@@ -10,9 +10,9 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -25,6 +25,7 @@
 #include "dbus/object_path.h"
 #include "device/bluetooth/floss/floss_dbus_client.h"
 #include "device/bluetooth/floss/floss_manager_client.h"
+#include "device/bluetooth/floss/test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,11 +33,6 @@ namespace floss {
 namespace {
 
 using testing::_;
-
-// Matches a dbus::MethodCall based on the method name (member).
-MATCHER_P(HasMemberOf, member, "") {
-  return arg->GetMember() == member;
-}
 
 const char kTestSender[] = ":0.1";
 const int kTestSerial = 1;
@@ -215,9 +211,8 @@ class FlossLEScanClientTest : public testing::Test,
     EXPECT_EQ(fake_scan_result_.periodic_adv_int, kTestPeriodicAdvInt);
     EXPECT_EQ(fake_scan_result_.flags, kTestFlags);
     EXPECT_EQ(fake_scan_result_.service_uuids.size(), 1UL);
-    EXPECT_EQ(std::count(fake_scan_result_.service_uuids.begin(),
-                         fake_scan_result_.service_uuids.end(),
-                         device::BluetoothUUID(kTestUuidStr)),
+    EXPECT_EQ(base::ranges::count(fake_scan_result_.service_uuids,
+                                  device::BluetoothUUID(kTestUuidStr)),
               1);
     EXPECT_EQ(fake_scan_result_.service_data.size(), 1UL);
     EXPECT_EQ(fake_scan_result_.service_data[kTestUuidStr], kTestAdvData);

@@ -42,7 +42,6 @@
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "media/base/format_utils.h"
-#include "media/base/video_frame.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "media/video/half_float_maker.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -162,13 +161,20 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
       buffer_formats[1] = gfx::BufferFormat::RG_88;
       return VideoFrameResourceType::YUV;
 
+    case PIXEL_FORMAT_NV12A:
+      DCHECK_EQ(num_textures, 3u);
+      buffer_formats[0] = gfx::BufferFormat::R_8;
+      buffer_formats[1] = gfx::BufferFormat::RG_88;
+      buffer_formats[2] = gfx::BufferFormat::R_8;
+      return VideoFrameResourceType::YUVA;
+
     case PIXEL_FORMAT_P016LE:
       DCHECK_EQ(num_textures, 2u);
       // TODO(mcasas): Support other formats such as e.g. P012.
       buffer_formats[0] = gfx::BufferFormat::R_16;
       // TODO(https://crbug.com/1233228): This needs to be
       // gfx::BufferFormat::RG_1616.
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
       buffer_formats[1] = gfx::BufferFormat::RG_1616;
 #else
       buffer_formats[1] = gfx::BufferFormat::RG_88;
@@ -319,14 +325,14 @@ class VideoResourceUpdater::PlaneResource {
 
   // Returns true if this resource matches the unique identifiers of another
   // VideoFrame resource.
-  bool Matches(int unique_frame_id, size_t plane_index) {
+  bool Matches(VideoFrame::ID unique_frame_id, size_t plane_index) {
     return has_unique_frame_id_and_plane_index_ &&
            unique_frame_id_ == unique_frame_id && plane_index_ == plane_index;
   }
 
   // Sets the unique identifiers for this resource, may only be called when
   // there is a single reference to the resource (i.e. |ref_count_| == 1).
-  void SetUniqueId(int unique_frame_id, size_t plane_index) {
+  void SetUniqueId(VideoFrame::ID unique_frame_id, size_t plane_index) {
     DCHECK_EQ(ref_count_, 1);
     plane_index_ = plane_index;
     unique_frame_id_ = unique_frame_id;
@@ -356,7 +362,7 @@ class VideoResourceUpdater::PlaneResource {
 
   // These two members are used for identifying the data stored in this
   // resource; they uniquely identify a VideoFrame plane.
-  int unique_frame_id_ = 0;
+  VideoFrame::ID unique_frame_id_;
   size_t plane_index_ = 0u;
   // Indicates if the above two members have been set or not.
   bool has_unique_frame_id_and_plane_index_ = false;
@@ -562,7 +568,8 @@ void VideoResourceUpdater::ObtainFrameResources(
       CreateExternalResourcesFromVideoFrame(video_frame);
   frame_resource_type_ = external_resources.type;
 
-  if (external_resources.type == VideoFrameResourceType::YUV) {
+  if (external_resources.type == VideoFrameResourceType::YUV ||
+      external_resources.type == VideoFrameResourceType::YUVA) {
     frame_resource_offset_ = external_resources.offset;
     frame_resource_multiplier_ = external_resources.multiplier;
     frame_bits_per_channel_ = external_resources.bits_per_channel;
@@ -661,6 +668,37 @@ void VideoResourceUpdater::AppendQuads(
       }
       break;
     }
+    case VideoFrameResourceType::YUVA: {
+      DCHECK_EQ(frame_resources_.size(),
+                VideoFrame::NumPlanes(frame->format()));
+      if (frame->HasTextures()) {
+        DCHECK_EQ(frame->format(), PIXEL_FORMAT_NV12A);
+      }
+
+      // Get the scaling factor of the YA texture relative to the UV texture.
+      const gfx::Size uv_sample_size =
+          VideoFrame::SampleSize(frame->format(), VideoFrame::kUPlane);
+
+      auto* yuv_video_quad =
+          render_pass->CreateAndAppendDrawQuad<viz::YUVVideoDrawQuad>();
+      yuv_video_quad->SetNew(
+          shared_quad_state, quad_rect, visible_quad_rect, needs_blending,
+          coded_size, visible_rect, uv_sample_size, frame_resources_[0].id,
+          frame_resources_[1].id,
+          frame_resources_.size() > 3 ? frame_resources_[2].id
+                                      : frame_resources_[1].id,
+          frame_resources_.size() > 3 ? frame_resources_[3].id
+                                      : frame_resources_[2].id,
+          frame->ColorSpace(), frame_resource_offset_,
+          frame_resource_multiplier_, frame_bits_per_channel_,
+          ProtectedVideoTypeFromMetadata(frame->metadata()),
+          frame->hdr_metadata());
+
+      for (viz::ResourceId resource_id : yuv_video_quad->resources) {
+        resource_provider_->ValidateResource(resource_id);
+      }
+      break;
+    }
     case VideoFrameResourceType::RGBA:
     case VideoFrameResourceType::RGBA_PREMULTIPLIED:
     case VideoFrameResourceType::RGB:
@@ -736,7 +774,7 @@ VideoResourceUpdater::RecycleOrAllocateResource(
     const gfx::Size& resource_size,
     viz::ResourceFormat resource_format,
     const gfx::ColorSpace& color_space,
-    int unique_id,
+    VideoFrame::ID unique_id,
     int plane_index) {
   PlaneResource* recyclable_resource = nullptr;
   for (auto& resource : all_resources_) {
@@ -800,7 +838,7 @@ void VideoResourceUpdater::CopyHardwarePlane(
   constexpr viz::ResourceFormat copy_resource_format =
       viz::ResourceFormat::RGBA_8888;
 
-  const int no_unique_id = 0;
+  const VideoFrame::ID no_unique_id;
   const int no_plane_index = -1;  // Do not recycle referenced textures.
   PlaneResource* plane_resource = RecycleOrAllocateResource(
       output_plane_resource_size, copy_resource_format, resource_color_space,
@@ -870,6 +908,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   gfx::BufferFormat buffer_formats[VideoFrame::kMaxPlanes];
   external_resources.type = ExternalResourceTypeForHardwarePlanes(
       *video_frame, target, buffer_formats, use_stream_video_draw_quad_);
+  external_resources.bits_per_channel = video_frame->BitDepth();
 
   if (external_resources.type == VideoFrameResourceType::NONE) {
     DLOG(ERROR) << "Unsupported Texture format"
@@ -1340,6 +1379,9 @@ void VideoResourceUpdater::ReturnTexture(scoped_refptr<VideoFrame> video_frame,
                                          bool lost_resource) {
   // TODO(dshwang): Forward to the decoder as a lost resource.
   if (lost_resource)
+    return;
+
+  if (!sync_token.HasData())
     return;
 
   // The video frame will insert a wait on the previous release sync token.

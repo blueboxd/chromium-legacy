@@ -18,8 +18,10 @@
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/authentication_service_fake.h"
+#import "ios/chrome/browser/signin/fake_authentication_service_delegate.h"
+#import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/sync/mock_sync_service_utils.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
@@ -37,7 +39,7 @@
 #import "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -69,19 +71,20 @@ class SettingsTableViewControllerTest : public ChromeTableViewControllerTest {
         ios::TemplateURLServiceFactory::GetDefaultFactory());
     builder.AddTestingFactory(
         AuthenticationServiceFactory::GetInstance(),
-        base::BindRepeating(
-            &AuthenticationServiceFake::CreateAuthenticationService));
+        AuthenticationServiceFactory::GetDefaultFactory());
     chrome_browser_state_ = builder.Build();
 
     browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
-
+    AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
+        chrome_browser_state_.get(),
+        std::make_unique<FakeAuthenticationServiceDelegate>());
     sync_setup_service_mock_ = static_cast<SyncSetupServiceMock*>(
         SyncSetupServiceFactory::GetForBrowserState(
             chrome_browser_state_.get()));
     sync_service_mock_ = static_cast<syncer::MockSyncService*>(
         SyncServiceFactory::GetForBrowserState(chrome_browser_state_.get()));
 
-    auth_service_ = static_cast<AuthenticationServiceFake*>(
+    auth_service_ = static_cast<AuthenticationService*>(
         AuthenticationServiceFactory::GetInstance()->GetForBrowserState(
             chrome_browser_state_.get()));
 
@@ -95,9 +98,11 @@ class SettingsTableViewControllerTest : public ChromeTableViewControllerTest {
                                         password_manager::TestPasswordStore>))
                 .get()));
 
-    fake_identity_ = [FakeChromeIdentity identityWithEmail:@"foo1@gmail.com"
-                                                    gaiaID:@"foo1ID"
-                                                      name:@"Fake Foo 1"];
+    fake_identity_ = [FakeSystemIdentity fakeIdentity1];
+    ios::FakeChromeIdentityService* identity_service_ =
+        ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
+    identity_service_->AddIdentity(fake_identity_);
+    auth_service_->SignIn(fake_identity_);
 
     // Make sure there is no pre-existing policy present.
     [[NSUserDefaults standardUserDefaults]
@@ -182,8 +187,8 @@ class SettingsTableViewControllerTest : public ChromeTableViewControllerTest {
   web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingLocalState scoped_testing_local_state_;
 
-  FakeChromeIdentity* fake_identity_ = nullptr;
-  AuthenticationServiceFake* auth_service_ = nullptr;
+  FakeSystemIdentity* fake_identity_ = nullptr;
+  AuthenticationService* auth_service_ = nullptr;
   syncer::MockSyncService* sync_service_mock_ = nullptr;
   SyncSetupServiceMock* sync_setup_service_mock_ = nullptr;
   scoped_refptr<password_manager::TestPasswordStore> password_store_mock_;

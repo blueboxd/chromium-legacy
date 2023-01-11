@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">Razveljavi</translation>
 <translation id="2084108471225856927">Nastavitve naprave</translation>
 <translation id="2084809735218147718">Oseba, ki se podpisuje v zahvalo</translation>
-<translation id="2085470240340828803">Datoteka z imenom »<ph name="FILENAME" />« že obstaja. Kaj želite storiti?</translation>
 <translation id="2088690981887365033">Omrežje VPN</translation>
 <translation id="2122305276694332719">Samodejna povezava s skritim omrežjem omogoča drugim, da vidijo vašo napravo in nekatere nastavitve omrežja, zato tega ne priporočamo.</translation>
 <translation id="2125607626296734455">kmerščina</translation>
@@ -456,7 +455,6 @@
 <translation id="4900532980794411603">Deljenje s programom Parallels Desktop</translation>
 <translation id="4902546322522096650">Omrežje <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, moč signala je <ph name="SIGNAL_STRENGTH" /> %, vzpostavitev povezave</translation>
 <translation id="4906580650526544301">Omrežje <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, moč signala je <ph name="SIGNAL_STRENGTH" /> %, stanje baterije telefona je <ph name="BATTERY_STATUS" /> %, podrobnosti</translation>
-<translation id="4929673617759421391">Lepljenje te datoteke blokira skrbniški pravilnik</translation>
 <translation id="4935975195727477204">Roža</translation>
 <translation id="4943368462779413526">Žoga</translation>
 <translation id="4961158930123534723">1 mapa je deljena s programom Parallels Desktop</translation>
@@ -534,6 +532,7 @@
 <translation id="5428105026674456456">španščina</translation>
 <translation id="5438282218546237410">Ni rezultatov za »<ph name="SEARCH_TERM" />«.</translation>
 <translation id="5449551289610225147">Neveljavno geslo</translation>
+<translation id="5459064203055649751">Datoteka z imenom »<ph name="FILENAME" />« že obstaja. Ali jo želite zamenjati z datoteko, ki jo premikate?</translation>
 <translation id="5463231940765244860">Vnos</translation>
 <translation id="5469868506864199649">italijanščina</translation>
 <translation id="5473333559083690127">Vnovični vnos nove kode PIN</translation>
@@ -654,6 +653,7 @@
 <translation id="6495925982925244349">Omrežje <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, moč signala je <ph name="SIGNAL_STRENGTH" /> %, upravlja ga vaš skrbnik, podrobnosti</translation>
 <translation id="649877868557234318">Razširjanje datoteke <ph name="FILE_NAME" /> v mapo <ph name="FOLDER_NAME" /></translation>
 <translation id="6499681088828539489">Ne dovoli proxyjev za omrežja v skupni rabi</translation>
+<translation id="6503285896705205014">Kopiranje <ph name="COUNT" /> datotek(-e) blokira skrbniški pravilnik.</translation>
 <translation id="6509122719576673235">norveščina</translation>
 <translation id="6528513914570774834">Omogoči drugim uporabnikom te naprave uporabo tega omrežja</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" /> – sinhroniziranje ...</translation>
@@ -756,6 +756,7 @@
 <translation id="7357762654218998920">Ta vrsta datoteke ni podprta. <ph name="BEGIN_LINK_HELP" />Preberite več<ph name="END_LINK_HELP" /> o odpiranju datotek v sistemu Chrome OS.</translation>
 <translation id="7359359531237882347">Kopiranje toliko elementov: <ph name="NUMBER_OF_ITEMS" /> …</translation>
 <translation id="7375951387215729722">Seznam datotek, razvrščen glede na <ph name="COLUMN_NAME" />, v padajočem vrstnem redu.</translation>
+<translation id="7377161162143020057">Kopiranje te datoteke blokira skrbniški pravilnik.</translation>
 <translation id="7402503521691663770">Naprave ChromeOS Flex</translation>
 <translation id="7408870451288633753">češčina</translation>
 <translation id="7417453074306512035">Tipkovnica za etiopščino</translation>
@@ -977,7 +978,6 @@
 <translation id="9183302530794969518">Google Dokumenti</translation>
 <translation id="9189836632794948435">kazaščina</translation>
 <translation id="9200427192836333033">Št. razširjenih elementov: <ph name="NUMBER_OF_ITEMS" />.</translation>
-<translation id="9210751050717126865">Lepljenje <ph name="COUNT" /> datotek(-e) blokira skrbniški pravilnik</translation>
 <translation id="9213073329713032541">Namestitev je bila uspešno začeta.</translation>
 <translation id="9219103736887031265">Slike</translation>
 <translation id="9219908252191632183">Mesečeva pokrajina</translation>

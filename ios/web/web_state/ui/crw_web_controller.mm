@@ -491,12 +491,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     }];
   }
 
-  if (@available(iOS 16.0, *)) {
-    if (base::FeatureList::IsEnabled(web::features::kEnableFullscreenAPI)) {
-      [observers addEntriesFromDictionary:@{
-        @"fullscreenState" : @"fullscreenStateDidChange"
-      }];
-    }
+  if (web::features::IsFullscreenAPIEnabled()) {
+    [observers addEntriesFromDictionary:@{
+      @"fullscreenState" : @"fullscreenStateDidChange"
+    }];
   }
 
   return observers;
@@ -892,6 +890,14 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 }
 
 - (void)closeMediaPresentations {
+  if (@available(iOS 16, *)) {
+    if (self.webView.fullscreenState == WKFullscreenStateInFullscreen) {
+      [self.webView closeAllMediaPresentationsWithCompletionHandler:^{
+      }];
+      return;
+    }
+  }
+
   if (@available(iOS 15, *)) {
     [self.webView requestMediaPlaybackStateWithCompletionHandler:^(
                       WKMediaPlaybackState mediaPlaybackState) {
@@ -2212,7 +2218,7 @@ CrFullscreenState CrFullscreenStateFromWKFullscreenState(
 
 - (void)loadUrlObjectsCompletion:(NSArray<NSURL*>*)objects {
   GURL URL = net::GURLWithNSURL([objects firstObject]);
-  if (!_isBeingDestroyed && URL.is_valid()) {
+  if (!_isBeingDestroyed && URL.is_valid() && URL.SchemeIsHTTPOrHTTPS()) {
     web::NavigationManager::WebLoadParams params(URL);
     params.transition_type = ui::PAGE_TRANSITION_TYPED;
     self.webStateImpl->GetNavigationManager()->LoadURLWithParams(params);

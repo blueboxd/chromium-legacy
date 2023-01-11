@@ -77,7 +77,6 @@ class BreadcrumbPersistentStorageManager : public BreadcrumbManagerObserver {
 
   // BreadcrumbManagerObserver
   void EventAdded(const std::string& event) override;
-  void OldEventsRemoved() override;
 
   // Individual breadcrumbs that have not yet been written to disk.
   std::string pending_breadcrumbs_;
@@ -101,9 +100,6 @@ class BreadcrumbPersistentStorageManager : public BreadcrumbManagerObserver {
 
   // The path to the file for storing persisted breadcrumbs.
   const base::FilePath breadcrumbs_file_path_;
-
-  // The path to the temporary file for writing persisted breadcrumbs.
-  const base::FilePath breadcrumbs_temp_file_path_;
 
   // The current size of breadcrumbs written to |breadcrumbs_file_path_|.
   // NOTE: The optional will not have a value until the size of the existing

@@ -247,6 +247,7 @@
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/browser/lens/region_search/lens_region_search_controller.h"
+#include "chrome/browser/ui/lens/lens_side_panel_helper.h"
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #endif
@@ -1037,6 +1038,8 @@ void RenderViewContextMenu::InitMenu() {
     AppendPrintItem();
   }
 
+  // Partial Translate is not supported on ChromeOS.
+#if !BUILDFLAG(IS_CHROMEOS)
   if (base::FeatureList::IsEnabled(translate::kDesktopPartialTranslate) &&
       content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_PARTIAL_TRANSLATE)) {
@@ -1044,6 +1047,7 @@ void RenderViewContextMenu::InitMenu() {
       AppendPartialTranslateItem();
     }
   }
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 
   // Spell check and writing direction options are not currently supported by
   // pepper plugins.
@@ -3629,9 +3633,14 @@ void RenderViewContextMenu::ExecRegionSearch(
     int event_flags,
     bool is_google_default_search_provider) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  Browser* browser = GetBrowser();
+  CHECK(browser);
+  if (lens::features::IsLensRegionSearchStaticPageEnabled()) {
+    lens::OpenLensStaticPage(browser);
+    return;
+  }
+
   if (!lens_region_search_controller_) {
-    Browser* browser = GetBrowser();
-    CHECK(browser);
     WebContents* web_contents = source_web_contents_;
     if (base::FeatureList::IsEnabled(
             lens::features::kEnableRegionSearchOnPdfViewer)) {

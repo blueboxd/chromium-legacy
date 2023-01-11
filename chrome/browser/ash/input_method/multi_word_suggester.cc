@@ -7,7 +7,6 @@
 #include <cmath>
 
 #include "ash/constants/ash_pref_names.h"
-#include "ash/services/ime/public/cpp/suggestions.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -16,6 +15,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/input_method/suggestion_enums.h"
 #include "chrome/browser/ash/input_method/ui/suggestion_details.h"
+#include "chromeos/ash/services/ime/public/cpp/assistive_suggestions.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -24,9 +24,9 @@ namespace ash {
 namespace input_method {
 namespace {
 
-using ime::TextSuggestion;
-using ime::TextSuggestionMode;
-using ime::TextSuggestionType;
+using ime::AssistiveSuggestion;
+using ime::AssistiveSuggestionMode;
+using ime::AssistiveSuggestionType;
 
 // Used for UmaHistogramExactLinear, should remain <= 101.
 constexpr size_t kMaxSuggestionLength = 101;
@@ -43,11 +43,11 @@ constexpr char16_t kSuggestionAcceptedMessage[] =
 constexpr char16_t kSuggestionDismissedMessage[] =
     u"predictive writing candidate dismissed";
 
-absl::optional<TextSuggestion> GetMultiWordSuggestion(
-    const std::vector<TextSuggestion>& suggestions) {
+absl::optional<AssistiveSuggestion> GetMultiWordSuggestion(
+    const std::vector<AssistiveSuggestion>& suggestions) {
   if (suggestions.empty())
     return absl::nullopt;
-  if (suggestions[0].type == TextSuggestionType::kMultiWord) {
+  if (suggestions[0].type == AssistiveSuggestionType::kMultiWord) {
     // There should only ever be one multi word suggestion given at a time.
     DCHECK_EQ(suggestions.size(), 1u);
     return suggestions[0];
@@ -70,11 +70,11 @@ size_t CalculateConfirmedLength(const std::u16string& surrounding_text,
 }
 
 MultiWordSuggestionType ToSuggestionType(
-    const ime::TextSuggestionMode& suggestion_mode) {
+    const ime::AssistiveSuggestionMode& suggestion_mode) {
   switch (suggestion_mode) {
-    case ime::TextSuggestionMode::kCompletion:
+    case ime::AssistiveSuggestionMode::kCompletion:
       return MultiWordSuggestionType::kCompletion;
-    case ime::TextSuggestionMode::kPrediction:
+    case ime::AssistiveSuggestionMode::kPrediction:
       return MultiWordSuggestionType::kPrediction;
     default:
       return MultiWordSuggestionType::kUnknown;
@@ -98,9 +98,16 @@ void RecordSuggestionLength(size_t suggestion_length) {
 }
 
 void RecordCouldPossiblyShowSuggestion(
-    const ime::TextSuggestionMode& suggestion_mode) {
+    const ime::AssistiveSuggestionMode& suggestion_mode) {
   base::UmaHistogramEnumeration(
       "InputMethod.Assistive.MultiWord.CouldPossiblyShowSuggestion",
+      ToSuggestionType(suggestion_mode));
+}
+
+void RecordImplicitAcceptance(
+    const ime::AssistiveSuggestionMode& suggestion_mode) {
+  base::UmaHistogramEnumeration(
+      "InputMethod.Assistive.MultiWord.ImplicitAcceptance",
       ToSuggestionType(suggestion_mode));
 }
 
@@ -156,7 +163,7 @@ MultiWordSuggester::MultiWordSuggester(
     : suggestion_handler_(suggestion_handler), state_(this), profile_(profile) {
   suggestion_button_.id = ui::ime::ButtonId::kSuggestion;
   suggestion_button_.window_type =
-      ui::ime::AssistiveWindowType::kMultiWordSuggestion;
+      ash::ime::AssistiveWindowType::kMultiWordSuggestion;
   suggestion_button_.index = 0;
 }
 
@@ -182,8 +189,9 @@ void MultiWordSuggester::OnSurroundingTextChanged(const std::u16string& text,
   if (CouldSuggestWithSurroundingText(text, cursor_pos, anchor_pos) &&
       !state_.IsSuggestionShowing()) {
     RecordCouldPossiblyShowSuggestion(
-        WouldBeInCompletionMode(text) ? ime::TextSuggestionMode::kCompletion
-                                      : ime::TextSuggestionMode::kPrediction);
+        WouldBeInCompletionMode(text)
+            ? ime::AssistiveSuggestionMode::kCompletion
+            : ime::AssistiveSuggestionMode::kPrediction);
   }
 
   auto surrounding_text = SuggestionState::SurroundingText{
@@ -196,11 +204,11 @@ void MultiWordSuggester::OnSurroundingTextChanged(const std::u16string& text,
 }
 
 void MultiWordSuggester::OnExternalSuggestionsUpdated(
-    const std::vector<TextSuggestion>& suggestions) {
+    const std::vector<AssistiveSuggestion>& suggestions) {
   if (state_.IsSuggestionShowing() || !state_.IsCursorAtEndOfText())
     return;
 
-  absl::optional<TextSuggestion> multi_word_suggestion =
+  absl::optional<AssistiveSuggestion> multi_word_suggestion =
       GetMultiWordSuggestion(suggestions);
 
   if (!multi_word_suggestion) {
@@ -318,8 +326,15 @@ bool MultiWordSuggester::HasSuggestions() {
   return false;
 }
 
-std::vector<TextSuggestion> MultiWordSuggester::GetSuggestions() {
-  return {};
+std::vector<AssistiveSuggestion> MultiWordSuggester::GetSuggestions() {
+  auto suggestion = state_.GetSuggestion();
+  if (!suggestion)
+    return {};
+  return {
+      AssistiveSuggestion{.mode = suggestion->mode,
+                          .type = AssistiveSuggestionType::kMultiWord,
+                          .text = base::UTF16ToUTF8(suggestion->text),
+                          .confirmed_length = suggestion->confirmed_length}};
 }
 
 void MultiWordSuggester::DisplaySuggestionIfAvailable() {
@@ -427,10 +442,10 @@ void MultiWordSuggester::SuggestionState::UpdateSurroundingText(
 void MultiWordSuggester::SuggestionState::UpdateSuggestion(
     const MultiWordSuggester::SuggestionState::Suggestion& suggestion) {
   suggestion_ = suggestion;
-  UpdateState(suggestion.mode == TextSuggestionMode::kCompletion
+  UpdateState(suggestion.mode == AssistiveSuggestionMode::kCompletion
                   ? State::kCompletionSuggestionShown
                   : State::kPredictionSuggestionShown);
-  if (suggestion.mode == TextSuggestionMode::kCompletion)
+  if (suggestion.mode == AssistiveSuggestionMode::kCompletion)
     ReconcileSuggestionWithText();
 }
 
@@ -448,6 +463,9 @@ void MultiWordSuggester::SuggestionState::ReconcileSuggestionWithText() {
                                       ? new_confirmed_length
                                       : suggestion_->initial_confirmed_length;
 
+  bool user_typed_suggestion =
+      new_confirmed_length == suggestion_->text.length();
+
   // Are we still tracking the last suggestion shown to the user?
   bool no_longer_tracking =
       state_ == State::kTrackingLastSuggestionShown &&
@@ -455,7 +473,10 @@ void MultiWordSuggester::SuggestionState::ReconcileSuggestionWithText() {
         new_confirmed_length < suggestion_->initial_confirmed_length) ||
        (new_confirmed_length == suggestion_->confirmed_length &&
         surrounding_text_->cursor_pos != surrounding_text_->prev_cursor_pos) ||
-       new_confirmed_length == suggestion_->text.length());
+       user_typed_suggestion);
+
+  if (no_longer_tracking && user_typed_suggestion)
+    RecordImplicitAcceptance(suggestion_->mode);
 
   if (no_longer_tracking || !surrounding_text_->cursor_at_end_of_text) {
     UpdateState(State::kSuggestionDismissed);
@@ -468,10 +489,12 @@ void MultiWordSuggester::SuggestionState::ReconcileSuggestionWithText() {
     UpdateState(State::kTrackingLastSuggestionShown);
   }
 
-  suggestion_ = Suggestion{.text = suggestion_->text,
+  suggestion_ = Suggestion{.mode = suggestion_->mode,
+                           .text = suggestion_->text,
                            .confirmed_length = new_confirmed_length,
                            .initial_confirmed_length = initial_confirmed_length,
-                           .time_first_shown = suggestion_->time_first_shown};
+                           .time_first_shown = suggestion_->time_first_shown,
+                           .highlighted = suggestion_->highlighted};
 }
 
 void MultiWordSuggester::SuggestionState::ToggleSuggestionHighlight() {

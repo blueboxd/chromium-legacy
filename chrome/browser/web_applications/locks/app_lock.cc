@@ -8,8 +8,18 @@
 
 namespace web_app {
 
-AppLock::AppLock(base::flat_set<AppId> app_ids)
-    : Lock(std::move(app_ids), Lock::Type::kApp) {}
+AppLockDescription::AppLockDescription(base::flat_set<AppId> app_ids)
+    : LockDescription(std::move(app_ids), LockDescription::Type::kApp) {}
+AppLockDescription::~AppLockDescription() = default;
+
+AppLock::AppLock(WebAppRegistrar& registrar,
+                 WebAppSyncBridge& sync_bridge,
+                 WebAppInstallFinalizer& install_finalizer,
+                 OsIntegrationManager& os_integration_manager)
+    : registrar_(registrar),
+      sync_bridge_(sync_bridge),
+      install_finalizer_(install_finalizer),
+      os_integration_manager_(os_integration_manager) {}
 AppLock::~AppLock() = default;
 
 }  // namespace web_app

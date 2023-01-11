@@ -7,17 +7,22 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/procedural_block_types.h"
+#import "base/callback.h"
 
 namespace web {
 class WebState;
 }
+
+class GURL;
 
 namespace activity_services {
 
 // Script to access the canonical URL from a web page. This script shouldn't be
 // used directly, but is exposed for testing purposes.
 extern const char16_t kCanonicalURLScript[];
+
+// Callback invoked when the canonical URL has been fetched.
+using CanonicalUrlRetrievedCallback = base::OnceCallback<void(const GURL& url)>;
 
 // Retrieves the canonical URL in the web page represented by `web_state`.
 // This method is asynchronous and the URL is returned by calling the
@@ -36,7 +41,7 @@ extern const char16_t kCanonicalURLScript[];
 // `completion`. This prevents the canonical URL from being downgraded to HTTP
 // from the HTTPS visible URL.
 void RetrieveCanonicalUrl(web::WebState* web_state,
-                          ProceduralBlockWithURL completion);
+                          CanonicalUrlRetrievedCallback completion);
 
 }  // namespace activity_services
 

@@ -5,8 +5,6 @@
 source_set("signin") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "chrome_identity.h",
-    "chrome_identity.mm",
     "chrome_identity_interaction_manager.h",
     "chrome_identity_interaction_manager.mm",
     "chrome_identity_service.h",
@@ -59,31 +57,19 @@ source_set("test_support") {
   ]
   deps = [
     ":constants",
-    ":fake_chrome_identity",
     ":signin",
     "//base",
     "//base/test:test_support",
     "//components/signin/public/identity_manager",
     "//google_apis",
+    "//ios/chrome/browser/signin:fake_system_identity",
+    "//ios/chrome/browser/signin:system_identity",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin:signin_error_api",
     "//ios/public/provider/chrome/browser/signin:signin_resources_api",
     "//ui/base:test_support",
   ]
   public_deps = [ "//testing/gmock" ]
-}
-
-source_set("fake_chrome_identity") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "fake_chrome_identity.h",
-    "fake_chrome_identity.mm",
-  ]
-  deps = [
-    ":signin",
-    "//base",
-  ]
 }
 
 source_set("constants") {
@@ -103,11 +89,11 @@ source_set("unit_tests") {
   testonly = true
   sources = [ "chrome_identity_service_unittest.mm" ]
   deps = [
-    ":fake_chrome_identity",
     ":signin",
     "//base",
     "//base/test:test_support",
     "//components/signin/internal/identity_manager",
+    "//ios/chrome/browser/signin:fake_system_identity",
     "//testing/gmock",
     "//testing/gtest",
   ]

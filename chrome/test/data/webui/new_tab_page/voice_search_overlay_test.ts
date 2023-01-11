@@ -15,7 +15,7 @@ import {isVisible} from 'chrome://webui-test/test_util.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 
-import {fakeMetricsPrivate, MetricsTracker} from './metrics_test_support.js';
+import {fakeMetricsPrivate, MetricsTracker} from './../metrics_test_support.js';
 import {assertNotStyle, assertStyle, installMock, keydown} from './test_support.js';
 
 function createResults(n: number): SpeechRecognitionEvent {
@@ -77,8 +77,7 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
   let metrics: MetricsTracker;
 
   setup(async () => {
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
 
     window.webkitSpeechRecognition =
         MockSpeechRecognition as unknown as typeof SpeechRecognition;

@@ -1,19 +1,8 @@
 {
-  "chromeos-amd64-generic-lacros-internal-rel": {
-    "args_file": "//build/args/chromeos/amd64-generic-crostoolchain.gni",
-    "gn_args": {
-      "chromeos_is_browser_only": true,
-      "dcheck_always_on": false,
-      "is_chromeos_device": true,
-      "is_debug": false,
-      "ozone_platform_headless": true,
-      "target_os": "chromeos",
-      "use_goma": true
-    }
-  },
   "chromeos-arm-generic-cfi-thin-lto-chrome-reclient": {
     "args_file": "//build/args/chromeos/arm-generic.gni",
     "gn_args": {
+      "also_build_lacros_chrome_for_architecture": "arm",
       "dcheck_always_on": false,
       "is_cfi": true,
       "is_chrome_branded": true,
@@ -48,14 +37,14 @@
       "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-finch-smoke-chrome": {
     "gn_args": {
       "is_chrome_branded": true,
       "is_official_build": true,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-password-manager-captured-sites-rel": {
@@ -63,7 +52,7 @@
       "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "lorenz-graph-dbg": {
@@ -76,7 +65,7 @@
       "proprietary_codecs": true,
       "symbol_level": 1,
       "target_os": "android",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "mac-arm64-finch-smoke-chrome": {
@@ -85,15 +74,7 @@
       "is_chrome_branded": true,
       "is_official_build": true,
       "target_cpu": "arm64",
-      "use_goma": true
-    }
-  },
-  "mac-autofill-captured-sites-rel": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "siso-comparison-android": {
@@ -167,7 +148,7 @@
     }
   },
   "siso-comparison-win10": {
-    "reclent": {
+    "reclient": {
       "gn_args": {
         "dcheck_always_on": true,
         "enable_precompiled_headers": false,
@@ -195,14 +176,6 @@
       }
     }
   },
-  "win-autofill-captured-sites-rel": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "use_goma": true
-    }
-  },
   "win-celab-rel": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -211,22 +184,14 @@
       "is_debug": false,
       "is_official_build": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "win-finch-smoke-chrome": {
     "gn_args": {
       "is_chrome_branded": true,
       "is_official_build": true,
-      "use_goma": true
-    }
-  },
-  "win-password-manager-captured-sites-rel": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "use_goma": true
+      "use_remoteexec": true
     }
   }
 }

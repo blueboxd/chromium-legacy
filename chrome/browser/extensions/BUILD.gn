@@ -14,6 +14,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//pdf/features.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//rlz/buildflags/buildflags.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 assert(enable_extensions)
 
@@ -41,6 +42,9 @@ static_library("extensions") {
     "activity_log/database_string_table.h",
     "activity_log/fullstream_ui_policy.cc",
     "activity_log/fullstream_ui_policy.h",
+
+    # TODO(crbug.com/1381603): Ideally, no API implementations would be included
+    # here.
     "api/activity_log_private/activity_log_private_api.cc",
     "api/activity_log_private/activity_log_private_api.h",
     "api/autofill_private/autofill_private_api.cc",
@@ -92,8 +96,6 @@ static_library("extensions") {
     "api/cookies/cookies_api_constants.h",
     "api/cookies/cookies_helpers.cc",
     "api/cookies/cookies_helpers.h",
-    "api/cryptotoken_private/cryptotoken_private_api.cc",
-    "api/cryptotoken_private/cryptotoken_private_api.h",
     "api/dashboard_private/dashboard_private_api.cc",
     "api/dashboard_private/dashboard_private_api.h",
     "api/debugger/debugger_api.cc",
@@ -309,8 +311,6 @@ static_library("extensions") {
     "api/safe_browsing_private/safe_browsing_private_event_router_factory.h",
     "api/safe_browsing_private/safe_browsing_util.cc",
     "api/safe_browsing_private/safe_browsing_util.h",
-    "api/scripting/scripting_api.cc",
-    "api/scripting/scripting_api.h",
     "api/search/search_api.cc",
     "api/search/search_api.h",
     "api/sessions/session_id.cc",
@@ -653,6 +653,9 @@ static_library("extensions") {
     "permissions_updater.h",
     "policy_handlers.cc",
     "policy_handlers.h",
+    "pref_mapping.cc",
+    "pref_mapping.h",
+    "pref_transformer_interface.h",
     "proxy_overridden_bubble_delegate.cc",
     "proxy_overridden_bubble_delegate.h",
     "safe_browsing_verdict_handler.cc",
@@ -777,6 +780,7 @@ static_library("extensions") {
     "//chrome/browser:browser_process",
     "//chrome/browser:ntp_background_proto",
     "//chrome/browser:theme_properties",
+    "//chrome/browser/autofill",
     "//chrome/browser/browsing_data:constants",
     "//chrome/browser/devtools",
     "//chrome/browser/favicon",
@@ -888,6 +892,7 @@ static_library("extensions") {
     "//components/undo",
     "//components/unified_consent",
     "//components/update_client",
+    "//components/update_client:buildflags",
     "//components/update_client:common_impl",
     "//components/url_formatter",
     "//components/url_matcher",
@@ -902,7 +907,6 @@ static_library("extensions") {
     "//extensions:extensions_resources",
     "//extensions/browser",
     "//extensions/browser:core_api_provider",
-    "//extensions/browser/api:api_implementations",
     "//extensions/browser/updater",
     "//extensions/browser/updater:keepalive",
     "//extensions/buildflags",
@@ -1142,7 +1146,6 @@ static_library("extensions") {
       "//ash/constants",
       "//ash/keyboard/ui:resources_grit_grit",
       "//ash/public/cpp",
-      "//ash/services/ime/public/mojom",
       "//ash/webui/camera_app_ui",
       "//ash/webui/camera_app_ui:mojo_bindings",
       "//ash/webui/file_manager/untrusted_resources:file_manager_untrusted_resources",
@@ -1174,6 +1177,7 @@ static_library("extensions") {
       "//chromeos/ash/services/assistant/public/cpp",
       "//chromeos/ash/services/chromebox_for_meetings/public/cpp",
       "//chromeos/ash/services/chromebox_for_meetings/public/mojom",
+      "//chromeos/ash/services/ime/public/mojom",
       "//chromeos/components/remote_apps/mojom",
       "//chromeos/login/login_state",
       "//chromeos/process_proxy",
@@ -1322,7 +1326,7 @@ static_library("extensions") {
     ]
   }
 
-  if (enable_basic_printing && (is_win || is_mac || is_linux || is_chromeos)) {
+  if (enable_printing && (is_win || is_mac || is_linux || is_chromeos)) {
     # TODO(crbug.com/1213762)  Replace this with more accurate dependency
     # once //chrome/browser/printing build is able to be cleanly targeted.
     deps += [ "//chrome/services/printing/public/mojom" ]
@@ -1384,10 +1388,14 @@ static_library("test_support") {
     "extension_management_test_util.h",
     "external_testing_loader.cc",
     "external_testing_loader.h",
+    "fake_crx_installer.cc",
+    "fake_crx_installer.h",
     "load_error_waiter.cc",
     "load_error_waiter.h",
     "menu_manager_test_observer.cc",
     "menu_manager_test_observer.h",
+    "mock_crx_installer.cc",
+    "mock_crx_installer.h",
     "mock_extension_special_storage_policy.cc",
     "mock_extension_special_storage_policy.h",
     "scoped_database_manager_for_test.cc",
@@ -1438,4 +1446,19 @@ static_library("test_support") {
   if (is_chromeos_ash) {
     deps += [ "//components/user_manager:test_support" ]
   }
+}
+
+fuzzer_test("extension_management_internal_fuzzer") {
+  sources = [ "extension_management_internal_fuzzer.cc" ]
+  deps = [
+    ":extensions",
+    "//base",
+
+    # While //c/b/extensions should've been sufficient, there are cyclic
+    # dependencies that require us linking against the whole //c/b.
+    "//chrome/browser",
+
+    # Pull test-specific stubs for symbols needed by //c/b.
+    "//chrome/test:test_support",
+  ]
 }

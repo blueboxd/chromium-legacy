@@ -45,8 +45,7 @@ TextClassifierModelServiceFactory::~TextClassifierModelServiceFactory() {}
 std::unique_ptr<KeyedService>
 TextClassifierModelServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  if ((!base::FeatureList::IsEnabled(kEnableExpKitCalendarTextClassifier) &&
-       !base::FeatureList::IsEnabled(kEnableExpKitTextClassifier)) ||
+  if (!base::FeatureList::IsEnabled(kEnableExpKitCalendarTextClassifier) ||
       !optimization_guide::features::IsOptimizationTargetPredictionEnabled()) {
     return nullptr;
   }

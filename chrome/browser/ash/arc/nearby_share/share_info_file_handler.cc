@@ -19,8 +19,8 @@
 #include "chrome/browser/ash/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/ash/arc/nearby_share/arc_nearby_share_uma.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
+#include "chrome/browser/ash/fileapi/external_file_url_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -72,12 +72,11 @@ file_manager::util::FileSystemURLAndHandle GetFileSystemURLAndHandle(
     const storage::FileSystemContext& context,
     const GURL& url) {
   // Obtain the absolute path in the file system.
-  const base::FilePath virtual_path =
-      chromeos::ExternalFileURLToVirtualPath(url);
+  const base::FilePath virtual_path = ash::ExternalFileURLToVirtualPath(url);
   DCHECK(!virtual_path.empty());
   // Obtain the file system URL.
   return file_manager::util::CreateIsolatedURLFromVirtualPath(
-      context, /* empty origin */ GURL(), virtual_path);
+      context, url::Origin(), virtual_path);
 }
 
 std::string StripPathComponents(const std::string& file_name) {
@@ -313,7 +312,7 @@ void ShareInfoFileHandler::OnFileDescriptorCreated(
   }
 
   // Check if the obtained path providing external file URL or not.
-  if (!chromeos::IsExternalFileURLType(isolated_file_system.url.type())) {
+  if (!ash::IsExternalFileURLType(isolated_file_system.url.type())) {
     LOG(ERROR) << "FileSystemURL is not of external file type.";
     UpdateNearbyShareDataHandlingFail(DataHandlingResult::kNotExternalFileType);
     NotifyFileSharingCompleted(base::File::FILE_ERROR_INVALID_URL);

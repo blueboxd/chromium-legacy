@@ -7,8 +7,10 @@
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/trace_event/trace_event.h"
@@ -28,10 +30,10 @@
 #include "chrome/browser/ui/views/profiles/profile_management_flow_controller.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_flow_controller.h"
 #include "chrome/browser/ui/webui/signin/profile_picker_ui.h"
+#include "chrome/browser/ui/webui/signin/signin_url_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
-#include "chrome/grit/google_chrome_strings.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -51,6 +53,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "chrome/browser/ui/views/profiles/first_run_flow_controller_dice.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_dice_sign_in_toolbar.h"
 #endif
 
@@ -97,7 +100,14 @@ class ProfilePickerWidget : public views::Widget {
   ~ProfilePickerWidget() override = default;
 
  private:
-  const raw_ptr<ProfilePickerView> profile_picker_view_;
+  // TODO(crbug.com/1380808): Remove once the cause of the bug is found.
+  void OnNativeWidgetSizeChanged(const gfx::Size& new_size) override {
+    if (profile_picker_view_)
+      profile_picker_view_->OnNativeWidgetSizeChanged(new_size);
+    views::Widget::OnNativeWidgetSizeChanged(new_size);
+  }
+
+  const raw_ptr<ProfilePickerView, DanglingUntriaged> profile_picker_view_;
 };
 
 // Returns whether the current flow is part of the classic profile picker flow.
@@ -107,8 +117,35 @@ class ProfilePickerWidget : public views::Widget {
 bool IsClassicProfilePickerFlow(const ProfilePicker::Params& params) {
   // TODO(crbug.com/1360773): Implement more use cases outside of the classic
   // profile picker flow. e.g.: kLacrosSelectAvailableAccount.
-  return params.entry_point() !=
-         ProfilePicker::EntryPoint::kLacrosPrimaryProfileFirstRun;
+  switch (params.entry_point()) {
+    case ProfilePicker::EntryPoint::kOnStartup:
+    case ProfilePicker::EntryPoint::kProfileMenuManageProfiles:
+    case ProfilePicker::EntryPoint::kProfileMenuAddNewProfile:
+    case ProfilePicker::EntryPoint::kOpenNewWindowAfterProfileDeletion:
+    case ProfilePicker::EntryPoint::kNewSessionOnExistingProcess:
+    case ProfilePicker::EntryPoint::kProfileLocked:
+    case ProfilePicker::EntryPoint::kUnableToCreateBrowser:
+    case ProfilePicker::EntryPoint::kBackgroundModeManager:
+    case ProfilePicker::EntryPoint::kProfileIdle:
+    case ProfilePicker::EntryPoint::kLacrosSelectAvailableAccount:
+      return true;
+    case ProfilePicker::EntryPoint::kLacrosPrimaryProfileFirstRun:
+    case ProfilePicker::EntryPoint::kFirstRun:
+      return false;
+  }
+}
+
+void ClearLockedProfilesFirstBrowserKeepAlive() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  const std::vector<Profile*> loaded_profiles =
+      profile_manager->GetLoadedProfiles();
+  for (Profile* profile : loaded_profiles) {
+    ProfileAttributesEntry* entry =
+        profile_manager->GetProfileAttributesStorage()
+            .GetProfileAttributesWithPath(profile->GetPath());
+    if (entry && entry->IsSigninRequired())
+      profile_manager->ClearFirstBrowserWindowKeepAlive(profile);
+  }
 }
 
 }  // namespace
@@ -188,11 +225,9 @@ base::FilePath ProfilePicker::GetPickerProfilePath() {
 }
 
 // static
-void ProfilePicker::ShowDialog(content::BrowserContext* browser_context,
-                               const GURL& url,
-                               const base::FilePath& profile_path) {
+void ProfilePicker::ShowDialog(Profile* profile, const GURL& url) {
   if (g_profile_picker_view) {
-    g_profile_picker_view->ShowDialog(browser_context, url, profile_path);
+    g_profile_picker_view->ShowDialog(profile, url);
   }
 }
 
@@ -201,15 +236,6 @@ void ProfilePicker::HideDialog() {
   if (g_profile_picker_view) {
     g_profile_picker_view->HideDialog();
   }
-}
-
-// static
-base::FilePath ProfilePicker::GetForceSigninProfilePath() {
-  if (g_profile_picker_view) {
-    return g_profile_picker_view->GetForceSigninProfilePath();
-  }
-
-  return base::FilePath();
 }
 
 // static
@@ -223,14 +249,14 @@ bool ProfilePicker::IsOpen() {
   return g_profile_picker_view;
 }
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
 // static
-bool ProfilePicker::IsLacrosFirstRunOpen() {
+bool ProfilePicker::IsFirstRunOpen() {
   return ProfilePicker::IsOpen() &&
-         g_profile_picker_view->params_.entry_point() ==
-             ProfilePicker::EntryPoint::kLacrosPrimaryProfileFirstRun;
+         (g_profile_picker_view->params_.entry_point() ==
+              ProfilePicker::EntryPoint::kLacrosPrimaryProfileFirstRun ||
+          g_profile_picker_view->params_.entry_point() ==
+              ProfilePicker::EntryPoint::kFirstRun);
 }
-#endif
 
 bool ProfilePicker::IsActive() {
   if (!IsOpen())
@@ -265,13 +291,13 @@ void ProfilePicker::AddOnProfilePickerOpenedCallbackForTesting(
 }
 
 // static
-void ProfilePicker::ShowDialogAndDisplayErrorMessage(
-    content::BrowserContext* browser_context) {
+void ProfilePicker::ShowDialogAndDisplayErrorMessage(Profile* profile) {
   if (!ProfilePicker::IsActive())
     return;
 
   GURL url(chrome::kChromeUISigninErrorURL);
-  ProfilePicker::ShowDialog(browser_context, url, base::FilePath());
+  url = AddFromProfilePickerURLParameter(url);
+  ProfilePicker::ShowDialog(profile, url);
   return;
 }
 
@@ -280,22 +306,20 @@ void ProfilePicker::ShowDialogAndDisplayErrorMessage(
 
 // static
 void ProfilePickerForceSigninDialog::ShowReauthDialog(
-    content::BrowserContext* browser_context,
-    const std::string& email,
-    const base::FilePath& profile_path) {
+    Profile* profile,
+    const std::string& email) {
   DCHECK(signin_util::IsForceSigninEnabled());
   if (!ProfilePicker::IsActive())
     return;
   GURL url = signin::GetEmbeddedReauthURLWithEmail(
       signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
       signin_metrics::Reason::kReauthentication, email);
-  ProfilePicker::ShowDialog(browser_context, url, profile_path);
+  url = AddFromProfilePickerURLParameter(url);
+  ProfilePicker::ShowDialog(profile, url);
 }
 
 // static
-void ProfilePickerForceSigninDialog::ShowForceSigninDialog(
-    content::BrowserContext* browser_context,
-    const base::FilePath& profile_path) {
+void ProfilePickerForceSigninDialog::ShowForceSigninDialog(Profile* profile) {
   DCHECK(signin_util::IsForceSigninEnabled());
   if (!ProfilePicker::IsActive())
     return;
@@ -303,8 +327,9 @@ void ProfilePickerForceSigninDialog::ShowForceSigninDialog(
   GURL url = signin::GetEmbeddedPromoURL(
       signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
       signin_metrics::Reason::kForcedSigninPrimaryAccount, true);
+  url = AddFromProfilePickerURLParameter(url);
 
-  ProfilePicker::ShowDialog(browser_context, url, profile_path);
+  ProfilePicker::ShowDialog(profile, url);
 }
 
 // static
@@ -313,11 +338,6 @@ void ProfilePickerForceSigninDialog::DisplayErrorMessage() {
   if (g_profile_picker_view) {
     g_profile_picker_view->DisplayErrorMessage();
   }
-}
-
-// static
-void ProfilePickerForceSigninDialog::HideDialog() {
-  ProfilePicker::HideDialog();
 }
 
 // ProfilePickerView::NavigationFinishedObserver ------------------------------
@@ -595,21 +615,7 @@ void ProfilePickerView::Init(Profile* picker_profile) {
       views::HWNDForWidget(GetWidget()));
 #endif
 
-  if (IsClassicProfilePickerFlow(params_)) {
-    flow_controller_ = std::make_unique<ProfilePickerFlowController>(
-        /*host=*/this, params_.entry_point());
-  } else if (params_.entry_point() ==
-             ProfilePicker::EntryPoint::kLacrosPrimaryProfileFirstRun) {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    flow_controller_ = std::make_unique<FirstRunFlowControllerLacros>(
-        /*host=*/this, picker_profile,
-        base::BindOnce(&ProfilePicker::Params::NotifyFirstRunExited,
-                       // Unretained ok because the controller is owned
-                       // by this through `initialized_steps_`.
-                       base::Unretained(&params_)));
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-  }
-
+  flow_controller_ = CreateFlowController(picker_profile, GetClearClosure());
   DCHECK(flow_controller_);
   flow_controller_->Init();
   state_ = kReady;
@@ -628,6 +634,31 @@ void ProfilePickerView::Init(Profile* picker_profile) {
     delete g_profile_picker_opened_callback_for_testing;
     g_profile_picker_opened_callback_for_testing = nullptr;
   }
+}
+
+std::unique_ptr<ProfileManagementFlowController>
+ProfilePickerView::CreateFlowController(Profile* picker_profile,
+                                        ClearHostClosure clear_host_callback) {
+  if (params_.entry_point() ==
+          ProfilePicker::EntryPoint::kLacrosPrimaryProfileFirstRun ||
+      params_.entry_point() == ProfilePicker::EntryPoint::kFirstRun) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    return std::make_unique<FirstRunFlowControllerLacros>(
+        /*host=*/this, std::move(clear_host_callback), picker_profile,
+        base::BindOnce(&ProfilePicker::Params::NotifyFirstRunExited,
+                       // Unretained ok because the controller is owned
+                       // by this through `initialized_steps_`.
+                       base::Unretained(&params_)));
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+    return std::make_unique<FirstRunFlowControllerDice>(
+        /*host=*/this, std::move(clear_host_callback), picker_profile);
+#endif
+  }
+
+  DCHECK(IsClassicProfilePickerFlow(params_));
+  return std::make_unique<ProfilePickerFlowController>(
+      /*host=*/this, std::move(clear_host_callback), params_.entry_point());
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -669,8 +700,7 @@ void ProfilePickerView::OnProfileForDiceForcedSigninCreated(
   }
 
   std::move(switch_finished_callback).Run(true);
-  ProfilePickerForceSigninDialog::ShowForceSigninDialog(
-      web_view_->GetWebContents()->GetBrowserContext(), profile->GetPath());
+  ProfilePickerForceSigninDialog::ShowForceSigninDialog(profile);
 }
 
 #endif
@@ -686,6 +716,12 @@ void ProfilePickerView::SwitchToSignedInFlow(
 #endif
 
 void ProfilePickerView::WindowClosing() {
+  // If a profile is locked, it might have been loaded and it's first browser
+  // will never be created, we need to remove it's equivalent
+  // `ProfileKeepAliveOrigin::kWaitingForFirstBrowserWindow` to be able to
+  // delete the profile.
+  ClearLockedProfilesFirstBrowserKeepAlive();
+
   views::WidgetDelegateView::WindowClosing();
   // Now that the window is closed, we can allow a new one to be opened.
   // (WindowClosing comes in asynchronously from the call to Close() and we
@@ -852,19 +888,13 @@ void ProfilePickerView::ConfigureAccelerators() {
 #endif  // BUILDFLAG(IS_MAC)
 }
 
-void ProfilePickerView::ShowDialog(content::BrowserContext* browser_context,
-                                   const GURL& url,
-                                   const base::FilePath& profile_path) {
+void ProfilePickerView::ShowDialog(Profile* profile, const GURL& url) {
   gfx::NativeView parent = GetWidget()->GetNativeView();
-  dialog_host_.ShowDialog(browser_context, url, profile_path, parent);
+  dialog_host_.ShowDialog(profile, url, parent);
 }
 
 void ProfilePickerView::HideDialog() {
   dialog_host_.HideDialog();
-}
-
-base::FilePath ProfilePickerView::GetForceSigninProfilePath() const {
-  return dialog_host_.GetForceSigninProfilePath();
 }
 
 GURL ProfilePickerView::GetOnSelectProfileTargetUrl() const {
@@ -877,6 +907,15 @@ ProfilePickerFlowController* ProfilePickerView::GetProfilePickerFlowController()
   return static_cast<ProfilePickerFlowController*>(flow_controller_.get());
 }
 
+ClearHostClosure ProfilePickerView::GetClearClosure() {
+  return ClearHostClosure(base::BindOnce(
+      &ProfilePickerView::Clear,
+      // The method contract indicates that it is the responsibility of the
+      // callers to make sure `this` is valid. As the callers are all owned by
+      // `this`, it should be a reasonable assumption.
+      base::Unretained(this)));
+}
+
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 // static
 void ProfilePicker::NotifyAccountSelected(const std::string& gaia_id) {
@@ -885,7 +924,3 @@ void ProfilePicker::NotifyAccountSelected(const std::string& gaia_id) {
   g_profile_picker_view->NotifyAccountSelected(gaia_id);
 }
 #endif
-
-BEGIN_METADATA(ProfilePickerView, views::WidgetDelegateView)
-ADD_READONLY_PROPERTY_METADATA(base::FilePath, ForceSigninProfilePath)
-END_METADATA

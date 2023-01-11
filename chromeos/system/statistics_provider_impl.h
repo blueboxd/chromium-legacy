@@ -5,7 +5,6 @@
 #ifndef CHROMEOS_SYSTEM_STATISTICS_PROVIDER_IMPL_H_
 #define CHROMEOS_SYSTEM_STATISTICS_PROVIDER_IMPL_H_
 
-#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -15,13 +14,14 @@
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/strings/string_piece.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/values.h"
 #include "chromeos/system/name_value_pairs_parser.h"
 #include "chromeos/system/statistics_provider.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos::system {
 
@@ -47,6 +47,7 @@ class COMPONENT_EXPORT(CHROMEOS_SYSTEM) StatisticsProviderImpl
     base::FilePath machine_info_filepath;
     base::FilePath vpd_echo_filepath;
     base::FilePath vpd_filepath;
+    base::FilePath vpd_status_filepath;
     base::FilePath oem_manifest_filepath;
     base::FilePath cros_regions_filepath;
   };
@@ -78,27 +79,30 @@ class COMPONENT_EXPORT(CHROMEOS_SYSTEM) StatisticsProviderImpl
   // StatisticsProvider implementation:
   void StartLoadingMachineStatistics(bool load_oem_manifest) override;
   void ScheduleOnMachineStatisticsLoaded(base::OnceClosure callback) override;
+
   // If `ash::switches::kCrosRegion` switch is set, looks for the requested
   // statistic in the region file and ignores any other sources. Otherwise
   // returns the statistic from the first matching source.
-  bool GetMachineStatistic(const std::string& name,
-                           std::string* result) override;
-  bool GetMachineFlag(const std::string& name, bool* result) override;
+  absl::optional<base::StringPiece> GetMachineStatistic(
+      base::StringPiece name) override;
+  FlagValue GetMachineFlag(base::StringPiece name) override;
+
   void Shutdown() override;
 
   // Returns true when Chrome OS is running in a VM. NOTE: if crossystem is not
   // installed it will return false even if Chrome OS is running in a VM.
   bool IsRunningOnVm() override;
 
+  VpdStatus GetVpdStatus() const override;
+
  private:
-  using MachineFlags = std::map<std::string, bool>;
-  using RegionDataExtractor = bool (*)(const base::Value&, std::string*);
+  using MachineFlags = base::flat_map<std::string, bool>;
 
   explicit StatisticsProviderImpl(StatisticsSources sources);
 
   // Called when statistics have finished loading. Unblocks pending calls to
-  // WaitForStatisticsLoaded() and schedules callbacks passed to
-  // ScheduleOnMachineStatisticsLoaded().
+  // `WaitForStatisticsLoaded()` and schedules callbacks passed to
+  // `ScheduleOnMachineStatisticsLoaded()`.
   void SignalStatisticsLoaded();
 
   // Waits up to `kTimeoutSecs` for statistics to be loaded. Returns true if
@@ -108,30 +112,46 @@ class COMPONENT_EXPORT(CHROMEOS_SYSTEM) StatisticsProviderImpl
   // Loads the machine statistics off of disk. Runs on the file thread.
   void LoadMachineStatistics(bool load_oem_manifest);
 
+  // Loads calls the crossystem tool and loads statistics from its output.
+  void LoadCrossystemTool();
+
+  // Loads the machine info statistics off of disk. Runs on the file thread.
+  void LoadMachineInfoFile();
+
+  // Loads the VPD statistics off of disk. Runs on the file thread.
+  void LoadVpdFiles();
+
   // Loads the OEM statistics off of disk. Runs on the file thread.
   void LoadOemManifestFromFile(const base::FilePath& file);
 
   // Loads regional data off of disk. Runs on the file thread.
-  void LoadRegionsFile(const base::FilePath& filename);
+  void LoadRegionsFile(const base::FilePath& filename,
+                       base::StringPiece region);
 
-  // Extracts known data from regional_data_;
-  // Returns true on success;
-  bool GetRegionalInformation(const std::string& name,
-                              std::string* result) const;
-
-  // Returns extractor from regional_data_extractors_ or nullptr.
-  RegionDataExtractor GetRegionalDataExtractor(const std::string& name) const;
+  // Extracts known data from `regional_data_`.
+  absl::optional<base::StringPiece> GetRegionalInformation(
+      base::StringPiece name) const;
 
   StatisticsSources sources_;
 
   bool load_statistics_started_;
   NameValuePairsParser::NameValueMap machine_info_;
   MachineFlags machine_flags_;
+  // Statistics extracted from region file and associated with `kRegionKey`
+  // region.
+  base::flat_map<std::string, std::string> region_info_;
   base::AtomicFlag cancellation_flag_;
   bool oem_manifest_loaded_;
-  std::string region_;
-  base::Value region_dict_;
-  base::flat_map<std::string, RegionDataExtractor> regional_data_extractors_;
+
+  // Stores VPD partitions status.
+  // VPD partition or partitions are considered in invalid state if:
+  // 1. Status file or VPD file is missing: both RO_VPD and RW_VPD are
+  //    considered being invalid.
+  // 2. Partition key is missing in the status file: corresponding partition is
+  //    considered being invalid.
+  // 3. Partition key has invalid value: corresponding partition is considered
+  //    being invalid.
+  VpdStatus vpd_status_{VpdStatus::kUnknown};
 
   // Lock held when `statistics_loaded_` is signaled and when
   // `statistics_loaded_callbacks_` is accessed.

@@ -20,6 +20,7 @@ source_set("settings_root") {
     "//ios/chrome/browser/net:crurl",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/settings/cells:public",
     "//ios/chrome/browser/ui/table_view",
@@ -40,6 +41,23 @@ source_set("settings_root_constants") {
     "settings_root_table_constants.mm",
   ]
   deps = [ "//base" ]
+}
+
+source_set("settings_root_categories") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "settings_root_table_view_controller+toolbar_add.h",
+    "settings_root_table_view_controller+toolbar_add.mm",
+    "settings_root_table_view_controller+toolbar_settings.h",
+    "settings_root_table_view_controller+toolbar_settings.mm",
+  ]
+  deps = [
+    ":settings_root",
+    ":settings_root_constants",
+    "//ios/chrome/app/strings",
+    "//ui/base",
+  ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("settings") {
@@ -121,7 +139,7 @@ source_set("settings") {
     "//components/url_formatter",
     "//components/version_info",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser",
+    "//ios/chrome/browser/application_context",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:browser_state_impl",
     "//ios/chrome/browser/browsing_data",
@@ -136,9 +154,11 @@ source_set("settings") {
     "//ios/chrome/browser/net:crurl",
     "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/passwords",
+    "//ios/chrome/browser/prefs:pref_names",
     "//ios/chrome/browser/prerender:prerender_pref",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/signin:system_identity",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/translate",
     "//ios/chrome/browser/ui:feature_flags",
@@ -157,7 +177,6 @@ source_set("settings") {
     "//ios/chrome/browser/ui/first_run:field_trial",
     "//ios/chrome/browser/ui/icons",
     "//ios/chrome/browser/ui/icons:buildflags",
-    "//ios/chrome/browser/ui/icons:settings_icons",
     "//ios/chrome/browser/ui/icons:symbols",
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/list_model",
@@ -256,11 +275,11 @@ source_set("test_support") {
     "//components/sync_preferences:test_support",
     "//google_apis",
     "//ios/chrome/app/application_delegate:app_state_header",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/prefs:browser_prefs",
+    "//ios/chrome/browser/prefs:pref_names",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/signin:test_support",
@@ -315,7 +334,6 @@ source_set("unit_tests") {
     "//components/translate/core/browser",
     "//components/translate/core/common",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/browsing_data",
@@ -327,9 +345,11 @@ source_set("unit_tests") {
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/prefs:browser_prefs",
+    "//ios/chrome/browser/prefs:pref_names",
     "//ios/chrome/browser/prerender:prerender_pref",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/signin:fake_system_identity",
     "//ios/chrome/browser/signin:test_support",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/sync:test_support",
@@ -349,7 +369,7 @@ source_set("unit_tests") {
     "//ios/chrome/test:test_support",
     "//ios/chrome/test/app:test_support",
     "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/signin:fake_chrome_identity",
+    "//ios/public/provider/chrome/browser/signin:test_support",
     "//ios/web/public/test",
     "//net",
     "//net:test_support",
@@ -379,9 +399,9 @@ source_set("eg_app_support+eg2") {
     "//components/prefs",
     "//components/search_engines",
     "//ios/chrome/app:app_internal",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/content_settings",
+    "//ios/chrome/browser/prefs:pref_names",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/test/app:test_support",
     "//third_party/breakpad:client",
@@ -426,6 +446,7 @@ source_set("eg2_tests") {
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/policy:eg_test_support+eg2",
+    "//ios/chrome/browser/signin:fake_system_identity",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
     "//ios/chrome/browser/ui/authentication/cells:constants",
@@ -434,7 +455,6 @@ source_set("eg2_tests") {
     "//ios/chrome/browser/ui/settings/elements:constants",
     "//ios/chrome/common/ui/table_view:cells_constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
-    "//ios/public/provider/chrome/browser/signin:fake_chrome_identity",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
     "//ios/web/public/test/http_server",

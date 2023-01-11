@@ -58,6 +58,8 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.SessionHandler;
+import org.chromium.chrome.browser.customtabs.features.sessionrestore.SessionRestoreManager;
+import org.chromium.chrome.browser.customtabs.features.sessionrestore.SessionRestoreManagerImpl;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -226,6 +228,8 @@ public class CustomTabsConnection {
     @Nullable
     private Callback<CustomTabsSessionToken> mDisconnectCallback;
     private @Nullable Supplier<Integer> mGreatestScrollPercentageSupplier;
+    @Nullable
+    private SessionRestoreManager mSessionRestoreManager;
 
     private volatile ChainedTasks mWarmupTasks;
 
@@ -427,7 +431,7 @@ public class CustomTabsConnection {
 
         // (1)
         if (!initialized) {
-            tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
+            tasks.add(UiThreadTaskTraits.DEFAULT, () -> {
                 try (TraceEvent e = TraceEvent.scoped("CustomTabsConnection.initializeBrowser()")) {
                     initializeBrowser(ContextUtils.getApplicationContext());
                     ChromeBrowserInitializer.getInstance().initNetworkChangeNotifier();
@@ -438,7 +442,7 @@ public class CustomTabsConnection {
 
         // (2)
         if (mayCreateSpareWebContents && !mHiddenTabHolder.hasHiddenTab()) {
-            tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
+            tasks.add(UiThreadTaskTraits.DEFAULT, () -> {
                 // Temporary fix for https://crbug.com/797832.
                 // TODO(lizeb): Properly fix instead of papering over the bug, this code should
                 // not be scheduled unless startup is done. See https://crbug.com/797832.
@@ -450,7 +454,7 @@ public class CustomTabsConnection {
         }
 
         // (3)
-        tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
+        tasks.add(UiThreadTaskTraits.DEFAULT, () -> {
             try (TraceEvent e = TraceEvent.scoped("InitializeViewHierarchy")) {
                 WarmupManager.getInstance().initializeViewHierarchy(
                         ContextUtils.getApplicationContext(),
@@ -459,7 +463,7 @@ public class CustomTabsConnection {
         });
 
         if (!initialized) {
-            tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
+            tasks.add(UiThreadTaskTraits.DEFAULT, () -> {
                 try (TraceEvent e = TraceEvent.scoped("WarmupInternalFinishInitialization")) {
                     // (4)
                     Profile profile = Profile.getLastUsedRegularProfile();
@@ -474,7 +478,7 @@ public class CustomTabsConnection {
             });
         }
 
-        tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> notifyWarmupIsDone(uid));
+        tasks.add(UiThreadTaskTraits.DEFAULT, () -> notifyWarmupIsDone(uid));
         tasks.start(false);
         mWarmupTasks = tasks;
         return true;
@@ -532,6 +536,17 @@ public class CustomTabsConnection {
     @VisibleForTesting
     public Tab getHiddenTab() {
         return mHiddenTabHolder != null ? mHiddenTabHolder.getHiddenTab() : null;
+    }
+
+    /* Return the SessionRestoreManager for session restore. */
+    public @Nullable SessionRestoreManager getSessionRestoreManager() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_RETAINING_STATE_IN_MEMORY)) {
+            return null;
+        }
+        if (mSessionRestoreManager == null) {
+            mSessionRestoreManager = new SessionRestoreManagerImpl();
+        }
+        return mSessionRestoreManager;
     }
 
     private boolean preconnectUrls(List<Bundle> likelyBundles) {
@@ -1093,9 +1108,8 @@ public class CustomTabsConnection {
         return mClientManager.getClientPackageNameForSession(session);
     }
 
-    /** @return Whether the client of the {@code session} is a first-party application. */
-    public boolean isSessionFirstParty(CustomTabsSessionToken session) {
-        String packageName = getClientPackageNameForSession(session);
+    /** @return Whether the given package name is that of a first-party application. */
+    public boolean isFirstParty(String packageName) {
         if (packageName == null) return false;
         return ExternalAuthUtils.getInstance().isGoogleSigned(packageName);
     }
@@ -1178,22 +1192,9 @@ public class CustomTabsConnection {
         Bundle args = new Bundle();
         args.putInt(ON_RESIZED_SIZE_EXTRA, size);
 
-        // TODO(crbug.com/1366844): Deprecate the extra callback.
         if (safeExtraCallback(session, ON_RESIZED_CALLBACK, args) && mLogRequests) {
             logCallback("extraCallback(" + ON_RESIZED_CALLBACK + ")", args);
         }
-
-        CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
-        if (callback == null) return;
-        try {
-            callback.onActivityResized(size, args);
-        } catch (Exception e) {
-            // Catching all exceptions is really bad, but we need it here,
-            // because Android exposes us to client bugs by throwing a variety
-            // of exceptions. See crbug.com/517023.
-            return;
-        }
-        logCallback("onActivityResized()", size);
     }
 
     /**

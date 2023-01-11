@@ -46,9 +46,9 @@ const char kWebFeedContentOrder[] = "webfeed.content_order";
 const char kLastSeenFeedType[] = "feedv2.last_seen_feed_type";
 const char kFeedOnDeviceUserActionsCollector[] = "feed.user_actions_collection";
 const char kInfoCardStates[] = "feed.info_card_states";
-const char kExperimentsV2[] = "feedv2.experiments_v2";
 const char kHasSeenWebFeed[] = "webfeed.has_seen_feed";
 const char kLastBadgeAnimationTime[] = "webfeed.last_badge_animation_time";
+const char kExperimentsV2[] = "feedv2.experiments_v2";
 
 // Deprecated October 2022
 const char kExperimentsDeprecated[] = "feedv2.experiments";
@@ -57,15 +57,6 @@ const char kExperimentsDeprecated[] = "feedv2.experiments";
 
 // Deprecated prefs:
 namespace {
-
-// Deprecated May/June 2021
-const char kEnableWebFeedUI[] = "webfeed_ui.enable";
-const char kIsWebFeedSubscriber[] = "webfeed.is_subscriber";
-
-void RegisterObsoletePrefsJune_2021(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(kEnableWebFeedUI, false);
-  registry->RegisterBooleanPref(kIsWebFeedSubscriber, false);
-}
 
 void RegisterObsoletePrefsOct_2022(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kExperimentsDeprecated);
@@ -100,23 +91,17 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(feed::prefs::kFeedOnDeviceUserActionsCollector,
                              PrefRegistry::LOSSY_PREF);
   registry->RegisterDictionaryPref(feed::prefs::kInfoCardStates, 0);
-  registry->RegisterDictionaryPref(feed::prefs::kExperimentsV2);
   registry->RegisterBooleanPref(feed::prefs::kHasSeenWebFeed, false);
   registry->RegisterTimePref(feed::prefs::kLastBadgeAnimationTime,
                              base::Time());
+  registry->RegisterDictionaryPref(feed::prefs::kExperimentsV2);
 
 #if BUILDFLAG(IS_IOS)
   registry->RegisterBooleanPref(feed::prefs::kLastFetchHadLoggingEnabled,
                                 false);
 #endif  // BUILDFLAG(IS_IOS)
 
-  RegisterObsoletePrefsJune_2021(registry);
   RegisterObsoletePrefsOct_2022(registry);
-}
-
-void MigrateObsoleteProfilePrefsJune_2021(PrefService* prefs) {
-  prefs->ClearPref(kEnableWebFeedUI);
-  prefs->ClearPref(kIsWebFeedSubscriber);
 }
 
 void MigrateObsoleteProfilePrefsOct_2022(PrefService* prefs) {

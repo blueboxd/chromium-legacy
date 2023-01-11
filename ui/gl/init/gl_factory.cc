@@ -4,13 +4,13 @@
 
 #include "ui/gl/init/gl_factory.h"
 
-#include <algorithm>
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -21,7 +21,7 @@
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_initializer.h"
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 #include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
@@ -66,9 +66,9 @@ GLImplementationParts GetRequestedGLImplementation(
       GetAllowedGLImplementations();
 
   if (cmd->HasSwitch(switches::kDisableES3GLContext)) {
-    auto iter =
-        std::find(allowed_impls.begin(), allowed_impls.end(),
-                  GLImplementationParts(kGLImplementationDesktopGLCoreProfile));
+    auto iter = base::ranges::find(
+        allowed_impls,
+        GLImplementationParts(kGLImplementationDesktopGLCoreProfile));
     if (iter != allowed_impls.end())
       allowed_impls.erase(iter);
   }
@@ -236,8 +236,7 @@ GLDisplay* InitializeGLOneOffPlatformImplementation(
 
   DVLOG(1) << "Using " << GetGLImplementationGLName(GetGLImplementationParts())
            << " GL implementation.";
-  if (disable_gl_drawing)
-    InitializeNullDrawGLBindings();
+  SetNullDrawGLBindings(disable_gl_drawing);
   return display;
 }
 

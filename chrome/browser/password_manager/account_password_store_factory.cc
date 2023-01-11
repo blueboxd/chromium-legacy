@@ -14,13 +14,13 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/credentials_cleaner_runner_factory.h"
 #include "chrome/browser/password_manager/password_reuse_manager_factory.h"
 #include "chrome/browser/password_manager/password_store_utils.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/web_data_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
@@ -36,47 +36,22 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 
-#if !BUILDFLAG(IS_ANDROID)
-#include "base/task/task_traits.h"
-#include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#if BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#else
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "content/public/browser/browser_task_traits.h"
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 using password_manager::PasswordStore;
 using password_manager::PasswordStoreInterface;
 using password_manager::UnsyncedCredentialsDeletionNotifier;
 
 namespace {
-
-void SyncEnabledOrDisabled(Profile* profile) {
-#if BUILDFLAG(IS_ANDROID)
-  NOTREACHED();
-#else
-  // Update all form managers. Incognito tabs originated from this profile
-  // can also fill passwords, so they should be included.
-  for (Browser* browser : *BrowserList::GetInstance()) {
-    if (browser->profile()->GetOriginalProfile() !=
-        profile->GetOriginalProfile()) {
-      continue;
-    }
-    TabStripModel* tabs = browser->tab_strip_model();
-    for (int index = 0; index < tabs->count(); index++) {
-      content::WebContents* web_contents = tabs->GetWebContentsAt(index);
-      ChromePasswordManagerClient::FromWebContents(web_contents)
-          ->UpdateFormManagers();
-    }
-  }
-  password_manager::PasswordReuseManager* reuse_manager =
-      PasswordReuseManagerFactory::GetForProfile(profile);
-  if (reuse_manager)
-    reuse_manager->AccountStoreStateChanged();
-#endif  // BUILDFLAG(IS_ANDROID)
-}
 
 #if !BUILDFLAG(IS_ANDROID)
 class UnsyncedCredentialsDeletionNotifierImpl
@@ -90,7 +65,7 @@ class UnsyncedCredentialsDeletionNotifierImpl
   base::WeakPtr<UnsyncedCredentialsDeletionNotifier> GetWeakPtr() override;
 
  private:
-  const raw_ptr<Profile> profile_;
+  const raw_ptr<Profile, DanglingUntriaged> profile_;
   base::WeakPtrFactory<UnsyncedCredentialsDeletionNotifier> weak_ptr_factory_{
       this};
 };
@@ -152,7 +127,7 @@ AccountPasswordStoreFactory::AccountPasswordStoreFactory()
     : RefcountedBrowserContextKeyedServiceFactory(
           "AccountPasswordStore",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(WebDataServiceFactory::GetInstance());
+  DependsOn(CredentialsCleanerRunnerFactory::GetInstance());
 }
 
 AccountPasswordStoreFactory::~AccountPasswordStoreFactory() = default;
@@ -182,14 +157,7 @@ AccountPasswordStoreFactory::BuildServiceInstanceFor(
                   profile)));
 #endif
 
-  if (!ps->Init(profile->GetPrefs(),
-                /*affiliated_match_helper=*/nullptr,
-                base::BindRepeating(&SyncEnabledOrDisabled, profile))) {
-    // TODO(crbug.com/479725): Remove the LOG once this error is visible in the
-    // UI.
-    LOG(WARNING) << "Could not initialize password store.";
-    return nullptr;
-  }
+  ps->Init(profile->GetPrefs(), /*affiliated_match_helper=*/nullptr);
 
   auto network_context_getter = base::BindRepeating(
       [](Profile* profile) -> network::mojom::NetworkContext* {

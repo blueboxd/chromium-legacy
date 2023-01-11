@@ -89,6 +89,8 @@ const std::string GetErrorReasonString(
     STRINGIFY(kFailedToGetDCompSurface);
     STRINGIFY(kFailedToDuplicateHandle);
     STRINGIFY(kFailedToCreateMediaEngine);
+    STRINGIFY(kFailedToCreateDCompTextureWrapper);
+    STRINGIFY(kFailedToInitDCompTextureWrapper);
   }
 #undef STRINGIFY
 }
@@ -236,6 +238,8 @@ HRESULT MediaFoundationRenderer::CreateMediaEngine(
           &MediaFoundationRenderer::OnFormatChange, weak_this)),
       BindToCurrentLoop(base::BindRepeating(
           &MediaFoundationRenderer::OnLoadedData, weak_this)),
+      BindToCurrentLoop(base::BindRepeating(
+          &MediaFoundationRenderer::OnCanPlayThrough, weak_this)),
       BindToCurrentLoop(
           base::BindRepeating(&MediaFoundationRenderer::OnPlaying, weak_this)),
       BindToCurrentLoop(
@@ -804,6 +808,10 @@ base::TimeDelta MediaFoundationRenderer::GetMediaTime() {
   return media_time;
 }
 
+RendererType MediaFoundationRenderer::GetRendererType() {
+  return RendererType::kMediaFoundation;
+}
+
 void MediaFoundationRenderer::OnPlaybackError(PipelineStatus status,
                                               HRESULT hr) {
   DVLOG_FUNC(1) << "status=" << status << ", hr=" << hr;
@@ -824,20 +832,32 @@ void MediaFoundationRenderer::OnPlaybackEnded() {
 }
 
 void MediaFoundationRenderer::OnFormatChange() {
-  DVLOG_FUNC(3);
+  DVLOG_FUNC(2);
   OnVideoNaturalSizeChange();
 }
 
 void MediaFoundationRenderer::OnLoadedData() {
-  DVLOG_FUNC(3);
+  DVLOG_FUNC(2);
+
+  // According to HTML5 <video> spec, on "loadeddata", the first frame is
+  // available for the first time, so we can report natural size change and
+  // set up the dcomp frame.
   OnVideoNaturalSizeChange();
+}
+
+void MediaFoundationRenderer::OnCanPlayThrough() {
+  DVLOG_FUNC(2);
+
+  // According to HTML5 <video> spec, on "canplaythrough", the video could be
+  // rendered at the current playback rate all the way to its end, and it's
+  // the time to report BUFFERING_HAVE_ENOUGH.
   OnBufferingStateChange(
       BufferingState::BUFFERING_HAVE_ENOUGH,
       BufferingStateChangeReason::BUFFERING_CHANGE_REASON_UNKNOWN);
 }
 
 void MediaFoundationRenderer::OnPlaying() {
-  DVLOG_FUNC(3);
+  DVLOG_FUNC(2);
 
   has_reported_playing_ = true;
 
@@ -857,6 +877,7 @@ void MediaFoundationRenderer::OnPlaying() {
 }
 
 void MediaFoundationRenderer::OnWaiting() {
+  DVLOG_FUNC(2);
   OnBufferingStateChange(
       BufferingState::BUFFERING_HAVE_NOTHING,
       BufferingStateChangeReason::BUFFERING_CHANGE_REASON_UNKNOWN);
@@ -962,11 +983,11 @@ void MediaFoundationRenderer::OnError(PipelineStatus status,
   // Report the error to UMA.
   ReportErrorReason(reason);
 
-  // HRESULT 0x8004CD12 is DRM_E_TEE_INVALID_HWDRM_STATE, which can happen
-  // during OS sleep/resume, or moving video to different graphics adapters.
-  // This is not an error, so special case it here.
+  // DRM_E_TEE_INVALID_HWDRM_STATE can happen during OS sleep/resume, or moving
+  // video to different graphics adapters. This is not an error, so special case
+  // it here.
   PipelineStatus new_status = status;
-  if (hresult == static_cast<HRESULT>(0x8004CD12)) {
+  if (hresult == DRM_E_TEE_INVALID_HWDRM_STATE) {
     // TODO(crbug.com/1370844): Remove these after the investigation is done.
     base::UmaHistogramBoolean(
         "Media.MediaFoundationRenderer.InvalidHwdrmState.HasReportedPlaying",

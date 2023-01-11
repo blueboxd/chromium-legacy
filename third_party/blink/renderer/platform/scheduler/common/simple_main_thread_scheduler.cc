@@ -44,16 +44,20 @@ SimpleMainThreadScheduler::V8TaskRunner() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
+SimpleMainThreadScheduler::CleanupTaskRunner() {
+  return base::ThreadTaskRunnerHandle::Get();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
 SimpleMainThreadScheduler::NonWakingTaskRunner() {
   return base::ThreadTaskRunnerHandle::Get();
 }
 
-std::unique_ptr<WebAgentGroupScheduler>
-SimpleMainThreadScheduler::CreateAgentGroupScheduler() {
+AgentGroupScheduler* SimpleMainThreadScheduler::CreateAgentGroupScheduler() {
   return nullptr;
 }
 
-WebAgentGroupScheduler*
+AgentGroupScheduler*
 SimpleMainThreadScheduler::GetCurrentAgentGroupScheduler() {
   return nullptr;
 }

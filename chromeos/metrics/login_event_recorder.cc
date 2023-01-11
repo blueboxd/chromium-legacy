@@ -106,6 +106,10 @@ void WriteTimes(const std::string base_name,
   total_hist->AddTime(total);
   std::string output =
       base::StringPrintf("%s: %.2f", uma_name.c_str(), total.InSecondsF());
+  if (uma_name == "BootTime.Login2" || uma_name == "BootTime.LoginNewUser") {
+    UMA_HISTOGRAM_CUSTOM_TIMES("Ash.Tast.BootTime.Login2", total,
+                               base::Milliseconds(1), base::Seconds(300), 100);
+  }
   base::Time prev = first;
   // Convert base::Time to base::TimeTicks for tracing.
   auto time2timeticks = [](const base::Time& ts) {
@@ -189,7 +193,7 @@ LoginEventRecorder::Stats LoginEventRecorder::Stats::GetCurrentStats() {
   Stats stats;
   // Callers of this method expect synchronous behavior.
   // It's safe to allow IO here, because only virtual FS are accessed.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlocking allow_blocking;
   base::ReadFileToString(kProcUptime, &stats.uptime_);
   base::ReadFileToString(kDiskStat, &stats.disk_);
   return stats;

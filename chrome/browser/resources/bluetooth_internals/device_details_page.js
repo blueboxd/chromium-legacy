@@ -9,6 +9,7 @@
  */
 
 import './service_list.js';
+import './object_fieldset.js';
 
 import {$} from 'chrome://resources/js/util.js';
 
@@ -16,9 +17,9 @@ import {DeviceInfo, DeviceRemote, ServiceInfo} from './device.mojom-webui.js';
 import {connectToDevice} from './device_broker.js';
 import {ConnectionStatus} from './device_collection.js';
 import {formatManufacturerDataMap, formatServiceUuids} from './device_utils.js';
-import {ObjectFieldSet} from './object_fieldset.js';
+import {ObjectFieldSetElement} from './object_fieldset.js';
 import {Page} from './page.js';
-import {Snackbar, SnackbarType} from './snackbar.js';
+import {showSnackbar, SnackbarType} from './snackbar.js';
 
 /**
  * Property names that will be displayed in the ObjectFieldSet which contains
@@ -57,9 +58,10 @@ export class DeviceDetailsPage extends Page {
     /** @private {?DeviceRemote} */
     this.device_ = null;
 
-    /** @private {!ObjectFieldSet} */
-    this.deviceFieldSet_ = new ObjectFieldSet();
-    this.deviceFieldSet_.setPropertyDisplayNames(PROPERTY_NAMES);
+    /** @private {!ObjectFieldSetElement} */
+    this.deviceFieldSet_ = document.createElement('object-field-set');
+    this.deviceFieldSet_.toggleAttribute('show-all', true);
+    this.deviceFieldSet_.dataset.nameMap = JSON.stringify(PROPERTY_NAMES);
 
     /** @private {!ServiceList} */
     this.serviceList_ = document.createElement('service-list');
@@ -125,7 +127,7 @@ export class DeviceDetailsPage extends Page {
             this.device_ = null;
           }
 
-          Snackbar.show(
+          showSnackbar(
               this.deviceInfo.nameForDisplay + ': ' + error.message,
               SnackbarType.ERROR, 'Retry', this.connect.bind(this));
 
@@ -178,7 +180,7 @@ export class DeviceDetailsPage extends Page {
       manufacturerDataMap: manufacturerDataMapText,
     };
 
-    this.deviceFieldSet_.setObject(deviceViewObj);
+    this.deviceFieldSet_.dataset.value = JSON.stringify(deviceViewObj);
   }
 
   /**

@@ -99,7 +99,9 @@ struct InteractionSequence::Configuration {
 
 InteractionSequence::Builder::Builder()
     : configuration_(std::make_unique<Configuration>()) {}
-
+InteractionSequence::Builder::Builder(Builder&& other) = default;
+InteractionSequence::Builder& InteractionSequence::Builder::operator=(
+    Builder&& other) = default;
 InteractionSequence::Builder::~Builder() {
   DCHECK(!configuration_);
 }
@@ -185,7 +187,12 @@ InteractionSequence::Builder& InteractionSequence::Builder::AddStep(
 }
 
 InteractionSequence::Builder& InteractionSequence::Builder::AddStep(
-    InteractionSequence::StepBuilder& step_builder) {
+    StepBuilder& step_builder) {
+  return AddStep(step_builder.Build());
+}
+
+InteractionSequence::Builder& InteractionSequence::Builder::AddStep(
+    StepBuilder&& step_builder) {
   return AddStep(step_builder.Build());
 }
 
@@ -206,6 +213,9 @@ std::unique_ptr<InteractionSequence> InteractionSequence::Builder::Build() {
 
 InteractionSequence::StepBuilder::StepBuilder()
     : step_(std::make_unique<Step>()) {}
+InteractionSequence::StepBuilder::StepBuilder(StepBuilder&& other) = default;
+InteractionSequence::StepBuilder& InteractionSequence::StepBuilder::operator=(
+    StepBuilder&& other) = default;
 InteractionSequence::StepBuilder::~StepBuilder() = default;
 
 InteractionSequence::StepBuilder&
@@ -365,6 +375,10 @@ void InteractionSequence::RunSynchronouslyForTesting() {
   run_loop.Run();
 }
 
+void InteractionSequence::FailForTesting() {
+  Abort(AbortedReason::kFailedForTesting);
+}
+
 void InteractionSequence::NameElement(TrackedElement* element,
                                       const base::StringPiece& name) {
   DCHECK(!name.empty());
@@ -442,7 +456,7 @@ void InteractionSequence::OnElementHidden(TrackedElement* element) {
     return;
   }
 
-  if (current_step_->element == element) {
+  if (current_step_ && current_step_->element == element) {
     // If the current step is marked as needing to remain visible and we haven't
     // seen the triggering event for the next step, abort.
     if (current_step_->must_remain_visible.value() &&
@@ -931,7 +945,8 @@ void PrintTo(InteractionSequence::AbortedReason reason, std::ostream* os) {
       "AbortedReason::kSequenceDestroyed",
       "AbortedReason::kElementHiddenBeforeSequenceStart",
       "AbortedReason::kElementNotVisibleAtStartOfStep",
-      "AbortedReason::kElementHiddenDuringStep"};
+      "AbortedReason::kElementHiddenDuringStep",
+      "AbortedReason::kFailedForTesting"};
   constexpr int kCount =
       sizeof(kAbortedReasonNames) / sizeof(kAbortedReasonNames[0]);
   static_assert(

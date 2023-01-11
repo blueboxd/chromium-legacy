@@ -10,9 +10,10 @@
 
 #include "base/cancelable_callback.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/clock.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -28,10 +29,6 @@
 #include "media/base/waiting.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace media {
 
 class AudioRenderer;
@@ -46,7 +43,7 @@ class MEDIA_EXPORT RendererImpl final : public Renderer {
   // provided. All methods except for GetMediaTime() run on the |task_runner|.
   // GetMediaTime() runs on the render main thread because it's part of JS sync
   // API.
-  RendererImpl(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+  RendererImpl(const scoped_refptr<base::SequencedTaskRunner>& task_runner,
                std::unique_ptr<AudioRenderer> audio_renderer,
                std::unique_ptr<VideoRenderer> video_renderer);
 
@@ -71,10 +68,11 @@ class MEDIA_EXPORT RendererImpl final : public Renderer {
   base::TimeDelta GetMediaTime() final;
   void OnSelectedVideoTracksChanged(
       const std::vector<DemuxerStream*>& enabled_tracks,
-      base::OnceClosure change_completed_cb) override;
+      base::OnceClosure change_completed_cb) final;
   void OnEnabledAudioTracksChanged(
       const std::vector<DemuxerStream*>& enabled_tracks,
-      base::OnceClosure change_completed_cb) override;
+      base::OnceClosure change_completed_cb) final;
+  RendererType GetRendererType() final;
 
   // Helper functions for testing purposes. Must be called before Initialize().
   void DisableUnderflowForTesting();
@@ -213,7 +211,7 @@ class MEDIA_EXPORT RendererImpl final : public Renderer {
   State state_;
 
   // Task runner used to execute pipeline tasks.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   raw_ptr<MediaResource> media_resource_;
   raw_ptr<RendererClient> client_;
@@ -231,7 +229,7 @@ class MEDIA_EXPORT RendererImpl final : public Renderer {
   raw_ptr<DemuxerStream> current_video_stream_;
 
   // Renderer-provided time source used to control playback.
-  raw_ptr<TimeSource> time_source_;
+  raw_ptr<TimeSource, DanglingUntriaged> time_source_;
   std::unique_ptr<WallClockTimeSource> wall_clock_time_source_;
   bool time_ticking_;
   double playback_rate_;

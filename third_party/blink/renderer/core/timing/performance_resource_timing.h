@@ -65,7 +65,8 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
       mojom::blink::CacheState cache_state,
       bool is_secure_transport,
       HeapVector<Member<PerformanceServerTiming>> server_timing,
-      ExecutionContext* context);
+      ExecutionContext* context,
+      network::mojom::NavigationDeliveryType delivery_type);
   PerformanceResourceTiming(const mojom::blink::ResourceTimingInfo&,
                             base::TimeTicks time_origin,
                             bool cross_origin_isolated_capability,
@@ -81,6 +82,7 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   AtomicString deliveryType() const;
   AtomicString nextHopProtocol() const;
   virtual AtomicString renderBlockingStatus() const;
+  virtual AtomicString contentType() const;
   DOMHighResTimeStamp workerStart() const;
   virtual DOMHighResTimeStamp redirectStart() const;
   virtual DOMHighResTimeStamp redirectEnd() const;
@@ -143,6 +145,7 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   AtomicString delivery_type_;
   AtomicString alpn_negotiated_protocol_;
   AtomicString connection_info_;
+  AtomicString content_type_;
   RenderBlockingStatusType render_blocking_status_;
   base::TimeTicks time_origin_;
   bool cross_origin_isolated_capability_;

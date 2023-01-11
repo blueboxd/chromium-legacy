@@ -60,10 +60,12 @@
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/resolver/filter_operation_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/transform_builder.h"
+#include "third_party/blink/renderer/core/css/scoped_css_value.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
+#include "third_party/blink/renderer/core/style/scoped_css_name.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/style_overflow_clip_margin.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
@@ -302,9 +304,10 @@ FontDescription::FamilyDescription StyleBuilderConverterBase::ConvertFontFamily(
 
 FontDescription::FamilyDescription StyleBuilderConverter::ConvertFontFamily(
     StyleResolverState& state,
-    const CSSValue& value) {
+    const ScopedCSSValue& scoped_value) {
+  state.GetFontBuilder().SetFamilyTreeScope(scoped_value.GetTreeScope());
   return StyleBuilderConverterBase::ConvertFontFamily(
-      value,
+      scoped_value.GetCSSValue(),
       state.GetDocument().GetSettings() ? &state.GetFontBuilder() : nullptr,
       &state.GetDocument());
 }
@@ -384,7 +387,7 @@ scoped_refptr<FontPalette> StyleBuilderConverter::ConvertFontPalette(
 
 float MathScriptScaleFactor(StyleResolverState& state) {
   int a = state.ParentStyle()->MathDepth();
-  int b = state.Style()->MathDepth();
+  int b = state.StyleBuilder().MathDepth();
   if (b == a)
     return 1.0;
   bool invertScaleFactor = false;
@@ -1015,9 +1018,8 @@ static void ConvertGridLineNamesList(
     bool is_first_repeat = false) {
   DCHECK(value.IsGridLineNamesValue());
 
-  // TODO(ansollan): Serialize subgrid's empty lines.
   for (auto& named_grid_line_value : To<CSSValueList>(value)) {
-    String named_grid_line =
+    AtomicString named_grid_line =
         To<CSSCustomIdentValue>(*named_grid_line_value).Value();
     NamedGridLinesMap::AddResult result =
         named_grid_lines.insert(named_grid_line, Vector<wtf_size_t>());
@@ -1237,6 +1239,7 @@ StyleHyphenateLimitChars StyleBuilderConverter::ConvertHyphenateLimitChars(
 LayoutUnit StyleBuilderConverter::ConvertBorderWidth(StyleResolverState& state,
                                                      const CSSValue& value) {
   double result = 0;
+
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     switch (identifier_value->GetValueID()) {
       case CSSValueID::kThin:
@@ -1252,6 +1255,7 @@ LayoutUnit StyleBuilderConverter::ConvertBorderWidth(StyleResolverState& state,
         NOTREACHED();
         break;
     }
+
     result = state.CssToLengthConversionData().ZoomedComputedPixels(
         result, CSSPrimitiveValue::UnitType::kPixels);
   } else {
@@ -1259,9 +1263,25 @@ LayoutUnit StyleBuilderConverter::ConvertBorderWidth(StyleResolverState& state,
     result =
         primitive_value.ComputeLength<float>(state.CssToLengthConversionData());
   }
+
   if (result > 0.0 && result < 1.0)
     return LayoutUnit(1);
+
+  if (RuntimeEnabledFeatures::SnapBorderWidthsBeforeLayoutEnabled())
+    return LayoutUnit(floor(result));
+
   return LayoutUnit(result);
+}
+
+uint16_t StyleBuilderConverter::ConvertColumnRuleWidth(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  if (RuntimeEnabledFeatures::SnapBorderWidthsBeforeLayoutEnabled()) {
+    return ClampTo<uint16_t>(
+        StyleBuilderConverter::ConvertBorderWidth(state, value).ToDouble());
+  }
+
+  return StyleBuilderConverter::ConvertLineWidth<uint16_t>(state, value);
 }
 
 LayoutUnit StyleBuilderConverter::ConvertLayoutUnit(StyleResolverState& state,
@@ -1283,6 +1303,13 @@ Length StyleBuilderConverter::ConvertLength(const StyleResolverState& state,
                                             const CSSValue& value) {
   return To<CSSPrimitiveValue>(value).ConvertToLength(
       state.CssToLengthConversionData());
+}
+Length StyleBuilderConverter::ConvertLength(
+    const StyleResolverState& state,
+    const ScopedCSSValue& scoped_value) {
+  return To<CSSPrimitiveValue>(scoped_value.GetCSSValue())
+      .ConvertToLength(state.GetScopedCSSToLengthConversionData(
+          scoped_value.GetTreeScope()));
 }
 
 UnzoomedLength StyleBuilderConverter::ConvertUnzoomedLength(
@@ -1317,18 +1344,34 @@ float StyleBuilderConverter::ConvertZoom(const StyleResolverState& state,
 Length StyleBuilderConverter::ConvertLengthOrAuto(
     const StyleResolverState& state,
     const CSSValue& value) {
+  return ConvertLengthOrAuto(state,
+                             ScopedCSSValue(value, nullptr /* TreeScope */));
+}
+
+Length StyleBuilderConverter::ConvertLengthOrAuto(
+    const StyleResolverState& state,
+    const ScopedCSSValue& scoped_value) {
+  const CSSValue& value = scoped_value.GetCSSValue();
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value && identifier_value->GetValueID() == CSSValueID::kAuto)
     return Length::Auto();
   return To<CSSPrimitiveValue>(value).ConvertToLength(
-      state.CssToLengthConversionData());
+      state.GetScopedCSSToLengthConversionData(scoped_value.GetTreeScope()));
 }
 
 Length StyleBuilderConverter::ConvertLengthSizing(StyleResolverState& state,
                                                   const CSSValue& value) {
+  return ConvertLengthSizing(state,
+                             ScopedCSSValue(value, nullptr /* TreeScope */));
+}
+
+Length StyleBuilderConverter::ConvertLengthSizing(
+    StyleResolverState& state,
+    const ScopedCSSValue& scoped_value) {
+  const CSSValue& value = scoped_value.GetCSSValue();
   const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (!identifier_value)
-    return ConvertLength(state, value);
+    return ConvertLength(state, scoped_value);
 
   switch (identifier_value->GetValueID()) {
     case CSSValueID::kMinContent:
@@ -1360,6 +1403,16 @@ Length StyleBuilderConverter::ConvertLengthMaxSizing(StyleResolverState& state,
   return ConvertLengthSizing(state, value);
 }
 
+Length StyleBuilderConverter::ConvertLengthMaxSizing(
+    StyleResolverState& state,
+    const ScopedCSSValue& scoped_value) {
+  const CSSValue& value = scoped_value.GetCSSValue();
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNone)
+    return Length::None();
+  return ConvertLengthSizing(state, scoped_value);
+}
+
 TabSize StyleBuilderConverter::ConvertLengthOrTabSpaces(
     StyleResolverState& state,
     const CSSValue& value) {
@@ -1373,7 +1426,7 @@ TabSize StyleBuilderConverter::ConvertLengthOrTabSpaces(
 
 static CSSToLengthConversionData LineHeightToLengthConversionData(
     StyleResolverState& state) {
-  float multiplier = state.Style()->EffectiveZoom();
+  float multiplier = state.StyleBuilder().EffectiveZoom();
   if (LocalFrame* frame = state.GetDocument().GetFrame())
     multiplier *= frame->TextZoomFactor();
   return state.CssToLengthConversionData().CopyWithAdjustedZoom(multiplier);
@@ -1434,6 +1487,19 @@ AtomicString StyleBuilderConverter::ConvertNoneOrCustomIdent(
     return g_null_atom;
   }
   return To<CSSCustomIdentValue>(value).Value();
+}
+
+ScopedCSSName* StyleBuilderConverter::ConvertNoneOrCustomIdent(
+    StyleResolverState& state,
+    const ScopedCSSValue& value) {
+  if (const auto* identifier_value =
+          DynamicTo<CSSIdentifierValue>(value.GetCSSValue())) {
+    DCHECK_EQ(identifier_value->GetValueID(), CSSValueID::kNone);
+    return nullptr;
+  }
+  return MakeGarbageCollected<ScopedCSSName>(
+      To<CSSCustomIdentValue>(value.GetCSSValue()).Value(),
+      value.GetTreeScope());
 }
 
 StyleInitialLetter StyleBuilderConverter::ConvertInitialLetter(
@@ -1722,7 +1788,7 @@ scoped_refptr<SVGDashArray> StyleBuilderConverter::ConvertStrokeDasharray(
   return array;
 }
 
-AtomicString StyleBuilderConverter::ConvertPageTransitionTag(
+AtomicString StyleBuilderConverter::ConvertViewTransitionName(
     StyleResolverState& state,
     const CSSValue& value) {
   if (auto* custom_ident_value = DynamicTo<CSSCustomIdentValue>(value))
@@ -1749,6 +1815,8 @@ StyleColor StyleBuilderConverter::ConvertStyleColor(StyleResolverState& state,
           value_id);
     }
   }
+  // TODO(crbug.com/1362022): We will need to store an unresolved color-mix
+  // value in order to account for currentColor.
   return StyleColor(state.GetDocument().GetTextLinkColors().ColorFromCSSValue(
       value, Color(), state.Style()->UsedColorScheme(), for_visited_link));
 }

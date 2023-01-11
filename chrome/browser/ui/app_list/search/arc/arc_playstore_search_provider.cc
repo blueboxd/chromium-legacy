@@ -15,7 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/extensions/gfx_utils.h"
+#include "chrome/browser/ash/extensions/gfx_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_result.h"
@@ -93,8 +93,6 @@ ash::AppListSearchResultType ArcPlayStoreSearchProvider::ResultType() const {
 
 void ArcPlayStoreSearchProvider::Start(const std::u16string& query) {
   last_query_ = query;
-  // Clear any results from the previous query.
-  ClearResultsSilently();
 
   arc::mojom::AppInstance* app_instance =
       arc::ArcServiceManager::Get()
@@ -114,13 +112,17 @@ void ArcPlayStoreSearchProvider::Start(const std::u16string& query) {
                      base::TimeTicks::Now()));
 }
 
+void ArcPlayStoreSearchProvider::StopQuery() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  last_query_.clear();
+}
+
 void ArcPlayStoreSearchProvider::OnResults(
     const std::u16string& query,
     base::TimeTicks query_start_time,
     arc::ArcPlayStoreSearchRequestState state,
     std::vector<arc::mojom::AppDiscoveryResultPtr> results) {
   if (state != arc::ArcPlayStoreSearchRequestState::SUCCESS) {
-    ClearResults();
     DCHECK(
         state ==
             arc::ArcPlayStoreSearchRequestState::PHONESKY_RESULT_INVALID_DATA ||

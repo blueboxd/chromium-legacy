@@ -173,11 +173,15 @@ bool GetAnnotatedVisitsToCluster::AddUnclusteredVisits(
             : false;
     if (is_clustered && recent_first_)
       continuation_params_.exhausted_unclustered_visits = true;
-    // Filter out visits from sync.
-    // TODO(manukh): Consider allowing the clustering backend to handle sync
-    //  visits.
-    if (!is_clustered && visit.source != history::SOURCE_SYNCED)
+
+    if (is_clustered) {
+      continue;
+    }
+
+    if ((visit.source != history::SOURCE_SYNCED) ||
+        GetConfig().include_synced_visits) {
       annotated_visits_.push_back(std::move(visit));
+    }
   }
 
   return limited_by_max_count;

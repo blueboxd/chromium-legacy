@@ -6,7 +6,6 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> trådar, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">Det finns en ny funktion. Tryck på uppåtpilen om du vill läsa mer.</translation>
 <translation id="1059913517121127803">Det gick inte att börja söka</translation>
-<translation id="1062407476771304334">Ersätt</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Brandvägg hittades</translation>
 <translation id="1075811647922107217">Sidstorlek</translation>
@@ -72,6 +71,7 @@
 <translation id="1567064801249837505">Album</translation>
 <translation id="1572585716423026576">Använd som bakgrund</translation>
 <translation id="1578784163189013834">Välj bakgrund för skärmsläckare</translation>
+<translation id="160633243685262989">Förhandsgranska bild</translation>
 <translation id="1615335640928990664">Dataanvändning sedan <ph name="FRIENDLY_DATE" /></translation>
 <translation id="1621067168122174824">Kör laddningstest</translation>
 <translation id="1639239467298939599">Profilen läses in</translation>
@@ -139,7 +139,6 @@
 <translation id="2161394479394250669">Avbryt utskriftsjobb</translation>
 <translation id="2163937499206714165">Aktivera mörkt läge</translation>
 <translation id="2180197493692062006">Något gick fel. Testa att öppna appen igen.</translation>
-<translation id="2182088270354640012">Tack för din feedback! Din feedback hjälper oss att förbättra Chrome OS och kommer att granskas av teamet bakom Chrome OS-teamet. Vi får många rapporter och därför får du inget direktsvar.</translation>
 <translation id="2209788852729124853">Återställ trafikräknare</translation>
 <translation id="2212733584906323460">Namnmatchning</translation>
 <translation id="2217935453350629363">Nuvarande hastighet</translation>
@@ -221,6 +220,7 @@
 <translation id="315116470104423982">Mobildata</translation>
 <translation id="3156846309055100599">Skannar sidan <ph name="PAGE_NUMBER" /> …</translation>
 <translation id="315738237743207937">Infångstportal har upptäckts</translation>
+<translation id="3160172848211257835">Skicka <ph name="BEGIN_LINK1" />system- och appinformation<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />statistik<ph name="END_LINK2" /></translation>
 <translation id="3170673040743561620">Sätt dokumentet i skannern</translation>
 <translation id="3188257591659621405">Mina filer</translation>
 <translation id="319101249942218879">Avatarbild har ändrats</translation>
@@ -333,6 +333,7 @@
 <translation id="4297501883039923494">Har stoppats – okänt fel</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> bilder</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> har tryckts ned</translation>
+<translation id="435692326371619097">Hantera APN-inställningar för nätverket. APN upprättar en anslutning mellan ett mobilnätverk och internet. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="4378373042927530923">Har inte körts</translation>
 <translation id="4378551569595875038">Ansluter ...</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -482,7 +483,6 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="5669267381087807207">Aktiverar</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Familj</translation>
-<translation id="5695599963893094957">Tryck på valfri tangent på tangentbordet. Du kan trycka på upp till fyra tangenter på samma gång.</translation>
 <translation id="5701381305118179107">Centrera</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> av <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Uppdatera <ph name="DEVICE_NAME" /></translation>
@@ -584,6 +584,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="6575134580692778371">Inte konfigurerat</translation>
 <translation id="6579509898032828423">Använd det här fotot</translation>
 <translation id="6596816719288285829">IP-adress</translation>
+<translation id="6599673642868607614">Tack för din feedback! Din feedback hjälper oss att förbättra Chromebook-upplevelsen och granskas av vårt team. Vi får många rapporter och därför kan vi inte svara på dem.</translation>
 <translation id="6618744767048954150">Körs</translation>
 <translation id="6620487321149975369">Utskriftsjobb visas i historiken såvida de inte tas bort manuellt</translation>
 <translation id="6624819909909965616">Det går inte att ladda upp en fil som är större än 10 MB</translation>
@@ -628,6 +629,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">Misslyckades – auktoriseringen misslyckades</translation>
 <translation id="7103252855940681301">Enhet <ph name="INDEX" /> av <ph name="COUNT" /> heter <ph name="NAME" />.</translation>
+<translation id="7130438335435247835">Åtkomstpunktens namn (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{Namnserver}other{Namnservrar}}</translation>
 <translation id="7143207342074048698">Ansluter</translation>
 <translation id="7144878232160441200">Försök igen</translation>
@@ -672,6 +674,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="7535791657097741517">Aktivera ljust tema</translation>
 <translation id="7550715992156305117">Diagnostikrutiner</translation>
 <translation id="7551123448725492271">Enheten är en ljudenhet.</translation>
+<translation id="7559239713112547082">Förhandsgranska skärmbild</translation>
 <translation id="7561454561030345039">Den här åtgärden hanteras av administratören</translation>
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7570674786725311828">USB-pekskärm</translation>
@@ -688,9 +691,9 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="773153675489693198">Antal cykler</translation>
 <translation id="7747039790905080783">I förväg delad nyckel</translation>
 <translation id="7762130827864645708">Lösenordet har bytts. Använd det nya lösenordet i fortsättningen.</translation>
-<translation id="7762839321248874531">Skicka <ph name="BEGIN_LINK1" />system- och appinformation<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />statistik<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Matchning av domänsuffix</translation>
 <translation id="7769672763586021400">Modell-id</translation>
+<translation id="7778717409420828014">Din feedback hjälper oss att förbättra Chromebook-upplevelsen och granskas av vårt team. Vi får många rapporter och därför kan vi inte svara på dem.</translation>
 <translation id="7784116172884276937">Inga DNS-servrar har konfigurerats</translation>
 <translation id="779591286616261875">Skicka ny rapport</translation>
 <translation id="7799817062559422778">Ljust läge</translation>
@@ -825,7 +828,6 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="9082718469794970195">Använd den här videon</translation>
 <translation id="9087578468327036362">Rapportera sökfrågan</translation>
 <translation id="9088306295921699330">Nuvarande användning</translation>
-<translation id="9092255287806472980">Din feedback hjälper oss att förbättra Chrome OS och kommer att granskas av vårt team. Vi får många rapporter och därför kan vi inte svara på dem.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="910415269708673980">Uppdatera biljetten för <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Skannar sidan <ph name="PAGE_NUMBER" /></translation>

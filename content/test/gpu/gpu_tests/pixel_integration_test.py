@@ -79,7 +79,7 @@ class PixelIntegrationTest(
     pages += namespace.WebGPUCanvasCapturePages(cls.test_base_name)
     pages += namespace.PaintWorkletPages(cls.test_base_name)
     pages += namespace.VideoFromCanvasPages(cls.test_base_name)
-    pages += namespace.MediaRecorderFromCanvasPages(cls.test_base_name)
+    pages += namespace.MediaRecorderPages(cls.test_base_name)
     # pages += namespace.NoGpuProcessPages(cls.test_base_name)
     # The following pages should run only on platforms where SwiftShader is
     # enabled. They are skipped on other platforms through test expectations.
@@ -172,7 +172,8 @@ class PixelIntegrationTest(
     # sizes.
     if (PixelIntegrationTest.browser.platform.GetOSName() == 'fuchsia'
         and page.name in pixel_test_pages.PROBLEMATIC_FUCHSIA_TESTS):
-      screenshot = tab.FullScreenshot(5)
+      # Screenshot on Fuchsia can take a long time. See crbug.com/1376684.
+      screenshot = tab.FullScreenshot(15)
     else:
       screenshot = tab.Screenshot(5)
     if screenshot is None:

@@ -12,7 +12,6 @@ import '//resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.js';
 import '../../components/oobe_icons.m.js';
 import '../../components/common_styles/common_styles.m.js';
 import '../../components/common_styles/oobe_dialog_host_styles.m.js';
-import '../../components/dialogs/oobe_adaptive_dialog.m.js';
 
 import {I18nBehavior} from '//resources/ash/common/i18n_behavior.js';
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
@@ -21,9 +20,10 @@ import {afterNextRender, dom, flush, html, mixinBehaviors, Polymer, PolymerEleme
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.m.js';
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.m.js';
 import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.m.js';
-import {OobeTextButton} from '../../components/buttons/oobe_text_button.m.js';
+import {OobeTextButton} from '../../components/buttons/oobe_text_button.js';
+import {OobeAdaptiveDialog} from '../../components/dialogs/oobe_adaptive_dialog.js';
 import {OOBE_UI_STATE, SCREEN_GAIA_SIGNIN} from '../../components/display_manager_types.m.js';
-import {OobeCrLottie} from '../../components/oobe_cr_lottie.m.js';
+import {OobeCrLottie} from '../../components/oobe_cr_lottie.js';
 
 
 /**
@@ -62,7 +62,7 @@ const FingerprintSetupBase = mixinBehaviors(
 
 /**
  * @typedef {{
- *   setupFingerprint:  OobeAdaptiveDialogElement,
+ *   setupFingerprint:  OobeAdaptiveDialog,
  *   arc:  CrFingerprintProgressArcElement,
  * }}
  */

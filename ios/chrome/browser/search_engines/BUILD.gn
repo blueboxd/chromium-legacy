@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//ios/build/chrome_build.gni")
 import("//ios/web/public/js_messaging/optimize_js.gni")
 import("//rlz/buildflags/buildflags.gni")
 
@@ -40,7 +41,7 @@ source_set("search_engines") {
     "//components/search",
     "//components/search_engines",
     "//components/version_info",
-    "//ios/chrome/browser",
+    "//ios/chrome/browser/application_context",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/flags:system_flags",
     "//ios/chrome/browser/google",
@@ -67,14 +68,18 @@ source_set("extension_search_engine_data_updater") {
     "extension_search_engine_data_updater.h",
     "extension_search_engine_data_updater.mm",
   ]
-
   deps = [
     ":search_engines",
     "//base",
     "//components/search_engines",
+    "//ios/chrome/browser/widget_kit:features",
     "//ios/chrome/common/app_group",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
+
+  if (ios_enable_widget_kit_extension) {
+    deps += [ "//ios/chrome/browser/widget_kit" ]
+  }
 }
 
 source_set("unit_tests") {

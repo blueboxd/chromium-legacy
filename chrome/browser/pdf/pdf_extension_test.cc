@@ -57,7 +57,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -328,22 +327,19 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
   }
 
  protected:
-  TestGuestViewManager* GetGuestViewManager(
-      content::BrowserContext* profile = nullptr) {
-    if (!profile)
-      profile = browser()->profile();
+  TestGuestViewManager* GetGuestViewManager() {
     // TODO(wjmaclean): Re-implement FromBrowserContext in the
     // TestGuestViewManager class to avoid all callers needing this cast.
     auto* manager = static_cast<TestGuestViewManager*>(
-        TestGuestViewManager::FromBrowserContext(profile));
+        TestGuestViewManager::FromBrowserContext(browser()->profile()));
     // Test code may access the TestGuestViewManager before it would be created
     // during creation of the first guest.
     if (!manager) {
       manager = static_cast<TestGuestViewManager*>(
           GuestViewManager::CreateWithDelegate(
-              profile,
+              browser()->profile(),
               ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate(
-                  profile)));
+                  browser()->profile())));
     }
     return manager;
   }
@@ -654,7 +650,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, CSPFrameAncestorsCanBlockEmbedding) {
       browser(), embedded_test_server()->GetURL(
                      "/pdf/frame-test-csp-frame-ancestors-none.html")));
 
-  console_observer.Wait();
+  ASSERT_TRUE(console_observer.Wait());
 
   EXPECT_EQ(0, CountPDFProcesses());
 }
@@ -1481,7 +1477,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BlockDirectAccess) {
       "https://example.com/notrequested.pdf");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), forbidden_url));
 
-  console_observer.Wait();
+  ASSERT_TRUE(console_observer.Wait());
 
   EXPECT_EQ(0, CountPDFProcesses());
 }
@@ -2633,7 +2629,7 @@ class PDFExtensionLinkClickTest : public PDFExtensionTest {
   WebContents* GetWebContentsForInputRouting() { return guest_contents_; }
 
  private:
-  raw_ptr<WebContents> guest_contents_;
+  raw_ptr<WebContents, DanglingUntriaged> guest_contents_;
 };
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, CtrlLeft) {
@@ -2863,7 +2859,7 @@ class PDFExtensionInternalLinkClickTest : public PDFExtensionTest {
   WebContents* GetWebContentsForInputRouting() { return guest_contents_; }
 
  private:
-  raw_ptr<WebContents> guest_contents_;
+  raw_ptr<WebContents, DanglingUntriaged> guest_contents_;
 };
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, CtrlLeft) {
@@ -3036,7 +3032,7 @@ class PDFExtensionComboBoxTest : public PDFExtensionTest {
   WebContents* GetWebContentsForInputRouting() { return guest_contents_; }
 
  private:
-  raw_ptr<WebContents> guest_contents_ = nullptr;
+  raw_ptr<WebContents, DanglingUntriaged> guest_contents_ = nullptr;
 };
 
 class PDFExtensionSaveTest : public PDFExtensionComboBoxTest {
@@ -4644,67 +4640,4 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderAndFencedFrameTest,
                          pdf_url)));
   ASSERT_TRUE(content::WaitForLoadStop(GetActiveWebContents()));
   EXPECT_EQ(CountPDFProcesses(), 0);
-}
-
-// Exercise a race condition where the profile is destroyed in the middle of a
-// PDF navigation and ensure that this doesn't crash.  Specifically,
-// `PdfNavigationThrottle` intercepts PDF navigations to PDF stream URLs,
-// cancels them, and posts a task to navigate to the original URL instead.
-// Triggering profile destruction after this task is posted but before it runs
-// has previously led to issues in https://crbug.com/1382761.
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfNavigationDuringProfileShutdown) {
-  // Open an Incognito window and navigate it to a page with a PDF embedded in
-  // an iframe.
-  Browser* incognito = CreateIncognitoBrowser();
-  content::WebContents* incognito_contents =
-      incognito->tab_strip_model()->GetActiveWebContents();
-  incognito_contents->GetController().LoadURL(
-      embedded_test_server()->GetURL("/pdf/test-cross-site-iframe.html"),
-      content::Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-
-  // Wait for the MimeHandleView guest to be created.  This should return
-  // before the actual PDF navigation in the guest is started.
-  GuestViewBase* guest_view = GetGuestViewManager(incognito->profile())
-                                  ->WaitForSingleGuestViewCreated();
-  ASSERT_TRUE(guest_view);
-
-  // Look up the PDF stream URL to which the navigation will take place.
-  extensions::MimeHandlerViewGuest* guest =
-      extensions::MimeHandlerViewGuest::FromWebContents(
-          guest_view->web_contents());
-  ASSERT_TRUE(guest);
-  base::WeakPtr<extensions::StreamContainer> stream = guest->GetStreamWeakPtr();
-  EXPECT_TRUE(stream);
-  GURL stream_url(stream->stream_url());
-
-  // Use TestNavigationManager to wait for first yield after running
-  // DidStartNavigation throttles.  This should be precisely after the
-  // navigation to the stream URL gets canceled and the task to start a new
-  // navigation to the original URL is scheduled.
-  {
-    content::TestNavigationManager manager(guest_view->web_contents(),
-                                           stream_url);
-    manager.WaitForFirstYieldAfterDidStartNavigation();
-  }
-
-  // Now, close Incognito and destroy its profile.  This is subtle: simply
-  // closing the Incognito window and waiting for browser destruction (e.g.,
-  // with `ui_test_utils::WaitForBrowserToClose(incognito)`) will trigger
-  // asynchronous profile destruction which will allow the PDF task to run
-  // before profile destruction is complete, sidestepping the bug in
-  // https://crbug.com/1382761.  Instead, use the hard shutdown/restart logic
-  // similar to that in `BrowserCloseManager::CloseBrowsers()`, which is used
-  // by `chrome::ExitIgnoreUnloadHandlers() and forces the `Browser` and its
-  // profile shutdown to complete synchronously, but only on the Incognito
-  // Browser object. Note that we can't just use
-  // `chrome::ExitIgnoreUnloadHandlers()` here, as that shuts down all Browser
-  // objects and the rest of the browser process and appears to be unsupported
-  // in tests.
-  chrome::CloseWindow(incognito);
-  BrowserView* incognito_view = static_cast<BrowserView*>(incognito->window());
-  incognito_view->DestroyBrowser();
-
-  // The test succeeds if it doesn't crash when the posted PDF task attempts to
-  // run (the task should be canceled/ignored), so wait for this to happen.
-  base::RunLoop().RunUntilIdle();
 }

@@ -5,6 +5,7 @@
 #include "ash/system/accessibility/floating_accessibility_controller.h"
 
 #include "ash/accelerators/accelerator_controller_impl.h"
+#include "ash/accessibility/a11y_feature_type.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/autoclick/autoclick_controller.h"
 #include "ash/ime/ime_controller_impl.h"
@@ -12,9 +13,9 @@
 #include "ash/public/cpp/session/session_types.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/system/accessibility/accessibility_detailed_view.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 #include "ash/system/accessibility/autoclick_menu_view.h"
-#include "ash/system/accessibility/tray_accessibility.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/barrier_closure.h"
@@ -538,13 +539,13 @@ TEST_F(FloatingAccessibilityControllerTest, ActiveFeaturesButtons) {
 
   struct FeatureWithButton {
     FloatingAccessibilityView::ButtonId button_id;
-    AccessibilityControllerImpl::FeatureType feature_type;
+    A11yFeatureType feature_type;
   } kFeatureButtons[] = {{FloatingAccessibilityView::ButtonId::kDictation,
-                          AccessibilityControllerImpl::kDictation},
+                          A11yFeatureType::kDictation},
                          {FloatingAccessibilityView::ButtonId::kSelectToSpeak,
-                          AccessibilityControllerImpl::kSelectToSpeak},
+                          A11yFeatureType::kSelectToSpeak},
                          {FloatingAccessibilityView::ButtonId::kVirtualKeyboard,
-                          AccessibilityControllerImpl::kVirtualKeyboard}};
+                          A11yFeatureType::kVirtualKeyboard}};
 
   gfx::Rect original_bounds = GetMenuViewBounds();
 

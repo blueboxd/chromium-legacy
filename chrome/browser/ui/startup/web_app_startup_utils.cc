@@ -40,6 +40,7 @@
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -65,14 +66,14 @@ base::OnceClosure& GetStartupDoneCallback() {
 }
 
 // TODO(https::/crbug.com/1366137): Remove this when LaunchMode is removed.
-LaunchMode ConvertOpenModeToLaunchMode(OpenMode open_mode) {
+OldLaunchMode ConvertOpenModeToLaunchMode(OpenMode open_mode) {
   static constexpr auto kModeMap =
-      base::MakeFixedFlatMap<OpenMode, LaunchMode>({
-          {OpenMode::kInTab, LaunchMode::kAsWebAppInTab},
-          {OpenMode::kUnknown, LaunchMode::kUnknownWebApp},
-          {OpenMode::kInWindowByUrl, LaunchMode::kAsWebAppInWindowByUrl},
-          {OpenMode::kInWindowByAppId, LaunchMode::kAsWebAppInWindowByAppId},
-          {OpenMode::kInWindowOther, LaunchMode::kAsWebAppInWindowOther},
+      base::MakeFixedFlatMap<OpenMode, OldLaunchMode>({
+          {OpenMode::kInTab, OldLaunchMode::kAsWebAppInTab},
+          {OpenMode::kUnknown, OldLaunchMode::kUnknownWebApp},
+          {OpenMode::kInWindowByUrl, OldLaunchMode::kAsWebAppInWindowByUrl},
+          {OpenMode::kInWindowByAppId, OldLaunchMode::kAsWebAppInWindowByAppId},
+          {OpenMode::kInWindowOther, OldLaunchMode::kAsWebAppInWindowOther},
       });
   return kModeMap.at(open_mode);
 }
@@ -308,8 +309,10 @@ class StartupWebAppCreator
                                           allowed, std::move(persist_callback));
       } else {
         DCHECK(!file_launch_infos_.empty());
-        PersistFileHandlersUserChoice(profile_, app_id_, allowed,
-                                      std::move(persist_callback));
+        WebAppProvider::GetForWebApps(profile_)
+            ->scheduler()
+            .PersistFileHandlersUserChoice(app_id_, allowed,
+                                           std::move(persist_callback));
       }
     } else {
       std::move(persist_callback).Run();
@@ -396,7 +399,7 @@ void FinalizeWebAppLaunch(absl::optional<OpenMode> app_open_mode,
   // OpenMode enum for the values of the buckets.
   base::UmaHistogramEnumeration("WebApp.OpenMode", mode);
 
-  LaunchModeRecorder().SetLaunchMode(ConvertOpenModeToLaunchMode(mode));
+  OldLaunchModeRecorder().SetLaunchMode(ConvertOpenModeToLaunchMode(mode));
 
   AddInfoBarsIfNecessary(browser, browser->profile(), command_line,
                          is_first_run,

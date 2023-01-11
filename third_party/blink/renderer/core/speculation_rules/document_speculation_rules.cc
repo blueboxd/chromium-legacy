@@ -25,7 +25,9 @@ namespace {
 // https://wicg.github.io/nav-speculation/prefetch.html#list-of-sufficiently-strict-speculative-navigation-referrer-policies
 bool AcceptableReferrerPolicy(mojom::blink::SpeculationAction action,
                               const Referrer& referrer) {
-  // TODO(1355146): This restriction should also apply to prerenders.
+  // Lax referrer policies are acceptable for same-site prerenders. The browser
+  // is responsible for aborting a cross-site prerender with a lax referrer
+  // policy.
   if (action == mojom::blink::SpeculationAction::kPrerender)
     return true;
 
@@ -48,9 +50,21 @@ bool AcceptableReferrerPolicy(mojom::blink::SpeculationAction action,
   }
 }
 
-String MakeReferrerWarning(const KURL& url, const Referrer& referrer) {
-  return "Ignored attempt to prefetch " + url.ElidedString() +
-         " due to unacceptable referrer policy (" +
+String SpeculationActionAsString(mojom::blink::SpeculationAction action) {
+  switch (action) {
+    case mojom::blink::SpeculationAction::kPrefetch:
+    case mojom::blink::SpeculationAction::kPrefetchWithSubresources:
+      return "prefetch";
+    case mojom::blink::SpeculationAction::kPrerender:
+      return "prerender";
+  }
+}
+
+String MakeReferrerWarning(mojom::blink::SpeculationAction action,
+                           const KURL& url,
+                           const Referrer& referrer) {
+  return "Ignored attempt to " + SpeculationActionAsString(action) + " " +
+         url.ElidedString() + " due to unacceptable referrer policy (" +
          SecurityPolicy::ReferrerPolicyAsString(referrer.referrer_policy) +
          ").";
 }
@@ -143,16 +157,18 @@ void DocumentSpeculationRules::UpdateSpeculationCandidates() {
   if (!host || !execution_context)
     return;
 
-  network::mojom::ReferrerPolicy referrer_policy =
+  network::mojom::ReferrerPolicy document_referrer_policy =
       execution_context->GetReferrerPolicy();
   String outgoing_referrer = execution_context->OutgoingReferrer();
 
   Vector<mojom::blink::SpeculationCandidatePtr> candidates;
-  auto push_candidates = [&candidates, &referrer_policy, &outgoing_referrer,
-                          &execution_context](
+  auto push_candidates = [&candidates, &document_referrer_policy,
+                          &outgoing_referrer, &execution_context](
                              mojom::blink::SpeculationAction action,
                              const HeapVector<Member<SpeculationRule>>& rules) {
     for (SpeculationRule* rule : rules) {
+      network::mojom::ReferrerPolicy referrer_policy =
+          rule->referrer_policy().value_or(document_referrer_policy);
       for (const KURL& url : rule->urls()) {
         Referrer referrer = SecurityPolicy::GenerateReferrer(
             referrer_policy, url, outgoing_referrer);
@@ -161,7 +177,7 @@ void DocumentSpeculationRules::UpdateSpeculationCandidates() {
           execution_context->AddConsoleMessage(
               mojom::blink::ConsoleMessageSource::kOther,
               mojom::blink::ConsoleMessageLevel::kWarning,
-              MakeReferrerWarning(url, referrer));
+              MakeReferrerWarning(action, url, referrer));
           continue;
         }
 

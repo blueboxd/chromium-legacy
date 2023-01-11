@@ -45,8 +45,6 @@
 
 namespace WTF {
 
-struct StringHash;
-
 #define DISPATCH_CASE_OP(caseSensitivity, op, args)     \
   ((caseSensitivity == kTextCaseSensitive)              \
        ? op args                                        \
@@ -90,8 +88,12 @@ class WTF_EXPORT String {
   String(const char* characters, size_t length);
 #endif  // defined(ARCH_CPU_64_BITS)
 
-  // Construct a string with latin1 data, from a null-terminated source.
-  String(const LChar* characters)
+  // Construct a string with latin1 data, from a null-terminated source. The
+  // `LChar` constructor is explicit to avoid misinterpreting byte arrays.
+  // If the conversion is implicit, functions with both `String` and
+  // `base::span<const uint8_t>` overloads become ambiguous when called on
+  // `uint8_t[N]`.
+  explicit String(const LChar* characters)
       : String(reinterpret_cast<const char*>(characters)) {}
   String(const char* characters)
       : String(characters, characters ? strlen(characters) : 0) {}
@@ -256,6 +258,9 @@ class WTF_EXPORT String {
     return impl_ ? impl_->ReverseFind(value, start) : kNotFound;
   }
 
+  // Returns the Unicode code point starting at the specified offset of this
+  // string. If the offset points an unpaired surrogate, this function returns
+  // 0.
   UChar32 CharacterStartingAt(unsigned) const;
 
   bool StartsWith(
@@ -666,13 +671,11 @@ void String::PrependTo(BufferType& result,
   impl_->PrependTo(result, position, length);
 }
 
-// StringHash is the default hash for String
 template <typename T>
 struct DefaultHash;
+// Defined in string_hash.h.
 template <>
-struct DefaultHash<String> {
-  typedef StringHash Hash;
-};
+struct DefaultHash<String>;
 
 // Shared global empty string.
 WTF_EXPORT extern const String& g_empty_string;

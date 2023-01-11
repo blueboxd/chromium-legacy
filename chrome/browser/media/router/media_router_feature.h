@@ -26,7 +26,11 @@ bool MediaRouterEnabled(content::BrowserContext* context);
 // process.
 void ClearMediaRouterStoredPrefsForTesting();
 
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
+// If enabled, the sink discovery on Caf MRP is run asynchronously when the main
+// thread is idle.
+BASE_DECLARE_FEATURE(kCafMRPDeferredDiscovery);
+#else
 
 // Enables the media router. Can be disabled in tests unrelated to
 // Media Router where it interferes. Can also be useful to disable for local
@@ -45,11 +49,6 @@ BASE_DECLARE_FEATURE(kGlobalMediaControlsCastStartStop);
 // If enabled, allows all websites to request to start mirroring via
 // Presentation API. If disabled, only the allowlisted sites can do so.
 BASE_DECLARE_FEATURE(kAllowAllSitesToInitiateMirroring);
-
-// If enabled, HTTP requests for DIAL can only be made to URLs that contain the
-// target device IP address.
-// TODO(crbug.com/1270509): Remove this base::Feature once fully launched.
-BASE_DECLARE_FEATURE(kDialEnforceUrlIPAddress);
 
 // If enabled, users can request Media Remoting without fullscreen-in-tab.
 BASE_DECLARE_FEATURE(kMediaRemotingWithoutFullscreen);

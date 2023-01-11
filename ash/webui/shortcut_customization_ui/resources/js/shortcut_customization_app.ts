@@ -21,7 +21,7 @@ import {AcceleratorLookupManager} from './accelerator_lookup_manager.js';
 import {ShowEditDialogEvent} from './accelerator_row.js';
 import {getShortcutProvider} from './mojo_interface_provider.js';
 import {getTemplate} from './shortcut_customization_app.html.js';
-import {AcceleratorConfig, AcceleratorInfo, AcceleratorSource, AcceleratorState, AcceleratorType, LayoutInfoList, ShortcutProviderInterface} from './shortcut_types.js';
+import {AcceleratorInfo, AcceleratorSource, AcceleratorState, AcceleratorType, MojoAcceleratorConfig, MojoLayoutInfo, ShortcutProviderInterface} from './shortcut_types.js';
 import {isCustomizationDisabled} from './shortcut_utils.js';
 
 export interface ShortcutCustomizationAppElement {
@@ -117,19 +117,18 @@ export class ShortcutCustomizationAppElement extends
 
   private fetchAccelerators_() {
     // Kickoff fetching accelerators by first fetching the accelerator configs.
-    this.shortcutProvider_.getAllAcceleratorConfig().then(
-        (result: AcceleratorConfig) =>
-            this.onAcceleratorConfigFetched_(result));
+    this.shortcutProvider_.getAccelerators().then(
+        ({config}) => this.onAcceleratorConfigFetched_(config));
   }
 
-  private onAcceleratorConfigFetched_(config: AcceleratorConfig) {
+  private onAcceleratorConfigFetched_(config: MojoAcceleratorConfig) {
     this.acceleratorLookupManager_.setAcceleratorLookup(config);
     // After fetching the config infos, fetch the layout infos next.
-    this.shortcutProvider_.getLayoutInfo().then(
-        (result: LayoutInfoList) => this.onLayoutInfosFetched_(result));
+    this.shortcutProvider_.getAcceleratorLayoutInfos().then(
+        ({layoutInfos}) => this.onLayoutInfosFetched_(layoutInfos));
   }
 
-  private onLayoutInfosFetched_(layoutInfos: LayoutInfoList) {
+  private onLayoutInfosFetched_(layoutInfos: MojoLayoutInfo[]) {
     this.acceleratorLookupManager_.setAcceleratorLayoutLookup(layoutInfos);
     // Notify pages to update their accelerators.
     this.$.navigationPanel.notifyEvent('updateAccelerators');
@@ -172,12 +171,12 @@ export class ShortcutCustomizationAppElement extends
     this.$.navigationPanel.notifyEvent('updateSubsections');
     const updatedAccels =
         this.acceleratorLookupManager_
-            .getAccelerators(e.detail.source, e.detail.action)
+            .getAcceleratorInfos(e.detail.source, e.detail.action)
             ?.filter((accel) => {
               // Hide accelerators that are default and disabled.
               return !(
-                  accel.type === AcceleratorType.DEFAULT &&
-                  accel.state === AcceleratorState.DISABLED_BY_USER);
+                  accel.type === AcceleratorType.kDefault &&
+                  accel.state === AcceleratorState.kDisabledByUser);
             });
 
     this.shadowRoot!.querySelector<AcceleratorEditDialogElement>('#editDialog')!

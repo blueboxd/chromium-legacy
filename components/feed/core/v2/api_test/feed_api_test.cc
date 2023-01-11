@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/feed/core/v2/api_test/feed_api_test.h"
+#include <string>
 #include "base/time/time.h"
 #include "components/feed/core/proto/v2/wire/reliability_logging_enums.pb.h"
 #include "components/feed/core/proto/v2/wire/web_feeds.pb.h"
@@ -332,8 +333,10 @@ TestForYouSurface::TestForYouSurface(FeedStream* stream)
     : TestSurfaceBase(StreamType(StreamKind::kForYou), stream) {}
 TestWebFeedSurface::TestWebFeedSurface(FeedStream* stream)
     : TestSurfaceBase(StreamType(StreamKind::kFollowing), stream) {}
-TestChannelSurface::TestChannelSurface(FeedStream* stream, std::string channel)
-    : TestSurfaceBase(StreamType(StreamKind::kChannel, channel), stream) {}
+TestSingleWebFeedSurface::TestSingleWebFeedSurface(FeedStream* stream,
+                                                   std::string web_feed_id)
+    : TestSurfaceBase(StreamType(StreamKind::kSingleWebFeed, web_feed_id),
+                      stream) {}
 
 TestReliabilityLoggingBridge::TestReliabilityLoggingBridge() = default;
 TestReliabilityLoggingBridge::~TestReliabilityLoggingBridge() = default;
@@ -381,6 +384,13 @@ void TestReliabilityLoggingBridge::LogWebFeedRequestStart(
     NetworkRequestId id,
     base::TimeTicks timestamp) {
   events_.push_back(base::StrCat({"LogWebFeedRequestStart id=",
+                                  base::NumberToString(id.GetUnsafeValue())}));
+}
+
+void TestReliabilityLoggingBridge::LogSingleWebFeedRequestStart(
+    NetworkRequestId id,
+    base::TimeTicks timestamp) {
+  events_.push_back(base::StrCat({"LogSingleWebFeedRequestStart id=",
                                   base::NumberToString(id.GetUnsafeValue())}));
 }
 
@@ -733,6 +743,7 @@ void TestWireResponseTranslator::InjectResponse(
   RefreshResponseData data;
   data.model_update_request = std::move(response);
   data.session_id = std::move(session_id);
+  data.last_fetch_timestamp = base::Time::Now();
   InjectResponse(std::move(data));
 }
 void TestWireResponseTranslator::InjectResponse(
@@ -777,22 +788,16 @@ void TestMetricsReporter::ContentSliceViewed(const StreamType& stream_type,
 }
 void TestMetricsReporter::OnLoadStream(
     const StreamType& stream_type,
-    LoadStreamStatus load_from_store_status,
-    LoadStreamStatus final_status,
-    bool is_initial_load,
-    bool loaded_new_content_from_network,
-    base::TimeDelta stored_content_age,
+    const LoadStreamResultSummary& result_summary,
     const ContentStats& content_stats,
-    ContentOrder content_order,
-    std::unique_ptr<LoadLatencyTimes> latencies) {
-  load_stream_from_store_status = load_from_store_status;
-  load_stream_status = final_status;
-  LOG(INFO) << "OnLoadStream: " << final_status
-            << " (store status: " << load_from_store_status << ")";
-  MetricsReporter::OnLoadStream(
-      stream_type, load_from_store_status, final_status, is_initial_load,
-      loaded_new_content_from_network, stored_content_age, content_stats,
-      content_order, std::move(latencies));
+    std::unique_ptr<LoadLatencyTimes> load_latencies) {
+  load_stream_from_store_status = result_summary.load_from_store_status;
+  load_stream_status = result_summary.final_status;
+  LOG(INFO) << "OnLoadStream: " << result_summary.final_status
+            << " (store status: " << result_summary.load_from_store_status
+            << ")";
+  MetricsReporter::OnLoadStream(stream_type, result_summary, content_stats,
+                                std::move(load_latencies));
 }
 void TestMetricsReporter::OnLoadMoreBegin(const StreamType& stream_type,
                                           SurfaceId surface_id) {

@@ -51,7 +51,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/shell.h"
-#include "chrome/browser/ui/webui/chromeos/parent_access/parent_access_dialog.h"
+#include "chrome/browser/ui/webui/ash/parent_access/parent_access_dialog.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -235,12 +235,12 @@ class SupervisedUserNavigationThrottleTest
         SupervisedUserSettingsServiceFactory::GetForKey(
             profile->GetProfileKey());
 
-    const base::Value& local_settings =
+    const base::Value::Dict& local_settings =
         settings_service->LocalSettingsForTest();
     std::unique_ptr<base::Value> dict_to_insert;
 
-    const base::Value* dict_value = local_settings.FindKey(
-        supervised_users::kContentPackManualBehaviorHosts);
+    const base::Value* dict_value =
+        local_settings.Find(supervised_users::kContentPackManualBehaviorHosts);
     if (dict_value) {
       dict_to_insert = std::make_unique<base::Value>(dict_value->Clone());
     } else {
@@ -293,7 +293,6 @@ void SupervisedUserNavigationThrottleTest::SetUpOnMainThread() {
 #endif
 IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
                        MAYBE_DisallowPrerendering) {
-  base::HistogramTester histogram_tester;
   const GURL initial_url = embedded_test_server()->GetURL("/simple.html");
   const GURL allowed_url =
       embedded_test_server()->GetURL("/supervised_user/simple.html");
@@ -604,8 +603,7 @@ bool SupervisedUserIframeFilterTest::RunCommandAndGetBooleanFromFrame(
 }
 
 void SupervisedUserIframeFilterTest::InitFeatures() {
-  std::vector<base::test::ScopedFeatureList::FeatureAndParams>
-      enabled_features_and_params;
+  std::vector<base::test::FeatureRefAndParams> enabled_features_and_params;
   std::vector<base::test::FeatureRef> disabled_features;
   if (IsWebFilterInterstitialRefreshEnabled()) {
     enabled_features_and_params.emplace_back(
@@ -663,6 +661,8 @@ INSTANTIATE_TEST_SUITE_P(
                         /* local_web_approvals_preferred */ false)));
 
 IN_PROC_BROWSER_TEST_P(SupervisedUserIframeFilterTest, BlockSubFrame) {
+  base::HistogramTester histogram_tester;
+
   BlockHost(kIframeHost2);
   GURL allowed_url_with_iframes = embedded_test_server()->GetURL(
       kExampleHost, "/supervised_user/with_iframes.html");
@@ -690,6 +690,13 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserIframeFilterTest, BlockSubFrame) {
                             permission_creator()->url_requests()[0]);
 
   EXPECT_FALSE(IsInterstitialBeingShownInFrame(blocked_frame_id));
+
+  histogram_tester.ExpectUniqueSample(
+      SupervisedUserInterstitial::kInterstitialCommandHistogramName,
+      SupervisedUserInterstitial::Commands::REMOTE_ACCESS_REQUEST, 1);
+  histogram_tester.ExpectUniqueSample(
+      SupervisedUserInterstitial::kInterstitialPermissionSourceHistogramName,
+      SupervisedUserInterstitial::RequestPermissionSource::SUB_FRAME, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(SupervisedUserIframeFilterTest, BlockMultipleSubFrames) {
@@ -1034,6 +1041,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 IN_PROC_BROWSER_TEST_P(ChromeOSLocalWebApprovalsTest,
                        StartLocalWebApprovalsFromMainFrame) {
+  base::HistogramTester histogram_tester;
   BlockHost(kExampleHost);
 
   GURL blocked_url = embedded_test_server()->GetURL(
@@ -1050,21 +1058,29 @@ IN_PROC_BROWSER_TEST_P(ChromeOSLocalWebApprovalsTest,
 
   // Trigger local approval flow - native dialog should appear.
   SendCommandToFrame(kLocalUrlAccessCommand, blocked_frame);
-  EXPECT_TRUE(chromeos::ParentAccessDialog::GetInstance());
+  EXPECT_TRUE(ash::ParentAccessDialog::GetInstance());
 
   // Close the flow without approval - interstitial should be still shown.
   ui::test::EventGenerator generator(ash::Shell::Get()->GetPrimaryRootWindow());
   generator.PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
 
-  EXPECT_FALSE(chromeos::ParentAccessDialog::GetInstance());
+  EXPECT_FALSE(ash::ParentAccessDialog::GetInstance());
   EXPECT_TRUE(IsInterstitialBeingShownInMainFrame(browser()));
   EXPECT_TRUE(IsLocalApprovalsButtonBeingShown(blocked_frame));
   EXPECT_TRUE(IsRemoteApprovalsButtonBeingShown(blocked_frame));
   CheckPreferredApprovalButton(blocked_frame);
+
+  histogram_tester.ExpectUniqueSample(
+      SupervisedUserInterstitial::kInterstitialCommandHistogramName,
+      SupervisedUserInterstitial::Commands::LOCAL_ACCESS_REQUEST, 1);
+  histogram_tester.ExpectUniqueSample(
+      SupervisedUserInterstitial::kInterstitialPermissionSourceHistogramName,
+      SupervisedUserInterstitial::RequestPermissionSource::MAIN_FRAME, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(ChromeOSLocalWebApprovalsTest,
                        StartLocalWebApprovalsFromIframe) {
+  base::HistogramTester histogram_tester;
   BlockHost(kIframeHost1);
 
   const GURL allowed_url_with_iframes = embedded_test_server()->GetURL(
@@ -1083,18 +1099,25 @@ IN_PROC_BROWSER_TEST_P(ChromeOSLocalWebApprovalsTest,
 
   // Trigger local approval flow - native dialog should appear.
   SendCommandToFrame(kLocalUrlAccessCommand, blocked_frame);
-  EXPECT_TRUE(chromeos::ParentAccessDialog::GetInstance());
+  EXPECT_TRUE(ash::ParentAccessDialog::GetInstance());
 
   // Close the flow without approval - interstitial should be still shown.
   ui::test::EventGenerator generator(ash::Shell::Get()->GetPrimaryRootWindow());
   generator.PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
 
-  EXPECT_FALSE(chromeos::ParentAccessDialog::GetInstance());
+  EXPECT_FALSE(ash::ParentAccessDialog::GetInstance());
   EXPECT_FALSE(IsInterstitialBeingShownInMainFrame(browser()));
   EXPECT_TRUE(IsInterstitialBeingShownInFrame(blocked_frame));
   EXPECT_TRUE(IsLocalApprovalsButtonBeingShown(blocked_frame));
   EXPECT_TRUE(IsRemoteApprovalsButtonBeingShown(blocked_frame));
   CheckPreferredApprovalButton(blocked_frame);
+
+  histogram_tester.ExpectUniqueSample(
+      SupervisedUserInterstitial::kInterstitialCommandHistogramName,
+      SupervisedUserInterstitial::Commands::LOCAL_ACCESS_REQUEST, 1);
+  histogram_tester.ExpectUniqueSample(
+      SupervisedUserInterstitial::kInterstitialPermissionSourceHistogramName,
+      SupervisedUserInterstitial::RequestPermissionSource::SUB_FRAME, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(ChromeOSLocalWebApprovalsTest,

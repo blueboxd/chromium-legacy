@@ -16,7 +16,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/crosapi/mojom/device_settings_service.mojom.h"
 #include "components/policy/policy_constants.h"
-#include "components/reporting/metrics/fake_metric_report_queue.h"
+#include "components/reporting/metrics/fakes/fake_metric_report_queue.h"
 #include "components/reporting/metrics/metric_data_collector.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -37,7 +37,7 @@ constexpr char kUserId[] = "123";
 class FakeCollector : public CollectorBase {
  public:
   explicit FakeCollector(int* collector_count)
-      : CollectorBase(nullptr, nullptr), collector_count_(collector_count) {
+      : CollectorBase(nullptr), collector_count_(collector_count) {
     ++(*collector_count_);
   }
 

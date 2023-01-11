@@ -182,7 +182,9 @@ const char kDisableBackgroundNetworking[] = "disable-background-networking";
 const char kDisableComponentExtensionsWithBackgroundPages[] =
     "disable-component-extensions-with-background-pages";
 
+#if BUILDFLAG(ENABLE_COMPONENT_UPDATER)
 const char kDisableComponentUpdate[] = "disable-component-update";
+#endif
 
 // Disables installation of default apps on first run. This is used during
 // automated testing.
@@ -501,6 +503,11 @@ const char kRestoreLastSession[] = "restore-last-session";
 // See http://crbug.com/120416 for how to remove this switch.
 const char kSavePageAsMHTML[] = "save-page-as-mhtml";
 
+// This flag sets the checkboxes for sharing audio during screen capture to off
+// by default. It is primarily intended to be used for tests.
+const char kScreenCaptureAudioDefaultUnchecked[] =
+    "screen-capture-audio-default-unchecked";
+
 // Does not show an infobar when an extension attaches to a page using
 // chrome.debugger page. Required to attach to extension background pages.
 const char kSilentDebuggerExtensionAPI[] = "silent-debugger-extension-api";
@@ -543,7 +550,8 @@ const char kStartMaximized[] = "start-maximized";
 const char kStartStackProfiler[] = "start-stack-profiler";
 
 // Browser test mode for the |kStartStackProfiler| switch. Limits the profile
-// durations to be significantly less than the test timeout.
+// durations to be significantly less than the test timeout. On ChromeOS,
+// forces the stack sampling profiler to run on all processes as well.
 const char kStartStackProfilerBrowserTest[] = "browser-test";
 
 // Interval, in minutes, used for storage pressure notification throttling.

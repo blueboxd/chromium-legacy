@@ -14,8 +14,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "components/attribution_reporting/constants.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
-#include "third_party/blink/public/common/attribution_reporting/constants.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-blink.h"
 #include "third_party/blink/renderer/platform/json/json_parser.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
@@ -74,19 +74,19 @@ bool ParseAttributionAggregationKey(const JSONValue* value,
   return true;
 }
 
-mojom::blink::AttributionTriggerDedupKeyPtr ParseDedupKey(
-    const String& string) {
-  bool is_valid = false;
-  uint64_t value = string.ToUInt64Strict(&is_valid);
-  return is_valid ? mojom::blink::AttributionTriggerDedupKey::New(value)
-                  : nullptr;
+absl::optional<base::TimeDelta> ParseTimeDeltaInSeconds(const String& s) {
+  bool valid = false;
+  int64_t seconds = s.ToInt64Strict(&valid);
+  if (valid)
+    return base::Seconds(seconds);
+  return absl::nullopt;
 }
 
 }  // namespace
 
-bool ParseAttributionFilterData(
+bool ParseFilterValues(
     const JSONValue* value,
-    mojom::blink::AttributionFilterData& filter_data) {
+    WTF::HashMap<String, WTF::Vector<String>>& filter_values) {
   if (!value)
     return true;
 
@@ -96,15 +96,16 @@ bool ParseAttributionFilterData(
 
   const int kExclusiveMaxHistogramValue = 101;
 
-  static_assert(kMaxValuesPerAttributionFilter < kExclusiveMaxHistogramValue,
-                "Bump the version for histogram Conversions.ValuesPerFilter");
+  static_assert(
+      attribution_reporting::kMaxValuesPerFilter < kExclusiveMaxHistogramValue,
+      "Bump the version for histogram Conversions.ValuesPerFilter");
 
   static_assert(
-      kMaxAttributionFiltersPerSource < kExclusiveMaxHistogramValue,
+      attribution_reporting::kMaxFiltersPerSource < kExclusiveMaxHistogramValue,
       "Bump the version for histogram Conversions.FiltersPerFilterData");
 
   const wtf_size_t num_filters = object->size();
-  if (num_filters > kMaxAttributionFiltersPerSource)
+  if (num_filters > attribution_reporting::kMaxFiltersPerSource)
     return false;
 
   // The metrics are called potentially many times while parsing an attribution
@@ -116,7 +117,7 @@ bool ParseAttributionFilterData(
     const JSONObject::Entry entry = object->at(i);
 
     if (entry.first.CharactersSizeInBytes() >
-        kMaxBytesPerAttributionFilterString) {
+        attribution_reporting::kMaxBytesPerFilterString) {
       return false;
     }
 
@@ -125,7 +126,7 @@ bool ParseAttributionFilterData(
       return false;
 
     const wtf_size_t num_values = array->size();
-    if (num_values > kMaxValuesPerAttributionFilter)
+    if (num_values > attribution_reporting::kMaxValuesPerFilter)
       return false;
 
     UMA_HISTOGRAM_COUNTS_100("Conversions.ValuesPerFilter", num_values);
@@ -138,45 +139,46 @@ bool ParseAttributionFilterData(
         return false;
 
       if (value_str.CharactersSizeInBytes() >
-          kMaxBytesPerAttributionFilterString) {
+          attribution_reporting::kMaxBytesPerFilterString) {
         return false;
       }
 
       values.push_back(std::move(value_str));
     }
 
-    filter_data.filter_values.insert(entry.first, std::move(values));
+    filter_values.insert(entry.first, std::move(values));
   }
 
   return true;
 }
 
-bool ParseAggregationKeys(
-    const JSONValue* json,
-    WTF::HashMap<String, absl::uint128>& aggregation_keys) {
+mojom::blink::AttributionAggregationKeysPtr ParseAggregationKeys(
+    const JSONValue* json) {
+  auto aggregation_keys = mojom::blink::AttributionAggregationKeys::New();
+
   // Aggregation keys may be omitted.
   if (!json)
-    return true;
+    return aggregation_keys;
 
   const int kExclusiveMaxHistogramValue = 101;
 
   static_assert(
-      kMaxAttributionAggregationKeysPerSourceOrTrigger <
+      attribution_reporting::kMaxAggregationKeysPerSourceOrTrigger <
           kExclusiveMaxHistogramValue,
       "Bump the version for histogram Conversions.AggregatableKeysPerSource");
 
   const auto* object = JSONObject::Cast(json);
   if (!object)
-    return false;
+    return nullptr;
 
   const wtf_size_t num_keys = object->size();
-  if (num_keys > kMaxAttributionAggregationKeysPerSourceOrTrigger)
-    return false;
+  if (num_keys > attribution_reporting::kMaxAggregationKeysPerSourceOrTrigger)
+    return nullptr;
 
   base::UmaHistogramCounts100("Conversions.AggregatableKeysPerSource",
                               num_keys);
 
-  aggregation_keys.ReserveCapacityForSize(num_keys);
+  aggregation_keys->keys.ReserveCapacityForSize(num_keys);
 
   for (wtf_size_t i = 0; i < num_keys; ++i) {
     JSONObject::Entry entry = object->at(i);
@@ -185,24 +187,26 @@ bool ParseAggregationKeys(
     DCHECK(value);
 
     if (key_id.CharactersSizeInBytes() >
-        kMaxBytesPerAttributionAggregationKeyId) {
-      return false;
+        attribution_reporting::kMaxBytesPerAggregationKeyId) {
+      return nullptr;
     }
 
     absl::uint128 key;
     if (!ParseAttributionAggregationKey(value, &key))
-      return false;
+      return nullptr;
 
-    aggregation_keys.insert(std::move(key_id), key);
+    aggregation_keys->keys.insert(std::move(key_id), key);
   }
 
-  return true;
+  return aggregation_keys;
 }
 
-mojom::blink::AttributionDebugKeyPtr ParseDebugKey(const String& string) {
+absl::optional<uint64_t> ParseUint64(const String& string) {
   bool is_valid = false;
   uint64_t value = string.ToUInt64Strict(&is_valid);
-  return is_valid ? mojom::blink::AttributionDebugKey::New(value) : nullptr;
+  if (is_valid)
+    return value;
+  return absl::nullopt;
 }
 
 bool ParseSourceRegistrationHeader(
@@ -227,8 +231,9 @@ bool ParseSourceRegistrationHeader(
     return false;
   source_data.destination = std::move(destination);
 
-  // Treat invalid source_event_id, expiry, priority, and debug key as if they
-  // were not set.
+  // Treat invalid source_event_id, expiry, event_report_window,
+  // aggregatable_report_window, priority, and debug key as if they were
+  // not set.
 
   if (String s; object->GetString("source_event_id", &s)) {
     bool valid = false;
@@ -244,19 +249,21 @@ bool ParseSourceRegistrationHeader(
       source_data.priority = priority;
   }
 
-  if (String s; object->GetString("expiry", &s)) {
-    bool valid = false;
-    int64_t seconds = s.ToInt64Strict(&valid);
-    if (valid)
-      source_data.expiry = base::Seconds(seconds);
-  }
+  if (String s; object->GetString("expiry", &s))
+    source_data.expiry = ParseTimeDeltaInSeconds(s);
+
+  if (String s; object->GetString("event_report_window", &s))
+    source_data.event_report_window = ParseTimeDeltaInSeconds(s);
+
+  if (String s; object->GetString("aggregatable_report_window", &s))
+    source_data.aggregatable_report_window = ParseTimeDeltaInSeconds(s);
 
   if (String s; object->GetString("debug_key", &s))
-    source_data.debug_key = ParseDebugKey(s);
+    source_data.debug_key = ParseUint64(s);
 
   source_data.filter_data = mojom::blink::AttributionFilterData::New();
-  if (!ParseAttributionFilterData(object->Get("filter_data"),
-                                  *source_data.filter_data)) {
+  if (!ParseFilterValues(object->Get("filter_data"),
+                         source_data.filter_data->filter_values)) {
     return false;
   }
 
@@ -266,9 +273,14 @@ bool ParseSourceRegistrationHeader(
   if (source_data.filter_data->filter_values.Contains("source_type"))
     return false;
 
-  if (!ParseAggregationKeys(object->Get("aggregation_keys"),
-                            source_data.aggregation_keys)) {
+  source_data.aggregation_keys =
+      ParseAggregationKeys(object->Get("aggregation_keys"));
+  if (!source_data.aggregation_keys)
     return false;
+
+  if (bool debug_reporting;
+      object->GetBoolean("debug_reporting", &debug_reporting)) {
+    source_data.debug_reporting = debug_reporting;
   }
 
   return true;
@@ -287,7 +299,7 @@ bool ParseEventTriggerData(
     return false;
 
   // Do not proceed if too many event trigger data are specified.
-  if (array_value->size() > kMaxAttributionEventTriggerData)
+  if (array_value->size() > attribution_reporting::kMaxEventTriggerData)
     return false;
 
   // Process each event trigger.
@@ -320,17 +332,17 @@ bool ParseEventTriggerData(
     }
 
     if (String s; object_val->GetString("deduplication_key", &s))
-      event_trigger->dedup_key = ParseDedupKey(s);
+      event_trigger->dedup_key = ParseUint64(s);
 
-    event_trigger->filters = mojom::blink::AttributionFilterData::New();
-    if (!ParseAttributionFilterData(object_val->Get("filters"),
-                                    *event_trigger->filters)) {
+    event_trigger->filters = mojom::blink::AttributionFilters::New();
+    if (!ParseFilterValues(object_val->Get("filters"),
+                           event_trigger->filters->filter_values)) {
       return false;
     }
 
-    event_trigger->not_filters = mojom::blink::AttributionFilterData::New();
-    if (!ParseAttributionFilterData(object_val->Get("not_filters"),
-                                    *event_trigger->not_filters)) {
+    event_trigger->not_filters = mojom::blink::AttributionFilters::New();
+    if (!ParseFilterValues(object_val->Get("not_filters"),
+                           event_trigger->not_filters->filter_values)) {
       return false;
     }
 
@@ -349,7 +361,7 @@ bool ParseAttributionAggregatableTriggerData(
 
   const int kExclusiveMaxHistogramValue = 101;
 
-  static_assert(kMaxAttributionAggregatableTriggerDataPerTrigger <
+  static_assert(attribution_reporting::kMaxAggregatableTriggerDataPerTrigger <
                     kExclusiveMaxHistogramValue,
                 "Bump the version for histogram "
                 "Conversions.AggregatableTriggerDataLength");
@@ -359,8 +371,10 @@ bool ParseAttributionAggregatableTriggerData(
     return false;
 
   const wtf_size_t num_trigger_data = array->size();
-  if (num_trigger_data > kMaxAttributionAggregatableTriggerDataPerTrigger)
+  if (num_trigger_data >
+      attribution_reporting::kMaxAggregatableTriggerDataPerTrigger) {
     return false;
+  }
 
   base::UmaHistogramCounts100("Conversions.AggregatableTriggerDataLength",
                               num_trigger_data);
@@ -385,7 +399,7 @@ bool ParseAttributionAggregatableTriggerData(
     JSONArray* source_keys_val = object->GetArray("source_keys");
     if (!source_keys_val ||
         source_keys_val->size() >
-            kMaxAttributionAggregationKeysPerSourceOrTrigger) {
+            attribution_reporting::kMaxAggregationKeysPerSourceOrTrigger) {
       return false;
     }
 
@@ -399,20 +413,21 @@ bool ParseAttributionAggregatableTriggerData(
       String source_key;
       if (!source_key_val->AsString(&source_key) ||
           source_key.CharactersSizeInBytes() >
-              kMaxBytesPerAttributionAggregationKeyId) {
+              attribution_reporting::kMaxBytesPerAggregationKeyId) {
         return false;
       }
       data->source_keys.push_back(std::move(source_key));
     }
 
-    data->filters = mojom::blink::AttributionFilterData::New();
-    if (!ParseAttributionFilterData(object->Get("filters"), *data->filters)) {
+    data->filters = mojom::blink::AttributionFilters::New();
+    if (!ParseFilterValues(object->Get("filters"),
+                           data->filters->filter_values)) {
       return false;
     }
 
-    data->not_filters = mojom::blink::AttributionFilterData::New();
-    if (!ParseAttributionFilterData(object->Get("not_filters"),
-                                    *data->not_filters)) {
+    data->not_filters = mojom::blink::AttributionFilters::New();
+    if (!ParseFilterValues(object->Get("not_filters"),
+                           data->not_filters->filter_values)) {
       return false;
     }
 
@@ -430,7 +445,8 @@ bool ParseAttributionAggregatableValues(
 
   const auto* object = JSONObject::Cast(json);
   if (!object ||
-      object->size() > kMaxAttributionAggregationKeysPerSourceOrTrigger) {
+      object->size() >
+          attribution_reporting::kMaxAggregationKeysPerSourceOrTrigger) {
     return false;
   }
 
@@ -444,13 +460,13 @@ bool ParseAttributionAggregatableValues(
     DCHECK(value);
 
     if (key_id.CharactersSizeInBytes() >
-        kMaxBytesPerAttributionAggregationKeyId) {
+        attribution_reporting::kMaxBytesPerAggregationKeyId) {
       return false;
     }
 
     int key_value;
     if (!value->AsInteger(&key_value) || key_value <= 0 ||
-        key_value > kMaxAttributionAggregatableValue) {
+        key_value > attribution_reporting::kMaxAggregatableValue) {
       return false;
     }
 
@@ -477,17 +493,17 @@ bool ParseTriggerRegistrationHeader(
     return false;
   }
 
-  trigger_data.filters = mojom::blink::AttributionFilterData::New();
+  trigger_data.filters = mojom::blink::AttributionFilters::New();
 
-  if (!ParseAttributionFilterData(object->Get("filters"),
-                                  *trigger_data.filters)) {
+  if (!ParseFilterValues(object->Get("filters"),
+                         trigger_data.filters->filter_values)) {
     return false;
   }
 
-  trigger_data.not_filters = mojom::blink::AttributionFilterData::New();
+  trigger_data.not_filters = mojom::blink::AttributionFilters::New();
 
-  if (!ParseAttributionFilterData(object->Get("not_filters"),
-                                  *trigger_data.not_filters)) {
+  if (!ParseFilterValues(object->Get("not_filters"),
+                         trigger_data.not_filters->filter_values)) {
     return false;
   }
 
@@ -503,10 +519,15 @@ bool ParseTriggerRegistrationHeader(
   }
 
   if (String s; object->GetString("debug_key", &s))
-    trigger_data.debug_key = ParseDebugKey(s);
+    trigger_data.debug_key = ParseUint64(s);
 
   if (String s; object->GetString("aggregatable_deduplication_key", &s))
-    trigger_data.aggregatable_dedup_key = ParseDedupKey(s);
+    trigger_data.aggregatable_dedup_key = ParseUint64(s);
+
+  if (bool debug_reporting;
+      object->GetBoolean("debug_reporting", &debug_reporting)) {
+    trigger_data.debug_reporting = debug_reporting;
+  }
 
   return true;
 }

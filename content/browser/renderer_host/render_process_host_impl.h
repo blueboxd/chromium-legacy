@@ -20,6 +20,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/safe_ref.h"
 #include "base/observer_list.h"
+#include "base/scoped_observation_traits.h"
 #include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -316,6 +317,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const GlobalRenderFrameHostId& render_frame_host_id) override;
   void ResumeSocketManagerForRenderFrameHost(
       const GlobalRenderFrameHostId& render_frame_host_id) override;
+
+  void SetOsSupportForAttributionReporting(
+      blink::mojom::AttributionOsSupport os_support) override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
@@ -659,12 +663,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const url::Origin& origin,
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) override;
 
-  // Binds |receiver| to the NotificationService instance owned by
-  // |storage_partition_impl_|, and is used by frames and workers via
-  // BrowserInterfaceBroker. |render_frame_id| will identify the RenderFrameHost
-  // when the service belongs to one, `MSG_ROUTING_NONE` for workers.
+  // Binds `creator_type`, `origin`, `receiver` and the information obtained
+  // from the (possibly empty) `rfh_id` to the NotificationService instance
+  // owned by `storage_partition_impl_`, and is used by documents and workers
+  // via BrowserInterfaceBroker.
   void CreateNotificationService(
-      int render_frame_id,
+      GlobalRenderFrameHostId rfh_id,
+      RenderProcessHost::NotificationServiceCreatorType creator_type,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::NotificationService> receiver)
       override;
@@ -1232,5 +1237,24 @@ class CONTENT_EXPORT RenderProcessHostImpl
 };
 
 }  // namespace content
+
+namespace base {
+
+template <>
+struct ScopedObservationTraits<content::RenderProcessHostImpl,
+                               content::RenderProcessHostInternalObserver> {
+  static void AddObserver(
+      content::RenderProcessHostImpl* source,
+      content::RenderProcessHostInternalObserver* observer) {
+    source->AddInternalObserver(observer);
+  }
+  static void RemoveObserver(
+      content::RenderProcessHostImpl* source,
+      content::RenderProcessHostInternalObserver* observer) {
+    source->RemoveInternalObserver(observer);
+  }
+};
+
+}  // namespace base
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_PROCESS_HOST_IMPL_H_

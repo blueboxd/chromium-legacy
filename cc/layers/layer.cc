@@ -36,7 +36,7 @@
 #include "cc/trees/transform_node.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
-#include "components/viz/common/shared_element_resource_id.h"
+#include "components/viz/common/view_transition_element_resource_id.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
@@ -72,7 +72,6 @@ static_assert(sizeof(Layer) == sizeof(SameSizeAsLayer),
 
 base::AtomicSequenceNumber g_next_layer_id;
 
-constexpr gfx::Transform Layer::kIdentityTransform;
 constexpr gfx::RoundedCornersF Layer::kNoRoundedCornersF;
 
 LayerDebugInfo::LayerDebugInfo() = default;
@@ -215,8 +214,8 @@ void Layer::SetDebugName(const std::string& name) {
   EnsureDebugInfo().name = name;
 }
 
-viz::SharedElementResourceId Layer::DocumentTransitionResourceId() const {
-  return viz::SharedElementResourceId();
+viz::ViewTransitionElementResourceId Layer::ViewTransitionResourceId() const {
+  return viz::ViewTransitionElementResourceId();
 }
 
 void Layer::SetNeedsFullTreeSync() {
@@ -933,7 +932,7 @@ bool Are2dAxisAligned(const gfx::Transform& a, const gfx::Transform& b) {
     return true;
   }
 
-  gfx::Transform inverse(gfx::Transform::kSkipInitialization);
+  gfx::Transform inverse;
   if (b.GetInverse(&inverse)) {
     inverse *= a;
     return inverse.Preserves2dAxisAlignment();

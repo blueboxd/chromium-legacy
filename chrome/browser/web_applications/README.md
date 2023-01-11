@@ -75,7 +75,7 @@ Notes:
 ### Manifest id
 The `id` specified in manifest represents the identity of the web app. The manifest id is processed following the algorithm described in [appmanifest specification](https://www.w3.org/TR/appmanifest/#id-member) to produce the app's identity. In web app system, the app's [identity](https://www.w3.org/TR/appmanifest/#dfn-identity) is [hashed](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/web_applications/web_app_helpers.cc;l=69;drc=cafa646efbb6f668d3ba20ff482c1f729159ae97) to be stored to [WebApp->app_id()](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/web_applications/web_app.h;l=43;drc=cafa646efbb6f668d3ba20ff482c1f729159ae97;bpv=1;bpt=1).
 
-The app identity is verified in manifest updating process, if an app gets a manifest with [mismatched identity](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/web_applications/manifest_update_task.cc;l=315?q=manifest_update_task&ss=chromium%2Fchromium%2Fsrc), the update process is aborted.
+The app identity is verified in manifest updating process, if an app gets a manifest with [mismatched identity](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/web_applications/commands/manifest_update_data_fetch_command.cc;l=265-276), the update process is aborted.
 ### Scope
 
 Scope refers to the prefix that a WebApp controls. All paths at or nested inside of a WebApp's scope is thought of as "controlled" or "in-scope" of that WebApp. This is a simple string prefix match. For example, if `scope` is `/my-app`, then the following will be "in-scope":
@@ -229,6 +229,22 @@ declaration and definition locations).
 ## Storage
 
 TODO
+
+### [`AppShimRegistry`](app_shim_registry_mac.h)
+
+On Mac OS we sometimes need to reason about the state of installed PWAs in all
+profiles without loading those profiles into memory. For this purpose,
+`AppShimRegistry` stores the needed information in Chrome's "Local State"
+(global preferences). The information stored here includes:
+
+ * All profiles a particular web app is installed in.
+ * What profiles a particular web app was open in when it was last used.
+ * What file and protocol handlers are enabled for a web app in each profile
+   it is installed in.
+
+This information is used when launching a web app (to determine what profile
+or profiles to open the web app in), as well as when updating an App Shim
+(to make sure all file and protocol handlers for the app are accounted for).
 
 ## Deep Dives
 

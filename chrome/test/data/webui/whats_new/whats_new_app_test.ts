@@ -6,7 +6,7 @@ import 'chrome://whats-new/whats_new_app.js';
 
 import {CommandHandlerRemote} from 'chrome://resources/js/browser_command/browser_command.mojom-webui.js';
 import {BrowserCommandProxy} from 'chrome://resources/js/browser_command/browser_command_proxy.js';
-import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {isChromeOS} from 'chrome://resources/js/platform.js';
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
@@ -40,8 +40,7 @@ suite('WhatsNewAppTest', function() {
       'chrome://webui-test/whats_new/test_with_command_3.html';
 
   setup(function() {
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
   });
 
   test('with query parameters', async () => {

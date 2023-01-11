@@ -21,7 +21,9 @@ import './address_remove_confirmation_dialog.js';
 import './passwords_shared.css.js';
 import '../i18n_setup.js';
 
+import {getInstance as getAnnouncerInstance} from '//resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {I18nMixin} from '//resources/cr_elements/i18n_mixin.js';
+import {loadTimeData} from '//resources/js/load_time_data.m.js';
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
@@ -182,7 +184,15 @@ export class SettingsAutofillSectionElement extends
     if (this.shadowRoot!
             .querySelector('settings-address-remove-confirmation-dialog')!
             .wasConfirmed()) {
+      if (this.addresses.length === 1) {
+        // When user removes the last address, move focus to the Add Address
+        // button when the dialog closes. Otherwise, focus gets lost.
+        this.activeDialogAnchor_ = this.$.addAddress;
+      }
+
       this.autofillManager_.removeAddress(this.activeAddress!.guid as string);
+      getAnnouncerInstance().announce(
+          loadTimeData.getString('addressRemovedMessage'));
     }
     this.showAddressRemoveConfirmationDialog_ = false;
     assert(this.activeDialogAnchor_);

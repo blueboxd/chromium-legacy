@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">元に戻す</translation>
 <translation id="2084108471225856927">デバイス設定</translation>
 <translation id="2084809735218147718">ありがとうとサインする</translation>
-<translation id="2085470240340828803">「<ph name="FILENAME" />」という名前のファイルは既に存在します。どのように処理しますか？</translation>
 <translation id="2088690981887365033">VPN ネットワーク</translation>
 <translation id="2122305276694332719">非公開ネットワークに自動接続すると、お使いのデバイスと一部のネットワーク設定が他のユーザーに公開されます。そのためこの設定はおすすめしません。</translation>
 <translation id="2125607626296734455">クメール語</translation>
@@ -456,7 +455,6 @@
 <translation id="4900532980794411603">Parallels Desktop と共有</translation>
 <translation id="4902546322522096650"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、<ph name="SECURITY_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />%、接続</translation>
 <translation id="4906580650526544301"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="PHONE_NAME" />、<ph name="PROVIDER_NAME" />、<ph name="CONNECTION_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />%、電池残量 <ph name="BATTERY_STATUS" />%、詳細</translation>
-<translation id="4929673617759421391">このファイルの貼り付けは管理者が設定したポリシーによってブロックされています</translation>
 <translation id="4935975195727477204">花</translation>
 <translation id="4943368462779413526">フットボール</translation>
 <translation id="4961158930123534723">1 個のフォルダが Parallels Desktop と共有されています</translation>
@@ -534,6 +532,7 @@
 <translation id="5428105026674456456">スペイン語</translation>
 <translation id="5438282218546237410"><ph name="SEARCH_TERM" /> に一致する検索結果はありません。</translation>
 <translation id="5449551289610225147">パスワードが無効です</translation>
+<translation id="5459064203055649751">「<ph name="FILENAME" />」という名前のファイルはすでに存在します。移動するファイルで上書きしますか？</translation>
 <translation id="5463231940765244860">入力</translation>
 <translation id="5469868506864199649">イタリア語</translation>
 <translation id="5473333559083690127">新しい PIN を再入力</translation>
@@ -654,6 +653,7 @@
 <translation id="6495925982925244349"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、<ph name="SECURITY_STATUS" />、<ph name="CONNECTION_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />%、管理者によって管理、詳細</translation>
 <translation id="649877868557234318"><ph name="FILE_NAME" /> を <ph name="FOLDER_NAME" /> に展開しています</translation>
 <translation id="6499681088828539489">共有ネットワークのプロキシを許可しない</translation>
+<translation id="6503285896705205014"><ph name="COUNT" /> 個のファイルのコピーは管理者が設定したポリシーによってブロックされています</translation>
 <translation id="6509122719576673235">ノルウェー語</translation>
 <translation id="6528513914570774834">このデバイスの他のユーザーにこのネットワークの使用を許可する</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" /> を同期しています...</translation>
@@ -756,6 +756,7 @@
 <translation id="7357762654218998920">このファイル形式はサポートされていません。Chrome OS でファイルを開く方法については、<ph name="BEGIN_LINK_HELP" />こちら<ph name="END_LINK_HELP" />をご覧ください。</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムをコピーしています...</translation>
 <translation id="7375951387215729722">ファイルの一覧は <ph name="COLUMN_NAME" /> の降順で並べ替えられています。</translation>
+<translation id="7377161162143020057">このファイルのコピーは管理者が設定したポリシーによってブロックされています</translation>
 <translation id="7402503521691663770">ChromeOS Flex デバイス</translation>
 <translation id="7408870451288633753">チェコ語</translation>
 <translation id="7417453074306512035">エチオピア語キーボード</translation>
@@ -977,7 +978,6 @@
 <translation id="9183302530794969518">Google ドキュメント</translation>
 <translation id="9189836632794948435">カザフ語</translation>
 <translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> 件のアイテムを抽出しました。</translation>
-<translation id="9210751050717126865"><ph name="COUNT" /> 個のファイルの貼り付けは管理者が設定したポリシーによってブロックされています</translation>
 <translation id="9213073329713032541">インストールを開始しました。</translation>
 <translation id="9219103736887031265">画像</translation>
 <translation id="9219908252191632183">月面</translation>

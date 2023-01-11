@@ -1135,6 +1135,50 @@ class PortTest(LoggingTestCase):
             "virtual/virtual_passes/passes/reftest.html")
         self.assertEqual(result, ([30, 30], [1, 2]))
 
+    def test_get_wpt_fuzzy_metadata_for_non_wpt_test_with_non_virtual_dsf(
+            self):
+        port = self.make_port(with_tests=True)
+        port._options.additional_driver_flag = [
+            '--force-device-scale-factor=2'
+        ]
+        rt_path = port.abspath_for_test("passes/reftest.html")
+
+        port._filesystem.write_text_file(
+            rt_path, "<meta name=fuzzy content=\"15;300\">")
+        result = port.get_wpt_fuzzy_metadata("passes/reftest.html")
+        self.assertEqual(result, ([15, 15], [1200, 1200]))
+
+        port._filesystem.write_text_file(
+            rt_path, "<meta name=fuzzy content=\"3-20;100\">")
+        result = port.get_wpt_fuzzy_metadata("passes/reftest.html")
+        self.assertEqual(result, ([3, 20], [400, 400]))
+
+        port._filesystem.write_text_file(
+            rt_path, "foo<meta name=fuzzy content=\"ref.html:0;1-200\">bar")
+        result = port.get_wpt_fuzzy_metadata("passes/reftest.html")
+        self.assertEqual(result, ([0, 0], [4, 800]))
+
+    def test_get_wpt_fuzzy_metadata_for_non_wpt_test_with_virtual_dsf(self):
+        port = self.make_port(with_tests=True)
+        port.args_for_test = unittest.mock.MagicMock(
+            return_value=['--force-device-scale-factor=2'])
+        rt_path = port.abspath_for_test("passes/reftest.html")
+
+        port._filesystem.write_text_file(
+            rt_path, "<meta name=fuzzy content=\"15;300\">")
+        result = port.get_wpt_fuzzy_metadata("passes/reftest.html")
+        self.assertEqual(result, ([15, 15], [1200, 1200]))
+
+        port._filesystem.write_text_file(
+            rt_path, "<meta name=fuzzy content=\"3-20;100\">")
+        result = port.get_wpt_fuzzy_metadata("passes/reftest.html")
+        self.assertEqual(result, ([3, 20], [400, 400]))
+
+        port._filesystem.write_text_file(
+            rt_path, "foo<meta name=fuzzy content=\"ref.html:0;1-200\">bar")
+        result = port.get_wpt_fuzzy_metadata("passes/reftest.html")
+        self.assertEqual(result, ([0, 0], [4, 800]))
+
     def test_get_file_path_for_wpt_test(self):
         port = self.make_port(with_tests=True)
         add_manifest_to_mock_filesystem(port)
@@ -1536,6 +1580,58 @@ class PortTest(LoggingTestCase):
     def test_missing_virtual_test_suite_file(self):
         port = self.make_port()
         self.assertRaises(AssertionError, port.virtual_test_suites)
+
+    def test_virtual_exclusive_tests(self):
+        port = self.make_port()
+        fs = port.host.filesystem
+        web_tests_dir = port.web_tests_dir()
+        fs.write_text_file(
+            fs.join(web_tests_dir, 'VirtualTestSuites'), '['
+            '{"prefix": "v1", "platforms": ["Linux"], "bases": ["b1", "b2"],'
+            ' "exclusive_tests": "ALL", "args": ["-a"]},'
+            '{"prefix": "v2", "platforms": ["Linux"], "bases": ["b2"],'
+            ' "exclusive_tests": ["b2/test.html"], "args": ["-b"]},'
+            '{"prefix": "v3", "platforms": ["Linux"], "bases": ["b3"],'
+            ' "args": ["-c"]}'
+            ']')
+        fs.write_text_file(fs.join(web_tests_dir, 'b1', 'test.html'), '')
+        fs.write_text_file(fs.join(web_tests_dir, 'b1', 'test2.html'), '')
+        fs.write_text_file(fs.join(web_tests_dir, 'b2', 'test.html'), '')
+        fs.write_text_file(fs.join(web_tests_dir, 'b2', 'test.html'), '')
+        fs.write_text_file(fs.join(web_tests_dir, 'b3', 'test.html'), '')
+
+        self.assertTrue(port.skipped_due_to_exclusive_virtual_tests('b1'))
+        self.assertTrue(
+            port.skipped_due_to_exclusive_virtual_tests('b1/test.html'))
+        self.assertTrue(port.skipped_due_to_exclusive_virtual_tests('b2'))
+        self.assertTrue(
+            port.skipped_due_to_exclusive_virtual_tests('b2/test.html'))
+        self.assertFalse(port.skipped_due_to_exclusive_virtual_tests('b3'))
+        self.assertFalse(
+            port.skipped_due_to_exclusive_virtual_tests('b3/test.html'))
+
+        self.assertFalse(
+            port.skipped_due_to_exclusive_virtual_tests('virtual/v1/b1'))
+        self.assertFalse(
+            port.skipped_due_to_exclusive_virtual_tests(
+                'virtual/v1/b1/test.html'))
+        self.assertFalse(
+            port.skipped_due_to_exclusive_virtual_tests('virtual/v1/b2'))
+        self.assertFalse(
+            port.skipped_due_to_exclusive_virtual_tests(
+                'virtual/v1/b2/test.html'))
+        self.assertFalse(
+            port.skipped_due_to_exclusive_virtual_tests(
+                'virtual/v1/b2/test2.html'))
+
+        self.assertFalse(
+            port.skipped_due_to_exclusive_virtual_tests('virtual/v2/b2'))
+        self.assertFalse(
+            port.skipped_due_to_exclusive_virtual_tests(
+                'virtual/v2/b2/test.html'))
+        self.assertTrue(
+            port.skipped_due_to_exclusive_virtual_tests(
+                'virtual/v2/b2/test2.html'))
 
     def test_default_results_directory(self):
         port = self.make_port(

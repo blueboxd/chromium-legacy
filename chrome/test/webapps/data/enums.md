@@ -18,8 +18,8 @@ The tables in this file are parsed as action templates for critical user journey
 
 ## Enums Table
 
-| #Enum Name | Values (* = default) |  |  |  |  |  |  |  |
-| --- | --- | --- | --- | --- | --- | --- | --- |
+| #Enum Name | Values (* = default) |  |  |  |  |  |  |  |  |  |  |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Site | Standalone* | MinimalUi | NotPromotable | StandaloneNestedA | StandaloneNestedB | Wco | Isolated | FileHandler | NotInstalled | StandaloneNotStartUrl | Screenshots |
 | InstallableSite | Standalone* | MinimalUi | StandaloneNestedA | StandaloneNestedB | Wco | NotInstalled | StandaloneNotStartUrl | Screenshots |
 | Title | StandaloneOriginal | StandaloneUpdated |  |  |  |  |  |
@@ -29,12 +29,13 @@ The tables in this file are parsed as action templates for critical user journey
 | IsShown | Shown | NotShown |  |  |  |  |  |
 | IsOn | On | Off |  |  |  |  |  |
 | Display | Standalone | MinimalUi | Wco | Browser |  |  |  |
-| FileExtension | Txt | Png |  |  |  |  |  |
-| Location | StartUrl | FileHandleUrlForTxt | FileHandleUrlForPng |  |  |  |  |
+| FileExtension | Foo | Bar |  |  |  |  |  |
+| Location | StartUrl | FileHandleUrlForFoo | FileHandleUrlForBar |  |  |  |  |
 | Number | One | Two |  |  |  |  |  |
-| FilesOptions | OneTextFile | MultipleTextFiles | OnePngFile | MultiplePngFiles | AllTestAndPngFiles |  |  |
+| FilesOptions | OneFooFile | MultipleFooFiles | OneBarFile | MultipleBarFiles | AllFooAndBarFiles |  |  |
 | AllowDenyOptions | Allow | Deny |
 | AskAgainOptions | AskAgain | Remember |
 | ShortcutOptions | WithShortcut | NoShortcut |
 | WindowOptions | Windowed | Browser |
 | InstallMode | WebApp* | WebShortcut |
+| UpdateDialogResponse | AcceptUpdate | CancelDialogAndUninstall | SkipUpdate |

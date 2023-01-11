@@ -11,9 +11,13 @@
 #include "base/memory/raw_ptr.h"
 #include "base/pending_task.h"
 #include "base/strings/string_piece.h"
+#include "base/time/tick_clock.h"
 #include "base/trace_event/base_tracing.h"
 
 namespace base {
+
+// Constant used to measure which long-running tasks should be traced.
+constexpr TimeDelta kMaxTaskDurationTimeDelta = Milliseconds(4);
 
 // Implements common debug annotations for posted tasks. This includes data
 // such as task origins, IPC message contexts, queueing durations and memory
@@ -31,7 +35,15 @@ class BASE_EXPORT TaskAnnotator {
   // to be used only from within generated IPC handler dispatch code.
   class ScopedSetIpcHash;
 
+  // This is used to track long-running browser-UI tasks. It is intended to
+  // be used for low-overhead logging to produce longer traces, particularly to
+  // help the scroll jank reduction effort.
+  class LongTaskTracker;
+
   static const PendingTask* CurrentTaskForThread();
+
+  static void OnIPCReceived(const char* interface_name,
+                            uint32_t (*method_info)());
 
   TaskAnnotator();
 
@@ -87,8 +99,8 @@ class BASE_EXPORT TaskAnnotator {
 #if BUILDFLAG(ENABLE_BASE_TRACING)
   // TRACE_EVENT argument helper, writing the task location data into
   // EventContext.
-  void EmitTaskLocation(perfetto::EventContext& ctx,
-                        const PendingTask& task) const;
+  static void EmitTaskLocation(perfetto::EventContext& ctx,
+                               const PendingTask& task);
 
   // TRACE_EVENT argument helper, writing the incoming task flow information
   // into EventContext if toplevel.flow category is enabled.
@@ -123,6 +135,41 @@ class BASE_EXPORT TaskAnnotator::ScopedSetIpcHash {
   raw_ptr<ScopedSetIpcHash> old_scoped_ipc_hash_ = nullptr;
   uint32_t ipc_hash_ = 0;
   const char* ipc_interface_name_ = nullptr;
+};
+
+class BASE_EXPORT TaskAnnotator::LongTaskTracker {
+ public:
+  explicit LongTaskTracker(const TickClock* tick_clock,
+                           PendingTask& pending_task,
+                           TaskAnnotator* task_annotator);
+
+  LongTaskTracker(const LongTaskTracker&) = delete;
+
+  ~LongTaskTracker();
+
+  void SetIpcDetails(const char* interface_name, uint32_t (*method_info)());
+
+ private:
+  void EmitReceivedIPCDetails(perfetto::EventContext& ctx);
+
+  // For tracking task duration
+  const TickClock* tick_clock_;  // Not owned.
+  TimeTicks task_start_time_;
+
+  // Tracing variables.
+
+  // Use this to ensure that tracing and NowTicks() are not called
+  // unnecessarily.
+  bool is_tracing_;
+  raw_ptr<LongTaskTracker> old_long_task_tracker_ = nullptr;
+  const char* ipc_interface_name_ = nullptr;
+  uint32_t ipc_hash_ = 0;
+
+  // IPC method info to retrieve IPC hash and method address from trace, if
+  // known. Note that this will not compile in the Native client.
+  uint32_t (*ipc_method_info_)();
+  PendingTask& pending_task_;
+  TaskAnnotator* task_annotator_;
 };
 
 }  // namespace base

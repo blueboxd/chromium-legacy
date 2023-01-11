@@ -8,6 +8,7 @@ if (is_linux) {
 
     deps = [
       ":management_service",
+      ":metrics",
       ":rotate_util",
       "//base",
       "//chrome/browser/enterprise/connectors/device_trust/key_management/core:constants",
@@ -27,9 +28,11 @@ if (is_linux) {
     ]
 
     deps = [
+      ":metrics",
       ":rotate_util",
       "//chrome/browser/enterprise/connectors/device_trust/key_management/core:constants",
       "//chrome/browser/enterprise/connectors/device_trust/key_management/core/network",
+      "//chrome/browser/enterprise/connectors/device_trust/key_management/installer/management_service/mojo_helper",
       "//chrome/common:channel_info",
       "//mojo/public/cpp/bindings",
       "//services/network/public/cpp",
@@ -41,6 +44,14 @@ if (is_linux) {
 }
 
 if (is_linux || is_win) {
+  source_set("metrics") {
+    public = [ "metrics_utils.h" ]
+
+    sources = [ "metrics_utils.cc" ]
+
+    deps = [ "//base" ]
+  }
+
   source_set("rotate_util") {
     public = [ "rotate_util.h" ]
 
@@ -49,6 +60,7 @@ if (is_linux || is_win) {
     public_deps = [ "//components/version_info:channel" ]
 
     deps = [
+      ":metrics",
       "//base",
       "//chrome/browser/enterprise/connectors/device_trust/key_management/core:constants",
       "//chrome/browser/enterprise/connectors/device_trust/key_management/installer:elevated_rotation",
@@ -64,6 +76,7 @@ source_set("unit_tests") {
   sources = [ "rotate_util_unittest.cc" ]
 
   deps = [
+    ":metrics",
     ":rotate_util",
     "//base",
     "//base/test:test_support",
@@ -79,6 +92,9 @@ source_set("unit_tests") {
     sources += [ "chrome_management_service_unittest.cc" ]
     deps += [
       ":management_service",
+      ":metrics",
+      "//chrome/browser/enterprise/connectors/device_trust/key_management/installer/management_service/mojo_helper",
+      "//chrome/browser/enterprise/connectors/device_trust/key_management/installer/management_service/mojo_helper:test_support",
       "//services/network:test_support",
     ]
   }

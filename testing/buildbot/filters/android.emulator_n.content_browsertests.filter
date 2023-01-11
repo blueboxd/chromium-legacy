@@ -21,7 +21,7 @@
 -All/SitePerProcessBrowserTest.PageScaleFactorPropagatesToOOPIFs/1
 
 # TODO(crbug.com/1344391)
--All/SitePerProcessBrowserTest.KeyboardScrollBubblingFromOOPIF/1
+-All/SitePerProcessBrowserTest.KeyboardScrollBubblingFromOOPIF/*
 
 # TODO(crbug.com/1365601)
 -All/DumpAccessibilityTreeTest.AccessibilityNoSourceVideo/android
@@ -31,9 +31,6 @@
 
 # TODO(crbug.com/1368744)
 -All/DumpAccessibilityTreeTest.AccessibilityButtonNameCalc/android
-
-# TODO(crbug.com/1368694)
--SubresourcePartitionedCookiesOriginTrialBrowserTest.NoToken
 
 # TODO(crbug.com/1368929)
 -PrefetchBrowserTest/PrefetchBrowserTest.CrossOriginDocumentHasNoSameSiteCookies/*
@@ -49,3 +46,13 @@
 
 # TODO(crbug.com/1373576)
 -PrefetchBrowserTest/PrefetchBrowserTest.CrossOriginWithPreloadAnonymous/*
+
+# TODO(crbug.com/1375800)
+-All/DumpAccessibilityTreeTest.AccessibilityNodeChangedCrashInEditableText/android
+
+# TODO(crbug.com/1376152)
+-PrefetchBrowserTest/PrefetchBrowserTest.CrossOriginDocumentNotReusedAsNestedFrameNavigation/*
+
+# TODO(crbug.com/1381560)
+-All/SignedExchangeExpectCTReportBrowserTest.CTFailureSendsExpectCTReport/*
+-All/SignedExchangeExpectCTReportBrowserTest.CrossOriginPrefetch/*

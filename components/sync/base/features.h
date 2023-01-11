@@ -72,6 +72,9 @@ BASE_DECLARE_FEATURE(kSyncExtensionTypesThrottling);
 
 BASE_DECLARE_FEATURE(kSyncResetPollIntervalOnStart);
 
+// If enabled, Segmentation data type will be synced.
+BASE_DECLARE_FEATURE(kSyncSegmentationDataType);
+
 // If enabled, interested data types, excluding Wallet and Offer, will be sent
 // to the Sync Server as part of DeviceInfo.
 BASE_DECLARE_FEATURE(kSyncSendInterestedDataTypes);
@@ -142,6 +145,12 @@ BASE_DECLARE_FEATURE(kSyncTrustedVaultUseMD5HashedFile);
 // SyncSendInterestedDataTypes must be enabled for this to take effect.
 BASE_DECLARE_FEATURE(kUseSyncInvalidations);
 
+// If enabled, all incoming invalidations will be stored in ModelTypeState
+// proto message.
+// TODO(crbug/1365292): Add more information about this feature after
+// upload/download invalidations support from ModelTypeState msg will be added.
+BASE_DECLARE_FEATURE(kSyncPersistInvalidations);
+
 // If enabled, types related to Wallet and Offer will be included in interested
 // data types, and the device will listen to new invalidations for those types
 // (if they are enabled).
@@ -164,6 +173,9 @@ BASE_DECLARE_FEATURE(kSyncEnableHistoryDataType);
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataType);
 
 BASE_DECLARE_FEATURE(kSyncPauseUponAnyPersistentAuthError);
+
+// If enabled, issues error and disables bookmarks sync when limit is crossed.
+BASE_DECLARE_FEATURE(kSyncEnforceBookmarksCountLimit);
 
 }  // namespace syncer
 

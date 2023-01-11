@@ -69,7 +69,7 @@ BOOL WaitForKeyboardToAppear() {
 }
 
 // Tests that the addresses view controller appears on screen.
-// TODO(crbug.com/1116274): Flaky on ios simulator.
+// TODO(crbug.com/1116043): Flaky on ios simulator.
 #if TARGET_IPHONE_SIMULATOR
 #define MAYBE_testAddressesViewControllerIsPresented \
   DISABLED_testAddressesViewControllerIsPresented
@@ -146,15 +146,8 @@ BOOL WaitForKeyboardToAppear() {
 
 // Tests that returning from "Manage Addresses..." leaves the icons and keyboard
 // in the right state.
-// TODO(crbug.com/1111076): Flaky on iOS simulator.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testAddressesStateAfterPresentingManageAddresses \
-  DISABLED_testAddressesStateAfterPresentingManageAddresses
-#else
-#define MAYBE_testAddressesStateAfterPresentingManageAddresses \
-  testAddressesStateAfterPresentingManageAddresses
-#endif
-- (void)MAYBE_testAddressesStateAfterPresentingManageAddresses {
+// TODO(crbug.com/1111076): Flaky on iOS simulator and device.
+- (void)DISABLED_testAddressesStateAfterPresentingManageAddresses {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];

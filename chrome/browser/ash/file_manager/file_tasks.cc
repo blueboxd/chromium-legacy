@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <cstddef>
 #include <map>
 #include <string>
 #include <utility>
@@ -16,6 +17,7 @@
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -48,12 +50,14 @@
 #include "chrome/browser/ash/file_system_provider/mount_path_util.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/ash/file_system_provider/service.h"
-#include "chrome/browser/chromeos/fileapi/file_system_backend.h"
+#include "chrome/browser/ash/fileapi/file_system_backend.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
+#include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload.mojom-shared.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
+#include "chrome/browser/ui/webui/ash/office_fallback/office_fallback_ui.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -86,14 +90,14 @@
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "url/gurl.h"
 
 using ash::file_manager::kChromeUIFileManagerURL;
 using extensions::Extension;
-using extensions::api::file_manager_private::Verb;
-using storage::FileSystemURL;
 
 namespace file_manager::file_tasks {
 
@@ -156,6 +160,13 @@ std::string ParseFilesAppActionId(const std::string& action_id) {
   }
 
   return action_id;
+}
+
+bool IsExtensionInstalled(Profile* profile, const std::string& extension_id) {
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  return registry->GetExtensionById(
+             extension_id, extensions::ExtensionRegistry::ENABLED) != nullptr;
 }
 
 // Returns true if the `task` is a Web Drive Office task.
@@ -400,7 +411,7 @@ bool OpenFilesWithBrowser(Profile* profile,
                           const std::string& action_id) {
   int num_opened = 0;
   for (const FileSystemURL& file_url : file_urls) {
-    if (chromeos::FileSystemBackend::CanHandleURL(file_url)) {
+    if (ash::FileSystemBackend::CanHandleURL(file_url)) {
       num_opened +=
           util::OpenFileWithBrowser(profile, file_url, action_id) ? 1 : 0;
     }
@@ -408,8 +419,10 @@ bool OpenFilesWithBrowser(Profile* profile,
   return num_opened > 0;
 }
 
-// Open a hosted MS Office file e.g. .docx, from a path hosted in DriveFS.
-void OpenHostedOfficeFile(const base::FilePath& file_path,
+// Open a hosted MS Office file e.g. .docx, from a url hosted in DriveFS.
+void OpenHostedOfficeFile(Profile* profile,
+                          const TaskDescriptor& task,
+                          const std::vector<FileSystemURL>& file_urls,
                           drive::FileError error,
                           drivefs::mojom::FileMetadataPtr metadata) {
   if (error != drive::FILE_ERROR_OK) {
@@ -426,7 +439,8 @@ void OpenHostedOfficeFile(const base::FilePath& file_path,
     UMA_HISTOGRAM_ENUMERATION(kDriveTaskResultMetricName,
                               OfficeTaskResult::OPENED);
   } else {
-    // TODO(petermarshall): Fall back to Quick Office.
+    GetUserFallbackChoice(profile, task, file_urls,
+                          ash::office_fallback::FallbackReason::kOffline);
   }
 }
 
@@ -439,7 +453,9 @@ bool ExecuteWebDriveOfficeTask(Profile* profile,
     UMA_HISTOGRAM_ENUMERATION(kDriveErrorMetricName,
                               OfficeDriveErrors::OFFLINE);
     // TODO(petermarshall): Quick Office vs. other default handler.
-    return LaunchQuickOffice(profile, file_urls);
+    return GetUserFallbackChoice(
+        profile, task, file_urls,
+        ash::office_fallback::FallbackReason::kOffline);
   }
 
   drive::DriveIntegrationService* integration_service =
@@ -453,7 +469,7 @@ bool ExecuteWebDriveOfficeTask(Profile* profile,
       // The file is on Drive already: Open the URL.
       integration_service->GetDriveFsInterface()->GetMetadata(
           relative_path,
-          base::BindOnce(&OpenHostedOfficeFile, first_file_path));
+          base::BindOnce(&OpenHostedOfficeFile, profile, task, file_urls));
       return true;
     } else {
       // We need to move the file to Drive first. This flow will eventually
@@ -461,13 +477,17 @@ bool ExecuteWebDriveOfficeTask(Profile* profile,
       // TODO(b/247038054) Add user preference to decide whether or not the
       // dialog should be shown.
       return ash::cloud_upload::UploadAndOpen(
-          profile, file_urls, ash::cloud_upload::UploadType::kDrive,
+          profile, file_urls,
+          ash::cloud_upload::mojom::CloudProvider::kGoogleDrive,
           /*show_dialog=*/false);
     }
   } else {
     UMA_HISTOGRAM_ENUMERATION(kDriveErrorMetricName,
                               OfficeDriveErrors::DRIVEFS_INTERFACE);
-    return LaunchQuickOffice(profile, file_urls);
+
+    return GetUserFallbackChoice(
+        profile, task, file_urls,
+        ash::office_fallback::FallbackReason::kDriveUnavailable);
   }
 }
 
@@ -506,27 +526,31 @@ bool FileIsOnODFS(const FileSystemURL& url, Profile* profile) {
 const char kOpenWebActionId[] = "OPEN_WEB";
 
 // Pre-condition: |url| is for a file which is on ODFS already.
-void OpenODFSUrl(const FileSystemURL& url, Profile* profile) {
-  std::vector<storage::FileSystemURL> files;
-  files.push_back(url);
+void OpenODFSUrl(Profile* profile,
+                 const TaskDescriptor& task,
+                 const std::vector<FileSystemURL>& file_urls) {
+  const FileSystemURL& url = file_urls.front();
   ash::file_system_provider::util::FileSystemURLParser parser(url);
+
   if (!parser.Parse()) {
     LOG(ERROR) << "Path not in FSP";
-    LaunchQuickOffice(profile, files);
     return;
   }
 
   parser.file_system()->ExecuteAction(
       {parser.file_path()}, kOpenWebActionId,
       base::BindOnce(
-          [](Profile* profile, std::vector<storage::FileSystemURL> files,
+          [](Profile* profile, const TaskDescriptor& task,
+             const std::vector<FileSystemURL>& file_urls,
              base::File::Error result) {
             if (result != base::File::Error::FILE_OK) {
               LOG(ERROR) << "Error executing action: " << result;
-              LaunchQuickOffice(profile, files);
+              GetUserFallbackChoice(
+                  profile, task, file_urls,
+                  ash::office_fallback::FallbackReason::kErrorOpeningWeb);
             }
           },
-          profile, files));
+          profile, task, file_urls));
 }
 
 bool ExecuteOpenInOfficeTask(Profile* profile,
@@ -535,13 +559,15 @@ bool ExecuteOpenInOfficeTask(Profile* profile,
   bool offline = drive::util::GetDriveConnectionStatus(profile) !=
                  drive::util::DRIVE_CONNECTED;
   if (offline) {
-    return LaunchQuickOffice(profile, file_urls);
+    return GetUserFallbackChoice(
+        profile, task, file_urls,
+        ash::office_fallback::FallbackReason::kOffline);
     // TODO(petermarshall): UMAs.
   }
 
   if (ODFSMounted(profile)) {
     if (FileIsOnODFS(file_urls.front(), profile)) {
-      OpenODFSUrl(file_urls.front(), profile);
+      OpenODFSUrl(profile, task, file_urls);
       LOG(ERROR) << "File is on ODFS";
       return true;
     } else {
@@ -551,12 +577,15 @@ bool ExecuteOpenInOfficeTask(Profile* profile,
       // dialog should be shown.
       LOG(ERROR) << "File can be moved to ODFS";
       return ash::cloud_upload::UploadAndOpen(
-          profile, file_urls, ash::cloud_upload::UploadType::kOneDrive,
+          profile, file_urls,
+          ash::cloud_upload::mojom::CloudProvider::kOneDrive,
           /*show_dialog=*/false);
     }
   } else {
     LOG(ERROR) << "ODFS not available/mounted";
-    return LaunchQuickOffice(profile, file_urls);
+    return GetUserFallbackChoice(
+        profile, task, file_urls,
+        ash::office_fallback::FallbackReason::kOneDriveUnavailable);
   }
 }
 
@@ -634,14 +663,12 @@ bool TaskDescriptor::operator<(const TaskDescriptor& other) const {
 
 FullTaskDescriptor::FullTaskDescriptor(const TaskDescriptor& in_task_descriptor,
                                        const std::string& in_task_title,
-                                       const Verb in_task_verb,
                                        const GURL& in_icon_url,
                                        bool in_is_default,
                                        bool in_is_generic_file_handler,
                                        bool in_is_file_extension_match)
     : task_descriptor(in_task_descriptor),
       task_title(in_task_title),
-      task_verb(in_task_verb),
       icon_url(in_icon_url),
       is_default(in_is_default),
       is_generic_file_handler(in_is_generic_file_handler),
@@ -933,7 +960,7 @@ bool ExecuteFileTask(Profile* profile,
   return false;
 }
 
-bool LaunchQuickOffice(Profile* profile,
+void LaunchQuickOffice(Profile* profile,
                        const std::vector<FileSystemURL>& file_urls) {
   UMA_HISTOGRAM_ENUMERATION(kDriveTaskResultMetricName,
                             OfficeTaskResult::FALLBACK_QUICKOFFICE);
@@ -942,7 +969,7 @@ bool LaunchQuickOffice(Profile* profile,
       extension_misc::kQuickOfficeComponentExtensionId, TASK_TYPE_FILE_HANDLER,
       kActionIdQuickOffice);
 
-  const bool result = file_tasks::ExecuteFileTask(
+  file_tasks::ExecuteFileTask(
       profile, quick_office_task, file_urls,
       base::BindOnce(
           [](extensions::api::file_manager_private::TaskResult result,
@@ -954,7 +981,62 @@ bool LaunchQuickOffice(Profile* profile,
             }
           }));
 
-  return result;
+  return;
+}
+
+void OnDialogChoiceReceived(Profile* profile,
+                            const TaskDescriptor& task,
+                            const std::vector<FileSystemURL>& file_urls,
+                            const std::string& choice) {
+  if (choice == ash::office_fallback::kDialogChoiceQuickOffice) {
+    LaunchQuickOffice(profile, file_urls);
+  } else if (choice == ash::office_fallback::kDialogChoiceTryAgain) {
+    if (IsWebDriveOfficeTask(task)) {
+      ExecuteWebDriveOfficeTask(profile, task, file_urls);
+    } else if (IsOpenInOfficeTask(task)) {
+      ExecuteOpenInOfficeTask(profile, task, file_urls);
+    }
+  }
+}
+
+bool GetUserFallbackChoice(
+    Profile* profile,
+    const TaskDescriptor& task,
+    const std::vector<FileSystemURL>& file_urls,
+    ash::office_fallback::FallbackReason fallback_reason) {
+  // If QuickOffice is not installed, don't launch dialog.
+  if (!IsExtensionInstalled(profile,
+                            extension_misc::kQuickOfficeComponentExtensionId)) {
+    LOG(ERROR) << "Cannot fallback to QuickOffice when it is not installed";
+    return false;
+  }
+  // TODO(b/242685536) Add support for multi-file
+  // selection so the OfficeFallbackDialog can display multiple file names and
+  // `OnDialogChoiceReceived()` can open multiple files.
+  std::vector<storage::FileSystemURL> first_url{file_urls.front()};
+
+  ash::office_fallback::DialogChoiceCallback callback =
+      base::BindOnce(&OnDialogChoiceReceived, profile, task, first_url);
+
+  int task_title_id;
+  // Get title of task which fails to open file.
+  const std::string parsed_action_id = ParseFilesAppActionId(task.action_id);
+  if (parsed_action_id == kActionIdWebDriveOfficeWord) {
+    task_title_id = IDS_FILE_BROWSER_TASK_OPEN_GDOC;
+  } else if (parsed_action_id == kActionIdWebDriveOfficeExcel) {
+    task_title_id = IDS_FILE_BROWSER_TASK_OPEN_GSHEET;
+  } else if (parsed_action_id == kActionIdWebDriveOfficePowerPoint) {
+    task_title_id = IDS_FILE_BROWSER_TASK_OPEN_GSLIDES;
+  } else if (parsed_action_id == kActionIdOpenInOffice) {
+    task_title_id = IDS_FILE_BROWSER_TASK_OPEN_OFFICE;
+  } else {
+    LOG(ERROR) << "Could not find a task with the given action_id";
+    return false;
+  }
+  std::u16string task_title = l10n_util::GetStringUTF16(task_title_id);
+
+  return ash::office_fallback::OfficeFallbackDialog::Show(
+      first_url, fallback_reason, task_title, std::move(callback));
 }
 
 void FindExtensionAndAppTasks(Profile* profile,

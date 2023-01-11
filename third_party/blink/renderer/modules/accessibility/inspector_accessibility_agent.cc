@@ -1032,10 +1032,10 @@ void InspectorAccessibilityAgent::queryAXTree(
     vector.emplace_back(std::move(query));
     queries_.insert(&document, std::move(vector));
   }
-  // ScheduleVisualUpdate() ensures the lifecycle doesn't get stalled,
+  // ScheduleAXUpdate() ensures the lifecycle doesn't get stalled,
   // and therefore ensures we get the AXReadyCallback callback as soon as a11y
   // is clean again.
-  cache.ScheduleVisualUpdate(document);
+  cache.ScheduleAXUpdate();
 }
 
 void InspectorAccessibilityAgent::CompleteQuery(AXQuery& query) {
@@ -1157,27 +1157,27 @@ void InspectorAccessibilityAgent::ProcessPendingDirtyNodes(Document& document) {
   GetFrontend()->nodesUpdated(std::move(nodes));
 }
 
-void InspectorAccessibilityAgent::ScheduleVisualUpdateIfNeeded(
-    TimerBase*,
-    Document* document) {
+void InspectorAccessibilityAgent::ScheduleAXUpdateIfNeeded(TimerBase*,
+                                                           Document* document) {
   DCHECK(document);
 
   if (!dirty_nodes_.Contains(document))
     return;
 
+  // Scheduling an AX update for the cache will schedule it for both the main
+  // document, and the popup document (if present).
   if (document->HasAXObjectCache())
-    document->ExistingAXObjectCache()->ScheduleVisualUpdate(*document);
+    document->ExistingAXObjectCache()->ScheduleAXUpdate();
 }
 
 void InspectorAccessibilityAgent::ScheduleAXChangeNotification(
     Document* document) {
   DCHECK(document);
   if (!timers_.Contains(document)) {
-    timers_.insert(
-        document,
-        MakeGarbageCollected<DisallowNewWrapper<DocumentTimer>>(
-            document, this,
-            &InspectorAccessibilityAgent::ScheduleVisualUpdateIfNeeded));
+    timers_.insert(document,
+                   MakeGarbageCollected<DisallowNewWrapper<DocumentTimer>>(
+                       document, this,
+                       &InspectorAccessibilityAgent::ScheduleAXUpdateIfNeeded));
   }
   DisallowNewWrapper<DocumentTimer>* timer = timers_.at(document);
   if (!timer->Value().IsActive())
@@ -1297,26 +1297,18 @@ void InspectorAccessibilityAgent::ProvideTo(LocalFrame* frame) {
   }
 }
 
-void InspectorAccessibilityAgent::RetainAXContextForDocument(
+AXObjectCacheImpl& InspectorAccessibilityAgent::AttachToAXObjectCache(
     Document* document) {
+  DCHECK(document);
+  DCHECK(document->IsActive());
   if (!document_to_context_map_.Contains(document)) {
     auto context = std::make_unique<AXContext>(*document, ui::kAXModeComplete);
     document_to_context_map_.insert(document, std::move(context));
   }
-}
-
-AXObjectCacheImpl& InspectorAccessibilityAgent::GetAXObjectCacheImplForDocument(
-    Document* document) {
-  AXContext ax_context(*document, ui::kAXModeComplete);
-  return To<AXObjectCacheImpl>(ax_context.GetAXObjectCache());
-}
-
-AXObjectCacheImpl& InspectorAccessibilityAgent::AttachToAXObjectCache(
-    Document* document) {
-  RetainAXContextForDocument(document);
-  auto& cache = GetAXObjectCacheImplForDocument(document);
-  cache.AddInspectorAgent(this);
-  return cache;
+  AXObjectCacheImpl* cache =
+      To<AXObjectCacheImpl>(document->ExistingAXObjectCache());
+  cache->AddInspectorAgent(this);
+  return *cache;
 }
 
 void InspectorAccessibilityAgent::Trace(Visitor* visitor) const {

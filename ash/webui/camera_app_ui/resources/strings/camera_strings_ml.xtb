@@ -31,6 +31,8 @@
 <translation id="1862930711583847113"><ph name="FILE" /> എക്‌സ്‌പോർട്ട് ചെയ്യാനായില്ല</translation>
 <translation id="1899697626337024495">ഫോട്ടോ റെസല്യൂഷൻ</translation>
 <translation id="1925845977604399247">ഗാലറിയിലേക്ക് പോകുക</translation>
+<translation id="199526504800285197">റെക്കോർഡിംഗ് നിർത്തി</translation>
+<translation id="1995951722691075581">ഉപകരണത്തിൽ സ്റ്റോറേജ് സ്പെയ്‌സ് കുറവായതിനാൽ നിങ്ങളുടെ റെക്കോർഡിംഗ് നിർത്തി. കൂടുതൽ വീഡിയോകൾ റെക്കോർഡ് ചെയ്യാൻ, നിങ്ങളുടെ ഉപകരണത്തിൽ ഇടം സൃഷ്ടിക്കേണ്ടതുണ്ട്.</translation>
 <translation id="2022953316617983419">QR കോഡ്</translation>
 <translation id="2036868001356139588">ടൈമർ ദൈർഘ്യം</translation>
 <translation id="2050339315714019657">പോർട്രെയ്റ്റ്</translation>
@@ -47,6 +49,7 @@
 <translation id="2501953888035679275">നിങ്ങളുടെ ക്യാമറ ഉപയോഗിച്ച് ചിത്രങ്ങൾ എടുക്കുക, വീഡിയോകൾ റെക്കോർഡ് ചെയ്യുക.</translation>
 <translation id="2517472476991765520">സ്‌കാൻ ചെയ്യുക</translation>
 <translation id="2549985041256363841">റെക്കോർഡിംഗ് ആരംഭിക്കൂ</translation>
+<translation id="2577915835281444458">റെക്കോർഡിംഗ് ഉടൻ നിർത്തും. ഇടം സൃഷ്‌ടിക്കാൻ ഉപകരണത്തിന്റെ സ്റ്റോറേജിലേക്ക് പോകുക.</translation>
 <translation id="2599796128805996109">പിൻ ക്യാമറ</translation>
 <translation id="2759905922487820242"><ph name="CURRENT" /> / <ph name="MAXIMAL" /> സെക്കൻഡ്</translation>
 <translation id="2761536921376153655">സ്‌കാൻ തരം</translation>
@@ -77,6 +80,7 @@
 <translation id="3810838688059735925">വീഡിയോ</translation>
 <translation id="3838931309141338733">ബാർകോഡ് സ്‌കാൻ ചെയ്യുക</translation>
 <translation id="3892148308691398805">ടെക്‌സ്‌റ്റ് പകർത്തുക</translation>
+<translation id="4060608699153044055">ഉപകരണത്തിൽ സ്റ്റോറേജ് സ്പെയ്‌സ് കുറവായതിനാൽ നിങ്ങൾക്ക് റെക്കോർഡ് ചെയ്യാനാകില്ല. റെക്കോർഡിംഗ് ആരംഭിക്കാൻ, നിങ്ങളുടെ ഉപകരണത്തിൽ ഇടം സൃഷ്ടിക്കേണ്ടതുണ്ട്.</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> MP</translation>
 <translation id="4118525110028899586">റെക്കോർഡ് ചെയ്യൽ തൽക്കാലം നിർത്തുക</translation>
 <translation id="4121305183798804752">ഡോക്യുമെന്റ് കണ്ടെത്തി</translation>
@@ -90,6 +94,7 @@
 <translation id="4445542136948522167">ഫോട്ടോ എടുക്കുന്നത് നിർത്തുക</translation>
 <translation id="4497569853498380347">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" />) <ph name="MEGAPIXEL" /> മെഗാപിക്‌സൽ</translation>
 <translation id="4570032796877367747">മുൻ ക്യാമറ</translation>
+<translation id="4598556348158889687">സ്‌റ്റോറേജ് മാനേജ്‌മെന്റ്</translation>
 <translation id="4620818268515773682">മൈക്രോഫോൺ മ്യൂട്ട് ചെയ്യൽ മാറ്റുക. മ്യൂട്ട് ചെയ്യൽ ഓഫാണ്</translation>
 <translation id="4628948037717959914">ഫോട്ടോ</translation>
 <translation id="4649291346448517080">ഫയൽ സംരക്ഷിക്കാനായില്ല</translation>
@@ -159,6 +164,7 @@
 <translation id="7748344063862150053">ഡോക്യുമെന്റിന്റെ മുകൾ ഭാഗത്തെ വലത് മൂല</translation>
 <translation id="7933675232020478311">താഴെ വലത് ദിശയിൽ നീങ്ങുന്നു</translation>
 <translation id="7983668134180549431">ടെക്‌സ്റ്റ് തിരിച്ചറിഞ്ഞു.</translation>
+<translation id="8079255378695216066">റെക്കോർഡിംഗ് ആരംഭിക്കാനാകില്ല</translation>
 <translation id="8120146556401698679">പാൻ ടിൽറ്റ് സൂം</translation>
 <translation id="8131740175452115882">സ്ഥിരീകരിക്കുക</translation>
 <translation id="8145038249676204903">ഫോട്ടോ എടുക്കുന്നതിലേക്ക് മാറുക</translation>

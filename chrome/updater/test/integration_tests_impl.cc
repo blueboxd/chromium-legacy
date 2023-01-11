@@ -35,13 +35,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -255,15 +255,26 @@ base::FilePath GetLogDestinationDir() {
   return var ? base::FilePath::FromUTF8Unsafe(var) : base::FilePath();
 }
 
+// Copies the updater log file present in `src_dir` to a test-specific directory
+// name in Swarming/Isolate. Avoids overwriting the destination log file if
+// other instances of it exist in the destination directory. Swarming retries
+// each failed test. It is useful to capture a few logs from previous failures
+// instead of the log of the last run only.
 void CopyLog(const base::FilePath& src_dir) {
   // TODO(crbug.com/1159189): copy other test artifacts.
   base::FilePath dest_dir = GetLogDestinationDir();
   if (!dest_dir.empty() && base::PathExists(dest_dir) &&
       base::PathExists(src_dir)) {
-    base::FilePath test_name_path = dest_dir.AppendASCII(GetTestName());
-    EXPECT_TRUE(base::CreateDirectory(test_name_path));
-    base::FilePath dest_file_path = test_name_path.AppendASCII("updater.log");
-    base::FilePath log_path = src_dir.AppendASCII("updater.log");
+    dest_dir = dest_dir.AppendASCII(GetTestName());
+    EXPECT_TRUE(base::CreateDirectory(dest_dir));
+    const base::FilePath dest_file_path = [dest_dir]() {
+      base::FilePath path = dest_dir.AppendASCII("updater.log");
+      for (int i = 1; i < 10 && base::PathExists(path); ++i) {
+        path = dest_dir.AppendASCII(base::StringPrintf("updater.%d.log", i));
+      }
+      return path;
+    }();
+    const base::FilePath log_path = src_dir.AppendASCII("updater.log");
     VLOG(0) << "Copying updater.log file. From: " << log_path
             << ". To: " << dest_file_path;
     EXPECT_TRUE(base::CopyFile(log_path, dest_file_path));
@@ -394,6 +405,24 @@ void SetServerStarts(UpdaterScope scope, int value) {
   PrefsCommitPendingWrites(global_prefs->GetPrefService());
 }
 
+void FillLog(UpdaterScope scope) {
+  absl::optional<base::FilePath> log = GetLogFilePath(scope);
+  ASSERT_TRUE(log);
+  std::string data = "This test string is used to fill up log space.\n";
+  for (int i = 0; i < 1024 * 1024 * 6; i += data.length()) {
+    ASSERT_TRUE(base::AppendToFile(*log, data));
+  }
+}
+
+void ExpectLogRotated(UpdaterScope scope) {
+  absl::optional<base::FilePath> log = GetLogFilePath(scope);
+  ASSERT_TRUE(log);
+  EXPECT_TRUE(base::PathExists(log->AddExtension(FILE_PATH_LITERAL(".old"))));
+  int64_t size = 0;
+  ASSERT_TRUE(base::GetFileSize(*log, &size));
+  EXPECT_TRUE(size < 1024 * 1024);
+}
+
 void ExpectRegistered(UpdaterScope scope, const std::string& app_id) {
   ASSERT_TRUE(base::Contains(base::MakeRefCounted<PersistedData>(
                                  CreateGlobalPrefs(scope)->GetPrefService())
@@ -457,6 +486,7 @@ bool WaitFor(base::RepeatingCallback<bool()> predicate,
 bool RequestMatcherRegex(const std::string& request_body_regex,
                          const std::string& request_body) {
   if (!re2::RE2::PartialMatch(request_body, request_body_regex)) {
+    VLOG(0) << "Request match failed.";
     ADD_FAILURE() << "Request with body: " << request_body
                   << " did not match expected regex " << request_body_regex;
     return false;
@@ -564,6 +594,7 @@ void StressUpdateService(UpdaterScope scope) {
 
   // Runs on the main sequence.
   auto loop_closure = [&]() {
+    LOG(ERROR) << __func__ << ": n: " << n;
     if (--n)
       return false;
     loop.Quit();
@@ -611,7 +642,7 @@ void StressUpdateService(UpdaterScope scope) {
       }
     };
 
-    Local::GetVersion(scope, base::SequencedTaskRunnerHandle::Get(),
+    Local::GetVersion(scope, base::SequencedTaskRunner::GetCurrentDefault(),
                       loop_closure);
   };
 

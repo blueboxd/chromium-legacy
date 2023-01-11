@@ -41,7 +41,6 @@ namespace {
 constexpr size_t kMinQueryLength = 3u;
 constexpr double kMinScore = 0.4;
 constexpr size_t kNumRequestedResults = 5u;
-constexpr size_t kMaxShownResults = 2u;
 
 // The end result of a list search. Logged once per time a list search finishes.
 // Not logged if the search is canceled by a new search starting. Not logged for
@@ -89,6 +88,11 @@ HelpAppResult::HelpAppResult(
 HelpAppResult::~HelpAppResult() = default;
 
 void HelpAppResult::Open(int event_flags) {
+  // This is a google-internal histogram. If changing this, also change the
+  // corresponding histograms file.
+  base::UmaHistogramSparse("Discover.LauncherSearch.ContentLaunched",
+                           base::PersistentHash(help_app_content_id_));
+
   // Note: event_flags is ignored, LaunchSWA doesn't need it.
   // Launch list result.
   ash::SystemAppLaunchParams params;
@@ -97,10 +101,6 @@ void HelpAppResult::Open(int event_flags) {
   ash::LaunchSystemWebAppAsync(
       profile_, ash::SystemWebAppType::HELP, params,
       std::make_unique<apps::WindowInfo>(display::kDefaultDisplayId));
-  // This is a google-internal histogram. If changing this, also change the
-  // corresponding histograms file.
-  base::UmaHistogramSparse("Discover.LauncherSearch.ContentLaunched",
-                           base::PersistentHash(help_app_content_id_));
 }
 
 HelpAppProvider::HelpAppProvider(Profile* profile)
@@ -129,8 +129,6 @@ HelpAppProvider::HelpAppProvider(Profile* profile)
 HelpAppProvider::~HelpAppProvider() = default;
 
 void HelpAppProvider::Start(const std::u16string& query) {
-  ClearResultsSilently();
-
   if (query.size() < kMinQueryLength) {
     // Do not do a list search for queries that are too short because the
     // results generally aren't meaningful. This isn't worth logging as a list
@@ -166,13 +164,10 @@ void HelpAppProvider::Start(const std::u16string& query) {
                      weak_factory_.GetWeakPtr(), query, start_time));
 }
 
-void HelpAppProvider::StartZeroState() {
-  ClearResultsSilently();
+void HelpAppProvider::StopQuery() {
   last_query_.clear();
-}
-
-void HelpAppProvider::ViewClosing() {
-  last_query_.clear();
+  // Invalidate weak pointers to cancel existing searches.
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void HelpAppProvider::OnSearchReturned(
@@ -184,11 +179,6 @@ void HelpAppProvider::OnSearchReturned(
   SearchProvider::Results search_results;
   for (const auto& result : sorted_results) {
     if (result->relevance_score < kMinScore) {
-      break;
-    } else if (!app_list_features::IsCategoricalSearchEnabled() &&
-               search_results.size() == kMaxShownResults) {
-      // Categorical search imposes its own maximums on search results
-      // elsewhere.
       break;
     }
 

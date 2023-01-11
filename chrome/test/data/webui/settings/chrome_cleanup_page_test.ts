@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW, ChromeCleanerScannerResults, ChromeCleanupFilePath, ChromeCleanupIdleReason, ChromeCleanupProxyImpl, ItemsToRemoveListElement, SettingsCheckboxElement, SettingsChromeCleanupPageElement} from 'chrome://settings/lazy_load.js';
 import {CrButtonElement} from 'chrome://settings/settings.js';
@@ -220,8 +220,7 @@ suite('ChromeCleanupHandler', function() {
     chromeCleanupProxy = new TestChromeCleanupProxy();
     ChromeCleanupProxyImpl.setInstance(chromeCleanupProxy);
 
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
 
     chromeCleanupPage = document.createElement('settings-chrome-cleanup-page');
     chromeCleanupPage.prefs = {

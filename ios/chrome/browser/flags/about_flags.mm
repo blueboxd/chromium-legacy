@@ -130,13 +130,6 @@ const FeatureEntry::Choice kAutofillIOSDelayBetweenFieldsChoices[] = {
     {"1000", autofill::switches::kAutofillIOSDelayBetweenFields, "1000"},
 };
 
-const FeatureEntry::Choice kDelayThresholdMinutesToUpdateGaiaCookieChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {"0", signin::kDelayThresholdMinutesToUpdateGaiaCookie, "0"},
-    {"10", signin::kDelayThresholdMinutesToUpdateGaiaCookie, "10"},
-    {"60", signin::kDelayThresholdMinutesToUpdateGaiaCookie, "60"},
-};
-
 const FeatureEntry::Choice
     kWaitThresholdMillisecondsForCapabilitiesApiChoices[] = {
         {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -492,6 +485,15 @@ const FeatureEntry::FeatureParam kNewMICEFREWithTangibleSyncC[] = {
 const FeatureEntry::FeatureParam kNewMICEFREWithTwoSteps[] = {
     {kNewMobileIdentityConsistencyFREParam,
      kNewMobileIdentityConsistencyFREParamTwoSteps}};
+const FeatureEntry::FeatureParam kNewMICEFREWithTangibleSyncD[] = {
+    {kNewMobileIdentityConsistencyFREParam,
+     kNewMobileIdentityConsistencyFREParamTangibleSyncD}};
+const FeatureEntry::FeatureParam kNewMICEFREWithTangibleSyncE[] = {
+    {kNewMobileIdentityConsistencyFREParam,
+     kNewMobileIdentityConsistencyFREParamTangibleSyncE}};
+const FeatureEntry::FeatureParam kNewMICEFREWithTangibleSyncF[] = {
+    {kNewMobileIdentityConsistencyFREParam,
+     kNewMobileIdentityConsistencyFREParamTangibleSyncF}};
 const FeatureEntry::FeatureVariation
     kNewMobileIdentityConsistencyFREVariations[] = {
         {"new FRE with tangible sync A", kNewMICEFREWithTangibleSyncA,
@@ -500,6 +502,12 @@ const FeatureEntry::FeatureVariation
          std::size(kNewMICEFREWithTangibleSyncB), nullptr},
         {"new FRE with tangible sync C", kNewMICEFREWithTangibleSyncC,
          std::size(kNewMICEFREWithTangibleSyncC), nullptr},
+        {"new FRE with tangible sync D", kNewMICEFREWithTangibleSyncD,
+         std::size(kNewMICEFREWithTangibleSyncD), nullptr},
+        {"new FRE with tangible sync E", kNewMICEFREWithTangibleSyncE,
+         std::size(kNewMICEFREWithTangibleSyncE), nullptr},
+        {"new FRE with tangible sync F", kNewMICEFREWithTangibleSyncF,
+         std::size(kNewMICEFREWithTangibleSyncF), nullptr},
         {"new FRE with 2 steps", kNewMICEFREWithTwoSteps,
          std::size(kNewMICEFREWithTwoSteps), nullptr}};
 
@@ -541,11 +549,12 @@ const FeatureEntry::FeatureVariation kDmTokenDeletionVariation[] = {
      nullptr}};
 
 const FeatureEntry::FeatureParam kOpenInDownloadInShareButton[] = {
-    {kOpenInDownloadInShareButtonParam, "true"}};
+    {kOpenInDownloadParameterName, kOpenInDownloadInShareButtonParam}};
 const FeatureEntry::FeatureParam kOpenInDownloadWithWKDownload[] = {
-    {kOpenInDownloadWithWKDownloadParam, "true"}};
+    {kOpenInDownloadParameterName, kOpenInDownloadWithWKDownloadParam}};
 const FeatureEntry::FeatureParam kOpenInDownloadWithV2[] = {
-    {kOpenInDownloadWithV2Param, "true"}};
+    {kOpenInDownloadParameterName, kOpenInDownloadWithV2Param}};
+
 const FeatureEntry::FeatureVariation kOpenInDownloadVariations[] = {
     {"With legacy download", kOpenInDownloadInShareButton,
      std::size(kOpenInDownloadInShareButton), nullptr},
@@ -566,6 +575,12 @@ const FeatureEntry::FeatureParam kIOSNewPostRestoreExperienceMinimal[] = {
 const FeatureEntry::FeatureVariation kIOSNewPostRestoreExperienceVariations[] =
     {{"minimal", kIOSNewPostRestoreExperienceMinimal,
       std::size(kIOSNewPostRestoreExperienceMinimal), nullptr}};
+
+const FeatureEntry::FeatureParam kEnableExperienceKitMapsWithSrp[] = {
+    {kExperienceKitMapsVariationName, kEnableExperienceKitMapsVariationSrp}};
+const FeatureEntry::FeatureVariation kEnableExperienceKitMapsVariations[] = {
+    {"with search result page", kEnableExperienceKitMapsWithSrp,
+     std::size(kEnableExperienceKitMapsWithSrp), nullptr}};
 
 const FeatureEntry::FeatureParam kFollowingFeedSortTypeGroupedByPublisher[] = {
     {kFollowingFeedDefaultSortTypeGroupedByPublisher, "true"},
@@ -687,11 +702,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kMaxZeroSuggestMatches,
                                     kOmniboxMaxZPSMatchesVariations,
                                     "OmniboxMaxZPSVariations")},
-#if BUILDFLAG(DCHECK_IS_CONFIGURABLE)
-    {"dcheck-is-fatal", flag_descriptions::kDcheckIsFatalName,
-     flag_descriptions::kDcheckIsFatalDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(base::kDCheckIsFatalFeature)},
-#endif  // BUILDFLAG(DCHECK_IS_CONFIGURABLE)
     {"autofill-use-mobile-label-disambiguation",
      flag_descriptions::kAutofillUseMobileLabelDisambiguationName,
      flag_descriptions::kAutofillUseMobileLabelDisambiguationDescription,
@@ -700,16 +710,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          autofill::features::kAutofillUseMobileLabelDisambiguation,
          kAutofillUseMobileLabelDisambiguationVariations,
          "AutofillUseMobileLabelDisambiguation")},
-    {"metrickit-crash-reports", flag_descriptions::kMetrickitCrashReportName,
-     flag_descriptions::kMetrickitCrashReportDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kMetrickitCrashReport)},
     {"ios-breadcrumbs", flag_descriptions::kLogBreadcrumbsName,
      flag_descriptions::kLogBreadcrumbsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(breadcrumbs::kLogBreadcrumbs)},
-    {"ios-synthetic-crash-reports",
-     flag_descriptions::kSyntheticCrashReportsForUteName,
-     flag_descriptions::kSyntheticCrashReportsForUteDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kSyntheticCrashReportsForUte)},
     {"force-startup-signin-promo",
      flag_descriptions::kForceStartupSigninPromoName,
      flag_descriptions::kForceStartupSigninPromoDescription, flags_ui::kOsIos,
@@ -735,10 +738,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"shared-highlighting-ios", flag_descriptions::kSharedHighlightingIOSName,
      flag_descriptions::kSharedHighlightingIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSharedHighlightingIOS)},
-    {"enable-fre-ui-module-ios-with-options",
-     flag_descriptions::kEnableFREUIModuleIOSName,
-     flag_descriptions::kEnableFREUIModuleIOSDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kEnableFREUIModuleIOS)},
     {"new-mobile-identity-consistency-fre",
      flag_descriptions::kNewMobileIdentityConsistencyFREName,
      flag_descriptions::kNewMobileIdentityConsistencyFREDescription,
@@ -755,11 +754,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"modern-tab-strip", flag_descriptions::kModernTabStripName,
      flag_descriptions::kModernTabStripDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kModernTabStrip)},
-    {"minutes-delay-to-restore-gaia-cookies-if-deleted",
-     flag_descriptions::kDelayThresholdMinutesToUpdateGaiaCookieName,
-     flag_descriptions::kDelayThresholdMinutesToUpdateGaiaCookieDescription,
-     flags_ui::kOsIos,
-     MULTI_VALUE_TYPE(kDelayThresholdMinutesToUpdateGaiaCookieChoices)},
     {"record-snapshot-size", flag_descriptions::kRecordSnapshotSizeName,
      flag_descriptions::kRecordSnapshotSizeDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kRecordSnapshotSize)},
@@ -984,11 +978,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableWebPageAnnotationsName,
      flag_descriptions::kEnableWebPageAnnotationsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kEnableWebPageAnnotations)},
-    {"enable-favicon-passwords",
-     flag_descriptions::kEnableFaviconForPasswordsName,
-     flag_descriptions::kEnableFaviconForPasswordsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kEnableFaviconForPasswords)},
     {"enable-password-grouping", flag_descriptions::kPasswordsGroupingName,
      flag_descriptions::kPasswordsGroupingDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordsGrouping)},
@@ -1089,17 +1078,19 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"experience-kit-calendar", flag_descriptions::kCalendarExperienceKitName,
      flag_descriptions::kCalendarExperienceKitDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kCalendarExperienceKit)},
+    {"experience-kit-apple-calendar",
+     flag_descriptions::kAppleCalendarExperienceKitName,
+     flag_descriptions::kAppleCalendarExperienceKitDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableExpKitAppleCalendar)},
     {"enable-expkit-calendar-text-classifier",
      flag_descriptions::kEnableExpKitCalendarTextClassifierName,
      flag_descriptions::kEnableExpKitCalendarTextClassifierDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableExpKitCalendarTextClassifier)},
-    {"enable-expkit-text-classifier",
-     flag_descriptions::kEnableExpKitTextClassifierName,
-     flag_descriptions::kEnableExpKitTextClassifierDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableExpKitTextClassifier)},
     {"experience-kit-maps", flag_descriptions::kMapsExperienceKitName,
      flag_descriptions::kMapsExperienceKitDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kMapsExperienceKit)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kMapsExperienceKit,
+                                    kEnableExperienceKitMapsVariations,
+                                    "IOSExperienceKitMaps")},
     {"enable-long-press-surrounding-text",
      flag_descriptions::kLongPressSurroundingTextName,
      flag_descriptions::kLongPressSurroundingTextDescription, flags_ui::kOsIos,
@@ -1188,11 +1179,25 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxZeroSuggestPrefetchingName,
      flag_descriptions::kOmniboxZeroSuggestPrefetchingDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(omnibox::kZeroSuggestPrefetching)},
+    {"omnibox-zero-suggest-prefetching-on-srp",
+     flag_descriptions::kOmniboxZeroSuggestPrefetchingOnSRPName,
+     flag_descriptions::kOmniboxZeroSuggestPrefetchingOnSRPDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(omnibox::kZeroSuggestPrefetchingOnSRP)},
+    {"omnibox-zero-suggest-prefetching-on-web",
+     flag_descriptions::kOmniboxZeroSuggestPrefetchingOnWebName,
+     flag_descriptions::kOmniboxZeroSuggestPrefetchingOnWebDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(omnibox::kZeroSuggestPrefetchingOnWeb)},
     {"omnibox-zero-suggest-in-memory-caching",
      flag_descriptions::kOmniboxZeroSuggestInMemoryCachingName,
      flag_descriptions::kOmniboxZeroSuggestInMemoryCachingDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(omnibox::kZeroSuggestInMemoryCaching)},
+    {"omnibox-on-device-tail-suggestions",
+     flag_descriptions::kOmniboxOnDeviceTailSuggestionsName,
+     flag_descriptions::kOmniboxOnDeviceTailSuggestionsDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(omnibox::kOnDeviceTailModel)},
     {"enable-user-policy", flag_descriptions::kEnableUserPolicyName,
      flag_descriptions::kEnableUserPolicyDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(policy::kUserPolicy)},
@@ -1284,6 +1289,17 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableRefineDataSourceReloadReportingDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEnableRefineDataSourceReloadReporting)},
+    {"enable-compromised-passwords-muting",
+     flag_descriptions::kEnableCompromisedPasswordsMutingName,
+     flag_descriptions::kEnableCompromisedPasswordsMutingDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(password_manager::features::kMuteCompromisedPasswords)},
+    {"enable-passwords-account-storage",
+     flag_descriptions::kEnablePasswordsAccountStorageName,
+     flag_descriptions::kEnablePasswordsAccountStorageDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kEnablePasswordsAccountStorage)},
     {"enable-default-following-feed-sort-type",
      flag_descriptions::kFollowingFeedDefaultSortTypeName,
      flag_descriptions::kFollowingFeedDefaultSortTypeDescription,
@@ -1291,6 +1307,16 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kFollowingFeedDefaultSortType,
                                     kFollowingFeedDefaultSortTypeVariations,
                                     "FollowingFeedDefaultSortType")},
+    {"omnibox-carousel-dynamic-spacing",
+     flag_descriptions::kOmniboxCarouselDynamicSpacingName,
+     flag_descriptions::kOmniboxCarouselDynamicSpacingDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kOmniboxCarouselDynamicSpacing)},
+    {"use-sf-symbols-omnibox", flag_descriptions::kUseSFSymbolsInOmniboxName,
+     flag_descriptions::kUseSFSymbolsInOmniboxDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kUseSFSymbolsInOmnibox)},
+    {"tab-grid-recency-sort", flag_descriptions::kTabGridRecencySortName,
+     flag_descriptions::kTabGridRecencySortDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kTabGridRecencySort)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -1629,19 +1655,6 @@ void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
 std::vector<std::string> RegisterAllFeatureVariationParameters(
     flags_ui::FlagsStorage* flags_storage,
     base::FeatureList* feature_list) {
-  // Occasionally DCHECK crashes on canary can be very distuptive.  An
-  // experimental flag was added to aid in temporarily disabling this for
-  // canary testers.
-#if BUILDFLAG(DCHECK_IS_CONFIGURABLE)
-  if (experimental_flags::AreDCHECKCrashesDisabled()) {
-    std::vector<base::FeatureList::FeatureOverrideInfo> overrides;
-    overrides.push_back(
-        {std::cref(base::kDCheckIsFatalFeature),
-         base::FeatureList::OverrideState::OVERRIDE_DISABLE_FEATURE});
-    feature_list->RegisterExtraFeatureOverrides(std::move(overrides));
-  }
-#endif  // BUILDFLAG(DCHECK_IS_CONFIGURABLE)
-
   return GetGlobalFlagsState().RegisterAllFeatureVariationParameters(
       flags_storage, feature_list);
 }

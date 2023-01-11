@@ -9,9 +9,10 @@
 #include "ash/system/message_center/message_center_utils.h"
 #include "ash/system/message_center/metrics_utils.h"
 #include "ash/system/message_center/unified_message_center_bubble.h"
-#include "ash/system/message_center/unified_message_center_view.h"
-#include "ash/system/message_center/unified_message_list_view.h"
+#include "ash/system/notification_center/notification_center_view.h"
+#include "ash/system/notification_center/notification_list_view.h"
 #include "ash/system/unified/unified_system_tray.h"
+#include "base/ranges/algorithm.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/message_center_types.h"
@@ -342,11 +343,11 @@ void NotificationGroupingController::RemoveGroupedChild(
 message_center::NotificationViewController*
 NotificationGroupingController::GetActiveNotificationViewController() {
   if (tray_->IsMessageCenterBubbleShown()) {
-    auto* message_list_view = tray_->message_center_bubble()
-                                  ->message_center_view()
-                                  ->message_list_view();
-    if (message_list_view)
-      return message_list_view;
+    auto* notification_list_view = tray_->message_center_bubble()
+                                       ->notification_center_view()
+                                       ->notification_list_view();
+    if (notification_list_view)
+      return notification_list_view;
   }
   return tray_->GetMessagePopupCollection();
 }
@@ -443,8 +444,8 @@ void NotificationGroupingController::OnNotificationRemoved(
     auto grouped_notifications =
         grouped_notification_list_->GetGroupedNotificationsForParent(
             notification_id);
-    std::copy(grouped_notifications.begin(), grouped_notifications.end(),
-              std::back_inserter(to_be_deleted));
+    base::ranges::copy(grouped_notifications,
+                       std::back_inserter(to_be_deleted));
     grouped_notification_list_->ClearGroupedNotification(notification_id);
 
     for (const auto& id : to_be_deleted)

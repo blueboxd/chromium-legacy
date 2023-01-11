@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/extensions/api/input_ime.h"
 #include "chrome/common/extensions/api/input_method_private.h"
+#include "chromeos/ash/services/ime/public/cpp/assistive_suggestions.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -58,8 +59,6 @@ namespace NotifyImeMenuItemActivated =
     extensions::api::input_method_private::NotifyImeMenuItemActivated;
 namespace OnScreenProjectionChanged =
     extensions::api::input_method_private::OnScreenProjectionChanged;
-namespace SetSelectionRange =
-    extensions::api::input_method_private::SetSelectionRange;
 namespace FinishComposingText =
     extensions::api::input_method_private::FinishComposingText;
 
@@ -100,13 +99,13 @@ keyboard::KeyboardConfig GetKeyboardConfig() {
   return ChromeKeyboardControllerClient::Get()->GetKeyboardConfig();
 }
 
-ui::ime::AssistiveWindowType ConvertAssistiveWindowType(
+ash::ime::AssistiveWindowType ConvertAssistiveWindowType(
     input_ime::AssistiveWindowType type) {
   switch (type) {
     case input_ime::ASSISTIVE_WINDOW_TYPE_NONE:
-      return ui::ime::AssistiveWindowType::kNone;
+      return ash::ime::AssistiveWindowType::kNone;
     case input_ime::ASSISTIVE_WINDOW_TYPE_UNDO:
-      return ui::ime::AssistiveWindowType::kUndoWindow;
+      return ash::ime::AssistiveWindowType::kUndoWindow;
   }
 }
 
@@ -139,16 +138,16 @@ input_ime::AssistiveWindowButton ConvertAssistiveWindowButton(
 }
 
 input_ime::AssistiveWindowType ConvertAssistiveWindowType(
-    const ui::ime::AssistiveWindowType& type) {
+    const ash::ime::AssistiveWindowType& type) {
   switch (type) {
-    case ui::ime::AssistiveWindowType::kNone:
-    case ui::ime::AssistiveWindowType::kEmojiSuggestion:
-    case ui::ime::AssistiveWindowType::kPersonalInfoSuggestion:
-    case ui::ime::AssistiveWindowType::kGrammarSuggestion:
-    case ui::ime::AssistiveWindowType::kMultiWordSuggestion:
-    case ui::ime::AssistiveWindowType::kLongpressDiacriticsSuggestion:
+    case ash::ime::AssistiveWindowType::kNone:
+    case ash::ime::AssistiveWindowType::kEmojiSuggestion:
+    case ash::ime::AssistiveWindowType::kPersonalInfoSuggestion:
+    case ash::ime::AssistiveWindowType::kGrammarSuggestion:
+    case ash::ime::AssistiveWindowType::kMultiWordSuggestion:
+    case ash::ime::AssistiveWindowType::kLongpressDiacriticsSuggestion:
       return input_ime::AssistiveWindowType::ASSISTIVE_WINDOW_TYPE_NONE;
-    case ui::ime::AssistiveWindowType::kUndoWindow:
+    case ash::ime::AssistiveWindowType::kUndoWindow:
       return input_ime::AssistiveWindowType::ASSISTIVE_WINDOW_TYPE_UNDO;
   }
 }
@@ -213,6 +212,18 @@ std::string GetKeyFromEvent(const ui::KeyEvent& event) {
     ch = event.GetCharacter();
   }
   return base::UTF16ToUTF8(std::u16string(1, ch));
+}
+
+// TODO(b/247441188): Change the input extension JS API to use
+// PersonalizationMode instead of a bool.
+bool ConvertPersonalizationMode(
+    const ui::TextInputMethod::InputContext& context) {
+  switch (context.personalization_mode) {
+    case ui::PersonalizationMode::kEnabled:
+      return true;
+    case ui::PersonalizationMode::kDisabled:
+      return false;
+  }
 }
 
 InputMethodEngine* GetEngineIfActive(Profile* profile,
@@ -480,7 +491,8 @@ class ImeObserverChromeOS
           ConvertInputContextSpellCheck(context.flags);
       private_api_input_context.has_been_password =
           ConvertHasBeenPassword(context);
-      private_api_input_context.should_do_learning = context.should_do_learning;
+      private_api_input_context.should_do_learning =
+          ConvertPersonalizationMode(context);
       private_api_input_context.focus_reason =
           input_method_private::ParseFocusReason(
               ConvertInputContextFocusReason(context));
@@ -509,7 +521,8 @@ class ImeObserverChromeOS
           ConvertInputContextAutoCapitalizePublic(context.flags);
       public_api_input_context.spell_check =
           ConvertInputContextSpellCheck(context.flags);
-      public_api_input_context.should_do_learning = context.should_do_learning;
+      public_api_input_context.should_do_learning =
+          ConvertPersonalizationMode(context);
 
       auto args(input_ime::OnFocus::Create(public_api_input_context));
       DispatchEventToExtension(extensions::events::INPUT_IME_ON_FOCUS,
@@ -584,6 +597,9 @@ class ImeObserverChromeOS
         extensions::events::INPUT_IME_ON_ASSISTIVE_WINDOW_BUTTON_CLICKED,
         input_ime::OnAssistiveWindowButtonClicked::kEventName, std::move(args));
   }
+
+  void OnAssistiveWindowChanged(
+      const ash::ime::AssistiveWindow& window) override {}
 
   void OnSuggestionsChanged(
       const std::vector<std::string>& suggestions) override {

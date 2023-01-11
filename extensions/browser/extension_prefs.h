@@ -658,14 +658,14 @@ class ExtensionPrefs : public KeyedService {
   // Used by AppWindowGeometryCache to persist its cache. These methods
   // should not be called directly.
   const base::DictionaryValue* GetGeometryCache(
-        const std::string& extension_id) const;
+      const std::string& extension_id) const;
   void SetGeometryCache(const std::string& extension_id,
                         std::unique_ptr<base::DictionaryValue> cache);
 
   // Used for verification of installed extension ids. For the Set method, pass
   // null to remove the preference.
-  const base::DictionaryValue* GetInstallSignature() const;
-  void SetInstallSignature(const base::DictionaryValue* signature);
+  const base::Value::Dict& GetInstallSignature() const;
+  void SetInstallSignature(base::Value::Dict* signature);
 
   // The installation parameter associated with the extension.
   std::string GetInstallParam(const std::string& extension_id) const;
@@ -801,9 +801,9 @@ class ExtensionPrefs : public KeyedService {
   void SetPref(const PrefMap& pref, std::unique_ptr<base::Value> value);
 
   // Updates ExtensionPrefs for a specific extension.
-  void UpdateExtensionPref(const std::string& id,
-                           const PrefMap& pref,
-                           std::unique_ptr<base::Value> value);
+  void UpdateExtensionPrefInternal(const std::string& id,
+                                   const PrefMap& pref,
+                                   base::Value value);
 
   // Converts absolute paths in the pref to paths relative to the
   // install_directory_.
@@ -935,7 +935,7 @@ class ExtensionPrefs : public KeyedService {
   base::FilePath install_directory_;
 
   // Weak pointer, owned by BrowserContext.
-  raw_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
+  raw_ptr<ExtensionPrefValueMap, DanglingUntriaged> extension_pref_value_map_;
 
   raw_ptr<base::Clock> clock_;
 

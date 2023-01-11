@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
@@ -170,8 +171,8 @@ class Component {
     // can further occur.
     void EndState();
 
-    Component& component() { return component_; }
-    const Component& component() const { return component_; }
+    Component& component() { return *component_; }
+    const Component& component() const { return *component_; }
 
     SEQUENCE_CHECKER(sequence_checker_);
 
@@ -180,7 +181,7 @@ class Component {
    private:
     virtual void DoHandle() = 0;
 
-    Component& component_;
+    const raw_ref<Component> component_;
     CallbackNextState callback_next_state_;
   };
 
@@ -448,7 +449,7 @@ class Component {
   // The error reported by the update checker.
   int update_check_error_ = 0;
 
-  base::FilePath crx_path_;
+  base::FilePath payload_path_;
 
   // The byte counts below are valid for the current url being fetched.
   // |total_bytes| is equal to the size of the CRX file and |downloaded_bytes|
@@ -486,7 +487,7 @@ class Component {
 
   CallbackHandleComplete callback_handle_complete_;
   std::unique_ptr<State> state_;
-  const UpdateContext& update_context_;
+  const raw_ref<const UpdateContext> update_context_;
 
   ComponentState previous_state_ = ComponentState::kLastStatus;
 

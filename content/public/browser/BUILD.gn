@@ -26,8 +26,11 @@ source_set("browser_sources") {
   # External code should depend on via ":browser" above.
   visibility = [ "//content/*" ]
   sources = [
+    "active_url_message_filter.cc",
+    "active_url_message_filter.h",
     "allow_service_worker_result.cc",
     "allow_service_worker_result.h",
+    "anchor_element_preconnect_delegate.h",
     "attribution_config.h",
     "attribution_reporting.h",
     "audio_service.h",
@@ -313,7 +316,6 @@ source_set("browser_sources") {
     "provision_fetcher_impl.h",
     "push_messaging_service.cc",
     "push_messaging_service.h",
-    "quota_permission_context.h",
     "reduce_accept_language_controller_delegate.h",
     "reload_type.h",
     "render_frame_host.h",
@@ -569,6 +571,7 @@ source_set("browser_sources") {
       "android/java_interfaces.h",
       "android/media_url_interceptor_register.cc",
       "android/media_url_interceptor_register.h",
+      "android/message_payload.h",
       "android/message_payload_type.h",
       "android/message_port_helper.h",
       "android/motion_event_action.h",
@@ -617,7 +620,6 @@ source_set("browser_sources") {
 
   if (is_chromeos) {
     sources += [ "lock_screen_storage.h" ]
-    deps += [ "//ui/ozone:ozone_switches" ]
   }
 
   if (!is_android) {

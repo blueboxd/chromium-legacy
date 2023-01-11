@@ -165,11 +165,18 @@ struct FetchGooglePhotosPhotosResponse {
     string? resume_token;
 };
 
+// Represents the response to a daily refresh request.
+struct SetDailyRefreshResponse {
+  // Indicates whether the request is successful.
+  bool success;
+
+  // Indicates whether the request forces the current wallpaper image to
+  // refresh.
+  bool force_refresh;
+};
+
 // Represents the currently selected wallpaper image.
 struct CurrentWallpaper {
-  // URL of the currently selected wallpaper image in data scheme.
-  url.mojom.Url url;
-
   // Attribution text such as "Photo by John Doe" or the file name of the local
   // image.
   array<string> attribution;
@@ -281,8 +288,10 @@ interface WallpaperProvider {
         bool preview_mode) => (bool success);
 
     // Sets the Google Photos album with the given id as the daily refresh
+    // album. May refresh the current wallpaper image if it is not part of the
     // album.
-    SelectGooglePhotosAlbum(string id) => (bool success);
+    SelectGooglePhotosAlbum(string id)
+        => (SetDailyRefreshResponse response);
 
     // Gets the id of the current Google Photos album on daily refresh, or an
     // empty string if Google Photos daily refresh is not active.
@@ -291,8 +300,10 @@ interface WallpaperProvider {
     // Sets the layout for current wallpaper.
     SetCurrentWallpaperLayout(WallpaperLayout layout);
 
-    // Set and enable daily refresh for the given |collection_id|.
-    SetDailyRefreshCollectionId(string collection_id);
+    // Sets and enables daily refresh for the given |collection_id|. May refresh
+    // the current wallpaper image if it is not part of the collection.
+    SetDailyRefreshCollectionId(string collection_id)
+        => (SetDailyRefreshResponse response);
 
     // Get the daily refresh collection id. It can be empty if daily refresh is
     // not enabled.
@@ -521,7 +532,7 @@ interface AmbientObserver {
 };
 
 // Provides APIs to expose Ambient mode settings.
-// Used by the Personalization Hub.
+// Used by the personalization hub WebUI to call into the browser process.
 interface AmbientProvider {
   // Boolean pref for whether ambient mode is enabled.
   IsAmbientModeEnabled() => (bool enabled);
@@ -549,6 +560,9 @@ interface AmbientProvider {
 
   // Request updated Ambient mode settings and albums.
   FetchSettingsAndAlbums();
+
+  // Starts the screen saver preview.
+  StartScreenSaverPreview();
 };
 
 // The supported preset colors for keyboard backlight.

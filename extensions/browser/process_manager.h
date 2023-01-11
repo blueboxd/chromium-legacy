@@ -16,7 +16,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_multi_source_observation.h"
@@ -120,12 +120,9 @@ class ProcessManager : public KeyedService,
   ExtensionHost* GetBackgroundHostForExtension(const std::string& extension_id);
 
   // Returns the background page ExtensionHost for the given
-  // |render_frame_host|, if |render_frame_host| is within the extension's
-  // background. Note that this will return the background page host for
-  // iframes embedded in the background page, even if they are not extension
-  // frames.
-  // TODO(https://crbug.com/1340001): Make these "gotchas" less subtle.
-  ExtensionHost* GetExtensionHostForRenderFrameHost(
+  // |render_frame_host|, if |render_frame_host| is in primary main frame and
+  // within the extension's background.
+  ExtensionHost* GetBackgroundHostForRenderFrameHost(
       content::RenderFrameHost* render_frame_host);
 
   // Returns true if the (lazy) background host for the given extension has

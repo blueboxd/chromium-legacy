@@ -9,25 +9,21 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/apps_grid_row_change_animator.h"
-#include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/test/test_focus_change_listener.h"
-#include "ash/app_list/views/app_list_a11y_announcer.h"
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_toast_container_view.h"
 #include "ash/app_list/views/app_list_toast_view.h"
-#include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/apps_grid_view_test_api.h"
 #include "ash/app_list/views/search_box_view.h"
-#include "ash/constants/ash_features.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -176,7 +172,7 @@ class PagedAppsGridViewTest : public AshTestBase {
   std::unique_ptr<SearchModel> search_model_;
 };
 
-// Tests with ProductivityLauncher and app list nudge enabled.
+// Tests with app list nudge enabled.
 class PagedAppsGridViewWithNudgeTest : public PagedAppsGridViewTest {
  public:
   void SetUp() override {
@@ -256,7 +252,7 @@ TEST_F(PagedAppsGridViewTest, GridDimensionsChangesWithDisplaySize) {
 
   // Test with a display in landscape mode a with a little more height. This
   // should have equal rows on the first and second pages.
-  UpdateDisplay("1600x900");
+  UpdateDisplay("1600x910");
   EXPECT_EQ(4, GetPagedAppsGridView()->GetFirstPageRowsForTesting());
   EXPECT_EQ(4, GetPagedAppsGridView()->GetRowsForTesting());
   EXPECT_EQ(5, GetPagedAppsGridView()->cols());
@@ -280,22 +276,6 @@ TEST_F(PagedAppsGridViewTest, GridDimensionsChangesWithDisplaySize) {
   EXPECT_EQ(5, GetPagedAppsGridView()->GetFirstPageRowsForTesting());
   EXPECT_EQ(6, GetPagedAppsGridView()->GetRowsForTesting());
   EXPECT_EQ(5, GetPagedAppsGridView()->cols());
-}
-
-// Test that spacing between pages is removed when the remove empty space flag
-// is enabled.
-TEST_F(PagedAppsGridViewTest, TestPaging) {
-  GetAppListTestHelper()->AddAppItems(1);
-  GetAppListTestHelper()->AddPageBreakItem();
-  GetAppListTestHelper()->AddAppItems(1);
-  GetAppListTestHelper()->AddPageBreakItem();
-  GetAppListTestHelper()->AddAppItems(1);
-
-  EXPECT_EQ(1, GetAppListTestHelper()
-                   ->GetRootPagedAppsGridView()
-                   ->pagination_model()
-                   ->total_pages());
-  EXPECT_EQ(3, grid_test_api_->AppsOnPage(0));
 }
 
 // Test that an app cannot be dragged to create a new page when the remove empty
@@ -695,11 +675,11 @@ TEST_F(PagedAppsGridViewTest, CloseReorderToast) {
     // Make sure that no between rows animation is occurring by checking that
     // all items are animating upward vertically and not horizontally.
     EXPECT_TRUE(GetPagedAppsGridView()->IsAnimatingView(item_view));
-    gfx::Rect target_bounds =
-        GetPagedAppsGridView()->bounds_animator_for_testing()->GetTargetBounds(
-            item_view);
-    EXPECT_GT(item_view->bounds().y(), target_bounds.y());
-    EXPECT_EQ(item_view->bounds().x(), target_bounds.x());
+    gfx::RectF bounds(item_view->GetMirroredBounds());
+    bounds = item_view->layer()->transform().MapRect(bounds);
+    gfx::Rect current_bounds_in_animation = gfx::ToRoundedRect(bounds);
+    EXPECT_GT(current_bounds_in_animation.y(), item_view->bounds().y());
+    EXPECT_EQ(current_bounds_in_animation.x(), item_view->bounds().x());
   }
 
   // Verify that another row appears once the toast is closed.
@@ -776,8 +756,7 @@ TEST_F(PagedAppsGridViewTest, DestroyLayersOnDragLastItemFromFolder) {
   for (size_t i = 0; i < view_model->view_size(); i++)
     EXPECT_FALSE(view_model->view_at(i)->layer());
 
-  EXPECT_FALSE(GetPagedAppsGridView()
-                   ->GetBoundsAnimationForCardifiedStateInProgressForTest());
+  EXPECT_FALSE(GetPagedAppsGridView()->IsItemAnimationRunning());
 }
 
 // Test the case of beginning an item drag and then immediately ending the drag.
@@ -820,8 +799,7 @@ TEST_F(PagedAppsGridViewTest, QuicklyDragAndDropItem) {
   // removed.
   for (size_t i = 0; i < view_model->view_size(); i++)
     EXPECT_FALSE(view_model->view_at(i)->layer());
-  EXPECT_FALSE(GetPagedAppsGridView()
-                   ->GetBoundsAnimationForCardifiedStateInProgressForTest());
+  EXPECT_FALSE(GetPagedAppsGridView()->IsItemAnimationRunning());
 
   // Now that cardified item animations are complete, make sure that
   // `OnCardifiedStateEnded()` is only called once.
@@ -877,8 +855,7 @@ TEST_F(PagedAppsGridViewTest, QuicklyDragAndDropItemToNewRow) {
   // removed.
   for (size_t i = 0; i < view_model->view_size(); i++)
     EXPECT_FALSE(view_model->view_at(i)->layer());
-  EXPECT_FALSE(GetPagedAppsGridView()
-                   ->GetBoundsAnimationForCardifiedStateInProgressForTest());
+  EXPECT_FALSE(GetPagedAppsGridView()->IsItemAnimationRunning());
   EXPECT_FALSE(IsRowChangeAnimatorAnimating());
   EXPECT_EQ(0, GetNumberOfRowChangeLayersForTest());
 

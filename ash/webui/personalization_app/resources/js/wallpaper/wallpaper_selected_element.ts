@@ -21,7 +21,7 @@ import {Paths} from '../personalization_router_element.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 import {isNonEmptyArray} from '../utils.js';
 
-import {getLocalStorageAttribution, getWallpaperLayoutEnum} from './utils.js';
+import {getLocalStorageAttribution, getWallpaperLayoutEnum, getWallpaperSrc} from './utils.js';
 import {getDailyRefreshState, selectGooglePhotosAlbum, setCurrentWallpaperLayout, setDailyRefreshCollectionId, updateDailyRefreshWallpaper} from './wallpaper_controller.js';
 import {getWallpaperProvider} from './wallpaper_interface_provider.js';
 import {WallpaperObserver} from './wallpaper_observer.js';
@@ -252,6 +252,10 @@ export class WallpaperSelected extends WithPersonalizationStore {
             collectionId! || googlePhotosAlbumId!, dailyRefreshState);
   }
 
+  private getWallpaperSrc_(image: CurrentWallpaper|null): string|null {
+    return getWallpaperSrc(image);
+  }
+
   private getCenterAriaPressed_(image: CurrentWallpaper): string {
     return (!!image && image.layout === WallpaperLayout.kCenter).toString();
   }
@@ -313,10 +317,6 @@ export class WallpaperSelected extends WithPersonalizationStore {
       setDailyRefreshCollectionId(
           isDailyRefreshId ? '' : this.collectionId!, getWallpaperProvider(),
           this.getStore());
-      // Only refresh the wallpaper if daily refresh is toggled on.
-      if (!isDailyRefreshId) {
-        updateDailyRefreshWallpaper(getWallpaperProvider(), this.getStore());
-      }
     }
   }
 

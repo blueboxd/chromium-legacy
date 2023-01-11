@@ -392,6 +392,9 @@ class FetchDiscountWorkerTestBase : public testing::Test {
   void TearDown() override {
     FakeCartDiscountFetcher::ClearFetchCount();
     is_signin_and_sync_ = false;
+
+    auto& data = commerce_heuristics::CommerceHeuristicsData::GetInstance();
+    data.PopulateDataFromComponent("{}", "{}", "", "");
   }
 
   // This method transfers mock_fetcher_ ownership. Set all expectations for
@@ -455,19 +458,29 @@ class FetchDiscountWorkerTestBase : public testing::Test {
 class FetchDiscountWorkerTest : public FetchDiscountWorkerTestBase {
  public:
   FetchDiscountWorkerTest() {
-    std::vector<base::test::ScopedFeatureList::FeatureAndParams>
-        enabled_features;
+    std::vector<base::test::FeatureRefAndParams> enabled_features;
     base::FieldTrialParams cart_params, coupon_params;
     cart_params["NtpChromeCartModuleAbandonedCartDiscountParam"] = "true";
     cart_params["discount-fetch-delay"] = "6h";
-    cart_params["partner-merchant-pattern"] = "(foo.com)";
     enabled_features.emplace_back(ntp_features::kNtpChromeCartModule,
                                   cart_params);
-    coupon_params["coupon-partner-merchant-pattern"] = "(qux.com)";
     coupon_params[commerce::kRetailCouponsWithCodeParam] = "true";
     enabled_features.emplace_back(commerce::kRetailCoupons, coupon_params);
     features_.InitWithFeaturesAndParameters(enabled_features,
                                             /*disabled_features*/ {});
+  }
+
+  void SetUp() override {
+    FetchDiscountWorkerTestBase::SetUp();
+
+    auto& data = commerce_heuristics::CommerceHeuristicsData::GetInstance();
+    ASSERT_TRUE(data.PopulateDataFromComponent("{}", R"###(
+        {
+          "rule_discount_partner_merchant_regex": "(foo.com)",
+          "coupon_discount_partner_merchant_regex": "(qux.com)"
+        }
+    )###",
+                                               "", ""));
   }
 };
 
@@ -734,8 +747,7 @@ class FetchMerchantWideDiscountWorkerTest : public FetchDiscountWorkerTestBase {
   // Features need to be initialized before #SetUp runs, in
   // order to avoid tsan data race error on FeatureList.
   FetchMerchantWideDiscountWorkerTest() {
-    std::vector<base::test::ScopedFeatureList::FeatureAndParams>
-        enabled_features;
+    std::vector<base::test::FeatureRefAndParams> enabled_features;
     base::FieldTrialParams merchant_wide_params;
     merchant_wide_params[commerce::kReadyToFetchMerchantWidePromotionParam] =
         "true";
@@ -808,8 +820,7 @@ class FetchMerchantWideDiscountWorkerDisableFetchTest
   // Features need to be initialized before #SetUp runs, in
   // order to avoid tsan data race error on FeatureList.
   FetchMerchantWideDiscountWorkerDisableFetchTest() {
-    std::vector<base::test::ScopedFeatureList::FeatureAndParams>
-        enabled_features;
+    std::vector<base::test::FeatureRefAndParams> enabled_features;
     base::FieldTrialParams merchant_wide_params;
     merchant_wide_params[commerce::kReadyToFetchMerchantWidePromotionParam] =
         "false";

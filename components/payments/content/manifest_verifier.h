@@ -13,7 +13,6 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/payments/content/developer_console_logger.h"
 #include "components/webdata/common/web_data_service_base.h"
@@ -116,10 +115,10 @@ class ManifestVerifier final : public WebDataServiceConsumer {
   DeveloperConsoleLogger log_;
 
   // Downloads the manifests.
-  raw_ptr<PaymentManifestDownloader> downloader_;
+  raw_ptr<PaymentManifestDownloader, DanglingUntriaged> downloader_;
 
   // Parses the manifests.
-  raw_ptr<PaymentManifestParser> parser_;
+  raw_ptr<PaymentManifestParser, DanglingUntriaged> parser_;
 
   // Caches the manifests.
   raw_ptr<PaymentManifestWebDataService> cache_;

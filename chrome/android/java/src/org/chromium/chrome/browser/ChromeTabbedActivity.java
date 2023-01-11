@@ -142,6 +142,7 @@ import org.chromium.chrome.browser.share.send_tab_to_self.SendTabToSelfAndroidBr
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.survey.ChromeSurveyController;
 import org.chromium.chrome.browser.sync.ui.SyncErrorMessage;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.RedirectHandlerTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
@@ -603,6 +604,12 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 }
 
                 @Override
+                public void multipleTabsPendingClosure(List<Tab> tabs, boolean isAllTabs) {
+                    closeIfNoTabsAndHomepageEnabled(true);
+                    openTabletTabSwitcherIfNoTabs();
+                }
+
+                @Override
                 public void tabRemoved(Tab tab) {
                     closeIfNoTabsAndHomepageEnabled(false);
                     openTabletTabSwitcherIfNoTabs();
@@ -655,13 +662,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                                      Toast.LENGTH_SHORT)
                                 .show();
                     }
-                }
-
-                @Override
-                public void multipleTabsPendingClosure(List<Tab> tabs, boolean isAllTabs) {
-                    if (!isAllTabs) return;
-                    NewTabPageUma.recordNTPImpression(NewTabPageUma.NTP_IMPESSION_POTENTIAL_NOTAB);
-                    openTabletTabSwitcherIfNoTabs();
                 }
             };
         } finally {
@@ -1398,7 +1398,21 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             // If initial tab creation is pending, this will instead be handled when we create the
             // initial tab in #createInitialTab.
             if (!mPendingInitialTabCreation) {
-                mAppLaunchDrawBlocker.onActiveTabAvailable(isTabRegularNtp(getActivityTab()));
+                Tab currentTab = getActivityTab();
+                boolean isTabNtp = isTabRegularNtp(currentTab);
+                if (isTabNtp && !currentTab.isNativePage()) {
+                    // This will be a NTP, but the native page hasn't been created yet. Need to wait
+                    // for this to be created before allowing the toolbar to draw.
+                    currentTab.addObserver(new EmptyTabObserver() {
+                        @Override
+                        public void onContentChanged(Tab tab) {
+                            tab.removeObserver(this);
+                            mAppLaunchDrawBlocker.onActiveTabAvailable(/*isTabNtp*/ true);
+                        }
+                    });
+                } else {
+                    mAppLaunchDrawBlocker.onActiveTabAvailable(isTabNtp);
+                }
             }
         } finally {
             TraceEvent.end("ChromeTabbedActivity.initializeState");
@@ -2262,7 +2276,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     @Override
     public boolean handleBackPressed() {
-        if (!mUIWithNativeInitialized) return false;
+        if (!mUIWithNativeInitialized) {
+            RecordUserAction.record("SystemBackBeforeUINativeInitialized");
+            return false;
+        }
 
         // This only intercepts back press 1. on T+ 2. back press refactor is disabled
         // 3. predictive back gesture is opted in.

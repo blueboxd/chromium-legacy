@@ -256,15 +256,15 @@ public class ChromeBrowserInitializer {
         // launch its required components.
         if (!delegate.startMinimalBrowser()
                 && !ProcessInitializationHandler.getInstance().postNativeInitializationComplete()) {
-            tasks.add(UiThreadTaskTraits.BOOTSTRAP,
+            tasks.add(UiThreadTaskTraits.DEFAULT,
                     () -> ProcessInitializationHandler.getInstance().initializePostNative());
         }
 
         if (!mNetworkChangeNotifierInitializationComplete) {
-            tasks.add(UiThreadTaskTraits.BOOTSTRAP, this::initNetworkChangeNotifier);
+            tasks.add(UiThreadTaskTraits.DEFAULT, this::initNetworkChangeNotifier);
         }
 
-        tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
+        tasks.add(UiThreadTaskTraits.DEFAULT, () -> {
             // This is not broken down as a separate task, since this:
             // 1. Should happen as early as possible
             // 2. Only submits asynchronous work
@@ -277,17 +277,17 @@ public class ChromeBrowserInitializer {
             onStartNativeInitialization();
         });
 
-        tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
+        tasks.add(UiThreadTaskTraits.DEFAULT, () -> {
             if (delegate.isActivityFinishingOrDestroyed()) return;
             delegate.initializeCompositor();
         });
 
-        tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
+        tasks.add(UiThreadTaskTraits.DEFAULT, () -> {
             if (delegate.isActivityFinishingOrDestroyed()) return;
             delegate.initializeState();
         });
 
-        tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
+        tasks.add(UiThreadTaskTraits.DEFAULT, () -> {
             if (delegate.isActivityFinishingOrDestroyed()) return;
             // Some tasks posted by this are on the critical path.
             delegate.startNativeInitialization();
@@ -324,7 +324,7 @@ public class ChromeBrowserInitializer {
                         }
                     });
         } else {
-            startChromeBrowserProcessesSync();
+            startChromeBrowserProcessesSync(delegate.shouldStartGpuProcess());
             tasks.start(true);
         }
     }
@@ -356,7 +356,7 @@ public class ChromeBrowserInitializer {
         }
     }
 
-    private void startChromeBrowserProcessesSync() {
+    private void startChromeBrowserProcessesSync(boolean startGpuProcess) {
         try {
             TraceEvent.begin("ChromeBrowserInitializer.startChromeBrowserProcessesSync");
             ThreadUtils.assertOnUiThread();
@@ -365,7 +365,8 @@ public class ChromeBrowserInitializer {
             StrictMode.setThreadPolicy(oldPolicy);
             LibraryPrefetcher.asyncPrefetchLibrariesToMemory();
             getBrowserStartupController().startBrowserProcessesSync(
-                    LibraryProcessType.PROCESS_BROWSER, /*singleProcess=*/false);
+                    LibraryProcessType.PROCESS_BROWSER, /*singleProcess=*/false,
+                    /*startGpuProcess=*/startGpuProcess);
             SigninCheckerProvider.get();
         } finally {
             TraceEvent.end("ChromeBrowserInitializer.startChromeBrowserProcessesSync");

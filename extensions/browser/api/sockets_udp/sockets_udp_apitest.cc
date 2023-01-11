@@ -38,14 +38,15 @@ IN_PROC_BROWSER_TEST_F(SocketsUdpApiTest, SocketsUdpCreateGood) {
   socket_create_function->set_extension(empty_extension.get());
   socket_create_function->set_has_callback(true);
 
-  std::unique_ptr<base::Value> result(
+  absl::optional<base::Value> result(
       api_test_utils::RunFunctionAndReturnSingleResult(
           socket_create_function.get(), "[]", browser_context()));
 
-  const base::Value::Dict& value = result->GetDict();
-  absl::optional<int> socketId = value.FindInt("socketId");
-  EXPECT_TRUE(socketId);
-  ASSERT_TRUE(*socketId > 0);
+  ASSERT_TRUE(result);
+  ASSERT_TRUE(result->is_dict());
+  absl::optional<int> socket_id = result->GetDict().FindInt("socketId");
+  ASSERT_TRUE(socket_id);
+  ASSERT_GT(*socket_id, 0);
 }
 
 // Disable SocketsUdpExtension on Mac due to time out.

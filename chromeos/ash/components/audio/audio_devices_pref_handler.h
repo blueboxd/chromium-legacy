@@ -19,10 +19,9 @@ struct AudioDevice;
 class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) AudioDevicesPrefHandler
     : public base::RefCountedThreadSafe<AudioDevicesPrefHandler> {
  public:
-  // Integer because C++ does not allow static const double in header files.
-  static const int kDefaultInputGainPercent = 50;
-  static const int kDefaultOutputVolumePercent = 75;
-  static const int kDefaultHdmiOutputVolumePercent = 100;
+  static constexpr double kDefaultInputGainPercent = 50;
+  static constexpr double kDefaultOutputVolumePercent = 75;
+  static constexpr double kDefaultHdmiOutputVolumePercent = 100;
 
   // Gets the audio output volume value from prefs for a device. Since we can
   // only have either a gain or a volume for a device (depending on whether it
@@ -63,11 +62,12 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) AudioDevicesPrefHandler
   // priorities will be [.., base, target, A, B].
   // If both target and base have kUserPriorityNone,
   // set the target's user priority to kUserPriorityMin.
+  // If base is nullptr, assign a minimal priority to `target`.
   // Do nothing if target already has a higher user priority.
   virtual void SetUserPriorityHigherThan(const AudioDevice& target,
-                                         const AudioDevice& base) = 0;
+                                         const AudioDevice* base) = 0;
   // Reads the user priority from prefs.
-  virtual int32_t GetUserPriority(const AudioDevice& device) = 0;
+  virtual int GetUserPriority(const AudioDevice& device) = 0;
 
   // Reads the audio output allowed value from prefs.
   virtual bool GetAudioOutputAllowedValue() const = 0;
@@ -77,8 +77,14 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) AudioDevicesPrefHandler
   // Removes an audio preference observer.
   virtual void RemoveAudioPrefObserver(AudioPrefObserver* observer) = 0;
 
+  // Mark `connected_devices` as seen and drop the least recently seen devices
+  // if there are more than `keep_devices` stored in preferences.
+  virtual void DropLeastRecentlySeenDevices(
+      const std::vector<AudioDevice>& connected_devices,
+      size_t keep_devices) = 0;
+
  protected:
-  virtual ~AudioDevicesPrefHandler() {}
+  virtual ~AudioDevicesPrefHandler() = default;
 
  private:
   friend class base::RefCountedThreadSafe<AudioDevicesPrefHandler>;

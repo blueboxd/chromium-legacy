@@ -114,6 +114,9 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
   void CupsRemovePrinter(const std::string& name,
                          CupsRemovePrinterCallback callback,
                          base::OnceClosure error_callback) override;
+  void CupsRetrievePrinterPpd(const std::string& name,
+                              CupsRetrievePrinterPpdCallback callback,
+                              base::OnceClosure error_callback) override;
   void StartPluginVmDispatcher(const std::string& owner_id,
                                const std::string& lang,
                                PluginVmDispatcherCallback callback) override;
@@ -145,6 +148,9 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
   // Sets routes that will be returned by GetRoutes() for testing.
   void SetRoutesForTesting(std::vector<std::string> routes);
 
+  // Sets PPD data that will be returned by CupsRetrievePrinterPpd for testing.
+  void SetPpdDataForTesting(const std::vector<uint8_t>& data);
+
   const std::string& scheduler_configuration_name() const {
     return scheduler_configuration_name_;
   }
@@ -162,6 +168,7 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
   std::string scheduler_configuration_name_;
   std::set<std::string> u2f_flags_;
   base::ObserverList<Observer> observers_;
+  std::vector<uint8_t> ppd_data_;
 };
 
 }  // namespace ash

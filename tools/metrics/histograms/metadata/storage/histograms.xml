@@ -120,7 +120,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Clipboard.Read" enum="ClipboardFormatRead"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>huangdarwin@chromium.org</owner>
   <owner>src/ui/base/clipboard/OWNERS</owner>
   <summary>
@@ -148,7 +148,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Clipboard.TimeIntervalBetweenCommitAndRead" units="ms"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>dcheng@chromium.org</owner>
   <owner>src/ui/base/clipboard/OWNERS</owner>
   <summary>
@@ -161,7 +161,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Clipboard.Write" enum="ClipboardFormatWrite"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>huangdarwin@chromium.org</owner>
   <owner>src/ui/base/clipboard/OWNERS</owner>
   <summary>
@@ -182,7 +182,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="LevelDBEnv.DeleteTableBackupFile" enum="BooleanSuccess"
-    expires_after="2022-12-04">
+    expires_after="2023-08-01">
   <owner>cmumford@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -208,7 +208,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="LevelDBWrapper.CommitDelay" units="ms"
-    expires_after="2022-12-04">
+    expires_after="2023-08-01">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -258,39 +258,6 @@ chromium-metrics-reviews@google.com.
     clear browsing data. It indicates which signals were used to show the given
     site to the user that the user then chose to exclude from clearing. This
     histogram has expired between M95-M106.
-  </summary>
-</histogram>
-
-<histogram name="Storage.Blob.DataURLWorkerRegister" enum="Boolean"
-    expires_after="M106">
-  <owner>awillia@chromium.org</owner>
-  <owner>ayui@chromium.org</owner>
-  <summary>
-    Recorded when the PublicURLManager::Register method is called from a worker
-    execution context (excluding service worker contexts). The value indicates
-    if the worker was created from a data URL.
-  </summary>
-</histogram>
-
-<histogram name="Storage.Blob.DataURLWorkerResolveAsURLLoaderFactory"
-    enum="Boolean" expires_after="M106">
-  <owner>awillia@chromium.org</owner>
-  <owner>ayui@chromium.org</owner>
-  <summary>
-    Recorded when the PublicURLManager::Resolve URLLoaderFactory method is
-    called from a worker execution context (excluding service worker contexts).
-    The value indicates if the worker was created from a data URL.
-  </summary>
-</histogram>
-
-<histogram name="Storage.Blob.DataURLWorkerResolveForNavigation" enum="Boolean"
-    expires_after="M106">
-  <owner>awillia@chromium.org</owner>
-  <owner>ayui@chromium.org</owner>
-  <summary>
-    Recorded when the PublicURLManager::Resolve method for navigations is called
-    from a worker execution context (excluding service worker contexts). The
-    value indicates if the worker was created from a data URL.
   </summary>
 </histogram>
 
@@ -475,7 +442,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.InterestGroup.DBMaintenanceTime" units="microseconds"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -488,7 +455,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.InterestGroup.DBSize" units="KB"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -498,7 +465,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.InterestGroup.PerSiteCount" units="groups"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -568,7 +535,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.SharedStorage.Database.Error" enum="SqliteErrorCode"
-    expires_after="2023-01-31">
+    expires_after="2023-04-30">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>

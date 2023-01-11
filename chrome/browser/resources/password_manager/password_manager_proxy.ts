@@ -7,10 +7,13 @@
  * chrome.passwordsPrivate which facilitates testing.
  */
 
-export type SavedPasswordListChangedListener =
-    (entries: chrome.passwordsPrivate.PasswordUiEntry[]) => void;
+export type BlockedSite = chrome.passwordsPrivate.ExceptionEntry;
+
+export type CredentialsChangedListener =
+    (credentials: chrome.passwordsPrivate.PasswordUiEntry[]) => void;
 export type PasswordCheckStatusChangedListener =
     (status: chrome.passwordsPrivate.PasswordCheckStatus) => void;
+export type BlockedSitesListChangedListener = (entries: BlockedSite[]) => void;
 
 /**
  * Represents different interactions the user can perform on the Password Check
@@ -44,14 +47,26 @@ export interface PasswordManagerProxy {
   /**
    * Add an observer to the list of saved passwords.
    */
-  addSavedPasswordListChangedListener(
-      listener: SavedPasswordListChangedListener): void;
+  addSavedPasswordListChangedListener(listener: CredentialsChangedListener):
+      void;
 
   /**
    * Remove an observer from the list of saved passwords.
    */
-  removeSavedPasswordListChangedListener(
-      listener: SavedPasswordListChangedListener): void;
+  removeSavedPasswordListChangedListener(listener: CredentialsChangedListener):
+      void;
+
+  /**
+   * Add an observer to the list of blocked sites.
+   */
+  addBlockedSitesListChangedListener(listener: BlockedSitesListChangedListener):
+      void;
+
+  /**
+   * Remove an observer from the list of blocked sites.
+   */
+  removeBlockedSitesListChangedListener(
+      listener: BlockedSitesListChangedListener): void;
 
   /**
    * Add an observer to the passwords check status change.
@@ -66,15 +81,40 @@ export interface PasswordManagerProxy {
       listener: PasswordCheckStatusChangedListener): void;
 
   /**
+   * Add an observer to the insecure passwords change.
+   */
+  addInsecureCredentialsListener(listener: CredentialsChangedListener): void;
+
+  /**
+   * Remove an observer to the insecure passwords change.
+   */
+  removeInsecureCredentialsListener(listener: CredentialsChangedListener): void;
+
+  /**
    * Request the list of saved passwords.
    */
   getSavedPasswordList(): Promise<chrome.passwordsPrivate.PasswordUiEntry[]>;
+
+  /**
+   * Request grouped credentials.
+   */
+  getCredentialGroups(): Promise<chrome.passwordsPrivate.CredentialGroup[]>;
+
+  /**
+   * Request the list of blocked sites.
+   */
+  getBlockedSitesList(): Promise<BlockedSite[]>;
 
   /**
    * Requests the current status of the check.
    */
   getPasswordCheckStatus():
       Promise<chrome.passwordsPrivate.PasswordCheckStatus>;
+
+  /**
+   * Requests the latest information about insecure credentials.
+   */
+  getInsecureCredentials(): Promise<chrome.passwordsPrivate.PasswordUiEntry[]>;
 
   /**
    * Requests the start of the bulk password check.
@@ -85,20 +125,35 @@ export interface PasswordManagerProxy {
    * Records a given interaction on the Password Check page.
    */
   recordPasswordCheckInteraction(interaction: PasswordCheckInteraction): void;
+
+  /**
+   * Triggers the shortcut creation dialog.
+   */
+  showAddShortcutDialog(): void;
 }
 
 /**
  * Implementation that accesses the private API.
  */
 export class PasswordManagerImpl implements PasswordManagerProxy {
-  addSavedPasswordListChangedListener(listener:
-                                          SavedPasswordListChangedListener) {
+  addSavedPasswordListChangedListener(listener: CredentialsChangedListener) {
     chrome.passwordsPrivate.onSavedPasswordsListChanged.addListener(listener);
   }
 
-  removeSavedPasswordListChangedListener(listener:
-                                             SavedPasswordListChangedListener) {
+  removeSavedPasswordListChangedListener(listener: CredentialsChangedListener) {
     chrome.passwordsPrivate.onSavedPasswordsListChanged.removeListener(
+        listener);
+  }
+
+  addBlockedSitesListChangedListener(listener:
+                                         BlockedSitesListChangedListener) {
+    chrome.passwordsPrivate.onPasswordExceptionsListChanged.addListener(
+        listener);
+  }
+
+  removeBlockedSitesListChangedListener(listener:
+                                            BlockedSitesListChangedListener) {
+    chrome.passwordsPrivate.onPasswordExceptionsListChanged.removeListener(
         listener);
   }
 
@@ -112,36 +167,47 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
         listener);
   }
 
+  addInsecureCredentialsListener(listener: CredentialsChangedListener) {
+    chrome.passwordsPrivate.onInsecureCredentialsChanged.addListener(listener);
+  }
+
+  removeInsecureCredentialsListener(listener: CredentialsChangedListener) {
+    chrome.passwordsPrivate.onInsecureCredentialsChanged.removeListener(
+        listener);
+  }
+
   getSavedPasswordList() {
-    return new Promise<chrome.passwordsPrivate.PasswordUiEntry[]>(resolve => {
-      chrome.passwordsPrivate.getSavedPasswordList(passwords => {
-        resolve(chrome.runtime.lastError ? [] : passwords);
-      });
-    });
+    return chrome.passwordsPrivate.getSavedPasswordList().catch(() => []);
+  }
+
+  getCredentialGroups() {
+    return chrome.passwordsPrivate.getCredentialGroups();
+  }
+
+  getBlockedSitesList() {
+    return chrome.passwordsPrivate.getPasswordExceptionList().catch(() => []);
   }
 
   getPasswordCheckStatus() {
-    return new Promise<chrome.passwordsPrivate.PasswordCheckStatus>(resolve => {
-      chrome.passwordsPrivate.getPasswordCheckStatus(resolve);
-    });
+    return chrome.passwordsPrivate.getPasswordCheckStatus();
+  }
+
+  getInsecureCredentials() {
+    return chrome.passwordsPrivate.getInsecureCredentials();
   }
 
   startBulkPasswordCheck() {
-    return new Promise<void>((resolve, reject) => {
-      chrome.passwordsPrivate.startPasswordCheck(() => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError.message);
-          return;
-        }
-        resolve();
-      });
-    });
+    return chrome.passwordsPrivate.startPasswordCheck();
   }
 
   recordPasswordCheckInteraction(interaction: PasswordCheckInteraction) {
     chrome.metricsPrivate.recordEnumerationValue(
         'PasswordManager.BulkCheck.UserAction', interaction,
         PasswordCheckInteraction.COUNT);
+  }
+
+  showAddShortcutDialog() {
+    chrome.passwordsPrivate.showAddShortcutDialog();
   }
 
   static getInstance(): PasswordManagerProxy {

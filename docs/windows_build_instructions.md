@@ -23,9 +23,9 @@ Are you a Google employee? See
 
 ### Visual Studio
 
-Chromium requires [Visual Studio 2017](https://docs.microsoft.com/en-us/visualstudio/releasenotes/vs2017-relnotes) (>=15.7.2)
-to build, but [Visual Studio 2019](https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes) (>=16.0.0)
-is preferred. Visual Studio can also be used to debug Chromium, and version 2019 is
+Chromium requires [Visual Studio 2019](https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes) (>=16.0.0)
+to build, but [Visual Studio 2022](https://learn.microsoft.com/en-us/visualstudio/releases/2022/release-notes) (>=17.0.0)
+is preferred. Visual Studio can also be used to debug Chromium, and version 2022 is
 preferred for this as it handles Chromium's large debug information much better.
 The clang-cl compiler is used but Visual Studio's header files, libraries, and
 some tools are required. Visual Studio Community Edition should work if its
@@ -161,8 +161,15 @@ $ fetch chromium
 If you don't want the full repo history, you can save a lot of time by
 adding the `--no-history` flag to `fetch`.
 
-Expect the command to take 30 minutes on even a fast connection, and many
-hours on slower ones.
+Expect the command to take over an hour on even a fast connection, and many
+hours on slower ones. You should configure your PC so that it doesn't sleep
+or hibernate during the fetch or else errors may occur. If errors occur while
+fetching sub-repos then you can start over, or you may be able to correct them
+by going to the chromium/src directory and running this command:
+
+```shell
+$ gclient sync
+```
 
 When `fetch` completes, it will have created a hidden `.gclient` file and a
 directory called `src` in the working directory. The remaining instructions
@@ -213,13 +220,13 @@ in the editor that appears when you create your output directory
 (`gn args out/Default`) or on the gn gen command line
 (`gn gen out/Default --args="is_component_build = true is_debug = true"`).
 Some helpful settings to consider using include:
-* `is_component_build = true` - this uses more, smaller DLLs, and incremental
-linking.
+* `is_component_build = true` - this uses more, smaller DLLs, and may avoid
+having to relink chrome.dll after every change.
 * `enable_nacl = false` - this disables Native Client which is usually not
 needed for local builds.
-* `target_cpu = "x86"` - x86 builds are slightly faster than x64 builds and
-support incremental linking for more targets. Note that if you set this but
-don't' set enable_nacl = false then build times may get worse.
+* `target_cpu = "x86"` - x86 builds may be slightly faster than x64 builds. Note
+that if you set this but don't set `enable_nacl = false` then build times may
+get worse.
 * `blink_symbol_level = 0` - turn off source-level debugging for
 blink to reduce build times, appropriate if you don't plan to debug blink.
 * `v8_symbol_level = 0` - turn off source-level debugging for v8 to reduce

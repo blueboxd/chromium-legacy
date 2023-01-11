@@ -273,7 +273,7 @@ void TransformTree::CombineTransformsBetween(int source_id,
     size_t index = source_to_destination_size - 1 - i;
     const TransformNode* node = Node(source_to_destination[index]);
     if (node->flattens_inherited_transform)
-      combined_transform.FlattenTo2d();
+      combined_transform.Flatten();
     combined_transform.PreConcat(node->to_parent);
   }
 
@@ -568,7 +568,7 @@ void TransformTree::UpdateScreenSpaceTransform(TransformNode* node,
   DCHECK(parent_node);
   gfx::Transform to_screen_space_transform = ToScreen(parent_node->id);
   if (node->flattens_inherited_transform)
-    to_screen_space_transform.FlattenTo2d();
+    to_screen_space_transform.Flatten();
   to_screen_space_transform.PreConcat(node->to_parent);
   node->ancestors_are_invertible = parent_node->ancestors_are_invertible;
   node->node_and_ancestors_are_flat =
@@ -614,7 +614,7 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
   // X = ST^-1 * ST'. We cache ST and ST^-1 to make this more efficient.
   DCHECK_LT(node->id, static_cast<int>(cached_data_.size()));
   gfx::Transform& to_screen = cached_data_[node->id].to_screen;
-  to_screen.RoundTranslationComponents();
+  to_screen.Round2dTranslationComponents();
   gfx::Transform& from_screen = cached_data_[node->id].from_screen;
   gfx::Transform delta = from_screen;
   delta *= to_screen;
@@ -632,7 +632,7 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
   node->to_parent.Translate(translation);
   // Avoid accumulation of errors in to_parent.
   if (node->to_parent.IsApproximatelyIdentityOrIntegerTranslation(kTolerance))
-    node->to_parent.RoundTranslationComponents();
+    node->to_parent.RoundToIdentityOrIntegerTranslation();
 }
 
 void TransformTree::UpdateTransformChanged(TransformNode* node,
@@ -696,9 +696,7 @@ void TransformTree::SetRootScaleAndTransform(
 
   gfx::Transform root_to_screen;
   root_to_screen.Scale(screen_space_scale.x(), screen_space_scale.y());
-  gfx::Transform root_from_screen;
-  bool invertible = root_to_screen.GetInverse(&root_from_screen);
-  DCHECK(invertible);
+  gfx::Transform root_from_screen = root_to_screen.GetCheckedInverse();
   if (root_to_screen != ToScreen(kRootPropertyNodeId)) {
     SetToScreen(kRootPropertyNodeId, root_to_screen);
     SetFromScreen(kRootPropertyNodeId, root_from_screen);
@@ -897,7 +895,7 @@ void EffectTree::UpdateOnlyDrawsVisibleContent(EffectNode* node,
                                                EffectNode* parent_node) {
   node->only_draws_visible_content =
       !node->has_copy_request && !node->subtree_capture_id.is_valid() &&
-      !node->shared_element_resource_id.IsValid();
+      !node->view_transition_element_resource_id.IsValid();
   if (parent_node)
     node->only_draws_visible_content &= parent_node->only_draws_visible_content;
   if (!node->backdrop_filters.IsEmpty()) {
@@ -1001,7 +999,7 @@ void EffectTree::UpdateEffects(int id) {
 
 void EffectTree::UpdateClosestAncestorSharedElement(EffectNode* node,
                                                     EffectNode* parent_node) {
-  if (node->shared_element_resource_id.IsValid()) {
+  if (node->view_transition_element_resource_id.IsValid()) {
     node->closest_ancestor_with_shared_element_id = node->id;
   } else if (parent_node) {
     node->closest_ancestor_with_shared_element_id =
@@ -1535,7 +1533,7 @@ gfx::Transform ScrollTree::ScreenSpaceTransform(int scroll_node_id) const {
   screen_space_transform.PostConcat(
       transform_tree.ToScreen(transform_node->id));
   if (scroll_node->should_flatten)
-    screen_space_transform.FlattenTo2d();
+    screen_space_transform.Flatten();
   return screen_space_transform;
 }
 

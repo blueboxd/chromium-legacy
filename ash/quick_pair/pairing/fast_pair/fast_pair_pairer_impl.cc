@@ -145,15 +145,11 @@ FastPairPairerImpl::FastPairPairerImpl(
       pairing_procedure_complete_(std::move(pairing_procedure_complete)) {
   adapter_observation_.Observe(adapter_.get());
 
-  absl::optional<std::vector<uint8_t>> additional_data =
-      device_->GetAdditionalData(Device::AdditionalDataType::kFastPairVersion);
-
   // If this is a v1 pairing, we pass off the responsibility to the Bluetooth
   // pairing dialog, and will listen for the
   // BluetoothAdapter::Observer::DevicePairedChanged event before firing the
   // |paired_callback|.
-  if (additional_data.has_value() && additional_data->size() == 1 &&
-      (*additional_data)[0] == 1) {
+  if (device_->version().value() == DeviceFastPairVersion::kV1) {
     Shell::Get()->system_tray_model()->client()->ShowBluetoothPairingDialog(
         device_->ble_address);
     return;
@@ -238,14 +234,28 @@ void FastPairPairerImpl::StartPairing() {
     case Protocol::kFastPairSubsequent:
       // Now that we have validated the decrypted response, we can attempt to
       // retrieve the device from the adapter by the address. If we are able
-      // to retrieve the device in this way, we can pair directly. Often, we
-      // will not be able to find the device this way, and we will have to
-      // connect via address and add ourselves as a pairing delegate.
+      // to get the device, and it's not already paired, we can pair directly.
+      // Often, we will not be able to find the device this way, and we will
+      // have to connect via address and add ourselves as a pairing delegate.
       QP_LOG(VERBOSE) << "Sending pair request to device. Address: "
                       << device_address << ". Found device: "
                       << ((bt_device != nullptr) ? "Yes" : "No") << ".";
 
       if (bt_device) {
+        if (bt_device->IsBonded()) {
+          QP_LOG(INFO) << __func__
+                       << ": Trying to pair to device that is already paired; "
+                          "returning success.";
+          std::move(paired_callback_).Run(device_);
+          // In addition to recording kPairingSuccess in the callback above,
+          // also record that the device was already paired.
+          AttemptRecordingFastPairEngagementFlow(
+              *device_,
+              FastPairEngagementFlowEvent::kPairingSucceededAlreadyPaired);
+          AttemptSendAccountKey();
+          return;
+        }
+
         bt_device->Pair(this,
                         base::BindOnce(&FastPairPairerImpl::OnPairConnected,
                                        weak_ptr_factory_.GetWeakPtr()));
@@ -413,9 +423,8 @@ void FastPairPairerImpl::OnParseDecryptedPasskey(
 
   QP_LOG(INFO) << __func__ << ": Passkeys match, confirming pairing";
   pairing_device->ConfirmPairing();
-  std::move(paired_callback_).Run(device_);
-  adapter_->RemovePairingDelegate(this);
-  AttemptSendAccountKey();
+  // DevicePairedChanged() is expected to be called following pairing
+  // confirmation.
 }
 
 void FastPairPairerImpl::AttemptSendAccountKey() {
@@ -472,7 +481,13 @@ void FastPairPairerImpl::AttemptSendAccountKey() {
     return;
   }
 
-  WriteAccountKey();
+  // It's possible that the user has opted to initial pair to a device that
+  // already has an account key saved. We check to see if this is the case
+  // before writing a new account key.
+  FastPairRepository::Get()->IsDeviceSavedToAccount(
+      device_->classic_address().value(),
+      base::BindOnce(&FastPairPairerImpl::OnIsDeviceSavedToAccount,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FastPairPairerImpl::OnCheckOptInStatus(
@@ -486,6 +501,38 @@ void FastPairPairerImpl::OnCheckOptInStatus(
     return;
   }
 
+  // It's possible that the user has opted to initial pair to a device that
+  // already has an account key saved. We check to see if this is the case
+  // before writing a new account key.
+  FastPairRepository::Get()->IsDeviceSavedToAccount(
+      device_->classic_address().value(),
+      base::BindOnce(&FastPairPairerImpl::OnIsDeviceSavedToAccount,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void FastPairPairerImpl::OnIsDeviceSavedToAccount(
+    bool is_device_saved_to_account) {
+  if (is_device_saved_to_account) {
+    // If the device is saved to Footprints, don't write a new account key to
+    // the device, and return that we've finished the pairing procedure
+    // successfully. We could rework some of our APIs here so that we can call
+    // AssociateAccountKeyLocally similar to how we handle Subsequent pairing
+    // above. However, the first time a not discoverable advertisement for this
+    // device is found we'll add the account key to our SavedDeviceRegistry as
+    // expected.
+    QP_LOG(INFO) << __func__
+                 << ": Device is already saved, skipping write account key. "
+                    "Pairing procedure complete.";
+    std::move(pairing_procedure_complete_).Run(device_);
+    return;
+  }
+
+  // If we can't load the user's saved devices for some reason (e.g. offline)
+  // |is_device_saved_to_account| will return false even though we didn't
+  // properly check Footrpints. This will cause us to write a new account key to
+  // the device. This may cause problems since the device will have a different
+  // account key than what is stored in Footprints, causing the not discoverable
+  // advertisement to not be recognized.
   WriteAccountKey();
 }
 
@@ -584,14 +631,23 @@ void FastPairPairerImpl::DevicePairedChanged(device::BluetoothAdapter* adapter,
   if (!new_paired_status || !paired_callback_)
     return;
 
-  // This covers the case where we are pairing a v1 device and are using the
-  // Bluetooth pairing dialog to do it.
   if (device->GetAddress() == device_->ble_address ||
       device->GetAddress() == device_->classic_address()) {
-    QP_LOG(INFO) << __func__ << ": Completing pairing procedure";
+    QP_LOG(INFO) << __func__ << ": Completing pairing procedure " << device_;
     std::move(paired_callback_).Run(device_);
 
-    if (pairing_procedure_complete_) {
+    // For V2 devices we still need to remove the Pairing Delegate and write the
+    // account key. `AttemptSendAccountKey()` will call
+    // |pairing_procedure_complete_| whereas V1 devices need to run the callback
+    // in this function since they don't write account keys, and their pairing
+    // procedure is not complete at this point.
+    if (device_->version().has_value() &&
+        device_->version().value() == DeviceFastPairVersion::kHigherThanV1) {
+      adapter_->RemovePairingDelegate(this);
+      AttemptSendAccountKey();
+    } else if (pairing_procedure_complete_) {
+      // This covers the case where we are pairing a v1 device and are using the
+      // Bluetooth pairing dialog to do it.
       std::move(pairing_procedure_complete_).Run(device_);
     }
   }

@@ -57,7 +57,7 @@
 #include "ui/gfx/geometry/test/geometry_util.h"
 #include "ui/latency/latency_info.h"
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 #include "components/viz/service/display/overlay_processor_delegated.h"
 #include "ui/base/ui_base_features.h"
 #endif
@@ -697,7 +697,7 @@ class OverlayTest : public testing::Test {
                                        output_surface_.get());
 
     child_provider_ = TestContextProvider::Create();
-    child_provider_->BindToCurrentThread();
+    child_provider_->BindToCurrentSequence();
     child_resource_provider_ = std::make_unique<ClientResourceProvider>();
 
     overlay_processor_ = std::make_unique<OverlayProcessorType>();
@@ -738,10 +738,9 @@ class UseMultipleOverlaysTest : public OverlayTest<OverlayProcessorType> {
  public:
   UseMultipleOverlaysTest() {
     // To use more than one overlay, we need to enable some features.
-    const std::vector<base::test::ScopedFeatureList::FeatureAndParams>
-        featureAndParamsList = {{features::kEnableOverlayPrioritization, {}},
-                                {features::kUseMultipleOverlays,
-                                 {{features::kMaxOverlaysParam, "4"}}}};
+    const std::vector<base::test::FeatureRefAndParams> featureAndParamsList = {
+        {features::kEnableOverlayPrioritization, {}},
+        {features::kUseMultipleOverlays, {{features::kMaxOverlaysParam, "4"}}}};
     scoped_features.InitWithFeaturesAndParameters(featureAndParamsList, {});
   }
 
@@ -4540,7 +4539,7 @@ TEST_F(UnderlayTest, ProtectedVideoOverlayScaling) {
   }
 }
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 
 TileDrawQuad* CreateTileCandidateQuadAt(
     DisplayResourceProvider* parent_resource_provider,

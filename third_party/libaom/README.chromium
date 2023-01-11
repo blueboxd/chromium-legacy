@@ -1,10 +1,10 @@
 Name: Alliance for Open Media Video Codec
 Short Name: libaom
 URL: https://aomedia.googlesource.com/aom/
-Version: 3.4.0
-Date: Monday December 05 2022
-Revision: fcf671adc2f301c2d1fe3cfa6d545d59c5084d3d
-CPEPrefix: cpe:/a:aomedia:aomedia:3.4.0
+Version: 3.5.0
+Date: Wednesday November 09 2022
+Revision: 407ee57e289d3ed907c57de16275c7615a93f9d9
+CPEPrefix: cpe:/a:aomedia:aomedia:3.5.0
 License: BSD
 License File: source/libaom/LICENSE
 Security Critical: yes

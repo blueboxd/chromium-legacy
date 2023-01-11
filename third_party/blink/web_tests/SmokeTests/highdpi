@@ -310,6 +310,7 @@ external/wpt/css/css-backgrounds/background-size/background-size-near-zero-png.h
 external/wpt/css/css-backgrounds/background-size/vector/tall--auto--percent-width-nonpercent-height-viewbox.html
 external/wpt/css/css-backgrounds/hidpi/simple-bg-color.html
 external/wpt/css/css-backgrounds/parsing/background-image-invalid.html
+external/wpt/css/css-borders/border-width-computed-value.tentative.html
 external/wpt/css/css-borders/subpixel-borders-with-child-border-box-sizing.html
 external/wpt/css/css-box/inheritance.html
 external/wpt/css/css-box/parsing/height-valid.html
@@ -1561,11 +1562,11 @@ transforms/transformed-document-element.html
 virtual/android/fullscreen/video-controls-timeline.html
 virtual/compositor-threaded-percent-based-scrolling/fast/events/wheel/continuous-platform-wheelevent-in-scrolling-div.html
 virtual/compositor_threaded_scrollbar_scrolling/paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html
-virtual/document-transition-wide-gamut/wpt_internal/document-transition/content-visibility-auto-shared-element.html
-virtual/document-transition-wide-gamut/wpt_internal/document-transition/content-with-clip-max-texture-size.html
-virtual/document-transition-wide-gamut/wpt_internal/document-transition/new-content-with-overflow-zoomed.html
-virtual/document-transition-wide-gamut/wpt_internal/document-transition/old-content-with-overflow-zoomed.html
-virtual/document-transition/wpt_internal/document-transition/
+virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/content-visibility-auto-shared-element.html
+virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/content-with-clip-max-texture-size.html
+virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/new-content-with-overflow-zoomed.html
+virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/old-content-with-overflow-zoomed.html
+virtual/view-transition/external/wpt/css/css-view-transitions/
 virtual/fenced-frame-mparch/wpt_internal/fenced_frame/nested-opaque-ad-sizes.https.html
 virtual/fenced-frame-mparch/wpt_internal/fenced_frame/opaque-ad-sizes.https.html
 virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/nested-opaque-ad-sizes.https.html

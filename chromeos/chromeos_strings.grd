@@ -1193,6 +1193,11 @@ Try tapping the mic to ask me anything.
         Done
       </message>
 
+      <!-- TODO(zhangwenyu): Finalize string and localization -->
+      <message name="IDS_INPUT_DIAGNOSTICS_UNTESTABLE_NOTE" translateable="false" desc="Text explaining why the input device is untestable and the test button is grey out.">
+        Can't access this routine. Check that it's properly connected and try again.
+      </message>
+
       <!-- Input diagnostics: keyboard tester -->
       <message name="IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_FOCUS_LOSS_MESSAGE" desc="A message displayed in a keyboard testing UI when its window loses focus, explaining that the tester won't respond to key presses again until its window is refocused.">
         Keys aren't tested when you're using another window
@@ -1201,10 +1206,16 @@ Try tapping the mic to ask me anything.
         For more help, go to the <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Help Center<ph name="END_LINK">&lt;/a&gt;</ph>.
       </message>
       <message name="IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_INSTRUCTION" desc="Instruction text in a keyboard testing UI. Appears above a visual representation showing the keys currently pressed on the keyboard.">
-        Type any key on your keyboard. You can press up to 4 keys at the same time.
+        Type any key on your keyboard. You can press up to 4 keys at the same time. Press Alt plus Esc to close the dialog.
       </message>
       <message name="IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_TITLE" desc="Title for a dialog allowing the user to test their keyboard.">
         Test your keyboard
+      </message>
+
+      <!-- Diagnostics App: Touchpad Diagnostics -->
+      <!-- TODO(b/253021171): Remove translatable and update string when touchpad strings finalized. -->
+      <message name="IDS_INPUT_DIAGNOSTICS_TOUCHPAD_TESTER_TITLE" translateable="false" desc="Title for a dialog allowing the user to test their touchpad.">
+        Test your touchpad
       </message>
 
       <!-- Ash keyboard diagram ARIA labels -->
@@ -3471,16 +3482,16 @@ Try tapping the mic to ask me anything.
       <message name="IDS_FEEDBACK_TOOL_BACK_BUTTON_LABEL" desc="label for the back button to return to a prior page">
         Back
       </message>
+      <message name="IDS_FEEDBACK_TOOL_DIALOG_BACK_BUTTON_ARIA_LABEL" desc="Aria label for the back button in the dialogs to close the dialog and return to the feedback app page">
+        Back
+      </message>
       <message name="IDS_FEEDBACK_TOOL_DESCRIPTION_HINT" desc="Label for the hint in description textarea">
         Share your feedback or describe your issue. If possible, include steps to reproduce your issue.
       </message>
       <message name="IDS_FEEDBACK_TOOL_ATTACH_FILES_LABEL" desc="Label for adding a screenshot and/or a filename.">
         Attach files
       </message>
-      <message name="IDS_FEEDBACK_TOOL_REPLACE_FILE_LABEL" desc="Label for replacing a file.">
-        Replace
-      </message>
-      <message name="IDS_FEEDBACK_TOOL_REPLACE_FILE_ARIA_LABEL" desc="Aria Label of the replace file button">
+      <message name="IDS_FEEDBACK_TOOL_REPLACE_FILE_LABEL" desc="Label of the replace file button">
         Replace file
       </message>
       <message name="IDS_FEEDBACK_TOOL_ADD_FILE_LABEL" desc="Label for the field of adding a file">
@@ -3496,22 +3507,22 @@ Try tapping the mic to ask me anything.
         Can't upload file larger than 10 MB
       </message>
       <message name="IDS_FEEDBACK_TOOL_INCLUDE_SYSTEM_INFO_AND_METRICS_CHECKBOX_LABEL" desc="Checkbox for including system information and metrics on the bug report dialog box">
-        Send <ph name="BEGIN_LINK1">&lt;a id="sysInfoLink"&gt;</ph>system and app info<ph name="END_LINK1">&lt;/a&gt;</ph> and <ph name="BEGIN_LINK2">&lt;a id="histogramsLink"&gt;</ph>metrics<ph name="END_LINK2">&lt;/a&gt;</ph>
+        Send <ph name="BEGIN_LINK1">&lt;a id="sysInfoLink"&gt;</ph>system &amp; app info<ph name="END_LINK1">&lt;/a&gt;</ph> and <ph name="BEGIN_LINK2">&lt;a id="histogramsLink"&gt;</ph>metrics<ph name="END_LINK2">&lt;/a&gt;</ph>
       </message>
       <message name="IDS_FEEDBACK_TOOL_INCLUDE_PERFORMANCE_TRACE_CHECKBOX_LABEL" desc="Checkbox for including performance trace data on the bug report dialog box.">
         Send <ph name="BEGIN_LINK1">&lt;a id="performanceTraceLink"&gt;</ph>performance trace data<ph name="END_LINK1">&lt;/a&gt;</ph>
       </message>
       <message name="IDS_FEEDBACK_TOOL_BLUETOOTH_LOGS_CHECKBOX" translateable="false" desc="Checkbox for Google internal account to attach bluetooth logs from the current session.">
-        Attach <ph name="BEGIN_LINK1">&lt;a id="bluetoothLogsInfoLink"&gt;</ph>Bluetooth Logs<ph name="END_LINK1">&lt;/a&gt;</ph> (Google internal)
+        Attach bluetooth history and information. <ph name="BEGIN_LINK1">&lt;a id="bluetoothLogsInfoLink"&gt;</ph>View more details<ph name="END_LINK1">&lt;/a&gt;</ph>.
       </message>
       <message name="IDS_FEEDBACK_TOOL_BLUETOOTH_LOGS_MESSAGE" translateable="false" desc="Message shown after user clicks on the bluetooth logs hyperlink">
-        To better diagnose Bluetooth issues, Googlers can include additional Bluetooth logs with their feedback reports. When this option is checked, your report will include btsnoop and HCI logs from your current session, sanitized to remove as much PII as possible. Access to these logs will be restricted to managers of the ChromeOS product group in Listnr. Logs will be purged after 90 days.
+        Include bluetooth logs which captures information such as btsnoop and HCI logs from your current session. The logs will be filtered to remove as much personal identifiable information as possible.&#10;&#10;The information is stored for up to 90 days and access is restricted to the team working on this issue.
       </message>
       <message name="IDS_FEEDBACK_TOOL_ASSISTANT_LOGS_CHECKBOX" translateable="false" desc="Checkbox for Google internal account to attach assistant logs from the current session.">
-        Include recent Assistant history via Sherlog. This may include your identify, location and debug info. <ph name="BEGIN_LINK1">&lt;a id="assistantLogsLink"&gt;</ph>Learn more<ph name="END_LINK1">&lt;/a&gt;</ph>
+      Include recent Google Assistant history and information. <ph name="BEGIN_LINK1">&lt;a id="assistantLogsLink"&gt;</ph>View more details<ph name="END_LINK1">&lt;/a&gt;</ph>.
       </message>
       <message name="IDS_FEEDBACK_TOOL_ASSISTANT_LOGS_MESSAGE" translateable="false" desc="Message shown after user clicks on the assistant logs hyperlink">
-        This information helps us better understand your Assistant issue. It's stored for up to 90 days and access is restricted to appropriate engineering and feedback teams.
+        Google Assistance captures recent history and information such as your identity and location to help us better understand your issue.&#10;&#10;The information is stored for up to 90 days and access is restricted to the team working on this issue.
       </message>
       <message name="IDS_FEEDBACK_TOOL_PRIVACY_NOTE" desc="Text for the privacy note included in the feedback app">
         Go to the <ph name="BEGIN_LINK1">&lt;a id="legalHelpPageUrl"&gt;</ph>Legal Help page<ph name="END_LINK1">&lt;/a&gt;</ph> to request content changes for legal reasons. Some account and system information may be sent to Google. We will use the information you give us to help address technical issues and to improve our services, subject to our <ph name="BEGIN_LINK2">&lt;a id="privacyPolicyUrl"&gt;</ph>Privacy Policy<ph name="END_LINK2">&lt;/a&gt;</ph> and <ph name="BEGIN_LINK3">&lt;a id="termsOfServiceUrl"&gt;</ph>Terms of Service<ph name="END_LINK3">&lt;/a&gt;</ph>.
@@ -3537,11 +3548,17 @@ Try tapping the mic to ask me anything.
       <message name="IDS_FEEDBACK_TOOL_SCREENSHOT_LABEL" desc="Label for the screenshot field">
         Screenshot
       </message>
+      <message name="IDS_FEEDBACK_TOOL_PREVIEW_SCREENSHOT_DIALOG_LABEL" desc="Label when opening the preview screenshot dialog.">
+        Preview Screenshot
+      </message>
       <message name="IDS_FEEDBACK_TOOL_ATTACH_SCREENSHOT_CHECKBOX_ARIA_LABEL" desc="Aria Label for the checkbox to select the screenshot">
         Attach screenshot
       </message>
       <message name="IDS_FEEDBACK_TOOL_PREVIEW_IMAGE_ARIA_LABEL" desc="Aria Label for the thumbnail of a screenshot or an image file">
         Preview <ph name="PREVIEW_OBJECT">$1<ex>Screenshot</ex></ph>
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_PREVIEW_IMAGE_DIALOG_LABEL" desc="Label when opening the preview attached image dialog.">
+        Preview Image
       </message>
       <message name="IDS_FEEDBACK_TOOL_USER_CONSENT_LABEL" desc="Label for checkbox indicating whether the user agrees to be contacted back.">
         Allow Google to email you about this issue
@@ -3551,10 +3568,10 @@ Try tapping the mic to ask me anything.
         Thanks for your feedback
       </message>
       <message name="IDS_FEEDBACK_TOOL_THANK_YOU_NOTE_OFFLINE" desc="Thank you note when feedback tool is offline">
-        Thanks for the feedback. Your feedback helps improve Chrome OS and will be reviewed by the Chrome OS team. Because of the number of reports submitted, you won’t receive a direct reply.
+        Thanks for your feedback. Your feedback helps us improve the Chromebook experience and will be reviewed by our team. Because of the large number of reports, we won’t be able to send a reply.
       </message>
       <message name="IDS_FEEDBACK_TOOL_THANK_YOU_NOTE_ONLINE" desc="Thank you note when feedback tool is online">
-        Your feedback helps improve Chrome OS and will be reviewed by our team. Because of the large number of reports, we won’t be able to send a reply.
+        Your feedback helps us improve the Chromebook experience and will be reviewed by our team. Because of the large number of reports, we won’t be able to send a reply.
       </message>
       <message name="IDS_FEEDBACK_TOOL_PAGE_TITLE_SEND_OFFLINE" desc="Label showing the title of the feedback tool when the user attempts to send a report while offline.">
         You're offline. Feedback will be sent later.
@@ -3596,6 +3613,18 @@ Try tapping the mic to ask me anything.
         Keyboard settings
       </message>
       <!-- End of Shortcut Customization -->
+
+      <!-- APN -->
+      <message name="IDS_SETTINGS_ACCESS_POINT_NAME_APN" desc="Name of the settings page which displays APN related configuration.">
+        Access point name (APN)
+      </message>
+      <message name="IDS_SETTINGS_ADD_NEW_APN" desc="Title for the button which opens the create new custom APN dialog.">
+        New APN
+      </message>
+      <message name="IDS_SETTINGS_APN_DESCRIPTION_WITH_LEARN_MORE_LINK" desc="Text describing APN settings menu with a link to more detailed information.">
+        Manage network APN settings. APNs establish a connection between a cellular network and the internet. <ph name="BEGIN_LINK">&lt;a href="#" &gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
+      </message>
+      <!-- End of APN -->
     </messages>
   </release>
 </grit>

@@ -32,6 +32,7 @@
 #include "chrome/browser/apps/app_service/paused_apps.h"
 #include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "chrome/browser/ash/arc/app_shortcuts/arc_app_shortcuts_request.h"
+#include "chrome/browser/ash/arc/privacy_items/arc_privacy_items_bridge.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
@@ -72,7 +73,7 @@ class ArcApps : public KeyedService,
                 public ash::ArcNotificationManagerBase::Observer,
                 public ash::ArcNotificationsHostInitializer::Observer,
                 public apps::InstanceRegistry::Observer,
-                public arc::mojom::PrivacyItemsHost {
+                public arc::ArcPrivacyItemsBridge::Observer {
  public:
   static ArcApps* Get(Profile* profile);
 
@@ -148,20 +149,8 @@ class ArcApps : public KeyedService,
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
               apps::mojom::WindowInfoPtr window_info) override;
-  void LaunchAppWithIntent(const std::string& app_id,
-                           int32_t event_flags,
-                           apps::mojom::IntentPtr intent,
-                           apps::mojom::LaunchSource launch_source,
-                           apps::mojom::WindowInfoPtr window_info,
-                           LaunchAppWithIntentCallback callback) override;
-  void SetPermission(const std::string& app_id,
-                     apps::mojom::PermissionPtr permission) override;
   void SetResizeLocked(const std::string& app_id,
                        apps::mojom::OptionalBool locked) override;
-  void Uninstall(const std::string& app_id,
-                 apps::mojom::UninstallSource uninstall_source,
-                 bool clear_site_data,
-                 bool report_abuse) override;
   void PauseApp(const std::string& app_id) override;
   void UnpauseApp(const std::string& app_id) override;
   void StopApp(const std::string& app_id) override;
@@ -221,11 +210,9 @@ class ArcApps : public KeyedService,
   void OnArcNotificationManagerDestroyed(
       ash::ArcNotificationManagerBase* notification_manager) override;
 
-  // PrivacyItemsHost overrides.
+  // ArcPrivacyItemsBridgeObserver overrides.
   void OnPrivacyItemsChanged(
-      std::vector<arc::mojom::PrivacyItemPtr> privacy_items) override;
-  void OnMicCameraIndicatorRequirementChanged(bool flag) override {}
-  void OnLocationIndicatorRequirementChanged(bool flag) override {}
+      const std::vector<arc::mojom::PrivacyItemPtr>& privacy_items) override;
 
   // apps::InstanceRegistry::Observer overrides.
   void OnInstanceUpdate(const apps::InstanceUpdate& update) override;
@@ -302,6 +289,10 @@ class ArcApps : public KeyedService,
       notification_observation_{this};
 
   AppNotifications app_notifications_;
+
+  base::ScopedObservation<arc::ArcPrivacyItemsBridge,
+                          arc::ArcPrivacyItemsBridge::Observer>
+      arc_privacy_items_bridge_observation_{this};
 
   base::ScopedObservation<apps::InstanceRegistry,
                           apps::InstanceRegistry::Observer>

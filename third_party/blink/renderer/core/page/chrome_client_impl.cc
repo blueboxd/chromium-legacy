@@ -213,11 +213,8 @@ void ChromeClientImpl::SetWindowRect(const gfx::Rect& requested_rect,
   // and to avoid exposing other screen details to frames without permission.
   // TODO(crbug.com/897300): Use permission state for better sync estimates or
   // store unadjusted pending window rects if that will not break many sites.
-  const bool request_unadjusted_rect =
-      RuntimeEnabledFeatures::WindowPlacementEnabled(frame.DomWindow());
-  web_view_->MainFrameViewWidget()->SetWindowRect(
-      request_unadjusted_rect ? rect_adjusted_for_minimum : adjusted_rect,
-      adjusted_rect);
+  web_view_->MainFrameViewWidget()->SetWindowRect(rect_adjusted_for_minimum,
+                                                  adjusted_rect);
 }
 
 gfx::Rect ChromeClientImpl::RootWindowRect(LocalFrame& frame) {
@@ -369,12 +366,8 @@ void ChromeClientImpl::Show(LocalFrame& frame,
   // and to avoid exposing other screen details to frames without permission.
   // TODO(crbug.com/897300): Use permission state for better sync estimates or
   // store unadjusted pending window rects if that will not break many sites.
-  const bool request_unadjusted_rect =
-      RuntimeEnabledFeatures::WindowPlacementEnabled(opener_frame.DomWindow());
-  web_view_->Show(
-      opener_frame.GetLocalFrameToken(), navigation_policy,
-      request_unadjusted_rect ? rect_adjusted_for_minimum : adjusted_rect,
-      adjusted_rect, user_gesture);
+  web_view_->Show(opener_frame.GetLocalFrameToken(), navigation_policy,
+                  rect_adjusted_for_minimum, adjusted_rect, user_gesture);
 }
 
 bool ChromeClientImpl::ShouldReportDetailedMessageForSourceAndSeverity(
@@ -1275,7 +1268,7 @@ void ChromeClientImpl::JavaScriptChangedAutofilledValue(
   }
 }
 
-TransformationMatrix ChromeClientImpl::GetDeviceEmulationTransform() const {
+gfx::Transform ChromeClientImpl::GetDeviceEmulationTransform() const {
   DCHECK(web_view_);
   return web_view_->GetDeviceEmulationTransform();
 }
@@ -1355,6 +1348,11 @@ void ChromeClientImpl::PasswordFieldReset(HTMLInputElement& element) {
           AutofillClientFromFrame(element.GetDocument().GetFrame())) {
     fill_client->PasswordFieldReset(WebInputElement(&element));
   }
+}
+
+float ChromeClientImpl::ZoomFactorForViewportLayout() {
+  DCHECK(web_view_);
+  return web_view_->ZoomFactorForViewportLayout();
 }
 
 gfx::Rect ChromeClientImpl::AdjustWindowRectForMinimum(

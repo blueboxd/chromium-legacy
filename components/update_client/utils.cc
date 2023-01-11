@@ -18,10 +18,12 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/path_service.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/system/sys_info.h"
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
 #include "components/update_client/component.h"
@@ -33,7 +35,17 @@
 #include "crypto/sha2.h"
 #include "url/gurl.h"
 
+#if BUILDFLAG(IS_WIN)
+#include <shlobj.h>
+
+#include "base/win/windows_version.h"
+#endif  // BUILDFLAG(IS_WIN)
+
 namespace update_client {
+
+const char kArchAmd64[] = "x86_64";
+const char kArchIntel[] = "x86";
+const char kArchArm64[] = "arm64";
 
 bool HasDiffUpdate(const Component& component) {
   return !component.crx_diffurls().empty();
@@ -47,11 +59,14 @@ bool DeleteFileAndEmptyParentDirectory(const base::FilePath& filepath) {
   if (!base::DeleteFile(filepath))
     return false;
 
-  const base::FilePath dirname(filepath.DirName());
-  if (!base::IsDirectoryEmpty(dirname))
+  return DeleteEmptyDirectory(filepath.DirName());
+}
+
+bool DeleteEmptyDirectory(const base::FilePath& dir_path) {
+  if (!base::IsDirectoryEmpty(dir_path))
     return true;
 
-  return base::DeleteFile(dirname);
+  return base::DeleteFile(dir_path);
 }
 
 std::string GetCrxComponentID(const CrxComponent& component) {
@@ -156,6 +171,17 @@ base::Value ReadManifest(const base::FilePath& unpack_path) {
   if (!root)
     return base::Value();
   return base::Value::FromUniquePtrValue(std::move(root));
+}
+
+std::string GetArchitecture() {
+#if BUILDFLAG(IS_WIN)
+  const base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
+  return (os_info->IsWowX86OnARM64() || os_info->IsWowAMD64OnARM64())
+             ? kArchArm64
+             : base::SysInfo().OperatingSystemArchitecture();
+#else   // BUILDFLAG(IS_WIN)
+  return base::SysInfo().OperatingSystemArchitecture();
+#endif  // BUILDFLAG(IS_WIN)
 }
 
 }  // namespace update_client

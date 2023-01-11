@@ -43,7 +43,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/ui/ash/login_screen_client_impl.h"
-#include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
+#include "chrome/browser/ui/webui/ash/login/l10n_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
@@ -521,11 +521,6 @@ UserAvatar UserSelectionScreen::BuildAshUserAvatarForUser(
         resource_id, rb.GetMaxResourceScaleFactor());
     avatar.bytes.assign(avatar_data.begin(), avatar_data.end());
   };
-
-  // After the default avatar images are moved to cloud, the user
-  // should have image bytes when using default images.
-  CHECK(!ash::features::IsAvatarsCloudMigrationEnabled() ||
-        !user.HasDefaultImage() || user.has_image_bytes());
 
   // After the avatar cloud migration, remove the second if case.
   if (user.has_image_bytes()) {

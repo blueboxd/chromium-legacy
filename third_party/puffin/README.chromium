@@ -42,3 +42,9 @@ components.
 so the tests will pass in back-to-back runs.
 - Updated puffin::ApplyPuffPatch test to use base::ContentsEqual rather than
 manually reading each file and comparing the results.
+- Added puffin::PuffDiff definition that only requires source, destination,
+and output patch filepaths as arguments.
+- Updated puffin::PuffDiff to return puffin::Status rather than a generic
+pass/fail bool.
+- Removing Requirement to find deflates; in puffin::PuffDiff if a file doesn't
+have deflates, we can still generate a raw patch.

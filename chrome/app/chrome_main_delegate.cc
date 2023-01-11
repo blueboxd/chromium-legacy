@@ -48,6 +48,7 @@
 #include "chrome/browser/startup_data.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -223,7 +224,10 @@
 #include "chromeos/lacros/dbus/lacros_dbus_helper.h"
 #include "chromeos/lacros/lacros_paths.h"
 #include "chromeos/lacros/lacros_service.h"
-#include "chromeos/startup/browser_params_proxy.h"  // nogncheck
+#include "chromeos/startup/browser_params_proxy.h"      // nogncheck
+#include "chromeos/startup/browser_postlogin_params.h"  // nogncheck
+#include "chromeos/startup/startup.h"                   // nogncheck
+#include "chromeos/startup/startup_switches.h"          // nogncheck
 #include "media/base/media_switches.h"
 #include "ui/base/resource/data_pack_with_resource_sharing_lacros.h"
 #endif
@@ -441,6 +445,24 @@ void HandleHelpSwitches(const base::CommandLine& command_line) {
 }
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// BrowserManager launches Lacros redirecting its stderr to a log file.
+// This function redirects stderr a second time, to another log file, after
+// user login has happened (e.g. to the cryptohome).
+// Only useful when pre-launching Lacros at login screen.
+void RedirectLacrosLogging() {
+  const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
+  base::FilePath log_file =
+      cmdline.GetSwitchValuePath(chromeos::switches::kCrosPostLoginLogFile);
+  if (!log_file.empty() && (logging::DetermineLoggingDestination(cmdline) &
+                            logging::LOG_TO_STDERR)) {
+    log_file = logging::SetUpLogFile(log_file, /*new_log=*/true);
+    FILE* result = freopen(log_file.value().c_str(), "a", stderr);
+    DPCHECK(result != nullptr);
+  }
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
 #if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_ANDROID)
 void SIGTERMProfilingShutdown(int signal) {
   content::Profiling::Stop();
@@ -579,8 +601,14 @@ void InitLogging(const std::string& process_type) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   logging::InitChromeLogging(command_line, file_state);
+  // Log the Chrome version for information. Do so at WARNING level as that's
+  // the min level on ChromeOS.
+  if (process_type.empty()) {
+    LOG(WARNING) << "This is Chrome version " << chrome::kChromeVersion
+                 << " (not a warning)";
+  }
 }
-#endif
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 void RecordMainStartupMetrics(base::TimeTicks application_start_time) {
   const base::TimeTicks now = base::TimeTicks::Now();
@@ -624,7 +652,18 @@ ChromeMainDelegate::ChromeMainDelegate(base::TimeTicks exe_entry_point_ticks) {
   RecordMainStartupMetrics(exe_entry_point_ticks);
 }
 
+#if !BUILDFLAG(IS_ANDROID)
+ChromeMainDelegate::~ChromeMainDelegate() {
+  std::string process_type =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kProcessType);
+  const bool is_browser_process = process_type.empty();
+  if (is_browser_process)
+    browser_shutdown::RecordShutdownMetrics();
+}
+#else
 ChromeMainDelegate::~ChromeMainDelegate() = default;
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
     InvokedIn invoked_in) {
@@ -729,6 +768,21 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
   content::InitializeMojoCore();
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Set Lacros's default paths.
+  // NOTE: When launching Lacros at login screen, this is the first access
+  // to post-login parameters. In other words, this is as far as Lacros
+  // initialization will go at login screen.
+  // The browser process will block here.
+  chrome::SetLacrosDefaultPathsFromInitParams(
+      chromeos::BrowserParamsProxy::Get()->DefaultPaths().get());
+
+  // NOTE: When launching Lacros at login screen, after this point,
+  // the user should have logged in. The cryptohome is now accessible.
+
+  // Redirect logs from system directory to cryptohome.
+  if (chromeos::IsLaunchedWithPostLoginParams())
+    RedirectLacrosLogging();
+
   // LacrosService instance needs the sequence of the main thread,
   // and needs to be created earlier than incoming Mojo invitation handling.
   // This also needs ThreadPool sequences to post some tasks internally.
@@ -738,6 +792,15 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
   {
     const chromeos::BrowserParamsProxy* init_params =
         chromeos::BrowserParamsProxy::Get();
+
+    // Override the login user DIR_HOME path for the Lacros browser process.
+    if (init_params->CrosUserIdHash().has_value()) {
+      base::FilePath homedir(kUserHomeDirPrefix);
+      homedir = homedir.Append(init_params->CrosUserIdHash().value());
+      base::PathService::OverrideAndCreateIfNeeded(
+          base::DIR_HOME, homedir, /*is_absolute=*/true, /*create=*/false);
+    }
+
     // This lives here rather than in ChromeBrowserMainExtraPartsLacros due to
     // timing constraints. If we relocate it, then the flags aren't propagated
     // to the GPU process.
@@ -1252,8 +1315,11 @@ void ChromeMainDelegate::PreSandboxStartup() {
     InitializeUserDataDir(base::CommandLine::ForCurrentProcess());
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (process_type.empty() || process_type == switches::kZygoteProcess ||
-      process_type == switches::kUtilityProcess) {
+  // Generate shared resource file only on browser process. This is to avoid
+  // generating a file in different processes again.
+  // Also generate only when resource file sharing feature is enabled.
+  if (command_line.HasSwitch(switches::kEnableResourcesFileSharing) &&
+      process_type.empty()) {
     // Initialize BrowserInitParams before generating and loading shared
     // resource file since the path required for the feature is set by
     // BrowserInitParams initialization.
@@ -1261,23 +1327,12 @@ void ChromeMainDelegate::PreSandboxStartup() {
         chromeos::BrowserParamsProxy::Get();
     chrome::SetLacrosDefaultPathsFromInitParams(
         init_params->DefaultPaths().get());
+    // TODO(crbug.com/1357874): Currently, when launching Lacros at login
+    // screen, and if resource file sharing is also enabled, Lacros will block
+    // here waiting for login. That's before the Zygote process is forked, so we
+    // can't take full advantage of the pre-launching optimization. Investigate
+    // if we can make these two features fully compatible.
 
-    // Override the login user DIR_HOME path for the Lacros browser process. The
-    // primary user id hash is expected to be already set, because Lacros should
-    // only run inside the user session.
-    if (init_params->CrosUserIdHash().has_value()) {
-      base::FilePath homedir(kUserHomeDirPrefix);
-      homedir = homedir.Append(init_params->CrosUserIdHash().value());
-      base::PathService::OverrideAndCreateIfNeeded(
-          base::DIR_HOME, homedir, /*is_absolute=*/true, /*create=*/false);
-    }
-  }
-
-  // Generate shared resource file only on browser process. This is to avoid
-  // generating a file in different processes again.
-  // Also generate only when resource file sharing feature is enabled.
-  if (command_line.HasSwitch(switches::kEnableResourcesFileSharing) &&
-      process_type.empty()) {
     base::FilePath ash_resources_dir;
     base::FilePath lacros_resources_dir;
     base::FilePath user_data_dir;
@@ -1446,7 +1501,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
       // before crashpad is initialized. Please leave this check immediately
       // before the crashpad initialization; the amount of memory used at this
       // point is important to the test.
-      IMMEDIATE_CRASH();
+      base::ImmediateCrash();
     }
 #if BUILDFLAG(IS_ANDROID)
     crash_reporter::InitializeCrashpad(process_type.empty(), process_type);

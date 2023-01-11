@@ -9,9 +9,10 @@ import {assert} from 'chrome://resources/js/assert_ts.js';
 import {getTrustedHTML} from 'chrome://resources/js/static_types.js';
 import {Origin} from 'chrome://resources/mojo/url/mojom/origin.mojom-webui.js';
 
-import {FailedSourceRegistration, Handler as AttributionInternalsHandler, HandlerRemote as AttributionInternalsHandlerRemote, ObserverInterface, ObserverReceiver, ReportID, WebUIReport, WebUISource, WebUISource_Attributability, WebUITrigger, WebUITrigger_Status} from './attribution_internals.mojom-webui.js';
+import {ClearedDebugKey, ClearedDebugKey_Type, FailedSourceRegistration, Handler as AttributionInternalsHandler, HandlerRemote as AttributionInternalsHandlerRemote, ObserverInterface, ObserverReceiver, ReportID, WebUIReport, WebUISource, WebUISource_Attributability, WebUITrigger, WebUITrigger_Status} from './attribution_internals.mojom-webui.js';
 import {AttributionInternalsTableElement} from './attribution_internals_table.js';
-import {ReportType, SourceRegistrationError, SourceType} from './attribution_reporting.mojom-webui.js';
+import {ReportType, SourceType} from './attribution_reporting.mojom-webui.js';
+import {SourceRegistrationError} from './source_registration_error.mojom-webui.js';
 import {Column, TableModel} from './table_model.js';
 
 // If kAttributionAggregatableBudgetPerSource changes, update this value
@@ -53,7 +54,7 @@ class ValueColumn<T, V> implements Column<T> {
   }
 
   renderHeader(th: HTMLElement) {
-    th.innerText = `${this.header}`;
+    th.innerText = this.header;
   }
 }
 
@@ -80,6 +81,54 @@ class CodeColumn<T> extends ValueColumn<T, string> {
     pre.appendChild(code);
 
     td.appendChild(pre);
+  }
+}
+
+function renderDL<T>(td: HTMLElement, row: T, cols: Array<Column<T>>) {
+  const dl = td.ownerDocument.createElement('dl');
+
+  cols.forEach(col => {
+    const dt = td.ownerDocument.createElement('dt');
+    col.renderHeader(dt);
+    dl.appendChild(dt);
+
+    const dd = td.ownerDocument.createElement('dd');
+    col.render(dd, row);
+    dl.appendChild(dd);
+  });
+
+  td.appendChild(dl);
+}
+
+function renderA(td: HTMLElement, text: string, href: string) {
+  const a = td.ownerDocument.createElement('a');
+  a.href = href;
+  a.target = '_blank';
+  a.innerText = text;
+  td.appendChild(a);
+}
+
+class LogMetadataColumn implements Column<Log> {
+  compare = null;
+
+  renderHeader(th: HTMLElement) {
+    th.innerText = 'Metadata';
+  }
+
+  render(td: HTMLElement, row: Log) {
+    row.renderMetadata(td);
+  }
+}
+
+class LogDescriptionColumn implements Column<Log> {
+  compare = null;
+
+  renderHeader(th: HTMLElement) {
+    th.innerText = 'Description';
+  }
+
+  render(td: HTMLElement, row: Log) {
+    row.renderDescription(td);
   }
 }
 
@@ -652,16 +701,78 @@ class AggregatableAttributionReportTableModel extends ReportTableModel {
   }
 }
 
-class Log {
-  json: string;
-  failureReason: string;
-  time: Date;
-  reportingOrigin: string;
+abstract class Log {
+  readonly timestamp: Date;
+  readonly reportTo: string;
+
+  constructor(mojo: {time: number, reportingOrigin: Origin}) {
+    this.timestamp = new Date(mojo.time);
+    this.reportTo = originToText(mojo.reportingOrigin);
+  }
+
+  abstract renderDescription(td: HTMLElement): void;
+
+  abstract renderMetadata(td: HTMLElement): void;
+}
+
+const CLEARED_DEBUG_KEY_COLS: Array<Column<ClearedDebugKeyLog>> = [
+  new ValueColumn<ClearedDebugKeyLog, string>(
+      'Cleared Debug Key', e => e.clearedDebugKey),
+  new ValueColumn<ClearedDebugKeyLog, string>('From', e => e.clearedFrom),
+  new ValueColumn<ClearedDebugKeyLog, string>('Report To', e => e.reportTo),
+];
+
+class ClearedDebugKeyLog extends Log {
+  readonly clearedFrom: string;
+  readonly clearedDebugKey: string;
+
+  constructor(mojo: ClearedDebugKey) {
+    super(mojo);
+
+    this.clearedDebugKey = `${mojo.clearedDebugKey.value}`;
+
+    switch (mojo.clearedFrom) {
+      case (ClearedDebugKey_Type.kSource):
+        this.clearedFrom = 'Source';
+        break;
+      case (ClearedDebugKey_Type.kTrigger):
+        this.clearedFrom = 'Trigger';
+        break;
+      default:
+        this.clearedFrom = 'Unknown type';
+        break;
+    }
+  }
+
+  renderDescription(td: HTMLElement): void {
+    renderA(
+        td,
+        'Cleared Debug Key',
+        'https://github.com/WICG/attribution-reporting-api/blob/main/EVENT.md#optional-extended-debugging-reports',
+    );
+  }
+
+  renderMetadata(td: HTMLElement) {
+    renderDL(td, this, CLEARED_DEBUG_KEY_COLS);
+  }
+}
+
+const FAILED_SOURCE_REGISTRATION_COLS:
+    Array<Column<FailedSourceRegistrationLog>> = [
+      new ValueColumn<FailedSourceRegistrationLog, string>(
+          'Failure Reason', e => e.failureReason),
+      new ValueColumn<FailedSourceRegistrationLog, string>(
+          'Report To', e => e.reportTo),
+      new CodeColumn<FailedSourceRegistrationLog>(
+          'Attribution-Reporting-Register-Source Header', e => e.headerValue),
+    ];
+
+class FailedSourceRegistrationLog extends Log {
+  readonly failureReason: string;
+  readonly headerValue: string;
 
   constructor(mojo: FailedSourceRegistration) {
-    this.time = new Date(mojo.time);
-    this.json = mojo.headerValue;
-    this.reportingOrigin = originToText(mojo.reportingOrigin);
+    super(mojo);
 
     switch (mojo.error) {
       case SourceRegistrationError.kInvalidJson:
@@ -679,10 +790,6 @@ class Log {
         break;
       case SourceRegistrationError.kDestinationUntrustworthy:
         this.failureReason = 'destination not potentially trustworthy';
-        break;
-      case SourceRegistrationError.kDestinationMismatched:
-        this.failureReason =
-            'destination differs from that of previous source in redirect chain';
         break;
       case SourceRegistrationError.kFilterDataWrongType:
         this.failureReason =
@@ -733,6 +840,20 @@ class Log {
         this.failureReason = 'unknown error';
         break;
     }
+
+    this.headerValue = mojo.headerValue;
+  }
+
+  renderDescription(td: HTMLElement) {
+    renderA(
+        td,
+        'Failed Source Registration',
+        'https://github.com/WICG/attribution-reporting-api/blob/main/EVENT.md#registering-attribution-sources',
+    );
+  }
+
+  renderMetadata(td: HTMLElement) {
+    renderDL(td, this, FAILED_SOURCE_REGISTRATION_COLS);
   }
 }
 
@@ -743,11 +864,9 @@ class LogTableModel extends TableModel<Log> {
     super();
 
     this.cols = [
-      new DateColumn<Log>('Time', (e) => e.time),
-      new CodeColumn<Log>('Failure Reason', (e) => e.failureReason),
-      new ValueColumn<Log, string>('Report To', (e) => e.reportingOrigin),
-      new CodeColumn<Log>(
-          'Attribution-Reporting-Register-Source Header', (e) => e.json),
+      new DateColumn<Log>('Timestamp', (e) => e.timestamp),
+      new LogDescriptionColumn(),
+      new LogMetadataColumn(),
     ];
 
     this.emptyRowText = 'No logs.';
@@ -886,6 +1005,8 @@ function triggerStatusToText(status: WebUITrigger_Status): string {
       return 'Failure: Prohibited by browser policy';
     case WebUITrigger_Status.kNoMatchingConfigurations:
       return 'Rejected: no matching event-level configurations';
+    case WebUITrigger_Status.kExcessiveEventLevelReports:
+      return 'Failure: Excessive event-level reports';
     default:
       return status.toString();
   }
@@ -1017,7 +1138,12 @@ class Observer implements ObserverInterface {
 
   onFailedSourceRegistration(mojo: FailedSourceRegistration) {
     assert(logTableModel);
-    logTableModel.addLog(new Log(mojo));
+    logTableModel.addLog(new FailedSourceRegistrationLog(mojo));
+  }
+
+  onDebugKeyCleared(mojo: ClearedDebugKey) {
+    assert(logTableModel);
+    logTableModel.addLog(new ClearedDebugKeyLog(mojo));
   }
 }
 

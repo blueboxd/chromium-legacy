@@ -202,7 +202,10 @@ class Port(object):
     WEBDRIVER_SUBTEST_PYTEST_SEPARATOR = '::'
 
     # The following two constants must match. When adding a new WPT root, also
-    # remember to add an alias rule to //third_party/wpt_tools/wpt.config.json.
+    # remember to update configurations in:
+    #     //third_party/blink/web_tests/external/wpt/config.json
+    #     //third_party/blink/web_tests/wptrunner.blink.ini
+    #
     # WPT_DIRS maps WPT roots on the file system to URL prefixes on wptserve.
     # The order matters: '/' MUST be the last URL prefix.
     WPT_DIRS = collections.OrderedDict([
@@ -1206,6 +1209,15 @@ class Port(object):
         if not tot_pix_min:
             tot_pix_min = tot_pix_max
 
+        for flag in reversed(self._specified_additional_driver_flags() +
+                             self.args_for_test(test_name)):
+            if "--force-device-scale-factor" in flag:
+                _, scale_factor = flag.split("=")
+                dsf = float(scale_factor)
+                tot_pix_min = float(tot_pix_min) * dsf * dsf
+                tot_pix_max = float(tot_pix_max) * dsf * dsf
+                break
+
         return ([int(max_diff_min),
                  int(max_diff_max)], [int(tot_pix_min),
                                       int(tot_pix_max)])
@@ -1358,7 +1370,8 @@ class Port(object):
         """
         return (self.skipped_due_to_smoke_tests(test)
                 or self.skipped_in_never_fix_tests(test)
-                or self.virtual_test_skipped_due_to_platform_config(test))
+                or self.virtual_test_skipped_due_to_platform_config(test)
+                or self.skipped_due_to_exclusive_virtual_tests(test))
 
     @memoized
     def _tests_from_file(self, filename):
@@ -1410,6 +1423,16 @@ class Port(object):
         return self._filesystem.join(self.web_tests_dir(), 'SmokeTests',
                                      'Default.txt')
 
+    @memoized
+    def _never_fix_test_expectations(self):
+        # Note: The parsing logic here (reading the file, constructing a
+        # parser, etc.) is very similar to blinkpy/w3c/test_copier.py.
+        path = self.path_to_never_fix_tests_file()
+        contents = self._filesystem.read_text_file(path)
+        test_expectations = TestExpectations(tags=self.get_platform_tags())
+        test_expectations.parse_tagged_list(contents)
+        return test_expectations
+
     def skipped_in_never_fix_tests(self, test):
         """Checks if the test is marked as Skip in NeverFixTests for this port.
 
@@ -1420,12 +1443,7 @@ class Port(object):
         Note: this will not work with skipped directories. See also the same
         issue with update_all_test_expectations_files in test_importer.py.
         """
-        # Note: The parsing logic here (reading the file, constructing a
-        # parser, etc.) is very similar to blinkpy/w3c/test_copier.py.
-        path = self.path_to_never_fix_tests_file()
-        contents = self._filesystem.read_text_file(path)
-        test_expectations = TestExpectations(tags=self.get_platform_tags())
-        test_expectations.parse_tagged_list(contents)
+        test_expectations = self._never_fix_test_expectations()
         return ResultType.Skip in test_expectations.expectations_for(
             test).results
 
@@ -1441,6 +1459,42 @@ class Port(object):
         suite = self._lookup_virtual_suite(test)
         if suite is not None:
             return self.operating_system() not in suite.platforms
+        return False
+
+    @memoized
+    def skipped_due_to_exclusive_virtual_tests(self, test):
+        """Checks if the test should be skipped due to the exclusive_tests rule
+        of any virtual suite.
+
+        If the test is not a virtual test, it will be skipped if it's in the
+        exclusive_tests list of any virtual suite. If the test is a virtual
+        test, it will be skipped if the base test is in the exclusive_tests list
+        of any virtual suite, and the base test is not in the test's own virtual
+        suite's exclusive_tests list.
+        """
+        base_test = self.lookup_virtual_test_base(test)
+        if base_test:
+            # For a virtual test, if the base test is in exclusive_tests of the
+            # test's own virtual suite, then we should not skip the test.
+            virtual_suite = self._lookup_virtual_suite(test)
+            for entry in virtual_suite.exclusive_tests:
+                normalized_entry = self.normalize_test_name(entry)
+                if base_test.startswith(normalized_entry):
+                    return False
+                if normalized_entry.startswith(base_test):
+                    # This means base_test is a directory containing exclusive
+                    # tests, so should not skip the directory.
+                    return False
+        else:
+            base_test = self.normalize_test_name(test)
+
+        # For a non-virtual test or a virtual test not listed in exclusive_tests
+        # of the test's own virtual suite, we should skip the test if the base
+        # test is in exclusive_tests of any virtual suite.
+        for suite in self.virtual_test_suites():
+            for entry in suite.exclusive_tests:
+                if base_test.startswith(self.normalize_test_name(entry)):
+                    return True
         return False
 
     def name(self):
@@ -2185,6 +2239,9 @@ class Port(object):
                         path_to_virtual_test_suites))
                 self._virtual_test_suites = []
                 for json_config in test_suite_json:
+                    # Strings are treated as comments.
+                    if isinstance(json_config, str):
+                        continue
                     vts = VirtualTestSuite(**json_config)
                     if any(vts.full_prefix == s.full_prefix
                            for s in self._virtual_test_suites):
@@ -2514,16 +2571,29 @@ class Port(object):
 
 
 class VirtualTestSuite(object):
-    def __init__(self, prefix=None, platforms=None, bases=None, args=None):
+    def __init__(self,
+                 prefix=None,
+                 platforms=None,
+                 bases=None,
+                 exclusive_tests=None,
+                 args=None):
         assert VALID_FILE_NAME_REGEX.match(prefix), \
             "Virtual test suite prefix '{}' contains invalid characters".format(prefix)
         assert isinstance(platforms, list)
         assert isinstance(bases, list)
         assert args
         assert isinstance(args, list)
+
+        if exclusive_tests == "ALL":
+            exclusive_tests = bases
+        elif exclusive_tests is None:
+            exclusive_tests = []
+        assert isinstance(exclusive_tests, list)
+
         self.full_prefix = 'virtual/' + prefix + '/'
         self.platforms = [x.lower() for x in platforms]
         self.bases = bases
+        self.exclusive_tests = exclusive_tests
         self.args = args
 
     def __repr__(self):

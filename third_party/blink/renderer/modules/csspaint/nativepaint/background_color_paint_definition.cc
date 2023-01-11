@@ -109,25 +109,20 @@ bool GetColorsFromKeyframe(const PropertySpecificKeyframe* frame,
                            Vector<Color>* animated_colors,
                            const Element* element) {
   if (model->IsStringKeyframeEffectModel()) {
-    DCHECK(frame->IsCSSPropertySpecificKeyframe());
     const CSSValue* value = To<CSSPropertySpecificKeyframe>(frame)->Value();
     const CSSPropertyName property_name =
         CSSPropertyName(CSSPropertyID::kBackgroundColor);
     const CSSValue* computed_value = StyleResolver::ComputeValue(
         const_cast<Element*>(element), property_name, *value);
-    DCHECK(computed_value->IsColorValue());
-    const cssvalue::CSSColor* color_value =
-        static_cast<const cssvalue::CSSColor*>(computed_value);
-    animated_colors->push_back(color_value->Value());
+    auto& color_value = To<cssvalue::CSSColor>(*computed_value);
+    animated_colors->push_back(color_value.Value());
   } else {
-    DCHECK(frame->IsTransitionPropertySpecificKeyframe());
-    const TransitionKeyframe::PropertySpecificKeyframe* keyframe =
+    const auto* keyframe =
         To<TransitionKeyframe::PropertySpecificKeyframe>(frame);
     InterpolableValue* value =
         keyframe->GetValue()->Value().interpolable_value.get();
-    DCHECK(value->IsList());
 
-    const InterpolableList& list = To<InterpolableList>(*value);
+    const auto& list = To<InterpolableList>(*value);
     DCHECK(CSSColorInterpolationType::IsRGBA(*(list.Get(0))));
 
     Color rgba = CSSColorInterpolationType::GetRGBA(*(list.Get(0)));
@@ -144,9 +139,7 @@ bool GetBGColorPaintWorkletParamsInternal(
     const Animation* compositable_animation) {
   element->GetLayoutObject()->GetMutableForPainting().EnsureId();
   const AnimationEffect* effect = compositable_animation->effect();
-  DCHECK(effect->IsKeyframeEffect());
-  const KeyframeEffectModelBase* model =
-      static_cast<const KeyframeEffect*>(effect)->Model();
+  const KeyframeEffectModelBase* model = To<KeyframeEffect>(effect)->Model();
   DCHECK_EQ(model->Composite(), EffectModel::kCompositeReplace);
   const PropertySpecificKeyframeVector* frames =
       model->GetPropertySpecificKeyframes(
@@ -230,8 +223,16 @@ sk_sp<PaintRecord> BackgroundColorPaintDefinition::Paint(
     const CompositorPaintWorkletInput* compositor_input,
     const CompositorPaintWorkletJob::AnimatedPropertyValues&
         animated_property_values) {
-  const BackgroundColorPaintWorkletInput* input =
-      static_cast<const BackgroundColorPaintWorkletInput*>(compositor_input);
+  return Paint(compositor_input, animated_property_values,
+               worker_backing_thread_->BackingThread().GetTaskRunner());
+}
+
+sk_sp<PaintRecord> BackgroundColorPaintDefinition::Paint(
+    const CompositorPaintWorkletInput* compositor_input,
+    const CompositorPaintWorkletJob::AnimatedPropertyValues&
+        animated_property_values,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  const auto* input = To<BackgroundColorPaintWorkletInput>(compositor_input);
   gfx::SizeF container_size = input->ContainerSize();
   Vector<Color> animated_colors = input->AnimatedColors();
   Vector<double> offsets = input->Offsets();
@@ -291,7 +292,8 @@ sk_sp<PaintRecord> BackgroundColorPaintDefinition::Paint(
     PaintRenderingContext2DSettings* context_settings =
         PaintRenderingContext2DSettings::Create();
     context_ = MakeGarbageCollected<PaintRenderingContext2D>(
-        rounded_size, context_settings, 1, 1);
+        rounded_size, context_settings, /*zoom=*/1, /*device_scale_factor=*/1,
+        std::move(task_runner));
   }
   context_->GetDrawingPaintCanvas()->drawColor(current_color);
   return context_->GetRecord();
@@ -323,8 +325,7 @@ bool BackgroundColorPaintDefinition::GetBGColorPaintWorkletParams(
     Vector<Color>* animated_colors,
     Vector<double>* offsets,
     absl::optional<double>* progress) {
-  DCHECK(node->IsElementNode());
-  Element* element = static_cast<Element*>(node);
+  Element* element = To<Element>(node);
   Animation* compositable_animation = GetAnimationIfCompositable(element);
   if (!compositable_animation)
     return false;
@@ -336,7 +337,8 @@ sk_sp<PaintRecord> BackgroundColorPaintDefinition::PaintForTest(
     const Vector<Color>& animated_colors,
     const Vector<double>& offsets,
     const CompositorPaintWorkletJob::AnimatedPropertyValues&
-        animated_property_values) {
+        animated_property_values,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   gfx::SizeF container_size(100, 100);
   absl::optional<double> progress = 0;
   CompositorPaintWorkletInput::PropertyKeys property_keys;
@@ -344,7 +346,7 @@ sk_sp<PaintRecord> BackgroundColorPaintDefinition::PaintForTest(
       base::MakeRefCounted<BackgroundColorPaintWorkletInput>(
           container_size, 1u, animated_colors, offsets, progress,
           property_keys);
-  return Paint(input.get(), animated_property_values);
+  return Paint(input.get(), animated_property_values, std::move(task_runner));
 }
 
 void BackgroundColorPaintDefinition::Trace(Visitor* visitor) const {

@@ -27,8 +27,8 @@ import {setSearchResults} from './actions.js';
 import {destroy as destroyApiListener, init as initApiListener} from './api_listener.js';
 import {getTemplate} from './app.html.js';
 import {LOCAL_STORAGE_FOLDER_STATE_KEY, LOCAL_STORAGE_TREE_WIDTH_KEY, ROOT_NODE_ID} from './constants.js';
-import {DNDManager} from './dnd_manager.js';
-import {MouseFocusMixin} from './mouse_focus_behavior.js';
+import {DndManager} from './dnd_manager.js';
+import {MouseFocusMixin, MouseFocusMixinInterface} from './mouse_focus_behavior.js';
 import {Store} from './store.js';
 import {StoreClientMixin, StoreClientMixinInterface} from './store_client_mixin.js';
 import {BookmarksToolbarElement} from './toolbar.js';
@@ -41,7 +41,8 @@ const BookmarksAppElementBase =
         StoreClientMixin(MouseFocusMixin(FindShortcutMixin(PolymerElement)))) as
     {
       new (): PolymerElement & StoreClientMixinInterface &
-          FindShortcutMixinInterface & IronScrollTargetBehavior,
+          FindShortcutMixinInterface & IronScrollTargetBehavior &
+          MouseFocusMixinInterface,
     };
 
 export interface BookmarksAppElement {
@@ -82,7 +83,7 @@ export class BookmarksAppElement extends BookmarksAppElementBase {
   }
 
   private eventTracker_: EventTracker = new EventTracker();
-  private dndManager_: DNDManager|null = null;
+  private dndManager_: DndManager|null = null;
   private folderOpenState_: FolderOpenState;
   private searchTerm_: string;
   private sidebarWidth_: string;
@@ -136,7 +137,7 @@ export class BookmarksAppElement extends BookmarksAppElementBase {
 
     this.initializeSplitter_();
 
-    this.dndManager_ = new DNDManager();
+    this.dndManager_ = new DndManager();
     this.dndManager_.init();
 
     this.scrollTarget = this.shadowRoot!.querySelector('bookmarks-list');

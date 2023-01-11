@@ -38,13 +38,15 @@ void CookieStore::DeleteAllAsync(DeleteCallback callback) {
                                    std::move(callback));
 }
 
-void CookieStore::SetForceKeepSessionState() {
-  // By default, do nothing.
-}
-
 void CookieStore::SetCookieAccessDelegate(
     std::unique_ptr<CookieAccessDelegate> delegate) {
   cookie_access_delegate_ = std::move(delegate);
+}
+
+absl::optional<bool> CookieStore::SiteHasCookieInOtherPartition(
+    const net::SchemefulSite& site,
+    const absl::optional<CookiePartitionKey>& partition_key) const {
+  return absl::nullopt;
 }
 
 }  // namespace net

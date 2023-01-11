@@ -2,29 +2,9 @@
 
 ## Understanding builder results
 
-The [Flake portal](https://analysis.chromium.org/p/chromium/flake-portal/flakes)
-links to the flake occurrences of various tests on various bots. On the flake
-occurrences page for a specific test, clicking on any of the timestamps takes
-you to the bot run that flaked.
-
-![flake_portal_occurrences]
-
-You can then search the page for the flaky test name to view
-details on how it failed. The failure will either be in a unittest run or
-browsertest run. Note that the flake may either be detected as a flaky failure
-if it passed on a following run (a "cq hidden flake" on the flake portal), or it
-could have flaked multiple times causing the bot run to fail (a "cq false
-rejection" on the flake portal). The build step output provides a link to your
-test output. If your flaky test has both hidden flakes and false rejections,
-take a look at the output for both as they may provide different hints toward
-the issue.
-
-![flaky_build_step]
-
-Compare the flake output to the expected output when the test passes. Sometimes
-observing the output is enough to narrow down the issue. However, sometimes
-there’s very little output or it’s not that useful, such as when the test times
-out. In this case you can try and add more logging and reproduce the flake.
+[LUCI Analysis](https://luci-analysis.appspot.com/p/chromium/clusters) lists the
+top flake clusters of tests along with any associated bug and failure counts in
+different contexts.
 
 ## Reproducing the flaky test
 
@@ -51,6 +31,25 @@ If you're unable to reproduce the flake locally, you can also try uploading your
 patch with the debug logging and flaky test enabled to try running the bot to
 reproduce the flake with more information.
 
+Another good solution is to use
+*Swarming* -- which will let you mimic bot conditions to better reproduce flakes
+that actually occur on CQ bots.
+
+### Swarming
+For a more detailed dive into swarming you can follow this
+[link](https://chromium.googlesource.com/chromium/src/+/master/docs/workflow/debugging-with-swarming.md#authenticating).
+
+As an example, suppose we have built Chrome using the GN args from
+above into a directory `out/linux-rel`, then we can simply run this command
+within the `chromium/src` directory:
+
+```
+tools/run-swarmed.py out/linux-rel browser_tests -- --gtest_filter="*<YOUR_TEST_NAME_HERE>*" --gtest_repeat=20 --gtest_also_run_disabled_tests
+```
+
+This allows us to quickly iterate over errors using logs to reproduce flakes and
+even fix them!
+
 >TODO: Add more tips for reproducing flaky tests
 
 ## Debugging the flaky test
@@ -73,6 +72,9 @@ For browsertest flakes that check EvalJs results, make sure test objects are not
 destroyed before JS may read their values (e.g. [flaky
 PaymentAppBrowserTest](https://chromium.googlesource.com/chromium/src/+/6089f3480c5036c73464661b3b1b6b82807b56a3)).
 
+For browsertest flakes that involve dialogs or widgets, make sure that test
+objects are not destroyed because focus is lost on the dialog (e.g [flaky AccessCodeCastHandlerBrowserTest](https://chromium-review.googlesource.com/c/chromium/src/+/3951132)).
+
 ## Preventing similar flakes
 
 Once you understand the problem and have a fix for the test, think about how the
@@ -80,6 +82,4 @@ fix may apply to other tests, or if documentation can be improved either in the
 relevant code or this flaky test documentation.
 
 
-[flake_portal_occurrences]: images/flake_portal_occurrences.png
-[flaky_build_step]: images/flaky_build_step.png
 [bot_gn_args]: images/bot_gn_args.png

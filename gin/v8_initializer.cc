@@ -14,6 +14,7 @@
 #include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/bits.h"
 #include "base/check.h"
+#include "base/check_op.h"
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
@@ -245,10 +246,6 @@ void SetFlags(IsolateHolder::ScriptMode mode,
                          "--no-compact-code-space-with-stack");
   SetV8FlagsIfOverridden(features::kV8CompactWithStack, "--compact-with-stack",
                          "--no-compact-with-stack");
-  SetV8FlagsIfOverridden(features::kV8CompactMaps, "--compact-maps",
-                         "--no-compact-maps");
-  SetV8FlagsIfOverridden(features::kV8UseMapSpace, "--use-map-space",
-                         "--no-use-map-space");
   SetV8FlagsIfOverridden(features::kV8CrashOnEvacuationFailure,
                          "--crash-on-aborted-evacuation",
                          "--no-crash-on-aborted-evacuation");
@@ -345,6 +342,11 @@ void SetFlags(IsolateHolder::ScriptMode mode,
     SetV8FlagsIfOverridden(features::kV8SlowHistograms, "--slow-histograms",
                            "--no-slow-histograms");
   }
+
+  // JavaScript language features.
+  SetV8FlagsIfOverridden(features::kJavaScriptSymbolAsWeakMapKey,
+                         "--harmony-symbol-as-weakmap-key",
+                         "--no-harmony-symbol-as-weakmap-key");
 
   if (IsolateHolder::kStrictMode == mode) {
     SetV8Flags("--use_strict");

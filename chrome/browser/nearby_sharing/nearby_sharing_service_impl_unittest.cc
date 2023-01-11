@@ -41,12 +41,12 @@
 #include "chrome/browser/nearby_sharing/fast_initiation/fast_initiation_scanner.h"
 #include "chrome/browser/nearby_sharing/local_device_data/fake_nearby_share_local_device_data_manager.h"
 #include "chrome/browser/nearby_sharing/local_device_data/nearby_share_local_device_data_manager_impl.h"
-#include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_notification_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_share_feature_status.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #include "chrome/browser/nearby_sharing/power_client.h"
 #include "chrome/browser/nearby_sharing/proto/rpc_resources.pb.h"
+#include "chrome/browser/nearby_sharing/public/cpp/nearby_connections_manager.h"
 #include "chrome/browser/nearby_sharing/wifi_network_configuration/fake_wifi_network_configuration_handler.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
@@ -1171,7 +1171,7 @@ class NearbySharingServiceImplTestBase : public testing::Test {
   }
 
   // This method sets up an incoming connection and performs the steps required
-  // to simulate a successful incoming transfter.
+  // to simulate a successful incoming transfer.
   void SuccessfullyReceiveTransfer() {
     for (int64_t payload_id : kValidIntroductionFramePayloadIds) {
       fake_nearby_connections_manager_->SetPayloadPathStatus(
@@ -1251,6 +1251,7 @@ class NearbySharingServiceImplTestBase : public testing::Test {
         .WillOnce(testing::Invoke([&](const ShareTarget& share_target,
                                       TransferMetadata metadata) {
           EXPECT_TRUE(metadata.is_final_status());
+          EXPECT_EQ(metadata.progress(), 100);
           EXPECT_EQ(TransferMetadata::Status::kComplete, metadata.status());
 
           ASSERT_TRUE(share_target.has_attachments());
@@ -1391,6 +1392,7 @@ class NearbySharingServiceImplTestBase : public testing::Test {
         .WillOnce(testing::Invoke([&](const ShareTarget& share_target,
                                       TransferMetadata metadata) {
           EXPECT_TRUE(metadata.is_final_status());
+          EXPECT_LT(metadata.progress(), 100);
           EXPECT_EQ(TransferMetadata::Status::kIncompletePayloads,
                     metadata.status());
 
@@ -3443,6 +3445,7 @@ TEST_P(NearbySharingServiceImplTest,
       .WillOnce(testing::Invoke(
           [&](const ShareTarget& share_target, TransferMetadata metadata) {
             EXPECT_TRUE(metadata.is_final_status());
+            EXPECT_LT(metadata.progress(), 100);
             EXPECT_EQ(TransferMetadata::Status::kIncompletePayloads,
                       metadata.status());
 

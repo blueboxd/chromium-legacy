@@ -142,8 +142,7 @@ suite('PasswordsAndForms', function() {
 
 
   setup(async function() {
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
 
     // Override the PasswordManagerImpl for testing.
     passwordManager = new TestPasswordManagerProxy();
@@ -309,7 +308,7 @@ function createAutofillPageSection() {
       value: false,
     },
   };
-  document.body.innerHTML = window.trustedTypes!.emptyHTML as unknown as string;
+  document.body.innerHTML = window.trustedTypes!.emptyHTML;
   document.body.appendChild(autofillPage);
   flush();
   return autofillPage;
@@ -397,7 +396,7 @@ suite('PasswordsUITest', function() {
             const eventDetail = document.createElement('password-list-item');
             eventDetail.entry = entry;
 
-            passwordManager.setRequestCredentialDetailsResponse(entry);
+            passwordManager.setRequestCredentialsDetailsResponse(entry);
 
             dispatchingElement.dispatchEvent(
                 new CustomEvent('password-view-page-requested', {

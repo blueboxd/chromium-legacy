@@ -65,6 +65,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
+#include "third_party/blink/renderer/core/frame/attribution_src_loader.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
@@ -89,7 +90,7 @@
 #include "third_party/blink/renderer/core/loader/resource_load_observer_for_frame.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
+#include "third_party/blink/renderer/core/paint/timing/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_chrome_client.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
@@ -289,6 +290,21 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
 
   if (GetResourceFetcherProperties().IsDetached())
     return;
+
+  // TODO(crbug.com/1375791): Consider overriding Attribution-Reporting-Support
+  // header.
+  if (base::FeatureList::IsEnabled(
+          blink::features::kAttributionReportingCrossAppWeb) &&
+      !request.HttpHeaderField(http_names::kAttributionReportingEligible)
+           .IsNull() &&
+      request.HttpHeaderField(http_names::kAttributionReportingSupport)
+          .IsNull()) {
+    if (AttributionSrcLoader* attribution_src_loader =
+            GetFrame()->GetAttributionSrcLoader()) {
+      request.AddHttpHeaderField(http_names::kAttributionReportingSupport,
+                                 attribution_src_loader->GetSupportHeader());
+    }
+  }
 }
 
 // TODO(toyoshim, arthursonzogni): PlzNavigate doesn't use this function to set
@@ -468,7 +484,17 @@ void FrameFetchContext::AddReducedAcceptLanguageIfNecessary(
     ResourceRequest& request) {
   // If the feature is enabled, then reduce accept language are allowed only on
   // http and https.
-  if (!base::FeatureList::IsEnabled(network::features::kReduceAcceptLanguage)) {
+
+  // For detached frame, we check whether the feature flag turns on because it
+  // will crash when detach frame calls GetExecutionContext().
+  if (GetResourceFetcherProperties().IsDetached() &&
+      !base::FeatureList::IsEnabled(network::features::kReduceAcceptLanguage)) {
+    return;
+  }
+
+  if (!GetResourceFetcherProperties().IsDetached() &&
+      !RuntimeEnabledFeatures::ReduceAcceptLanguageEnabled(
+          GetExecutionContext())) {
     return;
   }
 

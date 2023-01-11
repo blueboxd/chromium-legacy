@@ -4,7 +4,6 @@
 
 #include <fuchsia/camera3/cpp/fidl.h>
 #include <fuchsia/legacymetrics/cpp/fidl.h>
-#include <fuchsia/legacymetrics/cpp/fidl_test_base.h>
 #include <fuchsia/media/cpp/fidl.h>
 #include <fuchsia/modular/cpp/fidl.h>
 #include <fuchsia/web/cpp/fidl.h>
@@ -35,12 +34,12 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "fuchsia_web/common/string_util.h"
 #include "fuchsia_web/common/test/fit_adapter.h"
 #include "fuchsia_web/common/test/frame_test_util.h"
@@ -66,23 +65,6 @@ constexpr char kEchoHeaderPath[] = "/echoheader?Test";
 
 constexpr char kDummyAgentUrl[] =
     "fuchsia-pkg://fuchsia.com/dummy_agent#meta/dummy_agent.cmx";
-
-class FakeCorsExemptHeaderProvider final
-    : public chromium::cast::CorsExemptHeaderProvider {
- public:
-  FakeCorsExemptHeaderProvider() = default;
-  ~FakeCorsExemptHeaderProvider() override = default;
-
-  FakeCorsExemptHeaderProvider(const FakeCorsExemptHeaderProvider&) = delete;
-  FakeCorsExemptHeaderProvider& operator=(const FakeCorsExemptHeaderProvider&) =
-      delete;
-
- private:
-  void GetCorsExemptHeaderNames(
-      GetCorsExemptHeaderNamesCallback callback) override {
-    callback({StringToBytes("Test")});
-  }
-};
 
 class FakeUrlRequestRewriteRulesProvider final
     : public chromium::cast::UrlRequestRewriteRulesProvider {
@@ -278,7 +260,7 @@ class TestCastComponent {
 
     fidl::InterfaceHandle<fuchsia::io::Directory> outgoing_directory;
     startup_info.launch_info.directory_request =
-        outgoing_directory.NewRequest().TakeChannel();
+        outgoing_directory.NewRequest();
 
     fidl::InterfaceHandle<fuchsia::io::Directory> svc_directory;
     EXPECT_EQ(fdio_service_connect_at(
@@ -295,11 +277,6 @@ class TestCastComponent {
         fuchsia::io::OpenFlags::RIGHT_READABLE |
             fuchsia::io::OpenFlags::RIGHT_WRITABLE,
         directory.NewRequest().TakeChannel());
-
-    ASSERT_EQ(component_services_.AddPublicService(
-                  cors_exempt_header_provider_binding_.GetHandler(
-                      &cors_exempt_header_provider_)),
-              ZX_OK);
 
     // Provide the directory of services in the |flat_namespace|.
     startup_info.flat_namespace.paths.emplace_back(base::kServiceDirectoryPath);
@@ -492,10 +469,6 @@ class TestCastComponent {
   FakeApiBindingsImpl api_bindings_;
   std::unique_ptr<FakeUrlRequestRewriteRulesProvider>
       url_request_rewrite_rules_provider_;
-
-  FakeCorsExemptHeaderProvider cors_exempt_header_provider_;
-  fidl::BindingSet<chromium::cast::CorsExemptHeaderProvider>
-      cors_exempt_header_provider_binding_;
 
   // Incoming service directory, ComponentContext and per-component state.
   sys::OutgoingDirectory component_services_;
@@ -795,7 +768,7 @@ class AudioCastRunnerIntegrationTest : public CastRunnerIntegrationTest {
             test::kCastRunnerFeaturesFakeAudioDeviceEnumerator) {}
 };
 
-TEST_F(AudioCastRunnerIntegrationTest, MicrophoneRedirect) {
+TEST_F(AudioCastRunnerIntegrationTest, Microphone) {
   TestCastComponent component(cast_runner());
   GURL app_url = test_server().GetURL("/microphone.html");
   auto app_config =
@@ -806,26 +779,19 @@ TEST_F(AudioCastRunnerIntegrationTest, MicrophoneRedirect) {
   app_config.mutable_permissions()->push_back(std::move(mic_permission));
   component.app_config_manager()->AddAppConfig(std::move(app_config));
 
-  component.CreateComponentContextAndStartComponent();
-
-  // Expect fuchsia.media.Audio connection to be redirected to the agent.
+  // Expect fuchsia.media.Audio connection to be requested.
   base::RunLoop run_loop;
-  ASSERT_EQ(
-      component.component_state()->outgoing_directory()->AddPublicService(
-          std::make_unique<vfs::Service>(
-              [quit_closure = run_loop.QuitClosure()](
-                  zx::channel channel, async_dispatcher_t* dispatcher) mutable {
-                std::move(quit_closure).Run();
-              }),
-          fuchsia::media::Audio::Name_),
-      ZX_OK);
+  cast_runner_launcher().fake_cast_agent().RegisterOnConnectClosure(
+      fuchsia::media::Audio::Name_, run_loop.QuitClosure());
+
+  component.CreateComponentContextAndStartComponent();
   component.ExecuteJavaScript("connectMicrophone();");
 
   // Will quit once AudioCapturer is connected.
   run_loop.Run();
 }
 
-TEST_F(CastRunnerIntegrationTest, CameraRedirect) {
+TEST_F(CastRunnerIntegrationTest, Camera) {
   TestCastComponent component(cast_runner());
   GURL app_url = test_server().GetURL("/camera.html");
   auto app_config =
@@ -836,23 +802,14 @@ TEST_F(CastRunnerIntegrationTest, CameraRedirect) {
   app_config.mutable_permissions()->push_back(std::move(camera_permission));
   component.app_config_manager()->AddAppConfig(std::move(app_config));
 
+  // Expect fuchsia.camera3.DeviceWatcher connection to be requested.
+  cast_runner_launcher().fake_cast_agent().RegisterOnConnectClosure(
+      fuchsia::camera3::DeviceWatcher::Name_,
+      base::MakeExpectedRunAtLeastOnceClosure(FROM_HERE));
+
   component.CreateComponentContextAndStartComponent();
 
-  // Expect fuchsia.camera3.DeviceWatcher connection to be redirected to the
-  // agent.
-  bool received_device_watcher_request = false;
-  ASSERT_EQ(
-      component.component_state()->outgoing_directory()->AddPublicService(
-          std::make_unique<vfs::Service>(
-              [&received_device_watcher_request](
-                  zx::channel channel, async_dispatcher_t* dispatcher) mutable {
-                received_device_watcher_request = true;
-              }),
-          fuchsia::camera3::DeviceWatcher::Name_),
-      ZX_OK);
-
   component.ExecuteJavaScript("connectCamera();");
-  EXPECT_TRUE(received_device_watcher_request);
 }
 
 TEST_F(CastRunnerIntegrationTest, CameraAccessAfterComponentShutdown) {
@@ -892,6 +849,11 @@ TEST_F(CastRunnerIntegrationTest, MultipleComponentsUsingCamera) {
 
   GURL app_url = test_server().GetURL("/camera.html");
 
+  // Expect fuchsia.camera3.DeviceWatcher connection to be requested.
+  cast_runner_launcher().fake_cast_agent().RegisterOnConnectClosure(
+      fuchsia::camera3::DeviceWatcher::Name_,
+      base::MakeExpectedRunAtLeastOnceClosure(FROM_HERE));
+
   // Start two apps, both with camera permission.
   auto app_config1 =
       FakeApplicationConfigManager::CreateConfig(kTestAppId, app_url);
@@ -913,23 +875,7 @@ TEST_F(CastRunnerIntegrationTest, MultipleComponentsUsingCamera) {
   first_component.ShutdownComponent();
   first_component.ResetComponentState();
 
-  // Expect fuchsia.camera3.DeviceWatcher connection to be redirected to the
-  // agent.
-  bool received_device_watcher_request = false;
-  ASSERT_EQ(
-      second_component.component_state()
-          ->outgoing_directory()
-          ->AddPublicService(std::make_unique<vfs::Service>(
-                                 [&received_device_watcher_request](
-                                     zx::channel channel,
-                                     async_dispatcher_t* dispatcher) mutable {
-                                   received_device_watcher_request = true;
-                                 }),
-                             fuchsia::camera3::DeviceWatcher::Name_),
-      ZX_OK);
-
   second_component.ExecuteJavaScript("connectCamera();");
-  EXPECT_TRUE(received_device_watcher_request);
 }
 
 class HeadlessCastRunnerIntegrationTest : public CastRunnerIntegrationTest {
@@ -982,26 +928,24 @@ TEST_F(CastRunnerIntegrationTest, LegacyMetricsRedirect) {
   GURL app_url = test_server().GetURL(kBlankAppUrl);
   component.app_config_manager()->AddApp(kTestAppId, app_url);
 
-  auto component_url = base::StrCat({"cast:", kTestAppId});
-  component.CreateComponentContext(component_url);
-  EXPECT_TRUE(component.component_context());
+  bool connected_to_metrics_recorder_service = false;
 
-  base::RunLoop run_loop;
+  cast_runner_launcher().fake_cast_agent().RegisterOnConnectClosure(
+      fuchsia::legacymetrics::MetricsRecorder::Name_,
+      base::BindLambdaForTesting([&connected_to_metrics_recorder_service]() {
+        connected_to_metrics_recorder_service = true;
+      }));
 
-  // Add MetricsRecorder the the component's incoming_services.
-  ASSERT_EQ(
-      component.component_services()->AddPublicService(
-          std::make_unique<vfs::Service>(
-              [&run_loop](zx::channel request, async_dispatcher_t* dispatcher) {
-                run_loop.Quit();
-              }),
-          fuchsia::legacymetrics::MetricsRecorder::Name_),
-      ZX_OK);
-
-  component.StartCastComponent(component_url);
-
-  // Wait until we see the CastRunner connect to the MetricsRecorder service.
-  run_loop.Run();
+  // If the Component is going to connect to the MetricsRecorder service, it
+  // will have done so by the time the Component is responding.
+  component.CreateComponentContextAndStartComponent();
+  ASSERT_EQ(connected_to_metrics_recorder_service,
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
+            true
+#else
+            false
+#endif
+  );
 }
 
 // Verifies that the ApplicationContext::OnApplicationTerminated() is notified
@@ -1198,10 +1142,10 @@ class CastRunnerFrameHostIntegrationTest : public CastRunnerIntegrationTest {
       : CastRunnerIntegrationTest(test::kCastRunnerFeaturesFrameHost) {}
 };
 
-// Verifies that the CastRunner offers a fuchsia.web.FrameHost service.
-// TODO(crbug.com/1144102): Clean up config-data vs command-line flags handling
-// and add a not-enabled test here.
-TEST_F(CastRunnerFrameHostIntegrationTest, FrameHostComponent) {
+// Verifies that the CastRunner supports a component that offers
+// a fuchsia.web.FrameHost service, if configured to do so.
+// TODO(crbug.com/1144102): Clean up config-data vs command-line flags handling.
+TEST_F(CastRunnerFrameHostIntegrationTest, FrameHost_Component) {
   TestCastComponent component(cast_runner());
   constexpr char kFrameHostComponentName[] = "cast:fuchsia.web.FrameHost";
   component.StartCastComponent(kFrameHostComponentName);
@@ -1221,8 +1165,43 @@ TEST_F(CastRunnerFrameHostIntegrationTest, FrameHostComponent) {
       controller.get(), fuchsia::web::LoadUrlParams(), url.spec()));
 }
 
+// Verifies that the FrameHost component is not offered if not configured.
+TEST_F(CastRunnerIntegrationTest, FrameHost_Component_NotAvailable) {
+  TestCastComponent component(cast_runner());
+  constexpr char kFrameHostComponentName[] = "cast:fuchsia.web.FrameHost";
+  component.StartCastComponent(kFrameHostComponentName);
+
+  // Attempt to connect to the fuchsia.web.FrameHost service, which should
+  // immediately disconnect.
+  auto frame_host =
+      component.component_services_client()->Connect<fuchsia::web::FrameHost>();
+  base::RunLoop loop;
+  frame_host.set_error_handler(
+      [quit_loop = loop.QuitClosure()](zx_status_t status) {
+        EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
+        quit_loop.Run();
+      });
+}
+
+// Verifies that the CastRunner exposes a fuchsia.web.FrameHost protocol
+// capability, without requiring any special configuration.
+TEST_F(CastRunnerIntegrationTest, FrameHost_Service) {
+  // Connect to the fuchsia.web.FrameHost service and create a Frame.
+  auto frame_host = cast_runner_services().Connect<fuchsia::web::FrameHost>();
+  fuchsia::web::FramePtr frame;
+  frame_host->CreateFrameWithParams(fuchsia::web::CreateFrameParams(),
+                                    frame.NewRequest());
+
+  // Verify that a response is received for a LoadUrl() request to the frame.
+  fuchsia::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  const GURL url = test_server().GetURL(kBlankAppUrl);
+  EXPECT_TRUE(LoadUrlAndExpectResponse(
+      controller.get(), fuchsia::web::LoadUrlParams(), url.spec()));
+}
+
 #if defined(ARCH_CPU_ARM_FAMILY)
-// TODO(crbug.com/1058247): Support Vulkan in tests on ARM64.
+// TODO(crbug.com/1377994): Enable on ARM64 when bots support Vulkan.
 #define MAYBE_VulkanCastRunnerIntegrationTest \
   DISABLED_VulkanCastRunnerIntegrationTest
 #else

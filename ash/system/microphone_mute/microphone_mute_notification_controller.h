@@ -15,7 +15,7 @@
 
 namespace message_center {
 class Notification;
-}
+}  // namespace message_center
 
 namespace ash {
 
@@ -40,9 +40,16 @@ class ASH_EXPORT MicrophoneMuteNotificationController
                              bool recreate);
 
   // ash::CrasAudioHandler::AudioObserver:
-  void OnInputMuteChanged(bool mute_on) override;
+  void OnInputMuteChanged(
+      bool mute_on,
+      CrasAudioHandler::InputMuteChangeMethod method) override;
   void OnInputMutedByMicrophoneMuteSwitchChanged(bool muted) override;
   void OnNumberOfInputStreamsWithPermissionChanged() override;
+
+  static const char kNotificationId[];
+
+  // Set the microphone input to `muted` and log the interaction.
+  static void SetAndLogMicrophoneMute(bool muted);
 
  private:
   friend class MicrophoneMuteNotificationControllerTest;
@@ -55,11 +62,14 @@ class ASH_EXPORT MicrophoneMuteNotificationController
       message_center::NotificationPriority priority);
 
   // Mic mute notification title.
-  std::u16string GetNotificationTitle(
-      const absl::optional<std::u16string>& app_name) const;
+  std::u16string GetNotificationTitle() const;
 
   // Mic mute notification body.
-  std::u16string GetNotificationMessage() const;
+  // If the name of the app is provided via \p app_name, it may be used in the
+  // notification body. If the name is empty, a generic text that avoids
+  // refering to the app by name will be used.
+  std::u16string GetNotificationMessage(
+      const absl::optional<std::u16string>& app_name) const;
 
   // Takes down the mic mute notification.
   void RemoveMicrophoneMuteNotification();
@@ -69,8 +79,6 @@ class ASH_EXPORT MicrophoneMuteNotificationController
   // ash::CrasAudioClient::NumberOfInputStreamsWithPermissionChanged() for more
   // details.
   int CountActiveInputStreams();
-
-  static const char kNotificationId[];
 
   // Whether the microphone is muted.
   bool mic_mute_on_ = false;
@@ -85,9 +93,7 @@ class ASH_EXPORT MicrophoneMuteNotificationController
       current_notification_priority_;
 
   base::ScopedObservation<ash::CrasAudioHandler,
-                          AudioObserver,
-                          &ash::CrasAudioHandler::AddAudioObserver,
-                          &ash::CrasAudioHandler::RemoveAudioObserver>
+                          ash::CrasAudioHandler::AudioObserver>
       audio_observation_{this};
 
   base::WeakPtrFactory<MicrophoneMuteNotificationController> weak_ptr_factory_{

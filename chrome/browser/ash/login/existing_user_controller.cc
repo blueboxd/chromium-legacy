@@ -11,7 +11,6 @@
 
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/enterprise/arc_data_snapshotd_manager.h"
-#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/constants/notifier_catalogs.h"
@@ -28,7 +27,7 @@
 #include "base/scoped_observation.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -82,12 +81,12 @@
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/managed_ui.h"
-#include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
-#include "chrome/browser/ui/webui/chromeos/login/tpm_error_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/encryption_migration_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/kiosk_autolaunch_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/kiosk_enable_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/l10n_util.h"
+#include "chrome/browser/ui/webui/ash/login/tpm_error_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/update_required_screen_handler.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -98,6 +97,7 @@
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/ash/components/hibernate/buildflags.h"
+#include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/ash/components/login/auth/public/auth_failure.h"
 #include "chromeos/ash/components/login/auth/public/key.h"
 #include "chromeos/ash/components/login/session/session_termination_manager.h"
@@ -532,7 +532,7 @@ void ExistingUserController::Observe(
   // has been updated before we copy it.
   // TODO(pmarko): Find a better way to do this, see https://crbug.com/796512.
   VLOG(1) << "Authentication was entered manually, possibly for proxyauth.";
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, base::BindOnce(&TransferHttpAuthCaches),
       kAuthCacheTransferDelayMs);
 }
@@ -860,42 +860,9 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
 
   StopAutoLoginTimer();
 
-  // If the hibernate service is supported, call it to initiate resume.
-#if BUILDFLAG(ENABLE_HIBERNATE)
-  if (features::IsHibernateEnabled() &&
-      !base::FeatureList::IsEnabled(
-          ash::features::kUseAuthsessionAuthentication)) {
-    HibermanClient::Get()->WaitForServiceToBeAvailable(
-        base::BindOnce(&ExistingUserController::OnHibernateServiceAvailable,
-                       weak_factory_.GetWeakPtr(), user_context));
-
-    return;
-  }
-#endif
-
   // The hibernate service is not supported, just continue directly.
   ContinueAuthSuccessAfterResumeAttempt(user_context, true);
-  return;
 }
-
-#if BUILDFLAG(ENABLE_HIBERNATE)
-void ExistingUserController::OnHibernateServiceAvailable(
-    const UserContext& user_context,
-    bool service_is_available) {
-  if (!service_is_available) {
-    LOG(ERROR) << "Hibernate service is unavailable";
-    ContinueAuthSuccessAfterResumeAttempt(user_context, false);
-  } else {
-    // In a successful resume case, this function never returns, as execution
-    // continues in the resumed hibernation image.
-    HibermanClient::Get()->ResumeFromHibernate(
-        user_context.GetAccountId().GetUserEmail(),
-        base::BindOnce(
-            &ExistingUserController::ContinueAuthSuccessAfterResumeAttempt,
-            weak_factory_.GetWeakPtr(), user_context));
-  }
-}
-#endif
 
 void ExistingUserController::ContinueAuthSuccessAfterResumeAttempt(
     const UserContext& user_context,
@@ -939,9 +906,9 @@ void ExistingUserController::ContinueAuthSuccessAfterResumeAttempt(
 
   // Mark device will be consumer owned if the device is not managed and this is
   // the first user on the device.
-  if (!is_enterprise_managed &&
-      user_manager::UserManager::Get()->GetUsers().empty()) {
+  if (!is_enterprise_managed && InstallAttributes::Get()->IsFirstSignIn()) {
     DeviceSettingsService::Get()->MarkWillEstablishConsumerOwnership();
+    user_manager::UserManager::Get()->RecordOwner(user_context.GetAccountId());
   }
 
   if (user_context.CanLockManagedGuestSession()) {

@@ -57,10 +57,16 @@ class ASH_EXPORT UnifiedSliderBubbleController
   void OnMouseEnteredView() override;
   void OnMouseExitedView() override;
 
+  // Displays the microphone mute toast.
+  void DisplayMicrophoneMuteToast();
+
   // CrasAudioHandler::AudioObserver:
+  void OnInputMuteChanged(
+      bool mute_on,
+      CrasAudioHandler::InputMuteChangeMethod method) override;
+  void OnInputMutedByMicrophoneMuteSwitchChanged(bool muted) override;
   void OnOutputNodeVolumeChanged(uint64_t node_id, int volume) override;
   void OnOutputMuteChanged(bool mute_on) override;
-  void OnInputMuteChanged(bool mute_on) override;
 
   // UnifiedSystemTrayModel::Observer:
   void OnDisplayBrightnessChanged(bool by_user) override;

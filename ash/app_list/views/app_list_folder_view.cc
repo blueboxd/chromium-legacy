@@ -244,7 +244,7 @@ class FolderItemTitleAnimation : public AppListFolderView::Animation,
         folder_view_(folder_view),
         folder_item_view_(folder_item_view) {
     SkColor title_color = AppListColorProvider::Get()->GetAppListItemTextColor(
-        /*is_in_folder=*/false, folder_view_->GetWidget());
+        folder_view_->GetWidget());
     // Calculate the source and target states.
     from_color_ = show_ ? title_color : SK_ColorTRANSPARENT;
     to_color_ = show_ ? SK_ColorTRANSPARENT : title_color;
@@ -477,11 +477,7 @@ class TopIconAnimation : public AppListFolderView::Animation,
     // Go over items in the folder, and collect bounds of items that fit within
     // the bounds of the first "page" of apps.
     const size_t count = folder_view_->folder_item()->ChildItemCount();
-    views::View* container =
-        features::IsProductivityLauncherEnabled()
-            ? static_cast<views::View*>(scroll_view_)
-            : static_cast<views::View*>(folder_view_->items_grid_view());
-    const gfx::RectF container_bounds(container->GetLocalBounds());
+    const gfx::RectF container_bounds(scroll_view_->GetLocalBounds());
     for (size_t i = 0; i < count; ++i) {
       views::View* item = folder_view_->items_grid_view()->GetItemViewAt(i);
       if (folder_view_->items_grid_view()->IsViewHiddenForDrag(item))
@@ -491,7 +487,8 @@ class TopIconAnimation : public AppListFolderView::Animation,
       // that subsequent item bounds would not be within the container view
       // either.
       gfx::RectF bounds_in_container(item->GetLocalBounds());
-      views::View::ConvertRectToTarget(item, container, &bounds_in_container);
+      views::View::ConvertRectToTarget(item, scroll_view_,
+                                       &bounds_in_container);
       if (!container_bounds.Contains(bounds_in_container))
         break;
 
@@ -509,8 +506,7 @@ class TopIconAnimation : public AppListFolderView::Animation,
 
   AppListFolderView* const folder_view_;  // Not owned.
 
-  // The scroll view that contains the apps grid. Used with
-  // ProductivityLauncher.
+  // The scroll view that contains the apps grid.
   views::ScrollView* const scroll_view_;
 
   // The app list item view with which the folder view is associated.
@@ -927,8 +923,7 @@ void AppListFolderView::ResetState(bool restore_folder_item_view_state) {
   if (restore_folder_item_view_state && folder_item_view_) {
     folder_item_view_->SetIconVisible(true);
     folder_item_view_->title()->SetEnabledColor(
-        AppListColorProvider::Get()->GetAppListItemTextColor(
-            /*is_in_folder=*/false, GetWidget()));
+        AppListColorProvider::Get()->GetAppListItemTextColor(GetWidget()));
   }
 
   folder_item_view_observer_.Reset();

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the chromium.fuzz builder group."""
 
-load("//lib/builders.star", "goma", "os", "reclient", "sheriff_rotations", "xcode")
+load("//lib/builders.star", "os", "reclient", "sheriff_rotations", "xcode")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 
@@ -120,6 +120,7 @@ ci.builder(
         category = "afl",
         short_name = "afl",
     ),
+    cores = 16,
     executable = "recipe:chromium_afl",
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 4,
@@ -301,8 +302,6 @@ ci.builder(
     execution_timeout = 4 * time.hour,
     os = os.MAC_12,
     xcode = xcode.x14main,
-    goma_backend = goma.backend.RBE_PROD,
-    reclient_instance = None,
 )
 
 ci.builder(
@@ -447,8 +446,6 @@ ci.builder(
     executable = "recipe:chromium_libfuzzer",
     execution_timeout = 4 * time.hour,
     os = os.MAC_DEFAULT,
-    goma_backend = goma.backend.RBE_PROD,
-    reclient_instance = None,
 )
 
 ci.builder(

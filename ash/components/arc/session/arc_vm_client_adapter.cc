@@ -175,9 +175,6 @@ std::vector<std::string> GenerateUpgradeProps(
     }
   }
 
-  // TODO(lgcheng): Handle |is_account_managed| and
-  // |is_managed_adb_sideloading_allowed| in |upgrade_params| when we
-  // implement apk sideloading for ARCVM.
   return result;
 }
 
@@ -333,6 +330,9 @@ std::vector<std::string> GenerateKernelCmdline(
   if (base::FeatureList::IsEnabled(arc::kVmBroadcastPreNotifyANR))
     result.push_back("androidboot.arc.broadcast_anr_prenotify=1");
 
+  if (base::FeatureList::IsEnabled(arc::kEnableLazyWebViewInit))
+    result.push_back("androidboot.arc.web_view_zygote.lazy_init=1");
+
   return result;
 }
 
@@ -445,6 +445,10 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   // Request guest memory locking, if configured.
   request.set_lock_guest_memory(base::FeatureList::IsEnabled(kLockGuestMemory));
 
+  // Add update_o4c_list_via_a2c2.
+  request.set_update_o4c_list_via_a2c2(
+      base::FeatureList::IsEnabled(kArcUpdateO4CListViaA2C2));
+
   // Specify VM Memory.
   if (base::FeatureList::IsEnabled(kVmMemorySize)) {
     base::SystemMemoryInfoKB info;
@@ -458,7 +462,7 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
       if (delegate->IsCrosvm32bit()) {
         // This is a workaround for ARM Chromebooks where userland including
         // crosvm is compiled in 32 bit.
-        // TODO(yusukes): Remove this once crosvm becomes 64 bit binary on ARM.
+        // TODO(khmel): Remove this once crosvm becomes 64 bit binary on ARM.
         if (vm_ram_mib > static_cast<int>(k32bitVmRamMaxMib)) {
           VLOG(1) << "VmMemorySize is enabled, but we are on a 32-bit device, "
                   << "so limit the size to " << k32bitVmRamMaxMib << " MiB.";
@@ -507,8 +511,20 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   if (base::FeatureList::IsEnabled(kGuestZram))
     request.set_guest_swappiness(kGuestZramSwappiness.Get());
 
+  if (base::FeatureList::IsEnabled(kMglruReclaim)) {
+    request.set_mglru_reclaim_interval(kMglruReclaimInterval.Get());
+    request.set_mglru_reclaim_swappiness(kMglruReclaimSwappiness.Get());
+  } else {
+    request.set_mglru_reclaim_interval(0);
+    request.set_mglru_reclaim_swappiness(0);
+  }
+
   request.set_enable_consumer_auto_update_toggle(base::FeatureList::IsEnabled(
       ash::features::kConsumerAutoUpdateToggleAllowed));
+  if (base::FeatureList::IsEnabled(kVmMemoryPSIReports))
+    request.set_vm_memory_psi_period(kVmMemoryPSIReportsPeriod.Get());
+  else
+    request.set_vm_memory_psi_period(-1);
 
   auto orientation = display::Display::ROTATE_0;
   if (auto* screen = display::Screen::GetScreen())

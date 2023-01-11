@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
@@ -84,6 +85,7 @@
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
@@ -972,13 +974,13 @@ RendererBlinkPlatformImpl::GetGpuFactories() {
   return render_thread->GetGpuFactories();
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
+scoped_refptr<base::SequencedTaskRunner>
 RendererBlinkPlatformImpl::MediaThreadTaskRunner() {
   auto* render_thread = RenderThreadImpl::current();
   if (!render_thread)
     return nullptr;
 
-  return render_thread->GetMediaThreadTaskRunner();
+  return render_thread->GetMediaSequencedTaskRunner();
 }
 
 base::WeakPtr<media::DecoderFactory>
@@ -1043,6 +1045,15 @@ base::PlatformThreadId RendererBlinkPlatformImpl::GetIOThreadId() const {
     io_thread_id_ready_event_.Wait();
   }
   return io_thread_id_;
+}
+
+blink::mojom::AttributionOsSupport
+RendererBlinkPlatformImpl::GetOsSupportForAttributionReporting() {
+  auto* render_thread = RenderThreadImpl::current();
+  // RenderThreadImpl is null in some tests.
+  if (!render_thread)
+    return blink::mojom::AttributionOsSupport::kDisabled;
+  return render_thread->GetOsSupportForAttributionReporting();
 }
 
 }  // namespace content

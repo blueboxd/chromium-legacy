@@ -17,8 +17,7 @@ suite('ReadAnythingAppTest', () => {
   chrome.readAnything.onConnected = function() {};
 
   setup(() => {
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     readAnythingApp = document.createElement('read-anything-app');
     document.body.appendChild(readAnythingApp);
     chrome.readAnything.setThemeForTesting('default', 18.0, 0, 0, 1, 0);
@@ -40,7 +39,7 @@ suite('ReadAnythingAppTest', () => {
   }
 
   function assertContainerInnerHTML(expected: string) {
-    const actual: string =
+    const actual =
         readAnythingApp.shadowRoot!.getElementById('container')!.innerHTML;
     assertEquals(actual, expected);
   }
@@ -142,8 +141,8 @@ suite('ReadAnythingAppTest', () => {
       ],
     };
     chrome.readAnything.setContentForTesting(axTree, [2, 4]);
-    const expected: string =
-        '<p>This is a paragraph</p><p>This is a second paragraph</p>';
+    const expected = '<div><p>This is a paragraph</p>' +
+        '<p>This is a second paragraph</p></div>';
     assertContainerInnerHTML(expected);
   });
 
@@ -204,8 +203,10 @@ suite('ReadAnythingAppTest', () => {
       ],
     };
     chrome.readAnything.setContentForTesting(axTree, [2, 4]);
-    const expected: string =
-        '<p lang="en">This is in English</p><p lang="es">Esto es en español<a href="http://www.google.cn/" lang="zh">This is a link in Chinese</a></p>';
+    const expected = '<div><p lang="en">This is in English</p>' +
+        '<p lang="es">Esto es en español' +
+        '<a href="http://www.google.cn/" lang="zh">' +
+        'This is a link in Chinese</a></p></div>';
     assertContainerInnerHTML(expected);
   });
 
@@ -251,8 +252,9 @@ suite('ReadAnythingAppTest', () => {
       ],
     };
     chrome.readAnything.setContentForTesting(axTree, [2]);
-    const expected: string =
-        '<p lang="en">This is in English<a href="http://www.google.com/">This link has no language set</a></p>';
+    const expected =
+        '<p lang="en">This is in English<a href="http://www.google.com/">' +
+        'This link has no language set</a></p>';
     assertContainerInnerHTML(expected);
   });
 
@@ -349,8 +351,9 @@ suite('ReadAnythingAppTest', () => {
       ],
     };
     chrome.readAnything.setContentForTesting(axTree, [2, 4, 6, 8, 10, 12]);
-    const expected: string =
-        '<h1>This is an h1.</h1><h2>This is an h2.</h2><h3>This is an h3.</h3><h4>This is an h4.</h4><h5>This is an h5.</h5><h6>This is an h6.</h6>';
+    const expected = '<div><h1>This is an h1.</h1><h2>This is an h2.</h2>' +
+        '<h3>This is an h3.</h3><h4>This is an h4.</h4>' +
+        '<h5>This is an h5.</h5><h6>This is an h6.</h6></div>';
     assertContainerInnerHTML(expected);
   });
 
@@ -397,8 +400,8 @@ suite('ReadAnythingAppTest', () => {
       ],
     };
     chrome.readAnything.setContentForTesting(axTree, [2, 4]);
-    const expected: string =
-        '<a href="http://www.google.com">This is a link.</a><a href="http://www.youtube.com">This is another link.</a>';
+    const expected = '<div><a href="http://www.google.com">This is a link.' +
+        '</a><a href="http://www.youtube.com">This is another link.</a></div>';
     assertContainerInnerHTML(expected);
   });
 
@@ -407,6 +410,7 @@ suite('ReadAnythingAppTest', () => {
     // root htmlTag='#document' id=1
     // ++link htmlTag='a' id=2
     // ++++staticText name='This link does not have a url.' id=3
+    // ++image htmlTag='img' url='http://www.mycat.com' id=4
     const axTree = {
       rootId: 1,
       nodes: [
@@ -414,7 +418,7 @@ suite('ReadAnythingAppTest', () => {
           id: 1,
           role: 'rootWebArea',
           htmlTag: '#document',
-          childIds: [2],
+          childIds: [2, 4],
         },
         {
           id: 2,
@@ -427,10 +431,17 @@ suite('ReadAnythingAppTest', () => {
           role: 'staticText',
           name: 'This link does not have a url.',
         },
+        {
+          id: 4,
+          role: 'image',
+          htmlTag: 'img',
+          url: 'http://www.mycat.com',
+        },
       ],
     };
-    chrome.readAnything.setContentForTesting(axTree, [2]);
-    assertContainerInnerHTML('<a>This link does not have a url.</a>');
+    chrome.readAnything.setContentForTesting(axTree, [2, 4]);
+    const expected = '<div><a>This link does not have a url.</a><img></div>';
+    assertContainerInnerHTML(expected);
   });
 
   test('updateContent staticText', () => {
@@ -460,7 +471,7 @@ suite('ReadAnythingAppTest', () => {
       ],
     };
     chrome.readAnything.setContentForTesting(axTree, [2, 3]);
-    const expected: string = 'This is some text.This is some more text.';
+    const expected = '<div>This is some text.This is some more text.</div>';
     assertContainerInnerHTML(expected);
   });
 
@@ -509,7 +520,7 @@ suite('ReadAnythingAppTest', () => {
       ],
     };
     chrome.readAnything.setContentForTesting(axTree1, [2]);
-    const expected1: string = 'First set of content.';
+    const expected1 = 'First set of content.';
     assertContainerInnerHTML(expected1);
 
     // Fake chrome.readAnything methods for the following AXTree
@@ -532,7 +543,7 @@ suite('ReadAnythingAppTest', () => {
       ],
     };
     chrome.readAnything.setContentForTesting(axTree2, [2]);
-    const expected2: string = 'Second set of content.';
+    const expected2 = 'Second set of content.';
     assertContainerInnerHTML(expected2);
   });
 
@@ -598,6 +609,7 @@ suite('ReadAnythingAppTest', () => {
         focus_object_id: 7,
         anchor_offset: 1,
         focus_offset: 2,
+        is_backward: false,
       },
     };
     chrome.readAnything.setContentForTesting(axTree, []);
@@ -605,7 +617,248 @@ suite('ReadAnythingAppTest', () => {
     // that is common to the entire selection, which is the root node in this
     // example. Since the root node's html tag is '#document' which isn't valid,
     // we replace it with a div.
-    const expected: string = '<div><p>ello</p><p>World</p><p>Fr</p></div>';
+    const expected = '<div><p>ello</p><p>World</p><p>Fr</p></div>';
+    assertContainerInnerHTML(expected);
+  });
+
+  test('updateContent selection backwards', () => {
+    // root htmlTag='#document' id=1
+    // ++paragraph htmlTag='p' id=2
+    // ++++staticText name='Hello' id=3
+    // ++paragraph htmlTag='p' id=4
+    // ++++staticText name='World' id=5
+    // ++paragraph htmlTag='p' id=6
+    // ++++staticText name='Friend' id=7
+    // ++++staticText name='!' id=8
+    const axTree = {
+      rootId: 1,
+      nodes: [
+        {
+          id: 1,
+          role: 'rootWebArea',
+          htmlTag: '#document',
+          childIds: [2, 4, 6],
+        },
+        {
+          id: 2,
+          role: 'paragraph',
+          htmlTag: 'p',
+          childIds: [3],
+        },
+        {
+          id: 3,
+          role: 'staticText',
+          name: 'Hello',
+        },
+        {
+          id: 4,
+          role: 'paragraph',
+          htmlTag: 'p',
+          childIds: [5],
+        },
+        {
+          id: 5,
+          role: 'staticText',
+          name: 'World',
+        },
+        {
+          id: 6,
+          role: 'paragraph',
+          htmlTag: 'p',
+          childIds: [7, 8],
+        },
+        {
+          id: 7,
+          role: 'staticText',
+          name: 'Friend',
+        },
+        {
+          id: 8,
+          role: 'staticText',
+          name: '!',
+        },
+      ],
+      selection: {
+        anchor_object_id: 7,
+        focus_object_id: 3,
+        anchor_offset: 2,
+        focus_offset: 1,
+        is_backward: true,
+      },
+    };
+    chrome.readAnything.setContentForTesting(axTree, []);
+    // The expected string contains the selected text only inside of the node
+    // that is common to the entire selection, which is the root node in this
+    // example. Since the root node's html tag is '#document' which isn't valid,
+    // we replace it with a div.
+    const expected = '<div><p>ello</p><p>World</p><p>Fr</p></div>';
+    assertContainerInnerHTML(expected);
+  });
+
+  test('updateContent textDirection', () => {
+    // root htmlTag='#document' id=1
+    // ++paragraph htmlTag='p' id=2 direction='ltr'
+    // ++++staticText name='This is left to right writing' id=3
+    // ++paragraph htmlTag='p' id=4 direction='rtl'
+    // ++++staticText name='This is right to left writing' id=4
+    const axTree = {
+      rootId: 1,
+      nodes: [
+        {
+          id: 1,
+          role: 'rootWebArea',
+          htmlTag: '#document',
+          childIds: [2, 4],
+        },
+        {
+          id: 2,
+          role: 'paragraph',
+          htmlTag: 'p',
+          direction: 1,
+          childIds: [3],
+        },
+        {
+          id: 3,
+          role: 'staticText',
+          name: 'This is left to right writing',
+        },
+        {
+          id: 4,
+          role: 'paragraph',
+          htmlTag: 'p',
+          direction: 2,
+          childIds: [5],
+        },
+        {
+          id: 5,
+          role: 'staticText',
+          name: 'This is right to left writing',
+        },
+      ],
+    };
+    chrome.readAnything.setContentForTesting(axTree, [2, 4]);
+    const expected = '<div><p dir="ltr">This is left to right writing</p>' +
+        '<p dir="rtl">This is right to left writing</p></div>';
+    assertContainerInnerHTML(expected);
+  });
+
+  test('updateContent textDirection parentNodeDiffDir', () => {
+    // root htmlTag='#document' id=1
+    // ++paragraph htmlTag='p' id=2 direction='ltr'
+    // ++++staticText name='This is ltr' id=3
+    // ++++link htmlTag='a' url='http://www.google.com/' id=4 direction='rtl'
+    // ++++++staticText name='This link is rtl' id=5
+    const axTree = {
+      rootId: 1,
+      nodes: [
+        {
+          id: 1,
+          role: 'rootWebArea',
+          htmlTag: '#document',
+          childIds: [2],
+        },
+        {
+          id: 2,
+          role: 'paragraph',
+          htmlTag: 'p',
+          direction: 1,
+          childIds: [3, 4],
+        },
+        {
+          id: 3,
+          role: 'staticText',
+          name: 'This is ltr',
+        },
+        {
+          id: 4,
+          role: 'link',
+          htmlTag: 'a',
+          direction: 2,
+          url: 'http://www.google.com/',
+          childIds: [5],
+        },
+        {
+          id: 5,
+          role: 'staticText',
+          name: 'This link is rtl',
+        },
+      ],
+    };
+    chrome.readAnything.setContentForTesting(axTree, [2]);
+    const expected = '<p dir="ltr">This is ltr' +
+        '<a dir="rtl" href="http://www.google.com/">This link is rtl</a></p>';
+    assertContainerInnerHTML(expected);
+  });
+
+  test('updateContent textDirection verticalDir', () => {
+    // root htmlTag='#document' id=1
+    // ++paragraph htmlTag='p' id=2 direction='ttb'
+    // ++++staticText name='This should be auto' id=3
+    // ++paragraph htmlTag='p' id=4 direction='btt'
+    // ++++staticText name='This should be also be auto' id=4
+    const axTree = {
+      rootId: 1,
+      nodes: [
+        {
+          id: 1,
+          role: 'rootWebArea',
+          htmlTag: '#document',
+          childIds: [2, 4],
+        },
+        {
+          id: 2,
+          role: 'paragraph',
+          htmlTag: 'p',
+          direction: 3,
+          childIds: [3],
+        },
+        {
+          id: 3,
+          role: 'staticText',
+          name: 'This should be auto',
+        },
+        {
+          id: 4,
+          role: 'paragraph',
+          htmlTag: 'p',
+          direction: 4,
+          childIds: [5],
+        },
+        {
+          id: 5,
+          role: 'staticText',
+          name: 'This should be also be auto',
+        },
+      ],
+    };
+    chrome.readAnything.setContentForTesting(axTree, [2, 4]);
+    const expected = '<div><p dir="auto">This should be auto</p>' +
+        '<p dir="auto">This should be also be auto</p></div>';
+    assertContainerInnerHTML(expected);
+  });
+
+  test('updateContent noContentNodes', () => {
+    // Fake chrome.readAnything methods for the following AXTree
+    // root htmlTag='#document' id=1
+    // ++staticText name='This is some text.' id=2
+    const axTree = {
+      rootId: 1,
+      nodes: [
+        {
+          id: 1,
+          role: 'rootWebArea',
+          htmlTag: '#document',
+          childIds: [2],
+        },
+        {
+          id: 2,
+          role: 'staticText',
+          name: 'This is some text.',
+        },
+      ],
+    };
+    chrome.readAnything.setContentForTesting(axTree, []);
+    const expected = '';
     assertContainerInnerHTML(expected);
   });
 });

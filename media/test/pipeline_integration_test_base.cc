@@ -471,12 +471,12 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
   if (create_renderer_cb_)
     return create_renderer_cb_.Run(renderer_type);
 
-  return CreateDefaultRenderer(renderer_type);
+  return CreateRendererImpl(renderer_type);
 }
 
-std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateDefaultRenderer(
+std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRendererImpl(
     absl::optional<RendererType> renderer_type) {
-  if (renderer_type && *renderer_type != RendererType::kDefault) {
+  if (renderer_type && *renderer_type != RendererType::kRendererImpl) {
     DVLOG(1) << __func__ << ": renderer_type not supported";
     return nullptr;
   }
@@ -666,8 +666,26 @@ PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
         encrypted_media->GetCdmContext(),
         base::BindOnce(&PipelineIntegrationTestBase::DecryptorAttached,
                        base::Unretained(this)));
+  } else if (fuzzing_) {
+    // Encrypted content is not expected unless the fuzzer generates a stream
+    // that appears to be encrypted. The fuzzer handles any encrypted media
+    // init data callbacks, but could timeout if there is no such data but the
+    // media is determined by the parser to be encrypted (as can occur in MSE
+    // mp2t fuzzing of some kinds of encrypted media). To prevent such fuzzer
+    // timeout, post a task to the main thread to fail the test if the pipeline
+    // transitions to waiting for a CDM.
+    EXPECT_CALL(*this, OnWaiting(WaitingReason::kNoCdm))
+        .Times(AnyNumber())
+        .WillRepeatedly([this]() {
+          task_environment_.GetMainThreadTaskRunner()->PostTask(
+              FROM_HERE,
+              base::BindOnce(&PipelineIntegrationTestBase::FailTest,
+                             base::Unretained(this),
+                             media::PIPELINE_ERROR_INITIALIZATION_FAILED));
+        });
   } else {
-    // Encrypted content not used, so this is never called.
+    // We are neither fuzzing, nor expecting encrypted media, so we must not
+    // receive notification of waiting for a decryption key.
     EXPECT_CALL(*this, OnWaiting(WaitingReason::kNoDecryptionKey)).Times(0);
   }
 

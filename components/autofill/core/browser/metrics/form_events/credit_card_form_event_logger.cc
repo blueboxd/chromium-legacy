@@ -12,11 +12,14 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/ranges/algorithm.h"
 #include "components/autofill/core/browser/form_data_importer.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/metrics/form_events/form_events.h"
 #include "components/autofill/core/browser/payments/autofill_offer_manager.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/validation.h"
-#include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/autofill/core/common/autofill_internals/log_message.h"
+#include "components/autofill/core/common/autofill_internals/logging_scope.h"
+#include "components/autofill_assistant/core/public/autofill_assistant_intent.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
 namespace autofill {
@@ -29,7 +32,7 @@ CreditCardFormEventLogger::CreditCardFormEventLogger(
     : FormEventLoggerBase("CreditCard",
                           is_in_any_main_frame,
                           form_interactions_ukm_logger,
-                          client ? client->GetLogManager() : nullptr),
+                          client),
       current_authentication_flow_(UnmaskAuthFlowType::kNone),
       personal_data_manager_(personal_data_manager),
       client_(client) {}
@@ -115,12 +118,12 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
       /*is_for_credit_card=*/true, form, field);
 
   AutofillMetrics::LogCreditCardSeamlessnessAtFillTime(
-      {.event_logger = *this,
-       .form = form,
-       .field = field,
-       .newly_filled_fields = newly_filled_fields,
-       .safe_fields = safe_fields,
-       .builder = builder});
+      {.event_logger = raw_ref(*this),
+       .form = raw_ref(form),
+       .field = raw_ref(field),
+       .newly_filled_fields = raw_ref(newly_filled_fields),
+       .safe_fields = raw_ref(safe_fields),
+       .builder = raw_ref(builder)});
 
   switch (record_type) {
     case CreditCard::LOCAL_CARD:
@@ -173,6 +176,17 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
       base::UserMetricsAction("Autofill_FilledCreditCardSuggestion"));
 
   form_interactions_ukm_logger_->Record(std::move(builder));
+
+  ++form_interaction_counts_.autofill_fills;
+  UpdateFlowId();
+
+  if (autofill_assistant_intent() ==
+      autofill_assistant::AutofillAssistantIntent::CHROME_FAST_CHECKOUT) {
+    LOG_AF(client_->GetLogManager())
+        << LoggingScope::kFastCheckout << LogMessage::kFastCheckout
+        << "credit card form with signature " << form.FormSignatureAsStr()
+        << " was autofilled during a Fast Checkout run.";
+  }
 }
 
 void CreditCardFormEventLogger::LogCardUnmaskAuthenticationPromptShown(
@@ -265,8 +279,8 @@ void CreditCardFormEventLogger::OnSuggestionsShownOnce(
 void CreditCardFormEventLogger::OnSuggestionsShownSubmittedOnce(
     const FormStructure& form) {
   if (!has_logged_suggestion_filled_) {
-    const CreditCard credit_card =
-        client_->GetFormDataImporter()->ExtractCreditCardFromForm(form);
+    const CreditCard& credit_card =
+        client_->GetFormDataImporter()->ExtractCreditCardFromForm(form).card;
     Log(GetCardNumberStatusFormEvent(credit_card), form);
   }
 }

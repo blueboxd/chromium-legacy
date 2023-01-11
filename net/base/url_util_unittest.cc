@@ -163,6 +163,40 @@ TEST(UrlUtilTest, AppendOrReplaceQueryParameter) {
           .spec());
 }
 
+TEST(UrlUtilTest, AppendOrReplaceRef) {
+  // Setting a new ref should append it.
+  EXPECT_EQ("http://example.com/path#ref",
+            AppendOrReplaceRef(GURL("http://example.com/path"), "ref").spec());
+
+  // Setting a ref over an existing one should replace it.
+  EXPECT_EQ("http://example.com/path#ref",
+            AppendOrReplaceRef(GURL("http://example.com/path#old_ref"), "ref")
+                .spec());
+
+  // Setting a ref on a url with existing query parameters should simply append
+  // it at the end
+  EXPECT_EQ(
+      "http://example.com/path?query=value#ref",
+      AppendOrReplaceRef(GURL("http://example.com/path?query=value#ref"), "ref")
+          .spec());
+
+  // Setting a ref on a url with existing query parameters and with special
+  // encoded characters: `special-chars?query=value#ref chars%\";'`
+  EXPECT_EQ(
+      "http://example.com/special-chars?query=value#ref%20chars%%22;'",
+      AppendOrReplaceRef(GURL("http://example.com/special-chars?query=value"),
+                         "ref chars%\";'")
+          .spec());
+
+  // Testing adding a ref to a URL with specially encoded characters.
+  // `special chars%\";'?query=value#ref`
+  EXPECT_EQ(
+      "http://example.com/special%20chars%%22;'?query=value#ref",
+      AppendOrReplaceRef(
+          GURL("http://example.com/special chars%\";'?query=value"), "ref")
+          .spec());
+}
+
 TEST(UrlUtilTest, GetValueForKeyInQuery) {
   GURL url("http://example.com/path?name=value&boolParam&"
            "url=http://test.com/q?n1%3Dv1%26n2");
@@ -801,6 +835,40 @@ TEST(UrlUtilTest, GoogleHost) {
 
   for (const auto& host : google_host_cases) {
     EXPECT_EQ(host.expected_output, HasGoogleHost(host.url));
+  }
+}
+
+TEST(UrlUtilTest, IsLocalHostname) {
+  EXPECT_TRUE(IsLocalHostname("localhost"));
+  EXPECT_TRUE(IsLocalHostname("localhost."));
+  EXPECT_TRUE(IsLocalHostname("LOCALhost"));
+  EXPECT_TRUE(IsLocalHostname("LOCALhost."));
+  EXPECT_TRUE(IsLocalHostname("abc.localhost"));
+  EXPECT_TRUE(IsLocalHostname("abc.localhost."));
+  EXPECT_TRUE(IsLocalHostname("abc.LOCALhost"));
+  EXPECT_TRUE(IsLocalHostname("abc.LOCALhost."));
+  EXPECT_TRUE(IsLocalHostname("abc.def.localhost"));
+
+  EXPECT_FALSE(IsLocalHostname("localhost.actuallynot"));
+  EXPECT_FALSE(IsLocalHostname("notlocalhost"));
+  EXPECT_FALSE(IsLocalHostname("notlocalhost."));
+  EXPECT_FALSE(IsLocalHostname("still.notlocalhost"));
+  EXPECT_FALSE(IsLocalHostname("localhostjustkidding"));
+}
+
+TEST(UrlUtilTest, GoogleHostWithAlpnH3) {
+  struct {
+    base::StringPiece host;
+    bool expected_output;
+  } test_cases[] = {
+      {"google.com", true},        {"www.google.com", true},
+      {"google.CoM", true},        {"www.Google.cOm", true},
+      {"www.google.cat", false},   {"www.google.co.in", false},
+      {"www.google.co.jp", false},
+  };
+
+  for (const auto& host : test_cases) {
+    EXPECT_EQ(host.expected_output, IsGoogleHostWithAlpnH3(host.host));
   }
 }
 

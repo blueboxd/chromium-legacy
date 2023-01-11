@@ -22,7 +22,7 @@
 #include "ui/events/win/system_event_state_lookup.h"
 #endif
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 #include "ui/base/ui_base_features.h"
 #include "ui/events/event_constants.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -46,7 +46,7 @@ void FireFocusAfterMenuClose(base::WeakPtr<Widget> widget) {
   }
 }
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 bool IsAltPressed() {
   if (const auto* const platorm_menu_utils =
           ui::OzonePlatform::GetInstance()->GetPlatformMenuUtils()) {
@@ -55,7 +55,7 @@ bool IsAltPressed() {
   }
   return false;
 }
-#endif  // defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_OZONE)
 
 }  // namespace
 
@@ -73,11 +73,8 @@ MenuRunnerImplInterface* MenuRunnerImplInterface::Create(
 
 MenuRunnerImpl::MenuRunnerImpl(MenuItemView* menu)
     : menu_(menu),
-      running_(false),
-      delete_after_run_(false),
-      for_drop_(false),
-      controller_(nullptr),
-      owns_controller_(false) {}
+
+      controller_(nullptr) {}
 
 bool MenuRunnerImpl::IsRunning() const {
   return running_;
@@ -119,7 +116,8 @@ void MenuRunnerImpl::RunMenuAt(Widget* parent,
                                const gfx::Rect& bounds,
                                MenuAnchorPosition anchor,
                                int32_t run_types,
-                               gfx::NativeView native_view_for_gestures) {
+                               gfx::NativeView native_view_for_gestures,
+                               absl::optional<gfx::RoundedCornersF> corners) {
   closing_event_time_ = base::TimeTicks();
   if (running_) {
     // Ignore requests to show the menu while it's already showing. MenuItemView
@@ -129,6 +127,7 @@ void MenuRunnerImpl::RunMenuAt(Widget* parent,
 
   MenuController* controller = MenuController::GetActiveInstance();
   if (controller) {
+    controller->SetMenuRoundedCorners(corners);
     if ((run_types & MenuRunner::IS_NESTED) != 0) {
       if (controller->for_drop()) {
         controller->Cancel(MenuController::ExitType::kAll);
@@ -162,6 +161,7 @@ void MenuRunnerImpl::RunMenuAt(Widget* parent,
     // No menus are showing, show one.
     controller = new MenuController(for_drop_, this);
     owns_controller_ = true;
+    controller->SetMenuRoundedCorners(corners);
   }
   DCHECK((run_types & MenuRunner::COMBOBOX) == 0 ||
          (run_types & MenuRunner::EDITABLE_COMBOBOX) == 0);
@@ -256,7 +256,7 @@ bool MenuRunnerImpl::ShouldShowMnemonics(int32_t run_types) {
   // Show mnemonics if the button has focus or alt is pressed.
 #if BUILDFLAG(IS_WIN)
   show_mnemonics |= ui::win::IsAltPressed();
-#elif defined(USE_OZONE)
+#elif BUILDFLAG(IS_OZONE)
   show_mnemonics |= IsAltPressed();
 #elif BUILDFLAG(IS_MAC)
   show_mnemonics = false;

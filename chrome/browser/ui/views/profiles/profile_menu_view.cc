@@ -28,6 +28,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -44,7 +45,7 @@
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "chrome/browser/ui/views/hover_button.h"
+#include "chrome/browser/ui/views/controls/hover_button.h"
 #include "chrome/browser/ui/views/profiles/badged_profile_photo.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -346,6 +347,11 @@ void ProfileMenuView::OnSigninAccountButtonClicked(CoreAccountInfo account) {
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 void ProfileMenuView::OnSignoutButtonClicked() {
+  DCHECK(signin_util::UserSignoutSetting::GetForProfile(browser()->profile())
+             ->IsClearPrimaryAccountAllowed())
+      << "Clear primary account is not allowed. Signout should not be offered "
+         "in the UI.";
+
   RecordClick(ActionableItem::kSignoutButton);
   if (!perform_menu_actions())
     return;

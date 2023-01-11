@@ -10,9 +10,9 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/ui/download/download_item_mode.h"
+#include "chrome/browser/ui/views/controls/hover_button.h"
 #include "chrome/browser/ui/views/download/bubble/download_bubble_row_list_view.h"
 #include "chrome/browser/ui/views/download/bubble/download_toolbar_button_view.h"
-#include "chrome/browser/ui/views/hover_button.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -125,7 +125,6 @@ class DownloadBubbleRowView : public views::View,
   void OnDiscardButtonPressed();
   void OnMainButtonPressed();
 
-  // TODO(bhatiarohit): Add platform-independent icons.
   // The icon for the file. We get platform-specific icons from IconLoader.
   raw_ptr<views::ImageView> icon_ = nullptr;
   raw_ptr<views::ImageView> subpage_icon_ = nullptr;

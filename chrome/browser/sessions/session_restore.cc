@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <iterator>
 #include <list>
 #include <map>
@@ -28,6 +27,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/task/single_thread_task_runner.h"
@@ -92,7 +92,11 @@
 #include "extensions/common/extension_set.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/metrics/login_unlock_throughput_recorder.h"
+#include "ash/shell.h"
 #include "chrome/browser/ash/boot_times_recorder.h"
+#include "components/app_restore/window_properties.h"
+#include "ui/compositor/layer.h"
 #endif
 
 using content::NavigationController;
@@ -113,6 +117,50 @@ bool HasSingleNewTabPage(Browser* browser) {
 
 // Pointers to SessionRestoreImpls which are currently restoring the session.
 std::set<SessionRestoreImpl*>* active_session_restorers = nullptr;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void StartRecordingRestoredWindowsMetrics(
+    const std::vector<std::unique_ptr<sessions::SessionWindow>>& windows) {
+  // Ash is not always initialized in unit tests.
+  if (!ash::Shell::HasInstance())
+    return;
+
+  ash::LoginUnlockThroughputRecorder* throughput_recorder =
+      ash::Shell::Get()->login_unlock_throughput_recorder();
+
+  for (const auto& w : windows) {
+    if (w->type == sessions::SessionWindow::TYPE_NORMAL) {
+      throughput_recorder->AddScheduledRestoreWindow(
+          w->window_id.id(), w->app_name,
+          ash::LoginUnlockThroughputRecorder::kBrowser);
+    }
+  }
+}
+
+void ReportRestoredWindowCreated(aura::Window* window) {
+  // Ash is not always initialized in unit tests.
+  if (!ash::Shell::HasInstance())
+    return;
+
+  const int32_t restore_window_id =
+      window->GetProperty(app_restore::kRestoreWindowIdKey);
+
+  // Restored window IDs are always non-zero.
+  if (restore_window_id == 0)
+    return;
+
+  ash::LoginUnlockThroughputRecorder* throughput_recorder =
+      ash::Shell::Get()->login_unlock_throughput_recorder();
+  throughput_recorder->OnRestoredWindowCreated(restore_window_id);
+  aura::Window* root_window = window->GetRootWindow();
+  if (root_window) {
+    ui::Compositor* compositor = root_window->layer()->GetCompositor();
+    throughput_recorder->OnBeforeRestoredWindowShown(restore_window_id,
+                                                     compositor);
+  }
+}
+
+#endif
 
 }  // namespace
 
@@ -415,11 +463,14 @@ class SessionRestoreImpl : public BrowserListObserver {
     if (!read_error_)
       read_error_ = read_error;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    if (!read_error_)
+      StartRecordingRestoredWindowsMetrics(windows);
+#endif
+
     // Copy windows into windows_ so that we can combine both app and browser
     // windows together before doing a one-pass restore.
-    std::copy(std::make_move_iterator(windows.begin()),
-              std::make_move_iterator(windows.end()),
-              std::back_inserter(windows_));
+    base::ranges::move(windows, std::back_inserter(windows_));
     SessionRestore::OnGotSession(profile(), for_apps, windows.size());
     windows.clear();
 
@@ -576,6 +627,7 @@ class SessionRestoreImpl : public BrowserListObserver {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
         ash::BootTimesRecorder::Get()->AddLoginTimeMarker(
             "SessionRestore-CreateRestoredBrowser-End", false);
+        ReportRestoredWindowCreated(browser->window()->GetNativeWindow());
 #endif
       }
 
@@ -1080,7 +1132,8 @@ Browser* SessionRestore::RestoreSession(
 void SessionRestore::RestoreSessionAfterCrash(Browser* browser) {
   auto* profile = browser->profile();
 
-#if BUILDFLAG(IS_CHROMEOS)
+// While this behavior is enabled for ash, it is explicitly disabled for lacros.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Desks restore a window to the right desk, so we should not reuse any
   // browser window. Otherwise, the conflict of the parent desk arises because
   // tabs created in this |browser| should remain in the current active desk,

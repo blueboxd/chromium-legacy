@@ -25,6 +25,7 @@
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/chromecast_buildflags.h"
 #include "content/public/browser/audio_stream_broker.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
@@ -38,7 +39,6 @@
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/renderer_preferences_util.h"
@@ -51,10 +51,8 @@
 #include "fuchsia_web/webengine/browser/media_player_impl.h"
 #include "fuchsia_web/webengine/browser/message_port.h"
 #include "fuchsia_web/webengine/browser/navigation_policy_handler.h"
-#include "fuchsia_web/webengine/browser/receiver_session_client.h"
 #include "fuchsia_web/webengine/browser/url_request_rewrite_type_converters.h"
 #include "fuchsia_web/webengine/browser/web_engine_devtools_controller.h"
-#include "fuchsia_web/webengine/common/cast_streaming.h"
 #include "media/mojo/mojom/audio_processing.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -75,6 +73,11 @@
 #include "ui/wm/core/base_focus_rules.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
+#include "fuchsia_web/webengine/browser/receiver_session_client.h"  //nogncheck
+#include "fuchsia_web/webengine/common/cast_streaming.h"            // nogncheck
+#endif
 
 namespace {
 
@@ -692,6 +695,7 @@ bool FrameImpl::OnAccessibilityError(zx_status_t error) {
   return false;
 }
 
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
 bool FrameImpl::MaybeHandleCastStreamingMessage(
     std::string* origin,
     fuchsia::web::WebMessage* message,
@@ -732,16 +736,17 @@ void FrameImpl::MaybeStartCastStreaming(
       ->GetInterface(&demuxer_connector);
   receiver_session_client_->SetDemuxerConnector(std::move(demuxer_connector));
 }
+#endif
 
-void FrameImpl::UpdateRenderViewZoomLevel(
-    content::RenderViewHost* render_view_host) {
+void FrameImpl::UpdateRenderFrameZoomLevel(
+    content::RenderFrameHost* render_frame_host) {
   float page_scale = content_area_settings_.has_page_scale()
                          ? content_area_settings_.page_scale()
                          : 1.0;
   content::HostZoomMap* host_zoom_map =
       content::HostZoomMap::GetForWebContents(web_contents_.get());
   host_zoom_map->SetTemporaryZoomLevel(
-      render_view_host->GetProcess()->GetID(), render_view_host->GetRoutingID(),
+      render_frame_host->GetGlobalId(),
       blink::PageZoomFactorToZoomLevel(page_scale));
 }
 
@@ -779,7 +784,7 @@ void FrameImpl::ConnectToAccessibilityBridge() {
 }
 
 void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
-  scenic::ViewRefPair view_ref_pair = scenic::ViewRefPair::New();
+  auto view_ref_pair = scenic::ViewRefPair::New();
   CreateViewWithViewRef(std::move(view_token),
                         std::move(view_ref_pair.control_ref),
                         std::move(view_ref_pair.view_ref));
@@ -918,8 +923,10 @@ void FrameImpl::RemoveBeforeLoadJavaScript(uint64_t id) {
 void FrameImpl::PostMessage(std::string origin,
                             fuchsia::web::WebMessage message,
                             PostMessageCallback callback) {
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
   if (MaybeHandleCastStreamingMessage(&origin, &message, &callback))
     return;
+#endif
 
   fuchsia::web::Frame_PostMessage_Result result;
   if (origin.empty()) {
@@ -1196,7 +1203,7 @@ void FrameImpl::SetContentAreaSettings(
     if (!(content_area_settings_.has_page_scale() &&
           (settings.page_scale() == content_area_settings_.page_scale()))) {
       content_area_settings_.set_page_scale(settings.page_scale());
-      UpdateRenderViewZoomLevel(web_contents_->GetRenderViewHost());
+      UpdateRenderFrameZoomLevel(web_contents_->GetPrimaryMainFrame());
     }
   }
 
@@ -1206,7 +1213,7 @@ void FrameImpl::SetContentAreaSettings(
 void FrameImpl::ResetContentAreaSettings() {
   content_area_settings_ = fuchsia::web::ContentAreaSettings();
   web_contents_->OnWebPreferencesChanged();
-  UpdateRenderViewZoomLevel(web_contents_->GetRenderViewHost());
+  UpdateRenderFrameZoomLevel(web_contents_->GetPrimaryMainFrame());
 }
 
 void FrameImpl::OverrideWebPreferences(
@@ -1468,7 +1475,9 @@ void FrameImpl::ReadyToCommitNavigation(
   script_injector_.InjectScriptsForURL(navigation_handle->GetURL(),
                                        navigation_handle->GetRenderFrameHost());
 
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
   MaybeStartCastStreaming(navigation_handle);
+#endif
 }
 
 void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
@@ -1484,12 +1493,13 @@ void FrameImpl::RenderFrameCreated(content::RenderFrameHost* frame_host) {
   }
 }
 
-void FrameImpl::RenderViewHostChanged(content::RenderViewHost* old_host,
-                                      content::RenderViewHost* new_host) {
-  // UpdateRenderViewZoomLevel() sets temporary zoom level for the current
-  // RenderView. It needs to be called again whenever main RenderView is
+void FrameImpl::RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                                       content::RenderFrameHost* new_host) {
+  // UpdateRenderFrameZoomLevel() sets temporary zoom level for the current
+  // RenderFrame. It needs to be called again whenever main RenderFrame is
   // changed.
-  UpdateRenderViewZoomLevel(new_host);
+  if (new_host->IsInPrimaryMainFrame())
+    UpdateRenderFrameZoomLevel(new_host);
 }
 
 void FrameImpl::DidFirstVisuallyNonEmptyPaint() {

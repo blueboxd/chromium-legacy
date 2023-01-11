@@ -10,17 +10,20 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "content/public/renderer/plugin_ax_tree_source.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "pdf/pdf_accessibility_data_handler.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
+#include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/ax_tree_source.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace chrome_pdf {
+
 class PdfAccessibilityActionHandler;
 struct AccessibilityActionData;
 struct AccessibilityCharInfo;
@@ -30,6 +33,7 @@ struct AccessibilityPageObjects;
 struct AccessibilityTextRunInfo;
 struct AccessibilityViewportInfo;
 struct PageCharacterIndex;
+
 }  // namespace chrome_pdf
 
 namespace content {
@@ -39,9 +43,13 @@ class RenderFrame;
 
 namespace gfx {
 class Transform;
-}
+}  // namespace gfx
 
 namespace pdf {
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+class PdfOcrService;
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
 class PdfAccessibilityTree : public content::PluginAXTreeSource,
                              public content::RenderFrameObserver,
@@ -103,14 +111,24 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   bool IsValid(const ui::AXNode* node) const override;
   bool IsEqual(const ui::AXNode* node1, const ui::AXNode* node2) const override;
   const ui::AXNode* GetNull() const override;
-  void SerializeNode(const ui::AXNode* node, ui::AXNodeData* out_data)
-      const override;
+  void SerializeNode(const ui::AXNode* node,
+                     ui::AXNodeData* out_data) const override;
   std::unique_ptr<ui::AXActionTarget> CreateActionTarget(
       const ui::AXNode& target_node) override;
 
   // content::RenderFrameObserver:
   void AccessibilityModeChanged(const ui::AXMode& /*mode*/) override;
   void OnDestruct() override;
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  // Removes the image node in the accessibility tree with the specified ID, and
+  // adds a page node hosting a child tree containing the page contents which
+  // will later be provided by the OCR Service.
+  void OnOcrDataReceived(const ui::AXNodeID& image_node_id,
+                         const gfx::RectF& image_bounds,
+                         const ui::AXNodeID& parent_node_id,
+                         const ui::AXTreeID& child_tree_id);
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
   bool ShowContextMenu();
 
@@ -165,6 +183,11 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   // `RenderAccessibility` for the frame.
   void MaybeHandleAccessibilityChange();
 
+  // Returns a weak pointer for an instance of this class.
+  base::WeakPtr<PdfAccessibilityTree> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
   ui::AXTreeData tree_data_;
   ui::AXTree tree_;
 
@@ -214,6 +237,10 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   uint32_t next_page_index_ = 0;
 
   bool did_get_a_text_run_ = false;
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  std::unique_ptr<PdfOcrService> ocr_service_;
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
   base::WeakPtrFactory<PdfAccessibilityTree> weak_ptr_factory_{this};
 };

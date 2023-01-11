@@ -4,6 +4,7 @@
 
 #include "components/omnibox/common/omnibox_features.h"
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 
 namespace omnibox {
@@ -63,15 +64,19 @@ BASE_FEATURE(kAndroidAuxiliarySearch,
 // that may improve autocompletion stability. Feature params control which
 // tweaks specifically are enabled. Enabling this feature without params is a
 // no-op.
+// TODO(manukh) Enabled by default on 10/20/22 m109. Clean up feature code
+//  2/7/22, when m110 reaches stable.
 BASE_FEATURE(kAutocompleteStability,
              "OmniboxAutocompleteStability",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature to enable memoizing and filtering non-doc hosts for
 // `DocumentProvider::GetURLForDeduping()`.
+// TODO(manukh) Enabled by default on 10/20/22 m109. Clean up feature code
+//  2/7/22, when m110 reaches stable.
 BASE_FEATURE(kDocumentProviderDedupingOptimization,
              "OmniboxDocumentProviderDedupingOptimization",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature to tweak how the default suggestion is preserved. Feature params
 // control which tweaks specifically are enabled. Enabling this feature without
@@ -96,9 +101,11 @@ BASE_FEATURE(kOmniboxRemoveExcessiveRecycledViewClearCalls,
 
 // Feature to enable memoizing URLs when replacing search terms in
 // `AutocompleteMatch::GURLToStrippedGURL()`.
+// TODO(manukh) Enabled by default on 10/20/22 m109. Clean up feature code
+//  2/7/22, when m110 reaches stable.
 BASE_FEATURE(kStrippedGurlOptimization,
              "OmniboxStrippedGurlOptimization",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature to debounce `AutocompleteController::NotifyChanged()`.
 BASE_FEATURE(kUpdateResultDebounce,
@@ -143,6 +150,12 @@ BASE_FEATURE(kDynamicMaxAutocomplete,
              "OmniboxDynamicMaxAutocomplete",
              enabled_by_default_desktop_android);
 
+// If enabled, proactively sets the `stripped_destination_url` for the entity
+// suggestions with identical search terms so they are not erroneously deduped.
+BASE_FEATURE(kDisambiguateEntitySuggestions,
+             "DisambiguateEntitySuggestions",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Used to adjust the relevance for the local history zero-prefix suggestions.
 // If enabled, the relevance is determined by this feature's companion
 // parameter, OmniboxFieldTrial::kLocalHistoryZeroSuggestRelevanceScore.
@@ -180,7 +193,7 @@ BASE_FEATURE(kFocusTriggersSRPZeroSuggest,
 // zero-prefix and prefix suggestions.
 BASE_FEATURE(kLocalHistorySuggestRevamp,
              "LocalHistorySuggestRevamp",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             enabled_by_default_desktop_only);
 
 // Enables local history zero-prefix suggestions in every context in which the
 // remote zero-prefix suggestions are enabled.
@@ -190,12 +203,12 @@ BASE_FEATURE(kLocalHistoryZeroSuggestBeyondNTP,
 
 // Used to adjust the age threshold since the last visit in order to consider a
 // normalized keyword search term as a zero-prefix suggestion. If disabled, the
-// default value of 60 days for Desktop and 7 days for Android and iOS is used.
+// default value of 90 days for Desktop and 60 days for Android and iOS is used.
 // If enabled, the age threshold is determined by this feature's companion
 // parameter, OmniboxFieldTrial::kOmniboxLocalZeroSuggestAgeThresholdParam.
 BASE_FEATURE(kOmniboxLocalZeroSuggestAgeThreshold,
              "OmniboxLocalZeroSuggestAgeThreshold",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             enabled_by_default_desktop_only);
 
 // Mainly used to enable sending INTERACTION_CLOBBER focus type for zero-prefix
 // requests with an empty input on Web/SRP on Mobile. Enabled by default on
@@ -213,7 +226,7 @@ BASE_FEATURE(kZeroSuggestOnNTPForSignedOutUsers,
 // Enables prefetching of the zero prefix suggestions for eligible users on NTP.
 BASE_FEATURE(kZeroSuggestPrefetching,
              "ZeroSuggestPrefetching",
-             enabled_by_default_desktop_android);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables prefetching of the zero prefix suggestions for eligible users on SRP.
 BASE_FEATURE(kZeroSuggestPrefetchingOnSRP,
@@ -232,16 +245,19 @@ BASE_FEATURE(kZeroSuggestInMemoryCaching,
              "ZeroSuggestInMemoryCaching",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Features to provide non personalized head search suggestion from a compact
-// on device model. More specifically, feature name with suffix Incognito /
-// NonIncognito will only controls behaviors under incognito / non-incognito
-// mode respectively.
+// Features to provide head and tail non personalized search suggestion from
+// compact on device models. More specifically, feature name with suffix
+// Incognito / NonIncognito  will only controls behaviors under incognito /
+// non-incognito mode respectively.
 BASE_FEATURE(kOnDeviceHeadProviderIncognito,
              "OmniboxOnDeviceHeadProviderIncognito",
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kOnDeviceHeadProviderNonIncognito,
              "OmniboxOnDeviceHeadProviderNonIncognito",
              base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kOnDeviceTailModel,
+             "OmniboxOnDeviceTailModel",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, changes the way Google-provided search suggestions are scored by
 // the backend. Note that this Feature is only used for triggering a server-
@@ -280,18 +296,18 @@ BASE_FEATURE(kBookmarkPaths,
              "OmniboxBookmarkPaths",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If disabled, shortcuts to the same stripped destination URL are scored
-// independently, and only the highest scored shortcut is kept. If enabled,
-// duplicate shortcuts are given an aggregate score, as if they had been a
-// single shortcut.
-BASE_FEATURE(kAggregateShortcuts,
-             "OmniboxAggregateShortcuts",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If enabled, when updating or creating a shortcut, the last word of the input
 // is expanded, if possible, to a complete word in the suggestion description.
 BASE_FEATURE(kShortcutExpanding,
              "OmniboxShortcutExpanding",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, the shortcut provider is more aggressive in scoring. The exact
+// details will change over time; but ATM, the shortcut provider will chose 1
+// candidate to compete with HUP's URL-what-you-typed suggestion for the default
+// slot.
+BASE_FEATURE(kShortcutBoost,
+             "OmniboxShortcutBoost",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, the relevant AutocompleteProviders will store "title" data in
@@ -389,6 +405,11 @@ BASE_FEATURE(kOmniboxHeaderPaddingUpdate,
              "OmniboxHeaderPaddingUpdate",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Feature used to synchronize the toolbar's and status bar's color.
+BASE_FEATURE(kOmniboxMatchToolbarAndStatusBarColor,
+             "OmniboxMatchToolbarAndStatusBarColor",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Feature used to remove the capitalization of the suggestion header text.
 BASE_FEATURE(kOmniboxRemoveSuggestionHeaderCapitalization,
              "OmniboxRemoveSuggestionHeaderCapitalization",
@@ -411,6 +432,11 @@ BASE_FEATURE(kOmniboxMostVisitedTilesOnSrp,
              "OmniboxMostVisitedTilesOnSrp",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, forces omnibox suggestion rows to be uniformly sized.
+BASE_FEATURE(kUniformRowHeight,
+             "OmniboxUniformRowHeight",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // When enabled, use Assistant for omnibox voice query recognition instead of
 // Android's built-in voice recognition service. Only works on Android.
 BASE_FEATURE(kOmniboxAssistantVoiceSearch,
@@ -429,7 +455,7 @@ BASE_FEATURE(kBlurWithEscape,
 // scopes to Site Search/Keyword Mode.
 BASE_FEATURE(kSiteSearchStarterPack,
              "OmniboxSiteSearchStarterPack",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             enabled_by_default_desktop_only);
 
 // Experiment to introduce new security indicators for HTTPS.
 BASE_FEATURE(kUpdatedConnectionSecurityIndicators,

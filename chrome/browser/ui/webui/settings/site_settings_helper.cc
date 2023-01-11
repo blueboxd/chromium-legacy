@@ -13,7 +13,9 @@
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/json/values_util.h"
 #include "base/no_destructor.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -21,6 +23,8 @@
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/file_system_access/chrome_file_system_access_permission_context.h"
+#include "chrome/browser/file_system_access/file_system_access_permission_context_factory.h"
 #include "chrome/browser/hid/hid_chooser_context.h"
 #include "chrome/browser/hid/hid_chooser_context_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,6 +33,7 @@
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -54,6 +59,7 @@
 #include "content/public/common/url_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "url/origin.h"
 
@@ -114,6 +120,9 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::FILE_SYSTEM_ACCESS_CHOOSER_DATA,
      "file-system-access-handles-data"},
     {ContentSettingsType::FEDERATED_IDENTITY_API, "federated-identity-api"},
+    {ContentSettingsType::PRIVATE_NETWORK_GUARD, "private-network-devices"},
+    {ContentSettingsType::PRIVATE_NETWORK_CHOOSER_DATA,
+     "private-network-devices-data"},
 
     // Add new content settings here if a corresponding Javascript string
     // representation for it is not required, for example if the content setting
@@ -434,6 +443,11 @@ const std::vector<ContentSettingsType>& GetVisiblePermissionCategories() {
       base_types->push_back(ContentSettingsType::ADS);
     }
 
+    if (base::FeatureList::IsEnabled(
+            blink::features::kPrivateNetworkAccessPermissionPrompt)) {
+      base_types->push_back(ContentSettingsType::PRIVATE_NETWORK_GUARD);
+    }
+
     initialized = true;
   }
 
@@ -468,6 +482,38 @@ void AddExceptionForHostedApp(const std::string& url_pattern,
 }
 
 // Create a base::Value::Dict that will act as a data source for a single row
+// for a File System Access permission grant.
+base::Value::Dict GetFileSystemExceptionForPage(
+    ContentSettingsType content_type,
+    Profile* profile,
+    const std::string& origin,
+    const base::FilePath& file_path,
+    const ContentSetting& setting,
+    const std::string& provider_name,
+    bool incognito,
+    bool is_embargoed) {
+  base::Value::Dict exception;
+  exception.Set(kOrigin, origin);
+  // TODO(crbug.com/1373962): Replace `LossyDisplayName` method with a
+  // new method that returns the full file path in a human-readable format.
+  exception.Set(kDisplayName, file_path.LossyDisplayName());
+  std::string setting_string =
+      content_settings::ContentSettingToString(setting);
+  DCHECK(!setting_string.empty());
+  exception.Set(kSetting, setting_string);
+
+  exception.Set(kSource, provider_name);
+  exception.Set(kIncognito, incognito);
+  exception.Set(kIsEmbargoed, is_embargoed);
+  absl::optional<std::string> isolated_web_app_name =
+      GetIsolatedWebAppName(profile, GURL(origin));
+  if (isolated_web_app_name.has_value()) {
+    exception.Set(kIsolatedWebAppName, isolated_web_app_name.value());
+  }
+  return exception;
+}
+
+// Create a base::Value::Dict that will act as a data source for a single row
 // in a HostContentSettingsMap-controlled exceptions table (e.g., cookies).
 base::Value::Dict GetExceptionForPage(
     ContentSettingsType content_type,
@@ -495,6 +541,11 @@ base::Value::Dict GetExceptionForPage(
   exception.Set(kSource, provider_name);
   exception.Set(kIncognito, incognito);
   exception.Set(kIsEmbargoed, is_embargoed);
+  absl::optional<std::string> isolated_web_app_name =
+      GetIsolatedWebAppName(profile, GURL(pattern.ToString()));
+  if (isolated_web_app_name.has_value()) {
+    exception.Set(kIsolatedWebAppName, isolated_web_app_name.value());
+  }
   return exception;
 }
 
@@ -682,6 +733,18 @@ void GetExceptionsForContentType(
                          incognito);
   }
 
+  // Display the URLs with File System entries that are granted
+  // permissions via File System Access Persistent Permissions.
+  if (base::FeatureList::IsEnabled(
+          features::kFileSystemAccessPersistentPermissions) &&
+      (type == ContentSettingsType::FILE_SYSTEM_READ_GUARD ||
+       type == ContentSettingsType::FILE_SYSTEM_WRITE_GUARD)) {
+    auto& urls_with_granted_entries = all_provider_exceptions
+        [HostContentSettingsMap::GetProviderTypeFromSource(
+            SiteSettingSourceToString(SiteSettingSource::kDefault))];
+    GetFileSystemGrantedEntries(&urls_with_granted_entries, profile, incognito);
+  }
+
   for (auto& one_provider_exceptions : all_provider_exceptions) {
     for (auto& exception : one_provider_exceptions)
       exceptions->Append(std::move(exception));
@@ -767,6 +830,36 @@ std::vector<ContentSettingPatternSource> GetSiteExceptionsForContentType(
            PatternAppliesToWebUISchemes(e);
   });
   return entries;
+}
+
+void GetFileSystemGrantedEntries(std::vector<base::Value::Dict>* exceptions,
+                                 Profile* profile,
+                                 bool incognito) {
+  ChromeFileSystemAccessPermissionContext* permission_context =
+      FileSystemAccessPermissionContextFactory::GetForProfile(profile);
+  std::vector<std::unique_ptr<permissions::ObjectPermissionContextBase::Object>>
+      grants = permission_context->GetAllGrantedObjects();
+
+  for (const auto& grant : grants) {
+    const std::string url = grant->origin.spec();
+    auto* const optional_path = grant->value.GetDict().Find(
+        ChromeFileSystemAccessPermissionContext::kPermissionPathKey);
+
+    // Ensure that the file path is found for the given kPermissionPathKey.
+    if (optional_path) {
+      const base::FilePath file_path =
+          base::ValueToFilePath(optional_path).value();
+      exceptions->push_back(GetFileSystemExceptionForPage(
+          ContentSettingsType::FILE_SYSTEM_WRITE_GUARD, profile, url, file_path,
+          CONTENT_SETTING_ALLOW,
+          SiteSettingSourceToString(SiteSettingSource::kDefault), incognito));
+    }
+  }
+  // Sort exceptions by origin name, alphabetically.
+  base::ranges::sort(*exceptions, [](const base::Value::Dict& lhs,
+                                     const base::Value::Dict& rhs) {
+    return lhs.Find(kOrigin)->GetString() < rhs.Find(kOrigin)->GetString();
+  });
 }
 
 void GetPolicyAllowedUrls(
@@ -947,6 +1040,21 @@ base::Value::List GetChooserExceptionListFromProfile(
   }
 
   return exceptions;
+}
+
+absl::optional<std::string> GetIsolatedWebAppName(Profile* profile,
+                                                  GURL origin) {
+  absl::optional<std::string> app_name;
+  if (auto* provider = web_app::WebAppProvider::GetForWebApps(profile)) {
+    if (absl::optional<web_app::AppId> app_id =
+            provider->registrar().FindAppWithUrlInScope(origin)) {
+      if (!provider->registrar().IsIsolated(*app_id)) {
+        return app_name;
+      }
+      app_name = provider->registrar().GetAppShortName(*app_id);
+    }
+  }
+  return app_name;
 }
 
 }  // namespace site_settings

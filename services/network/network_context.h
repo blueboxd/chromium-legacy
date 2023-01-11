@@ -47,6 +47,7 @@
 #include "services/network/http_cache_data_counter.h"
 #include "services/network/http_cache_data_remover.h"
 #include "services/network/network_qualities_pref_delegate.h"
+#include "services/network/oblivious_http_request_handler.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/cpp/transferable_directory.h"
@@ -240,6 +241,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
       mojom::URLLoaderFactoryParamsPtr params) override;
   void ResetURLLoaderFactories() override;
+  void GetViaObliviousHttp(
+      mojom::ObliviousHttpRequestPtr request,
+      mojo::PendingRemote<mojom::ObliviousHttpClient> client) override;
   void GetCookieManager(
       mojo::PendingReceiver<mojom::CookieManager> receiver) override;
   void GetRestrictedCookieManager(
@@ -497,11 +501,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const std::string& realm,
       LookupProxyAuthCredentialsCallback callback) override;
 #endif
-  void ComputeFirstPartySetMetadata(
-      const net::SchemefulSite& site,
-      const absl::optional<net::SchemefulSite>& top_frame_site,
-      const std::vector<net::SchemefulSite>& party_context,
-      ComputeFirstPartySetMetadataCallback callback) override;
 
   // Destroys |request| when a proxy lookup completes.
   void OnProxyLookupComplete(ProxyLookupRequest* proxy_lookup_request);
@@ -599,6 +598,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   bool require_network_isolation_key() const {
     return require_network_isolation_key_;
+  }
+
+  bool acam_preflight_spec_conformant() const {
+    return acam_preflight_spec_conformant_;
   }
 
   cors::NonWildcardRequestHeadersSupport
@@ -904,10 +907,18 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   std::unique_ptr<NetworkServiceMemoryCache> memory_cache_;
 
+  // The ohttp_handler_ needs to be destroyed before cookie_manager_, since it
+  // depends on it indirectly through this context.
+  ObliviousHttpRequestHandler ohttp_handler_;
+
   // Whether all external consumers are expected to provide a non-empty
   // NetworkAnonymizationKey with all requests. When set, enabled a variety of
   // DCHECKs on APIs used by external callers.
   bool require_network_isolation_key_ = false;
+
+  // Whether Access-Control-Allow-Methods matching in CORS preflight is done
+  // according to the spec.
+  bool acam_preflight_spec_conformant_ = true;
 
   // Indicating whether
   // https://fetch.spec.whatwg.org/#cors-non-wildcard-request-header-name is

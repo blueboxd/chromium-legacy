@@ -180,7 +180,7 @@ void CastContentRendererClient::RunScriptsAtDocumentEnd(
 
 void CastContentRendererClient::GetSupportedKeySystems(
     ::media::GetSupportedKeySystemsCB cb) {
-  ::media::KeySystemInfoVector key_systems;
+  ::media::KeySystemInfos key_systems;
   media::AddChromecastKeySystems(&key_systems,
                                  false /* enable_persistent_license_support */,
                                  false /* enable_playready */);
@@ -297,7 +297,7 @@ std::unique_ptr<::media::Demuxer>
 CastContentRendererClient::OverrideDemuxerForUrl(
     content::RenderFrame* render_frame,
     const GURL& url,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   if (render_frame->GetRenderFrameMediaPlaybackOptions()
           .is_remoting_renderer_enabled() &&
       url.SchemeIs(::media::remoting::kRemotingScheme)) {

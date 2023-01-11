@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">Ontdoen</translation>
 <translation id="2084108471225856927">Toestelinstellings</translation>
 <translation id="2084809735218147718">Persoon sê dankie in gebaretaal</translation>
-<translation id="2085470240340828803">'n Lêer met die naam "<ph name="FILENAME" />" bestaan reeds. Wat wil jy doen?</translation>
 <translation id="2088690981887365033">VPN-netwerk</translation>
 <translation id="2122305276694332719">As jy outomaties aan 'n versteekte netwerk koppel, laat dit ander mense toe om jou toestel en van jou netwerkinstellings te sien. Dit word nie aanbeveel nie.</translation>
 <translation id="2125607626296734455">Khmer</translation>
@@ -456,7 +455,6 @@
 <translation id="4900532980794411603">Deel met Parallels Desktop</translation>
 <translation id="4902546322522096650">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" />%, koppel</translation>
 <translation id="4906580650526544301">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" />%, foonbattery <ph name="BATTERY_STATUS" />%, besonderhede</translation>
-<translation id="4929673617759421391">Administrateursbeleid verhoed dat hierdie lêer geplak kan word</translation>
 <translation id="4935975195727477204">Botterblom</translation>
 <translation id="4943368462779413526">Voetbal</translation>
 <translation id="4961158930123534723">1 vouer is met Parallels Desktop gedeel</translation>
@@ -533,6 +531,7 @@
 <translation id="5428105026674456456">Spaans</translation>
 <translation id="5438282218546237410">Daar is geen resultate vir <ph name="SEARCH_TERM" /> nie.</translation>
 <translation id="5449551289610225147">Ongeldige wagwoord</translation>
+<translation id="5459064203055649751">’n Lêer met die naam "<ph name="FILENAME" />" bestaan reeds. Wil jy dit vervang met die lêer wat jy tans skuif?</translation>
 <translation id="5463231940765244860">Voer in</translation>
 <translation id="5469868506864199649">Italiaans</translation>
 <translation id="5473333559083690127">Voer nuwe PIN weer in</translation>
@@ -653,6 +652,7 @@
 <translation id="6495925982925244349">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" />%, deur jou administrateur bestuur, besonderhede</translation>
 <translation id="649877868557234318">Onttrek tans <ph name="FILE_NAME" /> na <ph name="FOLDER_NAME" /></translation>
 <translation id="6499681088828539489">Weier instaanbedienerinstellings vir gedeelde netwerke</translation>
+<translation id="6503285896705205014">Administrateursbeleid verhoed dat <ph name="COUNT" /> lêers gekopieer kan word</translation>
 <translation id="6509122719576673235">Noors</translation>
 <translation id="6528513914570774834">Laat ander gebruikers van hierdie toestel toe om hierdie netwerk te gebruik</translation>
 <translation id="653019979737152879">Sinkroniseer tans <ph name="FILE_NAME" /> …</translation>
@@ -755,6 +755,7 @@
 <translation id="7357762654218998920">Hierdie lêertipe word nie gesteun nie. <ph name="BEGIN_LINK_HELP" />Kom meer te wete<ph name="END_LINK_HELP" /> oor hoe om lêers op Chrome-bedryfstelsel oop te maak.</translation>
 <translation id="7359359531237882347">Kopieer tans <ph name="NUMBER_OF_ITEMS" /> items …</translation>
 <translation id="7375951387215729722">Lêerlys is volgens <ph name="COLUMN_NAME" /> in dalende volgorde gerangskik.</translation>
+<translation id="7377161162143020057">Administrateursbeleid verhoed dat hierdie lêer gekopieer kan word</translation>
 <translation id="7402503521691663770">Chrome OS Flex-toestelle</translation>
 <translation id="7408870451288633753">Tsjeggies</translation>
 <translation id="7417453074306512035">Etiopiese sleutelbord</translation>
@@ -976,7 +977,6 @@
 <translation id="9183302530794969518">Google Dokumente</translation>
 <translation id="9189836632794948435">Kasaks</translation>
 <translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> items is onttrek.</translation>
-<translation id="9210751050717126865">Administrateursbeleid verhoed dat <ph name="COUNT" /> lêers geplak kan word</translation>
 <translation id="9213073329713032541">Installering is suksesvol begin.</translation>
 <translation id="9219103736887031265">Prente</translation>
 <translation id="9219908252191632183">Maanlandskap</translation>

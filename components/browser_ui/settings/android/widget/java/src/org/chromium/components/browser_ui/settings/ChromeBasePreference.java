@@ -55,6 +55,12 @@ public class ChromeBasePreference extends Preference {
     public ChromeBasePreference(Context context, AttributeSet attrs) {
         super(context, attrs);
 
+        if (SettingsFeatureList.isEnabled(
+                    SettingsFeatureList.HIGHLIGHT_MANAGED_PREF_DISCLAIMER_ANDROID)) {
+            setLayoutResource(
+                    ManagedPreferencesUtils.getLayoutResourceForPreference(context, attrs));
+        }
+
         setSingleLineTitle(false);
 
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ChromeBasePreference);
@@ -74,10 +80,12 @@ public class ChromeBasePreference extends Preference {
     @Override
     public void onBindViewHolder(PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
+
         Drawable icon = getIcon();
         if (icon != null && mIconTint != null) {
             icon.setColorFilter(mIconTint.getDefaultColor(), PorterDuff.Mode.SRC_IN);
         }
+
         ManagedPreferencesUtils.onBindViewToPreference(mManagedPrefDelegate, this, holder.itemView);
 
         if (mDividerAllowedAbove != null) {

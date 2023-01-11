@@ -13,6 +13,14 @@ struct SyncStatus;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+enum class TrustedVaultHintDegradedRecoverabilityChangedReasonForUMA {
+  kRecoveryMethodAdded = 0,
+  kPersistentAuthErrorResolved = 1,
+  kMaxValue = kPersistentAuthErrorResolved,
+};
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class TrustedVaultDeviceRegistrationStateForUMA {
   kAlreadyRegisteredV0 = 0,
   kLocalKeysAreStale = 1,
@@ -67,6 +75,10 @@ enum class TrustedVaultFileReadStatusForUMA {
   kMaxValue = kDataProtoDeserializationFailed
 };
 
+void RecordTrustedVaultHintDegradedRecoverabilityChangedReason(
+    TrustedVaultHintDegradedRecoverabilityChangedReasonForUMA
+        hint_degraded_recoverability_changed_reason);
+
 void RecordTrustedVaultDeviceRegistrationState(
     TrustedVaultDeviceRegistrationStateForUMA registration_state);
 
@@ -76,8 +88,7 @@ void RecordTrustedVaultDeviceRegistrationState(
 void RecordTrustedVaultURLFetchResponse(
     int http_response_code,
     int net_error,
-    TrustedVaultURLFetchReasonForUMA reason =
-        TrustedVaultURLFetchReasonForUMA::kUnspecified);
+    TrustedVaultURLFetchReasonForUMA reason);
 
 // Records the outcome of trying to download keys from the server.
 // |also_log_with_v1_suffx| allows the caller to determine whether the local

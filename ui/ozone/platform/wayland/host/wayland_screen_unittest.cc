@@ -310,7 +310,8 @@ TEST_P(WaylandScreenTest, OutputPropertyChangesMissingLogicalSize) {
   TestDisplayObserver observer;
   platform_screen_->AddObserver(&observer);
 
-  const uint32_t display_id = 7;
+  const uint32_t output_id = 7;
+  const int64_t display_id = 1ll << 34;
   const gfx::Point origin(50, 70);
   const gfx::Size physical_size(1200, 1600);
   const wl_output_transform panel_transform = WL_OUTPUT_TRANSFORM_90;
@@ -321,10 +322,11 @@ TEST_P(WaylandScreenTest, OutputPropertyChangesMissingLogicalSize) {
   // Test with missing logical size. Should fall back to calculating from
   // physical size.
   platform_screen_->OnOutputAddedOrUpdated(
-      display_id, origin, gfx::Size(), physical_size, insets, scale,
-      panel_transform, logical_transform, "display");
+      {output_id, display_id, origin, gfx::Size(), physical_size, insets, scale,
+       panel_transform, logical_transform, "display"});
 
   const display::Display new_display(observer.GetDisplay());
+  EXPECT_EQ(output_id, platform_screen_->GetOutputIdForDisplayId(display_id));
   EXPECT_EQ(new_display.id(), display_id);
   EXPECT_EQ(new_display.bounds(), gfx::Rect(origin, gfx::Size(800, 600)));
   EXPECT_EQ(new_display.GetSizeInPixel(), gfx::Size(1600, 1200));
@@ -347,15 +349,15 @@ TEST_P(WaylandScreenTest, OutputPropertyChangesPrimaryDisplayChanged) {
   display::Display display2(2, gfx::Rect(800, 0, 700, 500));
 
   platform_screen_->OnOutputAddedOrUpdated(
-      display1.id(), display1.bounds().origin(), display1.size(),
-      display1.GetSizeInPixel(), display1.GetWorkAreaInsets(),
-      display1.device_scale_factor(), WL_OUTPUT_TRANSFORM_NORMAL,
-      WL_OUTPUT_TRANSFORM_NORMAL, std::string());
+      {static_cast<uint32_t>(display1.id()), display1.id(),
+       display1.bounds().origin(), display1.size(), display1.GetSizeInPixel(),
+       display1.GetWorkAreaInsets(), display1.device_scale_factor(),
+       WL_OUTPUT_TRANSFORM_NORMAL, WL_OUTPUT_TRANSFORM_NORMAL, std::string()});
   platform_screen_->OnOutputAddedOrUpdated(
-      display2.id(), display2.bounds().origin(), display2.size(),
-      display2.GetSizeInPixel(), display2.GetWorkAreaInsets(),
-      display2.device_scale_factor(), WL_OUTPUT_TRANSFORM_NORMAL,
-      WL_OUTPUT_TRANSFORM_NORMAL, std::string());
+      {static_cast<uint32_t>(display2.id()), display2.id(),
+       display2.bounds().origin(), display2.size(), display2.GetSizeInPixel(),
+       display2.GetWorkAreaInsets(), display2.device_scale_factor(),
+       WL_OUTPUT_TRANSFORM_NORMAL, WL_OUTPUT_TRANSFORM_NORMAL, std::string()});
 
   EXPECT_EQ(platform_screen_->GetPrimaryDisplay(), display1);
 
@@ -366,15 +368,15 @@ TEST_P(WaylandScreenTest, OutputPropertyChangesPrimaryDisplayChanged) {
 
   // Purposely send the output metrics out of order.
   platform_screen_->OnOutputAddedOrUpdated(
-      display2.id(), display2.bounds().origin(), display2.size(),
-      display2.GetSizeInPixel(), display2.GetWorkAreaInsets(),
-      display2.device_scale_factor(), WL_OUTPUT_TRANSFORM_NORMAL,
-      WL_OUTPUT_TRANSFORM_NORMAL, std::string());
+      {static_cast<uint32_t>(display2.id()), display2.id(),
+       display2.bounds().origin(), display2.size(), display2.GetSizeInPixel(),
+       display2.GetWorkAreaInsets(), display2.device_scale_factor(),
+       WL_OUTPUT_TRANSFORM_NORMAL, WL_OUTPUT_TRANSFORM_NORMAL, std::string()});
   platform_screen_->OnOutputAddedOrUpdated(
-      display1.id(), display1.bounds().origin(), display1.size(),
-      display1.GetSizeInPixel(), display1.GetWorkAreaInsets(),
-      display1.device_scale_factor(), WL_OUTPUT_TRANSFORM_NORMAL,
-      WL_OUTPUT_TRANSFORM_NORMAL, std::string());
+      {static_cast<uint32_t>(display1.id()), display1.id(),
+       display1.bounds().origin(), display1.size(), display1.GetSizeInPixel(),
+       display1.GetWorkAreaInsets(), display1.device_scale_factor(),
+       WL_OUTPUT_TRANSFORM_NORMAL, WL_OUTPUT_TRANSFORM_NORMAL, std::string()});
 
   EXPECT_EQ(platform_screen_->GetPrimaryDisplay(), display2);
 
@@ -989,20 +991,7 @@ TEST_P(LazilyConfiguredScreenTest, DualOutput) {
   EXPECT_EQ(2u, screen_->GetAllDisplays().size());
 }
 
-// Tests that use aura-shell extension should use wl::ShellVersion::kStable.
-class WaylandAuraShellScreenTest : public WaylandScreenTest {
- public:
-  WaylandAuraShellScreenTest() = default;
-  WaylandAuraShellScreenTest(const WaylandAuraShellScreenTest&) = delete;
-  WaylandAuraShellScreenTest& operator=(const WaylandAuraShellScreenTest&) =
-      delete;
-  ~WaylandAuraShellScreenTest() override = default;
-
-  void SetUp() override {
-    ASSERT_EQ(GetParam().shell_version, wl::ShellVersion::kStable);
-    WaylandScreenTest::SetUp();
-  }
-};
+using WaylandAuraShellScreenTest = WaylandScreenTest;
 
 TEST_P(WaylandAuraShellScreenTest, OutputPropertyChanges) {
   TestDisplayObserver observer;
@@ -1179,23 +1168,14 @@ TEST_P(WaylandAuraShellScreenTest,
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandScreenTest,
-                         Values(wl::ServerConfig{
-                             .shell_version = wl::ShellVersion::kStable}));
+                         Values(wl::ServerConfig{}));
+
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandAuraShellScreenTest,
-                         Values(wl::ServerConfig{
-                             .shell_version = wl::ShellVersion::kStable}));
-INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
-                         WaylandScreenTest,
-                         Values(wl::ServerConfig{
-                             .shell_version = wl::ShellVersion::kV6}));
+                         Values(wl::ServerConfig{}));
+
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          LazilyConfiguredScreenTest,
-                         Values(wl::ServerConfig{
-                             .shell_version = wl::ShellVersion::kStable}));
-INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
-                         LazilyConfiguredScreenTest,
-                         Values(wl::ServerConfig{
-                             .shell_version = wl::ShellVersion::kV6}));
+                         Values(wl::ServerConfig{}));
 
 }  // namespace ui

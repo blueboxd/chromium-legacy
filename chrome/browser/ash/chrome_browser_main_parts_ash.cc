@@ -13,7 +13,6 @@
 
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/enterprise/arc_data_snapshotd_manager.h"
-#include "ash/components/fwupd/firmware_update_manager.h"
 #include "ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
@@ -23,7 +22,6 @@
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/shell.h"
 #include "ash/system/diagnostics/diagnostics_log_controller.h"
-#include "ash/system/firmware_update/firmware_update_notification_controller.h"
 #include "ash/system/pcie_peripheral/pcie_peripheral_notification_controller.h"
 #include "ash/system/usb_peripheral/usb_peripheral_notification_controller.h"
 #include "ash/webui/camera_app_ui/document_scanner_installer.h"
@@ -57,6 +55,8 @@
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
 #include "chrome/browser/ash/audio/audio_survey_handler.h"
 #include "chrome/browser/ash/boot_times_recorder.h"
+#include "chrome/browser/ash/camera/camera_general_survey_handler.h"
+#include "chrome/browser/ash/crosapi/browser_data_back_migrator.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
@@ -77,6 +77,7 @@
 #include "chrome/browser/ash/dbus/metrics_event_service_provider.h"
 #include "chrome/browser/ash/dbus/mojo_connection_service_provider.h"
 #include "chrome/browser/ash/dbus/printers_service_provider.h"
+#include "chrome/browser/ash/dbus/profiler_status_service_provider.h"
 #include "chrome/browser/ash/dbus/proxy_resolution_service_provider.h"
 #include "chrome/browser/ash/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/ash/dbus/smb_fs_service_provider.h"
@@ -91,6 +92,8 @@
 #include "chrome/browser/ash/diagnostics/diagnostics_browser_delegate_impl.h"
 #include "chrome/browser/ash/display/quirks_manager_delegate_impl.h"
 #include "chrome/browser/ash/events/event_rewriter_delegate_impl.h"
+#include "chrome/browser/ash/extensions/default_app_order.h"
+#include "chrome/browser/ash/extensions/login_screen_ui/ui_handler.h"
 #include "chrome/browser/ash/external_metrics.h"
 #include "chrome/browser/ash/input_method/input_method_configuration.h"
 #include "chrome/browser/ash/language_preferences.h"
@@ -156,8 +159,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_ash.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/extensions/default_app_order.h"
-#include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/ui_handler.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
@@ -232,6 +233,7 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/sync/base/command_line_switches.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -406,6 +408,12 @@ class DBusServices {
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<PrintersServiceProvider>()));
 
+    profiler_status_service_ = CrosDBusService::Create(
+        system_bus, ProfilerStatusServiceProvider::kServiceName,
+        dbus::ObjectPath(ProfilerStatusServiceProvider::kServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<ProfilerStatusServiceProvider>()));
+
     vm_applications_service_ = CrosDBusService::Create(
         system_bus, vm_tools::apps::kVmApplicationsServiceName,
         dbus::ObjectPath(vm_tools::apps::kVmApplicationsServicePath),
@@ -543,6 +551,7 @@ class DBusServices {
     metrics_event_service_.reset();
     plugin_vm_service_.reset();
     printers_service_.reset();
+    profiler_status_service_.reset();
     virtual_file_request_service_.reset();
     component_updater_service_.reset();
     chrome_features_service_.reset();
@@ -574,6 +583,7 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> metrics_event_service_;
   std::unique_ptr<CrosDBusService> plugin_vm_service_;
   std::unique_ptr<CrosDBusService> printers_service_;
+  std::unique_ptr<CrosDBusService> profiler_status_service_;
   std::unique_ptr<CrosDBusService> screen_lock_service_;
   std::unique_ptr<CrosDBusService> virtual_file_request_service_;
   std::unique_ptr<CrosDBusService> component_updater_service_;
@@ -751,6 +761,9 @@ int ChromeBrowserMainPartsAsh::PreMainMessageLoopRun() {
 
   audio_survey_handler_ = std::make_unique<AudioSurveyHandler>();
 
+  camera_general_survey_handler_ =
+      std::make_unique<CameraGeneralSurveyHandler>();
+
   content::MediaCaptureDevices::GetInstance()->AddVideoCaptureObserver(
       CrasAudioHandler::Get());
 
@@ -827,9 +840,6 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
 
   // Now that the file thread exists we can record our stats.
   BootTimesRecorder::Get()->RecordChromeMainStats();
-
-  // Trigger prefetching of ownership status.
-  DeviceSettingsService::Get()->Load();
 
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just before CreateProfile().
@@ -992,11 +1002,12 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
   metrics::structured::ChromeStructuredMetricsRecorder::Get()->Initialize();
 
   if (immediate_login) {
-    const std::string cryptohome_id =
+    const user_manager::CryptohomeId cryptohome_id(
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kLoginUser);
+            switches::kLoginUser));
+    user_manager::KnownUser known_user(g_browser_process->local_state());
     const AccountId account_id(
-        cryptohome::Identification::FromString(cryptohome_id).GetAccountId());
+        known_user.GetAccountIdByCryptohomeId(cryptohome_id));
 
     user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
@@ -1028,6 +1039,13 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
             account_id, user_id_hash,
             crosapi::browser_util::PolicyInitState::kBeforeInit)) {
       LOG(WARNING) << "Restarting chrome to run profile migration.";
+      return;
+    }
+
+    if (BrowserDataBackMigrator::MaybeRestartToMigrateBack(
+            account_id, user_id_hash,
+            crosapi::browser_util::PolicyInitState::kBeforeInit)) {
+      LOG(WARNING) << "Restarting chrome to run backward profile migration.";
       return;
     }
 
@@ -1329,15 +1347,7 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
                                 base::Unretained(ash_usb_detector_.get())));
 
   if (features::IsFirmwareUpdaterAppEnabled()) {
-    firmware_update_manager_ = std::make_unique<FirmwareUpdateManager>();
     fwupd_download_client_ = std::make_unique<FwupdDownloadClientImpl>();
-    // The notification controller is registered as an observer before
-    // requesting updates to allow a notification to be shown if a critical
-    // firmware update is found.
-    Shell::Get()
-        ->firmware_update_notification_controller()
-        ->OnFirmwareUpdateManagerInitialized();
-    firmware_update_manager_->RequestAllUpdates();
   }
 
   // The local_state pref may not be available at this stage of Chrome's
@@ -1431,8 +1441,6 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   assistant_delegate_.reset();
 
   assistant_state_client_.reset();
-
-  firmware_update_manager_.reset();
 
   if (pre_profile_init_called_)
     Shell::Get()->RemovePreTargetHandler(MagnificationManager::Get());

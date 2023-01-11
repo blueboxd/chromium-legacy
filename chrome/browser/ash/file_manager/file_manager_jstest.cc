@@ -28,6 +28,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, BannerController) {
   RunTestURL("foreground/js/banner_controller_unittest.js");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, BannerDlp) {
+  RunTestURL("foreground/js/ui/banners/dlp_restricted_banner_unittest.js");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, BannerUtil) {
   RunTestURL("foreground/js/banner_util_unittest.js");
 }
@@ -218,10 +222,6 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MetadataModel) {
   RunTestURL("foreground/js/metadata/metadata_model_unittest.js");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MetadataProxyTest) {
-  RunTestURL("background/js/metadata_proxy_unittest.js");
-}
-
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MultiMenu) {
   RunTestURL("foreground/js/ui/multi_menu_unittest.js");
 }
@@ -314,12 +314,20 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ReducerAllEntries) {
   RunTestURL("state/reducers/all_entries_unittest.js");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfConflictDialog) {
+  RunTestURL("widgets/xf_conflict_dialog_unittest.js");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfDlpRestrictionDetailsDialog) {
   RunTestURL("widgets/xf_dlp_restriction_details_dialog_unittest.js");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfNudge) {
   RunTestURL("widgets/xf_nudge_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfSelect) {
+  RunTestURL("widgets/xf_select_unittest.js");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, NudgeContainer) {

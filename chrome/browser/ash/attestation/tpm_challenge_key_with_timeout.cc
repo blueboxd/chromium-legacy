@@ -5,7 +5,7 @@
 #include "chrome/browser/ash/attestation/tpm_challenge_key_with_timeout.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 
 namespace ash {
 namespace attestation {
@@ -22,12 +22,13 @@ void TpmChallengeKeyWithTimeout::BuildResponse(
     TpmChallengeKeyCallback callback,
     const std::string& challenge,
     bool register_key,
+    ::attestation::KeyType key_crypto_type,
     const std::string& key_name_for_spkac,
     const absl::optional<std::string>& signals) {
   DCHECK(!callback_);
   callback_ = std::move(callback);
 
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&TpmChallengeKeyWithTimeout::ResolveCallback,
                      weak_factory_.GetWeakPtr(),
@@ -40,7 +41,7 @@ void TpmChallengeKeyWithTimeout::BuildResponse(
       key_type, profile,
       base::BindOnce(&TpmChallengeKeyWithTimeout::ResolveCallback,
                      weak_factory_.GetWeakPtr()),
-      challenge, register_key, key_name_for_spkac, signals);
+      challenge, register_key, key_crypto_type, key_name_for_spkac, signals);
 }
 
 void TpmChallengeKeyWithTimeout::ResolveCallback(

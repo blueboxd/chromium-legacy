@@ -9,20 +9,21 @@
 
       // Calls getDisplayMedia().
       // Calling with |busyWaitMs| set to a positive value leads to hogging
-      // the CPU for that long *before* calling focus().
+      // the CPU for that long *before* calling setFocusBehavior().
       // Then:
-      // * If (focusCallValue == ''), don't call focus().
-      // * If (focusCallValue != ''), call focus(focusCallValue).
-      // * If |onCorrectMicrotask|, focus() is called on the microtask
-      //   on which getDisplayMedia's Promise was resolved. Otherwise, it is
-      //   scheduled to be called in a later task.
+      // * If (focusCallValue == ''), don't call setFocusBehavior().
+      // * If (focusCallValue != ''), call setFocusBehavior(focusCallValue).
+      // * If |onCorrectMicrotask|, setFocusBehavior() is called on the
+      //   microtask on which getDisplayMedia's Promise was resolved.
+      //   Otherwise, it is scheduled to be called in a later task.
       async function captureOtherTab(busyWaitMs, focusCallValue, onCorrectMicrotask) {
         try {
-          const mediaStream = await navigator.mediaDevices.getDisplayMedia();
+          const controller = new CaptureController();
+          const mediaStream = await navigator.mediaDevices.getDisplayMedia({ controller });
           if (onCorrectMicrotask) {
-            handleCaptureSuccess(mediaStream, busyWaitMs, focusCallValue);
+            handleCaptureSuccess(mediaStream, busyWaitMs, focusCallValue, controller);
           } else {
-            setTimeout(handleCaptureSuccess, 0, mediaStream, busyWaitMs, focusCallValue);
+            setTimeout(handleCaptureSuccess, 0, mediaStream, busyWaitMs, focusCallValue, controller);
           }
         } catch (error) {
           window.domAutomationController.send("capture-failure");
@@ -36,7 +37,7 @@
         }
       }
 
-      function handleCaptureSuccess(mediaStream, busyWaitMs, focusCallValue) {
+      function handleCaptureSuccess(mediaStream, busyWaitMs, focusCallValue, controller) {
         mediaStreamKeepAlive = mediaStream;
 
         if (busyWaitMs > 0) {
@@ -44,9 +45,8 @@
         }
 
         if (focusCallValue) {
-          const [track] = mediaStream.getVideoTracks();
           try {
-            track.focus(focusCallValue);
+            controller.setFocusBehavior(focusCallValue);
           } catch (error) {
             window.domAutomationController.send(`${error}`);
           }
@@ -58,29 +58,22 @@
         });
       }
 
-      function callFocusAndExpectError() {
-        const [track] = mediaStreamKeepAlive.getVideoTracks();
+      // Calls setFocusBehavior(focusCallValueBeforeCapture) before
+      // getDisplayMedia({ controller }). Then
+      // if (focusCallValueAfterCapture != '') call
+      // setFocusBehavior(focusCallValueAfterCapture) on the microtask on which
+      // getDisplayMedia's Promise was resolved.
+      async function callSetFocusBehaviorBeforeCapture(focusCallValueBeforeCapture, focusCallValueAfterCapture) {
         try {
-          track.focus("focus-captured-surface");
-          window.domAutomationController.send("no-error");
+          const controller = new CaptureController();
+          controller.setFocusBehavior(focusCallValueBeforeCapture);
+          await navigator.mediaDevices.getDisplayMedia({ controller });
+          if (focusCallValueAfterCapture) {
+            controller.setFocusBehavior(focusCallValueAfterCapture);
+          }
+          window.domAutomationController.send("capture-success");
         } catch (error) {
           window.domAutomationController.send(`${error}`);
-        }
-      }
-
-      async function captureCloneAndFocusClone() {
-        try {
-          mediaStreamKeepAlive = await navigator.mediaDevices.getDisplayMedia();
-          const [track] = mediaStreamKeepAlive.getVideoTracks();
-          const clone = track.clone();
-          try {
-            clone.focus("focus-captured-surface");
-            window.domAutomationController.send("no-error");
-          } catch (error) {
-            window.domAutomationController.send(`${error}`);
-          }
-        } catch (error) {
-          window.domAutomationController.send("capture-failure");
         }
       }
     </script>

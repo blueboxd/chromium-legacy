@@ -107,13 +107,10 @@ TEST(ScriptParametersTest, SpecialScriptParameters) {
        {"PASSWORD_CHANGE_USERNAME", "fake_username"},
        {"OVERLAY_COLORS", "#123456"},
        {"ENABLE_TTS", "true"},
+       {"DISABLE_SCROLLBAR_FADING", "true"},
        {"CALLER", "3"},
        {"SOURCE", "4"},
        {"EXPERIMENT_IDS", "123,456,789"},
-       {"FIELD_TRIAL_1", "1234"},
-       {"FIELD_TRIAL_3", "5555"},
-       {"RUN_HEADLESS", "true"},
-       {"USE_ASSISTANT_UI", "false"},
        {"DISABLE_RPC_SIGNING", "true"},
        {"DETAILS_SHOW_INITIAL", "true"},
        {"DETAILS_TITLE", "title"},
@@ -135,16 +132,12 @@ TEST(ScriptParametersTest, SpecialScriptParameters) {
   EXPECT_THAT(parameters.GetPasswordChangeUsername(), Eq("fake_username"));
   EXPECT_THAT(parameters.GetOverlayColors(), Eq("#123456"));
   EXPECT_THAT(parameters.GetEnableTts(), Eq(true));
+  EXPECT_THAT(parameters.GetDisableScrollbarFading(), Eq(true));
   EXPECT_THAT(parameters.GetCaller(), Eq(3));
   EXPECT_THAT(parameters.GetSource(), Eq(4));
   EXPECT_THAT(
       parameters.GetExperiments(),
       UnorderedElementsAreArray(std::vector<std::string>{"123", "456", "789"}));
-  EXPECT_THAT(parameters.GetFieldTrialGroup(1), Eq("1234"));
-  EXPECT_THAT(parameters.GetFieldTrialGroup(3), Eq("5555"));
-  EXPECT_THAT(parameters.GetFieldTrialGroup(2).has_value(), Eq(false));
-  EXPECT_THAT(parameters.GetRunHeadless(), Eq(true));
-  EXPECT_THAT(parameters.GetUseAssistantUi(), Eq(false));
   EXPECT_THAT(parameters.GetDisableRpcSigning(), Eq(true));
   EXPECT_THAT(parameters.GetDetailsShowInitial(), Eq(true));
   EXPECT_THAT(parameters.GetDetailsTitle(), Eq("title"));

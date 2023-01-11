@@ -37,7 +37,7 @@
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_item_controller.h"
 #include "chrome/browser/ui/webui/ash/crostini_upgrader/crostini_upgrader_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
+#include "chrome/browser/ui/webui/ash/system_web_dialog_delegate.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -149,6 +149,13 @@ void LaunchApplication(
 
   auto* share_path = guest_os::GuestOsSharePath::GetForProfile(profile);
   const auto vm_name = registration.VmName();
+  auto vm_info =
+      crostini::CrostiniManager::GetForProfile(profile)->GetVmInfo(vm_name);
+  if (!vm_info) {
+    return OnLaunchFailed(app_id, std::move(callback),
+                          "VM not running: " + vm_name,
+                          CrostiniResult::SHARE_PATHS_FAILED);
+  }
 
   // Share any paths not in crostini.  The user will see the spinner while this
   // is happening.
@@ -178,7 +185,8 @@ void LaunchApplication(
   }
 
   share_path->SharePaths(
-      vm_name, std::move(paths_to_share), /*persist=*/false,
+      vm_name, vm_info->info.seneschal_server_handle(),
+      std::move(paths_to_share),
       base::BindOnce(OnSharePathForLaunchApplication, profile, app_id,
                      std::move(registration), display_id,
                      std::move(launch_args), std::move(callback)));
@@ -443,7 +451,7 @@ bool ShouldWarnAboutExpiredVersion(Profile* profile,
   // If the warning dialog is already open we can add more callbacks to it, but
   // if we've moved to the upgrade dialog proper we should run them now as they
   // may be part of the upgrade process.
-  if (chromeos::SystemWebDialogDelegate::FindInstance(
+  if (ash::SystemWebDialogDelegate::FindInstance(
           GURL{chrome::kChromeUICrostiniUpgraderUrl}.spec())) {
     return false;
   }

@@ -16,14 +16,16 @@
 namespace media {
 
 NullAudioSink::NullAudioSink(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : initialized_(false),
       started_(false),
       playing_(false),
       callback_(nullptr),
       task_runner_(task_runner) {}
 
-NullAudioSink::~NullAudioSink() = default;
+NullAudioSink::~NullAudioSink() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void NullAudioSink::Initialize(const AudioParameters& params,
                                RenderCallback* callback) {
@@ -36,14 +38,14 @@ void NullAudioSink::Initialize(const AudioParameters& params,
 }
 
 void NullAudioSink::Start() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(initialized_);
   DCHECK(!started_);
   started_ = true;
 }
 
 void NullAudioSink::Stop() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   started_ = false;
   // Stop may be called at any time, so we have to check before stopping.
   if (fake_worker_)
@@ -51,7 +53,7 @@ void NullAudioSink::Stop() {
 }
 
 void NullAudioSink::Play() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(started_);
 
   if (playing_)
@@ -64,7 +66,7 @@ void NullAudioSink::Play() {
 }
 
 void NullAudioSink::Pause() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(started_);
 
   if (!playing_)
@@ -95,7 +97,7 @@ bool NullAudioSink::IsOptimizedForHardwareParameters() {
 }
 
 bool NullAudioSink::CurrentThreadIsRenderingThread() {
-  return task_runner_->BelongsToCurrentThread();
+  return task_runner_->RunsTasksInCurrentSequence();
 }
 
 void NullAudioSink::SwitchOutputDevice(const std::string& device_id,
@@ -105,7 +107,7 @@ void NullAudioSink::SwitchOutputDevice(const std::string& device_id,
 
 void NullAudioSink::CallRender(base::TimeTicks ideal_time,
                                base::TimeTicks now) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   // Since NullAudioSink is only used for cases where a real audio sink was not
   // available, provide "idealized" delay-timing arguments. This will drive the

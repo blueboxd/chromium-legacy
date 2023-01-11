@@ -28,10 +28,12 @@ class WaylandZAuraOutput;
 class WaylandOutput : public wl::GlobalObjectRegistrar<WaylandOutput> {
  public:
   // Instances of this class are identified by an 32-bit unsigned int value,
-  // corresponding to its global wl_output object 'name' value. It is mostly
-  // used interchangeably with WaylandScreen's display::Display::id property,
-  // which is an int64_t instead, though it is worth bearing in mind they are
-  // slightly different, under the hood.
+  // corresponding to its global wl_output object 'name' value.  On
+  // wayland-linux, it is mostly used interchangeably with WaylandScreen's
+  // `display::Display::id1` property, which is an int64_t instead, though it is
+  // worth bearing in mind they are slightly different, under the hood.
+  // On lacros, the display id sent from ash-chrome is used for
+  // `display::Display::id`.
   using Id = uint32_t;
 
   static constexpr char kInterfaceName[] = "wl_output";
@@ -42,17 +44,42 @@ class WaylandOutput : public wl::GlobalObjectRegistrar<WaylandOutput> {
                           const std::string& interface,
                           uint32_t version);
 
+  // All parameters are in DIP screen coordinates/units except |physical_size|,
+  // which is in physical pixels.
+  struct Metrics {
+    // TODO(aluh): Remove explicit constructors/destructor to enable aggregate
+    // initialization if chromium-style check for complex struct is removed.
+    // See:
+    // https://groups.google.com/a/google.com/g/chromeos-chatty-eng/c/nM1_QC6qcuA
+    Metrics();
+    Metrics(Id output_id,
+            int64_t display_id,
+            gfx::Point origin,
+            gfx::Size logical_size,
+            gfx::Size physical_size,
+            gfx::Insets insets,
+            float scale_factor,
+            int32_t panel_transform,
+            int32_t logical_transform,
+            const std::string& description);
+    Metrics(const Metrics&);
+    ~Metrics();
+
+    Id output_id = 0;
+    int64_t display_id = -1;
+    gfx::Point origin;
+    gfx::Size logical_size;
+    gfx::Size physical_size;
+    gfx::Insets insets;
+    float scale_factor = 0.0;
+    int32_t panel_transform = 0;
+    int32_t logical_transform = 0;
+    std::string description;
+  };
+
   class Delegate {
    public:
-    virtual void OnOutputHandleMetrics(Id output_id,
-                                       const gfx::Point& origin,
-                                       const gfx::Size& logical_size,
-                                       const gfx::Size& physical_size,
-                                       const gfx::Insets& insets,
-                                       float scale_factor,
-                                       int32_t panel_transform,
-                                       int32_t logical_transform,
-                                       const std::string& description) = 0;
+    virtual void OnOutputHandleMetrics(const Metrics& metrics) = 0;
 
    protected:
     virtual ~Delegate() = default;
@@ -71,6 +98,7 @@ class WaylandOutput : public wl::GlobalObjectRegistrar<WaylandOutput> {
   void InitializeColorManagementOutput(WaylandZcrColorManager* manager);
   float GetUIScaleFactor() const;
 
+  Metrics GetMetrics() const;
   Id output_id() const { return output_id_; }
   bool has_output(wl_output* output) const { return output_.get() == output; }
   float scale_factor() const { return scale_factor_; }
@@ -80,27 +108,28 @@ class WaylandOutput : public wl::GlobalObjectRegistrar<WaylandOutput> {
   gfx::Size logical_size() const;
   gfx::Size physical_size() const { return physical_size_; }
   gfx::Insets insets() const;
+  int64_t display_id() const;
   const std::string& name() const;
   const std::string& description() const;
   WaylandZcrColorManagementOutput* color_management_output() const {
     return color_management_output_.get();
   }
 
-  // Tells if the output has already received physical screen dimensions in the
-  // global compositor space.
-  bool is_ready() const { return !physical_size_.IsEmpty(); }
+  // Tells if the output has already received necessary screen information such
+  // as physical screen dimensions in the global compositor space.
+  bool IsReady() const;
 
   wl_output* get_output() { return output_.get(); }
   zaura_output* get_zaura_output();
 
   void SetScaleFactorForTesting(float scale_factor);
 
+  void TriggerDelegateNotifications();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WaylandOutputTest, NameAndDescriptionFallback);
 
   static constexpr int32_t kDefaultScaleFactor = 1;
-
-  void TriggerDelegateNotifications();
 
   // Callback functions used for setting geometric properties of the output
   // and available modes.
@@ -125,10 +154,12 @@ class WaylandOutput : public wl::GlobalObjectRegistrar<WaylandOutput> {
   static void OutputHandleScale(void* data,
                                 struct wl_output* wl_output,
                                 int32_t factor);
-#if CHROME_WAYLAND_CHECK_VERSION(1, 20, 0)
+#ifdef WL_OUTPUT_NAME_SINCE_VERSION
   static void OutputHandleName(void* data,
                                struct wl_output* wl_output,
                                const char* name);
+#endif
+#ifdef WL_OUTPUT_DESCRIPTION_SINCE_VERSION
   static void OutputHandleDescription(void* data,
                                       struct wl_output* wl_output,
                                       const char* description);

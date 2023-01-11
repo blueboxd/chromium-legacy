@@ -66,6 +66,7 @@
 #include "base/allocator/partition_allocator/partition_ref_count.h"
 #include "base/allocator/partition_allocator/partition_tag.h"
 #include "base/allocator/partition_allocator/partition_tag_types.h"
+#include "base/allocator/partition_allocator/pkey.h"
 #include "base/allocator/partition_allocator/reservation_offset_table.h"
 #include "base/allocator/partition_allocator/tagging.h"
 #include "base/allocator/partition_allocator/thread_cache.h"
@@ -203,14 +204,25 @@ struct PartitionOptions {
                              Cookie cookie,
                              BackupRefPtr backup_ref_ptr,
                              BackupRefPtrZapping backup_ref_ptr_zapping,
-                             UseConfigurablePool use_configurable_pool)
+                             UseConfigurablePool use_configurable_pool
+#if BUILDFLAG(ENABLE_PKEYS)
+                             ,
+                             int pkey = internal::kDefaultPkey
+#endif
+                             )
       : aligned_alloc(aligned_alloc),
         thread_cache(thread_cache),
         quarantine(quarantine),
         cookie(cookie),
         backup_ref_ptr(backup_ref_ptr),
         backup_ref_ptr_zapping(backup_ref_ptr_zapping),
-        use_configurable_pool(use_configurable_pool) {}
+        use_configurable_pool(use_configurable_pool)
+#if BUILDFLAG(ENABLE_PKEYS)
+        ,
+        pkey(pkey)
+#endif
+  {
+  }
 
   AlignedAlloc aligned_alloc;
   ThreadCache thread_cache;
@@ -219,6 +231,9 @@ struct PartitionOptions {
   BackupRefPtr backup_ref_ptr;
   BackupRefPtrZapping backup_ref_ptr_zapping;
   UseConfigurablePool use_configurable_pool;
+#if BUILDFLAG(ENABLE_PKEYS)
+  int pkey;
+#endif
 };
 
 // Never instantiate a PartitionRoot directly, instead use
@@ -279,6 +294,10 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
 #endif  // defined(PA_ENABLE_MAC11_MALLOC_SIZE_HACK)
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     bool use_configurable_pool;
+
+#if BUILDFLAG(ENABLE_PKEYS)
+    int pkey;
+#endif
 
 #if defined(PA_EXTRAS_REQUIRED)
     uint32_t extras_size;
@@ -534,6 +553,9 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
       void* ptr);
 
   PA_ALWAYS_INLINE PageAccessibilityConfiguration GetPageAccessibility() const;
+  PA_ALWAYS_INLINE PageAccessibilityConfiguration
+      PageAccessibilityWithPkeyIfEnabled(
+          PageAccessibilityConfiguration::Permissions) const;
 
   PA_ALWAYS_INLINE size_t
   AllocationCapacityFromSlotStart(uintptr_t slot_start) const;
@@ -635,6 +657,11 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
       PA_DCHECK(IsConfigurablePoolAvailable());
       return internal::kConfigurablePoolHandle;
     }
+#if BUILDFLAG(ENABLE_PKEYS)
+    if (flags.pkey != internal::kDefaultPkey) {
+      return internal::kPkeyPoolHandle;
+    }
+#endif
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     return brp_enabled() ? internal::kBRPPoolHandle
                          : internal::kRegularPoolHandle;
@@ -883,8 +910,10 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
   void DecommitEmptySlotSpans() PA_EXCLUSIVE_LOCKS_REQUIRED(lock_);
   PA_ALWAYS_INLINE void RawFreeLocked(uintptr_t slot_start)
       PA_EXCLUSIVE_LOCKS_REQUIRED(lock_);
-  uintptr_t MaybeInitThreadCacheAndAlloc(uint16_t bucket_index,
-                                         size_t* slot_size);
+  ThreadCache* MaybeInitThreadCache();
+
+  // May return an invalid thread cache.
+  PA_ALWAYS_INLINE ThreadCache* GetOrCreateThreadCache();
 
 #if defined(PA_USE_PARTITION_ROOT_ENUMERATOR)
   static internal::Lock& GetEnumeratorLock();
@@ -1094,8 +1123,8 @@ PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
   if (PA_LIKELY(slot_span_alignment <= internal::PartitionPageSize() &&
                 slot_start)) {
     *is_already_zeroed = false;
-    // This is a fast path, so avoid calling GetUsableSize() on Release builds
-    // as it is more costly. Copy its small bucket path instead.
+    // This is a fast path, avoid calling GetUsableSize() in Release builds
+    // as it is costlier. Copy its small bucket path instead.
     *usable_size = AdjustSizeForExtrasSubtract(bucket->slot_size);
     PA_DCHECK(*usable_size == slot_span->GetUsableSize(this));
 
@@ -1484,21 +1513,35 @@ template <bool thread_safe>
 PA_ALWAYS_INLINE void PartitionRoot<thread_safe>::RawFreeWithThreadCache(
     uintptr_t slot_start,
     SlotSpan* slot_span) {
-  // TLS access can be expensive, do a cheap local check first.
-  //
   // PA_LIKELY: performance-sensitive partitions have a thread cache,
   // direct-mapped allocations are uncommon.
-  if (PA_LIKELY(flags.with_thread_cache &&
+  ThreadCache* thread_cache = GetOrCreateThreadCache();
+  if (PA_LIKELY(ThreadCache::IsValid(thread_cache) &&
                 !IsDirectMappedBucket(slot_span->bucket))) {
     size_t bucket_index =
         static_cast<size_t>(slot_span->bucket - this->buckets);
-    auto* thread_cache = ThreadCache::Get();
-    if (PA_LIKELY(ThreadCache::IsValid(thread_cache) &&
-                  thread_cache->MaybePutInCache(slot_start, bucket_index))) {
+    size_t slot_size;
+    if (PA_LIKELY(thread_cache->MaybePutInCache(slot_start, bucket_index,
+                                                &slot_size))) {
+      // This is a fast path, avoid calling GetUsableSize() in Release builds
+      // as it is costlier. Copy its small bucket path instead.
+      PA_DCHECK(!slot_span->CanStoreRawSize());
+      size_t usable_size = AdjustSizeForExtrasSubtract(slot_size);
+      PA_DCHECK(usable_size == slot_span->GetUsableSize(this));
+      thread_cache->RecordDeallocation(usable_size);
       return;
     }
   }
 
+  if (PA_LIKELY(ThreadCache::IsValid(thread_cache))) {
+    // Accounting must be done outside `RawFree()`, as it's also called from the
+    // thread cache. We would double-count otherwise.
+    //
+    // GetUsableSize() will always give the correct result, and we are in a slow
+    // path here (since the thread cache case returned earlier).
+    size_t usable_size = slot_span->GetUsableSize(this);
+    thread_cache->RecordDeallocation(usable_size);
+  }
   RawFree(slot_start, slot_span);
 }
 
@@ -1654,8 +1697,8 @@ PA_ALWAYS_INLINE bool PartitionRoot<thread_safe>::TryRecommitSystemPagesForData(
   internal::ScopedSyscallTimer timer{this};
   bool ok = TryRecommitSystemPages(address, length, GetPageAccessibility(),
                                    accessibility_disposition);
-#if defined(PA_COMMIT_CHARGE_IS_LIMITED)
   if (PA_UNLIKELY(!ok)) {
+    // Decommit some memory and retry. The alternative is crashing.
     {
       ::partition_alloc::internal::ScopedGuard guard(lock_);
       DecommitEmptySlotSpans();
@@ -1663,7 +1706,6 @@ PA_ALWAYS_INLINE bool PartitionRoot<thread_safe>::TryRecommitSystemPagesForData(
     ok = TryRecommitSystemPages(address, length, GetPageAccessibility(),
                                 accessibility_disposition);
   }
-#endif  // defined(PA_COMMIT_CHARGE_IS_LIMITED)
 
   if (ok)
     IncreaseCommittedPages(length);
@@ -1724,11 +1766,27 @@ PartitionRoot<thread_safe>::GetUsableSizeWithMac11MallocSizeHack(void* ptr) {
 template <bool thread_safe>
 PA_ALWAYS_INLINE PageAccessibilityConfiguration
 PartitionRoot<thread_safe>::GetPageAccessibility() const {
+  PageAccessibilityConfiguration::Permissions permissions =
+      PageAccessibilityConfiguration::kReadWrite;
 #if defined(PA_HAS_MEMORY_TAGGING)
   if (IsMemoryTaggingEnabled())
-    return PageAccessibilityConfiguration::kReadWriteTagged;
+    permissions = PageAccessibilityConfiguration::kReadWriteTagged;
 #endif
-  return PageAccessibilityConfiguration::kReadWrite;
+#if BUILDFLAG(ENABLE_PKEYS)
+  return PageAccessibilityConfiguration(permissions, flags.pkey);
+#else
+  return PageAccessibilityConfiguration(permissions);
+#endif
+}
+
+template <bool thread_safe>
+PA_ALWAYS_INLINE PageAccessibilityConfiguration
+PartitionRoot<thread_safe>::PageAccessibilityWithPkeyIfEnabled(
+    PageAccessibilityConfiguration::Permissions permissions) const {
+#if BUILDFLAG(ENABLE_PKEYS)
+  return PageAccessibilityConfiguration(permissions, flags.pkey);
+#endif
+  return PageAccessibilityConfiguration(permissions);
 }
 
 // Return the capacity of the underlying slot (adjusted for extras). This
@@ -1856,20 +1914,18 @@ PA_ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocWithFlagsNoHooks(
   }
 #endif  // BUILDFLAG(STARSCAN)
 
+  auto* thread_cache = GetOrCreateThreadCache();
+
   // Don't use thread cache if higher order alignment is requested, because the
   // thread cache will not be able to satisfy it.
   //
   // PA_LIKELY: performance-sensitive partitions use the thread cache.
-  if (PA_LIKELY(this->flags.with_thread_cache &&
+  if (PA_LIKELY(ThreadCache::IsValid(thread_cache) &&
                 slot_span_alignment <= internal::PartitionPageSize())) {
-    auto* tcache = ThreadCache::Get();
-    // PA_LIKELY: Typically always true, except for the very first allocation of
-    // this thread.
-    if (PA_LIKELY(ThreadCache::IsValid(tcache))) {
-      slot_start = tcache->GetFromCache(bucket_index, &slot_size);
-    } else {
-      slot_start = MaybeInitThreadCacheAndAlloc(bucket_index, &slot_size);
-    }
+    // Note: getting slot_size from the thread cache rather than by
+    // `buckets[bucket_index].slot_size` to avoid touching `buckets` on the fast
+    // path.
+    slot_start = thread_cache->GetFromCache(bucket_index, &slot_size);
 
     // PA_LIKELY: median hit rate in the thread cache is 95%, from metrics.
     if (PA_LIKELY(slot_start)) {
@@ -1904,6 +1960,9 @@ PA_ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocWithFlagsNoHooks(
 
   if (PA_UNLIKELY(!slot_start))
     return nullptr;
+
+  if (PA_LIKELY(ThreadCache::IsValid(thread_cache)))
+    thread_cache->RecordAllocation(usable_size);
 
   // Layout inside the slot:
   //   |[refcnt]|...object...|[empty]|[cookie]|[unused]|
@@ -2162,6 +2221,18 @@ PartitionRoot<thread_safe>::AllocationCapacityFromRequestedSize(
   size = AdjustSizeForExtrasSubtract(size);
   return size;
 #endif
+}
+
+template <bool thread_safe>
+ThreadCache* PartitionRoot<thread_safe>::GetOrCreateThreadCache() {
+  ThreadCache* thread_cache = nullptr;
+  if (PA_LIKELY(flags.with_thread_cache)) {
+    thread_cache = ThreadCache::Get();
+    if (PA_UNLIKELY(!ThreadCache::IsValid(thread_cache))) {
+      thread_cache = MaybeInitThreadCache();
+    }
+  }
+  return thread_cache;
 }
 
 using ThreadSafePartitionRoot = PartitionRoot<internal::ThreadSafe>;

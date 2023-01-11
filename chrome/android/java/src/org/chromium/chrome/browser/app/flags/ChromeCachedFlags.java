@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.app.flags;
 import android.text.TextUtils;
 
 import org.chromium.build.BuildConfig;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
@@ -23,8 +24,6 @@ import org.chromium.chrome.browser.omaha.VersionNumberGetter;
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuidePushNotificationManager;
 import org.chromium.chrome.browser.page_annotations.PageAnnotationsServiceConfig;
-import org.chromium.chrome.browser.paint_preview.StartupPaintPreviewHelper;
-import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabService;
 import org.chromium.chrome.browser.tab.state.FilePersistedTabDataStorage;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
@@ -88,7 +87,7 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sCctResizableAlwaysShowNavBarButtons);
                 add(ChromeFeatureList.sCctResizableForFirstParties);
                 add(ChromeFeatureList.sCctResizableForThirdParties);
-                add(ChromeFeatureList.sCctResizableWindowAboveNavbar);
+                add(ChromeFeatureList.sCctRetainableStateInMemory);
                 add(ChromeFeatureList.sCctToolbarCustomizations);
                 add(ChromeFeatureList.sCloseTabSuggestions);
                 add(ChromeFeatureList.sCommandLineOnNonRooted);
@@ -102,8 +101,8 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sDownloadsAutoResumptionNative);
                 add(ChromeFeatureList.sEarlyLibraryLoad);
                 add(ChromeFeatureList.sElasticOverscroll);
-                add(ChromeFeatureList.sElidePrioritizationOfPreNativeBootstrapTasks);
                 add(ChromeFeatureList.sFeedLoadingPlaceholder);
+                add(ChromeFeatureList.sFoldableJankFix);
                 add(ChromeFeatureList.sGridTabSwitcherForTablets);
                 add(ChromeFeatureList.sImmersiveUiMode);
                 add(ChromeFeatureList.sIncognitoReauthenticationForAndroid);
@@ -111,12 +110,12 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sInstantStart);
                 add(ChromeFeatureList.sInterestFeedV2);
                 add(ChromeFeatureList.sNewWindowAppMenu);
+                add(ChromeFeatureList.sOmniboxMatchToolbarAndStatusBarColor);
                 add(ChromeFeatureList.sOmniboxModernizeVisualUpdate);
                 add(ChromeFeatureList.sOmniboxRemoveExcessiveRecycledViewClearCalls);
                 add(ChromeFeatureList.sOptimizationGuidePushNotifications);
                 add(ChromeFeatureList.sOSKResizesVisualViewportByDefault);
                 add(ChromeFeatureList.sPaintPreviewDemo);
-                add(ChromeFeatureList.sPaintPreviewShowOnStartup);
                 add(ChromeFeatureList.sQueryTiles);
                 add(ChromeFeatureList.sQueryTilesOnStart);
                 add(ChromeFeatureList.sReadLater);
@@ -183,8 +182,6 @@ public class ChromeCachedFlags {
                         add(StartSurfaceConfiguration.SUPPORT_ACCESSIBILITY);
                         add(StartSurfaceConfiguration.TAB_COUNT_BUTTON_ON_START_SURFACE);
                         add(StartSurfaceConfiguration.USER_CLICK_THRESHOLD);
-                        add(StartupPaintPreviewHelper.ACCESSIBILITY_SUPPORT_PARAM);
-                        add(PaintPreviewTabService.ALLOW_SRP);
                         add(TabContentManager.ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION);
                         add(TabPersistentStore.CRITICAL_PERSISTED_TAB_DATA_SAVE_ONLY_PARAM);
                         add(TabUiFeatureUtilities.ENABLE_LAUNCH_BUG_FIX);
@@ -202,7 +199,10 @@ public class ChromeCachedFlags {
                         add(TabUiFeatureUtilities.GRID_TAB_SWITCHER_FOR_TABLETS_POLISH);
                         add(TabUiFeatureUtilities.TAB_STRIP_TAB_WIDTH);
                         add(TabUiFeatureUtilities.ENABLE_TAB_SELECTION_EDITOR_V2_SHARE);
+                        add(TabUiFeatureUtilities.TAB_STRIP_REDESIGN_ENABLE_FOLIO);
+                        add(TabUiFeatureUtilities.TAB_STRIP_REDESIGN_ENABLE_DETACHED);
                         add(VersionNumberGetter.MIN_SDK_VERSION);
+                        add(ChromeActivity.CONTENT_VIS_DELAY_MS);
                     }
                 };
         tryToCatchMissingParameters(fieldTrialsToCache);

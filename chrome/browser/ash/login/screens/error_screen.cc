@@ -28,10 +28,12 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/webui/chromeos/connectivity_diagnostics_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/connectivity_diagnostics_dialog.h"
+#include "chrome/browser/ui/webui/ash/internet_detail_dialog.h"
+#include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/offline_login_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/signin_screen_handler.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/ash/components/network/network_handler.h"
@@ -275,7 +277,7 @@ void ErrorScreen::OnUserAction(const base::Value::List& args) {
     ShowCaptivePortal();
   } else if (action_id == kUserActionOpenInternetDialog) {
     // Empty string opens the internet detail dialog for the default network.
-    chromeos::InternetDetailDialog::ShowDialog("");
+    InternetDetailDialog::ShowDialog("");
   } else if (action_id == kUserActionConfigureCertsButtonClicked) {
     OnConfigureCerts();
   } else if (action_id == kUserActionDiagnoseButtonClicked) {
@@ -350,7 +352,7 @@ void ErrorScreen::OnConfigureCerts() {
 }
 
 void ErrorScreen::OnDiagnoseButtonClicked() {
-  chromeos::ConnectivityDiagnosticsDialog::ShowDialog();
+  ConnectivityDiagnosticsDialog::ShowDialog();
 }
 
 void ErrorScreen::OnLaunchOobeGuestSession() {

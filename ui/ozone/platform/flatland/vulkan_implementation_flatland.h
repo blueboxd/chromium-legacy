@@ -9,7 +9,6 @@
 
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_instance.h"
-#include "ui/ozone/platform/scenic/mojom/scenic_gpu_host.mojom.h"
 
 namespace ui {
 
@@ -58,15 +57,15 @@ class VulkanImplementationFlatland : public gpu::VulkanImplementation {
       gfx::Size size,
       VkFormat vk_format,
       const gfx::ColorSpace& color_space) override;
-  std::unique_ptr<gpu::SysmemBufferCollection> RegisterSysmemBufferCollection(
+  void RegisterSysmemBufferCollection(
       VkDevice device,
-      gfx::SysmemBufferCollectionId id,
-      zx::channel token,
+      zx::eventpair service_handle,
+      zx::channel sysmem_token,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       gfx::Size size,
       size_t min_buffer_count,
-      bool register_with_image_pipe) override;
+      bool register_with_flatland_allocator) override;
 
  private:
   FlatlandSysmemBufferManager* const flatland_sysmem_buffer_manager_;

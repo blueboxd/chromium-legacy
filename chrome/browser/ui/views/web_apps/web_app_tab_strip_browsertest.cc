@@ -10,7 +10,6 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
-#include "chrome/browser/web_applications/manifest_update_task.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
@@ -41,6 +39,7 @@
 #include "content/public/test/background_color_change_waiter.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 
 namespace {
@@ -84,11 +83,6 @@ class WebAppTabStripBrowserTest : public InProcessBrowserTest {
     AppId app_id = test::InstallWebApp(profile, std::move(web_app_info));
 
     Browser* app_browser = LaunchWebAppBrowser(profile, app_id);
-
-    // This is to ensure that for manifest updates, we auto
-    // accept the identity dialog and bypass the window closing requirement.
-    chrome::SetAutoAcceptAppIdentityUpdateForTesting(true);
-    ManifestUpdateTask::BypassWindowCloseWaitingForTesting() = true;
     return App{app_id, app_browser,
                BrowserView::GetBrowserViewForBrowser(app_browser),
                app_browser->tab_strip_model()->GetActiveWebContents()};
@@ -548,6 +542,94 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, NoFavicons) {
   // No favicons shown for web apps.
   EXPECT_FALSE(tab_strip->delegate()->ShouldDisplayFavicon(
       tab_strip->GetActiveWebContents()));
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
+                       OnlyThrottlePrimaryMainFrame) {
+  GURL start_url =
+      embedded_test_server()->GetURL("/web_apps/tab_strip_customizations.html");
+  AppId app_id = InstallWebAppFromPage(browser(), start_url);
+  Browser* app_browser = FindWebAppBrowser(browser()->profile(), app_id);
+  TabStripModel* tab_strip = app_browser->tab_strip_model();
+  content::WebContents* web_contents = tab_strip->GetActiveWebContents();
+
+  EXPECT_EQ(tab_strip->count(), 1);
+  EXPECT_TRUE(registrar().IsTabbedWindowModeEnabled(app_id));
+
+  GURL iframe_url = embedded_test_server()->GetURL("/iframe_blank.html");
+  GURL iframe_nav_url =
+      embedded_test_server()->GetURL("/web_apps/get_manifest.html");
+
+  content::TestNavigationObserver nav_observer(web_contents, 1);
+  EXPECT_TRUE(
+      content::NavigateIframeToURL(web_contents, "test", iframe_nav_url));
+  nav_observer.Wait();
+
+  // Expect the navigation happened in the iframe and no new tab was opened.
+  EXPECT_EQ(iframe_nav_url, nav_observer.last_navigation_url());
+  EXPECT_EQ(tab_strip->count(), 1);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, DontCreateThrottleForReload) {
+  GURL start_url =
+      embedded_test_server()->GetURL("/web_apps/tab_strip_customizations.html");
+  AppId app_id = InstallWebAppFromPage(browser(), start_url);
+  Browser* app_browser = FindWebAppBrowser(browser()->profile(), app_id);
+  TabStripModel* tab_strip = app_browser->tab_strip_model();
+  EXPECT_TRUE(registrar().IsTabbedWindowModeEnabled(app_id));
+  content::WebContents* web_contents = tab_strip->GetActiveWebContents();
+
+  // Navigate home tab to different URL via a server redirect so that it doesn't
+  // open in a new tab.
+  GURL target_url =
+      embedded_test_server()->GetURL("/web_apps/get_manifest.html");
+  GURL redirect_url =
+      embedded_test_server()->GetURL("/server-redirect?" + target_url.spec());
+
+  // NavigateToURL() returns `false` because the final redirected URL does not
+  // match `redirect_url`. Separately ensure the navigation succeeded using a
+  // navigation observer.
+  content::TestNavigationObserver nav_observer(web_contents, 1);
+  EXPECT_FALSE(content::NavigateToURL(web_contents, redirect_url));
+  nav_observer.Wait();
+  EXPECT_TRUE(nav_observer.last_navigation_succeeded());
+
+  // Check no new tab was opened.
+  EXPECT_EQ(tab_strip->count(), 1);
+
+  // Reload.
+  content::TestNavigationObserver reload_nav_observer(web_contents, 1);
+  chrome::Reload(app_browser, WindowOpenDisposition::CURRENT_TAB);
+  reload_nav_observer.Wait();
+
+  // Expect the reload did not cause a new tab to open.
+  EXPECT_EQ(target_url, reload_nav_observer.last_navigation_url());
+  EXPECT_EQ(tab_strip->count(), 1);
+  EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetVisibleURL(), target_url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, QueryParamsInStartUrl) {
+  GURL start_url = embedded_test_server()->GetURL(
+      "/web_apps/get_manifest.html?tab_strip_query_params_in_start_url.json");
+  AppId app_id = InstallWebAppFromPage(browser(), start_url);
+  Browser* app_browser = FindWebAppBrowser(browser()->profile(), app_id);
+  TabStripModel* tab_strip = app_browser->tab_strip_model();
+
+  EXPECT_TRUE(registrar().IsTabbedWindowModeEnabled(app_id));
+
+  // Expect only the home tab was opened.
+  EXPECT_EQ(tab_strip->count(), 1);
+  EXPECT_TRUE(tab_strip->IsTabPinned(0));
+  EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetVisibleURL(), start_url);
+
+  // Navigate to start_url without query params.
+  OpenUrlAndWait(app_browser,
+                 embedded_test_server()->GetURL("/web_apps/get_manifest.html"));
+
+  // Expect navigation to happen in home tab.
+  EXPECT_EQ(tab_strip->count(), 1);
+  EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetVisibleURL(),
+            embedded_test_server()->GetURL("/web_apps/get_manifest.html"));
 }
 
 }  // namespace web_app

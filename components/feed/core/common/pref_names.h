@@ -82,12 +82,12 @@ extern const char kLastSeenFeedType[];
 extern const char kFeedOnDeviceUserActionsCollector[];
 // The pref name for the keys of the info cards.
 extern const char kInfoCardStates[];
-// The pref name for storing the server experiments the client is in.
-extern const char kExperimentsV2[];
 // The pref name for whether the user has opened/seen web feed at least once.
 extern const char kHasSeenWebFeed[];
 // The pref name for when the user last saw badge animation for web feed.
 extern const char kLastBadgeAnimationTime[];
+// The pref name for storing the server experiments the client is in.
+extern const char kExperimentsV2[];
 
 // Deprecated prefs
 
@@ -97,8 +97,6 @@ extern const char kExperimentsDeprecated[];
 }  // namespace prefs
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
-void MigrateObsoleteProfilePrefsFeb_2021(PrefService* prefs);
-void MigrateObsoleteProfilePrefsJune_2021(PrefService* prefs);
 void MigrateObsoleteProfilePrefsOct_2022(PrefService* prefs);
 
 }  // namespace feed

@@ -25,17 +25,19 @@
 #include "components/autofill/core/browser/form_parsing/birthdate_field.h"
 #include "components/autofill/core/browser/form_parsing/credit_card_field.h"
 #include "components/autofill/core/browser/form_parsing/email_field.h"
+#include "components/autofill/core/browser/form_parsing/form_field.h"
 #include "components/autofill/core/browser/form_parsing/iban_field.h"
 #include "components/autofill/core/browser/form_parsing/merchant_promo_code_field.h"
 #include "components/autofill/core/browser/form_parsing/name_field.h"
+#include "components/autofill/core/browser/form_parsing/numeric_quantity_field.h"
 #include "components/autofill/core/browser/form_parsing/phone_field.h"
 #include "components/autofill/core/browser/form_parsing/price_field.h"
 #include "components/autofill/core/browser/form_parsing/search_field.h"
 #include "components/autofill/core/browser/form_parsing/standalone_cvc_field.h"
 #include "components/autofill/core/browser/form_parsing/travel_field.h"
-#include "components/autofill/core/common/autocomplete_parsing_util.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
+#include "components/autofill/core/common/autocomplete_parsing_util.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_internals/log_message.h"
@@ -43,6 +45,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/autofill/core/common/dense_set.h"
 
 namespace autofill {
 
@@ -104,6 +107,11 @@ void FormField::ParseFormFields(
                         log_manager);
   }
 
+  // Numeric quantity pass.
+  ParseFormFieldsPass(NumericQuantityField::Parse, processed_fields,
+                      field_candidates, page_language, pattern_source,
+                      log_manager);
+
   // Credit card pass.
   ParseFormFieldsPass(CreditCardField::Parse, processed_fields,
                       field_candidates, page_language, pattern_source,
@@ -129,9 +137,25 @@ void FormField::ParseFormFields(
   }
 
   size_t fillable_fields = 0;
+  // Set to count distinct field types.
+  ServerFieldTypeSet heuristic_types;
   for (const auto& [field_id, candidates] : field_candidates) {
-    if (IsFillableFieldType(candidates.BestHeuristicType()))
+    if (IsFillableFieldType(candidates.BestHeuristicType())) {
       ++fillable_fields;
+      heuristic_types.insert(candidates.BestHeuristicType());
+    }
+  }
+
+  // TODO(crbug.com/1352826): Inline for launch.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillMin3FieldTypesForLocalHeuristics)) {
+    // With the experiment enabled, we consider the number of distinct fillable
+    // field types, not the number of distinct fillable fields, to determine
+    // whether local heuristics should be applied. We hypothesize that this
+    // reduces false positives.
+    // "Fillable" refers to the field type, not whether a specific field is
+    // visible and editable by the user.
+    fillable_fields = heuristic_types.size();
   }
 
   // Do not autofill a form if there aren't enough fields. Otherwise, it is

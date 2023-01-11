@@ -47,6 +47,8 @@ class MockUiControllerObserver : public UiControllerObserver {
   MOCK_METHOD0(OnCollapseBottomSheet, void());
   MOCK_METHOD2(OnFormChanged,
                void(const FormProto* form, const FormProto::Result* result));
+  MOCK_METHOD1(OnLegalDisclaimerChanged,
+               void(const LegalDisclaimerProto* legal_disclaimer));
   MOCK_METHOD1(OnQrCodeScanUiChanged,
                void(const PromptQrCodeScanProto* qr_code_scan));
   MOCK_METHOD1(OnGenericUserInterfaceChanged,
@@ -55,6 +57,8 @@ class MockUiControllerObserver : public UiControllerObserver {
                void(const GenericUserInterfaceProto* generic_ui));
   MOCK_METHOD1(OnTtsButtonVisibilityChanged, void(bool visible));
   MOCK_METHOD1(OnTtsButtonStateChanged, void(TtsButtonState state));
+  MOCK_METHOD1(OnDisableScrollbarFadingChanged,
+               void(bool disable_scrollbar_fading));
   MOCK_METHOD0(OnFeedbackFormRequested, void());
   MOCK_METHOD(void,
               OnShowAccountScreen,

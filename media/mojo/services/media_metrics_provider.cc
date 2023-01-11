@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "media/base/key_systems.h"
+#include "media/base/renderer.h"
 #include "media/base/video_codecs.h"
 #include "media/learning/mojo/mojo_learning_task_controller_service.h"
 #include "media/mojo/services/video_decode_stats_recorder.h"
@@ -25,7 +26,8 @@
 #include "media/filters/decrypting_video_decoder.h"
 #endif
 
-#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_CAST_ANDROID)
+#if BUILDFLAG(ENABLE_CAST_RECEIVER) && \
+    (BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_ANDROID))
 #include "media/mojo/services/playback_events_recorder.h"
 #endif
 
@@ -110,7 +112,7 @@ std::string MediaMetricsProvider::GetUMANameForAVStream(
   // Add Renderer name when not using the default RendererImpl.
   if (renderer_type_ == RendererType::kMediaFoundation) {
     return uma_name + GetRendererName(RendererType::kMediaFoundation);
-  } else if (renderer_type_ != RendererType::kDefault) {
+  } else if (renderer_type_ != RendererType::kRendererImpl) {
     return uma_name + "UnknownRenderer";
   }
 
@@ -337,7 +339,8 @@ void MediaMetricsProvider::AcquireVideoDecodeStatsRecorder(
 
 void MediaMetricsProvider::AcquirePlaybackEventsRecorder(
     mojo::PendingReceiver<mojom::PlaybackEventsRecorder> receiver) {
-#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_CAST_ANDROID)
+#if BUILDFLAG(ENABLE_CAST_RECEIVER) && \
+    (BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_ANDROID))
   PlaybackEventsRecorder::Create(std::move(receiver));
 #endif
 }

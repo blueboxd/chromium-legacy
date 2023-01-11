@@ -94,7 +94,6 @@ class LayerTreeHostContextTest : public LayerTreeTest {
 
     auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
     if (context_should_support_io_surface_) {
-      gl_owned->set_have_extension_io_surface(true);
       gl_owned->set_have_extension_egl_image(true);
     }
 
@@ -815,7 +814,7 @@ class LayerTreeHostContextTestDontUseLostResources
     context_should_support_io_surface_ = true;
 
     child_context_provider_ = viz::TestContextProvider::Create();
-    auto result = child_context_provider_->BindToCurrentThread();
+    auto result = child_context_provider_->BindToCurrentSequence();
     CHECK_EQ(result, gpu::ContextResult::kSuccess);
     shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
     child_resource_provider_ = std::make_unique<viz::ClientResourceProvider>();

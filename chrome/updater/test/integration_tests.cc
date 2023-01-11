@@ -19,6 +19,7 @@
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -33,7 +34,6 @@
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/test/server.h"
 #include "chrome/updater/test_scope.h"
-#include "chrome/updater/unittest_util.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
@@ -96,9 +96,6 @@ class IntegrationTest : public ::testing::Test {
                          true,    // enable_thread_id
                          true,    // enable_timestamp
                          false);  // enable_tickcount
-#if BUILDFLAG(IS_WIN)
-    ASSERT_TRUE(base::PathExists(updater_path_)) << updater_path_;
-#endif
     Clean();
     ExpectClean();
     // TODO(crbug.com/1233612) - reenable the code when system tests pass.
@@ -108,7 +105,8 @@ class IntegrationTest : public ::testing::Test {
 
   void TearDown() override {
     ExitTestMode();
-    ExpectClean();
+    if (!HasFatalFailure())
+      ExpectClean();
     PrintLog();
     // TODO(crbug.com/1159189): Use a specific test output directory
     // because Uninstall() deletes the files under GetDataDirPath().
@@ -116,9 +114,6 @@ class IntegrationTest : public ::testing::Test {
     // TODO(crbug.com/1233612) - reenable the code when system tests pass.
     // TearDownTestService();
     Clean();
-#if BUILDFLAG(IS_WIN)
-    ASSERT_TRUE(base::PathExists(updater_path_)) << updater_path_;
-#endif
   }
 
   void CopyLog() { test_commands_->CopyLog(); }
@@ -130,6 +125,7 @@ class IntegrationTest : public ::testing::Test {
   void ExpectInstalled() { test_commands_->ExpectInstalled(); }
 
   void Uninstall() {
+    EXPECT_TRUE(WaitForUpdaterExit());
     PrintLog();
     CopyLog();
     test_commands_->Uninstall();
@@ -227,6 +223,10 @@ class IntegrationTest : public ::testing::Test {
   }
 
   void SetServerStarts(int value) { test_commands_->SetServerStarts(value); }
+
+  void FillLog() { test_commands_->FillLog(); }
+
+  void ExpectLogRotated() { test_commands_->ExpectLogRotated(); }
 
   void ExpectRegistered(const std::string& app_id) {
     test_commands_->ExpectRegistered(app_id);
@@ -342,7 +342,6 @@ class IntegrationTest : public ::testing::Test {
 
  private:
   base::test::TaskEnvironment environment_;
-  const base::FilePath updater_path_ = GetUpdaterTestPath();
 };
 
 // The project's position is that component builds are not portable outside of
@@ -369,10 +368,8 @@ TEST_F(IntegrationTest, InstallUninstall) {
   Uninstall();
 }
 
-// TODO(crbug.com/1345407): this test is disabled temporarily. Reenable after
-// the build that adds `IUpdater::FetchPolicies` is published to CIPD.
-TEST_F(IntegrationTest, DISABLED_OverinstallWorking) {
-  SetupRealUpdaterLowerVersion();
+TEST_F(IntegrationTest, OverinstallWorking) {
+  ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
   EXPECT_TRUE(WaitForUpdaterExit());
   ExpectVersionNotActive(kUpdaterVersion);
 
@@ -385,14 +382,8 @@ TEST_F(IntegrationTest, DISABLED_OverinstallWorking) {
   Uninstall();
 }
 
-// TODO(crbug.com/1359334): Flaky on Win10.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_OverinstallBroken DISABLED_OverinstallBroken
-#else
-#define MAYBE_OverinstallBroken OverinstallBroken
-#endif
-TEST_F(IntegrationTest, MAYBE_OverinstallBroken) {
-  SetupRealUpdaterLowerVersion();
+TEST_F(IntegrationTest, OverinstallBroken) {
+  ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
   EXPECT_TRUE(WaitForUpdaterExit());
   DeleteUpdaterDirectory();
 
@@ -420,7 +411,14 @@ TEST_F(IntegrationTest, SelfUninstallOutdatedUpdater) {
   ExpectVersionNotActive(kUpdaterVersion);
   ExpectVersionNotActive("0.0.0.0");
 
-  Uninstall();
+  // Do not call `Uninstall()` since the outdated updater uninstalled itself.
+  // Additional clean up is needed because of how this test is set up. After
+  // the outdated instance uninstalls, a few files are left in the product
+  // directory: prefs.json, updater.log, and overrides.json. These files are
+  // owned by the active instance of the updater but in this case there is
+  // no active instance left; therefore, explicit clean up is required.
+  PrintLog();
+  CopyLog();
   Clean();
 }
 
@@ -449,7 +447,6 @@ TEST_F(IntegrationTest, QualifyUpdater) {
   ExpectVersionActive(kUpdaterVersion);
 
   Uninstall();
-  Clean();
 }
 
 TEST_F(IntegrationTest, SelfUpdate) {
@@ -465,7 +462,6 @@ TEST_F(IntegrationTest, SelfUpdate) {
   ExpectAppVersion(kUpdaterAppId, next_version);
 
   Uninstall();
-  Clean();
 }
 
 TEST_F(IntegrationTest, ReportsActive) {
@@ -528,7 +524,6 @@ TEST_F(IntegrationTest, UpdateApp) {
   ExpectLastStarted();
 
   Uninstall();
-  Clean();
 }
 
 #if BUILDFLAG(IS_WIN)
@@ -554,7 +549,6 @@ TEST_F(IntegrationTest, ForceInstallApp) {
   ExpectAppVersion(kAppId, v1);
 
   Uninstall();
-  Clean();
 }
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -568,7 +562,6 @@ TEST_F(IntegrationTest, MultipleWakesOneNetRequest) {
   RunWake(0);
 
   Uninstall();
-  Clean();
 }
 
 TEST_F(IntegrationTest, MultipleUpdateAllsMultipleNetRequests) {
@@ -581,7 +574,6 @@ TEST_F(IntegrationTest, MultipleUpdateAllsMultipleNetRequests) {
   UpdateAll();
 
   Uninstall();
-  Clean();
 }
 
 #if BUILDFLAG(IS_WIN)
@@ -723,6 +715,16 @@ TEST_F(IntegrationTest, UninstallUpdaterWhenAllAppsUninstalled) {
   EXPECT_TRUE(WaitForUpdaterExit());
 }
 
+TEST_F(IntegrationTest, RotateLog) {
+  Install();
+  EXPECT_TRUE(WaitForUpdaterExit());
+  FillLog();
+  RunWake(0);
+  EXPECT_TRUE(WaitForUpdaterExit());
+  ExpectLogRotated();
+  Uninstall();
+}
+
 // Windows does not currently have a concept of app ownership, so this
 // test need not run on Windows.
 #if BUILDFLAG(IS_MAC)
@@ -753,7 +755,7 @@ TEST_F(IntegrationTest, UnregisterUnownedApp) {
 TEST_F(IntegrationTest, SelfUpdateFromOldReal) {
   ScopedServer test_server(test_commands_);
 
-  SetupRealUpdaterLowerVersion();
+  ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
   ExpectVersionNotActive(kUpdaterVersion);
 
   // Trigger an old instance update check.
@@ -777,7 +779,7 @@ TEST_F(IntegrationTest, SelfUpdateFromOldReal) {
 // Tests that installing and uninstalling an old version of the updater from
 // CIPD is possible.
 TEST_F(IntegrationTest, InstallUninstallLowerVersion) {
-  SetupRealUpdaterLowerVersion();
+  ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
   ExpectVersionNotActive(kUpdaterVersion);
   Uninstall();
 

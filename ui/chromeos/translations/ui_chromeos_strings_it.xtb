@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="2084108471225856927">Impostazioni dispositivo</translation>
 <translation id="2084809735218147718">Gesto di ringraziamento</translation>
-<translation id="2085470240340828803">Esiste già un file denominato "<ph name="FILENAME" />". Che cosa vuoi fare?</translation>
 <translation id="2088690981887365033">Rete VPN</translation>
 <translation id="2122305276694332719">La connessione automatica a una rete nascosta consente ad altre persone di rilevare il tuo dispositivo e alcune impostazioni di rete, pertanto è sconsigliata.</translation>
 <translation id="2125607626296734455">Khmer</translation>
@@ -456,7 +455,6 @@
 <translation id="4900532980794411603">Condividi con Parallels Desktop</translation>
 <translation id="4902546322522096650">Rete <ph name="NETWORK_INDEX" /> di <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, intensità del segnale <ph name="SIGNAL_STRENGTH" />%, connetti</translation>
 <translation id="4906580650526544301">Rete <ph name="NETWORK_INDEX" /> di <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, intensità del segnale <ph name="SIGNAL_STRENGTH" />%, batteria del telefono <ph name="BATTERY_STATUS" />%, dettagli</translation>
-<translation id="4929673617759421391">Non puoi incollare questo file in base al criterio dell'amministratore</translation>
 <translation id="4935975195727477204">Gazania</translation>
 <translation id="4943368462779413526">Calcio</translation>
 <translation id="4961158930123534723">1 cartella condivisa con Parallels Desktop</translation>
@@ -533,6 +531,7 @@
 <translation id="5428105026674456456">Spagnolo</translation>
 <translation id="5438282218546237410">Nessun risultato per <ph name="SEARCH_TERM" />.</translation>
 <translation id="5449551289610225147">Password non valida</translation>
+<translation id="5459064203055649751">Esiste già un file chiamato "<ph name="FILENAME" />". Vuoi sostituirlo con quello da spostare?</translation>
 <translation id="5463231940765244860">Inserisci</translation>
 <translation id="5469868506864199649">Italiano</translation>
 <translation id="5473333559083690127">Inserisci ancora il nuovo PIN</translation>
@@ -653,6 +652,7 @@
 <translation id="6495925982925244349">Rete <ph name="NETWORK_INDEX" /> di <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, intensità del segnale <ph name="SIGNAL_STRENGTH" />%, gestita dall'amministratore, dettagli</translation>
 <translation id="649877868557234318">Estrazione del file <ph name="FILE_NAME" /> nella cartella <ph name="FOLDER_NAME" /> in corso…</translation>
 <translation id="6499681088828539489">Non consentire proxy per reti condivise</translation>
+<translation id="6503285896705205014">La copia di <ph name="COUNT" /> file è bloccata dal criterio dell'amministratore</translation>
 <translation id="6509122719576673235">Norvegese</translation>
 <translation id="6528513914570774834">Consenti ad altri utenti del dispositivo di usare questa rete</translation>
 <translation id="653019979737152879">Sincronizzazione del file <ph name="FILE_NAME" /> in corso...</translation>
@@ -755,6 +755,7 @@
 <translation id="7357762654218998920">Questo tipo di file non è supportato. <ph name="BEGIN_LINK_HELP" />Scopri di più<ph name="END_LINK_HELP" /> sull'apertura di file in ChromeOS.</translation>
 <translation id="7359359531237882347">Copia di <ph name="NUMBER_OF_ITEMS" /> elementi...</translation>
 <translation id="7375951387215729722">Elenco di file ordinato per <ph name="COLUMN_NAME" /> in ordine decrescente.</translation>
+<translation id="7377161162143020057">La copia di questo file è bloccata dal criterio dell'amministratore</translation>
 <translation id="7402503521691663770">Dispositivi ChromeOS Flex</translation>
 <translation id="7408870451288633753">Ceco</translation>
 <translation id="7417453074306512035">Tastiera Etiope</translation>
@@ -976,7 +977,6 @@
 <translation id="9183302530794969518">Documenti Google</translation>
 <translation id="9189836632794948435">Kazako</translation>
 <translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> elementi estratti.</translation>
-<translation id="9210751050717126865">La possibilità di incollare <ph name="COUNT" /> file è bloccata dal criterio dell'amministratore</translation>
 <translation id="9213073329713032541">Installazione eseguita correttamente.</translation>
 <translation id="9219103736887031265">Immagini</translation>
 <translation id="9219908252191632183">Lunare</translation>

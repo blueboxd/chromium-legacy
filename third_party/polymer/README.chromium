@@ -1,7 +1,7 @@
 Name: Polymer
 Short Name: polymer
 URL: https://polymer-library.polymer-project.org
-Version: 3.2.0
+Version: 3.5.0
 Revision: N/A
 License: BSD
 License File: LICENSE.polymer
@@ -26,11 +26,7 @@ becomes smaller and better over time.
 technologies called the Polymer.
 
 Local Modifications:
-- Applied modifications that can be found in v3_0/chromium.patch.
-- All inline JavaScript blocks are extracted from Polymer HTML elements to
-external JS files. This version of the Polymer is used in a web UI, where CSP
-forbids an execution of inline scripts. The extraction was made with the help of
-the Crisper tool (https://github.com/PolymerLabs/crisper).
+- Applied modifications that can be found in various v3_0/*.patch files.
 - Removed executable bit from some files.
 - Resolved encoding issues.
 - Replaced CRLF line endings with LF line endings in text files.
@@ -45,6 +41,30 @@ the Crisper tool (https://github.com/PolymerLabs/crisper).
 - Note that the Polymer 3 bundle does not include dir-mixin.js which is
   responsible for polyfylling :dir() CSS rules, because it causes a performance
   regression (and it is unnecessary), see crbug.com/899603 for more context.
+- Applied workaround for explicit calls to attachShadow() at
+  https://github.com/Polymer/polymer/issues/5574#issuecomment-649854825 since
+  that issue has not yet been fixed in the upstream repository.
+- Several modifications were introduced in v3.5.0 to save size, by pruning out
+  codepaths related to
+  1) ShadyDOM support (not needed by Chromium since native ShadowDOM is used).
+     Done by passing --define window.ShadyDOM=false flag to Terser.
+  2) ShadyCSS support (not needed by Chromium since no CSS mixins are used).
+     Done by passing --define window.ShadyCSS=false flag to Terser, as well as
+     by exluding all imports of shadycss/, which effectively removes the
+     shadycss polyfil from the final Polymer bundle.
+  3) PolymerElement#updateStyles() was modified to not rely on the ShadyCSS
+     polyfil anymore, and call the native this.style.setProperty() API instead
+     (required after the changes in #1)
+  4) PolymerElement#getComputedStyleValue() is now defunct (it was relying on
+     ShadyCSS stuff), and the native HTMLElement#computedStyleMap() API should
+     be used instead.
+  5) Polymer codepaths guarded by flags to preserve legacy Polymer behavior.
+     Specifically legacyWarnings, syncInitialRender, legacyUndefined,
+     legacyNoObservedAttributes.
+  6) Polymer codepaths guarded by flags implementing various
+     new optimizations introduced to v3.5.0. Specifically
+     removeNestedTemplates, fastDomIf, suppressTemplateNotifications,
+     useAdoptedStyleSheetsWithBuiltCSS.
 
-To restore a content of the 'components-chromium' directory from scratch, run
+To restore the content of the 'components-chromium' directory from scratch, run
 ./v3_0/reproduce.sh on a Linux machine.

@@ -9,12 +9,9 @@
 
 #include "ash/public/cpp/desk_template.h"
 #include "ash/wm/desks/templates/saved_desk_grid_view.h"
-#include "ash/wm/desks/templates/saved_desk_icon_container.h"
 #include "ash/wm/desks/templates/saved_desk_icon_view.h"
 #include "ash/wm/desks/templates/saved_desk_item_view.h"
 #include "ash/wm/desks/templates/saved_desk_library_view.h"
-#include "ash/wm/desks/templates/saved_desk_name_view.h"
-#include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "ui/views/controls/scroll_view.h"
 
@@ -29,7 +26,6 @@ class CloseButton;
 class OverviewGrid;
 class PillButton;
 class RoundedImageView;
-class SavedDeskLibraryView;
 class SavedDeskPresenter;
 
 // Wrapper for `SavedDeskPresenter` that exposes internal state to test

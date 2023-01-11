@@ -22,7 +22,7 @@ import './privacy_guide/privacy_guide_dialog.js';
 
 import {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -58,10 +58,10 @@ export interface SettingsPrivacyPageElement {
 }
 
 const SettingsPrivacyPageElementBase =
-    RouteObserverMixin(WebUIListenerMixin(
+    RouteObserverMixin(WebUiListenerMixin(
         I18nMixin(PrefsMixin(BaseMixin(PolymerElement))))) as {
       new (): PolymerElement & I18nMixinInterface &
-          WebUIListenerMixinInterface & PrefsMixinInterface &
+          WebUiListenerMixinInterface & PrefsMixinInterface &
           RouteObserverMixinInterface,
     };
 
@@ -180,6 +180,18 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
         value: () => loadTimeData.getBoolean('isPrivacySandboxRestricted'),
       },
 
+      /**
+       * Whether the File System Access Persistent Permissions UI should be
+       * displayed.
+       */
+      showPersistentPermissions_: {
+        type: Boolean,
+        readOnly: true,
+        value: function() {
+          return loadTimeData.getBoolean('showPersistentPermissions');
+        },
+      },
+
       focusConfig_: {
         type: Object,
         value() {
@@ -253,6 +265,7 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
   }
 
   private isGuest_: boolean;
+  private showPersistentPermissions_: boolean;
   private showClearBrowsingDataDialog_: boolean;
   private showPrivacyGuideDialog_: boolean;
   private enableSafeBrowsingSubresourceFilter_: boolean;

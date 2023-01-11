@@ -44,7 +44,6 @@
 #include "cc/base/switches.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
-#include "cc/document_transition/document_transition_request.h"
 #include "cc/input/browser_controls_offset_manager.h"
 #include "cc/input/page_scale_animation.h"
 #include "cc/input/scrollbar_animation_controller.h"
@@ -90,11 +89,13 @@
 #include "cc/trees/mobile_optimized_viewport_util.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/presentation_time_callback_buffer.h"
+#include "cc/trees/raster_context_provider_wrapper.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
+#include "cc/view_transition/view_transition_request.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_timing_details.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
@@ -199,41 +200,6 @@ void PopulateMetadataContentColorUsage(
   }
 }
 
-// Registers callbacks, as needed, to track First Scroll Latency.
-void ApplyFirstScrollTracking(const ui::LatencyInfo* latency,
-                              uint32_t frame_token,
-                              LayerTreeHostImpl* impl) {
-  base::TimeTicks creation_timestamp;
-  // If |latency| isn't tracking a scroll, we don't need to do extra
-  // first-scroll tracking.
-  auto scroll_update_started =
-      ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT;
-  auto scroll_update_continued =
-      ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT;
-  if (!latency->FindLatency(scroll_update_started, &creation_timestamp) &&
-      !latency->FindLatency(scroll_update_continued, &creation_timestamp)) {
-    return;
-  }
-
-  // Construct a callback that, given a successful presentation timestamp, will
-  // report the time span between the scroll input-event creation and the
-  // presentation timestamp.
-  PresentationTimeCallbackBuffer::CompositorCallback presentation_callback =
-      base::BindOnce(
-          [](base::TimeTicks event_creation,
-             LayerTreeHostImpl* layer_tree_host_impl,
-             base::TimeTicks presentation_timestamp) {
-            layer_tree_host_impl->DidObserveScrollDelay(
-                presentation_timestamp - event_creation, event_creation);
-          },
-          creation_timestamp, impl);
-
-  // Tell the |LayerTreeHostImpl| to run our callback with the presentation
-  // feedback corresponding to the given |frame_token|.
-  impl->RegisterCompositorPresentationTimeCallback(
-      frame_token, std::move(presentation_callback));
-}
-
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class SourceIdConsistency : int {
@@ -279,6 +245,75 @@ const char* ClientNameForVerboseLog() {
   VLOG_IF(3, VerboseLogEnabled()) << ClientNameForVerboseLog() << ": "
 
 }  // namespace
+
+// Holds either a created ImageDecodeCache or a ptr to a shared
+// GpuImageDecodeCache.
+class LayerTreeHostImpl::ImageDecodeCacheHolder {
+ public:
+  ImageDecodeCacheHolder(bool enable_shared_image_cache_for_gpu,
+                         bool use_gpu_rasterization,
+                         bool gpu_compositing,
+                         scoped_refptr<RasterContextProviderWrapper>
+                             worker_context_provider_wrapper,
+                         viz::ResourceFormat tile_format,
+                         size_t decoded_image_working_set_budget_bytes,
+                         int max_texture_size,
+                         RasterDarkModeFilter* dark_mode_filter) {
+    if (use_gpu_rasterization) {
+      auto color_type = viz::ResourceFormatToClosestSkColorType(
+          /*gpu_compositing=*/true, tile_format);
+      if (enable_shared_image_cache_for_gpu) {
+        image_decode_cache_ptr_ =
+            &worker_context_provider_wrapper->GetGpuImageDecodeCache(
+                color_type);
+      } else {
+        image_decode_cache_ = std::make_unique<GpuImageDecodeCache>(
+            worker_context_provider_wrapper->GetContext().get(),
+            /*use_transfer_cache=*/true, color_type,
+            decoded_image_working_set_budget_bytes, max_texture_size,
+            dark_mode_filter);
+      }
+    } else {
+      image_decode_cache_ = std::make_unique<SoftwareImageDecodeCache>(
+          viz::ResourceFormatToClosestSkColorType(gpu_compositing, tile_format),
+          decoded_image_working_set_budget_bytes);
+    }
+
+    if (image_decode_cache_) {
+      image_decode_cache_ptr_ = image_decode_cache_.get();
+    } else {
+      DCHECK(image_decode_cache_ptr_);
+    }
+  }
+
+  void SetShouldAggressivelyFreeResources(bool aggressively_free_resources) {
+    // This must only be called if the decode cache is not shared aka is not
+    // created via RasterContextProviderWrapper as the cache created via that
+    // gets this calls from ContextCacheController, which notifies only after
+    // ALL clients are invisible or at least one is visible.
+    if (image_decode_cache_) {
+      image_decode_cache_->SetShouldAggressivelyFreeResources(
+          aggressively_free_resources, /*context_lock_acquired=*/false);
+    }
+  }
+
+  ImageDecodeCache* image_decode_cache() const {
+    DCHECK(image_decode_cache_ptr_);
+    return image_decode_cache_ptr_;
+  }
+
+  ImageDecodeCacheHolder(const ImageDecodeCacheHolder&) = delete;
+  ImageDecodeCacheHolder& operator=(const ImageDecodeCacheHolder&) = delete;
+
+  ~ImageDecodeCacheHolder() {
+    image_decode_cache_ptr_ = nullptr;
+    image_decode_cache_.reset();
+  }
+
+ private:
+  raw_ptr<ImageDecodeCache> image_decode_cache_ptr_ = nullptr;
+  std::unique_ptr<ImageDecodeCache> image_decode_cache_;
+};
 
 void LayerTreeHostImpl::DidUpdateScrollAnimationCurve() {
   // Because we updated the animation target, notify the
@@ -516,7 +551,7 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   // all the resource and raster structures.
   DCHECK(!layer_tree_frame_sink_);
   DCHECK(!resource_pool_);
-  DCHECK(!image_decode_cache_);
+  DCHECK(!image_decode_cache_holder_);
   DCHECK(!single_thread_synchronous_task_graph_runner_);
 
   if (input_delegate_)
@@ -1238,7 +1273,7 @@ bool LayerTreeHostImpl::HasDamage() const {
 
   return root_surface_has_visible_damage ||
          active_tree_->property_trees()->effect_tree().HasCopyRequests() ||
-         hud_wants_to_draw_ || active_tree_->HasDocumentTransitionRequests();
+         hud_wants_to_draw_ || active_tree_->HasViewTransitionRequests();
 }
 
 DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
@@ -1274,7 +1309,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   // crbug.com/805673.
   active_tree_->ResetHandleVisibilityChanged();
 
-  base::flat_set<viz::SharedElementResourceId> known_resource_ids;
+  base::flat_set<viz::ViewTransitionElementResourceId> known_resource_ids;
   // Create the render passes in dependency order.
   size_t render_surface_list_size = frame->render_surface_list->size();
   for (size_t i = 0; i < render_surface_list_size; ++i) {
@@ -1290,9 +1325,9 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     if (should_draw_into_render_pass)
       frame->render_passes.push_back(render_surface->CreateRenderPass());
     if (render_surface->OwningEffectNode()
-            ->shared_element_resource_id.IsValid()) {
-      known_resource_ids.insert(
-          render_surface->OwningEffectNode()->shared_element_resource_id);
+            ->view_transition_element_resource_id.IsValid()) {
+      known_resource_ids.insert(render_surface->OwningEffectNode()
+                                    ->view_transition_element_resource_id);
     }
   }
 
@@ -1701,7 +1736,7 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
         pass->backdrop_filters.IsEmpty() &&
         // TODO(khushalsagar) : Send information about no-op passes to viz to
         // retain this optimization for shared elements. See crbug.com/1265178.
-        !pass->shared_element_resource_id.IsValid()) {
+        !pass->view_transition_element_resource_id.IsValid()) {
       // Remove the pass and decrement |i| to counter the for loop's increment,
       // so we don't skip the next pass in the loop.
       frame->render_passes.erase(frame->render_passes.begin() + i);
@@ -1721,7 +1756,7 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
     viz::CompositorRenderPass* pass =
         frame->render_passes[frame->render_passes.size() - 2 - i].get();
     if (!pass->copy_requests.empty() ||
-        pass->shared_element_resource_id.IsValid()) {
+        pass->view_transition_element_resource_id.IsValid()) {
       continue;
     }
     if (pass_references[pass->id])
@@ -1809,8 +1844,8 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
     // allow the image decode controller to retain resources. We handle the
     // equal to 0 case in NotifyAllTileTasksComplete to avoid interrupting
     // running work.
-    if (image_decode_cache_)
-      image_decode_cache_->SetShouldAggressivelyFreeResources(false);
+    if (image_decode_cache_holder_)
+      image_decode_cache_holder_->SetShouldAggressivelyFreeResources(false);
   } else {
     // When the memory policy is set to zero, its important to release any
     // decoded images cached by the tracker. But we can not re-checker any
@@ -2023,8 +2058,8 @@ void LayerTreeHostImpl::NotifyAllTileTasksCompleted() {
     // contexts of visibility change. This ensures that the imaged decode
     // controller has released all Skia refs at the time Skia's cleanup
     // executes (within worker context's cleanup).
-    if (image_decode_cache_)
-      image_decode_cache_->SetShouldAggressivelyFreeResources(true);
+    if (image_decode_cache_holder_)
+      image_decode_cache_holder_->SetShouldAggressivelyFreeResources(true);
     SetContextVisibility(false);
   }
 }
@@ -2135,14 +2170,9 @@ void LayerTreeHostImpl::DidReceiveCompositorFrameAck() {
 void LayerTreeHostImpl::DidPresentCompositorFrame(
     uint32_t frame_token,
     const viz::FrameTimingDetails& details) {
-  // Presentation callbacks registered on the compositor thread are expected to
-  // be called on the first successful presentation. So, if the presentation is
-  // failed, we only pop main thread callbacks at this point and leave
-  // compositor thread callbacks alone until a successful presentation.
-  const bool main_callbacks_only = details.presentation_feedback.failed();
   PresentationTimeCallbackBuffer::PendingCallbacks activated_callbacks =
-      presentation_time_callbacks_.PopPendingCallbacks(frame_token,
-                                                       main_callbacks_only);
+      presentation_time_callbacks_.PopPendingCallbacks(
+          frame_token, details.presentation_feedback.failed());
 
   // Send all tasks to the client so that it can decide which tasks
   // should run on which thread.
@@ -2302,10 +2332,11 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   metadata.root_background_color = active_tree_->background_color();
   metadata.may_throttle_if_undrawn_frames = may_throttle_if_undrawn_frames_;
 
-  if (active_tree_->has_presentation_callbacks()) {
-    presentation_time_callbacks_.RegisterMainThreadPresentationCallbacks(
-        metadata.frame_token, active_tree_->TakePresentationCallbacks());
-  }
+  presentation_time_callbacks_.RegisterMainThreadCallbacks(
+      metadata.frame_token, active_tree_->TakePresentationCallbacks());
+  presentation_time_callbacks_.RegisterMainThreadSuccessfulCallbacks(
+      metadata.frame_token,
+      active_tree_->TakeSuccessfulPresentationCallbacks());
 
   if (GetDrawMode() == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     // TODO(savella) : Change to check for ActivelyScrollingType::kNone
@@ -2650,10 +2681,10 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
 
   viz::CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
 
-  DocumentTransitionRequest::SharedElementMap shared_element_render_pass_id_map;
+  ViewTransitionRequest::SharedElementMap shared_element_render_pass_id_map;
   for (RenderSurfaceImpl* render_surface : *frame->render_surface_list) {
     const auto& shared_element_id =
-        render_surface->GetDocumentTransitionSharedElementId();
+        render_surface->GetViewTransitionElementId();
     if (!shared_element_id.valid())
       continue;
 
@@ -2668,10 +2699,10 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
     shared_element_render_pass_id_map[shared_element_id].render_pass_id =
         render_surface->render_pass_id();
     shared_element_render_pass_id_map[shared_element_id].resource_id =
-        render_surface->OwningEffectNode()->shared_element_resource_id;
+        render_surface->OwningEffectNode()->view_transition_element_resource_id;
   }
 
-  for (auto& request : active_tree_->TakeDocumentTransitionRequests()) {
+  for (auto& request : active_tree_->TakeViewTransitionRequests()) {
     metadata.transition_directives.push_back(
         request->ConstructDirective(shared_element_render_pass_id_map));
   }
@@ -2745,9 +2776,9 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
   if (!CommitToActiveTree() && !metadata.latency_info.empty()) {
     base::TimeTicks draw_time = base::TimeTicks::Now();
 
+    ApplyFirstScrollTracking(metadata.latency_info.front(),
+                             metadata.frame_token);
     ukm::SourceId exemplar = metadata.latency_info.front().ukm_source_id();
-    ApplyFirstScrollTracking(&metadata.latency_info.front(),
-                             metadata.frame_token, this);
     bool all_valid = true;
     bool all_unique = true;
     for (auto& latency : metadata.latency_info) {
@@ -2938,21 +2969,38 @@ void LayerTreeHostImpl::UpdateTreeResourcesForGpuRasterizationIfNeeded() {
   SetRequiresHighResToDraw();
 }
 
+ImageDecodeCache* LayerTreeHostImpl::GetImageDecodeCache() const {
+  return image_decode_cache_holder_
+             ? image_decode_cache_holder_->image_decode_cache()
+             : nullptr;
+}
+
 void LayerTreeHostImpl::RegisterMainThreadPresentationTimeCallbackForTesting(
     uint32_t frame_token,
-    PresentationTimeCallbackBuffer::MainCallback callback) {
-  std::vector<PresentationTimeCallbackBuffer::MainCallback> as_vector;
+    PresentationTimeCallbackBuffer::Callback callback) {
+  std::vector<PresentationTimeCallbackBuffer::Callback> as_vector;
   as_vector.push_back(std::move(callback));
-  presentation_time_callbacks_.RegisterMainThreadPresentationCallbacks(
+  presentation_time_callbacks_.RegisterMainThreadCallbacks(
       frame_token, std::move(as_vector));
 }
 
-void LayerTreeHostImpl::RegisterCompositorPresentationTimeCallback(
-    uint32_t frame_token,
-    PresentationTimeCallbackBuffer::CompositorCallback callback) {
-  std::vector<PresentationTimeCallbackBuffer::CompositorCallback> as_vector;
+void LayerTreeHostImpl::
+    RegisterMainThreadSuccessfulPresentationTimeCallbackForTesting(
+        uint32_t frame_token,
+        PresentationTimeCallbackBuffer::SuccessfulCallback callback) {
+  std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback> as_vector;
   as_vector.push_back(std::move(callback));
-  presentation_time_callbacks_.RegisterCompositorPresentationCallbacks(
+  presentation_time_callbacks_.RegisterMainThreadSuccessfulCallbacks(
+      frame_token, std::move(as_vector));
+}
+
+void LayerTreeHostImpl::
+    RegisterCompositorThreadSuccessfulPresentationTimeCallbackForTesting(
+        uint32_t frame_token,
+        PresentationTimeCallbackBuffer::SuccessfulCallback callback) {
+  std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback> as_vector;
+  as_vector.push_back(std::move(callback));
+  presentation_time_callbacks_.RegisterCompositorThreadSuccessfulCallbacks(
       frame_token, std::move(as_vector));
 }
 
@@ -3094,12 +3142,11 @@ static void PopulateHitTestRegion(viz::HitTestRegion* hit_test_region,
   gfx::Transform surface_to_root_transform = layer->ScreenSpaceTransform();
   surface_to_root_transform.Scale(SK_Scalar1 / device_scale_factor,
                                   SK_Scalar1 / device_scale_factor);
-  surface_to_root_transform.FlattenTo2d();
+  surface_to_root_transform.Flatten();
   // TODO(sunxd): Avoid losing precision by not using inverse if possible.
-  [[maybe_unused]] bool ok =
-      surface_to_root_transform.GetInverse(&hit_test_region->transform);
-  // Note: If |ok| is false, the |transform| is set to the identity before
-  // returning, which is what we want.
+  // Note: |transform| is set to the identity if |surface_to_root_transform| is
+  // not invertible, which is what we want.
+  hit_test_region->transform = surface_to_root_transform.InverseOrIdentity();
 }
 
 absl::optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
@@ -3587,23 +3634,17 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
       settings_, layer_tree_frame_sink_->context_provider(),
       use_gpu_rasterization_);
 
-  if (use_gpu_rasterization_) {
-    image_decode_cache_ = std::make_unique<GpuImageDecodeCache>(
-        layer_tree_frame_sink_->worker_context_provider(),
-        /*use_transfer_cache=*/true,
-        viz::ResourceFormatToClosestSkColorType(/*gpu_compositing=*/true,
-                                                tile_format),
-        settings_.decoded_image_working_set_budget_bytes, max_texture_size_,
-        dark_mode_filter_);
+  const bool gpu_compositing = !!layer_tree_frame_sink_->context_provider();
+  image_decode_cache_holder_ = std::make_unique<ImageDecodeCacheHolder>(
+      settings_.enable_shared_image_cache_for_gpu, use_gpu_rasterization_,
+      gpu_compositing,
+      layer_tree_frame_sink_->worker_context_provider_wrapper(), tile_format,
+      settings_.decoded_image_working_set_budget_bytes, max_texture_size_,
+      dark_mode_filter_);
 
+  if (use_gpu_rasterization_) {
     pending_raster_queries_ = std::make_unique<RasterQueryQueue>(
         layer_tree_frame_sink_->worker_context_provider());
-
-  } else {
-    bool gpu_compositing = !!layer_tree_frame_sink_->context_provider();
-    image_decode_cache_ = std::make_unique<SoftwareImageDecodeCache>(
-        viz::ResourceFormatToClosestSkColorType(gpu_compositing, tile_format),
-        settings_.decoded_image_working_set_budget_bytes);
   }
 
   raster_buffer_provider_ = CreateRasterBufferProvider();
@@ -3618,7 +3659,7 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
     task_graph_runner = single_thread_synchronous_task_graph_runner_.get();
   }
 
-  tile_manager_.SetResources(resource_pool_.get(), image_decode_cache_.get(),
+  tile_manager_.SetResources(resource_pool_.get(), GetImageDecodeCache(),
                              task_graph_runner, raster_buffer_provider_.get(),
                              use_gpu_rasterization_,
                              pending_raster_queries_.get());
@@ -3740,8 +3781,13 @@ void LayerTreeHostImpl::ClearCaches() {
   // comes with an invalidation and the image ids are never re-used.
   bool can_clear_decode_policy_tracking = true;
   tile_manager_.ClearCheckerImageTracking(can_clear_decode_policy_tracking);
-  if (image_decode_cache_)
-    image_decode_cache_->ClearCache();
+  // TODO(crbug.com/1378247): add tracking for which clients have used an image
+  // and remove entries used by only one client when the URL on that client
+  // changes. This should be fixed to correctly clear caches for web contents.
+  // This is only a problem when
+  // LayerTreeSettings::enable_shared_image_cache_for_gpu is true.
+  if (GetImageDecodeCache())
+    GetImageDecodeCache()->ClearCache();
   image_animation_controller_.set_did_navigate();
 }
 
@@ -3755,7 +3801,7 @@ void LayerTreeHostImpl::DidChangeScrollbarVisibility() {
 void LayerTreeHostImpl::CleanUpTileManagerResources() {
   tile_manager_.FinishTasksAndCleanUp();
   single_thread_synchronous_task_graph_runner_ = nullptr;
-  image_decode_cache_ = nullptr;
+  image_decode_cache_holder_ = nullptr;
   raster_buffer_provider_ = nullptr;
   pending_raster_queries_ = nullptr;
   // Any resources that were allocated previously should be considered not good
@@ -4056,7 +4102,7 @@ void LayerTreeHostImpl::UpdateImageDecodingHints(
 void LayerTreeHostImpl::SetRenderFrameObserver(
     std::unique_ptr<RenderFrameMetadataObserver> observer) {
   render_frame_metadata_observer_ = std::move(observer);
-  render_frame_metadata_observer_->BindToCurrentThread();
+  render_frame_metadata_observer_->BindToCurrentSequence();
 }
 
 void LayerTreeHostImpl::WillScrollContent(ElementId element_id) {
@@ -5152,7 +5198,7 @@ void LayerTreeHostImpl::SetUkmSmoothnessDestination(
 
 void LayerTreeHostImpl::NotifyDidPresentCompositorFrameOnImplThread(
     uint32_t frame_token,
-    std::vector<PresentationTimeCallbackBuffer::CompositorCallback> callbacks,
+    std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback> callbacks,
     const viz::FrameTimingDetails& details) {
   frame_trackers_.NotifyFramePresented(frame_token,
                                        details.presentation_feedback);
@@ -5188,6 +5234,40 @@ void LayerTreeHostImpl::RequestImplSideInvalidationForRerasterTiling() {
 
 base::WeakPtr<LayerTreeHostImpl> LayerTreeHostImpl::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+void LayerTreeHostImpl::ApplyFirstScrollTracking(const ui::LatencyInfo& latency,
+                                                 uint32_t frame_token) {
+  base::TimeTicks creation_timestamp;
+
+  // If `latency` isn't tracking a scroll, we don't need to do extra
+  // first-scroll tracking.
+  if (!latency.FindLatency(
+          ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+          &creation_timestamp) &&
+      !latency.FindLatency(
+          ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+          &creation_timestamp)) {
+    return;
+  }
+
+  // Construct a callback that, given a successful presentation timestamp, will
+  // report the time span between the scroll input-event creation and the
+  // presentation timestamp.
+  std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback> callbacks;
+  callbacks.push_back(base::BindOnce(
+      [](base::TimeTicks event_creation,
+         LayerTreeHostImpl* layer_tree_host_impl,
+         base::TimeTicks presentation_timestamp) {
+        layer_tree_host_impl->DidObserveScrollDelay(
+            presentation_timestamp - event_creation, event_creation);
+      },
+      creation_timestamp, this));
+
+  // Register the callback to run with the presentation timestamp corresponding
+  // to the given `frame_token`.
+  presentation_time_callbacks_.RegisterCompositorThreadSuccessfulCallbacks(
+      frame_token, std::move(callbacks));
 }
 
 }  // namespace cc

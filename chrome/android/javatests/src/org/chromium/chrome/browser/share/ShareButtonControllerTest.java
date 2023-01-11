@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
@@ -52,7 +53,7 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Batch(Batch.PER_CLASS)
 @EnableFeatures(
-        {ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR, ChromeFeatureList.START_SURFACE_ANDROID})
+        {ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR, ChromeFeatureList.START_SURFACE_ANDROID})
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "enable-features=" + ChromeFeatureList.START_SURFACE_ANDROID + "<Study",
         "force-fieldtrials=Study/Group"})
@@ -129,6 +130,7 @@ public final class ShareButtonControllerTest {
     @CommandLineFlags.Add({"force-fieldtrial-params=Study.Group:start_surface_variation/single"})
     @Restriction(
             {UiRestriction.RESTRICTION_TYPE_PHONE, Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @DisabledTest(message = "crbug.com/1381572")
     public void
     testShareButtonInToolbarNotAffectedByOverview() throws TimeoutException {
         // Sign in.
@@ -159,6 +161,7 @@ public final class ShareButtonControllerTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1381572")
     public void testShareButtonInToolbarIsDisabledOnUpdate() {
         View experimentalButton = mActivityTestRule.getActivity()
                                           .getToolbarManager()

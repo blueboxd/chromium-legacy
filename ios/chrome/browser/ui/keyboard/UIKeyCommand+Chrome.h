@@ -10,81 +10,67 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// Protocol UIResponder subclasses can implement to intercept key commands.
-// The implementer must be in the responder chain and be the first to respond to
-// this method to be called.
-@protocol ChromeKeyCommandHandler
-
-// Called when a registered key command was detected and the receiver is the
-// first responder implementing this method in the responder chain.
-- (void)cr_handleKeyCommand:(UIKeyCommand*)keyCommand;
-
-@end
-
-// UIApplication is always the last responder. By making it implement the
-// ChromeKeyCommandHandler protocol, it catches by default all key commands
-// and calls their cr_action.
-@interface UIApplication (ChromeKeyCommandHandler)<ChromeKeyCommandHandler>
-@end
-
-typedef void (^UIKeyCommandAction)(void);
-
-// Addition to the set of predefined modifier flags.
-extern UIKeyModifierFlags Cr_UIKeyModifierNone;
-
-// Defines a set of one-liner factory methods taking a key command block.
-// That way, responders willing to declare and respond to key commands can do it
-// in only one place:
-//
-// foo.mm:
-//
-// - (NSArray*)keyCommands {
-//   __weak AccountsTableViewController* weakSelf = self;
-//   return @[
-//     [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
-//                           modifierFlags:Cr_UIKeyModifierNone
-//                                   title:@"Exit"
-//                                  action:^{ [[Bar sharedInstance] exit]; }],
-//     [UIKeyCommand cr_keyCommandWithInput:@"t"
-//                            modifierFlags:UIKeyModifierCommand
-//                                    title:@"New Tab"
-//                                   action:^{
-//       Foo* strongSelf = weakSelf;
-//       if (!strongSelf)
-//         return;
-//       [strongSelf openNewTab];
-//     }],
-//   ];
-// }
-//
-// Or in a UIViewController starting in iOS 9:
-//
-// baz_view_controller.mm:
-//
-// - (void)viewDidLoad {
-//   …
-//   [self addKeyCommand:[UIKeyCommand cr_keyCommandWithInput:input
-//                                             modifierFlags:modifierFlags
-//                                                     title:title
-//                                                    action:action]];
-//   …
-// }
-//
 // Note: this is implemented as a category on UIKeyCommand because UIKeyCommand
 // can't be subclassed as of iOS 9 beta 4. http://crbug.com/510970
 @interface UIKeyCommand (Chrome)
 
-// Block to call when the key command is fired.
-@property(nonatomic, copy, setter=cr_setAction:) UIKeyCommandAction cr_action;
+// These commands come pre-configured with localized titles (for those that
+// appear in the HUD or menu), inputs, and modifier flags. Their action is
+// matching their name, where the UIKeyCommand cr_xxx triggers the action method
+// keyCommand_xxx.
+// Variants are provided if necessary. Variants are named cr_xxx_2, cr_xxx_3,
+// etc. They don't have a title and don't appear in the HUD or menu, but trigger
+// the same action method keyCommand_xxx.
+@property(class, nonatomic, readonly) UIKeyCommand* cr_openNewTab;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_openNewRegularTab;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_openNewIncognitoTab;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_openNewWindow;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_openNewIncognitoWindow;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_reopenLastClosedTab;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_find;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_findNext;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_findPrevious;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_openLocation;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_closeTab;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showNextTab;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showPreviousTab;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showNextTab_2;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showPreviousTab_2;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showNextTab_3;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showPreviousTab_3;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showBookmarks;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_addToBookmarks;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_reload;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_back;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_forward;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_back_2;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_forward_2;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showHistory;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_voiceSearch;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_close;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showSettings;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_stop;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showHelp;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showDownloads;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showDownloads_2;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showFirstTab;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showTab2;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showTab3;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showTab4;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showTab5;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showTab6;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showTab7;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showTab8;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showLastTab;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_reportAnIssue;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_reportAnIssue_2;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_addToReadingList;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_showReadingList;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_goToTabGrid;
+@property(class, nonatomic, readonly) UIKeyCommand* cr_clearBrowsingData;
+
 // Returns a symbolic description of the key command. For example: ⇧⌘T.
 @property(nonatomic, readonly) NSString* cr_symbolicDescription;
-
-// Returns a key command to return in -[UIResponder keyCommands] or to pass to
-// -[UIViewController addKeyCommand:].
-+ (instancetype)cr_keyCommandWithInput:(NSString*)input
-                         modifierFlags:(UIKeyModifierFlags)modifierFlags
-                                 title:(nullable NSString*)discoveryTitle
-                                action:(UIKeyCommandAction)action;
 
 @end
 

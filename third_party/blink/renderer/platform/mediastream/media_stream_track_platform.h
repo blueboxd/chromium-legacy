@@ -57,6 +57,7 @@ class PLATFORM_EXPORT MediaStreamTrackPlatform {
     absl::optional<media::mojom::DisplayCaptureSurfaceType> display_surface;
     absl::optional<bool> logical_surface;
     absl::optional<media::mojom::CursorCaptureType> cursor;
+    absl::optional<bool> suppress_local_audio_playback;
   };
 
   struct CaptureHandle {
@@ -84,7 +85,7 @@ class PLATFORM_EXPORT MediaStreamTrackPlatform {
   void Stop() { StopAndNotify(base::OnceClosure()); }
 
   // TODO(hta): Make method pure virtual when all tracks have the method.
-  virtual void GetSettings(Settings& settings) {}
+  virtual void GetSettings(Settings& settings) const {}
   virtual CaptureHandle GetCaptureHandle();
 
   // Adds a one off callback that will be invoked when observing the first frame

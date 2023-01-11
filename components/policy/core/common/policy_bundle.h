@@ -22,18 +22,21 @@ class POLICY_EXPORT PolicyBundle {
 
   PolicyBundle();
   PolicyBundle(const PolicyBundle&) = delete;
+  PolicyBundle(PolicyBundle&&);
   PolicyBundle& operator=(const PolicyBundle&) = delete;
+  PolicyBundle& operator=(PolicyBundle&&);
   virtual ~PolicyBundle();
 
-  // Returns the PolicyMap for namespace |ns|. Creates a new map if necessary.
+  // Returns the PolicyMap for namespace `ns`. Creates a new map if no entry
+  // for `ns` is present yet.
   PolicyMap& Get(const PolicyNamespace& ns);
+
+  // Returns the PolicyMap for namespace `ns`. Returns a reference to a static
+  // empty map if no entry for `ns` is present.
   const PolicyMap& Get(const PolicyNamespace& ns) const;
 
-  // Swaps the internal representation of |this| with |other|.
-  void Swap(PolicyBundle* other);
-
-  // |this| becomes a copy of |other|. Any existing PolicyMaps are dropped.
-  void CopyFrom(const PolicyBundle& other);
+  // Create a clone of `this`.
+  PolicyBundle Clone() const;
 
   // Merges the PolicyMaps of |this| with those of |other| for each namespace
   // in common. Also adds copies of the (namespace, PolicyMap) pairs in |other|
@@ -60,10 +63,6 @@ class POLICY_EXPORT PolicyBundle {
 
  private:
   MapType policy_bundle_;
-
-  // An empty PolicyMap that is returned by const Get() for namespaces that
-  // do not exist in |policy_bundle_|.
-  const PolicyMap kEmpty_;
 };
 
 }  // namespace policy

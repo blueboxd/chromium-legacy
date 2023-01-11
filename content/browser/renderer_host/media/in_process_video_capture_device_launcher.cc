@@ -496,8 +496,7 @@ void InProcessVideoCaptureDeviceLauncher::DoStartDesktopCaptureOnDeviceThread(
       implementation = kScreenCaptureKitDeviceMac;
   }
   if (!video_capture_device &&
-      base::FeatureList::IsEnabled(kDesktopCaptureMacV2)
-      && __builtin_available(macOS 10.8, *)) {
+      base::FeatureList::IsEnabled(kDesktopCaptureMacV2)) {
     if ((video_capture_device = CreateDesktopCaptureDeviceMac(desktop_id)))
       implementation = kDesktopCaptureDeviceMac;
   }

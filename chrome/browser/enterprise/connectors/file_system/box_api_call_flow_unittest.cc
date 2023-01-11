@@ -722,17 +722,13 @@ class BoxCreateUploadSessionApiCallFlowTest
   }
 
   void OnResponse(BoxApiCallResponse response,
-                  base::Value session_endpoints,
+                  base::Value::Dict session_endpoints,
                   size_t part_size) {
     OnGenericResponse(response);
     if (response.success) {
-      ASSERT_TRUE(session_endpoints.is_dict());
-      session_upload_endpoint_ =
-          session_endpoints.FindPath("upload_part")->GetString();
-      session_abort_endpoint_ =
-          session_endpoints.FindPath("abort")->GetString();
-      session_commit_endpoint_ =
-          session_endpoints.FindPath("commit")->GetString();
+      session_upload_endpoint_ = *session_endpoints.FindString("upload_part");
+      session_abort_endpoint_ = *session_endpoints.FindString("abort");
+      session_commit_endpoint_ = *session_endpoints.FindString("commit");
       part_size_ = part_size;
     }
     if (quit_closure_)
@@ -1074,25 +1070,24 @@ class BoxCommitUploadSessionApiCallFlowForTest
 class BoxCommitUploadSessionApiCallFlowTest
     : public BoxApiCallFlowTest<BoxCommitUploadSessionApiCallFlowForTest> {
  protected:
-  BoxCommitUploadSessionApiCallFlowTest()
-      : upload_session_parts_(base::Value::Type::LIST) {
-    base::Value part1(base::Value::Type::DICTIONARY);
-    part1.SetStringKey("part_id", "BFDF5379");
-    part1.SetIntKey("offset", 0);
-    part1.SetIntKey("size", 8388608);
-    part1.SetStringKey("sha1", "134b65991ed521fcfe4724b7d814ab8ded5185dc");
+  BoxCommitUploadSessionApiCallFlowTest() {
+    base::Value::Dict part1;
+    part1.Set("part_id", "BFDF5379");
+    part1.Set("offset", 0);
+    part1.Set("size", 8388608);
+    part1.Set("sha1", "134b65991ed521fcfe4724b7d814ab8ded5185dc");
 
-    base::Value part2(base::Value::Type::DICTIONARY);
-    part2.SetStringKey("part_id", "E8A3ED8E");
-    part2.SetIntKey("offset", 8388608);
-    part2.SetIntKey("size", 1611392);
-    part2.SetStringKey("sha1", "234b65934ed521fcfe3424b7d814ab8ded5185dc");
+    base::Value::Dict part2;
+    part2.Set("part_id", "E8A3ED8E");
+    part2.Set("offset", 8388608);
+    part2.Set("size", 1611392);
+    part2.Set("sha1", "234b65934ed521fcfe3424b7d814ab8ded5185dc");
 
     upload_session_parts_.Append(std::move(part1));
     upload_session_parts_.Append(std::move(part2));
 
-    base::Value parts_body(base::Value::Type::DICTIONARY);
-    parts_body.SetKey("parts", upload_session_parts_.Clone());
+    base::Value::Dict parts_body;
+    parts_body.Set("parts", upload_session_parts_.Clone());
     // The request body should be in the form of "parts": [list of parts], but
     // only the list is passed into the class.
 
@@ -1117,7 +1112,7 @@ class BoxCommitUploadSessionApiCallFlowTest
       std::move(quit_closure_).Run();
   }
 
-  base::Value upload_session_parts_;
+  base::Value::List upload_session_parts_;
   std::string expected_body_;
   base::TimeDelta retry_after_;
   std::string file_id_;
@@ -1219,11 +1214,11 @@ class BoxGetCurrentUserApiCallFlowTest
                        factory_.GetWeakPtr()));
   }
 
-  void OnResponse(BoxApiCallResponse response, base::Value json) {
+  void OnResponse(BoxApiCallResponse response, base::Value::Dict json) {
     OnGenericResponse(response);
-    if (json.FindStringPath("enterprise.id")) {
-      enterprise_id_ =
-          std::make_unique<std::string>(*json.FindStringPath("enterprise.id"));
+    if (json.FindStringByDottedPath("enterprise.id")) {
+      enterprise_id_ = std::make_unique<std::string>(
+          *json.FindStringByDottedPath("enterprise.id"));
     }
   }
 
@@ -1297,5 +1292,4 @@ TEST_F(BoxGetCurrentUserApiCallFlowTest, ProcessApiCallFailure) {
   ASSERT_EQ(box_error_code_, "rate_limit_exceeded");
 }
 
-// base::Value(base::Value::Type::DICTIONARY);
 }  // namespace enterprise_connectors

@@ -7,8 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-@class ChromeIdentity;
-
 // Sign-in result returned Sign-in result.
 typedef NS_ENUM(NSUInteger, SigninCoordinatorResult) {
   // Sign-in has been canceled by the user or by another reason.
@@ -37,8 +35,6 @@ typedef NS_ENUM(NSUInteger, SigninCoordinatorInterruptAction) {
   SigninCoordinatorInterruptActionDismissWithAnimation,
 };
 
-// Name of notification sent when the user has attempted a sign-in.
-extern NSString* const kUserSigninAttemptedNotification;
 // Name of accessibility identifier for the skip sign-in button.
 extern NSString* const kSkipSigninAccessibilityIdentifier;
 // Name of accessibility identifier for the add account button in the sign-in

@@ -12,6 +12,7 @@
 
 #include <string>
 
+#include "base/memory/raw_ref.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -37,8 +38,8 @@ namespace net {
 // AppendQueryParameter(GURL("http://example.com?x=y"), "name", "value").spec()
 // => "http://example.com?x=y&name=value"
 NET_EXPORT GURL AppendQueryParameter(const GURL& url,
-                                     const std::string& name,
-                                     const std::string& value);
+                                     base::StringPiece name,
+                                     base::StringPiece value);
 
 // Returns a new GURL by appending or replacing the given query parameter name
 // and the value. If `name` appears more than once, only the first name-value
@@ -59,8 +60,23 @@ NET_EXPORT GURL AppendQueryParameter(const GURL& url,
 // => "http://example.com?x=y&"
 NET_EXPORT GURL
 AppendOrReplaceQueryParameter(const GURL& url,
-                              const std::string& name,
+                              base::StringPiece name,
                               absl::optional<base::StringPiece> value);
+
+// Returns a new GURL by appending the provided ref (also named fragment).
+// Unsafe characters are escaped. The original fragment is replaced
+// if it's present.
+//
+// Examples:
+//
+// AppendOrReplaceRef(
+//     GURL("http://example.com"), "ref").spec()
+// => "http://example.com#ref"
+// AppendOrReplaceRef(
+//     GURL("http://example.com#ref"), "ref2").spec()
+// => "http://example.com#ref2"
+NET_EXPORT GURL AppendOrReplaceRef(const GURL& url,
+                                   const base::StringPiece& ref);
 
 // Iterates over the key-value pairs in the query portion of |url|.
 // NOTE: QueryIterator stores reference to |url| and creates base::StringPiece
@@ -82,7 +98,7 @@ class NET_EXPORT QueryIterator {
   void Advance();
 
  private:
-  const GURL& url_;
+  const raw_ref<const GURL> url_;
   url::Component query_;
   bool at_end_;
   url::Component key_;
@@ -94,7 +110,7 @@ class NET_EXPORT QueryIterator {
 // key is found and sets |out_value| to the unescaped value for the key.
 // Returns false if the key is not found.
 NET_EXPORT bool GetValueForKeyInQuery(const GURL& url,
-                                      const std::string& search_key,
+                                      base::StringPiece search_key,
                                       std::string* out_value);
 
 // Splits an input of the form <host>[":"<port>] into its consitituent parts.
@@ -166,12 +182,12 @@ NET_EXPORT std::string CanonicalizeHost(base::StringPiece host,
 //
 // NOTE: You should only pass in hosts that have been returned from
 // CanonicalizeHost(), or you may not get accurate results.
-NET_EXPORT bool IsCanonicalizedHostCompliant(const std::string& host);
+NET_EXPORT bool IsCanonicalizedHostCompliant(base::StringPiece host);
 
 // Returns true if |hostname| contains a non-registerable or non-assignable
 // domain name (eg: a gTLD that has not been assigned by IANA) or an IP address
 // that falls in an range reserved for non-publicly routable networks.
-NET_EXPORT bool IsHostnameNonUnique(const std::string& hostname);
+NET_EXPORT bool IsHostnameNonUnique(base::StringPiece hostname);
 
 // Returns true if the host part of |url| is a local host name according to
 // HostStringIsLocalhost.
@@ -216,6 +232,11 @@ NET_EXPORT_PRIVATE bool HasGoogleHost(const GURL& url);
 // Returns true if |host| is the hostname of a Google server. This should only
 // be used for histograms and shouldn't be used to affect behavior.
 NET_EXPORT_PRIVATE bool IsGoogleHost(base::StringPiece host);
+
+// Returns true if |host| is the hostname of a Google server and HTTPS DNS
+// record of |host| is expected to indicate H3 support. This should only be used
+// for histograms and shouldn't be used to affect behavior.
+NET_EXPORT_PRIVATE bool IsGoogleHostWithAlpnH3(base::StringPiece host);
 
 // This function tests |host| to see if it is of any local hostname form.
 // |host| is normalized before being tested.

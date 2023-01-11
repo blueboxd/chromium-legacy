@@ -181,6 +181,10 @@ feedwire::Request CreateFeedQueryRequest(
         Capability::INFO_CARD_ACKNOWLEDGEMENT_TRACKING);
   }
 
+  if (base::FeatureList::IsEnabled(kSyntheticCapabilities)) {
+    feed_request.add_client_capability(Capability::SYNTHETIC_CAPABILITIES);
+  }
+
   switch (request_metadata.tab_group_enabled_state) {
     case TabGroupEnabledState::kNone:
       feed_request.add_client_capability(Capability::OPEN_IN_TAB);
@@ -219,6 +223,10 @@ feedwire::Request CreateFeedQueryRequest(
   } else if (stream_type.IsWebFeed()) {
     entry_point.set_feed_entry_point_source_value(
         feedwire::FeedEntryPointSource::CHROME_FOLLOWING_FEED);
+  } else if (stream_type.IsSingleWebFeed()) {
+    // TODO (add other param to branch on other entry points)
+    entry_point.set_feed_entry_point_source_value(
+        feedwire::FeedEntryPointSource::CHROME_SINGLE_WEB_FEED_MENU);
   }
 
   // |consistency_token|, for action reporting, is only applicable to signed-in

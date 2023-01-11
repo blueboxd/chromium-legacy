@@ -231,7 +231,9 @@ def _ParseExceptionMessage(stack):
   return stack
 
 
-def FilterTests(tests, filter_str=None, annotations=None,
+def FilterTests(tests,
+                filter_strs=None,
+                annotations=None,
                 excluded_annotations=None):
   """Filter a list of tests
 
@@ -239,7 +241,7 @@ def FilterTests(tests, filter_str=None, annotations=None,
     tests: a list of tests. e.g. [
            {'annotations": {}, 'class': 'com.example.TestA', 'method':'test1'},
            {'annotations": {}, 'class': 'com.example.TestB', 'method':'test2'}]
-    filter_str: googletest-style filter string.
+    filter_strs: list of googletest-style filter string.
     annotations: a dict of wanted annotations for test methods.
     excluded_annotations: a dict of annotations to exclude.
 
@@ -341,21 +343,21 @@ def FilterTests(tests, filter_str=None, annotations=None,
         filtered_tests.append(t)
     return filtered_tests
 
-  def gtests_filter(tests, combined_filter):
-    ''' Returns the tests after the filter_str has been applied
+  def gtests_filter(tests, combined_filters):
+    ''' Returns the tests after the combined_filters have been applied
 
     Args:
       tests: a list of tests. e.g. [
             {'annotations": {}, 'class': 'com.example.TestA', 'method':'test1'},
             {'annotations": {}, 'class': 'com.example.TestB', 'method':'test2'}]
-      combined_filter: the filter string representing tests to exclude
+      combined_filters: the filter string representing tests to exclude
 
     Return:
-      A list of tests that should still be included after the filter_str is
-      applied to their names
+      A list of tests that should still be included after the combined_filters
+      are applied to their names
     '''
 
-    if not combined_filter:
+    if not combined_filters:
       return tests
 
     # Collect all test names
@@ -366,20 +368,20 @@ def FilterTests(tests, filter_str=None, annotations=None,
       for name in tests_to_names[id(t)]:
         all_test_names.add(name)
 
-    pattern_groups = filter_str.split('-')
-    negative_pattern = pattern_groups[1] if len(pattern_groups) > 1 else None
-    positive_pattern = pattern_groups[0]
+    for combined_filter in combined_filters:
+      pattern_groups = combined_filter.split('-')
+      negative_pattern = pattern_groups[1] if len(pattern_groups) > 1 else None
+      positive_pattern = pattern_groups[0]
+      if positive_pattern:
+        # Only use the test names that match the positive pattern
+        positive_test_names = test_names_from_pattern(positive_pattern,
+                                                      all_test_names)
+        tests = get_tests_from_names(tests, positive_test_names, tests_to_names)
 
-    if positive_pattern:
-      # Only use the test names that match the positive pattern
-      positive_test_names = test_names_from_pattern(positive_pattern,
-                                                    all_test_names)
-      tests = get_tests_from_names(tests, positive_test_names, tests_to_names)
-
-    if negative_pattern:
-      # Remove any test the negative filter matches
-      remove_names = test_names_from_pattern(negative_pattern, all_test_names)
-      tests = remove_tests_from_names(tests, remove_names, tests_to_names)
+      if negative_pattern:
+        # Remove any test the negative filter matches
+        remove_names = test_names_from_pattern(negative_pattern, all_test_names)
+        tests = remove_tests_from_names(tests, remove_names, tests_to_names)
 
     return tests
 
@@ -415,7 +417,7 @@ def FilterTests(tests, filter_str=None, annotations=None,
     return filter_av == av
 
   return_tests = []
-  for t in gtests_filter(tests, filter_str):
+  for t in gtests_filter(tests, filter_strs):
     # Enforce that all tests declare their size.
     if not any(a in _VALID_ANNOTATIONS for a in t['annotations']):
       raise MissingSizeAnnotationError(GetTestName(t))
@@ -611,8 +613,12 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
     self._annotations = None
     self._excluded_annotations = None
-    self._test_filter = None
+    self._test_filters = None
     self._initializeTestFilterAttributes(args)
+
+    self._run_setup_commands = []
+    self._run_teardown_commands = []
+    self._initializeSetupTeardownCommandAttributes(args)
 
     self._flags = None
     self._use_apk_under_test_flags_file = False
@@ -788,7 +794,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
       logging.warning('No data dependencies will be pushed.')
 
   def _initializeTestFilterAttributes(self, args):
-    self._test_filter = test_filter.InitializeFilterFromArgs(args)
+    self._test_filters = test_filter.InitializeFiltersFromArgs(args)
 
     def annotation_element(a):
       a = a.split('=', 1)
@@ -797,7 +803,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     if args.annotation_str:
       self._annotations = [
           annotation_element(a) for a in args.annotation_str.split(',')]
-    elif not self._test_filter:
+    elif not self._test_filters:
       self._annotations = [
           annotation_element(a) for a in _DEFAULT_ANNOTATIONS]
     else:
@@ -818,6 +824,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
       self._excluded_annotations.extend(
           annotation_element(a) for a in _EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS
           if a not in requested_annotations)
+
+  def _initializeSetupTeardownCommandAttributes(self, args):
+    self._run_setup_commands = args.run_setup_commands
+    self._run_teardown_commands = args.run_teardown_commands
 
   def _initializeFlagAttributes(self, args):
     self._use_apk_under_test_flags_file = args.use_apk_under_test_flags_file
@@ -987,6 +997,14 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     return self._replace_system_package
 
   @property
+  def run_setup_commands(self):
+    return self._run_setup_commands
+
+  @property
+  def run_teardown_commands(self):
+    return self._run_teardown_commands
+
+  @property
   def use_voice_interaction_service(self):
     return self._use_voice_interaction_service
 
@@ -1035,8 +1053,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     return self._test_apk_incremental_install_json
 
   @property
-  def test_filter(self):
-    return self._test_filter
+  def test_filters(self):
+    return self._test_filters
 
   @property
   def test_launcher_batch_limit(self):
@@ -1121,13 +1139,12 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     if self._junit4_runner_class is None and any(
         t['is_junit4'] for t in inflated_tests):
       raise MissingJUnit4RunnerException()
-    filtered_tests = FilterTests(
-        inflated_tests, self._test_filter, self._annotations,
-        self._excluded_annotations)
-    if self._test_filter and not filtered_tests:
+    filtered_tests = FilterTests(inflated_tests, self._test_filters,
+                                 self._annotations, self._excluded_annotations)
+    if self._test_filters and not filtered_tests:
       for t in inflated_tests:
         logging.debug('  %s', GetUniqueTestName(t))
-      logging.warning('Unmatched Filter: %s', self._test_filter)
+      logging.warning('Unmatched Filters: %s', self._test_filters)
     return filtered_tests
 
   def IsApkForceQueryable(self, apk):

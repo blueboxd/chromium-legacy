@@ -7,7 +7,7 @@
  */
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {sendWithPromise} from 'chrome://resources/js/cr.js';
 
 import {createElementFromText} from './utils.js';
 
@@ -66,7 +66,7 @@ function onGetDatabaseDump(
       document.querySelector<HTMLElement>('#dump-database-placeholder');
   assert(placeholder);
   assert(window.trustedTypes);
-  placeholder.innerHTML = window.trustedTypes.emptyHTML as unknown as string;
+  placeholder.innerHTML = window.trustedTypes.emptyHTML;
   for (let i = 0; i < databaseDump.length; ++i) {
     const div = document.createElement('div');
     const table = document.createElement('table');

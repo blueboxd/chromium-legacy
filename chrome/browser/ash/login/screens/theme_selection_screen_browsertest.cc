@@ -20,11 +20,11 @@
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/webui/chromeos/login/guest_tos_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/theme_selection_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/guest_tos_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/network_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/theme_selection_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/user_creation_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/welcome_screen_handler.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/test/browser_test.h"
 
@@ -104,7 +104,12 @@ class ThemeSelectionScreenTest
 
 IN_PROC_BROWSER_TEST_F(ThemeSelectionScreenTest, ProceedWithDefaultTheme) {
   ShowThemeSelectionScreen();
+  Profile* profile = ProfileManager::GetActiveUserProfile();
   test::OobeJS().ClickOnPath(kNextButtonPath);
+  // Verify that remaining nudge shown count is 0 after proceeding with the
+  // default theme.
+  EXPECT_EQ(0, profile->GetPrefs()->GetInteger(
+                   prefs::kDarkLightModeNudgeLeftToShowCount));
   WaitForScreenExit();
 }
 
@@ -132,6 +137,12 @@ IN_PROC_BROWSER_TEST_P(ThemeSelectionScreenTest, SelectTheme) {
   } else if (selectedOption == kAutoThemeButton) {
     EXPECT_EQ(profile->GetPrefs()->GetInteger(prefs::kDarkModeScheduleType), 1);
   }
+
+  test::OobeJS().ClickOnPath(kNextButtonPath);
+  // Verify that remaining nudge shown count is 0 after user selects the theme.
+  EXPECT_EQ(0, profile->GetPrefs()->GetInteger(
+                   prefs::kDarkLightModeNudgeLeftToShowCount));
+  WaitForScreenExit();
 }
 
 IN_PROC_BROWSER_TEST_F(ThemeSelectionScreenTest, ToggleTabletMode) {

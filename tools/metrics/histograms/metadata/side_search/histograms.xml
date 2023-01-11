@@ -24,7 +24,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SideSearch.AutoTrigger.NavigationCommittedWithinSideSearchCountPerJourney"
-    units="navigations" expires_after="2023-02-05">
+    units="navigations" expires_after="2023-04-16">
   <owner>yuhengh@chromium.org</owner>
   <owner>tluk@chromium.org</owner>
   <summary>
@@ -36,7 +36,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SideSearch.AutoTrigger.RedirectionToTabCountPerJourney"
-    units="navigations" expires_after="2023-02-05">
+    units="navigations" expires_after="2023-04-16">
   <owner>yuhengh@chromium.org</owner>
   <owner>tluk@chromium.org</owner>
   <summary>
@@ -48,7 +48,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SideSearch.AvailabilityChanged"
-    enum="SideSearchAvailabilityChangeType" expires_after="2023-02-12">
+    enum="SideSearchAvailabilityChangeType" expires_after="2023-04-16">
   <owner>yuhengh@chromium.org</owner>
   <owner>tluk@chromium.org</owner>
   <owner>romanarora@chromium.org</owner>
@@ -60,7 +60,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SideSearch.CloseAction" enum="SideSearchCloseActionType"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>yuhengh@chromium.org</owner>
   <owner>tluk@chromium.org</owner>
   <owner>romanarora@chromium.org</owner>
@@ -71,31 +71,31 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SideSearch.LoadCompletedTime" units="ms"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>yuhengh@chromium.org</owner>
   <owner>tluk@chromium.org</owner>
   <owner>romanarora@chromium.org</owner>
   <summary>
-    The amount of time between the render frame host StartProvisionalLoad event
-    and the render frame DocumentOnLoadCompleted event for the Side Search
+    The amount of time between the RenderFrameHost StartProvisionalLoad event
+    and the RenderFrameHost DocumentOnLoadCompleted event for the Side Search
     Result Page. Recorded when DocumentOnLoadCompleted event triggered.
   </summary>
 </histogram>
 
 <histogram name="SideSearch.LoadDocumentTime" units="ms"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>yuhengh@chromium.org</owner>
   <owner>tluk@chromium.org</owner>
   <owner>romanarora@chromium.org</owner>
   <summary>
-    The amount of time between the render frame host StartProvisionalLoad and
+    The amount of time between the RenderFrameHost StartProvisionalLoad and
     DidFinishDocumentLoad events for the Side Search Result Page. Recorded when
     DidFinishDocumentLoad events triggered.
   </summary>
 </histogram>
 
 <histogram name="SideSearch.Navigation" enum="SideSearchNavigationType"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>yuhengh@chromium.org</owner>
   <owner>tluk@chromium.org</owner>
   <owner>romanarora@chromium.org</owner>
@@ -211,7 +211,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SideSearch.TimeSinceSidePanelAvailableToFirstOpen" units="ms"
-    expires_after="2023-02-12">
+    expires_after="2023-04-23">
   <owner>yuhengh@chromium.org</owner>
   <owner>tluk@chromium.org</owner>
   <summary>
@@ -222,7 +222,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SideSearch.TimesReturnedBackToSRP" units="navigations"
-    expires_after="2023-02-12">
+    expires_after="2023-04-23">
   <owner>yuhengh@chromium.org</owner>
   <owner>tluk@chromium.org</owner>
   <summary>

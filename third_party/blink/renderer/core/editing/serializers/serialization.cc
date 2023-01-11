@@ -531,8 +531,9 @@ DocumentFragment* CreateFragmentFromMarkupWithContext(
     return nullptr;
 
   auto* tagged_document = MakeGarbageCollected<Document>(
-      DocumentInit::Create().WithExecutionContext(
-          document.GetExecutionContext()));
+      DocumentInit::Create()
+          .WithExecutionContext(document.GetExecutionContext())
+          .WithAgent(document.GetAgent()));
   tagged_document->SetContextFeatures(document.GetContextFeatures());
 
   auto* root =
@@ -900,7 +901,7 @@ void MergeWithNextTextNode(Text* text_node, ExceptionState& exception_state) {
 }
 
 static Document* CreateStagingDocumentForMarkupSanitization(
-    scheduler::WebAgentGroupScheduler& agent_group_scheduler) {
+    AgentGroupScheduler& agent_group_scheduler) {
   Page* page = Page::CreateNonOrdinary(GetStaticEmptyChromeClientInstance(),
                                        agent_group_scheduler);
 

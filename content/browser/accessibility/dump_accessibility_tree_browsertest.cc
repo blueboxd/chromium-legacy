@@ -1858,8 +1858,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-plaintext-with-role.html"));
 }
 
+// TODO(crbug.com/1379137): This test is failing on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_AccessibilityContenteditableOnDisallowedElement \
+  DISABLED_AccessibilityContenteditableOnDisallowedElement
+#else
+#define MAYBE_AccessibilityContenteditableOnDisallowedElement \
+  AccessibilityContenteditableOnDisallowedElement
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityContenteditableOnDisallowedElement) {
+                       MAYBE_AccessibilityContenteditableOnDisallowedElement) {
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-on-disallowed-element.html"));
 }
 
@@ -2306,17 +2314,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputDate) {
 }
 
 // TODO: date and time controls drop their children, including the popup button,
-// on Android
-#if BUILDFLAG(IS_ANDROID)
-#define MAYBE_AccessibilityInputDateWithPopupOpen \
-  DISABLED_AccessibilityInputDateWithPopupOpen
-#else
-#define MAYBE_AccessibilityInputDateWithPopupOpen \
-  AccessibilityInputDateWithPopupOpen
-#endif
-
+// on Android.
+// TODO(https://crbug.com/1378498): Flaky on every platform.
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       MAYBE_AccessibilityInputDateWithPopupOpen) {
+                       DISABLED_AccessibilityInputDateWithPopupOpen) {
   RunHtmlTest(FILE_PATH_LITERAL("input-date-with-popup-open.html"));
 }
 
@@ -2871,6 +2872,12 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityProgress) {
   RunHtmlTest(FILE_PATH_LITERAL("progress.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityProgressWithBackgroundExposesValues) {
+  RunRegressionTest(
+      FILE_PATH_LITERAL("progress-with-background-exposes-values.html"));
+}
+
 // TODO(crbug.com/1232138): Flaky on multiple platforms
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DISABLED_AccessibilityPortal) {
   RunHtmlTest(FILE_PATH_LITERAL("portal.html"));
@@ -3275,8 +3282,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityVideoTextOnly) {
   RunHtmlTest(FILE_PATH_LITERAL("video-text-only.html"));
 }
 
+// TODO(https://crbug.com/1377779): This test is failing on Android.
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_AccessibilityNodeChangedCrashInEditableText \
+  DISABLED_AccessibilityNodeChangedCrashInEditableText
+#else
+#define MAYBE_AccessibilityNodeChangedCrashInEditableText \
+  AccessibilityNodeChangedCrashInEditableText
+#endif  // BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityNodeChangedCrashInEditableText) {
+                       MAYBE_AccessibilityNodeChangedCrashInEditableText) {
   RunHtmlTest(FILE_PATH_LITERAL("node-changed-crash-in-editable-text.html"));
 }
 
@@ -3464,6 +3479,12 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MissingParent) {
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       NullObjectOnHypertextOffsetComputation) {
+  RunRegressionTest(
+      FILE_PATH_LITERAL("null-object-on-hypertext-offset-computation.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        OptionAccessibleNameIsSelect) {
   RunRegressionTest(FILE_PATH_LITERAL("option-accessible-name-is-select.html"));
 }
@@ -3490,6 +3511,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ReusedMapMoveImageToTop) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ReusedMapChangeUsemap) {
   RunRegressionTest(FILE_PATH_LITERAL("reused-map-change-usemap.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, RootBecomesLeaf) {
+  RunRegressionTest(FILE_PATH_LITERAL("root-becomes-leaf.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,

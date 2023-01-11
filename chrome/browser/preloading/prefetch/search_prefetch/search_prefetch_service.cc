@@ -360,7 +360,7 @@ void SearchPrefetchService::OnURLOpenedFromOmnibox(
     return;
   const GURL& opened_url = log->final_destination_url;
 
-  auto& match = log->result.match_at(log->selected_index);
+  auto& match = log->result->match_at(log->selected_index);
   if (match.type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED) {
     bool has_search_suggest = false;
     bool has_history_search = false;
@@ -873,8 +873,7 @@ bool SearchPrefetchService::LoadFromPrefs() {
     if (!navigation_url.is_valid())
       continue;
 
-    base::Value::ConstListView const prefetch_url_and_time =
-        base::Value::AsListValue(element.second).GetListDeprecated();
+    const base::Value::List& prefetch_url_and_time = element.second.GetList();
 
     if (prefetch_url_and_time.size() != 2 ||
         !prefetch_url_and_time[0].is_string() ||

@@ -27,8 +27,7 @@ suite('CrSettingsRecentSitePermissionsTest', function() {
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
     SiteSettingsPrefsBrowserProxyImpl.setInstance(browserProxy);
 
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     testElement = document.createElement('settings-recent-site-permissions');
     document.body.appendChild(testElement);
     flush();
@@ -71,8 +70,11 @@ suite('CrSettingsRecentSitePermissionsTest', function() {
   });
 
   test('Various recent permissions', async function() {
-    const origin1 = 'https://bar.com';
-    const origin2 = 'http://foo.com';
+    const scheme = 'https://';
+    const host1 = 'bar.com';
+    const host2 = 'foo.com';
+    const origin1 = `${scheme}${host1}`;
+    const origin2 = `${scheme}${host2}`;
     const mockData = [
       {
         origin: origin1,
@@ -106,7 +108,9 @@ suite('CrSettingsRecentSitePermissionsTest', function() {
         ],
       },
       {
+        // When isolatedWebAppName is defined, it will override the origin.
         origin: origin1,
+        isolatedWebAppName: 'Isolated Web App',
         incognito: false,
         recentPermissions: [
           createRawSiteException(origin1, {
@@ -142,6 +146,19 @@ suite('CrSettingsRecentSitePermissionsTest', function() {
     const siteEntries =
         testElement.shadowRoot!.querySelectorAll('.link-button');
     assertEquals(3, siteEntries.length);
+
+    assertEquals(
+        host1,
+        siteEntries[0]!.querySelector(
+                           '.url-directionality')!.textContent!.trim());
+    assertEquals(
+        mockData[1]!.isolatedWebAppName,
+        siteEntries[1]!.querySelector(
+                           '.url-directionality')!.textContent!.trim());
+    assertEquals(
+        host2,
+        siteEntries[2]!.querySelector(
+                           '.url-directionality')!.textContent!.trim());
 
     const incognitoIcons =
         testElement.shadowRoot!.querySelectorAll<HTMLElement>(

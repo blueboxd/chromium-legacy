@@ -66,6 +66,8 @@ class Vector2dF;
 namespace blink {
 
 class AccessibleNode;
+class AnchorScrollData;
+class AriaNotificationOptions;
 class Attr;
 class Attribute;
 class ContainerQueryData;
@@ -86,11 +88,10 @@ class EditContext;
 class ElementAnimations;
 class ElementInternals;
 class ElementIntersectionObserverData;
-class ElementRareData;
+class ElementRareDataBase;
 class ExceptionState;
 class FocusOptions;
 class GetInnerHTMLOptions;
-class HTMLSelectMenuElement;
 class HTMLTemplateElement;
 class Image;
 class InputDeviceCapabilities;
@@ -98,7 +99,7 @@ class Locale;
 class MutableCSSPropertyValueSet;
 class NamedNodeMap;
 class PointerLockOptions;
-class PopupData;
+class PopoverData;
 class PseudoElement;
 class ResizeObservation;
 class ResizeObserver;
@@ -159,44 +160,6 @@ enum class NamedItemType {
   kName,
   kNameOrId,
   kNameOrIdWithName,
-};
-
-enum class PopupValueType {
-  kNone,
-  kAuto,
-  kHint,
-  kManual,
-};
-constexpr const char* kPopupTypeValueAuto = "auto";
-constexpr const char* kPopupTypeValueHint = "hint";
-constexpr const char* kPopupTypeValueManual = "manual";
-
-enum class PopupTriggerAction {
-  kNone,
-  kToggle,
-  kShow,
-  kHide,
-};
-
-enum class HidePopupFocusBehavior {
-  kNone,
-  kFocusPreviousElement,
-};
-
-enum class HidePopupForcingLevel {
-  kHideAfterAnimations,
-  kHideImmediately,
-};
-
-enum class HidePopupIndependence {
-  kLeaveUnrelated,
-  kHideUnrelated,
-};
-
-enum class PopUpAncestorType {
-  kDefault,
-  kNewPopUp,
-  kInclusive,
 };
 
 typedef HeapVector<Member<Attr>> AttrNodeList;
@@ -434,6 +397,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   AccessibleNode* ExistingAccessibleNode() const;
   AccessibleNode* accessibleNode();
 
+  void ariaNotify(const String announcement, const AriaNotificationOptions*);
+
   void DidMoveToNewDocument(Document&) override;
 
   void removeAttribute(const AtomicString& name) {
@@ -595,39 +560,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   void DefaultEventHandler(Event&) override;
 
-  // Popup API related functions.
-  void UpdatePopupAttribute(String);
-  bool HasPopupAttribute() const;
-  PopupData* GetPopupData() const;
-  PopupValueType PopupType() const;
-  bool popupOpen() const;
-  void showPopUp(ExceptionState& exception_state);
-  void hidePopUp(ExceptionState& exception_state);
-  void HidePopUpInternal(HidePopupFocusBehavior focus_behavior,
-                         HidePopupForcingLevel forcing_level);
-  void PopupHideFinishIfNeeded();
-  static const Element* NearestOpenAncestralPopup(const Node&,
-                                                  PopUpAncestorType);
-  // Retrieves the element pointed to by this element's 'anchor' content
-  // attribute, if that element exists, and if this element is a pop-up.
-  Element* anchorElement() const;
-  static void HandlePopupLightDismiss(const Event& event);
-  void InvokePopup(Element* invoker);
-  void SetPopupFocusOnShow();
-  // This hides all visible popups up to, but not including,
-  // |endpoint|. If |endpoint| is nullptr, all popups are hidden.
-  static void HideAllPopupsUntil(const Element*,
-                                 Document&,
-                                 HidePopupFocusBehavior,
-                                 HidePopupForcingLevel,
-                                 HidePopupIndependence);
-
-  // TODO(crbug.com/1197720): The popup position should be provided by the new
-  // anchored positioning scheme.
-  void SetNeedsRepositioningForSelectMenu(bool flag);
-  void SetOwnerSelectMenuElement(HTMLSelectMenuElement* element);
-  void AdjustPopupPositionForSelectMenu(ComputedStyle& style);
-
   virtual bool HasLegalLinkAttribute(const QualifiedName&) const;
   virtual const QualifiedName& SubResourceAttributeName() const;
 
@@ -716,12 +648,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   const RegionCaptureCropId* GetRegionCaptureCropId() const;
 
   // Support for all elements with region capture is currently experimental.
-  // TODO(crbug.com/1332641): Remove this after support is stable.
   virtual bool IsSupportedByRegionCapture() const;
 
   ShadowRoot* attachShadow(const ShadowRootInit*, ExceptionState&);
 
-  void AttachDeclarativeShadowRoot(HTMLTemplateElement*,
+  // Returns true if the attachment was successful.
+  bool AttachDeclarativeShadowRoot(HTMLTemplateElement*,
                                    ShadowRootType,
                                    FocusDelegation,
                                    SlotAssignmentMode);
@@ -810,8 +742,13 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // Returns true if this is a shadow host, and its ShadowRoot has
   // delegatesFocus flag.
   bool DelegatesFocus() const;
-  Element* GetFocusableArea() const;
-  Element* GetAutofocusDelegate() const;
+  // in_descendant_traversal is used in GetFocusableArea and GetFocusDelegate to
+  // indicate that GetFocusDelegate is currently iterating over all descendants
+  // in a DOM subtree. Since GetFocusDelegate calls GetFocusableArea and
+  // GetFocusableArea calls GetFocusDelegate, this allows us to skip redundant
+  // recursive calls to the same descendants.
+  Element* GetFocusableArea(bool in_descendant_traversal = false) const;
+  Element* GetFocusDelegate(bool in_descendant_traversal = false) const;
   // Element focus function called through IDL (i.e. element.focus() in JS)
   // Delegates to Focus() with focus type set to kScript
   void focusForBindings(const FocusOptions*);
@@ -848,7 +785,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   Element* AdjustedFocusedElementInTreeScope() const;
   bool IsAutofocusable() const;
 
-  virtual void DispatchFocusEvent(
+  // Returns false if the event was canceled, and true otherwise.
+  virtual bool DispatchFocusEvent(
       Element* old_focused_element,
       mojom::blink::FocusType,
       InputDeviceCapabilities* source_capabilities = nullptr);
@@ -920,14 +858,14 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual void BeginParsingChildren() { SetIsFinishedParsingChildren(false); }
 
   // Returns the pseudo element for the given PseudoId type.
-  // |document_transition_tag| is used to uniquely identify a pseudo element
+  // |view_transition_name| is used to uniquely identify a pseudo element
   // from a set of pseudo elements which share the same |pseudo_id|. The current
   // usage of this ID is limited to pseudo elements generated for a
-  // DocumentTransition. See
-  // third_party/blink/renderer/core/document_transition/README.md
+  // ViewTransition. See
+  // third_party/blink/renderer/core/view_transition/README.md
   PseudoElement* GetPseudoElement(
       PseudoId,
-      const AtomicString& document_transition_tag = g_null_atom) const;
+      const AtomicString& view_transition_name = g_null_atom) const;
   LayoutObject* PseudoElementLayoutObject(PseudoId) const;
 
   bool PseudoElementStylesDependOnFontMetrics() const;
@@ -1202,17 +1140,17 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   const ResizeObserverSize* LastIntrinsicSize() const;
 
   // Returns a unique pseudo element for the given |pseudo_id| and
-  // |document_transition_tag| originating from this DOM element.
+  // |view_transition_name| originating from this DOM element.
   // This pseudo element may be directly associated with this element or nested
   // inside a hierarchy of pseudo elements.
   PseudoElement* GetNestedPseudoElement(
       PseudoId pseudo_id,
-      const AtomicString& document_transition_tag) const;
+      const AtomicString& view_transition_name) const;
 
   void RecalcTransitionPseudoTreeStyle(
-      const Vector<AtomicString>& document_transition_tags);
+      const Vector<AtomicString>& view_transition_names);
   void RebuildTransitionPseudoLayoutTree(
-      const Vector<AtomicString>& document_transition_tags);
+      const Vector<AtomicString>& view_transition_names);
 
   // Returns true if the element has the 'inert' attribute, forcing itself and
   // all its subtree to be inert.
@@ -1230,6 +1168,14 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   CSSToggleMap* GetToggleMap();
   CSSToggleMap& EnsureToggleMap();
+
+  void RemovePopoverData();
+  PopoverData* EnsurePopoverData();
+  PopoverData* GetPopoverData() const;
+
+  AnchorScrollData& EnsureAnchorScrollData();
+  void RemoveAnchorScrollData();
+  AnchorScrollData* GetAnchorScrollData() const;
 
  protected:
   const ElementData* GetElementData() const { return element_data_.Get(); }
@@ -1397,16 +1343,13 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       PseudoId,
       const StyleRecalcChange,
       const StyleRecalcContext&,
-      const AtomicString& document_transition_tag = g_null_atom);
+      const AtomicString& view_transition_name = g_null_atom);
 
   enum class StyleUpdatePhase {
     kRecalc,
     kRebuildLayoutTree,
     kAttachLayoutTree,
   };
-
-  // Special focus handling for popups.
-  Element* GetPopupFocusableArea() const;
 
   void UpdateFirstLetterPseudoElement(StyleUpdatePhase,
                                       const StyleRecalcContext&);
@@ -1418,7 +1361,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   inline PseudoElement* CreatePseudoElementIfNeeded(
       PseudoId,
       const StyleRecalcContext&,
-      const AtomicString& document_transition_tag = g_null_atom);
+      const AtomicString& view_transition_name = g_null_atom);
   void AttachPseudoElement(PseudoId, AttachContext&);
   void DetachPseudoElement(PseudoId, bool performing_reattach);
 
@@ -1556,8 +1499,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                             bool include_shadow_roots,
                             ExceptionState&);
 
-  ElementRareData* GetElementRareData() const;
-  ElementRareData& EnsureElementRareData();
+  ElementRareDataBase* GetElementRareData() const;
+  ElementRareDataBase& EnsureElementRareData();
 
   void RemoveAttrNodeList();
   void DetachAllAttrNodesFromElement();
@@ -1631,7 +1574,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // in the parent, but virtually all existing content uses universal rules
   // like *::selection. To improve runtime and keep copy-on-write inheritance,
   // avoid recalc if neither parent nor child matched any non-universal rules.
-  bool CanSkipRecalcForHighlightPseudos(const ComputedStyle& new_style) const;
+  bool TryToSkipHighlightPseudos(const ComputedStyle* old_style,
+                                 ComputedStyle& new_style) const;
 
   Member<ElementData> element_data_;
 };

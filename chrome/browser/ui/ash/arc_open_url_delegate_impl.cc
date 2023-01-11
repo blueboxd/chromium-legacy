@@ -24,11 +24,12 @@
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/ash/arc/intent_helper/custom_tab_session_impl.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/fileapi/external_file_url_util.h"
 #include "chrome/browser/ash/fusebox/fusebox_server.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -47,13 +48,12 @@
 #include "components/arc/intent_helper/custom_tab.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_update.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/types_util.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/filename_util.h"
 #include "net/base/url_util.h"
@@ -148,7 +148,7 @@ GURL ConvertArcUrlToExternalFileUrlIfNeeded(const GURL& url) {
 // system. This Moniker file is readable on the Linux filesystem like any other
 // file. Returns an empty URL if a Moniker could not be created.
 GURL ConvertToMonikerFileUrl(Profile* profile, GURL content_url) {
-  const base::FilePath virtual_path = chromeos::ExternalFileURLToVirtualPath(
+  const base::FilePath virtual_path = ash::ExternalFileURLToVirtualPath(
       arc::ArcUrlToExternalFileUrl(content_url));
 
   const storage::FileSystemURL fs_url =
@@ -291,6 +291,23 @@ void ArcOpenUrlDelegateImpl::OpenUrlFromArc(const GURL& url) {
     return;
 
   GURL url_to_open = ConvertArcUrlToExternalFileUrlIfNeeded(url);
+  // If Lacros is primary browser, convert externalfile:// url into file:// url
+  // managed by the FuseBox moniker system because Lacros cannot handle
+  // externalfile:// urls.
+  // TODO(crbug.com/1374575): Check if other externalfile:// urls can use the
+  // same logic. If so, move this code into CrosapiNewWindowDelegate::OpenUrl()
+  // which is only for Lacros.
+  if (crosapi::browser_util::IsLacrosPrimaryBrowser() &&
+      url_to_open.SchemeIs(content::kExternalFileScheme)) {
+    Profile* profile = ash::ProfileHelper::Get()->GetProfileByUser(
+        user_manager::UserManager::Get()->GetPrimaryUser());
+    // `profile` may be null if sign-in has happened but the profile isn't
+    // loaded yet.
+    if (!profile)
+      return;
+    url_to_open = ConvertToMonikerFileUrl(profile, url);
+  }
+
   ash::NewWindowDelegate::GetPrimary()->OpenUrl(
       url_to_open, ash::NewWindowDelegate::OpenUrlFrom::kArc,
       ash::NewWindowDelegate::Disposition::kNewForegroundTab);
@@ -307,7 +324,7 @@ void ArcOpenUrlDelegateImpl::OpenWebAppFromArc(const GURL& url) {
   if (!user)
     return;
 
-  // |profile| may be null if sign-in has happened but the profile isn't loaded
+  // `profile` may be null if sign-in has happened but the profile isn't loaded
   // yet.
   Profile* profile = ash::ProfileHelper::Get()->GetProfileByUser(user);
   if (!profile)
@@ -338,13 +355,8 @@ void ArcOpenUrlDelegateImpl::OpenWebAppFromArc(const GURL& url) {
         }
       });
 
-  if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
-    proxy->LaunchAppWithUrl(*app_id, event_flags, url,
-                            apps::LaunchSource::kFromArc);
-  } else {
-    proxy->LaunchAppWithUrl(*app_id, event_flags, url,
-                            apps::mojom::LaunchSource::kFromArc);
-  }
+  proxy->LaunchAppWithUrl(*app_id, event_flags, url,
+                          apps::LaunchSource::kFromArc);
 
   ash::ApkWebAppService* apk_web_app_service =
       ash::ApkWebAppService::Get(profile);
@@ -486,13 +498,7 @@ void ArcOpenUrlDelegateImpl::OpenAppWithIntent(
   int event_flags = apps::GetEventFlags(disposition,
                                         /*prefer_container=*/false);
 
-  if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
-    proxy->LaunchAppWithIntent(app_id, event_flags, std::move(intent),
-                               apps::LaunchSource::kFromArc, nullptr,
-                               base::DoNothing());
-  } else {
-    proxy->LaunchAppWithIntent(
-        app_id, event_flags, apps::ConvertIntentToMojomIntent(intent),
-        apps::mojom::LaunchSource::kFromArc, nullptr, {});
-  }
+  proxy->LaunchAppWithIntent(app_id, event_flags, std::move(intent),
+                             apps::LaunchSource::kFromArc, nullptr,
+                             base::DoNothing());
 }

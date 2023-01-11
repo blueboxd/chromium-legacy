@@ -53,9 +53,6 @@ namespace password_manager {
 namespace {
 
 using autofill::password_generation::PasswordGenerationType;
-
-using AutoselectFirstSuggestion =
-    autofill::AutofillClient::PopupOpenArgs::AutoselectFirstSuggestion;
 using IsLoading = autofill::Suggestion::IsLoading;
 
 constexpr char16_t kPasswordReplacementChar = 0x2022;
@@ -345,8 +342,7 @@ std::vector<autofill::Suggestion> SetUnlockLoadingState(
           autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE);
   std::vector<autofill::Suggestion> new_suggestions;
   new_suggestions.reserve(suggestions.size());
-  std::copy(suggestions.begin(), suggestions.end(),
-            std::back_inserter(new_suggestions));
+  base::ranges::copy(suggestions, std::back_inserter(new_suggestions));
   auto unlock_iter = base::ranges::find(new_suggestions, unlock_item,
                                         &autofill::Suggestion::frontend_id);
   unlock_iter->is_loading = is_loading;
@@ -524,13 +520,11 @@ void PasswordAutofillManager::DidAcceptSuggestion(
     } else {
       authenticator_ = std::move(authenticator);
 #if BUILDFLAG(IS_ANDROID)
-      // `this` cancels the authentication when it is destructed, which
-      // invalidates the callback, so using base::Unretained here is safe.
       authenticator_->Authenticate(
           device_reauth::BiometricAuthRequester::kAutofillSuggestion,
           base::BindOnce(&PasswordAutofillManager::OnBiometricReauthCompleted,
-                         base::Unretained(this), suggestion.main_text.value,
-                         suggestion.frontend_id),
+                         weak_ptr_factory_.GetWeakPtr(),
+                         suggestion.main_text.value, suggestion.frontend_id),
           /*use_last_valid_auth=*/true);
 #elif BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
       const std::u16string origin =
@@ -539,11 +533,9 @@ void PasswordAutofillManager::DidAcceptSuggestion(
 
       auto on_reath_complete =
           base::BindOnce(&PasswordAutofillManager::OnBiometricReauthCompleted,
-                         base::Unretained(this), suggestion.main_text.value,
-                         suggestion.frontend_id);
+                         weak_ptr_factory_.GetWeakPtr(),
+                         suggestion.main_text.value, suggestion.frontend_id);
 
-      // `this` cancels the authentication when it is destructed, which
-      // invalidates the callback, so using base::Unretained here is safe.
       authenticator_->AuthenticateWithMessage(
           device_reauth::BiometricAuthRequester::kAutofillSuggestion,
           l10n_util::GetStringFUTF16(IDS_PASSWORD_MANAGER_FILLING_REAUTH,
@@ -832,7 +824,8 @@ bool PasswordAutofillManager::ShowPopup(
   }
   LogMetricsForSuggestions(suggestions);
   autofill::AutofillClient::PopupOpenArgs open_args(
-      bounds, text_direction, suggestions, AutoselectFirstSuggestion(false),
+      bounds, text_direction, suggestions,
+      autofill::AutoselectFirstSuggestion(false),
       autofill::PopupType::kPasswords);
   autofill_client_->ShowAutofillPopup(open_args,
                                       weak_ptr_factory_.GetWeakPtr());

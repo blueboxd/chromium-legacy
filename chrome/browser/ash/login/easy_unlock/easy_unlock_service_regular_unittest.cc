@@ -12,10 +12,6 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
-#include "ash/services/device_sync/proto/cryptauth_api.pb.h"
-#include "ash/services/device_sync/public/cpp/fake_device_sync_client.h"
-#include "ash/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
-#include "ash/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -32,7 +28,7 @@
 #include "chrome/browser/ash/login/users/mock_user_manager.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
-#include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
+#include "chrome/browser/ui/webui/ash/multidevice_setup/multidevice_setup_dialog.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -41,9 +37,12 @@
 #include "chromeos/ash/components/multidevice/remote_device_test_util.h"
 #include "chromeos/ash/components/proximity_auth/fake_lock_handler.h"
 #include "chromeos/ash/components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/ash/services/device_sync/proto/cryptauth_api.pb.h"
+#include "chromeos/ash/services/device_sync/public/cpp/fake_device_sync_client.h"
+#include "chromeos/ash/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
+#include "chromeos/ash/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "chromeos/dbus/power_manager/idle.pb.h"
 #include "components/account_id/account_id.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -332,15 +331,6 @@ class EasyUnlockServiceRegularTest : public testing::Test {
 
   void ResetSmartLockState() {
     easy_unlock_service_regular_->ResetSmartLockState();
-  }
-
-  void SetScreenIdleStateAndWait(bool is_screen_dimmed, bool is_off) {
-    power_manager::ScreenIdleState screen_idle_state;
-    screen_idle_state.set_dimmed(is_screen_dimmed);
-    screen_idle_state.set_off(is_off);
-    chromeos::FakePowerManagerClient::Get()->SendScreenIdleStateChanged(
-        screen_idle_state);
-    base::RunLoop().RunUntilIdle();
   }
 
   // Must outlive TestingProfiles.
@@ -712,26 +702,6 @@ TEST_F(EasyUnlockServiceRegularTest, PrepareForSuspend) {
             fake_lock_handler_->smart_lock_state().value());
   chromeos::FakePowerManagerClient::Get()->SendSuspendImminent(
       power_manager::SuspendImminent::LID_CLOSED);
-  EXPECT_EQ(SmartLockState::kConnectingToPhone,
-            fake_lock_handler_->smart_lock_state().value());
-}
-
-TEST_F(EasyUnlockServiceRegularTest, OnScreenOff) {
-  base::test::ScopedFeatureList feature_list(
-      features::kSmartLockBluetoothScreenOffFix);
-  InitializeService(/*should_initialize_all_dependencies=*/true);
-  SetScreenLockState(/*is_locked=*/true);
-  EasyUnlockService* service = easy_unlock_service_regular_.get();
-
-  // Dimming screen shouldn't reset Smart Lock state.
-  service->UpdateSmartLockState(SmartLockState::kPhoneAuthenticated);
-  EXPECT_EQ(SmartLockState::kPhoneAuthenticated,
-            fake_lock_handler_->smart_lock_state().value());
-  SetScreenIdleStateAndWait(/*is_screen_dimmed=*/true, /*is_off=*/false);
-  EXPECT_EQ(SmartLockState::kPhoneAuthenticated,
-            fake_lock_handler_->smart_lock_state().value());
-
-  SetScreenIdleStateAndWait(/*is_screen_dimmed=*/false, /*is_off=*/true);
   EXPECT_EQ(SmartLockState::kConnectingToPhone,
             fake_lock_handler_->smart_lock_state().value());
 }

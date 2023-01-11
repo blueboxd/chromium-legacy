@@ -6,12 +6,15 @@
 #define UI_GFX_GEOMETRY_AXIS_TRANSFORM2D_H_
 
 #include "base/check_op.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/clamp_float_geometry.h"
 #include "ui/gfx/geometry/geometry_export.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace gfx {
+
+struct DecomposedTransform;
 
 // This class implements the subset of 2D linear transforms that only
 // translation and uniform scaling are allowed.
@@ -61,12 +64,24 @@ class GEOMETRY_EXPORT AxisTransform2d {
     PostTranslate(post.translation_);
   }
 
+  double Determinant() const { return double{scale_.x()} * scale_.y(); }
+  bool IsInvertible() const {
+    // Check float determinant (stricter than checking each component or double
+    // determinant) to keep consistency with Matrix44.
+    // TODO(crbug.com/1359528): This may be stricter than necessary. Revisit
+    // this after combination of gfx::Transform and blink::TransformationMatrix.
+    return std::isnormal(scale_.x() * scale_.y());
+  }
   void Invert() {
-    DCHECK(scale_.x());
-    DCHECK(scale_.y());
+    DCHECK(IsInvertible());
     scale_ = Vector2dF(1.f / scale_.x(), 1.f / scale_.y());
     translation_.Scale(-scale_.x(), -scale_.y());
   }
+
+  // Changes the transform to: scale(z) * mat * scale(1/z).
+  // Useful for mapping zoomed points to their zoomed transformed result:
+  //     new_mat * (scale(z) * x) == scale(z) * (mat * x).
+  void Zoom(float zoom_factor) { translation_.Scale(zoom_factor); }
 
   PointF MapPoint(const PointF& p) const {
     return PointF(MapX(p.x()), MapY(p.y()));
@@ -90,6 +105,11 @@ class GEOMETRY_EXPORT AxisTransform2d {
                  ClampFloatGeometry(r.width() * (1.f / scale_.x())),
                  ClampFloatGeometry(r.height() * (1.f / scale_.y())));
   }
+
+  // Decomposes this transform into |decomp|, following the 2d decomposition
+  // spec: https://www.w3.org/TR/css-transforms-1/#decomposing-a-2d-matrix.
+  // It's a simplified version of Matrix44::Decompose2d().
+  DecomposedTransform Decompose() const;
 
   const Vector2dF& scale() const { return scale_; }
   const Vector2dF& translation() const { return translation_; }

@@ -15,7 +15,8 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/privacy_hub/privacy_hub_controller.h"
 #include "ash/system/privacy_hub/privacy_hub_metrics.h"
-#include "base/bind.h"
+#include "ash/system/privacy_hub/privacy_hub_notification_controller.h"
+#include "ash/system/system_notification_controller.h"
 #include "base/check.h"
 #include "components/prefs/pref_service.h"
 #include "components/vector_icons/vector_icons.h"
@@ -57,12 +58,9 @@ void VCDPrivacyAdapter::SetCameraSWPrivacySwitch(
 }  // namespace
 
 CameraPrivacySwitchController::CameraPrivacySwitchController()
-    : switch_api_(std::make_unique<VCDPrivacyAdapter>()),
-      camera_privacy_switch_state_(media::CameraHalDispatcherImpl::GetInstance()
-                                       ->AddCameraPrivacySwitchObserver(this))
+    : switch_api_(std::make_unique<VCDPrivacyAdapter>())
 
 {
-  media::CameraHalDispatcherImpl::GetInstance()->AddActiveClientObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
 }
 
@@ -83,6 +81,30 @@ void CameraPrivacySwitchController::OnActiveUserPrefServiceChanged(
       prefs::kUserCameraAllowed,
       base::BindRepeating(&CameraPrivacySwitchController::OnPreferenceChanged,
                           base::Unretained(this)));
+
+  // Make sure to add camera observers after pref_change_registrar_ is created
+  // because OnCameraSWPrivacySwitchStateChanged accesses a pref value.
+  if (!is_camera_observer_added_) {
+    // Subscribe to the camera HW/SW privacy switch events.
+    auto device_id_to_privacy_switch_state =
+        media::CameraHalDispatcherImpl::GetInstance()
+            ->AddCameraPrivacySwitchObserver(this);
+    // TODO(b/255248909): Handle multiple cameras with privacy controls
+    // properly.
+    for (const auto& it : device_id_to_privacy_switch_state) {
+      cros::mojom::CameraPrivacySwitchState state = it.second;
+      if (state == cros::mojom::CameraPrivacySwitchState::ON) {
+        camera_privacy_switch_state_ = state;
+        break;
+      } else if (state == cros::mojom::CameraPrivacySwitchState::OFF) {
+        camera_privacy_switch_state_ = state;
+      }
+    }
+    media::CameraHalDispatcherImpl::GetInstance()->AddActiveClientObserver(
+        this);
+    is_camera_observer_added_ = true;
+  }
+
   // To ensure consistent values between the user pref and camera backend
   OnPreferenceChanged(prefs::kUserCameraAllowed);
 }
@@ -93,11 +115,15 @@ void CameraPrivacySwitchController::OnPreferenceChanged(
   const CameraSWPrivacySwitchSetting pref_val = GetUserSwitchPreference();
   switch_api_->SetCameraSWPrivacySwitch(pref_val);
   ClearSWSwitchNotifications();
-  if (is_camera_active_ &&
+  if (active_camera_client_count_ > 0 &&
       pref_val == CameraSWPrivacySwitchSetting::kDisabled) {
     // Show notification in case we switch off the camera when the camera is
     // used by an app.
-    ShowCameraOffNotification();
+    Shell::Get()
+        ->system_notification_controller()
+        ->privacy_hub()
+        ->ShowSensorDisabledNotification(
+            PrivacyHubNotificationController::Sensor::kCamera);
   }
 }
 
@@ -110,14 +136,25 @@ CameraPrivacySwitchController::GetUserSwitchPreference() {
                  : CameraSWPrivacySwitchSetting::kDisabled;
 }
 
+// static
+void CameraPrivacySwitchController::SetAndLogCameraPreferenceFromNotification(
+    const bool enabled) {
+  PrefService* const pref_service =
+      Shell::Get()->session_controller()->GetActivePrefService();
+  if (pref_service) {
+    pref_service->SetBoolean(prefs::kUserCameraAllowed, enabled);
+    privacy_hub_metrics::LogCameraEnabledFromNotification(enabled);
+  }
+}
+
 void CameraPrivacySwitchController::SetCameraPrivacySwitchAPIForTest(
     std::unique_ptr<CameraPrivacySwitchAPI> switch_api) {
   DCHECK(switch_api);
   switch_api_ = std::move(switch_api);
 }
 
-void CameraPrivacySwitchController::OnCameraHWPrivacySwitchStatusChanged(
-    int32_t camera_id,
+void CameraPrivacySwitchController::OnCameraHWPrivacySwitchStateChanged(
+    const std::string& device_id,
     cros::mojom::CameraPrivacySwitchState state) {
   camera_privacy_switch_state_ = state;
   PrivacyHubDelegate* const frontend =
@@ -131,6 +168,24 @@ void CameraPrivacySwitchController::OnCameraHWPrivacySwitchStatusChanged(
   if (state == cros::mojom::CameraPrivacySwitchState::ON &&
       GetUserSwitchPreference() == CameraSWPrivacySwitchSetting::kEnabled) {
     ShowHWCameraSwitchOffSWCameraSwitchOnNotification();
+  }
+  if (state == cros::mojom::CameraPrivacySwitchState::OFF) {
+    // Clear the notification that might have been displayed earlier
+    message_center::MessageCenter::Get()->RemoveNotification(
+        kPrivacyHubHWCameraSwitchOffSWCameraSwitchOnNotificationId,
+        /*by_user=*/false);
+  }
+}
+
+void CameraPrivacySwitchController::OnCameraSWPrivacySwitchStateChanged(
+    cros::mojom::CameraPrivacySwitchState state) {
+  const CameraSWPrivacySwitchSetting pref_val = GetUserSwitchPreference();
+  cros::mojom::CameraPrivacySwitchState pref_state =
+      pref_val == CameraSWPrivacySwitchSetting::kEnabled
+          ? cros::mojom::CameraPrivacySwitchState::OFF
+          : cros::mojom::CameraPrivacySwitchState::ON;
+  if (state != pref_state) {
+    switch_api_->SetCameraSWPrivacySwitch(pref_val);
   }
 }
 
@@ -164,7 +219,7 @@ void CameraPrivacySwitchController::ShowNotification(
     const int notification_message_id,
     const NotificationCatalogName catalog) {
   message_center::RichNotificationData notification_data;
-  notification_data.pinned = true;
+  notification_data.pinned = false;
   notification_data.buttons.emplace_back(l10n_util::GetStringUTF16(
       action_enables_camera ? IDS_PRIVACY_HUB_TURN_ON_CAMERA_ACTION_BUTTON
                             : IDS_PRIVACY_HUB_TURN_OFF_CAMERA_ACTION_BUTTON));
@@ -177,14 +232,7 @@ void CameraPrivacySwitchController::ShowNotification(
                   // Click on the notification body is no-op.
                   return;
                 }
-                PrefService* const pref_service =
-                    Shell::Get()->session_controller()->GetActivePrefService();
-                if (pref_service) {
-                  pref_service->SetBoolean(prefs::kUserCameraAllowed,
-                                           camera_enabled);
-                  privacy_hub_metrics::LogCameraEnabledFromNotification(
-                      camera_enabled);
-                }
+                SetAndLogCameraPreferenceFromNotification(camera_enabled);
               },
               action_enables_camera));
 
@@ -206,28 +254,51 @@ void CameraPrivacySwitchController::ShowNotification(
 }
 
 void CameraPrivacySwitchController::ClearSWSwitchNotifications() {
-  constexpr std::array kNotificationIds = {
-      kPrivacyHubCameraOffNotificationId,
-      kPrivacyHubHWCameraSwitchOffSWCameraSwitchOnNotificationId};
   message_center::MessageCenter* const message_center =
       message_center::MessageCenter::Get();
   if (!message_center) {
     return;
   }
-  for (const char* notification_id : kNotificationIds) {
-    message_center->RemoveNotification(notification_id,
-                                       /*by_user=*/false);
-  }
+  Shell::Get()
+      ->system_notification_controller()
+      ->privacy_hub()
+      ->RemoveSensorDisabledNotification(
+          PrivacyHubNotificationController::Sensor::kCamera);
+  message_center->RemoveNotification(
+      kPrivacyHubHWCameraSwitchOffSWCameraSwitchOnNotificationId,
+      /*by_user=*/false);
 }
 
 void CameraPrivacySwitchController::OnActiveClientChange(
     cros::mojom::CameraClientType type,
-    bool is_active) {
-  is_camera_active_ = is_active;
+    bool is_new_active_client,
+    const base::flat_set<std::string>& active_device_ids) {
+  if (is_new_active_client) {
+    active_camera_client_count_++;
+  } else if (active_device_ids.empty()) {
+    DCHECK(active_camera_client_count_ > 0);
+    active_camera_client_count_--;
+  }
 
-  if (is_active) {
-    if (GetUserSwitchPreference() == CameraSWPrivacySwitchSetting::kDisabled)
-      ShowCameraOffNotification();
+  // Notification should pop up when the number of active clients increases but
+  // the camera is disabled by the software switch.
+  if (is_new_active_client &&
+      GetUserSwitchPreference() == CameraSWPrivacySwitchSetting::kDisabled) {
+    Shell::Get()
+        ->system_notification_controller()
+        ->privacy_hub()
+        ->ShowSensorDisabledNotification(
+            PrivacyHubNotificationController::Sensor::kCamera);
+  }
+
+  // Remove existing software switch notification when the number of active
+  // clients is 0.
+  if (active_camera_client_count_ == 0) {
+    Shell::Get()
+        ->system_notification_controller()
+        ->privacy_hub()
+        ->RemoveSensorDisabledNotification(
+            PrivacyHubNotificationController::Sensor::kCamera);
   }
 }
 

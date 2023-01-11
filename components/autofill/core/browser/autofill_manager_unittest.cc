@@ -139,7 +139,7 @@ class MockAutofillManager : public AutofillManager {
                const FormFieldData& field,
                const gfx::RectF& bounding_box,
                int query_id,
-               bool autoselect_first_suggestion,
+               AutoselectFirstSuggestion autoselect_first_suggestion,
                FormElementWasClicked form_element_was_clicked),
               (override));
   MOCK_METHOD(void,
@@ -170,6 +170,11 @@ class MockAutofillManager : public AutofillManager {
   MOCK_METHOD(void,
               ReportAutofillWebOTPMetrics,
               (bool used_web_otp),
+              (override));
+  MOCK_METHOD(void,
+              OnContextMenuShownInField,
+              (const FormGlobalId& form_global_id,
+               const FieldGlobalId& field_global_id),
               (override));
 
  private:

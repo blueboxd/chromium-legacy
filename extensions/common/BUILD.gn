@@ -356,6 +356,8 @@ static_library("common") {
     "manifest_handlers/externally_connectable.h",
     "manifest_handlers/file_handler_info.cc",
     "manifest_handlers/file_handler_info.h",
+    "manifest_handlers/file_handler_info_mv3.cc",
+    "manifest_handlers/file_handler_info_mv3.h",
     "manifest_handlers/icons_handler.cc",
     "manifest_handlers/icons_handler.h",
     "manifest_handlers/incognito_info.cc",
@@ -545,6 +547,8 @@ source_set("test_support") {
     "api/extension_action/action_info_test_util.h",
     "file_test_util.cc",
     "file_test_util.h",
+    "warnings_test_util.cc",
+    "warnings_test_util.h",
   ]
 
   deps = [
@@ -552,6 +556,8 @@ source_set("test_support") {
     "//base",
     "//components/version_info:channel",
     "//extensions/common/api",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }
 

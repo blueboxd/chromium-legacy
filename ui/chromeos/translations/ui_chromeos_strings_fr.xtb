@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">Annuler</translation>
 <translation id="2084108471225856927">Paramètres de l'appareil</translation>
 <translation id="2084809735218147718">Dit merci en langue des signes</translation>
-<translation id="2085470240340828803">Le fichier "<ph name="FILENAME" />" existe déjà. Que voulez-vous faire ?</translation>
 <translation id="2088690981887365033">Réseau VPN</translation>
 <translation id="2122305276694332719">La connexion automatique à un réseau masqué permet à d'autres personnes de voir votre appareil, ainsi que certains paramètres du réseau, ce qui n'est pas recommandé.</translation>
 <translation id="2125607626296734455">Khmer</translation>
@@ -456,7 +455,6 @@
 <translation id="4900532980794411603">Partager avec Parallels Desktop</translation>
 <translation id="4902546322522096650">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" /> %, connexion</translation>
 <translation id="4906580650526544301">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" /> %, batterie du téléphone à <ph name="BATTERY_STATUS" /> %, détails</translation>
-<translation id="4929673617759421391">Une règle de l'administrateur a bloqué le collage de ce fichier</translation>
 <translation id="4935975195727477204">Fleur de gazania</translation>
 <translation id="4943368462779413526">Football américain</translation>
 <translation id="4961158930123534723">1 dossier partagé avec Parallels Desktop</translation>
@@ -534,6 +532,7 @@
 <translation id="5428105026674456456">Espagnol</translation>
 <translation id="5438282218546237410">Il n'y a pas de résultat pour <ph name="SEARCH_TERM" />.</translation>
 <translation id="5449551289610225147">Mot de passe incorrect</translation>
+<translation id="5459064203055649751">Un fichier intitulé "<ph name="FILENAME" />" existe déjà. Voulez-vous le remplacer par celui que vous déplacez ?</translation>
 <translation id="5463231940765244860">Saisir</translation>
 <translation id="5469868506864199649">Italien</translation>
 <translation id="5473333559083690127">Confirmation du nouveau code</translation>
@@ -654,6 +653,7 @@
 <translation id="6495925982925244349">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" /> %, géré par votre administrateur, détails</translation>
 <translation id="649877868557234318">Extraction de <ph name="FILE_NAME" /> vers <ph name="FOLDER_NAME" /></translation>
 <translation id="6499681088828539489">Interdire les proxys pour les réseaux partagés</translation>
+<translation id="6503285896705205014">Une règle de l'administrateur a bloqué la copie de <ph name="COUNT" /> fichiers</translation>
 <translation id="6509122719576673235">Norvégien</translation>
 <translation id="6528513914570774834">Autoriser les autres utilisateurs de cet appareil à employer ce réseau</translation>
 <translation id="653019979737152879">Synchronisation de <ph name="FILE_NAME" /> en cours…</translation>
@@ -756,6 +756,7 @@
 <translation id="7357762654218998920">Ce type de fichier n'est pas compatible. <ph name="BEGIN_LINK_HELP" />En savoir plus<ph name="END_LINK_HELP" /> sur l'ouverture de fichiers dans Chrome OS</translation>
 <translation id="7359359531237882347">Copie de <ph name="NUMBER_OF_ITEMS" /> éléments…</translation>
 <translation id="7375951387215729722">Liste des fichiers triée par <ph name="COLUMN_NAME" /> dans l'ordre décroissant.</translation>
+<translation id="7377161162143020057">Une règle de l'administrateur a bloqué la copie de ce fichier</translation>
 <translation id="7402503521691663770">Appareils ChromeOS Flex</translation>
 <translation id="7408870451288633753">Tchèque</translation>
 <translation id="7417453074306512035">Clavier éthiopien</translation>
@@ -977,7 +978,6 @@
 <translation id="9183302530794969518">Google Docs</translation>
 <translation id="9189836632794948435">Kazakh</translation>
 <translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> éléments extraits.</translation>
-<translation id="9210751050717126865">Une règle de l'administrateur a bloqué le collage de <ph name="COUNT" /> fichiers</translation>
 <translation id="9213073329713032541">Installation démarrée avec succès.</translation>
 <translation id="9219103736887031265">Images</translation>
 <translation id="9219908252191632183">Paysage lunaire</translation>

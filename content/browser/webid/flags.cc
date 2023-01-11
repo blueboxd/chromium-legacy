@@ -21,10 +21,6 @@ bool IsFedCmIdpSignoutEnabled() {
       features::kFedCm, features::kFedCmIdpSignoutFieldTrialParamName, false);
 }
 
-bool IsFedCmManifestValidationEnabled() {
-  return base::FeatureList::IsEnabled(features::kFedCmManifestValidation);
-}
-
 bool IsFedCmMultipleIdentityProvidersEnabled() {
   return base::FeatureList::IsEnabled(
       features::kFedCmMultipleIdentityProviders);
@@ -36,14 +32,7 @@ bool IsFedCmIdpSigninStatusEnabled() {
       false);
 }
 
-bool IsFedCmIframeSupportEnabled() {
-  return GetFieldTrialParamByFeatureAsBool(
-      features::kFedCm, features::kFedCmIframeSupportFieldTrialParamName,
-      false);
-}
-
 bool IsFedCmMetricsEndpointEnabled() {
   return base::FeatureList::IsEnabled(features::kFedCmMetricsEndpoint);
 }
-
 }  // namespace content

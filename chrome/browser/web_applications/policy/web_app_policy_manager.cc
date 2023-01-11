@@ -100,7 +100,7 @@ void WebAppPolicyManager::SetSystemWebAppDelegateMap(
   system_web_apps_delegate_map_ = system_web_apps_delegate_map;
 }
 
-void WebAppPolicyManager::Start() {
+void WebAppPolicyManager::Start(base::OnceClosure on_done) {
   // When Lacros is enabled, don't run PWA-specific logic in Ash.
   // TODO(crbug.com/1251491): Consider factoring out logic that should only run
   // in Ash into a separate class. This way, when running in Ash, we won't need
@@ -113,7 +113,8 @@ void WebAppPolicyManager::Start() {
       ->PostTask(FROM_HERE,
                  base::BindOnce(
                      &WebAppPolicyManager::InitChangeRegistrarAndRefreshPolicy,
-                     weak_ptr_factory_.GetWeakPtr(), enable_pwa_support));
+                     weak_ptr_factory_.GetWeakPtr(), enable_pwa_support)
+                     .Then(std::move(on_done)));
 }
 
 void WebAppPolicyManager::ReinstallPlaceholderAppIfNecessary(const GURL& url) {
@@ -181,9 +182,9 @@ void WebAppPolicyManager::InitChangeRegistrarAndRefreshPolicy(
     pref_change_registrar_.Add(
         prefs::kIsolatedWebAppInstallForceList,
         base::BindRepeating(
-            &WebAppPolicyManager::RefreshPolicyInstalledIsolatedApps,
+            &WebAppPolicyManager::RefreshPolicyInstalledIsolatedWebApps,
             weak_ptr_factory_.GetWeakPtr()));
-    RefreshPolicyInstalledIsolatedApps();
+    RefreshPolicyInstalledIsolatedWebApps();
 #endif
   }
   ObserveDisabledSystemFeaturesPolicy();
@@ -293,7 +294,7 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
 }
 
 #if BUILDFLAG(IS_CHROMEOS)
-void WebAppPolicyManager::RefreshPolicyInstalledIsolatedApps() {
+void WebAppPolicyManager::RefreshPolicyInstalledIsolatedWebApps() {
   const base::Value::List& isolated_web_apps =
       pref_service_->GetList(prefs::kIsolatedWebAppInstallForceList);
   if (!isolated_web_apps.empty()) {

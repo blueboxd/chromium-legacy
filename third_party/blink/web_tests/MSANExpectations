@@ -101,24 +101,24 @@ crbug.com/1357443 [ Linux ] external/wpt/dom/nodes/NodeList-static-length-getter
 crbug.com/1357443 [ Linux ] external/wpt/dom/nodes/NodeList-static-length-getter-tampered-3.html [ Timeout ]
 
 # Flaking on WebKit Linux MSAN
-crbug.com/1126305 [ Linux ] virtual/prerender/external/wpt/speculation-rules/prerender/fetch-blob.html [ Skip ]
-crbug.com/1126305 [ Linux ] virtual/prerender/external/wpt/speculation-rules/prerender/cache-storage.https.html [ Skip ]
-crbug.com/1126305 [ Linux ] virtual/prerender/external/wpt/speculation-rules/prerender/indexeddb.html [ Skip ]
-crbug.com/1126305 [ Linux ] virtual/prerender/external/wpt/speculation-rules/prerender/restriction-focus.html [ Skip ]
+crbug.com/1126305 [ Linux ] external/wpt/speculation-rules/prerender/fetch-blob.html [ Skip ]
+crbug.com/1126305 [ Linux ] external/wpt/speculation-rules/prerender/cache-storage.https.html [ Skip ]
+crbug.com/1126305 [ Linux ] external/wpt/speculation-rules/prerender/indexeddb.html [ Skip ]
+crbug.com/1126305 [ Linux ] external/wpt/speculation-rules/prerender/restriction-focus.html [ Skip ]
 
 # Flakes due to internal timeout values
-crbug.com/1361922 [ Linux ] virtual/document-transition-wide-gamut/wpt_internal/document-transition/content-with-transform-old-image.html [ Skip ]
-crbug.com/1361922 [ Linux ] virtual/document-transition-wide-gamut/wpt_internal/document-transition/new-content-captures-different-size.html [ Skip ]
-crbug.com/1361922 [ Linux ] virtual/document-transition-wide-gamut/wpt_internal/document-transition/new-content-container-writing-modes.html [ Skip ]
-crbug.com/1361922 [ Linux ] virtual/document-transition-wide-gamut/wpt_internal/document-transition/object-view-box-old-image.html [ Skip ]
-crbug.com/1361922 [ Linux ] virtual/document-transition-wide-gamut/wpt_internal/document-transition/old-content-captures-different-size.html [ Skip ]
-crbug.com/1361922 [ Linux ] virtual/document-transition-wide-gamut/wpt_internal/document-transition/old-content-captures-opacity.html [ Skip ]
-crbug.com/1361922 [ Linux ] virtual/document-transition/wpt_internal/document-transition/content-with-transform-old-image.html [ Skip ]
-crbug.com/1361922 [ Linux ] virtual/document-transition/wpt_internal/document-transition/new-content-captures-different-size.html [ Skip ]
-crbug.com/1361922 [ Linux ] virtual/document-transition/wpt_internal/document-transition/new-content-container-writing-modes.html [ Skip ]
-crbug.com/1361922 [ Linux ] virtual/document-transition/wpt_internal/document-transition/object-view-box-old-image.html [ Skip ]
-crbug.com/1361922 [ Linux ] virtual/document-transition/wpt_internal/document-transition/old-content-captures-different-size.html [ Skip ]
-crbug.com/1361922 [ Linux ] virtual/document-transition/wpt_internal/document-transition/old-content-captures-opacity.html [ Skip ]
+crbug.com/1361922 [ Linux ] virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/content-with-transform-old-image.html [ Skip ]
+crbug.com/1361922 [ Linux ] virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/new-content-captures-different-size.html [ Skip ]
+crbug.com/1361922 [ Linux ] virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/new-content-container-writing-modes.html [ Skip ]
+crbug.com/1361922 [ Linux ] virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/object-view-box-old-image.html [ Skip ]
+crbug.com/1361922 [ Linux ] virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/old-content-captures-different-size.html [ Skip ]
+crbug.com/1361922 [ Linux ] virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/old-content-captures-opacity.html [ Skip ]
+crbug.com/1361922 [ Linux ] virtual/view-transition/external/wpt/css/css-view-transitions/content-with-transform-old-image.html [ Skip ]
+crbug.com/1361922 [ Linux ] virtual/view-transition/external/wpt/css/css-view-transitions/new-content-captures-different-size.html [ Skip ]
+crbug.com/1361922 [ Linux ] virtual/view-transition/external/wpt/css/css-view-transitions/new-content-container-writing-modes.html [ Skip ]
+crbug.com/1361922 [ Linux ] virtual/view-transition/external/wpt/css/css-view-transitions/object-view-box-old-image.html [ Skip ]
+crbug.com/1361922 [ Linux ] virtual/view-transition/external/wpt/css/css-view-transitions/old-content-captures-different-size.html [ Skip ]
+crbug.com/1361922 [ Linux ] virtual/view-transition/external/wpt/css/css-view-transitions/old-content-captures-opacity.html [ Skip ]
 
 # use-of-uninitialized-value
 crbug.com/887140 [ Linux ] virtual/hdr/color-jpeg-with-color-profile.html [ Skip ]
@@ -127,3 +127,8 @@ crbug.com/887140 [ Linux ] virtual/hdr/video-canvas-alpha.html [ Skip ]
 
 # Sheriff 2022-10-06, use-of-uninitialized-value
 crbug.com/1372356 [ Linux ] virtual/oopr-canvas2d/fast/canvas/* [ Skip ]
+
+# Sheriff 2022-10-25
+crbug.com/1378044 [ Linux ] external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/microtasks/basic.any.html [ Timeout ]
+crbug.com/1378044 [ Linux ] external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/microtasks/basic.any.sharedworker.html [ Timeout ]
+crbug.com/1378044 [ Linux ] external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/microtasks/basic.any.worker.html [ Timeout ]

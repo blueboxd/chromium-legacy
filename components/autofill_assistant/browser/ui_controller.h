@@ -86,6 +86,9 @@ class UiController : public ScriptExecutorUiDelegate,
       override;
   void SetUserActions(
       std::unique_ptr<std::vector<UserAction>> user_actions) override;
+  void SetLegalDisclaimer(
+      std::unique_ptr<LegalDisclaimerProto> legal_disclaimer,
+      base::OnceCallback<void(int)> legal_disclaimer_link_callback) override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
   void ExpandBottomSheet() override;
   void CollapseBottomSheet() override;
@@ -136,6 +139,7 @@ class UiController : public ScriptExecutorUiDelegate,
   int GetProgressActiveStep() const override;
   bool GetProgressVisible() const override;
   bool GetTtsButtonVisible() const override;
+  bool GetDisableScrollbarFading() const override;
   TtsButtonState GetTtsButtonState() const override;
   bool GetProgressBarErrorState() const override;
   ShowProgressBarProto::StepProgressBarConfiguration
@@ -161,6 +165,7 @@ class UiController : public ScriptExecutorUiDelegate,
   void SetLoginOption(const std::string& identifier) override;
   void OnTextLinkClicked(int link) override;
   void OnFormActionLinkClicked(int link) override;
+  void OnLegalDisclaimerLinkClicked(int link) override;
   void OnTtsButtonClicked() override;
   void SetAdditionalValue(const std::string& client_memory_key,
                           const ValueProto& value) override;
@@ -169,6 +174,7 @@ class UiController : public ScriptExecutorUiDelegate,
   ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
   BottomSheetState GetBottomSheetState() override;
   void SetBottomSheetState(BottomSheetState state) override;
+  const LegalDisclaimerProto* GetLegalDisclaimer() const override;
   const FormProto* GetForm() const override;
   const FormProto::Result* GetFormResult() const override;
   void SetCounterValue(int input_index, int counter_index, int value) override;
@@ -194,6 +200,7 @@ class UiController : public ScriptExecutorUiDelegate,
           start_dom_checks_callback,
       base::OnceCallback<void(const external::Result& result)>
           end_action_callback) override;
+  bool IsUiShuttingDown() const override;
 
   // Overrides ControllerObserver.
   void OnError(const std::string& error_message,
@@ -275,6 +282,7 @@ class UiController : public ScriptExecutorUiDelegate,
   void SetInitialState();
   void SetStoppedState();
   void OnFeedbackSent();
+  void EnterBrowseModeForShutdown();
 
   UserData* GetUserData();
   UserModel* GetUserModel();
@@ -306,6 +314,11 @@ class UiController : public ScriptExecutorUiDelegate,
   // Current set of user actions. May be null, but never empty.
   std::unique_ptr<std::vector<UserAction>> user_actions_;
 
+  // Current legal disclaimer used in prompt-like actions.
+  std::unique_ptr<LegalDisclaimerProto> legal_disclaimer_;
+  base::OnceCallback<void(const int)> legal_disclaimer_link_callback_ =
+      base::DoNothing();
+
   // Current peek mode.
   ConfigureBottomSheetProto::PeekMode peek_mode_ =
       ConfigureBottomSheetProto::HANDLE;
@@ -336,8 +349,10 @@ class UiController : public ScriptExecutorUiDelegate,
   bool is_focus_on_bottom_sheet_text_input_ = false;
   bool show_feedback_chip_ = false;
   bool are_chips_visible_ = true;
+  bool is_shutting_down_ = false;
 
   bool tts_enabled_ = false;
+  bool disable_scrollbar_fading_ = false;
   std::unique_ptr<AutofillAssistantTtsController> tts_controller_;
   TtsButtonState tts_button_state_ = TtsButtonState::DEFAULT;
 

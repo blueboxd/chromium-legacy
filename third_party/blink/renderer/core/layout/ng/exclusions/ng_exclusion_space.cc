@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 
+#include <algorithm>
+
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
@@ -171,6 +173,10 @@ NGExclusionSpaceInternal::NGExclusionSpaceInternal(
       left_clear_offset_(other.left_clear_offset_),
       right_clear_offset_(other.right_clear_offset_),
       last_float_block_start_(other.last_float_block_start_),
+      initial_letter_left_clear_offset_(
+          other.initial_letter_left_clear_offset_),
+      initial_letter_right_clear_offset_(
+          other.initial_letter_right_clear_offset_),
       track_shape_exclusions_(other.track_shape_exclusions_),
       has_break_before_left_float_(other.has_break_before_left_float_),
       has_break_before_right_float_(other.has_break_before_right_float_),
@@ -189,6 +195,8 @@ NGExclusionSpaceInternal& NGExclusionSpaceInternal::operator=(
   left_clear_offset_ = other.left_clear_offset_;
   right_clear_offset_ = other.right_clear_offset_;
   last_float_block_start_ = other.last_float_block_start_;
+  initial_letter_left_clear_offset_ = other.initial_letter_left_clear_offset_;
+  initial_letter_right_clear_offset_ = other.initial_letter_right_clear_offset_;
   track_shape_exclusions_ = other.track_shape_exclusions_;
   has_break_before_left_float_ = other.has_break_before_left_float_;
   has_break_before_right_float_ = other.has_break_before_right_float_;
@@ -241,14 +249,59 @@ void NGExclusionSpaceInternal::Add(const NGExclusion* exclusion) {
   // We can safely mutate the exclusion here as an exclusion will never be
   // reused if this invariant doesn't hold.
   const_cast<NGExclusion*>(exclusion)->is_past_other_exclusions =
-      exclusion_block_offset >= left_clear_offset_ &&
-      exclusion_block_offset >= right_clear_offset_;
+      exclusion_block_offset >=
+      std::max({left_clear_offset_, exclusion_block_offset, right_clear_offset_,
+                exclusion_block_offset, initial_letter_left_clear_offset_,
+                exclusion_block_offset, initial_letter_right_clear_offset_});
+
+  // Update the members used for clearance calculations.
+  LayoutUnit clear_offset = exclusion->rect.BlockEndOffset();
+  if (UNLIKELY(exclusion->IsForInitialLetterBox())) {
+    if (exclusion->type == EFloat::kLeft) {
+      initial_letter_left_clear_offset_ =
+          std::max(initial_letter_left_clear_offset_, clear_offset);
+    } else if (exclusion->type == EFloat::kRight) {
+      initial_letter_right_clear_offset_ =
+          std::max(initial_letter_right_clear_offset_, clear_offset);
+    }
+
+    if (!already_exists) {
+      // Perform a copy-on-write if the number of exclusions has gone out of
+      // sync.
+      const auto& source_exclusions = *exclusions_;
+      exclusions_ = MakeGarbageCollected<NGExclusionPtrArray>();
+      exclusions_->resize(num_exclusions_ + 1);
+      const auto* const source_end =
+          source_exclusions.begin() + num_exclusions_;
+      // Initial-letters are special in that they can be inserted "before"
+      // other floats. Ensure we insert |exclusion| in the correct place
+      // (ascent order by block-start).
+      auto* destination = exclusions_->begin();
+      for (auto* it = source_exclusions.begin(); it != source_end; ++it) {
+        if (exclusion->rect.BlockStartOffset() <
+            (*it)->rect.BlockStartOffset()) {
+          *destination = exclusion;
+          destination = std::copy(it, source_end, destination + 1);
+          break;
+        }
+        *destination++ = *it;
+      }
+      if (destination != exclusions_->end())
+        *destination++ = exclusion;
+      DCHECK_EQ(destination, exclusions_->end());
+    }
+    num_exclusions_++;
+
+    if (exclusions_->at(num_exclusions_ - 1) != exclusion)
+      derived_geometry_ = nullptr;
+    if (derived_geometry_)
+      derived_geometry_->Add(*exclusion);
+    return;
+  }
 
   last_float_block_start_ =
       std::max(last_float_block_start_, exclusion_block_offset);
 
-  // Update the members used for clearance calculations.
-  LayoutUnit clear_offset = exclusion->rect.BlockEndOffset();
   if (exclusion->type == EFloat::kLeft)
     left_clear_offset_ = std::max(left_clear_offset_, clear_offset);
   else if (exclusion->type == EFloat::kRight)
@@ -376,15 +429,30 @@ void NGExclusionSpaceInternal::DerivedGeometry::Add(
         // 10 |xxx|        |xxx|
         //    +---+        +---+
         // 20
-        //                  +---+
-        // 30               |NEW|
-        //                  +---+
+        //                 +---+
+        // 30              |NEW|
+        //                 +---+
         //
         // In the above example the "NEW" exclusion *doesn't* overlap with the
         // above drawn shelf, and a new opportunity hasn't been created.
-        bool is_overlapping =
-            exclusion.rect.LineStartOffset() <= shelf.line_right &&
-            exclusion.rect.LineEndOffset() >= shelf.line_left;
+        //
+        // NOTE: below we have subtly different conditions for left/right
+        // exclusions. E.g. if a right exclusion is aligned with the right edge
+        // of the shelf (see above) then we *shouldn't* create a new area.
+        //
+        // However we may have a left exclusion whose left edge is aligned with
+        // the right edge of the shelf. In this case we *do* create a new area.
+        bool is_overlapping;
+        if (exclusion.type == EFloat::kLeft) {
+          is_overlapping =
+              exclusion.rect.LineStartOffset() <= shelf.line_right &&
+              exclusion.rect.LineEndOffset() > shelf.line_left;
+        } else {
+          DCHECK_EQ(exclusion.type, EFloat::kRight);
+          is_overlapping =
+              exclusion.rect.LineStartOffset() < shelf.line_right &&
+              exclusion.rect.LineEndOffset() >= shelf.line_left;
+        }
 
         // Insert a closed-off layout opportunity if needed.
         if (has_solid_edges && is_overlapping) {

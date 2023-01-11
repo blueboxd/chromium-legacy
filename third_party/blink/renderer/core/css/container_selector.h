@@ -32,8 +32,12 @@ class CORE_EXPORT ContainerSelector {
   explicit ContainerSelector(AtomicString name) : name_(std::move(name)) {}
   explicit ContainerSelector(PhysicalAxes physical_axes)
       : physical_axes_(physical_axes) {}
-  ContainerSelector(AtomicString name, LogicalAxes physical_axes)
-      : name_(std::move(name)), logical_axes_(physical_axes) {}
+  ContainerSelector(AtomicString name,
+                    PhysicalAxes physical_axes,
+                    LogicalAxes logical_axes)
+      : name_(std::move(name)),
+        physical_axes_(physical_axes),
+        logical_axes_(logical_axes) {}
   ContainerSelector(AtomicString name, const MediaQueryExpNode&);
 
   bool IsHashTableDeletedValue() const {
@@ -62,6 +66,9 @@ class CORE_EXPORT ContainerSelector {
 
   bool SelectsStyleContainers() const { return has_style_query_; }
 
+  PhysicalAxes GetPhysicalAxes() const { return physical_axes_; }
+  LogicalAxes GetLogicalAxes() const { return logical_axes_; }
+
  private:
   AtomicString name_;
   PhysicalAxes physical_axes_{kPhysicalAxisNone};
@@ -75,20 +82,18 @@ namespace WTF {
 
 template <>
 struct DefaultHash<blink::ContainerSelector> {
-  struct Hash {
-    STATIC_ONLY(Hash);
-    static unsigned GetHash(const blink::ContainerSelector& selector) {
-      return selector.GetHash();
-    }
+  STATIC_ONLY(DefaultHash);
+  static unsigned GetHash(const blink::ContainerSelector& selector) {
+    return selector.GetHash();
+  }
 
-    static bool Equal(const blink::ContainerSelector& a,
-                      const blink::ContainerSelector& b) {
-      return a == b;
-    }
+  static bool Equal(const blink::ContainerSelector& a,
+                    const blink::ContainerSelector& b) {
+    return a == b;
+  }
 
-    static const bool safe_to_compare_to_empty_or_deleted =
-        DefaultHash<AtomicString>::Hash::safe_to_compare_to_empty_or_deleted;
-  };
+  static const bool safe_to_compare_to_empty_or_deleted =
+      DefaultHash<AtomicString>::safe_to_compare_to_empty_or_deleted;
 };
 
 template <>

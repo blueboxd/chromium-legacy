@@ -37,6 +37,7 @@
 #include "chromeos/ash/services/assistant/public/cpp/assistant_enums.h"
 #include "chromeos/ash/services/assistant/public/cpp/device_actions.h"
 #include "chromeos/ash/services/assistant/public/cpp/features.h"
+#include "chromeos/ash/services/assistant/service.h"
 #include "chromeos/ash/services/assistant/service_context.h"
 #include "chromeos/ash/services/assistant/timer_host.h"
 #include "chromeos/ash/services/libassistant/public/mojom/android_app_info.mojom.h"
@@ -107,6 +108,8 @@ class SpeechRecognitionObserverWrapper
     return receiver_.BindNewPipeAndPassRemote();
   }
 
+  void Stop() { receiver_.reset(); }
+
   // libassistant::mojom::SpeechRecognitionObserver implementation:
   void OnSpeechLevelUpdated(float speech_level_in_decibels) override {
     for (auto& it : interaction_subscribers_)
@@ -170,7 +173,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     absl::optional<std::string> device_id_override,
     std::unique_ptr<LibassistantServiceHost> libassistant_service_host)
     : assistant_settings_(std::make_unique<AssistantSettingsImpl>(context)),
-      assistant_host_(std::make_unique<AssistantHost>()),
+      assistant_host_(std::make_unique<AssistantHost>(this)),
       platform_delegate_(std::make_unique<PlatformDelegateImpl>()),
       context_(context),
       device_settings_host_(std::make_unique<DeviceSettingsHost>(context)),
@@ -195,32 +198,6 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     libassistant_service_host_ =
         std::make_unique<LibassistantServiceHostImpl>();
   }
-
-  assistant_host_->Initialize(libassistant_service_host_.get());
-
-  service_controller().AddAndFireStateObserver(
-      state_observer_receiver_.BindNewPipeAndPassRemote());
-  assistant_host_->AddSpeechRecognitionObserver(
-      speech_recognition_observer_->BindNewPipeAndPassRemote());
-  AddRemoteConversationObserver(this);
-
-  audio_output_delegate_->Bind(assistant_host_->ExtractAudioOutputDelegate());
-  platform_delegate_->Bind(assistant_host_->ExtractPlatformDelegate());
-  audio_input_host_ = std::make_unique<AudioInputHostImpl>(
-      assistant_host_->ExtractAudioInputController(),
-      context_->cras_audio_handler(), context_->power_manager_client(),
-      context_->assistant_state()->locale().value());
-
-  assistant_settings_->Initialize(
-      assistant_host_->ExtractSpeakerIdEnrollmentController(),
-      &assistant_host_->settings_controller());
-
-  media_host_->Initialize(&assistant_host_->media_controller(),
-                          assistant_host_->ExtractMediaDelegate());
-  timer_host_->Initialize(&assistant_host_->timer_controller(),
-                          assistant_host_->ExtractTimerDelegate());
-
-  device_settings_host_->Bind(assistant_host_->ExtractDeviceSettingsDelegate());
 }
 
 AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {
@@ -232,7 +209,9 @@ AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {
 void AssistantManagerServiceImpl::Start(const absl::optional<UserInfo>& user,
                                         bool enable_hotword) {
   DCHECK(!IsServiceStarted());
-  DCHECK_EQ(GetState(), State::STOPPED);
+  DCHECK(GetState() == State::STOPPED || GetState() == State::DISCONNECTED);
+
+  Initialize();
 
   // Set the flag to avoid starting the service multiple times.
   SetStateAndInformObservers(State::STARTING);
@@ -247,11 +226,14 @@ void AssistantManagerServiceImpl::Stop() {
   // We cannot cleanly stop the service if it is in the process of starting up.
   DCHECK_NE(GetState(), State::STARTING);
 
-  weak_factory_.InvalidateWeakPtrs();
-  SetStateAndInformObservers(State::STOPPED);
+  // During shutdown, this could be called when the libassistant
+  // service is not started.
+  if (!IsServiceStarted()) {
+    return;
+  }
 
-  media_host_->Stop();
-  scoped_app_list_event_subscriber_.Reset();
+  weak_factory_.InvalidateWeakPtrs();
+  SetStateAndInformObservers(State::STOPPING);
 
   // When user disables the feature, we also delete all data.
   if (!assistant_state()->settings_enabled().value())
@@ -274,10 +256,18 @@ void AssistantManagerServiceImpl::SetUser(
 }
 
 void AssistantManagerServiceImpl::EnableListening(bool enable) {
+  // Could be called when the libassistant service is not started.
+  if (!IsServiceStarted())
+    return;
+
   settings_controller().SetListeningEnabled(enable);
 }
 
 void AssistantManagerServiceImpl::EnableHotword(bool enable) {
+  // Could be called when the libassistant service is not started.
+  if (!IsServiceStarted())
+    return;
+
   audio_input_host_->OnHotwordEnabled(enable);
 }
 
@@ -441,9 +431,41 @@ void AssistantManagerServiceImpl::OnStateChanged(
     case ServiceState::kRunning:
       OnServiceRunning();
       break;
+    case ServiceState::kDisconnected:
+      OnServiceDisconnected();
+      break;
     case ServiceState::kStopped:
+      OnServiceStopped();
       break;
   }
+}
+
+void AssistantManagerServiceImpl::Initialize() {
+  assistant_host_->StartLibassistantService(libassistant_service_host_.get());
+
+  service_controller().AddAndFireStateObserver(
+      state_observer_receiver_.BindNewPipeAndPassRemote());
+  assistant_host_->AddSpeechRecognitionObserver(
+      speech_recognition_observer_->BindNewPipeAndPassRemote());
+  AddRemoteConversationObserver(this);
+
+  audio_output_delegate_->Bind(assistant_host_->ExtractAudioOutputDelegate());
+  platform_delegate_->Bind(assistant_host_->ExtractPlatformDelegate());
+  audio_input_host_ = std::make_unique<AudioInputHostImpl>(
+      assistant_host_->ExtractAudioInputController(),
+      context_->cras_audio_handler(), context_->power_manager_client(),
+      context_->assistant_state()->locale().value());
+
+  assistant_settings_->Initialize(
+      assistant_host_->ExtractSpeakerIdEnrollmentController(),
+      &assistant_host_->settings_controller());
+
+  media_host_->Initialize(&assistant_host_->media_controller(),
+                          assistant_host_->ExtractMediaDelegate());
+  timer_host_->Initialize(&assistant_host_->timer_controller(),
+                          assistant_host_->ExtractTimerDelegate());
+
+  device_settings_host_->Bind(assistant_host_->ExtractDeviceSettingsDelegate());
 }
 
 void AssistantManagerServiceImpl::InitAssistant(
@@ -479,7 +501,9 @@ void AssistantManagerServiceImpl::OnServiceStarted() {
 bool AssistantManagerServiceImpl::IsServiceStarted() const {
   switch (state_) {
     case State::STOPPED:
+    case State::STOPPING:
     case State::STARTING:
+    case State::DISCONNECTED:
       return false;
     case State::STARTED:
     case State::RUNNING:
@@ -521,6 +545,34 @@ void AssistantManagerServiceImpl::OnServiceRunning() {
 
   if (base::FeatureList::IsEnabled(assistant::features::kAssistantAppSupport))
     scoped_app_list_event_subscriber_.Observe(device_actions());
+}
+
+void AssistantManagerServiceImpl::OnServiceStopped() {
+  // Valid `STOPPED` will only be called after `STOPPING`.
+  // However, a false `STOPPED` may be received.
+  // An ideal situation would be:
+  // 1. `AddAndFireStateObserver()` is called.
+  // 2. `ServiceController` sends the current state, e.g. STOPPED.
+  // However, since it takes a longer time (through mojom to another thread),
+  // the `state_` in this class could be temporary out of sync. For example:
+  // 1. `AddAndFireStateObserver()` is called when the `state_` is STOPPED.
+  // 2. `Start()`: sets `state_` to STARTING.
+  // 3. `ServiceController` sends the current state inside it, which is STOPPED.
+  // 4. `OnStateChanged()` receives STOPPED, but the `state_` is STARTING.
+  // We will ignore the invalid STOPPED signal.
+  if (GetState() != State::STOPPING)
+    return;
+
+  SetStateAndInformObservers(State::STOPPED);
+
+  // Stop after the `assistant_manager` was destroyed.
+  assistant_host_->StopLibassistantService();
+  ClearAfterStop();
+}
+
+void AssistantManagerServiceImpl::OnServiceDisconnected() {
+  SetStateAndInformObservers(State::DISCONNECTED);
+  ClearAfterStop();
 }
 
 void AssistantManagerServiceImpl::OnAndroidAppListRefreshed(
@@ -712,6 +764,24 @@ void AssistantManagerServiceImpl::SetStateAndInformObservers(State new_state) {
 
   for (auto& observer : state_observers_)
     observer.OnStateChanged(state_);
+}
+
+void AssistantManagerServiceImpl::ClearAfterStop() {
+  weak_factory_.InvalidateWeakPtrs();
+
+  state_observer_receiver_.reset();
+  speech_recognition_observer_->Stop();
+  audio_output_delegate_->Stop();
+  platform_delegate_->Stop();
+  audio_input_host_.reset();
+  assistant_settings_->Stop();
+  media_host_->Stop();
+  timer_host_->Stop();
+  device_settings_host_->Stop();
+
+  scoped_app_list_event_subscriber_.Reset();
+  interaction_subscribers_.Clear();
+  state_observers_.Clear();
 }
 
 }  // namespace ash::assistant

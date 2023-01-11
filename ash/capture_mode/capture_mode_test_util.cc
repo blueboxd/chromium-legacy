@@ -14,6 +14,7 @@
 #include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
 #include "ash/public/cpp/projector/projector_session.h"
 #include "ash/shell.h"
+#include "ash/style/icon_button.h"
 #include "ash/wm/cursor_manager_chromeos.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/files/file_path.h"
@@ -25,6 +26,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/view.h"
+#include "ui/views/view_observer.h"
 
 namespace ash {
 
@@ -145,7 +147,7 @@ CaptureModeBarView* GetCaptureModeBarView() {
   return CaptureModeSessionTestApi(session).GetCaptureModeBarView();
 }
 
-CaptureModeToggleButton* GetFullscreenToggleButton() {
+IconButton* GetFullscreenToggleButton() {
   auto* controller = CaptureModeController::Get();
   DCHECK(controller->IsActive());
   return GetCaptureModeBarView()
@@ -153,7 +155,7 @@ CaptureModeToggleButton* GetFullscreenToggleButton() {
       ->fullscreen_toggle_button();
 }
 
-CaptureModeToggleButton* GetRegionToggleButton() {
+IconButton* GetRegionToggleButton() {
   auto* controller = CaptureModeController::Get();
   DCHECK(controller->IsActive());
   return GetCaptureModeBarView()->capture_source_view()->region_toggle_button();
@@ -163,6 +165,14 @@ UserNudgeController* GetUserNudgeController() {
   auto* session = CaptureModeController::Get()->capture_mode_session();
   DCHECK(session);
   return CaptureModeSessionTestApi(session).GetUserNudgeController();
+}
+
+bool IsLayerStackedRightBelow(ui::Layer* layer, ui::Layer* sibling) {
+  DCHECK_EQ(layer->parent(), sibling->parent());
+  const auto& children = layer->parent()->children();
+  const int sibling_index =
+      base::ranges::find(children, sibling) - children.begin();
+  return sibling_index > 0 && children[sibling_index - 1] == layer;
 }
 
 // -----------------------------------------------------------------------------
@@ -205,12 +215,26 @@ void ProjectorCaptureModeIntegrationHelper::StartProjectorModeSession() {
   EXPECT_EQ(controller->source(), CaptureModeSource::kFullscreen);
 }
 
-bool IsLayerStackedRightBelow(ui::Layer* layer, ui::Layer* sibling) {
-  DCHECK_EQ(layer->parent(), sibling->parent());
-  const auto& children = layer->parent()->children();
-  const int sibling_index =
-      base::ranges::find(children, sibling) - children.begin();
-  return sibling_index > 0 && children[sibling_index - 1] == layer;
+// -----------------------------------------------------------------------------
+// ViewVisibilityChangeWaiter:
+
+ViewVisibilityChangeWaiter ::ViewVisibilityChangeWaiter(views::View* view)
+    : view_(view) {
+  view_->AddObserver(this);
+}
+
+ViewVisibilityChangeWaiter::~ViewVisibilityChangeWaiter() {
+  view_->RemoveObserver(this);
+}
+
+void ViewVisibilityChangeWaiter::Wait() {
+  wait_loop_.Run();
+}
+
+void ViewVisibilityChangeWaiter::OnViewVisibilityChanged(
+    views::View* observed_view,
+    views::View* starting_view) {
+  wait_loop_.Quit();
 }
 
 }  // namespace ash

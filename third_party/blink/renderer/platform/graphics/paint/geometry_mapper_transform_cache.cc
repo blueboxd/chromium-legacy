@@ -90,7 +90,7 @@ void GeometryMapperTransformCache::Update(
     root_of_2d_translation_ = &node;
     to_2d_translation_root_ = gfx::Vector2dF();
 
-    TransformationMatrix local = node.MatrixWithOriginApplied();
+    gfx::Transform local = node.MatrixWithOriginApplied();
     bool is_plane_root = !local.IsFlat() || !local.IsInvertible();
     if (is_plane_root) {
       // We don't need plane root transform because the plane root is the same
@@ -104,7 +104,7 @@ void GeometryMapperTransformCache::Update(
       plane_root_transform_->to_plane_root.MakeIdentity();
       parent.ApplyToPlaneRoot(plane_root_transform_->to_plane_root);
       plane_root_transform_->to_plane_root.PreConcat(local);
-      plane_root_transform_->from_plane_root = local.Inverse();
+      plane_root_transform_->from_plane_root = local.GetCheckedInverse();
       parent.ApplyFromPlaneRoot(plane_root_transform_->from_plane_root);
       plane_root_transform_->has_animation =
           parent.has_animation_to_plane_root() ||
@@ -149,7 +149,7 @@ void GeometryMapperTransformCache::UpdateScreenTransform(
 
   parent.ApplyToScreen(screen_transform_->to_screen);
   if (node.FlattensInheritedTransform())
-    screen_transform_->to_screen.FlattenTo2d();
+    screen_transform_->to_screen.Flatten();
   if (node.IsIdentityOr2DTranslation()) {
     const auto& translation = node.Translation2D();
     screen_transform_->to_screen.Translate(translation.x(), translation.y());
@@ -158,7 +158,7 @@ void GeometryMapperTransformCache::UpdateScreenTransform(
   }
 
   auto to_screen_flattened = screen_transform_->to_screen;
-  to_screen_flattened.FlattenTo2d();
+  to_screen_flattened.Flatten();
   screen_transform_->projection_from_screen_is_valid =
       to_screen_flattened.GetInverse(
           &screen_transform_->projection_from_screen);

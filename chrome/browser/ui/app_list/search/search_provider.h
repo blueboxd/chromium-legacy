@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_types.h"
-#include "base/callback.h"
 
 class ChromeSearchResult;
 
@@ -22,7 +21,6 @@ class SearchController;
 class SearchProvider {
  public:
   using Results = std::vector<std::unique_ptr<ChromeSearchResult>>;
-  using ResultChangedCallback = base::RepeatingClosure;
 
   SearchProvider();
 
@@ -33,11 +31,19 @@ class SearchProvider {
 
   // Invoked to start a query search. |query| is guaranteed to be non-empty.
   virtual void Start(const std::u16string& query) {}
+
+  // Called when search query is cleared. The provider should stop/cancel
+  // any pending search query handling. This should not affect zero state
+  // search.
+  virtual void StopQuery() {}
+
   // Invoked to start a zero-state search.
   virtual void StartZeroState() {}
-  // Invoked when the UI view closes. In response, the |SearchProvider| may
-  // clear its caches.
-  virtual void ViewClosing() {}
+
+  // Invoked to cancel zero-state search - called when app list view gets
+  // hidden.
+  virtual void StopZeroState() {}
+
   // Handles training signals if necessary. A given |SearchProvider| may receive
   // training signals for results of any |RankingItemType|, so it is the
   // |SearchProvider|'s responsibility to check |type| and ignore if necessary.
@@ -45,44 +51,19 @@ class SearchProvider {
   // Returns the main result type created by this provider.
   virtual ash::AppListSearchResultType ResultType() const = 0;
 
-  // Returns true if this provider should prevent zero-state results from being
-  // published until it has returned. If this is true, a provider should only
-  // return results once per call to StartZeroState.
-  virtual bool ShouldBlockZeroState() const;
-
   void set_controller(SearchController* controller) {
     search_controller_ = controller;
-  }
-
-  void set_result_changed_callback(ResultChangedCallback callback) {
-    result_changed_callback_ = std::move(callback);
   }
 
   const Results& results() const { return results_; }
 
  protected:
-  // Interface for the derived class to generate search results.
-  void Add(std::unique_ptr<ChromeSearchResult> result);
-
   // Swaps the internal results with |new_results|.
   // This is useful when multiple results will be added, and the notification is
   // desired to be done only once when all results are added.
   void SwapResults(Results* new_results);
 
-  // Clear results and call the |result_changed_callback_|. This is a no-op if
-  // categorical search is enabled, since clearing results is handled by the
-  // search controller.
-  void ClearResults();
-
-  // Clear the results without calling the |result_changed_callback_|. this is a
-  // no-op if categorical search is enabled, since clearing results is handled
-  // by the search controller.
-  void ClearResultsSilently();
-
  private:
-  void FireResultChanged();
-
-  ResultChangedCallback result_changed_callback_;
   SearchController* search_controller_ = nullptr;
   Results results_;
 };

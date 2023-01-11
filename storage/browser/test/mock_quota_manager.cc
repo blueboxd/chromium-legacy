@@ -133,7 +133,7 @@ void MockQuotaManager::GetBucketById(
   std::move(callback).Run(std::move(bucket));
 }
 
-void MockQuotaManager::GetBucket(
+void MockQuotaManager::GetBucketForTesting(
     const blink::StorageKey& storage_key,
     const std::string& bucket_name,
     blink::mojom::StorageType type,
@@ -232,9 +232,8 @@ bool MockQuotaManager::BucketHasData(const BucketInfo& bucket,
 }
 
 int MockQuotaManager::BucketDataCount(QuotaClientType quota_client) {
-  return std::count_if(
-      buckets_.begin(), buckets_.end(),
-      [quota_client](const BucketData& bucket) {
+  return base::ranges::count_if(
+      buckets_, [quota_client](const BucketData& bucket) {
         return bucket.quota_client_types.contains(quota_client);
       });
 }

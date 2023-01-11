@@ -36,7 +36,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Fingerprint.Auth.ScanResult" enum="FingerprintScanResult"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>emaamari@google.com</owner>
   <owner>tomhughes@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>
@@ -65,7 +65,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Fingerprint.Enroll.ScanResult" enum="FingerprintScanResult"
-    expires_after="2023-03-02">
+    expires_after="2023-05-07">
   <owner>emaamari@google.com</owner>
   <owner>tomhughes@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>
@@ -78,7 +78,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Fingerprint.FingerprintPowerButtonRace" units="units"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>emaamari@google.com</owner>
   <owner>chromeos-commercial-identity@google.com</owner>
   <owner>chromeos-fingerprint@google.com</owner>
@@ -91,7 +91,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Fingerprint.FingerprintScanDone" units="units"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>emaamari@google.com</owner>
   <owner>chromeos-commercial-identity@google.com</owner>
   <owner>chromeos-fingerprint@google.com</owner>
@@ -100,20 +100,6 @@ chromium-metrics-reviews@google.com.
     AuthScanDone signal is received by FinperprintStorage from biod, and
     notifies FingerprintPowerButtonRaceDetector.
   </summary>
-</histogram>
-
-<histogram name="Fingerprint.Reset.ResetContextMode"
-    enum="FingerprintSensorMode" expires_after="2023-04-05">
-  <owner>tomhughes@chromium.org</owner>
-  <owner>chromeos-fingerprint@google.com</owner>
-  <summary>The mode FPMCU was in when we reset context.</summary>
-</histogram>
-
-<histogram name="Fingerprint.SetContext.SetContextMode"
-    enum="FingerprintSensorMode" expires_after="2023-04-05">
-  <owner>hesling@chromium.org</owner>
-  <owner>chromeos-fingerprint@google.com</owner>
-  <summary>The mode FPMCU was in when we set its context.</summary>
 </histogram>
 
 <histogram name="Fingerprint.SetContext.Success" enum="BooleanSuccess"
@@ -156,7 +142,17 @@ chromium-metrics-reviews@google.com.
     expires_after="2023-04-05">
   <owner>tomhughes@chromium.org</owner>
   <owner>chromeos-fingerprint@google.com</owner>
-  <summary>Counts the number of fingers enrolled by the user.</summary>
+  <summary>
+    Counts the number of fingers enrolled by the user.
+
+    This metric is reported in biod when the first user logs in. It is not
+    reported when a secondary user logs in, nor when all users log-off, nor when
+    the primary user uses fingerprint unlock. It may be reported again if
+    session_manage crashes.
+
+    This metric is emitted in SendStatsOnLogin() along with
+    Fingerprint.UnlockEnabled.
+  </summary>
 </histogram>
 
 <histogram name="Fingerprint.Unlock.Match.PositiveMatchSecretCorrect"
@@ -247,7 +243,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Fingerprint.Unlock.Result" enum="FingerprintUnlockResult"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>emaamari@google.com</owner>
   <owner>tomhughes@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>
@@ -283,8 +279,17 @@ chromium-metrics-reviews@google.com.
   <owner>tomhughes@chromium.org</owner>
   <owner>chromeos-fingerprint@google.com</owner>
   <summary>
-    Track whether fingerprint is enabled to unlock the screen, when the user
-    logs in.
+    Indicates whether at least one finger is enrolled, which effectively permits
+    fingerprint unlock.
+
+    This metric is reported in biod when the first user logs in. It is not
+    reported when a secondary user logs in, nor when all users log-off, nor when
+    the primary user uses fingerprint unlock. It may be reported again if
+    session_manage crashes. It does not take into account if policy has
+    subsequently disabled fingerprint unlock.
+
+    This metric is emitted in SendStatsOnLogin() along with
+    Fingerprint.Unlock.EnrolledFingerCount.
   </summary>
 </histogram>
 
@@ -318,6 +323,25 @@ chromium-metrics-reviews@google.com.
   <token key="Outcome">
     <variant name="NoUpdate" summary="not necessary"/>
     <variant name="Update" summary="necessary"/>
+  </token>
+</histogram>
+
+<histogram name="Fingerprint.{ContextFunction}" enum="FingerprintSensorMode"
+    expires_after="2023-04-05">
+  <owner>tomhughes@chromium.org</owner>
+  <owner>chromeos-fingerprint@google.com</owner>
+  <summary>
+    The mode the FPMCU was in when we {ContextFunction}.
+
+    See the CrosFpDevice::SetContext and CrosFpDevice::ResetContext functions
+    for more information.
+
+    Related metrics are Fingerprint.Reset.ResetContextMode,
+    Fingerprint.SetContext.SetContextMode, and Fingerprint.SetContext.Success.
+  </summary>
+  <token key="ContextFunction">
+    <variant name="Reset.ResetContextMode" summary="reset context"/>
+    <variant name="SetContext.SetContextMode" summary="set its context"/>
   </token>
 </histogram>
 

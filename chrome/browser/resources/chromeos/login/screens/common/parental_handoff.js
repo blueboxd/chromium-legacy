@@ -11,14 +11,14 @@ import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../../components/oobe_icons.m.js';
 import '../../components/common_styles/common_styles.m.js';
 import '../../components/common_styles/oobe_dialog_host_styles.m.js';
-import '../../components/dialogs/oobe_adaptive_dialog.m.js';
 
 import {afterNextRender, dom, flush, html, mixinBehaviors, Polymer, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.m.js';
 import {OobeDialogHostBehavior} from '../../components/behaviors/oobe_dialog_host_behavior.m.js';
 import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.m.js';
-import {OobeNextButton} from '../../components/buttons/oobe_next_button.m.js';
+import {OobeNextButton} from '../../components/buttons/oobe_next_button.js';
+import {OobeAdaptiveDialog} from '../../components/dialogs/oobe_adaptive_dialog.js';
 
 
 /**
@@ -33,7 +33,7 @@ const ParentalHandoffElementBase = mixinBehaviors(
 
 /**
  * @typedef {{
- *   parentalHandoffDialog:  OobeAdaptiveDialogElement,
+ *   parentalHandoffDialog:  OobeAdaptiveDialog,
  * }}
  */
 ParentalHandoffElementBase.$;

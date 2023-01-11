@@ -14,19 +14,23 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
+#include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/path_service.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/version.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/extensions/updater/extension_update_client_command_line_config_policy.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_paths.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/patch/content/patch_service.h"
 #include "components/services/unzip/content/unzip_service.h"
 #include "components/update_client/activity_data_service.h"
+#include "components/update_client/buildflags.h"
 #include "components/update_client/crx_downloader_factory.h"
 #include "components/update_client/net/network_chromium.h"
 #include "components/update_client/patch/patch_impl.h"
@@ -100,7 +104,7 @@ void ExtensionActivityDataService::GetActiveBits(
     if (extension_prefs_->GetActiveBit(id))
       actives.insert(id);
   }
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), actives));
 }
 
@@ -123,7 +127,7 @@ void ExtensionActivityDataService::GetAndClearActiveBits(
       actives.insert(id);
     extension_prefs_->SetActiveBit(id, false);
   }
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), actives));
 }
 
@@ -309,5 +313,16 @@ void ChromeUpdateClientConfig::SetChromeUpdateClientConfigFactoryForTesting(
   DCHECK(!factory.is_null());
   GetFactoryCallback() = factory;
 }
+
+#if BUILDFLAG(ENABLE_PUFFIN_PATCHES)
+absl::optional<base::FilePath> ChromeUpdateClientConfig::GetCrxCachePath()
+    const {
+  base::FilePath path;
+  bool result = base::PathService::Get(chrome::DIR_USER_DATA, &path);
+  return result ? absl::optional<base::FilePath>(
+                      path.AppendASCII((kExtensionsCrxCachePath)))
+                : absl::nullopt;
+}
+#endif
 
 }  // namespace extensions

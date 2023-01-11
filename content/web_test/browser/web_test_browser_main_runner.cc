@@ -239,10 +239,12 @@ void WebTestBrowserMainRunner::Initialize() {
   command_line.AppendSwitchASCII(network::switches::kHostResolverRules,
                                  "MAP nonexistent.*.test ~NOTFOUND,"
                                  "MAP web-platform.test:443 127.0.0.1:8444,"
+                                 "MAP not-web-platform.test:443 127.0.0.1:8444,"
                                  "MAP *.test. 127.0.0.1,"
                                  "MAP *.test 127.0.0.1");
 
-  // These must be kept in sync with //third_party/wpt_tools/wpt.config.json.
+  // These must be kept in sync with
+  // //third_party/blink/web_tests/external/wpt/config.json.
   command_line.AppendSwitchASCII(network::switches::kIpAddressSpaceOverrides,
                                  "127.0.0.1:8082=private,"
                                  "127.0.0.1:8093=public,"

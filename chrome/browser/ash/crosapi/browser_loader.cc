@@ -21,6 +21,7 @@
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/browser/ash/crosapi/browser_data_back_migrator.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/common/channel_info.h"
@@ -131,7 +132,12 @@ bool CheckInstalledAndMaybeRemoveUserDirectory(
   // partially-removed directory could be used. Fix this.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kSafeMode)) {
-    base::DeletePathRecursively(browser_util::GetUserDataDir());
+    // If backward migration is enabled, don't remove the lacros folder as it
+    // will used by the migration and will be removed after it completes.
+    if (!ash::BrowserDataBackMigrator::IsBackMigrationEnabled(
+            crosapi::browser_util::PolicyInitState::kBeforeInit)) {
+      base::DeletePathRecursively(browser_util::GetUserDataDir());
+    }
   }
   return true;
 }
@@ -161,8 +167,6 @@ BrowserLoader::BrowserLoader(
 BrowserLoader::~BrowserLoader() = default;
 
 void BrowserLoader::Load(LoadCompletionCallback callback) {
-  DCHECK(browser_util::IsLacrosEnabled());
-
   lacros_start_load_time_ = base::TimeTicks::Now();
   // TODO(crbug.com/1078607): Remove non-error logging from this class.
   LOG(WARNING) << "Starting lacros component load.";
@@ -414,12 +418,35 @@ void BrowserLoader::OnLoadComplete(
     return;
   }
 
+  // Fail early if the chrome binary still doesn't exist, such that
+  // (1) we end up with an error message in Ash's log, and
+  // (2) BrowserManager doesn't endlessly try to spawn Lacros.
+  // For example, in the past there have been issues with mounting rootfs Lacros
+  // that resulted in /run/lacros being empty at this point.
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&base::PathExists, path.Append(kLacrosChromeBinary)),
+      base::BindOnce(&BrowserLoader::FinishOnLoadComplete,
+                     weak_factory_.GetWeakPtr(), std::move(callback), path,
+                     selection));
+}
+
+void BrowserLoader::FinishOnLoadComplete(LoadCompletionCallback callback,
+                                         const base::FilePath& path,
+                                         LacrosSelection selection,
+                                         bool lacros_binary_exists) {
+  if (!lacros_binary_exists) {
+    LOG(ERROR) << "Failed to find chrome binary at " << path;
+    std::move(callback).Run(base::FilePath(), selection);
+    return;
+  }
+
   base::UmaHistogramMediumTimes(
       "ChromeOS.Lacros.LoadTime",
       base::TimeTicks::Now() - lacros_start_load_time_);
 
   // Log the path on success.
-  LOG(WARNING) << "Loaded lacros image at " << path.MaybeAsASCII();
+  LOG(WARNING) << "Loaded lacros image at " << path;
   std::move(callback).Run(path, selection);
 }
 

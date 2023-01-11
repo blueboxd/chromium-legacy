@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">Відмінити</translation>
 <translation id="2084108471225856927">Налаштування пристрою</translation>
 <translation id="2084809735218147718">Пісня подяки</translation>
-<translation id="2085470240340828803">Файл із назвою "<ph name="FILENAME" />" уже існує. Що робити?</translation>
 <translation id="2088690981887365033">Мережа VPN</translation>
 <translation id="2122305276694332719">Автоматичне підключення до прихованої мережі дозволяє іншим користувачам бачити ваш пристрій і певні мережеві налаштування. Не рекомендується.</translation>
 <translation id="2125607626296734455">Кхмерська</translation>
@@ -456,7 +455,6 @@
 <translation id="4900532980794411603">Надати доступ додатку Parallels Desktop</translation>
 <translation id="4902546322522096650">Мережа <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, рівень сигналу – <ph name="SIGNAL_STRENGTH" />%. Підключитися</translation>
 <translation id="4906580650526544301">Мережа №<ph name="NETWORK_INDEX" />, загалом мереж: <ph name="NETWORK_COUNT" />, назва пристрою: <ph name="PHONE_NAME" />, оператор: <ph name="PROVIDER_NAME" />, стан з'єднання: <ph name="CONNECTION_STATUS" />, рівень сигналу: <ph name="SIGNAL_STRENGTH" />%, рівень заряду акумулятора телефона: <ph name="BATTERY_STATUS" />%, відомості</translation>
-<translation id="4929673617759421391">Адміністратор заборонив вставляти цей файл</translation>
 <translation id="4935975195727477204">Квітка</translation>
 <translation id="4943368462779413526">Футбольний м’яч</translation>
 <translation id="4961158930123534723">Додатку Parallels Desktop надано доступ до 1 папки</translation>
@@ -534,6 +532,7 @@
 <translation id="5428105026674456456">Іспанська</translation>
 <translation id="5438282218546237410">Немає результатів для запиту "<ph name="SEARCH_TERM" />".</translation>
 <translation id="5449551289610225147">Недійсний пароль</translation>
+<translation id="5459064203055649751">Файл із назвою "<ph name="FILENAME" />" уже існує. Замінити його на файл, який ви переносите?</translation>
 <translation id="5463231940765244860">Ввести</translation>
 <translation id="5469868506864199649">Італійська</translation>
 <translation id="5473333559083690127">Ще раз введіть новий PIN-код</translation>
@@ -654,6 +653,7 @@
 <translation id="6495925982925244349">Мережа <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, рівень сигналу – <ph name="SIGNAL_STRENGTH" />%. Мережею керує адміністратор. Докладніше</translation>
 <translation id="649877868557234318">Видобування файлу "<ph name="FILE_NAME" />" у папку "<ph name="FOLDER_NAME" />"</translation>
 <translation id="6499681088828539489">Заборонити проксі-сервери для спільних мереж</translation>
+<translation id="6503285896705205014">Адміністратор заборонив копіювати файли (<ph name="COUNT" />)</translation>
 <translation id="6509122719576673235">Норвезька</translation>
 <translation id="6528513914570774834">Надіти іншим користувачам цього пристрою доступ до цієї мережі</translation>
 <translation id="653019979737152879">Синхронізація файлу <ph name="FILE_NAME" />…</translation>
@@ -756,6 +756,7 @@
 <translation id="7357762654218998920">Цей тип файлу не підтримується. <ph name="BEGIN_LINK_HELP" />Докладніше<ph name="END_LINK_HELP" /> про те, як відкривати файли в ОС Chrome.</translation>
 <translation id="7359359531237882347">Копіювання елементів (<ph name="NUMBER_OF_ITEMS" />)…</translation>
 <translation id="7375951387215729722">Список файлів відсортовано в порядку спадання за таким критерієм: <ph name="COLUMN_NAME" />.</translation>
+<translation id="7377161162143020057">Адміністратор заборонив копіювати цей файл</translation>
 <translation id="7402503521691663770">Пристрої з ОС Chrome Flex</translation>
 <translation id="7408870451288633753">Чеська</translation>
 <translation id="7417453074306512035">Ефіопська клавіатура</translation>
@@ -977,7 +978,6 @@
 <translation id="9183302530794969518">Google Документи</translation>
 <translation id="9189836632794948435">Казахська</translation>
 <translation id="9200427192836333033">Видобуто об’єктів: <ph name="NUMBER_OF_ITEMS" />.</translation>
-<translation id="9210751050717126865">Адміністратор заборонив вставляти файли (<ph name="COUNT" />)</translation>
 <translation id="9213073329713032541">Встановлення розпочато.</translation>
 <translation id="9219103736887031265">Зображення</translation>
 <translation id="9219908252191632183">Місячний ландшафт</translation>

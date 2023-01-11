@@ -36,6 +36,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "components/fuchsia_component_support/feedback_registration.h"
 #include "fuchsia_web/common/string_util.h"
 #include "fuchsia_web/webengine/features.h"
@@ -46,10 +47,14 @@
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "third_party/widevine/cdm/widevine_cdm_common.h"
+#include "third_party/widevine/cdm/buildflags.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/ozone/public/ozone_switches.h"
+
+#if BUILDFLAG(ENABLE_WIDEVINE) && BUILDFLAG(ENABLE_CAST_RECEIVER)
+#include "third_party/widevine/cdm/widevine_cdm_common.h"  // nogncheck
+#endif
 
 namespace {
 
@@ -62,12 +67,14 @@ const char kWebInstanceComponentUrl[] =
 const char kWebInstanceWithWebUiComponentUrl[] =
     "fuchsia-pkg://fuchsia.com/web_engine_with_webui#meta/web_instance.cmx";
 
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
 // Use a constexpr instead of the existing base::Feature, because of the
 // additional dependencies required.
 constexpr char kMixedContentAutoupgradeFeatureName[] =
     "AutoupgradeMixedContent";
 constexpr char kDisableMixedContentAutoupgradeOrigin[] =
     "disable-mixed-content-autoupgrade";
+#endif
 
 // Use a constexpr instead of the existing switch, because of the additional
 // dependencies required.
@@ -84,9 +91,11 @@ constexpr char kDisableGpuSwitch[] = "disable-gpu";
 constexpr char kDisableSoftwareRasterizerSwitch[] =
     "disable-software-rasterizer";
 
+#if BUILDFLAG(ENABLE_WIDEVINE) && BUILDFLAG(ENABLE_CAST_RECEIVER)
 // Use a constexpr instead of the media::IsClearKey() helper, because of the
 // additional dependencies required.
 constexpr char kClearKeyKeySystem[] = "org.w3.clearkey";
+#endif
 
 // Registers product data for the web_instance Component, ensuring it is
 // registered regardless of how the Component is launched and without requiring
@@ -149,7 +158,7 @@ bool HandleDataDirectoryParam(fuchsia::web::CreateContextParams* params,
   launch_info->flat_namespace->paths.push_back(
       base::kPersistedDataDirectoryPath);
   launch_info->flat_namespace->directories.push_back(
-      params->mutable_data_directory()->TakeChannel());
+      std::move(*params->mutable_data_directory()));
   if (params->has_data_quota_bytes()) {
     launch_args->AppendSwitchNative(
         switches::kDataQuotaBytes,
@@ -170,7 +179,7 @@ bool HandleCdmDataDirectoryParam(fuchsia::web::CreateContextParams* params,
   launch_args->AppendSwitchNative(switches::kCdmDataDirectory, kCdmDataPath);
   launch_info->flat_namespace->paths.push_back(kCdmDataPath);
   launch_info->flat_namespace->directories.push_back(
-      params->mutable_cdm_data_directory()->TakeChannel());
+      std::move(*params->mutable_cdm_data_directory()));
   if (params->has_cdm_data_quota_bytes()) {
     launch_args->AppendSwitchNative(
         switches::kCdmDataQuotaBytes,
@@ -217,16 +226,21 @@ void HandleUnsafelyTreatInsecureOriginsAsSecureParam(
   const std::vector<std::string>& insecure_origins =
       params->unsafely_treat_insecure_origins_as_secure();
   for (auto origin : insecure_origins) {
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
     if (origin == switches::kAllowRunningInsecureContent) {
       launch_args->AppendSwitch(switches::kAllowRunningInsecureContent);
-    } else if (origin == kDisableMixedContentAutoupgradeOrigin) {
+      continue;
+    }
+    if (origin == kDisableMixedContentAutoupgradeOrigin) {
       AppendToSwitch(switches::kDisableFeatures,
                      kMixedContentAutoupgradeFeatureName, launch_args);
-    } else {
-      // Pass the rest of the list to the Context process.
-      AppendToSwitch(network::switches::kUnsafelyTreatInsecureOriginAsSecure,
-                     origin, launch_args);
+      continue;
     }
+#endif
+
+    // Pass the list to the Context process.
+    AppendToSwitch(network::switches::kUnsafelyTreatInsecureOriginAsSecure,
+                   origin, launch_args);
   }
 }
 
@@ -267,7 +281,7 @@ bool HandleContentDirectoriesParam(fuchsia::web::CreateContextParams* params,
     launch_info->flat_namespace->paths.push_back(
         kContentDirectories.Append(directory.name()).value());
     launch_info->flat_namespace->directories.push_back(
-        directory.mutable_directory()->TakeChannel());
+        std::move(*directory.mutable_directory()));
   }
 
   launch_args->AppendSwitch(switches::kEnableContentDirectories);
@@ -307,7 +321,7 @@ bool HandleKeyboardFeatureFlags(fuchsia::web::ContextFeatureFlags features,
 // FuchsiaCdm. Specifically we need to verify that protected memory is supported
 // and that mediacodec API provides hardware video decoders.
 bool IsFuchsiaCdmSupported() {
-#if defined(ARCH_CPU_ARM64)
+#if BUILDFLAG(ENABLE_WIDEVINE) && defined(ARCH_CPU_ARM64)
   return true;
 #else
   return false;
@@ -342,9 +356,6 @@ std::vector<std::string> GetRequiredServicesForConfig(
 
   // Additional services are required depending on particular configuration
   // parameters.
-  if (params.has_playready_key_system()) {
-    services.emplace_back("fuchsia.media.drm.PlayReady");
-  }
 
   // Additional services are required dependent on the set of features specified
   // for the instance, as described at:
@@ -385,10 +396,18 @@ std::vector<std::string> GetRequiredServicesForConfig(
 
   // HARDWARE_VIDEO_DECODER_ONLY does not require any additional services.
 
+#if BUILDFLAG(ENABLE_WIDEVINE)
   if ((features & fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM) ==
       fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM) {
     services.emplace_back("fuchsia.media.drm.Widevine");
   }
+
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
+  if (params.has_playready_key_system()) {
+    services.emplace_back("fuchsia.media.drm.PlayReady");
+  }
+#endif  // BUILDFLAG(ENABLE_CAST_RECEIVER)
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
 
   // HEADLESS instances cannot create Views and therefore do not require access
   // to any View-based services.
@@ -403,10 +422,12 @@ std::vector<std::string> GetRequiredServicesForConfig(
                     });
   }
 
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
   if ((features & fuchsia::web::ContextFeatureFlags::LEGACYMETRICS) ==
       fuchsia::web::ContextFeatureFlags::LEGACYMETRICS) {
     services.emplace_back("fuchsia.legacymetrics.MetricsRecorder");
   }
+#endif
 
   if ((features & fuchsia::web::ContextFeatureFlags::KEYBOARD) ==
       fuchsia::web::ContextFeatureFlags::KEYBOARD) {
@@ -492,7 +513,11 @@ zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
 
   if ((features & fuchsia::web::ContextFeatureFlags::LEGACYMETRICS) ==
       fuchsia::web::ContextFeatureFlags::LEGACYMETRICS) {
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
     launch_args.AppendSwitch(switches::kUseLegacyMetricsService);
+#else
+    LOG(WARNING) << "LEGACYMETRICS is not supported.";
+#endif
   }
 
   const bool enable_vulkan =
@@ -553,10 +578,12 @@ zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
     launch_args.AppendSwitch(kDisableSoftwareRasterizerSwitch);
   }
 
+#if BUILDFLAG(ENABLE_WIDEVINE)
   if (enable_widevine) {
     launch_args.AppendSwitch(switches::kEnableWidevine);
   }
 
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
   if (enable_playready) {
     const std::string& key_system = params.playready_key_system();
     if (key_system == kWidevineKeySystem || key_system == kClearKeyKeySystem) {
@@ -567,6 +594,8 @@ zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
     }
     launch_args.AppendSwitchNative(switches::kPlayreadyKeySystem, key_system);
   }
+#endif  // BUILDFLAG(ENABLE_CAST_RECEIVER)
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
 
   bool enable_audio = (features & fuchsia::web::ContextFeatureFlags::AUDIO) ==
                       fuchsia::web::ContextFeatureFlags::AUDIO;
@@ -635,13 +664,12 @@ zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
 
   if (tmp_dir_.is_valid()) {
     launch_info.flat_namespace->paths.push_back("/tmp");
-    launch_info.flat_namespace->directories.push_back(tmp_dir_.TakeChannel());
+    launch_info.flat_namespace->directories.push_back(std::move(tmp_dir_));
   }
 
   // Create a request for the new instance's service-directory.
   fidl::InterfaceHandle<fuchsia::io::Directory> instance_services_handle;
-  launch_info.directory_request =
-      instance_services_handle.NewRequest().TakeChannel();
+  launch_info.directory_request = instance_services_handle.NewRequest();
   sys::ServiceDirectory instance_services(std::move(instance_services_handle));
 
   // If one or more Debug protocol clients are active then enable debugging,
@@ -663,7 +691,7 @@ zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
   launch_info.additional_services = fuchsia::sys::ServiceList::New();
   launch_info.additional_services->names = GetRequiredServicesForConfig(params);
   launch_info.additional_services->host_directory =
-      service_directory.TakeChannel();
+      std::move(service_directory);
 
   // Take the accumulated command line arguments, omitting the program name in
   // argv[0], and set them in |launch_info|.
@@ -698,8 +726,8 @@ fuchsia::sys::Launcher* WebInstanceHost::IsolatedEnvironmentLauncher() {
   auto services = fuchsia::sys::ServiceList::New();
   services->names.push_back(fuchsia::sys::Loader::Name_);
   fidl::InterfaceHandle<::fuchsia::io::Directory> services_channel;
-  environment->GetDirectory(services_channel.NewRequest().TakeChannel());
-  services->host_directory = services_channel.TakeChannel();
+  environment->GetDirectory(services_channel.NewRequest());
+  services->host_directory = std::move(services_channel);
 
   // Instantiate the isolated environment. This ContextProvider instance's PID
   // is included in the label to ensure that concurrent service instances

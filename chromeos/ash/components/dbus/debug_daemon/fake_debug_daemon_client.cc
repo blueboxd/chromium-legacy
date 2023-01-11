@@ -109,8 +109,9 @@ void FakeDebugDaemonClient::StartAgentTracing(
 void FakeDebugDaemonClient::StopAgentTracing(
     StopAgentTracingCallback callback) {
   std::string trace_data = "# tracer: nop\n";
-  std::move(callback).Run(GetTracingAgentName(), GetTraceEventLabel(),
-                          base::RefCountedString::TakeString(&trace_data));
+  std::move(callback).Run(
+      GetTracingAgentName(), GetTraceEventLabel(),
+      base::MakeRefCounted<base::RefCountedString>(std::move(trace_data)));
 }
 
 void FakeDebugDaemonClient::SetStopAgentTracingTaskRunner(
@@ -293,6 +294,19 @@ void FakeDebugDaemonClient::CupsRemovePrinter(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), has_printer));
+}
+
+void FakeDebugDaemonClient::CupsRetrievePrinterPpd(
+    const std::string& name,
+    CupsRetrievePrinterPpdCallback callback,
+    base::OnceClosure error_callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), ppd_data_));
+}
+
+void FakeDebugDaemonClient::SetPpdDataForTesting(
+    const std::vector<uint8_t>& data) {
+  ppd_data_ = data;
 }
 
 void FakeDebugDaemonClient::StartPluginVmDispatcher(

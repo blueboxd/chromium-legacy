@@ -62,7 +62,7 @@ PASS childWindow.oncanplaythrough is null
 PASS childWindow.onchange is null
 PASS childWindow.onclick is null
 PASS childWindow.onclose is null
-PASS childWindow.oncontentvisibilityautostatechange is null
+PASS childWindow.oncontentvisibilityautostatechanged is null
 PASS childWindow.oncontextlost is null
 PASS childWindow.oncontextmenu is null
 PASS childWindow.oncontextrestored is null
@@ -124,9 +124,9 @@ PASS childWindow.onpointerout is null
 PASS childWindow.onpointerover is null
 PASS childWindow.onpointerrawupdate is null
 PASS childWindow.onpointerup is null
+PASS childWindow.onpopoverhide is null
+PASS childWindow.onpopovershow is null
 PASS childWindow.onpopstate is null
-PASS childWindow.onpopuphide is null
-PASS childWindow.onpopupshow is null
 PASS childWindow.onprogress is null
 PASS childWindow.onratechange is null
 PASS childWindow.onrejectionhandled is null

@@ -30,7 +30,6 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
-#include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/data_model/iban.h"
@@ -280,6 +279,21 @@ constexpr base::StringPiece kOfferMerchantDomainTable = "offer_merchant_domain";
 // kOfferId = "offer_id"
 constexpr base::StringPiece kMerchantDomain = "merchant_domain";
 
+constexpr base::StringPiece kContactInfoTable = "contact_info";
+// kGuid = "guid"
+// kUseCount = "use_count"
+// kUseDate = "use_date"
+// kDateModified = "date_modified"
+// kLanguageCode = "language_code"
+// kLabel = "label"
+
+constexpr base::StringPiece kContactInfoTypeTokensTable =
+    "contact_info_type_tokens";
+// kGuid = "guid"
+constexpr base::StringPiece kType = "type";
+// kValue = "value"
+constexpr base::StringPiece kVerificationStatus = "verification_status";
+
 // Helper functions to construct SQL statements from string constants.
 // - Functions with names corresponding to SQL keywords execute the statement
 //   directly and return if it was successful.
@@ -444,6 +458,24 @@ bool DeleteWhereColumnEq(sql::Database* db,
   return statement.Run();
 }
 
+// Initializes `statement` with UPDATE `table_name` SET `column_names` = ?, with
+// a placeholder for every `column_names`. A WHERE clause can optionally be
+// specified in `where_clause`.
+void UpdateBuilder(sql::Database* db,
+                   sql::Statement& statement,
+                   base::StringPiece table_name,
+                   std::initializer_list<base::StringPiece> column_names,
+                   base::StringPiece where_clause = "") {
+  auto columns_with_placeholders =
+      base::JoinString(column_names, " = ?, ") + " = ?";
+  auto where =
+      where_clause.empty() ? "" : base::StrCat({" WHERE ", where_clause});
+  statement.Assign(
+      db->GetUniqueStatement(base::StrCat({"UPDATE ", table_name, " SET ",
+                                           columns_with_placeholders, where})
+                                 .c_str()));
+}
+
 // Initializes `statement` with SELECT `columns` FROM `table_name` and
 // optionally further `modifiers`, such as WHERE, ORDER BY, etc.
 void SelectBuilder(sql::Database* db,
@@ -457,16 +489,14 @@ void SelectBuilder(sql::Database* db,
           .c_str()));
 }
 
-// Wrapper around `SelectBuilder()` that restricts the it to the provided `guid`
-// and limits the results to 1. Returns `statement.is_valid() &&
-// statement.Step()`.
+// Wrapper around `SelectBuilder()` that restricts the it to the provided
+// `guid`. Returns `statement.is_valid() && statement.Step()`.
 bool SelectByGuid(sql::Database* db,
                   sql::Statement& statement,
                   base::StringPiece table_name,
                   std::initializer_list<base::StringPiece> columns,
                   base::StringPiece guid) {
-  DCHECK(base::Contains(columns, kGuid));
-  SelectBuilder(db, statement, table_name, columns, "WHERE guid=? LIMIT 1");
+  SelectBuilder(db, statement, table_name, columns, "WHERE guid=?");
   statement.BindString(0, guid);
   return statement.is_valid() && statement.Step();
 }
@@ -497,15 +527,10 @@ struct AutofillUpdate {
   int count;
 };
 
-// Returns the |data_model|'s value corresponding to the |type|, trimmed to the
-// maximum length that can be stored in a column of the Autofill database.
-std::u16string GetInfo(const AutofillDataModel& data_model,
-                       ServerFieldType type) {
-  std::u16string data = data_model.GetRawInfo(type);
-  if (data.size() > AutofillTable::kMaxDataLength)
-    return data.substr(0, AutofillTable::kMaxDataLength);
-
-  return data;
+// Truncates `data` to the maximum length that can be stored in a column of the
+// Autofill database. Shorter strings are left as-is.
+std::u16string Truncate(const std::u16string& data) {
+  return data.substr(0, AutofillTable::kMaxDataLength);
 }
 
 void BindAutofillProfileToStatement(const AutofillProfile& profile,
@@ -519,7 +544,7 @@ void BindAutofillProfileToStatement(const AutofillProfile& profile,
        {COMPANY_NAME, ADDRESS_HOME_STREET_ADDRESS,
         ADDRESS_HOME_DEPENDENT_LOCALITY, ADDRESS_HOME_CITY, ADDRESS_HOME_STATE,
         ADDRESS_HOME_ZIP, ADDRESS_HOME_SORTING_CODE, ADDRESS_HOME_COUNTRY}) {
-    s->BindString16(index++, GetInfo(profile, type));
+    s->BindString16(index++, Truncate(profile.GetRawInfo(type)));
   }
   s->BindInt64(index++, profile.use_count());
   s->BindInt64(index++, profile.use_date().ToTimeT());
@@ -532,7 +557,7 @@ void BindAutofillProfileToStatement(const AutofillProfile& profile,
 
 void AddAutofillProfileDetailsFromStatement(sql::Statement& s,
                                             AutofillProfile* profile) {
-  int index = 1;  // 0 is for the guid.
+  int index = 1;  // 0 is for the origin.
   for (ServerFieldType type :
        {COMPANY_NAME, ADDRESS_HOME_STREET_ADDRESS,
         ADDRESS_HOME_DEPENDENT_LOCALITY, ADDRESS_HOME_CITY, ADDRESS_HOME_STATE,
@@ -542,7 +567,6 @@ void AddAutofillProfileDetailsFromStatement(sql::Statement& s,
   profile->set_use_count(s.ColumnInt64(index++));
   profile->set_use_date(base::Time::FromTimeT(s.ColumnInt64(index++)));
   profile->set_modification_date(base::Time::FromTimeT(s.ColumnInt64(index++)));
-  profile->set_origin(s.ColumnString(index++));
   profile->set_language_code(s.ColumnString(index++));
   profile->set_profile_label(s.ColumnString(index++));
   profile->set_disallow_settings_visible_updates(s.ColumnBool(index++));
@@ -567,7 +591,7 @@ void BindCreditCardToStatement(const CreditCard& credit_card,
 
   for (ServerFieldType type : {CREDIT_CARD_NAME_FULL, CREDIT_CARD_EXP_MONTH,
                                CREDIT_CARD_EXP_4_DIGIT_YEAR}) {
-    s->BindString16(index++, GetInfo(credit_card, type));
+    s->BindString16(index++, Truncate(credit_card.GetRawInfo(type)));
   }
   BindEncryptedCardToColumn(
       s, index++, credit_card.GetRawInfo(CREDIT_CARD_NUMBER), encryptor);
@@ -962,6 +986,125 @@ std::u16string Substitute(const std::u16string& s,
   return result;
 }
 
+// All ServerFieldTypes stored for an AutofillProfile in `kContactInfoTable`.
+// When introducing a new field type, it suffices to add it here. When removing
+// a field type, removing it from the list suffices (no additional clean-up in
+// the table necessary).
+// This is not reusing `AutofillProfile::SupportedTypes()` for three reasons:
+// - Due to the table design, the stored types are already ambiguous, so we
+//   prefer the explicitness here.
+// - Some supported types (like PHONE_HOME_CITY_CODE) are not stored.
+// - Some non-supported types are stored (usually types that don't have filling
+//   support yet).
+std::vector<ServerFieldType> GetStoredContactInfoTypes() {
+  return {COMPANY_NAME,
+          NAME_HONORIFIC_PREFIX,
+          NAME_FIRST,
+          NAME_MIDDLE,
+          NAME_LAST_FIRST,
+          NAME_LAST_CONJUNCTION,
+          NAME_LAST_SECOND,
+          NAME_LAST,
+          NAME_FULL,
+          NAME_FULL_WITH_HONORIFIC_PREFIX,
+          ADDRESS_HOME_STREET_ADDRESS,
+          ADDRESS_HOME_STREET_NAME,
+          ADDRESS_HOME_DEPENDENT_STREET_NAME,
+          ADDRESS_HOME_HOUSE_NUMBER,
+          ADDRESS_HOME_SUBPREMISE,
+          ADDRESS_HOME_PREMISE_NAME,
+          ADDRESS_HOME_DEPENDENT_LOCALITY,
+          ADDRESS_HOME_CITY,
+          ADDRESS_HOME_STATE,
+          ADDRESS_HOME_ZIP,
+          ADDRESS_HOME_SORTING_CODE,
+          ADDRESS_HOME_COUNTRY,
+          ADDRESS_HOME_APT_NUM,
+          ADDRESS_HOME_FLOOR,
+          EMAIL_ADDRESS,
+          PHONE_HOME_WHOLE_NUMBER,
+          BIRTHDATE_DAY,
+          BIRTHDATE_MONTH,
+          BIRTHDATE_4_DIGIT_YEAR};
+}
+
+// This helper function binds the `profile`s properties to the placeholders in
+// `s`, in the order the columns are defined in the header file.
+// Instead of `profile.modification_date()`, `modification_date` is used. This
+// makes the function useful for updates as well.
+void BindAutofillProfileToContactInfoStatement(
+    const AutofillProfile& profile,
+    const base::Time& modification_date,
+    sql::Statement& s) {
+  int index = 0;
+  s.BindString(index++, profile.guid());
+  s.BindInt64(index++, profile.use_count());
+  s.BindInt64(index++, profile.use_date().ToTimeT());
+  s.BindInt64(index++, modification_date.ToTimeT());
+  s.BindString(index++, profile.language_code());
+  s.BindString(index++, profile.profile_label());
+}
+
+// Inserts `profile` into `kContactInfoTable` and `kContactInfoTypeTokensTable`.
+bool AddAutofillProfileToContactInfoTable(sql::Database* db,
+                                          const AutofillProfile& profile,
+                                          const base::Time& modification_date) {
+  sql::Statement s;
+  InsertBuilder(
+      db, s, kContactInfoTable,
+      {kGuid, kUseCount, kUseDate, kDateModified, kLanguageCode, kLabel});
+  BindAutofillProfileToContactInfoStatement(profile, modification_date, s);
+  if (!s.Run())
+    return false;
+  for (ServerFieldType type : GetStoredContactInfoTypes()) {
+    InsertBuilder(db, s, kContactInfoTypeTokensTable,
+                  {kGuid, kType, kValue, kVerificationStatus});
+    s.BindString(0, profile.guid());
+    s.BindInt(1, type);
+    s.BindString16(2, Truncate(profile.GetRawInfo(type)));
+    s.BindInt(3, profile.GetVerificationStatusInt(type));
+    if (!s.Run())
+      return false;
+  }
+  return true;
+}
+
+// Reads the profile with `guid` from `kContactInfoTable`. The profile's source
+// is set to `kAccount`.
+std::unique_ptr<AutofillProfile> GetAutofillProfileFromContactInfoTable(
+    sql::Database* db,
+    const std::string& guid) {
+  sql::Statement s;
+  if (!SelectByGuid(db, s, kContactInfoTable,
+                    {kUseCount, kUseDate, kDateModified, kLanguageCode, kLabel},
+                    guid)) {
+    return nullptr;
+  }
+  auto profile = std::make_unique<AutofillProfile>(
+      guid, /*origin=*/"", AutofillProfile::Source::kAccount);
+  int index = 0;
+  profile->set_use_count(s.ColumnInt64(index++));
+  profile->set_use_date(base::Time::FromTimeT(s.ColumnInt64(index++)));
+  profile->set_modification_date(base::Time::FromTimeT(s.ColumnInt64(index++)));
+  profile->set_language_code(s.ColumnString(index++));
+  profile->set_profile_label(s.ColumnString(index++));
+
+  if (!SelectByGuid(db, s, kContactInfoTypeTokensTable,
+                    {kType, kValue, kVerificationStatus}, guid)) {
+    return nullptr;
+  }
+  // As `SelectByGuid()` already calls `s.Step()`, do-while is used here.
+  do {
+    ServerFieldType type = ToSafeServerFieldType(s.ColumnInt(0), UNKNOWN_TYPE);
+    DCHECK(type != UNKNOWN_TYPE);
+    profile->SetRawInfoWithVerificationStatusInt(type, s.ColumnString16(1),
+                                                 s.ColumnInt(2));
+  } while (s.Step());
+
+  profile->FinalizeAfterImport();
+  return profile;
+}
+
 }  // namespace
 
 // static
@@ -994,7 +1137,8 @@ bool AutofillTable::CreateTablesIfNecessary() {
          InitModelTypeStateTable() && InitPaymentsCustomerDataTable() &&
          InitPaymentsUPIVPATable() &&
          InitServerCreditCardCloudTokenDataTable() && InitOfferDataTable() &&
-         InitOfferEligibleInstrumentTable() && InitOfferMerchantDomainTable();
+         InitOfferEligibleInstrumentTable() && InitOfferMerchantDomainTable() &&
+         InitContactInfoTable() && InitContactInfoTypeTokensTable();
 }
 
 bool AutofillTable::IsSyncable() {
@@ -1070,6 +1214,12 @@ bool AutofillTable::MigrateToVersion(int version,
     case 105:
       *update_compatible_version = false;
       return MigrateToVersion105AddAutofillIBANTable();
+    case 106:
+      *update_compatible_version = true;
+      return MigrateToVersion106RecreateAutofillIBANTable();
+    case 107:
+      *update_compatible_version = false;
+      return MigrateToVersion107AddContactInfoTables();
   }
   return true;
 }
@@ -1261,9 +1411,10 @@ bool AutofillTable::RemoveFormElementsAddedBetween(
   if (!s_delete.Run())
     return false;
   for (const auto& update : updates) {
-    sql::Statement s_update(db_->GetUniqueStatement(
-        "UPDATE autofill SET date_created = ?, date_last_used = ?, count = ?"
-        "WHERE name = ? AND value = ?"));
+    sql::Statement s_update;
+    UpdateBuilder(db_, s_update, kAutofillTable,
+                  {kDateCreated, kDateLastUsed, kCount},
+                  "name = ? AND value = ?");
     s_update.BindInt64(0, update.date_created);
     s_update.BindInt64(1, update.date_last_used);
     s_update.BindInt(2, update.count);
@@ -1405,6 +1556,15 @@ bool AutofillTable::UpdateAutofillEntries(
 }
 
 bool AutofillTable::AddAutofillProfile(const AutofillProfile& profile) {
+  if (profile.source() == AutofillProfile::Source::kAccount) {
+    sql::Transaction transaction(db_);
+    return transaction.Begin() &&
+           AddAutofillProfileToContactInfoTable(
+               db_, profile, /*modification_date=*/AutofillClock::Now()) &&
+           transaction.Commit();
+  }
+
+  DCHECK(profile.source() == AutofillProfile::Source::kLocal);
   sql::Statement s;
   InsertBuilder(
       db_, s, kAutofillProfilesTable,
@@ -1423,25 +1583,38 @@ bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
   DCHECK(base::IsValidGUID(profile.guid()));
 
   std::unique_ptr<AutofillProfile> old_profile =
-      GetAutofillProfile(profile.guid());
+      GetAutofillProfile(profile.guid(), profile.source());
   if (!old_profile)
     return false;
 
-  bool update_modification_date = *old_profile != profile;
+  base::Time new_modification_date = *old_profile != profile
+                                         ? AutofillClock::Now()
+                                         : old_profile->modification_date();
 
-  sql::Statement s(db_->GetUniqueStatement(
-      "UPDATE autofill_profiles "
-      "SET guid=?, company_name=?, street_address=?, dependent_locality=?, "
-      "    city=?, state=?, zipcode=?, sorting_code=?, country_code=?, "
-      "    use_count=?, use_date=?, date_modified=?, origin=?, "
-      "    language_code=?, label=?, disallow_settings_visible_updates=? "
-      "WHERE guid=?"));
-  BindAutofillProfileToStatement(profile,
-                                 update_modification_date
-                                     ? AutofillClock::Now()
-                                     : old_profile->modification_date(),
-                                 &s);
-  s.BindString(16, profile.guid());
+  if (profile.source() == AutofillProfile::Source::kAccount) {
+    // Implementing an update as remove + add has multiple advantages:
+    // - Prevents outdated (ServerFieldType, value) pairs from remaining in the
+    //   `kContactInfoTypeTokensTables`, in case field types are removed.
+    // - Simpler code.
+    // The possible downside is performance. This is not an issue, as updates
+    // happen rarely and asynchronously.
+    sql::Transaction transaction(db_);
+    return transaction.Begin() &&
+           RemoveAutofillProfile(profile.guid(), profile.source()) &&
+           AddAutofillProfileToContactInfoTable(db_, profile,
+                                                new_modification_date) &&
+           transaction.Commit();
+  }
+
+  DCHECK(profile.source() == AutofillProfile::Source::kLocal);
+  sql::Statement s;
+  UpdateBuilder(
+      db_, s, kAutofillProfilesTable,
+      {kGuid, kCompanyName, kStreetAddress, kDependentLocality, kCity, kState,
+       kZipcode, kSortingCode, kCountryCode, kUseCount, kUseDate, kDateModified,
+       kOrigin, kLanguageCode, kLabel, kDisallowSettingsVisibleUpdates},
+      "guid = ?1");
+  BindAutofillProfileToStatement(profile, new_modification_date, &s);
 
   bool result = s.Run();
   DCHECK_GT(db_->GetLastChangeCount(), 0);
@@ -1455,29 +1628,42 @@ bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
   return AddAutofillProfilePieces(profile, db_);
 }
 
-bool AutofillTable::RemoveAutofillProfile(const std::string& guid) {
+bool AutofillTable::RemoveAutofillProfile(
+    const std::string& guid,
+    AutofillProfile::Source profile_source) {
   DCHECK(base::IsValidGUID(guid));
+  if (profile_source == AutofillProfile::Source::kAccount) {
+    sql::Transaction transaction(db_);
+    return transaction.Begin() &&
+           DeleteWhereColumnEq(db_, kContactInfoTable, kGuid, guid) &&
+           DeleteWhereColumnEq(db_, kContactInfoTypeTokensTable, kGuid, guid) &&
+           transaction.Commit();
+  }
+  DCHECK(profile_source == AutofillProfile::Source::kLocal);
   return DeleteWhereColumnEq(db_, kAutofillProfilesTable, kGuid, guid) &&
          RemoveAutofillProfilePieces(guid, db_);
 }
 
 std::unique_ptr<AutofillProfile> AutofillTable::GetAutofillProfile(
-    const std::string& guid) {
+    const std::string& guid,
+    AutofillProfile::Source profile_source) {
   DCHECK(base::IsValidGUID(guid));
+  if (profile_source == AutofillProfile::Source::kAccount)
+    return GetAutofillProfileFromContactInfoTable(db_, guid);
+
+  DCHECK(profile_source == AutofillProfile::Source::kLocal);
   sql::Statement s;
-  SelectBuilder(
-      db_, s, kAutofillProfilesTable,
-      {kGuid, kCompanyName, kStreetAddress, kDependentLocality, kCity, kState,
-       kZipcode, kSortingCode, kCountryCode, kUseCount, kUseDate, kDateModified,
-       kOrigin, kLanguageCode, kLabel, kDisallowSettingsVisibleUpdates},
-      "WHERE guid=?");
-  s.BindString(0, guid);
-
-  if (!s.Step())
+  if (!SelectByGuid(db_, s, kAutofillProfilesTable,
+                    {kOrigin, kCompanyName, kStreetAddress, kDependentLocality,
+                     kCity, kState, kZipcode, kSortingCode, kCountryCode,
+                     kUseCount, kUseDate, kDateModified, kLanguageCode, kLabel,
+                     kDisallowSettingsVisibleUpdates},
+                    guid)) {
     return nullptr;
+  }
 
-  auto profile = std::make_unique<AutofillProfile>();
-  profile->set_guid(s.ColumnString(0));
+  auto profile = std::make_unique<AutofillProfile>(
+      guid, /*origin=*/s.ColumnString(0), AutofillProfile::Source::kLocal);
   DCHECK(base::IsValidGUID(profile->guid()));
 
   // Get associated name info using guid.
@@ -1509,19 +1695,24 @@ std::unique_ptr<AutofillProfile> AutofillTable::GetAutofillProfile(
 }
 
 bool AutofillTable::GetAutofillProfiles(
-    std::vector<std::unique_ptr<AutofillProfile>>* profiles) {
+    std::vector<std::unique_ptr<AutofillProfile>>* profiles,
+    AutofillProfile::Source profile_source) {
   DCHECK(profiles);
   profiles->clear();
 
   sql::Statement s;
-  SelectBuilder(db_, s, kAutofillProfilesTable, {kGuid},
-                "ORDER BY date_modified DESC, guid");
+  SelectBuilder(db_, s,
+                profile_source == AutofillProfile::Source::kAccount
+                    ? kContactInfoTable
+                    : kAutofillProfilesTable,
+                {kGuid}, "ORDER BY date_modified DESC, guid");
 
   while (s.Step()) {
     std::string guid = s.ColumnString(0);
-    std::unique_ptr<AutofillProfile> profile = GetAutofillProfile(guid);
+    std::unique_ptr<AutofillProfile> profile =
+        GetAutofillProfile(guid, profile_source);
     if (!profile)
-      return false;
+      continue;
     profiles->push_back(std::move(profile));
   }
 
@@ -1678,10 +1869,9 @@ bool AutofillTable::UpdateIBAN(const IBAN& iban) {
     return true;
   }
 
-  sql::Statement s(db_->GetUniqueStatement(
-      "UPDATE ibans "
-      "SET guid=?, use_count=?, use_date=?, value=?, nickname=? "
-      "WHERE guid=?1"));
+  sql::Statement s;
+  UpdateBuilder(db_, s, kIBANsTable,
+                {kGuid, kUseCount, kUseDate, kValue, kNickname}, "guid=?1");
   BindIBANToStatement(iban, &s, *autofill_table_encryptor_);
 
   bool result = s.Run();
@@ -1752,12 +1942,12 @@ bool AutofillTable::UpdateCreditCard(const CreditCard& credit_card) {
 
   bool update_modification_date = *old_credit_card != credit_card;
 
-  sql::Statement s(db_->GetUniqueStatement(
-      "UPDATE credit_cards "
-      "SET guid=?, name_on_card=?, expiration_month=?,"
-      "expiration_year=?, card_number_encrypted=?, use_count=?, use_date=?,"
-      "date_modified=?, origin=?, billing_address_id=?, nickname=?"
-      "WHERE guid=?1"));
+  sql::Statement s;
+  UpdateBuilder(db_, s, kCreditCardsTable,
+                {kGuid, kNameOnCard, kExpirationMonth, kExpirationYear,
+                 kCardNumberEncrypted, kUseCount, kUseDate, kDateModified,
+                 kOrigin, kBillingAddressId, kNickname},
+                "guid=?1");
   BindCreditCardToStatement(credit_card,
                             update_modification_date
                                 ? AutofillClock::Now()
@@ -2451,7 +2641,8 @@ bool AutofillTable::RemoveAutofillDataModifiedBetween(
   profiles->clear();
   while (s_profiles_get.Step()) {
     std::string guid = s_profiles_get.ColumnString(0);
-    std::unique_ptr<AutofillProfile> profile = GetAutofillProfile(guid);
+    std::unique_ptr<AutofillProfile> profile =
+        GetAutofillProfile(guid, AutofillProfile::Source::kLocal);
     if (!profile)
       return false;
     profiles->push_back(std::move(profile));
@@ -2535,13 +2726,15 @@ bool AutofillTable::RemoveOriginURLsModifiedBetween(
 
   // Clear out the origins for the found Autofill profiles.
   for (const std::string& guid : profile_guids) {
-    sql::Statement s_profile(db_->GetUniqueStatement(
-        "UPDATE autofill_profiles SET origin='' WHERE guid=?"));
-    s_profile.BindString(0, guid);
+    sql::Statement s_profile;
+    UpdateBuilder(db_, s_profile, kAutofillProfilesTable, {kOrigin}, "guid=?");
+    s_profile.BindString(0, "");
+    s_profile.BindString(1, guid);
     if (!s_profile.Run())
       return false;
 
-    std::unique_ptr<AutofillProfile> profile = GetAutofillProfile(guid);
+    std::unique_ptr<AutofillProfile> profile =
+        GetAutofillProfile(guid, AutofillProfile::Source::kLocal);
     if (!profile)
       return false;
 
@@ -2565,9 +2758,10 @@ bool AutofillTable::RemoveOriginURLsModifiedBetween(
 
   // Clear out the origins for the found credit cards.
   for (const std::string& guid : credit_card_guids) {
-    sql::Statement s_credit_card(db_->GetUniqueStatement(
-        "UPDATE credit_cards SET origin='' WHERE guid=?"));
-    s_credit_card.BindString(0, guid);
+    sql::Statement s_credit_card;
+    UpdateBuilder(db_, s_credit_card, kCreditCardsTable, {kOrigin}, "guid=?");
+    s_credit_card.BindString(0, "");
+    s_credit_card.BindString(1, guid);
     if (!s_credit_card.Run())
       return false;
   }
@@ -3022,6 +3216,37 @@ bool AutofillTable::MigrateToVersion105AddAutofillIBANTable() {
                       {kUseDate, "INTEGER NOT NULL DEFAULT 0"},
                       {kValue, "VARCHAR"},
                       {kNickname, "VARCHAR"}}) &&
+         transaction.Commit();
+}
+
+bool AutofillTable::MigrateToVersion106RecreateAutofillIBANTable() {
+  sql::Transaction transaction(db_);
+  return transaction.Begin() && DropTable(db_, kIBANsTable) &&
+         CreateTable(db_, kIBANsTable,
+                     {{kGuid, "VARCHAR PRIMARY KEY"},
+                      {kUseCount, "INTEGER NOT NULL DEFAULT 0"},
+                      {kUseDate, "INTEGER NOT NULL DEFAULT 0"},
+                      {kValue, "VARCHAR"},
+                      {kNickname, "VARCHAR"}}) &&
+         transaction.Commit();
+}
+
+bool AutofillTable::MigrateToVersion107AddContactInfoTables() {
+  sql::Transaction transaction(db_);
+  return transaction.Begin() &&
+         CreateTable(db_, kContactInfoTable,
+                     {{kGuid, "VARCHAR PRIMARY KEY"},
+                      {kUseCount, "INTEGER NOT NULL DEFAULT 0"},
+                      {kUseDate, "INTEGER NOT NULL DEFAULT 0"},
+                      {kDateModified, "INTEGER NOT NULL DEFAULT 0"},
+                      {kLanguageCode, "VARCHAR"},
+                      {kLabel, "VARCHAR"}}) &&
+         CreateTable(db_, kContactInfoTypeTokensTable,
+                     {{kGuid, "VARCHAR"},
+                      {kType, "INTEGER"},
+                      {kValue, "VARCHAR"},
+                      {kVerificationStatus, "INTEGER DEFAULT 0"}},
+                     /*composite_primary_key=*/{kGuid, kType}) &&
          transaction.Commit();
 }
 
@@ -3483,6 +3708,25 @@ bool AutofillTable::InitOfferMerchantDomainTable() {
   return CreateTableIfNotExists(
       db_, kOfferMerchantDomainTable,
       {{kOfferId, "UNSIGNED LONG"}, {kMerchantDomain, "VARCHAR"}});
+}
+
+bool AutofillTable::InitContactInfoTable() {
+  return CreateTableIfNotExists(db_, kContactInfoTable,
+                                {{kGuid, "VARCHAR PRIMARY KEY"},
+                                 {kUseCount, "INTEGER NOT NULL DEFAULT 0"},
+                                 {kUseDate, "INTEGER NOT NULL DEFAULT 0"},
+                                 {kDateModified, "INTEGER NOT NULL DEFAULT 0"},
+                                 {kLanguageCode, "VARCHAR"},
+                                 {kLabel, "VARCHAR"}});
+}
+
+bool AutofillTable::InitContactInfoTypeTokensTable() {
+  return CreateTableIfNotExists(db_, kContactInfoTypeTokensTable,
+                                {{kGuid, "VARCHAR"},
+                                 {kType, "INTEGER"},
+                                 {kValue, "VARCHAR"},
+                                 {kVerificationStatus, "INTEGER DEFAULT 0"}},
+                                /*composite_primary_key=*/{kGuid, kType});
 }
 
 }  // namespace autofill

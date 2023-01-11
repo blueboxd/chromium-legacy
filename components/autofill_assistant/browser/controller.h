@@ -117,7 +117,6 @@ class Controller : public ScriptExecutorDelegate,
   const GURL& GetCurrentURL() override;
   const GURL& GetDeeplinkURL() override;
   const GURL& GetScriptURL() override;
-  Service* GetService() override;
   WebController* GetWebController() override;
   const TriggerContext* GetTriggerContext() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
@@ -189,6 +188,7 @@ class Controller : public ScriptExecutorDelegate,
   bool ShouldShowOverlay() const override;
   const ClientSettings& GetClientSettings() const override;
   void ShutdownIfNecessary() override;
+  void EnterBrowseModeForShutdown() override;
   void NotifyUserDataChange(UserDataFieldChange field_change) override;
   void GetTouchableArea(std::vector<RectF>* area) const override;
   void GetRestrictedArea(std::vector<RectF>* area) const override;
@@ -279,15 +279,19 @@ class Controller : public ScriptExecutorDelegate,
                   UserDataFieldChange field_change,
                   std::unique_ptr<autofill::AutofillProfile> profile);
 
-  // Show the first "Opening..." message and enter START state.
+  // Shows the first "Opening..." message and enters START state.
   void ShowFirstMessageAndStart();
 
-  // Clear out visible state and enter the stopped state.
+  // Clears out visible state and enters the stopped state.
   void EnterStoppedState();
 
-  // Configure the UI for the stopped state, clearing out visible state except
+  // Configures the UI for the stopped state, clearing out visible state except
   // for the message and possibly the "Send feedback" chip.
   void SetStoppedUI();
+
+  // Shuts down Autofill Assistant if the current `WebContents`' connection
+  // is https, but not secure. Returns `true` if a shut-down occurred.
+  bool ShutdownIfCertificateInsecure();
 
   // Notifies observers and shuts down.
   void Shutdown(Metrics::DropOutReason reason);

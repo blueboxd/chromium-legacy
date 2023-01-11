@@ -41,7 +41,7 @@ proto_library("interface_proto") {
   proto_deps = [
     ":record_constants",
     ":record_proto",
-    "//components/reporting/util:status_proto",
+    "//components/reporting/proto:status_proto",
   ]
 }
 
@@ -55,7 +55,7 @@ proto_library("health_proto") {
 
   deps = [
     ":record_constants",
-    "//components/reporting/util:status_proto",
+    "//components/reporting/proto:status_proto",
   ]
 }
 
@@ -76,16 +76,10 @@ proto_library("metric_data_proto") {
   link_deps = [ "//components/services/app_service/public/protos" ]
 }
 
-# Security XDR events definitions.
-proto_library("security_xdr_events_proto") {
+proto_library("status_proto") {
+  # Generate JS so it can be used by chrome extensions
+  generate_javascript = true
+
   proto_in_dir = "//"
-
-  sources = [ "synced/security_xdr_events.proto" ]
-}
-
-# Definition for pipeline id storage info.
-proto_library("pipeline_id_proto") {
-  proto_in_dir = "//"
-
-  sources = [ "synced/pipeline_id.proto" ]
+  sources = [ "synced/status.proto" ]
 }

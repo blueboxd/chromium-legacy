@@ -128,8 +128,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     // Prioritise one BeginMainFrame after an input task.
     bool prioritize_compositing_after_input;
 
-    // If enabled, base::ThreadTaskRunnerHandle::Get() and
-    // base::SequencedTaskRunnerHandle::Get() returns the current active
+    // If enabled, base::SingleThreadTaskRunner::GetCurrentDefault() and
+    // base::SequencedTaskRunner::GetCurrentDefault() returns the current active
     // per-ASG task runner instead of the per-thread task runner.
     bool mbi_override_task_runner_handle;
 
@@ -142,6 +142,11 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     // equivalent to the existing behavior.
     CompositorTQPolicyDuringThreadedScroll
         compositor_tq_policy_during_threaded_scroll;
+
+    // If we haven't run BeginMainFrame in this many milliseconds, give the next
+    // BeginMainFrame task elevated priority.
+    base::TimeDelta prioritize_compositing_after_delay_pre_fcp;
+    base::TimeDelta prioritize_compositing_after_delay_post_fcp;
   };
 
   static const char* UseCaseToString(UseCase use_case);
@@ -157,6 +162,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   // WebThreadScheduler implementation:
   std::unique_ptr<MainThread> CreateMainThread() override;
+  std::unique_ptr<WebAgentGroupScheduler> CreateWebAgentGroupScheduler()
+      override;
   // Note: this is also shared by the ThreadScheduler interface.
   scoped_refptr<base::SingleThreadTaskRunner> NonWakingTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> DeprecatedDefaultTaskRunner()
@@ -191,9 +198,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
                            base::TimeDelta delay,
                            Thread::IdleTask) override;
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> CleanupTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
-  std::unique_ptr<WebAgentGroupScheduler> CreateAgentGroupScheduler() override;
-  WebAgentGroupScheduler* GetCurrentAgentGroupScheduler() override;
+  AgentGroupScheduler* CreateAgentGroupScheduler() override;
+  AgentGroupScheduler* GetCurrentAgentGroupScheduler() override;
   void SetV8Isolate(v8::Isolate* isolate) override;
   base::TimeTicks MonotonicallyIncreasingVirtualTime() override;
 
@@ -443,8 +451,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   struct AgentGroupSchedulerScope {
     std::unique_ptr<base::ThreadTaskRunnerHandleOverride>
         thread_task_runner_handle_override;
-    WebAgentGroupScheduler* previous_agent_group_scheduler;
-    WebAgentGroupScheduler* current_agent_group_scheduler;
+    WeakPersistent<AgentGroupScheduler> previous_agent_group_scheduler;
+    WeakPersistent<AgentGroupScheduler> current_agent_group_scheduler;
     scoped_refptr<base::SingleThreadTaskRunner> previous_task_runner;
     scoped_refptr<base::SingleThreadTaskRunner> current_task_runner;
     const char* trace_event_scope_name;
@@ -452,7 +460,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   };
 
   void BeginAgentGroupSchedulerScope(
-      WebAgentGroupScheduler* next_agent_group_scheduler);
+      AgentGroupScheduler* next_agent_group_scheduler);
   void EndAgentGroupSchedulerScope();
 
   bool IsAnyOrdinaryMainFrameWaitingForFirstContentfulPaint() const;
@@ -860,7 +868,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     std::unique_ptr<power_scheduler::PowerModeVoter> audible_power_mode_voter;
 
     std::unique_ptr<TaskAttributionTracker> task_attribution_tracker;
-    WTF::HashSet<AgentGroupSchedulerImpl*> agent_group_schedulers;
+    Persistent<HeapHashSet<WeakMember<AgentGroupSchedulerImpl>>>
+        agent_group_schedulers;
   };
 
   struct AnyThread {
@@ -937,7 +946,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   }
 
   PollableThreadSafeFlag policy_may_need_update_;
-  WebAgentGroupScheduler* current_agent_group_scheduler_{nullptr};
+  WeakPersistent<AgentGroupScheduler> current_agent_group_scheduler_;
 
   base::WeakPtrFactory<MainThreadSchedulerImpl> weak_factory_{this};
 };

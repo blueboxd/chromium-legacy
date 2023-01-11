@@ -101,8 +101,9 @@ FullscreenMagnifierController::FullscreenMagnifierController()
     : root_window_(Shell::GetPrimaryRootWindow()),
       scale_(kNonMagnifiedScale),
       original_scale_(kNonMagnifiedScale) {
-  Shell::Get()->AddPreTargetHandler(this,
-                                    ui::EventTarget::Priority::kAccessibility);
+  Shell::Get()->AddAccessibilityEventHandler(
+      this,
+      AccessibilityEventHandlerManager::HandlerType::kFullscreenMagnifier);
   root_window_->AddObserver(this);
   root_window_->GetHost()->GetEventSource()->AddEventRewriter(this);
 
@@ -119,7 +120,7 @@ FullscreenMagnifierController::~FullscreenMagnifierController() {
   root_window_->GetHost()->GetEventSource()->RemoveEventRewriter(this);
   root_window_->RemoveObserver(this);
 
-  Shell::Get()->RemovePreTargetHandler(this);
+  Shell::Get()->RemoveAccessibilityEventHandler(this);
 }
 
 void FullscreenMagnifierController::SetEnabled(bool enabled) {
@@ -648,7 +649,6 @@ void FullscreenMagnifierController::OnMouseMove(
   int margin = kCursorPanningMargin / scale_;  // No need to consider DPI.
 
   // Edge mouse following mode.
-  // TODO(https://crbug.com/1178027): Add continuous mouse following mode.
   int x_margin = margin;
   int y_margin = margin;
 
@@ -793,10 +793,8 @@ bool FullscreenMagnifierController::ProcessGestures() {
           display::Screen::GetScreen()->GetDisplayNearestWindow(root_window_);
       gfx::Transform rotation_transform;
       rotation_transform.Rotate(display.PanelRotationAsDegree());
-      gfx::Transform rotation_inverse_transform;
-      const bool result =
-          rotation_transform.GetInverse(&rotation_inverse_transform);
-      DCHECK(result);
+      gfx::Transform rotation_inverse_transform =
+          rotation_transform.GetCheckedInverse();
       gfx::PointF scroll = rotation_inverse_transform.MapPoint(
           gfx::PointF(details.scroll_x(), details.scroll_y()));
 

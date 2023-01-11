@@ -710,7 +710,7 @@ public class RootUiCoordinator
                     mTabModelSelectorSupplier.get().openNewTab(
                             generateUrlParamsForSearch(tab, query),
                             TabLaunchType.FROM_LONGPRESS_FOREGROUND, tab, tab.isIncognito());
-                }, mShareDelegateSupplier, canDrawOutsideScreen());
+                }, mShareDelegateSupplier);
         mVrModeObserver = new VrModeObserver() {
             @Override
             public void onEnterVr() {
@@ -900,10 +900,7 @@ public class RootUiCoordinator
     }
 
     private void initScrollCapture() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S
-                || DeviceFormFactor.isWindowOnTablet(mWindowAndroid)) {
-            return;
-        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return;
 
         mScrollCaptureManager = new ScrollCaptureManager(mActivityTabProvider);
     }
@@ -1332,25 +1329,6 @@ public class RootUiCoordinator
         return appRect;
     }
 
-    /**
-     * Provides the height of the base app area on which bottom sheet client is drawn. This is
-     * not necessary for most embedders of BottomSheet, unless they have non-zero vertical Window
-     * offset that would push down a part of app area out of the screen. BottomSheet then uses
-     * this height to resize the sheet content so all of it is visible.
-     * @return Supplier of the height of the base app area. {@code null} if not necessary.
-     */
-    @Nullable
-    protected Supplier<Integer> getBaseHeightProvider() {
-        return null;
-    }
-
-    /**
-     * Whether UI like popup can be drawn outside the screen. {@code false} by default.
-     */
-    protected boolean canDrawOutsideScreen() {
-        return false;
-    }
-
     private void hideAppMenu() {
         if (mAppMenuCoordinator != null) mAppMenuCoordinator.getAppMenuHandler().hideAppMenu();
     }
@@ -1443,7 +1421,7 @@ public class RootUiCoordinator
                         -> mScrimCoordinator,
                 sheetInitializedCallback, mActivity.getWindow(),
                 mWindowAndroid.getKeyboardDelegate(),
-                () -> mActivity.findViewById(R.id.sheet_container), getBaseHeightProvider());
+                () -> mActivity.findViewById(R.id.sheet_container));
         BottomSheetControllerFactory.setExceptionReporter(
                 (throwable)
                         -> ChromePureJavaExceptionReporter.reportJavaException(

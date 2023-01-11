@@ -184,6 +184,13 @@ class ContentAutofillDriver : public AutofillDriver,
       const FormFieldData& raw_field,
       const autofill_assistant::AutofillAssistantIntent intent);
 
+  // Called to inform the browser that in the field with `form_global_id` and
+  // `field_global_id`, the context menu was triggered. This is different from
+  // the usual Autofill flow where the renderer calls the browser or the browser
+  // informs the renderer of some event.
+  virtual void OnContextMenuShownInField(const FormGlobalId& form_global_id,
+                                         const FieldGlobalId& field_global_id);
+
   // Triggers a reparse of the new forms in the AutofillAgent. This is necessary
   // when a form is seen in a child frame and it is not known which form is its
   // parent.
@@ -235,6 +242,8 @@ class ContentAutofillDriver : public AutofillDriver,
   void FocusNoLongerOnFormCallback(bool had_interacted_form);
   void UnsetKeyPressHandlerCallback();
   void SetShouldSuppressKeyboardCallback(bool suppress);
+  void OnContextMenuShownInFieldCallback(const FormGlobalId& form_global_id,
+                                         const FieldGlobalId& field_global_id);
 
  private:
   friend class ContentAutofillDriverTestApi;
@@ -304,7 +313,7 @@ class ContentAutofillDriver : public AutofillDriver,
       const FormFieldData& field,
       const gfx::RectF& bounding_box,
       int32_t query_id,
-      bool autoselect_first_suggestion,
+      AutoselectFirstSuggestion autoselect_first_suggestion,
       FormElementWasClicked form_element_was_clicked) override;
   void HidePopup() override;
   void FocusNoLongerOnForm(bool had_interacted_form) override;

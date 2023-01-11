@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/download/background_download_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
@@ -36,7 +37,9 @@ OptimizationGuideKeyedServiceFactory::GetInstance() {
 OptimizationGuideKeyedServiceFactory::OptimizationGuideKeyedServiceFactory()
     : ProfileKeyedServiceFactory(
           "OptimizationGuideKeyedService",
-          ProfileSelections::BuildForRegularAndIncognito()) {}
+          ProfileSelections::BuildForRegularAndIncognito()) {
+  DependsOn(BackgroundDownloadServiceFactory::GetInstance());
+}
 
 OptimizationGuideKeyedServiceFactory::~OptimizationGuideKeyedServiceFactory() =
     default;
@@ -48,7 +51,7 @@ KeyedService* OptimizationGuideKeyedServiceFactory::BuildServiceInstanceFor(
   // lockscreen profile since it basically is an ephemeral profile anyway and we
   // cannot provide hints or models to it anyway.
   Profile* profile = Profile::FromBrowserContext(context);
-  if (!ash::ProfileHelper::IsRegularProfile(profile))
+  if (!ash::ProfileHelper::IsUserProfile(profile))
     return nullptr;
 #endif
   return new OptimizationGuideKeyedService(context);

@@ -3,11 +3,9 @@
 // found in the LICENSE file.
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
-import {dispatchSimpleEvent, getPropertyDescriptor, PropertyKind} from 'chrome://resources/js/cr.m.js';
-import {Command} from './command.js';
-import {contextMenuHandler} from './context_menu_handler.js';
-import {Menu} from './menu.js';
+import {dispatchSimpleEvent, getPropertyDescriptor, PropertyKind} from 'chrome://resources/ash/common/cr_deprecated.js';
 
+import {maybeShowTooltip} from '../../../common/js/dom_utils.js';
 import {FileType} from '../../../common/js/file_type.js';
 import {vmTypeToIconName} from '../../../common/js/icon_util.js';
 import {metrics} from '../../../common/js/metrics.js';
@@ -23,6 +21,9 @@ import {DirectoryModel} from '../directory_model.js';
 import {MetadataModel} from '../metadata/metadata_model.js';
 import {NavigationListModel, NavigationModelAndroidAppItem, NavigationModelFakeItem, NavigationModelItem, NavigationModelItemType, NavigationModelShortcutItem, NavigationModelVolumeItem, NavigationSection} from '../navigation_list_model.js';
 
+import {Command} from './command.js';
+import {contextMenuHandler} from './context_menu_handler.js';
+import {Menu} from './menu.js';
 import {Tree, TreeItem} from './tree.js';
 
 // Namespace
@@ -292,7 +293,7 @@ export class DirectoryItem extends FilesTreeItem {
     this.addEventListener('collapse', this.onCollapse_.bind(this), false);
 
     // Default delayExpansion to false. Volumes will set it to true for
-    // provided file systems. SubDirectories will inherit from their
+    // provided and SMB file systems. SubDirectories will inherit from their
     // parent.
     this.delayExpansion = false;
 
@@ -862,6 +863,7 @@ export class SubDirectoryItem extends DirectoryItem {
 
     this.dirEntry_ = dirEntry;
     this.entry = dirEntry;
+    this.disabled = parentDirItem.disabled;
     this.delayExpansion = parentDirItem.delayExpansion;
 
     if (this.delayExpansion) {
@@ -973,6 +975,7 @@ export class EntryListItem extends DirectoryItem {
     this.dirEntry_ = modelItem.entry;
     this.modelItem_ = modelItem;
     this.rootType_ = rootType;
+    this.disabled = modelItem.disabled;
 
     if (rootType === VolumeManagerCommon.RootType.REMOVABLE) {
       this.setupEjectButton_(this.rowElement);
@@ -1111,10 +1114,12 @@ class VolumeItem extends DirectoryItem {
 
     this.modelItem_ = modelItem;
     this.volumeInfo_ = modelItem.volumeInfo;
+    this.disabled = modelItem.disabled;
 
-    // Provided volumes should delay the expansion of child nodes
-    // for performance reasons.
-    this.delayExpansion = (this.volumeInfo.volumeType === 'provided');
+    // Network file systems should delay the expansion of child nodes for
+    // performance reasons.
+    this.delayExpansion =
+        this.volumeInfo.source === VolumeManagerCommon.Source.NETWORK;
 
     // Set helper attribute for testing.
     if (window.IN_TEST) {
@@ -1645,6 +1650,7 @@ export class ShortcutItem extends FilesTreeItem {
 
     this.dirEntry_ = modelItem.entry;
     this.modelItem_ = modelItem;
+    this.disabled = modelItem.disabled;
 
     const icon = this.querySelector('.icon');
     icon.classList.add('item-icon');
@@ -1771,6 +1777,7 @@ class AndroidAppItem extends FilesTreeItem {
     }
 
     this.modelItem_ = modelItem;
+    this.disabled = modelItem.disabled;
 
     const icon = this.querySelector('.icon');
     icon.classList.add('item-icon');
@@ -1850,6 +1857,7 @@ export class FakeItem extends FilesTreeItem {
     this.dirEntry_ = modelItem.entry;
     this.modelItem_ = modelItem;
     this.rootType_ = rootType;
+    this.disabled = modelItem.disabled;
 
     const icon = this.querySelector('.icon');
     icon.classList.add('item-icon');
@@ -2001,10 +2009,6 @@ export class DirectoryTree extends Tree {
     this.directoryModel_.addEventListener(
         'directory-changed', this.onCurrentDirectoryChanged_.bind(this));
 
-    util.addEventListenerToBackgroundComponent(
-        fileOperationManager, 'entries-changed',
-        this.onEntriesChanged_.bind(this));
-
     this.addEventListener(
         'scroll', this.onTreeScrollEvent_.bind(this), {passive: true});
 
@@ -2017,6 +2021,9 @@ export class DirectoryTree extends Tree {
       }
     });
 
+    this.addEventListener(
+        'mouseover', this.onMouseOver_.bind(this), {passive: true});
+
     this.privateOnDirectoryChangedBound_ =
         this.onDirectoryContentChanged_.bind(this);
     chrome.fileManagerPrivate.onDirectoryChanged.addListener(
@@ -2028,6 +2035,27 @@ export class DirectoryTree extends Tree {
      * @private
      */
     this.fakeEntriesVisible_ = fakeEntriesVisible;
+  }
+
+  onMouseOver_(event) {
+    this.maybeShowToolTip(event);
+  }
+
+  maybeShowToolTip(event) {
+    const target = event.composedPath()[0];
+    if (!target) {
+      return;
+    }
+    if (!(target.classList.contains('tree-row') &&
+          target.parentElement?.label)) {
+      return;
+    }
+    const labelElement = target.querySelector('.label');
+    if (!labelElement) {
+      return;
+    }
+
+    maybeShowTooltip(labelElement, target.parentElement.label);
   }
 
   /**
@@ -2163,39 +2191,6 @@ export class DirectoryTree extends Tree {
         await DirectoryItemTreeBaseMethods.searchAndSelectByEntry.call(
             this, entry);
     return found;
-  }
-
-  /**
-   * Handles entries changed event.
-   * @param {!Event} event
-   * @private
-   */
-  onEntriesChanged_(event) {
-    const directories = event.entries.filter((entry) => entry.isDirectory);
-
-    if (directories.length === 0) {
-      return;
-    }
-
-    switch (event.kind) {
-      case util.EntryChangedKind.CREATED:
-        // Handle as change event of parent entry.
-        Promise
-            .all(directories.map(
-                (directory) =>
-                    new Promise(directory.getParent.bind(directory))))
-            .then((parentDirectories) => {
-              parentDirectories.forEach(
-                  (parentDirectory) =>
-                      this.updateTreeByEntry_(parentDirectory));
-            });
-        break;
-      case util.EntryChangedKind.DELETED:
-        directories.forEach((directory) => this.updateTreeByEntry_(directory));
-        break;
-      default:
-        assertNotReached();
-    }
   }
 
   /**

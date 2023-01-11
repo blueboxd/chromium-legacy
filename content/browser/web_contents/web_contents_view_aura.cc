@@ -104,6 +104,8 @@ std::unique_ptr<WebContentsView> CreateWebContentsView(
   return rv;
 }
 
+class ScopedAllowBlockingForViewAura : public base::ScopedAllowBlocking {};
+
 namespace {
 
 using ::ui::mojom::DragOperation;
@@ -214,7 +216,7 @@ void PrepareDragForDownload(const DropData& drop_data,
                             base::UTF16ToUTF8(mime_type), default_name);
 
   // http://crbug.com/332579
-  base::ThreadRestrictions::ScopedAllowIO allow_file_operations;
+  ScopedAllowBlockingForViewAura allow_file_operations;
 
   base::FilePath temp_dir_path;
   if (!base::CreateNewTempDirectory(FILE_PATH_LITERAL("chrome_drag"),
@@ -365,7 +367,6 @@ aura::Window* GetHostWindow(aura::Window* window) {
 WebContentsViewAura::DropMetadata::DropMetadata(
     const ui::DropTargetEvent& event) {
   localized_location = event.location_f();
-  root_location = event.root_location_f();
   source_operations = event.source_operations();
   flags = event.flags();
 }
@@ -1470,7 +1471,7 @@ void WebContentsViewAura::OnDragEntered(const ui::DropTargetEvent& event) {
 }
 
 void WebContentsViewAura::DragUpdatedCallback(
-    DropMetadata drop_metadata,
+    ui::DropTargetEvent event,
     std::unique_ptr<DropData> drop_data,
     base::WeakPtr<RenderWidgetHostViewBase> target,
     absl::optional<gfx::PointF> transformed_pt) {
@@ -1491,23 +1492,24 @@ void WebContentsViewAura::DragUpdatedCallback(
   aura::Window* root_window = GetNativeView()->GetRootWindow();
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(root_window);
-  gfx::PointF screen_pt = drop_metadata.root_location;
+  gfx::PointF screen_pt = event.root_location_f();
   if (screen_position_client)
     screen_position_client->ConvertPointToScreen(root_window, &screen_pt);
 
   if (target_rwh != current_rwh_for_drag_.get()) {
     if (current_rwh_for_drag_) {
-      gfx::PointF transformed_leave_point = drop_metadata.localized_location;
+      gfx::PointF transformed_leave_point = event.location_f();
       static_cast<RenderWidgetHostViewBase*>(
           web_contents_->GetRenderWidgetHostView())
           ->TransformPointToCoordSpaceForView(
-              drop_metadata.localized_location,
+              event.location_f(),
               static_cast<RenderWidgetHostViewBase*>(
                   current_rwh_for_drag_->GetView()),
               &transformed_leave_point);
       current_rwh_for_drag_->DragTargetDragLeave(transformed_leave_point,
                                                  screen_pt);
     }
+    DropMetadata drop_metadata(event);
     DragEnteredCallback(drop_metadata, std::move(drop_data), target,
                         transformed_pt);
   }
@@ -1518,11 +1520,10 @@ void WebContentsViewAura::DragUpdatedCallback(
 
   DCHECK(transformed_pt.has_value());
   blink::DragOperationsMask op_mask =
-      ConvertToDragOperationsMask(drop_metadata.source_operations);
+      ConvertToDragOperationsMask(event.source_operations());
   target_rwh->DragTargetDragOver(
       transformed_pt.value(), screen_pt, op_mask,
-      ui::EventFlagsToWebEventModifiers(drop_metadata.flags),
-      base::DoNothing());
+      ui::EventFlagsToWebEventModifiers(event.flags()), base::DoNothing());
 
   if (drag_dest_delegate_)
     drag_dest_delegate_->OnDragOver();
@@ -1532,6 +1533,7 @@ aura::client::DragUpdateInfo WebContentsViewAura::OnDragUpdated(
     const ui::DropTargetEvent& event) {
   if (web_contents_->ShouldIgnoreInputEvents())
     return aura::client::DragUpdateInfo();
+
   aura::client::DragUpdateInfo drag_info;
   auto* focused_frame = web_contents_->GetFocusedFrame();
   if (focused_frame && !web_contents_->GetBrowserContext()->IsOffTheRecord()) {
@@ -1542,13 +1544,13 @@ aura::client::DragUpdateInfo WebContentsViewAura::OnDragUpdated(
   std::unique_ptr<DropData> drop_data = std::make_unique<DropData>();
   // Calling this here as event.data might become invalid inside the callback.
   PrepareDropData(drop_data.get(), event.data());
-  DropMetadata drop_metadata(event);
+
   web_contents_->GetInputEventRouter()
       ->GetRenderWidgetHostAtPointAsynchronously(
           web_contents_->GetRenderViewHost()->GetWidget()->GetView(),
           event.location_f(),
           base::BindOnce(&WebContentsViewAura::DragUpdatedCallback,
-                         weak_ptr_factory_.GetWeakPtr(), drop_metadata,
+                         weak_ptr_factory_.GetWeakPtr(), event,
                          std::move(drop_data)));
 
   drag_info.drag_operation = static_cast<int>(current_drag_op_);

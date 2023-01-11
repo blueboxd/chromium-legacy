@@ -7,10 +7,10 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/commands/omnibox_suggestion_commands.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_keyboard_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_change_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_result_consumer.h"
+#import "ios/chrome/browser/ui/omnibox/popup/carousel_item.h"
 #import "ios/chrome/browser/ui/omnibox/popup/content_providing.h"
 
 @protocol CarouselItemMenuProvider;
@@ -31,10 +31,10 @@ class LargeIconService;
 // Hence the delegation.
 @interface OmniboxPopupViewController
     : UIViewController <AutocompleteResultConsumer,
+                        CarouselItemConsumer,
                         ContentProviding,
                         OmniboxKeyboardDelegate,
                         OmniboxReturnDelegate,
-                        OmniboxSuggestionCommands,
                         UIScrollViewDelegate>
 
 @property(nonatomic, assign) BOOL incognito;

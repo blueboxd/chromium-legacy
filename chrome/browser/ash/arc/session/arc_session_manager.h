@@ -15,10 +15,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/arc/arc_support_host.h"
 #include "chrome/browser/ash/arc/policy/arc_android_management_checker.h"
 #include "chrome/browser/ash/arc/session/adb_sideloading_availability_delegate_impl.h"
+#include "chrome/browser/ash/arc/session/arc_activation_necessity_checker.h"
 #include "chrome/browser/ash/arc/session/arc_app_id_provider_impl.h"
 #include "chrome/browser/ash/arc/session/arc_requirement_checker.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager_observer.h"
@@ -295,6 +297,11 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   ArcSessionRunner* GetArcSessionRunnerForTesting();
   void SetAttemptUserExitCallbackForTesting(
       const base::RepeatingClosure& callback);
+  void SetAndroidManagementCheckerFactoryForTesting(
+      ArcRequirementChecker::AndroidManagementCheckerFactory
+          android_management_checker_factory) {
+    android_management_checker_factory_ = android_management_checker_factory;
+  }
 
   // Returns whether the Play Store app is requested to be launched by this
   // class. Should be used only for tests.
@@ -314,10 +321,6 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   void OnExpandPropertyFilesAndReadSaltForTesting(bool result) {
     OnExpandPropertyFilesAndReadSalt(ExpansionResult{{}, result});
   }
-
-  // Invokes OnBackgroundAndroidManagementChecked as if the check is done.
-  void OnBackgroundAndroidManagementCheckedForTesting(
-      ArcAndroidManagementChecker::CheckResult result);
 
   void reset_property_files_expansion_result() {
     property_files_expansion_result_.reset();
@@ -351,6 +354,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // twice. This method can be called to bypass that check when restarting.
   // Returns true if ARC is started directly.
   bool RequestEnableImpl();
+
+  // Called when activation necessity check is done.
+  void OnActivationNecessityChecked(bool result);
 
   // Negotiates the terms of service to user, if necessary.
   // Otherwise, move to StartAndroidManagementCheck().
@@ -459,7 +465,11 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   std::unique_ptr<ArcSupportHost> support_host_;
   std::unique_ptr<ArcDataRemover> data_remover_;
 
+  ArcRequirementChecker::AndroidManagementCheckerFactory
+      android_management_checker_factory_;
   std::unique_ptr<ArcRequirementChecker> requirement_checker_;
+
+  std::unique_ptr<ArcActivationNecessityChecker> activation_necessity_checker_;
 
   std::unique_ptr<ScopedOptInFlowTracker> scoped_opt_in_tracker_;
   std::unique_ptr<ArcPaiStarter> pai_starter_;
@@ -472,6 +482,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   base::TimeTicks pre_start_time_;
   // The time when ARC was about to start.
   base::TimeTicks start_time_;
+
+  // Used to measure the activation delay.
+  std::unique_ptr<base::ElapsedTimer> activation_delay_elapsed_timer_;
 
   base::RepeatingClosure attempt_user_exit_callback_;
 

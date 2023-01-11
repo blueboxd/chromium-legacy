@@ -9,6 +9,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/css/css_selector_list.h"
 #include "third_party/blink/renderer/core/css/rule_set.h"
+#include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
@@ -42,6 +43,7 @@ class TestStyleSheet {
   CSSRuleList* CssRules();
 
  private:
+  ScopedNullExecutionContext execution_context_;
   Persistent<Document> document_;
   Persistent<CSSStyleSheet> style_sheet_;
 };
@@ -91,7 +93,7 @@ StyleRuleBase* ParseRule(Document& document, String text);
 // https://drafts.css-houdini.org/css-properties-values-api-1/#syntax-strings
 const CSSValue* ParseValue(Document&, String syntax, String value);
 
-CSSSelectorList ParseSelectorList(const String&);
+CSSSelectorList* ParseSelectorList(const String&);
 
 }  // namespace css_test_helpers
 }  // namespace blink

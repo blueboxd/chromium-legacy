@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
+#include "base/scoped_observation_traits.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/ash/crostini/crostini_low_disk_notification.h"
@@ -35,8 +36,6 @@
 #include "chromeos/ash/components/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
-#include "chromeos/ash/components/network/network_state.h"
-#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -44,9 +43,14 @@
 
 class Profile;
 
+namespace ash {
+class NetworkState;
+class NetworkStateHandler;
+}  // namespace ash
+
 namespace guest_os {
 class GuestOsStabilityMonitor;
-}
+}  // namespace guest_os
 
 namespace crostini {
 
@@ -212,6 +216,9 @@ class CrostiniManager : public KeyedService,
 
   // Returns true if the /dev/kvm directory is present.
   static bool IsDevKvmPresent();
+
+  // Returns true if concierge allows termina VM to be launched.
+  static bool IsVmLaunchAllowed();
 
   // Upgrades cros-termina component if the current version is not
   // compatible. This is a no-op if chromeos::features::kCrostiniUseDlc is
@@ -430,6 +437,25 @@ class CrostiniManager : public KeyedService,
                                        CrostiniResultCallback callback,
                                        RestartObserver* observer = nullptr);
 
+  // CreateOption operations.
+
+  // Registers the CreateOptions to create a container with specified
+  // RestartOptions. For containers that existed before this feature, this will
+  // be generic restart options, for newly created containers, this will store
+  // the initial starting information. Returns false if there is already an
+  // CreateOption registered.
+  bool RegisterCreateOptions(const guest_os::GuestId& container_id,
+                             const RestartOptions& options);
+
+  // Fetches the CreateOptions as RestartOptions. Returns True if this
+  // configuration has been started with before.
+  bool FetchCreateOptions(const guest_os::GuestId& container_id,
+                          RestartOptions* restart_options);
+
+  // Sets an CreateOptions as booted, so it becomes a historical record and has
+  // no effect on future starts.
+  void SetCreateOptionsUsed(const guest_os::GuestId& container_id);
+
   // Cancel a restart request. The associated result callback will be fired
   // immediately and the observer will be removed. If there were multiple
   // restart requests for the same container id, the restart may actually keep
@@ -552,7 +578,7 @@ class CrostiniManager : public KeyedService,
 
   void UpdateVmState(std::string vm_name, VmState vm_state);
   bool IsVmRunning(std::string vm_name);
-  // Returns null if VM is not running.
+  // Returns absl::nullopt if VM is not running.
   absl::optional<VmInfo> GetVmInfo(std::string vm_name);
   void AddRunningVmForTesting(std::string vm_name);
   void AddStoppingVmForTesting(std::string vm_name);
@@ -561,7 +587,9 @@ class CrostiniManager : public KeyedService,
                              const vm_tools::cicerone::OsRelease& os_release);
   const vm_tools::cicerone::OsRelease* GetContainerOsRelease(
       const guest_os::GuestId& container_id) const;
-  void AddRunningContainerForTesting(std::string vm_name, ContainerInfo info);
+  void AddRunningContainerForTesting(std::string vm_name,
+                                     ContainerInfo info,
+                                     bool notify = false);
 
   // If the Crostini reporting policy is set, save the last app launch
   // time window and the Termina version in prefs for asynchronous reporting.
@@ -650,7 +678,9 @@ class CrostiniManager : public KeyedService,
   // Callback for ConciergeClient::TremplinStartedSignal. Called after the
   // Tremplin service starts. Updates running containers list and then calls the
   // |callback| with true, indicating success.
-  void OnStartTremplin(std::string vm_name, BoolCallback callback);
+  void OnStartTremplin(std::string vm_name,
+                       uint32_t seneschal_server_handle,
+                       BoolCallback callback);
 
   // Callback for ConciergeClient::StopVm. Called after the Concierge
   // service method finishes.
@@ -776,6 +806,16 @@ class CrostiniManager : public KeyedService,
   // check for /dev/kvm.
   static void CheckPaths();
 
+  // Helper for CrostiniManager::MaybeUpdateCrostini. Checks that concierge is
+  // available.
+  void CheckConciergeAvailable();
+
+  // Helper for CrostiniManager::MaybeUpdateCrostini. Checks that concierge will
+  // allow the termina VM to be launched.
+  void CheckVmLaunchAllowed(bool service_is_available);
+  void OnCheckVmLaunchAllowed(
+      absl::optional<vm_tools::concierge::GetVmLaunchAllowedResponse> response);
+
   // Helper for CrostiniManager::MaybeUpdateCrostini. Separated because the
   // checking component registration code may block.
   void MaybeUpdateCrostiniAfterChecks();
@@ -823,6 +863,7 @@ class CrostiniManager : public KeyedService,
   bool skip_restart_for_testing_ = false;
 
   static bool is_dev_kvm_present_;
+  static bool is_vm_launch_allowed_;
 
   // |is_unclean_startup_| is true when we detect Concierge still running at
   // session startup time, and the last session ended in a crash.
@@ -936,5 +977,35 @@ class CrostiniManager : public KeyedService,
 };
 
 }  // namespace crostini
+
+namespace base {
+
+template <>
+struct ScopedObservationTraits<crostini::CrostiniManager,
+                               crostini::ContainerShutdownObserver> {
+  static void AddObserver(crostini::CrostiniManager* source,
+                          crostini::ContainerShutdownObserver* observer) {
+    source->AddContainerShutdownObserver(observer);
+  }
+  static void RemoveObserver(crostini::CrostiniManager* source,
+                             crostini::ContainerShutdownObserver* observer) {
+    source->RemoveContainerShutdownObserver(observer);
+  }
+};
+
+template <>
+struct ScopedObservationTraits<crostini::CrostiniManager,
+                               ash::VmShutdownObserver> {
+  static void AddObserver(crostini::CrostiniManager* source,
+                          ash::VmShutdownObserver* observer) {
+    source->AddVmShutdownObserver(observer);
+  }
+  static void RemoveObserver(crostini::CrostiniManager* source,
+                             ash::VmShutdownObserver* observer) {
+    source->RemoveVmShutdownObserver(observer);
+  }
+};
+
+}  // namespace base
 
 #endif  // CHROME_BROWSER_ASH_CROSTINI_CROSTINI_MANAGER_H_

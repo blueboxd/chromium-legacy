@@ -11,7 +11,7 @@
 #import "base/time/time.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
-#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_long_press_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_menus_provider.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view.h"
@@ -323,6 +323,40 @@ const base::TimeDelta kToobarSlideInAnimationDuration = base::Milliseconds(500);
   for (ToolbarButton* button in self.view.allButtons) {
     button.dimmed = NO;
   }
+}
+
+- (void)updateUIForIPHDisplayed:(PopupMenuType)popupType {
+  ToolbarButton* selectedButton = nil;
+  switch (popupType) {
+    case PopupMenuTypeNavigationForward:
+      selectedButton = self.view.forwardButton;
+      break;
+    case PopupMenuTypeNavigationBackward:
+      selectedButton = self.view.backButton;
+      break;
+    case PopupMenuTypeNewTab:
+      selectedButton = self.view.openNewTabButton;
+      break;
+    case PopupMenuTypeTabGrid:
+      selectedButton = self.view.tabGridButton;
+      break;
+    case PopupMenuTypeToolsMenu:
+      selectedButton = self.view.toolsMenuButton;
+      break;
+    case PopupMenuTypeTabStripTabGrid:
+      // ignore
+      break;
+  }
+
+  selectedButton.iphHighlighted = YES;
+}
+
+- (void)updateUIForIPHDismissed {
+  self.view.backButton.iphHighlighted = NO;
+  self.view.forwardButton.iphHighlighted = NO;
+  self.view.openNewTabButton.iphHighlighted = NO;
+  self.view.tabGridButton.iphHighlighted = NO;
+  self.view.toolsMenuButton.iphHighlighted = NO;
 }
 
 #pragma mark - Accessibility

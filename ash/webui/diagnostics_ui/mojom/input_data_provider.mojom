@@ -156,6 +156,26 @@ struct TouchDeviceInfo {
   ConnectionType connection_type;
   TouchDeviceType type;
   string name;
+  // Indicates if the device is testable or not. e.g. a laptop is connecting
+  // to an external display. While the lid is closed and the internal display
+  // is off, the internal touchscreen would be untestable.
+  bool testable;
+};
+
+// Implemented by clients that wish to be updated when the internal display
+// is on or off.
+interface InternalDisplayPowerStateObserver {
+  // Called when the internal display power state changed, `is_display_on`
+  // indicates the just applied display state.
+  OnInternalDisplayPowerStateChanged(bool is_display_on);
+};
+
+// Implemented by clients that wish to be notified when the tablet mode is
+// changed.
+interface TabletModeObserver {
+  // OnTabletModeChanged calls are triggered when dsiplay mode has changed
+  // between clamshell mode and tablet mode.
+  OnTabletModeChanged(bool is_tablet_mode);
 };
 
 // Implemented by clients that wish to be updated when input devices are
@@ -192,4 +212,23 @@ interface InputDataProvider {
   // target SWA window, and enforces the security policy of only forwarding
   // key events to the observer when that window is visible and has focus.
   ObserveKeyEvents(uint32 id, pending_remote<KeyboardObserver> observer);
+
+  // Registers an observer for tablet mode changes and returns tablet mode
+  // initial state.
+  ObserveTabletMode(pending_remote<TabletModeObserver> observer) =>
+    (bool is_tablet_mode);
+
+  // Registers an observer for changes to the internal display power state.
+  ObserveInternalDisplayPowerState(
+    pending_remote<InternalDisplayPowerStateObserver> observer);
+
+  // When touchscreen tester is launched, the Diagnostics app should be moved
+  // to the correct testing touchscreen. `evdev_id` is the evdev id of the
+  // testing touchscreen.
+  MoveAppToTestingScreen(uint32 evdev_id);
+
+  // When touchscreen tester is closed, the Diagnostics app should be moved
+  // back to previous screen, only if it was moved to a different screen when
+  // the tester was launched.
+  MoveAppBackToPreviousScreen();
 };

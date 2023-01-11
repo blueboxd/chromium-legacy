@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/layout/layout_media.h"
 
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
@@ -60,6 +61,11 @@ void LayoutMedia::UpdateLayout() {
 
   LayoutImage::UpdateLayout();
 
+  // If LayoutMediaNGContainer flag is enabled, |NGReplacedLayoutAlgorithm::
+  // LayoutMediaChildren()| handles children layout.
+  if (RuntimeEnabledFeatures::LayoutMediaNGContainerEnabled())
+    return;
+
   auto new_rect = PhysicalContentBoxRect().ToLayoutRect();
 
   LayoutState state(*this);
@@ -67,7 +73,7 @@ void LayoutMedia::UpdateLayout() {
 // Iterate the children in reverse order so that the media controls are laid
 // out before the text track container. This is to ensure that the text
 // track rendering has an up-to-date position of the media controls for
-// overlap checking, see LayoutVTTCue.
+// overlap checking, see ComputeControlsRect() in vtt_cue_layout_algorithm.cc.
 #if DCHECK_IS_ON()
   bool seen_text_track_container = false;
   bool seen_interstitial = false;
@@ -131,13 +137,22 @@ bool LayoutMedia::IsChildAllowed(LayoutObject* child,
   // of replaced content, which is not supposed to be possible. This
   // check can be removed if ::-webkit-media-controls is made
   // internal.
-  if (child->GetNode()->IsMediaControls())
+  if (child->GetNode()->IsMediaControls()) {
+    // IsInline() and StyleRef() don't work at this timing.
+    if (child->IsFlexibleBoxIncludingNG() &&
+        child->GetNode()->GetComputedStyle()->IsDisplayInlineType()) {
+      UseCounter::Count(GetDocument(), WebFeature::kLayoutMediaInlineChildren);
+    }
     return child->IsFlexibleBoxIncludingNG();
+  }
 
   if (child->GetNode()->IsTextTrackContainer() ||
       child->GetNode()->IsMediaRemotingInterstitial() ||
-      child->GetNode()->IsPictureInPictureInterstitial())
+      child->GetNode()->IsPictureInPictureInterstitial()) {
+    if (child->GetNode()->GetComputedStyle()->IsDisplayInlineType())
+      UseCounter::Count(GetDocument(), WebFeature::kLayoutMediaInlineChildren);
     return true;
+  }
 
   return false;
 }
@@ -233,6 +248,12 @@ LayoutUnit LayoutMedia::ComputePanelWidth(const LayoutRect& media_rect) const {
 
   // Calculate difference.
   return LayoutUnit((edge_intersection_point - bottom_left_point).Length());
+}
+
+RecalcLayoutOverflowResult LayoutMedia::RecalcLayoutOverflow() {
+  if (RuntimeEnabledFeatures::LayoutMediaNGContainerEnabled())
+    return RecalcLayoutOverflowNG();
+  return LayoutImage::RecalcLayoutOverflow();
 }
 
 }  // namespace blink

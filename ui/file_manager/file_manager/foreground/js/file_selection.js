@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert.js';
-import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
+import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
 
 import {FileType} from '../../common/js/file_type.js';
@@ -207,9 +207,6 @@ export class FileSelectionHandler extends EventTarget {
      */
     this.allowedPaths_ = allowedPaths;
 
-    util.addEventListenerToBackgroundComponent(
-        assert(fileOperationManager), 'entries-changed',
-        this.onFileSelectionChanged.bind(this));
     // Register evnets to update file selections.
     directoryModel.addEventListener(
         'directory-changed', this.onFileSelectionChanged.bind(this));

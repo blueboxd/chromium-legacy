@@ -65,26 +65,12 @@ ContentAnalysisDelegate::Factory* GetFactoryStorage() {
   return factory.get();
 }
 
-// A BinaryUploadService::Request implementation that gets the data to scan
-// from a string.
-class StringAnalysisRequest : public BinaryUploadService::Request {
- public:
-  StringAnalysisRequest(CloudOrLocalAnalysisSettings settings,
-                        std::string text,
-                        BinaryUploadService::ContentAnalysisCallback callback);
-  ~StringAnalysisRequest() override;
+bool* UIEnabledStorage() {
+  static bool enabled = true;
+  return &enabled;
+}
 
-  StringAnalysisRequest(const StringAnalysisRequest&) = delete;
-  StringAnalysisRequest& operator=(const StringAnalysisRequest&) = delete;
-
-  // BinaryUploadService::Request implementation.
-  void GetRequestData(DataCallback callback) override;
-
- private:
-  Data data_;
-  BinaryUploadService::Result result_ =
-      BinaryUploadService::Result::FILE_TOO_LARGE;
-};
+}  // namespace
 
 StringAnalysisRequest::StringAnalysisRequest(
     CloudOrLocalAnalysisSettings settings,
@@ -110,15 +96,8 @@ StringAnalysisRequest::~StringAnalysisRequest() {
 }
 
 void StringAnalysisRequest::GetRequestData(DataCallback callback) {
-  std::move(callback).Run(result_, std::move(data_));
+  std::move(callback).Run(result_, data_);
 }
-
-bool* UIEnabledStorage() {
-  static bool enabled = true;
-  return &enabled;
-}
-
-}  // namespace
 
 ContentAnalysisDelegate::Data::Data() = default;
 ContentAnalysisDelegate::Data::Data(Data&& other) = default;
@@ -180,10 +159,20 @@ void ContentAnalysisDelegate::Cancel(bool warning) {
   // Don't report this upload as cancelled if the user didn't bypass the
   // warning.
   if (!warning) {
-    RecordDeepScanMetrics(access_point_,
-                          base::TimeTicks::Now() - upload_start_time_, 0,
-                          "CancelledByUser", false);
+    RecordDeepScanMetrics(
+        data_.settings.cloud_or_local_settings.is_cloud_analysis(),
+        access_point_, base::TimeTicks::Now() - upload_start_time_, 0,
+        "CancelledByUser", false);
   }
+
+  // Ask the binary upload service to cancel requests if it can.
+  auto cancel = std::make_unique<BinaryUploadService::CancelRequests>(
+      data_.settings.cloud_or_local_settings);
+  cancel->set_user_action_id(user_action_id_);
+
+  BinaryUploadService* upload_service = GetBinaryUploadService();
+  if (upload_service)
+    upload_service->MaybeCancelRequests(std::move(cancel));
 
   // Make sure to reject everything.
   FillAllResultsWith(false);
@@ -288,7 +277,10 @@ void ContentAnalysisDelegate::CreateForWebContents(
 
     // This dialog is owned by the constrained_window code.
     delegate_ptr->dialog_ = new ContentAnalysisDialog(
-        std::move(delegate), web_contents, access_point, files_count);
+        std::move(delegate),
+        delegate_ptr->data_.settings.cloud_or_local_settings
+            .is_cloud_analysis(),
+        web_contents, access_point, files_count);
     return;
   }
 
@@ -354,9 +346,10 @@ void ContentAnalysisDelegate::StringRequestCallback(
   int64_t content_size = 0;
   for (const std::string& entry : data_.text)
     content_size += entry.size();
-  RecordDeepScanMetrics(access_point_,
-                        base::TimeTicks::Now() - upload_start_time_,
-                        content_size, result, response);
+  RecordDeepScanMetrics(
+      data_.settings.cloud_or_local_settings.is_cloud_analysis(), access_point_,
+      base::TimeTicks::Now() - upload_start_time_, content_size, result,
+      response);
 
   text_request_complete_ = true;
 
@@ -424,8 +417,7 @@ bool ContentAnalysisDelegate::CancelDialog() {
   if (!dialog_)
     return false;
 
-  dialog_->CancelDialog();
-  return true;
+  return dialog_->CancelDialogAndDelete();
 }
 
 void ContentAnalysisDelegate::PageRequestCallback(
@@ -435,9 +427,10 @@ void ContentAnalysisDelegate::PageRequestCallback(
   if (result == safe_browsing::BinaryUploadService::Result::SUCCESS)
     final_actions_[response.request_token()] = GetAckFinalAction(response);
 
-  RecordDeepScanMetrics(access_point_,
-                        base::TimeTicks::Now() - upload_start_time_,
-                        page_size_bytes_, result, response);
+  RecordDeepScanMetrics(
+      data_.settings.cloud_or_local_settings.is_cloud_analysis(), access_point_,
+      base::TimeTicks::Now() - upload_start_time_, page_size_bytes_, result,
+      response);
 
   page_request_complete_ = true;
 

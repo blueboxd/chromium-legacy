@@ -6,7 +6,8 @@ import 'chrome://intro/dice_app.js';
 
 import {IntroBrowserProxyImpl} from 'chrome://intro/browser_proxy.js';
 import {IntroAppElement} from 'chrome://intro/dice_app.js';
-import {assertEquals} from 'chrome://webui-test/chai_assert.js';
+import {assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 import {TestIntroBrowserProxy} from './test_intro_browser_proxy.js';
 
@@ -18,25 +19,34 @@ suite('DiceAppTest', function() {
     testBrowserProxy = new TestIntroBrowserProxy();
     IntroBrowserProxyImpl.setInstance(testBrowserProxy);
 
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     testElement = document.createElement('intro-app');
     document.body.appendChild(testElement);
+    return waitBeforeNextRender(testElement);
   });
 
   teardown(function() {
     testElement.remove();
   });
 
-  test('accept sign-in button callback', function() {
-    assertEquals(testBrowserProxy.getCallCount('continueWithAccount'), 0);
-    testElement.$.acceptSignInButton.click();
-    assertEquals(testBrowserProxy.getCallCount('continueWithAccount'), 1);
+  function isSelectorActive(selector: string) {
+    return testElement.shadowRoot!.querySelector(selector)!.classList.contains(
+        'active');
+  }
+
+  test('"splash" is the active view with the noAnimations param', function() {
+    assertTrue(isSelectorActive('#splash'));
+    assertFalse(isSelectorActive('sign-in-promo'));
   });
 
-  test('decline sign-in button callback', function() {
-    assertEquals(testBrowserProxy.getCallCount('continueWithoutAccount'), 0);
-    testElement.$.declineSignInButton.click();
-    assertEquals(testBrowserProxy.getCallCount('continueWithoutAccount'), 1);
-  });
+  test(
+      '"signInPromo" is the active view without the noAnimations param',
+      async function() {
+        const searchParams = new URLSearchParams(window.location.search);
+        searchParams.append('noAnimations', 'true');
+        testElement.setupViewManagerForTest(searchParams);
+
+        assertFalse(isSelectorActive('#splash'));
+        assertTrue(isSelectorActive('sign-in-promo'));
+      });
 });

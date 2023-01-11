@@ -10,6 +10,7 @@
 #include <string>
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "google_apis/buildflags.h"
 
 // These functions enable you to retrieve keys to use for Google APIs
@@ -78,17 +79,19 @@ std::string GetNonStableAPIKey();
 // Retrieves the Chrome Remote Desktop API key.
 std::string GetRemotingAPIKey();
 
-// Retrieves the Sharing API Key.
-std::string GetSharingAPIKey();
-
 // Retrieves the Speech On-Device API (SODA) API Key.
 std::string GetSodaAPIKey();
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Retrieves the Sharing API Key.
+std::string GetSharingAPIKey();
 
 // Retrieves the ReadAloud API Key.
 std::string GetReadAloudAPIKey();
 
 // Retrieves the Fresnel API Key.
 std::string GetFresnelAPIKey();
+#endif
 
 #if BUILDFLAG(SUPPORT_EXTERNAL_GOOGLE_API_KEY)
 // Sets the API key. This should be called as early as possible before this
@@ -136,8 +139,6 @@ void SetOAuth2ClientID(OAuth2Client client, const std::string& client_id);
 void SetOAuth2ClientSecret(OAuth2Client client,
                            const std::string& client_secret);
 #endif
-// Returns the auth token for the data reduction proxy.
-std::string GetSpdyProxyAuthValue();
 
 // Returns if the API key using in the current build is the one for official
 // Google Chrome.

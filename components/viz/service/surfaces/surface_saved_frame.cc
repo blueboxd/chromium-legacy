@@ -62,15 +62,15 @@ SurfaceSavedFrame::SurfaceSavedFrame(
 
 SurfaceSavedFrame::~SurfaceSavedFrame() {
   if (directive_finished_callback_)
-    std::move(directive_finished_callback_).Run(directive_.sequence_id());
+    std::move(directive_finished_callback_).Run(directive_);
 }
 
-base::flat_set<SharedElementResourceId> SurfaceSavedFrame::GetEmptyResourceIds()
-    const {
-  base::flat_set<SharedElementResourceId> result;
+base::flat_set<ViewTransitionElementResourceId>
+SurfaceSavedFrame::GetEmptyResourceIds() const {
+  base::flat_set<ViewTransitionElementResourceId> result;
   for (auto& shared_element : directive_.shared_elements())
     if (shared_element.render_pass_id.is_null())
-      result.insert(shared_element.shared_element_resource_id);
+      result.insert(shared_element.view_transition_element_resource_id);
   return result;
 }
 
@@ -98,7 +98,7 @@ void SurfaceSavedFrame::RequestCopyOfOutput(Surface* surface) {
 
   if (copy_request_count_ == 0) {
     InitFrameResult();
-    std::move(directive_finished_callback_).Run(directive_.sequence_id());
+    std::move(directive_finished_callback_).Run(directive_);
   }
 }
 
@@ -145,7 +145,7 @@ void SurfaceSavedFrame::NotifyCopyOfOutputComplete(
   // Even if we early out, we update the count since we are no longer waiting
   // for this result.
   if (--copy_request_count_ == 0) {
-    std::move(directive_finished_callback_).Run(directive_.sequence_id());
+    std::move(directive_finished_callback_).Run(directive_);
   }
 
   // Return if the result is empty.

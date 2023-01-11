@@ -34,6 +34,7 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -368,6 +369,32 @@ bool HasExistingExtensionShimForDifferentProfile(
   return false;
 }
 
+base::CommandLine BuildCommandLineForShimLaunch() {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitchASCII(
+      app_mode::kLaunchedByChromeProcessId,
+      base::NumberToString(base::GetCurrentProcId()));
+  command_line.AppendSwitchPath(app_mode::kLaunchedByChromeBundlePath,
+                                base::mac::MainBundlePath());
+
+  // When running unbundled (e.g, when running browser_tests), the path
+  // returned by base::mac::FrameworkBundlePath will not include the version.
+  // Manually append it.
+  // https://crbug.com/1286681
+  const base::FilePath framework_bundle_path =
+      base::mac::AmIBundled() ? base::mac::FrameworkBundlePath()
+                              : base::mac::FrameworkBundlePath()
+                                    .Append("Versions")
+                                    .Append(version_info::GetVersionNumber());
+  command_line.AppendSwitchPath(app_mode::kLaunchedByChromeFrameworkBundlePath,
+                                framework_bundle_path);
+  command_line.AppendSwitchPath(
+      app_mode::kLaunchedByChromeFrameworkDylibPath,
+      framework_bundle_path.Append(chrome::kFrameworkExecutableName));
+
+  return command_line;
+}
+
 void LaunchShimOnFileThread(LaunchShimUpdateBehavior update_behavior,
                             ShimLaunchedCallback launched_callback,
                             ShimTerminatedCallback terminated_callback,
@@ -408,27 +435,7 @@ void LaunchShimOnFileThread(LaunchShimUpdateBehavior update_behavior,
     if (!base::PathExists(shim_path))
       continue;
 
-    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-    command_line.AppendSwitchASCII(
-        app_mode::kLaunchedByChromeProcessId,
-        base::NumberToString(base::GetCurrentProcId()));
-    command_line.AppendSwitchPath(app_mode::kLaunchedByChromeBundlePath,
-                                  base::mac::MainBundlePath());
-
-    // When running unbundled (e.g, when running browser_tests), the path
-    // returned by base::mac::FrameworkBundlePath will not include the version.
-    // Manually append it.
-    // https://crbug.com/1286681
-    const base::FilePath framework_bundle_path =
-        base::mac::AmIBundled() ? base::mac::FrameworkBundlePath()
-                                : base::mac::FrameworkBundlePath()
-                                      .Append("Versions")
-                                      .Append(version_info::GetVersionNumber());
-    command_line.AppendSwitchPath(
-        app_mode::kLaunchedByChromeFrameworkBundlePath, framework_bundle_path);
-    command_line.AppendSwitchPath(
-        app_mode::kLaunchedByChromeFrameworkDylibPath,
-        framework_bundle_path.Append(chrome::kFrameworkExecutableName));
+    base::CommandLine command_line = BuildCommandLineForShimLaunch();
 
     if (launched_after_rebuild)
       command_line.AppendSwitch(app_mode::kLaunchedAfterRebuild);
@@ -1016,6 +1023,12 @@ void WebAppShortcutCreator::CreateShortcutsAt(
     base::mac::RemoveQuarantineAttribute(dst_app_path.Append("Contents")
                                              .Append("MacOS")
                                              .Append("app_mode_loader"));
+
+    // LaunchServices will eventually detect the (updated) app, but explicitly
+    // calling LSRegisterURL ensures tests see the right state immediately.
+    LSRegisterURL(
+        base::mac::NSToCFCast(base::mac::FilePathToNSURL(dst_app_path)), true);
+
     updated_paths->push_back(dst_app_path);
   }
 }
@@ -1157,10 +1170,24 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
   plist[app_mode::kNSHighResolutionCapableKey] = @YES;
 
   // 3. Fill in file handlers.
-  const auto file_handler_extensions =
+  // The plist needs to contain file handlers for all profiles the app is
+  // installed in. `info_->file_handler_extensions` only contains information
+  // for the current profile, so combine that with the information from
+  // `info_->handlers_per_profile`.
+  auto file_handler_extensions =
       GetFileHandlerExtensionsWithoutDot(info_->file_handler_extensions);
-  if (!file_handler_extensions.empty() ||
-      !info_->file_handler_mime_types.empty()) {
+  auto file_handler_mime_types = info_->file_handler_mime_types;
+  for (const auto& profile_handlers : info_->handlers_per_profile) {
+    if (profile_handlers.first == info_->profile_path)
+      continue;
+    auto extensions = GetFileHandlerExtensionsWithoutDot(
+        profile_handlers.second.file_handler_extensions);
+    file_handler_extensions.insert(extensions.begin(), extensions.end());
+    file_handler_mime_types.insert(
+        profile_handlers.second.file_handler_mime_types.begin(),
+        profile_handlers.second.file_handler_mime_types.end());
+  }
+  if (!file_handler_extensions.empty() || !file_handler_mime_types.empty()) {
     base::scoped_nsobject<NSMutableArray> doc_types_value(
         [[NSMutableArray alloc] init]);
     base::scoped_nsobject<NSMutableDictionary> doc_types_dict(
@@ -1174,10 +1201,10 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
                          forKey:app_mode::kCFBundleTypeExtensionsKey];
       ;
     }
-    if (!info_->file_handler_mime_types.empty()) {
+    if (!file_handler_mime_types.empty()) {
       base::scoped_nsobject<NSMutableArray> mime_types(
           [[NSMutableArray alloc] init]);
-      for (const auto& mime_type : info_->file_handler_mime_types)
+      for (const auto& mime_type : file_handler_mime_types)
         [mime_types addObject:base::SysUTF8ToNSString(mime_type)];
       [doc_types_dict setObject:mime_types
                          forKey:app_mode::kCFBundleTypeMIMETypesKey];
@@ -1187,10 +1214,21 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
   }
 
   // 4. Fill in protocol handlers
-  if (!info_->protocol_handlers.empty()) {
+  // Similarly to file handlers above, here too we need to combine handlers
+  // for the current profile with those for other profiles the app is installed
+  // in.
+  auto protocol_handlers = info_->protocol_handlers;
+  for (const auto& profile_handlers : info_->handlers_per_profile) {
+    if (profile_handlers.first == info_->profile_path)
+      continue;
+    protocol_handlers.insert(profile_handlers.second.protocol_handlers.begin(),
+                             profile_handlers.second.protocol_handlers.end());
+  }
+
+  if (!protocol_handlers.empty()) {
     base::scoped_nsobject<NSMutableArray> handlers(
         [[NSMutableArray alloc] init]);
-    for (const auto& protocol_handler : info_->protocol_handlers)
+    for (const auto& protocol_handler : protocol_handlers)
       [handlers addObject:base::SysUTF8ToNSString(protocol_handler)];
 
     plist[app_mode::kCFBundleURLTypesKey] = @[ @{
@@ -1374,6 +1412,69 @@ void LaunchShim(LaunchShimUpdateBehavior update_behavior,
                      std::move(launched_callback),
                      std::move(terminated_callback)),
       std::move(shortcut_info));
+}
+
+void LaunchShimForTesting(const base::FilePath& shim_path,  // IN-TEST
+                          const std::vector<GURL> urls,
+                          ShimLaunchedCallback launched_callback,
+                          ShimTerminatedCallback terminated_callback) {
+  base::CommandLine command_line = BuildCommandLineForShimLaunch();
+  command_line.AppendSwitch(app_mode::kLaunchedForTest);
+  command_line.AppendSwitch(app_mode::kIsNormalLaunch);
+
+  std::vector<std::string> url_specs;
+  url_specs.reserve(urls.size());
+  for (const GURL& url : urls) {
+    url_specs.push_back(url.spec());
+  }
+
+  base::scoped_nsobject<NSRunningApplication> app;
+  if (urls.empty()) {
+    app.reset(
+        base::mac::OpenApplicationWithPath(
+            shim_path, command_line,
+            NSWorkspaceLaunchDefault | NSWorkspaceLaunchWithoutActivation),
+        base::scoped_policy::RETAIN);
+  } else {
+    app.reset(
+        base::mac::OpenApplicationWithPathAndURLs(
+            shim_path, command_line, url_specs,
+            NSWorkspaceLaunchDefault | NSWorkspaceLaunchWithoutActivation),
+        base::scoped_policy::RETAIN);
+  }
+  if (app) {
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&RunAppLaunchCallbacks, app,
+                                  std::move(launched_callback),
+                                  std::move(terminated_callback)));
+    return;
+  }
+  LOG(ERROR) << "Failed to open application with path: " << shim_path;
+
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(launched_callback), base::Process()));
+}
+
+void WaitForShimToQuitForTesting(const base::FilePath& shim_path,  // IN-TEST
+                                 const std::string& app_id) {
+  std::string bundle_id = GetBundleIdentifier(app_id);
+  NSArray<NSRunningApplication*>* apps = [NSRunningApplication
+      runningApplicationsWithBundleIdentifier:base::SysUTF8ToNSString(
+                                                  bundle_id)];
+  NSRunningApplication* matching_app = nil;
+  for (NSRunningApplication* app in apps) {
+    if (base::mac::NSURLToFilePath(app.bundleURL) == shim_path) {
+      matching_app = app;
+      break;
+    }
+  }
+  if (!matching_app)
+    return;
+
+  base::RunLoop loop;
+  [[TerminationObserver alloc] initWithRunningApplication:matching_app
+                                                 callback:loop.QuitClosure()];
+  loop.Run();
 }
 
 // Removes the app shim from the list of Login Items.

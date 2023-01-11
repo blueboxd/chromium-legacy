@@ -5,10 +5,10 @@
 #include "content/public/browser/ax_inspect_factory.h"
 
 #include "base/notreached.h"
-#include "content/browser/accessibility/accessibility_event_recorder_auralinux.h"
-#include "content/browser/accessibility/accessibility_tree_formatter_auralinux.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "ui/accessibility/platform/inspect/ax_event_recorder_auralinux.h"
+#include "ui/accessibility/platform/inspect/ax_tree_formatter_auralinux.h"
 
 namespace content {
 
@@ -39,7 +39,7 @@ std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateFormatter(
     case ui::AXApiType::kBlink:
       return std::make_unique<AccessibilityTreeFormatterBlink>();
     case ui::AXApiType::kLinux:
-      return std::make_unique<AccessibilityTreeFormatterAuraLinux>();
+      return std::make_unique<ui::AXTreeFormatterAuraLinux>();
     default:
       NOTREACHED() << "Unsupported API type " << static_cast<std::string>(type);
   }
@@ -59,8 +59,8 @@ std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreateRecorder(
 
   switch (type) {
     case ui::AXApiType::kLinux:
-      return std::make_unique<AccessibilityEventRecorderAuraLinux>(manager, pid,
-                                                                   selector);
+      return std::make_unique<ui::AXEventRecorderAuraLinux>(manager, pid,
+                                                            selector);
     default:
       NOTREACHED() << "Unsupported API type " << static_cast<std::string>(type);
   }

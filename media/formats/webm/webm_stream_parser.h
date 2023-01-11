@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/byte_queue.h"
 #include "media/base/media_export.h"
@@ -41,7 +40,9 @@ class MEDIA_EXPORT WebMStreamParser : public StreamParser {
             MediaLog* media_log) override;
   void Flush() override;
   bool GetGenerateTimestampsFlag() const override;
-  bool Parse(const uint8_t* buf, int size) override;
+  [[nodiscard]] bool AppendToParseBuffer(const uint8_t* buf,
+                                         size_t size) override;
+  [[nodiscard]] ParseStatus Parse(int max_pending_bytes_to_inspect) override;
 
  private:
   enum State {
@@ -89,6 +90,15 @@ class MEDIA_EXPORT WebMStreamParser : public StreamParser {
   bool unknown_segment_size_;
 
   std::unique_ptr<WebMClusterParser> cluster_parser_;
+
+  // Tracks how much data has not yet been attempted to be parsed from
+  // `byte_queue_` between calls to Parse(). AppendToParseBuffer() increases
+  // this from 0 as more data is added. Parse() incrementally reduces this and
+  // Flush() zeroes this. Note that Parse() may have inspected some data at the
+  // front of `byte_queue_` but not yet been able to pop it from the queue. So
+  // this value may be lower than the actual amount of bytes in `byte_queue_`,
+  // since more data is needed to complete the parse.
+  int uninspected_pending_bytes_ = 0;
   ByteQueue byte_queue_;
 };
 

@@ -314,7 +314,7 @@ std::unique_ptr<net::test_server::HttpResponse> LoadFrenchPage(
 }
 
 // Verifies that the New Tab Tip appears when all conditions are met.
-// Flaky. See crbug.com/974152
+// TODO(crbug.com/934248) The test is flaky.
 - (void)DISABLED_testNewTabTipPromoShouldShow {
   GREYAssert([FeatureEngagementAppInterface enableNewTabTipTriggering],
              @"Feature Engagement tracker did not load");
@@ -405,7 +405,7 @@ std::unique_ptr<net::test_server::HttpResponse> LoadFrenchPage(
                     error:&error];
     return error == nil;
   };
-  GREYAssert(!WaitUntilConditionOrTimeout(2, condition),
+  GREYAssert(!WaitUntilConditionOrTimeout(base::Seconds(2), condition),
              @"The Bottom Toolbar tip shouldn't appear");
 }
 

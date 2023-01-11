@@ -53,6 +53,10 @@ class CONTENT_EXPORT BrowserAccessibilityState {
   // Called when screen reader client is detected.
   virtual void OnScreenReaderDetected() = 0;
 
+  // Called when screen reader client that had been detected is no longer
+  // running.
+  virtual void OnScreenReaderStopped() = 0;
+
   // Returns true if the browser should be customized for accessibility.
   virtual bool IsAccessibleBrowser() = 0;
 
@@ -84,6 +88,10 @@ class CONTENT_EXPORT BrowserAccessibilityState {
   // image labels. Used exclusively on Android.
   virtual void SetImageLabelsModeForProfile(bool enabled,
                                             BrowserContext* profile) = 0;
+
+  // Returns true if at least one service is running that provides spoken
+  // feedback to the user (e.g. Talkback). False otherwise.
+  virtual bool HasSpokenFeedbackServicePresent() = 0;
 #endif
 
   using FocusChangedCallback =

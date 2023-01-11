@@ -96,8 +96,8 @@ class ExtensionInstallDialogViewTestBase
   content::WebContents* web_contents() { return web_contents_; }
 
  private:
-  raw_ptr<const extensions::Extension> extension_;
-  raw_ptr<content::WebContents> web_contents_;
+  raw_ptr<const extensions::Extension, DanglingUntriaged> extension_;
+  raw_ptr<content::WebContents, DanglingUntriaged> web_contents_;
 };
 
 ExtensionInstallDialogViewTestBase::ExtensionInstallDialogViewTestBase()
@@ -227,8 +227,8 @@ class ExtensionInstallDialogViewTest
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
   {
-    // User presses install. Note that we have to wait for the 0ms delay for
-    // the install button to become enabled, hence the RunLoop later.
+    // User presses install. Note that we have to wait for the 0ms delay for the
+    // install button to become enabled, hence the RunLoop later.
     ExtensionInstallDialogView::SetInstallButtonDelayForTesting(0);
     ExtensionInstallPromptTestHelper helper;
     ExtensionInstallDialogView* delegate_view = CreateAndShowPrompt(&helper);
@@ -742,7 +742,7 @@ class ExtensionInstallDialogWithWithholdPermissionsUI
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// Verifies that some UI is displayed in the extra view for withholding
+// Verifies that some UI is displayed in the extra view when withholding
 // permissions on installation.
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogWithWithholdPermissionsUI,
                        ShowsWithholdUI) {

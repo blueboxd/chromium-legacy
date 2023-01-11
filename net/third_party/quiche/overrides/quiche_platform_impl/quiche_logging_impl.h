@@ -84,6 +84,7 @@
 #define QUICHE_CHECK_LT_IMPL(val1, val2) CHECK_LT(val1, val2)
 #define QUICHE_CHECK_GE_IMPL(val1, val2) CHECK_GE(val1, val2)
 #define QUICHE_CHECK_GT_IMPL(val1, val2) CHECK_GT(val1, val2)
+#define QUICHE_CHECK_OK_IMPL(value) CHECK((value).ok())
 
 #define QUICHE_DCHECK_IMPL(condition) DCHECK(condition)
 #define QUICHE_DCHECK_EQ_IMPL(val1, val2) DCHECK_EQ(val1, val2)
@@ -95,8 +96,8 @@
 
 namespace quic {
 template <typename T>
-QUICHE_EXPORT_PRIVATE inline std::ostream& operator<<(std::ostream& out,
-                                                      const std::vector<T>& v) {
+QUICHE_EXPORT inline std::ostream& operator<<(std::ostream& out,
+                                              const std::vector<T>& v) {
   out << "[";
   const char* sep = "";
   for (size_t i = 0; i < v.size(); ++i) {

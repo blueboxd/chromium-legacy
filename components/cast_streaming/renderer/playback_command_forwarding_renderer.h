@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "media/base/renderer.h"
 #include "media/base/renderer_client.h"
 #include "media/mojo/mojom/renderer.mojom.h"
@@ -29,7 +30,7 @@ class PlaybackCommandForwardingRenderer : public media::Renderer,
   // playback commands to this instance.
   PlaybackCommandForwardingRenderer(
       std::unique_ptr<media::Renderer> renderer,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
       mojo::PendingReceiver<media::mojom::Renderer> pending_rederer_controls);
   PlaybackCommandForwardingRenderer(const PlaybackCommandForwardingRenderer&) =
       delete;
@@ -60,6 +61,7 @@ class PlaybackCommandForwardingRenderer : public media::Renderer,
   void SetPlaybackRate(double playback_rate) override;
   void SetVolume(float volume) override;
   base::TimeDelta GetMediaTime() override;
+  media::RendererType GetRendererType() override;
 
  private:
   // Private namespace function not defined here because its details are not
@@ -125,7 +127,7 @@ class PlaybackCommandForwardingRenderer : public media::Renderer,
   mojo::PendingReceiver<media::mojom::Renderer> pending_renderer_controls_;
 
   // Task runner on which all mojo callbacks will be run.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Created as part of OnRealRendererInitializationComplete().
   std::unique_ptr<media::mojom::Renderer> playback_controller_;

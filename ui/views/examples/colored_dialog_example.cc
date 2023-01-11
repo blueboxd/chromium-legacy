@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/containers/adapters.h"
+#include "base/memory/raw_ref.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -23,8 +24,7 @@
 #include "ui/views/vector_icons.h"
 #include "ui/views/widget/widget.h"
 
-namespace views {
-namespace examples {
+namespace views::examples {
 
 class ThemeTrackingCheckbox : public views::Checkbox {
  public:
@@ -64,11 +64,11 @@ class TextVectorImageButton : public views::MdTextButton {
     // Use the text color for the associated vector image.
     SetImageModel(
         views::Button::ButtonState::STATE_NORMAL,
-        ui::ImageModel::FromVectorIcon(icon_, label()->GetEnabledColor()));
+        ui::ImageModel::FromVectorIcon(*icon_, label()->GetEnabledColor()));
   }
 
  private:
-  const gfx::VectorIcon& icon_;
+  const raw_ref<const gfx::VectorIcon> icon_;
 };
 
 ColoredDialog::ColoredDialog(AcceptCallback accept_callback) {
@@ -166,5 +166,4 @@ void ColoredDialogExample::CreateExampleView(views::View* container) {
   container->AddChildView(std::make_unique<ColoredDialogChooser>());
 }
 
-}  // namespace examples
-}  // namespace views
+}  // namespace views::examples

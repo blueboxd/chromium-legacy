@@ -8,12 +8,16 @@
 #include <fuchsia/sysmem/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include <memory>
+
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/koid.h"
 #include "base/fuchsia/process_context.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
+#include "base/notreached.h"
 #include "base/process/process_handle.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
@@ -28,8 +32,10 @@
 #include "media/fuchsia/mojom/fuchsia_media_resource_provider.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/client_native_pixmap_factory.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/native_pixmap_handle.h"
 
 namespace media {
 
@@ -37,7 +43,8 @@ namespace {
 
 class TestBufferCollection {
  public:
-  explicit TestBufferCollection(zx::channel collection_token) {
+  TestBufferCollection(zx::eventpair handle, zx::channel collection_token)
+      : handle_(std::move(handle)) {
     sysmem_allocator_ = base::ComponentContextForProcess()
                             ->svc()
                             ->Connect<fuchsia::sysmem::Allocator>();
@@ -81,6 +88,8 @@ class TestBufferCollection {
   }
 
  private:
+  zx::eventpair handle_;
+
   fuchsia::sysmem::AllocatorPtr sysmem_allocator_;
   fuchsia::sysmem::BufferCollectionSyncPtr buffers_collection_;
 
@@ -127,8 +136,10 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
     gfx::GpuMemoryBufferHandle handle = gpu_memory_buffer->CloneHandle();
     CHECK_EQ(handle.type, gfx::GpuMemoryBufferType::NATIVE_PIXMAP);
 
-    auto collection_it = sysmem_buffer_collections_.find(
-        handle.native_pixmap_handle.buffer_collection_id);
+    zx_koid_t id = base::GetRelatedKoid(
+                       handle.native_pixmap_handle.buffer_collection_handle)
+                       .value();
+    auto collection_it = sysmem_buffer_collections_.find(id);
     CHECK(collection_it != sysmem_buffer_collections_.end());
     CHECK_LT(handle.native_pixmap_handle.buffer_index,
              collection_it->second->GetNumBuffers());
@@ -167,22 +178,19 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
     ADD_FAILURE();
   }
 
-  void RegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
+  void RegisterSysmemBufferCollection(zx::eventpair handle,
                                       zx::channel token,
                                       gfx::BufferFormat format,
                                       gfx::BufferUsage usage,
                                       bool register_with_image_pipe) override {
     EXPECT_EQ(format, gfx::BufferFormat::YUV_420_BIPLANAR);
     EXPECT_EQ(usage, gfx::BufferUsage::GPU_READ);
+    zx_koid_t id = base::GetKoid(handle).value();
     std::unique_ptr<TestBufferCollection>& collection =
         sysmem_buffer_collections_[id];
     EXPECT_FALSE(collection);
-    collection = std::make_unique<TestBufferCollection>(std::move(token));
-  }
-
-  void ReleaseSysmemBufferCollection(
-      gfx::SysmemBufferCollectionId id) override {
-    EXPECT_EQ(sysmem_buffer_collections_.erase(id), 1U);
+    collection = std::make_unique<TestBufferCollection>(std::move(handle),
+                                                        std::move(token));
   }
 
   gpu::SyncToken GenVerifiedSyncToken() override {
@@ -209,8 +217,7 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
   }
 
  private:
-  base::flat_map<gfx::SysmemBufferCollectionId,
-                 std::unique_ptr<TestBufferCollection>>
+  base::flat_map<zx_koid_t, std::unique_ptr<TestBufferCollection>>
       sysmem_buffer_collections_;
 
   base::flat_set<gpu::Mailbox> mailboxes_;
@@ -236,7 +243,7 @@ class TestRasterContextProvider
   void Release() const override {
     base::RefCountedThreadSafe<TestRasterContextProvider>::Release();
   }
-  gpu::ContextResult BindToCurrentThread() override {
+  gpu::ContextResult BindToCurrentSequence() override {
     ADD_FAILURE();
     return gpu::ContextResult::kFatalFailure;
   }
@@ -342,19 +349,71 @@ class TestFuchsiaMediaResourceProvider
   mojo::Receiver<media::mojom::FuchsiaMediaResourceProvider> receiver_{this};
 };
 
+class FakeClientNativePixmap : public gfx::ClientNativePixmap {
+ public:
+  FakeClientNativePixmap(gfx::NativePixmapHandle handle)
+      : handle_(std::move(handle)) {
+    CHECK(handle_.buffer_collection_handle);
+  }
+
+  ~FakeClientNativePixmap() override = default;
+
+  // gfx::ClientNativePixmap implementation.
+  bool Map() override {
+    NOTREACHED();
+    return false;
+  }
+  void Unmap() override { NOTREACHED(); }
+  size_t GetNumberOfPlanes() const override {
+    NOTREACHED();
+    return 0;
+  }
+  void* GetMemoryAddress(size_t plane) const override {
+    NOTREACHED();
+    return nullptr;
+  }
+  int GetStride(size_t plane) const override {
+    NOTREACHED();
+    return 0;
+  }
+  gfx::NativePixmapHandle CloneHandleForIPC() const override {
+    return gfx::CloneHandleForIPC(handle_);
+  }
+
+ private:
+  gfx::NativePixmapHandle handle_;
+};
+
+class FakeClientNativePixmapFactory : public gfx::ClientNativePixmapFactory {
+ public:
+  FakeClientNativePixmapFactory() = default;
+  ~FakeClientNativePixmapFactory() override = default;
+
+  std::unique_ptr<gfx::ClientNativePixmap> ImportFromHandle(
+      gfx::NativePixmapHandle handle,
+      const gfx::Size& size,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage) override {
+    return std::make_unique<FakeClientNativePixmap>(std::move(handle));
+  }
+};
+
 }  // namespace
 
 class FuchsiaVideoDecoderTest : public testing::Test {
  public:
   FuchsiaVideoDecoderTest()
       : raster_context_provider_(
-            base::MakeRefCounted<TestRasterContextProvider>()),
-        decoder_(std::make_unique<FuchsiaVideoDecoder>(
-            raster_context_provider_.get(),
-            mojo::SharedRemote<media::mojom::FuchsiaMediaResourceProvider>(
-                test_media_resource_provider_.receiver_
-                    .BindNewPipeAndPassRemote()),
-            /*allow_overlays=*/false)) {}
+            base::MakeRefCounted<TestRasterContextProvider>()) {
+    auto decoder = std::make_unique<FuchsiaVideoDecoder>(
+        raster_context_provider_.get(),
+        mojo::SharedRemote<media::mojom::FuchsiaMediaResourceProvider>(
+            test_media_resource_provider_.receiver_.BindNewPipeAndPassRemote()),
+        /*allow_overlays=*/false);
+    decoder->SetClientNativePixmapFactoryForTests(
+        std::make_unique<FakeClientNativePixmapFactory>());
+    decoder_ = std::move(decoder);
+  }
 
   FuchsiaVideoDecoderTest(const FuchsiaVideoDecoderTest&) = delete;
   FuchsiaVideoDecoderTest& operator=(const FuchsiaVideoDecoderTest&) = delete;

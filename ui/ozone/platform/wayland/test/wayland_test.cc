@@ -17,6 +17,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_screen.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/ozone/platform/wayland/test/scoped_wl_array.h"
+#include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 #if BUILDFLAG(USE_XKBCOMMON)
@@ -30,9 +31,10 @@ using ::testing::SaveArg;
 
 namespace ui {
 
-WaylandTest::WaylandTest()
+WaylandTest::WaylandTest(TestServerMode server_mode)
     : task_environment_(base::test::TaskEnvironment::MainThreadType::UI,
-                        base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
+                        base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+      server_mode_(server_mode) {
 #if BUILDFLAG(USE_XKBCOMMON)
   auto keyboard_layout_engine =
       std::make_unique<XkbKeyboardLayoutEngine>(xkb_evdev_code_converter_);
@@ -99,11 +101,20 @@ void WaylandTest::SetUp() {
   EXPECT_EQ(0u, DeviceDataManager::GetInstance()->GetTouchpadDevices().size());
 
   initialized_ = true;
+
+  // TODO(crbug.com/1365887): this must be removed once all tests switch to
+  // asynchronous mode.
+  if (server_mode_ == TestServerMode::kAsync)
+    server_.SetServerAsync();
 }
 
 void WaylandTest::TearDown() {
-  if (initialized_)
-    Sync();
+  if (initialized_) {
+    if (server_mode_ != TestServerMode::kAsync)
+      Sync();
+    else
+      SyncDisplay();
+  }
 }
 
 void WaylandTest::Sync() {
@@ -116,6 +127,27 @@ void WaylandTest::Sync() {
   // Pause the server, after it has finished processing any follow-up requests
   // from the client.
   server_.Pause();
+}
+
+void WaylandTest::PostToServerAndWait(
+    base::OnceCallback<void(wl::TestWaylandServerThread* server)> callback) {
+  // Sync with the display to ensure client's requests are processed.
+  SyncDisplay();
+
+  server_.RunAndWait(std::move(callback));
+
+  // Sync with the display to ensure server's events are received and processed.
+  SyncDisplay();
+}
+
+void WaylandTest::PostToServerAndWait(base::OnceClosure closure) {
+  // Sync with the display to ensure client's requests are processed.
+  SyncDisplay();
+
+  server_.RunAndWait(std::move(closure));
+
+  // Sync with the display to ensure server's events are received and processed
+  SyncDisplay();
 }
 
 void WaylandTest::SetPointerFocusedWindow(WaylandWindow* window) {
@@ -132,31 +164,50 @@ void WaylandTest::SendConfigureEvent(wl::MockXdgSurface* xdg_surface,
                                      struct wl_array* states) {
   const int32_t width = size.width();
   const int32_t height = size.height();
-  // In xdg_shell_v6+, both surfaces send serial configure event and toplevel
-  // surfaces send other data like states, heights and widths.
   // Please note that toplevel surfaces may not exist if the surface was created
   // for the popup role.
-  if (GetParam().shell_version == wl::ShellVersion::kV6) {
-    if (xdg_surface->xdg_toplevel()) {
-      zxdg_toplevel_v6_send_configure(xdg_surface->xdg_toplevel()->resource(),
-                                      width, height, states);
-    } else {
-      ASSERT_TRUE(xdg_surface->xdg_popup()->resource());
-      zxdg_popup_v6_send_configure(xdg_surface->xdg_popup()->resource(), 0, 0,
-                                   width, height);
-    }
-    zxdg_surface_v6_send_configure(xdg_surface->resource(), serial);
+  if (xdg_surface->xdg_toplevel()) {
+    xdg_toplevel_send_configure(xdg_surface->xdg_toplevel()->resource(), width,
+                                height, states);
   } else {
+    ASSERT_TRUE(xdg_surface->xdg_popup()->resource());
+    xdg_popup_send_configure(xdg_surface->xdg_popup()->resource(), 0, 0, width,
+                             height);
+  }
+  xdg_surface_send_configure(xdg_surface->resource(), serial);
+}
+
+void WaylandTest::SendConfigureEvent(uint32_t surface_id,
+                                     const gfx::Size& size,
+                                     const wl::ScopedWlArray& states,
+                                     absl::optional<uint32_t> serial) {
+  ASSERT_EQ(server_mode_, TestServerMode::kAsync);
+  PostToServerAndWait([size, surface_id, states,
+                       serial](wl::TestWaylandServerThread* server) {
+    auto* surface = server->GetObject<wl::MockSurface>(surface_id);
+    ASSERT_TRUE(surface);
+    auto* xdg_surface = surface->xdg_surface();
+    ASSERT_TRUE(xdg_surface);
+
+    const int32_t width = size.width();
+    const int32_t height = size.height();
+    // In xdg_shell_v6+, both surfaces send serial configure event and toplevel
+    // surfaces send other data like states, heights and widths.
+    // Please note that toplevel surfaces may not exist if the surface was
+    // created for the popup role.
+    wl::ScopedWlArray surface_states(states);
     if (xdg_surface->xdg_toplevel()) {
       xdg_toplevel_send_configure(xdg_surface->xdg_toplevel()->resource(),
-                                  width, height, states);
+                                  width, height, surface_states.get());
     } else {
       ASSERT_TRUE(xdg_surface->xdg_popup()->resource());
       xdg_popup_send_configure(xdg_surface->xdg_popup()->resource(), 0, 0,
                                width, height);
     }
-    xdg_surface_send_configure(xdg_surface->resource(), serial);
-  }
+    xdg_surface_send_configure(
+        xdg_surface->resource(),
+        serial.has_value() ? serial.value() : server->GetNextSerial());
+  });
 }
 
 void WaylandTest::ActivateSurface(wl::MockXdgSurface* xdg_surface) {
@@ -165,8 +216,29 @@ void WaylandTest::ActivateSurface(wl::MockXdgSurface* xdg_surface) {
 }
 
 void WaylandTest::InitializeSurfaceAugmenter() {
-  server_.EnsureSurfaceAugmenter();
-  Sync();
+  if (server_mode_ == TestServerMode::kAsync) {
+    PostToServerAndWait([](wl::TestWaylandServerThread* server) {
+      server->EnsureSurfaceAugmenter();
+    });
+  } else {
+    server_.EnsureSurfaceAugmenter();
+    Sync();
+  }
+}
+
+void WaylandTest::SyncDisplay() {
+  ASSERT_EQ(server_mode_, TestServerMode::kAsync);
+  DCHECK(initialized_);
+  base::RunLoop run_loop;
+  wl::Object<wl_callback> sync_callback(
+      wl_display_sync(connection_->display_wrapper()));
+  wl_callback_listener listener = {
+      [](void* data, struct wl_callback* cb, uint32_t time) {
+        static_cast<base::RunLoop*>(data)->Quit();
+      }};
+  wl_callback_add_listener(sync_callback.get(), &listener, &run_loop);
+  connection_->Flush();
+  run_loop.Run();
 }
 
 }  // namespace ui

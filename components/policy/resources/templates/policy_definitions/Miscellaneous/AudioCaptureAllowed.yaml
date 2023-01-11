@@ -13,8 +13,13 @@ features:
   per_profile: true
 future_on:
 - fuchsia
+items:
+- caption: Enable audio input
+  value: true
+- caption: Disable audio input
+  value: false
 owners:
-- file://components/policy/resources/OWNERS
+- file://components/policy/OWNERS
 - pastarmovj@chromium.org
 schema:
   type: boolean

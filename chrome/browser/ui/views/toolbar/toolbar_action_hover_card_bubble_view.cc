@@ -22,8 +22,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/accessibility/view_accessibility.h"
-#include "ui/views/border.h"
-#include "ui/views/controls/separator.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 
@@ -32,6 +30,8 @@
 #endif
 
 namespace {
+
+using HoverCardState = ToolbarActionViewController::HoverCardState;
 
 // Hover card fixed width. Toolbar actions are not visible when window is too
 // small to display them, therefore hover cards wouldn't be displayed if the
@@ -42,9 +42,6 @@ constexpr int kHoverCardWidth = 240;
 // TODO(crbug.com/1351778): Move to a base hover card class.
 constexpr int kHorizontalMargin = 18;
 constexpr int kVerticalMargin = 10;
-constexpr int kFootnoteVerticalMargin = 8;
-constexpr auto kTitleMargins =
-    gfx::Insets::VH(kVerticalMargin, kHorizontalMargin);
 
 bool CustomShadowsSupported() {
 #if BUILDFLAG(IS_WIN)
@@ -54,58 +51,70 @@ bool CustomShadowsSupported() {
 #endif
 }
 
-std::u16string GetFootnoteTitle(
-    ToolbarActionViewController::HoverCardState state) {
+std::u16string GetSiteAccessTitle(
+    ToolbarActionViewController::HoverCardState::SiteAccess state) {
   int title_id = -1;
   switch (state) {
-    case ToolbarActionViewController::HoverCardState::kAllExtensionsAllowed:
-    case ToolbarActionViewController::HoverCardState::kExtensionHasAccess:
-      title_id =
-          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_FOOTER_TITLE_HAS_ACCESS;
+    case HoverCardState::SiteAccess::kAllExtensionsAllowed:
+    case HoverCardState::SiteAccess::kExtensionHasAccess:
+      title_id = IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_TITLE_HAS_ACCESS;
       break;
-    case ToolbarActionViewController::HoverCardState::kAllExtensionsBlocked:
-      title_id =
-          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_FOOTER_TITLE_BLOCKED_ACCESS;
+    case HoverCardState::SiteAccess::kAllExtensionsBlocked:
+      title_id = IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_TITLE_BLOCKED_ACCESS;
       break;
-    case ToolbarActionViewController::HoverCardState::kExtensionRequestsAccess:
-      title_id =
-          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_FOOTER_TITLE_REQUESTS_ACCESS;
+    case HoverCardState::SiteAccess::kExtensionRequestsAccess:
+      title_id = IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_TITLE_REQUESTS_ACCESS;
       break;
-    case ToolbarActionViewController::HoverCardState::
-        kExtensionDoesNotWantAccess:
+    case HoverCardState::SiteAccess::kExtensionDoesNotWantAccess:
       NOTREACHED();
       break;
   }
   return l10n_util::GetStringUTF16(title_id);
 }
 
-std::u16string GetFootnoteDescription(
-    ToolbarActionViewController::HoverCardState state,
-    std::u16string host) {
+std::u16string GetSiteAccessDescription(HoverCardState::SiteAccess state,
+                                        std::u16string host) {
   int title_id = -1;
   switch (state) {
-    case ToolbarActionViewController::HoverCardState::kAllExtensionsAllowed:
+    case HoverCardState::SiteAccess::kAllExtensionsAllowed:
       title_id =
-          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_FOOTER_DESCRIPTION_ALL_EXTENSIONS_ALLOWED_ACCESS;
+          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_DESCRIPTION_ALL_EXTENSIONS_ALLOWED_ACCESS;
       break;
-    case ToolbarActionViewController::HoverCardState::kAllExtensionsBlocked:
+    case HoverCardState::SiteAccess::kAllExtensionsBlocked:
       title_id =
-          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_FOOTER_DESCRIPTION_ALL_EXTENSIONS_BLOCKED_ACCESS;
+          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_DESCRIPTION_ALL_EXTENSIONS_BLOCKED_ACCESS;
       break;
-    case ToolbarActionViewController::HoverCardState::kExtensionHasAccess:
+    case HoverCardState::SiteAccess::kExtensionHasAccess:
       title_id =
-          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_FOOTER_DESCRIPTION_EXTENSION_HAS_ACESSS;
+          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_DESCRIPTION_EXTENSION_HAS_ACCESS;
       break;
-    case ToolbarActionViewController::HoverCardState::kExtensionRequestsAccess:
+    case HoverCardState::SiteAccess::kExtensionRequestsAccess:
       title_id =
-          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_FOOTER_DESCRIPTION_EXTENSION_REQUESTS_ACESSS;
+          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_DESCRIPTION_EXTENSION_REQUESTS_ACCESS;
       break;
-    case ToolbarActionViewController::HoverCardState::
-        kExtensionDoesNotWantAccess:
+    case HoverCardState::SiteAccess::kExtensionDoesNotWantAccess:
       NOTREACHED();
       break;
   }
   return l10n_util::GetStringFUTF16(title_id, host);
+}
+
+std::u16string GetPolicyText(HoverCardState::AdminPolicy state) {
+  int text_id = -1;
+  switch (state) {
+    case HoverCardState::AdminPolicy::kPinnedByAdmin:
+      text_id =
+          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_POLICY_LABEL_PINNED_TEXT;
+      break;
+    case HoverCardState::AdminPolicy::kInstalledByAdmin:
+      text_id =
+          IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_POLICY_LABEL_INSTALLED_TEXT;
+      break;
+    case HoverCardState::AdminPolicy::kNone:
+      NOTREACHED();
+      break;
+  }
+  return l10n_util::GetStringUTF16(text_id);
 }
 
 // Label that renders its background in a solid color. Placed in front of a
@@ -224,105 +233,14 @@ class ToolbarActionHoverCardBubbleView::FadeLabel : public views::View {
   absl::optional<ui::ColorId> background_color_id_;
 };
 
-class ToolbarActionHoverCardBubbleView::FootnoteView : public views::View {
- public:
-  FootnoteView() {
-    auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
-    layout->SetOrientation(views::LayoutOrientation::kVertical);
-    // We only add vertical margin to the view, since horizontal margins are
-    // handled by each child.
-    layout->SetInteriorMargin(gfx::Insets::VH(kFootnoteVerticalMargin, 0));
-
-    title_label_ =
-        AddChildView(std::make_unique<FadeLabel>(CONTEXT_TAB_HOVER_CARD_TITLE));
-    description_label_ = AddChildView(
-        std::make_unique<FadeLabel>(views::style::CONTEXT_DIALOG_BODY_TEXT));
-
-    separator_ = AddChildView(std::make_unique<views::Separator>());
-    separator_->SetProperty(views::kMarginsKey,
-                            gfx::Insets::VH(kVerticalMargin, 0));
-
-    policy_label_ = AddChildView(
-        std::make_unique<FadeLabel>(views::style::CONTEXT_DIALOG_BODY_TEXT));
-    policy_label_->SetText(l10n_util::GetStringUTF16(
-        IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_FOOTER_POLICY_LABEL_TEXT));
-
-    // Separator doesn't need margin to span the dialog width.
-    auto style_label = [](FadeLabel* label) {
-      label->SetBackgroundColorId(ui::kColorBubbleFooterBackground);
-      label->SetBorder(
-          views::CreateEmptyBorder(gfx::Insets::VH(0, kHorizontalMargin)));
-    };
-    style_label(title_label_);
-    style_label(description_label_);
-    style_label(policy_label_);
-  }
-
-  ~FootnoteView() override = default;
-
-  void OnThemeChanged() override {
-    views::View::OnThemeChanged();
-
-    // Simulate the same look as the bubble footnote view.
-    const auto* color_provider = GetColorProvider();
-    SetBackground(views::CreateSolidBackground(
-        color_provider->GetColor(ui::kColorBubbleFooterBackground)));
-    SetBorder(views::CreateSolidSidedBorder(
-        gfx::Insets::TLBR(1, 0, 0, 0),
-        color_provider->GetColor(ui::kColorBubbleFooterBorder)));
-  }
-
-  void UpdateContent(ToolbarActionViewController::HoverCardState state,
-                     bool show_policy_label,
-                     std::u16string host) {
-    bool show_site_access_labels = state !=
-                                   ToolbarActionViewController::HoverCardState::
-                                       kExtensionDoesNotWantAccess;
-    bool footer_visible = show_site_access_labels || show_policy_label;
-    SetVisible(footer_visible);
-
-    if (!footer_visible)
-      return;
-
-    title_label_->SetVisible(show_site_access_labels);
-    description_label_->SetVisible(show_site_access_labels);
-    policy_label_->SetVisible(show_policy_label);
-    separator_->SetVisible(show_site_access_labels && show_policy_label);
-
-    if (show_site_access_labels) {
-      title_label_->SetText(GetFootnoteTitle(state));
-      description_label_->SetText(GetFootnoteDescription(state, host));
-    }
-  }
-
-  void SetFade(double percent) {
-    title_label_->SetFade(percent);
-    description_label_->SetFade(percent);
-    policy_label_->SetFade(percent);
-  }
-
-  bool IsTitleVisible() const { return title_label_->GetVisible(); }
-  bool IsDescriptionVisible() const { return description_label_->GetVisible(); }
-  bool IsPolicyVisible() const { return policy_label_->GetVisible(); }
-  bool IsSeparatorVisible() const { return separator_->GetVisible(); }
-
- private:
-  raw_ptr<FadeLabel> title_label_;
-  raw_ptr<FadeLabel> description_label_;
-  raw_ptr<FadeLabel> policy_label_;
-  raw_ptr<views::Separator> separator_;
-};
-
 // ToolbarActionHoverCardBubbleView:
 // ----------------------------------------------------------
 
 ToolbarActionHoverCardBubbleView::ToolbarActionHoverCardBubbleView(
-    ToolbarActionView* action_view,
-    Profile* profile)
+    ToolbarActionView* action_view)
     : BubbleDialogDelegateView(action_view,
                                views::BubbleBorder::TOP_LEFT,
-                               views::BubbleBorder::STANDARD_SHADOW),
-      model_(ToolbarActionsModel::Get(profile)) {
+                               views::BubbleBorder::STANDARD_SHADOW) {
   DCHECK(base::FeatureList::IsEnabled(
       extensions_features::kExtensionsMenuAccessControl));
 
@@ -363,21 +281,47 @@ ToolbarActionHoverCardBubbleView::ToolbarActionHoverCardBubbleView(
   layout->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
   layout->SetCollapseMargins(true);
 
-  // Set up content.
-  title_label_ =
-      AddChildView(std::make_unique<FadeLabel>(CONTEXT_TAB_HOVER_CARD_TITLE));
-  title_label_->SetProperty(views::kMarginsKey, kTitleMargins);
-  title_label_->SetProperty(
-      views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
-                               views::MaximumFlexSizeRule::kScaleToMaximum)
-          .WithOrder(2));
-  footnote_view_ = AddChildView(std::make_unique<FootnoteView>());
-
   if (CustomShadowsSupported()) {
     corner_radius_ = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
         views::Emphasis::kHigh);
   }
+
+  // Set up content.
+  auto create_label = [](int context, gfx::Insets insets) {
+    auto label = std::make_unique<FadeLabel>(context);
+    label->SetProperty(views::kMarginsKey, insets);
+    label->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                                 views::MaximumFlexSizeRule::kScaleToMaximum));
+    return label;
+  };
+
+  auto create_separator = []() {
+    auto separator = std::make_unique<views::Separator>();
+    separator->SetProperty(views::kMarginsKey,
+                           gfx::Insets::VH(kVerticalMargin, 0));
+    return separator;
+  };
+
+  title_label_ = AddChildView(
+      create_label(CONTEXT_TAB_HOVER_CARD_TITLE,
+                   gfx::Insets::VH(kVerticalMargin, kHorizontalMargin)));
+
+  site_access_separator_ = AddChildView(create_separator());
+  site_access_title_label_ = AddChildView(
+      create_label(CONTEXT_TAB_HOVER_CARD_TITLE,
+                   gfx::Insets::TLBR(kVerticalMargin, kHorizontalMargin, 0,
+                                     kHorizontalMargin)));
+  site_access_description_label_ = AddChildView(
+      create_label(views::style::CONTEXT_DIALOG_BODY_TEXT,
+                   gfx::Insets::TLBR(0, kHorizontalMargin, kVerticalMargin,
+                                     kHorizontalMargin)));
+
+  policy_separator_ = AddChildView(create_separator());
+  policy_label_ = AddChildView(
+      create_label(views::style::CONTEXT_DIALOG_BODY_TEXT,
+                   gfx::Insets::VH(kVerticalMargin, kHorizontalMargin)));
 
   // Set up widget.
   views::BubbleDialogDelegateView::CreateBubble(this);
@@ -399,15 +343,33 @@ void ToolbarActionHoverCardBubbleView::UpdateCardContent(
     const ToolbarActionViewController* action_controller,
     content::WebContents* web_contents) {
   title_label_->SetText(action_controller->GetActionName());
-  footnote_view_->UpdateContent(
-      action_controller->GetHoverCardState(web_contents),
-      model_->IsActionForcePinned(action_controller->GetId()),
-      GetCurrentHost(web_contents));
+
+  HoverCardState state = action_controller->GetHoverCardState(web_contents);
+  bool show_site_access_labels =
+      state.site_access !=
+      HoverCardState::SiteAccess::kExtensionDoesNotWantAccess;
+  bool show_policy_label = state.policy != HoverCardState::AdminPolicy::kNone;
+
+  site_access_separator_->SetVisible(show_site_access_labels);
+  site_access_title_label_->SetVisible(show_site_access_labels);
+  site_access_description_label_->SetVisible(show_site_access_labels);
+  if (show_site_access_labels) {
+    site_access_title_label_->SetText(GetSiteAccessTitle(state.site_access));
+    site_access_description_label_->SetText(GetSiteAccessDescription(
+        state.site_access, GetCurrentHost(web_contents)));
+  }
+
+  policy_separator_->SetVisible(show_policy_label);
+  policy_label_->SetVisible(show_policy_label);
+  if (show_policy_label)
+    policy_label_->SetText(GetPolicyText(state.policy));
 }
 
 void ToolbarActionHoverCardBubbleView::SetTextFade(double percent) {
   title_label_->SetFade(percent);
-  footnote_view_->SetFade(percent);
+  site_access_title_label_->SetFade(percent);
+  site_access_description_label_->SetFade(percent);
+  policy_label_->SetFade(percent);
 }
 
 std::u16string ToolbarActionHoverCardBubbleView::GetTitleTextForTesting()
@@ -415,24 +377,24 @@ std::u16string ToolbarActionHoverCardBubbleView::GetTitleTextForTesting()
   return title_label_->GetText();
 }
 
-bool ToolbarActionHoverCardBubbleView::IsFooterVisible() const {
-  return footnote_view_->GetVisible();
+bool ToolbarActionHoverCardBubbleView::IsSiteAccessSeparatorVisible() const {
+  return site_access_separator_->GetVisible();
 }
 
-bool ToolbarActionHoverCardBubbleView::IsFooterTitleLabelVisible() const {
-  return footnote_view_->IsTitleVisible();
+bool ToolbarActionHoverCardBubbleView::IsSiteAccessTitleVisible() const {
+  return site_access_title_label_->GetVisible();
 }
 
-bool ToolbarActionHoverCardBubbleView::IsFooterDescriptionLabelVisible() const {
-  return footnote_view_->IsDescriptionVisible();
+bool ToolbarActionHoverCardBubbleView::IsSiteAccessDescriptionVisible() const {
+  return site_access_description_label_->GetVisible();
 }
 
-bool ToolbarActionHoverCardBubbleView::IsFooterSeparatorVisible() const {
-  return footnote_view_->IsSeparatorVisible();
+bool ToolbarActionHoverCardBubbleView::IsPolicySeparatorVisible() const {
+  return policy_separator_->GetVisible();
 }
 
-bool ToolbarActionHoverCardBubbleView::IsFooterPolicyLabelVisible() const {
-  return footnote_view_->IsPolicyVisible();
+bool ToolbarActionHoverCardBubbleView::IsPolicyLabelVisible() const {
+  return policy_label_->GetVisible();
 }
 
 void ToolbarActionHoverCardBubbleView::OnThemeChanged() {

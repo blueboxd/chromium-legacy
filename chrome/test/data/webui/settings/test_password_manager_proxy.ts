@@ -92,7 +92,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
   private getUrlCollectionResponse_: chrome.passwordsPrivate.UrlCollection|
       null = null;
   private changeSavedPasswordResponse_: number|null = null;
-  private requestCredentialDetailsResponse_:
+  private requestCredentialsDetailsResponse_:
       chrome.passwordsPrivate.PasswordUiEntry|null = null;
 
   constructor() {
@@ -105,6 +105,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
       'getInsecureCredentials',
       'getPasswordCheckStatus',
       'getUrlCollection',
+      'getSavedPasswordList',
       'importPasswords',
       'isAccountStoreDefault',
       'isOptedInForAccountStorage',
@@ -118,7 +119,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
       'removeSavedPassword',
       'requestExportProgressStatus',
       'requestPlaintextPassword',
-      'requestCredentialDetails',
+      'requestCredentialsDetails',
       'startAutomatedPasswordChange',
       'startBulkPasswordCheck',
       'stopBulkPasswordCheck',
@@ -160,9 +161,10 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
     this.actual_.listening.passwords--;
   }
 
-  getSavedPasswordList(callback: SavedPasswordListChangedListener) {
+  getSavedPasswordList() {
+    this.methodCalled('getSavedPasswordList');
     this.actual_.requested.passwords++;
-    callback(this.data.passwords);
+    return Promise.resolve(this.data.passwords);
   }
 
   recordPasswordsPageAccessInSettings() {}
@@ -188,9 +190,9 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
     this.actual_.listening.exceptions--;
   }
 
-  getExceptionList(callback: PasswordExceptionListChangedListener) {
+  getExceptionList() {
     this.actual_.requested.exceptions++;
-    callback(this.data.exceptions);
+    return Promise.resolve(this.data.exceptions);
   }
 
   removeException(id: number) {
@@ -211,17 +213,17 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
     this.plaintextPassword_ = plaintextPassword;
   }
 
-  requestCredentialDetails(id: number) {
-    this.methodCalled('requestCredentialDetails', {id});
-    if (!this.requestCredentialDetailsResponse_) {
+  requestCredentialsDetails(ids: number[]) {
+    this.methodCalled('requestCredentialsDetails', {ids});
+    if (!this.requestCredentialsDetailsResponse_) {
       return Promise.reject(new Error('Could not obtain credential details'));
     }
-    return Promise.resolve(this.requestCredentialDetailsResponse_);
+    return Promise.resolve([this.requestCredentialsDetailsResponse_]);
   }
 
-  setRequestCredentialDetailsResponse(
+  setRequestCredentialsDetailsResponse(
       credential: chrome.passwordsPrivate.PasswordUiEntry) {
-    this.requestCredentialDetailsResponse_ = credential;
+    this.requestCredentialsDetailsResponse_ = credential;
   }
 
   // Sets the return value of isOptedInForAccountStorage calls and notifies

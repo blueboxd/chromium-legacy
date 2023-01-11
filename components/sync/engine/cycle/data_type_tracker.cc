@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "components/sync/base/features.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/protocol/data_type_progress_marker.pb.h"
 
@@ -30,6 +31,9 @@ constexpr base::TimeDelta kVeryBigLocalChangeNudgeDelay = kDefaultPollInterval;
 constexpr base::TimeDelta kDefaultLocalChangeNudgeDelayForSessions =
     base::Seconds(11);
 
+constexpr base::TimeDelta kDefaultLocalChangeNudgeDelayForSegmentations =
+    base::Seconds(11);
+
 // Nudge delay for remote invalidations. Common to all data types.
 constexpr base::TimeDelta kRemoteInvalidationDelay = base::Milliseconds(250);
 
@@ -37,8 +41,6 @@ constexpr base::TimeDelta kRemoteInvalidationDelay = base::Milliseconds(250);
 // types when their quota is depleted.
 constexpr base::TimeDelta kDepletedQuotaNudgeDelayForExtensionTypes =
     base::Seconds(100);
-
-const size_t kDefaultMaxPayloadsPerType = 10;
 
 constexpr base::TimeDelta kRefillIntervalForExtensionTypes = base::Seconds(100);
 constexpr int kInitialTokensForExtensionTypes = 100;
@@ -52,10 +54,16 @@ base::TimeDelta GetDefaultLocalChangeNudgeDelay(ModelType model_type) {
       return kVeryBigLocalChangeNudgeDelay;
     case SESSIONS:
     case HISTORY:
+    case SAVED_TAB_GROUP:
       // Sessions is the type that causes the most commit traffic. It gets a
       // custom nudge delay, tuned for a reasonable trade-off between traffic
       // and freshness.
       return kDefaultLocalChangeNudgeDelayForSessions;
+    case SEGMENTATION:
+      // There are multiple segmentations computed during start-up within
+      // seconds. Applies a custom nudge delay, so that they are batched into
+      // one commit.
+      return kDefaultLocalChangeNudgeDelayForSegmentations;
     case BOOKMARKS:
     case PREFERENCES:
       // Types with sometimes automatic changes get longer delays to allow more
@@ -146,6 +154,7 @@ bool CanGetCommitsFromExtensions(ModelType model_type) {
     case PRINTERS_AUTHORIZATION_SERVERS:
     case READING_LIST:
     case USER_CONSENTS:
+    case SEGMENTATION:
     case SEND_TAB_TO_SELF:
     case SECURITY_EVENTS:
     case WIFI_CONFIGURATIONS:
@@ -154,16 +163,13 @@ bool CanGetCommitsFromExtensions(ModelType model_type) {
     case OS_PRIORITY_PREFERENCES:
     case WORKSPACE_DESK:
     case NIGORI:
+    case SAVED_TAB_GROUP:
     case PROXY_TABS:
       return false;
     case UNSPECIFIED:
       NOTREACHED();
       return false;
   }
-}
-
-void LogPendingInvalidationStatus(PendingInvalidationStatus status) {
-  base::UmaHistogramEnumeration("Sync.PendingInvalidationStatus", status);
 }
 
 }  // namespace
@@ -175,24 +181,10 @@ WaitInterval::WaitInterval(BlockingMode mode, base::TimeDelta length)
 
 WaitInterval::~WaitInterval() = default;
 
-DataTypeTracker::PendingInvalidation::PendingInvalidation() = default;
-DataTypeTracker::PendingInvalidation::PendingInvalidation(
-    PendingInvalidation&&) = default;
-DataTypeTracker::PendingInvalidation&
-DataTypeTracker::PendingInvalidation::operator=(PendingInvalidation&&) =
-    default;
-DataTypeTracker::PendingInvalidation::PendingInvalidation(
-    std::unique_ptr<SyncInvalidation> invalidation,
-    bool is_processed)
-    : pending_invalidation(std::move(invalidation)),
-      is_processed(is_processed) {}
-DataTypeTracker::PendingInvalidation::~PendingInvalidation() = default;
-
 DataTypeTracker::DataTypeTracker(ModelType type)
     : type_(type),
       local_nudge_count_(0),
       local_refresh_request_count_(0),
-      payload_buffer_size_(kDefaultMaxPayloadsPerType),
       initial_sync_required_(false),
       sync_required_to_resolve_conflict_(false),
       local_change_nudge_delay_(GetDefaultLocalChangeNudgeDelay(type)),
@@ -207,11 +199,7 @@ DataTypeTracker::DataTypeTracker(ModelType type)
   }
 }
 
-DataTypeTracker::~DataTypeTracker() {
-  for (size_t i = 0; i < pending_invalidations_.size(); ++i) {
-    LogPendingInvalidationStatus(PendingInvalidationStatus::kLost);
-  }
-}
+DataTypeTracker::~DataTypeTracker() = default;
 
 void DataTypeTracker::RecordLocalChange() {
   local_nudge_count_++;
@@ -219,72 +207,6 @@ void DataTypeTracker::RecordLocalChange() {
 
 void DataTypeTracker::RecordLocalRefreshRequest() {
   local_refresh_request_count_++;
-}
-
-void DataTypeTracker::RecordRemoteInvalidation(
-    std::unique_ptr<SyncInvalidation> incoming) {
-  DCHECK(incoming);
-  // Merge the incoming invalidation into our list of pending invalidations.
-  //
-  // We won't use STL algorithms here because our concept of equality doesn't
-  // quite fit the expectations of set_intersection.  In particular, two
-  // invalidations can be equal according to the SingleTopicInvalidationSet's
-  // rules (ie. have equal versions), but still have different AckHandle values
-  // and need to be acknowledged separately.
-  //
-  // The invalidations service can only track one outsanding invalidation per
-  // type and version, so the acknowledgement here should be redundant.  We'll
-  // acknowledge them anyway since it should do no harm, and makes this code a
-  // bit easier to test.
-  //
-  // Overlaps should be extremely rare for most invalidations.  They can happen
-  // for unknown version invalidations, though.
-
-  auto it = pending_invalidations_.begin();
-
-  // Find the lower bound.
-  while (it != pending_invalidations_.end() &&
-         SyncInvalidation::LessThanByVersion(*(it->pending_invalidation),
-                                             *incoming)) {
-    it++;
-  }
-
-  if (it != pending_invalidations_.end() &&
-      !SyncInvalidation::LessThanByVersion(*incoming,
-                                           *(it->pending_invalidation)) &&
-      !SyncInvalidation::LessThanByVersion(*(it->pending_invalidation),
-                                           *incoming)) {
-    // Incoming overlaps with existing.  Either both are unknown versions
-    // (likely) or these two have the same version number (very unlikely).
-    // Acknowledge and overwrite existing.
-
-    // Insert before the existing and get iterator to inserted.
-    auto it2 = pending_invalidations_.insert(it, {std::move(incoming), false});
-
-    // Increment that iterator to the old one, then acknowledge and remove it.
-    LogPendingInvalidationStatus(
-        (it2->pending_invalidation)->IsUnknownVersion()
-            ? PendingInvalidationStatus::kSameUnknownVersion
-            : PendingInvalidationStatus::kSameKnownVersion);
-    ++it2;
-    (it2->pending_invalidation)->Acknowledge();
-    pending_invalidations_.erase(it2);
-  } else {
-    // The incoming has a version not in the pending_invalidations_ list.
-    // Add it to the list at the proper position.
-    pending_invalidations_.insert(it, {std::move(incoming), false});
-  }
-
-  // The incoming invalidation may have caused us to exceed our buffer size.
-  // Trim some items from our list, if necessary.
-  while (pending_invalidations_.size() > payload_buffer_size_) {
-    last_dropped_invalidation_ =
-        std::move(pending_invalidations_.front().pending_invalidation);
-    last_dropped_invalidation_->Drop();
-    LogPendingInvalidationStatus(
-        PendingInvalidationStatus::kInvalidationsOverflow);
-    pending_invalidations_.erase(pending_invalidations_.begin());
-  }
 }
 
 void DataTypeTracker::RecordInitialSyncRequired() {
@@ -325,24 +247,6 @@ void DataTypeTracker::RecordSuccessfulSyncCycleIfNotBlocked() {
   // this sync cycle have been written to disk before updating the invalidations
   // state.  See crbug.com/324996.
 
-  // Processed pending invalidations are deleted, and unprocessed invalidations
-  // will be used in next sync cycle.
-  auto it = pending_invalidations_.begin();
-  while (it != pending_invalidations_.end()) {
-    if (it->is_processed) {
-      LogPendingInvalidationStatus(PendingInvalidationStatus::kAcknowledged);
-      it->pending_invalidation->Acknowledge();
-      it = pending_invalidations_.erase(it);
-    } else {
-      ++it;
-    }
-  }
-
-  if (last_dropped_invalidation_) {
-    last_dropped_invalidation_->Acknowledge();
-    last_dropped_invalidation_.reset();
-  }
-
   // The initial sync should generally have happened as part of a "configure"
   // sync cycle, before this method gets called (i.e. after a successful
   // "normal" sync cycle). However, in some cases the initial sync might not
@@ -361,11 +265,6 @@ void DataTypeTracker::RecordInitialSyncDone() {
     return;
   }
   initial_sync_required_ = false;
-}
-
-// This limit will take effect on all future invalidations received.
-void DataTypeTracker::UpdatePayloadBufferSize(size_t new_size) {
-  payload_buffer_size_ = new_size;
 }
 
 bool DataTypeTracker::IsSyncRequired() const {
@@ -390,7 +289,7 @@ bool DataTypeTracker::HasRefreshRequestPending() const {
 }
 
 bool DataTypeTracker::HasPendingInvalidation() const {
-  return !pending_invalidations_.empty() || last_dropped_invalidation_;
+  return has_pending_invalidations_;
 }
 
 bool DataTypeTracker::IsInitialSyncRequired() const {
@@ -403,22 +302,6 @@ bool DataTypeTracker::IsSyncRequiredToResolveConflict() const {
 
 void DataTypeTracker::FillGetUpdatesTriggersMessage(
     sync_pb::GetUpdateTriggers* msg) {
-  // Fill the list of payloads, if applicable.  The payloads must be ordered
-  // oldest to newest, so we insert them in the same order as we've been storing
-  // them internally.
-  for (PendingInvalidation& invalidation : pending_invalidations_) {
-    if (!invalidation.pending_invalidation->IsUnknownVersion()) {
-      msg->add_notification_hint(
-          invalidation.pending_invalidation->GetPayload());
-    }
-    invalidation.is_processed = true;
-  }
-
-  msg->set_server_dropped_hints(
-      !pending_invalidations_.empty() &&
-      (pending_invalidations_.begin()->pending_invalidation)
-          ->IsUnknownVersion());
-  msg->set_client_dropped_hints(!!last_dropped_invalidation_);
   msg->set_local_modification_nudges(local_nudge_count_);
   msg->set_datatype_refresh_nudges(local_refresh_request_count_);
   msg->set_initial_sync_in_progress(initial_sync_required_);
@@ -475,6 +358,11 @@ void DataTypeTracker::UpdateThrottleOrBackoffState() {
       wait_interval_.reset();
     }
   }
+}
+
+void DataTypeTracker::SetHasPendingInvalidations(
+    bool has_pending_invalidations) {
+  has_pending_invalidations_ = has_pending_invalidations;
 }
 
 void DataTypeTracker::UpdateLocalChangeNudgeDelay(base::TimeDelta delay) {

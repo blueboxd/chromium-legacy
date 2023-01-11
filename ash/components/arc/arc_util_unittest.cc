@@ -279,6 +279,12 @@ TEST_F(ArcUtilTest, IsArcVmEnabled) {
   EXPECT_TRUE(IsArcVmEnabled());
 }
 
+TEST_F(ArcUtilTest, GetArcAndroidSdkVersionAsInt) {
+  // Make sure that the function does not crash even when /etc/lsb-release is
+  // not available (e.g. unit tests) or corrupted.
+  EXPECT_EQ(kMaxArcVersion, GetArcAndroidSdkVersionAsInt());
+}
+
 TEST_F(ArcUtilTest, IsArcVmRtVcpuEnabled) {
   {
     ScopedRtVcpuFeature feature(false, false);
@@ -341,6 +347,15 @@ TEST_F(ArcUtilTest, GetArcVmUreadaheadMode) {
 
   EXPECT_EQ(ArcVmUreadaheadMode::DISABLED,
             GetArcVmUreadaheadMode(callback_disabled));
+
+  command_line->InitFromArgv(
+      {"", "--arc-disable-ureadahead", "--arcvm-ureadahead-mode=readahead"});
+  EXPECT_EQ(ArcVmUreadaheadMode::READAHEAD,
+            GetArcVmUreadaheadMode(callback_readahead));
+
+  command_line->InitFromArgv({"", "--arcvm-ureadahead-mode=readahead"});
+  EXPECT_EQ(ArcVmUreadaheadMode::READAHEAD,
+            GetArcVmUreadaheadMode(callback_readahead));
 
   command_line->InitFromArgv({"", "--arcvm-ureadahead-mode=generate"});
   EXPECT_EQ(ArcVmUreadaheadMode::GENERATE,

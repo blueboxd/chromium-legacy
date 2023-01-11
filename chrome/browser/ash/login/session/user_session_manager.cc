@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <map>
 #include <memory>
 #include <set>
@@ -46,13 +45,13 @@
 #include "chrome/browser/ash/base/locale_util.h"
 #include "chrome/browser/ash/boot_times_recorder.h"
 #include "chrome/browser/ash/child_accounts/child_policy_observer.h"
+#include "chrome/browser/ash/crosapi/browser_data_back_migrator.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
 #include "chrome/browser/ash/first_run/first_run.h"
 #include "chrome/browser/ash/floating_workspace/floating_workspace_service.h"
 #include "chrome/browser/ash/floating_workspace/floating_workspace_util.h"
 #include "chrome/browser/ash/hats/hats_config.h"
 #include "chrome/browser/ash/logging.h"
-#include "chrome/browser/ash/login/auth/chrome_cryptohome_authenticator.h"
 #include "chrome/browser/ash/login/auth/chrome_safe_mode_delegate.h"
 #include "chrome/browser/ash/login/chrome_restart_request.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
@@ -159,6 +158,7 @@
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/signin/public/identity_manager/tribool.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/user_manager/common_types.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -332,8 +332,7 @@ void InitLocaleAndInputMethodsForNewUser(
   for (size_t i = 0; i < candidates.size(); ++i) {
     const std::string& candidate = candidates[i];
     // Add a candidate if it's not yet in language_codes and is allowed.
-    if (std::count(language_codes.begin(), language_codes.end(), candidate) ==
-            0 &&
+    if (!base::Contains(language_codes, candidate) &&
         locale_util::IsAllowedLanguage(candidate, prefs)) {
       language_codes.push_back(candidate);
     }
@@ -692,15 +691,11 @@ scoped_refptr<Authenticator> UserSessionManager::CreateAuthenticator(
   if (authenticator_.get() == nullptr) {
     if (injected_authenticator_builder_) {
       authenticator_ = injected_authenticator_builder_->Create(consumer);
-    } else if (base::FeatureList::IsEnabled(
-                   ash::features::kUseAuthsessionAuthentication)) {
+    } else {
       authenticator_ = new AuthSessionAuthenticator(
           consumer, std::make_unique<ChromeSafeModeDelegate>(),
           base::BindRepeating(&RecordKnownUser), IsEphemeralMountForced(),
           g_browser_process->local_state());
-    } else {
-      authenticator_ =
-          base::MakeRefCounted<ChromeCryptohomeAuthenticator>(consumer);
     }
   } else {
     // TODO(nkostylev): Fix this hack by improving Authenticator dependencies.
@@ -967,7 +962,7 @@ bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
   if (!SessionManagerClient::Get()->SupportsBrowserRestart())
     return false;
 
-  if (!ProfileHelper::IsRegularProfile(profile)) {
+  if (!ProfileHelper::IsUserProfile(profile)) {
     return false;
   }
 
@@ -1298,7 +1293,7 @@ void UserSessionManager::InitializeAccountManager() {
   base::FilePath profile_path =
       ProfileHelper::GetProfilePathByUserIdHash(user_context_.GetUserIDHash());
 
-  if (ProfileHelper::IsRegularProfilePath(profile_path)) {
+  if (ProfileHelper::IsUserProfilePath(profile_path)) {
     ash::InitializeAccountManager(
         profile_path,
         base::BindOnce(&UserSessionManager::PrepareProfile,
@@ -2040,12 +2035,14 @@ void UserSessionManager::OnRestoreActiveSessions(
   const cryptohome::Identification active_cryptohome_id(
       user_manager->GetActiveUser()->GetAccountId());
 
-  for (auto& item : sessions.value()) {
-    cryptohome::Identification id =
-        cryptohome::Identification::FromString(item.first);
-    if (active_cryptohome_id == id)
+  user_manager::KnownUser known_user(g_browser_process->local_state());
+  for (auto& [cryptohome_id, user_id_hash] : sessions.value()) {
+    if (active_cryptohome_id.id() == cryptohome_id)
       continue;
-    pending_user_sessions_[id.GetAccountId()] = std::move(item.second);
+
+    const AccountId account_id(known_user.GetAccountIdByCryptohomeId(
+        user_manager::CryptohomeId(cryptohome_id)));
+    pending_user_sessions_[account_id] = std::move(user_id_hash);
   }
   RestorePendingUserSessions();
 }
@@ -2278,6 +2275,13 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
     return;
   }
 
+  if (ash::BrowserDataBackMigrator::MaybeRestartToMigrateBack(
+          user->GetAccountId(), user->username_hash(),
+          crosapi::browser_util::PolicyInitState::kAfterInit)) {
+    LOG(WARNING) << "Restarting chrome to run backward profile migration.";
+    return;
+  }
+
   if (LoginDisplayHost::default_host()) {
     LoginDisplayHost::default_host()->SetStatusAreaVisible(true);
     LoginDisplayHost::default_host()->BeforeSessionStart();
@@ -2391,7 +2395,7 @@ void UserSessionManager::LaunchBrowser(Profile* profile) {
   browser_creator.LaunchBrowser(
       *base::CommandLine::ForCurrentProcess(), profile, base::FilePath(),
       chrome::startup::IsProcessStartup::kYes, first_run,
-      std::make_unique<LaunchModeRecorder>());
+      std::make_unique<OldLaunchModeRecorder>());
 }
 
 // static

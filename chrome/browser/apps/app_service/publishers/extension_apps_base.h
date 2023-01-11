@@ -92,13 +92,12 @@ class ExtensionAppsBase : public apps::PublisherBase,
   // Calculate the icon effects for the extension.
   IconEffects GetIconEffects(const extensions::Extension* extension);
 
-  content::WebContents* LaunchAppWithIntentImpl(
-      const std::string& app_id,
-      int32_t event_flags,
-      IntentPtr intent,
-      LaunchSource launch_source,
-      WindowInfoPtr window_info,
-      base::OnceCallback<void(bool)> callback);
+  content::WebContents* LaunchAppWithIntentImpl(const std::string& app_id,
+                                                int32_t event_flags,
+                                                IntentPtr intent,
+                                                LaunchSource launch_source,
+                                                WindowInfoPtr window_info,
+                                                LaunchCallback callback);
 
   virtual content::WebContents* LaunchImpl(AppLaunchParams&& params);
   virtual void LaunchAppWithParamsImpl(AppLaunchParams&& params,
@@ -134,19 +133,6 @@ class ExtensionAppsBase : public apps::PublisherBase,
   }
 
  private:
-  // Holds onto a success/failure callback and invokes it with `false` if the
-  // holding object is deleted before the callback is otherwise invoked.
-  struct CallbackWrapper {
-   public:
-    explicit CallbackWrapper(base::OnceCallback<void(bool)> callback);
-    CallbackWrapper(const CallbackWrapper&) = delete;
-    CallbackWrapper& operator=(const CallbackWrapper&) = delete;
-    CallbackWrapper(CallbackWrapper&&);
-    ~CallbackWrapper();
-
-    base::OnceCallback<void(bool)> callback;
-  };
-
   // Determines whether the given extension should be treated as type app_type_,
   // and should therefore by handled by this publisher.
   virtual bool Accepts(const extensions::Extension* extension) = 0;
@@ -188,20 +174,6 @@ class ExtensionAppsBase : public apps::PublisherBase,
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
               apps::mojom::WindowInfoPtr window_info) override;
-  void LaunchAppWithFiles(const std::string& app_id,
-                          int32_t event_flags,
-                          apps::mojom::LaunchSource launch_source,
-                          apps::mojom::FilePathsPtr file_paths) override;
-  void LaunchAppWithIntent(const std::string& app_id,
-                           int32_t event_flags,
-                           apps::mojom::IntentPtr intent,
-                           apps::mojom::LaunchSource launch_source,
-                           apps::mojom::WindowInfoPtr window_info,
-                           LaunchAppWithIntentCallback callback) override;
-  void Uninstall(const std::string& app_id,
-                 apps::mojom::UninstallSource uninstall_source,
-                 bool clear_site_data,
-                 bool report_abuse) override;
   void OpenNativeSettings(const std::string& app_id) override;
 
   // extensions::ExtensionPrefsObserver overrides.
@@ -263,18 +235,6 @@ class ExtensionAppsBase : public apps::PublisherBase,
                          int32_t event_flags,
                          LaunchSource launch_source,
                          WindowInfoPtr window_info);
-  // TODO(crbug.com/1253250): This function is used as `callback` for
-  // RunExtensionEnableFlow. The LaunchAppWithIntent interface can't be used as
-  // `callback` with `base::BindOnce`, because we have both mojom and non mojom
-  // Launch function. Remove this function after migrating to the non mojom
-  // Launch interface when we have one non mojom LaunchAppWithIntent interface
-  // only.
-  void LaunchAppWithIntentWhenEnabled(const std::string& app_id,
-                                      int32_t event_flags,
-                                      IntentPtr intent,
-                                      LaunchSource launch_source,
-                                      WindowInfoPtr window_info,
-                                      CallbackWrapper callback);
 
   // TODO(crbug.com/1253250): Remove after migrating to the non mojom Launch
   // interface.
@@ -282,15 +242,6 @@ class ExtensionAppsBase : public apps::PublisherBase,
                    int32_t event_flags,
                    apps::mojom::LaunchSource launch_source,
                    apps::mojom::WindowInfoPtr window_info);
-
-  // TODO(crbug.com/1253250): Remove after migrating to the non mojom Launch
-  // interface.
-  void LaunchAppWithIntentMojom(const std::string& app_id,
-                                int32_t event_flags,
-                                apps::mojom::IntentPtr intent,
-                                apps::mojom::LaunchSource launch_source,
-                                apps::mojom::WindowInfoPtr window_info,
-                                CallbackWrapper callback);
 
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 

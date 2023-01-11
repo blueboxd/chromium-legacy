@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_origin.h"
+#include "third_party/blink/renderer/core/css/resolver/match_flags.h"
 #include "third_party/blink/renderer/core/css/rule_set.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
@@ -145,6 +146,13 @@ class CORE_EXPORT MatchResult {
   void FinishAddingPresentationalHints();
   void FinishAddingAuthorRulesForTreeScope(const TreeScope&);
 
+  void AddCustomHighlightName(const AtomicString& custom_highlight_name) {
+    custom_highlight_names_.insert(custom_highlight_name);
+  }
+  const HashSet<AtomicString>& CustomHighlightNames() const {
+    return custom_highlight_names_;
+  }
+
   void SetIsCacheable(bool cacheable) { is_cacheable_ = cacheable; }
   bool IsCacheable() const { return is_cacheable_; }
   void SetDependsOnSizeContainerQueries() {
@@ -158,6 +166,12 @@ class CORE_EXPORT MatchResult {
   }
   bool DependsOnStyleContainerQueries() const {
     return depends_on_size_container_queries_;
+  }
+  void SetFirstLineDependsOnSizeContainerQueries() {
+    first_line_depends_on_size_container_queries_ = true;
+  }
+  bool FirstLineDependsOnSizeContainerQueries() const {
+    return first_line_depends_on_size_container_queries_;
   }
   void SetDependsOnStaticViewportUnits() {
     depends_on_static_viewport_units_ = true;
@@ -183,6 +197,23 @@ class CORE_EXPORT MatchResult {
   bool ConditionallyAffectsAnimations() const {
     return conditionally_affects_animations_;
   }
+  void SetHasNonUniversalHighlightPseudoStyles() {
+    has_non_universal_highlight_pseudo_styles_ = true;
+  }
+  bool HasNonUniversalHighlightPseudoStyles() const {
+    return has_non_universal_highlight_pseudo_styles_;
+  }
+  void SetHasNonUaHighlightPseudoStyles() {
+    has_non_ua_highlight_pseudo_styles_ = true;
+  }
+  bool HasNonUaHighlightPseudoStyles() const {
+    return has_non_ua_highlight_pseudo_styles_;
+  }
+
+  bool HasFlag(MatchFlag flag) const {
+    return flags_ & static_cast<MatchFlags>(flag);
+  }
+  void AddFlags(MatchFlags flags) { flags_ |= flags; }
 
   const MatchedPropertiesVector& GetMatchedProperties() const {
     return matched_properties_;
@@ -200,12 +231,17 @@ class CORE_EXPORT MatchResult {
  private:
   MatchedPropertiesVector matched_properties_;
   HeapVector<Member<const TreeScope>, 4> tree_scopes_;
+  HashSet<AtomicString> custom_highlight_names_;
   bool is_cacheable_{true};
   bool depends_on_size_container_queries_{false};
+  bool first_line_depends_on_size_container_queries_{false};
   bool depends_on_static_viewport_units_{false};
   bool depends_on_dynamic_viewport_units_{false};
   bool depends_on_rem_container_queries_{false};
   bool conditionally_affects_animations_{false};
+  bool has_non_universal_highlight_pseudo_styles_{false};
+  bool has_non_ua_highlight_pseudo_styles_{false};
+  MatchFlags flags_{0};
   CascadeOrigin current_origin_{CascadeOrigin::kUserAgent};
   uint16_t current_tree_order_{0};
 };

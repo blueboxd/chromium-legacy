@@ -11,9 +11,12 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/floss/bluetooth_adapter_floss.h"
+#include "device/bluetooth/floss/bluetooth_advertisement_floss.h"
 #include "device/bluetooth/floss/bluetooth_device_floss.h"
 #include "device/bluetooth/floss/fake_floss_adapter_client.h"
 #include "device/bluetooth/floss/fake_floss_advertiser_client.h"
+#include "device/bluetooth/floss/fake_floss_battery_manager_client.h"
+#include "device/bluetooth/floss/fake_floss_gatt_client.h"
 #include "device/bluetooth/floss/fake_floss_lescan_client.h"
 #include "device/bluetooth/floss/fake_floss_manager_client.h"
 #include "device/bluetooth/floss/fake_floss_socket_manager.h"
@@ -88,22 +91,29 @@ class BluetoothFlossTest : public testing::Test {
 
     auto fake_floss_manager_client = std::make_unique<FakeFlossManagerClient>();
     auto fake_floss_adapter_client = std::make_unique<FakeFlossAdapterClient>();
-    auto fake_floss_socket_manager = std::make_unique<FakeFlossSocketManager>();
     auto fake_floss_lescan_client = std::make_unique<FakeFlossLEScanClient>();
     auto fake_floss_advertiser_client =
         std::make_unique<FakeFlossAdvertiserClient>();
+    auto fake_floss_battery_manager_client =
+        std::make_unique<FakeFlossBatteryManagerClient>();
 
     fake_floss_manager_client_ = fake_floss_manager_client.get();
     fake_floss_adapter_client_ = fake_floss_adapter_client.get();
     fake_floss_lescan_client_ = fake_floss_lescan_client.get();
     fake_floss_advertiser_client_ = fake_floss_advertiser_client.get();
+    fake_floss_battery_manager_client_ =
+        fake_floss_battery_manager_client.get();
 
     dbus_setter->SetFlossManagerClient(std::move(fake_floss_manager_client));
     dbus_setter->SetFlossAdapterClient(std::move(fake_floss_adapter_client));
-    dbus_setter->SetFlossSocketManager(std::move(fake_floss_socket_manager));
+    dbus_setter->SetFlossGattClient(std::make_unique<FakeFlossGattClient>());
+    dbus_setter->SetFlossSocketManager(
+        std::make_unique<FakeFlossSocketManager>());
     dbus_setter->SetFlossLEScanClient(std::move(fake_floss_lescan_client));
     dbus_setter->SetFlossAdvertiserClient(
         std::move(fake_floss_advertiser_client));
+    dbus_setter->SetFlossBatteryManagerClient(
+        std::move(fake_floss_battery_manager_client));
   }
 
   void InitializeAdapter() {
@@ -186,6 +196,7 @@ class BluetoothFlossTest : public testing::Test {
   raw_ptr<FakeFlossAdapterClient> fake_floss_adapter_client_;
   raw_ptr<FakeFlossLEScanClient> fake_floss_lescan_client_;
   raw_ptr<FakeFlossAdvertiserClient> fake_floss_advertiser_client_;
+  raw_ptr<FakeFlossBatteryManagerClient> fake_floss_battery_manager_client_;
 
   std::vector<std::unique_ptr<BluetoothDiscoverySession>> discovery_sessions_;
 
@@ -556,6 +567,76 @@ TEST_F(BluetoothFlossTest, HandlesClearedDevices) {
   EXPECT_TRUE(same_bonded_device != nullptr);
 }
 
+TEST_F(BluetoothFlossTest, UpdatesDeviceName) {
+  InitializeAdapter();
+  DiscoverDevices();
+
+  BluetoothDevice* device =
+      adapter_->GetDevice(FakeFlossAdapterClient::kClassicAddress);
+  ASSERT_TRUE(device != nullptr);
+  EXPECT_EQ(device->GetName(), FakeFlossAdapterClient::kClassicName);
+}
+
+TEST_F(BluetoothFlossTest, SetAdvertisingInterval) {
+  InitializeAdapter();
+
+  base::RunLoop run_loop0;
+  EXPECT_EQ(static_cast<uint32_t>(0),
+            fake_floss_advertiser_client_->start_advertising_set_called_);
+
+  auto data = std::make_unique<device::BluetoothAdvertisement::Data>(
+      device::BluetoothAdvertisement::AdvertisementType::
+          ADVERTISEMENT_TYPE_BROADCAST);
+
+  data->set_scan_response_data(
+      device::BluetoothAdvertisement::ScanResponseData());
+
+  adapter_->RegisterAdvertisement(
+      std::move(data),
+      base::BindLambdaForTesting(
+          [&run_loop0](
+              scoped_refptr<device::BluetoothAdvertisement> advertisement) {
+            EXPECT_TRUE(advertisement);
+
+            auto* advertisementfloss =
+                static_cast<BluetoothAdvertisementFloss*>(advertisement.get());
+            EXPECT_FALSE(advertisementfloss->params().connectable);
+            EXPECT_TRUE(advertisementfloss->params().scannable);
+            run_loop0.Quit();
+          }),
+      base::BindOnce([](device::BluetoothAdvertisement::ErrorCode error_code) {
+        FAIL();
+      }));
+  run_loop0.Run();
+  EXPECT_EQ(static_cast<uint32_t>(1),
+            fake_floss_advertiser_client_->start_advertising_set_called_);
+
+  base::RunLoop run_loop1;
+  EXPECT_EQ(static_cast<uint32_t>(0),
+            fake_floss_advertiser_client_->set_advertising_parameters_called_);
+  adapter_->SetAdvertisingInterval(
+      base::TimeDelta(), base::TimeDelta(),
+      base::BindLambdaForTesting([&run_loop1]() { run_loop1.Quit(); }),
+      base::BindOnce([](device::BluetoothAdvertisement::ErrorCode error_code) {
+        FAIL();
+      }));
+  run_loop1.Run();
+  EXPECT_EQ(static_cast<uint32_t>(1),
+            fake_floss_advertiser_client_->set_advertising_parameters_called_);
+
+  base::RunLoop run_loop2;
+  EXPECT_EQ(static_cast<uint32_t>(0),
+            fake_floss_advertiser_client_->stop_advertising_set_called_);
+  adapter_->ResetAdvertising(
+      base::BindLambdaForTesting([&run_loop2]() { run_loop2.Quit(); }),
+      base::BindOnce([](device::BluetoothAdvertisement::ErrorCode error_code) {
+        FAIL();
+      }));
+  run_loop2.Run();
+  EXPECT_EQ(static_cast<uint32_t>(1),
+            fake_floss_advertiser_client_->stop_advertising_set_called_);
+}
+
 #if BUILDFLAG(IS_CHROMEOS)
 TEST_F(BluetoothFlossTest, StartLowEnergyScanSessions) {
   InitializeAdapter();
@@ -607,6 +688,11 @@ TEST_F(BluetoothFlossTest, StartLowEnergyScanSessionWithScanResult) {
       base::Contains(fake_floss_lescan_client_->scanner_ids_, kTestScannerId));
   EXPECT_EQ(1, delegate.sessions_started_);
   EXPECT_TRUE(base::Contains(delegate.devices_found_, kTestDeviceAddr));
+
+  // Check that the scanned device is in the devices_ map so clients can
+  // access the device.
+  BluetoothDevice* device = adapter_->GetDevice(kTestDeviceAddr);
+  EXPECT_NE(nullptr, device);
 
   adapter_->Shutdown();
   EXPECT_EQ(1, delegate.sessions_invalidated_);

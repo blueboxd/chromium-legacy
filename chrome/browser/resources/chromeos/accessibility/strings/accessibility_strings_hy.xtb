@@ -26,6 +26,7 @@
 <translation id="1161762950103988776">Անցնել</translation>
 <translation id="1164857107703583584">Անցման հրամանները հեշտացնում են նավիգացիան վեբ էջերում։</translation>
 <translation id="1175914831232945926">Թվանշաններ</translation>
+<translation id="1181003590763099524">տեղափոխել սկիզբ</translation>
 <translation id="1188858454923323853">լրացուցիչ</translation>
 <translation id="1189258430971676908">Գործնական վարժությունների տարածք․ իջնող ցանկեր</translation>
 <translation id="1195238899008218998">հետգրություն</translation>
@@ -94,7 +95,7 @@
 <translation id="1506187449813838456">Բարձրացնել ձայնածավալը</translation>
 <translation id="151784044608172266">Հաջորդ նախադասությունը</translation>
 <translation id="1524531499102321782">Հաջորդ տողը</translation>
-<translation id="1542513807034338907">Թերթեք մինչև նախորդ էջ</translation>
+<translation id="1542513807034338907">Ոլորեք մինչև նախորդ էջ</translation>
 <translation id="1546370775711804143">Ոլորագոտի</translation>
 <translation id="1551572888042734032">Ամառ</translation>
 <translation id="1555130319947370107">Կապույտ</translation>
@@ -150,6 +151,7 @@
 <translation id="1914424852593176649">Չափսը՝ <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678">համադրություն՝ <ph name="DOT" /></translation>
 <translation id="1923956950274750765">Միջին խոլորձագույն</translation>
+<translation id="1928535370180099152">ընդգծել նախորդ նիշը</translation>
 <translation id="1928932365747995741">Նախորդ խմբագրելի տեքստային դաշտ չկա</translation>
 <translation id="1964135212174907577">Հաջորդ առարկան</translation>
 <translation id="1966649499058910679">Ընդգծել բառը, երբ այն հնչեցվում է</translation>
@@ -203,6 +205,7 @@
 <translation id="2381733276052567791">Միացնել/անջատել հնչեցումը</translation>
 <translation id="2390264819538553347">Առաջ անցնելու համար սեղմեք Enter: Հետ գնալու համար սեղմեք Backspace:</translation>
 <translation id="2398579267367951220">Մուտքագրեք տեքստը, որն անհրաժեշտ է գտնել էջում։ Սեղմեք Enter ստեղնը՝ որոնման արդյունքներին անցնելու համար, վեր կամ վար սլաքով ստեղները՝ արդյունքները դիտելու համար: Շարունակեք մուտքագրել տեքստը՝ որոնման հարցումը փոխելու համար: Չեղարկելու համար սեղմեք Escape ստեղնը:</translation>
+<translation id="2407047351320112166">ընդգծել հաջորդ նիշը</translation>
 <translation id="240709722712693803">Կապտամանուշակագույն</translation>
 <translation id="2410298923485357543">Օգտագործել բնական ձայնը, երբ սարքը միացած է ինտերնետին</translation>
 <translation id="2416512023405990736">Չնշված նշավանդակ</translation>
@@ -326,6 +329,7 @@
 <translation id="309749186376891736">Նշորդի տեղափոխում</translation>
 <translation id="3103579948980282461">Միջին կարմրամանուշակագույն</translation>
 <translation id="3104705064753753826">alrt dlg</translation>
+<translation id="3105857328626674463">ընդգծել նախորդ բառը</translation>
 <translation id="3109724472072898302">Կոծկված</translation>
 <translation id="311015743332597320">Չորս մատը սահեցրեք աջ</translation>
 <translation id="3112457281078985179">ChromeVox-ը միացնելու կամ անջատելու համար սեղմեք Control + Alt + Z ստեղները:</translation>
@@ -354,6 +358,7 @@
 <translation id="3241052487511142956">Նախորդ այցելած հղումը</translation>
 <translation id="3241638166094654466">Տողում բջիջների քանակը`</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />՝ <ph name="CONTENT" /></translation>
+<translation id="3247621388192105674">տեղափոխել վերջ</translation>
 <translation id="3260949043575829030">Նախորդ նման տարրը</translation>
 <translation id="3270069636408109001">Հաջորդ աղյուսակ չկա</translation>
 <translation id="3273791280096244679">Պահել պիտակը</translation>
@@ -380,6 +385,7 @@
 <translation id="3389259863310851658">Ձևաթղթի նախորդ դաշտը</translation>
 <translation id="3393605254399152980">Քաշեք մեկ մատով՝ հնչեցնելու տարրերը, որոնց հպում եք</translation>
 <translation id="3406283310380167331">Ցույց տալ ձևերի ցանկը</translation>
+<translation id="3407726812456125464">Հնչեցնել ընտրված տեքստը</translation>
 <translation id="3414400929511680526">Սառցե կապույտ</translation>
 <translation id="3418936350470374046">Ներքևում վանդակ չկա</translation>
 <translation id="3419269701801640163">տեղադրել</translation>
@@ -559,9 +565,10 @@
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">կանխադրված</translation>
 <translation id="4772771694153161212">Ընդգծումն անջատված է</translation>
-<translation id="4780458943471935919">Թերթեք մինչև հաջորդ էջ</translation>
+<translation id="4780458943471935919">Ոլորեք մինչև հաջորդ էջ</translation>
 <translation id="4784215347943747396">Կառավարեք սարքն ընդամենը 1 կամ 2 փոխանջատիչի օգնությամբ</translation>
 <translation id="4786285211967466855">1-ին մակարդակի նախորդ վերնագիր չկա</translation>
+<translation id="4786591486270126089">Ձայնի ավտոմատ փոխում լեզվի կարգավորումների հիման վրա</translation>
 <translation id="4787577491510559358">Հնչեցնել ընթացիկ տարրի ձևաչափը</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Անջատել</translation>
@@ -945,11 +952,13 @@
 <translation id="743783356331413498">Օրինակ</translation>
 <translation id="7439060726180460871">Գրացուցակ</translation>
 <translation id="744163271241493234">pwded</translation>
+<translation id="7443479558101073378">ընդգծել հաջորդ բառը</translation>
 <translation id="7465123027577412805">Օգտագործե՞լ բնական ձայն</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492497529767769458">Անցնել հաջորդ բաժին (օր․՝ Կարգավիճակի տող, Գործարկիչ և այլ)։</translation>
 <translation id="7505149250476994901">Տառից առաջ արտասանեք «մեծատառ»</translation>
 <translation id="7533226154149229506">Բաց ոսկեդեղին</translation>
+<translation id="7541021454094606506">ջնջել բոլորը</translation>
 <translation id="7543255924852002459">Հեռացնել պիտակը</translation>
 <translation id="7552432549459840808">Chrome-ի օգտակար դյուրանցումներ</translation>
 <translation id="7553679324939294712">զետեղել «<ph name="INSERT_PHRASE" />» արտահայտությունը «<ph name="BEFORE_PHRASE" />»-ից առաջ</translation>

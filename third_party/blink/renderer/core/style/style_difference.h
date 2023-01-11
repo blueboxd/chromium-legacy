@@ -34,6 +34,7 @@ class StyleDifference {
     kBlendModeChanged = 1 << 7,
     kMaskChanged = 1 << 8,
     kBackgroundColorChanged = 1 << 9,
+    kClipPathChanged = 1 << 10
     // If you add a value here, be sure to update kPropertyDifferenceCount.
   };
 
@@ -172,6 +173,13 @@ class StyleDifference {
     property_specific_differences_ |= kBackgroundColorChanged;
   }
 
+  bool ClipPathChanged() const {
+    return property_specific_differences_ & kClipPathChanged;
+  }
+  void SetClipPathChanged() {
+    property_specific_differences_ |= kClipPathChanged;
+  }
+
   bool ScrollAnchorDisablingPropertyChanged() const {
     return scroll_anchor_disabling_property_changed_;
   }
@@ -190,7 +198,7 @@ class StyleDifference {
   }
 
  private:
-  static constexpr int kPropertyDifferenceCount = 10;
+  static constexpr int kPropertyDifferenceCount = 11;
 
   friend CORE_EXPORT std::ostream& operator<<(std::ostream&,
                                               const StyleDifference&);
@@ -208,7 +216,16 @@ class StyleDifference {
   // Designed for the effects such as background-color, whose animation can be
   // composited using paint worklet infra.
   unsigned compositable_paint_effect_changed_ : 1;
+
+  // This exists only to get the object up to exactly 32 bits,
+  // which keeps Clang from making partial writes of it when copying
+  // (making two small writes to the stack and then reading the same
+  // data back again with a large read can cause store-to-load forward
+  // stalls). Feel free to take bits from here if you need them
+  // for something else.
+  unsigned padding_ [[maybe_unused]] : 12;
 };
+static_assert(sizeof(StyleDifference) == 4, "Remove some padding bits!");
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const StyleDifference&);
 

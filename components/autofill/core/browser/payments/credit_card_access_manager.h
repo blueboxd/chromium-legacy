@@ -41,6 +41,8 @@ class AutofillMetricsBaseTest;
 }
 
 // Flow type denotes which card unmask authentication method was used.
+// TODO(crbug/1300959): Deprecate kCvcThenFido, kCvcFallbackFromFido, and
+// kOtpFallbackFromFido.
 enum class UnmaskAuthFlowType {
   kNone = 0,
   // Only CVC prompt was shown.
@@ -84,22 +86,18 @@ struct CachedServerCardInfo {
 
 // Manages logic for accessing credit cards either stored locally or stored
 // with Google Payments. Owned by BrowserAutofillManager.
-#if BUILDFLAG(IS_IOS)
 class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
-                                public CreditCardOtpAuthenticator::Requester {
-#else
-class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
+#if !BUILDFLAG(IS_IOS)
                                 public CreditCardFIDOAuthenticator::Requester,
-                                public CreditCardOtpAuthenticator::Requester {
 #endif
+                                public CreditCardOtpAuthenticator::Requester {
  public:
   class Accessor {
    public:
     virtual ~Accessor() = default;
-    virtual void OnCreditCardFetched(
-        CreditCardFetchResult result,
-        const CreditCard* credit_card = nullptr,
-        const std::u16string& cvc = std::u16string()) = 0;
+    virtual void OnCreditCardFetched(CreditCardFetchResult result,
+                                     const CreditCard* credit_card,
+                                     const std::u16string& cvc) = 0;
   };
 
   CreditCardAccessManager(
@@ -162,6 +160,16 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
 #if !BUILDFLAG(IS_IOS)
   CreditCardFIDOAuthenticator* GetOrCreateFIDOAuthenticator();
 #endif
+
+  // CreditCardCVCAuthenticator::Requester:
+  void OnCVCAuthenticationComplete(
+      const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response)
+      override;
+
+  // CreditCardOtpAuthenticator::Requester:
+  void OnOtpAuthenticationComplete(
+      const CreditCardOtpAuthenticator::OtpAuthenticationResponse& response)
+      override;
 
  private:
   // TODO(crbug.com/1249665): Remove FRIEND and change everything to _ForTesting
@@ -256,10 +264,6 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // based on the |unmask_auth_flow_type_|.
   void Authenticate();
 
-  // CreditCardCVCAuthenticator::Requester:
-  void OnCVCAuthenticationComplete(
-      const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response)
-      override;
 #if BUILDFLAG(IS_ANDROID)
   bool ShouldOfferFidoAuth() const override;
   bool UserOptedInToFidoFromSettingsPageOnMobile() const override;
@@ -272,11 +276,6 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
       override;
   void OnFidoAuthorizationComplete(bool did_succeed) override;
 #endif
-
-  // CreditCardOtpAuthenticator::Requester:
-  void OnOtpAuthenticationComplete(
-      const CreditCardOtpAuthenticator::OtpAuthenticationResponse& response)
-      override;
 
   bool is_authentication_in_progress() {
     return is_authentication_in_progress_;
@@ -373,6 +372,12 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // of authentication method.
   void ShowUnmaskAuthenticatorSelectionDialog();
 
+  // Returns a pointer to the card unmask challenge option returned from the
+  // server that has an id which matches the passed in `challenge_id`. If no
+  // challenge option is found, this function will return nullptr.
+  CardUnmaskChallengeOption* GetCardUnmaskChallengeOptionForChallengeId(
+      const std::string& challenge_id);
+
   // `record_type` is the credit card record type of the card we are about to
   // unmask. This function returns true if we should log server card unmask
   // attempt metrics for `record_type`, and false otherwise. These metrics are
@@ -467,9 +472,10 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // The object attempting to access a card.
   base::WeakPtr<Accessor> accessor_;
 
-  // Used only in OTP authentication to differentiate between authentication
-  // methods.
-  std::string selected_challenge_option_id_;
+  // Used only in virtual card authentication to differentiate between
+  // authentication methods. Set when a challenge option is selected, and we are
+  // about to render the specific challenge option's input dialog.
+  raw_ptr<CardUnmaskChallengeOption> selected_challenge_option_ = nullptr;
 
   // Cached data of cards which have been unmasked. This is cleared upon page
   // navigation. Map key is the card's server_id.

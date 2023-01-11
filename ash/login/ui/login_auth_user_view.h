@@ -125,7 +125,8 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
 
   using OnAuthCallback =
       base::RepeatingCallback<void(bool auth_success,
-                                   bool display_error_messages)>;
+                                   bool display_error_messages,
+                                   bool authenticated_by_pin)>;
   using OnEasyUnlockIconHovered = base::RepeatingClosure;
 
   struct Callbacks {
@@ -208,7 +209,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
 
   // Provides the view that should be the anchor to message bubbles. Either the
   // password field, or the PIN field.
-  views::View* GetActiveInputView();
+  base::WeakPtr<views::View> GetActiveInputView();
   LoginPasswordView* password_view() { return password_view_; }
   LoginUserView* user_view() { return user_view_; }
 
@@ -231,7 +232,8 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   void OnAuthSubmit(const std::u16string& password);
   // Called with the result of the request started in |OnAuthSubmit| or
   // |AttemptAuthenticateWithExternalBinary|.
-  void OnAuthComplete(absl::optional<bool> auth_success);
+  void OnAuthComplete(bool authenticated_by_pin,
+                      absl::optional<bool> auth_success);
   // Called with the result of the request started in
   // |AttemptAuthenticateWithChallengeResponse|.
   void OnChallengeResponseAuthComplete(absl::optional<bool> auth_success);

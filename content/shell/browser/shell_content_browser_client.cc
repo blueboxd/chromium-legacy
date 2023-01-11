@@ -59,7 +59,6 @@
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
 #include "content/shell/browser/shell_paths.h"
-#include "content/shell/browser/shell_quota_permission_context.h"
 #include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
 #include "content/shell/common/shell_controller.test-mojom.h"
 #include "content/shell/common/shell_switches.h"
@@ -205,20 +204,6 @@ void BindNetworkHintsHandler(
 }
 
 }  // namespace
-
-class ShellContentBrowserClient::ShellFieldTrials
-    : public variations::PlatformFieldTrials {
- public:
-  ShellFieldTrials() = default;
-  ~ShellFieldTrials() override = default;
-
-  // variations::PlatformFieldTrials:
-  void SetUpFieldTrials() override {}
-  void SetUpFeatureControllingFieldTrials(
-      bool has_seed,
-      const variations::EntropyProviders& entropy_providers,
-      base::FeatureList* feature_list) override {}
-};
 
 std::string GetShellUserAgent() {
   if (base::FeatureList::IsEnabled(blink::features::kFullUserAgent))
@@ -388,16 +373,12 @@ ShellContentBrowserClient::GetWebContentsViewDelegate(
 
 bool ShellContentBrowserClient::ShouldUrlUseApplicationIsolationLevel(
     BrowserContext* browser_context,
-    const GURL& url) {
-  // Enable application isolation level to allow restricted APIs in WPT.
-  // Note that this will not turn on application isolation for all URLs; the
-  // content layer will still run its own checks.
-  return true;
-}
-
-scoped_refptr<content::QuotaPermissionContext>
-ShellContentBrowserClient::CreateQuotaPermissionContext() {
-  return new ShellQuotaPermissionContext();
+    const GURL& url,
+    bool origin_matches_flag) {
+  // Enable application isolation level to allow restricted APIs in WPT.  Note
+  // that will only turn on application isolation for URLs which pass the
+  // content layer checks, as specified by `origin_matches_flag`.
+  return origin_matches_flag;
 }
 
 GeneratedCodeCacheSettings
@@ -701,14 +682,16 @@ void ShellContentBrowserClient::SetUpFieldTrials() {
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager =
       metrics::MetricsStateManager::Create(
           local_state_.get(), &enabled_state_provider, std::wstring(),
-          path.AppendASCII("Local State"));
-  metrics_state_manager->InstantiateFieldTrialList(
-      cc::switches::kEnableGpuBenchmarking);
+          path.AppendASCII("Local State"), metrics::StartupVisibility::kUnknown,
+          {
+              .force_benchmarking_mode =
+                  base::CommandLine::ForCurrentProcess()->HasSwitch(
+                      cc::switches::kEnableGpuBenchmarking),
+          });
+  metrics_state_manager->InstantiateFieldTrialList();
 
   std::vector<std::string> variation_ids;
   auto feature_list = std::make_unique<base::FeatureList>();
-
-  field_trials_ = std::make_unique<ShellFieldTrials>();
 
   std::unique_ptr<variations::SeedResponse> initial_seed;
 #if BUILDFLAG(IS_ANDROID)
@@ -733,13 +716,14 @@ void ShellContentBrowserClient::SetUpFieldTrials() {
   // Since this is a test-only code path, some arguments to SetUpFieldTrials are
   // null.
   // TODO(crbug/1248066): Consider passing a low entropy source.
+  variations::PlatformFieldTrials platform_field_trials;
   field_trial_creator.SetUpFieldTrials(
       variation_ids,
       command_line->GetSwitchValueASCII(
           variations::switches::kForceVariationIds),
       content::GetSwitchDependentFeatureOverrides(*command_line),
-      std::move(feature_list), metrics_state_manager.get(), field_trials_.get(),
-      &safe_seed_manager,
+      std::move(feature_list), metrics_state_manager.get(),
+      &platform_field_trials, &safe_seed_manager,
       /*low_entropy_source_value=*/absl::nullopt);
 }
 
@@ -762,7 +746,7 @@ void ShellContentBrowserClient::OnNetworkServiceCreated(
 }
 
 absl::optional<blink::ParsedPermissionsPolicy>
-ShellContentBrowserClient::GetPermissionsPolicyForIsolatedApp(
+ShellContentBrowserClient::GetPermissionsPolicyForIsolatedWebApp(
     content::BrowserContext* browser_context,
     const url::Origin& app_origin) {
   blink::ParsedPermissionsPolicyDeclaration decl(

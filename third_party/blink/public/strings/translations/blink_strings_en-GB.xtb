@@ -13,7 +13,6 @@
 <translation id="1637811476055996098">Choose files</translation>
 <translation id="1681022320378710418">current time</translation>
 <translation id="1727839386348365796">Eyedropper</translation>
-<translation id="1727886345390570319">hide closed captions menu</translation>
 <translation id="1729654308190250600">Please enter a non-empty email address.</translation>
 <translation id="1758486001363313524">Other...</translation>
 <translation id="1787192514241997742">total time: <ph name="REMAINING_TIME" /></translation>
@@ -61,7 +60,6 @@
 <translation id="4103419683916926126">Milliseconds</translation>
 <translation id="4201051445878709314">Show previous month</translation>
 <translation id="4360991593054037559">Please enter a valid value. The two nearest valid values are <ph name="VALID_VALUE_LOW" /> and <ph name="VALID_VALUE_HIGHER" />.</translation>
-<translation id="4371899966896349864">hide playback speed menu</translation>
 <translation id="4522570452068850558">Details</translation>
 <translation id="4664250907885839816">A part following '<ph name="ATSIGN" />' should not contain the symbol '<ph name="INVALIDCHARACTER" />'.</translation>
 <translation id="4718048029184481307">Playing in picture-in-picture</translation>
@@ -81,6 +79,7 @@
 <translation id="5117590920725113268">Show next month</translation>
 <translation id="5164977714490026579">Value must be greater than or equal to <ph name="MINIMUM" />.</translation>
 <translation id="5196716972587102051">2</translation>
+<translation id="5199514351668672591">back to options</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5272594226096532950">Not ticked. In group, option <ph name="INDEX" /> of <ph name="COUNT" /></translation>
 <translation id="5307600278924710095">Please enter a part followed by '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' is incomplete.</translation>

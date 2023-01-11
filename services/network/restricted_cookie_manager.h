@@ -12,6 +12,7 @@
 #include "base/component_export.h"
 #include "base/containers/linked_list.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -95,13 +96,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   void OverrideIsolationInfoForTesting(
       const net::IsolationInfo& new_isolation_info);
 
-  const CookieSettings& cookie_settings() const { return cookie_settings_; }
+  const CookieSettings& cookie_settings() const { return *cookie_settings_; }
 
   void GetAllForUrl(const GURL& url,
                     const net::SiteForCookies& site_for_cookies,
                     const url::Origin& top_frame_origin,
                     mojom::CookieManagerGetOptionsPtr options,
-                    bool partitioned_cookies_runtime_feature_enabled,
                     GetAllForUrlCallback callback) override;
 
   void SetCanonicalCookie(const net::CanonicalCookie& cookie,
@@ -122,13 +122,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
                            const net::SiteForCookies& site_for_cookies,
                            const url::Origin& top_frame_origin,
                            const std::string& cookie,
-                           bool partitioned_cookies_runtime_feature_enabled,
                            SetCookieFromStringCallback callback) override;
 
   void GetCookiesString(const GURL& url,
                         const net::SiteForCookies& site_for_cookies,
                         const url::Origin& top_frame_origin,
-                        bool partitioned_cookies_runtime_feature_enabled,
                         GetCookiesStringCallback callback) override;
   void CookiesEnabledFor(const GURL& url,
                          const net::SiteForCookies& site_for_cookies,
@@ -144,20 +142,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
       const net::CookieStore* cookie_store,
       const net::IsolationInfo& isolation_info,
       base::OnceCallback<void(net::FirstPartySetMetadata)> callback);
-
-  // This is a temporary method for the partitioned cookies (aka CHIPS) origin
-  // trial.
-  //
-  // This method allows RCM to convert any sites' partitioned cookies to
-  // unpartitioned. It should only exist for the duration of the CHIPS OT and
-  // should be deleted shortly after, since it gives untrusted processes the
-  // ability to convert any site's partitioned cookies to unpartitioned.
-  //
-  // Since CHIPS is still an experimental API, giving RCM this privilege should
-  // not be a major risk. However, before CHIPS goes live this method should be
-  // deleted.
-  // TODO(https://crbug.com/1296161): Delete this function.
-  void ConvertPartitionedCookiesToUnpartitioned(const GURL& url) override;
 
  private:
   // The state associated with a CookieChangeListener.
@@ -230,7 +214,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
 
   const mojom::RestrictedCookieManagerRole role_;
   const raw_ptr<net::CookieStore> cookie_store_;
-  const CookieSettings& cookie_settings_;
+  const raw_ref<const CookieSettings> cookie_settings_;
 
   url::Origin origin_;
 

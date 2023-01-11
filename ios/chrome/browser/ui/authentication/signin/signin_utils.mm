@@ -8,27 +8,23 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/time/time.h"
 #import "base/version.h"
-#import "components/policy/core/common/policy_loader_ios_constants.h"
 #import "components/policy/policy_constants.h"
 #import "components/prefs/pref_service.h"
 #import "components/signin/ios/browser/features.h"
-#import "components/signin/public/base/signin_pref_names.h"
 #import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/policy/policy_util.h"
-#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/system_identity.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_constants.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "net/base/network_change_notifier.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -46,9 +42,9 @@ constexpr base::TimeDelta kShowSigninUpgradePromoMaxDelay =
 
 // Converts an array of identities to a set of gaia ids.
 NSSet<NSString*>* GaiaIdSetWithIdentities(
-    NSArray<ChromeIdentity*>* identities) {
+    NSArray<id<SystemIdentity>>* identities) {
   NSMutableSet* gaia_id_set = [NSMutableSet set];
-  for (ChromeIdentity* identity in identities) {
+  for (id<SystemIdentity> identity in identities) {
     [gaia_id_set addObject:identity.gaiaID];
   }
   return [gaia_id_set copy];
@@ -58,7 +54,7 @@ NSSet<NSString*>* GaiaIdSetWithIdentities(
 // current `identities` (i.e. all the gaia ids are in identities but there is
 // at least one new identity).
 bool IsStrictSubset(NSArray<NSString*>* recorded_gaia_ids,
-                    NSArray<ChromeIdentity*>* identities) {
+                    NSArray<id<SystemIdentity>>* identities) {
   // Optimisation for the case of a nil or empty `recorded_gaia_ids`.
   // This allow not special casing the construction of the NSSet (as
   // -[NSSet setWithArray:] does not support nil for the array).
@@ -134,7 +130,8 @@ bool ShouldPresentUserSigninUpgrade(ChromeBrowserState* browser_state,
   // ForceStartupSigninPromo() returns true.
   ChromeAccountManagerService* account_manager_service =
       ChromeAccountManagerServiceFactory::GetForBrowserState(browser_state);
-  NSArray* identities = account_manager_service->GetAllIdentities();
+  NSArray<id<SystemIdentity>>* identities =
+      account_manager_service->GetAllIdentities();
   if (identities.count == 0)
     return false;
 
@@ -182,7 +179,7 @@ void RecordUpgradePromoSigninStarted(
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults setObject:base::SysUTF8ToNSString(current_version.GetString())
                forKey:kDisplayedSSORecallForMajorVersionKey];
-  NSArray<ChromeIdentity*>* identities =
+  NSArray<id<SystemIdentity>>* identities =
       account_manager_service->GetAllIdentities();
   NSSet<NSString*>* gaia_id_set = GaiaIdSetWithIdentities(identities);
   [defaults setObject:gaia_id_set.allObjects
@@ -191,20 +188,6 @@ void RecordUpgradePromoSigninStarted(
       [defaults integerForKey:kSigninPromoViewDisplayCountKey];
   ++display_count;
   [defaults setInteger:display_count forKey:kSigninPromoViewDisplayCountKey];
-}
-
-bool IsSigninAllowedByPolicy() {
-  BrowserSigninMode policy_mode = static_cast<BrowserSigninMode>(
-      GetApplicationContext()->GetLocalState()->GetInteger(
-          prefs::kBrowserSigninPolicy));
-
-  switch (policy_mode) {
-    case BrowserSigninMode::kDisabled:
-      return false;
-    case BrowserSigninMode::kEnabled:
-    case BrowserSigninMode::kForced:
-      return true;
-  }
 }
 
 IdentitySigninState GetPrimaryIdentitySigninState(

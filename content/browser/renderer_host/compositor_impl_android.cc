@@ -23,6 +23,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
@@ -272,13 +273,13 @@ class CompositorImpl::HostBeginFrameObserver
 
   // This may be deleted as part of `CallObservers`.
   void CallObservers(const viz::BeginFrameArgs& args) {
-    auto observers_copy = simple_begin_frame_observers_;
+    auto observers_copy = *simple_begin_frame_observers_;
     for (auto* simple_observer : observers_copy) {
       simple_observer->OnBeginFrame(args.frame_time);
     }
   }
 
-  const base::flat_set<SimpleBeginFrameObserver*>&
+  const raw_ref<const base::flat_set<SimpleBeginFrameObserver*>>
       simple_begin_frame_observers_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
@@ -709,7 +710,7 @@ void CompositorImpl::OnGpuChannelEstablished(
               display_color_spaces_.GetRasterColorSpace(),
               requires_alpha_channel_),
           viz::command_buffer_metrics::ContextType::BROWSER_COMPOSITOR);
-  auto result = context_provider->BindToCurrentThread();
+  auto result = context_provider->BindToCurrentSequence();
 
   if (result == gpu::ContextResult::kFatalFailure) {
     LOG(FATAL) << "Fatal failure in creating offscreen context";
@@ -774,10 +775,6 @@ void CompositorImpl::DidReceiveCompositorFrameAck() {
 void CompositorImpl::DidLoseLayerTreeFrameSink() {
   TRACE_EVENT0("compositor", "CompositorImpl::DidLoseLayerTreeFrameSink");
   client_->DidSwapFrame(0);
-}
-
-void CompositorImpl::DidCommit(base::TimeTicks, base::TimeTicks) {
-  root_window_->OnCompositingDidCommit();
 }
 
 std::unique_ptr<cc::BeginMainFrameMetrics>
@@ -1020,6 +1017,11 @@ void CompositorImpl::RequestPresentationTimeForNextFrame(
   if (!host_)
     return;
   host_->RequestPresentationTimeForNextFrame(std::move(callback));
+}
+
+void CompositorImpl::RequestSuccessfulPresentationTimeForNextFrame(
+    SuccessfulPresentationTimeCallback callback) {
+  host_->RequestSuccessfulPresentationTimeForNextFrame(std::move(callback));
 }
 
 void CompositorImpl::SetDidSwapBuffersCallbackEnabled(bool enable) {

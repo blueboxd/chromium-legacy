@@ -11,7 +11,6 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/extension_apps_utils.h"
@@ -26,7 +25,6 @@
 #include "chrome/browser/ui/webui/settings/ash/app_management/app_management_uma.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/services/app_service/public/cpp/app_types.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "ui/base/models/image_model.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/vector_icons.h"
@@ -52,7 +50,7 @@ StandaloneBrowserExtensionAppContextMenu::
 void StandaloneBrowserExtensionAppContextMenu::GetMenuModel(
     GetMenuModelCallback callback) {
   // Always invoke the callback asynchronously to avoid re-entrancy.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&StandaloneBrowserExtensionAppContextMenu::OnGetMenuModel,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -102,15 +100,7 @@ void StandaloneBrowserExtensionAppContextMenu::ExecuteCommand(int command_id,
       apps::AppServiceProxy* proxy =
           apps::AppServiceProxyFactory::GetForProfile(
               ProfileManager::GetPrimaryUserProfile());
-      if (base::FeatureList::IsEnabled(
-              apps::kAppServiceUninstallWithoutMojom)) {
-        proxy->Uninstall(app_id_, uninstall_source, /*parent_window=*/window);
-      } else {
-        proxy->Uninstall(app_id_,
-                         apps::ConvertUninstallSourceToMojomUninstallSource(
-                             uninstall_source),
-                         /*parent_window=*/window);
-      }
+      proxy->Uninstall(app_id_, uninstall_source, /*parent_window=*/window);
       return;
     }
     case ash::SHOW_APP_INFO: {

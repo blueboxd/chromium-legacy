@@ -58,8 +58,10 @@ class MEDIA_EXPORT MediaFoundationRenderer
     kFailedToGetDCompSurface = 10,
     kFailedToDuplicateHandle = 11,
     kFailedToCreateMediaEngine = 12,
+    kFailedToCreateDCompTextureWrapper = 13,
+    kFailedToInitDCompTextureWrapper = 14,
     // Add new values here and update `kMaxValue`. Never reuse existing values.
-    kMaxValue = kFailedToCreateMediaEngine,
+    kMaxValue = kFailedToInitDCompTextureWrapper,
   };
 
   // Report `reason` to UMA.
@@ -87,6 +89,7 @@ class MEDIA_EXPORT MediaFoundationRenderer
   void SetPlaybackRate(double playback_rate) override;
   void SetVolume(float volume) override;
   base::TimeDelta GetMediaTime() override;
+  RendererType GetRendererType() override;
 
   // MediaFoundationRendererExtension implementation.
   void GetDCompSurface(GetDCompSurfaceCB callback) override;
@@ -124,6 +127,7 @@ class MEDIA_EXPORT MediaFoundationRenderer
   void OnPlaybackEnded();
   void OnFormatChange();
   void OnLoadedData();
+  void OnCanPlayThrough();
   void OnPlaying();
   void OnWaiting();
   void OnTimeUpdate();

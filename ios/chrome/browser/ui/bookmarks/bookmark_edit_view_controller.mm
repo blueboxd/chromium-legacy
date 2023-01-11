@@ -11,8 +11,9 @@
 #import "base/check_op.h"
 #import "base/ios/block_types.h"
 #import "base/mac/foundation_util.h"
-
 #import "base/mac/scoped_cftyperef.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "components/url_formatter/url_fixer.h"
@@ -338,7 +339,7 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
   [self updateFolderLabel];
 }
 
-- (void)dismiss {
+- (void)dismissBookmarkEditView {
   [self.view endEditing:YES];
 
   // Dismiss this controller.
@@ -464,12 +465,12 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
 }
 
 - (void)cancel {
-  [self dismiss];
+  [self dismissBookmarkEditView];
 }
 
 - (void)save {
   [self commitBookmarkChanges];
-  [self dismiss];
+  [self dismissBookmarkEditView];
 }
 
 #pragma mark - BookmarkTextFieldItemDelegate
@@ -579,7 +580,7 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
 - (void)folderPickerDidDismiss:(BookmarkFolderViewController*)folderPicker {
   self.folderViewController.delegate = nil;
   self.folderViewController = nil;
-  [self dismiss];
+  [self dismissBookmarkEditView];
 }
 
 #pragma mark - BookmarkModelBridgeObserver
@@ -687,19 +688,18 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
 
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
-  [self dismiss];
+  [self dismissBookmarkEditView];
 }
 
 #pragma mark - UIResponder
 
 - (NSArray*)keyCommands {
-  __weak BookmarkEditViewController* weakSelf = self;
-  return @[ [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
-                                   modifierFlags:Cr_UIKeyModifierNone
-                                           title:nil
-                                          action:^{
-                                            [weakSelf dismiss];
-                                          }] ];
+  return @[ UIKeyCommand.cr_close ];
+}
+
+- (void)keyCommand_close {
+  base::RecordAction(base::UserMetricsAction("MobileKeyCommandClose"));
+  [self dismissBookmarkEditView];
 }
 
 @end

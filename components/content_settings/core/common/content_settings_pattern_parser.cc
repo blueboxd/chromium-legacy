@@ -22,10 +22,6 @@ const char kSchemeWildcard[] = "*";
 const char kUrlPathSeparator = '/';
 const char kUrlPortSeparator = ':';
 const char kUrlPortAndPathSeparator[] = ":/";
-// A domain wildcard pattern involves exactly one separating dot,
-// inside the square brackets. This is a common misunderstanding of that
-// pattern that we want to check for. See: https://crbug.com/823706.
-const char kDomainWildcardWithSuperfluousDot[] = "[*.].";
 
 }  // namespace
 
@@ -138,12 +134,6 @@ void PatternParser::Parse(base::StringPiece pattern_spec,
         return;
       }
 
-      if (base::StartsWith(host_piece, kDomainWildcardWithSuperfluousDot,
-                           base::CompareCase::SENSITIVE)) {
-        builder->Invalid();
-        return;
-      }
-
       host_piece.remove_prefix(kDomainWildcardLength);
       builder->WithDomainWildcard();
       builder->WithHost(std::string(host_piece));
@@ -157,9 +147,11 @@ void PatternParser::Parse(base::StringPiece pattern_spec,
     }
   }
 
+  bool port_allowed =
+      !ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(scheme_piece) &&
+      !base::EqualsCaseInsensitiveASCII(scheme_piece, url::kFileScheme);
   if (!port_piece.empty()) {
-    if (ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(
-            scheme_piece)) {
+    if (!port_allowed) {
       builder->Invalid();
       return;
     }
@@ -177,10 +169,7 @@ void PatternParser::Parse(base::StringPiece pattern_spec,
       // TODO(markusheintz): Check port range.
       builder->WithPort(std::string(port_piece));
     }
-  } else if (!ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(
-                 scheme_piece) &&
-             !base::EqualsCaseInsensitiveASCII(scheme_piece,
-                                               url::kFileScheme)) {
+  } else if (port_allowed) {
     builder->WithPortWildcard();
   }
 

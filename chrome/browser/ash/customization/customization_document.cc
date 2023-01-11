@@ -29,10 +29,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/customization/customization_wallpaper_downloader.h"
 #include "chrome/browser/ash/customization/customization_wallpaper_util.h"
+#include "chrome/browser/ash/extensions/default_app_order.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/net/delay_network_call.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/extensions/external_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -241,7 +241,7 @@ class ServicesCustomizationExternalLoader
 
     VLOG(1) << "ServicesCustomization extension loader publishing "
             << apps_.size() << " apps.";
-    LoadFinishedWithDict(apps_.Clone());
+    LoadFinished(apps_.Clone());
   }
 
  protected:
@@ -313,7 +313,7 @@ StartupCustomizationDocument::StartupCustomizationDocument()
   {
     // Loading manifest causes us to do blocking IO on UI thread.
     // Temporarily allow it until we fix http://crosbug.com/11103
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlocking allow_blocking;
     base::FilePath startup_customization_manifest;
     base::PathService::Get(FILE_STARTUP_CUSTOMIZATION_MANIFEST,
                            &startup_customization_manifest);

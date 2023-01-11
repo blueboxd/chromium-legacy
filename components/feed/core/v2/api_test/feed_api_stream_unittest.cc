@@ -306,6 +306,104 @@ TEST_F(FeedApiTest, FetchImage) {
   EXPECT_EQ("dummyresponse", receiver.GetResult()->response_bytes);
 }
 
+TEST_F(FeedStreamTestForAllStreamTypes,
+       ReportContentLifetimeMetricsViaOnLoadStream) {
+  base::HistogramTester histograms;
+  {
+    RefreshResponseData injected_response;
+    injected_response.model_update_request = MakeTypicalInitialModelState();
+    feedstore::Metadata::StreamMetadata::ContentLifetime content_lifetime;
+    content_lifetime.set_stale_age_ms(10);
+    content_lifetime.set_invalid_age_ms(11);
+    injected_response.content_lifetime = std::move(content_lifetime);
+    response_translator_.InjectResponse(std::move(injected_response));
+
+    TestForYouSurface surface(stream_.get());
+    WaitForIdleTaskQueue();
+    ASSERT_TRUE(response_translator_.InjectedResponseConsumed());
+  }
+  ASSERT_TRUE(network_.query_request_sent);
+
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ContentLifetime.StaleAgeIsPresent", true, 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ContentLifetime.InvalidAgeIsPresent", true, 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ContentLifetime.StaleAge", 10, 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ContentLifetime.InvalidAge", 11, 1);
+}
+
+TEST_F(FeedStreamTestForAllStreamTypes,
+       DoNotReportContentLifetimeMetricsWhenStreamMetadataNotPopulated) {
+  base::HistogramTester histograms;
+  {
+    RefreshResponseData injected_response;
+    injected_response.model_update_request = MakeTypicalInitialModelState();
+    response_translator_.InjectResponse(std::move(injected_response));
+
+    TestForYouSurface surface(stream_.get());
+    WaitForIdleTaskQueue();
+    ASSERT_TRUE(response_translator_.InjectedResponseConsumed());
+  }
+  ASSERT_TRUE(network_.query_request_sent);
+
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ContentLifetime.StaleAgeIsPresent", false, 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ContentLifetime.InvalidAgeIsPresent", false, 1);
+}
+
+TEST_F(FeedStreamTestForAllStreamTypes,
+       DoNotReportContentLifetimeStaleAgeWhenNotPopulated) {
+  base::HistogramTester histograms;
+  {
+    RefreshResponseData injected_response;
+    injected_response.model_update_request = MakeTypicalInitialModelState();
+    feedstore::Metadata::StreamMetadata::ContentLifetime content_lifetime;
+    content_lifetime.set_invalid_age_ms(11);
+    injected_response.content_lifetime = std::move(content_lifetime);
+    response_translator_.InjectResponse(std::move(injected_response));
+
+    TestForYouSurface surface(stream_.get());
+    WaitForIdleTaskQueue();
+    ASSERT_TRUE(response_translator_.InjectedResponseConsumed());
+  }
+  ASSERT_TRUE(network_.query_request_sent);
+
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ContentLifetime.StaleAgeIsPresent", false, 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ContentLifetime.InvalidAgeIsPresent", true, 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ContentLifetime.InvalidAge", 11, 1);
+}
+
+TEST_F(FeedStreamTestForAllStreamTypes,
+       DoNotReportContentLifetimeInvalidAgeWhenNotPopulated) {
+  base::HistogramTester histograms;
+  {
+    RefreshResponseData injected_response;
+    injected_response.model_update_request = MakeTypicalInitialModelState();
+    feedstore::Metadata::StreamMetadata::ContentLifetime content_lifetime;
+    content_lifetime.set_stale_age_ms(10);
+    injected_response.content_lifetime = std::move(content_lifetime);
+    response_translator_.InjectResponse(std::move(injected_response));
+
+    TestForYouSurface surface(stream_.get());
+    WaitForIdleTaskQueue();
+    ASSERT_TRUE(response_translator_.InjectedResponseConsumed());
+  }
+  ASSERT_TRUE(network_.query_request_sent);
+
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ContentLifetime.StaleAgeIsPresent", true, 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ContentLifetime.InvalidAgeIsPresent", false, 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ContentLifetime.StaleAge", 10, 1);
+}
+
 TEST_P(FeedStreamTestForAllStreamTypes, LoadFromNetwork) {
   {
     WaitForIdleTaskQueue();
@@ -1128,6 +1226,35 @@ TEST_F(FeedApiTest, ReportSliceViewedIdentifiesCorrectIndex) {
       surface.GetSurfaceId(), surface.GetStreamType(),
       surface.initial_state->updated_slices(1).slice().slice_id());
   EXPECT_EQ(1, metrics_reporter_->slice_viewed_index);
+}
+
+TEST_F(FeedApiTest, ReportSliceViewed_AddViewedContentHashes) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  stream_->ReportSliceViewed(
+      surface.GetSurfaceId(), surface.GetStreamType(),
+      surface.initial_state->updated_slices(1).slice().slice_id());
+  const feedstore::Metadata::StreamMetadata* stream_metadata =
+      feedstore::FindMetadataForStream(stream_->GetMetadata(),
+                                       StreamType(StreamKind::kForYou));
+  EXPECT_EQ(1, stream_metadata->viewed_content_hashes().size());
+
+  stream_->ReportSliceViewed(
+      surface.GetSurfaceId(), surface.GetStreamType(),
+      surface.initial_state->updated_slices(0).slice().slice_id());
+  stream_metadata = feedstore::FindMetadataForStream(
+      stream_->GetMetadata(), StreamType(StreamKind::kForYou));
+  EXPECT_EQ(2, stream_metadata->viewed_content_hashes().size());
+
+  // Reporting the slice viewed before will not be counted again.
+  stream_->ReportSliceViewed(
+      surface.GetSurfaceId(), surface.GetStreamType(),
+      surface.initial_state->updated_slices(1).slice().slice_id());
+  stream_metadata = feedstore::FindMetadataForStream(
+      stream_->GetMetadata(), StreamType(StreamKind::kForYou));
+  EXPECT_EQ(2, stream_metadata->viewed_content_hashes().size());
 }
 
 TEST_F(FeedApiTest, ReportOpenInNewTabAction) {
@@ -2459,7 +2586,7 @@ TEST_F(FeedApiTest, PersistentKeyValueStoreIsClearedOnClearAll) {
 }
 
 TEST_F(FeedApiTest, LoadMultipleStreams) {
-  // TODO(crbug.com/1369777) Add support for channel feed.
+  // TODO(crbug.com/1369777) Add support for single web feed.
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
   // WebFeed stream is only fetched when there's a subscription.
@@ -2917,6 +3044,123 @@ TEST_F(FeedApiTest, ManualRefreshFailesWhenLoadingInProgress) {
   EXPECT_EQ(absl::optional<bool>(false), callback.GetResult());
   // The initial loading should finish.
   EXPECT_EQ("loading -> [user@foo] 2 slices", surface.DescribeUpdates());
+}
+
+TEST_F(FeedApiTest, ManualRefresh_MetricsOnNoCardViewed) {
+  base::HistogramTester histograms;
+
+  // Load the initial page.
+  response_translator_.InjectResponse(MakeTypicalRefreshModelState());
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // Manual refresh.
+  task_environment_.FastForwardBy(base::Seconds(100));
+  response_translator_.InjectResponse(MakeTypicalRefreshModelState());
+  stream_->ManualRefresh(surface.GetStreamType(), base::DoNothing());
+  WaitForIdleTaskQueue();
+
+  histograms.ExpectUniqueTimeSample(
+      "ContentSuggestions.Feed.ManualRefreshInterval", base::Seconds(100), 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ViewedCardCountAtManualRefresh", 0, 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ViewedCardPercentageAtManualRefresh", 0, 1);
+}
+
+TEST_F(FeedApiTest, ManualRefresh_MetricsOnCardsViewed) {
+  base::HistogramTester histograms;
+
+  // Load the initial page.
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // View a card.
+  stream_->ReportSliceViewed(
+      surface.GetSurfaceId(), surface.GetStreamType(),
+      surface.initial_state->updated_slices(1).slice().slice_id());
+  WaitForIdleTaskQueue();
+
+  // Manual refresh.
+  task_environment_.FastForwardBy(base::Seconds(100));
+  response_translator_.InjectResponse(MakeTypicalRefreshModelState());
+  stream_->ManualRefresh(surface.GetStreamType(), base::DoNothing());
+  WaitForIdleTaskQueue();
+
+  histograms.ExpectUniqueTimeSample(
+      "ContentSuggestions.Feed.ManualRefreshInterval", base::Seconds(100), 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ViewedCardCountAtManualRefresh", 1, 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ViewedCardPercentageAtManualRefresh", 50, 1);
+
+  // View a card.
+  stream_->ReportSliceViewed(
+      surface.GetSurfaceId(), surface.GetStreamType(),
+      surface.update->updated_slices(0).slice().slice_id());
+  WaitForIdleTaskQueue();
+
+  // Manual refresh.
+  task_environment_.FastForwardBy(base::Seconds(200));
+  response_translator_.InjectResponse(MakeTypicalRefreshModelState());
+  stream_->ManualRefresh(surface.GetStreamType(), base::DoNothing());
+  WaitForIdleTaskQueue();
+
+  histograms.ExpectBucketCount("ContentSuggestions.Feed.ManualRefreshInterval",
+                               base::Seconds(100).InMilliseconds(), 1);
+  histograms.ExpectBucketCount("ContentSuggestions.Feed.ManualRefreshInterval",
+                               base::Seconds(200).InMilliseconds(), 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ViewedCardCountAtManualRefresh", 1, 2);
+  histograms.ExpectBucketCount(
+      "ContentSuggestions.Feed.ViewedCardPercentageAtManualRefresh", 50, 1);
+  histograms.ExpectBucketCount(
+      "ContentSuggestions.Feed.ViewedCardPercentageAtManualRefresh", 33, 1);
+}
+
+TEST_F(FeedApiTest, ManualRefresh_MetricsOnCardsViewedAfterRestart) {
+  base::HistogramTester histograms;
+
+  // Load the initial page.
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // View a card.
+  stream_->ReportSliceViewed(
+      surface.GetSurfaceId(), surface.GetStreamType(),
+      surface.initial_state->updated_slices(1).slice().slice_id());
+  WaitForIdleTaskQueue();
+
+  histograms.ExpectUniqueSample("NewTabPage.ContentSuggestions.Shown", 1, 1);
+
+  // Simulate a Chrome restart.
+  CreateStream();
+
+  TestForYouSurface surface2(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // View the same card.
+  stream_->ReportSliceViewed(
+      surface2.GetSurfaceId(), surface2.GetStreamType(),
+      surface2.initial_state->updated_slices(1).slice().slice_id());
+  WaitForIdleTaskQueue();
+
+  histograms.ExpectUniqueSample("NewTabPage.ContentSuggestions.Shown", 1, 2);
+
+  // Manual refresh.
+  task_environment_.FastForwardBy(base::Seconds(100));
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  stream_->ManualRefresh(surface.GetStreamType(), base::DoNothing());
+  WaitForIdleTaskQueue();
+
+  histograms.ExpectUniqueTimeSample(
+      "ContentSuggestions.Feed.ManualRefreshInterval", base::Seconds(100), 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ViewedCardCountAtManualRefresh", 1, 1);
+  histograms.ExpectUniqueSample(
+      "ContentSuggestions.Feed.ViewedCardPercentageAtManualRefresh", 50, 1);
 }
 
 TEST_F(FeedApiTest, StartSurface) {
@@ -3654,26 +3898,256 @@ TEST_F(FeedApiTest, FeedCloseRefresh_RequestType) {
             network_.query_request_sent->feed_request().feed_query().reason());
   EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
 }
-TEST_F(FeedApiTest, ChannelFeed_AttachMultiple) {
+TEST_F(FeedApiTest, SingleWebFeed_AttachMultiple) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
 
-  TestChannelSurface channel_surface_a(stream_.get(), "A");
-  TestChannelSurface channel_surface_b(stream_.get(), "B");
+  StreamType stream_type_A(StreamKind::kSingleWebFeed, "A");
+  StreamType stream_type_B(StreamKind::kSingleWebFeed, "B");
+
+  TestSingleWebFeedSurface single_web_feed_surface_a(stream_.get(), "A");
+  TestSingleWebFeedSurface single_web_feed_surface_b(stream_.get(), "B");
 
   WaitForIdleTaskQueue();
 
-  channel_surface_b.Detach();
+  ASSERT_EQ("loading -> [user@foo] 2 slices",
+            single_web_feed_surface_a.DescribeUpdates());
+  ASSERT_EQ("loading -> [user@foo] 2 slices",
+            single_web_feed_surface_b.DescribeUpdates());
+
+  ASSERT_EQ(stream_->GetModel(stream_type_A)->DumpStateForTesting(),
+            ModelStateFor(stream_type_A, store_.get()));
+  ASSERT_EQ(stream_->GetModel(stream_type_B)->DumpStateForTesting(),
+            ModelStateFor(stream_type_B, store_.get()));
+
+  single_web_feed_surface_b.Detach();
 
   WaitForModelToAutoUnload();
   WaitForIdleTaskQueue();
 
-  EXPECT_TRUE(stream_->GetModel(StreamType(StreamKind::kChannel, "A")));
-  EXPECT_FALSE(stream_->GetModel(StreamType(StreamKind::kChannel, "B")));
-  EXPECT_TRUE(
-      stream_->GetStreamPresentForTest(StreamType(StreamKind::kChannel, "A")));
-  EXPECT_FALSE(
-      stream_->GetStreamPresentForTest(StreamType(StreamKind::kChannel, "B")));
+  EXPECT_TRUE(stream_->GetModel(stream_type_A));
+  EXPECT_FALSE(stream_->GetModel(stream_type_B));
 }
+
+TEST_F(FeedApiTest, CheckDuplicatedContents) {
+  Config config;
+  config.max_most_recent_viewed_content_hashes = 6;
+  SetFeedConfigForTesting(config);
+
+  StreamModelUpdateRequestGenerator model_generator;
+  TestForYouSurface surface;
+
+  {
+    base::HistogramTester histograms;
+    std::vector<int> num_ids({0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+    response_translator_.InjectResponse(
+        model_generator.MakeFirstPageWithSpecificContents(num_ids));
+    surface.Attach(stream_.get());
+    WaitForIdleTaskQueue();
+    histograms.ExpectTotalCount(
+        "ContentSuggestions.Feed.ContentDuplication2.Position1", 0);
+    histograms.ExpectTotalCount(
+        "ContentSuggestions.Feed.ContentDuplication2.Position2", 0);
+    histograms.ExpectTotalCount(
+        "ContentSuggestions.Feed.ContentDuplication2.Position3", 0);
+    histograms.ExpectTotalCount(
+        "ContentSuggestions.Feed.ContentDuplication2.Top10", 0);
+    histograms.ExpectTotalCount(
+        "ContentSuggestions.Feed.ContentDuplication2.ForAll", 0);
+  }
+
+  SurfaceId surface_id = surface.GetSurfaceId();
+  StreamType stream_type = surface.GetStreamType();
+
+  stream_->ReportSliceViewed(
+      surface_id, stream_type,
+      surface.initial_state->updated_slices(0).slice().slice_id());
+  stream_->ReportSliceViewed(
+      surface_id, stream_type,
+      surface.initial_state->updated_slices(1).slice().slice_id());
+  stream_->ReportSliceViewed(
+      surface_id, stream_type,
+      surface.initial_state->updated_slices(2).slice().slice_id());
+  stream_->ReportSliceViewed(
+      surface_id, stream_type,
+      surface.initial_state->updated_slices(6).slice().slice_id());
+  stream_->ReportSliceViewed(
+      surface_id, stream_type,
+      surface.initial_state->updated_slices(8).slice().slice_id());
+  // Viewed contents: 0, 1, 2, 6, 8
+
+  {
+    base::HistogramTester histograms;
+    std::vector<int> num_ids(
+        {7, 11, 6, 13, 14, 2, 16, 1, 5, 19, 12, 10, 8, 19});
+    response_translator_.InjectResponse(
+        model_generator.MakeFirstPageWithSpecificContents(num_ids));
+    stream_->ManualRefresh(StreamType(StreamKind::kForYou), base::DoNothing());
+    WaitForIdleTaskQueue();
+    histograms.ExpectUniqueSample(
+        "ContentSuggestions.Feed.ContentDuplication2.Position1", false, 1);
+    histograms.ExpectUniqueSample(
+        "ContentSuggestions.Feed.ContentDuplication2.Position2", false, 1);
+    histograms.ExpectUniqueSample(
+        "ContentSuggestions.Feed.ContentDuplication2.Position3", true, 1);
+    histograms.ExpectUniqueSample(
+        "ContentSuggestions.Feed.ContentDuplication2.First10", 30, 1);
+    histograms.ExpectUniqueSample(
+        "ContentSuggestions.Feed.ContentDuplication2.All", 28, 1);
+  }
+
+  stream_->ReportSliceViewed(
+      surface_id, stream_type,
+      surface.update->updated_slices(1).slice().slice_id());
+  stream_->ReportSliceViewed(
+      surface_id, stream_type,
+      surface.update->updated_slices(3).slice().slice_id());
+  stream_->ReportSliceViewed(
+      surface_id, stream_type,
+      surface.update->updated_slices(4).slice().slice_id());
+  stream_->ReportSliceViewed(
+      surface_id, stream_type,
+      surface.update->updated_slices(5).slice().slice_id());
+  // Viewed contents: (0, 1,) 6, 8, 11, 13, 14, 2
+
+  {
+    base::HistogramTester histograms;
+    std::vector<int> num_ids(
+        {8, 1, 9, 2, 30, 31, 5, 10, 12, 13, 32, 33, 14, 6});
+    response_translator_.InjectResponse(
+        model_generator.MakeFirstPageWithSpecificContents(num_ids));
+    stream_->ManualRefresh(StreamType(StreamKind::kForYou), base::DoNothing());
+    WaitForIdleTaskQueue();
+    histograms.ExpectUniqueSample(
+        "ContentSuggestions.Feed.ContentDuplication2.Position1", true, 1);
+    histograms.ExpectUniqueSample(
+        "ContentSuggestions.Feed.ContentDuplication2.Position2", true, 1);
+    histograms.ExpectUniqueSample(
+        "ContentSuggestions.Feed.ContentDuplication2.Position3", false, 1);
+    histograms.ExpectUniqueSample(
+        "ContentSuggestions.Feed.ContentDuplication2.First10", 40, 1);
+    histograms.ExpectUniqueSample(
+        "ContentSuggestions.Feed.ContentDuplication2.All", 42, 1);
+  }
+
+  stream_->ReportSliceViewed(
+      surface_id, stream_type,
+      surface.update->updated_slices(0).slice().slice_id());
+  stream_->ReportSliceViewed(
+      surface_id, stream_type,
+      surface.update->updated_slices(4).slice().slice_id());
+  stream_->ReportSliceViewed(
+      surface_id, stream_type,
+      surface.update->updated_slices(5).slice().slice_id());
+  stream_->ReportSliceViewed(
+      surface_id, stream_type,
+      surface.update->updated_slices(6).slice().slice_id());
+  // Viewed contents: (6, 11, 13), 14, 2, 8, 30, 31, 5
+
+  // Simulate a Chrome restart.
+  CreateStream();
+
+  TestForYouSurface surface2(stream_.get());
+  WaitForIdleTaskQueue();
+
+  {
+    base::HistogramTester histograms;
+    std::vector<int> num_ids(
+        {15, 11, 16, 2, 40, 41, 8, 42, 1, 43, 44, 14, 45, 47});
+    response_translator_.InjectResponse(
+        model_generator.MakeFirstPageWithSpecificContents(num_ids));
+    stream_->ManualRefresh(StreamType(StreamKind::kForYou), base::DoNothing());
+    WaitForIdleTaskQueue();
+    histograms.ExpectUniqueSample(
+        "ContentSuggestions.Feed.ContentDuplication2.Position1", false, 1);
+    histograms.ExpectUniqueSample(
+        "ContentSuggestions.Feed.ContentDuplication2.Position2", true, 1);
+    histograms.ExpectUniqueSample(
+        "ContentSuggestions.Feed.ContentDuplication2.Position3", false, 1);
+    histograms.ExpectUniqueSample(
+        "ContentSuggestions.Feed.ContentDuplication2.First10", 30, 1);
+    histograms.ExpectUniqueSample(
+        "ContentSuggestions.Feed.ContentDuplication2.All", 28, 1);
+  }
+}
+
+TEST_F(FeedApiTest, SingleWebFeed_DelayedDeletion) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  StreamType stream_type(StreamKind::kSingleWebFeed, "A");
+
+  TestSingleWebFeedSurface single_web_feed_surface(stream_.get(), "A");
+
+  WaitForIdleTaskQueue();
+
+  ASSERT_EQ("loading -> [user@foo] 2 slices",
+            single_web_feed_surface.DescribeUpdates());
+
+  ASSERT_EQ(stream_->GetModel(stream_type)->DumpStateForTesting(),
+            ModelStateFor(stream_type, store_.get()));
+
+  single_web_feed_surface.Detach();
+
+  WaitForModelToAutoUnload();
+  EXPECT_TRUE(stream_->GetStreamPresentForTest(stream_type));
+  task_environment_.FastForwardBy(base::Seconds(70));
+  WaitForIdleTaskQueue();
+
+  EXPECT_FALSE(stream_->GetModel(stream_type));
+  EXPECT_FALSE(stream_->GetStreamPresentForTest(stream_type));
+
+  ASSERT_EQ("{Failed to load model from store}",
+            ModelStateFor(stream_type, store_.get()));
+
+  EXPECT_FALSE(stream_->GetStreamPresentForTest(stream_type));
+}
+
+TEST_F(FeedApiTest, SingleWebFeed_DataRemovedOnStartup) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  StreamType stream_type(StreamKind::kSingleWebFeed, "A");
+
+  TestSingleWebFeedSurface single_web_feed_feed_surface(stream_.get(), "A");
+  WaitForIdleTaskQueue();
+
+  ASSERT_NE("{Failed to load model from store}",
+            ModelStateFor(stream_type, store_.get()));
+  // Creating a stream should init database.
+  CreateStream();
+  WaitForIdleTaskQueue();
+
+  ASSERT_EQ("{Failed to load model from store}",
+            ModelStateFor(stream_type, store_.get()));
+}
+
+TEST_F(FeedApiTest, SingleWebFeed_ReattachedSingleWebStreamFetches) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  StreamType stream_type(StreamKind::kSingleWebFeed, "A");
+
+  EXPECT_EQ(0, prefetch_image_call_count_);
+
+  TestSingleWebFeedSurface single_web_feed_feed_surface(stream_.get(), "A");
+  WaitForIdleTaskQueue();
+
+  ASSERT_EQ(stream_->GetModel(stream_type)->DumpStateForTesting(),
+            ModelStateFor(stream_type, store_.get()));
+
+  EXPECT_EQ("loading -> [user@foo] 2 slices",
+            single_web_feed_feed_surface.DescribeUpdates());
+  single_web_feed_feed_surface.Detach();
+
+  WaitForModelToAutoUnload();
+  WaitForIdleTaskQueue();
+
+  EXPECT_FALSE(stream_->GetModel(stream_type));
+
+  task_environment_.FastForwardBy(base::Seconds(40));
+
+  single_web_feed_feed_surface.Attach(stream_.get());
+  WaitForIdleTaskQueue();
+  // verify no new fetches were required to populate reattach.
+  EXPECT_EQ("loading -> 2 slices",
+            single_web_feed_feed_surface.DescribeUpdates());
+}
+
 // Keep instantiations at the bottom.
 INSTANTIATE_TEST_SUITE_P(FeedApiTest,
                          FeedStreamTestForAllStreamTypes,

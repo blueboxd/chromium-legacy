@@ -5,6 +5,7 @@
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 
 #include <stddef.h>
+#include <sstream>
 #include <string>
 
 #include "base/bind.h"
@@ -17,6 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
@@ -89,7 +91,7 @@ gfx::Image ReadImage(const base::FilePath& image_path) {
     return gfx::Image();
   }
   return gfx::Image::CreateFrom1xPNGBytes(
-      base::RefCountedString::TakeString(&image_data));
+      base::MakeRefCounted<base::RefCountedString>(std::move(image_data)));
 }
 
 // Saves |png_data| to disk at |image_path|.
@@ -158,6 +160,17 @@ void GetString(const base::Value::Dict& dict,
   if (const std::string* value = dict.FindString(key)) {
     result = *value;
   }
+}
+
+std::string AccountsToString(
+    const std::map<CoreAccountId, AccountInfo>& accounts) {
+  std::stringstream result;
+  result << "[";
+  for (const auto& entry : accounts) {
+    result << "{" << entry.first.ToString() << ": (" << entry.second << ")}";
+  }
+  result << ']';
+  return result.str();
 }
 
 }  // namespace
@@ -305,16 +318,23 @@ void AccountTrackerService::SetAccountInfoFromUserInfo(
   absl::optional<AccountInfo> maybe_account_info =
       AccountInfoFromUserInfo(user_info);
   if (maybe_account_info) {
-    // Should we DCHECK that the account stored in |accounts_| has the same
-    // value for |gaia_id| and |email| as the value loaded from |user_info|?
-    // DCHECK(account_info.gaia.empty()
-    //     || account_info.gaia == maybe_account_info.value().gaia);
-    // DCHECK(account_info.email.empty()
-    //     || account_info.email == maybe_account_info.value().email);
-    maybe_account_info.value().account_id = account_id;
-    account_info.UpdateWith(maybe_account_info.value());
+    DCHECK(!maybe_account_info->gaia.empty());
+    DCHECK(!maybe_account_info->email.empty());
+    maybe_account_info->account_id = PickAccountIdForAccount(
+        maybe_account_info->gaia, maybe_account_info->email);
+
+    if (maybe_account_info->account_id == account_info.account_id) {
+      account_info.UpdateWith(maybe_account_info.value());
+    } else {
+      DLOG(ERROR) << "Cannot set account info from user info as account ids "
+                     "do not match: existing_account_info = {"
+                  << account_info << "} new_account_info = {"
+                  << maybe_account_info.value() << "}";
+    }
   }
 
+  // TODO(msarda): Should account update notification be sent if the account was
+  // not updated (e.g. |maybe_account_info|==nullopt)?
   if (!account_info.gaia.empty())
     NotifyAccountUpdated(account_info);
   SaveToPrefs(account_info);
@@ -486,7 +506,8 @@ AccountTrackerService::ComputeNewMigrationState() const {
 }
 
 void AccountTrackerService::SetMigrationState(AccountIdMigrationState state) {
-  DCHECK(state != MIGRATION_DONE || AreAllAccountsMigrated());
+  DCHECK(state != MIGRATION_DONE || AreAllAccountsMigrated())
+      << "state: " << state << ", accounts = " << AccountsToString(accounts_);
   pref_service_->SetInteger(prefs::kAccountIdMigrationState, state);
 }
 
@@ -684,12 +705,15 @@ void AccountTrackerService::LoadFromPrefs() {
       MigrateToGaiaId();
     }
   }
-  DCHECK(GetMigrationState() != MIGRATION_DONE || AreAllAccountsMigrated());
+  DCHECK(GetMigrationState() != MIGRATION_DONE || AreAllAccountsMigrated())
+      << "state: " << (int)GetMigrationState()
+      << ", accounts = " << AccountsToString(accounts_);
 
   UMA_HISTOGRAM_ENUMERATION("Signin.AccountTracker.GaiaIdMigrationState",
                             GetMigrationState(), NUM_MIGRATION_STATES);
 #else
-  DCHECK(AreAllAccountsMigrated());
+  DCHECK(AreAllAccountsMigrated())
+      << "accounts = " << AccountsToString(accounts_);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   UMA_HISTOGRAM_COUNTS_100("Signin.AccountTracker.CountOfLoadedAccounts",
@@ -829,30 +853,36 @@ AccountTrackerService::GetJavaObject() {
 
 void AccountTrackerService::SeedAccountsInfo(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobjectArray>& gaiaIds,
-    const base::android::JavaParamRef<jobjectArray>& accountNames) {
-  std::vector<std::string> gaia_ids;
-  std::vector<std::string> account_names;
-  base::android::AppendJavaStringArrayToStringVector(env, gaiaIds, &gaia_ids);
-  base::android::AppendJavaStringArrayToStringVector(env, accountNames,
-                                                     &account_names);
-  DCHECK_EQ(gaia_ids.size(), account_names.size());
+    const base::android::JavaParamRef<jobjectArray>& core_account_infos) {
+  std::vector<CoreAccountInfo> curr_core_account_infos;
+  // As |GetArrayLength| makes no guarantees about the returned value (e.g., it
+  // may be -1 if |array| is not a valid Java array), wrap it with std::max
+  // to always get a valid, non-negative size.
+  size_t len = std::max(0, env->GetArrayLength(core_account_infos.obj()));
+  for (size_t i = 0; i < len; i++) {
+    base::android::ScopedJavaLocalRef<jobject> core_account_info_java(
+        env, env->GetObjectArrayElement(core_account_infos.obj(), i));
+    curr_core_account_infos.push_back(
+        ConvertFromJavaCoreAccountInfo(env, core_account_info_java));
+  }
 
   DVLOG(1) << "AccountTrackerService.SeedAccountsInfo: "
-           << " number of accounts " << gaia_ids.size();
+           << " number of accounts " << curr_core_account_infos.size();
 
-  std::vector<CoreAccountId> curr_ids;
-  for (const auto& gaia_id : gaia_ids) {
-    curr_ids.push_back(CoreAccountId::FromGaiaId(gaia_id));
-  }
   // Remove the accounts deleted from device
-  for (const AccountInfo& info : GetAccounts()) {
-    if (!base::Contains(curr_ids, info.account_id)) {
-      RemoveAccount(info.account_id);
+  for (const auto& account : GetAccounts()) {
+    if (!base::Contains(curr_core_account_infos, account.account_id,
+                        &CoreAccountInfo::account_id)) {
+      RemoveAccount(account.account_id);
     }
   }
-  for (size_t i = 0; i < gaia_ids.size(); ++i) {
-    SeedAccountInfo(gaia_ids[i], account_names[i]);
+  for (const auto& core_account_info : curr_core_account_infos) {
+    SeedAccountInfo(core_account_info.gaia, core_account_info.email);
   }
+}
+
+jboolean signin::JNI_AccountTrackerService_IsGaiaIdInAMFEnabled(JNIEnv* env) {
+  return base::FeatureList::IsEnabled(
+      switches::kGaiaIdCacheInAccountManagerFacade);
 }
 #endif

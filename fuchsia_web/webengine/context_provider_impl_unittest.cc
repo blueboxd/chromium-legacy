@@ -39,12 +39,14 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "fuchsia_web/webengine/fake_context.h"
 #include "fuchsia_web/webengine/switches.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
+#include "third_party/widevine/cdm/buildflags.h"
 
 namespace {
 
@@ -169,8 +171,7 @@ class FakeSysLauncher final : public fuchsia::sys::testing::Launcher_TestBase {
         tmp_directory.NewRequest().TakeChannel().release());
     ZX_CHECK(status == ZX_OK, status) << "fdio_open(/tmp)";
     launch_info.flat_namespace->paths.push_back("/tmp");
-    launch_info.flat_namespace->directories.push_back(
-        tmp_directory.TakeChannel());
+    launch_info.flat_namespace->directories.push_back(std::move(tmp_directory));
 
     // Redirect the sub-process Component's stderr to feed into the test output.
     launch_info.err = fuchsia::sys::FileDescriptor::New();
@@ -257,9 +258,9 @@ class FakeSysEnvironment final
     fake_nested_environment_.Bind(std::move(environment_request));
     nested_environment_controller_request_ = std::move(controller_request);
   }
-  void GetDirectory(zx::channel request) override {
-    base::ComponentContextForProcess()->svc()->CloneChannel(
-        fidl::InterfaceRequest<fuchsia::io::Directory>(std::move(request)));
+  void GetDirectory(
+      fidl::InterfaceRequest<::fuchsia::io::Directory> request) override {
+    base::ComponentContextForProcess()->svc()->CloneChannel(std::move(request));
   }
 
  private:
@@ -581,13 +582,31 @@ TEST_F(ContextProviderImplTest, WithInsecureOriginsAsSecure) {
   base::RunLoop loop;
   fake_environment_.fake_launcher().set_create_component_callback(
       base::BindLambdaForTesting([&loop](const base::CommandLine& command) {
+        const char* kAllowRunningInsecureContent =
+            "allow-running-insecure-content";
         loop.Quit();
-        EXPECT_TRUE(command.HasSwitch(switches::kAllowRunningInsecureContent));
+        EXPECT_TRUE(command.HasSwitch(
+            network::switches::kUnsafelyTreatInsecureOriginAsSecure));
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
+        ASSERT_STREQ(kAllowRunningInsecureContent,
+                     switches::kAllowRunningInsecureContent);
+        EXPECT_TRUE(command.HasSwitch(kAllowRunningInsecureContent));
         EXPECT_THAT(command.GetSwitchValueASCII(switches::kDisableFeatures),
                     testing::HasSubstr("AutoupgradeMixedContent"));
         EXPECT_EQ(command.GetSwitchValueASCII(
                       network::switches::kUnsafelyTreatInsecureOriginAsSecure),
-                  "http://example.com");
+                  "http://example.com,http://example.net");
+#else
+        EXPECT_FALSE(command.HasSwitch(kAllowRunningInsecureContent));
+        EXPECT_FALSE(command.HasSwitch(switches::kDisableFeatures));
+
+        // The unrecognized values are passed on as origins.
+        EXPECT_EQ(command.GetSwitchValueASCII(
+                      network::switches::kUnsafelyTreatInsecureOriginAsSecure),
+                  "allow-running-insecure-content,"
+                  "disable-mixed-content-autoupgrade,"
+                  "http://example.com,http://example.net");
+#endif
       }));
 
   fuchsia::web::ContextPtr context;
@@ -599,9 +618,10 @@ TEST_F(ContextProviderImplTest, WithInsecureOriginsAsSecure) {
 
   fuchsia::web::CreateContextParams create_params = BuildCreateContextParams();
   std::vector<std::string> insecure_origins;
-  insecure_origins.push_back(switches::kAllowRunningInsecureContent);
+  insecure_origins.push_back("allow-running-insecure-content");
   insecure_origins.push_back("disable-mixed-content-autoupgrade");
   insecure_origins.push_back("http://example.com");
+  insecure_origins.push_back("http://example.net");
   create_params.set_unsafely_treat_insecure_origins_as_secure(
       std::move(insecure_origins));
   provider_ptr_->Create(std::move(create_params), context.NewRequest());
@@ -636,9 +656,6 @@ TEST_F(ContextProviderImplTest, WithDataQuotaBytes) {
   loop.Run();
 }
 
-// TODO(crbug.com/1013412): This test doesn't actually exercise DRM, so could
-// be executed everywhere if DRM support were configurable.
-#if defined(ARCH_CPU_ARM64)
 TEST_F(ContextProviderImplTest, WithCdmDataQuotaBytes) {
   base::RunLoop loop;
   fake_environment_.fake_launcher().set_create_component_callback(
@@ -667,4 +684,3 @@ TEST_F(ContextProviderImplTest, WithCdmDataQuotaBytes) {
 
   loop.Run();
 }
-#endif  // defined(ARCH_CPU_ARM64)

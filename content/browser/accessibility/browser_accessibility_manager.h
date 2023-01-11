@@ -145,7 +145,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   void FireFocusEventsIfNeeded();
 
   // Return whether or not we are currently able to fire events.
-  virtual bool CanFireEvents() const;
+  bool CanFireEvents() const override;
 
   // Return a pointer to the root of the tree.
   BrowserAccessibility* GetBrowserAccessibilityRoot() const;
@@ -158,7 +158,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   BrowserAccessibility* GetFromID(int32_t id) const;
 
   // If this tree has a parent tree, return the parent node in that tree.
-  BrowserAccessibility* GetParentNodeFromParentTree() const;
+  BrowserAccessibility* GetParentNodeFromParentTreeAsBrowserAccessibility()
+      const;
 
   // In general, there is only a single node with the role of kRootWebArea,
   // but if a popup is opened, a second nested "root" is created in the same
@@ -406,9 +407,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   }
 
   // AXTreeObserver implementation.
-  void OnTreeDataChanged(ui::AXTree* tree,
-                         const ui::AXTreeData& old_data,
-                         const ui::AXTreeData& new_data) override;
   void OnNodeCreated(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeDeleted(ui::AXTree* tree, int32_t node_id) override;
   void OnNodeReparented(ui::AXTree* tree, ui::AXNode* node) override;
@@ -422,15 +420,14 @@ class CONTENT_EXPORT BrowserAccessibilityManager
       const std::vector<ui::AXTreeObserver::Change>& changes) override;
 
   // AXTreeManager overrides.
-  ui::AXNode* GetNodeFromTree(const ui::AXTreeID& tree_id,
-                              ui::AXNodeID node_id) const override;
   ui::AXNode* GetNode(const ui::AXNodeID node_id) const override;
+  void CleanUp() override;
+  void UpdateAttributesOnParent(ui::AXNode* parent) override;
 
   // AXPlatformTreeManager overrides.
   ui::AXPlatformNode* GetPlatformNodeFromTree(
       const ui::AXNodeID node_id) const override;
   ui::AXPlatformNode* GetPlatformNodeFromTree(const ui::AXNode&) const override;
-  ui::AXNode* GetParentNodeFromParentTreeAsAXNode() const override;
   ui::AXPlatformNodeDelegate* RootDelegate() const override;
 
   WebAXPlatformTreeManagerDelegate* delegate() const { return delegate_; }
@@ -497,6 +494,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   BrowserAccessibility* ApproximateHitTest(
       const gfx::Point& blink_screen_point) const;
 
+  // Detaches this instance from its parent manager. Useful during
+  // deconstruction.
+  void DetachFromParentManager();
+
   // Wrapper for converting the AXNode* returned by RetargetForEvents
   // to a BrowserAccessibility*. This is often needed.
   BrowserAccessibility* RetargetBrowserAccessibilityForEvents(
@@ -558,11 +559,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   mutable int last_hover_node_id_;
   mutable gfx::Rect last_hover_bounds_;
 
-  // True if the root's parent is in another accessibility tree and that
-  // parent's child is the root. Ensures that the parent node is notified
-  // once when this subtree is first connected.
-  bool connected_to_parent_tree_node_;
-
   // The device scale factor for the view associated with this frame,
   // cached each time there's any update to the accessibility tree.
   float device_scale_factor_;
@@ -611,16 +607,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   void BuildAXTreeHitTestCacheInternal(
       const BrowserAccessibility* node,
       std::vector<const BrowserAccessibility*>* storage);
-
-  // Add parent connection if missing (!connected_to_parent_tree_node_). If the
-  // root's parent is in another accessibility tree but it wasn't previously
-  // connected, post the proper notifications on the parent.
-  void EnsureParentConnectionIfNotRootManager();
-
-  // Refreshes a parent node in a parent tree when it needs to be informed that
-  // this tree is ready or being destroyed. For example, an iframe object
-  // in a parent tree may need to link or unlink to this manager.
-  void ParentConnectionChanged(BrowserAccessibility* parent);
 
   // This overrides `AXTreeManager::GetParentManager` only to add DCHECKs that
   // validate the following assumptions:

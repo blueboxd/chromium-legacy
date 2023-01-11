@@ -31,19 +31,6 @@ BASE_EXPORT CGColorSpaceRef GetGenericRGBColorSpace();
 // is a static value; do not release it!
 BASE_EXPORT CGColorSpaceRef GetSystemColorSpace();
 
-// Checks if the current application is set as a Login Item, so it will launch
-// on Login. If a non-NULL pointer to is_hidden is passed, the Login Item also
-// is queried for the 'hide on launch' flag.
-BASE_EXPORT bool CheckLoginItemStatus(bool* is_hidden);
-
-// Adds current application to the set of Login Items with specified "hide"
-// flag. This has the same effect as adding/removing the application in
-// SystemPreferences->Accounts->LoginItems or marking Application in the Dock
-// as "Options->Open on Login".
-// Does nothing if the application is already set up as Login Item with
-// specified hide flag.
-BASE_EXPORT void AddToLoginItems(bool hide_on_startup);
-
 // Adds the specified application to the set of Login Items with specified
 // "hide" flag. This has the same effect as adding/removing the application in
 // SystemPreferences->Accounts->LoginItems or marking Application in the Dock
@@ -53,10 +40,7 @@ BASE_EXPORT void AddToLoginItems(bool hide_on_startup);
 BASE_EXPORT void AddToLoginItems(const FilePath& app_bundle_file_path,
                                  bool hide_on_startup);
 
-// Removes the current application from the list Of Login Items.
-BASE_EXPORT void RemoveFromLoginItems();
-
-// Removes the specified application from the list Of Login Items.
+// Removes the specified application from the list of Login Items.
 BASE_EXPORT void RemoveFromLoginItems(const FilePath& app_bundle_file_path);
 
 // Returns true if the current process was automatically launched as a
@@ -220,6 +204,53 @@ BASE_EXPORT std::string GetOSDisplayName();
 
 // Returns the serial number of the macOS device.
 BASE_EXPORT std::string GetPlatformSerialNumber();
+
+// System Settings (née System Preferences) pane or subpanes to open via
+// `OpenSystemSettingsPane()`, below. The naming is based on the naming in the
+// System Settings app in the latest macOS release, macOS 13 Ventura.
+enum class SystemSettingsPane {
+  // Accessibility > Captions
+  kAccessibility_Captions,
+
+  // Date & Time
+  kDateTime,
+
+  // Network > Proxies
+  kNetwork_Proxies,
+
+  // Printers & Scanners
+  kPrintersScanners,
+
+  // Privacy & Security > Accessibility
+  kPrivacySecurity_Accessibility,
+
+  // Privacy & Security > Bluetooth
+  // Available on macOS 11 and later.
+  kPrivacySecurity_Bluetooth,
+
+  // Privacy & Security > Camera
+  // Available on macOS 10.14 and later.
+  kPrivacySecurity_Camera,
+
+  // Privacy & Security > Extensions > Sharing
+  kPrivacySecurity_Extensions_Sharing,
+
+  // Privacy & Security > Location Services
+  kPrivacySecurity_LocationServices,
+
+  // Privacy & Security > Microphone
+  // Available on macOS 10.14 and later.
+  kPrivacySecurity_Microphone,
+
+  // Privacy & Security > Screen Recording
+  // Available on macOS 10.15 and later.
+  kPrivacySecurity_ScreenRecording,
+};
+
+// Opens the specified System Settings pane. If the specified subpane does not
+// exist on the release of macOS that is running, the parent pane will open
+// instead.
+BASE_EXPORT void OpenSystemSettingsPane(SystemSettingsPane pane);
 
 }  // namespace base::mac
 

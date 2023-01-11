@@ -7,9 +7,10 @@ import {assert, assertInstanceof} from 'chrome://resources/js/assert.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
-import {getPreferences} from '../../common/js/api.js';
+import {getDialogCaller, getDlpBlockedComponents, getPreferences} from '../../common/js/api.js';
 import {ArrayDataModel} from '../../common/js/array_data_model.js';
-import {DialogType} from '../../common/js/dialog_type.js';
+import {DialogType, isFolderDialogType} from '../../common/js/dialog_type.js';
+import {getKeyModifiers, queryDecoratedElement, queryRequiredElement} from '../../common/js/dom_utils.js';
 import {FakeEntryImpl} from '../../common/js/files_app_entry_types.js';
 import {FilesAppState} from '../../common/js/files_app_state.js';
 import {FilteredVolumeManager} from '../../common/js/filtered_volume_manager.js';
@@ -663,15 +664,14 @@ export class FileManager extends EventTarget {
         this.directoryModel_, this.ui_.listContainer, this.spinnerController_,
         this.selectionHandler_);
     this.sortMenuController_ = new SortMenuController(
-        this.ui_.sortButton, this.ui_.sortButtonToggleRipple,
-        assert(this.directoryModel_.getFileList()));
+        this.ui_.sortButton, assert(this.directoryModel_.getFileList()));
     this.gearMenuController_ = new GearMenuController(
-        this.ui_.gearButton, this.ui_.gearButtonToggleRipple, this.ui_.gearMenu,
-        this.ui_.providersMenu, this.directoryModel_, this.commandHandler_,
+        this.ui_.gearButton, this.ui_.gearMenu, this.ui_.providersMenu,
+        this.directoryModel_, this.commandHandler_,
         assert(this.providersModel_));
     this.selectionMenuController_ = new SelectionMenuController(
         this.ui_.selectionMenuButton,
-        util.queryDecoratedElement('#file-context-menu', Menu));
+        queryDecoratedElement('#file-context-menu', Menu));
     this.toolbarController_ = new ToolbarController(
         this.ui_.toolbar, this.ui_.dialogNavigationList, this.ui_.listContainer,
         this.selectionHandler_, this.directoryModel_, this.volumeManager_,
@@ -725,7 +725,8 @@ export class FileManager extends EventTarget {
     this.ui_.listContainer.endBatchUpdates();
 
     const bannerController = new BannerController(
-        this.directoryModel_, this.volumeManager_, assert(this.crostini_));
+        this.directoryModel_, this.volumeManager_, assert(this.crostini_),
+        this.dialogType);
     this.ui_.initBanners(bannerController);
     bannerController.initialize();
 
@@ -831,7 +832,7 @@ export class FileManager extends EventTarget {
     CommandUtil.forceDefaultHandler(node, 'paste');
     CommandUtil.forceDefaultHandler(node, 'delete');
     node.addEventListener('keydown', e => {
-      const key = util.getKeyModifiers(e) + e.keyCode;
+      const key = getKeyModifiers(e) + e.keyCode;
       if (key === '190' /* '/' */ || key === '191' /* '.' */) {
         // If this key event is propagated, this is handled search command,
         // which calls 'preventDefault' method.
@@ -847,8 +848,8 @@ export class FileManager extends EventTarget {
   initializeCore() {
     this.initGeneral_();
     this.initSettingsPromise_ = this.startInitSettings_();
-    this.initBackgroundPagePromise_ = this.startInitBackgroundPage_();
-    this.initBackgroundPagePromise_.then(() => this.initVolumeManager_());
+    this.initBackgroundPagePromise_ =
+        this.startInitBackgroundPage_().then(() => this.initVolumeManager_());
 
     window.addEventListener('pagehide', this.onUnload_.bind(this));
   }
@@ -947,7 +948,6 @@ export class FileManager extends EventTarget {
     }
     this.fileOperationManager_ =
         this.fileBrowserBackground_.fileOperationManager;
-    this.fileOperationManager_.setFileManager(this);
     this.crostini_ = this.fileBrowserBackground_.crostini;
 
     metrics.recordInterval('Load.InitBackgroundPage');
@@ -957,10 +957,13 @@ export class FileManager extends EventTarget {
    * Initializes the VolumeManager instance.
    * @private
    */
-  initVolumeManager_() {
+  async initVolumeManager_() {
     const allowedPaths = this.getAllowedPaths_();
     const writableOnly =
         this.launchParams_.type === DialogType.SELECT_SAVEAS_FILE;
+    const disabledVolumes =
+        /** @type {!Array<!VolumeManagerCommon.VolumeType>} */ (
+            await this.getDisabledVolumes_());
 
     // FilteredVolumeManager hides virtual file system related event and data
     // even depends on the value of |supportVirtualPath|. If it is
@@ -974,7 +977,7 @@ export class FileManager extends EventTarget {
     this.volumeManager_ = new FilteredVolumeManager(
         allowedPaths, writableOnly,
         this.fileBrowserBackground_.getVolumeManager(),
-        this.launchParams_.volumeFilter);
+        this.launchParams_.volumeFilter, disabledVolumes);
   }
 
   /**
@@ -1006,7 +1009,7 @@ export class FileManager extends EventTarget {
     this.fileFilter_ = new FileFilter(this.volumeManager_);
 
     // Set the files-ng class for dialog header styling.
-    const dialogHeader = util.queryRequiredElement('.dialog-header');
+    const dialogHeader = queryRequiredElement('.dialog-header');
     dialogHeader.classList.add('files-ng');
 
     // Create the root view of FileManager.
@@ -1032,12 +1035,12 @@ export class FileManager extends EventTarget {
     const dom = this.dialogDom_;
     assert(dom);
 
-    const table = util.queryRequiredElement('.detail-table', dom);
+    const table = queryRequiredElement('.detail-table', dom);
     FileTable.decorate(
         table, this.metadataModel_, this.volumeManager_,
         /** @type {!A11yAnnounce} */ (this.ui_),
         this.dialogType == DialogType.FULL_PAGE);
-    const grid = util.queryRequiredElement('.thumbnail-grid', dom);
+    const grid = queryRequiredElement('.thumbnail-grid', dom);
     FileGrid.decorate(
         grid, this.metadataModel_, this.volumeManager_,
         /** @type {!A11yAnnounce} */ (this.ui_));
@@ -1048,8 +1051,6 @@ export class FileManager extends EventTarget {
 
     // Handle UI events.
     this.progressCenter.addPanel(this.ui_.progressCenterPanel);
-
-    util.addIsFocusedMethod();
 
     // Arrange the file list.
     this.ui_.listContainer.table.normalizeColumns();
@@ -1136,8 +1137,8 @@ export class FileManager extends EventTarget {
     this.taskController_ = new TaskController(
         this.dialogType, this.volumeManager_, this.ui_, this.metadataModel_,
         this.directoryModel_, this.selectionHandler_,
-        this.metadataUpdateController_, this.namingController_,
-        assert(this.crostini_), this.progressCenter);
+        this.metadataUpdateController_, assert(this.crostini_),
+        this.progressCenter);
 
     // Create search controller.
     this.searchController_ = new SearchController(
@@ -1176,6 +1177,29 @@ export class FileManager extends EventTarget {
   }
 
   /**
+   * Based on the dialog type and dialog caller, sets the list of volumes
+   * that should be disabled according to Data Leak Prevention rules.
+   * @return {Promise<!Array<!VolumeManagerCommon.VolumeType>>}
+   */
+  async getDisabledVolumes_() {
+    if (this.dialogType !== DialogType.SELECT_SAVEAS_FILE ||
+        !util.isDlpEnabled()) {
+      return [];
+    }
+    const caller = await getDialogCaller();
+    if (!caller.url) {
+      return [];
+    }
+    const dlpBlockedComponents = await getDlpBlockedComponents(caller.url);
+    const disabledVolumes = [];
+    for (const c of dlpBlockedComponents) {
+      disabledVolumes.push(
+          /** @type {!VolumeManagerCommon.VolumeType }*/ (c));
+    }
+    return disabledVolumes;
+  }
+
+  /**
    * @return {!Promise<void>}
    * @private
    */
@@ -1194,8 +1218,7 @@ export class FileManager extends EventTarget {
 
     directoryTree.dataModel = new NavigationListModel(
         assert(this.volumeManager_), assert(this.folderShortcutsModel_),
-        fakeEntriesVisible &&
-                !DialogType.isFolderDialog(this.launchParams_.type) ?
+        fakeEntriesVisible && !isFolderDialogType(this.launchParams_.type) ?
             new NavigationModelFakeItem(
                 str('RECENT_ROOT_LABEL'), NavigationModelItemType.RECENT,
                 assert(this.recentEntry_)) :
@@ -1232,7 +1255,9 @@ export class FileManager extends EventTarget {
         this.onCrostiniChanged_.bind(this));
     this.crostiniController_ = new CrostiniController(
         assert(this.crostini_), this.directoryModel_,
-        assert(this.directoryTree));
+        assert(this.directoryTree),
+        this.volumeManager_.isDisabled(
+            VolumeManagerCommon.VolumeType.CROSTINI));
     await this.crostiniController_.redraw();
     // Never show toast in an open-file dialog.
     const maybeShowToast = this.dialogType === DialogType.FULL_PAGE;
@@ -1241,7 +1266,9 @@ export class FileManager extends EventTarget {
 
     if (util.isGuestOsEnabled()) {
       this.guestOsController_ = new GuestOsController(
-          this.directoryModel_, assert(this.directoryTree));
+          this.directoryModel_, assert(this.directoryTree),
+          this.volumeManager_.isDisabled(
+              VolumeManagerCommon.VolumeType.GUEST_OS));
       await this.guestOsController_.refresh();
     }
   }
@@ -1565,7 +1592,7 @@ export class FileManager extends EventTarget {
     // non-native files. But it does not work for folders (e.g., dialog for
     // loading unpacked extensions).
     if (allowedPaths === AllowedPaths.NATIVE_PATH &&
-        !DialogType.isFolderDialog(this.launchParams_.type)) {
+        !isFolderDialogType(this.launchParams_.type)) {
       if (this.launchParams_.type == DialogType.SELECT_SAVEAS_FILE) {
         allowedPaths = AllowedPaths.NATIVE_PATH;
       } else {
@@ -1677,6 +1704,8 @@ export class FileManager extends EventTarget {
             new FakeEntryImpl(
                 str('DRIVE_DIRECTORY_LABEL'),
                 VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT));
+        this.fakeDriveItem_.disabled = this.volumeManager_.isDisabled(
+            VolumeManagerCommon.VolumeType.DRIVE);
       }
       this.directoryTree.dataModel.fakeDriveItem = this.fakeDriveItem_;
       return;

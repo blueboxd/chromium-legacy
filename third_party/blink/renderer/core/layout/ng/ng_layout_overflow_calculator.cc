@@ -24,7 +24,8 @@ namespace blink {
 // static
 PhysicalRect NGLayoutOverflowCalculator::RecalculateLayoutOverflowForFragment(
     const NGPhysicalBoxFragment& fragment) {
-  DCHECK(!fragment.IsLegacyLayoutRoot());
+  DCHECK(!fragment.IsLegacyLayoutRoot() ||
+         fragment.GetLayoutObject()->IsMedia());
   const NGBlockNode node(const_cast<LayoutBox*>(
       To<LayoutBox>(fragment.GetSelfOrContainerLayoutObject())));
   const WritingDirectionMode writing_direction =
@@ -273,7 +274,7 @@ PhysicalRect NGLayoutOverflowCalculator::LayoutOverflowForPropagation(
   }
 
   // Apply any transforms to the overflow.
-  if (absl::optional<TransformationMatrix> transform =
+  if (absl::optional<gfx::Transform> transform =
           node_.GetTransformForChildFragment(child_fragment, size_)) {
     overflow =
         PhysicalRect::EnclosingRect(transform->MapRect(gfx::RectF(overflow)));

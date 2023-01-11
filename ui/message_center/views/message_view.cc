@@ -47,31 +47,6 @@ namespace message_center {
 
 namespace {
 
-// Creates a text for spoken feedback from the data contained in the
-// notification.
-std::u16string CreateAccessibleName(const Notification& notification) {
-  if (!notification.accessible_name().empty())
-    return notification.accessible_name();
-
-  // Fall back to a text constructed from the notification.
-  // Add non-empty elements.
-
-  std::vector<std::u16string> accessible_lines;
-  if (!notification.title().empty())
-    accessible_lines.push_back(notification.title());
-
-  if (!notification.message().empty())
-    accessible_lines.push_back(notification.message());
-
-  if (!notification.context_message().empty())
-    accessible_lines.push_back(notification.context_message());
-  std::vector<NotificationItem> items = notification.items();
-  for (size_t i = 0; i < items.size() && i < kNotificationMaximumItems; ++i) {
-    accessible_lines.push_back(items[i].title + u" " + items[i].message);
-  }
-  return base::JoinString(accessible_lines, u"\n");
-}
-
 bool ShouldShowAeroShadowBorder() {
 #if BUILDFLAG(IS_WIN)
   return ui::win::IsAeroGlassEnabled();
@@ -129,6 +104,32 @@ views::View* MessageView::FindGroupNotificationView(
     const std::string& notification_id) {
   // Not implemented by default.
   return nullptr;
+}
+
+// Creates text for spoken feedback from the data contained in the
+// notification.
+std::u16string MessageView::CreateAccessibleName(
+    const Notification& notification) {
+  if (!notification.accessible_name().empty())
+    return notification.accessible_name();
+
+  // Fall back to text constructed from the notification.
+  // Add non-empty elements.
+
+  std::vector<std::u16string> accessible_lines;
+  if (!notification.title().empty())
+    accessible_lines.push_back(notification.title());
+
+  if (!notification.message().empty())
+    accessible_lines.push_back(notification.message());
+
+  if (!notification.context_message().empty())
+    accessible_lines.push_back(notification.context_message());
+  std::vector<NotificationItem> items = notification.items();
+  for (size_t i = 0; i < items.size() && i < kNotificationMaximumItems; ++i) {
+    accessible_lines.push_back(items[i].title + u" " + items[i].message);
+  }
+  return base::JoinString(accessible_lines, u"\n");
 }
 
 void MessageView::UpdateWithNotification(const Notification& notification) {
@@ -234,7 +235,7 @@ void MessageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (accessible_name_.empty())
     node_data->SetNameFrom(ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
 
-  node_data->SetName(accessible_name_);
+  node_data->SetNameChecked(accessible_name_);
 }
 
 bool MessageView::OnMousePressed(const ui::MouseEvent& event) {
@@ -358,11 +359,10 @@ ui::Layer* MessageView::GetSlideOutLayer() {
   // If a message view is contained in a parent message view it should give up
   // slide behavior to the parent message view when the parent view is
   // collapsed.
-  auto* nested_layer =
-      (parent_message_view_ && !parent_message_view_->IsExpanded())
-          ? parent_message_view_->layer()
-          : layer();
-  bool is_nested = (parent_message_view_ && !parent_message_view_->IsExpanded())
+  auto* nested_layer = (ShouldParentHandleSlide() && parent_message_view_)
+                           ? parent_message_view_->layer()
+                           : layer();
+  bool is_nested = (ShouldParentHandleSlide() && parent_message_view_)
                        ? parent_message_view_->is_nested()
                        : is_nested_;
   return is_nested ? nested_layer : GetWidget()->GetLayer();
@@ -407,6 +407,9 @@ void MessageView::RemoveObserver(MessageView::Observer* observer) {
 }
 
 void MessageView::OnSlideOut() {
+  if (ShouldParentHandleSlide() && parent_message_view_)
+    return parent_message_view_->OnSlideOut();
+
   // The notification will be deleted after slide out, so give observers a
   // chance to handle the notification before fulling sliding out.
   for (auto& observer : observers_)
@@ -526,6 +529,13 @@ bool MessageView::ShouldShowControlButtons() const {
 #else
   return true;
 #endif
+}
+
+bool MessageView::ShouldParentHandleSlide() const {
+  if (!parent_message_view_)
+    return false;
+
+  return !parent_message_view_->IsExpanded();
 }
 
 void MessageView::UpdateBackgroundPainter() {

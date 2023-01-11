@@ -14,6 +14,8 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_reader.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_writer.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_base.h"
 #include "chrome/browser/apps/app_service/launch_result_type.h"
 #include "chrome/browser/apps/app_service/paused_apps.h"
@@ -86,9 +88,6 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   void Uninstall(const std::string& app_id,
                  UninstallSource uninstall_source,
                  gfx::NativeWindow parent_window) override;
-  void Uninstall(const std::string& app_id,
-                 apps::mojom::UninstallSource uninstall_source,
-                 gfx::NativeWindow parent_window) override;
   void OnApps(std::vector<AppPtr> deltas,
               AppType app_type,
               bool should_notify_initialized) override;
@@ -126,13 +125,6 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
                            LaunchSource launch_source,
                            WindowInfoPtr window_info,
                            LaunchCallback callback) override;
-  void LaunchAppWithIntent(
-      const std::string& app_id,
-      int32_t event_flags,
-      apps::mojom::IntentPtr intent,
-      apps::mojom::LaunchSource launch_source,
-      apps::mojom::WindowInfoPtr window_info,
-      apps::mojom::Publisher::LaunchAppWithIntentCallback callback) override;
 
   base::WeakPtr<AppServiceProxyAsh> GetWeakPtr();
 
@@ -251,20 +243,24 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
                                     WindowInfoPtr window_info,
                                     LaunchCallback callback,
                                     bool is_allowed);
-  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
-  // interface.
-  void LaunchAppWithMojoIntentIfAllowed(
-      const std::string& app_id,
-      int32_t event_flags,
-      apps::mojom::IntentPtr intent,
-      apps::mojom::LaunchSource launch_source,
-      apps::mojom::WindowInfoPtr window_info,
-      apps::mojom::Publisher::LaunchAppWithIntentCallback callback,
-      bool is_allowed);
+
+  bool ShouldReadIcons() override;
+
+  // Reads icon image files from the local app_service icon directory on disk.
+  void ReadIcons(const std::string& app_id,
+                 int32_t size_hint_in_dip,
+                 const IconKey& icon_key,
+                 IconType icon_type,
+                 LoadIconCallback callback) override;
+
+  void OnIconRead(LoadIconCallback callback, IconValuePtr iv);
 
   SubscriberCrosapi* crosapi_subscriber_ = nullptr;
 
   std::unique_ptr<PublisherHost> publisher_host_;
+
+  AppIconReader icon_reader;
+  AppIconWriter icon_writer;
 
   bool arc_is_registered_ = false;
 

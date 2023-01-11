@@ -40,7 +40,8 @@ struct GlobalMetricsTrackers {
   raw_ptr<DroppedFrameCounter> dropped_frame_counter = nullptr;
   raw_ptr<LatencyUkmReporter> latency_ukm_reporter = nullptr;
   raw_ptr<FrameSequenceTrackerCollection> frame_sequence_trackers = nullptr;
-  raw_ptr<EventLatencyTracker> event_latency_tracker = nullptr;
+  raw_ptr<EventLatencyTracker, DanglingUntriaged> event_latency_tracker =
+      nullptr;
 };
 
 // This is used for tracing and reporting the duration of pipeline stages within
@@ -548,7 +549,6 @@ class CC_EXPORT CompositorFrameReporter {
   // |partial_update_decider_| is set to A for all these reporters.
   std::queue<base::WeakPtr<CompositorFrameReporter>> partial_update_dependents_;
   base::WeakPtr<CompositorFrameReporter> partial_update_decider_;
-  uint32_t discarded_partial_update_dependents_count_ = 0;
 
   // From the above example, it may be necessary for A to keep all the
   // dependents alive until A terminates, so that the dependents can set their

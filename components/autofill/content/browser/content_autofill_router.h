@@ -231,14 +231,14 @@ class ContentAutofillRouter {
       const FormFieldData& field,
       const gfx::RectF& bounding_box,
       int32_t query_id,
-      bool autoselect_first_suggestion,
+      AutoselectFirstSuggestion autoselect_first_suggestion,
       FormElementWasClicked form_element_was_clicked,
       void (*callback)(ContentAutofillDriver* target,
                        const FormData& form,
                        const FormFieldData& field,
                        const gfx::RectF& bounding_box,
                        int32_t query_id,
-                       bool autoselect_first_suggestion,
+                       AutoselectFirstSuggestion autoselect_first_suggestion,
                        FormElementWasClicked form_element_was_clicked));
   void HidePopup(ContentAutofillDriver* source,
                  void (*callback)(ContentAutofillDriver* target));
@@ -292,6 +292,15 @@ class ContentAutofillRouter {
           const FormData& form,
           const FormFieldData& fiel,
           const autofill_assistant::AutofillAssistantIntent intent));
+
+  // Event called when the context menu is opened on a field.
+  void OnContextMenuShownInField(
+      ContentAutofillDriver* source,
+      const FormGlobalId& form_global_id,
+      const FieldGlobalId& field_global_id,
+      void (*callback)(ContentAutofillDriver* target,
+                       const FormGlobalId& form_global_id,
+                       const FieldGlobalId& field_global_id));
 
   // Routing of events called by the browser:
   std::vector<FieldGlobalId> FillOrPreviewForm(

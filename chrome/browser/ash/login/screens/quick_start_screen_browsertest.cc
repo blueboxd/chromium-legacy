@@ -11,8 +11,8 @@
 #include "chrome/browser/ash/login/test/js_checker.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/ui/webui/chromeos/login/quick_start_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/quick_start_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/welcome_screen_handler.h"
 #include "content/public/test/browser_test.h"
 
 namespace ash {
@@ -21,7 +21,7 @@ namespace {
 constexpr char kWelcomeScreen[] = "welcomeScreen";
 constexpr char kQuickStartButton[] = "quickStart";
 constexpr test::UIPath kQuickStartButtonPath = {
-    chromeos::WelcomeView::kScreenId.name, kWelcomeScreen, kQuickStartButton};
+    WelcomeView::kScreenId.name, kWelcomeScreen, kQuickStartButton};
 }  // namespace
 
 class QuickStartBrowserTest : public OobeBaseTest {
@@ -62,7 +62,7 @@ class QuickStartNotDeterminedBrowserTest : public QuickStartBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(QuickStartNotDeterminedBrowserTest,
                        ButtonVisibleOnWelcomeScreen) {
-  OobeScreenWaiter(chromeos::WelcomeView::kScreenId).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().ExpectHiddenPath(kQuickStartButtonPath);
 
   connection_broker_factory_.instances().front()->set_feature_support_status(
@@ -75,22 +75,21 @@ IN_PROC_BROWSER_TEST_F(QuickStartNotDeterminedBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, QRCode) {
-  OobeScreenWaiter(chromeos::WelcomeView::kScreenId).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().ExpectVisiblePath(kQuickStartButtonPath);
 
   test::OobeJS().ClickOnPath(kQuickStartButtonPath);
 
-  OobeScreenWaiter(chromeos::QuickStartView::kScreenId).Wait();
+  OobeScreenWaiter(QuickStartView::kScreenId).Wait();
   connection_broker_factory_.instances().front()->InitiateConnection(
       "fake_device_id");
 
   test::OobeJS()
-      .CreateWaiter(
-          test::GetOobeElementPath({chromeos::QuickStartView::kScreenId.name}) +
-          ".uiStep === 'verification'")
+      .CreateWaiter(test::GetOobeElementPath({QuickStartView::kScreenId.name}) +
+                    ".uiStep === 'verification'")
       ->Wait();
-  test::OobeJS().ExpectAttributeEQ(
-      "canvasSize_", {chromeos::QuickStartView::kScreenId.name}, 225);
+  test::OobeJS().ExpectAttributeEQ("canvasSize_",
+                                   {QuickStartView::kScreenId.name}, 225);
 }
 
 }  // namespace ash

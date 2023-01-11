@@ -35,6 +35,7 @@
 #include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/client_hints/client_hints.h"
@@ -86,6 +87,7 @@
 #include "content/browser/web_package/web_bundle_utils.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/debug_utils.h"
+#include "content/common/features.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -111,14 +113,12 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "net/base/features.h"
 #include "net/base/filename_util.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
-#include "net/cookies/parsed_cookie.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/redirect_info.h"
@@ -129,7 +129,6 @@
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/header_util.h"
-#include "services/network/public/cpp/ip_address_space_util.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/supports_loading_mode/supports_loading_mode_parser.h"
@@ -137,6 +136,7 @@
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/supports_loading_mode.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-shared.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom.h"
@@ -152,15 +152,13 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/navigation/navigation_params_mojom_traits.h"
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
-#include "third_party/blink/public/common/origin_trials/trial_token.h"
-#include "third_party/blink/public/common/origin_trials/trial_token_result.h"
-#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
 #include "third_party/blink/public/common/permissions_policy/policy_helper_public.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/security/address_space_feature.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
+#include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
 #include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
@@ -208,6 +206,9 @@ const char kIsolatedAppCSP[] =
     "frame-src 'self' https:;"
     "connect-src 'self' https:;"
     "script-src 'self' 'wasm-unsafe-eval';"
+    "img-src 'self' data:;"
+    "media-src 'self' data:;"
+    "font-src 'self' data:;"
     "require-trusted-types-for 'script';";
 
 // Corresponds to the "NavigationURLScheme" histogram enumeration type in
@@ -462,6 +463,14 @@ void AddAdditionalRequestHeaders(
 
   if (has_attribution_src_token) {
     headers->SetHeader("Attribution-Reporting-Eligible", "navigation-source");
+
+    if (base::FeatureList::IsEnabled(
+            blink::features::kAttributionReportingCrossAppWeb)) {
+      bool has_os_support = AttributionManager::GetOsSupport() ==
+                            blink::mojom::AttributionOsSupport::kEnabled;
+      headers->SetHeader("Attribution-Reporting-Support",
+                         has_os_support ? "web, os" : "web");
+    }
   }
 }
 
@@ -804,10 +813,21 @@ std::pair<url::Origin, std::string>
 GetOriginForURLLoaderFactoryUncheckedWithDebugInfo(
     NavigationRequest* navigation_request) {
   DCHECK(navigation_request);
-
-  // Check if this is loadDataWithBaseUrl (which needs special treatment).
   const blink::mojom::CommonNavigationParams& common_params =
       navigation_request->common_params();
+
+  if (navigation_request->DidEncounterError()) {
+    // Error pages commit in an opaque origin in the renderer process. If this
+    // NavigationRequest resulted in committing an error page, return an
+    // opaque origin that has precursor information consistent with the URL
+    // being requested.  Note: this is intentionally done first; cases like
+    // errors in srcdoc frames need not inherit the parent's origin for errors.
+    return std::make_pair(
+        url::Origin::Create(common_params.url).DeriveNewOpaqueOrigin(),
+        "error");
+  }
+
+  // Check if this is loadDataWithBaseUrl (which needs special treatment).
   if (navigation_request->IsLoadDataWithBaseURL()) {
     // A (potentially attacker-controlled) renderer process should not be able
     // to use loadDataWithBaseUrl code path to initiate fetches on behalf of a
@@ -841,16 +861,14 @@ GetOriginForURLLoaderFactoryUncheckedWithDebugInfo(
     RenderFrameHostImpl* parent =
         navigation_request->frame_tree_node()->parent();
 
-    // The `parent` may be missing if a renderer executes `location =
-    // "about:srcdoc` instead of embedding an <iframe srcdoc="..."></iframe>
-    // element.  Such case should use an error page with an opaque, unique
-    // origin.
-    //
-    // See also NavigationBrowserTest.BlockedSrcDoc* tests.
-    DCHECK(parent || navigation_request->GetNetErrorCode() != net::OK);
-    return std::make_pair(
-        parent ? parent->GetLastCommittedOrigin() : url::Origin(),
-        "about_srcdoc");
+    // The only path for `parent` to be missing for a srcdoc navigation is if a
+    // renderer executes `location = "about:srcdoc` instead of embedding an
+    // <iframe srcdoc="..."></iframe> element; this is covered by
+    // NavigationBrowserTest.BlockedSrcDoc* tests.  However, we should never get
+    // here in such a case, because it would result in an error page which would
+    // be handled by the DidEncounterError() case above.
+    DCHECK(parent);
+    return std::make_pair(parent->GetLastCommittedOrigin(), "about_srcdoc");
   }
 
   // Uuid-in-package: subframes from WebBundles have opaque origins derived from
@@ -1000,48 +1018,6 @@ void RemoveOriginTrialHintsFromAcceptCH(
     DCHECK(frame_tree_node);
     PersistAcceptCH(url::Origin::Create(url), *frame_tree_node, delegate,
                     client_hints);
-  }
-}
-
-bool IsValidPartitionedCookiesOriginTrial(
-    const GURL& url,
-    const net::HttpResponseHeaders* response_headers) {
-  blink::TrialTokenValidator validator;
-  if (!validator.IsTrialPossibleOnOrigin(url))
-    return false;
-  // Since third-party requests can participate in the CHIPS origin trial and
-  // typically the Origin-Trial header is reserved for requests from the
-  // top-level site, we cannot use validator.RequestEnablesFeature here.
-  url::Origin origin = url::Origin::Create(url);
-  url::Origin third_party_origins[] = {url::Origin::Create(url)};
-  size_t iter = 0;
-  std::string token;
-  base::Time now(base::Time::Now());
-  while (response_headers->EnumerateHeader(&iter, "Origin-Trial", &token)) {
-    blink::TrialTokenResult result =
-        validator.ValidateToken(token, origin, third_party_origins, now);
-    if (result.Status() == blink::OriginTrialTokenStatus::kSuccess) {
-      if (result.ParsedToken()->feature_name() == "PartitionedCookies") {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-// For the partitioned cookies OT, we check if the response has a Set-Cookie
-// header with a partitioned cookie. If it does, we validate the OT token
-// otherwise we convert the URL's partitioned cookies to unpartitioned.
-void CheckPartitionedCookiesOriginTrial(
-    const network::mojom::URLResponseHead* response,
-    const GURL& url,
-    network::mojom::CookieManager* cookie_manager) {
-  if (!base::FeatureList::IsEnabled(net::features::kPartitionedCookies) ||
-      !response || !cookie_manager || !response->has_partitioned_cookie) {
-    return;
-  }
-  if (!IsValidPartitionedCookiesOriginTrial(url, response->headers.get())) {
-    cookie_manager->ConvertPartitionedCookiesToUnpartitioned(url);
   }
 }
 
@@ -1281,7 +1257,10 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           false /* should_load_data_url */,
           /*ancestor_or_self_has_cspee=*/
           frame_tree_node->AncestorOrSelfHasCSPEE(),
-          std::string() /* reduced_accept_language */);
+          std::string() /* reduced_accept_language */,
+          /*navigation_delivery_type=*/
+          network::mojom::NavigationDeliveryType::kDefault,
+          /*view_transition_state=*/absl::nullopt);
 
   // CreateRendererInitiated() should only be triggered when the navigation is
   // initiated by a frame in the same process.
@@ -1367,7 +1346,7 @@ NavigationRequest::CreateForSynchronousRendererCommit(
   // not used by the browser after commit.
   blink::mojom::CommitNavigationParamsPtr commit_params =
       blink::mojom::CommitNavigationParams::New(
-          origin,
+          absl::nullopt,
           // The correct storage key is computed right after creating the
           // NavigationRequest below.
           blink::StorageKey(), is_overriding_user_agent, redirects,
@@ -1411,7 +1390,10 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           false /* should_load_data_url */,
           /*ancestor_or_self_has_cspee=*/
           frame_tree_node->AncestorOrSelfHasCSPEE(),
-          std::string() /* reduced_accept_language */);
+          std::string() /* reduced_accept_language */,
+          /*navigation_delivery_type=*/
+          network::mojom::NavigationDeliveryType::kDefault,
+          /*view_transition_state=*/absl::nullopt);
   blink::mojom::BeginNavigationParamsPtr begin_params =
       blink::mojom::BeginNavigationParams::New();
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -1544,6 +1526,8 @@ NavigationRequest::NavigationRequest(
               ? absl::make_optional(
                     FencedFrameURLMapping::FencedFrameProperties())
               : absl::nullopt) {
+  TRACE_EVENT1("navigation", "NavigationRequest::NavigationRequest", "url",
+               GetURL());
   DCHECK(!blink::IsRendererDebugURL(common_params_->url));
   DCHECK(common_params_->method == "POST" || !common_params_->post_data);
   DCHECK_EQ(common_params_->url, commit_params_->original_url);
@@ -1847,16 +1831,39 @@ NavigationRequest::NavigationRequest(
 
   // For navigations that inherit a base URL, snapshot the parent's base URL at
   // the start of the navigation. Currently, this is only stored and sent to the
-  // renderer if kIsolatedSandboxedIframes is enabled, since it is a behavior
-  // change relevant for isolated sandboxed iframes. See
-  // https://crbug.com/1356658.
+  // renderer if kNewBaseUrlInheritanceBehavior or kIsolateSandboxedIframes is
+  // enabled, since it is a behavior change relevant for isolated sandboxed
+  // iframes. See https://crbug.com/1356658.
   // TODO(wjmaclean): about:blank frames may also need to inherit base URLs,
   // possibly from the initiator rather than the parent. See
   // https://crbug.com/1356658#c7.
   if (GetURL().IsAboutSrcdoc() && frame_tree_node_->parent() &&
-      SiteIsolationPolicy::AreIsolatedSandboxedIframesEnabled()) {
+      blink::features::IsNewBaseUrlInheritanceBehaviorEnabled()) {
     commit_params_->fallback_srcdoc_baseurl =
         frame_tree_node_->parent()->GetBaseUrl();
+  }
+
+  // Ask the service worker context to speculatively start a service worker for
+  // the request URL if necessary for optimization purposes. Don't ask to do
+  // that if this request is for ReloadType::BYPASSING_CACHE that is supposed to
+  // skip a service worker. There are cases where we have already started the
+  // service worker (e.g, Prerendering or the previous navigation already
+  // started the service worker), but this call does nothing if the service
+  // worker already started for the URL.
+  if (reload_type_ != ReloadType::BYPASSING_CACHE &&
+      base::FeatureList::IsEnabled(kSpeculativeServiceWorkerStartup)) {
+    if (ServiceWorkerContext* context =
+            frame_tree_node_->navigator()
+                .controller()
+                .GetBrowserContext()
+                ->GetStoragePartition(site_info_.storage_partition_config())
+                ->GetServiceWorkerContext()) {
+      const blink::StorageKey key(GetTentativeOriginAtRequestTime());
+      if (context->MaybeHasRegistrationForStorageKey(key)) {
+        context->StartServiceWorkerForNavigationHint(GetURL(), key,
+                                                     base::DoNothing());
+      }
+    }
   }
 }
 
@@ -2175,6 +2182,8 @@ void NavigationRequest::OnFencedFrameURLMappingComplete(
   is_deferred_on_fenced_frame_url_mapping_ = false;
 
   if (properties) {
+    if (properties->on_navigate_callback)
+      properties->on_navigate_callback.Run();
     common_params_->url = properties->mapped_url;
     commit_params_->original_url = properties->mapped_url;
     // TODO(crbug/1281643): move into commit_params_->ad_auction_components
@@ -2634,11 +2643,6 @@ void NavigationRequest::ResetStateForSiteInstanceChange() {
     commit_params_->page_state =
         blink::PageState::CreateFromURL(GetURL()).ToEncodedData();
 
-  // Any previously computed origin to commit is no longer valid (e.g., an
-  // opaque origin for an error page).
-  if (commit_params_->origin_to_commit)
-    commit_params_->origin_to_commit.reset();
-
   // ISNs and DSNs are process-specific.
   frame_entry_item_sequence_number_ = -1;
   frame_entry_document_sequence_number_ = -1;
@@ -2888,11 +2892,6 @@ void NavigationRequest::OnRequestRedirected(
 
   commit_params_->redirect_response.push_back(response_head_.Clone());
   commit_params_->redirect_infos.push_back(redirect_info);
-
-  // On redirects, the initial origin_to_commit is no longer correct, so it
-  // must be cleared to avoid sending incorrect value to the renderer process.
-  if (commit_params_->origin_to_commit)
-    commit_params_->origin_to_commit.reset();
 
   const bool is_same_origin_redirect =
       url::Origin::Create(common_params_->url)
@@ -3503,8 +3502,8 @@ UrlInfo NavigationRequest::GetUrlInfo() {
         // if two or more such documents share a site/origin. Using
         // navigation_id_ means that each new NavigationRequest (and thus each
         // document) will get a different value.
-        if (features::kIsolateSandboxedIframesGroupingParam.Get() ==
-            features::IsolateSandboxedIframesGrouping::kPerDocument) {
+        if (blink::features::kIsolateSandboxedIframesGroupingParam.Get() ==
+            blink::features::IsolateSandboxedIframesGrouping::kPerDocument) {
           url_info_init.WithUniqueSandboxId(navigation_id_);
         }
       }
@@ -3638,8 +3637,7 @@ void NavigationRequest::OnResponseStarted(
     const PolicyContainerPolicies& policies =
         policy_container_builder_->FinalPolicies();
     const url::Origin origin =
-        GetOriginForURLLoaderFactoryWithoutFinalFrameHost(
-            policies.sandbox_flags);
+        GetOriginForURLLoaderFactoryBeforeResponse(policies.sandbox_flags);
     coop_status_.EnforceCOOP(policies.cross_origin_opener_policy, origin,
                              network_anonymization_key);
   }
@@ -4006,7 +4004,7 @@ void NavigationRequest::OnResponseStarted(
   }
 
   if (render_frame_host_ &&
-      !CheckPermissionsPoliciesForFencedFrames(GetOriginToCommit())) {
+      !CheckPermissionsPoliciesForFencedFrames(GetOriginToCommit().value())) {
     OnRequestFailedInternal(
         network::URLLoaderCompletionStatus(net::ERR_ABORTED),
         false /*skip_throttles*/, absl::nullopt /*error_page_content*/,
@@ -4069,7 +4067,7 @@ NavigationRequest::CreateNavigationEarlyHintsManagerParams(
       commit_params_->frame_policy.sandbox_flags;
 
   const url::Origin tentative_origin =
-      GetOriginForURLLoaderFactoryWithoutFinalFrameHost(sandbox_flags);
+      GetOriginForURLLoaderFactoryBeforeResponse(sandbox_flags);
 
   mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer;
   Clone(cookie_observer.InitWithNewPipeAndPassReceiver());
@@ -4647,6 +4645,27 @@ void NavigationRequest::OnRedirectChecksComplete(
   if (auto reduce_accept_lang_utils =
           ReduceAcceptLanguageUtils::Create(browser_context);
       reduce_accept_lang_utils && !devtools_accept_language_override_) {
+    // Remove persisted language for the source origin if needed.
+    const network::mojom::URLResponseHead* response_head =
+        commit_params_->redirect_response.back().get();
+    // ReduceAcceptLanguageThrottle issues a 307 internal redirect without the
+    // original headers, and we don't want to remove persisted language when
+    // there is a potential restart due to language negotiation. This means that
+    // if the site sends a 307 (instead of a 301 or 302), the source origin
+    // persisted language will *not* be removed from the cache if the redirect
+    // response doesn't have a valid origin trial token.
+    if (response_head->headers && response_head->headers->response_code() !=
+                                      net::HTTP_TEMPORARY_REDIRECT) {
+      const url::Origin& source_origin =
+          url::Origin::Create(commit_params_->redirects.back());
+      absl::optional<std::string> persisted_language =
+          reduce_accept_lang_utils.value().LookupReducedAcceptLanguage(
+              source_origin, frame_tree_node_);
+      reduce_accept_lang_utils.value().RemoveOriginTrialReducedAcceptLanguage(
+          persisted_language.value_or(""), source_origin, response_head,
+          frame_tree_node_);
+    }
+
     net::HttpRequestHeaders accept_language_headers;
     absl::optional<std::string> reduced_accept_language =
         reduce_accept_lang_utils.value()
@@ -4656,6 +4675,8 @@ void NavigationRequest::OnRedirectChecksComplete(
     commit_params_->reduced_accept_language =
         reduced_accept_language.value_or("");
     modified_headers.MergeFrom(accept_language_headers);
+    // Remove the Accept-Language header passed from previous request if it has.
+    removed_headers.push_back(net::HttpRequestHeaders::kAcceptLanguage);
   }
 
   net::HttpRequestHeaders cors_exempt_headers;
@@ -4887,12 +4908,12 @@ void NavigationRequest::CommitErrorPage(
   common_params_->should_replace_current_entry =
       ShouldReplaceCurrentEntryForFailedNavigation();
 
-  // Error pages commit in an opaque origin in the renderer process. If this
-  // NavigationRequest resulted in committing an error page, set
-  // |origin_to_commit| to an opaque origin that has precursor information
-  // consistent with the URL being requested.
-  commit_params_->origin_to_commit =
-      url::Origin::Create(common_params_->url).DeriveNewOpaqueOrigin();
+  // Set |origin_to_commit| for the renderer; error pages should always commit
+  // in an opaque origin (with the precursor reflecting the destination URL).
+  DCHECK(!commit_params_->origin_to_commit);
+  commit_params_->origin_to_commit = GetOriginToCommit();
+  DCHECK(commit_params_->origin_to_commit->opaque());
+
   if (request_navigation_client_.is_bound()) {
     if (render_frame_host_ == frame_tree_node()->current_frame_host()) {
       // Reuse the request NavigationClient for commit.
@@ -4972,7 +4993,7 @@ void NavigationRequest::CommitNavigation() {
       (common_params_->url.SchemeIs(url::kUuidInPackageScheme) &&
        GetWebBundleURL().is_valid())
           ? url::Origin::Create(GetWebBundleURL())
-          : GetOriginToCommit();
+          : GetOriginToCommit().value();
   // TODO(crbug.com/979296): Consider changing this code to copy an origin
   // instead of creating one from a URL which lacks opacity information.
   isolation_info_for_subresources_ =
@@ -4987,7 +5008,7 @@ void NavigationRequest::CommitNavigation() {
       render_frame_host_->ComputeNonce(is_anonymous(),
                                        ComputeFencedFrameNonce());
   commit_params_->storage_key = render_frame_host_->CalculateStorageKey(
-      GetOriginToCommit(), base::OptionalToPtr(nonce));
+      GetOriginToCommit().value(), base::OptionalToPtr(nonce));
 
   if (IsServedFromBackForwardCache() || IsPrerenderedPageActivation()) {
     CommitPageActivation();
@@ -5040,9 +5061,9 @@ void NavigationRequest::CommitNavigation() {
           response()->headers.get(), browser_context, client_hints_delegate,
           frame_tree_node_);
     }
-    commit_params_->enabled_client_hints =
-        LookupAcceptCHForCommit(GetOriginToCommit(), client_hints_delegate,
-                                frame_tree_node_, common_params_->url);
+    commit_params_->enabled_client_hints = LookupAcceptCHForCommit(
+        GetOriginToCommit().value(), client_hints_delegate, frame_tree_node_,
+        common_params_->url);
     RemoveOriginTrialHintsFromAcceptCH(
         common_params_->url, client_hints_delegate, response(),
         commit_params_->enabled_client_hints, frame_tree_node_);
@@ -5050,10 +5071,16 @@ void NavigationRequest::CommitNavigation() {
 
   PersistOriginTrialsFromHeaders(origin, response(), browser_context);
 
-  CheckPartitionedCookiesOriginTrial(response(), common_params_->url,
-                                     frame_tree_node_->current_frame_host()
-                                         ->GetStoragePartition()
-                                         ->GetCookieManagerForBrowserProcess());
+  // If the final response do not have a valid ReduceAcceptLanguage origin trial
+  // token, stop persisting the accepted language. This happens when the token
+  // expires, is invalid, or is missing when the server stop using it.
+  if (auto reduce_accept_lang_utils =
+          ReduceAcceptLanguageUtils::Create(browser_context);
+      reduce_accept_lang_utils && !devtools_accept_language_override_) {
+    reduce_accept_lang_utils.value().RemoveOriginTrialReducedAcceptLanguage(
+        commit_params_->reduced_accept_language, GetOriginToCommit().value(),
+        response(), frame_tree_node_);
+  }
 
   // Generate a UKM source and track it on NavigationRequest. This will be
   // passed down to the blink::Document to be created, if any, and used for UKM
@@ -5130,6 +5157,11 @@ void NavigationRequest::CommitNavigation() {
   if (early_hints_manager_) {
     commit_params_->early_hints_preloaded_resources =
         early_hints_manager_->TakePreloadedResourceURLs();
+  }
+
+  if (response_head_) {
+    commit_params_->navigation_delivery_type =
+        response_head_->navigation_delivery_type;
   }
 
   auto common_params = common_params_->Clone();
@@ -6437,7 +6469,7 @@ void NavigationRequest::UpdatePrivateNetworkRequestPolicy() {
   BrowserContext* context =
       frame_tree_node_->navigator().controller().GetBrowserContext();
 
-  url::Origin origin = GetOriginToCommit();
+  url::Origin origin = GetOriginToCommit().value();
   if (client->ShouldAllowInsecurePrivateNetworkRequests(context, origin)) {
     // The content browser client decided to make an exception for this URL.
     private_network_request_policy_ =
@@ -6600,55 +6632,28 @@ bool NavigationRequest::IsLoadDataWithBaseURL() const {
 
 url::Origin NavigationRequest::GetTentativeOriginAtRequestTime() {
   DCHECK_LT(state_, WILL_PROCESS_RESPONSE);
-  return GetOriginForURLLoaderFactoryWithoutFinalFrameHost(
+  return GetOriginForURLLoaderFactoryBeforeResponse(
       commit_params_->frame_policy.sandbox_flags);
 }
 
-url::Origin NavigationRequest::GetOriginToCommit() {
-  return GetOriginForURLLoaderFactoryWithFinalFrameHost();
+absl::optional<url::Origin> NavigationRequest::GetOriginToCommit() {
+  return GetOriginToCommitWithDebugInfo().first;
 }
 
-std::pair<url::Origin, std::string>
+std::pair<absl::optional<url::Origin>, std::string>
 NavigationRequest::GetOriginToCommitWithDebugInfo() {
-  if (!IsSameDocument() && !IsPageActivation() &&
-      commit_params_->origin_to_commit) {
-    // `origin_to_commit` is set when there is an origin saved in the
-    // FrameNavigationEntry and it hasn't been reset yet due to redirects etc.
-    // Always try to use it, because this is what the renderer does in
-    // `DocumentLoader::CalculateOrigin()`. However this might not be the
-    // final origin, as the callers of this function might also consider sandbox
-    // flags too, which may require an opaque origin.
-    /// Note that this is handled here instead of in
-    // GetOriginForURLLoaderFactoryWithFinalFrameHostWithDebugInfo() as that
-    // function is used for more than just browser-vs-renderer origin
-    // verification, to avoid changing the behavior of existing browser-side
-    // code that don't expect `origin_to_commit` to be used before commit.
-    // TODO(https://crbug.com/1359351): Stop using `origin_to_commit` in the
-    // renderer and remove this special handling.
-    std::pair<url::Origin, std::string> origin_and_debug_info =
-        std::make_pair(*commit_params_->origin_to_commit, "origin_to_commit");
-    if ((SandboxFlagsToCommit() & network::mojom::WebSandboxFlags::kOrigin) ==
-        network::mojom::WebSandboxFlags::kOrigin) {
-      origin_and_debug_info =
-          std::make_pair(origin_and_debug_info.first.DeriveNewOpaqueOrigin(),
-                         origin_and_debug_info.second + ", sandbox_flags");
-    }
-    return origin_and_debug_info;
-  }
-  return GetOriginForURLLoaderFactoryWithFinalFrameHostWithDebugInfo();
+  return GetOriginForURLLoaderFactoryAfterResponseWithDebugInfo();
 }
 
-url::Origin
-NavigationRequest::GetOriginForURLLoaderFactoryWithoutFinalFrameHost(
+url::Origin NavigationRequest::GetOriginForURLLoaderFactoryBeforeResponse(
     network::mojom::WebSandboxFlags sandbox_flags) {
-  return GetOriginForURLLoaderFactoryWithoutFinalFrameHostWithDebugInfo(
-             sandbox_flags)
+  return GetOriginForURLLoaderFactoryBeforeResponseWithDebugInfo(sandbox_flags)
       .first;
 }
 
-std::pair<url::Origin, std::string> NavigationRequest::
-    GetOriginForURLLoaderFactoryWithoutFinalFrameHostWithDebugInfo(
-        network::mojom::WebSandboxFlags sandbox_flags) {
+std::pair<url::Origin, std::string>
+NavigationRequest::GetOriginForURLLoaderFactoryBeforeResponseWithDebugInfo(
+    network::mojom::WebSandboxFlags sandbox_flags) {
   // Calculate an approximation of the origin. The sandbox/csp are ignored.
   std::pair<url::Origin, std::string> origin_and_debug_info =
       GetOriginForURLLoaderFactoryUncheckedWithDebugInfo(this);
@@ -6667,41 +6672,36 @@ std::pair<url::Origin, std::string> NavigationRequest::
       (sandbox_flags & network::mojom::WebSandboxFlags::kOrigin) ==
       network::mojom::WebSandboxFlags::kOrigin;
   if (use_opaque_origin) {
-    origin_and_debug_info.second += ", sandbox_flags";
-  }
-  // TODO(https://crbug.com/1158370): Move special-casing error pages into
-  // ComputeSandboxFlagsToCommit (and renderer-side origin calculations) so that
-  // the most strict sandbox flags are applied.
-  if (GetNetErrorCode() != net::OK) {
-    use_opaque_origin = true;
-    origin_and_debug_info.second += ", error";
-  }
-
-  if (use_opaque_origin) {
     origin_and_debug_info =
         std::make_pair(origin_and_debug_info.first.DeriveNewOpaqueOrigin(),
-                       origin_and_debug_info.second);
+                       origin_and_debug_info.second + ", sandbox_flags");
   }
 
   return origin_and_debug_info;
 }
 
-url::Origin
-NavigationRequest::GetOriginForURLLoaderFactoryWithFinalFrameHost() {
-  return GetOriginForURLLoaderFactoryWithFinalFrameHostWithDebugInfo().first;
+absl::optional<url::Origin>
+NavigationRequest::GetOriginForURLLoaderFactoryAfterResponse() {
+  return GetOriginForURLLoaderFactoryAfterResponseWithDebugInfo().first;
 }
 
-std::pair<url::Origin, std::string> NavigationRequest::
-    GetOriginForURLLoaderFactoryWithFinalFrameHostWithDebugInfo() {
+std::pair<absl::optional<url::Origin>, std::string>
+NavigationRequest::GetOriginForURLLoaderFactoryAfterResponseWithDebugInfo() {
   // The origin to commit is not known until we get the final network response.
   DCHECK_GE(state_, WILL_PROCESS_RESPONSE);
+
+  // Downloads and/or 204 responses don't commit anything - there is no frame to
+  // commit in (and therefor there is no origin that will get committed and we
+  // indicate this by returning `nullopt`).
+  if (!GetRenderFrameHost())
+    return std::make_pair(absl::nullopt, "no_commit");
 
   if (IsSameDocument() || IsPageActivation())
     return std::make_pair(GetRenderFrameHost()->GetLastCommittedOrigin(),
                           "same_doc_or_page_activation");
 
   std::pair<url::Origin, std::string> origin_with_debug_info =
-      GetOriginForURLLoaderFactoryWithoutFinalFrameHostWithDebugInfo(
+      GetOriginForURLLoaderFactoryBeforeResponseWithDebugInfo(
           SandboxFlagsToCommit());
 
   // MHTML documents should commit as an opaque origin. They should not be able
@@ -6925,7 +6925,6 @@ NavigationRequest::MakeDidCommitProvisionalLoadParamsForBFCacheRestore() {
 
   // Add bfcache-specific provisional load params:
   params->did_create_new_entry = false;
-  DCHECK_EQ(params->origin, commit_params().origin_to_commit.value());
   params->page_state =
       blink::PageState::CreateFromEncodedData(commit_params().page_state);
   return params;
@@ -7775,25 +7774,11 @@ void NavigationRequest::RecordAddressSpaceFeature() {
     return;
   }
 
-  // We intentionally do *not* use `CalculateIPAddressSpace()` here, as it
-  // depends on `network::CalculateClientAddressSpace()` and takes into account
-  // the CSP `treat-as-public-address` directive. If a `public` document
-  // initiates a navigation request to a `local` resource, we should block that
-  // request before any bytes are sent over the network as that request
-  // inherently carries a risk of CSRF. It does not matter whether the resource
-  // eventually responds with a CSP `treat-as-public-address` directive.
-  //
-  // In other words, here (as opposed to in `ComputePoliciesToCommit()`), we
-  // wish to mirror the calculation performed by the network process when
-  // applying Private Network Access checks.
-  network::mojom::IPAddressSpace response_address_space =
-      network::CalculateResourceAddressSpace(common_params_->url,
-                                             response_head_->remote_endpoint);
-
   absl::optional<blink::mojom::WebFeature> optional_feature =
-      blink::AddressSpaceFeature(
-          blink::FetchType::kNavigation, initiator_policies->ip_address_space,
-          initiator_policies->is_web_secure_context, response_address_space);
+      blink::AddressSpaceFeature(blink::FetchType::kNavigation,
+                                 initiator_policies->ip_address_space,
+                                 initiator_policies->is_web_secure_context,
+                                 response_head_->response_address_space);
   if (!optional_feature.has_value()) {
     return;
   }
@@ -8314,5 +8299,10 @@ NavigationRequest::GetJavaNavigationHandle() {
   return navigation_handle_proxy_->java_navigation_handle();
 }
 #endif
+
+void NavigationRequest::SetViewTransitionState(
+    blink::ViewTransitionState view_transition_state) {
+  commit_params_->view_transition_state = std::move(view_transition_state);
+}
 
 }  // namespace content

@@ -16,14 +16,14 @@ TransformPaintPropertyNode::TransformAndOrigin::TransformAndOrigin(
     translation_2d_ = gfx::Vector2dF(transform.E(), transform.F());
   } else {
     matrix_and_origin_ = std::make_unique<MatrixAndOrigin>(
-        TransformationMatrix(transform), gfx::Point3F());
+        transform.ToTransform(), gfx::Point3F());
   }
 }
 
-TransformationMatrix
-TransformPaintPropertyNode::TransformAndOrigin::SlowMatrix() const {
+gfx::Transform TransformPaintPropertyNode::TransformAndOrigin::SlowMatrix()
+    const {
   return matrix_and_origin_ ? matrix_and_origin_->matrix
-                            : TransformationMatrix::MakeTranslation(
+                            : gfx::Transform::MakeTranslation(
                                   translation_2d_.x(), translation_2d_.y());
 }
 
@@ -167,7 +167,10 @@ std::unique_ptr<JSONObject> TransformPaintPropertyNode::ToJSON() const {
     if (!Translation2D().IsZero())
       json->SetString("translation2d", String(Translation2D().ToString()));
   } else {
-    json->SetString("matrix", Matrix().ToString());
+    String matrix(Matrix().ToDecomposedString());
+    if (matrix.EndsWith("\n"))
+      matrix = matrix.Left(matrix.length() - 1);
+    json->SetString("matrix", matrix.Replace("\n", ", "));
     json->SetString("origin", String(Origin().ToString()));
   }
   if (!state_.flags.flattens_inherited_transform)
@@ -191,7 +194,7 @@ std::unique_ptr<JSONObject> TransformPaintPropertyNode::ToJSON() const {
   }
   if (state_.compositor_element_id) {
     json->SetString("compositorElementId",
-                    state_.compositor_element_id.ToString().c_str());
+                    String(state_.compositor_element_id.ToString()));
   }
   if (state_.scroll)
     json->SetString("scroll", String::Format("%p", state_.scroll.get()));

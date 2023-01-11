@@ -383,7 +383,7 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoListBox)
     DEFINE_STRING_MAPPING(PseudoMultiSelectFocus)
     DEFINE_STRING_MAPPING(PseudoOpen)
-    DEFINE_STRING_MAPPING(PseudoPopupOpeningOrOpen)
+    DEFINE_STRING_MAPPING(PseudoClosed)
     DEFINE_STRING_MAPPING(PseudoHostHasAppearance)
     DEFINE_STRING_MAPPING(PseudoVideoPersistent)
     DEFINE_STRING_MAPPING(PseudoVideoPersistentAncestor)
@@ -396,11 +396,12 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoGrammarError)
     DEFINE_STRING_MAPPING(PseudoHas)
     DEFINE_STRING_MAPPING(PseudoRelativeAnchor)
-    DEFINE_STRING_MAPPING(PseudoPageTransition)
-    DEFINE_STRING_MAPPING(PseudoPageTransitionContainer);
-    DEFINE_STRING_MAPPING(PseudoPageTransitionImageWrapper);
-    DEFINE_STRING_MAPPING(PseudoPageTransitionIncomingImage);
-    DEFINE_STRING_MAPPING(PseudoPageTransitionOutgoingImage);
+    DEFINE_STRING_MAPPING(PseudoViewTransition)
+    DEFINE_STRING_MAPPING(PseudoViewTransitionGroup);
+    DEFINE_STRING_MAPPING(PseudoViewTransitionImagePair);
+    DEFINE_STRING_MAPPING(PseudoViewTransitionNew);
+    DEFINE_STRING_MAPPING(PseudoViewTransitionOld);
+    DEFINE_STRING_MAPPING(PseudoParent)
 #undef DEFINE_STRING_MAPPING
   }
 
@@ -762,6 +763,7 @@ const char kSvgChanged[] = "SVG changed";
 const char kScrollbarChanged[] = "Scrollbar changed";
 const char kDisplayLock[] = "Display lock";
 const char kDevtools[] = "Inspected by devtools";
+const char kAnchorPositioning[] = "Anchor positioning";
 }  // namespace layout_invalidation_reason
 
 void inspector_layout_invalidation_tracking_event::Data(

@@ -63,7 +63,7 @@
 #include "ui/views/controls/menu/menu_pre_target_handler.h"
 #endif
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 #include "ui/ozone/buildflags.h"
 #include "ui/ozone/public/ozone_platform.h"
 #if BUILDFLAG(OZONE_PLATFORM_X11)
@@ -79,14 +79,13 @@
 #include "base/win/windows_version.h"
 #endif
 
-namespace views {
-namespace test {
+namespace views::test {
 namespace {
 
 using ::ui::mojom::DragOperation;
 
 bool ShouldIgnoreScreenBoundsForMenus() {
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   // Some platforms, such as Wayland, disallow client applications to manipulate
   // global screen coordinates, requiring menus to be positioned relative to
   // their parent windows. See comment in ozone_platform_wayland.cc.
@@ -221,8 +220,7 @@ class GestureTestWidget : public Widget {
 class TestDragDropClient : public aura::client::DragDropClient {
  public:
   explicit TestDragDropClient(base::RepeatingClosure callback)
-      : start_drag_and_drop_callback_(std::move(callback)),
-        drag_in_progress_(false) {}
+      : start_drag_and_drop_callback_(std::move(callback)) {}
 
   TestDragDropClient(const TestDragDropClient&) = delete;
   TestDragDropClient& operator=(const TestDragDropClient&) = delete;
@@ -236,6 +234,10 @@ class TestDragDropClient : public aura::client::DragDropClient {
                                  const gfx::Point& screen_location,
                                  int allowed_operations,
                                  ui::mojom::DragEventSource source) override;
+#if BUILDFLAG(IS_LINUX)
+  void UpdateDragImage(const gfx::ImageSkia& image,
+                       const gfx::Vector2d& offset) override {}
+#endif
   void DragCancel() override;
   bool IsDragDropInProgress() override;
 
@@ -245,7 +247,7 @@ class TestDragDropClient : public aura::client::DragDropClient {
 
  private:
   base::RepeatingClosure start_drag_and_drop_callback_;
-  bool drag_in_progress_;
+  bool drag_in_progress_ = false;
 };
 
 DragOperation TestDragDropClient::StartDragAndDrop(
@@ -3355,5 +3357,4 @@ TEST_F(ExecuteCommandWithoutClosingMenuTest, OnReturnKey) {
             menu_item()->GetSubmenu()->GetMenuItemAt(0)->GetCommand());
 }
 
-}  // namespace test
-}  // namespace views
+}  // namespace views::test

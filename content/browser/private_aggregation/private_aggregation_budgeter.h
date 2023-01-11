@@ -42,6 +42,39 @@ class CONTENT_EXPORT PrivateAggregationBudgeter {
     kOpen,
   };
 
+  // The result of a request to consume some budget. All results other than
+  // `kApproved` enumerate different reasons the request was rejected.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class RequestResult {
+    kApproved = 0,
+    kInsufficientBudget = 1,
+    kRequestedMoreThanTotalBudget = 2,
+    kTooManyPendingCalls = 3,
+    kInvalidRequest = 4,
+    kStorageInitializationFailed = 5,
+    kBadValuesOnDisk = 6,
+    kMaxValue = kBadValuesOnDisk,
+  };
+
+  // Represents the validity status of the stored budget data for the provided
+  // origin and API retrieved during a `ConsumeBudget()` call. In case multiple
+  // statuses apply, the first one encountered/detected will be used.
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class BudgetValidityStatus {
+    kValid = 0,
+    kValidAndEmpty = 1,
+    kValidButContainsStaleWindow = 2,
+    kContainsTimestampInFuture = 3,
+    kContainsValueExceedingLimit = 4,
+    kContainsTimestampNotRoundedToHour = 5,
+    kSpansMoreThanADay = 6,
+    kContainsNonPositiveValue = 7,
+    kMaxValue = kContainsNonPositiveValue,
+  };
+
   // Maximum budget allowed to be claimed per-origin per-day per-API.
   static constexpr int kMaxBudgetPerScope = 65536;
 
@@ -69,9 +102,8 @@ class CONTENT_EXPORT PrivateAggregationBudgeter {
       const PrivateAggregationBudgeter& other) = delete;
   virtual ~PrivateAggregationBudgeter();
 
-  // Attempts to consume `budget` for `budget_key`. The callback
-  // `on_done` is then run with `true` if the attempt was successful and
-  // `false` otherwise.
+  // Attempts to consume `budget` for `budget_key`. The callback `on_done` is
+  // then run with the appropriate `RequestResult`.
   //
   // The attempt is rejected if it would cause an origin's daily per-API budget
   // to exceed `kMaxBudgetPerScope` (for the 24-hour period ending at the *end*
@@ -87,7 +119,7 @@ class CONTENT_EXPORT PrivateAggregationBudgeter {
   // testing.
   virtual void ConsumeBudget(int budget,
                              const PrivateAggregationBudgetKey& budget_key,
-                             base::OnceCallback<void(bool)> on_done);
+                             base::OnceCallback<void(RequestResult)> on_done);
 
   // Deletes all data in storage for any budgets that could have been set
   // between `delete_begin` and `delete_end` time (inclusive). Note that the
@@ -116,7 +148,7 @@ class CONTENT_EXPORT PrivateAggregationBudgeter {
  private:
   void ConsumeBudgetImpl(int additional_budget,
                          const PrivateAggregationBudgetKey& budget_key,
-                         base::OnceCallback<void(bool)> on_done);
+                         base::OnceCallback<void(RequestResult)> on_done);
   void ClearDataImpl(base::Time delete_begin,
                      base::Time delete_end,
                      StoragePartition::StorageKeyMatcherFunction filter,

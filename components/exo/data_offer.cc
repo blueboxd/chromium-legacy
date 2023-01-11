@@ -75,7 +75,7 @@ scoped_refptr<base::RefCountedString> EncodeAsRefCountedString(
   base::UTF16ToCodepage(text, charset.c_str(),
                         base::OnStringConversionError::SUBSTITUTE,
                         &encoded_text);
-  return base::RefCountedString::TakeString(&encoded_text);
+  return base::MakeRefCounted<base::RefCountedString>(std::move(encoded_text));
 }
 
 DataOffer::AsyncSendDataCallback AsyncEncodeAsRefCountedString(
@@ -89,7 +89,6 @@ DataOffer::AsyncSendDataCallback AsyncEncodeAsRefCountedString(
       text, charset);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 void ReadDataTransferEndpointFromClipboard(
     const std::string& charset,
     const ui::DataTransferEndpoint data_dst,
@@ -110,7 +109,6 @@ void ReadDataTransferEndpointFromClipboard(
 
   std::move(callback).Run(EncodeAsRefCountedString(encoded_endpoint, charset));
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void ReadTextFromClipboard(const std::string& charset,
                            const ui::DataTransferEndpoint data_dst,
@@ -137,7 +135,8 @@ void ReadRTFFromClipboard(const ui::DataTransferEndpoint data_dst,
   std::string text;
   ui::Clipboard::GetForCurrentThread()->ReadRTF(ui::ClipboardBuffer::kCopyPaste,
                                                 &data_dst, &text);
-  std::move(callback).Run(base::RefCountedString::TakeString(&text));
+  std::move(callback).Run(
+      base::MakeRefCounted<base::RefCountedString>(std::move(text)));
 }
 
 void OnReceivePNGFromClipboard(DataOffer::SendDataCallback callback,
@@ -239,7 +238,6 @@ void DataOffer::SetDropData(DataExchangeDelegate* data_exchange_delegate,
   ui::EndpointType endpoint_type =
       data_exchange_delegate->GetDataTransferEndpointType(target);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Drag & Drop source metadata (if any) is synced between Ash and Lacros by
   // encoding the metadata into a custom MIME type.
   if (endpoint_type == ui::EndpointType::kLacros && data.GetSource()) {
@@ -250,7 +248,6 @@ void DataOffer::SetDropData(DataExchangeDelegate* data_exchange_delegate,
         AsyncEncodeAsRefCountedString(encoded_endpoint, kUTF8));
     delegate_->OnOffer(ui::kMimeTypeDataTransferEndpoint);
   }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   const std::string uri_list_mime_type =
       data_exchange_delegate->GetMimeTypeForUriList(endpoint_type);
@@ -302,7 +299,8 @@ void DataOffer::SetDropData(DataExchangeDelegate* data_exchange_delegate,
            DataOffer::SendDataCallback callback) {
           std::move(callback).Run(std::move(contents));
         },
-        base::RefCountedString::TakeString(&file_contents));
+        base::MakeRefCounted<base::RefCountedString>(std::move(file_contents)));
+
     data_callbacks_.emplace(mime_type, std::move(callback));
     delegate_->OnOffer(mime_type);
   }
@@ -349,7 +347,6 @@ void DataOffer::SetClipboardData(DataExchangeDelegate* data_exchange_delegate,
   DCHECK_EQ(0u, data_callbacks_.size());
   const ui::DataTransferEndpoint data_dst(endpoint_type);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Clipboard source metadata (if any) is synced between Ash and Lacros by
   // encoding the metadata into a custom MIME type.
   if (endpoint_type == ui::EndpointType::kLacros &&
@@ -360,7 +357,6 @@ void DataOffer::SetClipboardData(DataExchangeDelegate* data_exchange_delegate,
         base::BindOnce(&ReadDataTransferEndpointFromClipboard,
                        std::string(kUTF8), data_dst));
   }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   if (data.IsFormatAvailable(ui::ClipboardFormatType::PlainTextType(),
                              ui::ClipboardBuffer::kCopyPaste, &data_dst)) {

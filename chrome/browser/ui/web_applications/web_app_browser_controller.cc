@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/tabs/tab_menu_model_factory.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
+#include "chrome/browser/ui/web_applications/web_app_tabbed_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
 #include "chrome/browser/web_applications/commands/callback_command.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
@@ -29,7 +30,9 @@
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
@@ -49,7 +52,9 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "chrome/browser/ash/apps/apk_web_app_service.h"
+#include "chrome/browser/ash/system_web_apps/color_helpers.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
 #endif
 
@@ -153,7 +158,7 @@ bool WebAppBrowserController::IsWindowControlsOverlayEnabled() const {
 void WebAppBrowserController::ToggleWindowControlsOverlayEnabled() {
   DCHECK(AppUsesWindowControlsOverlay());
 
-  provider_.sync_bridge().SetAppWindowControlsOverlayEnabled(
+  provider_->sync_bridge().SetAppWindowControlsOverlayEnabled(
       app_id(), !registrar().GetWindowControlsOverlayEnabled(app_id()));
 }
 
@@ -205,11 +210,14 @@ bool WebAppBrowserController::AlwaysShowToolbarInFullscreen() const {
 void WebAppBrowserController::ToggleAlwaysShowToolbarInFullscreen() {
   // base::Unretained is safe as the command manager won't execute the command
   // if the provider no longer exists.
-  provider_.command_manager().ScheduleCommand(std::make_unique<CallbackCommand>(
-      std::make_unique<AppLock, base::flat_set<AppId>>({app_id()}),
-      base::BindOnce(&WebAppSyncBridge::SetAlwaysShowToolbarInFullscreen,
-                     base::Unretained(&provider_.sync_bridge()), app_id(),
-                     !registrar().AlwaysShowToolbarInFullscreen(app_id()))));
+  provider_->command_manager().ScheduleCommand(
+      std::make_unique<CallbackCommand>(
+          std::make_unique<AppLockDescription, base::flat_set<AppId>>(
+              {app_id()}),
+          base::BindOnce(
+              &WebAppSyncBridge::SetAlwaysShowToolbarInFullscreen,
+              base::Unretained(&provider_->sync_bridge()), app_id(),
+              !registrar().AlwaysShowToolbarInFullscreen(app_id()))));
 }
 #endif
 
@@ -293,9 +301,9 @@ ui::ImageModel WebAppBrowserController::GetWindowAppIcon() const {
   }
 #endif
 
-  if (provider_.icon_manager().HasSmallestIcon(app_id(), {IconPurpose::ANY},
-                                               kWebAppIconSmall)) {
-    provider_.icon_manager().ReadSmallestIconAny(
+  if (provider_->icon_manager().HasSmallestIcon(app_id(), {IconPurpose::ANY},
+                                                kWebAppIconSmall)) {
+    provider_->icon_manager().ReadSmallestIconAny(
         app_id(), kWebAppIconSmall,
         base::BindOnce(&WebAppBrowserController::OnReadIcon,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -311,7 +319,7 @@ ui::ImageModel WebAppBrowserController::GetWindowIcon() const {
 absl::optional<SkColor> WebAppBrowserController::GetThemeColor() const {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // System App popups (settings pages) always use default theme.
-  if (system_app_ && browser()->is_type_app_popup())
+  if (system_app() && browser()->is_type_app_popup())
     return absl::nullopt;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -332,6 +340,15 @@ absl::optional<SkColor> WebAppBrowserController::GetThemeColor() const {
   }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // System Apps with dynamic color ignore manifest and pull theme color from
+  // the OS.
+  if (system_app() && system_app()->UseSystemThemeColor() &&
+      ash::features::IsJellyEnabled()) {
+    return ash::GetSystemThemeColor();
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
   if (ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors()) {
     absl::optional<SkColor> dark_mode_color =
         registrar().GetAppDarkModeThemeColor(app_id());
@@ -347,19 +364,30 @@ absl::optional<SkColor> WebAppBrowserController::GetThemeColor() const {
 absl::optional<SkColor> WebAppBrowserController::GetBackgroundColor() const {
   auto web_contents_color = AppBrowserController::GetBackgroundColor();
   auto manifest_color = GetResolvedManifestBackgroundColor();
+  // Prefer an available web contents color but when such a color is
+  // unavailable (i.e. in the time between when a window launches and it's web
+  // content loads) attempt to pull the background color from the manifest.
+  absl::optional<SkColor> result =
+      web_contents_color ? web_contents_color : manifest_color;
 
-  bool prefer_manifest_background_color = false;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (system_app())
-    prefer_manifest_background_color =
-        system_app()->PreferManifestBackgroundColor();
+  if (system_app()) {
+    if (ash::features::IsJellyEnabled()) {
+      // System Apps with dynamic color ignore the manifest and pull background
+      // color from the OS in situations where a background color can not be
+      // extracted from the web contents.
+      SkColor os_color = ash::GetSystemBackgroundColor();
+
+      result = web_contents_color ? web_contents_color : os_color;
+    } else if (system_app()->PreferManifestBackgroundColor()) {
+      // Some system web apps prefer their web content background color to be
+      // ignored in favour of their manifest background color.
+      result = manifest_color ? manifest_color : web_contents_color;
+    }
+  }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-  auto [preferred_color, fallback_color] =
-      prefer_manifest_background_color
-          ? std::tie(manifest_color, web_contents_color)
-          : std::tie(web_contents_color, manifest_color);
-  return preferred_color ? preferred_color : fallback_color;
+  return result;
 }
 
 GURL WebAppBrowserController::GetAppStartUrl() const {
@@ -426,7 +454,7 @@ std::u16string WebAppBrowserController::GetTitle() const {
   std::u16string raw_title = AppBrowserController::GetTitle();
 
   std::u16string app_name =
-      base::UTF8ToUTF16(provider_.registrar().GetAppShortName(app_id()));
+      base::UTF8ToUTF16(provider_->registrar().GetAppShortName(app_id()));
   if (base::StartsWith(raw_title, app_name)) {
     return raw_title;
   }
@@ -447,14 +475,14 @@ std::u16string WebAppBrowserController::GetFormattedUrlOrigin() const {
 }
 
 bool WebAppBrowserController::CanUserUninstall() const {
-  return WebAppUiManagerImpl::Get(&provider_)
+  return WebAppUiManagerImpl::Get(&*provider_)
       ->dialog_manager()
       .CanUserUninstallWebApp(app_id());
 }
 
 void WebAppBrowserController::Uninstall(
     webapps::WebappUninstallSource webapp_uninstall_source) {
-  WebAppUiManagerImpl::Get(&provider_)
+  WebAppUiManagerImpl::Get(&*provider_)
       ->dialog_manager()
       .UninstallWebApp(app_id(), webapps::WebappUninstallSource::kAppMenu,
                        browser()->window(), base::DoNothing());
@@ -473,6 +501,12 @@ void WebAppBrowserController::OnTabInserted(content::WebContents* contents) {
   // tabbed browser window (e.g. via "Open in Chrome" menu item), it is still
   // considered "appy".
   WebAppTabHelper::FromWebContents(contents)->set_acting_as_app(true);
+
+  if (registrar().IsTabbedWindowModeEnabled(app_id()) &&
+      IsPinnedHomeTabUrl(registrar(), app_id(),
+                         contents->GetLastCommittedURL())) {
+    WebAppTabHelper::FromWebContents(contents)->set_is_pinned_home_tab(true);
+  }
 }
 
 void WebAppBrowserController::OnTabRemoved(content::WebContents* contents) {
@@ -481,11 +515,11 @@ void WebAppBrowserController::OnTabRemoved(content::WebContents* contents) {
 }
 
 const WebAppRegistrar& WebAppBrowserController::registrar() const {
-  return provider_.registrar();
+  return provider_->registrar();
 }
 
 const WebAppInstallManager& WebAppBrowserController::install_manager() const {
-  return provider_.install_manager();
+  return provider_->install_manager();
 }
 
 void WebAppBrowserController::LoadAppIcon(bool allow_placeholder_icon) const {

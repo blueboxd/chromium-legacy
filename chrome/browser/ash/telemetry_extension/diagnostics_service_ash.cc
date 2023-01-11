@@ -57,7 +57,7 @@ void DiagnosticsServiceAsh::BindReceiver(
 cros_healthd::mojom::CrosHealthdDiagnosticsService*
 DiagnosticsServiceAsh::GetService() {
   if (!service_ || !service_.is_connected()) {
-    cros_healthd::ServiceConnection::GetInstance()->GetDiagnosticsService(
+    cros_healthd::ServiceConnection::GetInstance()->BindDiagnosticsService(
         service_.BindNewPipeAndPassReceiver());
     service_.set_disconnect_handler(base::BindOnce(
         &DiagnosticsServiceAsh::OnDisconnect, base::Unretained(this)));
@@ -310,7 +310,7 @@ void DiagnosticsServiceAsh::RunNvmeWearLevelRoutine(
     uint32_t wear_level_threshold,
     RunNvmeWearLevelRoutineCallback callback) {
   GetService()->RunNvmeWearLevelRoutine(
-      wear_level_threshold,
+      cros_healthd::mojom::NullableUint32::New(wear_level_threshold),
       base::BindOnce(
           [](crosapi::mojom::DiagnosticsService::RunNvmeWearLevelRoutineCallback
                  callback,

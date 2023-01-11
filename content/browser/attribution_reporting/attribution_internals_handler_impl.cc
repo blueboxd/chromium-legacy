@@ -19,12 +19,15 @@
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
+#include "components/attribution_reporting/aggregatable_trigger_data.h"
+#include "components/attribution_reporting/aggregation_keys.h"
+#include "components/attribution_reporting/event_trigger_data.h"
+#include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "content/browser/attribution_reporting/aggregatable_attribution_utils.h"
-#include "content/browser/attribution_reporting/attribution_aggregation_keys.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
+#include "content/browser/attribution_reporting/attribution_internals.mojom.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
@@ -49,6 +52,8 @@ namespace {
 
 using Attributability =
     ::attribution_internals::mojom::WebUISource::Attributability;
+
+using SourceOrTrigger = ::attribution_internals::mojom::ClearedDebugKey::Type;
 using Empty = ::attribution_internals::mojom::Empty;
 using ReportStatus = ::attribution_internals::mojom::ReportStatus;
 using ReportStatusPtr = ::attribution_internals::mojom::ReportStatusPtr;
@@ -285,10 +290,25 @@ void AttributionInternalsHandlerImpl::OnReportsChanged(
 
 void AttributionInternalsHandlerImpl::OnSourceHandled(
     const StorableSource& source,
+    absl::optional<uint64_t> cleared_debug_key,
     StorableSource::Result result) {
   Attributability attributability;
+  if (cleared_debug_key.has_value()) {
+    auto web_ui_log = attribution_internals::mojom::ClearedDebugKey::New();
+    web_ui_log->cleared_debug_key = WebUIDebugKey(cleared_debug_key.value());
+    web_ui_log->time = source.common_info().source_time().ToJsTime();
+    web_ui_log->reporting_origin = source.common_info().reporting_origin();
+    web_ui_log->cleared_from = SourceOrTrigger::kSource;
+
+    for (auto& observer : observers_) {
+      observer->OnDebugKeyCleared(web_ui_log.Clone());
+    }
+  }
+
   switch (result) {
     case StorableSource::Result::kSuccess:
+    // TODO(linnan): Consider displaying source noised in internals UI.
+    case StorableSource::Result::kSuccessNoised:
       return;
     case StorableSource::Result::kInternalError:
       attributability = Attributability::kInternalError;
@@ -390,6 +410,7 @@ WebUITriggerStatus GetWebUITriggerStatus(EventLevelStatus status) {
     case EventLevelStatus::kPriorityTooLow:
       return WebUITriggerStatus::kLowPriority;
     case EventLevelStatus::kDroppedForNoise:
+    case EventLevelStatus::kFalselyAttributedSource:
       return WebUITriggerStatus::kNoised;
     case EventLevelStatus::kExcessiveReportingOrigins:
       return WebUITriggerStatus::kExcessiveReportingOrigins;
@@ -399,6 +420,8 @@ WebUITriggerStatus GetWebUITriggerStatus(EventLevelStatus status) {
       return WebUITriggerStatus::kProhibitedByBrowserPolicy;
     case EventLevelStatus::kNoMatchingConfigurations:
       return WebUITriggerStatus::kNoMatchingConfigurations;
+    case EventLevelStatus::kExcessiveReports:
+      return WebUITriggerStatus::kExcessiveEventLevelReports;
   }
 }
 
@@ -435,7 +458,19 @@ WebUITriggerStatus GetWebUITriggerStatus(AggregatableStatus status) {
 
 void AttributionInternalsHandlerImpl::OnTriggerHandled(
     const AttributionTrigger& trigger,
+    const absl::optional<uint64_t> cleared_debug_key,
     const CreateReportResult& result) {
+  if (cleared_debug_key.has_value()) {
+    auto web_ui_log = attribution_internals::mojom::ClearedDebugKey::New();
+    web_ui_log->cleared_debug_key = WebUIDebugKey(cleared_debug_key.value());
+    web_ui_log->time = result.trigger_time().ToJsTime();
+    web_ui_log->reporting_origin = trigger.reporting_origin();
+    web_ui_log->cleared_from = SourceOrTrigger::kTrigger;
+
+    for (auto& observer : observers_) {
+      observer->OnDebugKeyCleared(web_ui_log.Clone());
+    }
+  }
   auto web_ui_trigger = attribution_internals::mojom::WebUITrigger::New();
   web_ui_trigger->trigger_time = result.trigger_time().ToJsTime();
   web_ui_trigger->destination_origin = trigger.destination_origin();

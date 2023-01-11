@@ -7,7 +7,9 @@
 #import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
 #import "base/numerics/safe_conversions.h"
+#import "base/ranges/algorithm.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/common/bookmark_metrics.h"
@@ -109,15 +111,6 @@ typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
 
 // Estimated TableView row height.
 const CGFloat kEstimatedRowHeight = 65.0;
-
-// TableView rows that are hidden by the NavigationBar, causing them to be
-// "visible" for the tableView but not for the user. This is used to calculate
-// the top most visibile table view indexPath row.
-// TODO(crbug.com/879001): This value is aproximate based on the standard (no
-// dynamic type) height. If the dynamic font is too large or too small it will
-// result in a small offset on the cache, in order to prevent this we need to
-// calculate this value dynamically.
-const int kRowsHiddenByNavigationBar = 3;
 
 // Returns a vector of all URLs in `nodes`.
 std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
@@ -464,13 +457,12 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 }
 
 - (NSArray*)keyCommands {
-  __weak BookmarkHomeViewController* weakSelf = self;
-  return @[ [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
-                                   modifierFlags:Cr_UIKeyModifierNone
-                                           title:nil
-                                          action:^{
-                                            [weakSelf navigationBarCancel:nil];
-                                          }] ];
+  return @[ UIKeyCommand.cr_close ];
+}
+
+- (void)keyCommand_close {
+  base::RecordAction(base::UserMetricsAction("MobileKeyCommandClose"));
+  [self navigationBarCancel:nil];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -1277,14 +1269,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   if (topMostIndexPath.row == 0)
     return 0;
 
-  // To avoid an index out of bounds, check if there are less or equal
-  // kRowsHiddenByNavigationBar than number of visibleIndexPaths.
-  if ([visibleIndexPaths count] <= kRowsHiddenByNavigationBar)
-    return 0;
-
-  // Return the first visible row not covered by the NavigationBar.
-  topMostIndexPath =
-      [visibleIndexPaths objectAtIndex:kRowsHiddenByNavigationBar];
+  // Return the first visible row.
+  topMostIndexPath = [visibleIndexPaths objectAtIndex:0];
   return topMostIndexPath.row;
 }
 
@@ -1361,9 +1347,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   std::vector<const bookmarks::BookmarkNode*> nodes;
   if (self.sharedState.currentlyShowingSearchResults) {
     // Create a vector of edit nodes in the same order as the selected nodes.
-    const std::set<const bookmarks::BookmarkNode*> editNodes =
-        self.sharedState.editNodes;
-    std::copy(editNodes.begin(), editNodes.end(), std::back_inserter(nodes));
+    base::ranges::copy(self.sharedState.editNodes, std::back_inserter(nodes));
   } else {
     // Create a vector of edit nodes in the same order as the nodes in folder.
     for (const auto& child :
@@ -1761,7 +1745,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                              return;
                            if ([strongSelf isIncognitoForced])
                              return;
-                           auto editNodes = [strongSelf editNodes];
+                           std::vector<const bookmarks::BookmarkNode*>
+                               editNodes = [strongSelf editNodes];
                            [strongSelf openAllURLs:GetUrlsToOpen(editNodes)
                                        inIncognito:NO
                                             newTab:NO];
@@ -1777,7 +1762,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                              return;
                            if (![strongSelf isIncognitoAvailable])
                              return;
-                           auto editNodes = [strongSelf editNodes];
+                           std::vector<const bookmarks::BookmarkNode*>
+                               editNodes = [strongSelf editNodes];
                            [strongSelf openAllURLs:GetUrlsToOpen(editNodes)
                                        inIncognito:YES
                                             newTab:NO];

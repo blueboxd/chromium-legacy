@@ -117,17 +117,17 @@ BASE_FEATURE(kAutofillAssistantLoadDFMForTriggerScripts,
              "AutofillAssistantLoadDFMForTriggerScripts",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Whether we should force the painting of an invisible tab before attempting
+// to perform a click.
+BASE_FEATURE(kAutofillAssistantPaintInvisibleTabForClick,
+             "AutofillAssistantPaintInvisibleTabForClick",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kAutofillAssistantProactiveHelp,
              "AutofillAssistantProactiveHelp",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables assistant UI (once the feature is enabled, scripts need to use the
-// USE_ASSISTANT_UI=true flag to use the assistant UI).
-BASE_FEATURE(kAutofillAssistantRemoteAssistantUi,
-             "AutofillAssistantRemoteAssistantUi",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Send the Moonracer model version in the client context.
+// Send the Semantic model version in the client context.
 BASE_FEATURE(kAutofillAssistantSendModelVersionInClientContext,
              "AutofillAssistantSendModelVersionInClientContext",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -176,6 +176,13 @@ BASE_FEATURE(kAutofillAssistantCudFilterProfiles,
 // we are confident using DidFinishNavigation is working properly. b/243897243
 BASE_FEATURE(kAutofillAssistantUseDidFinishNavigation,
              "AutofillAssistantUseDidFinishNavigation",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables fast shutdown, where the UI is hidden immediately after tapping the
+// DONE chip. This relies on some assumptions about scripts, so we'll keep this
+// behind a feature flag to have a way to turn it off if necessary.
+BASE_FEATURE(kAutofillAssistantFastShutdown,
+             "AutofillAssistantFastShutdown",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features

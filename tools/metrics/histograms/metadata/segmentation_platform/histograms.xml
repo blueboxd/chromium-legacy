@@ -94,7 +94,10 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="SegmentationPlatform.AdaptiveToolbar.ModelScore.{SegmentID}"
-    units="%" expires_after="2023-03-21">
+    units="%" expires_after="2022-10-24">
+  <obsolete>
+    Deprecated as of 2022-10-24.
+  </obsolete>
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -135,6 +138,32 @@ chromium-metrics-reviews@google.com.
     after a model evaluation completes. Recorded only if the selected segment
     switches to a new value.
   </summary>
+</histogram>
+
+<histogram name="SegmentationPlatform.DeviceCountByOsType.{OsType}"
+    units="devices" expires_after="2023-10-20">
+  <owner>junzou@chromium.org</owner>
+  <owner>ssid@chromium.org</owner>
+  <owner>chrome-segmentation-team@google.com</owner>
+  <summary>
+    The number of active syncing devices of type {OsType} known to any profile.
+    Each device is identified by one unique guid. No deduping is applied. May be
+    0 when there are no signed in/syncing profiles open. Recorded once on
+    browser startup iff DeviceInfo sync is enabled. Note that the threshold on
+    the number of days for determining active statuses may change based on the
+    config of the kSegmentationDeviceCountByOsType feature.
+  </summary>
+  <token key="OsType">
+    <variant name="Android"/>
+    <variant name="ChromeOsAsh"/>
+    <variant name="ChromeOsLacros"/>
+    <variant name="Fuchsia"/>
+    <variant name="iOS"/>
+    <variant name="Linux"/>
+    <variant name="Mac"/>
+    <variant name="Unknown"/>
+    <variant name="Windows"/>
+  </token>
 </histogram>
 
 <histogram
@@ -402,7 +431,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SegmentationPlatform.ModelExecution.Result.{SegmentationModel}"
-    units="%" expires_after="2023-03-21">
+    units="score" expires_after="2023-03-21">
   <owner>nyquist@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
@@ -475,7 +504,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SegmentationPlatform.ModelScore.{SegmentID}" units="%"
-    expires_after="2023-03-21">
+    expires_after="2022-10-24">
+  <obsolete>
+    Deprecated as of 2022-10-24.
+  </obsolete>
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>

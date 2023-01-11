@@ -408,9 +408,9 @@ std::vector<uint8_t> SSLClientSocketImpl::GetECHRetryConfigs() {
   return std::vector<uint8_t>(retry_configs, retry_configs + retry_configs_len);
 }
 
-int SSLClientSocketImpl::ExportKeyingMaterial(const base::StringPiece& label,
+int SSLClientSocketImpl::ExportKeyingMaterial(base::StringPiece label,
                                               bool has_context,
-                                              const base::StringPiece& context,
+                                              base::StringPiece context,
                                               unsigned char* out,
                                               unsigned int outlen) {
   if (!IsConnected())
@@ -805,6 +805,9 @@ int SSLClientSocketImpl::Init() {
       ssl_config_.version_max_override.value_or(context_->config().version_max);
   DCHECK_LT(SSL3_VERSION, version_min);
   DCHECK_LT(SSL3_VERSION, version_max);
+  if (base::FeatureList::IsEnabled(features::kSSLMinVersionAtLeastTLS12)) {
+    version_min = std::max<uint16_t>(version_min, TLS1_2_VERSION);
+  }
   if (!SSL_set_min_proto_version(ssl_.get(), version_min) ||
       !SSL_set_max_proto_version(ssl_.get(), version_max)) {
     return ERR_UNEXPECTED;
@@ -1652,6 +1655,17 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
 
 #if BUILDFLAG(IS_IOS)
   // TODO(droger): Support client auth on iOS. See http://crbug.com/145954).
+  //
+  // Historically this was disabled because client auth required
+  // platform-specific code deep in //net. Nowadays, this is abstracted away and
+  // we could enable the interfaces on iOS for platform-independence. However,
+  // merely enabling them changes our behavior from automatically proceeding
+  // with no client certificate to raising
+  // `URLRequest::Delegate::OnCertificateRequested`. Callers would need to be
+  // updated to apply that behavior manually.
+  //
+  // If fixing this, re-enable the tests in ssl_client_socket_unittest.cc and
+  // ssl_server_socket_unittest.cc which are disabled on iOS.
   LOG(WARNING) << "Client auth is not supported";
 #else   // !BUILDFLAG(IS_IOS)
   if (!send_client_cert_) {

@@ -12,6 +12,7 @@
 #include "ash/webui/personalization_app/personalization_app_url_constants.h"
 #include "ash/webui/personalization_app/personalization_app_user_provider.h"
 #include "ash/webui/personalization_app/personalization_app_wallpaper_provider.h"
+#include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -55,6 +56,7 @@ class MockPersonalizationAppAmbientProvider
                bool selected),
               (override));
   MOCK_METHOD(void, SetPageViewed, (), (override));
+  MOCK_METHOD(void, StartScreenSaverPreview, (), (override));
   MOCK_METHOD(void, FetchSettingsAndAlbums, (), (override));
 };
 
@@ -118,6 +120,10 @@ class MockPersonalizationAppWallpaperProvider
                   ash::personalization_app::mojom::WallpaperProvider> receiver),
               (override));
   bool IsEligibleForGooglePhotos() override { return true; }
+  void GetWallpaperAsJpegBytes(
+      content::WebUIDataSource::GotDataCallback callback) override {
+    std::move(callback).Run(base::MakeRefCounted<base::RefCountedBytes>());
+  }
   MOCK_METHOD(void, MakeTransparent, (), (override));
   MOCK_METHOD(void, MakeOpaque, (), (override));
   MOCK_METHOD(void,
@@ -201,7 +207,8 @@ class MockPersonalizationAppWallpaperProvider
               (override));
   MOCK_METHOD(void,
               SetDailyRefreshCollectionId,
-              (const std::string& collection_id),
+              (const std::string& collection_id,
+               SetDailyRefreshCollectionIdCallback callback),
               (override));
   MOCK_METHOD(void,
               GetDailyRefreshCollectionId,

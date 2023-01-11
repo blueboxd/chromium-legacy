@@ -150,6 +150,21 @@ source_set("heuristics_provider") {
   ]
 }
 
+source_set("heuristics_provider_unittests") {
+  testonly = true
+  sources = [ "heuristics/commerce_heuristics_provider_unittest.cc" ]
+  deps = [
+    ":feature_list",
+    ":heuristics_provider",
+    "//base",
+    "//base/test:test_support",
+    "//components/prefs:test_support",
+    "//testing/gtest",
+    "//third_party/re2:re2",
+    "//url:url",
+  ]
+}
+
 static_library("shopping_service") {
   sources = [
     "bookmark_update_manager.cc",
@@ -187,11 +202,12 @@ static_library("shopping_service") {
     "//components/resources:components_resources_grit",
     "//components/session_proto_db:core",
     "//components/signin/public/identity_manager:identity_manager",
-    "//services/data_decoder/public/cpp",
     "//services/network/public/cpp:cpp",
     "//ui/base",
     "//url:url",
   ]
+
+  public_deps = [ "//services/data_decoder/public/cpp" ]
 
   if (is_android) {
     sources += [
@@ -256,6 +272,7 @@ source_set("shopping_service_unit_tests") {
     "metrics/scheduled_metrics_manager_unittest.cc",
     "pdp_metrics_unittest.cc",
     "price_tracking_utils_unittest.cc",
+    "shopping_power_bookmark_data_provider_unittest.cc",
     "shopping_service_metrics_unittest.cc",
     "shopping_service_unittest.cc",
   ]

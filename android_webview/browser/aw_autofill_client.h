@@ -21,11 +21,11 @@ namespace autofill {
 class AutocompleteHistoryManager;
 class AutofillDriver;
 class AutofillPopupDelegate;
-class CardUnmaskDelegate;
 class CreditCard;
 class FormStructure;
 class PersonalDataManager;
 class StrikeDatabase;
+struct CardUnmaskPromptOptions;
 }  // namespace autofill
 
 namespace content {
@@ -61,7 +61,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   ~AwAutofillClient() override;
 
   void SetSaveFormData(bool enabled);
-  bool GetSaveFormData();
+  bool GetSaveFormData() const;
 
   // AutofillClient:
   autofill::PersonalDataManager* GetPersonalDataManager() override;
@@ -85,7 +85,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   void ShowAutofillSettings(bool show_credit_card_settings) override;
   void ShowUnmaskPrompt(
       const autofill::CreditCard& card,
-      UnmaskCardReason reason,
+      const autofill::CardUnmaskPromptOptions& card_unmask_prompt_options,
       base::WeakPtr<autofill::CardUnmaskDelegate> delegate) override;
   void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
   void ConfirmAccountNameFixFlow(
@@ -124,7 +124,8 @@ class AwAutofillClient : public autofill::AutofillClient,
   void HideFastCheckout() override;
   bool IsTouchToFillCreditCardSupported() override;
   bool ShowTouchToFillCreditCard(
-      base::WeakPtr<autofill::TouchToFillDelegate> delegate) override;
+      base::WeakPtr<autofill::TouchToFillDelegate> delegate,
+      base::span<const autofill::CreditCard* const> cards_to_suggest) override;
   void HideTouchToFillCreditCard() override;
   void ShowAutofillPopup(
       const autofill::AutofillClient::PopupOpenArgs& open_args,
@@ -138,7 +139,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   void UpdatePopup(const std::vector<autofill::Suggestion>& suggestions,
                    autofill::PopupType popup_type) override;
   void HideAutofillPopup(autofill::PopupHidingReason reason) override;
-  bool IsAutocompleteEnabled() override;
+  bool IsAutocompleteEnabled() const override;
   bool IsPasswordManagerEnabled() override;
   void PropagateAutofillPredictions(
       autofill::AutofillDriver* driver,
@@ -150,6 +151,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   bool AreServerCardsSupported() const override;
   void ExecuteCommand(int id) override;
   void OpenPromoCodeOfferDetailsURL(const GURL& url) override;
+  autofill::FormInteractionsFlowId GetCurrentFormInteractionsFlowId() override;
 
   // RiskDataLoader:
   void LoadRiskData(

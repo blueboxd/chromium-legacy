@@ -122,6 +122,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void OnStateChanged(AssistantManagerService::State new_state) override;
 
   void UpdateAssistantManagerState();
+  void ScheduleUpdateAssistantManagerState();
 
   CoreAccountInfo RetrievePrimaryAccountInfo() const;
   void RequestAccessToken();
@@ -136,6 +137,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void FinalizeAssistantManagerService();
 
   void StopAssistantManagerService();
+
+  void OnLibassistantServiceStopped();
+  void OnLibassistantServiceDisconnected();
 
   void AddAshSessionObserver();
 
@@ -152,6 +156,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   void LoadLibassistant();
   void OnLibassistantLoaded(bool success);
+
+  void ClearAfterStop();
 
   // |ServiceContext| object passed to child classes so they can access some of
   // our functionality without depending on us.

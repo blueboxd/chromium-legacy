@@ -15,8 +15,10 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "content/common/content_export.h"
 #include "content/public/common/alternative_error_page_override_info.mojom.h"
 #include "content/public/common/content_client.h"
@@ -60,9 +62,11 @@ struct WebURLError;
 enum class ProtocolHandlerSecurityLevel;
 }  // namespace blink
 
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
 namespace cast_streaming {
 class ResourceProvider;
 }  // namespace cast_streaming
+#endif
 
 namespace media {
 class DecoderFactory;
@@ -180,7 +184,7 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual std::unique_ptr<media::Demuxer> OverrideDemuxerForUrl(
       RenderFrame* render_frame,
       const GURL& url,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // Allows the embedder to provide a WebSocketHandshakeThrottleProvider. If it
   // returns NULL then none will be used.
@@ -419,10 +423,12 @@ class CONTENT_EXPORT ContentRendererClient {
       base::RepeatingCallback<media::GpuVideoAcceleratorFactories*()>
           get_gpu_factories_cb);
 
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
   // Creates a new cast_streaming::ResourceProvider. Will only be called once
   // per RenderFrame.
   virtual std::unique_ptr<cast_streaming::ResourceProvider>
   CreateCastStreamingResourceProvider();
+#endif
 };
 
 }  // namespace content

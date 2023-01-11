@@ -9,6 +9,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.RectF;
+import android.util.FloatProperty;
 
 import androidx.annotation.VisibleForTesting;
 import androidx.core.content.res.ResourcesCompat;
@@ -27,7 +28,6 @@ import org.chromium.chrome.browser.compositor.layouts.components.TintedComposito
 import org.chromium.chrome.browser.compositor.overlays.strip.TabLoadTracker.TabLoadTrackerCallback;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.animation.CompositorAnimator;
-import org.chromium.chrome.browser.layouts.animation.FloatProperty;
 import org.chromium.chrome.browser.layouts.components.VirtualView;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.styles.ChromeColors;
@@ -462,6 +462,21 @@ public class StripLayoutTab implements VirtualView {
      */
     public float getBrightness() {
         return mBrightness;
+    }
+
+    /**
+     * @param foreground Whether or not this tab is a foreground tab.
+     * @return The fraction (from 0.f to 1.f) of how opaque the tab should be.
+     */
+    public float getOpacity(boolean foreground) {
+        if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+            if (foreground) {
+                return 1.0f;
+            } else {
+                return 0.0f;
+            }
+        }
+        return 1.0f;
     }
 
     /**

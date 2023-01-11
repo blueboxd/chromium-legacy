@@ -96,8 +96,7 @@ TEST(AutofillShadowPredictionComparisonTest, ComparisonContainsAllTypes) {
   // If this test fails after adding a type, update
   // `AutofillPredictionsComparisonResult` in tools/metrics/histograms/enums.xml
   // and set `last_known_type` to the last entry in the enum.
-  constexpr ServerFieldType last_known_type =
-      CREDIT_CARD_STANDALONE_VERIFICATION_CODE;
+  constexpr ServerFieldType last_known_type = NUMERIC_QUANTITY;
   int max_comparison =
       GetShadowPrediction(last_known_type, NAME_FIRST, {NAME_LAST});
 
@@ -115,7 +114,7 @@ class AutofillShadowPredictionMetricsTest
  public:
   AutofillShadowPredictionMetricsTest() {
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {base::test::ScopedFeatureList::FeatureAndParams(
+        {base::test::FeatureRefAndParams(
             features::kAutofillParsingPatternProvider,
             {{"prediction_source", "default"}})},
         {});

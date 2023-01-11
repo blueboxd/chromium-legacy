@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/hid/hid_connection_resource.h"
 #include "extensions/browser/api/hid/hid_device_manager.h"
@@ -39,7 +38,7 @@ class HidGetDevicesFunction : public ExtensionFunction {
   // ExtensionFunction:
   ResponseAction Run() override;
 
-  void OnEnumerationComplete(std::unique_ptr<base::ListValue> devices);
+  void OnEnumerationComplete(base::Value::List devices);
 };
 
 class HidGetUserSelectedDevicesFunction : public ExtensionFunction {

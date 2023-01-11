@@ -4,9 +4,11 @@
 
 #include "components/heap_profiling/in_process/heap_profiler_parameters.h"
 
+#include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "components/metrics/call_stack_profile_params.h"
+#include "components/variations/variations_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -95,7 +97,33 @@ TEST(HeapProfilerParametersTest, ParseInvalidParameters) {
   EXPECT_FALSE(params.is_supported);
 }
 
+// Test that heap profiling is not supported for any process type when
+// --enable-benchmarking is specified on the command line.
+TEST(HeapProfilerParametersTest, EnableBenchmarking) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      variations::switches::kEnableBenchmarking);
+
+  using Process = metrics::CallStackProfileParams::Process;
+  EXPECT_FALSE(GetDefaultHeapProfilerParameters().is_supported);
+  EXPECT_FALSE(
+      GetHeapProfilerParametersForProcess(Process::kBrowser).is_supported);
+  EXPECT_FALSE(GetHeapProfilerParametersForProcess(Process::kGpu).is_supported);
+  EXPECT_FALSE(
+      GetHeapProfilerParametersForProcess(Process::kRenderer).is_supported);
+  EXPECT_FALSE(
+      GetHeapProfilerParametersForProcess(Process::kUtility).is_supported);
+  EXPECT_FALSE(GetHeapProfilerParametersForProcess(Process::kNetworkService)
+                   .is_supported);
+}
+
 TEST(HeapProfilerParametersTest, ApplyParameters) {
+  constexpr char kDefaultParams[] = R"({
+    "is-supported": false,
+    "stable-probability": 0.1,
+    "nonstable-probability": 0.2,
+    "sampling-rate-bytes": 1000,
+    "collection-interval-minutes": 15,
+  })";
   constexpr char kBrowserParams[] = R"({
     "sampling-rate-bytes": 1001,
   })";
@@ -111,21 +139,13 @@ TEST(HeapProfilerParametersTest, ApplyParameters) {
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeatureWithParameters(
-      kHeapProfilerReporting,
-      {
-          // Default parameters.
-          {"supported-processes", "renderer;utility"},
-          {"stable-probability", "0.1"},
-          {"nonstable-probability", "0.2"},
-          {"sampling-rate", "1000"},
-          {"heap-profiler-collection-interval-minutes", "15"},
-
-          // Process-specific overrides.
-          {"browser-process-params", kBrowserParams},
-          {"gpu-process-params", kGPUParams},
-          {"renderer-process-params", kRendererParams},
-          {"utility-process-params", "{}"},
-      });
+      kHeapProfilerReporting, {
+                                  {"default-params", kDefaultParams},
+                                  {"browser-process-params", kBrowserParams},
+                                  {"gpu-process-params", kGPUParams},
+                                  {"renderer-process-params", kRendererParams},
+                                  {"utility-process-params", "{}"},
+                              });
 
   EXPECT_THAT(GetDefaultHeapProfilerParameters(),
               MatchesParameters({
@@ -139,7 +159,6 @@ TEST(HeapProfilerParametersTest, ApplyParameters) {
   using Process = metrics::CallStackProfileParams::Process;
   EXPECT_THAT(GetHeapProfilerParametersForProcess(Process::kBrowser),
               MatchesParameters({
-                  // Not in "supported-processes" and not overridden.
                   .is_supported = false,
                   .stable_probability = 0.1,
                   .nonstable_probability = 0.2,
@@ -149,7 +168,6 @@ TEST(HeapProfilerParametersTest, ApplyParameters) {
 
   EXPECT_THAT(GetHeapProfilerParametersForProcess(Process::kGpu),
               MatchesParameters({
-                  // Not in "supported-processes" but overridden to true.
                   .is_supported = true,
                   .stable_probability = 0.1,
                   .nonstable_probability = 0.2,
@@ -159,7 +177,6 @@ TEST(HeapProfilerParametersTest, ApplyParameters) {
 
   EXPECT_THAT(GetHeapProfilerParametersForProcess(Process::kRenderer),
               MatchesParameters({
-                  // In "supported-processes", but overridden to false.
                   .is_supported = false,
                   .stable_probability = 0.1,
                   .nonstable_probability = 0.2,
@@ -169,8 +186,7 @@ TEST(HeapProfilerParametersTest, ApplyParameters) {
 
   EXPECT_THAT(GetHeapProfilerParametersForProcess(Process::kUtility),
               MatchesParameters({
-                  // In "supported-processes".
-                  .is_supported = true,
+                  .is_supported = false,
                   .stable_probability = 0.1,
                   .nonstable_probability = 0.2,
                   .sampling_rate_bytes = 1000,
@@ -179,13 +195,37 @@ TEST(HeapProfilerParametersTest, ApplyParameters) {
 
   EXPECT_THAT(GetHeapProfilerParametersForProcess(Process::kNetworkService),
               MatchesParameters({
-                  // Not in "supported-processes" and not overridden.
                   .is_supported = false,
                   .stable_probability = 0.1,
                   .nonstable_probability = 0.2,
                   .sampling_rate_bytes = 1000,
                   .collection_interval = base::Minutes(15),
               }));
+}
+
+TEST(HeapProfilerParametersTest, ApplyInvalidParameters) {
+  constexpr char kDefaultParams[] = R"({
+    "is-supported": true,
+    "collection-interval-minutes": "unexpected string",
+  })";
+  // Ensure that valid per-process params don't overwrite invalid default
+  // params.
+  constexpr char kBrowserParams[] = R"({
+    "is-supported": true,
+    "collection-interval-minutes": 1,
+  })";
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      kHeapProfilerReporting, {
+                                  {"default-params", kDefaultParams},
+                                  {"browser-process-params", kBrowserParams},
+                              });
+
+  EXPECT_FALSE(GetDefaultHeapProfilerParameters().is_supported);
+  EXPECT_FALSE(GetHeapProfilerParametersForProcess(
+                   metrics::CallStackProfileParams::Process::kBrowser)
+                   .is_supported);
 }
 
 }  // namespace

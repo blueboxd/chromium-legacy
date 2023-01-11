@@ -21,6 +21,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/back_forward_cache/disabled_reason_id.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -30,6 +31,7 @@
 #include "content/browser/devtools/protocol/emulation_handler.h"
 #include "content/browser/devtools/protocol/handler_helpers.h"
 #include "content/browser/manifest/manifest_manager_host.h"
+#include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
 #include "content/browser/renderer_host/back_forward_cache_disable.h"
 #include "content/browser/renderer_host/back_forward_cache_metrics.h"
@@ -67,7 +69,6 @@
 #include "ui/gfx/codec/webp_codec.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_util.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/snapshot/snapshot.h"
 
@@ -88,36 +89,50 @@ constexpr char kCommandIsOnlyAvailableAtTopTarget[] =
 constexpr char kErrorNotAttached[] = "Not attached to a page";
 constexpr char kErrorInactivePage[] = "Not attached to an active page";
 
-Binary EncodeImage(const gfx::Image& image,
-                   const std::string& format,
-                   int quality) {
-  DCHECK(!image.IsEmpty());
+using BitmapEncoder =
+    base::RepeatingCallback<bool(const SkBitmap& bitmap,
+                                 std::vector<uint8_t>& output)>;
 
-  scoped_refptr<base::RefCountedMemory> data;
-  if (format == protocol::Page::CaptureScreenshot::FormatEnum::Png) {
-    data = image.As1xPNGBytes();
-  } else if (format == Page::CaptureScreenshot::FormatEnum::Jpeg) {
-    auto bytes = base::MakeRefCounted<base::RefCountedBytes>();
-    if (gfx::JPEG1xEncodedDataFromImage(image, quality, &bytes->data()))
-      data = bytes;
-  } else if (format == Page::CaptureScreenshot::FormatEnum::Webp) {
-    auto bytes = base::MakeRefCounted<base::RefCountedBytes>();
-    if (gfx::WebpEncodedDataFromImage(image, quality, &bytes->data()))
-      data = bytes;
-  } else {
-    NOTREACHED();
-  }
-
-  if (!data || !data->front())
-    return protocol::Binary();
-
-  return Binary::fromRefCounted(data);
+bool EncodeBitmapAsPngSlow(const SkBitmap& bitmap,
+                           std::vector<uint8_t>& output) {
+  TRACE_EVENT0("devtools", "EncodeBitmapAsPngSlow");
+  return gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &output);
 }
 
-Binary EncodeSkBitmap(const SkBitmap& image,
-                      const std::string& format,
-                      int quality) {
-  return EncodeImage(gfx::Image::CreateFrom1xBitmap(image), format, quality);
+bool EncodeBitmapAsPngFast(const SkBitmap& bitmap,
+                           std::vector<uint8_t>& output) {
+  TRACE_EVENT0("devtools", "EncodeBitmapAsPngFast");
+  return gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, false, &output);
+}
+
+bool EncodeBitmapAsJpeg(int quality,
+                        const SkBitmap& bitmap,
+                        std::vector<uint8_t>& output) {
+  TRACE_EVENT0("devtools", "EncodeBitmapAsJpeg");
+  return gfx::JPEGCodec::Encode(bitmap, quality, &output);
+}
+
+bool EncodeBitmapAsWebp(int quality,
+                        const SkBitmap& bitmap,
+                        std::vector<uint8_t>& output) {
+  TRACE_EVENT0("devtools", "EncodeBitmapAsWebp");
+  return gfx::WebpCodec::Encode(bitmap, quality, &output);
+}
+
+absl::variant<protocol::Response, BitmapEncoder>
+GetEncoder(const std::string& format, int quality, bool optimize_for_speed) {
+  if (quality < 0 || quality > 100)
+    quality = kDefaultScreenshotQuality;
+
+  if (format == protocol::Page::CaptureScreenshot::FormatEnum::Png) {
+    return base::BindRepeating(optimize_for_speed ? EncodeBitmapAsPngFast
+                                                  : EncodeBitmapAsPngSlow);
+  }
+  if (format == protocol::Page::CaptureScreenshot::FormatEnum::Jpeg)
+    return base::BindRepeating(&EncodeBitmapAsJpeg, quality);
+  if (format == protocol::Page::CaptureScreenshot::FormatEnum::Webp)
+    return base::BindRepeating(&EncodeBitmapAsWebp, quality);
+  return protocol::Response::InvalidParams("Invalid image format");
 }
 
 std::unique_ptr<Page::ScreencastFrameMetadata> BuildScreencastFrameMetadata(
@@ -207,8 +222,6 @@ PageHandler::PageHandler(
       navigation_initiator_origin_(navigation_initiator_origin),
       may_read_local_files_(may_read_local_files),
       enabled_(false),
-      screencast_enabled_(false),
-      screencast_quality_(kDefaultScreenshotQuality),
       screencast_max_width_(-1),
       screencast_max_height_(-1),
       capture_every_nth_frame_(1),
@@ -282,7 +295,7 @@ void PageHandler::Wire(UberDispatcher* dispatcher) {
 void PageHandler::RenderWidgetHostVisibilityChanged(
     RenderWidgetHost* widget_host,
     bool became_visible) {
-  if (!screencast_enabled_)
+  if (!screencast_encoder_)
     return;
   NotifyScreencastVisibility(became_visible);
 }
@@ -352,10 +365,9 @@ Response PageHandler::Enable() {
 
 Response PageHandler::Disable() {
   enabled_ = false;
-  screencast_enabled_ = false;
   bypass_csp_ = false;
 
-  video_consumer_->StopCapture();
+  StopScreencast();
 
   if (!pending_dialog_.is_null()) {
     ResponseOrWebContents result = GetWebContentsForTopLevelActiveFrame();
@@ -625,6 +637,12 @@ void PageHandler::DownloadWillBegin(FrameTreeNode* ftn,
   pending_downloads_.insert(item);
 }
 
+void PageHandler::OnFrameDetached(const base::UnguessableToken& frame_id) {
+  if (!enabled_)
+    return;
+  frontend_->FrameDetached(frame_id.ToString(), "remove");
+}
+
 void PageHandler::OnDownloadDestroyed(download::DownloadItem* item) {
   pending_downloads_.erase(item);
 }
@@ -764,6 +782,7 @@ void PageHandler::CaptureSnapshot(
 void PageHandler::CaptureFullPageScreenshot(
     Maybe<std::string> format,
     Maybe<int> quality,
+    Maybe<bool> optimize_for_speed,
     std::unique_ptr<CaptureScreenshotCallback> callback,
     const gfx::Size& full_page_size) {
   // check width and height for validity
@@ -784,7 +803,7 @@ void PageHandler::CaptureFullPageScreenshot(
                   .Build();
   CaptureScreenshot(std::move(format), std::move(quality), std::move(clip),
                     /*from_surface=*/true, /*capture_beyond_viewport=*/true,
-                    std::move(callback));
+                    std::move(optimize_for_speed), std::move(callback));
 }
 
 void PageHandler::CaptureScreenshot(
@@ -793,6 +812,7 @@ void PageHandler::CaptureScreenshot(
     Maybe<Page::Viewport> clip,
     Maybe<bool> from_surface,
     Maybe<bool> capture_beyond_viewport,
+    Maybe<bool> optimize_for_speed,
     std::unique_ptr<CaptureScreenshotCallback> callback) {
   if (!host_ || !host_->GetRenderWidgetHost() ||
       !host_->GetRenderWidgetHost()->GetView()) {
@@ -809,7 +829,8 @@ void PageHandler::CaptureScreenshot(
         host_->GetAssociatedLocalMainFrame();
     main_frame->GetFullPageSize(base::BindOnce(
         &PageHandler::CaptureFullPageScreenshot, weak_factory_.GetWeakPtr(),
-        std::move(format), std::move(quality), std::move(callback)));
+        std::move(format), std::move(quality), std::move(optimize_for_speed),
+        std::move(callback)));
     return;
   }
   if (clip.isJust()) {
@@ -826,9 +847,14 @@ void PageHandler::CaptureScreenshot(
   }
 
   RenderWidgetHostImpl* widget_host = host_->GetRenderWidgetHost();
-  std::string screenshot_format =
-      format.fromMaybe(Page::CaptureScreenshot::FormatEnum::Png);
-  int screenshot_quality = quality.fromMaybe(kDefaultScreenshotQuality);
+  auto encoder =
+      GetEncoder(format.fromMaybe(Page::CaptureScreenshot::FormatEnum::Png),
+                 quality.fromMaybe(kDefaultScreenshotQuality),
+                 optimize_for_speed.fromMaybe(false));
+  if (absl::holds_alternative<Response>(encoder)) {
+    callback->sendFailure(absl::get<Response>(encoder));
+    return;
+  }
 
   // We don't support clip/emulation when capturing from window, bail out.
   if (!from_surface.fromMaybe(true)) {
@@ -840,8 +866,8 @@ void PageHandler::CaptureScreenshot(
     widget_host->GetSnapshotFromBrowser(
         base::BindOnce(&PageHandler::ScreenshotCaptured,
                        weak_factory_.GetWeakPtr(), std::move(callback),
-                       screenshot_format, screenshot_quality, gfx::Size(),
-                       gfx::Size(), blink::DeviceEmulationParams(),
+                       std::move(absl::get<BitmapEncoder>(encoder)),
+                       gfx::Size(), gfx::Size(), blink::DeviceEmulationParams(),
                        absl::nullopt),
         false);
     return;
@@ -957,8 +983,8 @@ void PageHandler::CaptureScreenshot(
   widget_host->GetSnapshotFromBrowser(
       base::BindOnce(&PageHandler::ScreenshotCaptured,
                      weak_factory_.GetWeakPtr(), std::move(callback),
-                     screenshot_format, screenshot_quality, original_view_size,
-                     requested_image_size, original_params,
+                     std::move(absl::get<BitmapEncoder>(encoder)),
+                     original_view_size, requested_image_size, original_params,
                      maybe_original_web_prefs),
       true);
 }
@@ -975,12 +1001,15 @@ Response PageHandler::StartScreencast(Maybe<std::string> format,
   if (!widget_host)
     return Response::InternalError();
 
-  screencast_enabled_ = true;
-  screencast_format_ =
-      format.fromMaybe(Page::CaptureScreenshot::FormatEnum::Png);
-  screencast_quality_ = quality.fromMaybe(kDefaultScreenshotQuality);
-  if (screencast_quality_ < 0 || screencast_quality_ > 100)
-    screencast_quality_ = kDefaultScreenshotQuality;
+  auto encoder =
+      GetEncoder(format.fromMaybe(Page::CaptureScreenshot::FormatEnum::Png),
+                 quality.fromMaybe(kDefaultScreenshotQuality),
+                 /* optimize_for_speed= */ true);
+  if (absl::holds_alternative<Response>(encoder))
+    return absl::get<Response>(encoder);
+
+  screencast_encoder_ = absl::get<BitmapEncoder>(encoder);
+
   screencast_max_width_ = max_width.fromMaybe(-1);
   screencast_max_height_ = max_height.fromMaybe(-1);
   ++session_id_;
@@ -1009,7 +1038,7 @@ Response PageHandler::StartScreencast(Maybe<std::string> format,
 }
 
 Response PageHandler::StopScreencast() {
-  screencast_enabled_ = false;
+  screencast_encoder_.Reset();
   if (video_consumer_)
     video_consumer_->StopCapture();
   return Response::FallThrough();
@@ -1158,27 +1187,33 @@ void PageHandler::ScreencastFrameCaptured(
   }
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&EncodeSkBitmap, bitmap, screencast_format_,
-                     screencast_quality_),
+      base::BindOnce(
+          [](const SkBitmap& bitmap,
+             BitmapEncoder encoder) -> std::vector<uint8_t> {
+            std::vector<uint8_t> result;
+            encoder.Run(bitmap, result);
+            return result;
+          },
+          bitmap, screencast_encoder_),
       base::BindOnce(&PageHandler::ScreencastFrameEncoded,
                      weak_factory_.GetWeakPtr(), std::move(page_metadata)));
 }
 
 void PageHandler::ScreencastFrameEncoded(
     std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata,
-    const protocol::Binary& data) {
-  if (data.size() == 0) {
+    std::vector<uint8_t> data) {
+  if (data.empty()) {
     --frames_in_flight_;
     return;  // Encode failed.
   }
 
-  frontend_->ScreencastFrame(data, std::move(page_metadata), session_id_);
+  frontend_->ScreencastFrame(Binary::fromVector(std::move(data)),
+                             std::move(page_metadata), session_id_);
 }
 
 void PageHandler::ScreenshotCaptured(
     std::unique_ptr<CaptureScreenshotCallback> callback,
-    const std::string& format,
-    int quality,
+    BitmapEncoder encoder,
     const gfx::Size& original_view_size,
     const gfx::Size& requested_image_size,
     const blink::DeviceEmulationParams& original_emulation_params,
@@ -1202,18 +1237,21 @@ void PageHandler::ScreenshotCaptured(
     return;
   }
 
+  std::vector<uint8_t> encoded_bitmap;
+  const SkBitmap& bitmap = *image.ToSkBitmap();
+
   if (!requested_image_size.IsEmpty() &&
       (image.Width() != requested_image_size.width() ||
        image.Height() != requested_image_size.height())) {
-    const SkBitmap* bitmap = image.ToSkBitmap();
     SkBitmap cropped = SkBitmapOperations::CreateTiledBitmap(
-        *bitmap, 0, 0, requested_image_size.width(),
+        bitmap, 0, 0, requested_image_size.width(),
         requested_image_size.height());
-    gfx::Image croppedImage = gfx::Image::CreateFrom1xBitmap(cropped);
-    callback->sendSuccess(EncodeImage(croppedImage, format, quality));
+    encoder.Run(cropped, encoded_bitmap);
   } else {
-    callback->sendSuccess(EncodeImage(image, format, quality));
+    encoder.Run(bitmap, encoded_bitmap);
   }
+  // TODO(caseq): send failure if we fail to encode?
+  callback->sendSuccess(Binary::fromVector(std::move(encoded_bitmap)));
 }
 
 void PageHandler::GotManifest(std::unique_ptr<GetAppManifestCallback> callback,
@@ -1442,87 +1480,100 @@ Page::BackForwardCacheNotRestoredReason NotRestoredReasonToProtocol(
 }
 
 Page::PrerenderFinalStatus PrerenderFinalStatusToProtocol(
-    PrerenderHost::FinalStatus feature) {
+    PrerenderFinalStatus feature) {
   switch (feature) {
-    case PrerenderHost::FinalStatus::kActivated:
+    case PrerenderFinalStatus::kActivated:
       return Page::PrerenderFinalStatusEnum::Activated;
-    case PrerenderHost::FinalStatus::kAudioOutputDeviceRequested:
+    case PrerenderFinalStatus::kAudioOutputDeviceRequested:
       return Page::PrerenderFinalStatusEnum::AudioOutputDeviceRequested;
-    case PrerenderHost::FinalStatus::kBlockedByClient:
+    case PrerenderFinalStatus::kBlockedByClient:
       return Page::PrerenderFinalStatusEnum::BlockedByClient;
-    case PrerenderHost::FinalStatus::kCancelAllHostsForTesting:
+    case PrerenderFinalStatus::kCancelAllHostsForTesting:
       return Page::PrerenderFinalStatusEnum::CancelAllHostsForTesting;
-    case PrerenderHost::FinalStatus::kClientCertRequested:
+    case PrerenderFinalStatus::kClientCertRequested:
       return Page::PrerenderFinalStatusEnum::ClientCertRequested;
-    case PrerenderHost::FinalStatus::kCrossOriginNavigation:
-      return Page::PrerenderFinalStatusEnum::CrossOriginNavigation;
-    case PrerenderHost::FinalStatus::kCrossOriginRedirect:
-      return Page::PrerenderFinalStatusEnum::CrossOriginRedirect;
-    case PrerenderHost::FinalStatus::kDataSaverEnabled:
+    case PrerenderFinalStatus::kDataSaverEnabled:
       return Page::PrerenderFinalStatusEnum::DataSaverEnabled;
-    case PrerenderHost::FinalStatus::kDestroyed:
+    case PrerenderFinalStatus::kDestroyed:
       return Page::PrerenderFinalStatusEnum::Destroyed;
-    case PrerenderHost::FinalStatus::kDidFailLoad:
+    case PrerenderFinalStatus::kDidFailLoad:
       return Page::PrerenderFinalStatusEnum::DidFailLoad;
-    case PrerenderHost::FinalStatus::kDownload:
+    case PrerenderFinalStatus::kDownload:
       return Page::PrerenderFinalStatusEnum::Download;
-    case PrerenderHost::FinalStatus::kEmbedderTriggeredAndCrossOriginRedirected:
+    case PrerenderFinalStatus::kEmbedderTriggeredAndCrossOriginRedirected:
       return Page::PrerenderFinalStatusEnum::
           EmbedderTriggeredAndCrossOriginRedirected;
-    case PrerenderHost::FinalStatus::kFailToGetMemoryUsage:
+    case PrerenderFinalStatus::kFailToGetMemoryUsage:
       return Page::PrerenderFinalStatusEnum::FailToGetMemoryUsage;
-    case PrerenderHost::FinalStatus::kInProgressNavigation:
+    case PrerenderFinalStatus::kInProgressNavigation:
       return Page::PrerenderFinalStatusEnum::InProgressNavigation;
-    case PrerenderHost::FinalStatus::kInvalidSchemeNavigation:
+    case PrerenderFinalStatus::kInvalidSchemeNavigation:
       return Page::PrerenderFinalStatusEnum::InvalidSchemeNavigation;
-    case PrerenderHost::FinalStatus::kInvalidSchemeRedirect:
+    case PrerenderFinalStatus::kInvalidSchemeRedirect:
       return Page::PrerenderFinalStatusEnum::InvalidSchemeRedirect;
-    case PrerenderHost::FinalStatus::kLoginAuthRequested:
+    case PrerenderFinalStatus::kLoginAuthRequested:
       return Page::PrerenderFinalStatusEnum::LoginAuthRequested;
-    case PrerenderHost::FinalStatus::kLowEndDevice:
+    case PrerenderFinalStatus::kLowEndDevice:
       return Page::PrerenderFinalStatusEnum::LowEndDevice;
-    case PrerenderHost::FinalStatus::kMainFrameNavigation:
+    case PrerenderFinalStatus::kMainFrameNavigation:
       return Page::PrerenderFinalStatusEnum::MainFrameNavigation;
-    case PrerenderHost::FinalStatus::kMaxNumOfRunningPrerendersExceeded:
+    case PrerenderFinalStatus::kMaxNumOfRunningPrerendersExceeded:
       return Page::PrerenderFinalStatusEnum::MaxNumOfRunningPrerendersExceeded;
-    case PrerenderHost::FinalStatus::kMemoryLimitExceeded:
+    case PrerenderFinalStatus::kMemoryLimitExceeded:
       return Page::PrerenderFinalStatusEnum::MemoryLimitExceeded;
-    case PrerenderHost::FinalStatus::kMixedContent:
+    case PrerenderFinalStatus::kMixedContent:
       return Page::PrerenderFinalStatusEnum::MixedContent;
-    case PrerenderHost::FinalStatus::kMojoBinderPolicy:
+    case PrerenderFinalStatus::kMojoBinderPolicy:
       return Page::PrerenderFinalStatusEnum::MojoBinderPolicy;
-    case PrerenderHost::FinalStatus::kNavigationBadHttpStatus:
+    case PrerenderFinalStatus::kNavigationBadHttpStatus:
       return Page::PrerenderFinalStatusEnum::NavigationBadHttpStatus;
-    case PrerenderHost::FinalStatus::kNavigationNotCommitted:
+    case PrerenderFinalStatus::kNavigationNotCommitted:
       return Page::PrerenderFinalStatusEnum::NavigationNotCommitted;
-    case PrerenderHost::FinalStatus::kNavigationRequestBlockedByCsp:
+    case PrerenderFinalStatus::kNavigationRequestBlockedByCsp:
       return Page::PrerenderFinalStatusEnum::NavigationRequestBlockedByCsp;
-    case PrerenderHost::FinalStatus::kNavigationRequestNetworkError:
+    case PrerenderFinalStatus::kNavigationRequestNetworkError:
       return Page::PrerenderFinalStatusEnum::NavigationRequestNetworkError;
-    case PrerenderHost::FinalStatus::kRendererProcessCrashed:
+    case PrerenderFinalStatus::kRendererProcessCrashed:
       return Page::PrerenderFinalStatusEnum::RendererProcessCrashed;
-    case PrerenderHost::FinalStatus::kRendererProcessKilled:
+    case PrerenderFinalStatus::kRendererProcessKilled:
       return Page::PrerenderFinalStatusEnum::RendererProcessKilled;
-    case PrerenderHost::FinalStatus::kSslCertificateError:
+    case PrerenderFinalStatus::kSslCertificateError:
       return Page::PrerenderFinalStatusEnum::SslCertificateError;
-    case PrerenderHost::FinalStatus::kStop:
+    case PrerenderFinalStatus::kStop:
       return Page::PrerenderFinalStatusEnum::Stop;
-    case PrerenderHost::FinalStatus::kTriggerBackgrounded:
+    case PrerenderFinalStatus::kTriggerBackgrounded:
       return Page::PrerenderFinalStatusEnum::TriggerBackgrounded;
-    case PrerenderHost::FinalStatus::kTriggerDestroyed:
+    case PrerenderFinalStatus::kTriggerDestroyed:
       return Page::PrerenderFinalStatusEnum::TriggerDestroyed;
-    case PrerenderHost::FinalStatus::kUaChangeRequiresReload:
+    case PrerenderFinalStatus::kUaChangeRequiresReload:
       return Page::PrerenderFinalStatusEnum::UaChangeRequiresReload;
-    case PrerenderHost::FinalStatus::kHasEffectiveUrl:
+    case PrerenderFinalStatus::kHasEffectiveUrl:
       return Page::PrerenderFinalStatusEnum::HasEffectiveUrl;
-    case PrerenderHost::FinalStatus::kActivatedBeforeStarted:
+    case PrerenderFinalStatus::kActivatedBeforeStarted:
       return Page::PrerenderFinalStatusEnum::ActivatedBeforeStarted;
-    case PrerenderHost::FinalStatus::kInactivePageRestriction:
+    case PrerenderFinalStatus::kInactivePageRestriction:
       return Page::PrerenderFinalStatusEnum::InactivePageRestriction;
-    case PrerenderHost::FinalStatus::kStartFailed:
+    case PrerenderFinalStatus::kStartFailed:
       return Page::PrerenderFinalStatusEnum::StartFailed;
-    case PrerenderHost::FinalStatus::kTimeoutBackgrounded:
+    case PrerenderFinalStatus::kTimeoutBackgrounded:
       return Page::PrerenderFinalStatusEnum::TimeoutBackgrounded;
+    case PrerenderFinalStatus::kCrossSiteRedirect:
+      return Page::PrerenderFinalStatusEnum::CrossSiteRedirect;
+    case PrerenderFinalStatus::kCrossSiteNavigation:
+      return Page::PrerenderFinalStatusEnum::CrossSiteNavigation;
+    case PrerenderFinalStatus::kSameSiteCrossOriginRedirect:
+      return Page::PrerenderFinalStatusEnum::SameSiteCrossOriginRedirect;
+    case PrerenderFinalStatus::kSameSiteCrossOriginNavigation:
+      return Page::PrerenderFinalStatusEnum::SameSiteCrossOriginNavigation;
+    case PrerenderFinalStatus::kSameSiteCrossOriginRedirectNotOptIn:
+      return Page::PrerenderFinalStatusEnum::
+          SameSiteCrossOriginRedirectNotOptIn;
+    case PrerenderFinalStatus::kSameSiteCrossOriginNavigationNotOptIn:
+      return Page::PrerenderFinalStatusEnum::
+          SameSiteCrossOriginNavigationNotOptIn;
+    case PrerenderFinalStatus::kActivationNavigationParameterMismatch:
+      return Page::PrerenderFinalStatusEnum::
+          ActivationNavigationParameterMismatch;
   }
 }
 
@@ -1561,9 +1612,6 @@ Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
     case WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction:
       return Page::BackForwardCacheNotRestoredReasonEnum::
           OutstandingIndexedDBTransaction;
-    case WebSchedulerTrackedFeature::kRequestedNotificationsPermission:
-      return Page::BackForwardCacheNotRestoredReasonEnum::
-          RequestedNotificationsPermission;
     case WebSchedulerTrackedFeature::kRequestedMIDIPermission:
       return Page::BackForwardCacheNotRestoredReasonEnum::
           RequestedMIDIPermission;
@@ -1633,6 +1681,8 @@ Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
       return Page::BackForwardCacheNotRestoredReasonEnum::InjectedJavascript;
     case WebSchedulerTrackedFeature::kInjectedStyleSheet:
       return Page::BackForwardCacheNotRestoredReasonEnum::InjectedStyleSheet;
+    case WebSchedulerTrackedFeature::kKeepaliveRequest:
+      return Page::BackForwardCacheNotRestoredReasonEnum::KeepaliveRequest;
     case WebSchedulerTrackedFeature::kDummy:
       // This is a test only reason and should never be called.
       NOTREACHED();
@@ -1785,13 +1835,13 @@ Page::BackForwardCacheNotRestoredReasonType MapNotRestoredReasonToType(
     case Reason::kBrowsingInstanceNotSwapped:
     case Reason::kBackForwardCacheDisabledForDelegate:
     case Reason::kServiceWorkerUnregistration:
-    case Reason::kCacheControlNoStore:
-    case Reason::kCacheControlNoStoreCookieModified:
-    case Reason::kCacheControlNoStoreHTTPOnlyCookieModified:
     case Reason::kNoResponseHead:
     case Reason::kErrorDocument:
     case Reason::kFencedFramesEmbedder:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::Circumstantial;
+    case Reason::kCacheControlNoStore:
+    case Reason::kCacheControlNoStoreCookieModified:
+    case Reason::kCacheControlNoStoreHTTPOnlyCookieModified:
     case Reason::kUnloadHandlerExistsInMainFrame:
     case Reason::kUnloadHandlerExistsInSubFrame:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::PageSupportNeeded;
@@ -1828,7 +1878,6 @@ Page::BackForwardCacheNotRestoredReasonType MapBlocklistedFeatureToType(
     case WebSchedulerTrackedFeature::kPortal:
     case WebSchedulerTrackedFeature::kWebNfc:
     case WebSchedulerTrackedFeature::kRequestedStorageAccessGrant:
-    case WebSchedulerTrackedFeature::kRequestedNotificationsPermission:
     case WebSchedulerTrackedFeature::kRequestedMIDIPermission:
     case WebSchedulerTrackedFeature::kRequestedAudioCapturePermission:
     case WebSchedulerTrackedFeature::kRequestedVideoCapturePermission:
@@ -1844,6 +1893,7 @@ Page::BackForwardCacheNotRestoredReasonType MapBlocklistedFeatureToType(
     case WebSchedulerTrackedFeature::kWebSocket:
     case WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet:
     case WebSchedulerTrackedFeature::kSpeechSynthesis:
+    case WebSchedulerTrackedFeature::kKeepaliveRequest:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::SupportPending;
     case WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore:
     case WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoCache:
@@ -1995,12 +2045,12 @@ void PageHandler::DidActivatePrerender(const NavigationRequest& nav_request) {
 
 void PageHandler::DidCancelPrerender(const GURL& prerendering_url,
                                      const std::string& initiating_frame_id,
-                                     PrerenderHost::FinalStatus status,
+                                     PrerenderFinalStatus status,
                                      const std::string& disallowed_api_method) {
   has_dispatched_stored_prerender_activation_ = false;
   if (!enabled_)
     return;
-  DCHECK_NE(status, PrerenderHost::FinalStatus::kActivated);
+  DCHECK_NE(status, PrerenderFinalStatus::kActivated);
   Maybe<std::string> opt_disallowed_api_method =
       disallowed_api_method.empty() ? Maybe<std::string>()
                                     : Maybe<std::string>(disallowed_api_method);

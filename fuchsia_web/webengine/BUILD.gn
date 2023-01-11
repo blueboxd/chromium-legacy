@@ -4,12 +4,14 @@
 
 assert(is_fuchsia)
 
+import("//build/config/chromecast_build.gni")
 import("//build/config/fuchsia/generate_runner_scripts.gni")
 import("//build/config/fuchsia/packaged_content_embedder_excluded_dirs.gni")
 import("//build/config/locales.gni")
 import("//testing/test.gni")
 import("//third_party/fuchsia-sdk/sdk/build/component.gni")
 import("//third_party/fuchsia-sdk/sdk/build/package.gni")
+import("//third_party/widevine/cdm/widevine.gni")
 import("//tools/grit/repack.gni")
 
 # Only allow use by targets in this directory unless explicitly specified.
@@ -17,6 +19,38 @@ visibility = [ ":*" ]
 
 config("web_engine_implementation") {
   defines = [ "WEB_ENGINE_IMPLEMENTATION" ]
+}
+
+_disallowed_cast_deps = [
+  # Only //components/cast/message_port:* should ever be used. Exclude peers.
+  # TODO(fdegans): Extract message_port so this can become just
+  # "//components/cast/*".
+  "//components/cast/api_bindings/*",
+  "//components/cast/named_message_port_connector/*",
+
+  # This component is not currently used.
+  "//components/cast_receiver/*",
+
+  # WebEngine never implements sender functionality.
+  "//third_party/openscreen/src/cast/sender/*",
+]
+
+if (!enable_cast_receiver) {
+  _disallowed_cast_deps += [
+    "//components/cast/*",
+
+    # TODO(crbug.com/1354845): Once this bug is fixed, update this list to
+    # include as much of "//components/cast_streaming/*" with as few individual
+    # exclusions as is reasonable.
+    "//components/cast_streaming/browser/*",
+    "//components/cast_streaming/common/*",
+    "//components/cast_streaming/renderer/*",
+
+    # TODO(crbug.com/1354845): Once this bug is fixed, update this list to
+    # include as much of "//third_party/openscreen/*" with as few individual
+    # exclusions as is reasonable.
+    "//third_party/openscreen/src/cast/receiver/*",
+  ]
 }
 
 _disallowed_extensions_deps = [
@@ -65,7 +99,7 @@ _disallowed_ppapi_deps = [
   "//ppapi/thunk/*",
 ]
 
-# Although `enable_basic_printing` is true on Fuchsia, no code should be linked.
+# Although `enable_printing` is true on Fuchsia, no code should be linked.
 # "//printing:metafile" is used by //third_party/blink/renderer/core and
 # uses "//printing/common/*".
 # "//printing/mojom/*" is allowed because Blink public APIs use its types.
@@ -77,8 +111,9 @@ _disallowed_printing_deps = [
 
 # TODO(crbug.com/1311822): Replace the uses of this in each target with a group
 # that depends on those targets once this is correctly supported.
-_disallowed_deps = _disallowed_extensions_deps + _disallowed_pdf_deps +
-                   _disallowed_ppapi_deps + _disallowed_printing_deps
+_disallowed_deps =
+    _disallowed_cast_deps + _disallowed_extensions_deps + _disallowed_pdf_deps +
+    _disallowed_ppapi_deps + _disallowed_printing_deps
 
 source_set("web_engine_export_from_implementation") {
   public = [ "web_engine_export.h" ]
@@ -143,13 +178,12 @@ component("web_engine_core") {
   assert_no_deps = _disallowed_deps
 
   deps = [
-    ":cast_streaming_receiver",
     ":context_provider",
     ":switches",
     ":web_engine_export_from_implementation",
     "//base",
     "//base:base_static",
-    "//components/cast_streaming/renderer",
+    "//build:chromecast_buildflags",
     "//components/cdm/renderer",
     "//components/client_hints/browser:in_memory",
     "//components/embedder_support",
@@ -158,7 +192,6 @@ component("web_engine_core") {
     "//components/favicon/content",
     "//components/favicon/core",
     "//components/fuchsia_component_support",
-    "//components/fuchsia_legacymetrics",
     "//components/keyed_service/content",
     "//components/media_control/browser",
     "//components/media_control/renderer",
@@ -209,7 +242,7 @@ component("web_engine_core") {
     "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_inspect_cpp",
-    "//third_party/widevine/cdm:headers",
+    "//third_party/widevine/cdm:buildflags",
     "//ui/accessibility",
     "//ui/aura",
     "//ui/base",
@@ -221,6 +254,14 @@ component("web_engine_core") {
     "//ui/wm",
     "//ui/wm/public",
   ]
+
+  if (enable_cast_receiver) {
+    deps += [ "//components/fuchsia_legacymetrics" ]
+  }
+
+  if (enable_widevine) {
+    deps += [ "//third_party/widevine/cdm:headers" ]
+  }
 
   # Technically the PAK files are only data dependencies, but specifying them
   # as |data_deps| causes metadata (.info) files to also be pulled-in to the
@@ -234,6 +275,7 @@ component("web_engine_core") {
   }
 
   public_deps = [
+    "//build:chromecast_buildflags",
     "//content/public/browser",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
@@ -321,6 +363,13 @@ component("web_engine_core") {
     "web_engine_main_delegate.cc",
     "web_engine_main_delegate.h",
   ]
+
+  if (enable_cast_receiver) {
+    deps += [
+      ":cast_streaming_receiver",
+      "//components/cast_streaming/renderer",
+    ]
+  }
 }
 
 source_set("context_provider") {
@@ -352,6 +401,7 @@ source_set("switches") {
     "//fuchsia_web/webinstance_host",
   ]
   deps = [ "//base" ]
+  public_deps = [ "//build:chromecast_buildflags" ]
   sources = [
     "features.h",
     "switches.cc",
@@ -552,7 +602,6 @@ test("web_engine_browsertests") {
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   deps = [
     ":browsertest_core",
-    ":cast_streaming_receiver_browsertests",
     ":switches",
     ":web_engine_core",
     "//components/policy/content:safe_sites_navigation_throttle",
@@ -567,11 +616,11 @@ test("web_engine_browsertests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.element",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.input.virtualkeyboard",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mediacodec",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.input3",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.policy",
     "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
     "//ui/gfx",
     "//ui/ozone",
@@ -582,9 +631,13 @@ test("web_engine_browsertests") {
   additional_manifest_fragments = [
     "//build/config/fuchsia/test/fonts.shard.test-cml",
     "//build/config/fuchsia/test/network.shard.test-cml",
-    "//build/config/fuchsia/test/test_ui_stack.shard.test-cml",
+    "//build/config/fuchsia/test/gfx_test_ui_stack.shard.test-cml",
     "//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml",
   ]
+
+  if (enable_cast_receiver) {
+    deps += [ ":cast_streaming_receiver_browsertests" ]
+  }
 }
 
 # Creates a component manifest based on the production web_instance.cmx, with
@@ -633,6 +686,7 @@ test("web_engine_unittests") {
     ":web_engine_core",
     ":web_engine_unittests_fake_instance_manifest",
     "//base/test:test_support",
+    "//build:chromecast_buildflags",
     "//components/url_rewrite/browser",
     "//components/url_rewrite/common",
     "//components/url_rewrite/mojom",
@@ -649,6 +703,7 @@ test("web_engine_unittests") {
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
     "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
+    "//third_party/widevine/cdm:buildflags",
     "//ui/events:test_support",
     "//ui/ozone",
   ]
@@ -677,7 +732,6 @@ test("web_engine_integration_tests") {
   data = [ "test/data" ]
   deps = [
     ":browsertest_core",
-    ":context_provider_component",
     "//base",
     "//base:test_log_listener_safe",
     "//base/test:test_support",
@@ -699,6 +753,7 @@ test("web_engine_integration_tests") {
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
   ]
+  fuchsia_package_deps = [ ":context_provider_component" ]
   package_deps = [ [
         ":web_engine",
         "web_engine",
@@ -766,21 +821,24 @@ test("web_engine_integration_tests_cfv1") {
 source_set("cast_streaming_receiver") {
   public_deps = [
     "//base",
-    "//components/cast_streaming/browser",
     "//components/cast_streaming/public/mojom",
+    "//mojo/public/cpp/bindings",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
   ]
   deps = [
     ":switches",
     "//components/cast/message_port",
+    "//components/cast_streaming/browser",
     "//components/cast_streaming/public:config_conversions",
     "//url",
   ]
+  public = [
+    "browser/receiver_session_client.h",
+    "common/cast_streaming.h",
+  ]
   sources = [
     "browser/receiver_session_client.cc",
-    "browser/receiver_session_client.h",
     "common/cast_streaming.cc",
-    "common/cast_streaming.h",
   ]
 }
 
@@ -791,6 +849,8 @@ source_set("cast_streaming_receiver_browsertests") {
   deps = [
     ":browsertest_core",
     ":web_engine_core",
+    "//base",
+    "//base/test:test_support",
     "//components/cast/message_port",
     "//components/cast_streaming/test:test_sender",
     "//content/test:test_support",

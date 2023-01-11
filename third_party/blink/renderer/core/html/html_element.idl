@@ -65,6 +65,13 @@
     [ImplementedAs=offsetWidthForBinding] readonly attribute long offsetWidth;
     [ImplementedAs=offsetHeightForBinding] readonly attribute long offsetHeight;
 
+    // The Popover API
+    [MeasureAs=ElementTogglePopover,RuntimeEnabled=HTMLPopoverAttribute,RaisesException] void togglePopover();
+    [MeasureAs=ElementShowPopover,RuntimeEnabled=HTMLPopoverAttribute,RaisesException] void showPopover();
+    [MeasureAs=ElementHidePopover,RuntimeEnabled=HTMLPopoverAttribute,RaisesException] void hidePopover();
+    [CEReactions,RuntimeEnabled=HTMLPopoverAttribute,MeasureAs=AnyPopoverAttribute,Reflect,ReflectOnly=("auto","manual"),ReflectEmpty="auto",ReflectInvalid="manual"] attribute DOMString? popover;
+    [CEReactions,RuntimeEnabled=HTMLPopoverAttribute,Reflect] attribute boolean defaultOpen;
+
     // Non-standard APIs
     [CEReactions, RaisesException=Setter, MeasureAs=HTMLElementInnerText, ImplementedAs=innerTextForBinding] attribute ([TreatNullAs=EmptyString] DOMString or TrustedScript) innerText;
     [CEReactions, RaisesException=Setter, MeasureAs=HTMLElementOuterText] attribute [TreatNullAs=EmptyString] DOMString outerText;

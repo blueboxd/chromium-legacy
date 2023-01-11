@@ -168,7 +168,7 @@ inline bool FontSelectionValue::operator>=(
 
 static inline const FontSelectionValue& ItalicThreshold() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, italicThreshold,
-                                  (20));
+                                  (14));
   return italicThreshold;
 }
 
@@ -189,7 +189,7 @@ static inline const FontSelectionValue& NormalSlopeValue() {
 }
 
 static inline const FontSelectionValue& ItalicSlopeValue() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, italicValue, (20));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, italicValue, (14));
   return italicValue;
 }
 
@@ -484,16 +484,12 @@ struct PLATFORM_EXPORT FontSelectionCapabilitiesHash {
 namespace WTF {
 
 template <>
-struct DefaultHash<blink::FontSelectionCapabilities> {
-  STATIC_ONLY(DefaultHash);
-  typedef blink::FontSelectionCapabilitiesHash Hash;
-};
+struct DefaultHash<blink::FontSelectionCapabilities>
+    : blink::FontSelectionCapabilitiesHash {};
 
 template <>
 struct HashTraits<blink::FontSelectionCapabilities>
-    : SimpleClassHashTraits<blink::FontSelectionCapabilities> {
-  STATIC_ONLY(HashTraits);
-};
+    : SimpleClassHashTraits<blink::FontSelectionCapabilities> {};
 
 }  // namespace WTF
 

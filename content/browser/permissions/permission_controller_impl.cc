@@ -30,9 +30,6 @@ namespace {
 absl::optional<blink::scheduler::WebSchedulerTrackedFeature>
 PermissionToSchedulingFeature(PermissionType permission_name) {
   switch (permission_name) {
-    case PermissionType::NOTIFICATIONS:
-      return blink::scheduler::WebSchedulerTrackedFeature::
-          kRequestedNotificationsPermission;
     case PermissionType::MIDI:
     case PermissionType::MIDI_SYSEX:
       return blink::scheduler::WebSchedulerTrackedFeature::
@@ -66,10 +63,11 @@ PermissionToSchedulingFeature(PermissionType permission_name) {
     case PermissionType::AR:
     case PermissionType::VR:
     case PermissionType::CAMERA_PAN_TILT_ZOOM:
-    case PermissionType::WINDOW_PLACEMENT:
+    case PermissionType::WINDOW_MANAGEMENT:
     case PermissionType::LOCAL_FONTS:
     case PermissionType::DISPLAY_CAPTURE:
     case PermissionType::GEOLOCATION:
+    case PermissionType::NOTIFICATIONS:
       return absl::nullopt;
   }
 }

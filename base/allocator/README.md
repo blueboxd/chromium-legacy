@@ -1,7 +1,7 @@
 This document describes how malloc / new calls are routed in the various Chrome
 platforms.
 
-Bare in mind that the chromium codebase does not always just use `malloc()`.
+Bear in mind that the chromium codebase does not always just use `malloc()`.
 Some examples:
  - Large parts of the renderer (Blink) use two home-brewed allocators,
    PartitionAlloc and BlinkGC (Oilpan).
@@ -15,29 +15,13 @@ Background
 ----------
 The `allocator` target defines at compile-time the platform-specific choice of
 the allocator and extra-hooks which services calls to malloc/new. The relevant
-build-time flags involved are `use_allocator` and `use_allocator_shim`.
+build-time flags involved are `use_allocator_shim` and
+`use_partition_alloc_as_malloc`.
 
-The default choices are as follows:
-
-**Windows**
-`use_allocator: winheap`, the default Windows heap.
-Additionally, `static_library` (i.e. non-component) builds have a shim
-layer wrapping malloc/new, which is controlled by `use_allocator_shim`.
-The shim layer provides extra security features, such as preventing large
-allocations that can hit signed vs. unsigned bugs in third_party code.
-
-**Android**
-`use_allocator: none`, always use the allocator symbols coming from Android's
-libc (Bionic). As it is developed as part of the OS, it is considered to be
-optimized for small devices and more memory-efficient than other choices.
-The actual implementation backing malloc symbols in Bionic is up to the board
-config and can vary (typically *dlmalloc* or *jemalloc* on most Nexus devices).
-
-**Mac/iOS**
-`use_allocator: none`, we always use the system's allocator implementation.
-
-In addition, when building for `asan` / `msan` both the allocator and the shim
-layer are disabled.
+By default, these are true on all platforms except iOS (not yet supported) and
+NaCl (no plan to support).
+Furthermore, when building with a sanitizer (e.g. `asan`, `msan`, ...) both the
+allocator and the shim layer are disabled.
 
 
 Layering and build deps
@@ -86,7 +70,7 @@ a central place.
  - Full documentation: [Allocator shim design doc][url-allocator-shim].
  - Current state: Available and enabled by default on Android, CrOS, Linux,
    Mac OS and Windows.
- - Tracking bug: [https://crbug.com/550886][crbug.com/550886].
+ - Tracking bug: [crbug.com/550886](https://crbug.com/550886).
  - Build-time flag: `use_allocator_shim`.
 
 **Overview of the unified allocator shim**

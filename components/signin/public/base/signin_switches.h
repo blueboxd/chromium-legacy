@@ -25,8 +25,7 @@ BASE_DECLARE_FEATURE(kAccountIdMigration);
 
 #if BUILDFLAG(IS_ANDROID)
 BASE_DECLARE_FEATURE(kAllowSyncOffForChildAccounts);
-BASE_DECLARE_FEATURE(kCreateSigninCheckerBeforeSyncConsentFragment);
-BASE_DECLARE_FEATURE(kGaiaIdInAMF);
+BASE_DECLARE_FEATURE(kGaiaIdCacheInAccountManagerFacade);
 #endif
 
 BASE_DECLARE_FEATURE(kNewSigninRequestHeaderCheckOrder);
@@ -40,10 +39,13 @@ BASE_DECLARE_FEATURE(kEnableFetchingAccountCapabilities);
 BASE_DECLARE_FEATURE(kForceDisableExtendedSyncPromos);
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-BASE_DECLARE_FEATURE(kEnableCbdSignOut);
 BASE_DECLARE_FEATURE(kForceStartupSigninPromo);
-BASE_DECLARE_FEATURE(kTangibleSync);
 #endif
+#if BUILDFLAG(IS_IOS)
+BASE_DECLARE_FEATURE(kEnableCbdSignOut);
+#endif
+
+BASE_DECLARE_FEATURE(kTangibleSync);
 
 }  // namespace switches
 

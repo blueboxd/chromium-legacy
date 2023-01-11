@@ -7,6 +7,7 @@
 #include <memory>
 #include <numeric>
 
+#include "base/containers/adapters.h"
 #include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -254,6 +255,10 @@ void CollectInlinesInternal(ItemsBuilder* builder,
         // block. This is an out-of-flow item whose position is computed
         // automatically.
         builder->AppendOpaque(NGInlineItem::kListMarker, node);
+      } else if (UNLIKELY(node->IsInitialLetterBox())) {
+        builder->AppendOpaque(NGInlineItem::kInitialLetterBox,
+                              kObjectReplacementCharacter, node);
+        builder->SetHasInititialLetterBox();
       } else {
         // For atomic inlines add a unicode "object replacement character" to
         // signal the presence of a non-text object to the unicode bidi
@@ -460,7 +465,7 @@ void NGInlineNode::ShapeTextOrDefer(const NGConstraintSpace& space) const {
   if (ds_controller.AllowDeferredShaping() &&
       !GetLayoutBox()->IsInsideFlowThread() &&
       Style().IsContentVisibilityVisible() &&
-      Style().PageTransitionTag().empty()) {
+      Style().ViewTransitionName().empty()) {
     DCHECK(IsHorizontalWritingMode(Style().GetWritingMode()));
     const LayoutUnit viewport_bottom = ds_controller.CurrentViewportBottom();
     DCHECK_NE(viewport_bottom, kIndefiniteSize) << GetLayoutBox();
@@ -780,8 +785,7 @@ class NGInlineNodeDataEditor final {
 
   template <typename Span1, typename Span2>
   static unsigned MismatchInternal(const Span1& span1, const Span2& span2) {
-    const auto old_new =
-        std::mismatch(span1.begin(), span1.end(), span2.begin(), span2.end());
+    const auto old_new = base::ranges::mismatch(span1, span2);
     return static_cast<unsigned>(old_new.first - span1.begin());
   }
 
@@ -803,8 +807,8 @@ class NGInlineNodeDataEditor final {
 
   template <typename Span1, typename Span2>
   static unsigned MismatchFromEnd(const Span1& span1, const Span2& span2) {
-    const auto old_new = std::mismatch(span1.rbegin(), span1.rend(),
-                                       span2.rbegin(), span2.rend());
+    const auto old_new =
+        base::ranges::mismatch(base::Reversed(span1), base::Reversed(span2));
     return static_cast<unsigned>(old_new.first - span1.rbegin());
   }
 
@@ -1805,7 +1809,9 @@ static LayoutUnit ComputeContentSize(
     }
   };
   FloatsMaxSize floats_max_size(float_input);
-  bool can_compute_max_size_from_min_size = true;
+  // Because `NGLineBreaker` has a special logic for initial letter text,
+  // `ComputeContentSize()` for `kMaxContent` doesn't work well.
+  bool can_compute_max_size_from_min_size = !node.IsInitialLetterBox();
   MaxSizeFromMinSize max_size_from_min_size(items_data, *max_size_cache,
                                             &floats_max_size);
 

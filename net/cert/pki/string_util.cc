@@ -4,10 +4,12 @@
 
 #include "net/cert/pki/string_util.h"
 
-#include "third_party/boringssl/src/include/openssl/mem.h"
-
-#include <algorithm>
+#include <iomanip>
+#include <sstream>
 #include <string>
+
+#include "base/ranges/algorithm.h"
+#include "third_party/boringssl/src/include/openssl/mem.h"
 
 namespace net::string_util {
 
@@ -21,13 +23,10 @@ bool IsAscii(std::string_view str) {
 }
 
 bool IsEqualNoCase(std::string_view str1, std::string_view str2) {
-  if (str1.size() != str2.size()) {
-    return false;
-  }
-  return std::equal(str2.cbegin(), str2.cend(), str1.cbegin(),
-                    [](const unsigned char a, const unsigned char b) {
-                      return OPENSSL_tolower(a) == OPENSSL_tolower(b);
-                    });
+  return base::ranges::equal(str1, str2,
+                             [](const unsigned char a, const unsigned char b) {
+                               return OPENSSL_tolower(a) == OPENSSL_tolower(b);
+                             });
 }
 
 bool EndsWithNoCase(std::string_view str, std::string_view suffix) {
@@ -70,6 +69,23 @@ bool EndsWith(std::string_view str, std::string_view suffix) {
 // TODO(bbe) get rid of this once we can c++20.
 bool StartsWith(std::string_view str, std::string_view prefix) {
   return prefix.size() <= str.size() && prefix == str.substr(0, prefix.size());
+}
+
+std::string HexEncode(const uint8_t* data, size_t length) {
+  std::ostringstream out;
+  for (size_t i = 0; i < length; i++) {
+    out << std::hex << std::setfill('0') << std::setw(2) << std::uppercase
+        << int{data[i]};
+  }
+  return out.str();
+}
+
+// TODO(bbe) get rid of this once extracted to boringssl. Everything else
+// in third_party uses std::to_string
+std::string NumberToDecimalString(int i) {
+  std::ostringstream out;
+  out << std::dec << i;
+  return out.str();
 }
 
 }  // namespace net::string_util

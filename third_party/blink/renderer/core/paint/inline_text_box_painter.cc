@@ -25,10 +25,10 @@
 #include "third_party/blink/renderer/core/paint/highlight_painting_utils.h"
 #include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/selection_bounds_recorder.h"
 #include "third_party/blink/renderer/core/paint/text_decoration_info.h"
 #include "third_party/blink/renderer/core/paint/text_painter.h"
+#include "third_party/blink/renderer/core/paint/timing/paint_timing_detector.h"
 #include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
@@ -445,8 +445,9 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
       decoration_info.emplace(
           local_origin, width, style_to_use,
           /* inline_context */ nullptr, selection_text_decoration,
-          /* font_override */ nullptr, MinimumThickness1(true), 1.0f,
-          inline_text_box_.Root().BaselineType(), decorating_box_style);
+          /* decoration_override */ nullptr, /* font_override */ nullptr,
+          MinimumThickness1(true), 1.0f, inline_text_box_.Root().BaselineType(),
+          decorating_box_style);
       TextDecorationOffset decoration_offset(decoration_info->TargetStyle(),
                                              &inline_text_box_, decorating_box);
       text_painter.PaintDecorationsExceptLineThrough(

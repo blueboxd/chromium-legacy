@@ -8,11 +8,9 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 
-namespace chromecast {
-class RuntimeApplication;
-}  // namespace chromecast
-
 namespace cast_receiver {
+
+class RuntimeApplication;
 
 // Provides callbacks associated with changes to the state
 class ApplicationStateObserver : public base::CheckedObserver {
@@ -22,10 +20,7 @@ class ApplicationStateObserver : public base::CheckedObserver {
   // Called when the foreground application changes. |app| is a valid pointer
   // when application is brought to the foreground and nullptr in all other
   // cases.
-  // TODO(crbug.com/1356310): Factor out a struct/object with only the
-  // properties consumed by observer implementations.
-  virtual void OnForegroundApplicationChanged(
-      chromecast::RuntimeApplication* app) = 0;
+  virtual void OnForegroundApplicationChanged(RuntimeApplication* app) = 0;
 };
 
 }  // namespace cast_receiver

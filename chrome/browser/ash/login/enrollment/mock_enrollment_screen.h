@@ -16,7 +16,7 @@ namespace ash {
 
 class MockEnrollmentScreen : public EnrollmentScreen {
  public:
-  MockEnrollmentScreen(EnrollmentScreenView* view,
+  MockEnrollmentScreen(base::WeakPtr<EnrollmentScreenView> view,
                        const ScreenExitCallback& exit_callback);
   ~MockEnrollmentScreen() override;
 
@@ -30,9 +30,6 @@ class MockEnrollmentScreenView : public EnrollmentScreenView {
  public:
   MockEnrollmentScreenView();
   ~MockEnrollmentScreenView() override;
-
-  void Bind(EnrollmentScreen* screen) override;
-  void Unbind() override;
 
   MOCK_METHOD(void,
               SetEnrollmentConfig,
@@ -48,9 +45,7 @@ class MockEnrollmentScreenView : public EnrollmentScreenView {
   MOCK_METHOD(void, MockBind, (EnrollmentScreen * screen));
   MOCK_METHOD(void, MockUnbind, ());
   MOCK_METHOD(void, ShowSigninScreen, ());
-  MOCK_METHOD(void,
-              ShowUserError,
-              (UserErrorType error_type, const std::string& email));
+  MOCK_METHOD(void, ShowUserError, (const std::string& email));
   MOCK_METHOD(void, ShowEnrollmentDuringTrialNotAllowedError, ());
   MOCK_METHOD(void, ShowSkipConfirmationDialog, ());
   MOCK_METHOD(void,
@@ -69,9 +64,6 @@ class MockEnrollmentScreenView : public EnrollmentScreenView {
   MOCK_METHOD(void, ShowOtherError, (EnterpriseEnrollmentHelper::OtherError));
   MOCK_METHOD(void, ShowEnrollmentStatus, (policy::EnrollmentStatus status));
   MOCK_METHOD(void, Shutdown, ());
-
- private:
-  EnrollmentScreen* screen_ = nullptr;
 };
 
 }  // namespace ash

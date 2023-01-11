@@ -15,8 +15,10 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
@@ -354,12 +356,12 @@ void AddStringsGeneric(base::Value::Dict* dict) {
       IDS_FILE_BROWSER_CANT_RESTORE_TRASHED_MULTIPLE_ITEMS_DIFFERENT_PARENTS);
   SET_STRING("CANT_RESTORE_SOME_ITEMS",
              IDS_FILE_BROWSER_CANT_RESTORE_TRASHED_SOME_ITEMS);
+  SET_STRING("CONFLICT_DIALOG_MESSAGE",
+             IDS_FILE_BROWSER_CONFLICT_DIALOG_MESSAGE);
   SET_STRING("CONFLICT_DIALOG_APPLY_TO_ALL",
              IDS_FILE_BROWSER_CONFLICT_DIALOG_APPLY_TO_ALL);
   SET_STRING("CONFLICT_DIALOG_KEEP_BOTH",
              IDS_FILE_BROWSER_CONFLICT_DIALOG_KEEP_BOTH);
-  SET_STRING("CONFLICT_DIALOG_MESSAGE",
-             IDS_FILE_BROWSER_CONFLICT_DIALOG_MESSAGE);
   SET_STRING("CONFLICT_DIALOG_REPLACE",
              IDS_FILE_BROWSER_CONFLICT_DIALOG_REPLACE);
   SET_STRING("COPY_BUTTON_LABEL", IDS_FILE_BROWSER_COPY_BUTTON_LABEL);
@@ -1041,10 +1043,6 @@ void AddFileManagerFeatureStrings(const std::string& locale,
             base::FeatureList::IsEnabled(arc::kUsbStorageUIFeature));
   dict->Set("ARC_ENABLE_VIRTIO_BLK_FOR_DATA",
             base::FeatureList::IsEnabled(arc::kEnableVirtioBlkForData));
-  dict->Set("CROSTINI_ENABLED",
-            crostini::CrostiniFeatures::Get()->IsEnabled(profile));
-  dict->Set("PLUGIN_VM_ENABLED",
-            plugin_vm::PluginVmFeatures::Get()->IsEnabled(profile));
   dict->Set("FILES_SEARCH_V2",
             base::FeatureList::IsEnabled(chromeos::features::kFilesSearchV2));
   dict->Set("FILES_TRASH_ENABLED",
@@ -1092,4 +1090,12 @@ void AddFileManagerFeatureStrings(const std::string& locale,
 
   dict->Set("UI_LOCALE", locale);
   dict->Set("WEEK_START_FROM", GetLocaleBasedWeekStart());
+  base::Value::List vms;
+  if (crostini::CrostiniFeatures::Get()->IsEnabled(profile)) {
+    vms.Append(crostini::kCrostiniDefaultVmName);
+  }
+  if (plugin_vm::PluginVmFeatures::Get()->IsEnabled(profile)) {
+    vms.Append(plugin_vm::kPluginVmName);
+  }
+  dict->Set("VMS_FOR_SHARING", std::move(vms));
 }

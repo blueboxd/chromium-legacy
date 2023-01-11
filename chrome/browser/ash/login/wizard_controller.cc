@@ -89,6 +89,7 @@
 #include "chrome/browser/ash/login/screens/packaged_license_screen.h"
 #include "chrome/browser/ash/login/screens/pin_setup_screen.h"
 #include "chrome/browser/ash/login/screens/recommend_apps_screen.h"
+#include "chrome/browser/ash/login/screens/recovery_eligibility_screen.h"
 #include "chrome/browser/ash/login/screens/reset_screen.h"
 #include "chrome/browser/ash/login/screens/saml_confirm_password_screen.h"
 #include "chrome/browser/ash/login/screens/signin_fatal_error_screen.h"
@@ -124,63 +125,65 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/webui/chromeos/login/active_directory_login_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/active_directory_password_change_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/auto_enrollment_check_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/consolidated_consent_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/cryptohome_recovery_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/demo_setup_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/family_link_notice_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/fingerprint_setup_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_password_changed_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/gesture_navigation_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/guest_tos_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/hardware_data_collection_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/lacros_data_backward_migration_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/lacros_data_migration_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/local_state_error_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/locale_switch_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/management_transition_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/multidevice_setup_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/offline_login_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/chromeos/login/os_install_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/os_trial_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/packaged_license_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/parental_handoff_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/pin_setup_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/quick_start_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/saml_confirm_password_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/signin_fatal_error_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/smart_privacy_protection_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/theme_selection_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/tpm_error_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/active_directory_login_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/active_directory_password_change_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/app_downloading_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/app_launch_splash_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/arc_terms_of_service_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/assistant_optin_flow_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/auto_enrollment_check_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/consolidated_consent_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/cryptohome_recovery_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/demo_preferences_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/demo_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/device_disabled_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/enable_adb_sideloading_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/enable_debugging_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/encryption_migration_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/enrollment_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/eula_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/family_link_notice_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/fingerprint_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/gaia_password_changed_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/gesture_navigation_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/guest_tos_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/hardware_data_collection_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/hid_detection_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/kiosk_autolaunch_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/kiosk_enable_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/lacros_data_backward_migration_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/lacros_data_migration_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/local_state_error_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/locale_switch_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/management_transition_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/marketing_opt_in_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/multidevice_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/network_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/offline_login_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/ash/login/os_install_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/os_trial_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/packaged_license_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/parental_handoff_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/pin_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/quick_start_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/recommend_apps_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/recovery_eligibility_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/reset_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/saml_confirm_password_handler.h"
+#include "chrome/browser/ui/webui/ash/login/signin_fatal_error_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/smart_privacy_protection_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/sync_consent_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/terms_of_service_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/theme_selection_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/tpm_error_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/update_required_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/update_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/user_creation_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/welcome_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/wrong_hwid_screen_handler.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -240,38 +243,38 @@ constexpr char kLegacyUpdateScreenName[] = "update";
 
 // Stores the list of all screens that should be shown when resuming OOBE.
 const StaticOobeScreenId kResumableOobeScreens[] = {
-    chromeos::WelcomeView::kScreenId,
-    chromeos::NetworkScreenView::kScreenId,
-    chromeos::UpdateView::kScreenId,
-    chromeos::EulaView::kScreenId,
+    WelcomeView::kScreenId,
+    NetworkScreenView::kScreenId,
+    UpdateView::kScreenId,
+    EulaView::kScreenId,
     chromeos::EnrollmentScreenView::kScreenId,
     chromeos::AutoEnrollmentCheckScreenView::kScreenId,
 };
 
 const StaticOobeScreenId kResumablePostLoginScreens[] = {
-    chromeos::TermsOfServiceScreenView::kScreenId,
-    chromeos::SyncConsentScreenView::kScreenId,
-    chromeos::HWDataCollectionView::kScreenId,
-    chromeos::FingerprintSetupScreenView::kScreenId,
-    chromeos::GestureNavigationScreenView::kScreenId,
-    chromeos::ArcTermsOfServiceScreenView::kScreenId,
-    chromeos::RecommendAppsScreenView::kScreenId,
-    chromeos::PinSetupScreenView::kScreenId,
-    chromeos::MarketingOptInScreenView::kScreenId,
-    chromeos::MultiDeviceSetupScreenView::kScreenId,
-    chromeos::ConsolidatedConsentScreenView::kScreenId,
-    chromeos::ThemeSelectionScreenView::kScreenId,
+    TermsOfServiceScreenView::kScreenId,
+    SyncConsentScreenView::kScreenId,
+    HWDataCollectionView::kScreenId,
+    FingerprintSetupScreenView::kScreenId,
+    GestureNavigationScreenView::kScreenId,
+    ArcTermsOfServiceScreenView::kScreenId,
+    RecommendAppsScreenView::kScreenId,
+    PinSetupScreenView::kScreenId,
+    MarketingOptInScreenView::kScreenId,
+    MultiDeviceSetupScreenView::kScreenId,
+    ConsolidatedConsentScreenView::kScreenId,
+    ThemeSelectionScreenView::kScreenId,
 };
 
 const StaticOobeScreenId kScreensWithHiddenStatusArea[] = {
-    chromeos::EnableAdbSideloadingScreenView::kScreenId,
-    chromeos::EnableDebuggingScreenView::kScreenId,
-    chromeos::KioskAutolaunchScreenView::kScreenId,
-    chromeos::KioskEnableScreenView::kScreenId,
-    chromeos::ManagementTransitionScreenView::kScreenId,
-    chromeos::TpmErrorView::kScreenId,
-    chromeos::WrongHWIDScreenView::kScreenId,
-    chromeos::LocalStateErrorScreenView::kScreenId,
+    EnableAdbSideloadingScreenView::kScreenId,
+    EnableDebuggingScreenView::kScreenId,
+    KioskAutolaunchScreenView::kScreenId,
+    KioskEnableScreenView::kScreenId,
+    ManagementTransitionScreenView::kScreenId,
+    TpmErrorView::kScreenId,
+    WrongHWIDScreenView::kScreenId,
+    LocalStateErrorScreenView::kScreenId,
 };
 
 bool IsResumableOobeScreen(OobeScreenId screen_id) {
@@ -298,10 +301,10 @@ struct Entry {
 // Some screens had multiple different names in the past (they have since been
 // unified). We need to always use the same name for UMA stats, though.
 constexpr const Entry kLegacyUmaOobeScreenNames[] = {
-    {chromeos::ArcTermsOfServiceScreenView::kScreenId, "arc_tos"},
+    {ArcTermsOfServiceScreenView::kScreenId, "arc_tos"},
     {chromeos::EnrollmentScreenView::kScreenId, "enroll"},
-    {chromeos::WelcomeView::kScreenId, "network"},
-    {chromeos::TermsOfServiceScreenView::kScreenId, "tos"}};
+    {WelcomeView::kScreenId, "network"},
+    {TermsOfServiceScreenView::kScreenId, "tos"}};
 
 std::string GetLegacyUmaOobeScreenName(const OobeScreenId& screen_id) {
   // Make sure to use initial UMA name if the name has changed.
@@ -361,7 +364,7 @@ GetSharedURLLoaderFactoryForTesting() {
 
 OobeScreenId PrefToScreenId(const std::string& pref_value) {
   if (pref_value == kLegacyUpdateScreenName)
-    return chromeos::UpdateView::kScreenId;
+    return UpdateView::kScreenId;
   return OobeScreenId(pref_value);
 }
 
@@ -571,7 +574,7 @@ WizardController::CreateScreens() {
 
   if (oobe_ui->display_type() == OobeUI::kOobeDisplay) {
     append(std::make_unique<WelcomeScreen>(
-        oobe_ui->GetView<WelcomeScreenHandler>(),
+        oobe_ui->GetView<WelcomeScreenHandler>()->AsWeakPtr(),
         base::BindRepeating(&WizardController::OnWelcomeScreenExit,
                             weak_factory_.GetWeakPtr())));
 
@@ -602,7 +605,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnUpdateScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<EnrollmentScreen>(
-      oobe_ui->GetView<EnrollmentScreenHandler>(),
+      oobe_ui->GetView<EnrollmentScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnEnrollmentScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<ResetScreen>(
@@ -633,6 +636,9 @@ WizardController::CreateScreens() {
       oobe_ui->GetView<LocaleSwitchScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnLocaleSwitchScreenExit,
                           weak_factory_.GetWeakPtr())));
+  append(std::make_unique<RecoveryEligibilityScreen>(
+      base::BindRepeating(&WizardController::OnRecoveryEligibilityScreenExit,
+                          weak_factory_.GetWeakPtr())));
   append(std::make_unique<TermsOfServiceScreen>(
       oobe_ui->GetView<TermsOfServiceScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnTermsOfServiceScreenExit,
@@ -642,7 +648,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnSyncConsentScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<ArcTermsOfServiceScreen>(
-      oobe_ui->GetView<ArcTermsOfServiceScreenHandler>(),
+      oobe_ui->GetView<ArcTermsOfServiceScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnArcTermsOfServiceScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<RecommendAppsScreen>(
@@ -691,7 +697,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnUpdateRequiredScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<AssistantOptInFlowScreen>(
-      oobe_ui->GetView<AssistantOptInFlowScreenHandler>(),
+      oobe_ui->GetView<AssistantOptInFlowScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnAssistantOptInFlowScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<MultiDeviceSetupScreen>(
@@ -1732,6 +1738,13 @@ void WizardController::OnLocaleSwitchScreenExit(
     LocaleSwitchScreen::Result result) {
   OnScreenExit(LocaleSwitchView::kScreenId,
                LocaleSwitchScreen::GetResultString(result));
+  AdvanceToScreen(RecoveryEligibilityView::kScreenId);
+}
+
+void WizardController::OnRecoveryEligibilityScreenExit(
+    RecoveryEligibilityScreen::Result result) {
+  OnScreenExit(RecoveryEligibilityView::kScreenId,
+               RecoveryEligibilityScreen::GetResultString(result));
   AdvanceToScreen(TermsOfServiceScreenView::kScreenId);
 }
 
@@ -2289,6 +2302,7 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
              screen_id == ActiveDirectoryLoginView::kScreenId ||
              screen_id == SignInFatalErrorView::kScreenId ||
              screen_id == LocaleSwitchView::kScreenId ||
+             screen_id == RecoveryEligibilityView::kScreenId ||
              screen_id == OfflineLoginView::kScreenId ||
              screen_id == OsInstallScreenView::kScreenId ||
              screen_id == OsTrialScreenView::kScreenId ||

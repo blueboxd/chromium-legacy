@@ -24,9 +24,9 @@ class FakeSyncScheduler : public SyncScheduler {
   void Stop() override;
   void ScheduleLocalNudge(ModelType type) override;
   void ScheduleLocalRefreshRequest(ModelTypeSet types) override;
-  void ScheduleInvalidationNudge(
-      ModelType type,
-      std::unique_ptr<SyncInvalidation> interface) override;
+  void ScheduleInvalidationNudge(ModelType type) override;
+  void SetHasPendingInvalidations(ModelType type,
+                                  bool has_invalidation) override;
   void ScheduleConfiguration(sync_pb::SyncEnums::GetUpdatesOrigin origin,
                              ModelTypeSet types_to_download,
                              base::OnceClosure ready_task) override;
@@ -47,7 +47,6 @@ class FakeSyncScheduler : public SyncScheduler {
       const base::TimeDelta& new_interval) override;
   void OnReceivedCustomNudgeDelays(
       const std::map<ModelType, base::TimeDelta>& nudge_delays) override;
-  void OnReceivedClientInvalidationHintBufferSize(int size) override;
   void OnSyncProtocolError(const SyncProtocolError& error) override;
   void OnReceivedGuRetryDelay(const base::TimeDelta& delay) override;
   void OnReceivedMigrationRequest(ModelTypeSet types) override;

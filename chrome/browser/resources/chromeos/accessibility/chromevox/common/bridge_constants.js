@@ -66,7 +66,6 @@ BridgeConstants.ChromeVoxState = {
   TARGET: 'ChromeVoxState',
   Action: {
     CLEAR_CURRENT_RANGE: 'clearCurrentRange',
-    UPDATE_PUNCTUATION_ECHO: 'updatePunctuationEcho',
   },
 };
 
@@ -148,6 +147,8 @@ BridgeConstants.TtsBackground = {
   TARGET: 'TtsBackground',
   Action: {
     GET_CURRENT_VOICE: 'getCurrentVoice',
+    SPEAK: 'speak',
+    UPDATE_PUNCTUATION_ECHO: 'updatePunctuationEcho',
   },
 };
 

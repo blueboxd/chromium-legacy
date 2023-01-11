@@ -350,6 +350,16 @@ final class TabWebContentsDelegateAndroidImpl extends TabWebContentsDelegateAndr
         return mDelegate.isInstalledWebappDelegateGeolocation();
     }
 
+    /**
+     * Checks if the associated tab uses modal context menu.
+     * @return true if the current tab uses modal context menu.
+     */
+    @CalledByNative
+    @Override
+    protected boolean isModalContextMenu() {
+        return mDelegate.isModalContextMenu();
+    }
+
     @Override
     public int getTopControlsHeight() {
         return mDelegate.getTopControlsHeight();
@@ -378,6 +388,11 @@ final class TabWebContentsDelegateAndroidImpl extends TabWebContentsDelegateAndr
     @Override
     public boolean controlsResizeView() {
         return mDelegate.controlsResizeView();
+    }
+
+    @Override
+    public int getVirtualKeyboardHeight() {
+        return mDelegate.getVirtualKeyboardHeight();
     }
 
     @VisibleForTesting

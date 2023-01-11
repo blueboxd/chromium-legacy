@@ -37,8 +37,6 @@ class PasswordsPrivateDelegate : public KeyedService {
 
   using PlaintextPasswordCallback =
       base::OnceCallback<void(absl::optional<std::u16string>)>;
-  using RequestCredentialDetailsCallback = base::OnceCallback<void(
-      absl::optional<api::passwords_private::PasswordUiEntry>)>;
 
   using RefreshScriptsIfNecessaryCallback = base::OnceClosure;
 
@@ -53,6 +51,10 @@ class PasswordsPrivateDelegate : public KeyedService {
   using UiEntries = std::vector<api::passwords_private::PasswordUiEntry>;
   using UiEntriesCallback = base::OnceCallback<void(const UiEntries&)>;
   virtual void GetSavedPasswordsList(UiEntriesCallback callback) = 0;
+
+  using CredentialsGroups =
+      std::vector<api::passwords_private::CredentialGroup>;
+  virtual CredentialsGroups GetCredentialGroups() = 0;
 
   // Gets the password exceptions list.
   using ExceptionEntries = std::vector<api::passwords_private::ExceptionEntry>;
@@ -133,9 +135,9 @@ class PasswordsPrivateDelegate : public KeyedService {
   // could be obtained successfully, or absl::nullopt otherwise.
   // |web_contents| The web content object used as the UI; will be used to show
   //     an OS-level authentication dialog if necessary.
-  virtual void RequestCredentialDetails(
-      int id,
-      RequestCredentialDetailsCallback callback,
+  virtual void RequestCredentialsDetails(
+      const std::vector<int>& ids,
+      UiEntriesCallback callback,
       content::WebContents* web_contents) = 0;
 
   // Moves a list of passwords currently stored on the device to being stored in
@@ -239,6 +241,9 @@ class PasswordsPrivateDelegate : public KeyedService {
   // successful authentication.
   virtual void SwitchBiometricAuthBeforeFillingState(
       content::WebContents* web_contents) = 0;
+
+  // Triggers a dialog for installing the shortcut for PasswordManager page.
+  virtual void ShowAddShortcutDialog(content::WebContents* web_contents) = 0;
 };
 
 }  // namespace extensions

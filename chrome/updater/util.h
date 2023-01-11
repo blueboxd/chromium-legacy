@@ -13,7 +13,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/task/bind_post_task.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "chrome/updater/tag.h"
 #include "chrome/updater/updater_scope.h"
@@ -142,6 +142,8 @@ std::string GetInstallDataIndexFromAppArgs(const std::string& app_id);
 // Returns true if the user running the updater also owns the `path`.
 bool PathOwnedByUser(const base::FilePath& path);
 
+absl::optional<base::FilePath> GetLogFilePath(UpdaterScope scope);
+
 // Initializes logging for an executable.
 void InitLogging(UpdaterScope updater_scope);
 
@@ -227,7 +229,7 @@ void InitializeThreadPool(const char* name);
 // Adapts `callback` so that the callback is posted on the current sequence.
 template <typename CallbackT>
 CallbackT OnCurrentSequence(CallbackT callback) {
-  return base::BindPostTask(base::SequencedTaskRunnerHandle::Get(),
+  return base::BindPostTask(base::SequencedTaskRunner::GetCurrentDefault(),
                             std::move(callback));
 }
 

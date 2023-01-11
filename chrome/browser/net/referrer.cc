@@ -110,7 +110,7 @@ void Referrer::Deserialize(const base::Value& value) {
   if (value.type() != base::Value::Type::LIST)
     return;
 
-  base::Value::ConstListView list = value.GetListDeprecated();
+  const base::Value::List& list = value.GetList();
   for (auto it = list.begin(); it != list.end() && it + 1 != list.end();
        it += 2) {
     const std::string* url = it->GetIfString();
@@ -135,8 +135,8 @@ void Referrer::Deserialize(const base::Value& value) {
   }
 }
 
-std::unique_ptr<base::ListValue> Referrer::Serialize() const {
-  auto subresource_list = std::make_unique<base::ListValue>();
+std::unique_ptr<base::Value::List> Referrer::Serialize() const {
+  auto subresource_list = std::make_unique<base::Value::List>();
   for (auto it = begin(); it != end(); ++it) {
     subresource_list->Append(it->first.spec());
     subresource_list->Append(it->second.subresource_use_rate());

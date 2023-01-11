@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">Ongedaan maken</translation>
 <translation id="2084108471225856927">Apparaatinstellingen</translation>
 <translation id="2084809735218147718">Persoon die iemand bedankt</translation>
-<translation id="2085470240340828803">Er bestaat al een bestand met de naam '<ph name="FILENAME" />'. Wat wil je doen?</translation>
 <translation id="2088690981887365033">VPN-netwerk</translation>
 <translation id="2122305276694332719">Als er automatisch verbinding wordt gemaakt met een verborgen netwerk, kunnen anderen je apparaat en bepaalde netwerkinstellingen zien. Dit wordt niet aanbevolen.</translation>
 <translation id="2125607626296734455">Khmer</translation>
@@ -456,7 +455,6 @@
 <translation id="4900532980794411603">Delen met Parallels Desktop</translation>
 <translation id="4902546322522096650">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, signaalsterkte <ph name="SIGNAL_STRENGTH" />%, verbinden</translation>
 <translation id="4906580650526544301">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, signaalsterkte <ph name="SIGNAL_STRENGTH" />%, telefoonbatterij <ph name="BATTERY_STATUS" />%, details</translation>
-<translation id="4929673617759421391">Plakken is geblokkeerd door het beheerdersbeleid</translation>
 <translation id="4935975195727477204">Bloem</translation>
 <translation id="4943368462779413526">Amerikaanse voetbal</translation>
 <translation id="4961158930123534723">1 map gedeeld met Parallels Desktop</translation>
@@ -535,6 +533,7 @@
 <translation id="5428105026674456456">Spaans</translation>
 <translation id="5438282218546237410">Geen resultaten voor <ph name="SEARCH_TERM" />.</translation>
 <translation id="5449551289610225147">Ongeldig wachtwoord</translation>
+<translation id="5459064203055649751">Er is al een bestand met de naam <ph name="FILENAME" />. Wil je het vervangen door het bestand dat je verplaatst?</translation>
 <translation id="5463231940765244860">Opgeven</translation>
 <translation id="5469868506864199649">Italiaans</translation>
 <translation id="5473333559083690127">Pincode opnieuw opgeven</translation>
@@ -655,6 +654,7 @@
 <translation id="6495925982925244349">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signaalsterkte <ph name="SIGNAL_STRENGTH" />%, beheerd door je beheerder, details</translation>
 <translation id="649877868557234318"><ph name="FILE_NAME" /> uitpakken naar <ph name="FOLDER_NAME" /></translation>
 <translation id="6499681088828539489">Proxy's voor gedeelde netwerken niet toestaan</translation>
+<translation id="6503285896705205014"><ph name="COUNT" /> bestanden kopiëren is geblokkeerd door het beheerdersbeleid</translation>
 <translation id="6509122719576673235">Noors</translation>
 <translation id="6528513914570774834">Andere gebruikers van dit apparaat toestaan om dit netwerk te gebruiken</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" /> synchroniseren...</translation>
@@ -757,6 +757,7 @@
 <translation id="7357762654218998920">Dit bestandstype wordt niet ondersteund. Bekijk <ph name="BEGIN_LINK_HELP" />meer informatie<ph name="END_LINK_HELP" /> over hoe je bestanden opent in Chrome OS.</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> items kopiëren...</translation>
 <translation id="7375951387215729722">Lijst met bestanden gesorteerd op <ph name="COLUMN_NAME" /> in aflopende volgorde.</translation>
+<translation id="7377161162143020057">Dit bestand kopiëren is geblokkeerd door het beheerdersbeleid</translation>
 <translation id="7402503521691663770">Chrome OS Flex-apparaten</translation>
 <translation id="7408870451288633753">Tsjechië</translation>
 <translation id="7417453074306512035">Ethiopisch toetsenbord</translation>
@@ -978,7 +979,6 @@
 <translation id="9183302530794969518">Google Documenten</translation>
 <translation id="9189836632794948435">Kazaks</translation>
 <translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> items geëxtraheerd.</translation>
-<translation id="9210751050717126865"><ph name="COUNT" /> bestanden plakken is geblokkeerd door het beheerdersbeleid</translation>
 <translation id="9213073329713032541">De installatie is gestart.</translation>
 <translation id="9219103736887031265">Afbeeldingen</translation>
 <translation id="9219908252191632183">Lunair</translation>

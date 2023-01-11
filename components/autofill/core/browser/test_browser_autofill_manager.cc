@@ -83,7 +83,7 @@ void TestBrowserAutofillManager::OnAskForValuesToFill(
     const FormFieldData& field,
     const gfx::RectF& bounding_box,
     int query_id,
-    bool autoselect_first_suggestion,
+    AutoselectFirstSuggestion autoselect_first_suggestion,
     FormElementWasClicked form_element_was_clicked) {
   TestAutofillManagerWaiter waiter(*this,
                                    {&Observer::OnAfterAskForValuesToFill});
@@ -127,6 +127,11 @@ void TestBrowserAutofillManager::UploadFormData(
 
   if (call_parent_upload_form_data_)
     BrowserAutofillManager::UploadFormData(submitted_form, observed_submission);
+}
+
+const gfx::Image& TestBrowserAutofillManager::GetCardImage(
+    const CreditCard& credit_card) const {
+  return card_image_;
 }
 
 void TestBrowserAutofillManager::ScheduleRefill(const FormData& form) {
@@ -182,7 +187,7 @@ int TestBrowserAutofillManager::GetPackedCreditCardID(int credit_card_id) {
   std::string credit_card_guid =
       base::StringPrintf("00000000-0000-0000-0000-%012d", credit_card_id);
 
-  return suggestion_generator()->MakeFrontendId(
+  return suggestion_generator_for_test()->MakeFrontendId(
       Suggestion::BackendId(credit_card_guid), Suggestion::BackendId());
 }
 
@@ -233,7 +238,7 @@ void TestBrowserAutofillManager::OnAskForValuesToFillTest(
     const FormFieldData& field,
     int query_id,
     const gfx::RectF& bounding_box,
-    bool autoselect_first_suggestion,
+    AutoselectFirstSuggestion autoselect_first_suggestion,
     FormElementWasClicked form_element_was_clicked) {
   TestAutofillManagerWaiter waiter(
       *this, {&AutofillManager::Observer::OnAfterAskForValuesToFill});
@@ -272,6 +277,13 @@ void TestBrowserAutofillManager::SetExpectedObservedSubmission(bool expected) {
 
 void TestBrowserAutofillManager::SetCallParentUploadFormData(bool value) {
   call_parent_upload_form_data_ = value;
+}
+
+int TestBrowserAutofillManager::MakeFrontendId(
+    const MakeFrontendIdParams& params) {
+  return suggestion_generator_for_test()->MakeFrontendId(
+      Suggestion::BackendId(params.credit_card_id),
+      Suggestion::BackendId(params.profile_id));
 }
 
 }  // namespace autofill

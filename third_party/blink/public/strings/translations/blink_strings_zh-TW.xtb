@@ -13,7 +13,6 @@
 <translation id="1637811476055996098">選擇檔案</translation>
 <translation id="1681022320378710418">目前時間</translation>
 <translation id="1727839386348365796">滴管</translation>
-<translation id="1727886345390570319">不要顯示隱藏式輔助字幕選單</translation>
 <translation id="1729654308190250600">請輸入電子郵件地址。</translation>
 <translation id="1758486001363313524">其他...</translation>
 <translation id="1787192514241997742">總時間：<ph name="REMAINING_TIME" /></translation>
@@ -61,7 +60,6 @@
 <translation id="4103419683916926126">毫秒</translation>
 <translation id="4201051445878709314">顯示上一個月</translation>
 <translation id="4360991593054037559">請輸入有效值。最接近的兩個有效值分別是 <ph name="VALID_VALUE_LOW" /> 和 <ph name="VALID_VALUE_HIGHER" />。</translation>
-<translation id="4371899966896349864">隱藏播放速度選單</translation>
 <translation id="4522570452068850558">詳細資料</translation>
 <translation id="4664250907885839816">「<ph name="ATSIGN" />」後面的部分不應包含「<ph name="INVALIDCHARACTER" />」符號。</translation>
 <translation id="4718048029184481307">在子母畫面中播放</translation>
@@ -81,6 +79,7 @@
 <translation id="5117590920725113268">顯示下一個月</translation>
 <translation id="5164977714490026579">值必須大於或等於 <ph name="MINIMUM" />。</translation>
 <translation id="5196716972587102051">2</translation>
+<translation id="5199514351668672591">回到選項</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5272594226096532950">未勾選。位於群組中，選項 <ph name="INDEX" /> (共 <ph name="COUNT" /> 個)</translation>
 <translation id="5307600278924710095">請輸入「<ph name="ATSIGN" />」後面的部分。「<ph name="INVALIDADDRESS" />」不是完整值。</translation>

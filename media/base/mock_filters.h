@@ -163,6 +163,8 @@ class MockDemuxer : public Demuxer {
 
   // Demuxer implementation.
   std::string GetDisplayName() const override;
+  DemuxerType GetDemuxerType() const override;
+
   void Initialize(DemuxerHost* host, PipelineStatusCallback cb) override {
     OnInitialize(host, cb);
   }
@@ -217,7 +219,7 @@ class MockDemuxerStream : public DemuxerStream {
   void set_liveness(StreamLiveness liveness);
 
  private:
-  Type type_;
+  Type type_ = DemuxerStream::Type::UNKNOWN;
   StreamLiveness liveness_ = StreamLiveness::kUnknown;
   AudioDecoderConfig audio_decoder_config_;
   VideoDecoderConfig video_decoder_config_;
@@ -307,6 +309,7 @@ class MockAudioEncoder : public AudioEncoder {
               (override));
 
   MOCK_METHOD(void, Flush, (AudioEncoder::EncoderStatusCB done_cb), (override));
+  MOCK_METHOD(void, DisablePostedCallbacks, (), (override));
 
   // A function for mocking destructor calls
   MOCK_METHOD(void, OnDestruct, ());
@@ -345,6 +348,7 @@ class MockVideoEncoder : public VideoEncoder {
               (override));
 
   MOCK_METHOD(void, Flush, (VideoEncoder::EncoderStatusCB done_cb), (override));
+  MOCK_METHOD(void, DisablePostedCallbacks, (), (override));
 
   // A function for mocking destructor calls
   MOCK_METHOD(void, Dtor, ());
@@ -522,6 +526,7 @@ class MockRenderer : public Renderer {
                void(std::vector<DemuxerStream*>, base::OnceClosure));
   MOCK_METHOD2(OnSelectedAudioTracksChanged,
                void(std::vector<DemuxerStream*>, base::OnceClosure));
+  RendererType GetRendererType() override { return RendererType::kTest; }
 };
 
 class MockRendererFactory : public RendererFactory {
@@ -534,14 +539,14 @@ class MockRendererFactory : public RendererFactory {
   ~MockRendererFactory() override;
 
   // Renderer implementation.
-  MOCK_METHOD6(CreateRenderer,
-               std::unique_ptr<Renderer>(
-                   const scoped_refptr<base::SingleThreadTaskRunner>&,
-                   const scoped_refptr<base::TaskRunner>&,
-                   AudioRendererSink*,
-                   VideoRendererSink*,
-                   RequestOverlayInfoCB,
-                   const gfx::ColorSpace&));
+  MOCK_METHOD6(
+      CreateRenderer,
+      std::unique_ptr<Renderer>(const scoped_refptr<base::SequencedTaskRunner>&,
+                                const scoped_refptr<base::TaskRunner>&,
+                                AudioRendererSink*,
+                                VideoRendererSink*,
+                                RequestOverlayInfoCB,
+                                const gfx::ColorSpace&));
 };
 
 class MockTimeSource : public TimeSource {
@@ -846,7 +851,8 @@ class MockStreamParser : public StreamParser {
                     MediaLog* media_log));
   MOCK_METHOD0(Flush, void());
   MOCK_CONST_METHOD0(GetGenerateTimestampsFlag, bool());
-  MOCK_METHOD2(Parse, bool(const uint8_t*, int));
+  MOCK_METHOD2(AppendToParseBuffer, bool(const uint8_t*, size_t));
+  MOCK_METHOD1(Parse, ParseStatus(int));
 };
 
 class MockMediaClient : public media::MediaClient {

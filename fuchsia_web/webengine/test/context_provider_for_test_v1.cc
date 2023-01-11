@@ -33,8 +33,13 @@ constexpr char kTestNameSwitch[] = "test-name";
 fidl::InterfaceHandle<fuchsia::io::Directory> StartWebEngineForTestsInternal(
     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
         component_controller_request,
-    const base::CommandLine& command_line) {
-  DCHECK(command_line.argv()[0].empty()) << "Must use NO_PROGRAM.";
+    const base::CommandLine& base_command_line) {
+  DCHECK(base_command_line.argv()[0].empty()) << "Must use NO_PROGRAM.";
+
+  base::CommandLine command_line = base_command_line;
+  constexpr char const* kSwitchesToCopy[] = {"ozone-platform"};
+  command_line.CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
+                                kSwitchesToCopy, std::size(kSwitchesToCopy));
 
   fuchsia::sys::LaunchInfo launch_info;
   launch_info.url =
@@ -44,8 +49,7 @@ fidl::InterfaceHandle<fuchsia::io::Directory> StartWebEngineForTestsInternal(
       command_line.argv().begin() + 1, command_line.argv().end()));
 
   fuchsia::io::DirectorySyncPtr web_engine_services_dir;
-  launch_info.directory_request =
-      web_engine_services_dir.NewRequest().TakeChannel();
+  launch_info.directory_request = web_engine_services_dir.NewRequest();
 
   fuchsia::sys::LauncherPtr launcher;
   base::ComponentContextForProcess()->svc()->Connect(launcher.NewRequest());

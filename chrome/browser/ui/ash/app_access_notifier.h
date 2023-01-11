@@ -15,7 +15,6 @@
 #include "components/account_id/account_id.h"
 #include "components/services/app_service/public/cpp/app_capability_access_cache.h"
 #include "components/services/app_service/public/cpp/capability_access_update.h"
-#include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -24,6 +23,10 @@ namespace apps {
 class AppCapabilityAccessCache;
 class AppRegistryCache;
 }  // namespace apps
+
+namespace session_manager {
+class SessionManager;
+}  // namespace session_manager
 
 // This class is responsible for observing AppCapabilityAccessCache, notifying
 // to appropriate entities when an app is accessing camera/microphone. This is
@@ -58,8 +61,10 @@ class AppAccessNotifier
 
   // Get the app short name of the app with `app_id`.
   static absl::optional<std::u16string> GetAppShortNameFromAppId(
-      std::string app_id,
-      apps::AppRegistryCache* registry_cache);
+      std::string app_id);
+
+  // Launch the native settings page of the app with `app_id`.
+  static void LaunchAppSettings(const std::string& app_id);
 
  protected:
   // Returns the active user's account ID if we have an active user, an empty
@@ -78,12 +83,8 @@ class AppAccessNotifier
   // account ID.
   apps::AppCapabilityAccessCache* GetActiveUserAppCapabilityAccessCache();
 
-  // Returns the "short name" of the registered app to most recently attempt to
-  // access the microphone, or an empty (optional) string if none exists. Used
-  // for the microphone mute notification.
-  absl::optional<std::u16string> GetMostRecentAppAccessingMicrophone(
-      apps::AppCapabilityAccessCache* capability_cache,
-      apps::AppRegistryCache* registry_cache);
+  // Get the current active instance of AppRegistryCache.
+  static apps::AppRegistryCache* GetActiveUserAppRegistryCache();
 
   // List of IDs of apps that have attempted to use the microphone, in order of
   // most-recently-launched.
@@ -100,15 +101,10 @@ class AppAccessNotifier
 
   // Observations.
   base::ScopedObservation<session_manager::SessionManager,
-                          session_manager::SessionManagerObserver,
-                          &session_manager::SessionManager::AddObserver,
-                          &session_manager::SessionManager::RemoveObserver>
+                          session_manager::SessionManagerObserver>
       session_manager_observation_{this};
-  base::ScopedObservation<
-      user_manager::UserManager,
-      user_manager::UserManager::UserSessionStateObserver,
-      &user_manager::UserManager::AddSessionStateObserver,
-      &user_manager::UserManager::RemoveSessionStateObserver>
+  base::ScopedObservation<user_manager::UserManager,
+                          user_manager::UserManager::UserSessionStateObserver>
       user_session_state_observation_{this};
   base::ScopedObservation<apps::AppCapabilityAccessCache,
                           apps::AppCapabilityAccessCache::Observer>

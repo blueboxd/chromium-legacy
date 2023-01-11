@@ -28,8 +28,8 @@
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/browser_state/bookmark_model_loaded_observer.h"
+#import "ios/chrome/browser/browser_state/constants.h"
 #import "ios/chrome/browser/browser_state/off_the_record_chrome_browser_state_impl.h"
-#import "ios/chrome/browser/chrome_constants.h"
 #import "ios/chrome/browser/net/ios_chrome_url_request_context_getter.h"
 #import "ios/chrome/browser/paths/paths_internal.h"
 #import "ios/chrome/browser/policy/browser_policy_connector_ios.h"
@@ -45,8 +45,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
 // Returns a bool indicating whether the necessary directories were able to be
 // created (or already existed).
 bool EnsureBrowserStateDirectoriesCreated(const base::FilePath& path,
@@ -58,7 +56,7 @@ bool EnsureBrowserStateDirectoriesCreated(const base::FilePath& path,
   // lightweight I/O operation and avoiding the headache of sequencing all
   // otherwise unrelated I/O after this one justifies running it on the main
   // thread.
-  base::ThreadRestrictions::ScopedAllowIO allow_io_to_create_directory;
+  base::ScopedAllowBlocking allow_blocking_to_create_directory;
 
   if (!base::PathExists(path) && !base::CreateDirectory(path))
     return false;
@@ -73,6 +71,8 @@ bool EnsureBrowserStateDirectoriesCreated(const base::FilePath& path,
     return false;
   return true;
 }
+
+namespace {
 
 base::FilePath GetCachePath(const base::FilePath& base) {
   return base.Append(kIOSChromeCacheDirname);

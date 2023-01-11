@@ -1,17 +1,17 @@
 Name: LZMA SDK
 Short Name: lzma
 URL: http://www.7-zip.org/sdk.html
-Version: 21.07
-Date: 2021-12-26
+Version: 22.01
+Date: 2022-07-15
 License: Public Domain
 Security Critical: yes
 CPEPrefix: unknown
 
 Description:
-This contains a part of LZMA SDK 21.07.
+This contains a part of LZMA SDK 22.01.
 
 Local Modifications:
-The original code can be found at https://7-zip.org/a/lzma2107.7z.  Only parts
+The original code can be found at https://7-zip.org/a/lzma2201.7z.  Only parts
 of this archive are copied here.  More specifically:
 
 1/ C code required to open 7z archive files and uncompress LZMA
@@ -43,7 +43,10 @@ Fuschia as well as some of the AVX2 and SSE4 code for Windows. In Fuschia,
 `#include <asm/hwcap.h>` is not available. In Android builds, `armv8-a+crc` is
 not a known target architecture, even when the -march cflag is passed,
 specifying the CPU type to use. In Windows, Chromium still supports SSE3,
-so it is not be ready to transition to utilizing AVX2 and SSE4, yet.
+so it is not be ready to transition to utilizing AVX2 and SSE4, yet. Added
+.note.gnu.property section to arm64/7zAsm.s to suppress compiler error requiring
+bti. Shortened segment names in Asm/x86/*.asm files to make the builds
+deterministic. Resolved include paths as well.
 
 The patch in Util/SfxSetup/chromium.patch was applied so that:
 

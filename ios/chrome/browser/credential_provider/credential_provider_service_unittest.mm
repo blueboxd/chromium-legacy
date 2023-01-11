@@ -22,16 +22,17 @@
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/authentication_service_fake.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/fake_authentication_service_delegate.h"
+#import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/common/credential_provider/constants.h"
 #import "ios/chrome/common/credential_provider/credential.h"
 #import "ios/chrome/common/credential_provider/memory_credential_store.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest_mac.h"
@@ -49,8 +50,6 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 using base::test::ios::kWaitForFileOperationTimeout;
 using password_manager::PasswordStore;
 using password_manager::LoginDatabase;
-
-NSString* const userEmail = @"test@email.com";
 
 class CredentialProviderServiceTest : public PlatformTest {
  public:
@@ -77,8 +76,7 @@ class CredentialProviderServiceTest : public PlatformTest {
     TestChromeBrowserState::Builder builder;
     builder.AddTestingFactory(
         AuthenticationServiceFactory::GetInstance(),
-        base::BindRepeating(
-            &AuthenticationServiceFake::CreateAuthenticationService));
+        AuthenticationServiceFactory::GetDefaultFactory());
     builder.AddTestingFactory(ios::FaviconServiceFactory::GetInstance(),
                               ios::FaviconServiceFactory::GetDefaultFactory());
     builder.AddTestingFactory(
@@ -91,7 +89,10 @@ class CredentialProviderServiceTest : public PlatformTest {
                               ios::HistoryServiceFactory::GetDefaultFactory());
     chrome_browser_state_ = builder.Build();
 
-    auth_service_ = static_cast<AuthenticationServiceFake*>(
+    AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
+        chrome_browser_state_.get(),
+        std::make_unique<FakeAuthenticationServiceDelegate>());
+    auth_service_ = static_cast<AuthenticationService*>(
         AuthenticationServiceFactory::GetInstance()->GetForBrowserState(
             chrome_browser_state_.get()));
 
@@ -137,7 +138,7 @@ class CredentialProviderServiceTest : public PlatformTest {
   IOSChromeScopedTestingLocalState scoped_testing_local_state_;
   scoped_refptr<PasswordStore> password_store_;
   id<CredentialStore> credential_store_;
-  AuthenticationServiceFake* auth_service_;
+  AuthenticationService* auth_service_;
   std::unique_ptr<CredentialProviderService> credential_provider_service_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   ChromeAccountManagerService* account_manager_service_;
@@ -303,16 +304,16 @@ TEST_F(CredentialProviderServiceTest, PasswordCreationPreference) {
 // on the password sync state.
 TEST_F(CredentialProviderServiceTest, PasswordSyncStoredEmail) {
   // Start by signing in and turning sync on.
-  FakeChromeIdentity* identity =
-      [FakeChromeIdentity identityWithEmail:userEmail
-                                     gaiaID:@"gaiaID"
-                                       name:@"Test Name"];
+  FakeSystemIdentity* identity = [FakeSystemIdentity fakeIdentity1];
+  ios::FakeChromeIdentityService* identity_service_ =
+      ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
+  identity_service_->AddIdentity(identity);
   auth_service_->SignIn(identity);
   auth_service_->GrantSyncConsent(identity);
   sync_service_.FireStateChanged();
 
   EXPECT_NSEQ(
-      userEmail,
+      identity.userEmail,
       [app_group::GetGroupUserDefaults()
           stringForKey:AppGroupUserDefaultsCredentialProviderUserEmail()]);
 

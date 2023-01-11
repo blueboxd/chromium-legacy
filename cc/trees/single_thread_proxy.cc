@@ -669,11 +669,13 @@ void SingleThreadProxy::DidPresentCompositorFrameOnImplThread(
   DCHECK(!task_runner_provider_->HasImplThread() ||
          task_runner_provider_->IsImplThread());
   host_impl_->NotifyDidPresentCompositorFrameOnImplThread(
-      frame_token, std::move(callbacks.compositor_thread_callbacks), details);
+      frame_token, std::move(callbacks.compositor_successful_callbacks),
+      details);
   {
     DebugScopedSetMainThread main(task_runner_provider_);
     layer_tree_host_->DidPresentCompositorFrame(
-        frame_token, std::move(callbacks.main_thread_callbacks),
+        frame_token, std::move(callbacks.main_callbacks),
+        std::move(callbacks.main_successful_callbacks),
         details.presentation_feedback);
   }
   if (scheduler_on_impl_thread_) {
@@ -1032,6 +1034,13 @@ void SingleThreadProxy::BeginMainFrame(
 
   if (!layer_tree_host_->IsVisible()) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NotVisible", TRACE_EVENT_SCOPE_THREAD);
+
+    // Since the commit is deferred due to the page becoming invisible, the
+    // metrics are not meaningful anymore (as the page might become visible in
+    // any arbitrary time in the future and cause an arbitrarily large latency).
+    // Discard event metrics.
+    layer_tree_host_->ClearEventsMetrics();
+
     BeginMainFrameAbortedOnImplThread(
         CommitEarlyOutReason::ABORTED_NOT_VISIBLE);
     return;

@@ -90,10 +90,10 @@ void ModelExecutionSchedulerImpl::OnModelExecutionCompleted(
   proto::PredictionResult segment_result;
   bool success = result->status == ModelExecutionStatus::kSuccess;
   if (success) {
-    segment_result.set_result(result->score);
+    // TODO(ritikagup): Change the use of this according to MultiOutputModel.
+    segment_result.set_result(result->scores[0]);
     segment_result.set_timestamp_us(
         clock_->Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
-    stats::RecordModelScore(segment_id, result->score);
   }
 
   segment_database_->SaveSegmentResult(

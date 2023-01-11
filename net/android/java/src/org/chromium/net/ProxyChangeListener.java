@@ -128,7 +128,7 @@ public class ProxyChangeListener {
             assertOnThread();
             assert mNativePtr == 0;
             mNativePtr = nativePtr;
-            registerReceiver();
+            registerBroadcastReceiver();
         }
     }
 
@@ -136,7 +136,7 @@ public class ProxyChangeListener {
     public void stop() {
         assertOnThread();
         mNativePtr = 0;
-        unregisterReceiver();
+        unregisterBroadcastReceiver();
     }
 
     @UsedByReflection("WebView embedders call this to override proxy settings")
@@ -253,7 +253,7 @@ public class ProxyChangeListener {
         runOnThread(() -> proxySettingsChanged(getProxyConfig(intent)));
     }
 
-    private void registerReceiver() {
+    private void registerBroadcastReceiver() {
         assertOnThread();
         assert mProxyReceiver == null;
         assert mRealProxyReceiver == null;
@@ -265,7 +265,7 @@ public class ProxyChangeListener {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             // Proxy change broadcast receiver for Pre-M. Uses reflection to extract proxy
             // information from the intent extra.
-            ContextUtils.registerNonExportedBroadcastReceiver(
+            ContextUtils.registerProtectedBroadcastReceiver(
                     ContextUtils.getApplicationContext(), mProxyReceiver, filter);
         } else {
             // Register the instance of ProxyReceiver with an empty intent filter, so that it is
@@ -276,17 +276,12 @@ public class ProxyChangeListener {
             // Create a BroadcastReceiver that uses M+ APIs to fetch the proxy confuguration from
             // ConnectionManager.
             mRealProxyReceiver = new ProxyBroadcastReceiver(this);
-            Intent intent = ContextUtils.registerNonExportedBroadcastReceiver(
+            ContextUtils.registerProtectedBroadcastReceiver(
                     ContextUtils.getApplicationContext(), mRealProxyReceiver, filter);
-            if (intent != null) {
-                // registerReceiver returns the last broadcasted intent for sticky broadcasts, so
-                // rather than wait for the first time the receiver is triggered, use this now.
-                updateProxyConfigFromConnectivityManager(intent);
-            }
         }
     }
 
-    private void unregisterReceiver() {
+    private void unregisterBroadcastReceiver() {
         assertOnThread();
         assert mProxyReceiver != null;
 

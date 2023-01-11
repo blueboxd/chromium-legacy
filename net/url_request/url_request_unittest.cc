@@ -4,32 +4,14 @@
 
 #include <stdint.h>
 
-#include <algorithm>
 #include <iterator>
 #include <limits>
 #include <memory>
 #include <utility>
 
-#include "base/memory/raw_ptr.h"
-
-// This must be before Windows headers
-#include "base/callback_helpers.h"
-#include "base/memory/ptr_util.h"
-#include "base/time/time.h"
-#include "build/build_config.h"
-#include "net/dns/public/secure_dns_policy.h"
-#include "net/log/net_log.h"
-#include "url/url_constants.h"
-
-#if BUILDFLAG(IS_WIN)
-#include <objbase.h>
-#include <shlobj.h>
-#include <windows.h>
-#include <wrl/client.h>
-#endif
-
 #include "base/base64url.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -37,8 +19,11 @@
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/escape.h"
 #include "base/strings/strcat.h"
@@ -53,7 +38,9 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "build/buildflag.h"
 #include "crypto/sha2.h"
 #include "net/base/chunked_upload_data_stream.h"
@@ -112,6 +99,7 @@
 #include "net/http/transport_security_state.h"
 #include "net/http/transport_security_state_source.h"
 #include "net/log/file_net_log_observer.h"
+#include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
@@ -161,6 +149,11 @@
 #include "url/url_util.h"
 
 #if BUILDFLAG(IS_WIN)
+#include <objbase.h>
+#include <shlobj.h>
+#include <windows.h>
+#include <wrl/client.h>
+
 #include "base/win/scoped_com_initializer.h"
 #endif
 
@@ -328,9 +321,9 @@ class PriorityMonitoringURLRequestJob : public URLRequestTestJob {
 
 // Do a case-insensitive search through |haystack| for |needle|.
 bool ContainsString(const std::string& haystack, const char* needle) {
-  std::string::const_iterator it = std::search(
-      haystack.begin(), haystack.end(), needle, needle + strlen(needle),
-      base::CaseInsensitiveCompareASCII<char>());
+  std::string::const_iterator it =
+      base::ranges::search(haystack, base::StringPiece(needle),
+                           base::CaseInsensitiveCompareASCII<char>());
   return it != haystack.end();
 }
 
@@ -3988,7 +3981,7 @@ class URLRequestTestHTTP : public URLRequestTest {
       std::unique_ptr<URLRequest> r(default_context().CreateRequest(
           test_server_.GetURL("/echo"), DEFAULT_PRIORITY, &d,
           TRAFFIC_ANNOTATION_FOR_TESTS));
-      r->set_method(method.c_str());
+      r->set_method(method);
 
       r->set_upload(CreateSimpleUploadData(uploadBytes.get()));
 
@@ -8451,9 +8444,6 @@ TEST_F(URLRequestTestHTTP, Redirect303Tests) {
   HTTPRedirectMethodTest(url, "PUT", "GET", true);
   HTTPRedirectMethodTest(url, "HEAD", "HEAD", false);
 
-  HTTPRedirectOriginHeaderTest(url, "CONNECT", "GET", std::string());
-  HTTPRedirectOriginHeaderTest(https_redirect_url, "CONNECT", "GET",
-                               std::string());
   HTTPRedirectOriginHeaderTest(url, "DELETE", "GET", std::string());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "DELETE", "GET",
                                std::string());
@@ -13027,6 +13017,18 @@ TEST_F(URLRequestTestHTTP, AuthChallengeInfo) {
   EXPECT_EQ("testrealm", r->auth_challenge_info()->realm);
   EXPECT_EQ("Basic realm=\"testrealm\"", r->auth_challenge_info()->challenge);
   EXPECT_EQ("/auth-basic", r->auth_challenge_info()->path);
+}
+
+TEST_F(URLRequestTestHTTP, ConnectNoSupported) {
+  ASSERT_TRUE(http_test_server()->Start());
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> r(default_context().CreateRequest(
+      http_test_server()->GetURL("/"), DEFAULT_PRIORITY, &delegate,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
+  r->set_method("CONNECT");
+  r->Start();
+  delegate.RunUntilComplete();
+  EXPECT_EQ(ERR_METHOD_NOT_SUPPORTED, delegate.request_status());
 }
 
 class URLRequestDnsAliasTest : public TestWithTaskEnvironment {

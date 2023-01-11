@@ -10,7 +10,7 @@ GEN_INCLUDE([
  * Annotations in the output that are primitive strings are ignored.
  */
 function checkBrailleOutput(expectedText, expectedSpans, output) {
-  const actualOutput = output.brailleOutputForTest;
+  const actualOutput = output.braille;
   // Remove string annotations.  These are tested in the speech output and
   // there's no need to clutter the tests with the corresponding braille
   // annotations.
@@ -98,24 +98,28 @@ ChromeVoxOutputE2ETest = class extends ChromeVoxNextE2ETest {
   /** @override */
   async setUpDeferred() {
     await super.setUpDeferred();
+
+    // Alphabetical based on file path.
+    await importModule(
+        'EventSourceState', '/chromevox/background/event_source.js');
     await importModule('FocusBounds', '/chromevox/background/focus_bounds.js');
     await importModule('Output', '/chromevox/background/output/output.js');
     await importModule(
         'OutputRoleInfo', '/chromevox/background/output/output_role_info.js');
-    await importModule('CursorRange', '/common/cursors/range.js');
-    await importModule('Cursor', '/common/cursors/cursor.js');
+    await importModule(
+        'OutputRule', '/chromevox/background/output/output_rules.js');
     await importModule(
         ['OutputEarconAction', 'OutputNodeSpan', 'OutputSelectionSpan'],
         '/chromevox/background/output/output_types.js');
+    await importModule(
+        'EventSourceType', '/chromevox/common/event_source_type.js');
     await importModule('Msgs', '/chromevox/common/msgs.js');
-    await importModule('AutomationUtil', '/common/automation_util.js');
     await importModule('TtsCategory', '/chromevox/common/tts_interface.js');
     await importModule(
         'AutomationPredicate', '/common/automation_predicate.js');
-    await importModule(
-        'EventSourceState', '/chromevox/background/event_source.js');
-    await importModule(
-        'EventSourceType', '/chromevox/common/event_source_type.js');
+    await importModule('AutomationUtil', '/common/automation_util.js');
+    await importModule('Cursor', '/common/cursors/cursor.js');
+    await importModule('CursorRange', '/common/cursors/range.js');
 
     window.Dir = AutomationUtil.Dir;
     this.forceContextualLastOutput();
@@ -773,7 +777,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'ToggleButton', async function() {
         ],
       },
       o.speechOutputForTest);
-  assertEquals('Subscribe tgl btn =', o.brailleOutputForTest.string_);
+  assertEquals('Subscribe tgl btn =', o.braille.string_);
 });
 
 AX_TEST_F('ChromeVoxOutputE2ETest', 'JoinDescendants', async function() {
@@ -965,8 +969,8 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'ValidateCommonProperties', function() {
   let missingState = [];
   let missingRestriction = [];
   let missingDescription = [];
-  for (const key in Output.RULES.navigate) {
-    const speak = Output.RULES.navigate[key].speak;
+  for (const key in OutputRule.RULES.navigate) {
+    const speak = OutputRule.RULES.navigate[key].speak;
     if (!speak) {
       continue;
     }
@@ -1079,12 +1083,12 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'ValidateRoles', function() {
     RoleType.STATIC_TEXT,
     RoleType.WINDOW,
   ];
-  for (const key in Output.RULES.navigate) {
+  for (const key in OutputRule.RULES.navigate) {
     if (allowedMissingRoles.indexOf(key) !== -1) {
       continue;
     }
-    const speak = Output.RULES.navigate[key].speak;
-    let enter = Output.RULES.navigate[key].enter;
+    const speak = OutputRule.RULES.navigate[key].speak;
+    let enter = OutputRule.RULES.navigate[key].enter;
     if (enter && enter.speak) {
       enter = enter.speak;
     }
@@ -1112,8 +1116,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'InlineBraille', async function() {
   const o = new Output().withRichSpeechAndBraille(CursorRange.fromNode(obj));
   assertEquals(
       'Name|row 1 column 1|Table , 1 by 3', o.speechOutputForTest.string_);
-  assertEquals(
-      'Name r1c1 Age r1c2 Address r1c3', o.brailleOutputForTest.string_);
+  assertEquals('Name r1c1 Age r1c2 Address r1c3', o.braille.string_);
 });
 
 AX_TEST_F(
@@ -1130,12 +1133,12 @@ AX_TEST_F(
 
       let o = new Output().withRichSpeechAndBraille(CursorRange.fromNode(text));
       assertEquals('|square', o.speechOutputForTest.string_);
-      assertEquals('square', o.brailleOutputForTest.string_);
+      assertEquals('square', o.braille.string_);
 
       const region = root.find({role: RoleType.REGION});
       o = new Output().withRichSpeechAndBraille(CursorRange.fromNode(region));
       assertEquals('circle', o.speechOutputForTest.string_);
-      assertEquals('circle', o.brailleOutputForTest.string_);
+      assertEquals('circle', o.braille.string_);
     });
 
 AX_TEST_F('ChromeVoxOutputE2ETest', 'NestedList', async function() {

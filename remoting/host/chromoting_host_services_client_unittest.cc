@@ -10,13 +10,16 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/environment.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
-#include "remoting/host/mojo_ipc/mojo_ipc_server.h"
-#include "remoting/host/mojo_ipc/mojo_ipc_test_util.h"
+#include "components/named_mojo_ipc_server/named_mojo_ipc_server.h"
+#include "components/named_mojo_ipc_server/named_mojo_ipc_test_util.h"
+#include "remoting/host/chromoting_host.h"
+#include "remoting/host/mojo_caller_security_checker.h"
 #include "remoting/host/mojom/chromoting_host_services.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,23 +35,25 @@ class ChromotingHostServicesClientTest : public testing::Test,
       mojo::PendingReceiver<mojom::ChromotingSessionServices> receiver)
       override;
 
+  void TearDown() override;
+
  protected:
   void SetChromeRemoteDesktopSessionEnvVar(bool is_crd_session);
   void WaitForInvitationSent();
   void WaitForSessionServicesBound();
   void SetRemoteDisconnectCallback(base::OnceClosure callback);
 
+  base::test::TaskEnvironment task_environment_;
+  raw_ptr<base::Environment> environment_;
   std::unique_ptr<ChromotingHostServicesClient> client_;
-  std::unique_ptr<MojoIpcServer<mojom::ChromotingHostServices>> ipc_server_;
+  std::unique_ptr<
+      named_mojo_ipc_server::NamedMojoIpcServer<mojom::ChromotingHostServices>>
+      ipc_server_;
   std::vector<mojo::PendingReceiver<mojom::ChromotingSessionServices>>
       receivers_;
 
  private:
   void OnInvitationSent();
-
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
-  raw_ptr<base::Environment> environment_;
 
   // Used to block the thread until the server has sent out an invitation.
   std::unique_ptr<base::RunLoop> on_invitation_sent_run_loop_;
@@ -58,13 +63,15 @@ class ChromotingHostServicesClientTest : public testing::Test,
 };
 
 ChromotingHostServicesClientTest::ChromotingHostServicesClientTest() {
-  auto test_server_name = test::GenerateRandomServerName();
+  auto test_server_name =
+      named_mojo_ipc_server::test::GenerateRandomServerName();
   auto environment = base::Environment::Create();
   environment_ = environment.get();
   client_ = base::WrapUnique(new ChromotingHostServicesClient(
       std::move(environment), test_server_name));
-  ipc_server_ = std::make_unique<MojoIpcServer<mojom::ChromotingHostServices>>(
-      test_server_name, this);
+  ipc_server_ = std::make_unique<
+      named_mojo_ipc_server::NamedMojoIpcServer<mojom::ChromotingHostServices>>(
+      test_server_name, this, base::BindRepeating(&IsTrustedMojoEndpoint));
   ipc_server_->set_on_invitation_sent_callback_for_testing(
       base::BindRepeating(&ChromotingHostServicesClientTest::OnInvitationSent,
                           base::Unretained(this)));
@@ -79,6 +86,11 @@ void ChromotingHostServicesClientTest::BindSessionServices(
     mojo::PendingReceiver<mojom::ChromotingSessionServices> receiver) {
   receivers_.push_back(std::move(receiver));
   session_services_bound_run_loop_->Quit();
+}
+
+void ChromotingHostServicesClientTest::TearDown() {
+  ipc_server_->StopServer();
+  task_environment_.RunUntilIdle();
 }
 
 void ChromotingHostServicesClientTest::SetChromeRemoteDesktopSessionEnvVar(

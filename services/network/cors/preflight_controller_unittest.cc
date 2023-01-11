@@ -237,7 +237,7 @@ TEST(PreflightControllerOptionsTest, CheckOptions) {
       PrivateNetworkAccessPreflightBehavior::kWarn, /*tainted=*/false,
       TRAFFIC_ANNOTATION_FOR_TESTS, &url_loader_factory, net::IsolationInfo(),
       /*client_security_state=*/nullptr,
-      /*devtools_observer=*/mojo::NullRemote(), net_log);
+      /*devtools_observer=*/mojo::NullRemote(), net_log, true);
 
   preflight_controller.PerformPreflightCheck(
       base::BindOnce([](int, absl::optional<CorsErrorStatus>, bool) {}),
@@ -246,7 +246,7 @@ TEST(PreflightControllerOptionsTest, CheckOptions) {
       PrivateNetworkAccessPreflightBehavior::kWarn, /*tainted=*/false,
       TRAFFIC_ANNOTATION_FOR_TESTS, &url_loader_factory, net::IsolationInfo(),
       /*client_security_state=*/nullptr,
-      /*devtools_observer=*/mojo::NullRemote(), net_log);
+      /*devtools_observer=*/mojo::NullRemote(), net_log, true);
 
   ASSERT_EQ(2, url_loader_factory.NumPending());
   EXPECT_EQ(mojom::kURLLoadOptionAsCorsPreflight,
@@ -305,7 +305,8 @@ class MockDevToolsObserver : public mojom::DevToolsObserver {
       const net::CookieAccessResultList& cookies_with_access_result,
       std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
       const base::TimeTicks timestamp,
-      network::mojom::ClientSecurityStatePtr client_security_state) override {
+      network::mojom::ClientSecurityStatePtr client_security_state,
+      network::mojom::OtherPartitionInfoPtr other_partition_info) override {
     on_raw_request_called_ = true;
   }
   void OnRawResponse(
@@ -465,7 +466,8 @@ class PreflightControllerTest : public testing::Test {
         isolation_info, std::move(client_security_state),
         devtools_observer_->Bind(),
         net::NetLogWithSource::Make(net::NetLog::Get(),
-                                    net::NetLogSourceType::URL_REQUEST));
+                                    net::NetLogSourceType::URL_REQUEST),
+        true);
     run_loop_->Run();
   }
 
@@ -772,7 +774,7 @@ TEST_F(PreflightControllerTest,
   mojom::ClientSecurityStatePtr client_security_state =
       ClientSecurityStateBuilder()
           .WithPrivateNetworkRequestPolicy(
-              mojom::PrivateNetworkRequestPolicy::kPreflightWarn)
+              mojom::PrivateNetworkRequestPolicy::kPreflightBlock)
           .Build();
 
   // Set the client security state in the request's trusted params, because the

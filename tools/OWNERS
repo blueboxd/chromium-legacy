@@ -7,6 +7,7 @@
 
 set noparent
 brucedawson@chromium.org
+dpranke@google.com
 thakis@chromium.org
 
 per-file add_header*.py=dcheng@chromium.org
@@ -28,6 +29,8 @@ per-file gyp-explain.py=thakis@chromium.org
 per-file include_tracer.py=thakis@chromium.org
 
 per-file ipc_messages_log.py=yfriedman@chromium.org
+
+per-file licenses_test.py=ichikawa@chromium.org
 
 per-file nocompile_driver.py=wychen@chromium.org
 

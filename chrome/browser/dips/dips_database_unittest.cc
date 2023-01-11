@@ -5,11 +5,14 @@
 #include <optional>
 #include <string>
 
+#include "base/time/time.h"
 #include "chrome/browser/dips/dips_database.h"
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/test/gtest_util.h"
 #include "chrome/browser/dips/dips_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -17,18 +20,24 @@ using base::Time;
 
 class DIPSDatabase;
 
-class DIPSDatabaseTest : public testing::TestWithParam<bool> {
+namespace {
+enum ColumnType {
+  kSiteStorage,
+  kUserInteraction,
+  kStatefulBounce,
+  kStatelessBounce
+};
+}  // namespace
+class DIPSDatabaseTest : public testing::Test {
  public:
-  DIPSDatabaseTest() = default;
+  explicit DIPSDatabaseTest(bool in_memory) : in_memory_(in_memory) {}
 
  protected:
-  base::ScopedTempDir temp_dir_;
   std::unique_ptr<DIPSDatabase> db_;
 
- private:
   // Test setup.
   void SetUp() override {
-    if (GetParam()) {
+    if (in_memory_) {
       db_ = std::make_unique<DIPSDatabase>(absl::nullopt);
     } else {
       ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -43,55 +52,310 @@ class DIPSDatabaseTest : public testing::TestWithParam<bool> {
     db_.reset();
 
     // Deletes temporary directory from on-disk tests
-    if (!GetParam())
+    if (!in_memory_)
       ASSERT_TRUE(temp_dir_.Delete());
   }
+
+ private:
+  base::ScopedTempDir temp_dir_;
+  bool in_memory_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All, DIPSDatabaseTest, testing::Bool());
+// A test class that lets us ensure that we can add, read, update, and delete
+// bounces for all columns in the DIPSDatabase. Parameterized over whether the
+// db is in memory, and what column we're testing.
+class DIPSDatabaseAllColumnTest
+    : public DIPSDatabaseTest,
+      public testing::WithParamInterface<std::tuple<bool, ColumnType>> {
+ public:
+  DIPSDatabaseAllColumnTest()
+      : DIPSDatabaseTest(std::get<0>(GetParam())),
+        column_(std::get<1>(GetParam())) {}
 
-// Test adding, updating, querying, and deleting entries in the bounces table
-// in the DIPSDatabase.
-TEST_P(DIPSDatabaseTest, AddUpdateQueryDeleteBounce) {
-  // Add a bounce for site1.
-  const std::string site1 = GetSiteForDIPS(GURL("http://www.youtube.com/"));
-  absl::optional<base::Time> storage_time1 = Time::FromDoubleT(1);
-  EXPECT_TRUE(db_->Write(site1, storage_time1, absl::nullopt));
+ protected:
+  // Uses `times` to write  to the first and last columns for `column_` in the
+  // `site` row in `db`. This also writes the empty time stamps to all other
+  // columns in `db`
+  bool WriteToVariableColumn(const std::string& site,
+                             const TimestampRange& times) {
+    return db_->Write(site, column_ == kSiteStorage ? times : TimestampRange(),
+                      column_ == kUserInteraction ? times : TimestampRange(),
+                      column_ == kStatefulBounce ? times : TimestampRange(),
+                      column_ == kStatelessBounce ? times : TimestampRange());
+  }
 
-  // Add a bounce for site2.
-  const std::string site2 = GetSiteForDIPS(GURL("http://mail.google.com/"));
-  absl::optional<base::Time> interaction_time2 = Time::FromDoubleT(2);
-  EXPECT_TRUE(db_->Write(site2, absl::nullopt, interaction_time2));
+  TimestampRange ReadValueForVariableColumn(absl::optional<StateValue> value) {
+    switch (column_) {
+      case ColumnType::kSiteStorage:
+        return value->site_storage_times;
+      case ColumnType::kUserInteraction:
+        return value->user_interaction_times;
+      case ColumnType::kStatefulBounce:
+        return value->stateful_bounce_times;
+      case ColumnType::kStatelessBounce:
+        return value->stateless_bounce_times;
+    }
+  }
 
-  // Query both of them.
-  absl::optional<StateValue> state1 = db_->Read(site1);
-  ASSERT_TRUE(state1.has_value());
-  EXPECT_EQ(state1->first_site_storage_time, storage_time1);
-  EXPECT_FALSE(state1->first_user_interaction_time.has_value());
+ private:
+  ColumnType column_;
+};
 
-  absl::optional<StateValue> state2 = db_->Read(site2);
-  ASSERT_TRUE(state2.has_value());
-  EXPECT_FALSE(state2->first_site_storage_time.has_value());
-  EXPECT_EQ(state2->first_user_interaction_time, interaction_time2);
-
-  // Update the second.
-  absl::optional<base::Time> storage_time2 = Time::FromDoubleT(3);
-  state2->first_site_storage_time = storage_time2;
-  EXPECT_TRUE(db_->Write(site2, state2->first_site_storage_time,
-                         state2->first_user_interaction_time));
-  // Query the second again.
-  absl::optional<StateValue> updated_state2 = db_->Read(site2);
-  ASSERT_TRUE(updated_state2.has_value());
-  EXPECT_EQ(updated_state2->first_site_storage_time, storage_time2);
-  EXPECT_EQ(updated_state2->first_user_interaction_time, interaction_time2);
-
-  //  Delete the first.
-  EXPECT_EQ(db_->RemoveRow(site1), true);
-
-  // Query the first one again, making sure there is no state now.
-  EXPECT_FALSE(db_->Read(site1).has_value());
-
-  // Query a site that never had DIPS State.
-  const std::string site3 = GetSiteForDIPS(GURL("https://www.waze.com/"));
-  EXPECT_FALSE(db_->Read(site3).has_value());
+// Test adding entries in the `bounces` table of the DIPSDatabase.
+TEST_P(DIPSDatabaseAllColumnTest, AddBounce) {
+  // Add a bounce for site.
+  const std::string site = GetSiteForDIPS(GURL("http://www.youtube.com/"));
+  TimestampRange bounce_1{Time::FromDoubleT(1), Time::FromDoubleT(1)};
+  EXPECT_TRUE(WriteToVariableColumn(site, bounce_1));
+  // Verify that site is in `bounces` using Read().
+  EXPECT_TRUE(db_->Read(site).has_value());
 }
+
+// Test updating entries in the `bounces` table of the DIPSDatabase.
+TEST_P(DIPSDatabaseAllColumnTest, UpdateBounce) {
+  // Add a bounce for site.
+  const std::string site = GetSiteForDIPS(GURL("http://www.youtube.com/"));
+  TimestampRange bounce_1{Time::FromDoubleT(1), Time::FromDoubleT(1)};
+  EXPECT_TRUE(WriteToVariableColumn(site, bounce_1));
+
+  // Verify that site's entry in `bounces` is now at t = 1
+  EXPECT_EQ(ReadValueForVariableColumn(db_->Read(site)), bounce_1);
+
+  // Update site's entry with a bounce at t = 2
+  TimestampRange bounce_2{Time::FromDoubleT(2), Time::FromDoubleT(3)};
+  EXPECT_TRUE(WriteToVariableColumn(site, bounce_2));
+
+  // Verify that site's entry in `bounces` is now at t = 2
+  EXPECT_EQ(ReadValueForVariableColumn(db_->Read(site)), bounce_2);
+}
+
+// Test deleting an entry from the `bounces` table of the DIPSDatabase.
+TEST_P(DIPSDatabaseAllColumnTest, DeleteBounce) {
+  // Add a bounce for site.
+  const std::string site = GetSiteForDIPS(GURL("http://www.youtube.com/"));
+  TimestampRange bounce{Time::FromDoubleT(1), Time::FromDoubleT(1)};
+  EXPECT_TRUE(WriteToVariableColumn(site, bounce));
+
+  // Verify that site has state tracked in bounces.
+  EXPECT_TRUE(db_->Read(site).has_value());
+
+  //  Delete site's entry in bounces.
+  EXPECT_TRUE(db_->RemoveRow(site));
+
+  // Query the bounces for site, making sure there is no state now.
+  EXPECT_FALSE(db_->Read(site).has_value());
+}
+
+// Test reading the `bounces` table of the DIPSDatabase.
+TEST_P(DIPSDatabaseAllColumnTest, ReadBounce) {
+  // Add a bounce for site.
+  const std::string site = GetSiteForDIPS(GURL("https://example.test"));
+
+  TimestampRange bounce({Time::FromDoubleT(1), Time::FromDoubleT(1)});
+  EXPECT_TRUE(WriteToVariableColumn(site, bounce));
+  EXPECT_EQ(ReadValueForVariableColumn(db_->Read(site)), bounce);
+
+  // Query a site that never had DIPS State, verifying that is has no entry.
+  EXPECT_FALSE(db_->Read(GetSiteForDIPS(GURL("https://www.not-in-db.com/")))
+                   .has_value());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DIPSDatabaseAllColumnTest,
+    ::testing::Combine(::testing::Bool(),
+                       ::testing::Values(ColumnType::kSiteStorage,
+                                         ColumnType::kUserInteraction,
+                                         ColumnType::kStatefulBounce,
+                                         ColumnType::kStatelessBounce)));
+
+// A test class that verifies the behavior of the methods  used to query the
+// DIPSDatabase for information more efficiently than using DIPSDatabase::Read.
+//
+// Parameterized over whether the db is in memory.
+class DIPSDatabaseQueryTest : public DIPSDatabaseTest,
+                              public testing::WithParamInterface<bool> {
+ public:
+  DIPSDatabaseQueryTest() : DIPSDatabaseTest(GetParam()) {}
+
+  void SetUp() override {
+    DIPSDatabaseTest::SetUp();
+
+    DCHECK(db_);
+    // Add entries to the database filling in the columns we want to test.
+    // These test entries correspond with the following cases:
+    // - a site accesses the browser's storage only
+    // - a site redirects the user while accessing storage
+    // - a site redirects the user (without regard to storage access)
+    //  All of these entries include a user interaction.
+    db_->Write("https://storage-only.test", storage_times, interaction_times,
+               /*stateful_bounce_times=*/{}, /*stateless_bounce_times=*/{});
+    db_->Write("https://stateful-bounce.test", storage_times, interaction_times,
+               stateful_bounce_times,
+               /*stateless_bounce_times=*/{});
+    db_->Write("https://stateless-bounce.test",
+               /*storage_times=*/{}, interaction_times,
+               /*stateful_bounce_times=*/{}, stateless_bounce_times);
+  }
+
+  // For ease of testings if a site has an entry in its `user_interaction`
+  // column the timestamp is at t=1 and so on.
+  base::Time interaction = Time::FromDoubleT(1);
+  base::Time storage = Time::FromDoubleT(2);
+  base::Time stateful_bounce = Time::FromDoubleT(3);
+  base::Time stateless_bounce = Time::FromDoubleT(4);
+
+  // Extra times used for testing querying at various times before or after the
+  // events being recorded to the db.
+  base::Time before_interaction = Time::FromDoubleT(0.9999);
+  base::Time after_interaction = Time::FromDoubleT(1.0001);
+  base::Time before_storage = Time::FromDoubleT(1.9999);
+  base::Time after_storage = Time::FromDoubleT(2.0001);
+  base::Time before_stateful_bounce = Time::FromDoubleT(2.9999);
+  base::Time after_stateful_bounce = Time::FromDoubleT(3.0001);
+  base::Time after_stateless_bounce = Time::FromDoubleT(4.0001);
+
+  TimestampRange interaction_times = {interaction, interaction};
+  TimestampRange storage_times = {storage, storage};
+  TimestampRange stateful_bounce_times = {stateful_bounce, stateful_bounce};
+  TimestampRange stateless_bounce_times = {stateless_bounce, stateless_bounce};
+};
+
+TEST_P(DIPSDatabaseQueryTest, EnsureLastInteractionStrictlyBeforeRangeStart) {
+  // Verify that the |last_interaction| shouldn't be greater than |range_start|
+  // for each query method.
+  base::Time range_start = Time::FromDoubleT(0);
+  base::Time last_interaction = Time::FromDoubleT(1);
+
+  EXPECT_DCHECK_DEATH(db_->GetSitesThatBounced(range_start, last_interaction));
+  EXPECT_DCHECK_DEATH(
+      db_->GetSitesThatBouncedWithState(range_start, last_interaction));
+  EXPECT_DCHECK_DEATH(
+      db_->GetSitesThatUsedStorage(range_start, last_interaction));
+
+  // Verify that the |last_interaction| should be strictly less than
+  // |range_start| for each query method.
+  EXPECT_DCHECK_DEATH(
+      db_->GetSitesThatBounced(range_start, /*last_interaction=*/range_start));
+  EXPECT_DCHECK_DEATH(db_->GetSitesThatBouncedWithState(
+      range_start, /*last_interaction=*/range_start));
+  EXPECT_DCHECK_DEATH(db_->GetSitesThatUsedStorage(
+      range_start, /*last_interaction=*/range_start));
+}
+
+TEST_P(DIPSDatabaseQueryTest, GetSitesThatBounced_InteractionTest) {
+  // All queries should be for the entire range (range_start > before_storage)
+  // so that we can test the behavior of this method for different values of
+  // last_interaction.
+  base::Time earliest_range_start = before_storage;
+
+  // No sites are expected since all of their interactions happen later on.
+  EXPECT_THAT(
+      db_->GetSitesThatBounced(earliest_range_start, before_interaction),
+      testing::IsEmpty());
+
+  // No sites are expected since the last_interaction_time check is strictly
+  // less, and not less than or equal to.
+  EXPECT_THAT(db_->GetSitesThatBounced(earliest_range_start, interaction),
+              testing::IsEmpty());
+
+  // When the last_interaction bound is `after_interaction`, both sites that
+  // bounced are returned since they had user interaction before it.
+  EXPECT_THAT(db_->GetSitesThatBounced(earliest_range_start, after_interaction),
+              testing::ElementsAre("https://stateful-bounce.test",
+                                   "https://stateless-bounce.test"));
+}
+
+TEST_P(DIPSDatabaseQueryTest, GetSitesThatBounced_RangeStartTest) {
+  EXPECT_THAT(db_->GetSitesThatBounced(before_storage, after_interaction),
+              testing::ElementsAre("https://stateful-bounce.test",
+                                   "https://stateless-bounce.test"));
+  // When the range begins after the stateful bounce happened,
+  // "stateless-bounce.test" is returned since it bounces later.
+  EXPECT_THAT(
+      db_->GetSitesThatBounced(after_stateful_bounce, after_interaction),
+      testing::ElementsAre("https://stateless-bounce.test"));
+  // When the range begins after the stateless bounce happened, neither are
+  // returned since both sites bounced before this.
+  EXPECT_THAT(
+      db_->GetSitesThatBounced(after_stateless_bounce, after_interaction),
+      testing::IsEmpty());
+}
+
+TEST_P(DIPSDatabaseQueryTest, GetSitesThatBouncedWithState_InteractionTest) {
+  // All queries should be for the entire range (range_start > before_storage)
+  // so that we can test the behavior of this method for different values of
+  // last_interaction.
+  base::Time earliest_range_start = before_storage;
+
+  // No sites are expected since all of their interactions happen later on.
+  EXPECT_THAT(db_->GetSitesThatBouncedWithState(earliest_range_start,
+                                                before_interaction),
+              testing::IsEmpty());
+
+  // No sites are expected since the last_interaction_time check is strictly
+  // less, and not less than or equal to.
+  EXPECT_THAT(
+      db_->GetSitesThatBouncedWithState(earliest_range_start, interaction),
+      testing::IsEmpty());
+
+  // When the last_interaction bound is `after_interaction`, the site that
+  // did a stateful bounce is returned since it had user interaction before it.
+  EXPECT_THAT(db_->GetSitesThatBouncedWithState(earliest_range_start,
+                                                after_interaction),
+              testing::ElementsAre("https://stateful-bounce.test"));
+}
+
+TEST_P(DIPSDatabaseQueryTest, GetSitesThatBouncedWithState_RangeStartTest) {
+  EXPECT_THAT(
+      db_->GetSitesThatBouncedWithState(before_storage, after_interaction),
+      testing::ElementsAre("https://stateful-bounce.test"));
+  // When the range begins after the stateful bounce happened, no other sites
+  // are returned (since no other site did a stateful bounce after this time).
+  EXPECT_THAT(db_->GetSitesThatBouncedWithState(after_stateful_bounce,
+                                                after_interaction),
+              testing::IsEmpty());
+}
+
+TEST_P(DIPSDatabaseQueryTest, GetSitesThatUsedStorage_InteractionTest) {
+  // All queries should be for the entire range (range_start > before_storage)
+  // so that we can test the behavior of this method for different values of
+  // last_interaction.
+  base::Time earliest_range_start = before_storage;
+
+  // No sites are expected since all of their interactions happen later on.
+  EXPECT_THAT(
+      db_->GetSitesThatUsedStorage(earliest_range_start, before_interaction),
+      testing::IsEmpty());
+
+  // No sites are expected since the last_interaction_time check is strictly
+  // less, and not less than or equal to.
+  EXPECT_THAT(db_->GetSitesThatUsedStorage(earliest_range_start, interaction),
+              testing::IsEmpty());
+
+  // When the last_interaction bound is `after_interaction`, both sites that
+  // used storage are returned since they had user interaction before it.
+  EXPECT_THAT(
+      db_->GetSitesThatUsedStorage(earliest_range_start, after_interaction),
+      testing::ElementsAre("https://stateful-bounce.test",
+                           "https://storage-only.test"));
+}
+
+TEST_P(DIPSDatabaseQueryTest, GetSitesThatUsedStorage_RangeStartTest) {
+  // When the range begins at 0, both sites that used storage are returned since
+  // they did so after t=0.
+  EXPECT_THAT(db_->GetSitesThatUsedStorage(before_storage, after_interaction),
+              testing::ElementsAre("https://stateful-bounce.test",
+                                   "https://storage-only.test"));
+  // When the range begins after "storage-only.test" used storage, only
+  // "stateful_bounce.test" is returned since it uses storage later.
+  EXPECT_THAT(db_->GetSitesThatUsedStorage(after_storage, after_interaction),
+              testing::ElementsAre("https://stateful-bounce.test"));
+  // When the range begins after the stateful bounce happened, no other sites
+  // are returned (since no other site used storage after this time).
+  EXPECT_THAT(
+      db_->GetSitesThatUsedStorage(after_stateful_bounce, after_interaction),
+      testing::IsEmpty());
+}
+
+INSTANTIATE_TEST_SUITE_P(All, DIPSDatabaseQueryTest, ::testing::Bool());

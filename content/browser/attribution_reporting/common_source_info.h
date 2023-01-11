@@ -7,9 +7,11 @@
 
 #include <stdint.h>
 
+#include "base/check_op.h"
+#include "base/containers/flat_set.h"
 #include "base/time/time.h"
-#include "content/browser/attribution_reporting/attribution_aggregation_keys.h"
-#include "content/browser/attribution_reporting/attribution_filter_data.h"
+#include "components/attribution_reporting/aggregation_keys.h"
+#include "components/attribution_reporting/filters.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -31,17 +33,35 @@ class CONTENT_EXPORT CommonSourceInfo {
       base::Time source_time,
       AttributionSourceType source_type);
 
+  // TODO(crbug.com/1382389): Remove this constructor once all callers pass
+  // a destination set.
   CommonSourceInfo(uint64_t source_event_id,
                    url::Origin source_origin,
                    url::Origin destination_origin,
                    url::Origin reporting_origin,
                    base::Time source_time,
                    base::Time expiry_time,
+                   absl::optional<base::Time> event_report_window_time,
+                   absl::optional<base::Time> aggregatable_report_window_time,
                    AttributionSourceType source_type,
                    int64_t priority,
-                   AttributionFilterData filter_data,
+                   attribution_reporting::FilterData filter_data,
                    absl::optional<uint64_t> debug_key,
-                   AttributionAggregationKeys aggregation_keys);
+                   attribution_reporting::AggregationKeys aggregation_keys);
+
+  CommonSourceInfo(uint64_t source_event_id,
+                   url::Origin source_origin,
+                   base::flat_set<url::Origin> destination_origins,
+                   url::Origin reporting_origin,
+                   base::Time source_time,
+                   base::Time expiry_time,
+                   absl::optional<base::Time> event_report_window_time,
+                   absl::optional<base::Time> aggregatable_report_window_time,
+                   AttributionSourceType source_type,
+                   int64_t priority,
+                   attribution_reporting::FilterData filter_data,
+                   absl::optional<uint64_t> debug_key,
+                   attribution_reporting::AggregationKeys aggregation_keys);
 
   ~CommonSourceInfo();
 
@@ -55,7 +75,14 @@ class CONTENT_EXPORT CommonSourceInfo {
 
   const url::Origin& source_origin() const { return source_origin_; }
 
-  const url::Origin& destination_origin() const { return destination_origin_; }
+  const base::flat_set<url::Origin>& destination_origins() const {
+    return destination_origins_;
+  }
+
+  const url::Origin& destination_origin() const {
+    DCHECK_EQ(destination_origins_.size(), 1u);
+    return *destination_origins_.begin();
+  }
 
   const url::Origin& reporting_origin() const { return reporting_origin_; }
 
@@ -63,15 +90,25 @@ class CONTENT_EXPORT CommonSourceInfo {
 
   base::Time expiry_time() const { return expiry_time_; }
 
+  base::Time event_report_window_time() const {
+    return event_report_window_time_;
+  }
+
+  base::Time aggregatable_report_window_time() const {
+    return aggregatable_report_window_time_;
+  }
+
   AttributionSourceType source_type() const { return source_type_; }
 
   int64_t priority() const { return priority_; }
 
-  const AttributionFilterData& filter_data() const { return filter_data_; }
+  const attribution_reporting::FilterData& filter_data() const {
+    return filter_data_;
+  }
 
   absl::optional<uint64_t> debug_key() const { return debug_key_; }
 
-  const AttributionAggregationKeys& aggregation_keys() const {
+  const attribution_reporting::AggregationKeys& aggregation_keys() const {
     return aggregation_keys_;
   }
 
@@ -92,15 +129,17 @@ class CONTENT_EXPORT CommonSourceInfo {
  private:
   uint64_t source_event_id_;
   url::Origin source_origin_;
-  url::Origin destination_origin_;
+  base::flat_set<url::Origin> destination_origins_;
   url::Origin reporting_origin_;
   base::Time source_time_;
   base::Time expiry_time_;
+  base::Time event_report_window_time_;
+  base::Time aggregatable_report_window_time_;
   AttributionSourceType source_type_;
   int64_t priority_;
-  AttributionFilterData filter_data_;
+  attribution_reporting::FilterData filter_data_;
   absl::optional<uint64_t> debug_key_;
-  AttributionAggregationKeys aggregation_keys_;
+  attribution_reporting::AggregationKeys aggregation_keys_;
 
   // When adding new members, the corresponding `operator==()` definition in
   // `attribution_test_utils.h` should also be updated.

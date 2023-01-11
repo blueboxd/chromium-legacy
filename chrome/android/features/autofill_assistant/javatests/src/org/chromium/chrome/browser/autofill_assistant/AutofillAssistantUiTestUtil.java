@@ -28,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -434,6 +435,24 @@ class AutofillAssistantUiTestUtil {
                 InstrumentationRegistry.getTargetContext().getResources().getString(id));
     }
 
+    /** Checks whether the scrollbar fading is enabled. */
+    static TypeSafeMatcher<View> isScrollbarFadingEnabled() {
+        return new TypeSafeMatcher<View>() {
+            @Override
+            protected boolean matchesSafely(View item) {
+                if (!(item instanceof ScrollView)) {
+                    return false;
+                }
+                return ((ScrollView) item).isScrollbarFadingEnabled();
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("isScrollbarFadingEnabled");
+            }
+        };
+    }
+
     /**
      * Waits until {@code matcher} matches {@code condition}. Will automatically fail after a
      * default timeout.
@@ -605,6 +624,24 @@ class AutofillAssistantUiTestUtil {
                     + ", or obstructed by the BottomSheet with height=" + totalBottomSheetHeight);
         }
         TestTouchUtils.singleClick(InstrumentationRegistry.getInstrumentation(), x, y);
+    }
+
+    /**
+     * Similar to {@code tapElement}, but clicks with JS and does not check that the element is
+     * currently visible or in the viewport.
+     */
+    public static void clickElementWithJs(WebContents webContents, String... elementIds)
+            throws Exception {
+        TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper javascriptHelper =
+                new TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper();
+        javascriptHelper.evaluateJavaScriptForTests(webContents,
+                "(function() {"
+                        + " " + getElementSelectorString(elementIds) + ".click();"
+                        + " return [true];"
+                        + "})()");
+        javascriptHelper.waitUntilHasValue();
+        JSONArray result = new JSONArray(javascriptHelper.getJsonResultAndClear());
+        assert result.getBoolean(0);
     }
 
     /** Scrolls to the specified element on the webpage, if necessary. */

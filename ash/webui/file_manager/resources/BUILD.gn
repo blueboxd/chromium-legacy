@@ -3,12 +3,12 @@
 # found in the LICENSE file.
 
 import("//build/config/chromeos/ui_mode.gni")
-import("//chrome/browser/resources/tools/optimize_webui.gni")
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/typescript/ts_library.gni")
+import("//ui/file_manager/base/gn/files_webui_bundle/files_webui_bundle.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 
 assert(is_chromeos_ash)
@@ -44,14 +44,12 @@ js_library("main_js") {
   externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
 
-files_app_path =
-    rebase_path("$root_gen_dir/ui/file_manager/preprocessed/file_manager",
-                root_build_dir)
+files_app_path = rebase_path("$root_gen_dir/ui/file_manager/tsc/file_manager",
+                             root_build_dir)
 
 js_type_check("closure_compile") {
   deps = [
     ":main_js",
-    "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
   closure_flags =
@@ -127,7 +125,7 @@ if (!optimize_webui) {
   }
 }
 
-optimize_webui("build") {
+files_webui_bundle("build") {
   host = "file-manager"
   input = rebase_path(preprocess_folder, root_build_dir)
 
@@ -152,8 +150,7 @@ optimize_webui("build") {
   deps = [
     ":preprocess",
     ":preprocess_mojo",
-    "//ui/file_manager:preprocess_generated",
-    "//ui/file_manager:preprocess_static",
+    "//ui/file_manager:build_ts",
     "//ui/webui/resources:preprocess",
   ]
 }

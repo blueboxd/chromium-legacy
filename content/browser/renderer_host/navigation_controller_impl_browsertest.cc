@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/ranges/algorithm.h"
@@ -159,7 +160,7 @@ class NavigationControllerBrowserTestBase : public ContentBrowserTest {
 void InitBackForwardCacheFeature(base::test::ScopedFeatureList* feature_list,
                                  bool enable_back_forward_cache) {
   if (enable_back_forward_cache) {
-    std::vector<base::test::ScopedFeatureList::FeatureAndParams> features;
+    std::vector<base::test::FeatureRefAndParams> features;
     features.push_back({features::kBackForwardCache, {}});
     features.push_back({kBackForwardCacheNoTimeEviction, {}});
     features.push_back({features::kBackForwardCacheMemoryControls, {}});
@@ -8758,6 +8759,96 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   EXPECT_EQ(about_blank_url, new_controller.GetLastCommittedEntry()->GetURL());
 }
 
+// Verify that the restore state of a pending entry doesn't change if an
+// unrelated subframe commits while the navigation is in progress.
+// Regression test for https://crbug.com/923423.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       RestoreAndAddSubframeDuringPendingBack) {
+  GURL url_1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("a.com", "/title2.html"));
+
+  // 1. Start in a tab with 2 NavigationEntries.
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetPrimaryFrameTree()
+                            .root();
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  NavigationEntryImpl* entry1 = controller.GetLastCommittedEntry();
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+  NavigationEntryImpl* entry2 = controller.GetLastCommittedEntry();
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(url_2, root->current_url());
+
+  // 2. Create NavigationEntries with the same PageState as the current entries.
+  std::unique_ptr<NavigationEntryRestoreContextImpl> context =
+      std::make_unique<NavigationEntryRestoreContextImpl>();
+  std::unique_ptr<NavigationEntryImpl> restored_entry1 =
+      NavigationEntryImpl::FromNavigationEntry(
+          NavigationController::CreateNavigationEntry(
+              url_1, Referrer(), absl::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              false, std::string(), controller.GetBrowserContext(),
+              nullptr /* blob_url_loader_factory */));
+  restored_entry1->SetPageState(entry1->GetPageState(), context.get());
+  std::unique_ptr<NavigationEntryImpl> restored_entry2 =
+      NavigationEntryImpl::FromNavigationEntry(
+          NavigationController::CreateNavigationEntry(
+              url_2, Referrer(), absl::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              false, std::string(), controller.GetBrowserContext(),
+              nullptr /* blob_url_loader_factory */));
+  restored_entry2->SetPageState(entry2->GetPageState(), context.get());
+
+  // 3. Create a new tab and restore the entries.
+  Shell* new_shell = Shell::CreateNewWindow(
+      controller.GetBrowserContext(), GURL::EmptyGURL(), nullptr, gfx::Size());
+  WebContentsImpl* new_web_contents =
+      static_cast<WebContentsImpl*>(new_shell->web_contents());
+  NavigationControllerImpl& new_controller =
+      static_cast<NavigationControllerImpl&>(new_web_contents->GetController());
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
+  entries.push_back(std::move(restored_entry1));
+  entries.push_back(std::move(restored_entry2));
+  new_controller.Restore(entries.size() - 1, RestoreType::kRestored, &entries);
+  {
+    TestNavigationObserver restore_observer(new_shell->web_contents());
+    new_controller.LoadIfNecessary();
+    restore_observer.Wait();
+  }
+  NavigationEntryImpl* new_entry1 = new_controller.GetEntryAtIndex(0);
+  NavigationEntryImpl* new_entry2 = new_controller.GetEntryAtIndex(1);
+  EXPECT_EQ(new_entry2, new_controller.GetLastCommittedEntry());
+
+  // 4. Start and pause a back navigation in the new NavigationController, which
+  // will set the pending entry to `new_entry1`.
+  TestNavigationManager back_navigation_manager(new_shell->web_contents(),
+                                                url_1);
+  new_controller.GoBack();
+  EXPECT_TRUE(back_navigation_manager.WaitForRequestStart());
+  EXPECT_EQ(new_entry1, new_controller.GetPendingEntry());
+  EXPECT_TRUE(new_entry1->IsRestored());
+
+  // While waiting for the back navigation, add a new subframe and wait for it
+  // to commit. This should not change the restore status of new_entry1, which
+  // used to fail in https://crbug.com/923423 and caused a DCHECK crash. Note
+  // that passing true for `wait_for_navigation` does not work because it waits
+  // for load stop, which will not happen while the back navigation is pending.
+  TestNavigationObserver subframe_observer(new_web_contents);
+  CreateSubframe(new_web_contents, "child", url_2,
+                 false /* wait_for_navigation */);
+  subframe_observer.WaitForNavigationFinished();
+  EXPECT_EQ(new_entry2, new_controller.GetLastCommittedEntry());
+  EXPECT_EQ(new_entry1, new_controller.GetPendingEntry());
+  EXPECT_TRUE(new_entry1->IsRestored());
+
+  // Allow the back navigation to complete, clearing the restore status.
+  back_navigation_manager.WaitForNavigationFinished();
+  EXPECT_FALSE(new_entry1->IsRestored());
+  EXPECT_EQ(new_entry1, new_controller.GetLastCommittedEntry());
+  EXPECT_EQ(2, new_controller.GetEntryCount());
+  EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
+}
+
 // Verifies that the |frame_unique_name| is set to the correct frame, so that we
 // can match subframe FrameNavigationEntries to newly created frames after
 // back/forward and restore.
@@ -15599,7 +15690,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 
   {
     // Go to a non-existent page resulting in a 404 with an empty body.
-    TestNavigationObserver observer(contents());
+    TestNavigationObserverInternal observer(contents());
     shell()->LoadURL(url);
     observer.Wait();
 
@@ -15619,7 +15710,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 
   {
     // Reloads will still result in an error page.
-    TestNavigationObserver reload_observer(contents());
+    TestNavigationObserverInternal reload_observer(contents());
     shell()->Reload();
     reload_observer.Wait();
     EXPECT_FALSE(reload_observer.last_navigation_succeeded());
@@ -15633,7 +15724,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 
   {
     // Same-URL navigation will still result in an error page.
-    TestNavigationObserver same_url_observer(contents());
+    TestNavigationObserverInternal same_url_observer(contents());
     controller.LoadURL(url, Referrer(), ui::PAGE_TRANSITION_TYPED,
                        std::string() /* extra_headers */);
     same_url_observer.Wait();
@@ -17186,15 +17277,15 @@ class NavigationStarterBeforeDidCommitNavigation
       mojom::DidCommitProvisionalLoadParamsPtr* params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {
-    if ((**params).url == url_to_intercept_) {
-      shell_->LoadURL(url_to_start_);
+    if ((**params).url == *url_to_intercept_) {
+      shell_->LoadURL(*url_to_start_);
     }
     return true;
   }
 
   raw_ptr<Shell> shell_;
-  const GURL& url_to_intercept_;
-  const GURL& url_to_start_;
+  const raw_ref<const GURL> url_to_intercept_;
+  const raw_ref<const GURL> url_to_start_;
 };
 
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
@@ -20955,155 +21046,6 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   }
 }
 
-#if BUILDFLAG(IS_ANDROID)
-// ContentBrowserClient that ignores NavigationStateChanged calls for initial
-// NavigationEntries.
-class IgnoreInitialEntryNavigationStateChangedContentBrowserClient
-    : public TestContentBrowserClient {
- public:
-  IgnoreInitialEntryNavigationStateChangedContentBrowserClient() = default;
-
-  IgnoreInitialEntryNavigationStateChangedContentBrowserClient(
-      const IgnoreInitialEntryNavigationStateChangedContentBrowserClient&) =
-      delete;
-  IgnoreInitialEntryNavigationStateChangedContentBrowserClient& operator=(
-      const IgnoreInitialEntryNavigationStateChangedContentBrowserClient&) =
-      delete;
-
-  bool
-  ShouldIgnoreInitialNavigationEntryNavigationStateChangedForLegacySupport()
-      override {
-    return true;
-  }
-};
-
-// Same as NavigationStateChangedForInitialNavigationEntry above, but with a
-// client that ignores initial NavigationEntry NavigationStateChangedCalls.
-IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
-                       NavigationStateChangedForInitialNavigationEntry_Ignore) {
-  if (!blink::features::IsInitialNavigationEntryEnabled()) {
-    // The tests below specifically tests the "initial NavigationEntry" state,
-    // which is not used when InitialNavigationEntry is disabled.
-    return;
-  }
-
-  IgnoreInitialEntryNavigationStateChangedContentBrowserClient
-      content_browser_client;
-  ContentBrowserClient* old_client =
-      SetBrowserClientForTesting(&content_browser_client);
-
-  GURL url1 = embedded_test_server()->GetURL("/title1.html");
-  GURL url2 = embedded_test_server()->GetURL("/title2.html");
-  EXPECT_TRUE(NavigateToURL(shell(), url1));
-  FrameTreeNode* root = contents()->GetPrimaryFrameTree().root();
-  // Pop open a new window without specifying a URL.
-  ShellAddedObserver new_shell_observer;
-  EXPECT_TRUE(ExecJs(root, "var w = window.open()"));
-  Shell* new_shell = new_shell_observer.GetShell();
-  WebContentsImpl* new_contents =
-      static_cast<WebContentsImpl*>(new_shell->web_contents());
-  EXPECT_TRUE(WaitForLoadStop(new_contents));
-
-  // Observe NavigationStateChanged calls.
-  AllNavigationStateChangedDelegate all_navigation_state_changed_delegate;
-  new_contents->SetDelegate(&all_navigation_state_changed_delegate);
-  EXPECT_EQ(0, all_navigation_state_changed_delegate.call_count());
-  ASSERT_NE(new_contents, shell()->web_contents());
-  FrameTreeNode* new_root = new_contents->GetPrimaryFrameTree().root();
-
-  NavigationControllerImpl& controller = new_contents->GetController();
-  // The new window is on the initial NavigationEntry.
-  EXPECT_EQ(1, controller.GetEntryCount());
-  EXPECT_TRUE(controller.GetLastCommittedEntry()->IsInitialEntry());
-
-  {
-    // Make a new iframe in the popup.
-    LoadCommittedCapturer capturer(new_contents);
-    std::string script = JsReplace(kAddFrameWithSrcScript, url1);
-    EXPECT_TRUE(ExecJs(new_root, script));
-    capturer.Wait();
-    EXPECT_EQ(url1, new_root->child_at(0)->current_url());
-
-    // The new window is still on the initial NavigationEntry, as the previous
-    // navigation modified the existing entry.
-    EXPECT_EQ(1, controller.GetEntryCount());
-    EXPECT_TRUE(controller.GetLastCommittedEntry()->IsInitialEntry());
-
-    // No new NavigationEntry was committed as the last navigation only modifies
-    // the existing NavigationEntry, so no NavigationStateChanged calls were
-    // triggered.
-    EXPECT_EQ(0, all_navigation_state_changed_delegate.call_count());
-  }
-
-  {
-    // Navigate the iframe to another URL.
-    FrameNavigateParamsCapturer capturer(new_root->child_at(0));
-    NavigateFrameToURL(new_root->child_at(0), url2);
-    capturer.Wait();
-    EXPECT_EQ(url2, new_root->child_at(0)->current_url());
-    EXPECT_EQ(NAVIGATION_TYPE_AUTO_SUBFRAME, capturer.navigation_type());
-    // The new window is still on the initial NavigationEntry, as the previous
-    // navigation modified the existing entry.
-    EXPECT_EQ(1, controller.GetEntryCount());
-    EXPECT_TRUE(controller.GetLastCommittedEntry()->IsInitialEntry());
-
-    // No new NavigationEntry was committed as the last navigation only modifies
-    // the existing NavigationEntry, so no NavigationStateChanged calls were
-    // triggered.
-    EXPECT_EQ(0, all_navigation_state_changed_delegate.call_count());
-  }
-
-  {
-    // Navigate the popup main frame to a same-document URL.
-    FrameNavigateParamsCapturer capturer(new_root);
-    EXPECT_TRUE(ExecJs(new_root, "location.href = '#foo';"));
-    capturer.Wait();
-    EXPECT_EQ(GURL("about:blank#foo"), new_root->current_url());
-    EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
-              capturer.navigation_type());
-    EXPECT_TRUE(capturer.is_same_document());
-
-    // The navigation is a same-document navigation from the initial empty
-    // document, so we committed a new initial NavigationEntry that replaced the
-    // previous initial NavigationEntry.
-    EXPECT_TRUE(capturer.did_replace_entry());
-    EXPECT_EQ(1, controller.GetEntryCount());
-    EXPECT_TRUE(controller.GetLastCommittedEntry()->IsInitialEntry());
-
-    // 0 INVALIDATE_TYPE_ALL NavigationStateChanged calls were triggered even
-    // though we committed a new NavigationEntry, because the new
-    // NavigationEntry keeps the "initial" status:
-    // Note that this is different from the non-Ignore test above, which would
-    // fire the events because the client doesn't choose to ignore the updates.
-    EXPECT_EQ(0, all_navigation_state_changed_delegate.call_count());
-  }
-
-  {
-    // Navigate the popup main frame to another URL.
-    FrameNavigateParamsCapturer capturer(new_root);
-    EXPECT_TRUE(ExecJs(new_root, JsReplace("location.href = $1;", url2)));
-    capturer.Wait();
-    EXPECT_EQ(url2, new_root->current_url());
-    EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY, capturer.navigation_type());
-    EXPECT_TRUE(capturer.did_replace_entry());
-
-    // The navigation is a cross-document navigation from the initial empty
-    // document, so we committed a new non-initial NavigationEntry that
-    // replaced the initial entry.
-    EXPECT_EQ(1, controller.GetEntryCount());
-    EXPECT_FALSE(controller.GetLastCommittedEntry()->IsInitialEntry());
-
-    // 2 INVALIDATE_TYPE_ALL NavigationStateChanged calls were triggered, and
-    // they're not for the initial NavigationEntry.
-    // #1 was triggered by DiscardNonCommittedEntries().
-    // #2 is triggered by NotifyNavigationEntryCommitted().
-    EXPECT_EQ(2, all_navigation_state_changed_delegate.call_count());
-  }
-
-  SetBrowserClientForTesting(old_client);
-}
-#endif
-
 // Tests with InitialNavigationEntry enabled/disabled.
 class NavigationControllerInitialNavigationEntryBrowserTest
     : public NavigationControllerBrowserTestBase,
@@ -21856,13 +21798,9 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 // Tests that navigating to a document that was previously sandboxed but later
-// on is loaded again without being marked as sandboxed would reuse the opaque
-// origin that was used when the document was first loaded. Note that this
-// behavior is not currently following the spec, which always calculates the
-// origin based on the latest sandbox flags, but that might change soon.
-// See also the linked bug and https://github.com/whatwg/html/issues/6809.
-// TODO(https://crbug.com/1359351): Update this test to expect the origin to
-// be recalculated once `origin_to_commit` is no longer used.
+// on is loaded again without being marked as sandboxed would not reuse the
+// opaque origin that was used when the document was first loaded, and instead
+// recalculate the origin using the latest state.
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTestNoServer,
                        HistoryNavigationToPreviouslySandboxedDocument) {
   net::test_server::ControllableHttpResponse response1(
@@ -21928,16 +21866,13 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTestNoServer,
     response2.Done();
     nav_observer.Wait();
     EXPECT_EQ(main_url, controller.GetLastCommittedEntry()->GetURL());
-    // The document is not sandboxed, but has an opaque origin derived from
+    // The document is not sandboxed, and has a non-opaque origin based on
     // `main_url`.
-    // TODO(https://crbug.com/1359351): The origin should be recalculated and
-    // result in a non-opaque origin instead.
     EXPECT_FALSE(root->current_frame_host()->IsSandboxed(
         network::mojom::WebSandboxFlags::kAll));
-    EXPECT_TRUE(root->current_frame_host()->GetLastCommittedOrigin().opaque());
-    EXPECT_TRUE(
-        root->current_frame_host()->GetLastCommittedOrigin().CanBeDerivedFrom(
-            main_url));
+    EXPECT_FALSE(root->current_frame_host()->GetLastCommittedOrigin().opaque());
+    EXPECT_EQ(root->current_frame_host()->GetLastCommittedOrigin(),
+              url::Origin::Create(main_url));
   }
 }
 
@@ -21998,14 +21933,14 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     FrameNavigateParamsCapturer capturer(child);
     controller.GoBack();
     capturer.Wait();
-    // The document is not sandboxed, but has an opaque origin derived from
-    // `main_url` (the initiator origin).
+    // The document is not sandboxed, and has a non-opaque origin based on
+    // `main_url`.
     EXPECT_FALSE(child->current_frame_host()->IsSandboxed(
         network::mojom::WebSandboxFlags::kAll));
-    EXPECT_TRUE(child->current_frame_host()->GetLastCommittedOrigin().opaque());
-    EXPECT_TRUE(
-        child->current_frame_host()->GetLastCommittedOrigin().CanBeDerivedFrom(
-            main_url));
+    EXPECT_FALSE(
+        child->current_frame_host()->GetLastCommittedOrigin().opaque());
+    EXPECT_EQ(child->current_frame_host()->GetLastCommittedOrigin(),
+              url::Origin::Create(main_url));
   }
 }
 

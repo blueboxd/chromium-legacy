@@ -137,7 +137,10 @@ class ExtensionInstallPrompt {
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
     bool ShouldShowPermissions() const;
-    bool ShouldDisplayWithholdingUI() const;
+
+    // Returns whether the dialog should withheld permissions if the dialog is
+    // accepted.
+    bool ShouldWithheldPermissionsOnDialogAccept() const;
 
     // Getters for webstore metadata. Only populated when the type is
     // INLINE_INSTALL_PROMPT, EXTERNAL_INSTALL_PROMPT, or REPAIR_PROMPT.
@@ -216,7 +219,7 @@ class ExtensionInstallPrompt {
     bool is_requesting_host_permissions_;
 
     // The extension being installed.
-    raw_ptr<const extensions::Extension> extension_;
+    raw_ptr<const extensions::Extension, DanglingUntriaged> extension_;
 
     std::string delegated_username_;
 
@@ -250,7 +253,7 @@ class ExtensionInstallPrompt {
 
   enum class Result {
     ACCEPTED,
-    ACCEPTED_AND_OPTION_CHECKED,
+    ACCEPTED_WITH_WITHHELD_PERMISSIONS,
     USER_CANCELED,
     ABORTED,
   };

@@ -119,7 +119,7 @@ def GetTestRunFilterArg(args, test_run, test_app_mode=None, arch=None):
   test_app_mode = test_app_mode or _APP_MODE_FULL
 
   # Convert cmdline filters to test-filter style
-  filter_string = test_filter.InitializeFilterFromArgs(args)
+  filter_strings = test_filter.InitializeFiltersFromArgs(args)
 
   # Get all the filters for either include or exclude patterns
   # and filter where an architecture is provided and does not match
@@ -132,20 +132,25 @@ def GetTestRunFilterArg(args, test_run, test_app_mode=None, arch=None):
         if 'mode' not in filter_ or filter_['mode'] == test_app_mode
     ]
 
-  # Only add inclusion filters if there's not already one specified, since
-  # they would conflict, see test_filter.ConflictingPositiveFiltersException.
-  if not test_filter.HasPositivePatterns(filter_string):
+  if not filter_strings or not any(
+      test_filter.HasPositivePatterns(filt) for filt in filter_strings):
     patterns = getTestRunFilters("includes")
-    filter_string = test_filter.AppendPatternsToFilter(
-        filter_string, positive_patterns=patterns)
+    positive_string = test_filter.AppendPatternsToFilter(
+        '', positive_patterns=patterns)
+    if positive_string:
+      filter_strings.append(positive_string)
 
   if args.skip_expected_failures:
     patterns = getTestRunFilters("excludes")
-    filter_string = test_filter.AppendPatternsToFilter(
-        filter_string, negative_patterns=patterns)
+    negative_string = test_filter.AppendPatternsToFilter(
+        '', negative_patterns=patterns)
+    filter_strings.append(negative_string)
 
-  if filter_string:
-    return [TEST_FILTER_OPT + '=' + filter_string]
+  if filter_strings:
+    return [
+        TEST_FILTER_OPT + '=' + filter_string
+        for filter_string in filter_strings
+    ]
   return []
 
 
@@ -157,6 +162,8 @@ def RunCTS(
     voice_service=None,
     additional_apks=None,
     test_app_mode=None,
+    setup_commands=None,
+    teardown_commands=None,
     json_results_file=None):
   """Run tests in apk using test_runner script at _TEST_RUNNER_PATH.
 
@@ -187,6 +194,14 @@ def RunCTS(
         local_test_runner_args += [
             '--instant-additional-apk', additional_apk_tmp
         ]
+
+  if setup_commands:
+    for cmd in setup_commands:
+      local_test_runner_args += ['--run-setup-command', cmd]
+
+  if teardown_commands:
+    for cmd in teardown_commands:
+      local_test_runner_args += ['--run-teardown-command', cmd]
 
   if json_results_file:
     local_test_runner_args += ['--json-results-file=%s' %
@@ -275,6 +290,10 @@ def RunAllCTSTests(args, arch, cts_release, test_runner_args):
       # services to run
       additional_apks = cts_test_run.get('additional_apks')
 
+      # Some tests require custom setup and/or teardown steps
+      setup_commands = cts_test_run.get('setup_commands')
+      teardown_commands = cts_test_run.get('teardown_commands')
+
       test_app_mode = (_APP_MODE_INSTANT
                        if args.test_apk_as_instant else _APP_MODE_FULL)
 
@@ -294,6 +313,8 @@ def RunAllCTSTests(args, arch, cts_release, test_runner_args):
               voice_service=voice_service,
               additional_apks=additional_apks,
               test_app_mode=test_app_mode,
+              setup_commands=setup_commands,
+              teardown_commands=teardown_commands,
               json_results_file=iteration_json_file.name)
           with open(iteration_json_file.name) as f:
             additional_results_json = json.load(f)
@@ -304,7 +325,9 @@ def RunAllCTSTests(args, arch, cts_release, test_runner_args):
                                       apk=test_apk,
                                       voice_service=voice_service,
                                       additional_apks=additional_apks,
-                                      test_app_mode=test_app_mode)
+                                      test_app_mode=test_app_mode,
+                                      setup_commands=setup_commands,
+                                      teardown_commands=teardown_commands)
       if iteration_cts_result:
         cts_result = iteration_cts_result
     if json_results_file:
@@ -507,8 +530,8 @@ def main():
     arch = args.arch or DetermineArch(device)
     cts_release = args.cts_release or DetermineCtsRelease(device)
 
-    if (args.test_filter_files or args.test_filter
-        or args.isolated_script_test_filter):
+    if (args.test_filter_files or args.test_filters
+        or args.isolated_script_test_filters):
       # TODO(aluo): auto-determine the module based on the test filter and the
       # available tests in each module
       if not args.module_apk:

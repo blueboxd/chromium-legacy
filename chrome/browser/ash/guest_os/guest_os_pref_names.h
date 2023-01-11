@@ -41,6 +41,7 @@ extern const char kAppLastLaunchTimeKey[];
 
 // GuestId
 extern const char kGuestOsContainers[];
+extern const char kContainerCreateOptions[];
 extern const char kContainerOsVersionKey[];
 extern const char kContainerOsPrettyNameKey[];
 extern const char kContainerColorKey[];
@@ -48,6 +49,7 @@ extern const char kContainerColorKey[];
 extern const char kTerminalSupportedKey[];
 // The display name to use in the terminal.
 extern const char kTerminalLabel[];
+extern const char kContainerSharedVmDevicesKey[];
 
 // Terminal
 // Dictionary of terminal UI settings such as font style, colors, etc.

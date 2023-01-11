@@ -96,6 +96,8 @@ _NEGATIVE_FILTER = [
     'ChromeSwitchesCapabilityTest.*',
     'ChromeExtensionsCapabilityTest.*',
     'MobileEmulationCapabilityTest.*',
+    # Flaky https://bugs.chromium.org/p/chromium/issues/detail?id=1378464
+    'BidiTest.*',
 ]
 
 
@@ -573,14 +575,6 @@ class ChromeDriverWebSocketTest(ChromeDriverBaseTestWithWebServer):
   def testWebSocketUrlInvalid(self):
     self.assertRaises(chromedriver.InvalidArgument,
         self.CreateDriver, web_socket_url='Invalid')
-
-  def testWebSocketOneConnectionPerSession(self):
-    driver = self.CreateDriver(web_socket_url=True)
-    websocket = websocket_connection.WebSocketConnection(
-        _CHROMEDRIVER_SERVER_URL, driver.GetSessionId())
-    self.assertNotEqual(None, websocket)
-    self.assertRaises(Exception, websocket_connection.WebSocketConnection,
-                      _CHROMEDRIVER_SERVER_URL, driver.GetSessionId())
 
   def testWebSocketInvalidSessionId(self):
     driver = self.CreateDriver(web_socket_url=True)
@@ -3027,7 +3021,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         'state': 'denied'})
 
   def testPermissionStates(self):
-    """ Confirms that denied, granted, and prompt can be set. """
+    """ Confirms that denied and granted can be set. """
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.SetPermission({
       'descriptor': { 'name': 'geolocation' },
@@ -3039,11 +3033,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       'state': 'granted'
     })
     self.CheckPermission(self.GetPermission('geolocation'), 'granted')
-    self._driver.SetPermission({
-      'descriptor': { 'name': 'geolocation' },
-      'state': 'prompt'
-    })
-    self.CheckPermission(self.GetPermission('geolocation'), 'prompt')
 
   def testSettingPermissionDoesNotAffectOthers(self):
     """ Confirm permissions do not affect unset permissions. """
@@ -3066,15 +3055,10 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       'state': 'denied'
     })
     self._driver.SetPermission({
-      'descriptor': { 'name': 'background-fetch' },
-      'state': 'prompt'
-    })
-    self._driver.SetPermission({
       'descriptor': { 'name': 'background-sync' },
       'state': 'granted'
     })
     self.CheckPermission(self.GetPermission('geolocation'), 'denied')
-    self.CheckPermission(self.GetPermission('background-fetch'), 'prompt')
     self.CheckPermission(self.GetPermission('background-sync'), 'granted')
 
   def testSensorPermissions(self):
@@ -3178,11 +3162,11 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
     parameters = {
       'descriptor': { 'name': 'clipboard-write' },
-      'state': 'prompt'
+      'state': 'denied'
     }
     self._driver.SetPermission(parameters)
     self.CheckPermission(self.GetPermission('clipboard-read'), 'granted')
-    self.CheckPermission(self.GetPermission('clipboard-write'), 'prompt')
+    self.CheckPermission(self.GetPermission('clipboard-write'), 'denied')
 
   def testPersistentStoragePermissions(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -3273,14 +3257,14 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.SwitchToWindow(another_window_handle)
 
     # Set permission.
-    parameters = { 'descriptor': { 'name': 'geolocation' }, 'state': 'prompt' }
+    parameters = { 'descriptor': { 'name': 'geolocation' }, 'state': 'granted' }
 
     # Test that they are present across the same domain.
     self._driver.SetPermission(parameters)
-    self.CheckPermission(self.GetPermission('geolocation'), 'prompt')
+    self.CheckPermission(self.GetPermission('geolocation'), 'granted')
 
     self._driver.SwitchToWindow(window_handle)
-    self.CheckPermission(self.GetPermission('geolocation'), 'prompt')
+    self.CheckPermission(self.GetPermission('geolocation'), 'granted')
 
     # Assert different domain is not the same.
     self._driver.SwitchToWindow(different_domain)
@@ -5235,8 +5219,8 @@ class HeadlessInvalidCertificateTest(ChromeDriverBaseTestWithWebServer):
       HeadlessInvalidCertificateTest._https_server.GetUrl() + file_path)
 
   def setUp(self):
-    self._driver = self.CreateDriver(chrome_switches = ["--headless"],
-                                     accept_insecure_certs = True)
+    self._driver = self.CreateDriver(chrome_switches=["--headless"],
+                                     accept_insecure_certs=True)
 
   def testLoadsPage(self):
     print("loading")
@@ -5323,14 +5307,51 @@ class HeadlessChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 class BidiTest(ChromeDriverBaseTestWithWebServer):
 
   def setUp(self):
-    self._driver = self.CreateDriver(web_socket_url = True)
+    super().setUp()
+    self._driver = self.CreateDriver(web_socket_url=True)
+    self._connections = []
 
-  def createWebSocketConnection(self, driver = None):
+  def tearDown(self):
+    for conn in self._connections:
+      conn.Close()
+    super().tearDown()
+
+  def createWebSocketConnection(self, driver=None):
     if driver is None:
       driver = self._driver
     conn = driver.CreateWebSocketConnection()
     conn.SetTimeout(5 * 60) # 5 minutes
+    self._connections.append(conn)
     return conn
+
+  def getContextId(self, conn, idx):
+    cmd_id = conn.SendCommand({
+      'method': 'browsingContext.getTree',
+      'params': {
+      }
+    })
+    resp = conn.WaitForResponse(cmd_id)
+    return resp['result']['contexts'][idx]['context']
+
+  def postEvaluate(self, conn, expression, context_id=None, channel=None,
+                   id=None):
+    if context_id is None:
+      context_id = self.getContextId(conn, 0)
+    command = {
+      'method': 'script.evaluate',
+      'params': {
+          'expression': expression,
+          'awaitPromise': False,
+          'target': {
+            'context': context_id
+          }
+      }
+    }
+    if channel is not None:
+      command['channel'] = channel
+    if id is not None:
+      command['id'] = id
+    return conn.SendCommand(command)
 
   def testCreateContext(self):
     conn = self.createWebSocketConnection()
@@ -5422,21 +5443,42 @@ class BidiTest(ChromeDriverBaseTestWithWebServer):
   def testBrowserQuitsWhenLastBrowsingContextIsClosed(self):
     conn = self.createWebSocketConnection()
 
-    cmd_id = conn.SendCommand({
-      'method': 'browsingContext.getTree',
-      'params': {
-      }
-    })
-    resp = conn.WaitForResponse(cmd_id)
-    contexts = resp['result']['contexts']
+    context_id = self.getContextId(conn, 0)
 
     cmd_id = conn.SendCommand({
       'method': 'browsingContext.close',
       'params': {
-          'context': contexts[0]['context']
+          'context': context_id
       }
     })
     conn.WaitForResponse(cmd_id)
+
+    with self.assertRaises(chromedriver.WebSocketConnectionClosedException):
+      # BiDi messages cannot have negative "id".
+      # Wait indefinitely until time out.
+      conn.WaitForResponse(-1)
+
+  def testCmdIdCheatAndBrowserClosing(self):
+    # Browser closing mechanism should not rely on command it
+    conn = self.createWebSocketConnection()
+    context_id = self.getContextId(conn, 0)
+    cmd_id1 = None
+    # overwhelm the Mapper to have enough irrelevant responses
+    for k in range(200):
+      cmd_id1 = self.postEvaluate(conn,
+                                  "24",
+                                  context_id = context_id,
+                                  id = 10005)
+
+    cmd_id2 = conn.SendCommand({
+      'id': 10005,
+      'method': 'browsingContext.close',
+      'params': {
+          'context': context_id
+      }
+    })
+    self.assertEqual(cmd_id1, cmd_id2)
+    conn.WaitForResponse(cmd_id2)
 
     with self.assertRaises(chromedriver.WebSocketConnectionClosedException):
       # BiDi messages cannot have negative "id".
@@ -5474,11 +5516,179 @@ class BidiTest(ChromeDriverBaseTestWithWebServer):
     self.assertIsInstance(children, list)
     self.assertEqual(1, len(children))
 
+  def testNamedChannel(self):
+    conn = self.createWebSocketConnection()
+    context_id = self.getContextId(conn, 0);
+    self.assertIsNotNone(context_id)
+
+    cmd_id1 = self.postEvaluate(conn, '9', channel="abc", context_id=context_id)
+    cmd_id2 = self.postEvaluate(conn, '13', context_id=context_id)
+
+    resp = conn.WaitForResponse(cmd_id2)
+    self.assertEqual(13, resp['result']['result']['value'])
+    resp = conn.TryGetResponse(cmd_id1)
+    self.assertIsNone(resp)
+    resp = conn.WaitForResponse(cmd_id1, channel="abc")
+    self.assertEqual(9, resp['result']['result']['value'])
+
+  def testMultipleConnections(self):
+    conn1 = self.createWebSocketConnection()
+    context_id = self.getContextId(conn1, 0);
+    self.assertIsNotNone(context_id)
+    conn2 = self.createWebSocketConnection()
+    # Pre-check: make sure that the implementation does not use the same socket
+    self.assertNotEqual(conn1, conn2);
+
+    cmd_id1 = self.postEvaluate(conn1, '77', context_id = context_id)
+    cmd_id2 = self.postEvaluate(conn2, '23', context_id = context_id)
+    cmd_id3 = self.postEvaluate(conn1, '41', context_id = context_id)
+    cmd_id4 = self.postEvaluate(conn2, '98', context_id = context_id)
+
+    resp = conn1.WaitForResponse(cmd_id1)
+    self.assertEqual(77, resp['result']['result']['value'])
+    resp = conn1.WaitForResponse(cmd_id3)
+    self.assertEqual(41, resp['result']['result']['value'])
+    resp = conn2.WaitForResponse(cmd_id4)
+    self.assertEqual(98, resp['result']['result']['value'])
+    resp = conn2.WaitForResponse(cmd_id2)
+    self.assertEqual(23, resp['result']['result']['value'])
+
+  def testMultipleConnectionsNamedChannels(self):
+    conn1 = self.createWebSocketConnection()
+    context_id = self.getContextId(conn1, 0);
+    self.assertIsNotNone(context_id)
+    conn2 = self.createWebSocketConnection()
+    # Pre-check: make sure that the implementation does not use the same socket
+    self.assertNotEqual(conn1, conn2);
+
+    cmd_id1 = self.postEvaluate(conn1, '77', context_id=context_id, id=100,
+                                channel='3')
+    cmd_id2 = self.postEvaluate(conn1, '23', context_id=context_id, id=100,
+                                channel='/')
+    cmd_id3 = self.postEvaluate(conn2, '41', context_id=context_id, id=101,
+                                channel='3')
+    cmd_id4 = self.postEvaluate(conn2, '98', context_id=context_id, id=100,
+                                channel='')
+    cmd_id5 = self.postEvaluate(conn2, '6', context_id=context_id, id=100)
+
+    resp = conn2.WaitForResponse(cmd_id3, channel='3')
+    self.assertEqual(41, resp['result']['result']['value'])
+    resp = conn1.WaitForResponse(cmd_id1, channel = '3')
+    self.assertEqual(77, resp['result']['result']['value'])
+    resp = conn1.WaitForResponse(cmd_id2, channel='/')
+    self.assertEqual(23, resp['result']['result']['value'])
+    resp = conn2.WaitForResponse(cmd_id4, channel='')
+    self.assertEqual(98, resp['result']['result']['value'])
+    resp = conn2.WaitForResponse(cmd_id5)
+    self.assertEqual(6, resp['result']['result']['value'])
+
+  def subscribeToLoad(self, conn, channel=None):
+    command = {
+      'method': 'session.subscribe',
+      'params': {
+          'events': [
+              'browsingContext.load']}}
+    if channel is not None:
+      command['channel'] = channel
+    return conn.SendCommand(command)
+
+  def navigateSomewhere(self, conn, context_id=None, channel=None):
+    if context_id is None:
+      context_id = self.getContextId(conn, 0)
+    command = {
+        'method': 'browsingContext.navigate',
+        'params': {
+            'url': 'data:text/html,navigated',
+            'wait': 'complete',
+            'context': context_id}}
+    if channel is not None:
+      command['channel'] = channel
+    return conn.SendCommand(command)
+
+  def testEvent(self):
+    conn = self.createWebSocketConnection()
+    context_id = self.getContextId(conn, 0);
+    self.assertIsNotNone(context_id)
+
+    self.subscribeToLoad(conn)
+    cmd_id = self.navigateSomewhere(conn, context_id)
+    conn.WaitForResponse(cmd_id)
+
+    events = conn.TakeEvents()
+    # The event for about:blank is also possible
+    self.assertLessEqual(1, len(events))
+    self.assertFalse('channel' in events[0])
+    self.assertEqual('browsingContext.load', events[0]['method'])
+
+  def testEventChannel(self):
+    conn = self.createWebSocketConnection()
+    context_id = self.getContextId(conn, 0);
+    self.assertIsNotNone(context_id)
+
+    self.subscribeToLoad(conn, channel='abc')
+    cmd_id = self.navigateSomewhere(conn, context_id, channel='abc')
+    conn.WaitForResponse(cmd_id, channel='abc')
+
+    events = conn.TakeEvents()
+    # The event for about:blank is also possible
+    self.assertLessEqual(1, len(events))
+    self.assertEqual('abc', events[0]['channel'])
+    self.assertEqual('browsingContext.load', events[0]['method'])
+
+  def testEventChannelAndNoChannel(self):
+    conn = self.createWebSocketConnection()
+    context_id = self.getContextId(conn, 0);
+    self.assertIsNotNone(context_id)
+
+    self.subscribeToLoad(conn)
+    self.subscribeToLoad(conn, channel='x')
+    cmd_id = self.navigateSomewhere(conn, context_id)
+    conn.WaitForResponse(cmd_id)
+
+    all_events = conn.TakeEvents()
+    events = [evt for evt in all_events if 'channel' not in evt]
+    events_x = [evt for evt in all_events
+               if 'channel' in evt and evt['channel'] == 'x']
+
+    # The event for about:blank is also possible
+    self.assertLessEqual(1, len(events))
+    self.assertFalse('channel' in events[0])
+    self.assertEqual('browsingContext.load', events[0]['method'])
+
+    # The event for about:blank is also possible
+    self.assertLessEqual(1, len(events_x))
+    self.assertEqual('x', events_x[0]['channel'])
+    self.assertEqual('browsingContext.load', events[0]['method'])
+
+  def testEventConnections(self):
+    conn1 = self.createWebSocketConnection()
+    conn2 = self.createWebSocketConnection()
+    context_id = self.getContextId(conn1, 0);
+    self.assertIsNotNone(context_id)
+
+    self.subscribeToLoad(conn2)
+    cmd_id = self.navigateSomewhere(conn1, context_id=context_id)
+    conn1.WaitForResponse(cmd_id)
+    # push the events
+    cmd_id = self.postEvaluate(conn2, '12', context_id=context_id)
+    conn2.WaitForResponse(cmd_id)
+
+    events1 = conn1.TakeEvents()
+    events2 = conn2.TakeEvents()
+
+    self.assertEqual(0, len(events1))
+    # The event for about:blank is also possible
+    self.assertLessEqual(1, len(events2))
+    self.assertFalse('channel' in events2[0])
+    self.assertEqual('browsingContext.load', events2[0]['method'])
+
+
+
 
 class ClassicTest(ChromeDriverBaseTestWithWebServer):
 
   def testAfterLastPage(self):
-    driver = self.CreateDriver(web_socket_url = False)
+    driver = self.CreateDriver(web_socket_url=False)
 
     handles = driver.GetWindowHandles()
     self.assertEqual(1, len(handles))

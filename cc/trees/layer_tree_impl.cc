@@ -34,7 +34,6 @@
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
 #include "cc/base/synced_property.h"
-#include "cc/document_transition/document_transition_request.h"
 #include "cc/input/page_scale_animation.h"
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/layers/effect_tree_layer_list_iterator.h"
@@ -54,6 +53,7 @@
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "cc/trees/tree_synchronizer.h"
+#include "cc/view_transition/view_transition_request.h"
 #include "components/viz/common/traced_value.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -599,10 +599,10 @@ void LayerTreeImpl::PullPropertiesFrom(
     ForceRedrawNextActivation();
   if (commit_state.next_commit_forces_recalculate_raster_scales)
     ForceRecalculateRasterScales();
-  if (!commit_state.pending_presentation_time_callbacks.empty()) {
-    AddPresentationCallbacks(
-        std::move(commit_state.pending_presentation_time_callbacks));
-  }
+  AddPresentationCallbacks(
+      std::move(commit_state.pending_presentation_callbacks));
+  AddSuccessfulPresentationCallbacks(
+      std::move(commit_state.pending_successful_presentation_callbacks));
 
   if (commit_state.needs_full_tree_sync)
     TreeSynchronizer::SynchronizeTrees(commit_state, unsafe_state, this);
@@ -743,8 +743,8 @@ void LayerTreeImpl::PullLayerTreePropertiesFrom(CommitState& commit_state) {
     delegated_ink_metadata_.reset();
 
   // Transfer page transition directives.
-  for (auto& request : commit_state.document_transition_requests)
-    AddDocumentTransitionRequest(std::move(request));
+  for (auto& request : commit_state.view_transition_requests)
+    AddViewTransitionRequest(std::move(request));
 
   SetVisualUpdateDurations(
       commit_state.previous_surfaces_visual_update_duration,
@@ -862,6 +862,9 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->HandleScrollbarShowRequests();
   target_tree->AddPresentationCallbacks(std::move(presentation_callbacks_));
   presentation_callbacks_.clear();
+  target_tree->AddSuccessfulPresentationCallbacks(
+      std::move(successful_presentation_callbacks_));
+  successful_presentation_callbacks_.clear();
 
   if (delegated_ink_metadata_) {
     TRACE_EVENT_WITH_FLOW1("delegated_ink_trails",
@@ -874,8 +877,8 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
     target_tree->clear_delegated_ink_metadata();
   }
 
-  for (auto& request : TakeDocumentTransitionRequests())
-    target_tree->AddDocumentTransitionRequest(std::move(request));
+  for (auto& request : TakeViewTransitionRequests())
+    target_tree->AddViewTransitionRequest(std::move(request));
 
   target_tree->SetVisualUpdateDurations(
       previous_surfaces_visual_update_duration_, visual_update_duration_);
@@ -997,16 +1000,27 @@ void LayerTreeImpl::SetBackdropFilterMutated(
 }
 
 void LayerTreeImpl::AddPresentationCallbacks(
-    std::vector<PresentationTimeCallbackBuffer::MainCallback> callbacks) {
-  std::copy(std::make_move_iterator(callbacks.begin()),
-            std::make_move_iterator(callbacks.end()),
-            std::back_inserter(presentation_callbacks_));
+    std::vector<PresentationTimeCallbackBuffer::Callback> callbacks) {
+  base::ranges::move(callbacks, std::back_inserter(presentation_callbacks_));
 }
 
-std::vector<PresentationTimeCallbackBuffer::MainCallback>
+std::vector<PresentationTimeCallbackBuffer::Callback>
 LayerTreeImpl::TakePresentationCallbacks() {
-  std::vector<PresentationTimeCallbackBuffer::MainCallback> callbacks;
+  std::vector<PresentationTimeCallbackBuffer::Callback> callbacks;
   callbacks.swap(presentation_callbacks_);
+  return callbacks;
+}
+
+void LayerTreeImpl::AddSuccessfulPresentationCallbacks(
+    std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback> callbacks) {
+  base::ranges::move(callbacks,
+                     std::back_inserter(successful_presentation_callbacks_));
+}
+
+std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback>
+LayerTreeImpl::TakeSuccessfulPresentationCallbacks() {
+  std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback> callbacks;
+  callbacks.swap(successful_presentation_callbacks_);
   return callbacks;
 }
 
@@ -1844,7 +1858,7 @@ TileManager* LayerTreeImpl::tile_manager() const {
 }
 
 ImageDecodeCache* LayerTreeImpl::image_decode_cache() const {
-  return host_impl_->image_decode_cache();
+  return host_impl_->GetImageDecodeCache();
 }
 
 ImageAnimationController* LayerTreeImpl::image_animation_controller() const {
@@ -2112,9 +2126,6 @@ void LayerTreeImpl::ProcessUIResourceRequestQueue() {
       case UIResourceRequest::UI_RESOURCE_DELETE:
         host_impl_->DeleteUIResource(req.GetId());
         break;
-      case UIResourceRequest::UI_RESOURCE_INVALID_REQUEST:
-        NOTREACHED();
-        break;
     }
   }
   ui_resource_request_queue_.clear();
@@ -2242,8 +2253,7 @@ static bool PointHitsRect(
     float* distance_to_camera) {
   // If the transform is not invertible, then assume that this point doesn't hit
   // this rect.
-  gfx::Transform inverse_local_space_to_screen_space(
-      gfx::Transform::kSkipInitialization);
+  gfx::Transform inverse_local_space_to_screen_space;
   if (!local_space_to_screen_space_transform.GetInverse(
           &inverse_local_space_to_screen_space))
     return false;
@@ -2329,8 +2339,7 @@ static bool PointHitsRegion(const gfx::PointF& screen_space_point,
 
   // If the transform is not invertible, then assume that this point doesn't hit
   // this region.
-  gfx::Transform inverse_screen_space_transform(
-      gfx::Transform::kSkipInitialization);
+  gfx::Transform inverse_screen_space_transform;
   if (!screen_space_transform.GetInverse(&inverse_screen_space_transform))
     return false;
 
@@ -2907,20 +2916,20 @@ std::string LayerTreeImpl::LayerListAsJson() const {
   return value.ToFormattedJSON();
 }
 
-void LayerTreeImpl::AddDocumentTransitionRequest(
-    std::unique_ptr<DocumentTransitionRequest> request) {
-  document_transition_requests_.push_back(std::move(request));
+void LayerTreeImpl::AddViewTransitionRequest(
+    std::unique_ptr<ViewTransitionRequest> request) {
+  view_transition_requests_.push_back(std::move(request));
   // We need to send the request to viz.
   SetNeedsRedraw();
 }
 
-std::vector<std::unique_ptr<DocumentTransitionRequest>>
-LayerTreeImpl::TakeDocumentTransitionRequests() {
-  return std::move(document_transition_requests_);
+std::vector<std::unique_ptr<ViewTransitionRequest>>
+LayerTreeImpl::TakeViewTransitionRequests() {
+  return std::move(view_transition_requests_);
 }
 
-bool LayerTreeImpl::HasDocumentTransitionRequests() const {
-  return !document_transition_requests_.empty();
+bool LayerTreeImpl::HasViewTransitionRequests() const {
+  return !view_transition_requests_.empty();
 }
 
 bool LayerTreeImpl::IsReadyToActivate() const {

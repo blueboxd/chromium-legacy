@@ -79,7 +79,7 @@ class PdfFindRequestManagerTest : public InProcessBrowserTest {
 
  private:
   FindTestWebContentsDelegate test_delegate_;
-  raw_ptr<WebContentsDelegate> normal_delegate_ = nullptr;
+  raw_ptr<WebContentsDelegate, DanglingUntriaged> normal_delegate_ = nullptr;
 
   // The ID of the last find request requested.
   int last_request_id_ = 0;
@@ -245,8 +245,10 @@ IN_PROC_BROWSER_TEST_F(PdfFindRequestManagerTestWithPdfPartialLoading,
   // Verify that find-in-page works fine.
   auto options = blink::mojom::FindOptions::New();
   Find("FXCMAP_CMap", options.Clone());
+  delegate()->WaitForFinalReply();
   options->new_session = false;
   Find("FXCMAP_CMap", options.Clone());
+  delegate()->WaitForFinalReply();
   Find("FXCMAP_CMap", options.Clone());
   delegate()->WaitForFinalReply();
 

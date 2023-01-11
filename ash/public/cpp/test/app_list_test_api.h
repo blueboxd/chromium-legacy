@@ -19,6 +19,10 @@ namespace views {
 class View;
 }  // namespace views
 
+namespace ui {
+class Layer;
+}  // namespace ui
+
 namespace ui::test {
 class EventGenerator;
 }  // namespace ui::test
@@ -48,7 +52,7 @@ class ASH_EXPORT AppListTestApi {
   // `wait_for_opening_animation` indicates whether to wait for the bubble
   // launcher show animations (including the app list window animation, the
   // bubble apps page animation, the bubble view animation and apps grid
-  // animation). Only used with productivity launcher in clamshell mode.
+  // animation).
   void WaitForBubbleWindow(bool wait_for_opening_animation);
 
   // Waits until all the animations to show the app list become idle. No
@@ -95,9 +99,6 @@ class ASH_EXPORT AppListTestApi {
 
   // Returns the pagination model.
   PaginationModel* GetPaginationModel();
-
-  // Updates the paged view structure.
-  void UpdatePagedViewStructure();
 
   // Returns the top level apps grid view. Could be ScrollableAppsGridView if
   // bubble launcher is enabled or PagedAppsGridView otherwise.
@@ -170,6 +171,10 @@ class ASH_EXPORT AppListTestApi {
   // Returns the recent app item item specified by `index`.
   views::View* GetRecentAppAt(int index);
 
+  // Returns the list of app IDs shown in recent apps view, in order they appear
+  // in the  UI.
+  std::vector<std::string> GetRecentAppIds();
+
   // Updates launcher search box content, and triggers search.
   void SimulateSearch(const std::u16string& query);
 
@@ -232,6 +237,9 @@ class ASH_EXPORT AppListTestApi {
   // completes.
   void ClickOnCloseButtonAndWaitForToastAnimation(
       ui::test::EventGenerator* event_generator);
+
+  // Returns `AppListView`'s layer.
+  ui::Layer* GetAppListViewLayer();
 
  private:
   // Adds a callback that runs at the end of the reorder animation.

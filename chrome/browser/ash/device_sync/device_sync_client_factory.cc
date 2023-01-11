@@ -4,11 +4,6 @@
 
 #include "chrome/browser/ash/device_sync/device_sync_client_factory.h"
 
-#include "ash/services/device_sync/device_sync_impl.h"
-#include "ash/services/device_sync/public/cpp/device_sync_client.h"
-#include "ash/services/device_sync/public/cpp/device_sync_client_impl.h"
-#include "ash/services/device_sync/stub_device_sync.h"
-#include "ash/services/multidevice_setup/public/cpp/prefs.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/timer/timer.h"
@@ -21,6 +16,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chromeos/ash/components/multidevice/stub_multidevice_util.h"
+#include "chromeos/ash/services/device_sync/device_sync_impl.h"
+#include "chromeos/ash/services/device_sync/public/cpp/device_sync_client.h"
+#include "chromeos/ash/services/device_sync/public/cpp/device_sync_client_impl.h"
+#include "chromeos/ash/services/device_sync/stub_device_sync.h"
+#include "chromeos/ash/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/account_id/account_id.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -105,6 +105,7 @@ class DeviceSyncClientHolder : public KeyedService {
 
 DeviceSyncClientFactory::DeviceSyncClientFactory()
     : ProfileKeyedServiceFactory("DeviceSyncClient") {
+  DependsOn(ClientAppMetadataProviderServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(gcm::GCMProfileServiceFactory::GetInstance());
 

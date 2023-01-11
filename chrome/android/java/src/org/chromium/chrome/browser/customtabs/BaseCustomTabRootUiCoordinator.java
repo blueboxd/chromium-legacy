@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTa
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
+import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.features.branding.BrandingController;
@@ -42,7 +43,6 @@ import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarC
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ActivityType;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -175,7 +175,7 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
         mNavigationController = customTabNavigationController;
         mIntentDataProvider = intentDataProvider;
 
-        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.CCT_BRAND_TRANSPARENCY)
+        if (ChromeFeatureList.sCctBrandTransparency.isEnabled()
                 && intentDataProvider.get().getActivityType() == ActivityType.CUSTOM_TAB
                 && !intentDataProvider.get().isOpenedByChrome()
                 && !intentDataProvider.get().isIncognito()) {
@@ -183,7 +183,9 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
             if (TextUtils.isEmpty(packageName)) {
                 packageName = CustomTabIntentDataProvider.getReferrerPackageName(activity);
             }
-            mBrandingController = new BrandingController(activity, packageName);
+            String appName = activity.getResources().getString(R.string.app_name);
+            mBrandingController = new BrandingController(
+                    activity, packageName, appName, new ChromePureJavaExceptionReporter());
         }
         mTabController = tabController;
     }
@@ -274,12 +276,11 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
 
         mCustomTabHeightStrategy = CustomTabHeightStrategy.createStrategy(mActivity,
                 intentDataProvider.getInitialActivityHeight(),
-                intentDataProvider.getColorProvider().getNavigationBarColor(),
-                intentDataProvider.getColorProvider().getNavigationBarDividerColor(),
                 intentDataProvider.isPartialCustomTabFixedHeight(),
                 CustomTabsConnection.getInstance(), intentDataProvider.getSession(),
                 mActivityLifecycleDispatcher, mFullscreenManager,
-                DeviceFormFactor.isWindowOnTablet(mWindowAndroid));
+                DeviceFormFactor.isWindowOnTablet(mWindowAndroid),
+                intentDataProvider.canInteractWithBackground());
     }
 
     @Override
@@ -299,6 +300,7 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
     protected Rect getAppRectInWindow() {
         // This is necessary if app handler cannot rely on the popup window that ensures the menu
         // will not be clipped off the screen, which can happen in partial CCT.
+        // TODO(crbug.com/1382010): Add a render test to prevent regressions.
         if (mIntentDataProvider.get().isPartialHeightCustomTab()) {
             View coord = mActivity.findViewById(R.id.coordinator);
             int[] location = new int[2];
@@ -307,21 +309,6 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                     location[1] + coord.getHeight());
         }
         return super.getAppRectInWindow();
-    }
-
-    @Override
-    protected Supplier<Integer> getBaseHeightProvider() {
-        if (mIntentDataProvider.get().isPartialHeightCustomTab()
-                && !ChromeFeatureList.sCctResizableWindowAboveNavbar.isEnabled()) {
-            return () -> mActivity.findViewById(R.id.coordinator).getHeight();
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    protected boolean canDrawOutsideScreen() {
-        return mCustomTabHeightStrategy.canDrawOutsideScreen();
     }
 
     @Override

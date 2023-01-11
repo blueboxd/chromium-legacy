@@ -39,6 +39,7 @@
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/embedder_support/android/metrics/memory_metrics_logger.h"
+#include "components/embedder_support/origin_trials/component_updater_utils.h"
 #include "components/heap_profiling/multi_process/supervisor.h"
 #include "components/metrics/metrics_service.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
@@ -48,6 +49,8 @@
 #include "components/variations/variations_crash_keys.h"
 #include "components/variations/variations_ids_provider.h"
 #include "content/public/browser/android/synchronous_compositor.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
@@ -89,6 +92,10 @@ int AwBrowserMainParts::PreEarlyInitialization() {
 
   browser_process_ = std::make_unique<AwBrowserProcess>(
       browser_client_->aw_feature_list_creator());
+
+  embedder_support::SetupOriginTrialsCommandLine(
+      browser_process_->local_state());
+
   return content::RESULT_CODE_NORMAL_EXIT;
 }
 
@@ -174,12 +181,28 @@ void AwBrowserMainParts::WillRunMainMessageLoop(
   NOTREACHED();
 }
 
+namespace {
+
+void LoadOriginTrialsControllerDelegateOnUiThread() {
+  // Requesting the |OriginTrialsControllerDelegate| will initialize
+  // it if the feature is enabled.
+  //
+  // This should be done as soon as possible in the start-up process, in order
+  // to load the database from disk.
+  AwBrowserContext::GetDefault()->GetOriginTrialsControllerDelegate();
+}
+
+}  // namespace
+
 void AwBrowserMainParts::PostCreateThreads() {
   heap_profiling::Mode mode = heap_profiling::GetModeForStartup();
   if (mode != heap_profiling::Mode::kNone)
     heap_profiling::Supervisor::GetInstance()->Start(base::NullCallback());
 
   MaybeSetupSystemTracing();
+
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&LoadOriginTrialsControllerDelegateOnUiThread));
 }
 
 }  // namespace android_webview

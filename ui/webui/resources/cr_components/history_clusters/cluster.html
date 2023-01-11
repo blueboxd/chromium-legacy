@@ -55,13 +55,13 @@
     padding-inline-start: 16px;
   }
 
-  .label {
+  #label {
     color: var(--cr-primary-text-color);
     font-size: 1rem;  /* 16px */
     font-weight: 500;
   }
 
-  :host([in-side-panel_]) .label {
+  :host([in-side-panel_]) #label {
     font-size: .875rem;  /* 14px */
     line-height: calc(10/7); /* 20px */
   }
@@ -81,6 +81,11 @@
     min-width: 0;
     /* Top is a special 8px value. */
     padding: 8px var(--cluster-padding-horizontal) var(--cluster-padding-vertical);
+  }
+
+  :host([in-side-panel_]) #related-searches {
+    margin-top: -8px;
+    padding: 0 16px var(--cluster-padding-vertical);
   }
 
   search-query {
@@ -135,7 +140,8 @@
        left, while outside the side panel the timestamp and the menu should
        be side by side on the right. -->
   <div class="label-row">
-    <div id="label" class="label"></div>
+    <span id="label" class="label"></span>
+    <img is="cr-auto-img" auto-src="[[imageUrl_]]">
     <div class="debug-info">[[cluster.debugInfo]]</div>
     <div class="timestamp-and-menu">
       <div class="timestamp">[[cluster.visits.0.relativeDate]]</div>
@@ -155,7 +161,7 @@
   <div id="related-searches" hidden="[[!cluster.relatedSearches.length]]"
       role="list" aria-label$="[[i18n('relatedSearchesHeader')]]"
       on-related-search-clicked="onRelatedSearchClicked_">
-    <template is="dom-repeat" items="[[cluster.relatedSearches]]">
+    <template is="dom-repeat" items="[[relatedSearches_]]">
       <search-query search-query="[[item]]" index="[[index]]" role="listitem">
       </search-query>
     </template>

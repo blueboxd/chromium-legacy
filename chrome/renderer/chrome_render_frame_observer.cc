@@ -61,6 +61,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/codec/webp_codec.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "url/gurl.h"
 
@@ -110,6 +111,7 @@ namespace {
 const char kGifExtension[] = ".gif";
 const char kPngExtension[] = ".png";
 const char kJpgExtension[] = ".jpg";
+const char kWebpExtension[] = ".webp";
 
 #if BUILDFLAG(IS_ANDROID)
 base::Lock& GetFrameHeaderMapLock() {
@@ -384,6 +386,7 @@ void ChromeRenderFrameObserver::RequestImageForContextNode(
     int32_t thumbnail_min_area_pixels,
     const gfx::Size& thumbnail_max_size_pixels,
     chrome::mojom::ImageFormat image_format,
+    int32_t quality,
     RequestImageForContextNodeCallback callback) {
   WebNode context_node = render_frame()->GetWebFrame()->ContextMenuImageNode();
   std::vector<uint8_t> image_data;
@@ -400,6 +403,7 @@ void ChromeRenderFrameObserver::RequestImageForContextNode(
            lens::mojom::ImageFormat::ORIGINAL},
           {chrome::mojom::ImageFormat::PNG, lens::mojom::ImageFormat::PNG},
           {chrome::mojom::ImageFormat::JPEG, lens::mojom::ImageFormat::JPEG},
+          {chrome::mojom::ImageFormat::WEBP, lens::mojom::ImageFormat::WEBP},
       };
 
   if (context_node.IsNull() || !context_node.IsElementNode()) {
@@ -445,7 +449,6 @@ void ChromeRenderFrameObserver::RequestImageForContextNode(
     }
   }
 
-  constexpr int kDefaultQuality = 90;
   std::vector<unsigned char> data;
   if (image_format == chrome::mojom::ImageFormat::ORIGINAL) {
     // ORIGINAL will only fall back to here if the image needs to downscale.
@@ -470,10 +473,16 @@ void ChromeRenderFrameObserver::RequestImageForContextNode(
         image_extension = kPngExtension;
       }
       break;
+    case chrome::mojom::ImageFormat::WEBP:
+      if (gfx::WebpCodec::Encode(bitmap, quality, &data)) {
+        image_data.swap(data);
+        image_extension = kWebpExtension;
+      }
+      break;
     case chrome::mojom::ImageFormat::ORIGINAL:
     // Any format other than PNG and JPEG fall back to here.
     case chrome::mojom::ImageFormat::JPEG:
-      if (gfx::JPEGCodec::Encode(bitmap, kDefaultQuality, &data)) {
+      if (gfx::JPEGCodec::Encode(bitmap, quality, &data)) {
         image_data.swap(data);
         image_extension = kJpgExtension;
       }
@@ -698,6 +707,8 @@ bool ChromeRenderFrameObserver::NeedsEncodeImage(
   switch (image_format) {
     case chrome::mojom::ImageFormat::PNG:
       return !base::EqualsCaseInsensitiveASCII(image_extension, kPngExtension);
+    case chrome::mojom::ImageFormat::WEBP:
+      return !base::EqualsCaseInsensitiveASCII(image_extension, kWebpExtension);
     case chrome::mojom::ImageFormat::JPEG:
       return !base::EqualsCaseInsensitiveASCII(image_extension, kJpgExtension);
     case chrome::mojom::ImageFormat::ORIGINAL:

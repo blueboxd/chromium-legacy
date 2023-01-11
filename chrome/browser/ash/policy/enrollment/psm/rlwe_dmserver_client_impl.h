@@ -15,7 +15,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/policy/enrollment/psm/rlwe_client.h"
 #include "chrome/browser/ash/policy/enrollment/psm/rlwe_dmserver_client.h"
-#include "chrome/browser/ash/policy/enrollment/psm/rlwe_id_provider.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/dmserver_job_configurations.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
@@ -29,22 +28,18 @@ class SharedURLLoaderFactory;
 
 namespace policy::psm {
 
-class RlweIdProvider;
-
 class RlweDmserverClientImpl : public RlweDmserverClient {
  public:
   using PlaintextId = private_membership::rlwe::RlwePlaintextId;
   using OprfResponse =
       private_membership::rlwe::PrivateMembershipRlweOprfResponse;
-  // The RlweDmserverClientImpl doesn't take ownership of
-  // |device_management_service|, |psm_rlwe_client_factory| and
-  // |psm_rlwe_id_provider|. All of them must not be nullptr. Also,
-  // |device_management_service| must outlive RlweDmserverClientImpl.
+  // `device_management_service`, `url_loader_factory` and
+  // `psm_rlwe_client` must not be nullptr. Also,
+  // `device_management_service` must outlive RlweDmserverClientImpl.
   RlweDmserverClientImpl(
       DeviceManagementService* device_management_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      RlweClient::Factory* psm_rlwe_client_factory,
-      RlweIdProvider* psm_rlwe_id_provider);
+      std::unique_ptr<RlweClient> psm_rlwe_client);
 
   // Disallow copy constructor and assignment operator.
   RlweDmserverClientImpl(const RlweDmserverClientImpl&) = delete;
@@ -54,7 +49,7 @@ class RlweDmserverClientImpl : public RlweDmserverClient {
   // callbacks).
   ~RlweDmserverClientImpl() override;
 
-  // Determines membership for the |psm_rlwe_id_|.
+  // Determines membership for the |psm_rlwe_client_|.
   void CheckMembership(CompletionCallback callback) override;
 
   // Returns true if the PSM protocol is still running,
@@ -108,9 +103,6 @@ class RlweDmserverClientImpl : public RlweDmserverClient {
 
   // Callback will be triggered upon completing of the protocol.
   CompletionCallback on_completion_callback_;
-
-  // PSM identifier, which is going to be used while preparing the PSM requests.
-  PlaintextId psm_rlwe_id_;
 
   // The time when the PSM request started.
   base::TimeTicks time_start_;

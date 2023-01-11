@@ -6,6 +6,8 @@
 
 #import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -733,15 +735,13 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   if ([self presentedViewController]) {
     return nil;
   }
-  __weak SettingsNavigationController* weakSelf = self;
-  return @[
-    [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
-                           modifierFlags:Cr_UIKeyModifierNone
-                                   title:nil
-                                  action:^{
-                                    [weakSelf closeSettings];
-                                  }],
-  ];
+
+  return @[ UIKeyCommand.cr_close ];
+}
+
+- (void)keyCommand_close {
+  base::RecordAction(base::UserMetricsAction("MobileKeyCommandClose"));
+  [self closeSettings];
 }
 
 #pragma mark - ApplicationSettingsCommands

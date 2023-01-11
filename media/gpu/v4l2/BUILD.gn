@@ -56,8 +56,6 @@ source_set("v4l2") {
     "v4l2_video_decoder_backend_stateful.h",
     "v4l2_video_decoder_backend_stateless.cc",
     "v4l2_video_decoder_backend_stateless.h",
-    "v4l2_video_decoder_delegate_av1.cc",
-    "v4l2_video_decoder_delegate_av1.h",
     "v4l2_video_decoder_delegate_h264.cc",
     "v4l2_video_decoder_delegate_h264.h",
     "v4l2_video_decoder_delegate_vp8.cc",
@@ -68,12 +66,9 @@ source_set("v4l2") {
 
   if (is_chromeos) {
     sources += [
-      "v4l2_video_decoder_delegate_h264_legacy.cc",
-      "v4l2_video_decoder_delegate_h264_legacy.h",
-      "v4l2_video_decoder_delegate_vp8_legacy.cc",
-      "v4l2_video_decoder_delegate_vp8_legacy.h",
-      "v4l2_video_decoder_delegate_vp9_legacy.cc",
-      "v4l2_video_decoder_delegate_vp9_legacy.h",
+      # AV1 delegate depends on header files only in ChromeOS SDK
+      "v4l2_video_decoder_delegate_av1.cc",
+      "v4l2_video_decoder_delegate_av1.h",
 
       # TODO(crbug.com/901264): Encoders use hack for passing offset
       # within a DMA-buf, which is not supported upstream.
@@ -177,6 +172,8 @@ executable("v4l2_stateless_decoder") {
     "test/v4l2_stateless_decoder.cc",
     "test/video_decoder.cc",
     "test/video_decoder.h",
+    "test/vp8_decoder.cc",
+    "test/vp8_decoder.h",
     "test/vp9_decoder.cc",
     "test/vp9_decoder.h",
   ]
@@ -193,6 +190,7 @@ executable("v4l2_stateless_decoder") {
     "//media",
     "//media:test_support",
     "//media/gpu:common",
+    "//media/parsers",
   ]
 
   if (enable_libgav1_decoder || use_libgav1_parser) {

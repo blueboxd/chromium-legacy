@@ -16,9 +16,14 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_pool_2d_options.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/ml/ml_context.h"
+#include "third_party/blink/renderer/modules/ml/webnn/buildflags.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_operand.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+
+#if BUILDFLAG(BUILD_WEBNN_WITH_XNNPACK)
+#include "third_party/blink/renderer/modules/ml/webnn/ml_graph_xnnpack.h"
+#endif
 
 namespace blink {
 
@@ -192,8 +197,8 @@ absl::optional<double> CalculateConv2dOutputSize(
   // Calculate the output size in double precision floating point number that
   // ensures all dimension values of type uint32_t can be exactly represented.
   // https://en.wikipedia.org/wiki/Double-precision_floating-point_format#Precision_limitations_on_integer_values
-  // The max value of checked_output_size should be 3 * UINT_MAX + 1, assert it
-  // is less than max integer value of double type.
+  // The max value of checked_output_size should be 3 * UINT_MAX + 1,
+  // which is smaller than the max safe integer value for double type.
   auto checked_output_size =
       (base::MakeCheckedNum<double>(input_size) -
        checked_effective_filter_size + beginning_padding + ending_padding) /
@@ -201,8 +206,7 @@ absl::optional<double> CalculateConv2dOutputSize(
       1;
 
   if (checked_output_size.ValueOrDie() < 0) {
-    error_message =
-        "The input size is too small to fill the convolution window.";
+    error_message = "The input size is too small to fill the window.";
     return absl::nullopt;
   }
 
@@ -1097,9 +1101,13 @@ ScriptPromise MLGraphBuilder::buildAsync(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   auto promise = resolver->Promise();
 
-  // TODO(ningxin.hu@intel.com): Create a concrete MLGraph object that builds
-  // the platform specific graph for hardware acceleration. For example:
-  // MLGraphXnnpack::ValidateAndBuildAsync(ml_context_, outputs, resolver);
+#if BUILDFLAG(BUILD_WEBNN_WITH_XNNPACK)
+  if (ml_context_->GetDevicePreference() == V8MLDevicePreference::Enum::kAuto ||
+      ml_context_->GetDevicePreference() == V8MLDevicePreference::Enum::kCpu) {
+    MLGraphXnnpack::ValidateAndBuildAsync(ml_context_, named_outputs, resolver);
+    return promise;
+  }
+#endif
 
   resolver->Reject(MakeGarbageCollected<DOMException>(
       DOMExceptionCode::kNotSupportedError, "Not implemented"));

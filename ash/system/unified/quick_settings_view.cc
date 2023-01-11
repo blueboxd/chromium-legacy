@@ -7,6 +7,7 @@
 #include <numeric>
 
 #include "ash/constants/ash_features.h"
+#include "ash/style/pill_button.h"
 #include "ash/system/media/unified_media_controls_container.h"
 #include "ash/system/tray/interacted_by_tap_recorder.h"
 #include "ash/system/tray/tray_constants.h"
@@ -18,6 +19,7 @@
 #include "ash/system/unified/quick_settings_header.h"
 #include "ash/system/unified/unified_system_info_view.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
+#include "base/functional/bind.h"
 #include "media/base/media_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -25,6 +27,8 @@
 #include "ui/compositor/layer.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/flex_layout_view.h"
 
 namespace ash {
 
@@ -78,27 +82,6 @@ class AccessibilityFocusHelperView : public views::View {
 
 }  // namespace
 
-SlidersContainerView::SlidersContainerView() {
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical));
-}
-
-SlidersContainerView::~SlidersContainerView() = default;
-
-int SlidersContainerView::GetHeight() const {
-  return std::accumulate(
-      children().cbegin(), children().cend(), 0, [](int height, const auto* v) {
-        return height + v->GetHeightForWidth(kRevampedTrayMenuWidth);
-      });
-}
-
-gfx::Size SlidersContainerView::CalculatePreferredSize() const {
-  return gfx::Size(kRevampedTrayMenuWidth, GetHeight());
-}
-
-BEGIN_METADATA(SlidersContainerView, views::View)
-END_METADATA
-
 // The container view for the system tray, i.e. the panel containing settings
 // buttons and sliders (e.g. sign out, lock, volume slider, etc.).
 class QuickSettingsView::SystemTrayContainer : public views::View {
@@ -136,11 +119,16 @@ QuickSettingsView::QuickSettingsView(UnifiedSystemTrayController* controller)
           std::make_unique<InteractedByTapRecorder>(this)) {
   DCHECK(controller_);
 
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+
   system_tray_container_ =
-      AddChildView(std::make_unique<SystemTrayContainer>());
+      AddChildView(std::make_unique<views::FlexLayoutView>());
+  system_tray_container_->SetOrientation(views::LayoutOrientation::kVertical);
+
+  AddTemporaryDetailedViewButtons();
 
   header_ = system_tray_container_->AddChildView(
-      std::make_unique<QuickSettingsHeader>());
+      std::make_unique<QuickSettingsHeader>(controller_));
   feature_tiles_container_ = system_tray_container_->AddChildView(
       std::make_unique<FeatureTilesContainerView>(controller_));
   page_indicator_view_ = system_tray_container_->AddChildView(
@@ -153,12 +141,11 @@ QuickSettingsView::QuickSettingsView(UnifiedSystemTrayController* controller)
   }
 
   sliders_container_ = system_tray_container_->AddChildView(
-      std::make_unique<SlidersContainerView>());
+      std::make_unique<views::FlexLayoutView>());
+  sliders_container_->SetOrientation(views::LayoutOrientation::kVertical);
 
   footer_ = system_tray_container_->AddChildView(
       std::make_unique<QuickSettingsFooter>(controller_));
-
-  system_tray_container_->SetFlexForView(page_indicator_view_);
 
   detailed_view_container_ =
       AddChildView(std::make_unique<DetailedViewContainer>());
@@ -200,14 +187,15 @@ void QuickSettingsView::ShowMediaControls() {
 }
 
 void QuickSettingsView::SetDetailedView(views::View* detailed_view) {
-  auto system_tray_size = system_tray_container_->GetPreferredSize();
-  system_tray_container_->SetVisible(false);
-
   detailed_view_container_->RemoveAllChildViews();
   detailed_view_container_->AddChildView(detailed_view);
+  system_tray_container_->SetVisible(false);
   detailed_view_container_->SetVisible(true);
-  detailed_view_container_->SetPreferredSize(system_tray_size);
-  detailed_view->InvalidateLayout();
+
+  // We need to enforce a manual `Layout()` here to make sure that
+  // `CalendarView` is notified that it can be initialized through
+  // `OnViewBoundsChanged`. The `CalendarView` depends on `OnViewsBoundsChanged`
+  // to check if it can `ScrollToToday`.
   Layout();
 }
 
@@ -217,8 +205,6 @@ void QuickSettingsView::ResetDetailedView() {
   if (media_controls_container_)
     media_controls_container_->MaybeShowMediaControls();
   system_tray_container_->SetVisible(true);
-  PreferredSizeChanged();
-  Layout();
 }
 
 void QuickSettingsView::SaveFocus() {
@@ -238,15 +224,20 @@ int QuickSettingsView::GetCurrentHeight() const {
   return GetPreferredSize().height();
 }
 
+// TODO(b/253303697): The `FeatureTilesContainer` does not currently respect
+// size constraints when vertical space is limited. This leads to the
+// `QuickSettingsView` being clipped from the bottom.
 int QuickSettingsView::CalculateHeightForFeatureTilesContainer() {
   int media_controls_container_height =
       media_controls_container_ ? media_controls_container_->GetExpandedHeight()
                                 : 0;
 
-  return max_height_ - header_->GetPreferredSize().height() -
+  return max_height_ -
+         temporary_buttons_container_->GetPreferredSize().height() -
+         header_->GetPreferredSize().height() -
          page_indicator_view_->GetPreferredSize().height() -
-         sliders_container_->GetHeight() - media_controls_container_height -
-         footer_->GetPreferredSize().height();
+         sliders_container_->GetPreferredSize().height() -
+         media_controls_container_height - footer_->GetPreferredSize().height();
 }
 
 std::u16string QuickSettingsView::GetDetailedViewAccessibleName() const {
@@ -257,33 +248,56 @@ bool QuickSettingsView::IsDetailedViewShown() const {
   return detailed_view_container_->GetVisible();
 }
 
-gfx::Size QuickSettingsView::CalculatePreferredSize() const {
-  int media_controls_container_height =
-      media_controls_container_ ? media_controls_container_->GetExpandedHeight()
-                                : 0;
-  return gfx::Size(kRevampedTrayMenuWidth,
-                   header_->GetPreferredSize().height() +
-                       feature_tiles_container_->GetPreferredSize().height() +
-                       page_indicator_view_->GetExpandedHeight() +
-                       sliders_container_->GetHeight() +
-                       media_controls_container_height +
-                       footer_->GetPreferredSize().height());
-}
-
 void QuickSettingsView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_SCROLL_FLING_START)
     controller_->Fling(event->details().velocity_y());
 }
 
-void QuickSettingsView::Layout() {
-  if (system_tray_container_->GetVisible())
-    system_tray_container_->SetBoundsRect(GetContentsBounds());
-  else if (detailed_view_container_->GetVisible())
-    detailed_view_container_->SetBoundsRect(GetContentsBounds());
-}
+void QuickSettingsView::AddTemporaryDetailedViewButtons() {
+  // While feature tiles are under development, provide some temporary buttons
+  // that allow access to tray detail pages.
+  DCHECK(system_tray_container_);
+  temporary_buttons_container_ =
+      system_tray_container_->AddChildView(std::make_unique<views::View>());
+  auto* layout = temporary_buttons_container_->SetLayoutManager(
+      std::make_unique<views::BoxLayout>());
+  layout->set_between_child_spacing(4);
 
-void QuickSettingsView::ChildPreferredSizeChanged(views::View* child) {
-  PreferredSizeChanged();
+  temporary_buttons_container_->AddChildView(std::make_unique<PillButton>(
+      base::BindRepeating(
+          [](UnifiedSystemTrayController* controller) {
+            controller->ShowNetworkDetailedView(/*force=*/true);
+          },
+          controller_),
+      u"Net"));
+  temporary_buttons_container_->AddChildView(std::make_unique<PillButton>(
+      base::BindRepeating(
+          [](UnifiedSystemTrayController* controller) {
+            controller->ShowBluetoothDetailedView();
+          },
+          controller_),
+      u"Bluetooth"));
+  temporary_buttons_container_->AddChildView(std::make_unique<PillButton>(
+      base::BindRepeating(
+          [](UnifiedSystemTrayController* controller) {
+            controller->ShowIMEDetailedView();
+          },
+          controller_),
+      u"IME"));
+  temporary_buttons_container_->AddChildView(std::make_unique<PillButton>(
+      base::BindRepeating(
+          [](UnifiedSystemTrayController* controller) {
+            controller->ShowAccessibilityDetailedView();
+          },
+          controller_),
+      u"A11y"));
+  temporary_buttons_container_->AddChildView(std::make_unique<PillButton>(
+      base::BindRepeating(
+          [](UnifiedSystemTrayController* controller) {
+            controller->ShowCastDetailedView();
+          },
+          controller_),
+      u"Cast"));
 }
 
 BEGIN_METADATA(QuickSettingsView, views::View)

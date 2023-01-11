@@ -8,7 +8,7 @@
 #         mac highsierra mojave catalina bigsur monterey
 #         win win8 win10 ]
 # Devices
-# tags: [ android-nexus-5 android-nexus-5x android-pixel-2 android-pixel-4
+# tags: [ android-nexus-5x android-pixel-2 android-pixel-4
 #             android-pixel-6 android-shield-android-tv android-sm-a135m
 #             android-sm-a235m
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
@@ -84,14 +84,8 @@
 # Incorrectly reporting SCALING instead of DIRECT on Win10 w/ UHD 630 GPUs.
 crbug.com/1079393 [ win intel-0x3e92 ] InfoCollection_direct_composition [ Failure ]
 
-# NVIDIA bots need 456.38+ drivers to use SOFTWARE overlays.
-crbug.com/1113893 [ win10 nvidia ] InfoCollection_direct_composition [ Failure ]
-
 # InfoCollection_basic is flaky on Fuchsia.
 crbug.com/1154597 [ fuchsia ] InfoCollection_basic [ RetryOnFailure ]
-
-# Flakes on Linux Release
-crbug.com/1340081 [ linux release intel-0x5912 ] InfoCollection_asan_info_surfaced [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

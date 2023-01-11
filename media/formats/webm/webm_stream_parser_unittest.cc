@@ -54,8 +54,22 @@ class WebMStreamParserTest : public testing::Test {
                   base::BindRepeating(&WebMStreamParserTest::EndMediaSegmentCB,
                                       base::Unretained(this)),
                   &media_log_);
-    bool result = parser_->Parse(buffer->data(), buffer->data_size());
-    EXPECT_TRUE(result);
+
+    // Note this portion is a simplified version of
+    // StreamParserTestBase::AppendAllDataThenParseInPieces(). Consider unifying
+    // via inheritance or utility method.
+    EXPECT_TRUE(
+        parser_->AppendToParseBuffer(buffer->data(), buffer->data_size()));
+    bool has_more_data = true;
+    size_t iterations = 0;
+    while (has_more_data) {
+      StreamParser::ParseStatus parse_result = parser_->Parse(1);
+      EXPECT_NE(StreamParser::ParseStatus::kFailed, parse_result);
+      has_more_data =
+          parse_result == StreamParser::ParseStatus::kSuccessHasMoreData;
+      iterations++;
+      EXPECT_EQ(iterations < buffer->data_size(), has_more_data);
+    }
   }
 
   // Verifies only the detected track counts by track type, then chains to the
@@ -75,7 +89,20 @@ class WebMStreamParserTest : public testing::Test {
 
   bool NewConfigCB(std::unique_ptr<MediaTracks> tracks,
                    const StreamParser::TextTrackConfigMap& text_track_map) {
+    size_t audio_config_count = 0;
+    size_t video_config_count = 0;
     DCHECK(tracks.get());
+    for (const auto& track : tracks->tracks()) {
+      if (track->type() == MediaTrack::Audio) {
+        audio_config_count++;
+        continue;
+      }
+      if (track->type() == MediaTrack::Video) {
+        video_config_count++;
+      }
+    }
+    EXPECT_EQ(tracks->GetAudioConfigs().size(), audio_config_count);
+    EXPECT_EQ(tracks->GetVideoConfigs().size(), video_config_count);
     media_tracks_ = std::move(tracks);
     return true;
   }

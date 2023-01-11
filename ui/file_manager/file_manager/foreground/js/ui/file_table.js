@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 import {assert, assertInstanceof} from 'chrome://resources/js/assert.js';
-import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
+import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.js';
 
-import {AsyncUtil} from '../../../common/js/async_util.js';
+import {RateLimiter} from '../../../common/js/async_util.js';
+import {maybeShowTooltip} from '../../../common/js/dom_utils.js';
 import {FileType} from '../../../common/js/file_type.js';
 import {str, strf, util} from '../../../common/js/util.js';
 import {FilesAppEntry} from '../../../externs/files_app_entry_interfaces.js';
@@ -381,7 +382,7 @@ export class FileTable extends Table {
     /** @private {?ListThumbnailLoader} */
     this.listThumbnailLoader_ = null;
 
-    /** @private {?AsyncUtil.RateLimiter} */
+    /** @private {?RateLimiter} */
     this.relayoutRateLimiter_ = null;
 
     /** @private {?MetadataModel} */
@@ -491,7 +492,7 @@ export class FileTable extends Table {
     });
 
     self.relayoutRateLimiter_ =
-        new AsyncUtil.RateLimiter(self.relayoutImmediately_.bind(self));
+        new RateLimiter(self.relayoutImmediately_.bind(self));
 
     // Save the last selection. This is used by shouldStartDragSelection.
     self.list.addEventListener('mousedown', function(e) {
@@ -502,6 +503,29 @@ export class FileTable extends Table {
     }.bind(self), true);
     self.list.shouldStartDragSelection =
         self.shouldStartDragSelection_.bind(self);
+
+    self.list.addEventListener(
+        'mouseover', self.onMouseOver_.bind(self), {passive: true});
+  }
+
+  onMouseOver_(event) {
+    this.maybeShowToolTip(event);
+  }
+
+  maybeShowToolTip(event) {
+    const target = event.composedPath()[0];
+    if (!target) {
+      return;
+    }
+    if (!target.classList.contains('detail-name')) {
+      return;
+    }
+    const labelElement = target.querySelector('.filename-label');
+    if (!labelElement) {
+      return;
+    }
+
+    maybeShowTooltip(labelElement, labelElement.innerText);
   }
 
   /**

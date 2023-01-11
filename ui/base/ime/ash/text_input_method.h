@@ -23,6 +23,12 @@ namespace gfx {
 class Rect;
 }  // namespace gfx
 
+namespace ash {
+namespace ime {
+struct AssistiveWindow;
+}  // namespace ime
+}  // namespace ash
+
 namespace ui {
 
 class VirtualKeyboardController;
@@ -36,6 +42,18 @@ enum class KeyEventHandledState {
   kHandledByAssistiveSuggester = 2,
 };
 }  // namespace ime
+
+enum class PersonalizationMode {
+  // The input method MUST not use anything from the input field to update any
+  // personalized data (e.g. to improve suggestions quality). Personalization
+  // could be disabled if the content is privacy-sensitive (e.g. incognito mode
+  // in
+  // Chrome browser), or if using personalization does not make sense (e.g.
+  // playing a typing game may pollute the dictionary with uncommon words).
+  kDisabled,
+  // The input method MAY use the input field contents for personalization.
+  kEnabled
+};
 
 // An interface representing an input method that can read and manipulate text
 // in a TextInputTarget. For example, this can represent a Japanese input method
@@ -53,12 +71,12 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) TextInputMethod {
                  TextInputMode mode,
                  int flags,
                  TextInputClient::FocusReason focus_reason,
-                 bool should_do_learning)
+                 PersonalizationMode personalization_mode)
         : type(type),
           mode(mode),
           flags(flags),
           focus_reason(focus_reason),
-          should_do_learning(should_do_learning) {}
+          personalization_mode(personalization_mode) {}
     TextInputType type;
     TextInputMode mode;
     // Flags for web input fields. Please refer to WebTextInputType.
@@ -67,19 +85,20 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) TextInputMethod {
     TextInputClient::FocusReason focus_reason;
     // Whether text entered in this field should be used to improve typing
     // suggestions for the user.
-    bool should_do_learning;
+    PersonalizationMode personalization_mode;
   };
 
   virtual ~TextInputMethod() = default;
 
-  // Called when an input field gains focus.
-  virtual void FocusIn(const InputContext& input_context) = 0;
+  // Informs the input method that an input field has gained focus.
+  // `input_context` contains information about the newly focused input field.
+  virtual void Focus(const InputContext& input_context) = 0;
+
+  // Informs the input method that focus has been lost.
+  virtual void Blur() = 0;
 
   // Called on touch inside an input field which already has focus.
   virtual void OnTouch(ui::EventPointerType pointerType) = 0;
-
-  // Called when the currently focused input field loses the focus.
-  virtual void FocusOut() = 0;
 
   // Called when the IME is enabled.
   virtual void Enable(const std::string& component_id) = 0;
@@ -125,6 +144,10 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) TextInputMethod {
   // Called when assistive window is clicked.
   virtual void AssistiveWindowButtonClicked(
       const ui::ime::AssistiveWindowButton& button) {}
+
+  // Called when an input's assistive window state is updated.
+  virtual void AssistiveWindowChanged(
+      const ash::ime::AssistiveWindow& window) = 0;
 
   // Sets the mirroring/casting enable states.
   virtual void SetMirroringEnabled(bool mirroring_enabled) = 0;

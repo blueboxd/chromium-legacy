@@ -20,11 +20,8 @@ namespace {
 const NSInteger kLabelNumLines = 2;
 const CGFloat kSpaceIconTitle = 10;
 const CGFloat kIconSize = 56;
-
 // Standard width of tiles.
 const CGFloat kPreferredMaxWidth = 74;
-const CGFloat kPreferredMaxWidthWide = 83;
-
 // Non-standard width of tiles. (Used only when the Content Suggestions UI
 // Module Refresh feature is enabled.)
 const CGFloat kModulePreferredMaxWidth = 74;
@@ -49,20 +46,19 @@ const CGFloat kModulePreferredMaxWidthWide = 83;
     _titleLabel.font = [self titleLabelFont];
     _titleLabel.textAlignment = NSTextAlignmentCenter;
 
-    // Since modules are given more horizontal space on iPad, allow for more
-    // estimated width for the label to calculate content size.
-    CGFloat preferredWidth = self.traitCollection.horizontalSizeClass ==
-                                     UIUserInterfaceSizeClassRegular
-                                 ? kPreferredMaxWidthWide
-                                 : kPreferredMaxWidth;
-    CGFloat modulePreferredWidth = self.traitCollection.horizontalSizeClass ==
-                                           UIUserInterfaceSizeClassRegular
-                                       ? kModulePreferredMaxWidthWide
-                                       : kModulePreferredMaxWidth;
+    if (IsContentSuggestionsUIModuleRefreshEnabled()) {
+      // Since modules are given more horizontal space on iPad, allow for more
+      // estimated width for the label to calculate content size.
+      CGFloat modulePreferredWidth = self.traitCollection.horizontalSizeClass ==
+                                             UIUserInterfaceSizeClassRegular
+                                         ? kModulePreferredMaxWidthWide
+                                         : kModulePreferredMaxWidth;
 
-    _titleLabel.preferredMaxLayoutWidth =
-        IsContentSuggestionsUIModuleRefreshEnabled() ? modulePreferredWidth
-                                                     : preferredWidth;
+      _titleLabel.preferredMaxLayoutWidth = modulePreferredWidth;
+    } else {
+      _titleLabel.preferredMaxLayoutWidth = kPreferredMaxWidth;
+    }
+
     _titleLabel.numberOfLines = kLabelNumLines;
     _imageContainerView = [[UIView alloc] init];
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;

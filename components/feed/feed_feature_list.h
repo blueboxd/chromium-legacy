@@ -57,6 +57,9 @@ BASE_DECLARE_FEATURE(kXsurfaceMetricsReporting);
 // Whether to log reliability events.
 BASE_DECLARE_FEATURE(kReliabilityLogging);
 
+// Feature that enables sticky header when users scroll down.
+BASE_DECLARE_FEATURE(kFeedHeaderStickToTop);
+
 // Feature that enables refreshing feeds triggered by the users.
 BASE_DECLARE_FEATURE(kFeedInteractiveRefresh);
 
@@ -169,6 +172,17 @@ extern const base::FeatureParam<double> kSliceVisibleCoverageThreshold;
 
 // When enabled, allow tagging experiments with only an experiment ID.
 BASE_DECLARE_FEATURE(kFeedExperimentIDTagging);
+
+// When enabled, allow show sign in command to request a user signs in / syncs.
+BASE_DECLARE_FEATURE(kFeedShowSignInCommand);
+
+// When enabled, depending on params selected, enable different
+// performance-oriented features in Feed.
+BASE_DECLARE_FEATURE(kFeedPerformanceStudy);
+
+// When enabled, allows the server to unilaterally alter capabilities sent
+// by the client, primarily to retroactively work around bugs.
+BASE_DECLARE_FEATURE(kSyntheticCapabilities);
 
 }  // namespace feed
 

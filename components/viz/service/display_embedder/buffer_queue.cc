@@ -135,13 +135,14 @@ void BufferQueue::AllocateBuffers(size_t n) {
   DCHECK(format_);
   const ResourceFormat format = GetResourceFormat(format_.value());
 
+  constexpr uint32_t usage = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
+                             gpu::SHARED_IMAGE_USAGE_DISPLAY_WRITE |
+                             gpu::SHARED_IMAGE_USAGE_SCANOUT;
+
   available_buffers_.reserve(available_buffers_.size() + n);
   for (size_t i = 0; i < n; ++i) {
     const gpu::Mailbox mailbox = skia_output_surface_->CreateSharedImage(
-        format, size_, color_space_,
-        gpu::SHARED_IMAGE_USAGE_SCANOUT | gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
-            gpu::SHARED_IMAGE_USAGE_DISPLAY_WRITE,
-        surface_handle_);
+        format, size_, color_space_, usage, surface_handle_);
     DCHECK(!mailbox.IsZero());
 
     available_buffers_.push_back(
@@ -156,6 +157,29 @@ std::unique_ptr<BufferQueue::AllocatedBuffer> BufferQueue::GetNextBuffer() {
       std::move(available_buffers_.front());
   available_buffers_.pop_front();
   return buffer;
+}
+
+gpu::Mailbox BufferQueue::GetLastSwappedBuffer() {
+  // The last swapped buffer will generally be in displayed_buffer_, as long as
+  // SwapBuffersComplete() has been called at least once for a non-empty swap
+  // since the last Reshape().
+  if (displayed_buffer_) {
+    return displayed_buffer_->mailbox;
+  }
+
+  // If displayed_buffer_ is null then any available buffer will do.
+  if (!available_buffers_.empty()) {
+    return available_buffers_.back()->mailbox;
+  }
+
+  // If there's nothing displayed or available, then we should have no buffers
+  // allocated because Reshape() hasn't been called yet, so a zero-mailbox is
+  // returned.
+  // If any buffers are in flight at this point then BufferQueue is being used
+  // incorrectly. We should not be Swap()ing all available buffers before
+  // receiving any SwapBuffersComplete() calls.
+  DCHECK(in_flight_buffers_.empty());
+  return gpu::Mailbox();
 }
 
 void BufferQueue::EnsureMinNumberOfBuffers(size_t n) {

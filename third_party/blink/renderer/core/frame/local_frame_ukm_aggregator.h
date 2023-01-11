@@ -311,9 +311,11 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // Mark the beginning of a main frame update.
   void BeginMainFrame();
 
-  // Inform the aggregator that we have reached First Contentful Paint.
-  // The UKM event for the pre-FCP period will be recorded and UMA for
-  // aggregated contributions to FCP are reported.
+  // Inform the aggregator that some frame reached First Contentful Paint. On
+  // the next frame, this will cause the UKM event for the pre-FCP period to be
+  // recorded and UMA for aggregated contributions to FCP to be recorded.
+  // TODO(1370937): Currently we don't yet know how to handle soft navigation
+  // UKM reporting, so this may be called multiple times for a given frame.
   void DidReachFirstContentfulPaint();
 
   bool InMainFrameUpdate() { return in_main_frame_update_; }
@@ -323,12 +325,6 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // That is, after calling BeginMainFrame and before calling
   // RecordEndOfFrameMetrics.
   std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics();
-
-  bool IsBeforeFCPForTesting() const;
-
-  void SetIntersectionObserverSamplePeriod(size_t period) {
-    intersection_observer_sample_period_ = period;
-  }
 
  private:
   struct AbsoluteMetricRecord {
@@ -380,6 +376,12 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // LocalFrameUkmAggregator.
   void SetTickClockForTesting(const base::TickClock* clock);
 
+  bool IsBeforeFCPForTesting() const;
+
+  void SetIntersectionObserverSamplePeriodForTesting(size_t period) {
+    intersection_observer_sample_period_ = period;
+  }
+
   // UKM system data
   const int64_t source_id_;
   ukm::UkmRecorder* const recorder_;
@@ -405,7 +407,7 @@ class CORE_EXPORT LocalFrameUkmAggregator
   unsigned mean_calls_between_forced_style_layout_uma_ = 500;
   unsigned calls_to_next_forced_style_layout_uma_ = 0;
 
-  // Set by BeginMainFrame() and cleared in RecordMEndOfFrameMetrics.
+  // Set by BeginMainFrame() and cleared in RecordEndOfFrameMetrics.
   // Main frame metrics are only recorded if this is true.
   bool in_main_frame_update_ = false;
 
@@ -426,7 +428,7 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // granular metrics are useful for pinpointing regressions, but we can get
   // most of the benefit even if we downsample them. This value controls how
   // frequently we collect granular IntersectionObserver metrics.
-  size_t intersection_observer_sample_period_ = 1;
+  size_t intersection_observer_sample_period_ = 10;
 };
 
 }  // namespace blink

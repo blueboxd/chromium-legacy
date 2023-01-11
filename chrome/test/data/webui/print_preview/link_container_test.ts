@@ -4,7 +4,7 @@
 
 import {Destination, DestinationOrigin, PrintPreviewLinkContainerElement} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.js';
-import {isWindows} from 'chrome://resources/js/cr.m.js';
+import {isWindows} from 'chrome://resources/js/platform.js';
 
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
@@ -27,8 +27,7 @@ suite(link_container_test.suiteName, function() {
   let linkContainer: PrintPreviewLinkContainerElement;
 
   setup(function() {
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     linkContainer = document.createElement('print-preview-link-container');
     document.body.appendChild(linkContainer);
 

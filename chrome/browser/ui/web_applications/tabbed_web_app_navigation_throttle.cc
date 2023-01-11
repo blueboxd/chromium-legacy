@@ -34,6 +34,14 @@ const char* TabbedWebAppNavigationThrottle::GetNameForLogging() {
 std::unique_ptr<content::NavigationThrottle>
 TabbedWebAppNavigationThrottle::MaybeCreateThrottleFor(
     content::NavigationHandle* handle) {
+  if (!handle->IsInPrimaryMainFrame())
+    return nullptr;
+
+  // Reloading the page should not cause the tab to change.
+  if (handle->GetReloadType() != content::ReloadType::NONE) {
+    return nullptr;
+  }
+
   content::WebContents* web_contents = handle->GetWebContents();
 
   WebAppProvider* provider = WebAppProvider::GetForWebContents(web_contents);
@@ -93,6 +101,12 @@ TabbedWebAppNavigationThrottle::WillStartRequest() {
     return FocusHomeTab();
   }
 
+  return content::NavigationThrottle::PROCEED;
+}
+
+content::NavigationThrottle::ThrottleCheckResult
+TabbedWebAppNavigationThrottle::WillRedirectRequest() {
+  // TODO(crbug.com/897314): Figure out how redirects should be handled.
   return content::NavigationThrottle::PROCEED;
 }
 

@@ -32,8 +32,7 @@ suite('PasswordManagerAppTest', function() {
   let testElement: TestElement;
 
   setup(function() {
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     testElement = document.createElement('test-element') as TestElement;
     document.body.appendChild(testElement);
     return flushTasks();
@@ -64,5 +63,14 @@ suite('PasswordManagerAppTest', function() {
     const router = new Router();
     assertEquals(location.pathname, '/passwords');
     assertEquals(Page.PASSWORDS, router.currentRoute.page);
+  });
+
+  test('Direct navigation to Password details page supported', function() {
+    history.replaceState({}, '', '/passwords/amazon.com');
+
+    // Create a new router to simulate opening a new page.
+    const router = new Router();
+    assertEquals(Page.PASSWORD_DETAILS, router.currentRoute.page);
+    assertEquals('amazon.com', router.currentRoute.details);
   });
 });

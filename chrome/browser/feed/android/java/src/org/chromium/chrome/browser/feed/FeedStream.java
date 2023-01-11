@@ -352,6 +352,11 @@ public class FeedStream implements Stream {
                         -> FeedServiceBridge.reportOpenVisitComplete(visitResult.visitTimeMs));
             });
         }
+
+        @Override
+        public void showSignInPrompt() {
+            mActionDelegate.showSignInActivity();
+        }
     }
 
     /**
@@ -1152,8 +1157,8 @@ public class FeedStream implements Stream {
                 return StreamType.FOR_YOU;
             case StreamKind.FOLLOWING:
                 return StreamType.WEB_FEED;
-            case StreamKind.CHANNEL:
-                return StreamType.CHANNEL;
+            case StreamKind.SINGLE_WEB_FEED:
+                return StreamType.SINGLE_WEB_FEED;
             default:
                 return StreamType.UNSPECIFIED;
         }

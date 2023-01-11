@@ -6,7 +6,6 @@
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece_forward.h"
-#include "base/strings/stringprintf.h"
 #include "media/formats/hls/parse_status.h"
 #include "media/formats/hls/tag_name.h"
 #include "media/formats/hls/types.h"
@@ -31,7 +30,7 @@ TEST(HlsPlaylistTest, IdentifyPlaylist) {
       [](ParseStatusCode expected_error, base::StringPiece src,
          const base::Location& from = base::Location::Current()) {
         auto result = Playlist::IdentifyPlaylist(src);
-        ASSERT_TRUE(result.has_error()) << from.ToString();
+        ASSERT_FALSE(result.has_value()) << from.ToString();
 
         auto error = std::move(result).error();
         EXPECT_EQ(error.code(), expected_error) << from.ToString();

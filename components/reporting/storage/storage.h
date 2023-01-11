@@ -15,7 +15,10 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/thread_annotations.h"
 #include "components/reporting/compression/compression_module.h"
 #include "components/reporting/encryption/encryption_module_interface.h"
 #include "components/reporting/proto/synced/record.pb.h"
@@ -69,18 +72,17 @@ class Storage : public base::RefCountedThreadSafe<Storage> {
   // Initiates upload of collected records according to the priority.
   // Called usually for a queue with an infinite or very large upload period.
   // Multiple |Flush| calls can safely run in parallel.
-  // Returns error if cannot start upload.
-  Status Flush(Priority priority);
+  // Invokes |completion_cb| with error if upload fails or cannot start.
+  void Flush(Priority priority, base::OnceCallback<void(Status)> completion_cb);
 
   // If the server attached signed encryption key to the response, it needs to
   // be paased here.
   void UpdateEncryptionKey(SignedEncryptionInfo signed_encryption_key);
 
-  // Stores the given |pipeline_id|. Overwrites any data from previous calls.
-  // Returns "ok" |Status| if success. Otherwise returns error Status.
-  Status StorePipelineId(base::StringPiece pipeline_id);
-  // Returns the pipeline ID if possible. Otherwise, returns error Status.
-  StatusOr<std::string> GetPipelineId();
+  // Registers completion notification callback. Thread-safe.
+  // All registered callbacks are called when all queues destructions come
+  // to their completion and the Storage is destructed as well.
+  void RegisterCompletionCallback(base::OnceClosure callback);
 
  protected:
   virtual ~Storage();
@@ -99,9 +101,6 @@ class Storage : public base::RefCountedThreadSafe<Storage> {
   // one server roundtrip and notify all requestors upon its completion.
   class KeyDelivery;
 
-  // Private helper class for pipeline ID upload/download to the file system.
-  class PipelineIdInStorage;
-
   // Private constructor, to be called by Create factory method only.
   // Queues need to be added afterwards.
   Storage(const StorageOptions& options,
@@ -116,33 +115,42 @@ class Storage : public base::RefCountedThreadSafe<Storage> {
 
   // Helper method that selects queue by priority. Returns error
   // if priority does not match any queue.
-  // Note: queues_ never change after initialization is finished, so there is no
-  // need to protect or serialize access to it.
   StatusOr<scoped_refptr<StorageQueue>> GetQueue(Priority priority) const;
+
+  // Helper method to select queue by priority on the Storage task runner and
+  // then perform `queue_action`, if succeeded. Returns failure on any stage
+  // with `completion_cb`.
+  void AsyncGetQueueAndProceed(
+      Priority priority,
+      base::OnceCallback<void(scoped_refptr<StorageQueue>,
+                              base::OnceCallback<void(Status)>)> queue_action,
+      base::OnceCallback<void(Status)> completion_cb);
 
   // Immutable options, stored at the time of creation.
   const StorageOptions options_;
 
   // Encryption module.
-  scoped_refptr<EncryptionModuleInterface> encryption_module_;
+  const scoped_refptr<EncryptionModuleInterface> encryption_module_;
 
   // Internal module for initiail key delivery from server.
-  std::unique_ptr<KeyDelivery> key_delivery_;
+  const std::unique_ptr<KeyDelivery> key_delivery_;
 
   // Compression module.
-  scoped_refptr<CompressionModule> compression_module_;
+  const scoped_refptr<CompressionModule> compression_module_;
 
   // Internal key management module.
-  std::unique_ptr<KeyInStorage> key_in_storage_;
-
-  // Map priority->StorageQueue.
-  base::flat_map<Priority, scoped_refptr<StorageQueue>> queues_;
+  const std::unique_ptr<KeyInStorage> key_in_storage_;
 
   // Upload provider callback.
   const UploaderInterface::AsyncStartUploaderCb async_start_upload_cb_;
 
-  // Internal pipeline ID management module.
-  std::unique_ptr<PipelineIdInStorage> pipeline_id_in_storage_;
+  // Task runner for storage-wide operations (initialization, queues selection).
+  const scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  // Map priority->StorageQueue.
+  base::flat_map<Priority, scoped_refptr<StorageQueue>> queues_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 };
 
 }  // namespace reporting

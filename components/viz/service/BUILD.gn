@@ -213,8 +213,6 @@ viz_component("service") {
     "surfaces/surface_reference.h",
     "surfaces/surface_saved_frame.cc",
     "surfaces/surface_saved_frame.h",
-    "surfaces/surface_saved_frame_storage.cc",
-    "surfaces/surface_saved_frame_storage.h",
     "transitions/surface_animation_manager.cc",
     "transitions/surface_animation_manager.h",
     "transitions/transferable_resource_tracker.cc",
@@ -257,7 +255,6 @@ viz_component("service") {
 
   public_deps = [
     "//base",
-    "//cc",
     "//cc/debug",
     "//components/viz/common",
     "//gpu/command_buffer/service:gles2",
@@ -371,6 +368,8 @@ viz_component("service") {
       "display/overlay_processor_win.h",
       "display_embedder/output_device_backing.cc",
       "display_embedder/output_device_backing.h",
+      "display_embedder/skia_output_device_dcomp.cc",
+      "display_embedder/skia_output_device_dcomp.h",
       "display_embedder/software_output_device_win.cc",
       "display_embedder/software_output_device_win.h",
       "gl/info_collection_gpu_service_impl.cc",
@@ -499,7 +498,6 @@ viz_source_set("unit_tests") {
     "main/viz_main_impl_unittest.cc",
     "surfaces/referenced_surface_tracker_unittest.cc",
     "surfaces/surface_unittest.cc",
-    "transitions/surface_animation_manager_unittest.cc",
     "transitions/transferable_resource_tracker_unittest.cc",
   ]
 
@@ -623,6 +621,7 @@ fuzzer_test("hit_test_manager_fuzzer") {
     ":service",
     "//base/test:test_support",
     "//components/viz/test:test_support",
+    "//ui/gfx:test_support",
   ]
 }
 

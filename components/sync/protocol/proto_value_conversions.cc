@@ -39,6 +39,7 @@
 #include "components/sync/protocol/priority_preference_specifics.pb.h"
 #include "components/sync/protocol/proto_visitors.h"
 #include "components/sync/protocol/reading_list_specifics.pb.h"
+#include "components/sync/protocol/saved_tab_group_specifics.pb.h"
 #include "components/sync/protocol/search_engine_specifics.pb.h"
 #include "components/sync/protocol/segmentation_specifics.pb.h"
 #include "components/sync/protocol/send_tab_to_self_specifics.pb.h"
@@ -59,8 +60,7 @@ namespace syncer {
 namespace {
 
 // ToValueVisitor is a VisitProtoFields()-compatible visitor that serializes
-// protos to base::DictionaryValues. To serialize a proto you call ToValue()
-// method:
+// protos to base::Value. To serialize a proto you call ToValue() method:
 //
 //  ToValueVisitor visitor;
 //  auto value = visitor.ToValue(proto);
@@ -104,46 +104,45 @@ namespace {
 //    customize ToValue() method:
 //
 //    template <class P>
-//    std::unique_ptr<base::DictionaryValue> ToValue(const P& proto) const;
+//    base::Value ToValue(const P& proto) const;
 //
 //    By default ToValue() creates new instance of ToValueVisitor, calls
 //    VisitProtoFields(visitor, |proto|) and returns visitor's |value_|.
-//    Default implementation is accessible via ToValueImpl().
+//    Default implementation is accessible via ToValueDictImpl().
 //
 //    For example let's say you want to clobber a sensitive field:
 //
-//    std::unique_ptr<base::DictionaryValue> ToValue(
-//        const sync_pb::GreenProto& proto) const {
-//      std::unique_ptr<base::DictionaryValue> value = ToValueImpl(proto);
-//      value->SetStringKey("secret", "<clobbered>");
-//      return value;
+//    base::Value ToValue(const sync_pb::GreenProto& proto) const {
+//      base::Value::Dict value = ToValueDictImpl(proto);
+//      value.Set("secret", "<clobbered>");
+//      return base::Value(value);
 //    }
 //
-//    ToValue() doesn't have to return base::DictionaryValue though. It might
+//    ToValue() doesn't have to return a dictionary though. It might
 //    be more appropriate to serialize GreenProto into a string instead:
 //
-//    std::unique_ptr<base::Value> ToValue(
-//        const sync_pb::GreenProto& proto) const {
-//      return std::make_unique<base::Value>(proto.content());
+//    base::Value ToValue(const sync_pb::GreenProto& proto) const {
+//      return base::Value(proto.content());
 //    }
 //
 class ToValueVisitor {
  public:
   explicit ToValueVisitor(const ProtoValueConversionOptions& options =
                               ProtoValueConversionOptions(),
-                          base::DictionaryValue* value = nullptr)
+                          base::Value::Dict* value = nullptr)
       : options_(options), value_(value) {}
 
   template <class P>
   void VisitBytes(const P& parent_proto,
                   const char* field_name,
                   const std::string& field) {
-    value_->Set(field_name, BytesToValue(field));
+    value_->Set(field_name,
+                base::Base64Encode(base::as_bytes(base::make_span(field))));
   }
 
   template <class P, class E>
   void VisitEnum(const P& parent_proto, const char* field_name, E field) {
-    value_->Set(field_name, EnumToValue(field));
+    value_->Set(field_name, ProtoEnumToString(field));
   }
 
   template <class P, class F>
@@ -153,9 +152,9 @@ class ToValueVisitor {
     if (!repeated_field.empty()) {
       base::Value::List list;
       for (const auto& field : repeated_field) {
-        list.Append(base::Value::FromUniquePtrValue(ToValue(field)));
+        list.Append(ToValue(field));
       }
-      value_->Set(field_name, std::make_unique<base::Value>(std::move(list)));
+      value_->Set(field_name, std::move(list));
     }
   }
 
@@ -166,9 +165,9 @@ class ToValueVisitor {
     if (!repeated_field.empty()) {
       base::Value::List list;
       for (const auto& field : repeated_field) {
-        list.Append(base::Value::FromUniquePtrValue(ToValue(field)));
+        list.Append(ToValue(field));
       }
-      value_->Set(field_name, std::make_unique<base::Value>(std::move(list)));
+      value_->Set(field_name, std::move(list));
     }
   }
 
@@ -178,8 +177,8 @@ class ToValueVisitor {
   }
 
   template <class P>
-  std::unique_ptr<base::DictionaryValue> ToValue(const P& proto) const {
-    return ToValueImpl(proto);
+  base::Value ToValue(const P& proto) const {
+    return base::Value(ToValueDictImpl(proto));
   }
 
   // Customizations
@@ -195,108 +194,88 @@ class ToValueVisitor {
   }
 
   // GetUpdateTriggers.
-  std::unique_ptr<base::DictionaryValue> ToValue(
-      const sync_pb::GetUpdateTriggers& proto) const {
-    std::unique_ptr<base::DictionaryValue> value = ToValueImpl(proto);
+  base::Value ToValue(const sync_pb::GetUpdateTriggers& proto) const {
+    base::Value::Dict dict = ToValueDictImpl(proto);
     if (!options_.include_full_get_update_triggers) {
       if (!proto.client_dropped_hints()) {
-        value->RemoveKey("client_dropped_hints");
+        dict.Remove("client_dropped_hints");
       }
       if (!proto.invalidations_out_of_sync()) {
-        value->RemoveKey("invalidations_out_of_sync");
+        dict.Remove("invalidations_out_of_sync");
       }
       if (proto.local_modification_nudges() == 0) {
-        value->RemoveKey("local_modification_nudges");
+        dict.Remove("local_modification_nudges");
       }
       if (proto.datatype_refresh_nudges() == 0) {
-        value->RemoveKey("datatype_refresh_nudges");
+        dict.Remove("datatype_refresh_nudges");
       }
       if (!proto.server_dropped_hints()) {
-        value->RemoveKey("server_dropped_hints");
+        dict.Remove("server_dropped_hints");
       }
       if (!proto.initial_sync_in_progress()) {
-        value->RemoveKey("initial_sync_in_progress");
+        dict.Remove("initial_sync_in_progress");
       }
       if (!proto.sync_for_resolve_conflict_in_progress()) {
-        value->RemoveKey("sync_for_resolve_conflict_in_progress");
+        dict.Remove("sync_for_resolve_conflict_in_progress");
       }
     }
-    return value;
+    return base::Value(std::move(dict));
   }
 
   // AutofillWalletSpecifics
-  std::unique_ptr<base::DictionaryValue> ToValue(
-      const sync_pb::AutofillWalletSpecifics& proto) const {
-    std::unique_ptr<base::DictionaryValue> value = ToValueImpl(proto);
+  base::Value ToValue(const sync_pb::AutofillWalletSpecifics& proto) const {
+    base::Value::Dict dict = ToValueDictImpl(proto);
     if (proto.type() != sync_pb::AutofillWalletSpecifics::POSTAL_ADDRESS) {
-      value->RemoveKey("address");
+      dict.Remove("address");
     }
     if (proto.type() != sync_pb::AutofillWalletSpecifics::MASKED_CREDIT_CARD) {
-      value->RemoveKey("masked_card");
+      dict.Remove("masked_card");
     }
     if (proto.type() != sync_pb::AutofillWalletSpecifics::CUSTOMER_DATA) {
-      value->RemoveKey("customer_data");
+      dict.Remove("customer_data");
     }
     if (proto.type() !=
         sync_pb::AutofillWalletSpecifics::CREDIT_CARD_CLOUD_TOKEN_DATA) {
-      value->RemoveKey("cloud_token_data");
+      dict.Remove("cloud_token_data");
     }
-    return value;
+    return base::Value(std::move(dict));
   }
 
   // UniquePosition
-  std::unique_ptr<base::Value> ToValue(
-      const sync_pb::UniquePosition& proto) const {
+  base::Value ToValue(const sync_pb::UniquePosition& proto) const {
     UniquePosition pos = UniquePosition::FromProto(proto);
-    return std::make_unique<base::Value>(pos.ToDebugString());
+    return base::Value(pos.ToDebugString());
   }
 
  private:
   template <class P>
-  std::unique_ptr<base::DictionaryValue> ToValueImpl(const P& proto) const {
-    auto value = std::make_unique<base::DictionaryValue>();
-    ToValueVisitor visitor(options_, value.get());
+  base::Value::Dict ToValueDictImpl(const P& proto) const {
+    base::Value::Dict dict;
+    ToValueVisitor visitor(options_, &dict);
     VisitProtoFields(visitor, proto);
-    return value;
+    return dict;
   }
 
-  static std::unique_ptr<base::Value> BytesToValue(const std::string& bytes) {
-    std::string bytes_base64;
-    base::Base64Encode(bytes, &bytes_base64);
-    return std::make_unique<base::Value>(bytes_base64);
+  base::Value ToValue(const std::string& value) const {
+    return base::Value(value);
   }
 
-  template <class E>
-  static std::unique_ptr<base::Value> EnumToValue(E value) {
-    return std::make_unique<base::Value>(ProtoEnumToString(value));
+  base::Value ToValue(int64_t value) const {
+    return base::Value(base::NumberToString(value));
+  }
+  base::Value ToValue(uint64_t value) const {
+    return base::Value(base::NumberToString(value));
+  }
+  base::Value ToValue(uint32_t value) const {
+    return base::Value(base::NumberToString(value));
+  }
+  base::Value ToValue(int32_t value) const {
+    return base::Value(base::NumberToString(value));
   }
 
-  std::unique_ptr<base::Value> ToValue(const std::string& value) const {
-    return std::make_unique<base::Value>(value);
-  }
-
-  std::unique_ptr<base::Value> ToValue(int64_t value) const {
-    return std::make_unique<base::Value>(base::NumberToString(value));
-  }
-  std::unique_ptr<base::Value> ToValue(uint64_t value) const {
-    return std::make_unique<base::Value>(base::NumberToString(value));
-  }
-  std::unique_ptr<base::Value> ToValue(uint32_t value) const {
-    return std::make_unique<base::Value>(base::NumberToString(value));
-  }
-  std::unique_ptr<base::Value> ToValue(int32_t value) const {
-    return std::make_unique<base::Value>(base::NumberToString(value));
-  }
-
-  std::unique_ptr<base::Value> ToValue(bool value) const {
-    return std::make_unique<base::Value>(value);
-  }
-  std::unique_ptr<base::Value> ToValue(float value) const {
-    return std::make_unique<base::Value>(value);
-  }
-  std::unique_ptr<base::Value> ToValue(double value) const {
-    return std::make_unique<base::Value>(value);
-  }
+  base::Value ToValue(bool value) const { return base::Value(value); }
+  base::Value ToValue(float value) const { return base::Value(value); }
+  base::Value ToValue(double value) const { return base::Value(value); }
 
   // Needs to be here to see all ToValue() overloads above.
   template <class P, class F>
@@ -305,22 +284,20 @@ class ToValueVisitor {
   }
 
   const ProtoValueConversionOptions options_;
-  raw_ptr<base::DictionaryValue> value_;
+  raw_ptr<base::Value::Dict> value_;
 };
 
 }  // namespace
 
-#define IMPLEMENT_PROTO_TO_VALUE(Proto)                  \
-  std::unique_ptr<base::DictionaryValue> Proto##ToValue( \
-      const sync_pb::Proto& proto) {                     \
-    return ToValueVisitor().ToValue(proto);              \
+#define IMPLEMENT_PROTO_TO_VALUE(Proto)                     \
+  base::Value Proto##ToValue(const sync_pb::Proto& proto) { \
+    return ToValueVisitor().ToValue(proto);                 \
   }
 
-#define IMPLEMENT_PROTO_TO_VALUE_WITH_OPTIONS(Proto)     \
-  std::unique_ptr<base::DictionaryValue> Proto##ToValue( \
-      const sync_pb::Proto& proto,                       \
-      const ProtoValueConversionOptions& options) {      \
-    return ToValueVisitor(options).ToValue(proto);       \
+#define IMPLEMENT_PROTO_TO_VALUE_WITH_OPTIONS(Proto)                       \
+  base::Value Proto##ToValue(const sync_pb::Proto& proto,                  \
+                             const ProtoValueConversionOptions& options) { \
+    return ToValueVisitor(options).ToValue(proto);                         \
   }
 
 IMPLEMENT_PROTO_TO_VALUE(AppListSpecifics)
@@ -364,6 +341,7 @@ IMPLEMENT_PROTO_TO_VALUE(PrinterSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(PrintersAuthorizationServerSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(PriorityPreferenceSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(ReadingListSpecifics)
+IMPLEMENT_PROTO_TO_VALUE(SavedTabGroupSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(SearchEngineSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(SecurityEventSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(SendTabToSelfSpecifics)

@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//base/allocator/allocator.gni")
 import("//ios/web/public/js_messaging/optimize_js.gni")
+import("//rlz/buildflags/buildflags.gni")
 
 source_set("web") {
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -11,8 +13,6 @@ source_set("web") {
     "blocked_popup_tab_helper.mm",
     "certificate_policy_app_agent.h",
     "certificate_policy_app_agent.mm",
-    "dom_altering_lock.h",
-    "dom_altering_lock.mm",
     "error_page_controller_bridge.h",
     "error_page_controller_bridge.mm",
     "error_page_util.h",
@@ -48,7 +48,7 @@ source_set("web") {
     "//components/variations/net",
     "//ios/chrome/app/application_delegate:observing_app_state_agent",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser",
+    "//ios/chrome/browser/application_context",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/feature_engagement",
@@ -89,7 +89,6 @@ source_set("delegate") {
     ":tab_helper_delegates",
     ":web",
     "//base",
-    "//components/url_param_filter/core",
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/overlays",
     "//ios/chrome/browser/overlays/public/web_content_area",
@@ -166,7 +165,6 @@ source_set("unit_tests") {
     "//components/sync_preferences:test_support",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/main:test_support",
@@ -209,10 +207,14 @@ optimize_js("language_detection_js") {
 source_set("web_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "browser_about_rewriter.cc",
+    "browser_about_rewriter.h",
     "chrome_main_parts.h",
     "chrome_main_parts.mm",
     "chrome_web_client.h",
     "chrome_web_client.mm",
+    "ios_thread_profiler.cc",
+    "ios_thread_profiler.h",
   ]
   deps = [
     ":language_detection_js",
@@ -222,7 +224,7 @@ source_set("web_internal") {
     "//components/autofill/ios/browser",
     "//components/autofill/ios/form_util:form_handler_feature",
     "//components/content_settings/core/browser",
-    "//components/crash/core/common:crash_key_lib",
+    "//components/crash/core/common:crash_key",
     "//components/crash/core/common:reporter_running_ios",
     "//components/dom_distiller/core",
     "//components/flags_ui",
@@ -232,6 +234,7 @@ source_set("web_internal") {
     "//components/metrics",
     "//components/metrics:call_stack_profile_params",
     "//components/metrics:child_call_stack_profile_builder",
+    "//components/metrics/public/mojom:call_stack_mojo_bindings",
     "//components/metrics_services_manager",
     "//components/open_from_clipboard",
     "//components/password_manager/core/common:features",
@@ -243,13 +246,13 @@ source_set("web_internal") {
     "//components/strings",
     "//components/translate/core/browser",
     "//components/translate/ios/browser",
+    "//components/url_formatter",
     "//components/variations",
     "//components/variations/field_trial_config",
     "//components/variations/service",
     "//components/version_info",
     "//ios/chrome/app/resources:ios_resources",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser:browser_impl",
+    "//ios/chrome/browser/application_context",
     "//ios/chrome/browser/application_context:application_context_impl",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:browser_state_impl",
@@ -267,7 +270,9 @@ source_set("web_internal") {
     "//ios/chrome/browser/ntp",
     "//ios/chrome/browser/open_from_clipboard",
     "//ios/chrome/browser/passwords",
+    "//ios/chrome/browser/paths",
     "//ios/chrome/browser/policy",
+    "//ios/chrome/browser/prefs:pref_names",
     "//ios/chrome/browser/prerender",
     "//ios/chrome/browser/promos_manager",
     "//ios/chrome/browser/reading_list",
@@ -314,6 +319,10 @@ source_set("web_internal") {
     "UIKit.framework",
     "Foundation.framework",
   ]
+
+  if (enable_rlz) {
+    deps += [ "//ios/chrome/browser/rlz" ]
+  }
 }
 
 source_set("unit_tests_internal") {
@@ -321,6 +330,7 @@ source_set("unit_tests_internal") {
   testonly = true
   sources = [
     "blocked_popup_tab_helper_unittest.mm",
+    "browser_about_rewriter_unittest.cc",
     "chrome_web_client_unittest.mm",
   ]
   deps = [
@@ -337,7 +347,6 @@ source_set("unit_tests_internal") {
     "//components/security_interstitials/core:unsafe_resource",
     "//components/strings",
     "//components/version_info",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/content_settings:content_settings",
     "//ios/chrome/browser/find_in_page",

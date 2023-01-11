@@ -34,7 +34,7 @@
 
 namespace gfx {
 class RectF;
-}
+}  // namespace gfx
 
 namespace autofill {
 
@@ -176,7 +176,7 @@ class AutofillManager
       const FormFieldData& field,
       const gfx::RectF& bounding_box,
       int query_id,
-      bool autoselect_first_suggestion,
+      AutoselectFirstSuggestion autoselect_first_suggestion,
       FormElementWasClicked form_element_was_clicked);
 
   // Invoked when |form|'s |field| has focus.
@@ -265,6 +265,11 @@ class AutofillManager
   // Resets cache.
   virtual void Reset();
 
+  // Invoked when the context menu is opened in a field.
+  virtual void OnContextMenuShownInField(
+      const FormGlobalId& form_global_id,
+      const FieldGlobalId& field_global_id) = 0;
+
   // translate::TranslateDriver::LanguageDetectionObserver:
   void OnTranslateDriverDestroyed(
       translate::TranslateDriver* translate_driver) override;
@@ -335,19 +340,19 @@ class AutofillManager
     OnServerRequestError(form_signature, request_type, http_error);
   }
 
-#ifdef UNIT_TEST
-  // A public wrapper that calls |mutable_form_structures| for testing purposes
-  // only.
+  void set_download_manager_for_test(
+      std::unique_ptr<AutofillDownloadManager> manager) {
+    download_manager_ = std::move(manager);
+  }
+
   std::map<FormGlobalId, std::unique_ptr<FormStructure>>*
   mutable_form_structures_for_test() {
     return mutable_form_structures();
   }
 
-  // A public wrapper that calls |ParseForm| for testing purposes only.
   FormStructure* ParseFormForTest(const FormData& form) {
     return ParseForm(form, nullptr);
   }
-#endif  // UNIT_TEST
 
  protected:
   AutofillManager(AutofillDriver* driver,
@@ -387,7 +392,7 @@ class AutofillManager
       const FormFieldData& field,
       const gfx::RectF& bounding_box,
       int query_id,
-      bool autoselect_first_suggestion,
+      AutoselectFirstSuggestion autoselect_first_suggestion,
       FormElementWasClicked form_element_was_clicked) = 0;
 
   virtual void OnFocusOnFormFieldImpl(const FormData& form,
@@ -497,14 +502,6 @@ class AutofillManager
     return &form_structures_;
   }
 
-#ifdef UNIT_TEST
-  // Exposed for testing.
-  void set_download_manager_for_test(
-      std::unique_ptr<AutofillDownloadManager> manager) {
-    download_manager_ = std::move(manager);
-  }
-#endif  // UNIT_TEST
-
  private:
   // AutofillDownloadManager::Observer:
   void OnLoadedServerPredictions(
@@ -533,11 +530,8 @@ class AutofillManager
   const raw_ptr<LogManager> log_manager_;
 
   // Observer needed to re-run heuristics when the language has been detected.
-  base::ScopedObservation<
-      translate::TranslateDriver,
-      translate::TranslateDriver::LanguageDetectionObserver,
-      &translate::TranslateDriver::AddLanguageDetectionObserver,
-      &translate::TranslateDriver::RemoveLanguageDetectionObserver>
+  base::ScopedObservation<translate::TranslateDriver,
+                          translate::TranslateDriver::LanguageDetectionObserver>
       translate_observation_{this};
 
   // Our copy of the form data.

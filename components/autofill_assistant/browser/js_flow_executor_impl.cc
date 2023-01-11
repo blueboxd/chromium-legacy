@@ -10,6 +10,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
+#include "components/autofill_assistant/browser/client_context.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/js_flow_util.h"
 #include "components/autofill_assistant/browser/metrics.h"
@@ -121,6 +122,7 @@ JsFlowExecutorImpl::~JsFlowExecutorImpl() = default;
 
 void JsFlowExecutorImpl::Start(
     const std::string& js_flow,
+    absl::optional<std::pair<std::string, std::string>> startup_param,
     base::OnceCallback<void(const ClientStatus&, std::unique_ptr<base::Value>)>
         callback) {
   Metrics::RecordJsFlowStartedEvent(
@@ -135,6 +137,7 @@ void JsFlowExecutorImpl::Start(
   }
 
   js_flow_ = std::make_unique<std::string>(js_flow);
+  startup_param_ = startup_param;
   callback_ = std::move(callback);
 
   js_flow_devtools_wrapper_->GetDevtoolsAndMaybeInit(base::BindOnce(
@@ -143,7 +146,15 @@ void JsFlowExecutorImpl::Start(
 
 // Wraps the main js_flow in an async function as well as making
 // runNativeAction, client constants (e.g. LINE_OFFSET) available to the flow.
-std::string CreateWrappedJsFlow(const std::string& js_flow) {
+std::string CreateWrappedJsFlow(
+    const std::string& js_flow,
+    absl::optional<std::pair<std::string, std::string>> startup_param) {
+  std::string startup_param_variable;
+  if (startup_param) {
+    startup_param_variable = base::StrCat(
+        {"const ", startup_param->first, " = '", startup_param->second, "';"});
+  }
+
   return base::StrCat(
       {// The leading wrapper contains the runNativeAction
        // function as well as the first part of the anonymous
@@ -155,9 +166,15 @@ std::string CreateWrappedJsFlow(const std::string& js_flow) {
        // The Chrome version number, e.g. "104.0.490.1".
        "const CHROME_VERSION_NUMBER = '", version_info::GetVersionNumber(),
        "';",
+       // The platform type that the flow should run for.
+       "const PLATFORM_TYPE = ",
+       base::NumberToString(static_cast<int>(ClientContext::GetPlatformType())),
+       ";",
        // The DebugMode command line switch, if true more info will be logged.
        "const DEBUG_MODE = ", js_flow_util::IsDebugMode() ? "true" : "false",
        ";",
+       // Optional startup parameter.
+       startup_param_variable,
        // New line so the js flow starts from the first column.
        // Added to kJsLineOffset.
        "\n",
@@ -189,7 +206,7 @@ void JsFlowExecutorImpl::InternalStart(const ClientStatus& status,
   // the flow may fulfill to request execution of a native action.
   RefreshNativeActionPromise();
 
-  const auto wrapped_js_flow = CreateWrappedJsFlow(*js_flow_);
+  const auto wrapped_js_flow = CreateWrappedJsFlow(*js_flow_, startup_param_);
 
   Metrics::RecordJsFlowStartedEvent(
       Metrics::JsFlowStartedEvent::SCRIPT_STARTED);
@@ -370,7 +387,7 @@ void JsFlowExecutorImpl::OnFlowFinished(
     std::unique_ptr<runtime::EvaluateResult> result) {
   const JsLineOffsets js_line_offsets = {
       {js_flow_util::GetDevtoolsSourceUrl(UnexpectedErrorInfoProto::JS_FLOW),
-       {kJsLineOffset, kJsLineOffset + CountLines(*js_flow_)}}};
+       {.begin = kJsLineOffset, .end = kJsLineOffset + CountLines(*js_flow_)}}};
   // Check and extract the return value. In case of exceptions, the sanitized
   // stack trace will be part of the returned ClientStatus. Only primitive
   // values are allowed (see js_flow_util::ExtractFlowReturnValue for details).

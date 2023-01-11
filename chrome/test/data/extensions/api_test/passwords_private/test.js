@@ -197,23 +197,24 @@ var availableTests = [
         });
   },
 
-  function requestCredentialDetails() {
-    chrome.passwordsPrivate.requestCredentialDetails(0, passwordUiEntry => {
+  function requestCredentialsDetails() {
+    chrome.passwordsPrivate.requestCredentialsDetails([0], passwords => {
       // Ensure that the callback is invoked without an error state and the
       // expected plaintext password.
       chrome.test.assertNoLastError();
-      chrome.test.assertEq('plaintext', passwordUiEntry.password);
+      chrome.test.assertEq(1, passwords.length);
+      chrome.test.assertEq('plaintext', passwords[0].password);
       chrome.test.succeed();
     });
   },
 
-  function requestCredentialDetailsFails() {
-    chrome.passwordsPrivate.requestCredentialDetails(123, passwordUiEntry => {
+  function requestCredentialsDetailsFails() {
+    chrome.passwordsPrivate.requestCredentialsDetails([123], passwords => {
       // Ensure that the callback is invoked with an error state and the
       // message contains the right id.
       chrome.test.assertLastError(
           'Could not obtain password entry. Either the user is not ' +
-          'authenticated or no credential with id = 123 could be found.');
+          'authenticated or no credential with matching ids could be found.');
       chrome.test.succeed();
     });
   },
@@ -695,6 +696,40 @@ var availableTests = [
     chrome.passwordsPrivate.switchBiometricAuthBeforeFillingState();
     chrome.test.assertNoLastError();
     chrome.test.succeed();
+  },
+
+  function showAddShortcutDialog() {
+    chrome.passwordsPrivate.showAddShortcutDialog();
+    chrome.test.assertNoLastError();
+    chrome.test.succeed();
+  },
+
+  function getCredentialGroups() {
+    var callback = function(list) {
+      chrome.test.assertTrue(!!list);
+      chrome.test.assertEq(list.length, 1);
+
+      const group = list[0];
+      chrome.test.assertTrue(!!group);
+      chrome.test.assertTrue(group.entries.length > 0);
+
+      var idSet = new Set();
+      for (var i = 0; i < group.entries.length; ++i) {
+        var entry = group.entries[i];
+        chrome.test.assertTrue(!!entry);
+        chrome.test.assertTrue(!!entry.urls.signonRealm);
+        chrome.test.assertTrue(!!entry.urls.shown);
+        chrome.test.assertTrue(!!entry.urls.link);
+        idSet.add(entry.id);
+      }
+
+      // Ensure that all entry ids are unique.
+      chrome.test.assertEq(group.entries.length, idSet.size);
+      // Ensure that the callback is invoked.
+      chrome.test.succeed();
+    };
+
+    chrome.passwordsPrivate.getCredentialGroups(callback);
   },
 ];
 

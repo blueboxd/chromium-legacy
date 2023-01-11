@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics.h"
 #include "base/observer_list.h"
+#include "base/scoped_observation_traits.h"
 #include "base/timer/timer.h"
 #include "chromeos/ash/components/audio/audio_device.h"
 #include "chromeos/ash/components/audio/audio_devices_pref_handler.h"
@@ -74,6 +75,12 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   typedef base::flat_map<std::string, std::string> AudioSurveyData;
   static constexpr int32_t kSystemAecGroupIdNotAvailable = -1;
 
+  enum class InputMuteChangeMethod {
+    kKeyboardButton,
+    kPhysicalShutter,
+    kOther,
+  };
+
   class AudioObserver {
    public:
     AudioObserver(const AudioObserver&) = delete;
@@ -89,7 +96,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
     virtual void OnInputNodeGainChanged(uint64_t node_id, int gain);
 
     // Called when input mute state changed.
-    virtual void OnInputMuteChanged(bool mute_on);
+    virtual void OnInputMuteChanged(bool mute_on, InputMuteChangeMethod method);
 
     // Called when the state of input mute hw switch state changes.
     virtual void OnInputMutedByMicrophoneMuteSwitchChanged(bool muted);
@@ -327,7 +334,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   void SetOutputMuteLockedBySecurityCurtain(bool mute_on);
 
   // Mutes or unmutes audio input device.
-  void SetInputMute(bool mute_on);
+  void SetInputMute(bool mute_on, InputMuteChangeMethod method);
 
   // Switches active audio device to |device|. |activate_by| indicates why
   // the device is switched to active: by user's manual choice, by priority,
@@ -806,6 +813,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // In this case, input mute changes will be disabled.
   bool input_muted_by_microphone_mute_switch_ = false;
 
+  // Whether the audio device was selected by user, to track user overrides
+  bool input_device_selected_by_user_ = false;
+  bool output_device_selected_by_user_ = false;
+
   // Task runner of browser main thread. All member variables should be accessed
   // on this thread.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -837,5 +848,22 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO)
 namespace chromeos {
 using ::ash::CrasAudioHandler;
 }
+
+namespace base {
+
+template <>
+struct ScopedObservationTraits<ash::CrasAudioHandler,
+                               ash::CrasAudioHandler::AudioObserver> {
+  static void AddObserver(ash::CrasAudioHandler* source,
+                          ash::CrasAudioHandler::AudioObserver* observer) {
+    source->AddAudioObserver(observer);
+  }
+  static void RemoveObserver(ash::CrasAudioHandler* source,
+                             ash::CrasAudioHandler::AudioObserver* observer) {
+    source->RemoveAudioObserver(observer);
+  }
+};
+
+}  // namespace base
 
 #endif  // CHROMEOS_ASH_COMPONENTS_AUDIO_CRAS_AUDIO_HANDLER_H_

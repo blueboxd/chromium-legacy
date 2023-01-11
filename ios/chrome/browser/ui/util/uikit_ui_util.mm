@@ -12,6 +12,7 @@
 #import <stdint.h>
 #import <cmath>
 
+#import "base/check.h"
 #import "base/check_op.h"
 #import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
@@ -22,7 +23,6 @@
 #import "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/common/ui/util/ui_util.h"
-#import "ios/web/public/thread/web_thread.h"
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "ui/base/resource/resource_bundle.h"
@@ -67,6 +67,12 @@ void MaybeSetUITextFieldScaledFont(BOOL maybe,
   } else {
     textField.font = font;
   }
+}
+
+UIFont* CreateDynamicFont(UIFontTextStyle style, UIFontWeight weight) {
+  UIFontDescriptor* fontDescriptor =
+      [UIFontDescriptor preferredFontDescriptorWithTextStyle:style];
+  return [UIFont systemFontOfSize:fontDescriptor.pointSize weight:weight];
 }
 
 UIImage* CaptureViewWithOption(UIView* view,
@@ -275,7 +281,7 @@ UIView* GetFirstResponderSubview(UIView* view) {
 }
 
 UIResponder* GetFirstResponder() {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  DCHECK(NSThread.isMainThread);
   return GetFirstResponderSubview(GetAnyKeyWindow());
 }
 

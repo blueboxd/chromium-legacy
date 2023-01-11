@@ -1,48 +1,7 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-/**
- * A blocking queue to allow the remote test interact with the FSP
- * implementation asynchronously.
- */
-class Queue {
-  constructor() {
-    /** @type {!Array<!Object>} */
-    this.items = [];
-    /** @type {!Array<function(!Object)>} */
-    this.readers = [];
-  }
-
-  /**
-   * Pushes an item into the queue and unblocks the first waiting reader if
-   * there are any. This method returns immediately and will never block.
-   *
-   * @param {!Object} item
-   */
-  push(item) {
-    if (this.readers.length > 0) {
-      this.readers.shift()(item);
-      return;
-    }
-    this.items.push(item);
-  }
-
-  /**
-   * Pops the first item from the queue. If the queue is empty, will wait until
-   * an item is available.
-   *
-   * @returns {!Object}
-   */
-  async pop() {
-    if (this.items.length > 0) {
-      return this.items.shift();
-    }
-    return new Promise(resolve => {
-      this.readers.push(resolve);
-    });
-  }
-};
+import {promisifyWithLastError, Queue} from '/_test_resources/api_test/file_system_provider/service_worker/helpers.js';
 
 /**
  * Splits the path into dir name and base name, e.g. '/a/b/c' -> '/a/b', 'c'.
@@ -66,6 +25,8 @@ function textToBuffer(text) {
 
 class Entry {
   /**
+   * @param {string} key name identifying the entry in a directory (separate
+   *    from name in the metadata to allow returning a different value there).
    * @param {{
    *  name: string,
    *  isDirectory: boolean,
@@ -75,12 +36,12 @@ class Entry {
    * @param {?string} contents
    * @param {Array<!Entry>} children
    */
-  constructor(metadata, contents, children) {
+  constructor(key, metadata, contents, children) {
+    this.key = key;
     this.metadata = metadata;
     this.contents = contents;
     /** @type {!Object<string, !Entry>} */
-    this.children =
-        Object.fromEntries((children || []).map(e => [e.metadata.name, e]));
+    this.children = Object.fromEntries((children || []).map(e => [e.key, e]));
   }
 
   /**
@@ -90,7 +51,7 @@ class Entry {
    */
   static file(name, modificationTime, contents) {
     return new Entry(
-        {
+        name, {
           name,
           isDirectory: false,
           size: contents.length,
@@ -106,8 +67,9 @@ class Entry {
    */
   static dir(name, modificationTime, children) {
     return new Entry(
-        {
+        name, {
           name,
+          size: 0,
           isDirectory: true,
           modificationTime,
         },
@@ -125,23 +87,26 @@ export class TestFileSystemProvider {
      * @private {!Entry}
      */
     this.root = Entry.dir('', new Date(2014, 4, 28, 10, 39, 15), [
+      // Directory with actions.
+      Entry.dir(
+          TestFileSystemProvider.DIR_WITH_ACTIONS,
+          new Date(2014, 1, 25, 7, 36, 12), []),
+      // Directory with no actions.
+      Entry.dir(
+          TestFileSystemProvider.DIR_WITH_NO_ACTIONS,
+          new Date(2014, 1, 25, 7, 36, 12), []),
       // Read error
       Entry.file(
           TestFileSystemProvider.FILE_FAIL, new Date(2014, 1, 25, 7, 36, 12),
           TestFileSystemProvider.INITIAL_TEXT),
-      // Read and write blocks indefinitely.
-      Entry.file(
-          TestFileSystemProvider.FILE_BLOCKS_FOREVER,
-          new Date(2014, 1, 26, 8, 37, 13),
-          TestFileSystemProvider.INITIAL_TEXT),
       // Open blocks until unblocked manually.
       Entry.file(
-          TestFileSystemProvider.FILE_STALL_OPEN,
+          TestFileSystemProvider.FILE_BLOCK_OPEN,
           new Date(2014, 1, 26, 8, 37, 13),
           TestFileSystemProvider.INITIAL_TEXT),
       // Read blocks until unblocked manually.
       Entry.file(
-          TestFileSystemProvider.FILE_STALL_READ,
+          TestFileSystemProvider.FILE_BLOCK_IO,
           new Date(2014, 1, 26, 8, 37, 13),
           TestFileSystemProvider.INITIAL_TEXT),
       // Read returns data in chunks.
@@ -174,6 +139,28 @@ export class TestFileSystemProvider {
         entry.metadata.size = -entry.metadata.size;
         return entry;
       })(),
+      // File with invalid date for the modification time.
+      Entry.file(
+          TestFileSystemProvider.FILE_INVALID_DATE, new Date('Invalid date.'),
+          ''),
+      // File with only isDirectory flag as metadata.
+      (() => {
+        const entry = Entry.file(
+            TestFileSystemProvider.FILE_ONLY_TYPE,
+            new Date(2014, 1, 25, 7, 36, 12), '');
+        const {isDirectory} = entry.metadata;
+        entry.metadata = {isDirectory};
+        return entry;
+      })(),
+      // File with only size as metadata.
+      (() => {
+        const entry = Entry.file(
+            TestFileSystemProvider.FILE_ONLY_TYPE_AND_SIZE,
+            new Date(2014, 1, 25, 7, 36, 12), 'A'.repeat(1024 * 4));
+        const {isDirectory, size} = entry.metadata;
+        entry.metadata = {isDirectory, size};
+        return entry;
+      })(),
     ]);
 
     /**
@@ -191,7 +178,8 @@ export class TestFileSystemProvider {
     this.maxOpenedFiles = 0;
 
     /**
-     * A queue of recorded event per event name.
+     * A queue of recorded event per event name. Allows the remote test to read
+     * the events happening in the FSP implementation asynchronously.
      *
      * @private {!Object<string, !Queue>}
      */
@@ -228,14 +216,20 @@ export class TestFileSystemProvider {
     this.setHandlerEnabled('onCloseFileRequested', true);
     this.setHandlerEnabled('onConfigureRequested', true);
     this.setHandlerEnabled('onCopyEntryRequested', true);
+    this.setHandlerEnabled('onCreateDirectoryRequested', true);
     this.setHandlerEnabled('onCreateFileRequested', true);
     this.setHandlerEnabled('onDeleteEntryRequested', true);
+    this.setHandlerEnabled('onExecuteActionRequested', true);
+    this.setHandlerEnabled('onGetActionsRequested', true);
     this.setHandlerEnabled('onGetMetadataRequested', true);
+    this.setHandlerEnabled('onMountRequested', true);
     this.setHandlerEnabled('onMoveEntryRequested', true);
     this.setHandlerEnabled('onOpenFileRequested', true);
     this.setHandlerEnabled('onReadDirectoryRequested', true);
     this.setHandlerEnabled('onReadFileRequested', true);
     this.setHandlerEnabled('onRemoveWatcherRequested', true);
+    this.setHandlerEnabled('onTruncateRequested', true);
+    this.setHandlerEnabled('onUnmountRequested', true);
     this.setHandlerEnabled('onWriteFileRequested', true);
   }
 
@@ -248,7 +242,7 @@ export class TestFileSystemProvider {
   setHandlerEnabled(handlerName, enabled) {
     if (!(handlerName in this)) {
       throw new Error(
-        `${this.constructor.name} does not implement ${handlerName}`);
+          `${this.constructor.name} does not implement ${handlerName}`);
     }
     if (!(handlerName in this.handlers)) {
       this.handlers[handlerName] = this[handlerName].bind(this);
@@ -262,25 +256,31 @@ export class TestFileSystemProvider {
     }
   }
 
-  setUpCommandListener(serviceWorker) {
-    serviceWorker.onmessage = (e) => {
-      const {requestId, commandId, args} = e.data;
-      e.waitUntil((
-          /** @suppress {checkTypes} */
-          async () => {
-            const result = {requestId};
-            try {
-              if (commandId in this) {
-                result.response = await this[commandId](...args);
-              } else {
-                result.error = `unhandled: ${commandId}`;
-              }
-            } catch (error) {
-              result.error = error.toString();
-            }
-            e.source.postMessage(result);
-          })());
+  setUpCommandListener() {
+    const listener = (msg, sender, sendResponse) => {
+      const {commandId, args} = msg;
+      this.handleCommand(commandId, ...args).then(sendResponse);
+      return true;  // Indicate that we want to respond asynchronously.
     };
+    // Listen to both events to handle messages sent both from the same or from
+    // a different extension.
+    chrome.runtime.onMessageExternal.addListener(listener);
+    chrome.runtime.onMessage.addListener(listener);
+  }
+
+  /** @suppress {checkTypes} */
+  async handleCommand(commandId, ...args) {
+    const result = {};
+    try {
+      if (commandId in this) {
+        result.response = await this[commandId](...args);
+      } else {
+        result.error = `unhandled: ${commandId}`;
+      }
+    } catch (error) {
+      result.error = error.toString();
+    }
+    return result;
   }
 
   /**
@@ -294,7 +294,8 @@ export class TestFileSystemProvider {
       const {dirPath} = splitPath(path);
       // Restore Date objects after receiving data via postMessage.
       file.metadata.modificationTime = new Date(file.metadata.modificationTime);
-      const entry = new Entry(file.metadata, file.contents, null);
+      const entry =
+          new Entry(file.metadata.name, file.metadata, file.contents, null);
       this.findEntryByPath(dirPath).children[entry.metadata.name] = entry;
     }
   }
@@ -320,6 +321,53 @@ export class TestFileSystemProvider {
   }
 
   /**
+   * Called by the test. Causes a change notification to be sent for an entry.
+   *
+   * @param {string} entryPath
+   * @param {boolean} recursive
+   * @param {string} tag
+   */
+  async triggerNotify(entryPath, recursive, tag) {
+    return promisifyWithLastError(chrome.fileSystemProvider.notify, {
+      fileSystemId: this.fileSystemId,
+      observedPath: entryPath,
+      recursive,
+      changeType: 'CHANGED',
+      tag,
+    });
+  }
+
+  /**
+   * Opens a tab from the extension hosting this provider.
+   *
+   * @param {string} url
+   * @returns {!Promise<number>}
+   */
+  async openTab(url) {
+    const tab = await promisifyWithLastError(chrome.tabs.create, {url});
+    return tab.id;
+  }
+
+  /**
+   * Closes a tab previously opened with |openTab|.
+   *
+   * @param {number} tabId
+   */
+  async closeTab(tabId) {
+    await chrome.tabs.remove(tabId);
+  }
+
+  /**
+   * Opens a window from the extension hosting this provider.
+   *
+   * @param {string} url
+   * @returns {!Promise<number>}
+   */
+  async openWindow(url) {
+    return await promisifyWithLastError(chrome.windows.create, {url});
+  }
+
+  /**
    * Called by the test. Gets the least recent event recorded for a given event
    * name. Will block until there is at least one in the queue.
    *
@@ -340,7 +388,7 @@ export class TestFileSystemProvider {
    * @returns {number}
    */
   getEventCount(eventName) {
-    return this.getEventQueue(eventName).items.length;
+    return this.getEventQueue(eventName).size();
   }
 
   /**
@@ -420,6 +468,9 @@ export class TestFileSystemProvider {
    * @returns {?Entry}
    */
   findEntryByPath(pathString) {
+    if (pathString === '/') {
+      return this.root;
+    }
     let path = pathString.split('/');
     if (path[0] != '') {
       // Must start with "/"
@@ -463,6 +514,11 @@ export class TestFileSystemProvider {
       return;
     }
 
+    if (options.entryPath === '/' + TestFileSystemProvider.FILE_FAIL) {
+      onError(chrome.fileSystemProvider.ProviderError.FAILED);
+      return;
+    }
+
     if (this.findEntryByPath(options.entryPath)) {
       onSuccess();
       return;
@@ -503,6 +559,12 @@ export class TestFileSystemProvider {
    */
   onConfigureRequested(options, onSuccess, onError) {
     this.recordEvent('onConfigureRequested', options);
+    const delay = this.testConfig['onConfigureRequestedDelayMs'];
+    if (delay) {
+      // Simulates a delayed configuration success.
+      setTimeout(onSuccess, delay);
+      return;
+    }
     const error = this.testConfig['onConfigureRequestedError'];
     if (error) {
       onError(error);
@@ -553,6 +615,57 @@ export class TestFileSystemProvider {
   }
 
   /**
+   * FSP: implementation of creating a directory within the same file system.
+   *
+   * @param {!chrome.fileSystemProvider.CreateDirectoryRequestedOptions} options
+   *  Options.
+   * @param {function()} onSuccess Success callback
+   * @param {function(chrome.fileSystemProvider.ProviderError)} onError Error
+   *  callback with an error code.
+   */
+  onCreateDirectoryRequested(options, onSuccess, onError) {
+    if (options.fileSystemId !== this.fileSystemId) {
+      onError(chrome.fileSystemProvider.ProviderError.SECURITY);
+      return;
+    }
+
+    if (options.directoryPath === '/' || options.recursive) {
+      onError(chrome.fileSystemProvider.ProviderError.INVALID_OPERATION);
+      return;
+    }
+
+    if (this.findEntryByPath(options.directoryPath)) {
+      onError(chrome.fileSystemProvider.ProviderError.EXISTS);
+      return;
+    }
+
+    // Check new directory path is valid.
+    const dirPathSplit = splitPath(options.directoryPath);
+    const parentDir = this.findEntryByPath(dirPathSplit.dirPath);
+    const dirName = dirPathSplit.fileName;
+    if (!parentDir) {
+      onError(chrome.fileSystemProvider.ProviderError.NOT_FOUND);
+      return;
+    }
+    if (!parentDir.metadata.isDirectory) {
+      onError(chrome.fileSystemProvider.ProviderError.NOT_A_DIRECTORY);
+      return;
+    }
+
+    // Add new directory.
+    const emptyDirMetadata = {
+      isDirectory: true,
+      name: dirName,
+      modificationTime: new Date(2014, 4, 28, 10, 39, 15),
+    }
+
+    const entry = new Entry(dirName, emptyDirMetadata, null, null);
+    parentDir.children[dirName] = entry;
+
+    onSuccess();
+  }
+
+  /**
    * FSP: implementation for the file create request event.
    *
    * @param {!chrome.fileSystemProvider.CreateFileRequestedOptions} options
@@ -589,6 +702,55 @@ export class TestFileSystemProvider {
   };
 
   /**
+   * FSP: implementation for the execute action request event.
+   *
+   * @param {!chrome.fileSystemProvider.ExecuteActionRequestedOptions} options
+   *     Options.
+   * @param {function()} onSuccess Success callback
+   * @param {function(chrome.fileSystemProvider.ProviderError)} onError Error
+   *     callback with an error code.
+   */
+  onExecuteActionRequested(options, onSuccess, onError) {
+    this.recordEvent('onExecuteActionRequested', options);
+    if (options.actionId === TestFileSystemProvider.ACTION_ID) {
+      onSuccess();
+    } else {
+      onError(chrome.fileSystemProvider.ProviderError.NOT_FOUND);
+    }
+  }
+
+  /**
+   * FSP: implementation for returning a list of actions for the requested
+   * entry.
+   *
+   * @param {chrome.fileSystemProvider.GetActionsRequestedOptions} options
+   *     Options.
+   * @param {function(Array<Object>)} onSuccess Success callback with a list of
+   *     actions.
+   * @param {function(string)} onError Error callback with an error code.
+   */
+  onGetActionsRequested(options, onSuccess, onError) {
+    if (options.fileSystemId !== this.fileSystemId) {
+      onError(chrome.fileSystemProvider.ProviderError.SECURITY);
+      return;
+    }
+
+    if (options.entryPaths.indexOf(
+            '/' + TestFileSystemProvider.DIR_WITH_NO_ACTIONS) !== -1) {
+      onSuccess([]);
+      return;
+    }
+
+    if (options.entryPaths.indexOf(
+            '/' + TestFileSystemProvider.DIR_WITH_ACTIONS) !== -1) {
+      onSuccess(TestFileSystemProvider.ACTIONS);
+      return;
+    }
+
+    onError(chrome.fileSystemProvider.ProviderError.NOT_FOUND);
+  }
+
+  /**
    * FSP: implementation for the metadata request event.
    *
    * @param {chrome.fileSystemProvider.GetMetadataRequestedOptions} options
@@ -599,6 +761,7 @@ export class TestFileSystemProvider {
    *     callback with an error code.
    */
   onGetMetadataRequested(options, onSuccess, onError) {
+    this.recordEvent('onGetMetadataRequested', options);
     if (options.fileSystemId !== this.fileSystemId) {
       onError(chrome.fileSystemProvider.ProviderError.SECURITY);
       return;
@@ -610,6 +773,19 @@ export class TestFileSystemProvider {
       return;
     }
 
+    // Returning a thumbnail while not requested is not allowed for performance
+    // reasons. Remove the field if needed. However, do not remove it for one
+    // file, to simulate an error.
+    if (!options.thumbnail && entry.metadata.thumbnail &&
+        options.entryPath !==
+            `/${TestFileSystemProvider.FILE_ALWAYS_VALID_THUMBNAIL}`) {
+      const metadataWithoutThumbnail = {
+        ...entry.metadata,
+        thumbnail: undefined,
+      };
+      onSuccess(metadataWithoutThumbnail);
+      return;
+    }
     onSuccess(entry.metadata);
   };
 
@@ -641,7 +817,7 @@ export class TestFileSystemProvider {
     this.maxOpenedFiles =
         Math.max(this.maxOpenedFiles, Object.keys(this.openedFiles).length);
 
-    if (options.filePath === '/' + TestFileSystemProvider.FILE_STALL_OPEN) {
+    if (options.filePath === '/' + TestFileSystemProvider.FILE_BLOCK_OPEN) {
       this.stallRequest('onOpenFileRequested', options).then(onSuccess);
       return;
     }
@@ -797,12 +973,7 @@ export class TestFileSystemProvider {
       return;
     }
 
-    if (filePath === '/' + TestFileSystemProvider.FILE_BLOCKS_FOREVER) {
-      // This simulates a very slow read.
-      return;
-    }
-
-    if (filePath === '/' + TestFileSystemProvider.FILE_STALL_READ) {
+    if (filePath === '/' + TestFileSystemProvider.FILE_BLOCK_IO) {
       // Block the read until it's unblocked.
       this.stallRequest('onReadFileRequested', options)
           .then(() => sendFileInChunks(entry));
@@ -842,12 +1013,80 @@ export class TestFileSystemProvider {
       return;
     }
 
+    const error = this.testConfig['onRemoveWatcherRequestedError'];
+    if (error) {
+      onError(error);
+      return;
+    }
+
     if (!this.findEntryByPath(options.entryPath)) {
       onSuccess();
       return;
     }
 
     onError(chrome.fileSystemProvider.ProviderError.NOT_FOUND);
+  };
+
+  /**
+   * FSP: implementation for truncating a file to the specified length.
+   *
+   * @param {!chrome.fileSystemProvider.TruncateRequestedOptions} options
+   *     Options.
+   * @param {function()} onSuccess Success callback.
+   * @param {function(string)} onError Error callback.
+   */
+  onTruncateRequested(options, onSuccess, onError) {
+    if (options.fileSystemId !== this.fileSystemId) {
+      onError(chrome.fileSystemProvider.ProviderError.SECURITY);
+      return;
+    }
+
+    let entry = this.findEntryByPath(options.filePath);
+    if (!entry) {
+      onError(chrome.fileSystemProvider.ProviderError.NOT_FOUND);
+      return;
+    }
+
+    // Truncating beyond the end of the file.
+    if (options.length > entry.metadata.size) {
+      onError(chrome.fileSystemProvider.ProviderError.INVALID_OPERATION);
+      return;
+    }
+
+    entry.metadata.size = options.length;
+    onSuccess();
+  }
+
+
+  /**
+   * FSP: requests to mount this filesystem.
+   *
+   * @param {function()} onSuccess Success callback.
+   * @param {function(chrome.fileSystemProvider.ProviderError)} onError Error
+   *     callback.
+   */
+  onMountRequested(onSuccess, onError) {
+    // This handler does not take the options arguments.
+    this.recordEvent('onMountRequested', {});
+    onSuccess();
+  };
+
+  /**
+   * FSP: requests to unmount this filesystem.
+   *
+   * @param {!chrome.fileSystemProvider.UnmountRequestedOptions} options
+   * @param {function()} onSuccess Success callback.
+   * @param {function(chrome.fileSystemProvider.ProviderError)} onError Error
+   *     callback.
+   */
+  onUnmountRequested(options, onSuccess, onError) {
+    this.recordEvent('onUnmountRequested', options);
+    const error = this.testConfig['onUnmountRequestedError'];
+    if (error) {
+      onError(error);
+    } else {
+      onSuccess();
+    }
   };
 
   /**
@@ -893,29 +1132,34 @@ export class TestFileSystemProvider {
       return;
     }
 
-    if (filePath === '/' + TestFileSystemProvider.FILE_BLOCKS_FOREVER) {
-      // Do not call any callback to simulate a very slow network connection.
-      return;
-    }
-
     // Writing beyond the end of the file.
     if (options.offset > metadata.size) {
       onError(chrome.fileSystemProvider.ProviderError.INVALID_OPERATION);
       return;
     }
 
-    // Create an array with enough space for new data.
-    const prevContents = textToBuffer(entry.contents || '');
-    const newLength = Math.max(
-        prevContents.byteLength, options.offset + options.data.byteLength);
-    const newContents = new Uint8Array(new ArrayBuffer(newLength));
-    // Write existing data and new data.
-    newContents.set(new Uint8Array(prevContents), 0);
-    newContents.set(new Uint8Array(options.data), options.offset);
-    // Save the new file as text.
-    entry.contents = new TextDecoder().decode(newContents);
-    metadata.size = newContents.length;
-    onSuccess();
+    const continueWrite = () => {
+      // Create an array with enough space for new data.
+      const prevContents = textToBuffer(entry.contents || '');
+      const newLength = Math.max(
+          prevContents.byteLength, options.offset + options.data.byteLength);
+      const newContents = new Uint8Array(new ArrayBuffer(newLength));
+      // Write existing data and new data.
+      newContents.set(new Uint8Array(prevContents), 0);
+      newContents.set(new Uint8Array(options.data), options.offset);
+      // Save the new file as text.
+      entry.contents = new TextDecoder().decode(newContents);
+      metadata.size = newContents.length;
+      onSuccess();
+    };
+
+    if (filePath === '/' + TestFileSystemProvider.FILE_BLOCK_IO) {
+      // Block the write until it's unblocked.
+      this.stallRequest('onWriteFileRequested', options).then(continueWrite);
+      return;
+    }
+
+    continueWrite();
   }
 
   /**
@@ -963,10 +1207,22 @@ export class TestFileSystemProvider {
  * @type {string}
  * @const
  */
+TestFileSystemProvider.DIR_WITH_ACTIONS = 'actions';
+
+/**
+ * @type {string}
+ * @const
+ */
+TestFileSystemProvider.DIR_WITH_NO_ACTIONS = 'no-actions';
+
+/**
+ * @type {string}
+ * @const
+ */
 TestFileSystemProvider.FILESYSTEM_ID = 'test-fs';
 
 /**
- * Reads and writes of this file always fail.
+ * Reads, writes and add/remove watchers of this file always fail.
  *
  * @type {string}
  * @const
@@ -987,23 +1243,16 @@ TestFileSystemProvider.FILE_DENIED = 'denied.txt';
  * @type {string}
  * @const
  */
-TestFileSystemProvider.FILE_STALL_OPEN = 'stall-open.txt';
+TestFileSystemProvider.FILE_BLOCK_OPEN = 'block-open.txt';
 
 /**
- * Read requests on this file are blocked until they are manually unblocked.
+ * Read and write requests on this file are blocked until they are manually
+ * unblocked.
  *
  * @type {string}
  * @const
  */
-TestFileSystemProvider.FILE_STALL_READ = 'stall-read.txt';
-
-/**
- * Reads and writes on this file never finish.
- *
- * @type {string}
- * @const
- */
-TestFileSystemProvider.FILE_BLOCKS_FOREVER = 'blocks-forever.txt';
+TestFileSystemProvider.FILE_BLOCK_IO = 'block-io.txt';
 
 /**
  * File reads return data normally (in multiple callbacks).
@@ -1046,6 +1295,40 @@ TestFileSystemProvider.FILE_INVALID_CALLBACK = 'read-invalid-callback.txt';
 TestFileSystemProvider.FILE_NEGATIVE_SIZE = 'negative-size.txt';
 
 /**
+ * File with invalid modification time.
+ *
+ * @type {string}
+ * @const
+ */
+TestFileSystemProvider.FILE_INVALID_DATE = 'invalid-date.txt';
+
+/**
+ * File with only type for metadata fields.
+ *
+ * @type {string}
+ * @const
+ */
+TestFileSystemProvider.FILE_ONLY_TYPE = 'metadata-only-type.txt';
+
+/**
+ * File with only size for metadata fields.
+ *
+ * @type {string}
+ * @const
+ */
+TestFileSystemProvider.FILE_ONLY_TYPE_AND_SIZE =
+    'metadata-only-type-and-size.txt';
+
+/**
+ * File always with valid thumbnail.
+ *
+ * @type {string}
+ * @const
+ */
+TestFileSystemProvider.FILE_ALWAYS_VALID_THUMBNAIL =
+    'always-with-thumbnail.txt';
+
+/**
  * Initial contents of default testing files.
  *
  * @type {string}
@@ -1053,11 +1336,37 @@ TestFileSystemProvider.FILE_NEGATIVE_SIZE = 'negative-size.txt';
  */
 TestFileSystemProvider.INITIAL_TEXT = 'Hello world. How are you today?';
 
+/**
+ * Valid thumbnail for testing files.
+ *
+ * @type {string}
+ * @const
+ */
+TestFileSystemProvider.VALID_THUMBNAIL =
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA' +
+    'AAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO' +
+    '9TXL0Y4OHwAAAABJRU5ErkJggg==';
+
+/**
+ * A valid action ID that will execute successfully.
+ *
+ * @type {string}
+ * @const
+ */
+TestFileSystemProvider.ACTION_ID = 'test-action-id';
+
+/**
+ * @type {Array<Object>}
+ * @const
+ */
+TestFileSystemProvider.ACTIONS = Object.freeze(
+    [{id: 'SHARE'}, {id: 'SomeCustomAction', title: 'Do something custom'}]);
+
 // Service worker entry point.
 export function serviceWorkerMain(serviceWorker) {
   const provider =
       new TestFileSystemProvider(TestFileSystemProvider.FILESYSTEM_ID);
 
   provider.setUpProviderListeners();
-  provider.setUpCommandListener(serviceWorker);
+  provider.setUpCommandListener();
 }

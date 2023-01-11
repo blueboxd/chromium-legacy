@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.filters.LargeTest;
 
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -85,6 +86,11 @@ public class PrivacySettingsFragmentTest {
         });
     }
 
+    private void scrollToSetting(Matcher<View> matcher) {
+        onView(withId(R.id.recycler_view))
+                .perform(RecyclerViewActions.scrollTo(hasDescendant(matcher)));
+    }
+
     private View getIncognitoReauthSettingView(PrivacySettings privacySettings) {
         String incognito_lock_title = mSettingsActivityTestRule.getActivity().getString(
                 R.string.settings_incognito_tab_lock_title);
@@ -144,12 +150,10 @@ public class PrivacySettingsFragmentTest {
         mSettingsActivityTestRule.startSettingsActivity();
         PrivacySettings fragment = mSettingsActivityTestRule.getFragment();
         // Scroll down and open Privacy Sandbox page.
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            RecyclerView recyclerView = fragment.getView().findViewById(R.id.recycler_view);
-            recyclerView.scrollToPosition(recyclerView.getAdapter().getItemCount() - 1);
-        });
+        scrollToSetting(withText(R.string.prefs_privacy_sandbox));
         onView(withText(R.string.prefs_privacy_sandbox)).perform(click());
         // Verify that the right view is shown depending on feature state.
+        scrollToSetting(withText(R.string.privacy_sandbox_toggle));
         onView(withText(R.string.privacy_sandbox_toggle)).check(matches(isDisplayed()));
     }
 
@@ -160,10 +164,7 @@ public class PrivacySettingsFragmentTest {
         mSettingsActivityTestRule.startSettingsActivity();
         PrivacySettings fragment = mSettingsActivityTestRule.getFragment();
         // Scroll down and open Privacy Sandbox page.
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            RecyclerView recyclerView = fragment.getView().findViewById(R.id.recycler_view);
-            recyclerView.scrollToPosition(recyclerView.getAdapter().getItemCount() - 1);
-        });
+        scrollToSetting(withText(R.string.prefs_privacy_sandbox));
         onView(withText(R.string.prefs_privacy_sandbox)).perform(click());
         // Verify that the right view is shown depending on feature state.
         onView(withText(R.string.privacy_sandbox_ad_personalization_title))

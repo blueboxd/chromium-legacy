@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/controls/separator.h"
 
 class ToolbarActionView;
 class WebContents;
@@ -18,8 +19,7 @@ class ToolbarActionHoverCardBubbleView
     : public views::BubbleDialogDelegateView {
  public:
   METADATA_HEADER(ToolbarActionHoverCardBubbleView);
-  explicit ToolbarActionHoverCardBubbleView(ToolbarActionView* action_view,
-                                            Profile* profile);
+  explicit ToolbarActionHoverCardBubbleView(ToolbarActionView* action_view);
   ToolbarActionHoverCardBubbleView(const ToolbarActionHoverCardBubbleView&) =
       delete;
   ToolbarActionHoverCardBubbleView& operator=(
@@ -35,11 +35,11 @@ class ToolbarActionHoverCardBubbleView
 
   // Accessors used by tests.
   std::u16string GetTitleTextForTesting() const;
-  bool IsFooterVisible() const;
-  bool IsFooterTitleLabelVisible() const;
-  bool IsFooterDescriptionLabelVisible() const;
-  bool IsFooterSeparatorVisible() const;
-  bool IsFooterPolicyLabelVisible() const;
+  bool IsSiteAccessSeparatorVisible() const;
+  bool IsSiteAccessTitleVisible() const;
+  bool IsSiteAccessDescriptionVisible() const;
+  bool IsPolicySeparatorVisible() const;
+  bool IsPolicyLabelVisible() const;
 
  private:
   friend class ToolbarActionHoverCardBubbleViewUITest;
@@ -52,11 +52,13 @@ class ToolbarActionHoverCardBubbleView
   // views::BubbleDialogDelegateView:
   void OnThemeChanged() override;
 
-  // The associated ToolbarActionsModel. Not owned.
-  raw_ptr<ToolbarActionsModel> model_;
-
   raw_ptr<FadeLabel> title_label_ = nullptr;
-  raw_ptr<FootnoteView> footnote_view_ = nullptr;
+  raw_ptr<FadeLabel> site_access_title_label_ = nullptr;
+  raw_ptr<FadeLabel> site_access_description_label_ = nullptr;
+  raw_ptr<FadeLabel> policy_label_ = nullptr;
+
+  raw_ptr<views::Separator> site_access_separator_;
+  raw_ptr<views::Separator> policy_separator_;
 
   absl::optional<int> corner_radius_;
 };

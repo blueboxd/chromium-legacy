@@ -40,7 +40,7 @@ class AutofillProvider : public content::WebContentsUserData<AutofillProvider> {
       const FormFieldData& field,
       const gfx::RectF& bounding_box,
       int32_t query_id,
-      bool autoselect_first_suggestion,
+      AutoselectFirstSuggestion autoselect_first_suggestion,
       FormElementWasClicked form_element_was_clicked) = 0;
 
   virtual void OnTextFieldDidChange(AndroidAutofillManager* manager,
@@ -91,7 +91,8 @@ class AutofillProvider : public content::WebContentsUserData<AutofillProvider> {
 
   void FillOrPreviewForm(AndroidAutofillManager* manager,
                          int requestId,
-                         const FormData& formData);
+                         const FormData& formData,
+                         const url::Origin& triggered_origin);
 
   // Notifies the renderer should accept the datalist suggestion given by
   // |value| and fill the input field indified by |field_id|.

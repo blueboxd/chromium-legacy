@@ -17,6 +17,7 @@
 #include "components/device_event_log/device_event_log.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
+#include "device/bluetooth/floss/bluetooth_advertisement_floss.h"
 #include "device/bluetooth/floss/bluetooth_device_floss.h"
 #include "device/bluetooth/floss/bluetooth_low_energy_scan_session_floss.h"
 #include "device/bluetooth/floss/bluetooth_socket_floss.h"
@@ -29,6 +30,10 @@
 #include "device/bluetooth/chromeos/bluetooth_connection_logger.h"
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/devicetype.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace floss {
 
@@ -64,6 +69,14 @@ BluetoothDeviceFloss::ConnectErrorCode BtifStatusToConnectErrorCode(
     default:
       return BluetoothDeviceFloss::ConnectErrorCode::ERROR_UNKNOWN;
   }
+}
+
+bool DeviceHasReadProperties(device::BluetoothDevice* device) {
+  if (device) {
+    return static_cast<BluetoothDeviceFloss*>(device)->HasReadProperties();
+  }
+
+  return false;
 }
 
 }  // namespace
@@ -119,6 +132,15 @@ void BluetoothAdapterFloss::Shutdown() {
     RemoveAdapter();  // Cleans up devices and adapter observers.
   DCHECK(devices_.empty());
 
+  // This may call unregister on advertisements that have already been
+  // unregistered but that's fine. The advertisement object keeps a track of
+  // the fact that it has been already unregistered and will call our empty
+  // error callback with an "Already unregistered" error, which we'll ignore.
+  for (const auto& adv : advertisements_) {
+    adv->Stop(base::DoNothing(), base::DoNothing());
+  }
+  advertisements_.clear();
+
   FlossDBusManager::Get()->GetManagerClient()->RemoveObserver(this);
   dbus_is_shutdown_ = true;
 
@@ -136,6 +158,7 @@ void BluetoothAdapterFloss::AddAdapterObservers() {
   // that we are controlling.
   FlossDBusManager::Get()->GetAdapterClient()->AddObserver(this);
   FlossDBusManager::Get()->GetLEScanClient()->AddObserver(this);
+  FlossDBusManager::Get()->GetBatteryManagerClient()->AddObserver(this);
 }
 
 void BluetoothAdapterFloss::RemoveAdapter() {
@@ -319,6 +342,12 @@ bool BluetoothAdapterFloss::IsDiscovering() const {
     return false;
 
   return NumScanningDiscoverySessions() > 0;
+}
+
+std::unique_ptr<BluetoothDeviceFloss>
+BluetoothAdapterFloss::CreateBluetoothDeviceFloss(FlossDeviceId device) {
+  return std::make_unique<BluetoothDeviceFloss>(this, device, ui_task_runner_,
+                                                socket_thread_);
 }
 
 void BluetoothAdapterFloss::OnMethodResponse(base::OnceClosure callback,
@@ -579,19 +608,29 @@ void BluetoothAdapterFloss::AdapterFoundDevice(
   DCHECK(FlossDBusManager::Get());
   DCHECK(IsPresent());
 
-  auto device_floss = base::WrapUnique(new BluetoothDeviceFloss(
-      this, device_found, ui_task_runner_, socket_thread_));
+  BLUETOOTH_LOG(EVENT) << __func__ << device_found;
+
+  auto device_floss = CreateBluetoothDeviceFloss(device_found);
+  BluetoothDeviceFloss* new_device_ptr = nullptr;
 
   std::string canonical_address =
       device::CanonicalizeBluetoothAddress(device_floss->GetAddress());
-  if (!base::Contains(devices_, canonical_address)) {
-    // Take copy of pointer before moving ownership.
-    BluetoothDeviceFloss* device_ptr = device_floss.get();
-    devices_.emplace(canonical_address, std::move(device_floss));
 
-    device_ptr->InitializeDeviceProperties(
+  // Devices are newly found if they aren't in the devices_ map or they were
+  // added via ScanResult (which doesn't trigger property reads).
+  if (!base::Contains(devices_, canonical_address)) {
+    new_device_ptr = device_floss.get();
+    devices_.emplace(canonical_address, std::move(device_floss));
+  } else if (!DeviceHasReadProperties(devices_[canonical_address].get())) {
+    new_device_ptr =
+        static_cast<BluetoothDeviceFloss*>(devices_[canonical_address].get());
+  }
+
+  // Trigger property reads for new devices.
+  if (new_device_ptr) {
+    new_device_ptr->InitializeDeviceProperties(
         base::BindOnce(&BluetoothAdapterFloss::OnInitializeDeviceProperties,
-                       weak_ptr_factory_.GetWeakPtr(), device_ptr));
+                       weak_ptr_factory_.GetWeakPtr(), new_device_ptr));
 
     // TODO(b/204708206): Convert "Paired" and "Connected" property into a
     // property framework.
@@ -603,9 +642,27 @@ void BluetoothAdapterFloss::AdapterFoundDevice(
         base::BindOnce(&BluetoothAdapterFloss::OnGetConnectionState,
                        weak_ptr_factory_.GetWeakPtr(), device_found),
         device_found);
+    return;
   }
 
-  BLUETOOTH_LOG(EVENT) << __func__ << device_found;
+  BluetoothDeviceFloss* device =
+      static_cast<BluetoothDeviceFloss*>(devices_[canonical_address].get());
+  if (UpdateDevice(device, device_floss.get())) {
+    for (auto& observer : observers_)
+      observer.DeviceChanged(this, device);
+  }
+}
+
+bool BluetoothAdapterFloss::UpdateDevice(BluetoothDeviceFloss* device,
+                                         BluetoothDeviceFloss* new_device) {
+  bool updated = false;
+
+  if (new_device->GetName() && device->GetName() != new_device->GetName()) {
+    device->SetName(new_device->GetName().value_or(""));
+    updated = true;
+  }
+
+  return updated;
 }
 
 void BluetoothAdapterFloss::AdapterClearedDevice(
@@ -613,8 +670,7 @@ void BluetoothAdapterFloss::AdapterClearedDevice(
   DCHECK(FlossDBusManager::Get());
   DCHECK(IsPresent());
 
-  auto device_floss = base::WrapUnique(new BluetoothDeviceFloss(
-      this, device_cleared, ui_task_runner_, socket_thread_));
+  auto device_floss = CreateBluetoothDeviceFloss(device_cleared);
   std::string canonical_address =
       device::CanonicalizeBluetoothAddress(device_floss->GetAddress());
   if (base::Contains(devices_, canonical_address)) {
@@ -765,6 +821,44 @@ void BluetoothAdapterFloss::AdapterDeviceConnected(
   NotifyDeviceConnectedStateChanged(device, true);
 }
 
+absl::optional<device::BluetoothDevice::BatteryType> variant_to_battery_type(
+    const std::string& variant) {
+  std::unordered_map<std::string, device::BluetoothDevice::BatteryType>
+      battery_type_lookup = {
+          {"", device::BluetoothDevice::BatteryType::kDefault},
+          {"left", device::BluetoothDevice::BatteryType::kLeftBudTrueWireless},
+          {"right",
+           device::BluetoothDevice::BatteryType::kRightBudTrueWireless},
+          {"case", device::BluetoothDevice::BatteryType::kCaseTrueWireless},
+      };
+  if (!base::Contains(battery_type_lookup, variant)) {
+    return absl::nullopt;
+  }
+  return battery_type_lookup[variant];
+}
+
+void BluetoothAdapterFloss::BatteryInfoUpdated(std::string remote_address,
+                                               BatterySet battery_set) {
+  BluetoothDeviceFloss* device =
+      static_cast<BluetoothDeviceFloss*>(GetDevice(remote_address));
+  if (!device) {
+    LOG(WARNING) << "BatterySet received for unknown device" << remote_address;
+    return;
+  }
+
+  for (const auto& battery : battery_set.batteries) {
+    absl::optional<device::BluetoothDevice::BatteryType> battery_type =
+        variant_to_battery_type(battery.variant);
+    if (!battery_type) {
+      LOG(WARNING) << "Unable to convert to battery_type from "
+                   << battery.variant;
+      continue;
+    }
+    device->SetBatteryInfo(device::BluetoothDevice::BatteryInfo(
+        battery_type.value(), battery.percentage));
+  }
+}
+
 void BluetoothAdapterFloss::AdapterDeviceDisconnected(
     const FlossDeviceId& device_id) {
   DCHECK(FlossDBusManager::Get());
@@ -828,24 +922,36 @@ void BluetoothAdapterFloss::RegisterAdvertisement(
     std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
     CreateAdvertisementCallback callback,
     AdvertisementErrorCallback error_callback) {
-  std::move(error_callback)
-      .Run(device::BluetoothAdvertisement::ERROR_UNSUPPORTED_PLATFORM);
+  scoped_refptr<BluetoothAdvertisementFloss> advertisement(
+      new BluetoothAdvertisementFloss(std::move(advertisement_data),
+                                      interval_ms_, this));
+  advertisement->Start(base::BindOnce(std::move(callback), advertisement),
+                       std::move(error_callback));
+  advertisements_.emplace_back(advertisement);
 }
 
 void BluetoothAdapterFloss::SetAdvertisingInterval(
     const base::TimeDelta& min,
     const base::TimeDelta& max,
     base::OnceClosure callback,
-    AdvertisementErrorCallback error_callback) {
-  std::move(error_callback)
-      .Run(device::BluetoothAdvertisement::ERROR_UNSUPPORTED_PLATFORM);
+    AdvertisementErrorCallback r_callback) {
+  interval_ms_ = static_cast<uint16_t>(
+      std::min(static_cast<int64_t>(std::numeric_limits<uint16_t>::max()),
+               min.InMilliseconds()));
+  for (const auto& adv : advertisements_) {
+    adv->SetAdvertisingInterval(interval_ms_, base::DoNothing(),
+                                base::DoNothing());
+  }
+  std::move(callback).Run();
 }
 
 void BluetoothAdapterFloss::ResetAdvertising(
     base::OnceClosure callback,
     AdvertisementErrorCallback error_callback) {
-  std::move(error_callback)
-      .Run(device::BluetoothAdvertisement::ERROR_UNSUPPORTED_PLATFORM);
+  for (const auto& adv : advertisements_) {
+    adv->Stop(base::DoNothing(), base::DoNothing());
+  }
+  std::move(callback).Run();
 }
 
 void BluetoothAdapterFloss::ConnectDevice(
@@ -891,7 +997,10 @@ BluetoothAdapterFloss::GetLowEnergyScanSessionHardwareOffloadingStatus() {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void BluetoothAdapterFloss::SetStandardChromeOSAdapterName() {
-  NOTIMPLEMENTED();
+  DCHECK(IsPresent());
+  std::string alias = ash::GetDeviceBluetoothName(GetAddress());
+  FlossDBusManager::Get()->GetAdapterClient()->SetName(base::DoNothing(),
+                                                       alias);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -921,30 +1030,73 @@ void BluetoothAdapterFloss::ScannerRegistered(device::BluetoothUUID uuid,
 }
 
 void BluetoothAdapterFloss::ScanResultReceived(ScanResult scan_result) {
-  device::BluetoothDevice* device = new BluetoothDeviceFloss(
-      this,
-      FlossDeviceId({.address = scan_result.address, .name = scan_result.name}),
-      ui_task_runner_, socket_thread_);
+  BLUETOOTH_LOG(DEBUG) << __func__ << ": " << scan_result.address;
+
+  BluetoothDeviceFloss* device_ptr;
+  std::string canonical_address =
+      device::CanonicalizeBluetoothAddress(scan_result.address);
+
+  if (base::Contains(devices_, canonical_address)) {
+    device_ptr =
+        static_cast<BluetoothDeviceFloss*>(devices_[canonical_address].get());
+    device_ptr->UpdateTimestamp();
+  } else {
+    auto device = CreateBluetoothDeviceFloss(FlossDeviceId(
+        {.address = scan_result.address, .name = scan_result.name}));
+    device_ptr = device.get();
+    devices_.emplace(canonical_address, std::move(device));
+  }
 
   device::BluetoothDevice::ServiceDataMap service_data_map;
   for (const auto& [uuid, bytes] : scan_result.service_data) {
     service_data_map[device::BluetoothUUID(uuid)] = bytes;
   }
 
-  device->UpdateAdvertisementData(scan_result.rssi, scan_result.flags,
-                                  scan_result.service_uuids,
-                                  scan_result.tx_power, service_data_map,
-                                  device::BluetoothDevice::ManufacturerDataMap(
-                                      scan_result.manufacturer_data.begin(),
-                                      scan_result.manufacturer_data.end()));
+  device_ptr->UpdateAdvertisementData(
+      scan_result.rssi, scan_result.flags, scan_result.service_uuids,
+      scan_result.tx_power, service_data_map,
+      device::BluetoothDevice::ManufacturerDataMap(
+          scan_result.manufacturer_data.begin(),
+          scan_result.manufacturer_data.end()));
 
   for (auto& observer : observers_)
-    observer.DeviceAdvertisementReceived(this, device, scan_result.rssi,
+    observer.DeviceAdvertisementReceived(this, device_ptr, scan_result.rssi,
                                          scan_result.adv_data);
 
   // All scanners share scan results
   for (const auto& [key, scanner] : scanners_) {
-    scanner->OnDeviceFound(device);
+    scanner->OnDeviceFound(device_ptr);
+  }
+}
+
+void BluetoothAdapterFloss::ScanResultLost(ScanResult scan_result) {
+  // TODO(b/217274013): This needs to be wired once filters are in place and
+  // API has been defined on daemon
+  BLUETOOTH_LOG(DEBUG) << __func__ << ": " << scan_result.address;
+
+  auto device = CreateBluetoothDeviceFloss(FlossDeviceId(
+      {.address = scan_result.address, .name = scan_result.name}));
+  std::string canonical_address =
+      device::CanonicalizeBluetoothAddress(device->GetAddress());
+  if (!base::Contains(devices_, canonical_address)) {
+    BLUETOOTH_LOG(EVENT) << __func__
+                         << ": Device lost but never previously found: "
+                         << scan_result.address;
+    return;
+  }
+
+  BluetoothDeviceFloss* device_ptr = device.get();
+  BluetoothDeviceFloss* found_ptr =
+      static_cast<BluetoothDeviceFloss*>(GetDevice(device->GetAddress()));
+
+  // Only remove devices from devices_ that are not paired or connected.
+  if (!found_ptr || (!found_ptr->IsPaired() && !found_ptr->IsConnected())) {
+    devices_.erase(canonical_address);
+  }
+
+  // All scanners share scan results
+  for (const auto& [key, scanner] : scanners_) {
+    scanner->OnDeviceLost(device_ptr);
   }
 }
 

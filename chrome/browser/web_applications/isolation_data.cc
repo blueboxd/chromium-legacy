@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/isolation_data.h"
 
 #include "base/functional/overloaded.h"
+#include "base/json/values_util.h"
 
 namespace web_app {
 
@@ -56,15 +57,16 @@ base::Value IsolationData::AsDebugValue() const {
   absl::visit(base::Overloaded{
                   [&value](const IsolationData::InstalledBundle& bundle) {
                     value.SetByDottedPath("content.installed_bundle.path",
-                                          bundle.path.LossyDisplayName());
+                                          base::FilePathToValue(bundle.path));
                   },
                   [&value](const IsolationData::DevModeBundle& bundle) {
                     value.SetByDottedPath("content.dev_mode_bundle.path",
-                                          bundle.path.LossyDisplayName());
+                                          base::FilePathToValue(bundle.path));
                   },
                   [&value](const IsolationData::DevModeProxy& proxy) {
+                    DCHECK(!proxy.proxy_url.opaque());
                     value.SetByDottedPath("content.dev_mode_proxy.proxy_url",
-                                          proxy.proxy_url);
+                                          proxy.proxy_url.GetDebugString());
                   },
               },
               content);

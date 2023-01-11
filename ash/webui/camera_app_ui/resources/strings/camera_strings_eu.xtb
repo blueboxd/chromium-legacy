@@ -31,6 +31,8 @@
 <translation id="1862930711583847113">Ezin da esportatu <ph name="FILE" /></translation>
 <translation id="1899697626337024495">Argazkiaren bereizmena</translation>
 <translation id="1925845977604399247">Joan galeriara</translation>
+<translation id="199526504800285197">Gelditu egin da grabaketa</translation>
+<translation id="1995951722691075581">Grabaketa gelditu da gailuak biltegiratzeko toki gutxi duelako. Bideo gehiago grabatzeko, tokia egin behar duzu gailuan.</translation>
 <translation id="2022953316617983419">QR kodea</translation>
 <translation id="2036868001356139588">Tenporizadorearen iraupena</translation>
 <translation id="2050339315714019657">Bertikala</translation>
@@ -47,6 +49,7 @@
 <translation id="2501953888035679275">Atera argazkiak eta grabatu bideoak kamerarekin.</translation>
 <translation id="2517472476991765520">Bilatu</translation>
 <translation id="2549985041256363841">Hasi grabatzen</translation>
+<translation id="2577915835281444458">Laster utziko zaio grabatzeari. Tokia egiteko, joan gailuaren memoriara.</translation>
 <translation id="2599796128805996109">Atzeko kamera</translation>
 <translation id="2759905922487820242"><ph name="CURRENT" />/<ph name="MAXIMAL" /> s</translation>
 <translation id="2761536921376153655">Bilaketa mota</translation>
@@ -77,6 +80,7 @@
 <translation id="3810838688059735925">Bideoa</translation>
 <translation id="3838931309141338733">Eskaneatu barra-kodea</translation>
 <translation id="3892148308691398805">Kopiatu testua</translation>
+<translation id="4060608699153044055">Ezin duzu grabatu gailuak biltegiratzeko toki gutxi duelako. Grabatzen hasteko, tokia egin behar duzu gailuan.</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> MP</translation>
 <translation id="4118525110028899586">Pausatu grabaketa</translation>
 <translation id="4121305183798804752">Hauteman egin da dokumentua</translation>
@@ -90,6 +94,7 @@
 <translation id="4445542136948522167">Utzi argazkia ateratzeari</translation>
 <translation id="4497569853498380347">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" />) <ph name="MEGAPIXEL" /> megapixel</translation>
 <translation id="4570032796877367747">Aurreko kamera</translation>
+<translation id="4598556348158889687">Memoriaren kudeaketa</translation>
 <translation id="4620818268515773682">Aktibatu edo desaktibatu mikrofonoa. Mikrofonoa aktibatuta dago.</translation>
 <translation id="4628948037717959914">Argazkia</translation>
 <translation id="4649291346448517080">Ezin da gorde fitxategia</translation>
@@ -159,6 +164,7 @@ Irudi edo bideoaren kalitateari buruzko iritzia eman nahi baduzu, erantsi argazk
 <translation id="7748344063862150053">Dokumentuaren goiko eskuinaldeko ertza</translation>
 <translation id="7933675232020478311">Behera eta eskuinera mugitzen ari da</translation>
 <translation id="7983668134180549431">Testua hauteman da.</translation>
+<translation id="8079255378695216066">Ezin da hasi grabatzen</translation>
 <translation id="8120146556401698679">Mugitu, okertu, zooma</translation>
 <translation id="8131740175452115882">Berretsi</translation>
 <translation id="8145038249676204903">Aldatu argazkiak ateratzeko modura</translation>

@@ -69,11 +69,6 @@ BASE_FEATURE(kWebViewJavaJsBridgeMojo,
              "WebViewJavaJsBridgeMojo",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When enabled, connections using legacy TLS 1.0/1.1 versions are allowed.
-BASE_FEATURE(kWebViewLegacyTlsSupport,
-             "WebViewLegacyTlsSupport",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Measure the number of pixels occupied by one or more WebViews as a
 // proportion of the total screen size. Depending on the number of
 // WebVieaws and the size of the screen this might be expensive so
@@ -86,7 +81,7 @@ BASE_FEATURE(kWebViewMeasureScreenCoverage,
 // Field trial feature for controlling support of Origin Trials on WebView.
 BASE_FEATURE(kWebViewOriginTrials,
              "WebViewOriginTrials",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Whether to record size of the embedding app's data directory to the UMA
 // histogram Android.WebView.AppDataDirectorySize.
@@ -99,13 +94,6 @@ BASE_FEATURE(kWebViewRecordAppDataDirectorySize,
 BASE_FEATURE(kWebViewSuppressDifferentOriginSubframeJSDialogs,
              "WebViewSuppressDifferentOriginSubframeJSDialogs",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Only synthesize page load for URL spoof prevention at most once, on initial
-// main document access (instead on every NavigationStateChanged call that
-// invalidates the URL after).
-BASE_FEATURE(kWebViewSynthesizePageLoadOnlyOnInitialMainDocumentAccess,
-             "WebViewSynthesizePageLoadOnlyOnInitialMainDocumentAccess",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // A Feature used for WebView variations tests. Not used in production.
 BASE_FEATURE(kWebViewTestFeature,

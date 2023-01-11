@@ -36,6 +36,9 @@ fuzzer_test("color_parser_fuzzer") {
   sources = [ "color_parser_fuzzer.cc" ]
   deps = [ ":fuzzer_support" ]
   seed_corpus = "//content/test/data/fuzzer_corpus/color_parser_data/"
+
+  # Increase the memory limit, since the fuzzer exceeds it in Debug builds.
+  libfuzzer_options = [ "rss_limit_mb=4096" ]
 }
 
 fuzzer_test("origin_trial_token_fuzzer") {
@@ -227,20 +230,6 @@ fuzzer_test("attribution_simulator_fuzzer") {
     "//third_party/libprotobuf-mutator",
   ]
   seed_corpus = "//content/test/data/fuzzer_corpus/attribution_simulator/"
-}
-
-fuzzer_test("attribution_source_fuzzer") {
-  sources = [ "attribution_source_fuzzer.cc" ]
-  deps = [
-    "//content/browser",
-    "//content/public/browser:browser_sources",
-    "//content/test:test_support",
-    "//testing/libfuzzer/proto:json_proto",
-    "//testing/libfuzzer/proto:json_proto_converter",
-    "//third_party/libprotobuf-mutator",
-  ]
-  seed_corpus =
-      "//testing/libfuzzer/fuzzers/attribution_source_registration_corpus/"
 }
 
 fuzzer_test("browser_accessibility_fuzzer") {

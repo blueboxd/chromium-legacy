@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertArrayEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 import {MockVolumeManager} from '../../../background/js/mock_volume_manager.js';
@@ -69,9 +70,7 @@ let mockChrome;
 
 // Set up test components.
 export function setUp() {
-  // Mock LoadTimeData strings.
-  window.loadTimeData.getString = id => id;
-  window.loadTimeData.resetForTesting({
+  loadTimeData.overrideValues({
     FILES_TRASH_ENABLED: false,
     UNIFIED_MEDIA_VIEW_ENABLED: false,
     GUEST_OS: false,
@@ -1099,6 +1098,48 @@ export function testAriaExpanded(callback) {
         assertEquals(
             'group',
             downloadsItem.querySelector('.tree-children').getAttribute('role'));
+      }),
+      callback);
+}
+
+/** Test that clicking on disabled items is ignored. */
+export function testDisabledVolumes(callback) {
+  // Setup My Drive and Downloads and one folder inside each of them.
+  fakeFileSystemURLEntries['filesystem:drive/root/folder1'] =
+      MockDirectoryEntry.create(driveFileSystem, '/root/folder1');
+  const downloadsFileSystem = volumeManager.volumeInfoList.item(1).fileSystem;
+  fakeFileSystemURLEntries['filesystem:downloads/folder1'] =
+      MockDirectoryEntry.create(downloadsFileSystem, '/folder1');
+
+  // Populate the directory tree with the mock filesystem.
+  let directoryTree = createElements();
+  directoryTree.metadataModel = createMockMetadataModel();
+  const mockMetadata = createMockMetadataModel();
+  DirectoryTree.decorate(
+      directoryTree, directoryModel, volumeManager, mockMetadata,
+      fileOperationManager, true);
+  directoryTree.dataModel = new MockNavigationListModel(volumeManager);
+
+  // Coerce to DirectoryTree type and draw the tree.
+  directoryTree = /** @type {!DirectoryTree} */ (directoryTree);
+  directoryTree.redraw(true);
+
+  const driveItem = directoryTree.items[0];
+  driveItem.disabled = true;
+
+  reportPromise(
+      waitUntil(() => {
+        driveItem.click();
+        return !driveItem.selected;
+      }).then(() => {
+        let ariaExpanded = driveItem.getAttribute('aria-expanded');
+        assertTrue(ariaExpanded === 'false' || ariaExpanded === null);
+
+        driveItem.querySelector('.expand-icon').click();
+        // After clicking on expand-icon, aria-expanded should be still be set
+        // to false.
+        ariaExpanded = driveItem.getAttribute('aria-expanded');
+        assertTrue(ariaExpanded === 'false' || ariaExpanded === null);
       }),
       callback);
 }

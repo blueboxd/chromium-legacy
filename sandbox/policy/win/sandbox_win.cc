@@ -324,21 +324,24 @@ ResultCode AddGenericConfig(sandbox::TargetConfig* config) {
   DCHECK(!config->IsConfigured());
   ResultCode result;
 
-  // Add the policy for the client side of a pipe. It is just a file
-  // in the \pipe\ namespace. We restrict it to pipes that start with
-  // "chrome." so the sandboxed process cannot connect to system services.
-  result = config->AddRule(SubSystem::kFiles, Semantics::kFilesAllowAny,
-                           L"\\??\\pipe\\chrome.*");
-  if (result != SBOX_ALL_OK)
-    return result;
+  if (!base::FeatureList::IsEnabled(
+          sandbox::policy::features::kChromePipeLockdown)) {
+    // Add the policy for the client side of a pipe. It is just a file
+    // in the \pipe\ namespace. We restrict it to pipes that start with
+    // "chrome." so the sandboxed process cannot connect to system services.
+    result = config->AddRule(SubSystem::kFiles, Semantics::kFilesAllowAny,
+                             L"\\??\\pipe\\chrome.*");
+    if (result != SBOX_ALL_OK)
+      return result;
 
-  // Allow the server side of sync sockets, which are pipes that have
-  // the "chrome.sync" namespace and a randomly generated suffix.
-  result =
-      config->AddRule(SubSystem::kNamedPipes, Semantics::kNamedPipesAllowAny,
-                      L"\\\\.\\pipe\\chrome.sync.*");
-  if (result != SBOX_ALL_OK)
-    return result;
+    // Allow the server side of sync sockets, which are pipes that have
+    // the "chrome.sync" namespace and a randomly generated suffix.
+    result =
+        config->AddRule(SubSystem::kNamedPipes, Semantics::kNamedPipesAllowAny,
+                        L"\\\\.\\pipe\\chrome.sync.*");
+    if (result != SBOX_ALL_OK)
+      return result;
+  }
 
 // Add the policy for read-only PDB file access for stack traces.
 #if !defined(OFFICIAL_BUILD)
@@ -741,10 +744,7 @@ ResultCode GenerateConfigForSandboxedProcess(const base::CommandLine& cmd_line,
       MITIGATION_DEP_NO_ATL_THUNK | MITIGATION_EXTENSION_POINT_DISABLE |
       MITIGATION_SEHOP | MITIGATION_NONSYSTEM_FONT_DISABLE |
       MITIGATION_IMAGE_LOAD_NO_REMOTE | MITIGATION_IMAGE_LOAD_NO_LOW_LABEL |
-      MITIGATION_RESTRICT_INDIRECT_BRANCH_PREDICTION;
-
-  if (base::FeatureList::IsEnabled(features::kWinSboxDisableKtmComponent))
-    mitigations |= MITIGATION_KTM_COMPONENT;
+      MITIGATION_RESTRICT_INDIRECT_BRANCH_PREDICTION | MITIGATION_KTM_COMPONENT;
 
   // CET is enabled with the CETCOMPAT bit on chrome.exe so must be
   // disabled for processes we know are not compatible.
@@ -759,6 +759,7 @@ ResultCode GenerateConfigForSandboxedProcess(const base::CommandLine& cmd_line,
   // Post-startup mitigations.
   mitigations = MITIGATION_DLL_SEARCH_ORDER;
   if (!cmd_line.HasSwitch(switches::kAllowThirdPartyModules) &&
+      sandbox_type != Sandbox::kScreenAI &&
       sandbox_type != Sandbox::kSpeechRecognition &&
       sandbox_type != Sandbox::kMediaFoundationCdm) {
     mitigations |= MITIGATION_FORCE_MS_SIGNED_BINS;
@@ -1265,12 +1266,14 @@ std::string SandboxWin::GetSandboxTypeInEnglish(Sandbox sandbox_type) {
       return "CDM";
     case Sandbox::kPrintCompositor:
       return "Print Compositor";
-#if BUILDFLAG(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
     case Sandbox::kPrintBackend:
       return "Print Backend";
 #endif
     case Sandbox::kAudio:
       return "Audio";
+    case Sandbox::kScreenAI:
+      return "Screen AI";
     case Sandbox::kSpeechRecognition:
       return "Speech Recognition";
     case Sandbox::kPdfConversion:

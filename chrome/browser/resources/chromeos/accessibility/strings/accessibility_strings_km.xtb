@@ -26,6 +26,7 @@
 <translation id="1161762950103988776">ផ្លោះ</translation>
 <translation id="1164857107703583584">គ្រាប់ចុចបញ្ជា​ឱ្យរំលង​អាចត្រូវបានប្រើ​សម្រាប់​រុករក​ក្នុង​ទំព័របណ្ដាញ​យ៉ាងមាន​ប្រសិទ្ធភាព​។</translation>
 <translation id="1175914831232945926">តួលេខ</translation>
+<translation id="1181003590763099524">ផ្លាស់ទីទៅ​ចំណុច​ចាប់ផ្ដើម</translation>
 <translation id="1188858454923323853">បន្ថែម</translation>
 <translation id="1189258430971676908">កន្លែង​អនុវត្ត៖ បញ្ជី​ធ្លាក់ចុះ</translation>
 <translation id="1195238899008218998">សេចក្ដី​បញ្ចប់</translation>
@@ -150,6 +151,7 @@
 <translation id="1914424852593176649">ទំហំ <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678">បង្ហាញ​អក្សរប្រៃយ៍ <ph name="DOT" /></translation>
 <translation id="1923956950274750765">ស្វាយ</translation>
+<translation id="1928535370180099152">រំលេចតួអក្សរមុន</translation>
 <translation id="1928932365747995741">គ្មានកន្លែងបញ្ចូលអត្ថបទដែលអាចកែបានមុនទេ</translation>
 <translation id="1964135212174907577">វត្ថុបន្ទាប់</translation>
 <translation id="1966649499058910679">រំលេចពាក្យនីមួយៗនៅពេលដែលពាក្យនោះត្រូវបាននិយាយ</translation>
@@ -203,6 +205,7 @@
 <translation id="2381733276052567791">បិទ ឬ​បើក​ការនិយាយ</translation>
 <translation id="2390264819538553347">ដើម្បីបន្ត​ សូមចុច​ចូល ឬ​ប្រសិន​បើ​ចង់ថយក្រោយ សូមចុច​លុបថយក្រោយ។</translation>
 <translation id="2398579267367951220">វាយបញ្ចូល ដើម្បីស្វែងរក​ទំព័រ។ ចុច Enter ដើម្បីរំលងទៅ​លទ្ធផល ចុចព្រួញឡើងលើ ឬចុះ​ក្រោម ដើម្បីរុករក​លទ្ធផល បន្តវាយបញ្ចូលដើម្បីប្ដូរការស្វែងរក​របស់អ្នក ឬចុច Escape ដើម្បីបោះបង់។</translation>
+<translation id="2407047351320112166">រំលេចតួ​អក្សរ​បន្ទាប់</translation>
 <translation id="240709722712693803">ស្វាយចាស់</translation>
 <translation id="2410298923485357543">ប្រើសំឡេងធម្មជាតិ នៅពេលឧបករណ៍មានអ៊ីនធឺណិត</translation>
 <translation id="2416512023405990736">ប្រអប់ធីកដែលមិនបានធីក</translation>
@@ -326,6 +329,7 @@
 <translation id="309749186376891736">រូប​ទស្សន៍ទ្រនិច​សម្រាប់ផ្លាស់ទី</translation>
 <translation id="3103579948980282461">ស្វាយ​ខ្ចី</translation>
 <translation id="3104705064753753826">alrt dlg</translation>
+<translation id="3105857328626674463">រំលេចពាក្យមុន</translation>
 <translation id="3109724472072898302">បានបង្រួមចូល</translation>
 <translation id="311015743332597320">អូសម្រាមដៃ​បួនទៅស្ដាំ</translation>
 <translation id="3112457281078985179">ដើម្បីបើក ឬបិទ ChromeVox សូមប្រើ Control+Alt+Z ។</translation>
@@ -354,6 +358,7 @@
 <translation id="3241052487511142956">តំណដែលបានទៅកាន់ពីមុន</translation>
 <translation id="3241638166094654466">ក្រឡា​នៅក្នុង​បន្ទាត់​នីមួយៗ៖</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3247621388192105674">ផ្លាស់ទីទៅ​ចំណុចចុងគេ</translation>
 <translation id="3260949043575829030">ធាតុ​ស្រដៀងគ្នា​ពីមុន</translation>
 <translation id="3270069636408109001">គ្មានតារាងបន្ទាប់ទេ</translation>
 <translation id="3273791280096244679">រក្សាទុកស្លាក</translation>
@@ -380,6 +385,7 @@
 <translation id="3389259863310851658">ប្រអប់បែបបទពីមុន</translation>
 <translation id="3393605254399152980">អូស​ដោយប្រើ​ម្រាមដៃ​មួយ ដើម្បី​ឮ​នូវអ្វី​ដែល​អ្នកប៉ះ</translation>
 <translation id="3406283310380167331">បង្ហាញបញ្ជីបែបបទ</translation>
+<translation id="3407726812456125464">ស្ដាប់​ការអានអក្សរ​ដែល​បាន​ជ្រើសរើស</translation>
 <translation id="3414400929511680526">ផ្ទៃមេឃ​ស្រាល</translation>
 <translation id="3418936350470374046">គ្មានក្រឡាខាងក្រោមទេ</translation>
 <translation id="3419269701801640163">ដាក់ចូល</translation>
@@ -562,6 +568,7 @@
 <translation id="4780458943471935919">រំកិលទៅ​ទំព័រ​បន្ទាប់</translation>
 <translation id="4784215347943747396">គ្រប់គ្រង​ឧបករណ៍​ដោយប្រើ​ប៊ូតុងបិទបើក 1 ឬ 2 ប៉ុណ្ណោះ</translation>
 <translation id="4786285211967466855">គ្មានផ្នែកក្បាលកម្រិតទី 1 មុនទេ</translation>
+<translation id="4786591486270126089">ប្ដូរសំឡេង​ដោយស្វ័យប្រវត្តិ​ដោយផ្អែកតាមភាសា</translation>
 <translation id="4787577491510559358">ប្រកាស​ទម្រង់​សម្រាប់​ធាតុ​បច្ចុប្បន្ន</translation>
 <translation id="479989351350248267">ស្វែងរក</translation>
 <translation id="4804818685124855865">ផ្តាច់</translation>
@@ -945,11 +952,13 @@
 <translation id="743783356331413498">ឧទាហរណ៍</translation>
 <translation id="7439060726180460871">ថតឯកសារ</translation>
 <translation id="744163271241493234">pwded</translation>
+<translation id="7443479558101073378">រំលេចពាក្យបន្ទាប់</translation>
 <translation id="7465123027577412805">ប្រើ​សំឡេងធម្មជាតិឬ?</translation>
 <translation id="7491962110804786152">ផ្ទាំង</translation>
 <translation id="7492497529767769458">ទៅ​កាន់​ផ្នែក​បន្ទាប់។ ឧទាហរណ៍រួមបញ្ចូលកម្មវិធី​ចាប់ផ្ដើម និងរបារស្ថានភាព។</translation>
 <translation id="7505149250476994901">និយាយថា "អក្សរធំ" បន្ទាប់ពី​អក្សរ</translation>
 <translation id="7533226154149229506">លឿងខ្ចី</translation>
+<translation id="7541021454094606506">លុប​ទាំងអស់</translation>
 <translation id="7543255924852002459">លុបចោលស្លាក</translation>
 <translation id="7552432549459840808">ផ្លូវកាត់ Chrome ដែលមានប្រយោជន៍</translation>
 <translation id="7553679324939294712">បញ្ចូល <ph name="INSERT_PHRASE" /> នៅ​ពី​មុខ <ph name="BEFORE_PHRASE" /></translation>

@@ -108,7 +108,7 @@ gfx::Image ReadBitmap(const base::FilePath& image_path) {
   }
 
   gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(
-      base::RefCountedString::TakeString(&image_data));
+      base::MakeRefCounted<base::RefCountedString>(std::move(image_data)));
   if (image.IsEmpty())
     LOG(ERROR) << "Failed to decode PNG file.";
 
@@ -188,10 +188,8 @@ MultiProfileUserType GetMultiProfileUserType(
   if (entries.size() == 1u)
     return MultiProfileUserType::kSingleProfile;
 
-  int active_count = std::count_if(
-      entries.begin(), entries.end(), [](ProfileAttributesEntry* entry) {
-        return ProfileMetrics::IsProfileActive(entry);
-      });
+  int active_count =
+      base::ranges::count_if(entries, &ProfileMetrics::IsProfileActive);
 
   if (active_count <= 1)
     return MultiProfileUserType::kLatentMultiProfile;

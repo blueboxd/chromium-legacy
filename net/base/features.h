@@ -208,6 +208,9 @@ NET_EXPORT BASE_DECLARE_FEATURE(kPostQuantumCECPQ2SomeDomains);
 NET_EXPORT extern const base::FeatureParam<std::string>
     kPostQuantumCECPQ2Prefix;
 
+// Causes SSLClientSocket to force a minimum TLS version of at least TLS 1.2.
+NET_EXPORT BASE_DECLARE_FEATURE(kSSLMinVersionAtLeastTLS12);
+
 // Changes the timeout after which unused sockets idle sockets are cleaned up.
 NET_EXPORT BASE_DECLARE_FEATURE(kNetUnusedIdleSocketTimeout);
 
@@ -329,11 +332,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kSamePartyCookiesConsideredFirstParty);
 // be sent when the browser is on the same top-level site that it was on when
 // the cookie was set.
 NET_EXPORT BASE_DECLARE_FEATURE(kPartitionedCookies);
-// Flag to bypass the origin trial opt-in to use Partitioned cookies. This
-// allows developers to test Partitioned cookies manually in development
-// environments.
-// TODO(crbug.com/1296161): Remove this feature when the CHIPS OT ends.
-NET_EXPORT BASE_DECLARE_FEATURE(kPartitionedCookiesBypassOriginTrial);
 
 // When enabled, then we allow partitioned cookies even if kPartitionedCookies
 // is disabled only if the cookie partition key contains a nonce. So far, this
@@ -410,6 +408,7 @@ NET_EXPORT extern const base::FeatureParam<bool>
     kStorageAccessAPIAutoDenyOutsideFPS;
 
 NET_EXPORT BASE_DECLARE_FEATURE(kThirdPartyStoragePartitioning);
+NET_EXPORT BASE_DECLARE_FEATURE(kSupportPartitionedBlobUrl);
 
 // Whether ALPS parsing is on for any type of frame.
 NET_EXPORT BASE_DECLARE_FEATURE(kAlpsParsing);
@@ -426,6 +425,9 @@ NET_EXPORT BASE_DECLARE_FEATURE(kEnableWebsocketsOverHttp3);
 
 // Whether to do IPv4 to IPv6 address translation for IPv4 literals.
 NET_EXPORT BASE_DECLARE_FEATURE(kUseNAT64ForIPv4Literal);
+
+// Whether to block newly added forbidden headers (https://crbug.com/1362331).
+NET_EXPORT BASE_DECLARE_FEATURE(kBlockNewForbiddenHeaders);
 
 }  // namespace net::features
 

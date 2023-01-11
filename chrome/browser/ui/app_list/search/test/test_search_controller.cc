@@ -13,24 +13,24 @@ namespace app_list {
 TestSearchController::TestSearchController() = default;
 TestSearchController::~TestSearchController() = default;
 
+void TestSearchController::ClearSearch() {
+  if (!ash::IsZeroStateResultType(provider_->ResultType()))
+    last_results_.clear();
+  provider_->StopQuery();
+}
+
 void TestSearchController::StartSearch(const std::u16string& query) {
   // The search controller used when categorical search is enabled clears all
   // results when starging another search query - simulate this behavior in
   // tests when categorical search is enabled.
-  if (!ash::IsContinueSectionResultType(provider_->ResultType()) &&
-      app_list_features::IsCategoricalSearchEnabled()) {
+  if (!ash::IsZeroStateResultType(provider_->ResultType()))
     last_results_.clear();
-  }
   provider_->Start(query);
 }
 
 void TestSearchController::StartZeroState(base::OnceClosure on_done,
                                           base::TimeDelta timeout) {
-  // The search controller used when categorical search is enabled clears all
-  // results when starging another search query - simulate this behavior in
-  // tests when categorical search is enabled.
-  if (app_list_features::IsCategoricalSearchEnabled())
-    last_results_.clear();
+  last_results_.clear();
   provider_->StartZeroState();
 }
 
@@ -43,21 +43,29 @@ void TestSearchController::InvokeResultAction(
     ChromeSearchResult* result,
     ash::SearchResultActionType action) {}
 
-size_t TestSearchController::AddGroup(size_t max_results) {
-  return 0u;
+AppSearchDataSource* TestSearchController::GetAppSearchDataSource() {
+  return nullptr;
 }
 
 void TestSearchController::AddProvider(
-    size_t group_id,
     std::unique_ptr<SearchProvider> provider) {
   DCHECK(!provider_);
   provider_ = std::move(provider);
   provider_->set_controller(this);
 }
 
+size_t TestSearchController::ReplaceProvidersForResultTypeForTest(
+    ash::AppListSearchResultType result_type,
+    std::unique_ptr<SearchProvider> provider) {
+  NOTREACHED();
+  return 0u;
+}
+
 void TestSearchController::SetResults(const SearchProvider* provider,
                                       Results results) {
   last_results_ = std::move(results);
+  if (results_changed_callback_)
+    results_changed_callback_.Run(provider->ResultType());
 }
 
 void TestSearchController::Publish() {}
@@ -87,8 +95,14 @@ base::Time TestSearchController::session_start() {
 }
 
 void TestSearchController::set_results_changed_callback_for_test(
-    ResultsChangedCallback callback) {}
+    ResultsChangedCallback callback) {
+  results_changed_callback_ = callback;
+}
 
 void TestSearchController::disable_ranking_for_test() {}
 
+void TestSearchController::WaitForZeroStateCompletionForTest(
+    base::OnceClosure callback) {
+  std::move(callback).Run();
+}
 }  // namespace app_list

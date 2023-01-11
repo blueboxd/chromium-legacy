@@ -84,9 +84,7 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
     contents()->GetPrimaryMainFrame()->InitializeRenderFrameIfNeeded();
   }
 
-  void TearDown() override {
-    RenderViewHostImplTestHarness::TearDown();
-  }
+  void TearDown() override { RenderViewHostImplTestHarness::TearDown(); }
 
   void CancelDeferredNavigation(
       NavigationThrottle::ThrottleCheckResult result) {
@@ -772,9 +770,11 @@ class ScopedIsolatedAppBrowserClient : public ContentBrowserClient {
     SetBrowserClientForTesting(old_client_);
   }
 
-  bool ShouldUrlUseApplicationIsolationLevel(BrowserContext* browser_context,
-                                             const GURL& url) override {
-    return true;
+  bool ShouldUrlUseApplicationIsolationLevel(
+      BrowserContext* browser_context,
+      const GURL& url,
+      bool origin_matches_flag) override {
+    return origin_matches_flag;
   }
 
  private:
@@ -804,7 +804,7 @@ TEST_F(NavigationRequestTest, IsolatedAppPolicyInjection) {
   // Validate CSP.
   EXPECT_EQ(1UL, policies.content_security_policies.size());
   const auto& csp = policies.content_security_policies[0];
-  EXPECT_EQ(7UL, csp->raw_directives.size());
+  EXPECT_EQ(10UL, csp->raw_directives.size());
   using Directive = network::mojom::CSPDirectiveName;
   EXPECT_EQ("'none'", csp->raw_directives[Directive::BaseURI]);
   EXPECT_EQ("'none'", csp->raw_directives[Directive::ObjectSrc]);
@@ -813,6 +813,9 @@ TEST_F(NavigationRequestTest, IsolatedAppPolicyInjection) {
   EXPECT_EQ("'self' https:", csp->raw_directives[Directive::ConnectSrc]);
   EXPECT_EQ("'self' 'wasm-unsafe-eval'",
             csp->raw_directives[Directive::ScriptSrc]);
+  EXPECT_EQ("'self' data:", csp->raw_directives[Directive::ImgSrc]);
+  EXPECT_EQ("'self' data:", csp->raw_directives[Directive::MediaSrc]);
+  EXPECT_EQ("'self' data:", csp->raw_directives[Directive::FontSrc]);
   EXPECT_EQ("'script'", csp->raw_directives[Directive::RequireTrustedTypesFor]);
 }
 
@@ -1053,6 +1056,8 @@ class OriginTrialsControllerDelegateMock
     DCHECK(false) << "Method not implemented for test.";
     return base::flat_set<std::string>();
   }
+
+  void ClearPersistedTokens() override { persisted_tokens_.clear(); }
 
   base::flat_map<url::Origin, std::vector<std::string>> persisted_tokens_;
 };

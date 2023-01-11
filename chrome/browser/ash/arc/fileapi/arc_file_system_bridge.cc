@@ -30,7 +30,7 @@
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
-#include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
+#include "chrome/browser/ash/fileapi/external_file_url_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/dbus/virtual_file_provider/virtual_file_provider_client.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -96,8 +96,7 @@ file_manager::util::FileSystemURLAndHandle GetFileSystemURL(
     const GURL& url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return file_manager::util::CreateIsolatedURLFromVirtualPath(
-      context, /* empty origin */ GURL(),
-      chromeos::ExternalFileURLToVirtualPath(url));
+      context, url::Origin(), ash::ExternalFileURLToVirtualPath(url));
 }
 
 // Retrieves file's metadata on the IO thread, and runs the callback on the UI
@@ -554,7 +553,7 @@ base::FilePath ArcFileSystemBridge::GetLinuxVFSPathFromExternalFileURL(
     const GURL& url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::FilePath virtual_path = chromeos::ExternalFileURLToVirtualPath(url);
+  base::FilePath virtual_path = ash::ExternalFileURLToVirtualPath(url);
 
   std::string mount_name, cracked_id;
   storage::FileSystemType file_system_type;

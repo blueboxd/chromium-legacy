@@ -5,13 +5,15 @@
 // Mark the test as fully loaded. The Browser Test reads this.
 window.__TEST_LOADED__ = false;
 
+import 'chrome://webui-test/strings.m.js';
+
 async function run() {
   // Grab the JS module to test from the GET params.
   const params = new URLSearchParams(window.location.search);
   const jsModuleUrl = params.get('test_module');
 
   // Push all entities to global namespace to be visible to the test harness:
-  // ui/webui/resources/js/webui_resource_test.js
+  // ash/webui/common/resources/webui_resource_test.js
   const TestModule = await import(jsModuleUrl);
   for (const name in TestModule) {
     window[name] = TestModule[name];

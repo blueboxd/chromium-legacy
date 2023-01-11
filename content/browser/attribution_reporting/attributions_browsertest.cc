@@ -11,9 +11,11 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/values_test_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
+#include "build/buildflag.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
@@ -46,8 +48,10 @@
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
 #include "url/gurl.h"
 
@@ -263,7 +267,8 @@ class AttributionsBrowserTest : public ContentBrowserTest {
     observation.Observe(attribution_manager());
 
     base::RunLoop loop;
-    EXPECT_CALL(observer, OnSourceHandled(_, StorableSource::Result::kSuccess))
+    EXPECT_CALL(observer,
+                OnSourceHandled(_, _, StorableSource::Result::kSuccess))
         .WillOnce([&]() { loop.Quit(); });
 
     EXPECT_TRUE(ExecJs(web_contents(), JsReplace("createAttributionSrcImg($1);",
@@ -313,7 +318,7 @@ class AttributionsBrowserTest : public ContentBrowserTest {
     base::RunLoop loop;
     bool received = false;
     EXPECT_CALL(source_observer,
-                OnSourceHandled(_, StorableSource::Result::kSuccess))
+                OnSourceHandled(_, _, StorableSource::Result::kSuccess))
         .WillOnce([&]() {
           received = true;
           loop.Quit();
@@ -614,6 +619,8 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   EXPECT_EQ(register_response1->http_request()->headers.at(
                 "Attribution-Reporting-Eligible"),
             "navigation-source");
+  EXPECT_FALSE(base::Contains(register_response1->http_request()->headers,
+                              "Attribution-Reporting-Support"));
 
   auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
   http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
@@ -626,6 +633,8 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   ASSERT_EQ(register_response2->http_request()->headers.at(
                 "Attribution-Reporting-Eligible"),
             "navigation-source");
+  ASSERT_FALSE(base::Contains(register_response2->http_request()->headers,
+                              "Attribution-Reporting-Support"));
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
@@ -656,6 +665,8 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   register_response1->WaitForRequest();
   EXPECT_FALSE(base::Contains(register_response1->http_request()->headers,
                               "Attribution-Reporting-Eligible"));
+  EXPECT_FALSE(base::Contains(register_response1->http_request()->headers,
+                              "Attribution-Reporting-Support"));
 
   auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
   http_response->set_code(net::HTTP_OK);
@@ -848,8 +859,13 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   expected_report.WaitForReport();
 }
 
+// TODO(https://crbug.com/1374121): This is failing flakily because clicking the
+// link will cause a navigation. It is possible that the navigation will
+// complete before the attributionsSrc resource has been received. In this case,
+// the browser will mark the page as "frozen", causing MojoURLLoaderClient to
+// store the message and never dispatch it.
 IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
-                       ImpressionConversionSameDomain_ReportSent) {
+                       DISABLED_ImpressionConversionSameDomain_ReportSent) {
   // Expected reports must be registered before the server starts.
   ExpectedReportWaiter expected_report(
       GURL("https://d.test/.well-known/attribution-reporting/"
@@ -919,9 +935,18 @@ IN_PROC_BROWSER_TEST_F(
   expected_report.WaitForReport();
 }
 
+// TODO(crbug.com/1382603): Re-enable this test on Fuchsia when deflaked.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_MultipleImpressionsPerConversion_ReportSentWithAttribution \
+  DISABLED_MultipleImpressionsPerConversion_ReportSentWithAttribution
+#else
+#define MAYBE_MultipleImpressionsPerConversion_ReportSentWithAttribution \
+  MultipleImpressionsPerConversion_ReportSentWithAttribution
+#endif
+
 IN_PROC_BROWSER_TEST_F(
     AttributionsBrowserTest,
-    MultipleImpressionsPerConversion_ReportSentWithAttribution) {
+    MAYBE_MultipleImpressionsPerConversion_ReportSentWithAttribution) {
   ExpectedReportWaiter expected_report(
       GURL("https://b.test/.well-known/attribution-reporting/"
            "report-event-attribution"),
@@ -1048,7 +1073,7 @@ IN_PROC_BROWSER_TEST_F(
   observation.Observe(attribution_manager());
 
   base::RunLoop loop;
-  EXPECT_CALL(observer, OnSourceHandled(_, StorableSource::Result::kSuccess))
+  EXPECT_CALL(observer, OnSourceHandled(_, _, StorableSource::Result::kSuccess))
       .WillOnce([&]() { loop.Quit(); });
 
   EXPECT_TRUE(ExecJs(
@@ -1127,7 +1152,7 @@ IN_PROC_BROWSER_TEST_F(
   observation.Observe(attribution_manager());
 
   base::RunLoop loop;
-  EXPECT_CALL(observer, OnSourceHandled(_, StorableSource::Result::kSuccess))
+  EXPECT_CALL(observer, OnSourceHandled(_, _, StorableSource::Result::kSuccess))
       .WillOnce([&]() { loop.Quit(); });
 
   EXPECT_TRUE(ExecJs(
@@ -1546,6 +1571,112 @@ ATTRIBUTION_PRERENDER_BROWSER_TEST(ConversionsRegisteredOnActivatedPrerender) {
   // Confirm that reports work as expected, and impressions were retrieved from
   // the pre-rendered page, once it became a primary page.
   expected_report.WaitForReport();
+}
+
+class AttributionsCrossAppWebEnabledBrowserTest
+    : public AttributionsBrowserTest {
+ public:
+  AttributionsCrossAppWebEnabledBrowserTest() = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_{
+      blink::features::kAttributionReportingCrossAppWeb};
+};
+
+IN_PROC_BROWSER_TEST_F(AttributionsCrossAppWebEnabledBrowserTest,
+                       AttributionEligibleNavigation_SetsSupportHeader) {
+  auto register_response1 =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server(), "/register_source_redirect");
+  auto register_response2 =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server(), "/register_source_redirect2");
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL impression_url = https_server()->GetURL(
+      "a.test", "/attribution_reporting/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), impression_url));
+
+  GURL register_source_url =
+      https_server()->GetURL("d.test", "/register_source_redirect");
+
+  // Don't use `CreateAndClickSource()` as we need to observe navigation
+  // redirects prior to the navigation finishing.
+  EXPECT_TRUE(ExecJs(web_contents(), JsReplace(R"(
+    createAttributionSrcAnchor({id: 'link',
+                        url: $1,
+                        attributionsrc: '',
+                        target: $2});)",
+                                               register_source_url, "_top")));
+  EXPECT_TRUE(ExecJs(web_contents(), "simulateClick('link');"));
+
+  // Verify the navigation redirects contain the support header.
+  register_response1->WaitForRequest();
+  EXPECT_EQ(register_response1->http_request()->headers.at(
+                "Attribution-Reporting-Support"),
+            "web");
+
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
+  http_response->AddCustomHeader("Location", "/register_source_redirect2");
+  register_response1->Send(http_response->ToResponseString());
+  register_response1->Done();
+
+  // Ensure that redirect requests also contain the header.
+  register_response2->WaitForRequest();
+  ASSERT_EQ(register_response2->http_request()->headers.at(
+                "Attribution-Reporting-Support"),
+            "web");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    AttributionsCrossAppWebEnabledBrowserTest,
+    AttributionEligibleNavigationOsLevelEnabled_SetsSupportHeader) {
+  auto register_response1 =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server(), "/register_source_redirect");
+  auto register_response2 =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server(), "/register_source_redirect2");
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL impression_url = https_server()->GetURL(
+      "a.test", "/attribution_reporting/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), impression_url));
+
+  AttributionManagerImpl::ScopedOsSupportForTesting scoped_os_support_setting(
+      blink::mojom::AttributionOsSupport::kEnabled);
+
+  GURL register_source_url =
+      https_server()->GetURL("d.test", "/register_source_redirect");
+
+  // Don't use `CreateAndClickSource()` as we need to observe navigation
+  // redirects prior to the navigation finishing.
+  EXPECT_TRUE(ExecJs(web_contents(), JsReplace(R"(
+    createAttributionSrcAnchor({id: 'link',
+                        url: $1,
+                        attributionsrc: '',
+                        target: $2});)",
+                                               register_source_url, "_top")));
+  EXPECT_TRUE(ExecJs(web_contents(), "simulateClick('link');"));
+
+  // Verify the navigation redirects contain the support header.
+  register_response1->WaitForRequest();
+  EXPECT_EQ(register_response1->http_request()->headers.at(
+                "Attribution-Reporting-Support"),
+            "web, os");
+
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
+  http_response->AddCustomHeader("Location", "/register_source_redirect2");
+  register_response1->Send(http_response->ToResponseString());
+  register_response1->Done();
+
+  // Ensure that redirect requests also contain the header.
+  register_response2->WaitForRequest();
+  ASSERT_EQ(register_response2->http_request()->headers.at(
+                "Attribution-Reporting-Support"),
+            "web, os");
 }
 
 }  // namespace content

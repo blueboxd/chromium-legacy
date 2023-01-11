@@ -16,15 +16,13 @@
 #import "base/version.h"
 #import "components/crash/core/app/crashpad.h"
 #import "components/crash/core/common/reporter_running_ios.h"
+#import "components/previous_session_info/previous_session_info.h"
 #import "components/version_info/version_info.h"
 #import "ios/chrome/browser/crash_report/features.h"
-#import "ios/chrome/browser/crash_report/synthetic_crash_report_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-NSString* const kChromeMetricKitPayloadsDirectory = @"ChromeMetricKitPayloads";
 
 // The different causes of app exit as reported by MetricKit.
 // This enum is used in UMA. Do not change the order.
@@ -48,8 +46,6 @@ enum MetricKitExitReason {
 };
 
 namespace {
-
-NSString* const kEnableMetricKit = @"EnableMetricKit";
 
 void ReportExitReason(base::HistogramBase* histogram,
                       MetricKitExitReason bucket,
@@ -84,72 +80,14 @@ void ReportMemory(const char* histogram_name, NSMeasurement* measurement) {
   base::UmaHistogramMemoryLargeMB(histogram_name, value);
 }
 
-void WriteMetricPayloads(NSArray<MXMetricPayload*>* payloads) {
-  NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
-                                                       NSUserDomainMask, YES);
-  NSString* documents_directory = [paths objectAtIndex:0];
-  NSString* metric_kit_report_directory = [documents_directory
-      stringByAppendingPathComponent:kChromeMetricKitPayloadsDirectory];
-  base::FilePath metric_kit_report_path(
-      base::SysNSStringToUTF8(metric_kit_report_directory));
-  if (!base::CreateDirectory(metric_kit_report_path)) {
-    return;
-  }
-  NSDateFormatter* formatter = [[NSDateFormatter alloc] init];
-  [formatter setDateFormat:@"yyyyMMdd_HHmmss"];
-  [formatter setTimeZone:[NSTimeZone timeZoneWithName:@"UTC"]];
-  for (MXMetricPayload* payload : payloads) {
-    NSDate* end_date = payload.timeStampEnd;
-    NSString* file_name =
-        [NSString stringWithFormat:@"Metrics-%@.json",
-                                   [formatter stringFromDate:end_date]];
-    base::FilePath file_path(
-        base::SysNSStringToUTF8([metric_kit_report_directory
-            stringByAppendingPathComponent:file_name]));
-    NSData* file_data = payload.JSONRepresentation;
-    base::WriteFile(file_path, static_cast<const char*>(file_data.bytes),
-                    file_data.length);
-  }
-}
-
-void WriteDiagnosticPayloads(NSArray<MXDiagnosticPayload*>* payloads)
-    API_AVAILABLE(ios(14.0)) {
-  NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
-                                                       NSUserDomainMask, YES);
-  NSString* documents_directory = [paths objectAtIndex:0];
-  NSString* metric_kit_report_directory = [documents_directory
-      stringByAppendingPathComponent:kChromeMetricKitPayloadsDirectory];
-  base::FilePath metric_kit_report_path(
-      base::SysNSStringToUTF8(metric_kit_report_directory));
-  if (!base::CreateDirectory(metric_kit_report_path)) {
-    return;
-  }
-  NSDateFormatter* formatter = [[NSDateFormatter alloc] init];
-  [formatter setDateFormat:@"yyyyMMdd_HHmmss"];
-  [formatter setTimeZone:[NSTimeZone timeZoneWithName:@"UTC"]];
-  for (MXDiagnosticPayload* payload : payloads) {
-    NSDate* end_date = payload.timeStampEnd;
-    NSString* file_name =
-        [NSString stringWithFormat:@"Diagnostic-%@.json",
-                                   [formatter stringFromDate:end_date]];
-    base::FilePath file_path(
-        base::SysNSStringToUTF8([metric_kit_report_directory
-            stringByAppendingPathComponent:file_name]));
-    NSData* file_data = payload.JSONRepresentation;
-    base::WriteFile(file_path, static_cast<const char*>(file_data.bytes),
-                    file_data.length);
-  }
-}
-
-void SendDiagnostic(MXDiagnostic* diagnostic, const std::string& type)
-    API_AVAILABLE(ios(14.0)) {
+void SendDiagnostic(MXDiagnostic* diagnostic, const std::string& type) {
   base::FilePath cache_dir_path;
   if (!base::PathService::Get(base::DIR_CACHE, &cache_dir_path)) {
     return;
   }
-  NSDictionary* info_dict = NSBundle.mainBundle.infoDictionary;
-  NSError* error = nil;
+
   // Deflate the payload.
+  NSError* error = nil;
   NSData* payload = [diagnostic.JSONRepresentation
       compressedDataUsingAlgorithm:NSDataCompressionAlgorithmZlib
                              error:&error];
@@ -157,31 +95,29 @@ void SendDiagnostic(MXDiagnostic* diagnostic, const std::string& type)
     return;
   }
 
-  if (crash_reporter::IsBreakpadRunning()) {
-    std::string stringpayload(reinterpret_cast<const char*>(payload.bytes),
-                              payload.length);
-    CreateSyntheticCrashReportForMetrickit(
-        cache_dir_path.Append(FILE_PATH_LITERAL("Breakpad")),
-        base::SysNSStringToUTF8(info_dict[@"BreakpadProductDisplay"]),
-        base::SysNSStringToUTF8([NSString
-            stringWithFormat:@"%@_MetricKit", info_dict[@"BreakpadProduct"]]),
-        base::SysNSStringToUTF8(diagnostic.metaData.applicationBuildVersion),
-        base::SysNSStringToUTF8(info_dict[@"BreakpadURL"]), type,
-        stringpayload);
-  } else {
+  if (crash_reporter::IsCrashpadRunning()) {
     base::span<const uint8_t> spanpayload(
         reinterpret_cast<const uint8_t*>(payload.bytes), payload.length);
-    crash_reporter::ProcessExternalDump(
-        "MetricKit", spanpayload,
-        {{"ver",
-          base::SysNSStringToUTF8(diagnostic.metaData.applicationBuildVersion)},
-         {"metrickit", "true"},
-         {"metrickit_type", type}});
+
+    std::map<std::string, std::string> override_annotations = {
+        {"ver",
+         base::SysNSStringToUTF8(diagnostic.metaData.applicationBuildVersion)},
+        {"metrickit", "true"},
+        {"metrickit_type", type}};
+    PreviousSessionInfo* previous_session =
+        [PreviousSessionInfo sharedInstance];
+    for (NSString* key in previous_session.reportParameters.allKeys) {
+      override_annotations.insert(
+          {base::SysNSStringToUTF8(key),
+           base::SysNSStringToUTF8(previous_session.reportParameters[key])});
+    }
+
+    crash_reporter::ProcessExternalDump("MetricKit", spanpayload,
+                                        override_annotations);
   }
 }
 
-void SendDiagnosticPayloads(NSArray<MXDiagnosticPayload*>* payloads)
-    API_AVAILABLE(ios(14.0)) {
+void ProcessDiagnosticPayloads(NSArray<MXDiagnosticPayload*>* payloads) {
   for (MXDiagnosticPayload* payload in payloads) {
     for (MXCrashDiagnostic* diagnostic in payload.crashDiagnostics) {
       SendDiagnostic(diagnostic, "crash");
@@ -199,17 +135,6 @@ void SendDiagnosticPayloads(NSArray<MXDiagnosticPayload*>* payloads)
         SendDiagnostic(diagnostic, "diskwrite-exception");
       }
     }
-  }
-}
-
-void ProcessDiagnosticPayloads(NSArray<MXDiagnosticPayload*>* payloads,
-                               bool write_payloads,
-                               bool send_payloads) API_AVAILABLE(ios(14.0)) {
-  if (write_payloads) {
-    WriteDiagnosticPayloads(payloads);
-  }
-  if (send_payloads) {
-    SendDiagnosticPayloads(payloads);
   }
 }
 
@@ -235,15 +160,6 @@ void ProcessDiagnosticPayloads(NSArray<MXDiagnosticPayload*>* payloads,
 }
 
 - (void)didReceiveMetricPayloads:(NSArray<MXMetricPayload*>*)payloads {
-  NSUserDefaults* standard_defaults = [NSUserDefaults standardUserDefaults];
-  if ([standard_defaults boolForKey:kEnableMetricKit]) {
-    base::ThreadPool::PostTask(
-        FROM_HERE,
-        {base::TaskPriority::BEST_EFFORT,
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
-         base::ThreadPolicy::PREFER_BACKGROUND, base::MayBlock()},
-        base::BindOnce(WriteMetricPayloads, payloads));
-  }
   for (MXMetricPayload* payload : payloads) {
     [self processPayload:payload];
   }
@@ -287,8 +203,7 @@ void ProcessDiagnosticPayloads(NSArray<MXDiagnosticPayload*>* payloads,
   }
 }
 
-- (void)logForegroundExit:(MXForegroundExitData*)exitData
-    API_AVAILABLE(ios(14.0)) {
+- (void)logForegroundExit:(MXForegroundExitData*)exitData {
   base::HistogramBase* histogramUMA = base::LinearHistogram::FactoryGet(
       "IOS.MetricKit.ForegroundExitData", 1, kMetricKitExitReasonCount,
       kMetricKitExitReasonCount + 1,
@@ -307,8 +222,7 @@ void ProcessDiagnosticPayloads(NSArray<MXDiagnosticPayload*>* payloads,
                    exitData.cumulativeIllegalInstructionExitCount);
 }
 
-- (void)logBackgroundExit:(MXBackgroundExitData*)exitData
-    API_AVAILABLE(ios(14.0)) {
+- (void)logBackgroundExit:(MXBackgroundExitData*)exitData {
   base::HistogramBase* histogramUMA = base::LinearHistogram::FactoryGet(
       "IOS.MetricKit.BackgroundExitData", 1, kMetricKitExitReasonCount,
       kMetricKitExitReasonCount + 1,
@@ -373,21 +287,13 @@ void ProcessDiagnosticPayloads(NSArray<MXDiagnosticPayload*>* payloads,
   [self logBackgroundExit:payload.applicationExitMetrics.backgroundExitData];
 }
 
-- (void)didReceiveDiagnosticPayloads:(NSArray<MXDiagnosticPayload*>*)payloads
-    API_AVAILABLE(ios(14.0)) {
-  NSUserDefaults* standard_defaults = [NSUserDefaults standardUserDefaults];
-  BOOL writePayloadsToDisk = [standard_defaults boolForKey:kEnableMetricKit];
-  bool sendPayloads = base::FeatureList::IsEnabled(kMetrickitCrashReport);
-
-  if (writePayloadsToDisk || sendPayloads) {
-    base::ThreadPool::PostTask(
-        FROM_HERE,
-        {base::TaskPriority::BEST_EFFORT,
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
-         base::ThreadPolicy::PREFER_BACKGROUND, base::MayBlock()},
-        base::BindOnce(ProcessDiagnosticPayloads, payloads, writePayloadsToDisk,
-                       sendPayloads));
-  }
+- (void)didReceiveDiagnosticPayloads:(NSArray<MXDiagnosticPayload*>*)payloads {
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+       base::ThreadPolicy::PREFER_BACKGROUND, base::MayBlock()},
+      base::BindOnce(ProcessDiagnosticPayloads, payloads));
 }
 
 @end

@@ -47,9 +47,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/app_launch_splash_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/update_required_screen_handler.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/dbus/shill/shill_service_client.h"
@@ -257,12 +257,12 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, CriticalUpdateOnLoginScreen) {
       CreateMinimumVersionSingleRequirementPolicyValue(
           kNewVersion, kNoWarning, kNoWarning,
           false /* unmanaged_user_restricted */));
-  ash::OobeScreenWaiter(chromeos::UpdateRequiredView::kScreenId).Wait();
+  ash::OobeScreenWaiter(ash::UpdateRequiredView::kScreenId).Wait();
   EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 
   // Revoke policy and check update required screen is hidden.
   SetDevicePolicyAndWaitForSettingChange(base::Value::Dict());
-  ash::OobeScreenExitWaiter(chromeos::UpdateRequiredView::kScreenId).Wait();
+  ash::OobeScreenExitWaiter(ash::UpdateRequiredView::kScreenId).Wait();
   EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 }
 
@@ -694,13 +694,13 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionNoUsersLoginTest,
           false /* unmanaged_user_restricted */));
 
   // Check update required screen is shown on the login screen.
-  ash::OobeScreenWaiter(chromeos::UpdateRequiredView::kScreenId).Wait();
+  ash::OobeScreenWaiter(ash::UpdateRequiredView::kScreenId).Wait();
   EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 
   // Revoke policy and check update required screen is hidden and gaia screen is
   // shown.
   SetDevicePolicyAndWaitForSettingChange(base::Value::Dict());
-  ash::OobeScreenExitWaiter(chromeos::UpdateRequiredView::kScreenId).Wait();
+  ash::OobeScreenExitWaiter(ash::UpdateRequiredView::kScreenId).Wait();
   ash::OobeScreenWaiter(ash::OobeBaseTest::GetFirstSigninScreen()).Wait();
 }
 
@@ -725,7 +725,7 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyPresentTest,
   // the device.
   EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
             session_manager::SessionState::LOGIN_PRIMARY);
-  ash::OobeScreenWaiter(chromeos::UpdateRequiredView::kScreenId).Wait();
+  ash::OobeScreenWaiter(ash::UpdateRequiredView::kScreenId).Wait();
   EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 }
 
@@ -745,7 +745,7 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionExistingUserTest, DeadlineReached) {
   // the device.
   EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
             session_manager::SessionState::LOGIN_PRIMARY);
-  ash::OobeScreenWaiter(chromeos::UpdateRequiredView::kScreenId).Wait();
+  ash::OobeScreenWaiter(ash::UpdateRequiredView::kScreenId).Wait();
   EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 }
 
@@ -774,7 +774,7 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionBeforeLoginHost, DeadlineReached) {
   ShowLoginWizard(ash::OOBE_SCREEN_UNKNOWN);
   EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
             session_manager::SessionState::LOGIN_PRIMARY);
-  ash::OobeScreenWaiter(chromeos::UpdateRequiredView::kScreenId).Wait();
+  ash::OobeScreenWaiter(ash::UpdateRequiredView::kScreenId).Wait();
   EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 }
 
@@ -808,7 +808,7 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPublicSessionAutoLoginTest,
   // reboot.
   EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
             session_manager::SessionState::LOGIN_PRIMARY);
-  ash::OobeScreenWaiter(chromeos::UpdateRequiredView::kScreenId).Wait();
+  ash::OobeScreenWaiter(ash::UpdateRequiredView::kScreenId).Wait();
   EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
   EXPECT_FALSE(
       ash::ExistingUserController::current_controller()->IsSigninInProgress());
@@ -836,7 +836,7 @@ class MinimumVersionKioskAutoLoginTest : public MinimumVersionExistingUserTest {
 IN_PROC_BROWSER_TEST_F(MinimumVersionKioskAutoLoginTest, AllowAutoLaunch) {
   EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
             session_manager::SessionState::LOGIN_PRIMARY);
-  ash::OobeScreenWaiter(chromeos::AppLaunchSplashScreenView::kScreenId).Wait();
+  ash::OobeScreenWaiter(ash::AppLaunchSplashScreenView::kScreenId).Wait();
   // Policy handler returns early when device is setup in auto launch kiosk
   // mode.
   PrefService* prefs = g_browser_process->local_state();
@@ -884,7 +884,7 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionTimerExpiredOnLogin, DeadlinePassed) {
   // Show update required screen as deadline to update the device has passed.
   EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
             session_manager::SessionState::LOGIN_PRIMARY);
-  ash::OobeScreenWaiter(chromeos::UpdateRequiredView::kScreenId).Wait();
+  ash::OobeScreenWaiter(ash::UpdateRequiredView::kScreenId).Wait();
   EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 }
 

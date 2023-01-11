@@ -29,6 +29,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/widget/widget.h"
@@ -120,6 +121,8 @@ void DisplayOverlayController::AddOverlay(DisplayMode display_mode) {
 }
 
 void DisplayOverlayController::RemoveOverlayIfAny() {
+  if (display_mode_ == DisplayMode::kEdit)
+    OnCustomizeCancel();
   auto* shell_surface_base =
       exo::GetShellSurfaceBaseForWindow(touch_injector_->window());
   if (shell_surface_base && shell_surface_base->HasOverlay()) {
@@ -191,7 +194,7 @@ void DisplayOverlayController::AddMenuEntryView(views::Widget* overlay_widget) {
       vector_icons::kVideogameAssetOutlineIcon, SK_ColorBLACK);
 
   // Create and position entry point for |InputMenuView|.
-  auto menu_entry = std::make_unique<views::ImageButton>(base::BindRepeating(
+  auto menu_entry = std::make_unique<MenuEntryView>(base::BindRepeating(
       &DisplayOverlayController::OnMenuEntryPressed, base::Unretained(this)));
   menu_entry->SetImage(views::Button::STATE_NORMAL, game_icon);
   menu_entry->SetBackground(views::CreateRoundedRectBackground(
@@ -351,6 +354,11 @@ void DisplayOverlayController::AddButtonForAddActionTap() {
   auto* parent_view = overlay_widget->GetContentsView();
   DCHECK(parent_view);
   add_action_tap_ = parent_view->AddChildView(std::move(add_action_tap));
+  add_action_tap_->SetButtonTextColor(cros_styles::ResolveColor(
+      cros_styles::ColorName::kButtonLabelColorPrimary, IsDarkModeEnabled()));
+  add_action_tap_->SetBackgroundColor(cros_styles::ResolveColor(
+      cros_styles::ColorName::kButtonBackgroundColorPrimary,
+      IsDarkModeEnabled()));
   add_action_tap_->SetPosition(
       gfx::Point(parent_view->width() - add_action_tap_->width(), 0));
 }
@@ -380,6 +388,11 @@ void DisplayOverlayController::AddButtonForAddActionMove() {
   auto* parent_view = overlay_widget->GetContentsView();
   DCHECK(parent_view);
   add_action_move_ = parent_view->AddChildView(std::move(add_action_move));
+  add_action_move_->SetButtonTextColor(cros_styles::ResolveColor(
+      cros_styles::ColorName::kButtonLabelColorPrimary, IsDarkModeEnabled()));
+  add_action_move_->SetBackgroundColor(cros_styles::ResolveColor(
+      cros_styles::ColorName::kButtonBackgroundColorPrimary,
+      IsDarkModeEnabled()));
   add_action_move_->SetPosition(
       gfx::Point(parent_view->width() - add_action_move_->width(),
                  add_action_tap_->height()));
@@ -394,6 +407,10 @@ void DisplayOverlayController::RemoveButtonForAddActionMove() {
 
 void DisplayOverlayController::OnAddActionMoveButtonPressed() {
   touch_injector_->AddNewAction(ActionType::MOVE);
+}
+
+void DisplayOverlayController::OnActionTrashButtonPressed(Action* action) {
+  touch_injector_->RemoveAction(action);
 }
 
 views::Widget* DisplayOverlayController::GetOverlayWidget() {

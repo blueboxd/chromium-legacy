@@ -88,6 +88,7 @@ void SearchResultImageListView::AppendShownResultMetadata(
 absl::optional<SearchResultContainerView::ResultsAnimationInfo>
 SearchResultImageListView::ScheduleResultAnimations(
     const ResultsAnimationInfo& aggregate_animation_info) {
+  SetVisible(true);
   // TODO(crbug.com/1352636) Update once animations are defined by UX. There is
   // no animation information to be returned for this container.
   return absl::nullopt;
@@ -106,8 +107,7 @@ void SearchResultImageListView::GetAccessibleNodeData(
 void SearchResultImageListView::OnThemeChanged() {
   SearchResultContainerView::OnThemeChanged();
   title_label_->SetEnabledColor(
-      AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
-          kDeprecatedSearchBoxTextDefaultColor, GetWidget()));
+      AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(GetWidget()));
 }
 
 void SearchResultImageListView::OnSelectedResultChanged() {

@@ -74,7 +74,7 @@ AssistiveWindowButton CreateDiacriticsButtonFor(
   AssistiveWindowButton button = {
       .id = ui::ime::ButtonId::kSuggestion,
       .window_type =
-          ui::ime::AssistiveWindowType::kLongpressDiacriticsSuggestion,
+          ash::ime::AssistiveWindowType::kLongpressDiacriticsSuggestion,
       .index = index,
       .announce_string = announce_string,
   };
@@ -185,6 +185,28 @@ TEST_P(LongpressDiacriticsSuggesterTest, HighlightIncrementsOnNextKeyEvent) {
   suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::ARROW_RIGHT));
   suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::ARROW_RIGHT));
   suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::ARROW_RIGHT));
+
+  EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+  EXPECT_TRUE(suggestion_handler.GetShowingSuggestion());
+  EXPECT_EQ(suggestion_handler.GetSuggestionText(),
+            Join(GetParam().candidates));
+  EXPECT_EQ(suggestion_handler.GetHighlightedButton(),
+            CreateDiacriticsButtonFor(
+                expected_candidate_index,
+                GetParam().candidates[expected_candidate_index]));
+}
+
+TEST_P(LongpressDiacriticsSuggesterTest, HighlightIncrementsOnTabKeyEvent) {
+  size_t expected_candidate_index = 2 % GetParam().candidates.size();
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  suggester.TrySuggestOnLongpress(GetParam().longpress_char);
+  suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::TAB));
+  suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::TAB));
+  suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::TAB));
 
   EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
   EXPECT_TRUE(suggestion_handler.GetShowingSuggestion());
@@ -590,6 +612,25 @@ TEST_P(LongpressDiacriticsSuggesterTest, DismissSuggestionOnSecondKeyPress) {
   EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
   EXPECT_FALSE(suggestion_handler.GetShowingSuggestion());
   EXPECT_FALSE(suggestion_handler.GetAcceptedSuggestion());
+}
+
+TEST_P(LongpressDiacriticsSuggesterTest,
+       AcceptSuggestionOnSecondKeyPressIfHighlighted) {
+  FakeSuggestionHandler suggestion_handler;
+  LongpressDiacriticsSuggester suggester =
+      LongpressDiacriticsSuggester(&suggestion_handler);
+  suggester.OnFocus(kContextId);
+
+  suggester.TrySuggestOnLongpress(GetParam().longpress_char);
+  suggester.HandleKeyEvent(CreateKeyEventFromCode(ui::DomCode::ARROW_RIGHT));
+
+  EXPECT_EQ(suggester.HandleKeyEvent(CreateKeyEventFromCode(GetParam().code)),
+            SuggestionStatus::kNotHandled);
+  EXPECT_EQ(suggestion_handler.GetContextId(), kContextId);
+  EXPECT_FALSE(suggestion_handler.GetShowingSuggestion());
+  EXPECT_EQ(suggestion_handler.GetAcceptedSuggestionText(),
+            GetParam().candidates[0]);
+  EXPECT_EQ(suggestion_handler.GetDeletePreviousUtf16Len(), 1u);
 }
 
 TEST_P(LongpressDiacriticsSuggesterTest, NoDismissSuggestionOnRepeatKeyPress) {

@@ -1428,28 +1428,58 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
   wtf_size_t auto_repeat_insertion_point =
       computed_grid_track_list.auto_repeat_insertion_point;
 
-  // If the element is a grid container, the resolved value is the used value,
-  // specifying track sizes in pixels and expanding the repeat() notation.
   if (is_layout_grid) {
     const auto* grid = ToInterface<LayoutNGGridInterface>(layout_object);
-    OrderedNamedLinesCollectorInGridLayout collector(
-        computed_grid_track_list.ordered_named_grid_lines,
-        computed_grid_track_list.auto_repeat_ordered_named_grid_lines,
-        auto_repeat_insertion_point,
-        grid->AutoRepeatCountForDirection(direction),
-        auto_repeat_track_sizes.size());
-    auto getTrackSize = [&](const LayoutUnit& v) {
-      return ZoomAdjustedPixelValue(v, style);
-    };
-    // Named grid line indices are relative to the explicit grid, but we are
-    // including all tracks. So we need to subtract the number of leading
-    // implicit tracks in order to get the proper line index.
-    int offset = -base::checked_cast<int>(
-        grid->ExplicitGridStartForDirection(direction));
-    PopulateGridTrackList(list, collector,
-                          grid->TrackSizesForComputedStyle(direction),
-                          getTrackSize, offset);
-    return list;
+    if (computed_grid_track_list.IsSubgriddedAxis()) {
+      // If the track list is subgridded, return the word 'subgrid', followed by
+      // the specified named grid lines in brackets. Empty brackets are also
+      // valid.
+      list->Append(
+          *MakeGarbageCollected<CSSIdentifierValue>(CSSValueID::kSubgrid));
+
+      wtf_size_t subgrid_line_names_start =
+          grid->ExplicitGridStartForDirection(direction);
+      wtf_size_t subgrid_line_names_end =
+          grid->ExplicitGridEndForDirection(direction);
+      for (wtf_size_t i = subgrid_line_names_start; i <= subgrid_line_names_end;
+           ++i) {
+        auto iter = computed_grid_track_list.ordered_named_grid_lines.find(i);
+
+        cssvalue::CSSBracketedValueList* value_list =
+            MakeGarbageCollected<cssvalue::CSSBracketedValueList>();
+
+        if (iter != computed_grid_track_list.ordered_named_grid_lines.end()) {
+          for (auto named_grid_line : iter->value) {
+            value_list->Append(*MakeGarbageCollected<CSSCustomIdentValue>(
+                named_grid_line.line_name));
+          }
+        }
+        list->Append(*value_list);
+      }
+      return list;
+    } else {
+      // If the element is a grid container, the resolved value is the used
+      // value, specifying track sizes in pixels and expanding the repeat()
+      // notation.
+      OrderedNamedLinesCollectorInGridLayout collector(
+          computed_grid_track_list.ordered_named_grid_lines,
+          computed_grid_track_list.auto_repeat_ordered_named_grid_lines,
+          auto_repeat_insertion_point,
+          grid->AutoRepeatCountForDirection(direction),
+          auto_repeat_track_sizes.size());
+      auto getTrackSize = [&](const LayoutUnit& v) {
+        return ZoomAdjustedPixelValue(v, style);
+      };
+      // Named grid line indices are relative to the explicit grid, but we are
+      // including all tracks. So we need to subtract the number of leading
+      // implicit tracks in order to get the proper line index.
+      int offset = -base::checked_cast<int>(
+          grid->ExplicitGridStartForDirection(direction));
+      PopulateGridTrackList(list, collector,
+                            grid->TrackSizesForComputedStyle(direction),
+                            getTrackSize, offset);
+      return list;
+    }
   }
 
   // Otherwise, the resolved value is the computed value, preserving repeat().
@@ -1705,6 +1735,47 @@ CSSValue* ComputedStyleUtils::ValueForAnimationDelay(
   return list;
 }
 
+namespace {
+
+CSSValue* ValueForTimingDelay(const Timing::Delay& delay) {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (delay.IsTimelineOffset()) {
+    list->Append(*MakeGarbageCollected<CSSIdentifierValue>(delay.phase));
+    list->Append(*CSSNumericLiteralValue::Create(
+        delay.relative_offset * 100.0,
+        CSSPrimitiveValue::UnitType::kPercentage));
+  } else {
+    return CSSNumericLiteralValue::Create(
+        delay.AsTimeValue().InSecondsF(),
+        CSSPrimitiveValue::UnitType::kSeconds);
+  }
+  return list;
+}
+
+CSSValue* ValueForTimingDelayList(const Vector<Timing::Delay>& delay_list) {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  for (const Timing::Delay& delay : delay_list) {
+    list->Append(*ValueForTimingDelay(delay));
+  }
+  return list;
+}
+
+}  // namespace
+
+CSSValue* ComputedStyleUtils::ValueForAnimationDelayStart(
+    const CSSTimingData* timing_data) {
+  if (!timing_data)
+    return ValueForTimingDelayList({CSSTimingData::InitialDelayStart()});
+  return ValueForTimingDelayList(timing_data->DelayStartList());
+}
+
+CSSValue* ComputedStyleUtils::ValueForAnimationDelayEnd(
+    const CSSTimingData* timing_data) {
+  if (!timing_data)
+    return ValueForTimingDelayList({CSSTimingData::InitialDelayEnd()});
+  return ValueForTimingDelayList(timing_data->DelayEndList());
+}
+
 CSSValue* ComputedStyleUtils::ValueForAnimationDirection(
     Timing::PlaybackDirection direction) {
   switch (direction) {
@@ -1898,14 +1969,14 @@ CSSValue* ComputedStyleUtils::ValueForBorderRadiusCorner(
       CSSValuePair::kDropIdenticalValues);
 }
 
-CSSFunctionValue* ComputedStyleUtils::ValueForTransformationMatrix(
-    const TransformationMatrix& matrix,
+CSSFunctionValue* ComputedStyleUtils::ValueForTransform(
+    const gfx::Transform& matrix,
     float zoom,
     bool force_matrix3d) {
-  if (matrix.IsAffine() && !force_matrix3d) {
+  if (matrix.Is2dTransform() && !force_matrix3d) {
     auto* result = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMatrix);
     // CSS matrix values are returned in column-major order.
-    auto unzoomed = matrix.ToAffineTransform().Zoom(1.f / zoom);
+    auto unzoomed = AffineTransform::FromTransform(matrix).Zoom(1.f / zoom);
     for (double value : {unzoomed.A(), unzoomed.B(), unzoomed.C(), unzoomed.D(),
                          unzoomed.E(), unzoomed.F()}) {
       result->Append(*CSSNumericLiteralValue::Create(
@@ -1920,7 +1991,7 @@ CSSFunctionValue* ComputedStyleUtils::ValueForTransformationMatrix(
     unzoomed.Zoom(1.f / zoom);
     for (int i = 0; i < 16; i++) {
       result->Append(*CSSNumericLiteralValue::Create(
-          unzoomed.ColMajorData()[i], CSSPrimitiveValue::UnitType::kNumber));
+          unzoomed.ColMajorData(i), CSSPrimitiveValue::UnitType::kNumber));
     }
     return result;
   }
@@ -2063,10 +2134,10 @@ CSSFunctionValue* ComputedStyleUtils::ValueForTransformOperation(
     case TransformOperation::kRotateAroundOrigin: {
       // TODO(https://github.com/w3c/csswg-drafts/issues/5011):
       // Update this once there is consensus.
-      TransformationMatrix matrix;
+      gfx::Transform matrix;
       operation.Apply(matrix, gfx::SizeF(0, 0));
-      return ValueForTransformationMatrix(matrix, zoom,
-                                          /*force_matrix3d=*/false);
+      return ValueForTransform(matrix, zoom,
+                               /*force_matrix3d=*/false);
     }
     case TransformOperation::kSkewX: {
       const auto& skew = To<SkewTransformOperation>(operation);
@@ -2106,14 +2177,14 @@ CSSFunctionValue* ComputedStyleUtils::ValueForTransformOperation(
     }
     case TransformOperation::kMatrix: {
       const auto& matrix = To<MatrixTransformOperation>(operation).Matrix();
-      return ValueForTransformationMatrix(matrix, zoom,
-                                          /*force_matrix3d=*/false);
+      return ValueForTransform(matrix, zoom,
+                               /*force_matrix3d=*/false);
     }
     case TransformOperation::kMatrix3D: {
       const auto& matrix = To<Matrix3DTransformOperation>(operation).Matrix();
       // Force matrix3d serialization
-      return ValueForTransformationMatrix(matrix, zoom,
-                                          /*force_matrix3d=*/true);
+      return ValueForTransform(matrix, zoom,
+                               /*force_matrix3d=*/true);
     }
     case TransformOperation::kInterpolated:
       // TODO(https://github.com/w3c/csswg-drafts/issues/2854):
@@ -2121,10 +2192,10 @@ CSSFunctionValue* ComputedStyleUtils::ValueForTransformOperation(
       // This currently converts the operation to a matrix, using box_size if
       // provided, 0x0 if not (returning all but the relative translate
       // portion of the transform). Update this once the spec is updated.
-      TransformationMatrix matrix;
+      gfx::Transform matrix;
       operation.Apply(matrix, box_size);
-      return ValueForTransformationMatrix(matrix, zoom,
-                                          /*force_matrix3d=*/false);
+      return ValueForTransform(matrix, zoom,
+                               /*force_matrix3d=*/false);
   }
 }
 
@@ -2176,7 +2247,7 @@ CSSValue* ComputedStyleUtils::ResolvedTransform(
 
   gfx::RectF reference_box = ReferenceBoxForTransform(*layout_object);
 
-  TransformationMatrix transform;
+  gfx::Transform transform;
   style.ApplyTransform(
       transform, reference_box, ComputedStyle::kIncludeTransformOperations,
       ComputedStyle::kExcludeTransformOrigin, ComputedStyle::kExcludeMotionPath,
@@ -2185,8 +2256,8 @@ CSSValue* ComputedStyleUtils::ResolvedTransform(
   // FIXME: Need to print out individual functions
   // (https://bugs.webkit.org/show_bug.cgi?id=23924)
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*ValueForTransformationMatrix(transform, style.EffectiveZoom(),
-                                             /*force_matrix3d=*/false));
+  list->Append(*ValueForTransform(transform, style.EffectiveZoom(),
+                                  /*force_matrix3d=*/false));
 
   return list;
 }

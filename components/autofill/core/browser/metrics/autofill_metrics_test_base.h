@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_METRICS_AUTOFILL_METRICS_TEST_BASE_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_METRICS_AUTOFILL_METRICS_TEST_BASE_H_
 
+#include "base/metrics/metrics_hashes.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/autofill/core/browser/autofill_form_test_utils.h"
@@ -21,7 +22,10 @@
 
 namespace autofill::metrics {
 
-constexpr char kTestGuid[] = "00000000-0000-0000-0000-000000000001";
+constexpr char kTestProfileId[] = "00000000-0000-0000-0000-000000000001";
+constexpr char kTestLocalCardId[] = "10000000-0000-0000-0000-000000000001";
+constexpr char kTestMaskedCardId[] = "10000000-0000-0000-0000-000000000002";
+constexpr char kTestFullServerCardId[] = "10000000-0000-0000-0000-000000000003";
 
 class MockAutofillClient : public TestAutofillClient {
  public:
@@ -157,9 +161,12 @@ class AutofillMetricsBaseTest : public testing::Test {
   void FillTestProfile(const FormData& form) {
     autofill_manager().FillOrPreviewForm(
         mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-        autofill_manager().suggestion_generator()->MakeFrontendId(
-            Suggestion::BackendId(),
-            Suggestion::BackendId(std::string(kTestGuid))));
+        MakeFrontendId({.profile_id = kTestProfileId}));
+  }
+
+  int MakeFrontendId(
+      const TestBrowserAutofillManager::MakeFrontendIdParams& params) {
+    return autofill_manager().MakeFrontendId(params);
   }
 
   TestBrowserAutofillManager& autofill_manager() {

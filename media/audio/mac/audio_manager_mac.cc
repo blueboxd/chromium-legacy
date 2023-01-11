@@ -40,6 +40,10 @@
 
 namespace media {
 
+BASE_FEATURE(kMonitorOutputSampleRateChangesMac,
+             "MonitorOutputSampleRateChangesMac",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Maximum number of output streams that can be open simultaneously.
 static const int kMaxOutputStreams = 50;
 
@@ -279,7 +283,8 @@ static bool GetDeviceTotalChannelCount(AudioDeviceID device,
   for (UInt32 i = 0; i < buffer_list->mNumberBuffers; ++i)
     *channels += buffer_list->mBuffers[i].mNumberChannels;
 
-  DVLOG(1) << (scope == kAudioDevicePropertyScopeInput ? "Input" : "Output")
+  DVLOG(1) << __FUNCTION__
+           << (scope == kAudioDevicePropertyScopeInput ? " Input" : " Output")
            << " total channels: " << *channels;
   return true;
 }
@@ -328,7 +333,7 @@ static bool GetDeviceChannels(AudioDeviceID device,
       return false;
     }
 
-    DVLOG(1) << "Input channels: " << *channels;
+    DVLOG(2) << __FUNCTION__ << " Input channels: " << *channels;
     return true;
   }
 
@@ -436,7 +441,7 @@ static bool GetDeviceChannels(AudioUnit audio_unit,
     }
   }
 
-  DVLOG(1) << "Output channels: " << *channels;
+  DVLOG(2) << __FUNCTION__ << " Output channels: " << *channels;
   return true;
 }
 
@@ -486,13 +491,13 @@ class AudioManagerMac::AudioPowerObserver : public base::PowerSuspendObserver {
  private:
   void OnSuspend() override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    DVLOG(1) << "OnSuspend";
+    DVLOG(1) << "AudioPowerObserver::" << __FUNCTION__;
     is_suspending_ = true;
   }
 
   void OnResume() override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    DVLOG(1) << "OnResume";
+    DVLOG(1) << "AudioPowerObserver::" << __FUNCTION__;
     ++num_resume_notifications_;
     is_suspending_ = false;
     earliest_start_time_ =
@@ -719,9 +724,14 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
     // even if OSX calls us on the right thread.  Some CoreAudio drivers will
     // fire the callbacks during stream creation, leading to re-entrancy issues
     // otherwise.  See http://crbug.com/349604
-    output_device_listener_ = std::make_unique<AudioDeviceListenerMac>(
+    output_device_listener_ = AudioDeviceListenerMac::Create(
         BindToCurrentLoop(base::BindRepeating(
-            &AudioManagerMac::HandleDeviceChanges, base::Unretained(this))));
+            &AudioManagerMac::HandleDeviceChanges, base::Unretained(this))),
+        /*monitor_sample_rate_changes=*/
+        base::FeatureList::IsEnabled(kMonitorOutputSampleRateChangesMac),
+        /*monitor_default_input=*/false,
+        /*monitor_addition_removal=*/false,
+        /*monitor_sources=*/false);
     device_listener_first_init = true;
   }
 
@@ -902,6 +912,10 @@ void AudioManagerMac::HandleDeviceChanges() {
     return;
   }
 
+  DVLOG(1) << __func__
+           << " device changed: " << (current_sample_rate_ != new_sample_rate)
+           << " current sample rate: " << current_sample_rate_
+           << " new sample rate: " << new_sample_rate;
   current_sample_rate_ = new_sample_rate;
   current_output_device_ = new_output_device;
   NotifyAllOutputDeviceChangeListeners();
@@ -948,26 +962,21 @@ size_t AudioManagerMac::GetNumberOfResumeNotifications() const {
 bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
                                             AudioUnit audio_unit,
                                             AudioUnitElement element,
-                                            size_t desired_buffer_size,
-                                            bool* size_was_changed,
-                                            size_t* io_buffer_frame_size) {
+                                            size_t desired_buffer_size) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   if (in_shutdown_) {
-    DVLOG(1) << "Disabled since we are shutting down";
+    DVLOG(1) << __FUNCTION__ << " Disabled since we are shutting down";
     return false;
   }
   const bool is_input = (element == 1);
-  DVLOG(1) << "MaybeChangeBufferSize(id=0x" << std::hex << device_id
+  DVLOG(1) << __FUNCTION__ << " (id=0x" << std::hex << device_id
            << ", is_input=" << is_input << ", desired_buffer_size=" << std::dec
            << desired_buffer_size << ")";
 
-  *size_was_changed = false;
-  *io_buffer_frame_size = 0;
-
   // Log the device name (and id) for debugging purposes.
   std::string device_name = GetAudioDeviceNameFromDeviceId(device_id, is_input);
-  DVLOG(1) << "name: " << device_name << " (ID: 0x" << std::hex << device_id
-           << ")";
+  DVLOG(1) << __FUNCTION__ << " name: " << device_name << " (ID: 0x" << std::hex
+           << device_id << ")";
 
   // Get the current size of the I/O buffer for the specified device. The
   // property is read on a global scope, hence using element 0. The default IO
@@ -982,12 +991,11 @@ bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
         << "AudioUnitGetProperty(kAudioDevicePropertyBufferFrameSize) failed.";
     return false;
   }
-  // Store the currently used (not changed yet) I/O buffer frame size.
-  *io_buffer_frame_size = buffer_size;
 
-  DVLOG(1) << "current IO buffer size: " << buffer_size;
-  DVLOG(1) << "#output streams: " << output_streams_.size();
-  DVLOG(1) << "#input streams: " << low_latency_input_streams_.size();
+  DVLOG(1) << __FUNCTION__ << " current IO buffer size: " << buffer_size;
+  DVLOG(1) << __FUNCTION__ << " #output streams: " << output_streams_.size();
+  DVLOG(1) << __FUNCTION__
+           << " #input streams: " << low_latency_input_streams_.size();
 
   // Check if a buffer size change is required. If the caller asks for a
   // reduced size (|desired_buffer_size| < |buffer_size|), the new lower size
@@ -1038,8 +1046,8 @@ bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
     // OS error is logged in GetIOBufferFrameSizeRange().
     return false;
   }
-  DVLOG(1) << "valid IO buffer size range: [" << minimum << ", " << maximum
-           << "]";
+  DVLOG(1) << __FUNCTION__ << " valid IO buffer size range: [" << minimum
+           << ", " << maximum << "]";
   buffer_size = desired_buffer_size;
   if (buffer_size < minimum)
     buffer_size = minimum;
@@ -1055,10 +1063,9 @@ bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
   OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
       << "AudioUnitSetProperty(kAudioDevicePropertyBufferFrameSize) failed.  "
       << "Size:: " << buffer_size;
-  *size_was_changed = (result == noErr);
-  DVLOG_IF(1, result == noErr) << "IO buffer size changed to: " << buffer_size;
+  DVLOG_IF(1, result == noErr)
+      << __FUNCTION__ << " IO buffer size changed to: " << buffer_size;
   // Store the currently used (after a change) I/O buffer frame size.
-  *io_buffer_frame_size = buffer_size;
   return result == noErr;
 }
 
@@ -1220,8 +1227,8 @@ void AudioManagerMac::ReleaseOutputStreamUsingRealDevice(
     AudioOutputStream* stream,
     AudioDeviceID device_id) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  DVLOG(1) << "Closing output stream with id=0x" << std::hex << device_id;
-  DVLOG(1) << "requested_buffer_size: "
+  DVLOG(1) << __FUNCTION__ << " Closing output stream with id=0x" << std::hex
+           << device_id << " requested_buffer_size: "
            << static_cast<AUHALStream*>(stream)->requested_buffer_size();
 
   // Start by closing down the specified output stream.

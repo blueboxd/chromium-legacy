@@ -9,8 +9,13 @@ example_value: true
 features:
   dynamic_refresh: false
   per_profile: true
+items:
+- caption: Do not launch the browser on startup
+  value: true
+- caption: Automatically launch the browser on startup
+  value: false
 owners:
-- file://components/policy/resources/OWNERS
+- file://components/policy/OWNERS
 - hendrich@chromium.org
 schema:
   type: boolean

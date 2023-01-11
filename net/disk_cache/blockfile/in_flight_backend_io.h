@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
@@ -161,7 +161,7 @@ class BackendIO : public BackgroundIO {
   // Used for ops that open or create entries.
   EntryResultCallback entry_result_callback_;
   // if set, already has the user's ref added.
-  raw_ptr<Entry> out_entry_ = nullptr;
+  raw_ptr<Entry, DanglingUntriaged> out_entry_ = nullptr;
   bool out_entry_opened_ = false;
 
   // For GetAvailableRange
@@ -174,7 +174,7 @@ class BackendIO : public BackgroundIO {
   base::Time end_time_;
   raw_ptr<Rankings::Iterator> iterator_ = nullptr;
   std::unique_ptr<Rankings::Iterator> scoped_iterator_;
-  raw_ptr<EntryImpl> entry_ = nullptr;
+  raw_ptr<EntryImpl, DanglingUntriaged> entry_ = nullptr;
   int index_ = 0;
   int offset_ = 0;
   scoped_refptr<net::IOBuffer> buf_;

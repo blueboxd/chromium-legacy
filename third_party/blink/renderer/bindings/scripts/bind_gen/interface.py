@@ -764,8 +764,6 @@ def _make_blink_api_call(code_node,
         expr = "\n".join([
             # GCC extension: a compound statement enclosed in parentheses
             "({",
-            "ThreadState::NoAllocationScope nadc_no_allocation_scope"
-            "(ThreadState::Current());",
             "v8::Isolate::DisallowJavascriptExecutionScope "
             "nadc_disallow_js_exec_scope"
             "(${isolate}, "
@@ -775,10 +773,6 @@ def _make_blink_api_call(code_node,
             _format("{};", expr),
             "})",
         ])
-        code_node.accumulate(
-            CodeGenAccumulator.require_include_headers([
-                "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
-            ]))
     return expr
 
 
@@ -870,20 +864,26 @@ def bind_return_value(code_node, cg_context, overriding_args=None):
         SymbolNode("return_value", definition_constructor=create_definition))
 
 
+def _make_bindings_logging_id(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    logging_id = "{}.{}".format(cg_context.class_like.identifier,
+                                cg_context.property_.identifier)
+    if cg_context.attribute_get:
+        logging_id = "{}.{}".format(logging_id, "get")
+    elif cg_context.attribute_set:
+        logging_id = "{}.{}".format(logging_id, "set")
+    elif cg_context.constructor_group and not cg_context.is_named_constructor:
+        logging_id = "{}.{}".format(cg_context.class_like.identifier,
+                                    "constructor")
+    return logging_id
+
+
 def make_bindings_trace_event(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
-    event_name = "{}.{}".format(cg_context.class_like.identifier,
-                                cg_context.property_.identifier)
-    if cg_context.attribute_get:
-        event_name = "{}.{}".format(event_name, "get")
-    elif cg_context.attribute_set:
-        event_name = "{}.{}".format(event_name, "set")
-    elif cg_context.constructor_group and not cg_context.is_named_constructor:
-        event_name = "{}.{}".format(cg_context.class_like.identifier,
-                                    "constructor")
-
-    return TextNode("BLINK_BINDINGS_TRACE_EVENT(\"{}\");".format(event_name))
+    return TextNode("BLINK_BINDINGS_TRACE_EVENT(\"{}\");".format(
+        _make_bindings_logging_id(cg_context)))
 
 
 def make_check_argument_length(cg_context):
@@ -1041,8 +1041,7 @@ def make_cooperative_scheduling_safepoint(cg_context):
 def make_log_activity(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
-    target = cg_context.member_like or cg_context.property_
-    ext_attrs = target.extended_attributes
+    ext_attrs = cg_context.logging_target.extended_attributes
     if "LogActivity" not in ext_attrs:
         return None
     target = ext_attrs.value_of("LogActivity")
@@ -1368,8 +1367,8 @@ def make_report_coop_access(cg_context):
 def make_report_deprecate_as(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
-    target = cg_context.member_like or cg_context.property_
-    name = target.extended_attributes.value_of("DeprecateAs")
+    name = cg_context.logging_target.extended_attributes.value_of(
+        "DeprecateAs")
     if not name:
         return None
 
@@ -1388,8 +1387,7 @@ def make_report_deprecate_as(cg_context):
 def _make_measure_web_feature_constant(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
-    target = cg_context.member_like or cg_context.property_
-    ext_attrs = target.extended_attributes
+    ext_attrs = cg_context.logging_target.extended_attributes
 
     suffix = ""
     if cg_context.attribute_get:
@@ -1420,29 +1418,48 @@ def _make_measure_web_feature_constant(cg_context):
 def make_report_high_entropy(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
-    target = cg_context.member_like or cg_context.property_
-    ext_attrs = target.extended_attributes
-    if cg_context.attribute_set or "HighEntropy" not in ext_attrs:
+    ext_attrs = cg_context.logging_target.extended_attributes
+    if "HighEntropy" not in ext_attrs:
         return None
+    if cg_context.attribute_set:
+        return None
+
+    node = SequenceNode([
+        TextNode("// [HighEntropy]"),
+        FormatNode(
+            "const Dactyloscoper::HighEntropyTracer"
+            "  high_entropy_tracer(\"{logging_id}\", ${info});",
+            logging_id=_make_bindings_logging_id(cg_context)),
+    ])
+    node.accumulate(
+        CodeGenAccumulator.require_include_headers([
+            "third_party/blink/renderer/core/frame/dactyloscoper.h",
+        ]))
+    return node
+
+
+def make_report_high_entropy_direct(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    ext_attrs = cg_context.logging_target.extended_attributes
+    if not ext_attrs.value_of("HighEntropy") == "Direct":
+        return None
+    if cg_context.attribute_set:
+        return None
+
     assert "Measure" in ext_attrs or "MeasureAs" in ext_attrs, "{}: {}".format(
         cg_context.idl_location_and_name,
-        "[HighEntropy] must be specified with either [Measure] or "
+        "[HighEntropy=Direct] must be specified with either [Measure] or "
         "[MeasureAs].")
 
-    if ext_attrs.value_of("HighEntropy") == "Direct":
-        text = _format(
-            "// [HighEntropy=Direct]\n"
+    node = SequenceNode([
+        TextNode("// [HighEntropy=Direct]"),
+        FormatNode(
             "Dactyloscoper::RecordDirectSurface("
             "${current_execution_context}, {measure_constant}, "
             "${return_value});",
-            measure_constant=_make_measure_web_feature_constant(cg_context))
-    else:
-        text = _format(
-            "// [HighEntropy]\n"
-            "Dactyloscoper::Record("
-            "${current_execution_context}, {measure_constant});",
-            measure_constant=_make_measure_web_feature_constant(cg_context))
-    node = TextNode(text)
+            measure_constant=_make_measure_web_feature_constant(cg_context)),
+    ])
     node.accumulate(
         CodeGenAccumulator.require_include_headers(
             ["third_party/blink/renderer/core/frame/dactyloscoper.h"]))
@@ -1452,8 +1469,7 @@ def make_report_high_entropy(cg_context):
 def make_report_measure_as(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
-    target = cg_context.member_like or cg_context.property_
-    ext_attrs = target.extended_attributes
+    ext_attrs = cg_context.logging_target.extended_attributes
     if not ("Measure" in ext_attrs or "MeasureAs" in ext_attrs):
         return None
 
@@ -1530,7 +1546,7 @@ def make_runtime_call_timer_scope(cg_context, overriding_name=None):
     assert isinstance(cg_context, CodeGenContext)
     assert _is_none_or_str(overriding_name)
 
-    target = cg_context.member_like or cg_context.property_
+    target = cg_context.logging_target
 
     suffix = ""
     if cg_context.attribute_get:
@@ -1822,6 +1838,7 @@ def make_attribute_get_callback_def(cg_context, function_name):
         make_bindings_trace_event(cg_context),
         make_report_coop_access(cg_context),
         make_report_deprecate_as(cg_context),
+        make_report_high_entropy(cg_context),
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
         EmptyNode(),
@@ -1839,7 +1856,7 @@ def make_attribute_get_callback_def(cg_context, function_name):
         EmptyNode(),
         make_check_security_of_return_value(cg_context),
         make_v8_set_return_value(cg_context),
-        make_report_high_entropy(cg_context),
+        make_report_high_entropy_direct(cg_context),
         make_return_value_cache_update_value(cg_context),
     ])
 
@@ -1925,7 +1942,7 @@ EventListener* event_handler = JSEventHandler::CreateOrNull(
             elif key == "Reflect":
                 has_reflect = True
             elif key in ("Affects", "CrossOriginIsolated", "DeprecateAs",
-                         "Exposed", "IsolatedApplication", "LogActivity",
+                         "Exposed", "IsolatedContext", "LogActivity",
                          "LogAllWorlds", "Measure", "MeasureAs",
                          "ReflectEmpty", "ReflectInvalid", "ReflectMissing",
                          "ReflectOnly", "RuntimeCallStatsCounter",
@@ -2009,6 +2026,7 @@ def make_constant_callback_def(cg_context, function_name):
 
     logging_nodes = SequenceNode([
         make_report_deprecate_as(cg_context),
+        make_report_high_entropy(cg_context),
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
     ])
@@ -2027,7 +2045,6 @@ def make_constant_callback_def(cg_context, function_name):
         logging_nodes,
         EmptyNode(),
         TextNode(v8_set_return_value),
-        make_report_high_entropy(cg_context),
     ])
 
     return func_def
@@ -2485,16 +2502,10 @@ def make_no_alloc_direct_call_callback_def(cg_context, function_name,
     bind_callback_local_vars(body, cg_context)
 
     body.extend([
-        T("ThreadState::NoAllocationScope "
-          "thread_no_alloc_scope(ThreadState::Current());"),
         T("blink::NoAllocDirectCallScope no_alloc_direct_call_scope("
           "${blink_receiver}, &${v8_arg_callback_options});"),
         EmptyNode(),
     ])
-    body.accumulate(
-        CodeGenAccumulator.require_include_headers([
-            "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
-        ]))
 
     blink_arguments = list(
         map(lambda arg: "${{{}}}".format(arg.blink_arg_name), arg_list))
@@ -2630,6 +2641,7 @@ def make_operation_function_def(cg_context, function_name):
         EmptyNode(),
         make_report_coop_access(cg_context),
         make_report_deprecate_as(cg_context),
+        make_report_high_entropy(cg_context),
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
         EmptyNode(),
@@ -2652,7 +2664,7 @@ def make_operation_function_def(cg_context, function_name):
         EmptyNode(),
         make_check_security_of_return_value(cg_context),
         make_v8_set_return_value(cg_context),
-        make_report_high_entropy(cg_context),
+        make_report_high_entropy_direct(cg_context),
     ])
 
     return func_def
@@ -4730,9 +4742,9 @@ def bind_installer_local_vars(code_node, cg_context):
         S("is_cross_origin_isolated",
           ("const bool ${is_cross_origin_isolated} = "
            "${execution_context}->CrossOriginIsolatedCapability();")),
-        S("is_isolated_application",
-          ("const bool ${is_isolated_application} = "
-           "${execution_context}->IsolatedApplicationCapability();")),
+        S("is_in_isolated_context",
+          ("const bool ${is_in_isolated_context} = "
+           "${execution_context}->IsIsolatedContext();")),
         S("is_in_secure_context",
           ("const bool ${is_in_secure_context} = "
            "${execution_context}->IsSecureContext();")),
@@ -5564,9 +5576,19 @@ def _make_install_prototype_object(cg_context):
     interface = cg_context.interface
 
     unscopables = []
-    is_unscopable = lambda member: "Unscopable" in member.extended_attributes
-    unscopables.extend(filter(is_unscopable, class_like.attributes))
-    unscopables.extend(filter(is_unscopable, class_like.operations))
+    if interface:
+        # Iff the interface has an unscopable member, then collect all
+        # unscopable members including ones in inherited interfaces.
+        # Otherwise, do not create an @@unscopables object.
+        is_unscopable = lambda member: "Unscopable" in member.extended_attributes
+        unscopables.extend(filter(is_unscopable, interface.attributes))
+        unscopables.extend(filter(is_unscopable, interface.operations))
+        if unscopables:
+            for i in interface.inclusive_inherited_interfaces:
+                if i == interface:
+                    continue
+                unscopables.extend(filter(is_unscopable, i.attributes))
+                unscopables.extend(filter(is_unscopable, i.operations))
     if unscopables:
         nodes.extend([
             TextNode("""\
@@ -5580,8 +5602,8 @@ def _make_install_prototype_object(cg_context):
                 TextNode("static constexpr const char* "
                          "kUnscopablePropertyNames[] = {"),
                 ListNode([
-                    TextNode("\"{}\", ".format(member.identifier))
-                    for member in unscopables
+                    TextNode("\"{}\", ".format(name)) for name in sorted(
+                        map(lambda member: member.identifier, unscopables))
                 ]),
                 TextNode("};"),
             ]),

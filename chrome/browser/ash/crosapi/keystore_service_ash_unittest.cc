@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/gmock_move_support.h"
+#include "base/test/gtest_util.h"
 #include "chrome/browser/ash/attestation/mock_tpm_challenge_key.h"
 #include "chrome/browser/ash/attestation/tpm_challenge_key_result.h"
 #include "chrome/browser/ash/platform_keys/key_permissions/mock_key_permissions_service.h"
@@ -42,6 +43,8 @@ namespace {
 
 using ::ash::platform_keys::MockKeyPermissionsService;
 using ::ash::platform_keys::MockPlatformKeysService;
+using ::attestation::KEY_TYPE_ECC;
+using ::attestation::KEY_TYPE_RSA;
 using ::base::test::RunOnceCallback;
 using ::chromeos::platform_keys::HashAlgorithm;
 using ::chromeos::platform_keys::Status;
@@ -399,7 +402,7 @@ TEST_F(KeystoreServiceAshTest, SelectClientCertificatesFail) {
 
 TEST_F(KeystoreServiceAshTest, GetKeyTagsSuccess) {
   EXPECT_CALL(key_permissions_service_,
-              IsCorporateKey(GetPublicKeyStr(), /*callback=*/_))
+              IsCorporateKey(GetPublicKeyBin(), /*callback=*/_))
       .WillOnce(
           RunOnceCallback<1>(absl::optional<bool>(true), Status::kSuccess));
 
@@ -429,7 +432,7 @@ TEST_F(KeystoreServiceAshTest, AddKeyTagsSuccess) {
   const uint64_t tags = static_cast<uint64_t>(mojom::KeyTag::kCorporate);
 
   EXPECT_CALL(key_permissions_service_,
-              SetCorporateKey(GetPublicKeyStr(), /*callback=*/_))
+              SetCorporateKey(GetPublicKeyBin(), /*callback=*/_))
       .WillOnce(RunOnceCallback<1>(Status::kSuccess));
 
   StatusCallbackObserver observer;
@@ -443,7 +446,7 @@ TEST_F(KeystoreServiceAshTest, AddKeyTagsFail) {
   const uint64_t tags = static_cast<uint64_t>(mojom::KeyTag::kCorporate);
 
   EXPECT_CALL(key_permissions_service_,
-              SetCorporateKey(GetPublicKeyStr(), /*callback=*/_))
+              SetCorporateKey(GetPublicKeyBin(), /*callback=*/_))
       .WillOnce(RunOnceCallback<1>(Status::kErrorInternal));
 
   StatusCallbackObserver observer;
@@ -458,7 +461,7 @@ TEST_F(KeystoreServiceAshTest, AddKeyTagsFail) {
 
 TEST_F(KeystoreServiceAshTest, CanUserGrantPermissionForKey) {
   EXPECT_CALL(key_permissions_service_,
-              CanUserGrantPermissionForKey(GetPublicKeyStr(), /*callback=*/_))
+              CanUserGrantPermissionForKey(GetPublicKeyBin(), /*callback=*/_))
       .WillOnce(RunOnceCallback<1>(false));
 
   CallbackObserver<bool> observer;
@@ -593,7 +596,7 @@ TEST_F(KeystoreServiceAshTest, GetCertificatesSuccess) {
                    GetCertificateList());
 }
 
-TEST_F(KeystoreServiceAshTest, GetCertificatesFail) {
+TEST_F(KeystoreServiceAshTest, InternalErrorThenGetCertificatesFail) {
   EXPECT_CALL(platform_keys_service_,
               GetCertificates(TokenId::kUser, /*callback=*/_))
       .WillOnce(RunOnceCallback<1>(std::make_unique<net::CertificateList>(),
@@ -605,6 +608,18 @@ TEST_F(KeystoreServiceAshTest, GetCertificatesFail) {
 
   ASSERT_TRUE(observer.result.has_value() && observer.result.value());
   AssertErrorEq(observer.result.value(), mojom::KeystoreError::kInternal);
+}
+
+TEST_F(KeystoreServiceAshTest, UnsupportedKeystoreTypeThenGetCertificatesFail) {
+  CallbackObserver<mojom::GetCertificatesResultPtr> observer;
+  mojom::KeystoreType wrong_keystore_type = static_cast<mojom::KeystoreType>(2);
+
+  keystore_service_.GetCertificates(wrong_keystore_type,
+                                    observer.GetCallback());
+
+  ASSERT_TRUE(observer.result.has_value() && observer.result.value());
+  AssertErrorEq(observer.result.value(),
+                mojom::KeystoreError::kUnsupportedKeystoreType);
 }
 
 //------------------------------------------------------------------------------
@@ -626,18 +641,44 @@ TEST_F(KeystoreServiceAshTest, AddCertificateSuccess) {
   EXPECT_EQ(observer.result_is_error, false);
 }
 
-TEST_F(KeystoreServiceAshTest, AddCertificateFail) {
-  auto cert_list = GetCertificateList();
-
-  EXPECT_CALL(platform_keys_service_,
-              ImportCertificate(TokenId::kSystem, CertEq(cert_list->front()),
-                                /*callback=*/_))
-      .WillOnce(RunOnceCallback<2>(Status::kErrorCertificateInvalid));
-
+TEST_F(KeystoreServiceAshTest, WrongKeystoreTypeThenAddCertificateFail) {
+  auto valid_cert_blob = CertToBlob(GetCertificateList()->front());
   StatusCallbackObserver observer;
-  keystore_service_.AddCertificate(mojom::KeystoreType::kDevice,
-                                   CertToBlob(cert_list->front()),
+  mojom::KeystoreType wrong_keystore_type = static_cast<mojom::KeystoreType>(2);
+
+  keystore_service_.AddCertificate(wrong_keystore_type, valid_cert_blob,
                                    observer.GetCallback());
+
+  ASSERT_TRUE(observer.has_value());
+  EXPECT_EQ(observer.result_is_error, true);
+  EXPECT_EQ(observer.result_error,
+            mojom::KeystoreError::kUnsupportedKeystoreType);
+}
+
+TEST_F(KeystoreServiceAshTest, InvalidCertificateThenAddCertificateFail) {
+  auto valid_cert = GetCertificateList()->front();
+  StatusCallbackObserver observer;
+  // Mocking very long input as a reason for invalid certificate.
+  EXPECT_CALL(platform_keys_service_,
+              ImportCertificate(TokenId::kSystem, CertEq(valid_cert),
+                                /*callback=*/_))
+      .WillOnce(RunOnceCallback<2>(Status::kErrorInputTooLong));
+
+  keystore_service_.AddCertificate(mojom::KeystoreType::kDevice,
+                                   CertToBlob(valid_cert),
+                                   observer.GetCallback());
+
+  ASSERT_TRUE(observer.has_value());
+  EXPECT_EQ(observer.result_is_error, true);
+  EXPECT_EQ(observer.result_error, mojom::KeystoreError::kInputTooLong);
+}
+
+TEST_F(KeystoreServiceAshTest, NotParsebleCertThenAddCertificateFail) {
+  std::vector<uint8_t> empty_cert_blob;
+  StatusCallbackObserver observer;
+
+  keystore_service_.AddCertificate(mojom::KeystoreType::kDevice,
+                                   empty_cert_blob, observer.GetCallback());
 
   ASSERT_TRUE(observer.has_value());
   EXPECT_EQ(observer.result_is_error, true);
@@ -705,7 +746,8 @@ TEST_F(KeystoreServiceAshTest, ChallengeUserKeyNoMigrateSuccess) {
       BuildResponse(ash::attestation::AttestationKeyType::KEY_USER,
                     /*profile=*/_, /*callback=*/_, /*challenge=*/GetDataStr(),
                     /*register_key=*/false,
-                    /*key_name_for_spkac=*/std::string(),
+                    /*key_crypto_type=*/KEY_TYPE_RSA,
+                    /*key_name=*/std::string(),
                     /*signals=*/_))
       .WillOnce(RunOnceCallback<2>(
           ash::attestation::TpmChallengeKeyResult::MakeChallengeResponse(
@@ -714,6 +756,7 @@ TEST_F(KeystoreServiceAshTest, ChallengeUserKeyNoMigrateSuccess) {
   CallbackObserver<mojom::ChallengeAttestationOnlyKeystoreResultPtr> observer;
   keystore_service_.ChallengeAttestationOnlyKeystore(
       mojom::KeystoreType::kUser, /*challenge=*/GetDataBin(), /*migrate=*/false,
+      mojom::KeystoreSigningAlgorithmName::kRsassaPkcs115,
       observer.GetCallback());
 
   ASSERT_TRUE(observer.result.has_value() && observer.result.value());
@@ -733,7 +776,8 @@ TEST_F(KeystoreServiceAshTest, ChallengeUserKeyMigrateSuccess) {
       BuildResponse(ash::attestation::AttestationKeyType::KEY_USER,
                     /*profile=*/_, /*callback=*/_, /*challenge=*/GetDataStr(),
                     /*register_key=*/true,
-                    /*key_name_for_spkac=*/std::string(),
+                    /*key_crypto_type=*/KEY_TYPE_RSA,
+                    /*key_name=*/std::string(),
                     /*signals=*/_))
       .WillOnce(RunOnceCallback<2>(
           ash::attestation::TpmChallengeKeyResult::MakeChallengeResponse(
@@ -742,6 +786,7 @@ TEST_F(KeystoreServiceAshTest, ChallengeUserKeyMigrateSuccess) {
   CallbackObserver<mojom::ChallengeAttestationOnlyKeystoreResultPtr> observer;
   keystore_service_.ChallengeAttestationOnlyKeystore(
       mojom::KeystoreType::kUser, /*challenge=*/GetDataBin(), /*migrate=*/true,
+      mojom::KeystoreSigningAlgorithmName::kRsassaPkcs115,
       observer.GetCallback());
 
   ASSERT_TRUE(observer.result.has_value() && observer.result.value());
@@ -761,7 +806,8 @@ TEST_F(KeystoreServiceAshTest, ChallengeDeviceKeyNoMigrateSuccess) {
       BuildResponse(ash::attestation::AttestationKeyType::KEY_DEVICE,
                     /*profile=*/_, /*callback=*/_, /*challenge=*/GetDataStr(),
                     /*register_key=*/false,
-                    /*key_name_for_spkac=*/std::string(),
+                    /*key_crypto_type=*/KEY_TYPE_RSA,
+                    /*key_name=*/std::string(),
                     /*signals=*/_))
       .WillOnce(RunOnceCallback<2>(
           ash::attestation::TpmChallengeKeyResult::MakeChallengeResponse(
@@ -770,7 +816,8 @@ TEST_F(KeystoreServiceAshTest, ChallengeDeviceKeyNoMigrateSuccess) {
   CallbackObserver<mojom::ChallengeAttestationOnlyKeystoreResultPtr> observer;
   keystore_service_.ChallengeAttestationOnlyKeystore(
       mojom::KeystoreType::kDevice, /*challenge=*/GetDataBin(),
-      /*migrate=*/false, observer.GetCallback());
+      /*migrate=*/false, mojom::KeystoreSigningAlgorithmName::kRsassaPkcs115,
+      observer.GetCallback());
 
   ASSERT_TRUE(observer.result.has_value() && observer.result.value());
   ASSERT_TRUE(observer.result.value()->is_challenge_response());
@@ -786,12 +833,12 @@ TEST_F(KeystoreServiceAshTest, ChallengeDeviceKeyMigrateSuccess) {
 
   EXPECT_CALL(
       *challenge_key_ptr,
-      BuildResponse(
-          ash::attestation::AttestationKeyType::KEY_DEVICE,
-          /*profile=*/_, /*callback=*/_, /*challenge=*/GetDataStr(),
-          /*register_key=*/true,
-          /*key_name_for_spkac=*/StrStartsWith("attest-ent-machine-keystore-"),
-          /*signals=*/_))
+      BuildResponse(ash::attestation::AttestationKeyType::KEY_DEVICE,
+                    /*profile=*/_, /*callback=*/_, /*challenge=*/GetDataStr(),
+                    /*register_key=*/true,
+                    /*key_crypto_type=*/KEY_TYPE_RSA,
+                    /*key_name=*/StrStartsWith("attest-ent-machine-keystore-"),
+                    /*signals=*/_))
       .WillOnce(RunOnceCallback<2>(
           ash::attestation::TpmChallengeKeyResult::MakeChallengeResponse(
               GetDataStr())));
@@ -799,7 +846,37 @@ TEST_F(KeystoreServiceAshTest, ChallengeDeviceKeyMigrateSuccess) {
   CallbackObserver<mojom::ChallengeAttestationOnlyKeystoreResultPtr> observer;
   keystore_service_.ChallengeAttestationOnlyKeystore(
       mojom::KeystoreType::kDevice, /*challenge=*/GetDataBin(),
-      /*migrate=*/true, observer.GetCallback());
+      /*migrate=*/true, mojom::KeystoreSigningAlgorithmName::kRsassaPkcs115,
+      observer.GetCallback());
+
+  ASSERT_TRUE(observer.result.has_value() && observer.result.value());
+  ASSERT_TRUE(observer.result.value()->is_challenge_response());
+  EXPECT_EQ(observer.result.value()->get_challenge_response(), GetDataBin());
+}
+
+TEST_F(KeystoreServiceAshTest, ChallengeUserEcdsaKeyMigrateSuccess) {
+  // Incoming challenge and outgoing challenge response are imitated with the
+  // same data blob. It is not realistic, but good enough for this test.
+
+  ash::attestation::MockTpmChallengeKey* challenge_key_ptr =
+      InjectMockChallengeKey();
+
+  EXPECT_CALL(
+      *challenge_key_ptr,
+      BuildResponse(ash::attestation::AttestationKeyType::KEY_USER,
+                    /*profile=*/_, /*callback=*/_, /*challenge=*/GetDataStr(),
+                    /*register_key=*/true,
+                    /*key_crypto_type=*/KEY_TYPE_ECC,
+                    /*key_name=*/std::string(),
+                    /*signals=*/_))
+      .WillOnce(RunOnceCallback<2>(
+          ash::attestation::TpmChallengeKeyResult::MakeChallengeResponse(
+              GetDataStr())));
+
+  CallbackObserver<mojom::ChallengeAttestationOnlyKeystoreResultPtr> observer;
+  keystore_service_.ChallengeAttestationOnlyKeystore(
+      mojom::KeystoreType::kUser, /*challenge=*/GetDataBin(), /*migrate=*/true,
+      mojom::KeystoreSigningAlgorithmName::kEcdsa, observer.GetCallback());
 
   ASSERT_TRUE(observer.result.has_value() && observer.result.value());
   ASSERT_TRUE(observer.result.value()->is_challenge_response());
@@ -818,14 +895,16 @@ TEST_F(KeystoreServiceAshTest, ChallengeKeyFail) {
       BuildResponse(ash::attestation::AttestationKeyType::KEY_USER,
                     /*profile=*/_, /*callback=*/_, /*challenge=*/GetDataStr(),
                     /*register_key=*/false,
-                    /*key_name_for_spkac=*/std::string(),
+                    /*key_crypto_type=*/KEY_TYPE_RSA,
+                    /*key_name=*/std::string(),
                     /*signals=*/_))
       .WillOnce(RunOnceCallback<2>(challenge_result));
 
   CallbackObserver<mojom::ChallengeAttestationOnlyKeystoreResultPtr> observer;
   keystore_service_.ChallengeAttestationOnlyKeystore(
       mojom::KeystoreType::kUser, /*challenge=*/GetDataBin(),
-      /*migrate=*/false, observer.GetCallback());
+      /*migrate=*/false, mojom::KeystoreSigningAlgorithmName::kRsassaPkcs115,
+      observer.GetCallback());
 
   ASSERT_TRUE(observer.result.has_value() && observer.result.value());
   ASSERT_TRUE(observer.result.value()->is_error_message());
@@ -876,147 +955,34 @@ TEST_F(KeystoreServiceAshTest, DeprecatedGetPublicKeyFail) {
                 mojom::KeystoreError::kAlgorithmNotPermittedByCertificate));
 }
 
-//------------------------------------------------------------------------------
+// ---------------- Deprecated methods which should fail when they are called
 
-TEST_F(KeystoreServiceAshTest, DeprecatedGetKeyStoresEmptySuccess) {
-  EXPECT_CALL(platform_keys_service_, GetTokens)
-      .WillOnce(RunOnceCallback<0>(MakeTokenIds({}), Status::kSuccess));
-
+TEST_F(KeystoreServiceAshTest, DeprecatedGetKeyStoresCallShouldFail) {
   CallbackObserver<mojom::DEPRECATED_GetKeyStoresResultPtr> observer;
-  keystore_service_.DEPRECATED_GetKeyStores(observer.GetCallback());
 
-  ASSERT_TRUE(observer.result.has_value() && observer.result.value());
-  ASSERT_TRUE(observer.result.value()->is_key_stores());
-  EXPECT_TRUE(observer.result.value()->get_key_stores().empty());
+  EXPECT_CHECK_DEATH_WITH(
+      keystore_service_.DEPRECATED_GetKeyStores(observer.GetCallback()),
+      "DEPRECATED_GetKeyStores method was called.");
 }
 
-TEST_F(KeystoreServiceAshTest, DeprecatedGetKeyStoresUserSuccess) {
-  EXPECT_CALL(platform_keys_service_, GetTokens)
-      .WillOnce(
-          RunOnceCallback<0>(MakeTokenIds({TokenId::kUser}), Status::kSuccess));
-
-  CallbackObserver<mojom::DEPRECATED_GetKeyStoresResultPtr> observer;
-  keystore_service_.DEPRECATED_GetKeyStores(observer.GetCallback());
-
-  ASSERT_TRUE(observer.result.has_value() && observer.result.value());
-  ASSERT_TRUE(observer.result.value()->is_key_stores());
-  EXPECT_THAT(observer.result.value()->get_key_stores(),
-              ElementsAre(crosapi::mojom::KeystoreType::kUser));
-}
-
-TEST_F(KeystoreServiceAshTest, DeprecatedGetKeyStoresDeviceSuccess) {
-  EXPECT_CALL(platform_keys_service_, GetTokens)
-      .WillOnce(RunOnceCallback<0>(MakeTokenIds({TokenId::kSystem}),
-                                   Status::kSuccess));
-
-  CallbackObserver<mojom::DEPRECATED_GetKeyStoresResultPtr> observer;
-  keystore_service_.DEPRECATED_GetKeyStores(observer.GetCallback());
-
-  ASSERT_TRUE(observer.result.has_value() && observer.result.value());
-  ASSERT_TRUE(observer.result.value()->is_key_stores());
-  EXPECT_THAT(observer.result.value()->get_key_stores(),
-              ElementsAre(crosapi::mojom::KeystoreType::kDevice));
-}
-
-TEST_F(KeystoreServiceAshTest, DeprecatedGetKeyStoresDeviceUserSuccess) {
-  EXPECT_CALL(platform_keys_service_, GetTokens)
-      .WillOnce(RunOnceCallback<0>(
-          MakeTokenIds({TokenId::kUser, TokenId::kSystem}), Status::kSuccess));
-
-  CallbackObserver<mojom::DEPRECATED_GetKeyStoresResultPtr> observer;
-  keystore_service_.DEPRECATED_GetKeyStores(observer.GetCallback());
-
-  ASSERT_TRUE(observer.result.has_value() && observer.result.value());
-  ASSERT_TRUE(observer.result.value()->is_key_stores());
-  EXPECT_THAT(observer.result.value()->get_key_stores(),
-              UnorderedElementsAre(crosapi::mojom::KeystoreType::kUser,
-                                   crosapi::mojom::KeystoreType::kDevice));
-}
-
-TEST_F(KeystoreServiceAshTest, DeprecatedGetKeyStoresFail) {
-  EXPECT_CALL(platform_keys_service_, GetTokens)
-      .WillOnce(RunOnceCallback<0>(MakeTokenIds({}), Status::kErrorInternal));
-
-  CallbackObserver<mojom::DEPRECATED_GetKeyStoresResultPtr> observer;
-  keystore_service_.DEPRECATED_GetKeyStores(observer.GetCallback());
-
-  ASSERT_TRUE(observer.result.has_value() && observer.result.value());
-  ASSERT_TRUE(observer.result.value()->is_error_message());
-  EXPECT_EQ(observer.result.value()->get_error_message(),
-            chromeos::platform_keys::KeystoreErrorToString(
-                mojom::KeystoreError::kInternal));
-}
-
-//------------------------------------------------------------------------------
-
-TEST_F(KeystoreServiceAshTest, DeprecatedGetCertificatesSuccess) {
-  EXPECT_CALL(platform_keys_service_,
-              GetCertificates(TokenId::kUser, /*callback=*/_))
-      .WillOnce(RunOnceCallback<1>(GetCertificateList(), Status::kSuccess));
-
-  CallbackObserver<mojom::DEPRECATED_GetCertificatesResultPtr> observer;
-  keystore_service_.DEPRECATED_GetCertificates(mojom::KeystoreType::kUser,
-                                               observer.GetCallback());
-
-  ASSERT_TRUE(observer.result.has_value() && observer.result.value());
-  ASSERT_TRUE(observer.result.value()->is_certificates());
-  AssertCertListEq(observer.result.value()->get_certificates(),
-                   GetCertificateList());
-}
-
-TEST_F(KeystoreServiceAshTest, DeprecatedGetCertificatesFail) {
-  EXPECT_CALL(platform_keys_service_,
-              GetCertificates(TokenId::kUser, /*callback=*/_))
-      .WillOnce(RunOnceCallback<1>(std::make_unique<net::CertificateList>(),
-                                   Status::kErrorInternal));
-
-  CallbackObserver<mojom::DEPRECATED_GetCertificatesResultPtr> observer;
-  keystore_service_.DEPRECATED_GetCertificates(mojom::KeystoreType::kUser,
-                                               observer.GetCallback());
-
-  ASSERT_TRUE(observer.result.has_value() && observer.result.value());
-  ASSERT_TRUE(observer.result.value()->is_error_message());
-  EXPECT_EQ(observer.result.value()->get_error_message(),
-            chromeos::platform_keys::KeystoreErrorToString(
-                mojom::KeystoreError::kInternal));
-}
-
-//------------------------------------------------------------------------------
-
-TEST_F(KeystoreServiceAshTest, DeprecatedAddCertificateSuccess) {
+TEST_F(KeystoreServiceAshTest, DeprecatedAddCertificateCallShouldFail) {
   auto cert_list = GetCertificateList();
-
-  EXPECT_CALL(platform_keys_service_,
-              ImportCertificate(TokenId::kSystem, CertEq(cert_list->front()),
-                                /*callback=*/_))
-      .WillOnce(RunOnceCallback<2>(Status::kSuccess));
-
   CallbackObserverRef<std::string> observer;
-  keystore_service_.DEPRECATED_AddCertificate(mojom::KeystoreType::kDevice,
-                                              CertToBlob(cert_list->front()),
-                                              observer.GetCallback());
 
-  ASSERT_TRUE(observer.result.has_value());
-  EXPECT_TRUE(observer.result.value().empty());
+  EXPECT_CHECK_DEATH_WITH(
+      keystore_service_.DEPRECATED_AddCertificate(
+          mojom::KeystoreType::kDevice, CertToBlob(cert_list->front()),
+          observer.GetCallback()),
+      "DEPRECATED_AddCertificate method was called.");
 }
 
-TEST_F(KeystoreServiceAshTest, DeprecatedAddCertificateFail) {
-  auto cert_list = GetCertificateList();
+TEST_F(KeystoreServiceAshTest, DeprecatedGetCertificatesCallShouldFail) {
+  CallbackObserver<mojom::DEPRECATED_GetCertificatesResultPtr> observer;
 
-  EXPECT_CALL(platform_keys_service_,
-              ImportCertificate(TokenId::kSystem, CertEq(cert_list->front()),
-                                /*callback=*/_))
-      .WillOnce(RunOnceCallback<2>(Status::kErrorCertificateInvalid));
-
-  CallbackObserverRef<std::string> observer;
-  keystore_service_.DEPRECATED_AddCertificate(mojom::KeystoreType::kDevice,
-                                              CertToBlob(cert_list->front()),
-                                              observer.GetCallback());
-
-  ASSERT_TRUE(observer.result.has_value());
-  EXPECT_EQ(observer.result.value(),
-            chromeos::platform_keys::KeystoreErrorToString(
-                mojom::KeystoreError::kCertificateInvalid));
+  EXPECT_CHECK_DEATH_WITH(
+      keystore_service_.DEPRECATED_GetCertificates(mojom::KeystoreType::kUser,
+                                                   observer.GetCallback()),
+      "DEPRECATED_GetCertificates method was called.");
 }
 
 //------------------------------------------------------------------------------
@@ -1071,7 +1037,8 @@ TEST_F(KeystoreServiceAshTest, DeprecatedChallengeUserKeyNoMigrateSuccess) {
       BuildResponse(ash::attestation::AttestationKeyType::KEY_USER,
                     /*profile=*/_, /*callback=*/_, /*challenge=*/GetDataStr(),
                     /*register_key=*/false,
-                    /*key_name_for_spkac=*/std::string(),
+                    /*key_crypto_type=*/KEY_TYPE_RSA,
+                    /*key_name=*/std::string(),
                     /*signals=*/_))
       .WillOnce(RunOnceCallback<2>(
           ash::attestation::TpmChallengeKeyResult::MakeChallengeResponse(
@@ -1099,7 +1066,8 @@ TEST_F(KeystoreServiceAshTest, DeprecatedChallengeUserKeyMigrateSuccess) {
       BuildResponse(ash::attestation::AttestationKeyType::KEY_USER,
                     /*profile=*/_, /*callback=*/_, /*challenge=*/GetDataStr(),
                     /*register_key=*/true,
-                    /*key_name_for_spkac=*/std::string(),
+                    /*key_crypto_type=*/KEY_TYPE_RSA,
+                    /*key_name=*/std::string(),
                     /*signals=*/_))
       .WillOnce(RunOnceCallback<2>(
           ash::attestation::TpmChallengeKeyResult::MakeChallengeResponse(
@@ -1127,7 +1095,8 @@ TEST_F(KeystoreServiceAshTest, DeprecatedChallengeDeviceKeyNoMigrateSuccess) {
       BuildResponse(ash::attestation::AttestationKeyType::KEY_DEVICE,
                     /*profile=*/_, /*callback=*/_, /*challenge=*/GetDataStr(),
                     /*register_key=*/false,
-                    /*key_name_for_spkac=*/std::string(),
+                    /*key_crypto_type=*/KEY_TYPE_RSA,
+                    /*key_name=*/std::string(),
                     /*signals=*/_))
       .WillOnce(RunOnceCallback<2>(
           ash::attestation::TpmChallengeKeyResult::MakeChallengeResponse(
@@ -1152,12 +1121,12 @@ TEST_F(KeystoreServiceAshTest, DeprecatedChallengeDeviceKeyMigrateSuccess) {
 
   EXPECT_CALL(
       *challenge_key_ptr,
-      BuildResponse(
-          ash::attestation::AttestationKeyType::KEY_DEVICE,
-          /*profile=*/_, /*callback=*/_, /*challenge=*/GetDataStr(),
-          /*register_key=*/true,
-          /*key_name_for_spkac=*/StrStartsWith("attest-ent-machine-lacros-"),
-          /*signals=*/_))
+      BuildResponse(ash::attestation::AttestationKeyType::KEY_DEVICE,
+                    /*profile=*/_, /*callback=*/_, /*challenge=*/GetDataStr(),
+                    /*register_key=*/true,
+                    /*key_crypto_type=*/KEY_TYPE_RSA,
+                    /*key_name=*/StrStartsWith("attest-ent-machine-lacros-"),
+                    /*signals=*/_))
       .WillOnce(RunOnceCallback<2>(
           ash::attestation::TpmChallengeKeyResult::MakeChallengeResponse(
               GetDataStr())));
@@ -1184,7 +1153,8 @@ TEST_F(KeystoreServiceAshTest, DeprecatedChallengeKeyFail) {
       BuildResponse(ash::attestation::AttestationKeyType::KEY_USER,
                     /*profile=*/_, /*callback=*/_, /*challenge=*/GetDataStr(),
                     /*register_key=*/false,
-                    /*key_name_for_spkac=*/std::string(),
+                    /*key_crypto_type=*/KEY_TYPE_RSA,
+                    /*key_name=*/std::string(),
                     /*signals=*/_))
       .WillOnce(RunOnceCallback<2>(challenge_result));
 

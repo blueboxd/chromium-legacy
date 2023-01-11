@@ -7,10 +7,17 @@ source_set("keyboard") {
   sources = [
     "UIKeyCommand+Chrome.h",
     "UIKeyCommand+Chrome.mm",
+    "key_command_actions.h",
+    "menu_builder.h",
+    "menu_builder.mm",
   ]
   deps = [
     "//base",
+    "//components/strings",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/util",
+    "//ui/base",
   ]
 }
 
@@ -26,12 +33,17 @@ source_set("features") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [ "UIKeyCommand+ChromeTest.mm" ]
+  sources = [
+    "UIKeyCommand+ChromeTest.mm",
+    "menu_builder_unittest.mm",
+  ]
   deps = [
     ":keyboard",
     "//base",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/commands",
     "//testing/gtest",
+    "//ui/base",
   ]
 }
 

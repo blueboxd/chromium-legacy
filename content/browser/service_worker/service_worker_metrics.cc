@@ -124,6 +124,8 @@ const char* EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_PUSH_SUBSCRIPTION_CHANGE";
     case ServiceWorkerMetrics::EventType::FETCH_FENCED_FRAME:
       return "_FETCH_FENCED_FRAME";
+    case ServiceWorkerMetrics::EventType::BYPASS_MAIN_RESOURCE:
+      return "_BYPASS_MAIN_RESOURCE";
   }
   return "_UNKNOWN";
 }
@@ -186,6 +188,8 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Push Subscription Change";
     case EventType::FETCH_FENCED_FRAME:
       return "Fetch Fenced Frame";
+    case ServiceWorkerMetrics::EventType::BYPASS_MAIN_RESOURCE:
+      return "_BYPASS_MAIN_RESOURCE";
   }
   NOTREACHED() << "Got unexpected event type: " << static_cast<int>(event_type);
   return "error";
@@ -394,6 +398,8 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
       UMA_HISTOGRAM_MEDIUM_TIMES(
           "ServiceWorker.PushSubscriptionChangeEvent.Time", time);
       break;
+    case EventType::BYPASS_MAIN_RESOURCE:
+    // The bypass main resource should not be sent as an event.
     case EventType::NAVIGATION_HINT:
     // The navigation hint should not be sent as an event.
     case EventType::UNKNOWN:
@@ -479,7 +485,7 @@ void ServiceWorkerMetrics::RecordStartWorkerTimingClockConsistency(
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartTiming.ClockConsistency", type);
 }
 
-void ServiceWorkerMetrics::RecordSkipServiceWorkerOnNavigationOnBrowserStartup(
+void ServiceWorkerMetrics::RecordSkipServiceWorkerOnNavigation(
     bool skip_service_worker) {
   static bool is_first_call = true;
   if (is_first_call) {
@@ -489,12 +495,17 @@ void ServiceWorkerMetrics::RecordSkipServiceWorkerOnNavigationOnBrowserStartup(
           "ServiceWorker.OnBrowserStartup.SkipServiceWorkerOnFirstNavigation",
           skip_service_worker);
     }
+  } else {
+    if (GetContentClient()->browser()->IsBrowserStartupComplete()) {
+      base::UmaHistogramBoolean(
+          "ServiceWorker.SkipCallingFindRegistrationForClientUrl",
+          skip_service_worker);
+    }
   }
 }
 
-void ServiceWorkerMetrics::
-    RecordFirstFindRegistrationForClientUrlTimeOnBrowserStartup(
-        base::TimeDelta time) {
+void ServiceWorkerMetrics::RecordFindRegistrationForClientUrlTime(
+    base::TimeDelta time) {
   static bool is_first_call = true;
   if (is_first_call) {
     is_first_call = false;
@@ -503,6 +514,11 @@ void ServiceWorkerMetrics::
           "ServiceWorker.OnBrowserStartup.FirstFindRegistrationForClientUrl."
           "Time",
           time);
+    }
+  } else {
+    if (GetContentClient()->browser()->IsBrowserStartupComplete()) {
+      base::UmaHistogramMediumTimes(
+          "ServiceWorker.FindRegistrationForClientUrl.Time", time);
     }
   }
 }

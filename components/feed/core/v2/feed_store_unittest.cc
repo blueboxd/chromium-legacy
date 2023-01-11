@@ -144,8 +144,12 @@ TEST_F(FeedStoreTest, OverwriteStream) {
       content_domain: "render_data"
     }
     stream_id: "i"
-    content_hashes: 1403410510
-    content_hashes: 1084072211
+    content_hashes {
+      hashes: 1403410510
+    }
+    content_hashes {
+      hashes: 1084072211
+    }
   }
 }
 [T/i/0] {
@@ -268,8 +272,12 @@ TEST_F(FeedStoreTest, OverwriteStreamWebFeed) {
       content_domain: "render_data"
     }
     stream_id: "w"
-    content_hashes: 1403410510
-    content_hashes: 1084072211
+    content_hashes {
+      hashes: 1403410510
+    }
+    content_hashes {
+      hashes: 1084072211
+    }
   }
 }
 [T/w/0] {
@@ -922,6 +930,24 @@ TEST_F(FeedStoreTest, ReadRecommendedWebFeedInfoNotPresent) {
 
   ASSERT_TRUE(callback.GetResult());
   ASSERT_FALSE(*callback.GetResult());
+}
+
+TEST_F(FeedStoreTest, ClearAllStreamData) {
+  // Write stream records to store.
+  MakeFeedStore({});
+  store_->OverwriteStream(StreamType(StreamKind::kSingleWebFeed, "A"),
+                          MakeTypicalInitialModelState(), base::DoNothing());
+  fake_db_->UpdateCallback(true);
+  ASSERT_NE("", StoreToString());
+
+  // ClearAll() and verify the DB is empty.
+  CallbackReceiver<bool> receiver;
+  store_->ClearAllStreamData(StreamKind::kSingleWebFeed, receiver.Bind());
+  fake_db_->UpdateCallback(true);
+
+  ASSERT_TRUE(receiver.GetResult());
+  EXPECT_TRUE(*receiver.GetResult());
+  EXPECT_EQ("", StoreToString());
 }
 
 }  // namespace feed

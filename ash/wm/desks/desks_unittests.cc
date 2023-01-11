@@ -38,6 +38,7 @@
 #include "ash/style/close_button.h"
 #include "ash/style/color_util.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_util.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desk_action_context_menu.h"
 #include "ash/wm/desks/desk_action_view.h"
@@ -235,19 +236,6 @@ BackdropController* GetDeskBackdropController(const Desk* desk,
   return layout_manager->backdrop_controller();
 }
 
-// Returns true if |win1| is stacked (not directly) below |win2|.
-bool IsStackedBelow(aura::Window* win1, aura::Window* win2) {
-  DCHECK_NE(win1, win2);
-  DCHECK_EQ(win1->parent(), win2->parent());
-
-  const auto& children = win1->parent()->children();
-  auto win1_iter = base::ranges::find(children, win1);
-  auto win2_iter = base::ranges::find(children, win2);
-  DCHECK(win1_iter != children.end());
-  DCHECK(win2_iter != children.end());
-  return win1_iter < win2_iter;
-}
-
 // Simulate pressing on a desk preview.
 void LongTapOnDeskPreview(const DeskMiniView* desk_mini_view,
                           ui::test::EventGenerator* event_generator) {
@@ -300,12 +288,10 @@ class TestObserver : public DesksController::Observer {
     base::Erase(desks_, desk);
     EXPECT_TRUE(DesksController::Get()->AreDesksBeingModified());
   }
-  void OnDeskReordered(int old_index, int new_index) override {}
   void OnDeskActivationChanged(const Desk* activated,
                                const Desk* deactivated) override {
     EXPECT_TRUE(DesksController::Get()->AreDesksBeingModified());
   }
-  void OnDeskSwitchAnimationLaunching() override {}
   void OnDeskSwitchAnimationFinished() override {
     EXPECT_FALSE(DesksController::Get()->AreDesksBeingModified());
   }
@@ -556,7 +542,7 @@ TEST_P(DesksTest, DesksBarViewDeskCreation) {
   EXPECT_FALSE(desks_bar_view->IsZeroState());
 
   auto* new_desk_button =
-      desks_bar_view->expanded_state_new_desk_button()->inner_button();
+      desks_bar_view->expanded_state_new_desk_button()->GetInnerButton();
   EXPECT_TRUE(new_desk_button->GetEnabled());
 
   auto* scroll_right_button = DesksTestApi::GetDesksBarRightScrollButton();
@@ -613,7 +599,7 @@ TEST_P(DesksTest, DesksBarViewDeskCreation) {
   DCHECK(desks_bar_view);
   EXPECT_EQ(controller->desks().size(), desks_bar_view->mini_views().size());
   EXPECT_TRUE(desks_bar_view->expanded_state_new_desk_button()
-                  ->inner_button()
+                  ->GetInnerButton()
                   ->GetEnabled());
 }
 
@@ -728,7 +714,7 @@ TEST_P(DesksTest, GestureTapOnNewDeskButton) {
   ClickOnView(desks_bar_view->zero_state_default_desk_button(),
               event_generator);
   auto* new_desk_button =
-      desks_bar_view->expanded_state_new_desk_button()->inner_button();
+      desks_bar_view->expanded_state_new_desk_button()->GetInnerButton();
   EXPECT_TRUE(new_desk_button->GetEnabled());
 
   auto* scroll_right_button = DesksTestApi::GetDesksBarRightScrollButton();
@@ -1945,7 +1931,7 @@ TEST_P(DesksTest, NewDeskButtonStateAndColor) {
   const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
   const auto* new_desk_button =
-      desks_bar_view->expanded_state_new_desk_button()->inner_button();
+      desks_bar_view->expanded_state_new_desk_button()->GetInnerButton();
   auto* scroll_right_button = DesksTestApi::GetDesksBarRightScrollButton();
 
   // Tests that with one or two desks, the new desk button has an enabled state
@@ -2452,7 +2438,7 @@ TEST_P(DesksEditableNamesTest, EventsThatCommitChanges) {
 
   // Creating a new desk commits the changes.
   auto* new_desk_button =
-      desks_bar_view()->expanded_state_new_desk_button()->inner_button();
+      desks_bar_view()->expanded_state_new_desk_button()->GetInnerButton();
   auto* event_generator = GetEventGenerator();
   ClickOnView(new_desk_button, event_generator);
   ASSERT_EQ(3u, controller()->desks().size());
@@ -3271,11 +3257,6 @@ TEST_P(TabletModeDesksTest, RestoringUnsnappableWindowsInSplitView) {
 }
 
 TEST_P(DesksTest, MiniViewsTouchGestures) {
-  // TODO(crbug.com/1361138): Figure out how to accommodate the context menu in
-  // CloseAll.
-  base::test::ScopedFeatureList desks_close_all_disabler;
-  desks_close_all_disabler.InitAndDisableFeature(features::kDesksCloseAll);
-
   auto* controller = DesksController::Get();
   NewDesk();
   NewDesk();
@@ -3292,16 +3273,36 @@ TEST_P(DesksTest, MiniViewsTouchGestures) {
   auto* desk_2_mini_view = desks_bar_view->mini_views()[1];
   auto* desk_3_mini_view = desks_bar_view->mini_views()[2];
 
-  // Long gesture tapping on one mini_view shows its desk action interface, and
-  // hides those of other mini_views.
+  // Long gesture tapping on one desk preview shows its desk action interface,
+  // and hides those of other mini views.
   auto* event_generator = GetEventGenerator();
-  LongGestureTap(desk_1_mini_view->GetBoundsInScreen().CenterPoint(),
-                 event_generator);
+  const gfx::Point desk_1_preview_center =
+      desk_1_mini_view->desk_preview()->GetBoundsInScreen().CenterPoint();
+  const gfx::Point desk_2_preview_center =
+      desk_2_mini_view->desk_preview()->GetBoundsInScreen().CenterPoint();
+
+  LongGestureTap(desk_1_preview_center, event_generator);
+
+  // If the `kDesksCloseAll` feature is enabled, the context menu appears on the
+  // first long press and after the user taps away the buttons will show. So in
+  // that case we need to tap away and wait for the context menu to disappear
+  // before checking whether the desk action interfaces are visible.
+  if (features::IsDesksCloseAllEnabled()) {
+    event_generator->GestureTapDownAndUp(desk_1_preview_center);
+    base::RunLoop().RunUntilIdle();
+  }
+
   EXPECT_TRUE(GetDeskActionVisibilityForMiniView(desk_1_mini_view));
   EXPECT_FALSE(GetDeskActionVisibilityForMiniView(desk_2_mini_view));
   EXPECT_FALSE(GetDeskActionVisibilityForMiniView(desk_3_mini_view));
-  LongGestureTap(desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
-                 event_generator);
+
+  LongGestureTap(desk_2_preview_center, event_generator);
+
+  if (features::IsDesksCloseAllEnabled()) {
+    event_generator->GestureTapDownAndUp(desk_2_preview_center);
+    base::RunLoop().RunUntilIdle();
+  }
+
   EXPECT_FALSE(GetDeskActionVisibilityForMiniView(desk_1_mini_view));
   EXPECT_TRUE(GetDeskActionVisibilityForMiniView(desk_2_mini_view));
   EXPECT_FALSE(GetDeskActionVisibilityForMiniView(desk_3_mini_view));
@@ -4691,7 +4692,7 @@ TEST_P(DesksTest, NameNudges) {
   EXPECT_EQ(1u, desks_bar_view->mini_views().size());
 
   auto* new_desk_button =
-      desks_bar_view->expanded_state_new_desk_button()->inner_button();
+      desks_bar_view->expanded_state_new_desk_button()->GetInnerButton();
   EXPECT_TRUE(new_desk_button->GetEnabled());
 
   // As desks are added, we will scroll the desks bar to keep the "new desk"
@@ -4838,7 +4839,7 @@ TEST_P(DesksTest, ScrollableDesks) {
   EXPECT_EQ(1u, desks_bar_view->mini_views().size());
 
   auto* new_desk_button =
-      desks_bar_view->expanded_state_new_desk_button()->inner_button();
+      desks_bar_view->expanded_state_new_desk_button()->GetInnerButton();
 
   // Set the scroll delta large enough to make sure the desks bar can be
   // scrolled to the end each time.
@@ -5523,7 +5524,7 @@ TEST_P(DesksTest, NewDeskButton) {
   ClickOnView(desks_bar_view->zero_state_default_desk_button(),
               event_generator);
   auto* new_desk_button =
-      desks_bar_view->expanded_state_new_desk_button()->inner_button();
+      desks_bar_view->expanded_state_new_desk_button()->GetInnerButton();
   EXPECT_TRUE(new_desk_button->GetVisible());
   EXPECT_TRUE(new_desk_button->GetEnabled());
 
@@ -5687,11 +5688,6 @@ TEST_P(DesksTest, ReorderDesksByMouse) {
 }
 
 TEST_P(DesksTest, ReorderDesksByGesture) {
-  // TODO(crbug.com/1361138): Figure out how to accommodate the context menu in
-  // CloseAll.
-  base::test::ScopedFeatureList desks_close_all_disabler;
-  desks_close_all_disabler.InitAndDisableFeature(features::kDesksCloseAll);
-
   auto* desks_controller = DesksController::Get();
 
   EnterOverview();
@@ -5732,6 +5728,16 @@ TEST_P(DesksTest, ReorderDesksByGesture) {
 
   event_generator->ReleaseTouch();
 
+  // If the `kDesksCloseAll` feature is enabled, the context menu appears on a
+  // long press on the desk preview. In order to drag the desk again, we first
+  // need to get rid of the context menu by tapping and waiting for the menu to
+  // disappear.
+  if (features::IsDesksCloseAllEnabled()) {
+    event_generator->GestureTapDownAndUp(
+        mini_view_1->desk_preview()->GetBoundsInScreen().CenterPoint());
+    base::RunLoop().RunUntilIdle();
+  }
+
   // Reorder the second desk
   LongTapOnDeskPreview(mini_view_1, event_generator);
   EXPECT_TRUE(desks_bar_view->IsDraggingDesk());
@@ -5739,6 +5745,13 @@ TEST_P(DesksTest, ReorderDesksByGesture) {
   // Swap the positions of the second desk and the third desk.
   gfx::Point desk_center_2 =
       mini_view_2->GetPreviewBoundsInScreen().CenterPoint();
+
+  // If `kDesksCloseAll` is enabled, we need to drag the mouse a bit after
+  // long-tapping the desk preview to start the closing of the context menu
+  // before rearranging the desk.
+  if (features::IsDesksCloseAllEnabled())
+    event_generator->MoveTouchBy(10, 0);
+
   event_generator->MoveTouch(desk_center_2);
 
   // Now, the desks order should be [0, 2, 1]:
@@ -5844,11 +5857,6 @@ TEST_P(DesksTest, ReorderDesksByKeyboard) {
 
 // Test reordering desks in RTL mode.
 TEST_P(DesksTest, ReorderDesksInRTLMode) {
-  // TODO(crbug.com/1361138): Figure out how to accommodate the context menu in
-  // CloseAll.
-  base::test::ScopedFeatureList desks_close_all_disabler;
-  desks_close_all_disabler.InitAndDisableFeature(features::kDesksCloseAll);
-
   // Turn on RTL mode.
   const bool default_rtl = base::i18n::IsRTL();
   base::i18n::SetRTLForTesting(true);
@@ -5910,6 +5918,13 @@ TEST_P(DesksTest, ReorderDesksInRTLMode) {
 
   gfx::Point desk_center_0 =
       mini_view_0->GetPreviewBoundsInScreen().CenterPoint();
+
+  // If `kDesksCloseAll` is enabled, we need to drag the mouse a bit after
+  // long-tapping the desk preview to start the closing of the context menu
+  // before rearranging the desk.
+  if (features::IsDesksCloseAllEnabled())
+    event_generator->MoveTouchBy(-10, 0);
+
   event_generator->MoveTouch(desk_center_0);
 
   // Now, the desks order should be [1, 0, 2]:
@@ -6373,6 +6388,72 @@ TEST_P(DesksTest, CloseButtonShowsAfterLongPressInTabletMode) {
   LongGestureTap(desk_preview_view_center, event_generator);
 
   EXPECT_TRUE(mini_view->close_desk_button()->GetVisible());
+}
+
+// Tests that metrics are being recorded when a desk is renamed, when new desks
+// are added, and when a desk is being removed.
+TEST_P(DesksTest, TestCustomDeskNameMetricsRecording) {
+  // Actions that should cause the histogram to update.
+  enum class UpdateSource {
+    kDeskRenamed,
+    kDeskAdded,
+    kDeskRemoved,
+  };
+
+  struct {
+    const std::string scope_trace;
+    const UpdateSource update_source;
+    const int expected_number_of_custom_desks;
+    const int expected_percentage_of_custom_desks;
+  } kTestCases[] = {
+      {"Rename a desk", UpdateSource::kDeskRenamed, 1, 50},
+      {"Add a desk", UpdateSource::kDeskAdded, 1, 33},
+      {"Remove a desk", UpdateSource::kDeskRemoved, 1, 50},
+  };
+
+  base::HistogramTester histogram_tester;
+
+  // Create a new desk. At this point we should have had one update for the new
+  // desk addition because adding a new desk requires confirming the new desk's
+  // name.
+  NewDesk();
+  int number_of_updates = 1;
+  histogram_tester.ExpectTotalCount(kNumberOfCustomNamesHistogramName,
+                                    number_of_updates);
+  histogram_tester.ExpectTotalCount(kPercentageOfCustomNamesHistogramName,
+                                    number_of_updates);
+  const auto& desks = DesksController::Get()->desks();
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.scope_trace);
+
+    switch (test_case.update_source) {
+      case UpdateSource::kDeskRenamed:
+        desks[0]->SetName(u"Hello", true);
+        break;
+      case UpdateSource::kDeskAdded:
+        NewDesk();
+        break;
+      case UpdateSource::kDeskRemoved:
+        RemoveDesk(desks.back().get());
+        break;
+    }
+
+    ++number_of_updates;
+    histogram_tester.ExpectTotalCount(kNumberOfCustomNamesHistogramName,
+                                      number_of_updates);
+    histogram_tester.ExpectTotalCount(kPercentageOfCustomNamesHistogramName,
+                                      number_of_updates);
+
+    // There should be at least one recording of the expected custom desk count
+    // and percentage.
+    EXPECT_NE(0, histogram_tester.GetBucketCount(
+                     kNumberOfCustomNamesHistogramName,
+                     test_case.expected_number_of_custom_desks));
+    EXPECT_NE(0, histogram_tester.GetBucketCount(
+                     kPercentageOfCustomNamesHistogramName,
+                     test_case.expected_percentage_of_custom_desks));
+  }
 }
 
 class DesksBentoBarTest : public DesksTest {
@@ -8283,7 +8364,7 @@ TEST_P(DesksCloseAllTest, CanAddLastDeskWhileUndoToastIsBeingDisplayed) {
   // The new desk button should be enabled at this point.
   auto* new_desk_button = GetPrimaryRootDesksBarView()
                               ->expanded_state_new_desk_button()
-                              ->inner_button();
+                              ->GetInnerButton();
   ASSERT_TRUE(new_desk_button->GetEnabled());
 
   // Scroll all the way to the right to ensure that the new button is visible.

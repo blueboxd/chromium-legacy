@@ -49,10 +49,10 @@ class ExternalProtocolHandlerSandboxBrowserTest
   // additional security check and ask the user, without displaying a message in
   // the console. Adopt Linux's behavior for the purpose of this test suite.
   void AllowCustomProtocol() {
-    base::ListValue allow_list;
+    base::Value::List allow_list;
     allow_list.Append("custom:*");
     browser()->profile()->GetPrefs()->Set(policy::policy_prefs::kUrlAllowlist,
-                                          allow_list);
+                                          base::Value(std::move(allow_list)));
   }
 
   content::RenderFrameHost* CreateIFrame(content::RenderFrameHost* document,
@@ -106,7 +106,7 @@ class ExternalProtocolHandlerSandboxBrowserTest
         has_user_gesture ? content::EXECUTE_SCRIPT_DEFAULT_OPTIONS
                          : content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
-    observer.Wait();
+    EXPECT_TRUE(observer.Wait());
     std::string message = observer.GetMessageAt(0u);
 
     return message == allowed_msg_1 || message == allowed_msg_2;
@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolHandlerBrowserTest,
   observer.SetPattern("*aunch*'mailto:test@site.test'*");
   ASSERT_TRUE(
       ExecJs(web_content(), "window.open('mailto:test@site.test', '_self');"));
-  observer.Wait();
+  ASSERT_TRUE(observer.Wait());
   ASSERT_EQ(1u, observer.messages().size());
   EXPECT_EQ("Launched external handler for 'mailto:test@site.test'.",
             observer.GetMessageAt(0u));
@@ -213,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolHandlerBrowserTest,
   observer.SetPattern("Failed to launch 'does.not.exist:failure'*");
   ASSERT_TRUE(
       ExecJs(web_content(), "window.open('does.not.exist:failure', '_self');"));
-  observer.Wait();
+  ASSERT_TRUE(observer.Wait());
   ASSERT_EQ(1u, observer.messages().size());
 #endif
 }
@@ -336,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolHandlerBrowserTest,
 
   ASSERT_TRUE(
       ExecJs(originating_rfh, "location.href = 'willfailtolaunch://foo';"));
-  observer.Wait();
+  ASSERT_TRUE(observer.Wait());
   ASSERT_EQ(1u, observer.messages().size());
   EXPECT_EQ("Not allowed to launch 'willfailtolaunch://foo'.",
             observer.GetMessageAt(0u));

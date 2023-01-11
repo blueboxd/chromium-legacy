@@ -97,21 +97,19 @@ class PasswordsPrivateRequestPlaintextPasswordFunction
   void GotPassword(absl::optional<std::u16string> password);
 };
 
-class PasswordsPrivateRequestCredentialDetailsFunction
+class PasswordsPrivateRequestCredentialsDetailsFunction
     : public ExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.requestCredentialDetails",
-                             PASSWORDSPRIVATE_REQUESTCREDENTIALDETAILS)
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.requestCredentialsDetails",
+                             PASSWORDSPRIVATE_REQUESTCREDENTIALSDETAILS)
  protected:
-  ~PasswordsPrivateRequestCredentialDetailsFunction() override = default;
+  ~PasswordsPrivateRequestCredentialsDetailsFunction() override = default;
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;
 
  private:
-  void GotPasswordUiEntry(
-      absl::optional<api::passwords_private::PasswordUiEntry>
-          password_ui_entry);
+  void GotPasswords(const PasswordsPrivateDelegate::UiEntries& entries);
 };
 
 class PasswordsPrivateGetSavedPasswordListFunction : public ExtensionFunction {
@@ -128,6 +126,18 @@ class PasswordsPrivateGetSavedPasswordListFunction : public ExtensionFunction {
  private:
   void GetList();
   void GotList(const PasswordsPrivateDelegate::UiEntries& entries);
+};
+
+class PasswordsPrivateGetCredentialGroupsFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.getCredentialGroups",
+                             PASSWORDSPRIVATE_GETCREDENTIALGROUPS)
+
+ protected:
+  ~PasswordsPrivateGetCredentialGroupsFunction() override = default;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
 };
 
 class PasswordsPrivateGetPasswordExceptionListFunction
@@ -424,6 +434,18 @@ class PasswordsPrivateSwitchBiometricAuthBeforeFillingStateFunction
  protected:
   ~PasswordsPrivateSwitchBiometricAuthBeforeFillingStateFunction() override =
       default;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+};
+
+class PasswordsPrivateShowAddShortcutDialogFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.showAddShortcutDialog",
+                             PASSWORDSPRIVATE_SHOWADDSHORTCUTDIALOG)
+
+ protected:
+  ~PasswordsPrivateShowAddShortcutDialogFunction() override = default;
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;

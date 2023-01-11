@@ -25,7 +25,6 @@
 #include "components/viz/common/switches.h"
 #include "components/viz/common/transition_utils.h"
 #include "components/viz/service/surfaces/surface.h"
-#include "components/viz/service/surfaces/surface_saved_frame_storage.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/gfx/animation/keyframe/animation_curve.h"
 #include "ui/gfx/animation/keyframe/keyframed_animation_curve.h"
@@ -131,119 +130,54 @@ void ReplaceSharedElementWithTexture(
 
 }  // namespace
 
-class SurfaceAnimationManager::StorageWithSurface {
- public:
-  StorageWithSurface(SurfaceSavedFrameStorage* storage, Surface* surface)
-      : storage_(storage) {
-    DCHECK(!storage_->has_active_surface());
-    storage_->set_active_surface(surface);
-  }
-
-  ~StorageWithSurface() { storage_->set_active_surface(nullptr); }
-
-  SurfaceSavedFrameStorage* operator->() { return storage_; }
-
- private:
-  raw_ptr<SurfaceSavedFrameStorage> storage_;
-};
+// static
+std::unique_ptr<SurfaceAnimationManager>
+SurfaceAnimationManager::CreateWithSave(
+    const CompositorFrameTransitionDirective& directive,
+    Surface* surface,
+    SharedBitmapManager* shared_bitmap_manager,
+    TransitionDirectiveCompleteCallback sequence_id_finished_callback) {
+  return absl::WrapUnique(
+      new SurfaceAnimationManager(directive, surface, shared_bitmap_manager,
+                                  std::move(sequence_id_finished_callback)));
+}
 
 SurfaceAnimationManager::SurfaceAnimationManager(
-    SharedBitmapManager* shared_bitmap_manager)
-    : transferable_resource_tracker_(shared_bitmap_manager) {}
-
-SurfaceAnimationManager::~SurfaceAnimationManager() = default;
-
-void SurfaceAnimationManager::SetDirectiveFinishedCallback(
-    TransitionDirectiveCompleteCallback sequence_id_finished_callback) {
-  sequence_id_finished_callback_ = std::move(sequence_id_finished_callback);
-}
-
-void SurfaceAnimationManager::ProcessTransitionDirectives(
-    const std::vector<CompositorFrameTransitionDirective>& directives,
-    Surface* active_surface) {
-  StorageWithSurface storage(&surface_saved_frame_storage_, active_surface);
-  for (auto& directive : directives) {
-    // Don't process directives with sequence ids smaller than or equal to the
-    // last seen one. It is possible that we call this with the same frame
-    // multiple times.
-    if (directive.sequence_id() <= last_processed_sequence_id_)
-      continue;
-    last_processed_sequence_id_ = directive.sequence_id();
-
-    bool handled = false;
-    // Dispatch to a specialized function based on type.
-    switch (directive.type()) {
-      case CompositorFrameTransitionDirective::Type::kSave:
-        handled = ProcessSaveDirective(directive, storage);
-        break;
-      case CompositorFrameTransitionDirective::Type::kAnimateRenderer:
-        handled = ProcessAnimateRendererDirective(directive, storage);
-        break;
-      case CompositorFrameTransitionDirective::Type::kRelease:
-        handled = ProcessReleaseDirective();
-        break;
-    }
-
-    // If we didn't handle the directive, it means that we're in a state that
-    // does not permit the directive to be processed, and it was ignored. We
-    // should notify that we've fully processed the directive in this case to
-    // allow code that is waiting for this to continue.
-    if (!handled)
-      sequence_id_finished_callback_.Run(directive.sequence_id());
-  }
-}
-
-bool SurfaceAnimationManager::ProcessSaveDirective(
     const CompositorFrameTransitionDirective& directive,
-    StorageWithSurface& storage) {
-  // We can only have one saved frame. It is the job of the client to ensure the
-  // correct API usage. So if we are receiving a save directive while we already
-  // have a saved frame, release it first. That ensures that any subsequent
-  // animate directives which presumably rely on this save directive will
-  // succeed.
-  ProcessReleaseDirective();
-
-  // We need to be in the idle state in order to save.
-  if (state_ != State::kIdle)
-    return false;
-  empty_resource_ids_ =
-      storage->ProcessSaveDirective(directive, sequence_id_finished_callback_);
-  return true;
+    Surface* surface,
+    SharedBitmapManager* shared_bitmap_manager,
+    TransitionDirectiveCompleteCallback sequence_id_finished_callback)
+    : transferable_resource_tracker_(shared_bitmap_manager) {
+  DCHECK(directive.type() == CompositorFrameTransitionDirective::Type::kSave);
+  saved_frame_ = std::make_unique<SurfaceSavedFrame>(
+      directive, std::move(sequence_id_finished_callback));
+  saved_frame_->RequestCopyOfOutput(surface);
+  empty_resource_ids_ = saved_frame_->GetEmptyResourceIds();
 }
 
-bool SurfaceAnimationManager::ProcessAnimateRendererDirective(
-    const CompositorFrameTransitionDirective& directive,
-    StorageWithSurface& storage) {
-  // We can only begin an animate if we are currently idle. The renderer sends
-  // this in response to a notification of the capture completing successfully.
-  if (state_ != State::kIdle)
-    return false;
+SurfaceAnimationManager::~SurfaceAnimationManager() {
+  if (saved_textures_)
+    transferable_resource_tracker_.ReturnFrame(*saved_textures_);
+  saved_textures_.reset();
+}
+
+void SurfaceAnimationManager::Animate() {
+  if (animating_)
+    return;
 
   DCHECK(!saved_textures_);
-  state_ = State::kAnimatingRenderer;
-  auto saved_frame = storage->TakeSavedFrame();
-  if (!saved_frame || !saved_frame->IsValid()) {
+  animating_ = true;
+  if (!saved_frame_ || !saved_frame_->IsValid()) {
     LOG(ERROR) << "Failure in caching shared element snapshots";
-    return false;
+    saved_frame_.reset();
+    return;
   }
 
   // Import the saved frame, which converts it to a ResourceFrame -- a
   // structure which has transferable resources.
   saved_textures_.emplace(
-      transferable_resource_tracker_.ImportResources(std::move(saved_frame)));
+      transferable_resource_tracker_.ImportResources(std::move(saved_frame_)));
   empty_resource_ids_.clear();
-  return true;
-}
-
-bool SurfaceAnimationManager::ProcessReleaseDirective() {
-  if (state_ != State::kAnimatingRenderer)
-    return false;
-
-  state_ = State::kIdle;
-  if (saved_textures_)
-    transferable_resource_tracker_.ReturnFrame(*saved_textures_);
-  saved_textures_.reset();
-  return true;
 }
 
 void SurfaceAnimationManager::RefResources(
@@ -268,8 +202,8 @@ void SurfaceAnimationManager::UnrefResources(
 
 bool SurfaceAnimationManager::FilterSharedElementsWithRenderPassOrResource(
     std::vector<TransferableResource>* resource_list,
-    const base::flat_map<SharedElementResourceId, const CompositorRenderPass*>*
-        element_id_to_pass,
+    const base::flat_map<ViewTransitionElementResourceId,
+                         const CompositorRenderPass*>* element_id_to_pass,
     const DrawQuad& quad,
     CompositorRenderPass& copy_pass) {
   if (quad.material != DrawQuad::Material::kSharedElement)
@@ -337,7 +271,7 @@ void SurfaceAnimationManager::ReplaceSharedElementResources(Surface* surface) {
   if (!active_frame.metadata.has_shared_element_resources)
     return;
 
-  // A frame created by resolving SharedElementResourceIds to their
+  // A frame created by resolving ViewTransitionElementResourceIds to their
   // corresponding static or live snapshot.
   DCHECK(!surface->HasInterpolatedFrame())
       << "Can not override interpolated frame";
@@ -345,7 +279,7 @@ void SurfaceAnimationManager::ReplaceSharedElementResources(Surface* surface) {
   resolved_frame.metadata = active_frame.metadata.Clone();
   resolved_frame.resource_list = active_frame.resource_list;
 
-  base::flat_map<SharedElementResourceId, const CompositorRenderPass*>
+  base::flat_map<ViewTransitionElementResourceId, const CompositorRenderPass*>
       element_id_to_pass;
   TransitionUtils::FilterCallback filter_callback = base::BindRepeating(
       &SurfaceAnimationManager::FilterSharedElementsWithRenderPassOrResource,
@@ -360,10 +294,11 @@ void SurfaceAnimationManager::ReplaceSharedElementResources(Surface* surface) {
 
     // This must be done after copying the render pass so we use the render pass
     // id of |pass_copy| when replacing SharedElementDrawQuads.
-    if (pass_copy->shared_element_resource_id.IsValid()) {
-      DCHECK(element_id_to_pass.find(pass_copy->shared_element_resource_id) ==
+    if (pass_copy->view_transition_element_resource_id.IsValid()) {
+      DCHECK(element_id_to_pass.find(
+                 pass_copy->view_transition_element_resource_id) ==
              element_id_to_pass.end());
-      element_id_to_pass.emplace(pass_copy->shared_element_resource_id,
+      element_id_to_pass.emplace(pass_copy->view_transition_element_resource_id,
                                  pass_copy.get());
     }
 
@@ -373,9 +308,9 @@ void SurfaceAnimationManager::ReplaceSharedElementResources(Surface* surface) {
   surface->SetInterpolatedFrame(std::move(resolved_frame));
 }
 
-SurfaceSavedFrameStorage*
-SurfaceAnimationManager::GetSurfaceSavedFrameStorageForTesting() {
-  return &surface_saved_frame_storage_;
+void SurfaceAnimationManager::CompleteSaveForTesting() {
+  DCHECK(saved_frame_);
+  saved_frame_->CompleteSavedFrameForTesting();  // IN-TEST
 }
 
 }  // namespace viz

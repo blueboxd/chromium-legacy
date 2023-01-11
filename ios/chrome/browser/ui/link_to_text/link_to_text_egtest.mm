@@ -97,7 +97,7 @@ NSArray<NSString*>* GetMarkedText() {
                   "  }"
                   "  return markedText;"
                   "})();";
-  auto result = [ChromeEarlGrey evaluateJavaScript:js];
+  base::Value result = [ChromeEarlGrey evaluateJavaScript:js];
   GREYAssertTrue(result.is_list(), @"Result is not iterable.");
 
   NSMutableArray<NSString*>* marked_texts = [NSMutableArray array];
@@ -125,7 +125,7 @@ NSString* GetFirstVisibleMarkedText() {
        "    rect.right <= window.innerWidth;"
        "  return isVisible ? firstMark.innerText : '';"
        "})();";
-  auto result = [ChromeEarlGrey evaluateJavaScript:js];
+  base::Value result = [ChromeEarlGrey evaluateJavaScript:js];
   GREYAssertTrue(result.is_string(), @"Result is not a string.");
   return base::SysUTF8ToNSString(result.GetString());
 }
@@ -184,10 +184,10 @@ std::unique_ptr<net::test_server::HttpResponse> LoadHtml(
 
   GREYAssertEqual(2, markedText.count,
                   @"Did not get the expected number of marked text.");
-  GREYAssertEqual(kFirstFragmentText, base::SysNSStringToUTF8(markedText[0]),
-                  @"First marked text is not valid.");
-  GREYAssertEqual(kSecondFragmentText, base::SysNSStringToUTF8(markedText[1]),
-                  @"Second marked text is not valid.");
+  GREYAssertEqualObjects(@(kFirstFragmentText), markedText[0],
+                         @"First marked text is not valid.");
+  GREYAssertEqualObjects(@(kSecondFragmentText), markedText[1],
+                         @"Second marked text is not valid.");
 }
 
 // Tests that a fragment will be scrolled to if it's lower on the page.
@@ -213,8 +213,8 @@ std::unique_ptr<net::test_server::HttpResponse> LoadHtml(
                                      .InSecondsF()],
              @"Could not find visible marked element.");
 
-  GREYAssertEqual(kFirstFragmentText, base::SysNSStringToUTF8(firstVisibleMark),
-                  @"Visible marked text is not valid.");
+  GREYAssertEqualObjects(@(kFirstFragmentText), firstVisibleMark,
+                         @"Visible marked text is not valid.");
 }
 
 // Tests that a link can be generated for a simple text selection.

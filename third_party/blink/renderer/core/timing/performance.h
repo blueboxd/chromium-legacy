@@ -33,7 +33,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_H_
 
 #include "base/task/single_thread_task_runner.h"
-#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -53,6 +52,7 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace base {
+class Clock;
 class TickClock;
 }  // namespace base
 
@@ -292,42 +292,29 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   bool HasObserverFor(PerformanceEntry::EntryType) const;
 
-  // Checks whether the single ResourceResponse passes the Timing-Allow-Origin
-  // check. The first parameter is the ResourceResponse being checked. The
-  // second parameter is the next ResourceResponse in the redirect chain, or is
-  // equal to the first parameter if there is no such response. This parameter
-  // is only introduced temporarily to enable computing a UseCounter within this
-  // method. The first bool parameter is
-  // https://fetch.spec.whatwg.org/#concept-request-response-tainting, while the
-  // second bool is
-  // https://fetch.spec.whatwg.org/#concept-request-tainted-origin.
-  // The next ResourceResponse and tainted origin flag are currently only being
-  // used in a UseCounter.
-  static bool PassesTimingAllowCheck(const ResourceResponse& response,
-                                     const ResourceResponse& next_response,
-                                     const SecurityOrigin&,
-                                     ExecutionContext*,
-                                     bool* response_tainting_not_basic,
-                                     bool* tainted_origin_flag);
-
-  static bool ShouldReportResponseStatus(
+  static bool IsResponseSameOriginWithInitiator(
       const ResourceResponse& response,
-      const SecurityOrigin& initiator_security_origin,
-      const network::mojom::RequestMode request_mode);
+      const SecurityOrigin& initiator_security_origin);
 
-  static bool AllowsTimingRedirect(const Vector<ResourceResponse>&,
-                                   const ResourceResponse&,
-                                   const SecurityOrigin&,
-                                   ExecutionContext*);
+  static bool PassesCORSConditions(
+      const ResourceResponse& final_response,
+      const SecurityOrigin& initiator_security_origin,
+      const network::mojom::RequestMode request_mode,
+      const Vector<ResourceResponse>& redirect_chain);
 
   // Determine whether a given Node can be exposed via a Web Perf API.
   static bool CanExposeNode(Node*);
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
+  void InsertEntryIntoSortedBuffer(PerformanceEntryVector& vector,
+                                   PerformanceEntry& entry);
+
   void Trace(Visitor*) const override;
 
-  void SetTickClockForTesting(const base::TickClock* tick_clock);
+  // The caller owns the |clock|.
+  void SetClocksForTesting(const base::Clock* clock,
+                           const base::TickClock* tick_clock);
   void ResetTimeOriginForTesting(base::TimeTicks time_origin);
 
  private:
@@ -350,6 +337,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
                                         ExceptionState& exception_state);
 
   void CopySecondaryBuffer();
+
   PerformanceEntryVector getEntriesByTypeInternal(
       PerformanceEntry::EntryType type);
 
@@ -406,6 +394,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   Member<PerformanceEventTiming> first_input_timing_;
 
   base::TimeTicks time_origin_;
+  base::TimeDelta unix_at_zero_monotonic_;
   const base::TickClock* tick_clock_;
   bool cross_origin_isolated_capability_;
 

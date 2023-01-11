@@ -381,6 +381,10 @@ class MetaBuildWrapper:
                       help=('Run under the internal swarming server '
                             '(chrome-swarming) instead of the public server '
                             '(chromium-swarm).'))
+    subp.add_argument('--realm',
+                      default=None,
+                      help=('Optional realm used when triggering swarming '
+                            'tasks.'))
     subp.add_argument('--tags', default=[], action='append', metavar='FOO:BAR',
                       help='Tags to assign to the swarming task')
     subp.add_argument('--no-default-dimensions', action='store_false',
@@ -677,9 +681,11 @@ class MetaBuildWrapper:
     if internal:
       cas_instance = 'chrome-swarming'
       swarming_server = 'chrome-swarming.appspot.com'
+      realm = 'chrome:try' if not self.args.realm else self.args.realm
     else:
       cas_instance = 'chromium-swarm'
       swarming_server = 'chromium-swarm.appspot.com'
+      realm = self.args.realm
     # TODO(dpranke): Look up the information for the target in
     # the //testing/buildbot.json file, if possible, so that we
     # can determine the isolate target, command line, and additional
@@ -742,17 +748,17 @@ class MetaBuildWrapper:
           cas_digest,
           '-server',
           swarming_server,
+          # 30 is try level. So use the same here.
+          '-priority',
+          '30',
           '-tag=purpose:user-debug-mb',
           '-relative-cwd',
           self.ToSrcRelPath(build_dir),
           '-dump-json',
           json_file,
       ]
-      if internal:
-        cmd += [
-            '--realm',
-            'chrome:try',
-        ]
+      if realm:
+        cmd += ['--realm', realm]
       cmd += tags + dimensions + ['--'] + list(isolate_cmd)
       if self.args.extra_args:
         cmd += self.args.extra_args
@@ -1273,16 +1279,13 @@ class MetaBuildWrapper:
     """Filter out the runtime dependencies not used by Skylab.
 
     Skylab is CrOS infra facilities for us to run hardware tests. These files
-    may appear in the test target's runtime_deps but unnecessary for our tests
-    to execute in a CrOS device.
+    may appear in the test target's runtime_deps for browser lab, but
+    unnecessary for CrOS lab. E.g. chrome is provisioned by our autotest
+    wrapper in Skylab, not by third_party/chromite.
     """
     file_ignore_list = [
-        re.compile(r'.*build/android.*'),
         re.compile(r'.*build/chromeos.*'),
         re.compile(r'.*build/cros_cache.*'),
-        # The following matches anything under //testing/ that isn't under
-        # //testing/buildbot/filters/.
-        re.compile(r'.*testing/(?!buildbot/filters).*'),
         re.compile(r'.*third_party/chromite.*'),
         # No test target should rely on files in [output_dir]/gen.
         re.compile(r'^gen/.*'),
@@ -1366,10 +1369,12 @@ class MetaBuildWrapper:
 
     filter_exists = self.Exists(abs_filter_file_path)
     if filter_exists:
-      command.append('--test-launcher-filter-file=%s' % filter_file_path)
+      filtered_command = command.copy()
+      filtered_command.append('--test-launcher-filter-file=%s' %
+                              filter_file_path)
       self.Print('added RTS filter file to command: %s' % filter_file)
-
-    return filter_exists
+      return filtered_command
+    return None
 
   def PossibleRuntimeDepsPaths(self, vals, ninja_targets, isolate_map):
     """Returns a map of targets to possible .runtime_deps paths.
@@ -1580,17 +1585,19 @@ class MetaBuildWrapper:
     if self.args.rts:
       if target in self.banned_from_rts:
         self.Print('%s is banned for RTS on this builder' % target)
-        isolate['variables']['command'] = command
       else:
-        inverted_command = command.copy()
-        self.AddFilterFileArg(target, build_dir, command, inverted=False)
-        isolate['variables']['command'] = command
+        rts_command = self.AddFilterFileArg(target,
+                                            build_dir,
+                                            command,
+                                            inverted=False)
+        if rts_command:
+          isolate['variables']['rts_command'] = rts_command
 
-        inverted_filter_exists = self.AddFilterFileArg(target,
-                                                       build_dir,
-                                                       inverted_command,
-                                                       inverted=True)
-        if inverted_filter_exists:
+        inverted_command = self.AddFilterFileArg(target,
+                                                 build_dir,
+                                                 command,
+                                                 inverted=True)
+        if inverted_command:
           isolate['variables']['inverted_command'] = inverted_command
 
     self.WriteFile(isolate_path, json.dumps(isolate, sort_keys=True) + '\n')
@@ -1827,7 +1834,6 @@ class MetaBuildWrapper:
         cmdline += [
             os.path.join('bin', 'cros_test_wrapper'),
             '--logs-dir=${ISOLATED_OUTDIR}',
-            '--',
         ]
       if is_android:
         extra_files.append('../../build/android/test_wrapper/logdog_wrapper.py')

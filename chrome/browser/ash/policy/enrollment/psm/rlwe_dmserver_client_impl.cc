@@ -16,7 +16,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/policy/enrollment/psm/rlwe_client.h"
 #include "chrome/browser/ash/policy/enrollment/psm/rlwe_dmserver_client.h"
-#include "chrome/browser/ash/policy/enrollment/psm/rlwe_id_provider.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -36,34 +35,14 @@ namespace policy::psm {
 RlweDmserverClientImpl::RlweDmserverClientImpl(
     DeviceManagementService* device_management_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    RlweClient::Factory* psm_rlwe_client_factory,
-    RlweIdProvider* psm_rlwe_id_provider)
-    : random_device_id_(base::GenerateGUID()),
+    std::unique_ptr<RlweClient> psm_rlwe_client)
+    : psm_rlwe_client_(std::move(psm_rlwe_client)),
+      random_device_id_(base::GenerateGUID()),
       url_loader_factory_(url_loader_factory),
       device_management_service_(device_management_service) {
-  CHECK(device_management_service);
-  CHECK(psm_rlwe_client_factory);
-  CHECK(psm_rlwe_id_provider);
-
-  psm_rlwe_id_ = psm_rlwe_id_provider->ConstructRlweId();
-
-  // Create PSM client for |psm_rlwe_id_| with use case as CROS_DEVICE_STATE.
-  std::vector<psm_rlwe::RlwePlaintextId> psm_ids = {psm_rlwe_id_};
-  auto status_or_client = psm_rlwe_client_factory->Create(
-      psm_rlwe::RlweUseCase::CROS_DEVICE_STATE, psm_ids);
-  if (!status_or_client.ok()) {
-    // If the PSM RLWE client hasn't been created successfully, then report
-    // the error and don't run the protocol.
-    LOG(ERROR) << "PSM error: unexpected internal logic error during creating "
-                  "PSM RLWE client";
-    last_psm_execution_result_ =
-        ResultHolder(RlweResult::kCreateRlweClientLibraryError);
-    base::UmaHistogramEnumeration(kUMAPsmResult + uma_suffix_,
-                                  RlweResult::kCreateRlweClientLibraryError);
-    return;
-  }
-
-  psm_rlwe_client_ = std::move(status_or_client).value();
+  CHECK(psm_rlwe_client_);
+  CHECK(url_loader_factory_);
+  CHECK(device_management_service_);
 }
 
 RlweDmserverClientImpl::~RlweDmserverClientImpl() {
@@ -238,15 +217,13 @@ void RlweDmserverClientImpl::OnRlweQueryRequestCompletion(
         return;
       }
 
-      const psm_rlwe::PrivateMembershipRlweQueryResponse query_response =
-          result.response.private_set_membership_response()
-              .rlwe_response()
-              .query_response();
+      const ::rlwe::StatusOr<bool> is_member =
+          psm_rlwe_client_->ProcessQueryResponse(
+              result.response.private_set_membership_response()
+                  .rlwe_response()
+                  .query_response());
 
-      auto status_or_responses =
-          psm_rlwe_client_->ProcessQueryResponse(query_response);
-
-      if (!status_or_responses.ok()) {
+      if (!is_member.ok()) {
         // If the RLWE query response hasn't processed successfully, then
         // report the error and stop the protocol.
         LOG(ERROR) << "PSM error: unexpected internal logic error during "
@@ -256,41 +233,12 @@ void RlweDmserverClientImpl::OnRlweQueryRequestCompletion(
         return;
       }
 
-      LOG(WARNING) << "PSM query request completed successfully";
-
       base::UmaHistogramEnumeration(kUMAPsmResult + uma_suffix_,
                                     RlweResult::kSuccessfulDetermination);
       RecordPsmSuccessTimeHistogram();
 
-      // The RLWE query response has been processed successfully. Extract
-      // the membership response, and report the result.
-
-      psm_rlwe::RlweMembershipResponses rlwe_membership_responses =
-          std::move(status_or_responses).value();
-
-      // Ensure the existence of one membership response. Then, verify that it
-      // is regarding the current PSM ID.
-      if (rlwe_membership_responses.membership_responses_size() != 1 ||
-          rlwe_membership_responses.membership_responses(0)
-                  .plaintext_id()
-                  .sensitive_id() != psm_rlwe_id_.sensitive_id()) {
-        LOG(ERROR)
-            << "PSM error: RLWE membership responses are either empty or its "
-               "first response's ID is not the same as the current PSM ID.";
-        // TODO(crbug.com/1302982): Record that error separately and merge it
-        // with RlweResult.
-        StoreErrorAndStop(RlweResult::kEmptyQueryResponseError);
-        return;
-      }
-
-      const bool membership_result =
-          rlwe_membership_responses.membership_responses(0)
-              .membership_response()
-              .is_member();
-
       LOG(WARNING) << "PSM determination successful. Identifier "
-                   << (membership_result ? "" : "not ")
-                   << "present on the server";
+                   << (*is_member ? "" : "not ") << "present on the server";
 
       // Reset the |psm_request_job_| to allow another call to
       // CheckMembership.
@@ -298,7 +246,7 @@ void RlweDmserverClientImpl::OnRlweQueryRequestCompletion(
 
       // Store the last PSM execution result.
       last_psm_execution_result_ =
-          ResultHolder(RlweResult::kSuccessfulDetermination, membership_result,
+          ResultHolder(RlweResult::kSuccessfulDetermination, *is_member,
                        /*membership_determination_time=*/base::Time::Now());
 
       std::move(on_completion_callback_)

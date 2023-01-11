@@ -31,6 +31,7 @@
 #include "components/omnibox/browser/actions/omnibox_pedal.h"
 #include "components/omnibox/browser/actions/omnibox_pedal_concepts.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
+#include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/base_search_provider.h"
@@ -1653,9 +1654,19 @@ bool OmniboxEditModel::OnAfterPossibleChange(
   // Update the paste state as appropriate: if we're just finishing a paste
   // that replaced all the text, preserve that information; otherwise, if we've
   // made some other edit, clear paste tracking.
-  if (paste_state_ == PASTING)
+  if (paste_state_ == PASTING) {
     paste_state_ = PASTED;
-  else if (state_changes.text_differs)
+
+#if BUILDFLAG(IS_IOS)
+    GURL url = GURL(*(state_changes.new_text));
+
+    if (url.is_valid()) {
+      base::RecordAction(
+          base::UserMetricsAction("Mobile.Omnibox.iOS.PastedValidURL"));
+    }
+#endif
+
+  } else if (state_changes.text_differs)
     paste_state_ = NONE;
 
   if (state_changes.text_differs || state_changes.selection_differs) {
@@ -1911,10 +1922,24 @@ gfx::Image OmniboxEditModel::GetMatchIcon(const AutocompleteMatch& match,
     return client()->GetSizedIcon(extension_icon);
   }
 
+  // The @tabs starter pack suggestion is a unique case. It uses a help center
+  // article URL as a placeholder and shouldn't display the favicon from the
+  // help center.  Ignore this favicon even if it's available.
+  bool is_starter_pack_tabs_suggestion = false;
+  if (AutocompleteMatch::IsStarterPackType(match.type) &&
+      match.associated_keyword) {
+    TemplateURL* turl =
+        client()->GetTemplateURLService()->GetTemplateURLForKeyword(
+            match.associated_keyword->keyword);
+    is_starter_pack_tabs_suggestion =
+        turl && turl->GetBuiltinEngineType() == KEYWORD_MODE_STARTER_PACK_TABS;
+  }
+
   // Get the favicon for navigational suggestions.
   if (!AutocompleteMatch::IsSearchType(match.type) &&
       match.type != AutocompleteMatchType::DOCUMENT_SUGGESTION &&
-      match.type != AutocompleteMatchType::HISTORY_CLUSTER) {
+      match.type != AutocompleteMatchType::HISTORY_CLUSTER &&
+      !is_starter_pack_tabs_suggestion) {
     // Because the Views UI code calls GetMatchIcon in both the layout and
     // painting code, we may generate multiple `OnFaviconFetched` callbacks,
     // all run one after another. This seems to be harmless as the callback

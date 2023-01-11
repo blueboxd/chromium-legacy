@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
+#include "base/run_loop.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ash/login/login_manager_test.h"
@@ -35,6 +36,7 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/test/layer_animation_stopped_waiter.h"
 #include "ui/compositor/test/test_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -174,6 +176,7 @@ class AppListSortBrowserTest : public extensions::ExtensionBrowserTest {
 
     // Start in tablet mode.
     ash::ShellTestApi().SetTabletModeEnabledForTest(true);
+    WaitForAppListTransitionAnimation();
 
     // Ensure async callbacks are run.
     base::RunLoop().RunUntilIdle();
@@ -222,6 +225,14 @@ class AppListSortBrowserTest : public extensions::ExtensionBrowserTest {
     extensions::ExtensionBrowserTest::TearDownOnMainThread();
   }
 
+  // Helps to prevent flakiness due to conflicting animations (`AppListView`
+  // closing animation aborts already started bubble launcher sort animation
+  // indirectly via app list service layer).
+  void WaitForAppListTransitionAnimation() {
+    ui::LayerAnimationStoppedWaiter().Wait(
+        app_list_test_api_.GetAppListViewLayer());
+  }
+
   ash::AppListTestApi app_list_test_api_;
   std::string app1_id_;
   std::string app2_id_;
@@ -238,6 +249,7 @@ class AppListSortBrowserTest : public extensions::ExtensionBrowserTest {
 // mode.
 IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest, ContextMenuSortItemsInTopLevel) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
   app_list_test_api_.WaitForBubbleWindow(/*wait_for_opening_animation=*/true);
@@ -264,6 +276,7 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest, ContextMenuSortItemsInTopLevel) {
 // Verifies that clearing pref order by moving an item works as expected.
 IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest, ClearPrefOrderByItemMove) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
   app_list_test_api_.WaitForBubbleWindow(/*wait_for_opening_animation=*/true);
@@ -298,6 +311,7 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest, ClearPrefOrderByItemMove) {
 // mode.
 IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest, ContextMenuSortItemsInFolder) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
   app_list_test_api_.WaitForBubbleWindow(/*wait_for_opening_animation=*/true);
@@ -325,6 +339,7 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest, ContextMenuSortItemsInFolder) {
 IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
                        ContextMenuOnAppListItemSortItemsInTopLevel) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
   app_list_test_api_.WaitForBubbleWindow(/*wait_for_opening_animation=*/true);
@@ -349,6 +364,7 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
 IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
                        ContextMenuOnAppListItemSortItemsInFolder) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
   app_list_test_api_.WaitForBubbleWindow(/*wait_for_opening_animation=*/true);
@@ -375,6 +391,7 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
 IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
                        ContextMenuOnFolderItemSortItems) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
   app_list_test_api_.WaitForBubbleWindow(/*wait_for_opening_animation=*/true);
@@ -398,6 +415,7 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
 IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
                        SortUsingContextMenuOnFolderChildViewClamshell) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
   app_list_test_api_.WaitForBubbleWindow(/*wait_for_opening_animation=*/true);
@@ -436,6 +454,7 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
 IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
                        FolderNotClosedIfTemporarySortIsCommittedClamshell) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
   app_list_test_api_.WaitForBubbleWindow(/*wait_for_opening_animation=*/true);
@@ -577,6 +596,7 @@ IN_PROC_BROWSER_TEST_F(
     AppListSortBrowserTest,
     ContextMenuOnAppListItemSortItemsInTopLevelWithoutWaiting) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
   app_list_test_api_.WaitForBubbleWindow(/*wait_for_opening_animation=*/true);
@@ -612,6 +632,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
                        DeleteItemDuringReorderingAnimation) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
   app_list_test_api_.WaitForBubbleWindow(/*wait_for_opening_animation=*/true);
@@ -656,6 +677,7 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
 // sorting order in bubble launcher.
 IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest, UndoTemporarySortingClamshell) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
 
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
@@ -762,6 +784,7 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest, UndoTemporarySortingTablet) {
 
 IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest, TransitionToTabletCommitsSort) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
 
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
@@ -833,6 +856,7 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
   // Transition to clamshell mode - verify that the bubble launcher does not
   // have undo toast, and that the order of apps is still sorted.
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
 
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
@@ -945,6 +969,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
                        TransitionToTabletModeDuringFadeInAnimation) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
   app_list_test_api_.WaitForBubbleWindow(/*wait_for_opening_animation=*/true);
@@ -991,6 +1016,7 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
 IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
                        CommitTemporaryOrderByClickingAtToastCloseButton) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
   app_list_test_api_.WaitForBubbleWindow(/*wait_for_opening_animation=*/true);
@@ -1048,6 +1074,7 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
             std::vector<std::string>({app1_id_, app2_id_, app3_id_}));
 
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
   app_list_test_api_.WaitForBubbleWindow(/*wait_for_opening_animation=*/true);
@@ -1072,6 +1099,7 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
 IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
                        InterruptReorderFadeOutAnimationClamshellMode) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
 
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
@@ -1148,6 +1176,7 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
 IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
                        InterruptReorderFadeInAnimationClamshellMode) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
 
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
@@ -1220,6 +1249,7 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
 // Verifies that changing an app's icon under color sort works as expected.
 IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest, SetIconUnderColorSort) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
 
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
@@ -1355,6 +1385,7 @@ class AppListSortColorOrderBrowserTest : public AppListSortBrowserTest {
 IN_PROC_BROWSER_TEST_F(AppListSortColorOrderBrowserTest,
                        InstallAppUnderColorSort) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  WaitForAppListTransitionAnimation();
 
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST, {});
@@ -1365,6 +1396,15 @@ IN_PROC_BROWSER_TEST_F(AppListSortColorOrderBrowserTest,
 
   std::string yellow_app_id = LoadExtension(extension_path_)->id();
   EXPECT_FALSE(yellow_app_id.empty());
+
+  AppListModelUpdater* model_updater =
+      test::GetModelUpdater(AppListClientImpl::GetInstance());
+
+  // Set the yellow icon manually, because loading the icon is otherwise an
+  // async operation which has to be waited for.
+  model_updater->FindItem(yellow_app_id)
+      ->SetIcon(CreateImageSkia(16, 16, SK_ColorYELLOW),
+                /*is_placeholder=*/false);
 
   // Verify that the new app's position follows the color order.
   EXPECT_EQ(

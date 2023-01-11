@@ -25,7 +25,6 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
@@ -33,10 +32,10 @@ import org.chromium.components.autofill_assistant.AssistantFeatures;
 import org.chromium.components.external_intents.ExternalNavigationDelegate.IntentToAutofillAllowingAppResult;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationParams;
+import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
-import org.chromium.url.Origin;
 
 /**
  * Instrumentation tests for {@link ExternalNavigationHandler}.
@@ -64,9 +63,6 @@ public class ExternalNavigationDelegateImplTest {
             + Uri.encode("https://www.example.com") + ";"
             + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
             + Uri.encode("https://www.example.com") + ";end";
-    private static final String[] SUPERVISOR_START_ACTIONS = {
-            "com.google.android.instantapps.START", "com.google.android.instantapps.nmr1.INSTALL",
-            "com.google.android.instantapps.nmr1.VIEW"};
     private static final boolean IS_GOOGLE_REFERRER = true;
 
     @Rule
@@ -119,18 +115,13 @@ public class ExternalNavigationDelegateImplTest {
         }
     }
 
-    private static class MockOrigin extends Origin {};
-
     public void maybeSetAndGetRequestMetadata(ExternalNavigationDelegateImpl delegate,
-            Intent intent, boolean hasUserGesture, boolean isRendererInitiated,
-            Origin initiatorOrigin) {
-        delegate.maybeSetRequestMetadata(
-                intent, hasUserGesture, isRendererInitiated, initiatorOrigin);
+            Intent intent, boolean hasUserGesture, boolean isRendererInitiated) {
+        delegate.maybeSetRequestMetadata(intent, hasUserGesture, isRendererInitiated);
         IntentWithRequestMetadataHandler.RequestMetadata metadata =
                 IntentWithRequestMetadataHandler.getInstance().getRequestMetadataAndClear(intent);
         Assert.assertEquals(hasUserGesture, metadata.hasUserGesture());
         Assert.assertEquals(isRendererInitiated, metadata.isRendererInitiated());
-        Assert.assertEquals(initiatorOrigin, metadata.getInitiatorOrigin());
     }
 
     private ExternalNavigationDelegateImpl mExternalNavigationDelegateImpl;
@@ -144,6 +135,7 @@ public class ExternalNavigationDelegateImplTest {
     @Before
     public void setUp() throws InterruptedException {
         MockitoAnnotations.initMocks(this);
+        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
         doReturn(mMockWindowAndroid).when(mMockTab).getWindowAndroid();
         mExternalNavigationDelegateImpl = TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> new ExternalNavigationDelegateImpl(mMockTab));
@@ -168,36 +160,18 @@ public class ExternalNavigationDelegateImplTest {
 
     @Test
     @SmallTest
-    public void testMaybeAdjustInstantAppExtras() {
-        String url = "http://www.example.com";
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse(url));
-
-        mExternalNavigationDelegateImpl.maybeAdjustInstantAppExtras(
-                intent, /*isIntentToInstantApp=*/true);
-        Assert.assertTrue(intent.hasExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER));
-
-        mExternalNavigationDelegateImpl.maybeAdjustInstantAppExtras(
-                intent, /*isIntentToInstantApp=*/false);
-        Assert.assertFalse(intent.hasExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER));
-    }
-
-    @Test
-    @SmallTest
     public void maybeSetRequestMetadata() {
         String url = "http://www.example.com";
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
 
-        mExternalNavigationDelegateImpl.maybeSetRequestMetadata(intent, false, false, null);
+        mExternalNavigationDelegateImpl.maybeSetRequestMetadata(intent, false, false);
         Assert.assertNull(
                 IntentWithRequestMetadataHandler.getInstance().getRequestMetadataAndClear(intent));
 
-        maybeSetAndGetRequestMetadata(mExternalNavigationDelegateImpl, intent, true, true, null);
-        maybeSetAndGetRequestMetadata(mExternalNavigationDelegateImpl, intent, true, false, null);
-        maybeSetAndGetRequestMetadata(mExternalNavigationDelegateImpl, intent, false, true, null);
-        maybeSetAndGetRequestMetadata(
-                mExternalNavigationDelegateImpl, intent, false, false, new MockOrigin());
+        maybeSetAndGetRequestMetadata(mExternalNavigationDelegateImpl, intent, true, true);
+        maybeSetAndGetRequestMetadata(mExternalNavigationDelegateImpl, intent, true, false);
+        maybeSetAndGetRequestMetadata(mExternalNavigationDelegateImpl, intent, false, true);
     }
 
     @Test

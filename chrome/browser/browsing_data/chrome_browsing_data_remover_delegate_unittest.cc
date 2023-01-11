@@ -19,6 +19,7 @@
 #include "base/json/values_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -42,6 +43,8 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "chrome/browser/dips/dips_service.h"
+#include "chrome/browser/dips/dips_service_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service_factory.h"
@@ -112,7 +115,6 @@
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/zero_suggest_cache_service.h"
 #include "components/omnibox/common/omnibox_features.h"
-#include "components/origin_trials/browser/prefservice_persistence_provider.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/mock_field_info_store.h"
 #include "components/password_manager/core/browser/mock_password_store_interface.h"
@@ -412,9 +414,9 @@ class RemoveHistoryTester {
   }
 
   void AddHistory(const GURL& url, base::Time time) {
-    history_service_->AddPage(url, time, nullptr, 0, GURL(),
-                              history::RedirectList(), ui::PAGE_TRANSITION_LINK,
-                              history::SOURCE_BROWSED, false);
+    history_service_->AddPage(url, time, 0, 0, GURL(), history::RedirectList(),
+                              ui::PAGE_TRANSITION_LINK, history::SOURCE_BROWSED,
+                              false);
   }
 
  private:
@@ -461,7 +463,7 @@ class RemoveFaviconTester {
   // Adds a visit to history and stores an arbitrary favicon bitmap for
   // |page_url|.
   void VisitAndAddFavicon(const GURL& page_url) {
-    history_service_->AddPage(page_url, base::Time::Now(), nullptr, 0, GURL(),
+    history_service_->AddPage(page_url, base::Time::Now(), 0, 0, GURL(),
                               history::RedirectList(), ui::PAGE_TRANSITION_LINK,
                               history::SOURCE_BROWSED, false);
 
@@ -681,6 +683,43 @@ class RemovePasswordsTester {
       mock_field_info_store_;
 };
 
+class RemoveDIPSEventsTester {
+ public:
+  explicit RemoveDIPSEventsTester(Profile* profile) {
+    auto* dips_service = DIPSServiceFactory::GetForBrowserContext(profile);
+    storage_ = dips_service->storage();
+  }
+
+  void WriteEventTimes(GURL url,
+                       absl::optional<base::Time> storage_time,
+                       absl::optional<base::Time> interaction_time) {
+    if (storage_time.has_value())
+      storage_->AsyncCall(&DIPSStorage::RecordStorage)
+          .WithArgs(url, storage_time.value(), DIPSCookieMode::kStandard);
+    if (interaction_time.has_value())
+      storage_->AsyncCall(&DIPSStorage::RecordInteraction)
+          .WithArgs(url, interaction_time.value(), DIPSCookieMode::kStandard);
+    storage_->FlushPostedTasksForTesting();
+  }
+
+  absl::optional<StateValue> ReadStateValue(GURL url) {
+    absl::optional<StateValue> value;
+
+    storage_->AsyncCall(&DIPSStorage::Read)
+        .WithArgs(url)
+        .Then(base::BindLambdaForTesting([&](const DIPSState& state) {
+          value = state.was_loaded() ? absl::make_optional(state.ToStateValue())
+                                     : absl::nullopt;
+        }));
+    storage_->FlushPostedTasksForTesting();
+
+    return value;
+  }
+
+ private:
+  base::SequenceBound<DIPSStorage>* storage_;
+};
+
 class RemoveSecurePaymentConfirmationCredentialsTester {
  public:
   using MockWrapper = testing::NiceMock<payments::MockWebDataServiceWrapper>;
@@ -775,16 +814,16 @@ class ProbablySameFilterMatcher
 
   bool MatchAndExplain(const base::RepeatingCallback<bool(const GURL&)>& filter,
                        MatchResultListener* listener) const override {
-    if (filter.is_null() && to_match_.is_null())
+    if (filter.is_null() && to_match_->is_null())
       return true;
-    if (filter.is_null() != to_match_.is_null())
+    if (filter.is_null() != to_match_->is_null())
       return false;
 
     const GURL urls_to_test_[] = {
         GURL("http://host1.com:1"), GURL("http://host2.com:1"),
         GURL("http://host3.com:1"), GURL("invalid spec")};
     for (GURL url : urls_to_test_) {
-      if (filter.Run(url) != to_match_.Run(url)) {
+      if (filter.Run(url) != to_match_->Run(url)) {
         if (listener)
           *listener << "The filters differ on the URL " << url;
         return false;
@@ -794,15 +833,15 @@ class ProbablySameFilterMatcher
   }
 
   void DescribeTo(::std::ostream* os) const override {
-    *os << "is probably the same url filter as " << &to_match_;
+    *os << "is probably the same url filter as " << &*to_match_;
   }
 
   void DescribeNegationTo(::std::ostream* os) const override {
-    *os << "is definitely NOT the same url filter as " << &to_match_;
+    *os << "is definitely NOT the same url filter as " << &*to_match_;
   }
 
  private:
-  const base::RepeatingCallback<bool(const GURL&)>& to_match_;
+  const raw_ref<const base::RepeatingCallback<bool(const GURL&)>> to_match_;
 };
 
 inline Matcher<const base::RepeatingCallback<bool(const GURL&)>&>
@@ -2933,6 +2972,131 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveFledgeJoinSettings) {
       url::Origin::Create(GURL("http://different-example.com"))));
 }
 
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveDIPSEventsForLastHour) {
+  RemoveDIPSEventsTester tester(GetProfile());
+  GURL url1("https://example1.com");
+  GURL url2("https://example2.com");
+  base::Time two_hours_ago = base::Time::Now() - base::Hours(2);
+
+  tester.WriteEventTimes(url1, /*storage_time=*/base::Time::Now(),
+                         /*interaction_time=*/absl::nullopt);
+  tester.WriteEventTimes(url2, /*storage_time=*/absl::nullopt,
+                         /*interaction_time=*/two_hours_ago);
+
+  {
+    absl::optional<StateValue> state_val1 = tester.ReadStateValue(url1);
+    absl::optional<StateValue> state_val2 = tester.ReadStateValue(url2);
+
+    ASSERT_TRUE(state_val1.has_value());
+    EXPECT_TRUE(state_val1->site_storage_times.first.has_value());
+    ASSERT_TRUE(state_val2.has_value());
+    EXPECT_TRUE(state_val2->user_interaction_times.first.has_value());
+  }
+
+  uint64_t remove_mask = constants::DATA_TYPE_HISTORY |
+                         content::BrowsingDataRemover::DATA_TYPE_COOKIES;
+
+  BlockUntilBrowsingDataRemoved(AnHourAgo(), base::Time::Max(), remove_mask,
+                                false);
+
+  {
+    absl::optional<StateValue> state_val1 = tester.ReadStateValue(url1);
+    absl::optional<StateValue> state_val2 = tester.ReadStateValue(url2);
+
+    EXPECT_FALSE(state_val1.has_value());
+    ASSERT_TRUE(state_val2.has_value());
+    EXPECT_TRUE(state_val2->user_interaction_times.first.has_value());
+  }
+
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(), remove_mask,
+                                false);
+
+  {
+    absl::optional<StateValue> state_val1 = tester.ReadStateValue(url1);
+    absl::optional<StateValue> state_val2 = tester.ReadStateValue(url2);
+
+    EXPECT_FALSE(state_val1.has_value());
+    EXPECT_FALSE(state_val2.has_value());
+  }
+}
+
+// TODO(crbug.com/1245736): Flakes too often on Android bots.
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_RemoveDIPSEventsByType DISABLED_RemoveDIPSEventsByType
+#else
+#define MAYBE_RemoveDIPSEventsByType RemoveDIPSEventsByType
+#endif
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, MAYBE_RemoveDIPSEventsByType) {
+  RemoveDIPSEventsTester tester(GetProfile());
+  GURL url1("https://example1.com");
+  GURL url2("https://example2.com");
+  GURL url3("https://example3.com");
+  base::Time two_hours_ago = base::Time::Now() - base::Hours(2);
+
+  tester.WriteEventTimes(url1, /*storage_time=*/base::Time::Now(),
+                         /*interaction_time=*/absl::nullopt);
+  tester.WriteEventTimes(url2, /*storage_time=*/absl::nullopt,
+                         /*interaction_time=*/base::Time::Now());
+  tester.WriteEventTimes(url3, /*storage_time=*/base::Time::Now(),
+                         /*interaction_time=*/two_hours_ago);
+
+  {
+    absl::optional<StateValue> state_val1 = tester.ReadStateValue(url1);
+    absl::optional<StateValue> state_val2 = tester.ReadStateValue(url2);
+    absl::optional<StateValue> state_val3 = tester.ReadStateValue(url3);
+
+    ASSERT_TRUE(state_val1.has_value());
+    EXPECT_TRUE(state_val1->site_storage_times.first.has_value());
+
+    ASSERT_TRUE(state_val2.has_value());
+    EXPECT_TRUE(state_val2->user_interaction_times.first.has_value());
+
+    ASSERT_TRUE(state_val3.has_value());
+    EXPECT_TRUE(state_val3->site_storage_times.first.has_value());
+    EXPECT_TRUE(state_val3->user_interaction_times.first.has_value());
+  }
+
+  // Remove interaction events from DIPS Storage.
+  BlockUntilBrowsingDataRemoved(AnHourAgo(), base::Time::Max(),
+                                constants::DATA_TYPE_HISTORY, false);
+
+  // Verify the interaction event for url2 has been removed.
+  {
+    absl::optional<StateValue> state_val1 = tester.ReadStateValue(url1);
+    absl::optional<StateValue> state_val2 = tester.ReadStateValue(url2);
+    absl::optional<StateValue> state_val3 = tester.ReadStateValue(url3);
+
+    ASSERT_TRUE(state_val1.has_value());
+    EXPECT_TRUE(state_val1->site_storage_times.first.has_value());
+
+    EXPECT_FALSE(state_val2.has_value());
+
+    ASSERT_TRUE(state_val3.has_value());
+    EXPECT_TRUE(state_val3->site_storage_times.first.has_value());
+    EXPECT_TRUE(state_val3->user_interaction_times.first.has_value());
+  }
+
+  // Remove storage events from DIPS Storage.
+  BlockUntilBrowsingDataRemoved(AnHourAgo(), base::Time::Max(),
+                                content::BrowsingDataRemover::DATA_TYPE_COOKIES,
+                                false);
+
+  // Verify the storage events for url1 and url3 have been removed.
+  {
+    absl::optional<StateValue> state_val1 = tester.ReadStateValue(url1);
+    absl::optional<StateValue> state_val2 = tester.ReadStateValue(url2);
+    absl::optional<StateValue> state_val3 = tester.ReadStateValue(url3);
+
+    EXPECT_FALSE(state_val1.has_value());
+
+    EXPECT_FALSE(state_val2.has_value());
+
+    ASSERT_TRUE(state_val3.has_value());
+    EXPECT_FALSE(state_val3->site_storage_times.first.has_value());
+    EXPECT_TRUE(state_val3->user_interaction_times.first.has_value());
+  }
+}
+
 class ChromeBrowsingDataRemoverDelegateBlockPromptsTest
     : public ChromeBrowsingDataRemoverDelegateTest {
  public:
@@ -3600,18 +3764,24 @@ TEST_F(ChromeBrowsingDataRemoverDelegateOriginTrialsTest,
   ASSERT_TRUE(SubresourceFilterProfileContextFactory::GetForProfile(profile));
 
   std::vector<std::string> tokens{kPersistentOriginTrialToken};
-  profile->GetOriginTrialsControllerDelegate()->PersistTrialsFromTokens(
-      origin, tokens, kPersistentOriginTrialValidTime);
+  content::OriginTrialsControllerDelegate* delegate =
+      profile->GetOriginTrialsControllerDelegate();
+  delegate->PersistTrialsFromTokens(origin, tokens,
+                                    kPersistentOriginTrialValidTime);
 
   // Delete all data types that trigger website setting deletions.
   uint64_t mask = constants::DATA_TYPE_HISTORY |
                   constants::DATA_TYPE_SITE_DATA |
                   constants::DATA_TYPE_CONTENT_SETTINGS;
 
-  auto* prefs = profile->GetPrefs();
-  EXPECT_FALSE(prefs->GetDict(origin_trials::kOriginTrialPrefKey).empty());
+  EXPECT_FALSE(
+      delegate
+          ->GetPersistedTrialsForOrigin(origin, kPersistentOriginTrialValidTime)
+          .empty());
 
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(), mask, false);
-
-  EXPECT_TRUE(prefs->GetDict(origin_trials::kOriginTrialPrefKey).empty());
+  EXPECT_TRUE(
+      delegate
+          ->GetPersistedTrialsForOrigin(origin, kPersistentOriginTrialValidTime)
+          .empty());
 }

@@ -87,7 +87,6 @@
 #include "chrome/browser/ash/arc/tracing/arc_app_performance_tracing.h"
 #include "chrome/browser/ash/arc/tracing/arc_tracing_bridge.h"
 #include "chrome/browser/ash/arc/tts/arc_tts_service.h"
-#include "chrome/browser/ash/arc/usb/arc_usb_host_bridge_delegate.h"
 #include "chrome/browser/ash/arc/user_session/arc_user_session_service.h"
 #include "chrome/browser/ash/arc/video/gpu_arc_video_service_host.h"
 #include "chrome/browser/ash/arc/wallpaper/arc_wallpaper_service.h"
@@ -175,7 +174,7 @@ void ArcServiceLauncher::Initialize() {
       base::BindOnce(&ArcServiceLauncher::OnCdmFactoryDaemonAvailable,
                      weak_factory_.GetWeakPtr(), /*from_timeout=*/false));
 
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ArcServiceLauncher::OnCheckTpmStatus,
                      weak_factory_.GetWeakPtr()),
@@ -299,8 +298,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcTimerBridge::GetForBrowserContext(profile);
   ArcTracingBridge::GetForBrowserContext(profile);
   ArcTtsService::GetForBrowserContext(profile);
-  ArcUsbHostBridge::GetForBrowserContext(profile)->SetDelegate(
-      std::make_unique<ArcUsbHostBridgeDelegate>());
+  ArcUsbHostBridge::GetForBrowserContext(profile);
   ArcUsbHostPermissionManager::GetForBrowserContext(profile);
   ArcUserSessionService::GetForBrowserContext(profile);
   ArcVolumeMounterBridge::GetForBrowserContext(profile);
@@ -381,7 +379,7 @@ void ArcServiceLauncher::OnGetTpmStatus(
     // The TPM is owned, so we should invoke OnCdmFactoryDaemonAvailable() after
     // our timeout so that the property files get expanded even if the daemon
     // doesn't come online.
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&ArcServiceLauncher::OnCdmFactoryDaemonAvailable,
                        weak_factory_.GetWeakPtr(),
@@ -391,7 +389,7 @@ void ArcServiceLauncher::OnGetTpmStatus(
     return;
   }
 
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ArcServiceLauncher::OnCheckTpmStatus,
                      weak_factory_.GetWeakPtr()),

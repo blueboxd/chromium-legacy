@@ -20,7 +20,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -59,8 +58,8 @@ void AbslAbortHook(const char* file,
                    const char* prefix_end,
                    const char* buf_end) {
   // This simulates that a CHECK(false) was done at file:line instead of here.
-  // This is used instead of IMMEDIATE_CRASH() to give better error messages
-  // locally (printed stack for one).
+  // This is used instead of base::ImmediateCrash() to give better error
+  // messages locally (printed stack for one).
   logging::CheckError::Check(file, line, "false").stream() << prefix_end;
 }
 
@@ -199,7 +198,10 @@ bool InitializeCrashpadImpl(bool initial_client,
     g_database =
         crashpad::CrashReportDatabase::Initialize(database_path).release();
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_IOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
+    // On Android crashpad doesn't handle uploads. Android uses
+    // //components/minidump_uploader which queries metrics sample/consent opt
+    // in from preferences.
     CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
     SetUploadConsent(crash_reporter_client->GetCollectStatsConsent());
 #endif

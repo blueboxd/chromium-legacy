@@ -534,8 +534,7 @@ void DecoderTemplate<Traits>::Shutdown(DOMException* exception) {
   // NOTE: This task runner may be destroyed without running tasks, so don't use
   // DeleteSoon() which can leak the codec. See https://crbug.com/1376851.
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce([](std::unique_ptr<MediaDecoderType>) {},
-                                std::move(decoder_)));
+      FROM_HERE, base::DoNothingWithBoundArgs(std::move(decoder_)));
 
   if (pending_request_) {
     // This request was added as part of calling ResetAlgorithm above. However,
@@ -742,7 +741,7 @@ void DecoderTemplate<Traits>::OnOutput(uint32_t reset_generation,
 
   auto output_or_error = MakeOutput(std::move(output), context);
 
-  if (output_or_error.has_error()) {
+  if (!output_or_error.has_value()) {
     Shutdown(logger_->MakeException("Error creating output from decoded data",
                                     std::move(output_or_error).error()));
     return;

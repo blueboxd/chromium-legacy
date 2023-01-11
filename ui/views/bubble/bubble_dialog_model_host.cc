@@ -17,7 +17,6 @@
 #include "ui/base/models/dialog_model_field.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -256,7 +255,7 @@ class BubbleDialogModelHost::ContentsView : public BoxLayoutView {
   }
 
  private:
-  const raw_ptr<BubbleDialogModelHost> parent_;
+  const raw_ptr<BubbleDialogModelHost, DanglingUntriaged> parent_;
 };
 
 class BubbleDialogModelHost::LayoutConsensusView : public View {
@@ -797,12 +796,6 @@ void BubbleDialogModelHost::AddOrUpdateTextfield(
   // TODO(pbos): Support updates to the existing model.
 
   auto textfield = std::make_unique<Textfield>();
-  // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
-  // able to submit accessibility checks, but this focusable View needs to
-  // add a name so that the screen reader knows what to announce. The
-  // placeholder name may need to be pushed into DialogModel, unless we can tie
-  // this to the label. Maybe SetAssociatedField on Textfield is sufficient?
-  textfield->SetProperty(kSkipAccessibilityPaintChecks, true);
   textfield->SetAccessibleName(
       model_field->accessible_name(GetPassKey()).empty()
           ? model_field->label(GetPassKey())
@@ -901,7 +894,7 @@ BubbleDialogModelHost::FindDialogModelHostField(ui::DialogModelField* field) {
     if (info.dialog_model_field == field)
       return info;
   }
-  NOTREACHED();
+  // TODO(pbos): `field` could correspond to a button.
   return {};
 }
 

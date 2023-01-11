@@ -308,8 +308,9 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
   }
 
   // Fill in HexSSID field from contents of SSID field if not set already.
-  onc::FillInHexSSIDFieldsInOncObject(
-      chromeos::onc::kNetworkConfigurationSignature, &validated_user_settings);
+  chromeos::onc::FillInHexSSIDFieldsInOncObject(
+      chromeos::onc::kNetworkConfigurationSignature,
+      validated_user_settings.GetDict());
 
   const base::Value* network_policy = policies->GetPolicyByGuid(guid);
   if (network_policy)
@@ -393,8 +394,9 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
 
   // Fill in HexSSID field from contents of SSID field if not set already - this
   // is required to properly match the configuration against existing policies.
-  onc::FillInHexSSIDFieldsInOncObject(
-      chromeos::onc::kNetworkConfigurationSignature, &validated_properties);
+  chromeos::onc::FillInHexSSIDFieldsInOncObject(
+      chromeos::onc::kNetworkConfigurationSignature,
+      validated_properties.GetDict());
 
   // Make sure the network is not configured through a user policy.
   const ProfilePolicies* policies = nullptr;
@@ -1070,7 +1072,7 @@ void ManagedNetworkConfigurationHandlerImpl::Init(
 void ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork(
     base::OnceClosure callback,
     const std::string& service_path,
-    const std::string& guid) {
+    const std::string& guid) const {
   // When this is called, the policy has been fully applied and is reflected in
   // NetworkStateHandler, so it is safe to notify obserers.
   // Notifying observers is the last step of policy application to

@@ -4,7 +4,6 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 
-#include <set>
 #include <string>
 
 #include "ash/app_list/app_list_badge_controller.h"
@@ -27,6 +26,7 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/session/session_types.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -51,20 +51,16 @@
 #include "base/i18n/number_formatting.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/presentation_time_recorder.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/layer_animation_stopped_waiter.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_popup_view.h"
-#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
 #include "ui/views/test/views_test_utils.h"
-#include "ui/views/test/widget_animation_waiter.h"
 
 namespace ash {
 
@@ -120,10 +116,6 @@ void ShowAppListNow(AppListViewState state) {
 void DismissAppListNow() {
   Shell::Get()->app_list_controller()->fullscreen_presenter()->Dismiss(
       base::TimeTicks::Now());
-}
-
-aura::Window* GetAppListViewNativeWindow() {
-  return GetAppListView()->GetWidget()->GetNativeView();
 }
 
 void EnableTabletMode() {
@@ -324,47 +316,6 @@ TEST_F(AppListControllerImplTest, VirtualKeyboardNotShownWhenUserStartsTyping) {
   EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
 }
 
-// Verifies that in tablet mode, the AppListView has correct bounds when the
-// virtual keyboard is dismissed (see https://crbug.com/944133).
-TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
-  // This isn't relevant with ProductivityLauncher, which uses separate widgets
-  // in clamshell versus tablet mode. See bug above. Also, the clamshell
-  // launcher closes when transitioning into tablet mode. This test can be
-  // deleted when ProductivityLauncher is the default.
-  if (features::IsProductivityLauncherEnabled())
-    return;
-
-  Shell::Get()->keyboard_controller()->SetEnableFlag(
-      keyboard::KeyboardEnableFlag::kShelfEnabled);
-
-  // Show the AppListView and click on the search box with mouse so the
-  // VirtualKeyboard is shown. Wait until the virtual keyboard shows.
-  ShowAppListNow(AppListViewState::kFullscreenAllApps);
-  GetSearchBoxView()->SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
-
-  // Turn on the tablet mode. The virtual keyboard should still show.
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  EXPECT_TRUE(IsTabletMode());
-  EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
-
-  // Close the virtual keyboard. Wait until it is hidden.
-  Shell::Get()->keyboard_controller()->HideKeyboard(HideReason::kUser);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
-
-  // Check the following things:
-  // (1) AppListView's state is FULLSCREEN_SEARCH
-  // (2) AppListView's bounds are the same as the preferred bounds for
-  // the FULLSCREEN_SEARCH state.
-  EXPECT_EQ(AppListViewState::kFullscreenSearch,
-            GetAppListView()->app_list_state());
-  EXPECT_EQ(GetAppListView()->GetPreferredWidgetBoundsForState(
-                AppListViewState::kFullscreenSearch),
-            GetAppListViewNativeWindow()->bounds());
-}
-
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_CloseNotificationWithAppListShown \
   DISABLED_CloseNotificationWithAppListShown
@@ -435,10 +386,10 @@ TEST_F(AppListControllerImplTest,
   auto* widget = views::Widget::GetWidgetForNativeView(window1.get());
   std::unique_ptr<views::Textfield> text_field =
       std::make_unique<views::Textfield>();
-  // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
-  // able to submit accessibility checks, but this focusable View needs to
-  // add a name so that the screen reader knows what to announce.
-  text_field->SetProperty(views::kSkipAccessibilityPaintChecks, true);
+
+  // Focusable views need an accessible name to pass the accessibility paint
+  // checks.
+  text_field->SetAccessibleName(u"Name");
 
   // Note that the bounds of |text_field| cannot be too small. Otherwise, it
   // may not receive the gesture event.
@@ -482,14 +433,9 @@ TEST_F(AppListControllerImplTest,
 // closed.
 TEST_F(AppListControllerImplTest,
        CloseAppListShownFromOverviewAfterTabletExit) {
-  // This test is not relevant for ProductivityLauncher because it uses separate
-  // widgets in clamshell and tablet mode. This test can be deleted when
-  // ProductivityLauncher is the default.
-  if (features::IsProductivityLauncherEnabled())
-    return;
-
   auto* shell = Shell::Get();
   auto* tablet_mode_controller = shell->tablet_mode_controller();
+  auto* controller = Shell::Get()->app_list_controller();
   // Move to tablet mode and back.
   tablet_mode_controller->SetEnabledForTest(true);
   tablet_mode_controller->SetEnabledForTest(false);
@@ -502,19 +448,14 @@ TEST_F(AppListControllerImplTest,
   PressHomeButton();
 
   EXPECT_FALSE(shell->overview_controller()->InOverviewSession());
-  EXPECT_EQ(AppListViewState::kFullscreenAllApps,
-            GetAppListView()->app_list_state());
-  GetAppListTestHelper()->CheckVisibility(true);
-  ASSERT_TRUE(GetAppListView()->GetWidget());
-  EXPECT_TRUE(GetAppListView()->GetWidget()->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(controller->bubble_presenter_for_test()->IsShowing());
+  EXPECT_TRUE(controller->IsVisible());
 
   // Pressing home button again should close the app list.
   PressHomeButton();
 
-  EXPECT_EQ(AppListViewState::kClosed, GetAppListView()->app_list_state());
-  GetAppListTestHelper()->CheckVisibility(false);
-  ASSERT_TRUE(GetAppListView()->GetWidget());
-  EXPECT_FALSE(GetAppListView()->GetWidget()->GetNativeWindow()->IsVisible());
+  EXPECT_FALSE(controller->bubble_presenter_for_test()->IsShowing());
+  EXPECT_FALSE(controller->IsVisible());
 }
 
 // Tests that swapping out an AppListModel (simulating a profile swap with
@@ -696,34 +637,6 @@ TEST_F(AppListControllerImplTest, DragItemFromAppsGridView) {
   EXPECT_EQ(1.0f, shelf_icon_view->layer()->opacity());
 }
 
-// Verifies that apps grid and hotseat bounds do not overlap when switching from
-// side shelf app list to tablet mode.
-TEST_F(AppListControllerImplTest, NoOverlapWithHotseatOnSwitchFromSideShelf) {
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
-  Shelf* const shelf = GetPrimaryShelf();
-  shelf->SetAlignment(ShelfAlignment::kRight);
-  ShowAppListNow(AppListViewState::kFullscreenAllApps);
-  ASSERT_EQ(AppListViewState::kFullscreenAllApps,
-            GetAppListView()->app_list_state());
-
-  gfx::Rect apps_grid_view_bounds = GetAppsGridView()->GetBoundsInScreen();
-  EXPECT_FALSE(apps_grid_view_bounds.Intersects(
-      shelf->shelf_widget()->GetWindowBoundsInScreen()));
-  EXPECT_FALSE(apps_grid_view_bounds.Intersects(
-      shelf->hotseat_widget()->GetWindowBoundsInScreen()));
-
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-
-  EXPECT_EQ(AppListViewState::kFullscreenAllApps,
-            GetAppListView()->app_list_state());
-
-  apps_grid_view_bounds = GetAppsGridView()->GetBoundsInScreen();
-  EXPECT_FALSE(apps_grid_view_bounds.Intersects(
-      shelf->shelf_widget()->GetWindowBoundsInScreen()));
-  EXPECT_FALSE(apps_grid_view_bounds.Intersects(
-      shelf->hotseat_widget()->GetWindowBoundsInScreen()));
-}
-
 TEST_F(AppListControllerImplTest, OnlyMinimizeCycleListWindows) {
   std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 400, 400)));
   std::unique_ptr<aura::Window> w2(CreateTestWindow(
@@ -773,10 +686,15 @@ TEST_F(AppListControllerImplTest, CreatePage) {
 
 // The test parameter indicates whether the shelf should auto-hide. In either
 // case the animation behaviors should be the same.
+// TODO(crbug.com/1344199): Remove after flipping
+// `kAnimateScaleOnTabletModeTransition`.
 class AppListAnimationTest : public AshTestBase,
                              public testing::WithParamInterface<bool> {
  public:
-  AppListAnimationTest() = default;
+  AppListAnimationTest() {
+    scoped_feature_list_.InitAndDisableFeature(
+        app_list_features::kAnimateScaleOnTabletModeTransition);
+  }
 
   AppListAnimationTest(const AppListAnimationTest&) = delete;
   AppListAnimationTest& operator=(const AppListAnimationTest&) = delete;
@@ -835,6 +753,7 @@ class AppListAnimationTest : public AshTestBase,
  private:
   // Set during setup.
   gfx::Rect shown_shelf_bounds_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(AutoHideShelf, AppListAnimationTest, testing::Bool());
@@ -975,20 +894,7 @@ TEST_P(AppListAnimationTest, SearchBoxOpacityDuringShowAndClose) {
   EXPECT_EQ(1.0f, search_box->layer()->GetTargetOpacity());
 }
 
-// Tests with the bubble launcher enabled. This is a separate test suite
-// because the feature must be enabled before ash::Shell constructs the
-// AppListControllerImpl.
-class AppListControllerImplAppListBubbleTest : public AshTestBase {
- public:
-  AppListControllerImplAppListBubbleTest() {
-    scoped_features_.InitAndEnableFeature(features::kProductivityLauncher);
-  }
-  ~AppListControllerImplAppListBubbleTest() override = default;
-
-  base::test::ScopedFeatureList scoped_features_;
-};
-
-TEST_F(AppListControllerImplAppListBubbleTest, ShowAppListOpensBubble) {
+TEST_F(AppListControllerImplTest, ShowAppListOpensBubble) {
   auto* controller = Shell::Get()->app_list_controller();
   controller->ShowAppList();
 
@@ -996,7 +902,7 @@ TEST_F(AppListControllerImplAppListBubbleTest, ShowAppListOpensBubble) {
   EXPECT_TRUE(controller->IsVisible());
 }
 
-TEST_F(AppListControllerImplAppListBubbleTest, ToggleAppListOpensBubble) {
+TEST_F(AppListControllerImplTest, ToggleAppListOpensBubble) {
   auto* controller = Shell::Get()->app_list_controller();
   controller->ToggleAppList(GetPrimaryDisplay().id(),
                             AppListShowSource::kShelfButton,
@@ -1006,7 +912,7 @@ TEST_F(AppListControllerImplAppListBubbleTest, ToggleAppListOpensBubble) {
   EXPECT_TRUE(controller->IsVisible());
 }
 
-TEST_F(AppListControllerImplAppListBubbleTest, DismissAppListClosesBubble) {
+TEST_F(AppListControllerImplTest, DismissAppListClosesBubble) {
   auto* controller = Shell::Get()->app_list_controller();
   controller->ShowAppList();
 
@@ -1016,8 +922,7 @@ TEST_F(AppListControllerImplAppListBubbleTest, DismissAppListClosesBubble) {
   EXPECT_FALSE(controller->IsVisible());
 }
 
-TEST_F(AppListControllerImplAppListBubbleTest,
-       ShowAppListDoesNotOpenBubbleInTabletMode) {
+TEST_F(AppListControllerImplTest, ShowAppListDoesNotOpenBubbleInTabletMode) {
   EnableTabletMode();
 
   auto* controller = Shell::Get()->app_list_controller();
@@ -1027,8 +932,7 @@ TEST_F(AppListControllerImplAppListBubbleTest,
   EXPECT_TRUE(controller->IsVisible());
 }
 
-TEST_F(AppListControllerImplAppListBubbleTest,
-       ToggleAppListDoesNotOpenBubbleInTabletMode) {
+TEST_F(AppListControllerImplTest, ToggleAppListDoesNotOpenBubbleInTabletMode) {
   EnableTabletMode();
 
   auto* controller = Shell::Get()->app_list_controller();
@@ -1040,7 +944,7 @@ TEST_F(AppListControllerImplAppListBubbleTest,
   EXPECT_TRUE(controller->IsVisible());
 }
 
-TEST_F(AppListControllerImplAppListBubbleTest, EnteringTabletModeClosesBubble) {
+TEST_F(AppListControllerImplTest, EnteringTabletModeClosesBubble) {
   auto* controller = Shell::Get()->app_list_controller();
   controller->ShowAppList();
 
@@ -1049,8 +953,7 @@ TEST_F(AppListControllerImplAppListBubbleTest, EnteringTabletModeClosesBubble) {
   EXPECT_FALSE(controller->bubble_presenter_for_test()->IsShowing());
 }
 
-TEST_F(AppListControllerImplAppListBubbleTest,
-       WallpaperColorChangeDoesNotCrash) {
+TEST_F(AppListControllerImplTest, WallpaperColorChangeDoesNotCrash) {
   auto* controller = Shell::Get()->app_list_controller();
   controller->ShowAppList();
   // Simulate synced wallpaper update while bubble is open.
@@ -1058,7 +961,7 @@ TEST_F(AppListControllerImplAppListBubbleTest,
   // No crash.
 }
 
-TEST_F(AppListControllerImplAppListBubbleTest, HideContinueSectionUpdatesPref) {
+TEST_F(AppListControllerImplTest, HideContinueSectionUpdatesPref) {
   auto* controller = Shell::Get()->app_list_controller();
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
@@ -1079,14 +982,13 @@ TEST_F(AppListControllerImplAppListBubbleTest, HideContinueSectionUpdatesPref) {
 }
 
 // AppListControllerImpl test that start in inactive session.
-class AppListControllerImplNotLoggedInTest
-    : public AppListControllerImplAppListBubbleTest {
+class AppListControllerImplNotLoggedInTest : public AppListControllerImplTest {
  public:
   AppListControllerImplNotLoggedInTest() = default;
   ~AppListControllerImplNotLoggedInTest() override = default;
 
   void SetUp() override {
-    AppListControllerImplAppListBubbleTest::SetUp();
+    AppListControllerImplTest::SetUp();
     SetSessionState(session_manager::SessionState::LOGIN_PRIMARY);
   }
 
@@ -1353,14 +1255,13 @@ TEST_F(AppListControllerImplNotLoggedInTest,
 }
 
 // Kiosk tests with the bubble launcher enabled.
-class AppListControllerImplKioskTest
-    : public AppListControllerImplAppListBubbleTest {
+class AppListControllerImplKioskTest : public AppListControllerImplTest {
  public:
   AppListControllerImplKioskTest() = default;
   ~AppListControllerImplKioskTest() override = default;
 
   void SetUp() override {
-    AppListControllerImplAppListBubbleTest::SetUp();
+    AppListControllerImplTest::SetUp();
     SessionInfo info;
     info.is_running_in_app_mode = true;
     info.state = session_manager::SessionState::ACTIVE;
@@ -1555,6 +1456,41 @@ TEST_F(AppListControllerWithAssistantTest, TriggerSearchKeyWhenAppListClosing) {
 
   // The Assistant should be closed.
   EXPECT_EQ(AssistantVisibility::kClosed, GetAssistantVisibility());
+}
+
+TEST_F(AppListControllerWithAssistantTest,
+       AppListWindowIsNotShowingOnTopOfOtherApps) {
+  CreateAppWindow();
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  auto* home_screen_container = Shell::GetPrimaryRootWindow()->GetChildById(
+      kShellWindowId_HomeScreenContainer);
+  auto* app_list_window = Shell::Get()
+                              ->app_list_controller()
+                              ->fullscreen_presenter()
+                              ->GetView()
+                              ->GetWidget()
+                              ->GetNativeWindow();
+
+  // Default placement is in home screen container behind other app windows.
+  EXPECT_TRUE(home_screen_container->Contains(app_list_window));
+
+  // The app list window shows on top of other app windows when assistant UI is
+  // active.
+  ToggleAssistantUiWithAccelerator();
+  EXPECT_FALSE(home_screen_container->Contains(app_list_window));
+
+  // And stays there during tablet -> clamshell mode transition when assistant
+  // UI is active.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  EXPECT_FALSE(home_screen_container->Contains(app_list_window));
+
+  // Enter tablet mode again. App list window should return to its default
+  // position and shouldn't move during transition to clamshell mode.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_TRUE(home_screen_container->Contains(app_list_window));
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  EXPECT_TRUE(home_screen_container->Contains(app_list_window));
 }
 
 }  // namespace ash

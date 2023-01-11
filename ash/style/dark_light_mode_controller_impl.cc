@@ -14,15 +14,12 @@
 #include "ash/style/color_util.h"
 #include "ash/style/dark_light_mode_nudge_controller.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
-#include "base/logging.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "ui/chromeos/styles/cros_styles.h"
-#include "ui/gfx/color_analysis.h"
-#include "ui/gfx/color_utils.h"
 
 namespace ash {
 
@@ -72,19 +69,12 @@ DarkLightModeControllerImpl::DarkLightModeControllerImpl()
   DCHECK(!g_instance);
   g_instance = this;
 
-  // TODO(crbug/1339004): Remove after fixing the crashes.
-  LOG(WARNING) << "Initial theme is "
-               << (IsDarkModeEnabled() ? "dark" : "light");
-
   // May be null in unit tests.
   if (Shell::HasInstance()) {
     auto* shell = Shell::Get();
     shell->login_screen_controller()->data_dispatcher()->AddObserver(this);
     shell->wallpaper_controller()->AddObserver(this);
   }
-
-  cros_styles::SetDebugColorsEnabled(base::FeatureList::IsEnabled(
-      ash::features::kSemanticColorsDebugOverride));
 }
 
 DarkLightModeControllerImpl::~DarkLightModeControllerImpl() {
@@ -122,7 +112,7 @@ void DarkLightModeControllerImpl::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(prefs::kDarkModeEnabled,
                                 kDefaultDarkModeEnabled);
-  registry->RegisterIntegerPref(prefs::kDarkLightModeNudge,
+  registry->RegisterIntegerPref(prefs::kDarkLightModeNudgeLeftToShowCount,
                                 kDarkLightModeNudgeMaxShownCount);
 }
 
@@ -288,10 +278,6 @@ const char* DarkLightModeControllerImpl::GetFeatureName() const {
 
 void DarkLightModeControllerImpl::NotifyColorModeChanges() {
   const bool is_enabled = IsDarkModeEnabled();
-
-  // TODO(crbug/1339004): Remove after fixing the crashes.
-  LOG(WARNING) << "Theme is " << (is_enabled ? "dark" : "light");
-
   cros_styles::SetDarkModeEnabled(is_enabled);
   for (auto& observer : observers_)
     observer.OnColorModeChanged(is_enabled);

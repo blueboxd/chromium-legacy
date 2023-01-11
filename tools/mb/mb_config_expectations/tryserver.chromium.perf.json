@@ -16,7 +16,6 @@
   },
   "Android Compile Perf PGO": {
     "gn_args": {
-      "clang_use_default_sample_profile": false,
       "debuggable_apks": false,
       "ffmpeg_branding": "Chrome",
       "is_chrome_branded": true,
@@ -45,7 +44,6 @@
   },
   "Android arm64 Compile Perf PGO": {
     "gn_args": {
-      "clang_use_default_sample_profile": false,
       "debuggable_apks": false,
       "ffmpeg_branding": "Chrome",
       "is_chrome_branded": true,
@@ -74,6 +72,7 @@
     }
   },
   "Fuchsia Builder Perf": {
+    "args_file": "//build/config/fuchsia/size_optimized_cast_receiver_args_internal.gn",
     "gn_args": {
       "ffmpeg_branding": "Chrome",
       "fuchsia_additional_boot_images": [
@@ -94,9 +93,6 @@
   "Fuchsia Builder Perf x64": {
     "gn_args": {
       "ffmpeg_branding": "Chrome",
-      "fuchsia_additional_boot_images": [
-        "//third_party/fuchsia-sdk/images/chromebook-x64-release/"
-      ],
       "is_chrome_branded": true,
       "is_official_build": true,
       "proprietary_codecs": true,

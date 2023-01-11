@@ -49,6 +49,8 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
   // `kRefetching` is used to represent the fetching status when there're cached
   // events for a month but another fetching request has been sent. In this
   // case, the event indicator dots and the tooltip will show the cached events.
+  // `kNever` is used as the default state when we experience an error or
+  // timeout or haven't fetched anything.
   enum FetchingStatus { kNever, kFetching, kRefetching, kSuccess, kError, kNa };
 
   CalendarModel();
@@ -75,6 +77,9 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
         const FetchingStatus status,
         const base::Time start_time,
         const google_apis::calendar::EventList* events) {}
+
+    // Invoked when an internal timeout has occurred.
+    virtual void OnTimeout(base::Time start_of_month) {}
   };
 
   void AddObserver(Observer* observer);
@@ -111,6 +116,11 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
   // likely to be pruned if we need to trim down to stay within storage limits.
   SingleDayEventList FindEvents(base::Time day) const;
 
+  // Uses the `FindEvents` method to get events for that day and then filters
+  // the result into two lists of multi-day and same day events.
+  std::tuple<SingleDayEventList, SingleDayEventList>
+  FindEventsSplitByMultiDayAndSameDay(base::Time day) const;
+
   // Checks the `FetchingStatus` of a given start time.
   FetchingStatus FindFetchingStatus(base::Time start_time) const;
 
@@ -135,9 +145,6 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
   bool ShouldInsertEvent(
       const google_apis::calendar::CalendarEvent* event) const;
 
-  // Checks if the event spans more than one day.
-  bool IsMultiDayEvent(const google_apis::calendar::CalendarEvent* event) const;
-
   // Inserts a single `event` that spans more than one day in the EventCache.
   void InsertMultiDayEvent(const google_apis::calendar::CalendarEvent* event,
                            const base::Time start_of_month);
@@ -153,25 +160,6 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
       SingleMonthEventMap& month,
       const google_apis::calendar::CalendarEvent* event,
       const base::Time start_time_midnight);
-
-  // Returns the `start_time` of `event` adjusted by time difference, to ensure
-  // that each event is stored by its local time, e.g. an event that starts at
-  // 2022-05-31 22:00:00.000 PST (2022-06-01 05:00:00.000 UTC) is stored in the
-  // map for 05-2022.
-  base::Time GetStartTimeAdjusted(
-      const google_apis::calendar::CalendarEvent* event) const;
-
-  // Returns the `end_time` of `event` adjusted by time difference.
-  base::Time GetEndTimeAdjusted(
-      const google_apis::calendar::CalendarEvent* event) const;
-
-  // Returns midnight on the day of the start time of `event`.
-  base::Time GetStartTimeMidnightAdjusted(
-      const google_apis::calendar::CalendarEvent* event) const;
-
-  // Returns midnight on the day of the end time of `event`.
-  base::Time GetEndTimeMidnightAdjusted(
-      const google_apis::calendar::CalendarEvent* event) const;
 
   // Frees up months of events as needed to keep us within storage limits.
   void PruneEventCache();

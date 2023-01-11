@@ -13,6 +13,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
 #include "base/memory/ptr_util.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
 #include "third_party/angle/src/common/fuchsia_egl/fuchsia_egl.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/native_pixmap.h"
@@ -26,10 +27,7 @@
 #include "ui/ozone/platform/scenic/scenic_window_canvas.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
 #include "ui/ozone/platform/scenic/sysmem_buffer_collection.h"
-
-#if BUILDFLAG(ENABLE_VULKAN)
 #include "ui/ozone/platform/scenic/vulkan_implementation_scenic.h"
-#endif
 
 namespace ui {
 
@@ -170,13 +168,14 @@ std::unique_ptr<SurfaceOzoneCanvas> ScenicSurfaceFactory::CreateCanvasForWidget(
 
 scoped_refptr<gfx::NativePixmap> ScenicSurfaceFactory::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
-    VkDevice vk_device,
+    gpu::VulkanDeviceQueue* device_queue,
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     absl::optional<gfx::Size> framebuffer_size) {
   DCHECK(!framebuffer_size || framebuffer_size == size);
 
+  VkDevice vk_device = device_queue->GetVulkanDevice();
   if (widget != gfx::kNullAcceleratedWidget &&
       usage == gfx::BufferUsage::SCANOUT) {
     // The usage SCANOUT is for a primary plane buffer.
@@ -185,23 +184,19 @@ scoped_refptr<gfx::NativePixmap> ScenicSurfaceFactory::CreateNativePixmap(
     return surface->AllocatePrimaryPlanePixmap(vk_device, size, format);
   }
 
-  auto collection = sysmem_buffer_manager_.CreateCollection(vk_device, size,
-                                                            format, usage, 1);
-  if (!collection)
-    return nullptr;
-
-  return collection->CreateNativePixmap(0, size);
+  return sysmem_buffer_manager_.CreateNativePixmap(vk_device, size, format,
+                                                   usage);
 }
 
 void ScenicSurfaceFactory::CreateNativePixmapAsync(
     gfx::AcceleratedWidget widget,
-    VkDevice vk_device,
+    gpu::VulkanDeviceQueue* device_queue,
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     NativePixmapCallback callback) {
   std::move(callback).Run(
-      CreateNativePixmap(widget, vk_device, size, format, usage));
+      CreateNativePixmap(widget, device_queue, size, format, usage));
 }
 
 scoped_refptr<gfx::NativePixmap>
@@ -210,22 +205,20 @@ ScenicSurfaceFactory::CreateNativePixmapFromHandle(
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::NativePixmapHandle handle) {
-  auto collection = sysmem_buffer_manager_.GetCollectionById(
-      handle.buffer_collection_id.value());
+  auto collection = sysmem_buffer_manager_.GetCollectionByHandle(
+      handle.buffer_collection_handle);
   if (!collection)
     return nullptr;
 
-  return collection->CreateNativePixmap(handle.buffer_index, size);
+  return collection->CreateNativePixmap(std::move(handle), size);
 }
 
-#if BUILDFLAG(ENABLE_VULKAN)
 std::unique_ptr<gpu::VulkanImplementation>
 ScenicSurfaceFactory::CreateVulkanImplementation(bool use_swiftshader,
                                                  bool allow_protected_memory) {
   return std::make_unique<ui::VulkanImplementationScenic>(
       this, &sysmem_buffer_manager_, use_swiftshader, allow_protected_memory);
 }
-#endif
 
 void ScenicSurfaceFactory::AddSurface(gfx::AcceleratedWidget widget,
                                       ScenicSurface* surface) {

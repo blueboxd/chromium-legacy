@@ -11,7 +11,7 @@ import {QueueMode, TtsCategory} from '../common/tts_interface.js';
 
 import {ChromeVoxState} from './chromevox_state.js';
 import {Output} from './output/output.js';
-import {OutputEventType} from './output/output_types.js';
+import {OutputCustomEvent} from './output/output_types.js';
 
 const AutomationNode = chrome.automation.AutomationNode;
 const RoleType = chrome.automation.RoleType;
@@ -24,18 +24,8 @@ const TreeChangeType = chrome.automation.TreeChangeType;
  * ChromeVox live region handler.
  */
 export class LiveRegions {
-  /**
-   * @param {!ChromeVoxState} chromeVoxState The ChromeVox state object,
-   *     keeping track of the current mode and current range.
-   * @private
-   */
-  constructor(chromeVoxState) {
-    /**
-     * @type {!ChromeVoxState}
-     * @private
-     */
-    this.chromeVoxState_ = chromeVoxState;
-
+  /** @private */
+  constructor() {
     /**
      * The time the last live region event was output.
      * @type {!Date}
@@ -62,15 +52,11 @@ export class LiveRegions {
         this.onTreeChange.bind(this));
   }
 
-  /**
-   * @param {!ChromeVoxState} chromeVoxState The ChromeVox state object,
-   *     keeping track of the current mode and current range.
-   */
-  static init(chromeVoxState) {
+  static init() {
     if (LiveRegions.instance) {
       throw 'Error: Trying to create two instances of singleton LiveRegions';
     }
-    LiveRegions.instance = new LiveRegions(chromeVoxState);
+    LiveRegions.instance = new LiveRegions();
   }
 
   /**
@@ -175,7 +161,7 @@ export class LiveRegions {
     // Queue live regions coming from background tabs.
     let hostView = AutomationUtil.getTopLevelRoot(node);
     hostView = hostView ? hostView.parent : null;
-    const currentRange = this.chromeVoxState_.currentRange;
+    const currentRange = ChromeVoxState.instance.currentRange;
     const forceQueue = !hostView || !hostView.state.focused ||
         (currentRange && currentRange.start.node.root !== node.root) ||
         node.containerLiveStatus === 'polite';
@@ -194,7 +180,7 @@ export class LiveRegions {
     if (opt_prependFormatStr) {
       output.format(opt_prependFormatStr);
     }
-    output.withSpeech(range, range, OutputEventType.NAVIGATE);
+    output.withSpeech(range, range, OutputCustomEvent.NAVIGATE);
 
     if (!output.hasSpeech && node.liveAtomic) {
       output.format('$joinedDescendants', node);
@@ -234,7 +220,7 @@ export class LiveRegions {
       return false;
     }
 
-    const currentRange = this.chromeVoxState_.currentRange;
+    const currentRange = ChromeVoxState.instance.currentRange;
     if (currentRange && currentRange.start.node.root === node.root) {
       return false;
     }

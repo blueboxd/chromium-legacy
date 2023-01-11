@@ -4,9 +4,20 @@
 
 #include "chrome/browser/ui/views/profiles/profile_management_step_controller.h"
 
-#include "chrome/browser/ui/views/profiles/profile_picker_dice_sign_in_provider.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/ui/views/profiles/profile_management_utils.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_signed_in_flow_controller.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_web_contents_host.h"
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "chrome/browser/ui/views/profiles/profile_picker_dice_sign_in_provider.h"
+#endif
 
 namespace {
 class ProfilePickerAppStepController : public ProfileManagementStepController {
@@ -19,30 +30,38 @@ class ProfilePickerAppStepController : public ProfileManagementStepController {
 
   void Show(base::OnceCallback<void(bool)> step_shown_callback,
             bool reset_state) override {
-    if (was_shown_) {
-      if (reset_state) {
-        // back to the beginning of the history:
-        host()->GetPickerContents()->GetController().GoToIndex(0);
-      }
-      host()->ShowScreenInPickerContents(GURL());
-    } else {
-      host()->ShowScreenInPickerContents(initial_url_);
-      was_shown_ = true;
+    if (!loaded_ui_in_picker_contents_) {
+      loaded_ui_in_picker_contents_ = true;
+      host()->ShowScreenInPickerContents(
+          initial_url_,
+          step_shown_callback
+              ? base::BindOnce(std::move(step_shown_callback), true)
+              : base::OnceClosure());
+      return;
     }
+
+    if (reset_state) {
+      // Don't do a full reset, just go back to the beginning of the history:
+      host()->GetPickerContents()->GetController().GoToIndex(0);
+    }
+    host()->ShowScreenInPickerContents(GURL());
     if (step_shown_callback) {
       std::move(step_shown_callback).Run(true);
     }
   }
-
-  void OnHidden() override {}
 
   void OnNavigateBackRequested() override {
     NavigateBackInternal(host()->GetPickerContents());
   }
 
  private:
-  bool was_shown_ = false;
-  GURL initial_url_;
+  // We want to load the WebUI page exactly once, and do more lightweight
+  // transitions if we need to switch back to this step later. So we track
+  // whether the UI has been loaded or not.
+  // Note that this relies on other steps not clearing the picker contents and
+  // using their own instead.
+  bool loaded_ui_in_picker_contents_ = false;
+  const GURL initial_url_;
 };
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -63,7 +82,6 @@ class DiceSignInStepController : public ProfileManagementStepController {
   void Show(base::OnceCallback<void(bool)> step_shown_callback,
             bool reset_state) override {
     DCHECK(step_shown_callback);
-    DCHECK(!reset_state);  // Not supported.
     DCHECK(signed_in_callback_) << "Attempting to show Dice step again while "
                                    "it was previously completed";
     // Unretained ok because the provider is owned by `this`.
@@ -109,6 +127,86 @@ class DiceSignInStepController : public ProfileManagementStepController {
 
   std::unique_ptr<ProfilePickerDiceSignInProvider> dice_sign_in_provider_;
 };
+
+class FinishSamlSignInStepController : public ProfileManagementStepController {
+ public:
+  explicit FinishSamlSignInStepController(
+      ProfilePickerWebContentsHost* host,
+      Profile* profile,
+      std::unique_ptr<content::WebContents> contents,
+      absl::optional<SkColor> profile_color,
+      FinishFlowCallback finish_flow_callback)
+      : ProfileManagementStepController(host),
+        profile_(profile),
+        contents_(std::move(contents)),
+        profile_color_(profile_color),
+        finish_flow_callback_(std::move(finish_flow_callback)) {
+    DCHECK(finish_flow_callback_.value());
+    profile_keep_alive_ = std::make_unique<ScopedProfileKeepAlive>(
+        profile_, ProfileKeepAliveOrigin::kProfileCreationSamlFlow);
+  }
+
+  ~FinishSamlSignInStepController() override {
+    if (finish_flow_callback_.value()) {
+      finish_flow_callback_->Reset();
+
+      // The profile setup did not continue. Schedule it for deletion.
+      g_browser_process->profile_manager()->ScheduleEphemeralProfileForDeletion(
+          profile_->GetPath());
+    }
+  }
+
+  void Show(base::OnceCallback<void(bool)> step_shown_callback,
+            bool reset_state) override {
+    // First, stop showing `contents_` to free it up so it can be moved to a new
+    // browser window.
+    host()->ShowScreenInPickerContents(
+        GURL(url::kAboutBlankURL),
+        /*navigation_finished_closure=*/
+        base::BindOnce(&FinishSamlSignInStepController::OnSignInContentsFreedUp,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void OnNavigateBackRequested() override {
+    // Not supported here
+  }
+
+ private:
+  // Note: This will be executed after the profile management view closes, so
+  // the step instance will already be deleted.
+  static void ContinueSAMLSignin(std::unique_ptr<content::WebContents> contents,
+                                 Browser* browser) {
+    DCHECK(browser);
+    browser->tab_strip_model()->ReplaceWebContentsAt(0, std::move(contents));
+
+    ProfileMetrics::LogProfileAddSignInFlowOutcome(
+        ProfileMetrics::ProfileSignedInFlowOutcome::kSAML);
+  }
+
+  void OnSignInContentsFreedUp() {
+    DCHECK(finish_flow_callback_.value());
+
+    ProfileMetrics::LogProfileAddNewUser(
+        ProfileMetrics::ADD_NEW_PROFILE_PICKER_SIGNED_IN);
+
+    FinalizeNewProfileSetup(profile_,
+                            profiles::GetDefaultNameForNewEnterpriseProfile());
+
+    auto continue_callback = PostHostClearedCallback(
+        base::BindOnce(&FinishSamlSignInStepController::ContinueSAMLSignin,
+                       std::move(contents_)));
+    std::move(finish_flow_callback_.value()).Run(std::move(continue_callback));
+  }
+
+  std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive_;
+  Profile* profile_;
+  std::unique_ptr<content::WebContents> contents_;
+  absl::optional<SkColor> profile_color_;
+  FinishFlowCallback finish_flow_callback_;
+
+  base::WeakPtrFactory<FinishSamlSignInStepController> weak_ptr_factory_{this};
+};
+
 #endif
 
 class PostSignInStepController : public ProfileManagementStepController {
@@ -123,7 +221,6 @@ class PostSignInStepController : public ProfileManagementStepController {
 
   void Show(base::OnceCallback<void(bool)> step_shown_callback,
             bool reset_state) override {
-    DCHECK(!reset_state);  // Not supported.
     signed_in_flow_->Init();
     if (step_shown_callback) {
       std::move(step_shown_callback).Run(true);
@@ -160,6 +257,20 @@ ProfileManagementStepController::CreateForDiceSignIn(
   return std::make_unique<DiceSignInStepController>(
       host, std::move(dice_sign_in_provider), std::move(signed_in_callback));
 }
+
+// static
+std::unique_ptr<ProfileManagementStepController>
+ProfileManagementStepController::CreateForFinishSamlSignIn(
+    ProfilePickerWebContentsHost* host,
+    Profile* profile,
+    std::unique_ptr<content::WebContents> contents,
+    absl::optional<SkColor> profile_color,
+    FinishFlowCallback finish_flow_callback) {
+  return std::make_unique<FinishSamlSignInStepController>(
+      host, profile, std::move(contents), profile_color,
+      std::move(finish_flow_callback));
+}
+
 #endif
 
 // static
@@ -176,8 +287,6 @@ ProfileManagementStepController::ProfileManagementStepController(
     : host_(host) {}
 
 ProfileManagementStepController::~ProfileManagementStepController() = default;
-
-void ProfileManagementStepController::OnHidden() {}
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void ProfileManagementStepController::OnReloadRequested() {}

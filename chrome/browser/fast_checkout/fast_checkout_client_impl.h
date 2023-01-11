@@ -17,12 +17,19 @@
 
 class FastCheckoutExternalActionDelegate;
 
+namespace autofill {
+class LogManager;
+}
+
 namespace autofill_assistant {
 class RuntimeManager;
 }
 
 constexpr char kUmaKeyFastCheckoutRunOutcome[] =
     "Autofill.FastCheckout.RunOutcome";
+
+// The command line switch for specifying a custom server URL.
+constexpr char kAutofillAssistantUrl[] = "autofill-assistant-url";
 
 // Enum defining possible outcomes of a Fast Checkout run. Must be kept in sync
 // with enums.xml.
@@ -114,6 +121,9 @@ class FastCheckoutClientImpl
 
   // Returns true if fast checkout should run, e.g. if the feature is enabled.
   bool ShouldRun(bool script_supports_consentless_execution);
+
+  // Returns the Autofill log manager if available.
+  autofill::LogManager* GetAutofillLogManager();
 
   // Delegate for the surface being shown.
   base::WeakPtr<autofill::FastCheckoutDelegate> delegate_;

@@ -136,6 +136,10 @@ class ASH_EXPORT WallpaperControllerImpl
   // Returns the k mean color of the current wallpaper.
   SkColor GetKMeanColor() const;
 
+  const WallpaperCalculatedColors& calculated_colors() const {
+    return calculated_colors_;
+  }
+
   // Returns current image on the wallpaper, or an empty image if there's no
   // wallpaper.
   gfx::ImageSkia GetWallpaper() const;
@@ -253,6 +257,8 @@ class ASH_EXPORT WallpaperControllerImpl
                                   SetWallpaperCallback callback) override;
   void SetGooglePhotosWallpaper(const GooglePhotosWallpaperParams& params,
                                 SetWallpaperCallback callback) override;
+  void SetGooglePhotosDailyRefreshAlbumId(const AccountId& account_id,
+                                          const std::string& album_id) override;
   std::string GetGooglePhotosDailyRefreshAlbumId(
       const AccountId& account_id) const override;
   bool SetDailyGooglePhotosWallpaperIdCache(
@@ -346,6 +352,8 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // OverviewObserver:
   void OnOverviewModeWillStart() override;
+  void OnOverviewModeStarting() override;
+  void OnOverviewModeEnded() override;
 
   // CompositorLockClient:
   void CompositorLockTimedOut() override;

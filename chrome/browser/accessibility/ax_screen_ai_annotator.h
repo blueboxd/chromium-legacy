@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ACCESSIBILITY_AX_SCREEN_AI_ANNOTATOR_H_
 #define CHROME_BROWSER_ACCESSIBILITY_AX_SCREEN_AI_ANNOTATOR_H_
 
+#include <vector>
+
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -25,6 +27,13 @@ namespace gfx {
 class Image;
 }
 
+namespace ui {
+
+struct AXTreeUpdate;
+class AXTreeID;
+
+}  // namespace ui
+
 namespace screen_ai {
 
 class AXScreenAIAnnotator : public KeyedService,
@@ -40,10 +49,6 @@ class AXScreenAIAnnotator : public KeyedService,
   // call.
   void AnnotateScreenshot(Browser* browser);
 
-  // TODO(https://crbug.com/1278249): Add
-  // mojom::ScreenAIServiceClient::HandleAXTreeUpdate after service side data is
-  // ready.
-
   // ScreenAIInstallState::Observer:
   void ComponentReady() override;
 
@@ -53,8 +58,10 @@ class AXScreenAIAnnotator : public KeyedService,
 
   // Receives an screenshot and sends it to ScreenAI library for processing.
   // `ax_tree_id` represents the accessibility tree that is associated with the
-  // snapshot at the time of triggering the request.
+  // snapshot at the time of triggering the request. `start_time` represents
+  // the time when the screenshot is requested.
   virtual void OnScreenshotReceived(const ui::AXTreeID& ax_tree_id,
+                                    const base::Time& start_time,
                                     gfx::Image snapshot);
 
   // Informs this instance that the Screen AI Service has finished creating the
@@ -65,6 +72,9 @@ class AXScreenAIAnnotator : public KeyedService,
   void OnAnnotationPerformed(const ui::AXTreeID& parent_tree_id,
                              const ui::AXTreeID& screen_ai_tree_id);
 
+  // mojom::ScreenAIAnnotatorClient:
+  void HandleAXTreeUpdate(const ui::AXTreeUpdate& update) override;
+
   base::ScopedObservation<ScreenAIInstallState, ScreenAIInstallState::Observer>
       component_ready_observer_{this};
 
@@ -74,6 +84,10 @@ class AXScreenAIAnnotator : public KeyedService,
 
   mojo::Remote<mojom::ScreenAIAnnotator> screen_ai_annotator_;
   mojo::Receiver<mojom::ScreenAIAnnotatorClient> screen_ai_service_client_;
+
+  // Holds the IDs of all the accessibility trees containing the results of the
+  // Screen AI Service that have been generated in this browser context.
+  std::vector<ui::AXTreeID> tree_ids_;
 
   base::WeakPtrFactory<AXScreenAIAnnotator> weak_ptr_factory_{this};
 };

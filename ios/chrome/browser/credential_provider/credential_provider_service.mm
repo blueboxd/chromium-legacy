@@ -26,12 +26,12 @@
 #import "components/sync/driver/sync_user_settings.h"
 #import "ios/chrome/browser/credential_provider/archivable_credential+password_form.h"
 #import "ios/chrome/browser/credential_provider/credential_provider_util.h"
+#import "ios/chrome/browser/signin/system_identity.h"
 #import "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/common/credential_provider/archivable_credential.h"
 #import "ios/chrome/common/credential_provider/as_password_credential_identity+credential.h"
 #import "ios/chrome/common/credential_provider/constants.h"
 #import "ios/chrome/common/credential_provider/credential_store.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -72,14 +72,6 @@ ErrorForReportingForASCredentialIdentityStoreErrorCode(
       return CredentialIdentityStoreErrorForReporting::kBusy;
   }
   return CredentialIdentityStoreErrorForReporting::kUnknownError;
-}
-
-// Return if the feature flag for the favicon is enabled.
-// TODO(crbug.com/1300569): Remove this when kEnableFaviconForPasswords flag is
-// removed.
-bool IsFaviconEnabled() {
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kEnableFaviconForPasswords);
 }
 
 BOOL ShouldSyncAllCredentials() {
@@ -255,13 +247,10 @@ void CredentialProviderService::AddCredentials(
   const bool sync_enabled = sync_service_->IsSyncFeatureEnabled();
 
   for (const auto& form : forms) {
-    NSString* favicon_key = nil;
-    if (IsFaviconEnabled()) {
-      favicon_key = GetFaviconFileKey(form->url);
-      // Fetch the favicon and save it to the storage.
-      FetchFaviconForURLToPath(favicon_loader_, form->url, favicon_key,
-                               should_skip_max_verification, sync_enabled);
-    }
+    NSString* favicon_key = GetFaviconFileKey(form->url);
+    // Fetch the favicon and save it to the storage.
+    FetchFaviconForURLToPath(favicon_loader_, form->url, favicon_key,
+                             should_skip_max_verification, sync_enabled);
 
     ArchivableCredential* credential =
         [[ArchivableCredential alloc] initWithPasswordForm:*form

@@ -29,10 +29,10 @@ class ASH_EXPORT DesksTextfield : public views::Textfield,
   // The max number of characters (UTF-16) allowed for the textfield.
   static constexpr size_t kMaxLength = 300;
 
-  // If this view has focus, make the view's border visible and change
-  // background to its active color. If it doesn't have focus, hide the view's
-  // border and change background to its default color.
-  void UpdateViewAppearance();
+  // Commits an on-going name change (if any) by blurring the focus away from
+  // any view on `widget`, where `widget` should be the saved desk library
+  // widget or the desk bar widget.
+  static void CommitChanges(views::Widget* widget);
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
@@ -59,6 +59,11 @@ class ASH_EXPORT DesksTextfield : public views::Textfield,
 
  private:
   void UpdateFocusRingState();
+
+  // If this view has focus, make the view's border visible and change
+  // background to its active color. If it doesn't have focus, hide the view's
+  // border and change background to its default color.
+  void UpdateViewAppearance();
 
   // Returns the background color for this view based on whether it has focus
   // and if the mouse is entering/exiting the view.

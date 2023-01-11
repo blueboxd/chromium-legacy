@@ -116,6 +116,9 @@ class BackForwardCacheWithDedicatedWorkerBrowserTest
     : public BackForwardCacheBrowserTest,
       public testing::WithParamInterface<bool> {
  public:
+  const int kMaxBufferedBytesPerProcess = 10000;
+  const base::TimeDelta kGracePeriodToFinishLoading = base::Seconds(5);
+
   BackForwardCacheWithDedicatedWorkerBrowserTest() { server_.Start(); }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -124,6 +127,13 @@ class BackForwardCacheWithDedicatedWorkerBrowserTest
     if (IsPlzDedicatedWorkerEnabled())
       EnableFeatureAndSetParams(blink::features::kPlzDedicatedWorker, "", "");
     BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
+    feature_list_.InitWithFeaturesAndParameters(
+        {{blink::features::kLoadingTasksUnfreezable,
+          {{"max_buffered_bytes_per_process",
+            base::NumberToString(kMaxBufferedBytesPerProcess)},
+           {"grace_period_to_finish_loading_in_seconds",
+            base::NumberToString(kGracePeriodToFinishLoading.InSeconds())}}}},
+        {});
 
     server_.SetUpCommandLine(command_line);
   }
@@ -143,6 +153,7 @@ class BackForwardCacheWithDedicatedWorkerBrowserTest
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   WebTransportSimpleTestServer server_;
 };
 
@@ -313,9 +324,10 @@ IN_PROC_BROWSER_TEST_P(
       {}, {}, {}, FROM_HERE);
 }
 
+// TODO(https://crbug.com/1296306): Disabled due to being flaky.
 IN_PROC_BROWSER_TEST_P(
     BackForwardCacheWithDedicatedWorkerBrowserTest,
-    DoNotCacheWithDedicatedWorkerWithClosedWebTransportAndDocumentWithBroadcastChannel) {
+    DISABLED_DoNotCacheWithDedicatedWorkerWithClosedWebTransportAndDocumentWithBroadcastChannel) {
   CreateHttpsServer();
   ASSERT_TRUE(https_server()->Start());
 
@@ -412,7 +424,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheWithDedicatedWorkerBrowserTest,
   PageLifecycleStateManagerTestDelegate delegate(
       rfh_a->render_view_host()->GetPageLifecycleStateManager());
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  delegate.WaitForInBackForwardCacheAck();
+  ASSERT_TRUE(delegate.WaitForInBackForwardCacheAck());
 
   // Page A is initially stored in the back-forward cache.
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
@@ -489,7 +501,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheWithDedicatedWorkerBrowserTest,
   PageLifecycleStateManagerTestDelegate delegate(
       rfh_a->render_view_host()->GetPageLifecycleStateManager());
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  delegate.WaitForInBackForwardCacheAck();
+  ASSERT_TRUE(delegate.WaitForInBackForwardCacheAck());
 
   // Page A is initially stored in the back-forward cache.
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
@@ -556,7 +568,7 @@ IN_PROC_BROWSER_TEST_P(
       rfh_a->render_view_host()->GetPageLifecycleStateManager());
   EXPECT_TRUE(
       NavigateToURL(shell(), https_server()->GetURL("b.test", "/title2.html")));
-  delegate.WaitForInBackForwardCacheAck();
+  ASSERT_TRUE(delegate.WaitForInBackForwardCacheAck());
 
   // The worker was still loading when we navigated away, but it's still
   // eligible for back-forward cache.
@@ -622,7 +634,7 @@ IN_PROC_BROWSER_TEST_P(
       rfh_a->render_view_host()->GetPageLifecycleStateManager());
   EXPECT_TRUE(
       NavigateToURL(shell(), https_server()->GetURL("b.test", "/title2.html")));
-  delegate.WaitForInBackForwardCacheAck();
+  ASSERT_TRUE(delegate.WaitForInBackForwardCacheAck());
   // The worker was still loading when we navigated away, but it's still
   // eligible for back-forward cache.
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
@@ -661,7 +673,6 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheWithDedicatedWorkerBrowserTest,
   // Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImplWrapper rfh_a(current_frame_host());
-  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a.get());
 
   // Call fetch in a dedicated worker before navigating away.
   std::string worker_script =
@@ -682,7 +693,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheWithDedicatedWorkerBrowserTest,
   // Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
 
-  delete_observer_rfh_a.WaitUntilDeleted();
+  ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
 
   // Go back to A. kNetworkRequestDatapipeDrainedAsBytesConsumer is recorded
   // since receiving the response body started but this didn't end before the
@@ -713,7 +724,6 @@ IN_PROC_BROWSER_TEST_P(
   // Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImplWrapper rfh_a(current_frame_host());
-  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a.get());
 
   // Call fetch in a nested dedicated worker before navigating away.
   std::string child_worker_script =
@@ -740,7 +750,7 @@ IN_PROC_BROWSER_TEST_P(
   // Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
 
-  delete_observer_rfh_a.WaitUntilDeleted();
+  ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
 
   // Go back to A. kNetworkRequestDatapipeDrainedAsBytesConsumer is recorded
   // since receiving the response body started but this didn't end before the
@@ -790,17 +800,16 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheWithDedicatedWorkerBrowserTest,
   PageLifecycleStateManagerTestDelegate delegate(
       rfh_a->render_view_host()->GetPageLifecycleStateManager());
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  delegate.WaitForInBackForwardCacheAck();
+  ASSERT_TRUE(delegate.WaitForInBackForwardCacheAck());
   // The page was still loading when we navigated away, but it's still eligible
   // for back-forward cache.
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
-  RenderFrameDeletedObserver delete_observer(rfh_a.get());
   // Start sending the image response while in the back-forward cache, but never
   // finish the request. Eventually the page will get deleted due to network
   // request timeout.
   image_response.Send(net::HTTP_OK, "image/png");
-  delete_observer.WaitUntilDeleted();
+  ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
 
   // 3) Go back to the first page. We should not restore the page from the
   // back-forward cache.
@@ -854,17 +863,16 @@ IN_PROC_BROWSER_TEST_P(
   PageLifecycleStateManagerTestDelegate delegate(
       rfh_a->render_view_host()->GetPageLifecycleStateManager());
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  delegate.WaitForInBackForwardCacheAck();
+  ASSERT_TRUE(delegate.WaitForInBackForwardCacheAck());
   // The page was still loading when we navigated away, but it's still eligible
   // for back-forward cache.
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
-  RenderFrameDeletedObserver delete_observer(rfh_a.get());
   // Start sending the image response while in the back-forward cache, but never
   // finish the request. Eventually the page will get deleted due to network
   // request timeout.
   image_response.Send(net::HTTP_OK, "image/png");
-  delete_observer.WaitUntilDeleted();
+  ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
 
   // 3) Go back to the first page. We should not restore the page from the
   // back-forward cache.
@@ -1599,7 +1607,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
   RenderFrameHostImplWrapper rfh_a(current_frame_host());
-  RenderFrameDeletedObserver rfh_a_deleted(rfh_a.get());
 
   AcquireKeyboardLock(rfh_a.get());
   ReleaseKeyboardLock(rfh_a.get());
@@ -1633,7 +1640,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
   RenderFrameHostImplWrapper rfh_a(current_frame_host());
-  RenderFrameDeletedObserver rfh_a_deleted(rfh_a.get());
 
   AcquireKeyboardLock(rfh_a.get());
   ReleaseKeyboardLock(rfh_a.get());
@@ -1644,7 +1650,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
 
   // The page uses keyboard lock so it should be deleted.
-  rfh_a_deleted.WaitUntilDeleted();
+  ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
 
   // 3) Go back and make sure the keyboard lock page wasn't in the cache.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
@@ -1664,7 +1670,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
   RenderFrameHostImplWrapper rfh_a(current_frame_host());
-  RenderFrameDeletedObserver rfh_a_deleted(rfh_a.get());
 
   AcquireKeyboardLock(rfh_a.get());
   ReleaseKeyboardLock(rfh_a.get());
@@ -1688,7 +1693,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
   RenderFrameHostImplWrapper rfh_a(current_frame_host());
-  RenderFrameDeletedObserver rfh_a_deleted(rfh_a.get());
 
   AcquireKeyboardLock(rfh_a.get());
   // Register a pagehide handler to release keyboard lock.
@@ -1718,7 +1722,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
   RenderFrameHostImplWrapper rfh_a(current_frame_host());
-  RenderFrameDeletedObserver rfh_a_deleted(rfh_a.get());
   rfh_a->UseDummyStickyBackForwardCacheDisablingFeatureForTesting();
 
   // 2) Navigate away.
@@ -1726,7 +1729,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
 
   // The page uses the dummy sticky feature so it should be deleted.
-  rfh_a_deleted.WaitUntilDeleted();
+  ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
 
   // 3) Go back and make sure the dummy sticky feature page wasn't in the cache.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
@@ -2174,14 +2177,13 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                    "a.com", "/back_forward_cache/page_with_indexedDB.html")));
   RenderFrameHostImplWrapper rfh_a(current_frame_host());
   EXPECT_TRUE(ExecJs(rfh_a.get(), "setupIndexedDBConnection()"));
-  RenderFrameDeletedObserver deleted(rfh_a.get());
 
   // 2) Navigate away.
   shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
   // The page has an open IndexedDB connection so it should be deleted.
-  deleted.WaitUntilDeleted();
+  ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
 
   // 3) Go back to the page with IndexedDB.
   web_contents()->GetController().GoBack();
@@ -2335,6 +2337,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
 // Disabled on Android, since we have problems starting up the websocket test
 // server in the host
+// TODO(crbug.com/1372291): Re-enable the test after solving the WS server.
 #if BUILDFLAG(IS_ANDROID)
 #define MAYBE_WebSocketCachedIfClosed DISABLED_WebSocketCachedIfClosed
 #else
@@ -2407,7 +2410,6 @@ IN_PROC_BROWSER_TEST_F(WebTransportBackForwardCacheBrowserTest,
   // 1) Navigate to A.
   ASSERT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImplWrapper rfh_a(current_frame_host());
-  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a.get());
 
   // Establish a WebTransport session.
   const char script[] = R"(
@@ -2419,7 +2421,7 @@ IN_PROC_BROWSER_TEST_F(WebTransportBackForwardCacheBrowserTest,
   ASSERT_TRUE(NavigateToURL(shell(), url_b));
 
   // Confirm A is evicted.
-  delete_observer_rfh_a.WaitUntilDeleted();
+  ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
 
   // 3) Go back.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
@@ -2886,7 +2888,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                     {}, {}, FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CachePagesWithBeacon) {
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BeaconAndBfCache) {
   constexpr char kKeepalivePath[] = "/keepalive";
 
   net::test_server::ControllableHttpResponse keepalive(embedded_test_server(),
@@ -2898,8 +2900,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CachePagesWithBeacon) {
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
-  RenderFrameHostImpl* rfh_a = current_frame_host();
-  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  RenderFrameHostImplWrapper rfh_a(current_frame_host());
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a.get());
 
   EXPECT_TRUE(
       ExecJs(shell(), JsReplace(R"(navigator.sendBeacon($1, "");)", url_ping)));
@@ -2955,12 +2957,11 @@ IN_PROC_BROWSER_TEST_F(GeolocationBackForwardCacheBrowserTest,
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 }
 
-// Test that a page which has an inflight geolocation query can be bfcached,
+// Test that a page which has an in-flight geolocation query can be bfcached,
 // and verify that the page does not observe any geolocation while the page
 // was inside bfcache.
-// The test is flaky on multiple platforms: crbug.com/1033270
 IN_PROC_BROWSER_TEST_F(GeolocationBackForwardCacheBrowserTest,
-                       DISABLED_CancelGeolocationRequestInFlight) {
+                       CancelGeolocationRequestInFlight) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL("/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
@@ -2969,26 +2970,60 @@ IN_PROC_BROWSER_TEST_F(GeolocationBackForwardCacheBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImpl* rfh_a = current_frame_host();
 
-  // Continuously query current geolocation.
   EXPECT_TRUE(ExecJs(rfh_a, R"(
+    // If set, will be called by handleEvent.
+    window.pending_resolve = null;
+
     window.longitude_log = [];
     window.err_log = [];
-    window.wait_for_first_position = new Promise(resolve => {
-      navigator.geolocation.watchPosition(
-        pos => {
-          window.longitude_log.push(pos.coords.longitude);
-          resolve("resolved");
-        },
-        err => window.err_log.push(err)
-      );
-    })
-  )"));
-  geo_override_.UpdateLocation(0.0, 0.0);
-  EXPECT_EQ("resolved", EvalJs(rfh_a, "window.wait_for_first_position"));
 
-  // Pause resolving Geoposition queries to keep the request inflight.
+    // Returns a promise that will resolve when the `longitude` is recorded in
+    // the `longitude_log`. The promise will resolve with the index.
+    function waitForLongitudeRecorded(longitude) {
+      let index = window.longitude_log.indexOf(longitude);
+      if (index >= 0) {
+        return Promise.resolve(index);
+      }
+      return new Promise(resolve => {
+        window.pending_resolve = resolve;
+      }).then(() => waitForLongitudeRecorded(longitude));
+    }
+
+    // Continuously query current geolocation, if the longitude is different
+    // from the last recorded value, update the result in the list,
+    // and resolve the pending promises with the longitude value.
+    navigator.geolocation.watchPosition(
+      pos => {
+        let new_longitude = pos.coords.longitude;
+        let log_length = window.longitude_log.length;
+        if (log_length == 0 ||
+            window.longitude_log[log_length - 1] != new_longitude) {
+          window.longitude_log.push(pos.coords.longitude);
+          if (window.pending_resolve != null) {
+            window.pending_resolve();
+            window.pending_resolve = null;
+          }
+        }
+      },
+      err => window.err_log.push(err)
+    );
+  )"));
+
+  // Wait for the initial value to be updated in the callback.
+  EXPECT_EQ(
+      0, EvalJs(rfh_a, "window.waitForLongitudeRecorded(0.0);").ExtractInt());
+
+  // Update the location and wait for the promise, this location should be
+  // observed.
+  geo_override_.UpdateLocation(10.0, 10.0);
+  EXPECT_EQ(
+      1, EvalJs(rfh_a, "window.waitForLongitudeRecorded(10.0);").ExtractInt())
+      << "Geoposition before the page is put into BFCache should be visible.";
+
+  // Pause resolving Geoposition queries to keep the request in-flight.
+  // This location should not be observed.
   geo_override_.Pause();
-  geo_override_.UpdateLocation(1.0, 1.0);
+  geo_override_.UpdateLocation(20.0, 20.0);
   EXPECT_EQ(1u, geo_override_.GetGeolocationInstanceCount());
 
   // 2) Navigate away.
@@ -3000,7 +3035,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBackForwardCacheBrowserTest,
 
   loop_until_close.Run();
 
-  // The page has no inflight geolocation request when we navigated away,
+  // The page has no in-flight geolocation request when we navigated away,
   // so it should have been cached.
   EXPECT_FALSE(deleted.deleted());
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
@@ -3010,39 +3045,32 @@ IN_PROC_BROWSER_TEST_F(GeolocationBackForwardCacheBrowserTest,
 
   // We update the location while the page is BFCached, but this location should
   // not be observed.
-  geo_override_.UpdateLocation(2.0, 2.0);
+  geo_override_.UpdateLocation(30.0, 30.0);
 
   // 3) Navigate back to A.
 
+  // Pause resolving Geoposition queries to keep the request in-flight.
   // The location when navigated back can be observed
-  geo_override_.UpdateLocation(3.0, 3.0);
+  geo_override_.Pause();
+  geo_override_.UpdateLocation(40.0, 40.0);
 
   ASSERT_TRUE(HistoryGoBack(web_contents()));
   EXPECT_EQ(rfh_a, current_frame_host());
   EXPECT_FALSE(rfh_a->IsInBackForwardCache());
 
-  // Wait for an update after the user navigates back to A.
-  EXPECT_EQ("resolved", EvalJs(rfh_a, R"(
-    window.wait_for_position_after_resume = new Promise(resolve => {
-      navigator.geolocation.watchPosition(
-        pos => {
-          window.longitude_log.push(pos.coords.longitude);
-          resolve("resolved");
-        },
-        err => window.err_log.push(err)
-      );
-    })
-  )"));
+  // Resume resolving Geoposition queries.
+  geo_override_.Resume();
 
-  EXPECT_LE(0, EvalJs(rfh_a, "longitude_log.indexOf(0.0)").ExtractInt())
-      << "Geoposition before the page is put into BFCache should be visible";
-  EXPECT_EQ(-1, EvalJs(rfh_a, "longitude_log.indexOf(1.0)").ExtractInt())
-      << "Geoposition while the page is put into BFCache should be invisible";
-  EXPECT_EQ(-1, EvalJs(rfh_a, "longitude_log.indexOf(2.0)").ExtractInt())
-      << "Geoposition while the page is put into BFCache should be invisible";
-  EXPECT_LT(0, EvalJs(rfh_a, "longitude_log.indexOf(3.0)").ExtractInt())
+  // Wait for an update after the user navigates back to A.
+  EXPECT_EQ(2,
+            EvalJs(rfh_a, "window.waitForLongitudeRecorded(40.0)").ExtractInt())
       << "Geoposition when the page is restored from BFCache should be visible";
-  EXPECT_EQ(0, EvalJs(rfh_a, "err_log.length"))
+
+  EXPECT_EQ("0,10,40", EvalJs(rfh_a, "window.longitude_log.toString();"))
+      << "Geoposition while the page is put into BFCache should be invisible, "
+         "so the log array should only contain 0, 10 and 40 but not 20 and 30";
+
+  EXPECT_EQ(0, EvalJs(rfh_a, "err_log.length;"))
       << "watchPosition API should have reported no errors";
 }
 

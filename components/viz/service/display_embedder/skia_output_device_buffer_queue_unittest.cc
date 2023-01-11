@@ -30,7 +30,7 @@
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gl/gl_surface_stub.h"
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -219,7 +219,7 @@ class MockGLSurfaceAsync : public gl::GLSurfaceStub {
   }
 
   bool ScheduleOverlayPlane(
-      gl::GLImage* image,
+      gl::OverlayImage image,
       std::unique_ptr<gfx::GpuFence> gpu_fence,
       const gfx::OverlayPlaneData& overlay_plane_data) override {
     return true;

@@ -422,7 +422,7 @@ inline void ImageLoader::EnqueueImageLoadingMicroTask(
     network::mojom::ReferrerPolicy referrer_policy) {
   auto task = std::make_unique<Task>(this, update_behavior, referrer_policy);
   pending_task_ = task->GetWeakPtr();
-  element_->GetDocument().GetAgent()->event_loop()->EnqueueMicrotask(
+  element_->GetDocument().GetAgent().event_loop()->EnqueueMicrotask(
       WTF::BindOnce(&Task::Run, std::move(task)));
   delay_until_do_update_from_element_ =
       std::make_unique<IncrementLoadEventDelayCount>(element_->GetDocument());
@@ -847,7 +847,7 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* content) {
                         GetElement()->GetDocument())));
 }
 
-LayoutImageResource* ImageLoader::GetLayoutImageResource() {
+LayoutImageResource* ImageLoader::GetLayoutImageResource() const {
   LayoutObject* layout_object = element_->GetLayoutObject();
 
   if (!layout_object)
@@ -881,6 +881,16 @@ void ImageLoader::UpdateLayoutObject() {
   if (image_content_ != cached_image_content &&
       (image_complete_ || !cached_image_content))
     image_resource->SetImageResource(image_content_.Get());
+}
+
+ResourcePriority ImageLoader::ComputeResourcePriority() const {
+  LayoutImageResource* image_resource = GetLayoutImageResource();
+  if (!image_resource)
+    return ResourcePriority();
+
+  ResourcePriority priority = image_resource->ComputeResourcePriority();
+  priority.source = ResourcePriority::Source::kImageLoader;
+  return priority;
 }
 
 bool ImageLoader::HasPendingEvent() const {

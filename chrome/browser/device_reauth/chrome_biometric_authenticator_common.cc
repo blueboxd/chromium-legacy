@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_access_authenticator.h"
 
@@ -22,21 +22,20 @@ ChromeBiometricAuthenticatorCommon::ChromeBiometricAuthenticatorCommon() =
 ChromeBiometricAuthenticatorCommon::~ChromeBiometricAuthenticatorCommon() =
     default;
 
-bool ChromeBiometricAuthenticatorCommon::RecordAuthenticationResult(
+void ChromeBiometricAuthenticatorCommon::RecordAuthenticationTimeIfSuccessful(
     bool success) {
-  if (success) {
-    last_good_auth_timestamp_ = base::TimeTicks::Now();
+  if (!success)
+    return;
+  last_good_auth_timestamp_ = base::TimeTicks::Now();
 
-    // Holds scoped_refptr for kAuthValidityPeriod seconds, preventing object
-    // from being deleted.
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(
-            [](scoped_refptr<ChromeBiometricAuthenticatorCommon> ptr) {},
-            base::WrapRefCounted(this)),
-        PasswordAccessAuthenticator::kAuthValidityPeriod);
-  }
-  return success;
+  // Holds scoped_refptr for kAuthValidityPeriod seconds, preventing object
+  // from being deleted.
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<ChromeBiometricAuthenticatorCommon> ptr) {},
+          base::WrapRefCounted(this)),
+      PasswordAccessAuthenticator::kAuthValidityPeriod);
 }
 
 bool ChromeBiometricAuthenticatorCommon::NeedsToAuthenticate() const {

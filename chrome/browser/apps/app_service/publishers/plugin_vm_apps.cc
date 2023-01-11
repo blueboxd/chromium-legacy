@@ -409,33 +409,6 @@ void PluginVmApps::Launch(const std::string& app_id,
   }
 }
 
-void PluginVmApps::LaunchAppWithIntent(
-    const std::string& app_id,
-    int32_t event_flags,
-    apps::mojom::IntentPtr intent,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::WindowInfoPtr window_info,
-    PluginVmApps::LaunchAppWithIntentCallback callback) {
-  NOTIMPLEMENTED();
-  std::move(callback).Run(/*success=*/false);
-}
-
-void PluginVmApps::SetPermission(const std::string& app_id,
-                                 apps::mojom::PermissionPtr permission_ptr) {
-  SetPermission(app_id, ConvertMojomPermissionToPermission(permission_ptr));
-}
-
-void PluginVmApps::Uninstall(const std::string& app_id,
-                             apps::mojom::UninstallSource uninstall_source,
-                             bool clear_site_data,
-                             bool report_abuse) {
-  guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_)
-      ->ClearApplicationList(guest_os::VmType::PLUGIN_VM,
-                             plugin_vm::kPluginVmName, "");
-  plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)
-      ->UninstallPluginVm();
-}
-
 void PluginVmApps::GetMenuModel(const std::string& app_id,
                                 apps::mojom::MenuType menu_type,
                                 int64_t display_id,

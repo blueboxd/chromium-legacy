@@ -152,8 +152,10 @@ void FullCardRequest::GetFullCardImpl(
   // If there is a UI delegate, then perform a CVC check.
   // Otherwise, continue and use |fido_assertion_info| to unmask.
   if (ui_delegate_) {
-    ui_delegate_->ShowUnmaskPrompt(request_->card, reason,
-                                   weak_ptr_factory_.GetWeakPtr());
+    ui_delegate_->ShowUnmaskPrompt(
+        request_->card,
+        CardUnmaskPromptOptions(selected_challenge_option, reason),
+        weak_ptr_factory_.GetWeakPtr());
   }
 
   if (should_unmask_card_) {
@@ -246,6 +248,14 @@ void FullCardRequest::OnDidGetRealPan(
   // authentication. Exactly one of these fields must be populated.
   DCHECK_NE(!request_->user_response.cvc.empty(),
             request_->fido_assertion_info.has_value());
+
+  // Update the existing context token to the most up-to-date one received from
+  // the payments server. The context token in the response details can be an
+  // empty string for regular server cards. It will be populated in situations
+  // where the server needs to connect multiple steps of the unmasking flow
+  // together, such as in the case of virtual cards.
+  request_->context_token = response_details.context_token;
+
   AutofillClient::PaymentsRpcCardType card_type = response_details.card_type;
   if (!request_->user_response.cvc.empty()) {
     AutofillMetrics::LogRealPanDuration(

@@ -13,14 +13,14 @@ import './data_export_done.js';
 import './support_tool_shared.css.js';
 
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
-import {WebUIListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {BrowserProxy, BrowserProxyImpl, PIIDataItem, StartDataCollectionResult} from './browser_proxy.js';
+import {BrowserProxy, BrowserProxyImpl, PiiDataItem, StartDataCollectionResult} from './browser_proxy.js';
 import {DataCollectorsElement} from './data_collectors.js';
 import {DataExportDoneElement} from './data_export_done.js';
 import {IssueDetailsElement} from './issue_details.js';
-import {PIISelectionElement} from './pii_selection.js';
+import {PiiSelectionElement} from './pii_selection.js';
 import {SpinnerPageElement} from './spinner_page.js';
 import {getTemplate} from './support_tool.html.js';
 
@@ -44,14 +44,14 @@ export interface SupportToolElement {
     issueDetails: IssueDetailsElement,
     dataCollectors: DataCollectorsElement,
     spinnerPage: SpinnerPageElement,
-    piiSelection: PIISelectionElement,
+    piiSelection: PiiSelectionElement,
     exportSpinner: SpinnerPageElement,
     dataExportDone: DataExportDoneElement,
     errorMessageToast: CrToastElement,
   };
 }
 
-const SupportToolElementBase = WebUIListenerMixin(PolymerElement);
+const SupportToolElementBase = WebUiListenerMixin(PolymerElement);
 
 export class SupportToolElement extends SupportToolElementBase {
   static get is() {
@@ -104,7 +104,7 @@ export class SupportToolElement extends SupportToolElementBase {
     this.selectedPage_ = SupportToolPageIndex.EXPORT_SPINNER;
   }
 
-  private onDataCollectionCompleted_(piiItems: PIIDataItem[]) {
+  private onDataCollectionCompleted_(piiItems: PiiDataItem[]) {
     this.$.piiSelection.updateDetectedPIIItems(piiItems);
     this.selectedPage_ = SupportToolPageIndex.PII_SELECTION;
   }

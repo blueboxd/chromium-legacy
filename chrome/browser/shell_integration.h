@@ -48,6 +48,12 @@ enum DefaultWebClientSetPermission {
 // current user.
 DefaultWebClientSetPermission GetDefaultWebClientSetPermission();
 
+// Returns requirements for making the running browser either the default
+// browser or the default client application for a specific protocols for the
+// current user, according to a specific platform.
+DefaultWebClientSetPermission
+GetPlatformSpecificDefaultWebClientSetPermission();
+
 // Returns true if the running browser can be set as the default browser,
 // whether user interaction is needed or not. Use
 // GetDefaultWebClientSetPermission() if this distinction is important.
@@ -62,6 +68,13 @@ bool IsElevationNeededForSettingDefaultProtocolClient();
 // neither is guaranteed and it should only be used as a display string.
 // Returns an empty string on failure.
 std::u16string GetApplicationNameForProtocol(const GURL& url);
+
+#if BUILDFLAG(IS_MAC)
+// Returns a vector which containing all the application paths that can be used
+// to launch the requested URL.
+// Returns an empty vector if no application is found.
+std::vector<base::FilePath> GetAllApplicationPathsForURL(const GURL& url);
+#endif
 
 // Chrome's default web client state as a browser as a protocol client. If the
 // current install mode is not default, the brand's other modes are

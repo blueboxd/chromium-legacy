@@ -25,7 +25,6 @@
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/texture_owner.h"
-#include "gpu/ipc/common/android/android_image_reader_utils.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
@@ -35,6 +34,7 @@
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "ui/gl/android/egl_fence_utils.h"
 #include "ui/gl/gl_image_ahardwarebuffer.h"
 #include "ui/gl/gl_utils.h"
 
@@ -56,16 +56,15 @@ void CreateAndBindEglImageFromAHB(AHardwareBuffer* buffer, GLuint service_id) {
   }
 }
 
-class VideoImage : public gl::GLImage {
+class VideoImage : public base::RefCounted<VideoImage> {
  public:
   VideoImage() = default;
 
   VideoImage(AHardwareBuffer* buffer)
       : handle_(base::android::ScopedHardwareBufferHandle::Create(buffer)) {}
 
-  // gl::GLImage:
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
-  GetAHardwareBuffer() override {
+  GetAHardwareBuffer() {
     if (!handle_.is_valid())
       return nullptr;
 
@@ -76,9 +75,9 @@ class VideoImage : public gl::GLImage {
   base::ScopedFD TakeEndReadFence() { return std::move(end_read_fence_); }
 
  protected:
-  ~VideoImage() override = default;
-
  private:
+  friend class base::RefCounted<VideoImage>;
+
   class ScopedHardwareBufferFenceSyncImpl
       : public base::android::ScopedHardwareBufferFenceSync {
    public:
@@ -92,7 +91,7 @@ class VideoImage : public gl::GLImage {
           image_(std::move(image)) {}
     ~ScopedHardwareBufferFenceSyncImpl() override = default;
 
-    void SetReadFence(base::ScopedFD fence_fd, bool has_context) override {
+    void SetReadFence(base::ScopedFD fence_fd) override {
       image_->end_read_fence_ =
           gl::MergeFDs(std::move(image_->end_read_fence_), std::move(fence_fd));
     }
@@ -100,6 +99,8 @@ class VideoImage : public gl::GLImage {
    private:
     scoped_refptr<VideoImage> image_;
   };
+
+  ~VideoImage() = default;
 
   base::android::ScopedHardwareBufferHandle handle_;
 
@@ -218,8 +219,8 @@ class VideoImageReaderImageBacking::GLTextureVideoImageRepresentation
   void EndAccess() override {
     DCHECK(scoped_hardware_buffer_);
 
-    base::ScopedFD sync_fd = CreateEglFenceAndExportFd();
-    scoped_hardware_buffer_->SetReadFence(std::move(sync_fd), true);
+    base::ScopedFD sync_fd = gl::CreateEglFenceAndExportFd();
+    scoped_hardware_buffer_->SetReadFence(std::move(sync_fd));
     base::AutoLockMaybe auto_lock(GetDrDcLockPtr());
     scoped_hardware_buffer_ = nullptr;
   }
@@ -285,8 +286,8 @@ class VideoImageReaderImageBacking::GLTexturePassthroughVideoImageRepresentation
   void EndAccess() override {
     DCHECK(scoped_hardware_buffer_);
 
-    base::ScopedFD sync_fd = CreateEglFenceAndExportFd();
-    scoped_hardware_buffer_->SetReadFence(std::move(sync_fd), true);
+    base::ScopedFD sync_fd = gl::CreateEglFenceAndExportFd();
+    scoped_hardware_buffer_->SetReadFence(std::move(sync_fd));
     base::AutoLockMaybe auto_lock(GetDrDcLockPtr());
     scoped_hardware_buffer_ = nullptr;
   }
@@ -314,20 +315,21 @@ class VideoImageReaderImageBacking::SkiaVkVideoImageRepresentation
                                          tracker),
         RefCountedLockHelperDrDc(std::move(drdc_lock)) {}
 
-  sk_sp<SkSurface> BeginWriteAccess(
+  std::vector<sk_sp<SkSurface>> BeginWriteAccess(
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
+      const gfx::Rect& update_rect,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
     // Writes are not intended to used for video backed representations.
     NOTIMPLEMENTED();
-    return nullptr;
+    return {};
   }
 
-  void EndWriteAccess(sk_sp<SkSurface> surface) override { NOTIMPLEMENTED(); }
+  void EndWriteAccess() override { NOTIMPLEMENTED(); }
 
-  sk_sp<SkPromiseImageTexture> BeginReadAccess(
+  std::vector<sk_sp<SkPromiseImageTexture>> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
@@ -343,7 +345,7 @@ class VideoImageReaderImageBacking::SkiaVkVideoImageRepresentation
     scoped_hardware_buffer_ = stream_texture_sii->GetAHardwareBuffer();
     if (!scoped_hardware_buffer_) {
       LOG(ERROR) << "Failed to get the hardware buffer.";
-      return nullptr;
+      return {};
     }
     DCHECK(scoped_hardware_buffer_->buffer());
 
@@ -359,7 +361,7 @@ class VideoImageReaderImageBacking::SkiaVkVideoImageRepresentation
           scoped_hardware_buffer_->TakeBuffer(), context_state(), size(),
           format(), VK_QUEUE_FAMILY_FOREIGN_EXT);
       if (!vulkan_image_)
-        return nullptr;
+        return {};
 
       // We always use VK_IMAGE_TILING_OPTIMAL while creating the vk image in
       // VulkanImplementationAndroid::CreateVkImageAndImportAHB. Hence pass
@@ -393,8 +395,7 @@ class VideoImageReaderImageBacking::SkiaVkVideoImageRepresentation
     // Pass the end read access sync fd to the scoped hardware buffer. This
     // will make sure that the AImage associated with the hardware buffer will
     // be deleted only when the read access is ending.
-    scoped_hardware_buffer_->SetReadFence(android_backing()->TakeReadFence(),
-                                          true);
+    scoped_hardware_buffer_->SetReadFence(android_backing()->TakeReadFence());
     scoped_hardware_buffer_ = nullptr;
   }
 
@@ -529,34 +530,18 @@ class VideoImageReaderImageBacking::OverlayVideoImageRepresentation
   }
 
   void EndReadAccess(gfx::GpuFenceHandle release_fence) override {
-    if (gl_image_) {
+    if (video_image_) {
       DCHECK(release_fence.is_null());
       if (scoped_hardware_buffer_) {
-        scoped_hardware_buffer_->SetReadFence(gl_image_->TakeEndReadFence(),
-                                              true);
+        scoped_hardware_buffer_->SetReadFence(video_image_->TakeEndReadFence());
       }
-      gl_image_.reset();
+      video_image_.reset();
     } else {
-      scoped_hardware_buffer_->SetReadFence(std::move(release_fence.owned_fd),
-                                            true);
+      scoped_hardware_buffer_->SetReadFence(std::move(release_fence.owned_fd));
     }
 
     base::AutoLockMaybe auto_lock(GetDrDcLockPtr());
     scoped_hardware_buffer_.reset();
-  }
-
-  gl::GLImage* GetGLImage() override {
-    base::AutoLockMaybe auto_lock(GetDrDcLockPtr());
-    DCHECK(stream_image()->HasTextureOwner())
-        << "The backing is already in a SurfaceView!";
-    DCHECK(scoped_hardware_buffer_);
-
-    if (!gl_image_) {
-      gl_image_ =
-          base::MakeRefCounted<VideoImage>(scoped_hardware_buffer_->buffer());
-      gl_image_->SetColorSpace(color_space());
-    }
-    return gl_image_.get();
   }
 
   AHardwareBuffer* GetAHardwareBuffer() override {
@@ -564,10 +549,28 @@ class VideoImageReaderImageBacking::OverlayVideoImageRepresentation
     return scoped_hardware_buffer_->buffer();
   }
 
+  std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+  GetAHardwareBufferFenceSync() override {
+    return GetVideoImage()->GetAHardwareBuffer();
+  }
+
  private:
+  VideoImage* GetVideoImage() {
+    base::AutoLockMaybe auto_lock(GetDrDcLockPtr());
+    DCHECK(stream_image()->HasTextureOwner())
+        << "The backing is already in a SurfaceView!";
+    DCHECK(scoped_hardware_buffer_);
+
+    if (!video_image_) {
+      video_image_ =
+          base::MakeRefCounted<VideoImage>(scoped_hardware_buffer_->buffer());
+    }
+    return video_image_.get();
+  }
+
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
       scoped_hardware_buffer_;
-  scoped_refptr<VideoImage> gl_image_;
+  scoped_refptr<VideoImage> video_image_;
 
   StreamTextureSharedImageInterface* stream_image() {
     auto* video_backing = static_cast<VideoImageReaderImageBacking*>(backing());

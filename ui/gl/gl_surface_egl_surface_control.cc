@@ -21,6 +21,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_features.h"
 #include "ui/gl/gl_fence_android_native_fence_sync.h"
+#include "ui/gl/gl_image.h"
 #include "ui/gl/gl_utils.h"
 
 namespace gl {
@@ -318,7 +319,7 @@ bool GLSurfaceEGLSurfaceControl::OnMakeCurrent(GLContext* context) {
 }
 
 bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
-    GLImage* image,
+    OverlayImage image,
     std::unique_ptr<gfx::GpuFence> gpu_fence,
     const gfx::OverlayPlaneData& overlay_plane_data) {
   if (surface_lost_) {
@@ -351,7 +352,7 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
 
   AHardwareBuffer* hardware_buffer = nullptr;
   base::ScopedFD fence_fd;
-  auto scoped_hardware_buffer = image->GetAHardwareBuffer();
+  auto scoped_hardware_buffer = std::move(image);
   bool is_primary_plane = false;
   if (scoped_hardware_buffer) {
     hardware_buffer = scoped_hardware_buffer->buffer();
@@ -509,7 +510,6 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   transaction_ack_timeout_manager_.OnTransactionAck();
 
-  const bool has_context = context_->MakeCurrent(this);
   for (auto& surface_stat : transaction_stats.surface_stats) {
     auto it = released_resources.find(surface_stat.surface);
 
@@ -528,8 +528,7 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
     }
 
     if (surface_stat.fence.is_valid()) {
-      it->second.scoped_buffer->SetReadFence(std::move(surface_stat.fence),
-                                             has_context);
+      it->second.scoped_buffer->SetReadFence(std::move(surface_stat.fence));
     }
   }
 

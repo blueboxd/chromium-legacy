@@ -86,7 +86,7 @@ static void UpdateCcTransformLocalMatrix(
     }
   } else {
     DCHECK(!transform_node.ScrollNode());
-    compositor_node.local = transform_node.Matrix().ToTransform();
+    compositor_node.local = transform_node.Matrix();
     compositor_node.origin = transform_node.Origin();
   }
   compositor_node.needs_local_transform_update = true;
@@ -250,9 +250,7 @@ void PropertyTreeManager::SetupRootTransformNode() {
   gfx::Transform to_screen;
   to_screen.Scale(device_scale_factor, device_scale_factor);
   transform_tree_.SetToScreen(cc::kRootPropertyNodeId, to_screen);
-  gfx::Transform from_screen;
-  bool invertible = to_screen.GetInverse(&from_screen);
-  DCHECK(invertible);
+  gfx::Transform from_screen = to_screen.GetCheckedInverse();
   transform_tree_.SetFromScreen(cc::kRootPropertyNodeId, from_screen);
   transform_tree_.set_needs_update(true);
 
@@ -988,11 +986,11 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     if (pending_clip.type & CcEffectType::kSyntheticForNonTrivialClip) {
       if (clip_id == cc::kInvalidPropertyNodeId) {
         const auto* clip = pending_clip.clip;
-        // Some virtual/document-transition/wpt_internal/document-transition/*
+        // Some virtual/view-transition/external/wpt/css/css-view-transitions/*
         // tests will fail without the following condition.
         // TODO(crbug.com/1345805): Investigate the reason and remove the
         // condition if possible.
-        if (!current_.effect->DocumentTransitionSharedElementId().valid()) {
+        if (!current_.effect->ViewTransitionElementId().valid()) {
           // Use the parent clip as the output clip of the synthetic effect so
           // that the clip will apply to the masked contents but not the mask
           // layer, to ensure the masked content is fully covered by the mask
@@ -1192,8 +1190,8 @@ static cc::RenderSurfaceReason RenderSurfaceReasonForEffect(
       effect.BlendMode() != SkBlendMode::kDstIn) {
     return cc::RenderSurfaceReason::kBlendMode;
   }
-  if (effect.DocumentTransitionSharedElementId().valid())
-    return cc::RenderSurfaceReason::kDocumentTransitionParticipant;
+  if (effect.ViewTransitionElementId().valid())
+    return cc::RenderSurfaceReason::kViewTransitionParticipant;
   // If the effect's transform node flattens the transform while it
   // participates in the 3d sorting context of an ancestor, cc needs a
   // render surface for correct flattening.
@@ -1234,9 +1232,10 @@ void PropertyTreeManager::PopulateCcEffectNode(
   effect_node.effect_changed = effect.NodeChangeAffectsRaster();
 
   if (can_be_shared_element_resource) {
-    effect_node.document_transition_shared_element_id =
-        effect.DocumentTransitionSharedElementId();
-    effect_node.shared_element_resource_id = effect.SharedElementResourceId();
+    effect_node.view_transition_shared_element_id =
+        effect.ViewTransitionElementId();
+    effect_node.view_transition_element_resource_id =
+        effect.ViewTransitionElementResourceId();
   }
 }
 

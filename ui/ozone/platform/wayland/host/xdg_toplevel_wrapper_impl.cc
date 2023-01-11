@@ -6,7 +6,6 @@
 
 #include <aura-shell-client-protocol.h>
 #include <xdg-decoration-unstable-v1-client-protocol.h>
-#include <xdg-shell-unstable-v6-client-protocol.h>
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -183,8 +182,7 @@ void XDGToplevelWrapperImpl::SurfaceResize(WaylandConnection* connection,
   DCHECK(xdg_toplevel_);
   if (auto serial = GetSerialForMoveResize(connection)) {
     xdg_toplevel_resize(xdg_toplevel_.get(), connection->seat()->wl_object(),
-                        serial->value,
-                        wl::IdentifyDirection(*connection, hittest));
+                        serial->value, wl::IdentifyDirection(hittest));
   }
 }
 
@@ -295,6 +293,8 @@ void XDGToplevelWrapperImpl::ConfigureAuraTopLevel(
            CheckIfWlArrayHasValue(states, XDG_TOPLEVEL_STATE_FULLSCREEN),
        .is_activated =
            CheckIfWlArrayHasValue(states, XDG_TOPLEVEL_STATE_ACTIVATED),
+       .is_minimized =
+           CheckIfWlArrayHasValue(states, ZAURA_TOPLEVEL_STATE_MINIMIZED),
        .is_snapped_primary =
            CheckIfWlArrayHasValue(states, ZAURA_TOPLEVEL_STATE_SNAPPED_PRIMARY),
        .is_snapped_secondary = CheckIfWlArrayHasValue(

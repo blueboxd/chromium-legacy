@@ -7,7 +7,7 @@
 
 #include "base/types/expected.h"
 #include "base/values.h"
-#include "content/browser/attribution_reporting/attribution_reporting.mojom-forward.h"
+#include "components/attribution_reporting/source_registration_error.mojom-forward.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/common/content_export.h"
 
@@ -30,7 +30,8 @@ ParseSourceRegistration(base::Value::Dict registration,
                         base::Time source_time,
                         url::Origin reporting_origin,
                         url::Origin source_origin,
-                        AttributionSourceType source_type);
+                        AttributionSourceType source_type,
+                        bool is_within_fenced_frame);
 
 }  // namespace content
 

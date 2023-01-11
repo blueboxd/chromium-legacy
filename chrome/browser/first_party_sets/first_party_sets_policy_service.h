@@ -10,11 +10,10 @@
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/first_party_sets_handler.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/network/public/mojom/first_party_sets_access_delegate.mojom.h"
-
-class PrefService;
 
 namespace content {
 class BrowserContext;
@@ -41,6 +40,16 @@ class FirstPartySetsPolicyService : public KeyedService {
       delete;
   ~FirstPartySetsPolicyService() override;
 
+  // Computes the First-Party Set metadata related to the given request context,
+  // and invokes `callback` with the result.
+  //
+  // This may invoke `callback` synchronously.
+  void ComputeFirstPartySetMetadata(
+      const net::SchemefulSite& site,
+      const net::SchemefulSite* top_frame_site,
+      const std::set<net::SchemefulSite>& party_context,
+      base::OnceCallback<void(net::FirstPartySetMetadata)> callback);
+
   // Stores `access_delegate` in a RemoteSet for later IPC calls on it when this
   // service is ready to do so.
   //
@@ -60,9 +69,8 @@ class FirstPartySetsPolicyService : public KeyedService {
   // First-Party Sets enabled pref changes.
   void OnFirstPartySetsEnabledChanged(bool enabled);
 
-  // Invoke the callback synchronously to resume navigation if the instance is
-  // ready; or stores the callback to be invoked when this service is ready to
-  // do so.
+  // Stores the callback to be invoked when this service is ready to do so. Must
+  // not be called when FPS is not enabled or the service is already ready.
   void RegisterThrottleResumeCallback(base::OnceClosure resume_callback);
 
   // KeyedService:
@@ -76,16 +84,17 @@ class FirstPartySetsPolicyService : public KeyedService {
   // factory for FirstPartySetsPolicyService instances in tests, so every
   // instance calls into the prod logic to eagerly initialize itself. This
   // method allows tests to wait for that eager initialization to complete, then
-  // reset state, and re-run initialization via `InitForTesting`.
+  // reset state, and re-run initialization via `Init`.
   void WaitForFirstInitCompleteForTesting(base::OnceClosure callback);
 
-  // Testing-only method that allows injecting different logic to get the
-  // config.
-  void InitForTesting(
-      base::FunctionRef<
-          void(PrefService*,
-               base::OnceCallback<void(net::FirstPartySetsContextConfig)>)>
-          get_config);
+  // Exposes `Init` for use in tests.
+  void InitForTesting();
+
+  // Returns true iff the preference and feature are both enabled.
+  bool is_enabled() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return feature_enabled_ && pref_enabled_;
+  }
 
   // Returns true when this instance has received the config thus has been fully
   // initialized.
@@ -122,11 +131,8 @@ class FirstPartySetsPolicyService : public KeyedService {
   }
 
  private:
-  // Initialize this instance by getting the config via `get_config` if needed.
-  void Init(base::FunctionRef<
-            void(PrefService*,
-                 base::OnceCallback<void(net::FirstPartySetsContextConfig)>)>
-                get_config);
+  // Initialize this instance by getting the config if needed.
+  void Init();
 
   // Sets the `config_` member and provides it to all delegates via NotifyReady.
   void OnReadyToNotifyDelegates(net::FirstPartySetsContextConfig config,
@@ -140,6 +146,14 @@ class FirstPartySetsPolicyService : public KeyedService {
   void OnProfileConfigReady(bool initially_enabled,
                             net::FirstPartySetsContextConfig config);
 
+  // Like ComputeFirstPartySetMetadata, but passes the result into the provided
+  // callback. Must not be called before `config_` has been received.
+  void ComputeFirstPartySetMetadataInternal(
+      const net::SchemefulSite& site,
+      const absl::optional<net::SchemefulSite>& top_frame_site,
+      const std::set<net::SchemefulSite>& party_context,
+      base::OnceCallback<void(net::FirstPartySetMetadata)> callback) const;
+
   // The remote delegates associated with the profile that created this
   // service.
   mojo::RemoteSet<network::mojom::FirstPartySetsAccessDelegate>
@@ -149,6 +163,21 @@ class FirstPartySetsPolicyService : public KeyedService {
   // `Shutdown()`.
   raw_ptr<content::BrowserContext> browser_context_
       GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // Whether FPS is enabled globally.
+  //
+  // Initialized to true for the sake of tests, so that queries received before
+  // service initialization can be accumulated and answered after test setup,
+  // rather than answered immediately in the negative.
+  bool feature_enabled_ GUARDED_BY_CONTEXT(sequence_checker_) = true;
+
+  // Whether FPS is enabled in this context. Note that this may be true even if
+  // FPS is globally disabled.
+  //
+  // Initialized to true for the sake of tests, so that queries received before
+  // service initialization can be accumulated and answered after test setup,
+  // rather than answered immediately in the negative.
+  bool pref_enabled_ GUARDED_BY_CONTEXT(sequence_checker_) = true;
 
   // The customizations to the browser's list of First-Party Sets to respect
   // the changes specified by this FirstPartySetsOverrides policy for the

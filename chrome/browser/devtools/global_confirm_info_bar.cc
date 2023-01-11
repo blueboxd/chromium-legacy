@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/infobars/confirm_infobar_creator.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -40,6 +40,8 @@ class GlobalConfirmInfoBar::DelegateProxy : public ConfirmInfoBarDelegate {
   std::u16string GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
+  bool IsCloseable() const override;
+  bool ShouldAnimate() const override;
 
   infobars::InfoBar* info_bar_ = nullptr;
   base::WeakPtr<GlobalConfirmInfoBar> global_info_bar_;
@@ -65,6 +67,16 @@ std::u16string GlobalConfirmInfoBar::DelegateProxy::GetLinkText() const {
 GURL GlobalConfirmInfoBar::DelegateProxy::GetLinkURL() const {
   return global_info_bar_ ? global_info_bar_->delegate_->GetLinkURL()
                           : ConfirmInfoBarDelegate::GetLinkURL();
+}
+
+bool GlobalConfirmInfoBar::DelegateProxy::IsCloseable() const {
+  return global_info_bar_ ? global_info_bar_->delegate_->IsCloseable()
+                          : ConfirmInfoBarDelegate::IsCloseable();
+}
+
+bool GlobalConfirmInfoBar::DelegateProxy::ShouldAnimate() const {
+  return global_info_bar_ ? global_info_bar_->delegate_->ShouldAnimate()
+                          : ConfirmInfoBarDelegate::ShouldAnimate();
 }
 
 bool GlobalConfirmInfoBar::DelegateProxy::LinkClicked(
@@ -245,7 +257,7 @@ void GlobalConfirmInfoBar::MaybeAddInfoBar(content::WebContents* web_contents) {
   if (!added_bar) {
     is_closing_ = true;
 
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&GlobalConfirmInfoBar::Close,
                                   weak_factory_.GetWeakPtr()));
     return;

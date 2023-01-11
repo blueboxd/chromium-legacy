@@ -140,7 +140,7 @@ class TCPSocket : public Socket {
 
   // |this| doesn't outlive |browser_context_| because |this| is owned by
   // ApiResourceManager which is a BrowserContextKeyedAPI.
-  raw_ptr<content::BrowserContext> browser_context_;
+  raw_ptr<content::BrowserContext, DanglingUntriaged> browser_context_;
 
   SocketMode socket_mode_;
 
@@ -160,7 +160,8 @@ class TCPSocket : public Socket {
   absl::optional<net::IPEndPoint> peer_addr_;
 
   // Only used in tests.
-  raw_ptr<content::StoragePartition> storage_partition_ = nullptr;
+  raw_ptr<content::StoragePartition, DanglingUntriaged> storage_partition_ =
+      nullptr;
 
   // WeakPtr is used when posting tasks to |task_runner_| which might outlive
   // |this|.

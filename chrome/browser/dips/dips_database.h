@@ -10,15 +10,10 @@
 #include <string>
 #include <vector>
 
-#include "base/time/time.h"
 #include "chrome/browser/dips/dips_utils.h"
 #include "sql/database.h"
 #include "sql/init_status.h"
 #include "sql/statement.h"
-
-namespace base {
-class Time;
-}
 
 // TODO(crbug.com/1342228): This is currently in-memory only. Add support for a
 // persistent SQLite database to be used for non-OTR profiles.
@@ -44,23 +39,44 @@ class DIPSDatabase {
 
   // DIPS Bounce table functions -----------------------------------------------
   bool Write(const std::string& site,
-             absl::optional<base::Time> first_storage_time,
-             absl::optional<base::Time> first_interaction_time) {
-    return Write(site, first_storage_time, first_storage_time,
-                 first_interaction_time, first_interaction_time);
-  }
-
-  bool Write(const std::string& site,
-             absl::optional<base::Time> first_storage_time,
-             absl::optional<base::Time> last_storage_time,
-             absl::optional<base::Time> first_interaction_time,
-             absl::optional<base::Time> last_interaction_time);
+             const TimestampRange& storage_times,
+             const TimestampRange& interaction_times,
+             const TimestampRange& stateful_bounce_times,
+             const TimestampRange& stateless_bounce_times);
 
   absl::optional<StateValue> Read(const std::string& site);
+
+  // Returns all sites that did a bounce after |range_start| with their last
+  // interaction happening before |last_interaction|.
+  //
+  // Note: |last_interaction| must be earlier than |range_start|.
+  std::vector<std::string> GetSitesThatBounced(
+      base::Time range_start,
+      base::Time last_interaction) const;
+
+  // Returns all sites that did a stateful bounce after |range_start| with their
+  // last interaction happening before |last_interaction|.
+  //
+  // Note: |last_interaction| must be earlier than |range_start|.
+  std::vector<std::string> GetSitesThatBouncedWithState(
+      base::Time range_start,
+      base::Time last_interaction) const;
+
+  // Returns all sites that wrote to storage after |range_start| with their last
+  // interaction happening before |last_interaction|.
+  //
+  // Note: |last_interaction| must be earlier than |range_start|.
+  std::vector<std::string> GetSitesThatUsedStorage(
+      base::Time range_start,
+      base::Time last_interaction) const;
 
   // Delete the row from the bounces table for `site`. Returns true if query
   // executes successfully.
   bool RemoveRow(const std::string& site);
+
+  bool RemoveEventsByTime(const base::Time& delete_begin,
+                          const base::Time& delete_end,
+                          const DIPSEventRemovalType type);
 
   bool in_memory() const { return db_path_.empty(); }
 
@@ -69,6 +85,17 @@ class DIPSDatabase {
   sql::InitStatus OpenDatabase();
   sql::InitStatus InitImpl();
   bool InitTables();
+
+  // Internal utility functions ------------------------------------------------
+  bool ClearTimestamps(const base::Time& delete_begin,
+                       const base::Time& delete_end,
+                       const DIPSEventRemovalType type);
+  bool AdjustFirstTimestamps(const base::Time& delete_begin,
+                             const base::Time& delete_end,
+                             const DIPSEventRemovalType type);
+  bool AdjustLastTimestamps(const base::Time& delete_begin,
+                            const base::Time& delete_end,
+                            const DIPSEventRemovalType type);
 
  private:
   // Callback for database errors.

@@ -76,18 +76,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
 
   ~QuotaDatabase();
 
-  // Returns quota if entry is found. Returns QuotaError::kNotFound no entry if
-  // found.
-  QuotaErrorOr<int64_t> GetHostQuota(const std::string& host,
-                                     blink::mojom::StorageType type);
-
-  // Returns whether the operation succeeded.
-  QuotaError SetHostQuota(const std::string& host,
-                          blink::mojom::StorageType type,
-                          int64_t quota);
-  QuotaError DeleteHostQuota(const std::string& host,
-                             blink::mojom::StorageType type);
-
   // Gets the bucket described by `params.storage_key` and `params.name`
   // for StorageType kTemporary and returns the BucketInfo. If a bucket fitting
   // the params doesn't exist, it creates a new bucket with the policies in
@@ -202,6 +190,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
       base::Time begin,
       base::Time end);
 
+  // Returns a set of all expired buckets.
+  QuotaErrorOr<std::set<BucketInfo>> GetExpiredBuckets();
+
   base::FilePath GetStoragePath() const { return storage_directory_->path(); }
 
   // Returns false if SetIsBootstrapped() has never been called before, which
@@ -238,18 +229,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
   static void SetClockForTesting(base::Clock* clock);
 
  private:
-  struct COMPONENT_EXPORT(STORAGE_BROWSER) QuotaTableEntry {
-    std::string host;
-    blink::mojom::StorageType type = blink::mojom::StorageType::kUnknown;
-    int64_t quota = 0;
-  };
-  friend COMPONENT_EXPORT(STORAGE_BROWSER) bool operator==(
-      const QuotaTableEntry& lhs,
-      const QuotaTableEntry& rhs);
-  friend COMPONENT_EXPORT(STORAGE_BROWSER) bool operator<(
-      const QuotaTableEntry& lhs,
-      const QuotaTableEntry& rhs);
-
   // Structures used for CreateSchema.
   struct TableSchema {
     const char* table_name;
@@ -262,8 +241,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
     bool unique;
   };
 
-  using QuotaTableCallback =
-      base::RepeatingCallback<bool(const QuotaTableEntry&)>;
   using BucketTableCallback =
       base::RepeatingCallback<bool(mojom::BucketTableEntryPtr)>;
 
@@ -286,7 +263,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
 
   // Dumps table entries for chrome://quota-internals page.
   // `callback` may return false to stop reading data.
-  QuotaError DumpQuotaTable(const QuotaTableCallback& callback);
   QuotaError DumpBucketTable(const BucketTableCallback& callback);
 
   // Adds a new bucket entry in the buckets table. Will return a

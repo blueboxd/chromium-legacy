@@ -14,6 +14,7 @@ import '../../css/common.css.js';
 import '../../css/cros_button_style.css.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
 import {setErrorAction} from '../personalization_actions.js';
@@ -23,7 +24,7 @@ import {Paths, PersonalizationRouter} from '../personalization_router_element.js
 import {WithPersonalizationStore} from '../personalization_store.js';
 import {isNonEmptyArray} from '../utils.js';
 
-import {setAmbientModeEnabled} from './ambient_controller.js';
+import {setAmbientModeEnabled, startScreenSaverPreview} from './ambient_controller.js';
 import {getAmbientProvider} from './ambient_interface_provider.js';
 import {AmbientObserver} from './ambient_observer.js';
 import {getTemplate} from './ambient_preview_element.html.js';
@@ -117,6 +118,14 @@ export class AmbientPreview extends WithPersonalizationStore {
     this.updateFromStore();
   }
 
+  private isScreenSaverPreviewEnabled_() {
+    return loadTimeData.getBoolean('isScreenSaverPreviewEnabled');
+  }
+
+  private startScreenSaverPreview_() {
+    startScreenSaverPreview(getAmbientProvider());
+  }
+
   private computeLoading_(): boolean {
     return this.ambientModeEnabled_ === null || this.albums_ === null ||
         this.topicSource_ === null || this.googlePhotosAlbumsPreviews_ === null;
@@ -205,8 +214,16 @@ export class AmbientPreview extends WithPersonalizationStore {
   }
 
   private getPreviewContainerClass_(): string {
-    return this.ambientModeEnabled_ || this.loading_ ? 'zero-state-disabled' :
-                                                       '';
+    const classes = [];
+    if (this.ambientModeEnabled_ || this.loading_) {
+      classes.push('zero-state-disabled');
+    }
+    /* TODO(b/253470553): Remove this condition after Ambient subpage UI change
+     * is released. */
+    if (!loadTimeData.getBoolean('isAmbientSubpageUIChangeEnabled')) {
+      classes.push('pre-ui-change');
+    }
+    return classes.join(' ');
   }
 
   private getCollageContainerClass_(): string {

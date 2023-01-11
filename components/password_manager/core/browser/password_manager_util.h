@@ -197,11 +197,6 @@ bool IsValidPasswordURL(const GURL& url);
 // origin |url|.
 std::string GetSignonRealm(const GURL& url);
 
-// Returns whether branded (Google Password Manager) name should be used
-// in the password manager UI. Branded name is always used in Chrome builds
-// and only when user |is_syncing| in Chromium builds.
-bool UsesPasswordManagerGoogleBranding(bool is_syncing);
-
 #if BUILDFLAG(IS_IOS)
 // Returns a boolean indicating whether the user had enabled the credential
 // provider in their iOS settings at startup.
@@ -211,6 +206,24 @@ bool IsCredentialProviderEnabledOnStartup(const PrefService* prefs);
 // provider in their iOS settings at startup.
 void SetCredentialProviderEnabledOnStartup(PrefService* prefs, bool enabled);
 #endif
+
+// Contains all special symbols considered for password-generation.
+constexpr char kSpecialSymbols[] = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
+
+// Helper functions for character type classification. The built-in functions
+// depend on locale, platform and other stuff. To make the output more
+// predictable, the function are re-implemented here.
+bool IsNumeric(char16_t c);
+
+bool IsLetter(char16_t c);
+
+bool IsLowercaseLetter(char16_t c);
+
+bool IsUppercaseLetter(char16_t c);
+
+// Checks if a supplied character |c| is a special symbol.
+// Special symbols are defined by the string |kSpecialSymbols|.
+bool IsSpecialSymbol(char16_t c);
 
 }  // namespace password_manager_util
 

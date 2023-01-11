@@ -4,6 +4,12 @@
 
 #include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h"
 
+#include <stdint.h>
+
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/values.h"
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_api.h"
 #include "chrome/browser/platform_keys/extension_platform_keys_service.h"
@@ -194,12 +200,12 @@ EnterprisePlatformKeysInternalGenerateKeyFunction::Run() {
 }
 
 void EnterprisePlatformKeysInternalGenerateKeyFunction::OnGeneratedKey(
-    const std::string& public_key_der,
+    std::vector<uint8_t> public_key_der,
     absl::optional<crosapi::mojom::KeystoreError> error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!error) {
-    Respond(ArgumentList(api_epki::GenerateKey::Results::Create(
-        std::vector<uint8_t>(public_key_der.begin(), public_key_der.end()))));
+    Respond(ArgumentList(
+        api_epki::GenerateKey::Results::Create(std::move(public_key_der))));
   } else {
     Respond(
         Error(chromeos::platform_keys::KeystoreErrorToString(error.value())));
@@ -214,9 +220,8 @@ EnterprisePlatformKeysGetCertificatesFunction::Run() {
       api_epk::GetCertificates::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  std::string error =
-      ValidateCrosapi(KeystoreService::kDEPRECATED_GetCertificatesMinVersion,
-                      browser_context());
+  std::string error = ValidateCrosapi(
+      KeystoreService::kGetCertificatesMinVersion, browser_context());
   if (!error.empty()) {
     return RespondNow(Error(error));
   }
@@ -230,14 +235,15 @@ EnterprisePlatformKeysGetCertificatesFunction::Run() {
   auto c = base::BindOnce(
       &EnterprisePlatformKeysGetCertificatesFunction::OnGetCertificates, this);
   GetKeystoreService(browser_context())
-      ->DEPRECATED_GetCertificates(keystore, std::move(c));
+      ->GetCertificates(keystore, std::move(c));
   return RespondLater();
 }
 
 void EnterprisePlatformKeysGetCertificatesFunction::OnGetCertificates(
-    crosapi::mojom::DEPRECATED_GetCertificatesResultPtr result) {
-  if (result->is_error_message()) {
-    Respond(Error(result->get_error_message()));
+    crosapi::mojom::GetCertificatesResultPtr result) {
+  if (result->is_error()) {
+    Respond(Error(
+        chromeos::platform_keys::KeystoreErrorToString(result->get_error())));
     return;
   }
   DCHECK(result->is_certificates());
@@ -261,7 +267,7 @@ EnterprisePlatformKeysImportCertificateFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   std::string error = ValidateCrosapi(
-      KeystoreService::kDEPRECATED_AddCertificateMinVersion, browser_context());
+      KeystoreService::kAddCertificateMinVersion, browser_context());
   if (!error.empty()) {
     return RespondNow(Error(error));
   }
@@ -273,16 +279,17 @@ EnterprisePlatformKeysImportCertificateFunction::Run() {
   auto c = base::BindOnce(
       &EnterprisePlatformKeysImportCertificateFunction::OnAddCertificate, this);
   GetKeystoreService(browser_context())
-      ->DEPRECATED_AddCertificate(keystore, params->certificate, std::move(c));
+      ->AddCertificate(keystore, params->certificate, std::move(c));
   return RespondLater();
 }
 
 void EnterprisePlatformKeysImportCertificateFunction::OnAddCertificate(
-    const std::string& error) {
-  if (error.empty()) {
+    bool is_error,
+    crosapi::mojom::KeystoreError error_code) {
+  if (!is_error) {
     Respond(NoArguments());
   } else {
-    Respond(Error(error));
+    Respond(Error(chromeos::platform_keys::KeystoreErrorToString(error_code)));
   }
 }
 
@@ -329,22 +336,23 @@ ExtensionFunction::ResponseAction
 EnterprisePlatformKeysInternalGetTokensFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(args().empty());
 
-  std::string error = ValidateCrosapi(
-      KeystoreService::kDEPRECATED_GetKeyStoresMinVersion, browser_context());
+  std::string error = ValidateCrosapi(KeystoreService::kGetKeyStoresMinVersion,
+                                      browser_context());
   if (!error.empty()) {
     return RespondNow(Error(error));
   }
 
   auto c = base::BindOnce(
       &EnterprisePlatformKeysInternalGetTokensFunction::OnGetKeyStores, this);
-  GetKeystoreService(browser_context())->DEPRECATED_GetKeyStores(std::move(c));
+  GetKeystoreService(browser_context())->GetKeyStores(std::move(c));
   return RespondLater();
 }
 
 void EnterprisePlatformKeysInternalGetTokensFunction::OnGetKeyStores(
-    crosapi::mojom::DEPRECATED_GetKeyStoresResultPtr result) {
-  if (result->is_error_message()) {
-    Respond(Error(result->get_error_message()));
+    crosapi::mojom::GetKeyStoresResultPtr result) {
+  if (result->is_error()) {
+    Respond(Error(
+        chromeos::platform_keys::KeystoreErrorToString(result->get_error())));
     return;
   }
   DCHECK(result->is_key_stores());

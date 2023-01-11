@@ -32,17 +32,17 @@ class DevToolsTrustTokenBrowsertest : public DevToolsProtocolTest,
   }
 
   // The returned view is only valid until the next |SendCommand| call.
-  base::Value::ConstListView GetTrustTokensViaProtocol() {
+  const base::Value::List& GetTrustTokensViaProtocol() {
     SendCommandSync("Storage.getTrustTokens");
     const base::Value* tokens = result()->Find("tokens");
     CHECK(tokens);
-    return tokens->GetListDeprecated();
+    return tokens->GetList();
   }
 
   // Asserts that CDP reports |count| number of tokens for |issuerOrigin|.
   void AssertTrustTokensViaProtocol(const std::string& issuerOrigin,
                                     int expectedCount) {
-    auto tokens = GetTrustTokensViaProtocol();
+    const base::Value::List& tokens = GetTrustTokensViaProtocol();
     EXPECT_GT(tokens.size(), 0ul);
 
     for (const auto& token : tokens) {
@@ -210,7 +210,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsTrustTokenBrowsertest, FetchEndToEnd) {
     await fetch('/issue', {trustToken: {type: 'token-request'}});
     await fetch('/redeem', {trustToken: {type: 'token-redemption'}});
     await fetch('/sign', {trustToken: {type: 'send-redemption-record',
-                                  signRequestData: 'include',
                                   issuers: [$1]}});
     return 'Success'; })(); )";
 
@@ -260,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTrustTokenBrowsertest, IframeEndToEnd) {
   execute_op_via_iframe("/redeem", R"({"type": "token-redemption"})");
   execute_op_via_iframe("/sign", JsReplace(
                                      R"({"type": "send-redemption-record",
-              "signRequestData": "include", "issuers": [$1]})",
+              "issuers": [$1]})",
                                      IssuanceOriginFromHost("a.test")));
 
   // 4) Verify that we received three successful events.

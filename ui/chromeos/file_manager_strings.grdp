@@ -433,7 +433,7 @@
   </message>
 
   <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_MESSAGE" desc="Message of the conflict dialog shown when a file transfer operation is conflicted.">
-    A file named "<ph name="FILENAME">$1<ex>photo.jpg</ex></ph>" already exists. What do you want to do?
+    A file named "<ph name="FILENAME">$1<ex>photo.jpg</ex></ph>" already exists. Do you want to replace it with the one you're moving?
   </message>
   <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_KEEP_BOTH" desc="Label of a button to keep both entries after the file transfer operation.">
     Keep both
@@ -1529,10 +1529,10 @@
 
 <!-- Data Leak Prevention -->
   <message name="IDS_FILE_BROWSER_DLP_BLOCK_COPY_TOAST" desc="A toast informing the user that copying a file is blocked by the administrator.">
-    Pasting this file is blocked by administrator policy
+    Copying this file is blocked by administrator policy
   </message>
   <message name="IDS_FILE_BROWSER_DLP_BLOCK_COPY_TOAST_PLURAL" desc="A toast informing the user that copying files is blocked by the administrator.">
-    Pasting <ph name="COUNT">$1<ex>10</ex></ph> files is blocked by administrator policy
+    Copying <ph name="COUNT">$1<ex>10</ex></ph> files is blocked by administrator policy
   </message>
   <message name="IDS_FILE_BROWSER_DLP_BLOCK_MOVE_TOAST" desc="A toast informing the user that moving a file is blocked by the administrator.">
     Moving this file is blocked by administrator policy

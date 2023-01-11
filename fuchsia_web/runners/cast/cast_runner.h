@@ -5,9 +5,7 @@
 #ifndef FUCHSIA_WEB_RUNNERS_CAST_CAST_RUNNER_H_
 #define FUCHSIA_WEB_RUNNERS_CAST_CAST_RUNNER_H_
 
-#include <fuchsia/camera3/cpp/fidl.h>
-#include <fuchsia/media/cpp/fidl.h>
-#include <fuchsia/sys/cpp/fidl.h>
+#include <fuchsia/component/runner/cpp/fidl.h>
 #include <fuchsia/web/cpp/fidl.h>
 #include <memory>
 #include <set>
@@ -27,14 +25,10 @@ namespace base {
 class FilteredServiceDirectory;
 }
 
-namespace fuchsia::legacymetrics {
-class MetricsRecorder;
-}
-
 class WebInstanceHost;
 
-// sys::Runner which instantiates Cast activities specified via cast/casts URIs.
-class CastRunner final : public fuchsia::sys::Runner,
+// ComponentRunner that runs Cast activities specified via cast/casts URIs.
+class CastRunner final : public fuchsia::component::runner::ComponentRunner,
                          public chromium::cast::DataReset,
                          public PendingCastComponent::Delegate {
  public:
@@ -51,14 +45,20 @@ class CastRunner final : public fuchsia::sys::Runner,
   CastRunner(const CastRunner&) = delete;
   CastRunner& operator=(const CastRunner&) = delete;
 
-  // fuchsia::sys::Runner implementation.
-  void StartComponent(fuchsia::sys::Package package,
-                      fuchsia::sys::StartupInfo startup_info,
-                      fidl::InterfaceRequest<fuchsia::sys::ComponentController>
-                          controller_request) override;
+  // fuchsia::component::runner::ComponentRunner implementation.
+  void Start(
+      fuchsia::component::runner::ComponentStartInfo start_info,
+      fidl::InterfaceRequest<fuchsia::component::runner::ComponentController>
+          controller) override;
 
   // chromium::cast::DataReset implementation.
   void DeletePersistentData(DeletePersistentDataCallback callback) override;
+
+  // Returns a connection request handler for the fuchsia.web.FrameHost
+  // protocol exposed by the main web_instance. This is available regardless
+  // of whether `enable_frame_host_component_` is set.
+  fidl::InterfaceRequestHandler<fuchsia::web::FrameHost>
+  GetFrameHostRequestHandler();
 
   // Enables the special component that provides the fuchsia.web.FrameHost API,
   // hosted using the same WebEngine instance as the main web.Context.
@@ -75,9 +75,6 @@ class CastRunner final : public fuchsia::sys::Runner,
   void LaunchPendingComponent(PendingCastComponent* pending_component,
                               CastComponent::Params params) override;
   void CancelPendingComponent(PendingCastComponent* pending_component) override;
-
-  // Handles component destruction.
-  void OnComponentDestroyed(CastComponent* component);
 
   // Handlers used to provide parameters for main & isolated Contexts.
   WebContentRunner::WebInstanceConfig GetCommonWebInstanceConfig();
@@ -105,20 +102,12 @@ class CastRunner final : public fuchsia::sys::Runner,
   // it to be torn down.
   void OnIsolatedContextEmpty(WebContentRunner* context);
 
-  // Connection handlers for redirected services.
-  void OnAudioServiceRequest(
-      fidl::InterfaceRequest<fuchsia::media::Audio> request);
-  void OnCameraServiceRequest(
-      fidl::InterfaceRequest<fuchsia::camera3::DeviceWatcher> request);
-  void OnMetricsRecorderServiceRequest(
-      fidl::InterfaceRequest<fuchsia::legacymetrics::MetricsRecorder> request);
-
   // Internal implementation of StartComponent(), called after validating the
   // component URL and ensuring that CORS-exempt headers have been fetched.
   void StartComponentInternal(
       const GURL& url,
       std::unique_ptr<base::StartupContext> startup_context,
-      fidl::InterfaceRequest<fuchsia::sys::ComponentController>
+      fidl::InterfaceRequest<fuchsia::component::runner::ComponentController>
           controller_request);
 
   // Moves all data persisted by the main Context to a staging directory,
@@ -167,22 +156,6 @@ class CastRunner final : public fuchsia::sys::Runner,
   absl::optional<std::vector<std::vector<uint8_t>>> cors_exempt_headers_;
   chromium::cast::CorsExemptHeaderProviderPtr cors_exempt_headers_provider_;
   std::vector<base::OnceClosure> on_have_cors_exempt_headers_;
-
-  // Reference to the service directory of the most recent FrameHost component.
-  // Used to route MetricsRecorder requests from the web.Context, if there are
-  // no CastComponents available through which to do so.
-  base::WeakPtr<const sys::ServiceDirectory>
-      frame_host_component_incoming_services_;
-
-  // List of components created with permission to access MICROPHONE.
-  base::flat_set<CastComponent*> audio_capturer_components_;
-
-  // List of components created with permission to access CAMERA.
-  base::flat_set<CastComponent*> video_capturer_components_;
-
-  // The URL of the agent first using the respective capturer component.
-  std::string first_audio_capturer_agent_url_;
-  std::string first_video_capturer_agent_url_;
 
   // True if Contexts should be created without VULKAN set.
   bool disable_vulkan_for_test_ = false;

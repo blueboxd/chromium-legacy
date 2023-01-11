@@ -17,6 +17,7 @@
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feedstore_util.h"
+#include "components/feed/core/v2/prefs.h"
 #include "components/feed/core/v2/public/common_enums.h"
 #include "components/feed/core/v2/public/feed_api.h"
 #include "components/feed/core/v2/public/stream_type.h"
@@ -39,6 +40,15 @@ const ContentStats kContentStats = {
     /*card_count=*/12,
     /*total_content_frame_size_bytes=*/100 * 1024,
     /*shared_state_size=*/200 * 1024};
+const MetricsReporter::LoadStreamResultSummary result_summary =
+    MetricsReporter::LoadStreamResultSummary{
+        LoadStreamStatus::kDataInStoreIsStale,
+        LoadStreamStatus::kLoadedFromNetwork,
+        /*is_initial_load=*/true,
+        /*loaded_new_content_from_network=*/true,
+        /*stored_content_age=*/base::Days(5),
+        ContentOrder::kGrouped,
+        feedstore::Metadata::StreamMetadata()};
 
 class MetricsReporterTest : public testing::Test, MetricsReporter::Delegate {
  protected:
@@ -60,7 +70,7 @@ class MetricsReporterTest : public testing::Test, MetricsReporter::Delegate {
       const StreamType& stream_type) {
     std::map<FeedEngagementType, int> result;
     const char* histogram_name;
-    switch (stream_type.GetType()) {
+    switch (stream_type.GetKind()) {
       case StreamKind::kForYou:
         histogram_name = "ContentSuggestions.Feed.EngagementType";
         break;
@@ -70,8 +80,8 @@ class MetricsReporterTest : public testing::Test, MetricsReporter::Delegate {
       case StreamKind::kUnknown:
         histogram_name = "ContentSuggestions.Feed.AllFeeds.EngagementType";
         break;
-      case StreamKind::kChannel:
-        histogram_name = "ContentSuggestions.Feed.AllFeeds.EngagementType";
+      case StreamKind::kSingleWebFeed:
+        histogram_name = "ContentSuggestions.Feed.SingleWebFeed.EngagementType";
         break;
     }
     for (const auto& bucket : histogram_.GetAllSamples(histogram_name)) {
@@ -117,6 +127,9 @@ TEST_F(MetricsReporterTest, SliceViewedReportsSuggestionShown) {
   histogram_.ExpectTotalCount("ContentSuggestions.Feed.ReachedEndOfFeed", 0);
   histogram_.ExpectTotalCount(
       "ContentSuggestions.Feed.WebFeed.ReachedEndOfFeed", 0);
+  reporter_->ContentSliceViewed(StreamType(StreamKind::kSingleWebFeed), 5, 7);
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.SingleWebFeed.Shown",
+                                5, 1);
 }
 
 TEST_F(MetricsReporterTest, LastSliceViewedReportsReachedEndOfFeed) {
@@ -371,14 +384,8 @@ TEST_F(MetricsReporterTest, InteractedWithBothFeeds) {
 }
 
 TEST_F(MetricsReporterTest, ReportsLoadStreamStatus) {
-  reporter_->OnLoadStream(
-      StreamType(StreamKind::kForYou), LoadStreamStatus::kDataInStoreIsStale,
-      LoadStreamStatus::kLoadedFromNetwork,
-      /*is_initial_load=*/true,
-      /*loaded_new_content_from_network=*/true,
-      /*stored_content_age=*/base::Days(5), kContentStats,
-      ContentOrder::kGrouped, std::make_unique<LoadLatencyTimes>());
-
+  reporter_->OnLoadStream(StreamType(StreamKind::kForYou), result_summary,
+                          kContentStats, std::make_unique<LoadLatencyTimes>());
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.LoadStreamStatus.Initial",
       LoadStreamStatus::kLoadedFromNetwork, 1);
@@ -395,14 +402,18 @@ TEST_F(MetricsReporterTest, ReportsLoadStreamStatus) {
 }
 
 TEST_F(MetricsReporterTest, ReportsLoadStreamStatusWhenDisabled) {
-  reporter_->OnLoadStream(
-      StreamType(StreamKind::kForYou), LoadStreamStatus::kDataInStoreIsStale,
-      LoadStreamStatus::kLoadNotAllowedDisabled,
-      /*is_initial_load=*/true,
-      /*loaded_new_content_from_network=*/false,
-      /*stored_content_age=*/base::Days(5), kContentStats,
-      ContentOrder::kGrouped, std::make_unique<LoadLatencyTimes>());
-
+  feedstore::Metadata::StreamMetadata stream_metadata;
+  MetricsReporter::LoadStreamResultSummary result_summary_ =
+      MetricsReporter::LoadStreamResultSummary{
+          LoadStreamStatus::kDataInStoreIsStale,
+          LoadStreamStatus::kLoadNotAllowedDisabled,
+          /*is_initial_load=*/true,
+          /*loaded_new_content_from_network=*/false,
+          /*stored_content_age=*/base::Days(5),
+          ContentOrder::kGrouped,
+          stream_metadata};
+  reporter_->OnLoadStream(StreamType(StreamKind::kForYou), result_summary_,
+                          kContentStats, std::make_unique<LoadLatencyTimes>());
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.LoadStreamStatus.Initial",
       LoadStreamStatus::kLoadNotAllowedDisabled, 1);
@@ -412,14 +423,8 @@ TEST_F(MetricsReporterTest, ReportsLoadStreamStatusWhenDisabled) {
 }
 
 TEST_F(MetricsReporterTest, WebFeed_ReportsLoadStreamStatus) {
-  reporter_->OnLoadStream(
-      StreamType(StreamKind::kFollowing), LoadStreamStatus::kDataInStoreIsStale,
-      LoadStreamStatus::kLoadedFromNetwork,
-      /*is_initial_load=*/true,
-      /*loaded_new_content_from_network=*/true,
-      /*stored_content_age=*/base::Days(5), kContentStats,
-      ContentOrder::kGrouped, std::make_unique<LoadLatencyTimes>());
-
+  reporter_->OnLoadStream(StreamType(StreamKind::kFollowing), result_summary,
+                          kContentStats, std::make_unique<LoadLatencyTimes>());
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.WebFeed.LoadStreamStatus.Initial",
       LoadStreamStatus::kLoadedFromNetwork, 1);
@@ -446,14 +451,18 @@ TEST_F(MetricsReporterTest, WebFeed_ReportsLoadStreamStatus) {
 }
 
 TEST_F(MetricsReporterTest, WebFeed_ReportsLoadStreamStatus_ReverseChron) {
-  reporter_->OnLoadStream(
-      StreamType(StreamKind::kFollowing), LoadStreamStatus::kDataInStoreIsStale,
-      LoadStreamStatus::kLoadedFromNetwork,
-      /*is_initial_load=*/true,
-      /*loaded_new_content_from_network=*/true,
-      /*stored_content_age=*/base::Days(5), kContentStats,
-      ContentOrder::kReverseChron, std::make_unique<LoadLatencyTimes>());
-
+  feedstore::Metadata::StreamMetadata stream_metadata;
+  MetricsReporter::LoadStreamResultSummary result_summary_ =
+      MetricsReporter::LoadStreamResultSummary{
+          LoadStreamStatus::kDataInStoreIsStale,
+          LoadStreamStatus::kLoadedFromNetwork,
+          /*is_initial_load=*/true,
+          /*loaded_new_content_from_network=*/true,
+          /*stored_content_age=*/base::Days(5),
+          ContentOrder::kReverseChron,
+          stream_metadata};
+  reporter_->OnLoadStream(StreamType(StreamKind::kFollowing), result_summary_,
+                          kContentStats, std::make_unique<LoadLatencyTimes>());
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.WebFeed.LoadedCardCount",
       kContentStats.card_count, 1);
@@ -465,40 +474,42 @@ TEST_F(MetricsReporterTest, WebFeed_ReportsLoadStreamStatus_ReverseChron) {
 }
 
 TEST_F(MetricsReporterTest, WebFeed_ReportsNoContentShown) {
-  reporter_->OnLoadStream(
-      StreamType(StreamKind::kFollowing), LoadStreamStatus::kDataInStoreIsStale,
-      LoadStreamStatus::kLoadedFromNetwork,
-      /*is_initial_load=*/true,
-      /*loaded_new_content_from_network=*/true,
-      /*stored_content_age=*/base::Days(5), ContentStats(),
-      ContentOrder::kGrouped, std::make_unique<LoadLatencyTimes>());
-
+  reporter_->OnLoadStream(StreamType(StreamKind::kFollowing), result_summary,
+                          ContentStats(), std::make_unique<LoadLatencyTimes>());
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.WebFeed.FollowCount.NoContentShown",
       kSubscriptionCount, 1);
 }
 
 TEST_F(MetricsReporterTest, OnLoadStreamDoesNotReportLoadedCardCountOnFailure) {
-  reporter_->OnLoadStream(
-      StreamType(StreamKind::kForYou), LoadStreamStatus::kDataInStoreIsStale,
-      LoadStreamStatus::kDataInStoreIsExpired,
-      /*is_initial_load=*/true,
-      /*loaded_new_content_from_network=*/false,
-      /*stored_content_age=*/base::Days(5), kContentStats,
-      ContentOrder::kGrouped, std::make_unique<LoadLatencyTimes>());
-
+  feedstore::Metadata::StreamMetadata stream_metadata;
+  MetricsReporter::LoadStreamResultSummary result_summary_ =
+      MetricsReporter::LoadStreamResultSummary{
+          LoadStreamStatus::kDataInStoreIsStale,
+          LoadStreamStatus::kDataInStoreIsExpired,
+          /*is_initial_load=*/true,
+          /*loaded_new_content_from_network=*/false,
+          /*stored_content_age=*/base::Days(5),
+          ContentOrder::kGrouped,
+          stream_metadata};
+  reporter_->OnLoadStream(StreamType(StreamKind::kForYou), result_summary_,
+                          kContentStats, std::make_unique<LoadLatencyTimes>());
   histogram_.ExpectTotalCount("ContentSuggestions.Feed.LoadedCardCount", 0);
 }
 
 TEST_F(MetricsReporterTest, ReportsLoadStreamStatusForManualRefresh) {
-  reporter_->OnLoadStream(
-      StreamType(StreamKind::kForYou), LoadStreamStatus::kDataInStoreIsStale,
-      LoadStreamStatus::kLoadedFromNetwork,
-      /*is_initial_load=*/false,
-      /*loaded_new_content_from_network=*/true,
-      /*stored_content_age=*/base::Days(5), kContentStats,
-      ContentOrder::kGrouped, std::make_unique<LoadLatencyTimes>());
-
+  feedstore::Metadata::StreamMetadata stream_metadata;
+  MetricsReporter::LoadStreamResultSummary result_summary_ =
+      MetricsReporter::LoadStreamResultSummary{
+          LoadStreamStatus::kDataInStoreIsStale,
+          LoadStreamStatus::kLoadedFromNetwork,
+          /*is_initial_load=*/false,
+          /*loaded_new_content_from_network=*/true,
+          /*stored_content_age=*/base::Days(5),
+          ContentOrder::kGrouped,
+          stream_metadata};
+  reporter_->OnLoadStream(StreamType(StreamKind::kForYou), result_summary_,
+                          kContentStats, std::make_unique<LoadLatencyTimes>());
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.LoadStreamStatus.Initial",
       LoadStreamStatus::kLoadedFromNetwork, 0);
@@ -510,15 +521,45 @@ TEST_F(MetricsReporterTest, ReportsLoadStreamStatusForManualRefresh) {
       LoadStreamStatus::kLoadedFromNetwork, 1);
 }
 
-TEST_F(MetricsReporterTest, ReportsLoadStreamStatusIgnoresNoStatusFromStore) {
-  reporter_->OnLoadStream(
-      StreamType(StreamKind::kForYou), LoadStreamStatus::kNoStatus,
-      LoadStreamStatus::kLoadedFromNetwork,
-      /*is_initial_load=*/true,
-      /*loaded_new_content_from_network=*/true,
-      /*stored_content_age=*/base::TimeDelta(), kContentStats,
-      ContentOrder::kGrouped, std::make_unique<LoadLatencyTimes>());
+TEST_F(MetricsReporterTest,
+       SingleWebFeed_ReportsLoadStreamStatusForManualRefresh) {
+  feedstore::Metadata::StreamMetadata stream_metadata;
+  MetricsReporter::LoadStreamResultSummary result_summary_ =
+      MetricsReporter::LoadStreamResultSummary{
+          LoadStreamStatus::kDataInStoreIsStale,
+          LoadStreamStatus::kLoadedFromNetwork,
+          /*is_initial_load=*/false,
+          /*loaded_new_content_from_network=*/true,
+          /*stored_content_age=*/base::Days(5),
+          ContentOrder::kGrouped,
+          stream_metadata};
+  reporter_->OnLoadStream(StreamType(StreamKind::kSingleWebFeed),
+                          result_summary_, kContentStats,
+                          std::make_unique<LoadLatencyTimes>());
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.SingleWebFeed.LoadStreamStatus.Initial",
+      LoadStreamStatus::kLoadedFromNetwork, 0);
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.SingleWebFeed.LoadStreamStatus.InitialFromStore",
+      LoadStreamStatus::kDataInStoreIsStale, 0);
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.SingleWebFeed.LoadStreamStatus.ManualRefresh",
+      LoadStreamStatus::kLoadedFromNetwork, 1);
+}
 
+TEST_F(MetricsReporterTest, ReportsLoadStreamStatusIgnoresNoStatusFromStore) {
+  feedstore::Metadata::StreamMetadata stream_metadata;
+  MetricsReporter::LoadStreamResultSummary result_summary_ =
+      MetricsReporter::LoadStreamResultSummary{
+          LoadStreamStatus::kNoStatus,
+          LoadStreamStatus::kLoadedFromNetwork,
+          /*is_initial_load=*/true,
+          /*loaded_new_content_from_network=*/true,
+          /*stored_content_age=*/base::TimeDelta(),
+          ContentOrder::kGrouped,
+          stream_metadata};
+  reporter_->OnLoadStream(StreamType(StreamKind::kForYou), result_summary_,
+                          kContentStats, std::make_unique<LoadLatencyTimes>());
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.LoadStreamStatus.Initial",
       LoadStreamStatus::kLoadedFromNetwork, 1);
@@ -530,47 +571,53 @@ TEST_F(MetricsReporterTest, ReportsLoadStreamStatusIgnoresNoStatusFromStore) {
 }
 
 TEST_F(MetricsReporterTest, ReportsContentAgeBlockingRefresh) {
-  reporter_->OnLoadStream(
-      StreamType(StreamKind::kForYou), LoadStreamStatus::kDataInStoreIsStale,
-      LoadStreamStatus::kLoadedFromNetwork,
-      /*is_initial_load=*/true,
-      /*loaded_new_content_from_network=*/true,
-      /*stored_content_age=*/base::Days(5), kContentStats,
-      ContentOrder::kGrouped, std::make_unique<LoadLatencyTimes>());
-
+  reporter_->OnLoadStream(StreamType(StreamKind::kForYou), result_summary,
+                          kContentStats, std::make_unique<LoadLatencyTimes>());
   histogram_.ExpectUniqueTimeSample(
       "ContentSuggestions.Feed.ContentAgeOnLoad.BlockingRefresh", base::Days(5),
       1);
 }
 
 TEST_F(MetricsReporterTest, ReportsContentAgeNoRefresh) {
-  reporter_->OnLoadStream(
-      StreamType(StreamKind::kForYou), LoadStreamStatus::kDataInStoreIsStale,
-      LoadStreamStatus::kLoadedFromStore,
-      /*is_initial_load=*/true,
-      /*loaded_new_content_from_network=*/false,
-      /*stored_content_age=*/base::Days(5), kContentStats,
-      ContentOrder::kGrouped, std::make_unique<LoadLatencyTimes>());
-
+  feedstore::Metadata::StreamMetadata stream_metadata;
+  MetricsReporter::LoadStreamResultSummary result_summary_ =
+      MetricsReporter::LoadStreamResultSummary{
+          LoadStreamStatus::kDataInStoreIsStale,
+          LoadStreamStatus::kLoadedFromNetwork,
+          /*is_initial_load=*/true,
+          /*loaded_new_content_from_network=*/false,
+          /*stored_content_age=*/base::Days(5),
+          ContentOrder::kGrouped,
+          stream_metadata};
+  reporter_->OnLoadStream(StreamType(StreamKind::kForYou), result_summary_,
+                          kContentStats, std::make_unique<LoadLatencyTimes>());
   histogram_.ExpectUniqueTimeSample(
       "ContentSuggestions.Feed.ContentAgeOnLoad.NotRefreshed", base::Days(5),
       1);
 }
 
 TEST_F(MetricsReporterTest, DoNotReportContentAgeWhenNotPositive) {
-  reporter_->OnLoadStream(
-      StreamType(StreamKind::kForYou), LoadStreamStatus::kDataInStoreIsStale,
-      LoadStreamStatus::kLoadedFromStore, /*is_initial_load=*/true,
-      /*loaded_new_content_from_network=*/false,
-      /*stored_content_age=*/-base::Seconds(1), kContentStats,
-      ContentOrder::kGrouped, std::make_unique<LoadLatencyTimes>());
-  reporter_->OnLoadStream(
-      StreamType(StreamKind::kForYou), LoadStreamStatus::kDataInStoreIsStale,
-      LoadStreamStatus::kLoadedFromStore,
-      /*is_initial_load=*/true,
-      /*loaded_new_content_from_network=*/false,
-      /*stored_content_age=*/base::TimeDelta(), kContentStats,
-      ContentOrder::kGrouped, std::make_unique<LoadLatencyTimes>());
+  feedstore::Metadata::StreamMetadata stream_metadata;
+  MetricsReporter::LoadStreamResultSummary result_summary_ =
+      MetricsReporter::LoadStreamResultSummary{
+          LoadStreamStatus::kDataInStoreIsStale,
+          LoadStreamStatus::kLoadedFromStore,
+          /*is_initial_load=*/true,
+          /*loaded_new_content_from_network=*/false,
+          /*stored_content_age=*/-base::Seconds(1),
+          ContentOrder::kGrouped,
+          stream_metadata};
+  reporter_->OnLoadStream(StreamType(StreamKind::kForYou), result_summary_,
+                          kContentStats, std::make_unique<LoadLatencyTimes>());
+  result_summary_ = {LoadStreamStatus::kDataInStoreIsStale,
+                     LoadStreamStatus::kLoadedFromStore,
+                     /*is_initial_load=*/true,
+                     /*loaded_new_content_from_network=*/false,
+                     /*stored_content_age=*/base::TimeDelta(),
+                     ContentOrder::kGrouped,
+                     stream_metadata};
+  reporter_->OnLoadStream(StreamType(StreamKind::kForYou), result_summary_,
+                          kContentStats, std::make_unique<LoadLatencyTimes>());
   histogram_.ExpectTotalCount(
       "ContentSuggestions.Feed.ContentAgeOnLoad.NotRefreshed", 0);
   histogram_.ExpectTotalCount(
@@ -578,19 +625,24 @@ TEST_F(MetricsReporterTest, DoNotReportContentAgeWhenNotPositive) {
 }
 
 TEST_F(MetricsReporterTest, ReportsLoadStepLatenciesOnFirstView) {
+  feedstore::Metadata::StreamMetadata stream_metadata;
   {
     auto latencies = std::make_unique<LoadLatencyTimes>();
     task_environment_.FastForwardBy(base::Milliseconds(150));
     latencies->StepComplete(LoadLatencyTimes::kLoadFromStore);
     task_environment_.FastForwardBy(base::Milliseconds(50));
     latencies->StepComplete(LoadLatencyTimes::kUploadActions);
-    reporter_->OnLoadStream(
-        StreamType(StreamKind::kForYou), LoadStreamStatus::kNoStatus,
-        LoadStreamStatus::kLoadedFromNetwork,
-        /*is_initial_load=*/true,
-        /*loaded_new_content_from_network=*/true,
-        /*stored_content_age=*/base::TimeDelta(), kContentStats,
-        ContentOrder::kGrouped, std::move(latencies));
+    MetricsReporter::LoadStreamResultSummary result_summary_ =
+        MetricsReporter::LoadStreamResultSummary{
+            LoadStreamStatus::kNoStatus,
+            LoadStreamStatus::kLoadedFromNetwork,
+            /*is_initial_load=*/true,
+            /*loaded_new_content_from_network=*/true,
+            /*stored_content_age=*/base::TimeDelta(),
+            ContentOrder::kGrouped,
+            stream_metadata};
+    reporter_->OnLoadStream(StreamType(StreamKind::kForYou), result_summary_,
+                            kContentStats, std::move(latencies));
   }
   task_environment_.FastForwardBy(base::Milliseconds(300));
   reporter_->FeedViewed(kSurfaceId);
@@ -631,6 +683,16 @@ TEST_F(MetricsReporterTest, WebFeed_ReportsBackgroundRefreshStatus) {
 
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.WebFeed.LoadStreamStatus.BackgroundRefresh",
+      LoadStreamStatus::kLoadedFromNetwork, 1);
+}
+
+TEST_F(MetricsReporterTest, SingleWebFeed_ReportsBackgroundRefreshStatus) {
+  reporter_->OnBackgroundRefresh(StreamType(StreamKind::kSingleWebFeed),
+                                 LoadStreamStatus::kLoadedFromNetwork);
+
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.SingleWebFeed.LoadStreamStatus."
+      "BackgroundRefresh",
       LoadStreamStatus::kLoadedFromNetwork, 1);
 }
 
@@ -914,6 +976,16 @@ TEST_F(MetricsReporterTest, WebFeed_OpenFeedSuccessDuration) {
 
   histogram_.ExpectUniqueTimeSample(
       "ContentSuggestions.Feed.UserJourney.OpenFeed.WebFeed.SuccessDuration",
+      base::Seconds(9), 1);
+}
+TEST_F(MetricsReporterTest, SingleWebFeed_OpenFeedSuccessDuration) {
+  reporter_->SurfaceOpened(StreamType(StreamKind::kSingleWebFeed), kSurfaceId);
+  task_environment_.FastForwardBy(base::Seconds(9));
+  reporter_->FeedViewed(kSurfaceId);
+
+  histogram_.ExpectUniqueTimeSample(
+      "ContentSuggestions.Feed.UserJourney.OpenFeed.SingleWebFeed."
+      "SuccessDuration",
       base::Seconds(9), 1);
 }
 
@@ -1344,6 +1416,10 @@ TEST_F(MetricsReporterTest, ReportInfoCard) {
   reporter_->OnInfoCardStateReset(StreamType(StreamKind::kFollowing), 1);
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.WebFeed.InfoCard.Reset", 1, 1);
+
+  reporter_->OnInfoCardClicked(StreamType(StreamKind::kSingleWebFeed), 1);
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.SingleWebFeed.InfoCard.Clicked", 1, 1);
 }
 
 TEST_F(MetricsReporterTest, GoodVisit_Scroll_GoodTimeSpentInFeed) {
@@ -1641,6 +1717,72 @@ TEST_F(MetricsReporterTest, GoodVisit_DisableGoodVisits) {
   histogram_.ExpectBucketCount(
       "ContentSuggestions.Feed.AllFeeds.EngagementType",
       FeedEngagementType::kGoodVisit, 0);
+}
+
+TEST_F(MetricsReporterTest, GoodVisitStateIsPersistent) {
+  reporter_->OtherUserAction(StreamType(StreamKind::kForYou),
+                             FeedUserActionType::kShare);
+  histogram_.ExpectBucketCount(
+      "ContentSuggestions.Feed.AllFeeds.EngagementType",
+      FeedEngagementType::kGoodVisit, 1);
+  reporter_->OnEnterBackground();
+  RecreateMetricsReporter();
+
+  // This one shouldn't report a good visit.
+  reporter_->OtherUserAction(StreamType(StreamKind::kForYou),
+                             FeedUserActionType::kShare);
+  histogram_.ExpectBucketCount(
+      "ContentSuggestions.Feed.AllFeeds.EngagementType",
+      FeedEngagementType::kGoodVisit, 1);
+}
+
+TEST_F(MetricsReporterTest, OpenActionSingleWebFeed) {
+  reporter_->OpenAction(StreamType(StreamKind::kSingleWebFeed, "A"), 5,
+                        OpenActionType::kDefault);
+
+  std::map<FeedEngagementType, int> want({
+      {FeedEngagementType::kFeedEngaged, 1},
+      {FeedEngagementType::kFeedInteracted, 1},
+      {FeedEngagementType::kFeedEngagedSimple, 1},
+  });
+  EXPECT_EQ(want,
+            ReportedEngagementType(StreamType(StreamKind::kSingleWebFeed)));
+  EXPECT_EQ(want, ReportedEngagementType(kCombinedStreams));
+  EXPECT_EQ(1, user_actions_.GetActionCount(
+                   "ContentSuggestions.Feed.CardAction.Open"));
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserActions",
+                                FeedUserActionType::kTappedOnCard, 1);
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.SingleWebFeed.Opened",
+                                5, 1);
+  histogram_.ExpectTotalCount("ContentSuggestions.Feed.FollowCount.Engaged2",
+                              0);
+  histogram_.ExpectTotalCount(
+      "ContentSuggestions.Feed.SingleWebFeed.FollowCount.Engaged2", 1);
+  histogram_.ExpectTotalCount(
+      "ContentSuggestions.Feed.WebFeed.FollowCount.Engaged2", 0);
+  histogram_.ExpectTotalCount(
+      "ContentSuggestions.Feed.AllFeeds.FollowCount.Engaged2", 1);
+}
+
+TEST_F(MetricsReporterTest, SingleWebFeed_ReportsLoadStreamStatus) {
+  reporter_->OnLoadStream(StreamType(StreamKind::kSingleWebFeed),
+                          result_summary, kContentStats,
+                          std::make_unique<LoadLatencyTimes>());
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.SingleWebFeed.LoadStreamStatus.Initial",
+      LoadStreamStatus::kLoadedFromNetwork, 1);
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.SingleWebFeed.LoadStreamStatus.InitialFromStore",
+      LoadStreamStatus::kDataInStoreIsStale, 1);
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.SingleWebFeed.LoadedCardCount",
+      kContentStats.card_count, 1);
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.SingleWebFeed.StreamContentSizeKB",
+      kContentStats.total_content_frame_size_bytes / 1024, 1);
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.SingleWebFeed.SharedStateSizeKB",
+      kContentStats.shared_state_size / 1024, 1);
 }
 
 }  // namespace feed

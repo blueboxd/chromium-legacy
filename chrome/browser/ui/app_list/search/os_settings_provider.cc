@@ -13,13 +13,11 @@
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/common/icon_constants.h"
 #include "chrome/browser/ui/app_list/search/search_tags_util.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/ash/hierarchy.h"
-#include "chrome/browser/ui/webui/settings/ash/os_settings_manager.h"
 #include "chrome/browser/ui/webui/settings/ash/search/search_handler.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
@@ -38,7 +36,6 @@ using Section = chromeos::settings::mojom::Section;
 constexpr char kOsSettingsResultPrefix[] = "os-settings://";
 
 constexpr size_t kNumRequestedResults = 5u;
-constexpr size_t kMaxShownResults = 2u;
 
 // Various error states of the OsSettingsProvider. kOk is currently not emitted,
 // but may be used in future. These values persist to logs. Entries should not
@@ -93,8 +90,8 @@ bool ContainsBetterAncestor(Setting setting,
 
   // Check primary subpage only. Alternate subpages aren't used enough for the
   // check to be worthwhile.
-  if (metadata.primary.second) {
-    const auto parent_subpage = metadata.primary.second.value();
+  if (metadata.primary.subpage) {
+    const auto parent_subpage = metadata.primary.subpage.value();
     const auto it = subpages.find(parent_subpage);
     if ((it != subpages.end() && it->second >= score) ||
         ContainsBetterAncestor(parent_subpage, score, hierarchy, subpages,
@@ -103,7 +100,7 @@ bool ContainsBetterAncestor(Setting setting,
   }
 
   // Check section.
-  const auto it = sections.find(metadata.primary.first);
+  const auto it = sections.find(metadata.primary.section);
   return it != sections.end() && it->second >= score;
 }
 
@@ -162,14 +159,14 @@ void OsSettingsResult::Open(int event_flags) {
 
 OsSettingsProvider::OsSettingsProvider(
     Profile* profile,
-    ash::settings::OsSettingsManager* settings_manager)
-    : profile_(profile), settings_manager_(settings_manager) {
+    ash::settings::SearchHandler* search_handler,
+    const ash::settings::Hierarchy* hierarchy,
+    apps::AppServiceProxy* app_service_proxy)
+    : profile_(profile),
+      search_handler_(search_handler),
+      hierarchy_(hierarchy),
+      app_service_proxy_(app_service_proxy) {
   DCHECK(profile_);
-
-  if (settings_manager_) {
-    search_handler_ = settings_manager_->search_handler();
-    hierarchy_ = settings_manager_->hierarchy();
-  }
 
   // |search_handler_| can be nullptr in the case that the new OS settings
   // search chrome flag is disabled. If it is, we should effectively disable the
@@ -186,19 +183,18 @@ OsSettingsProvider::OsSettingsProvider(
   search_handler_->Observe(
       search_results_observer_receiver_.BindNewPipeAndPassRemote());
 
-  app_service_proxy_ = apps::AppServiceProxyFactory::GetForProfile(profile_);
-  DCHECK(app_service_proxy_);
+  if (app_service_proxy_) {
+    Observe(&app_service_proxy_->AppRegistryCache());
 
-  Observe(&app_service_proxy_->AppRegistryCache());
-
-  app_service_proxy_->LoadIcon(
-      app_service_proxy_->AppRegistryCache().GetAppType(
-          web_app::kOsSettingsAppId),
-      web_app::kOsSettingsAppId, apps::IconType::kStandard,
-      GetAppIconDimension(),
-      /*allow_placeholder_icon=*/false,
-      base::BindOnce(&OsSettingsProvider::OnLoadIcon,
-                     weak_factory_.GetWeakPtr()));
+    app_service_proxy_->LoadIcon(
+        app_service_proxy_->AppRegistryCache().GetAppType(
+            web_app::kOsSettingsAppId),
+        web_app::kOsSettingsAppId, apps::IconType::kStandard,
+        GetAppIconDimension(),
+        /*allow_placeholder_icon=*/false,
+        base::BindOnce(&OsSettingsProvider::OnLoadIcon,
+                       weak_factory_.GetWeakPtr()));
+  }
 }
 
 OsSettingsProvider::~OsSettingsProvider() = default;
@@ -221,8 +217,6 @@ void OsSettingsProvider::Start(const std::u16string& query) {
     return;
   }
 
-  ClearResultsSilently();
-
   // Do not return results for queries that are too short, as the results
   // generally aren't meaningful. Note this provider never provides zero-state
   // results.
@@ -238,8 +232,10 @@ void OsSettingsProvider::Start(const std::u16string& query) {
                      weak_factory_.GetWeakPtr(), query, start_time));
 }
 
-void OsSettingsProvider::ViewClosing() {
+void OsSettingsProvider::StopQuery() {
   last_query_.clear();
+  // Invalidate weak pointers to cancel existing searches.
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void OsSettingsProvider::OnSearchReturned(
@@ -271,7 +267,8 @@ void OsSettingsProvider::OnAppUpdate(const apps::AppUpdate& update) {
 
   // Request the Settings app icon when either the readiness or the icon has
   // changed.
-  if (update.ReadinessChanged() || update.IconKeyChanged()) {
+  if (app_service_proxy_ &&
+      (update.ReadinessChanged() || update.IconKeyChanged())) {
     app_service_proxy_->LoadIcon(update.AppType(), web_app::kOsSettingsAppId,
                                  apps::IconType::kStandard,
                                  GetAppIconDimension(),
@@ -351,16 +348,6 @@ std::vector<SettingsResultPtr> OsSettingsProvider::FilterResults(
       clean_results.erase(clean_results.begin() + i);
       --i;
     }
-  }
-
-  // Categorical search has its own maximum-results mechanisms, so only cap
-  // results if it is not enabled.
-  //
-  // TODO(crbug.com/1199206): This can be cleaned up once categorical search is
-  // launched.
-  if (clean_results.size() > static_cast<size_t>(kMaxShownResults) &&
-      !app_list_features::IsCategoricalSearchEnabled()) {
-    clean_results.resize(kMaxShownResults);
   }
 
   return clean_results;

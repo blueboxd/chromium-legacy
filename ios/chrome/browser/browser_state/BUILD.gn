@@ -41,6 +41,26 @@ source_set("browser_state") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
+source_set("ios_thread") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "ios_chrome_io_thread.h",
+    "ios_chrome_io_thread.mm",
+  ]
+
+  deps = [
+    "//components/variations/net",
+    "//ios/chrome/browser/net",
+    "//ios/chrome/common",
+    "//ios/components/io_thread",
+    "//ios/web/public/init",
+    "//ios/web/public/thread",
+    "//mojo/public/cpp/bindings",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
+  ]
+}
+
 source_set("browser_state_impl") {
   sources = [
     "bookmark_model_loaded_observer.cc",
@@ -67,6 +87,8 @@ source_set("browser_state_impl") {
 
   deps = [
     ":browser_state",
+    ":constants",
+    ":ios_thread",
     "//base",
     "//base:i18n",
     "//components/bookmarks/browser",
@@ -91,7 +113,7 @@ source_set("browser_state_impl") {
     "//components/sync_preferences",
     "//components/user_prefs",
     "//google_apis",
-    "//ios/chrome/browser",
+    "//ios/chrome/browser/application_context",
     "//ios/chrome/browser/autocomplete",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/bookmarks",
@@ -121,10 +143,13 @@ source_set("browser_state_impl") {
     "//ios/chrome/browser/ntp_snippets",
     "//ios/chrome/browser/optimization_guide",
     "//ios/chrome/browser/passwords",
+    "//ios/chrome/browser/paths",
     "//ios/chrome/browser/policy",
     "//ios/chrome/browser/policy_url_blocking",
+    "//ios/chrome/browser/power_bookmarks",
     "//ios/chrome/browser/prefs",
     "//ios/chrome/browser/prefs:browser_prefs",
+    "//ios/chrome/browser/prefs:pref_names",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/safe_browsing",
     "//ios/chrome/browser/screen_time:buildflags",
@@ -133,6 +158,7 @@ source_set("browser_state_impl") {
     "//ios/chrome/browser/send_tab_to_self",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/signin:system_identity",
     "//ios/chrome/browser/signin:trusted_vault_factory",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/sync",
@@ -168,7 +194,6 @@ source_set("browser_state_impl") {
     deps += [ "//ios/chrome/browser/credential_provider" ]
   }
   allow_circular_includes_from = [
-    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state_metrics",
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/prefs:browser_prefs",
@@ -176,6 +201,15 @@ source_set("browser_state_impl") {
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/sync/glue",
   ]
+}
+
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "constants.cc",
+    "constants.h",
+  ]
+  deps = [ "//base" ]
 }
 
 source_set("unit_tests") {
@@ -220,7 +254,6 @@ source_set("test_support") {
     "//components/undo",
     "//components/user_prefs",
     "//components/webdata_services",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/policy:policy",
     "//ios/chrome/browser/prefs",

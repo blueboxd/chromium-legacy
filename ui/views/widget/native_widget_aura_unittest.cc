@@ -875,5 +875,156 @@ TEST_F(NativeWidgetAuraTest, MinimizedWidgetRestoreBounds) {
   EXPECT_EQ(restore_bounds, window->bounds());
 }
 
+// NativeWidgetAura has a protected destructor.
+// Use a test object that overrides the destructor for unit tests.
+class TestNativeWidgetAura : public NativeWidgetAura {
+ public:
+  explicit TestNativeWidgetAura(internal::NativeWidgetDelegate* delegate)
+      : NativeWidgetAura(delegate) {}
+
+  TestNativeWidgetAura(const TestNativeWidgetAura&) = delete;
+  TestNativeWidgetAura& operator=(const TestNativeWidgetAura&) = delete;
+
+  ~TestNativeWidgetAura() override = default;
+};
+
+// Series of tests that verifies having a null NativeWidgetDelegate doesn't
+// crash.
+class NativeWidgetAuraWithNoDelegateTest : public NativeWidgetAuraTest {
+ public:
+  NativeWidgetAuraWithNoDelegateTest() : widget(std::make_unique<Widget>()) {}
+
+  NativeWidgetAuraWithNoDelegateTest(
+      const NativeWidgetAuraWithNoDelegateTest&) = delete;
+  NativeWidgetAuraWithNoDelegateTest& operator=(
+      const NativeWidgetAuraWithNoDelegateTest&) = delete;
+
+  ~NativeWidgetAuraWithNoDelegateTest() override = default;
+
+  // testing::Test overrides:
+  void SetUp() override {
+    NativeWidgetAuraTest::SetUp();
+    native_widget = new TestNativeWidgetAura(widget.get());
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+    params.ownership = views::Widget::InitParams::CLIENT_OWNS_WIDGET;
+    params.native_widget = native_widget;
+    widget->Init(std::move(params));
+
+    // Widget will create a DefaultWidgetDelegate if no delegates are provided.
+    // Call Widget::OnNativeWidgetDestroyed() to destroy
+    // the WidgetDelegate properly.
+    widget->OnNativeWidgetDestroyed();
+    widget.reset();
+  }
+
+  void TearDown() override {
+    native_widget->CloseNow();
+    ViewsTestBase::TearDown();
+  }
+
+  std::unique_ptr<Widget> widget;
+  raw_ptr<TestNativeWidgetAura> native_widget;
+};
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, GetHitTestMaskTest) {
+  SkPath mask;
+  native_widget->GetHitTestMask(&mask);
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, GetMaximumSizeTest) {
+  native_widget->GetMaximumSize();
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, GetMinimumSizeTest) {
+  native_widget->GetMinimumSize();
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, GetNonClientComponentTest) {
+  native_widget->GetNonClientComponent(gfx::Point());
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, GetWidgetTest) {
+  native_widget->GetWidget();
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, HasHitTestMaskTest) {
+  native_widget->HasHitTestMask();
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, OnBoundsChangedTest) {
+  native_widget->OnCaptureLost();
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, OnCaptureLostTest) {
+  native_widget->OnBoundsChanged(gfx::Rect(), gfx::Rect());
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, OnKeyEventTest) {
+  ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_0, ui::EF_NONE);
+  native_widget->OnKeyEvent(&key);
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, OnPaintTest) {
+  native_widget->OnPaint(ui::PaintContext(nullptr, 0, gfx::Rect(), false));
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, OnResizeLoopEndedTest) {
+  native_widget->OnResizeLoopEnded(nullptr);
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, OnResizeLoopStartedTest) {
+  native_widget->OnResizeLoopStarted(nullptr);
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, OnScrollEventTest) {
+  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::Point(), ui::EventTimeForNow(), 0,
+                         0, 0, 0, 0, 0);
+  native_widget->OnScrollEvent(&scroll);
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, OnTransientParentChangedTest) {
+  native_widget->OnTransientParentChanged(nullptr);
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, OnWindowAddedToRootWindowTest) {
+  native_widget->OnWindowAddedToRootWindow(nullptr);
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, OnWindowPropertyChangedTest) {
+  native_widget->OnWindowPropertyChanged(nullptr, nullptr, 0);
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, OnWindowRemovingFromRootWindowTest) {
+  native_widget->OnWindowRemovingFromRootWindow(nullptr, nullptr);
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest,
+       OnWindowTargetVisibilityChangedTest) {
+  native_widget->OnWindowTargetVisibilityChanged(false);
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, OnWindowActivatedTest) {
+  native_widget->OnWindowActivated(
+      wm::ActivationChangeObserver::ActivationReason::ACTIVATION_CLIENT,
+      native_widget->GetNativeView(), nullptr);
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, OnWindowFocusedTest) {
+  native_widget->OnWindowFocused(nullptr, nullptr);
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, ShouldActivateTest) {
+  native_widget->ShouldActivate();
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest,
+       ShouldDescendIntoChildForEventHandlingTest) {
+  native_widget->ShouldDescendIntoChildForEventHandling(nullptr, gfx::Point());
+}
+
+TEST_F(NativeWidgetAuraWithNoDelegateTest, UpdateVisualStateTest) {
+  native_widget->UpdateVisualState();
+}
+
 }  // namespace
 }  // namespace views

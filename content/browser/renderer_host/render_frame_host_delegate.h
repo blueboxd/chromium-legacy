@@ -33,6 +33,7 @@
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -123,8 +124,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Callback used with HandleClipboardPaste() method.  If the clipboard paste
   // is allowed to proceed, the callback is called with true.  Otherwise the
   // callback is called with false.
-  using ClipboardPasteContentAllowed =
-      RenderFrameHostImpl::ClipboardPasteContentAllowed;
   using IsClipboardPasteContentAllowedCallback =
       RenderFrameHostImpl::IsClipboardPasteContentAllowedCallback;
 
@@ -532,7 +531,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // unknown data types.
   //
   // The implementation is expected to show UX to the user if needed.  If
-  // shown, the UX should be associated with the specific render frame host.
+  // shown, the UX should be associated with the specific RenderFrameHost.
   //
   // The callback is called, possibly asynchronously, with a status indicating
   // whether the operation is allowed or not.

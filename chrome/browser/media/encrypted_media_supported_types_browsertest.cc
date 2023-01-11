@@ -477,8 +477,7 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
  protected:
   // Features to enable or disable for the test. Must be updated in the test
   // constructor (before SetUpDefaultCommandLine()) to take effect.
-  std::vector<base::test::ScopedFeatureList::FeatureAndParams>
-      enabled_features_;
+  std::vector<base::test::FeatureRefAndParams> enabled_features_;
   std::vector<base::test::FeatureRef> disabled_features_;
   base::test::ScopedFeatureList feature_list_;
 
@@ -953,7 +952,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
 
   // Child key systems for External Clear Key are generally supported except
   // for the special one explicitly marked as "invalid". See
-  // ExternalClearKeyProperties.
+  // ExternalClearKeySystemInfo.
   EXPECT_UNSUPPORTED(
       IsSupportedByKeySystem("org.chromium.externalclearkey.invalid",
                              kVideoWebMMimeType, video_webm_codecs()));

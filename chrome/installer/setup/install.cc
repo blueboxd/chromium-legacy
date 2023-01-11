@@ -21,7 +21,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
-#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -53,7 +52,6 @@
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/work_item_list.h"
-#include "components/version_info/channel.h"
 
 namespace installer {
 
@@ -183,9 +181,9 @@ void CopyPreferenceFileForFirstRun(const InstallerState& installer_state,
 // and removes the whole directory during rollback.
 InstallStatus InstallNewVersion(const InstallParams& install_params,
                                 bool is_downgrade_allowed) {
-  const InstallerState& installer_state = install_params.installer_state;
-  const base::Version& current_version = install_params.current_version;
-  const base::Version& new_version = install_params.new_version;
+  const InstallerState& installer_state = *install_params.installer_state;
+  const base::Version& current_version = *install_params.current_version;
+  const base::Version& new_version = *install_params.new_version;
 
   installer_state.SetStage(BUILDING);
 
@@ -304,26 +302,6 @@ bool HasVisualElementAssets(const base::FilePath& base_path,
   return true;
 }
 
-// This function will control the rollout of the installer pinning Chrome to the
-// taskbar on Win10+, for Beta and Stable channels.
-bool ShouldPinChromeToTaskbar() {
-  if (base::win::GetVersion() < base::win::Version::WIN10)
-    return true;
-  switch (install_static::GetChromeChannel()) {
-    case version_info::Channel::BETA: {
-      // Increase kBetaRolloutPercentage to roll out to beta channel.
-      constexpr int kBetaRolloutPercentage = 50;
-      return base::RandInt(0, 99) < kBetaRolloutPercentage;
-    }
-    case version_info::Channel::STABLE: {
-      constexpr int kStableRolloutPercentage = 0;
-      return base::RandInt(0, 99) < kStableRolloutPercentage;
-    }
-    default:
-      return false;
-  }
-}
-
 }  // namespace
 
 bool CreateVisualElementsManifest(const base::FilePath& src_path,
@@ -418,11 +396,7 @@ void CreateOrUpdateShortcuts(const base::FilePath& target,
   if (shortcut_operation == ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS ||
       shortcut_operation ==
           ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL) {
-    // ShouldPinChromeToTaskbar controls the rollout of installer pinning to
-    // the taskbar, for Win10+ beta and stable channels.
-    bool pin_to_taskbar =
-        !do_not_create_taskbar_shortcut && ShouldPinChromeToTaskbar();
-    start_menu_properties.set_pin_to_taskbar(pin_to_taskbar);
+    start_menu_properties.set_pin_to_taskbar(!do_not_create_taskbar_shortcut);
   }
 
   const CLSID toast_activator_clsid = install_static::GetToastActivatorClsid();
@@ -532,11 +506,11 @@ void RunShortcutCreationInChildProc(
 InstallStatus InstallOrUpdateProduct(const InstallParams& install_params,
                                      const base::FilePath& prefs_path,
                                      const InitialPreferences& prefs) {
-  const InstallationState& original_state = install_params.installation_state;
-  const InstallerState& installer_state = install_params.installer_state;
-  const base::FilePath& setup_path = install_params.setup_path;
-  const base::FilePath& src_path = install_params.src_path;
-  const base::Version& new_version = install_params.new_version;
+  const InstallationState& original_state = *install_params.installation_state;
+  const InstallerState& installer_state = *install_params.installer_state;
+  const base::FilePath& setup_path = *install_params.setup_path;
+  const base::FilePath& src_path = *install_params.src_path;
+  const base::Version& new_version = *install_params.new_version;
 
   // TODO(robertshield): Removing the pending on-reboot moves should be done
   // elsewhere.

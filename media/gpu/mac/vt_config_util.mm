@@ -152,8 +152,9 @@ CFStringRef GetMatrix(media::VideoColorSpace::MatrixID matrix_id) {
   }
 }
 
-void SetContentLightLevelInfo(const gfx::HDRMetadata& hdr_metadata,
-                              NSMutableDictionary<NSString*, id>* extensions) {
+void SetContentLightLevelInfo(
+    const absl::optional<gfx::HDRMetadata>& hdr_metadata,
+    NSMutableDictionary<NSString*, id>* extensions) {
   if (@available(macos 10.13, *)) {
     SetDictionaryValue(
         extensions, kCMFormatDescriptionExtension_ContentLightLevelInfo,
@@ -164,8 +165,9 @@ void SetContentLightLevelInfo(const gfx::HDRMetadata& hdr_metadata,
   }
 }
 
-void SetColorVolumeMetadata(const gfx::HDRMetadata& hdr_metadata,
-                            NSMutableDictionary<NSString*, id>* extensions) {
+void SetColorVolumeMetadata(
+    const absl::optional<gfx::HDRMetadata>& hdr_metadata,
+    NSMutableDictionary<NSString*, id>* extensions) {
   if (@available(macos 10.13, *)) {
     SetDictionaryValue(
         extensions, kCMFormatDescriptionExtension_MasteringDisplayColorVolume,
@@ -260,9 +262,10 @@ CFMutableDictionaryRef CreateFormatExtensions(
   SetDictionaryValue(extensions, kCMFormatDescriptionExtension_FullRangeVideo,
                      @(color_space.range == gfx::ColorSpace::RangeID::FULL));
 
-  if (hdr_metadata) {
-    SetContentLightLevelInfo(*hdr_metadata, extensions);
-    SetColorVolumeMetadata(*hdr_metadata, extensions);
+  // Set metadata for PQ signals.
+  if (color_space.transfer == VideoColorSpace::TransferID::SMPTEST2084) {
+    SetContentLightLevelInfo(hdr_metadata, extensions);
+    SetColorVolumeMetadata(hdr_metadata, extensions);
   }
 
   if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX)

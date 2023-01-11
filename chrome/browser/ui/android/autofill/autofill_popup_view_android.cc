@@ -13,10 +13,10 @@
 #include "base/strings/strcat.h"
 #include "chrome/android/chrome_jni_headers/AutofillPopupBridge_jni.h"
 #include "chrome/browser/android/resource_mapper.h"
-#include "chrome/browser/autofill/autofill_keyboard_accessory_adapter.h"
+#include "chrome/browser/autofill/autofill_popup_controller_utils.h"
 #include "chrome/browser/ui/android/autofill/autofill_keyboard_accessory_view.h"
+#include "chrome/browser/ui/autofill/autofill_keyboard_accessory_adapter.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
-#include "chrome/browser/ui/autofill/autofill_popup_controller_utils.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -78,32 +78,31 @@ void AutofillPopupViewAndroid::OnSuggestionsChanged() {
       Java_AutofillPopupBridge_createAutofillSuggestionArray(env, count);
 
   for (size_t i = 0; i < count; ++i) {
-    ScopedJavaLocalRef<jstring> label;
-    ScopedJavaLocalRef<jstring> secondary_label;
+    std::u16string label;
+    std::u16string secondary_label;
     if (base::FeatureList::IsEnabled(
-            features::kAutofillEnableVirtualCardMetadata)) {
-      label = base::android::ConvertUTF16ToJavaString(
-          env, controller_->GetSuggestionMainTextAt(i));
-      secondary_label = base::android::ConvertUTF16ToJavaString(
-          env, controller_->GetSuggestionMinorTextAt(i));
+            features::kAutofillEnableVirtualCardMetadata) &&
+        base::FeatureList::IsEnabled(
+            features::kAutofillEnableCardProductName)) {
+      label = controller_->GetSuggestionMainTextAt(i);
+      secondary_label = controller_->GetSuggestionMinorTextAt(i);
     } else {
-      label = base::android::ConvertUTF16ToJavaString(
-          env,
-          controller_->GetSuggestionMinorTextAt(i).empty()
-              ? controller_->GetSuggestionMainTextAt(i)
-              : base::StrCat({controller_->GetSuggestionMainTextAt(i), u" ",
-                              controller_->GetSuggestionMinorTextAt(i)}));
+      label = controller_->GetSuggestionMinorTextAt(i).empty()
+                  ? controller_->GetSuggestionMainTextAt(i)
+                  : base::StrCat({controller_->GetSuggestionMainTextAt(i), u" ",
+                                  controller_->GetSuggestionMinorTextAt(i)});
     }
     std::vector<std::vector<autofill::Suggestion::Text>> suggestion_labels =
         controller_->GetSuggestionLabelsAt(i);
     std::u16string sublabel;
+    std::u16string secondary_sublabel;
     std::u16string item_tag;
     DCHECK_LE(suggestion_labels.size(), 2U);
     if (suggestion_labels.size() > 0) {
-      // TODO(crbug.com/1313616): Allow displaying more than one entry for each
-      // row once the card name is populated.
-      DCHECK_EQ(suggestion_labels[0].size(), 1U);
+      DCHECK_LE(suggestion_labels[0].size(), 2U);
       sublabel = std::move(suggestion_labels[0][0].value);
+      if (suggestion_labels[0].size() > 1)
+        secondary_sublabel = std::move(suggestion_labels[0][1].value);
     }
     if (suggestion_labels.size() > 1) {
       DCHECK_EQ(suggestion_labels[1].size(), 1U);
@@ -127,8 +126,10 @@ void AutofillPopupViewAndroid::OnSuggestionsChanged() {
         suggestion.frontend_id == POPUP_ITEM_ID_MIXED_FORM_MESSAGE;
 
     Java_AutofillPopupBridge_addToAutofillSuggestionArray(
-        env, data_array, i, label, secondary_label,
+        env, data_array, i, base::android::ConvertUTF16ToJavaString(env, label),
+        base::android::ConvertUTF16ToJavaString(env, secondary_label),
         base::android::ConvertUTF16ToJavaString(env, sublabel),
+        base::android::ConvertUTF16ToJavaString(env, secondary_sublabel),
         base::android::ConvertUTF16ToJavaString(env, item_tag), android_icon_id,
         suggestion.is_icon_at_start, suggestion.frontend_id, is_deletable,
         is_label_multiline, /*isLabelBold*/ false,

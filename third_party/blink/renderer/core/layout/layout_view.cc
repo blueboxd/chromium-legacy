@@ -29,8 +29,6 @@
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
-#include "third_party/blink/renderer/core/document_transition/document_transition.h"
-#include "third_party/blink/renderer/core/document_transition/document_transition_supplement.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -60,6 +58,8 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/view_painter.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -292,8 +292,11 @@ bool LayoutView::ShouldPlaceBlockDirectionScrollbarOnLogicalLeft() const {
   NOT_DESTROYED();
   LocalFrame& frame = GetFrameView()->GetFrame();
   // See crbug.com/249860
-  if (frame.IsOutermostMainFrame())
-    return false;
+  if (frame.IsOutermostMainFrame()) {
+    Settings* settings = GetDocument().GetSettings();
+    if (!settings || !settings->GetPlaceRTLScrollbarsOnLeftSideInMainFrame())
+      return false;
+  }
   // <body> inherits 'direction' from <html>, so checking style on the body is
   // sufficient.
   if (Element* body = GetDocument().body()) {
@@ -411,7 +414,7 @@ void LayoutView::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
   NOT_DESTROYED();
   if (!ancestor && !(mode & kIgnoreTransforms) &&
       ShouldUseTransformFromContainer(nullptr)) {
-    TransformationMatrix t;
+    gfx::Transform t;
     GetTransformFromContainer(nullptr, PhysicalOffset(), t);
     transform_state.ApplyTransform(t);
   }
@@ -587,24 +590,26 @@ PhysicalRect LayoutView::ViewRect() const {
   if (!frame_view_)
     return PhysicalRect();
 
+  // TODO(bokan): This shouldn't be just for the outermost main frame, we
+  // should do it for all frames. crbug.com/1311518.
   if (frame_view_->GetFrame().IsOutermostMainFrame()) {
-    auto* supplement =
-        DocumentTransitionSupplement::FromIfExists(GetDocument());
-    if (supplement && !supplement->GetTransition()->IsIdle()) {
-      // If we're capturing a transition snapshot, the root transition needs to
-      // produce the snapshot at a known stable size, excluding all insetting
-      // UI like mobile URL bars and virtual keyboards.
+    if (auto* transition =
+            ViewTransitionUtils::GetActiveTransition(GetDocument());
+        transition && transition->IsRootTransitioning()) {
+      // If we're capturing a transition snapshot, the root transition
+      // needs to produce the snapshot at a known stable size, excluding
+      // all insetting UI like mobile URL bars and virtual keyboards.
 
-      // This adjustment should always be an expansion of the current viewport.
-      DCHECK_GE(supplement->GetTransition()->GetSnapshotViewportRect().width(),
+      // This adjustment should always be an expansion of the current
+      // viewport.
+      DCHECK_GE(transition->GetSnapshotViewportRect().width(),
                 frame_view_->Size().width());
-      DCHECK_GE(supplement->GetTransition()->GetSnapshotViewportRect().height(),
+      DCHECK_GE(transition->GetSnapshotViewportRect().height(),
                 frame_view_->Size().height());
 
       return PhysicalRect(
           PhysicalOffset(),
-          PhysicalSize(
-              supplement->GetTransition()->GetSnapshotViewportRect().size()));
+          PhysicalSize(transition->GetSnapshotViewportRect().size()));
     }
   }
 
@@ -622,7 +627,13 @@ PhysicalRect LayoutView::OverflowClipRect(
   }
 
   rect.offset += location;
-  if (IsScrollContainer())
+
+  // When capturing the root snapshot for a transition, we paint the
+  // background color where the scrollbar would be so keep the clip rect
+  // the full ViewRect size.
+  auto* transition = ViewTransitionUtils::GetActiveTransition(GetDocument());
+  bool is_in_transition = transition && transition->IsRootTransitioning();
+  if (IsScrollContainer() && !is_in_transition)
     ExcludeScrollbars(rect, overlay_scrollbar_clip_behavior);
 
   return rect;

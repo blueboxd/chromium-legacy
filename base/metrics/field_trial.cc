@@ -79,17 +79,6 @@ const size_t kFieldTrialAllocationSize = 128 << 10;  // 128 KiB
 constexpr MachPortsForRendezvous::key_type kFieldTrialRendezvousKey = 'fldt';
 #endif
 
-class SessionEntropyProvider : public FieldTrial::EntropyProvider {
- public:
-  SessionEntropyProvider() = default;
-  ~SessionEntropyProvider() override = default;
-
-  double GetEntropyForTrial(StringPiece trial_name,
-                            uint32_t randomization_seed) const override {
-    return RandDouble();
-  }
-};
-
 // Writes out string1 and then string2 to pickle.
 void WriteStringPair(Pickle* pickle,
                      const StringPiece& string1,
@@ -415,10 +404,6 @@ void FieldTrial::SetGroupChoice(const std::string& group_name, int number) {
 }
 
 void FieldTrial::FinalizeGroupChoice() {
-  FinalizeGroupChoiceImpl(false);
-}
-
-void FieldTrial::FinalizeGroupChoiceImpl(bool is_locked) {
   if (group_ != kNotFinalized)
     return;
   accumulated_group_probability_ = divisor_;
@@ -426,10 +411,6 @@ void FieldTrial::FinalizeGroupChoiceImpl(bool is_locked) {
   // finalized.
   DCHECK(!forced_);
   SetGroupChoice(default_group_name_, kDefaultGroupNumber);
-
-  // Add the field trial to shared memory.
-  if (trial_registered_)
-    FieldTrialList::OnGroupFinalized(is_locked, this);
 }
 
 bool FieldTrial::GetActiveGroup(ActiveGroup* active_group) const {
@@ -442,7 +423,7 @@ bool FieldTrial::GetActiveGroup(ActiveGroup* active_group) const {
 }
 
 void FieldTrial::GetStateWhileLocked(PickleState* field_trial_state) {
-  FinalizeGroupChoiceImpl(true);
+  FinalizeGroupChoice();
   field_trial_state->trial_name = &trial_name_;
   field_trial_state->group_name = &group_name_;
   field_trial_state->activated = group_reported_;
@@ -875,20 +856,6 @@ void FieldTrialList::RemoveObserver(Observer* observer) {
 }
 
 // static
-void FieldTrialList::OnGroupFinalized(bool is_locked, FieldTrial* field_trial) {
-  if (!global_)
-    return;
-  if (is_locked) {
-    AddToAllocatorWhileLocked(global_->field_trial_allocator_.get(),
-                              field_trial);
-  } else {
-    AutoLock auto_lock(global_->lock_);
-    AddToAllocatorWhileLocked(global_->field_trial_allocator_.get(),
-                              field_trial);
-  }
-}
-
-// static
 void FieldTrialList::NotifyFieldTrialGroupSelection(FieldTrial* field_trial) {
   if (!global_)
     return;
@@ -1063,14 +1030,6 @@ FieldTrialList::GetAllFieldTrialsFromPersistentAllocator(
     entries.push_back(entry);
   }
   return entries;
-}
-
-// static
-const FieldTrial::EntropyProvider&
-FieldTrialList::GetEntropyProviderForSessionRandomization() {
-  static const base::NoDestructor<SessionEntropyProvider>
-      session_entropy_provider;
-  return *session_entropy_provider;
 }
 
 // static

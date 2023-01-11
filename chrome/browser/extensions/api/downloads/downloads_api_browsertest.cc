@@ -197,7 +197,7 @@ class DownloadsEventsListener : public EventRouter::TestObserver {
     }
 
    private:
-    raw_ptr<Profile> profile_;
+    raw_ptr<Profile, DanglingUntriaged> profile_;
     std::string event_name_;
     std::string json_args_;
     base::Value args_;
@@ -266,7 +266,7 @@ class DownloadsEventsListener : public EventRouter::TestObserver {
   base::Time last_wait_;
   std::unique_ptr<Event> waiting_for_;
   base::circular_deque<std::unique_ptr<Event>> events_;
-  raw_ptr<Profile> profile_;
+  raw_ptr<Profile, DanglingUntriaged> profile_;
 };
 
 // Object waiting for a download open event.
@@ -748,8 +748,8 @@ class DownloadExtensionTest : public ExtensionApiTest {
 
   raw_ptr<const Extension> extension_;
   raw_ptr<const Extension> second_extension_;
-  raw_ptr<Browser> incognito_browser_;
-  raw_ptr<Browser> current_browser_;
+  raw_ptr<Browser, DanglingUntriaged> incognito_browser_;
+  raw_ptr<Browser, DanglingUntriaged> current_browser_;
   std::unique_ptr<DownloadsEventsListener> events_listener_;
 
   std::unique_ptr<net::test_server::ControllableHttpResponse> first_download_;
@@ -1229,13 +1229,14 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
     ASSERT_FALSE(base::PathExists(fake_path));
   }
 
-  for (auto iter = all_downloads.begin(); iter != all_downloads.end(); ++iter) {
+  for (const auto* download : all_downloads) {
     std::string result_string;
     // Use a MockIconExtractorImpl to test if the correct path is being passed
     // into the DownloadFileIconExtractor.
-    EXPECT_TRUE(RunFunctionAndReturnString(MockedGetFileIconFunction(
-            (*iter)->GetTargetFilePath(), IconLoader::NORMAL, "hello"),
-        base::StringPrintf("[%d, {\"size\": 32}]", (*iter)->GetId()),
+    EXPECT_TRUE(RunFunctionAndReturnString(
+        MockedGetFileIconFunction(download->GetTargetFilePath(),
+                                  IconLoader::NORMAL, "hello"),
+        base::StringPrintf("[%d, {\"size\": 32}]", download->GetId()),
         &result_string));
     EXPECT_STREQ("hello", result_string.c_str());
   }
@@ -4504,11 +4505,11 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
     DownloadManager::DownloadVector items;
     manager->GetAllDownloads(&items);
-    for (auto iter = items.begin(); iter != items.end(); ++iter) {
-      if ((*iter)->GetState() == DownloadItem::IN_PROGRESS) {
+    for (auto* download_item : items) {
+      if (download_item->GetState() == DownloadItem::IN_PROGRESS) {
         // There should be only one IN_PROGRESS item.
         EXPECT_EQ(nullptr, item);
-        item = *iter;
+        item = download_item;
       }
     }
     ASSERT_TRUE(item);
@@ -4810,7 +4811,8 @@ IN_PROC_BROWSER_TEST_F(
     DownloadExtensionBubbleEnabledTest_SetUiOptionsShowDetails) {
   LoadExtension("downloads_split");
   DownloadManager::DownloadVector items;
-  CreateTwoDownloads(&items);
+  CreateFirstSlowTestDownload();
+  GetCurrentManager()->GetAllDownloads(&items);
   ScopedItemVectorCanceller delete_items(&items);
 
   EXPECT_TRUE(GetDownloadToolbarButton()->IsShowing());
@@ -4818,14 +4820,10 @@ IN_PROC_BROWSER_TEST_F(
   // extension.
   EXPECT_FALSE(GetDownloadToolbarButton()->IsShowingDetails());
 
-  items[0]->Cancel(true);
-  EXPECT_TRUE(GetDownloadToolbarButton()->IsShowing());
-  // Details are not shown because the download item is observed by an
-  // extension.
-  EXPECT_FALSE(GetDownloadToolbarButton()->IsShowingDetails());
-
   DisableExtension(GetExtensionId());
-  items[1]->Cancel(true);
+
+  CreateSecondSlowTestDownload();
+  GetCurrentManager()->GetAllDownloads(&items);
   EXPECT_TRUE(GetDownloadToolbarButton()->IsShowing());
   // Details are shown because the extension is disabled.
   EXPECT_TRUE(GetDownloadToolbarButton()->IsShowingDetails());

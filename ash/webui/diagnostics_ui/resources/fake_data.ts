@@ -620,11 +620,20 @@ export const fakeTouchDevices: TouchDeviceInfo[] = [
     connectionType: ConnectionType.kInternal,
     type: TouchDeviceType.kPointer,
     name: 'Sample touchpad',
+    testable: true,
   },
   {
     id: 7,
     connectionType: ConnectionType.kInternal,
     type: TouchDeviceType.kDirect,
     name: 'Sample touchscreen',
+    testable: true,
+  },
+  {
+    id: 8,
+    connectionType: ConnectionType.kInternal,
+    type: TouchDeviceType.kDirect,
+    name: 'Sample untestable touchscreen',
+    testable: false,
   },
 ];

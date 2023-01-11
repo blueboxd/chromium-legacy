@@ -24,7 +24,6 @@
 #include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "components/permissions/test/permission_request_observer.h"
 #include "content/public/browser/disallow_activation_reason.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -1628,7 +1627,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestWithPrerendererTest,
       content::EvalJs(prerender_render_frame_host, "eventsSeen");
   std::vector<std::string> eventsSeen;
   base::Value resultsList = results.ExtractList();
-  for (auto& result : resultsList.GetListDeprecated())
+  for (const auto& result : resultsList.GetList())
     eventsSeen.push_back(result.GetString());
   EXPECT_THAT(eventsSeen, testing::ElementsAreArray(
                               {"accessGeolocation (prerendering: true)",
@@ -1784,16 +1783,11 @@ class PermissionRequestFromExtension : public extensions::ExtensionApiTest {
   // with `id`.
   content::WebContents* OpenPopupViaToolbar(const std::string& id) {
     EXPECT_FALSE(id.empty());
-    content::WindowedNotificationObserver popup_observer(
-        content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-        content::NotificationService::AllSources());
+    content::CreateAndLoadWebContentsObserver popup_observer;
     ExtensionActionTestHelper::Create(browser())->Press(id);
-    popup_observer.Wait();
+    content::WebContents* popup = popup_observer.Wait();
     EnsurePopupActive();
-    const auto& source =
-        static_cast<const content::Source<content::WebContents>&>(
-            popup_observer.source());
-    return source.ptr();
+    return popup;
   }
 
   void VerifyExtensionsPopupPage(std::string extension_path) {

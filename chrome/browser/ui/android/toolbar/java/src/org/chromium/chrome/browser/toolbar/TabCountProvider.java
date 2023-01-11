@@ -9,11 +9,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 
 import java.util.List;
 
@@ -69,10 +67,8 @@ public class TabCountProvider {
         addObserver(observer);
 
         if (mTabModelSelector != null && mTabModelSelector.isTabStateInitialized()) {
-            observer.onTabCountChanged(mTabModelSelector.getTabModelFilterProvider()
-                                               .getCurrentTabModelFilter()
-                                               .getCount(),
-                    mTabModelSelector.isIncognitoSelected());
+            observer.onTabCountChanged(
+                    getCurrentTotalTabCount(), mTabModelSelector.isIncognitoSelected());
         }
     }
 
@@ -166,11 +162,7 @@ public class TabCountProvider {
     private void updateTabCount() {
         if (!mTabModelSelector.isTabStateInitialized()) return;
 
-        final TabModelFilter modelFilter =
-                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
-        final int tabCount = (modelFilter instanceof TabGroupModelFilter)
-                ? ((TabGroupModelFilter) modelFilter).getTotalTabCount()
-                : modelFilter.getCount();
+        final int tabCount = getCurrentTotalTabCount();
         final boolean isIncognito = mTabModelSelector.isIncognitoSelected();
 
         if (mTabCount == tabCount && mIsIncognito == isIncognito) return;
@@ -181,5 +173,11 @@ public class TabCountProvider {
         for (TabCountObserver observer : mTabCountObservers) {
             observer.onTabCountChanged(tabCount, isIncognito);
         }
+    }
+
+    private int getCurrentTotalTabCount() {
+        return mTabModelSelector.getTabModelFilterProvider()
+                .getCurrentTabModelFilter()
+                .getTotalTabCount();
     }
 }

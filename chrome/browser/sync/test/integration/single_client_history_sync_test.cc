@@ -3,16 +3,22 @@
 // found in the LICENSE file.
 
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/test/integration/fake_server_match_status_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/sync/test/integration/typed_urls_helper.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/test/base/chrome_test_utils.h"
+#include "components/history/core/browser/history_types.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/sync_service_impl.h"
 #include "components/sync/protocol/history_specifics.pb.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+#include "sync_service_impl_harness.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
@@ -117,6 +123,51 @@ MATCHER(StandardFieldsArePopulated, "") {
          arg.redirect_entries(0).originator_visit_id() > 0 &&
          !arg.redirect_entries(0).url().empty() && arg.has_browser_type() &&
          arg.window_id() > 0 && arg.tab_id() > 0 && arg.task_id() > 0;
+}
+
+sync_pb::HistorySpecifics CreateSpecifics(
+    base::Time visit_time,
+    const std::string& originator_cache_guid,
+    const std::vector<GURL>& urls,
+    const std::vector<history::VisitID>& originator_visit_ids) {
+  DCHECK_EQ(originator_visit_ids.size(), urls.size());
+  sync_pb::HistorySpecifics specifics;
+  specifics.set_visit_time_windows_epoch_micros(
+      visit_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  specifics.set_originator_cache_guid(originator_cache_guid);
+  specifics.mutable_page_transition()->set_core_transition(
+      sync_pb::SyncEnums_PageTransition_LINK);
+  for (size_t i = 0; i < urls.size(); ++i) {
+    auto* redirect_entry = specifics.add_redirect_entries();
+    redirect_entry->set_originator_visit_id(originator_visit_ids[i]);
+    redirect_entry->set_url(urls[i].spec());
+    if (i > 0) {
+      redirect_entry->set_redirect_type(
+          sync_pb::SyncEnums_PageTransitionRedirectType_SERVER_REDIRECT);
+    }
+  }
+  return specifics;
+}
+
+sync_pb::HistorySpecifics CreateSpecifics(
+    base::Time visit_time,
+    const std::string& originator_cache_guid,
+    const GURL& url,
+    history::VisitID originator_visit_id = 0) {
+  return CreateSpecifics(visit_time, originator_cache_guid, std::vector{url},
+                         std::vector{originator_visit_id});
+}
+
+std::unique_ptr<syncer::LoopbackServerEntity> CreateFakeServerEntity(
+    const sync_pb::HistorySpecifics& specifics) {
+  sync_pb::EntitySpecifics entity;
+  *entity.mutable_history() = specifics;
+  return syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
+      /*non_unique_name=*/"",
+      /*client_tag=*/
+      base::NumberToString(specifics.visit_time_windows_epoch_micros()), entity,
+      /*creation_time=*/0,
+      /*last_modified_time=*/0);
 }
 
 std::vector<sync_pb::HistorySpecifics> SyncEntitiesToHistorySpecifics(
@@ -245,11 +296,6 @@ class SingleClientHistorySyncTest : public SyncTest {
     return ServerHistoryMatchChecker(matcher).Wait();
   }
 
-  std::vector<sync_pb::HistorySpecifics> GetAllServerHistory() {
-    return SyncEntitiesToHistorySpecifics(
-        fake_server_->GetSyncEntitiesByModelType(syncer::HISTORY));
-  }
-
   content::WebContents* GetActiveWebContents() {
 #if BUILDFLAG(IS_ANDROID)
     return chrome_test_utils::GetActiveWebContents(this);
@@ -301,6 +347,52 @@ IN_PROC_BROWSER_TEST_F(SingleClientHistorySyncTest,
   EXPECT_TRUE(WaitForHistory(UnorderedElementsAre(UrlIs(synced_url1.spec()),
                                                   UrlIs(synced_url2.spec()))));
 }
+
+// TODO(crbug.com/1373448): EnterSyncPausedStateForPrimaryAccount is currently
+// not supported on Android. Enable this test once it is.
+#if !BUILDFLAG(IS_ANDROID)
+IN_PROC_BROWSER_TEST_F(SingleClientHistorySyncTest, DoesNotUploadWhilePaused) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Navigate somewhere and make sure the URL arrives on the server.
+  GURL synced_url1 =
+      embedded_test_server()->GetURL("synced1.com", "/sync/simple.html");
+  NavigateToURL(synced_url1);
+  ASSERT_TRUE(WaitForHistory(UnorderedElementsAre(UrlIs(synced_url1.spec()))));
+
+  // Enter the Sync-paused state.
+  GetClient(0)->EnterSyncPausedStateForPrimaryAccount();
+  ASSERT_EQ(GetSyncService(0)->GetTransportState(),
+            syncer::SyncService::TransportState::PAUSED);
+
+  // Navigate somewhere while Sync is paused.
+  GURL paused_url =
+      embedded_test_server()->GetURL("not-synced.com", "/sync/simple.html");
+  NavigateToURL(paused_url);
+
+  // Navigate somewhere else. The previous URL should *not* get synced, but this
+  // one (currently open at the time Sync is un-paused) will get synced when it
+  // gets updated, which in practice happens on the next navigation, or when the
+  // tab is closed.
+  GURL synced_url2 =
+      embedded_test_server()->GetURL("synced2.com", "/sync/simple.html");
+  NavigateToURL(synced_url2);
+
+  GetClient(0)->ExitSyncPausedStateForPrimaryAccount();
+  ASSERT_EQ(GetSyncService(0)->GetTransportState(),
+            syncer::SyncService::TransportState::ACTIVE);
+
+  // After Sync was un-paused, navigate further. This triggers an update to
+  // `synced_url2` and also uploads `synced_url3`.
+  GURL synced_url3 =
+      embedded_test_server()->GetURL("synced3.com", "/sync/simple.html");
+  NavigateToURL(synced_url3);
+
+  EXPECT_TRUE(WaitForHistory(UnorderedElementsAre(UrlIs(synced_url1.spec()),
+                                                  UrlIs(synced_url2.spec()),
+                                                  UrlIs(synced_url3.spec()))));
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(SingleClientHistorySyncTest, UploadsAllFields) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -427,5 +519,179 @@ IN_PROC_BROWSER_TEST_F(SingleClientHistorySyncTest,
       AllOf(StandardFieldsArePopulated(), UrlIs(url2.spec()), IsChainStart(),
             IsChainEnd(), HasOpenerVisit()))));
 }
+
+IN_PROC_BROWSER_TEST_F(SingleClientHistorySyncTest, DownloadsAndMerges) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Before Sync gets enabled, one URL exists locally, one remotely, and one in
+  // both places.
+  const GURL url_local("https://www.url-local.com");
+  const GURL url_remote("https://www.url-remote.com");
+  const GURL url_both("https://www.url-both.com");
+
+  typed_urls_helper::AddUrlToHistory(/*index=*/0, url_local);
+  typed_urls_helper::AddUrlToHistory(/*index=*/0, url_both);
+
+  GetFakeServer()->InjectEntity(CreateFakeServerEntity(CreateSpecifics(
+      base::Time::Now() - base::Minutes(5), "other_cache_guid", url_remote)));
+  GetFakeServer()->InjectEntity(CreateFakeServerEntity(CreateSpecifics(
+      base::Time::Now() - base::Minutes(4), "other_cache_guid", url_both)));
+
+  // Turn on Sync - this should cause the two remote URLs to get downloaded and
+  // merged with the existing local ones.
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Now the "local" and "remote" URLs should have one visit each, while the
+  // "both" one should have two.
+  history::URLRow row_local;
+  EXPECT_TRUE(
+      typed_urls_helper::GetUrlFromClient(/*index=*/0, url_local, &row_local));
+  EXPECT_EQ(row_local.visit_count(), 1);
+
+  history::URLRow row_remote;
+  EXPECT_TRUE(typed_urls_helper::GetUrlFromClient(/*index=*/0, url_remote,
+                                                  &row_remote));
+  EXPECT_EQ(row_remote.visit_count(), 1);
+
+  history::URLRow row_both;
+  EXPECT_TRUE(
+      typed_urls_helper::GetUrlFromClient(/*index=*/0, url_both, &row_both));
+  EXPECT_EQ(row_both.visit_count(), 2);
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientHistorySyncTest,
+                       DownloadsServerRedirectChain) {
+  const GURL url1("https://www.url1.com");
+  const GURL url2("https://www.url2.com");
+  const GURL url3("https://www.url3.com");
+
+  GetFakeServer()->InjectEntity(CreateFakeServerEntity(
+      CreateSpecifics(base::Time::Now() - base::Minutes(5), "other_cache_guid",
+                      {url1, url2, url3}, {101, 102, 103})));
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Make sure the chain arrived intact.
+  history::URLRow url_row;
+  EXPECT_TRUE(typed_urls_helper::GetUrlFromClient(/*index=*/0, url3, &url_row));
+  history::VisitVector visits =
+      typed_urls_helper::GetVisitsFromClient(/*index=*/0, url_row.id());
+  ASSERT_EQ(visits.size(), 1u);
+  history::VisitVector redirect_chain =
+      typed_urls_helper::GetRedirectChainFromClient(/*index=*/0, visits[0]);
+  ASSERT_EQ(redirect_chain.size(), 3u);
+
+  history::URLRow url_row1;
+  EXPECT_TRUE(typed_urls_helper::GetUrlFromClient(
+      /*index=*/0, redirect_chain[0].url_id, &url_row1));
+  EXPECT_EQ(url_row1.url(), url1);
+  history::URLRow url_row2;
+  EXPECT_TRUE(typed_urls_helper::GetUrlFromClient(
+      /*index=*/0, redirect_chain[1].url_id, &url_row2));
+  EXPECT_EQ(url_row2.url(), url2);
+  history::URLRow url_row3;
+  EXPECT_TRUE(typed_urls_helper::GetUrlFromClient(
+      /*index=*/0, redirect_chain[2].url_id, &url_row3));
+  EXPECT_EQ(url_row3.url(), url3);
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientHistorySyncTest,
+                       DownloadsClientRedirectChain) {
+  const GURL url1("https://www.url1.com");
+  const GURL url2("https://www.url2.com");
+
+  // As opposed to server redirects, client redirect entries have different
+  // visit_times, so the chain gets split up into multiple entities.
+  sync_pb::HistorySpecifics specifics1 = CreateSpecifics(
+      base::Time::Now() - base::Minutes(5), "other_cache_guid", url1, 101);
+  sync_pb::HistorySpecifics specifics2 = CreateSpecifics(
+      base::Time::Now() - base::Minutes(4), "other_cache_guid", url2, 102);
+  // Link them together via the referring visit ID, and mark chain end/start
+  // incomplete, so they'll be considered one chain.
+  specifics1.set_redirect_chain_end_incomplete(true);
+  specifics2.set_redirect_chain_start_incomplete(true);
+  specifics2.set_originator_referring_visit_id(101);
+  specifics2.mutable_redirect_entries(0)->set_redirect_type(
+      sync_pb::SyncEnums_PageTransitionRedirectType_CLIENT_REDIRECT);
+
+  GetFakeServer()->InjectEntity(CreateFakeServerEntity(specifics1));
+  GetFakeServer()->InjectEntity(CreateFakeServerEntity(specifics2));
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Make sure the chain arrived intact (i.e. was stitched back together).
+  history::URLRow url_row;
+  EXPECT_TRUE(typed_urls_helper::GetUrlFromClient(/*index=*/0, url2, &url_row));
+  history::VisitVector visits =
+      typed_urls_helper::GetVisitsFromClient(/*index=*/0, url_row.id());
+  ASSERT_EQ(visits.size(), 1u);
+  history::VisitVector redirect_chain =
+      typed_urls_helper::GetRedirectChainFromClient(/*index=*/0, visits[0]);
+  ASSERT_EQ(redirect_chain.size(), 2u);
+
+  history::URLRow url_row1;
+  EXPECT_TRUE(typed_urls_helper::GetUrlFromClient(
+      /*index=*/0, redirect_chain[0].url_id, &url_row1));
+  EXPECT_EQ(url_row1.url(), url1);
+  history::URLRow url_row2;
+  EXPECT_TRUE(typed_urls_helper::GetUrlFromClient(
+      /*index=*/0, redirect_chain[1].url_id, &url_row2));
+  EXPECT_EQ(url_row2.url(), url2);
+}
+
+// On Android, switches::kSyncUserForTest isn't supported (the passed-in
+// username gets ignored in SyncSigninDelegateAndroid::SigninFake()), so it's
+// not currently possible to simulate a non-@gmail.com account.
+#if !BUILDFLAG(IS_ANDROID)
+
+class SingleClientHistoryNonGmailSyncTest : public SingleClientHistorySyncTest {
+ public:
+  void SetUp() override {
+    // Set up a non-@gmail.com account, so that it'll be treated as a potential
+    // Dasher (aka managed aka enterprise) account.
+    // Note: This can't be done in SetUpCommandLine() because that happens
+    // slightly too late (SyncTest::SetUp() already consumes this param).
+    base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+    cl->AppendSwitchASCII(switches::kSyncUserForTest,
+                          "user@managed-domain.com");
+    SingleClientHistorySyncTest::SetUp();
+  }
+
+  void SignInAndSetAccountInfo(bool is_managed) {
+    ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
+
+    signin::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(GetProfile(0));
+    CoreAccountInfo account =
+        identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync);
+
+    // A non-empty hosted domain means the account is managed.
+    std::string hosted_domain = is_managed ? "managed-domain.com" : "";
+    signin::SimulateSuccessfulFetchOfAccountInfo(
+        identity_manager, account.account_id, account.email, account.gaia,
+        hosted_domain, "Full Name", "Given Name", "en-US", "");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(SingleClientHistoryNonGmailSyncTest,
+                       HistorySyncDisabledForManagedAccount) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  SignInAndSetAccountInfo(/*is_managed=*/true);
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  ASSERT_FALSE(GetSyncService(0)->GetActiveDataTypes().Empty());
+  EXPECT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::HISTORY));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientHistoryNonGmailSyncTest,
+                       HistorySyncEnabledForNonManagedAccount) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  SignInAndSetAccountInfo(/*is_managed=*/false);
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::HISTORY));
+}
+
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace

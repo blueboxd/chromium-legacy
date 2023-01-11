@@ -11,12 +11,13 @@
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/filesystem_api_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
-#include "chrome/browser/chromeos/fileapi/file_system_backend.h"
+#include "chrome/browser/ash/fileapi/file_system_backend.h"
 #include "chrome/browser/platform_util.h"
 #include "components/services/unzip/content/unzip_service.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
@@ -54,7 +55,7 @@ ExtractIOTask::ExtractIOTask(
   for (const storage::FileSystemURL& source_url : source_urls_) {
     const base::FilePath source_path = source_url.path();
     if (source_path.MatchesExtension(".zip") &&
-        chromeos::FileSystemBackend::CanHandleURL(source_url)) {
+        ash::FileSystemBackend::CanHandleURL(source_url)) {
       progress_.sources.emplace_back(source_url, absl::nullopt);
     }
   }
@@ -264,7 +265,7 @@ void ExtractIOTask::GetExtractedSize(base::FilePath source_file) {
 
 void ExtractIOTask::CheckSizeThenExtract() {
   for (const EntryStatus& source : progress_.sources) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&ExtractIOTask::GetExtractedSize,
                        weak_ptr_factory_.GetWeakPtr(), source.url.path()));
@@ -281,7 +282,7 @@ void ExtractIOTask::Execute(IOTask::ProgressCallback progress_callback,
   progress_callback_.Run(progress_);
   // If the backend can't handle the folder to unpack into or
   // there are no files to extract, finish the operation with an error.
-  if (!chromeos::FileSystemBackend::CanHandleURL(parent_folder_) ||
+  if (!ash::FileSystemBackend::CanHandleURL(parent_folder_) ||
       sizingCount_ == 0) {
     progress_.state = State::kError;
     RecordUmaExtractStatus(ExtractStatus::kUnknownError);
@@ -309,7 +310,7 @@ void ExtractIOTask::Cancel() {
 // Calls the completion callback for the task. |progress_| should not be
 // accessed after calling this.
 void ExtractIOTask::Complete() {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(complete_callback_), std::move(progress_)));
 }

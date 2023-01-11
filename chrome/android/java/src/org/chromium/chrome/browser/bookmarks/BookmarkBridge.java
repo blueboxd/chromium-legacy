@@ -33,7 +33,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
-import org.chromium.components.commerce.PriceTracking.ProductPrice;
 import org.chromium.components.power_bookmarks.PowerBookmarkMeta;
 import org.chromium.components.power_bookmarks.PowerBookmarkType;
 import org.chromium.components.power_bookmarks.ShoppingSpecifics;
@@ -41,7 +40,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -55,44 +53,10 @@ class BookmarkBridge {
     private boolean mIsDoingExtensiveChanges;
     private long mNativeBookmarkBridge;
     private boolean mIsNativeBookmarkModelLoaded;
-    private final List<DelayedBookmarkCallback> mDelayedBookmarkCallbacks =
-            new ArrayList<DelayedBookmarkCallback>();
     private final ObserverList<BookmarkModelObserver> mObservers =
             new ObserverList<BookmarkModelObserver>();
     private SubscriptionsManager mSubscriptionManager;
     private SubscriptionsManager.SubscriptionObserver mSubscriptionsObserver;
-
-    /**
-     * Interface for callback object for fetching bookmarks and folder hierarchy.
-     */
-    public interface BookmarksCallback {
-        /**
-         * Callback method for fetching bookmarks for a folder and the folder hierarchy.
-         * @param folderId The folder id to which the bookmarks belong.
-         * @param bookmarksList List holding the fetched bookmarks and details.
-         */
-        @CalledByNative("BookmarksCallback")
-        void onBookmarksAvailable(BookmarkId folderId, List<BookmarkItem> bookmarksList);
-
-        /**
-         * Callback method for fetching the folder hierarchy.
-         * @param folderId The folder id to which the bookmarks belong.
-         * @param bookmarksList List holding the fetched folder details.
-         */
-        @CalledByNative("BookmarksCallback")
-        void onBookmarksFolderHierarchyAvailable(BookmarkId folderId,
-                List<BookmarkItem> bookmarksList);
-    }
-
-    /** A callback for updates to the price of a product. */
-    public interface PriceUpdateCallback {
-        /**
-         * @param id The bookmark ID that the price information was fetched for.
-         * @param url The URL of the product that was updated.
-         * @param price The price of the product.
-         */
-        void onPriceUpdated(BookmarkId id, GURL url, ProductPrice price);
-    }
 
     /**
      * Handler to fetch the bookmarks, titles, urls and folder hierarchy.
@@ -135,7 +99,6 @@ class BookmarkBridge {
             BookmarkBridgeJni.get().destroy(mNativeBookmarkBridge, BookmarkBridge.this);
             mNativeBookmarkBridge = 0;
             mIsNativeBookmarkModelLoaded = false;
-            mDelayedBookmarkCallbacks.clear();
         }
         mObservers.clear();
 
@@ -652,26 +615,8 @@ class BookmarkBridge {
         assert mIsNativeBookmarkModelLoaded;
         List<BookmarkItem> result = new ArrayList<BookmarkItem>();
         BookmarkBridgeJni.get().getBookmarksForFolder(
-                mNativeBookmarkBridge, BookmarkBridge.this, folderId, null, result);
+                mNativeBookmarkBridge, BookmarkBridge.this, folderId, result);
         return result;
-    }
-
-    /**
-     * Fetches the bookmarks of the current folder. Callback will be
-     * synchronous if the bookmark model is already loaded and async if it is loaded in the
-     * background.
-     * @param folderId The current folder id.
-     * @param callback Instance of a callback object.
-     */
-    public void getBookmarksForFolder(BookmarkId folderId, BookmarksCallback callback) {
-        ThreadUtils.assertOnUiThread();
-        if (mIsNativeBookmarkModelLoaded) {
-            BookmarkBridgeJni.get().getBookmarksForFolder(mNativeBookmarkBridge,
-                    BookmarkBridge.this, folderId, callback, new ArrayList<BookmarkItem>());
-        } else {
-            mDelayedBookmarkCallbacks.add(new DelayedBookmarkCallback(folderId, callback,
-                    DelayedBookmarkCallback.GET_BOOKMARKS_FOR_FOLDER, this));
-        }
     }
 
     /**
@@ -687,24 +632,6 @@ class BookmarkBridge {
         }
         return BookmarkBridgeJni.get().isFolderVisible(
                 mNativeBookmarkBridge, BookmarkBridge.this, id.getId(), id.getType());
-    }
-
-    /**
-     * Fetches the folder hierarchy of the given folder. Callback will be
-     * synchronous if the bookmark model is already loaded and async if it is loaded in the
-     * background.
-     * @param folderId The current folder id.
-     * @param callback Instance of a callback object.
-     */
-    public void getCurrentFolderHierarchy(BookmarkId folderId, BookmarksCallback callback) {
-        ThreadUtils.assertOnUiThread();
-        if (mIsNativeBookmarkModelLoaded) {
-            BookmarkBridgeJni.get().getCurrentFolderHierarchy(mNativeBookmarkBridge,
-                    BookmarkBridge.this, folderId, callback, new ArrayList<BookmarkItem>());
-        } else {
-            mDelayedBookmarkCallbacks.add(new DelayedBookmarkCallback(folderId, callback,
-                    DelayedBookmarkCallback.GET_CURRENT_FOLDER_HIERARCHY, this));
-        }
     }
 
     /**
@@ -914,15 +841,7 @@ class BookmarkBridge {
     @CalledByNative
     private void bookmarkModelLoaded() {
         mIsNativeBookmarkModelLoaded = true;
-
         notifyBookmarkModelLoaded();
-
-        if (!mDelayedBookmarkCallbacks.isEmpty()) {
-            for (int i = 0; i < mDelayedBookmarkCallbacks.size(); i++) {
-                mDelayedBookmarkCallbacks.get(i).callCallbackMethod();
-            }
-            mDelayedBookmarkCallbacks.clear();
-        }
     }
 
     @CalledByNative
@@ -1009,46 +928,6 @@ class BookmarkBridge {
         }
     }
 
-    /**
-     * Get updated price information for a given list of bookmark IDs.
-     * @param bookmarksToUpdate The IDs of the bookmarks to update.
-     * @param callback A callback to be called for each ID iff price information is available.
-     */
-    public void getUpdatedProductPrices(
-            List<BookmarkId> bookmarksToUpdate, PriceUpdateCallback callback) {
-        final HashMap<GURL, BookmarkId> urlToId = new HashMap<>();
-        GURL[] urls = new GURL[bookmarksToUpdate.size()];
-        for (int i = 0; i < bookmarksToUpdate.size(); i++) {
-            GURL url = getBookmarkById(bookmarksToUpdate.get(i)).getUrl();
-            urls[i] = url;
-            urlToId.put(url, bookmarksToUpdate.get(i));
-        }
-
-        // This wrapper is used to avoid needing to pass the map of URL -> BookmarkId to native.
-        PriceUpdateCallback callbackWrapper = new PriceUpdateCallback() {
-            @Override
-            public void onPriceUpdated(BookmarkId id, GURL url, ProductPrice price) {
-                callback.onPriceUpdated(urlToId.get(url), url, price);
-            }
-        };
-
-        BookmarkBridgeJni.get().getUpdatedProductPrices(
-                mNativeBookmarkBridge, BookmarkBridge.this, urls, callbackWrapper);
-    }
-
-    @CalledByNative
-    private void onProductPriceUpdated(
-            GURL url, byte[] productPriceBytes, PriceUpdateCallback callback) {
-        try {
-            ProductPrice price = ProductPrice.parseFrom(productPriceBytes);
-            // Intentionally pass |null| for the bookmark ID here, the wrapper will populate this
-            // field. See #getUpdatedProductPrices
-            callback.onPriceUpdated(null, url, price);
-        } catch (InvalidProtocolBufferException ex) {
-            // Intentional noop
-        }
-    }
-
     @CalledByNative
     private static BookmarkItem createBookmarkItem(long id, int type, String title, GURL url,
             boolean isFolder, long parentId, int parentIdType, boolean isEditable,
@@ -1082,45 +961,6 @@ class BookmarkBridge {
         return pairList;
     }
 
-    /**
-     * Details about callbacks that need to be called once the bookmark model has loaded.
-     */
-    private static class DelayedBookmarkCallback {
-
-        private static final int GET_BOOKMARKS_FOR_FOLDER = 0;
-        private static final int GET_CURRENT_FOLDER_HIERARCHY = 1;
-
-        private final BookmarksCallback mCallback;
-        private final BookmarkId mFolderId;
-        private final int mCallbackMethod;
-        private final BookmarkBridge mHandler;
-
-        private DelayedBookmarkCallback(BookmarkId folderId, BookmarksCallback callback,
-                int method, BookmarkBridge handler) {
-            mFolderId = folderId;
-            mCallback = callback;
-            mCallbackMethod = method;
-            mHandler = handler;
-        }
-
-        /**
-         * Invoke the callback method.
-         */
-        private void callCallbackMethod() {
-            switch (mCallbackMethod) {
-                case GET_BOOKMARKS_FOR_FOLDER:
-                    mHandler.getBookmarksForFolder(mFolderId, mCallback);
-                    break;
-                case GET_CURRENT_FOLDER_HIERARCHY:
-                    mHandler.getCurrentFolderHierarchy(mFolderId, mCallback);
-                    break;
-                default:
-                    assert false;
-                    break;
-            }
-        }
-    }
-
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     @NativeMethods
     public interface Natives {
@@ -1149,8 +989,6 @@ class BookmarkBridge {
                 long nativeBookmarkBridge, BookmarkBridge caller, long id, int type, int index);
         int getTotalBookmarkCount(
                 long nativeBookmarkBridge, BookmarkBridge caller, long id, int type);
-        void getUpdatedProductPrices(long nativeBookmarkBridge, BookmarkBridge caller, GURL[] gurls,
-                PriceUpdateCallback callback);
         void setBookmarkTitle(
                 long nativeBookmarkBridge, BookmarkBridge caller, long id, int type, String title);
         void setBookmarkUrl(
@@ -1164,11 +1002,9 @@ class BookmarkBridge {
         boolean doesBookmarkExist(
                 long nativeBookmarkBridge, BookmarkBridge caller, long id, int type);
         void getBookmarksForFolder(long nativeBookmarkBridge, BookmarkBridge caller,
-                BookmarkId folderId, BookmarksCallback callback, List<BookmarkItem> bookmarksList);
+                BookmarkId folderId, List<BookmarkItem> bookmarksList);
         boolean isFolderVisible(
                 long nativeBookmarkBridge, BookmarkBridge caller, long id, int type);
-        void getCurrentFolderHierarchy(long nativeBookmarkBridge, BookmarkBridge caller,
-                BookmarkId folderId, BookmarksCallback callback, List<BookmarkItem> bookmarksList);
         BookmarkId addFolder(long nativeBookmarkBridge, BookmarkBridge caller, BookmarkId parent,
                 int index, String title);
         void deleteBookmark(

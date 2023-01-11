@@ -671,6 +671,10 @@ const NGLayoutResult* NGTableLayoutAlgorithm::Layout() {
   if (result->Status() == NGLayoutResult::kNeedsRelayoutAsLastTableBox)
     return RelayoutAsLastTableBox();
   if (result->Status() == NGLayoutResult::kNeedsEarlierBreak) {
+    // We shouldn't insert early-breaks when we're relaying out as the last
+    // table-box fragment. That should take place *first*.
+    DCHECK(!is_known_to_be_last_table_box_);
+
     return RelayoutAndBreakEarlier<NGTableLayoutAlgorithm>(
         *result->GetEarlyBreak());
   }
@@ -725,6 +729,13 @@ const NGLayoutResult* NGTableLayoutAlgorithm::RelayoutAsLastTableBox() {
       BreakToken(), /* early_break */ nullptr);
   NGTableLayoutAlgorithm algorithm(params);
   algorithm.is_known_to_be_last_table_box_ = true;
+
+  // In case we were already re-laying out with a known early-break, we need to
+  // re-propagate that piece of information as well, so that we don't end up
+  // getting stuck in an infinite recursion with the early-break and
+  // known-to-be-last-table-box mechanisms invoking each other.
+  algorithm.early_break_ = early_break_;
+
   return algorithm.Layout();
 }
 
@@ -747,7 +758,7 @@ void NGTableLayoutAlgorithm::ComputeRows(
   // NGLayoutResult vector in LayoutBox objects alone, since we're in the middle
   // of building those.
   absl::optional<NGDisableSideEffectsScope> disable_side_effects;
-  if (IsResumingLayout(BreakToken()))
+  if (IsBreakInside(BreakToken()))
     disable_side_effects.emplace();
 
   const bool is_table_block_size_specified = !Style().LogicalHeight().IsAuto();
@@ -977,13 +988,12 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
 
   auto CreateSectionConstraintSpace = [&table_writing_direction,
                                        &section_available_inline_size,
-                                       &constraint_space_data, &sections,
-                                       this](const NGBlockNode& section,
-                                             LayoutUnit block_offset,
-                                             wtf_size_t section_index,
-                                             absl::optional<LayoutUnit>
-                                                 repeated_footer_block_size,
-                                             ESectionRepeatMode repeat_mode) {
+                                       &constraint_space_data, &sections, this](
+                                          const NGBlockNode& section,
+                                          LayoutUnit fragmentainer_block_offset,
+                                          wtf_size_t section_index,
+                                          LayoutUnit reserved_space,
+                                          ESectionRepeatMode repeat_mode) {
     NGConstraintSpaceBuilder section_space_builder(
         ConstraintSpace(), table_writing_direction, /* is_new_fc */ true);
 
@@ -1006,18 +1016,23 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
     if (repeat_mode != kNotRepeated) {
       section_space_builder.SetShouldRepeat(repeat_mode == kMayRepeatAgain);
       section_space_builder.SetIsInsideRepeatableContent(true);
+      section_space_builder.SetShouldPropagateChildBreakValues(false);
     } else if (ConstraintSpace().HasBlockFragmentation()) {
+      // Note that, with fragmentainer_block_offset, we pretend that any
+      // repeated table header isn't there (since it doesn't really participate
+      // in block fragmentation anyway), so that the block-offset right after
+      // such a header will be at 0, as far as block fragmentation is concerned.
+      // This way the fragmentation engine will refuse to insert a break before
+      // having made some content progress (even if the first piece of content
+      // doesn't fit).
       SetupSpaceBuilderForFragmentation(
-          ConstraintSpace(), section, block_offset, &section_space_builder,
-          /* is_new_fc */ true,
+          ConstraintSpace(), section, fragmentainer_block_offset,
+          &section_space_builder, /* is_new_fc */ true,
           container_builder_.RequiresContentBeforeBreaking());
 
-      if (repeated_footer_block_size) {
-        // Reserve space for the repeated footer at the block-end of the
-        // fragmentainer. No other section may extend into this area.
-        section_space_builder.ReserveSpaceAtFragmentainerEnd(
-            *repeated_footer_block_size);
-      }
+      // Reserve space for any repeated header / footer.
+      if (ConstraintSpace().HasKnownFragmentainerBlockSize())
+        section_space_builder.ReserveSpaceInFragmentainer(reserved_space);
     }
 
     return section_space_builder.ToConstraintSpace();
@@ -1038,7 +1053,8 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
   absl::optional<LayoutUnit> last_baseline;
 
   bool has_repeated_header = false;
-  absl::optional<LayoutUnit> pending_repeated_footer_block_size;
+  bool has_pending_repeated_footer = false;
+  LayoutUnit repeated_footer_block_size;
 
   // Before fragmented layout we need to go through the table's children, to
   // look for repeatable headers and footers. This is especially important for
@@ -1048,8 +1064,7 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
   // crbug.com/1352931 for more details. Furthermore, we cannot repeat content
   // if side-effects are disabled, as that machinery depends on updating and
   // reading the physical fragments vector of the LayoutBox.
-  if (ConstraintSpace().HasKnownFragmentainerBlockSize() &&
-      !ConstraintSpace().IsInsideRepeatableContent() &&
+  if (!ConstraintSpace().IsInsideRepeatableContent() &&
       !NGDisableSideEffectsScope::IsDisabled() &&
       (grouped_children.header || grouped_children.footer)) {
     LayoutUnit max_section_block_size =
@@ -1061,25 +1076,57 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
       if (child != grouped_children.header && child != grouped_children.footer)
         continue;
 
-      // Headers and footers may be repeated if their block-size is one quarter
-      // or less than that of the fragmentainer, AND 'break-inside' has an
-      // applicable avoid* value. Being repeated means that the section is
-      // monolithic, and nothing inside can break.
-      //
-      // See https://www.w3.org/TR/css-tables-3/#repeated-headers
-      LayoutUnit block_size = sections[entry.GetSectionIndex()].block_size;
-      if (block_size > max_section_block_size)
-        continue;
       if (!IsAvoidBreakValue(ConstraintSpace(), child.Style().BreakInside()))
         continue;
+
+      const NGBlockBreakToken* child_break_token = entry.GetBreakToken();
+      // If we've already broken inside the section, it's not going to repeat,
+      // but rather perform regular fragmentation.
+      if (IsBreakInside(child_break_token))
+        continue;
+
+      LayoutUnit block_size = sections[entry.GetSectionIndex()].block_size;
+
+      // Unless we have already decided to repeat in a previous fragment, check
+      // if the block-size of the section is acceptable.
+      if (!child_break_token || !child_break_token->IsRepeated()) {
+        DCHECK(!child_break_token || child_break_token->IsBreakBefore());
+
+        // If this isn't the first fragment for the table box, and the section
+        // didn't repeat in the previous fragment, it doesn't make sense to
+        // start repeating now. If this is a header, we may already have
+        // finished (non-repeated) layout. If this is a footer, we have already
+        // laid out at least one fragment without it.
+        if (incoming_table_break_data &&
+            incoming_table_break_data->has_entered_table_box)
+          continue;
+
+        // Headers and footers may be repeated if their block-size is one
+        // quarter or less than that of the fragmentainer, AND 'break-inside'
+        // has an applicable avoid* value. Being repeated means that the section
+        // is monolithic, and nothing inside can break.
+        //
+        // See https://www.w3.org/TR/css-tables-3/#repeated-headers
+        //
+        // We will never make the decision to start repeating if we're in an
+        // initial column balancing pass (we have no idea about the block-size
+        // of the fragmentainer, so that would be impossible), but we will
+        // continue repeating if we previously decided to do so in a previous
+        // layout pass, for a previous fragment.
+        if (!ConstraintSpace().HasKnownFragmentainerBlockSize() ||
+            block_size > max_section_block_size)
+          continue;
+      }
 
       if (child == grouped_children.header) {
         has_repeated_header = true;
       } else {
         DCHECK_EQ(child, grouped_children.footer);
+        has_pending_repeated_footer = true;
+
         // We need to reserve space for the repeated footer at the end of the
         // fragmentainer.
-        pending_repeated_footer_block_size =
+        repeated_footer_block_size =
             block_size + border_spacing.block_size +
             (has_collapsed_borders ? border_padding.block_end : LayoutUnit());
       }
@@ -1087,6 +1134,7 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
   }
 
   LayoutUnit grid_block_size_inflation;
+  LayoutUnit repeated_header_block_size;
   bool broke_inside = false;
   bool has_ended_table_box_layout = false;
   NGTableChildIterator child_iterator(grouped_children, BreakToken());
@@ -1105,7 +1153,7 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
         broke_inside = true;
 
         if (child == grouped_children.footer)
-          pending_repeated_footer_block_size.reset();
+          has_pending_repeated_footer = false;
 
         break;
       }
@@ -1114,6 +1162,7 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
 
     const NGBlockBreakToken* child_break_token = entry.GetBreakToken();
     const NGLayoutResult* child_result;
+    absl::optional<LayoutUnit> offset_before_repeated_header;
     LayoutUnit child_inline_offset;
     LayoutUnit child_block_end_margin;  // Captions allow margins.
     absl::optional<TableBoxExtent> new_table_box_extent;
@@ -1160,13 +1209,14 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
       CaptionResult caption = LayoutCaption(
           ConstraintSpace(), Style(), container_builder_.InlineSize(),
           child_space, child, margins, child_break_token, early_break_in_child);
-      if (caption.layout_result->Status() != NGLayoutResult::kSuccess) {
-        DCHECK_EQ(caption.layout_result->Status(),
-                  NGLayoutResult::kOutOfFragmentainerSpace);
-        return container_builder_.Abort(caption.layout_result->Status());
-      }
+      DCHECK(caption.layout_result->Status() == NGLayoutResult::kSuccess ||
+             caption.layout_result->Status() ==
+                 NGLayoutResult::kOutOfFragmentainerSpace);
       child_result = caption.layout_result;
       child_inline_offset = caption.margins.inline_start;
+
+      // Captions don't need to worry about repeated sections.
+      repeated_header_block_size = LayoutUnit();
     } else {
       DCHECK(child.IsTableSection());
       LayoutUnit collapsible_border_spacing;
@@ -1187,7 +1237,6 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
       }
 
       LayoutUnit offset_for_childless_section = child_block_offset;
-      child_block_offset += collapsible_border_spacing;
 
       bool may_repeat_again = false;
       if (child == grouped_children.header) {
@@ -1199,6 +1248,12 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
           // reach the end in this fragment, we need to abort and relayout.
           may_repeat_again = !is_known_to_be_last_table_box_;
 
+          // We need to measure the block-size of the repeated header, because
+          // this is something we have to subtract from available fragmentainer
+          // block-size, AND fragmentainer block-offset, when laying out
+          // non-repeated content (i.e. regular sections).
+          offset_before_repeated_header.emplace(child_block_offset);
+
           // A header will share its collapsed border with the block-start of
           // the table. However when repeated it will draw the whole border
           // itself. We need to reserve additional space at the block-start for
@@ -1208,26 +1263,34 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
             child_block_offset += border_padding.block_start;
         }
       } else if (child == grouped_children.footer) {
-        if (pending_repeated_footer_block_size) {
+        if (has_pending_repeated_footer) {
           is_repeated_section = true;
           // For footers it's easier, though. Since we got all the way to the
           // footer during layout, this means that this will be the last time
           // the footer is repeated. We can finish it right away, unless we have
           // a repeated header as well (which means that we're going to
           // relayout).
-          pending_repeated_footer_block_size.reset();
+          has_pending_repeated_footer = false;
           may_repeat_again =
               !is_known_to_be_last_table_box_ && has_repeated_header;
         }
       }
 
+      child_block_offset += collapsible_border_spacing;
+
       ESectionRepeatMode repeat_mode = kNotRepeated;
       if (is_repeated_section)
         repeat_mode = may_repeat_again ? kMayRepeatAgain : kRepeatedLast;
 
+      LayoutUnit reserved_space;
+      if (repeat_mode == kNotRepeated) {
+        reserved_space =
+            repeated_header_block_size + repeated_footer_block_size;
+      }
+
       NGConstraintSpace child_space = CreateSectionConstraintSpace(
-          child, child_block_offset, entry.GetSectionIndex(),
-          pending_repeated_footer_block_size, repeat_mode);
+          child, child_block_offset - repeated_header_block_size,
+          entry.GetSectionIndex(), reserved_space, repeat_mode);
       if (is_repeated_section) {
         child_result =
             child.LayoutRepeatableRoot(child_space, child_break_token);
@@ -1257,16 +1320,16 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
         child_block_offset = offset_for_childless_section;
       }
     }
-    if (ConstraintSpace().HasBlockFragmentation()) {
+    if (ConstraintSpace().HasBlockFragmentation() &&
+        (!child_break_token || !is_repeated_section)) {
       LayoutUnit fragmentainer_block_offset =
-          ConstraintSpace().FragmentainerOffset() + child_block_offset;
+          ConstraintSpace().FragmentainerOffset() + child_block_offset -
+          repeated_header_block_size;
       NGBreakStatus break_status = BreakBeforeChildIfNeeded(
           ConstraintSpace(), child, *child_result, fragmentainer_block_offset,
           has_container_separation, &container_builder_);
-      if (break_status == NGBreakStatus::kNeedsEarlierBreak) {
-        return RelayoutAndBreakEarlier<NGTableLayoutAlgorithm>(
-            container_builder_.EarlyBreak());
-      }
+      if (break_status == NGBreakStatus::kNeedsEarlierBreak)
+        return container_builder_.Abort(NGLayoutResult::kNeedsEarlierBreak);
       if (break_status == NGBreakStatus::kBrokeBefore) {
         broke_inside = true;
         break;
@@ -1291,6 +1354,12 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
     child_block_offset += fragment.BlockSize() + child_block_end_margin;
 
     if (child.IsTableSection()) {
+      if (offset_before_repeated_header) {
+        repeated_header_block_size = child_block_offset -
+                                     *offset_before_repeated_header +
+                                     border_spacing.block_size;
+      }
+
       if (new_table_box_extent) {
         // The first section was added successfully. We're officially inside the
         // table box!
@@ -1330,17 +1399,8 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
 
   bool table_box_will_continue =
       table_box_extent && !is_past_table_box && broke_inside;
-  if (has_repeated_header && !table_box_will_continue &&
-      !is_known_to_be_last_table_box_) {
-    // We have already laid out the header in a repeatable manner (with an
-    // outgoing "repeat" break token). However, we managed to finish the table
-    // box in this fragment, so it shouldn't repeat anymore. We now need to
-    // re-layout, with this in mind.
-    return container_builder_.Abort(
-        NGLayoutResult::kNeedsRelayoutAsLastTableBox);
-  }
 
-  if (pending_repeated_footer_block_size && table_box_extent) {
+  if (has_pending_repeated_footer && table_box_extent) {
     DCHECK(table_box_will_continue);
     // We broke before we got to the footer. Add it now. Before doing that,
     // though, also insert break tokens for the sections that we didn't get to
@@ -1362,7 +1422,7 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
     LogicalOffset offset(section_inline_offset, child_block_offset);
     NGConstraintSpace child_space = CreateSectionConstraintSpace(
         grouped_children.footer, offset.block_offset, entry.GetSectionIndex(),
-        /* repeated_footer_block_size */ absl::nullopt, kMayRepeatAgain);
+        /* reserved_space */ LayoutUnit(), kMayRepeatAgain);
     const NGLayoutResult* result = grouped_children.footer.LayoutRepeatableRoot(
         child_space, entry.GetBreakToken());
 
@@ -1419,6 +1479,8 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
           minimal_table_grid_block_size, &(*table_box_extent),
           &grid_block_size_inflation);
 
+      has_ended_table_box_layout = true;
+
       if (!broke_inside) {
         // If the table box fits inside the fragmentainer, we're past it.
         is_past_table_box =
@@ -1443,8 +1505,23 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
 
   LayoutUnit block_size = child_block_offset.ClampNegativeToZero();
   DCHECK_GE(block_size, grid_block_size_inflation);
-  container_builder_.SetIntrinsicBlockSize(block_size -
-                                           grid_block_size_inflation);
+
+  LayoutUnit intrinsic_block_size = block_size - grid_block_size_inflation;
+  if (!has_ended_table_box_layout && !is_past_table_box) {
+    // Include block-end border/padding/border-spacing when setting the
+    // block-size. Even if we're positive at this point that we're going to
+    // break inside, the fragmentation machinery expects this to be part of the
+    // block-size. The reason is that the algorithms themselves don't really
+    // know enough to tell for sure that we're *not* going to break inside. In
+    // order for FinishFragmentation() to make that decision correctly, add
+    // this, if it hasn't already been added.
+    LayoutUnit table_block_end_fluff =
+        border_padding.block_end + border_spacing_after_last_section;
+    intrinsic_block_size += table_block_end_fluff;
+    block_size += table_block_end_fluff;
+  }
+  container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
+
   block_size += previously_consumed_block_size;
   if (ConstraintSpace().IsFixedBlockSize())
     block_size = ConstraintSpace().AvailableSize().block_size;
@@ -1509,10 +1586,10 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
                     container_builder_.InlineSize(), grid_block_size);
   }
 
+  bool has_entered_table_box = false;
   if (ConstraintSpace().HasBlockFragmentation()) {
     LayoutUnit consumed_table_box_block_size =
         previously_consumed_table_box_block_size;
-    bool has_entered_table_box = false;
     if (incoming_table_break_data)
       has_entered_table_box = incoming_table_break_data->has_entered_table_box;
     consumed_table_box_block_size += grid_block_size;
@@ -1530,6 +1607,17 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
                                    column_block_size);
 
   NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
+
+  if (has_repeated_header && has_entered_table_box &&
+      !table_box_will_continue && !is_known_to_be_last_table_box_) {
+    // We have already laid out the header in a repeatable manner (with an
+    // outgoing "repeat" break token). However, we managed to finish the table
+    // box in this fragment, so it shouldn't repeat anymore. We now need to
+    // re-layout, with this in mind.
+    return container_builder_.Abort(
+        NGLayoutResult::kNeedsRelayoutAsLastTableBox);
+  }
+
   return container_builder_.ToBoxFragment();
 }
 

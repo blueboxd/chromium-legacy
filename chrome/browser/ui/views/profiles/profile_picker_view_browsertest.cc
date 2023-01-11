@@ -51,9 +51,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/profile_ui_test_utils.h"
+#include "chrome/browser/ui/startup/first_run_service.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
-#include "chrome/browser/ui/views/profiles/profile_creation_signed_in_flow_controller.h"
+#include "chrome/browser/ui/views/profiles/profile_management_utils.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_test_base.h"
 #include "chrome/browser/ui/views/user_education/browser_feature_promo_controller.h"
 #include "chrome/browser/ui/webui/signin/enterprise_profile_welcome_handler.h"
@@ -107,7 +108,6 @@
 #include "components/policy/core/common/management/scoped_management_service_override_for_testing.h"
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/lacros/account_manager/fake_account_manager_ui_dialog_waiter.h"
-#include "chrome/browser/ui/startup/lacros_first_run_service.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
 #include "components/account_manager_core/chromeos/account_manager_mojo_service.h"
@@ -676,6 +676,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
                        MAYBE_CreateForceSignedInProfile) {
   signin_util::ScopedForceSigninSetterForTesting force_signin_setter{true};
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
+  ASSERT_EQ(1u, g_browser_process->profile_manager()->GetNumberOfProfiles());
 
   // Note: Observed some rare flakiness on some bots. Inclusing some logs to
   // understand it.
@@ -696,6 +697,9 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   GURL force_signin_webui_url = signin::GetEmbeddedPromoURL(
       signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
       signin_metrics::Reason::kForcedSigninPrimaryAccount, true);
+  force_signin_webui_url =
+      AddFromProfilePickerURLParameter(force_signin_webui_url);
+
   ui_test_utils::UrlLoadObserver url_observer(
       force_signin_webui_url, content::NotificationService::AllSources());
   url_observer.Wait();
@@ -706,11 +710,15 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
       profile_picker_view->dialog_host_.GetDialogDelegateViewForTesting());
 
   // A new profile should have been created for the forced sign-in flow.
-  base::FilePath force_signin_profile_path =
-      profile_picker_view->dialog_host_.GetForceSigninProfilePath();
-  EXPECT_NE(browser()->profile()->GetPath(), force_signin_profile_path);
-  EXPECT_TRUE(g_browser_process->profile_manager()->GetProfileByPath(
-      force_signin_profile_path));
+  EXPECT_EQ(2u, g_browser_process->profile_manager()->GetNumberOfProfiles());
+  // Get the profile that was used to load the `force_signin_webui_url`.
+  Profile* force_signin_profile = Profile::FromBrowserContext(
+      content::Source<content::NavigationController>(url_observer.source())
+          .ptr()
+          ->GetBrowserContext());
+  EXPECT_TRUE(force_signin_profile);
+  // Make sure that the force_signin profile is different from the main one.
+  EXPECT_FALSE(force_signin_profile->IsSameOrParent(browser()->profile()));
 
   // The tail end of the flow is handled by inline_login_*
 }
@@ -2206,7 +2214,7 @@ class ProfilePickerLacrosFirstRunBrowserTestBase
       bool quit_on_welcome,
       absl::optional<bool> quit_on_sync) {
     Profile* profile = GetPrimaryProfile();
-    EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun(profile));
+    EXPECT_TRUE(ShouldOpenFirstRun(profile));
 
     // The profile picker should be open on start to show the FRE.
     EXPECT_EQ(0u, BrowserList::GetInstance()->size());
@@ -2215,7 +2223,7 @@ class ProfilePickerLacrosFirstRunBrowserTestBase
     // The entry point should get logged when the FRE is opened, not completed.
     histogram_tester().ExpectUniqueSample(
         "Profile.LacrosPrimaryProfileFirstRunEntryPoint",
-        LacrosFirstRunService::EntryPoint::kProcessStartup, 1);
+        FirstRunService::EntryPoint::kProcessStartup, 1);
 
     // A welcome page should be displayed.
     WaitForPickerWidgetCreated();
@@ -2283,7 +2291,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_QuitEarly) {
 
   // No browser window should open because we closed the FRE UI early.
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
-  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun(GetPrimaryProfile()));
+  EXPECT_TRUE(ShouldOpenFirstRun(GetPrimaryProfile()));
 
   histogram_tester().ExpectUniqueSample(
       "Profile.LacrosPrimaryProfileFirstRunOutcome",
@@ -2292,18 +2300,18 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_QuitEarly) {
   // After exit we still only have the one entry point logged.
   histogram_tester().ExpectUniqueSample(
       "Profile.LacrosPrimaryProfileFirstRunEntryPoint",
-      LacrosFirstRunService::EntryPoint::kProcessStartup, 1);
+      FirstRunService::EntryPoint::kProcessStartup, 1);
 }
 IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, QuitEarly) {
   // On the second run, the FRE is still not marked finished and we should
   // reopen it.
-  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun(GetPrimaryProfile()));
+  EXPECT_TRUE(ShouldOpenFirstRun(GetPrimaryProfile()));
   EXPECT_TRUE(ProfilePicker::IsOpen());
 
   // Same as the PRE_ test, we log this on FRE open.
   histogram_tester().ExpectUniqueSample(
       "Profile.LacrosPrimaryProfileFirstRunEntryPoint",
-      LacrosFirstRunService::EntryPoint::kProcessStartup, 1);
+      FirstRunService::EntryPoint::kProcessStartup, 1);
 }
 
 // Overall sequence for QuitAtEnd:
@@ -2322,7 +2330,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_QuitAtEnd) {
       /*quit_on_sync=*/true);
 
   // Because we quit, we should also quit chrome, but mark the FRE finished.
-  EXPECT_FALSE(ShouldOpenPrimaryProfileFirstRun(profile));
+  EXPECT_FALSE(ShouldOpenFirstRun(profile));
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
   histogram_tester().ExpectUniqueSample(
       "Profile.LacrosPrimaryProfileFirstRunOutcome",
@@ -2333,7 +2341,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, QuitAtEnd) {
   Profile* profile = GetPrimaryProfile();
 
   // On the second run, the FRE is marked finished and we should skip it.
-  EXPECT_FALSE(ShouldOpenPrimaryProfileFirstRun(profile));
+  EXPECT_FALSE(ShouldOpenFirstRun(profile));
   EXPECT_FALSE(chrome::enterprise_util::UserAcceptedAccountManagement(profile));
   EXPECT_FALSE(ProfilePicker::IsOpen());
   EXPECT_EQ(1u, BrowserList::GetInstance()->size());
@@ -2354,7 +2362,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_OptIn) {
       /*quit_on_sync=*/false);
 
   // A browser should open.
-  EXPECT_FALSE(ShouldOpenPrimaryProfileFirstRun(GetPrimaryProfile()));
+  EXPECT_FALSE(ShouldOpenFirstRun(GetPrimaryProfile()));
   EXPECT_EQ(1u, BrowserList::GetInstance()->size());
   histogram_tester().ExpectUniqueSample(
       "Profile.LacrosPrimaryProfileFirstRunOutcome",
@@ -2362,12 +2370,12 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_OptIn) {
   // After exit we still only have the one entry point logged.
   histogram_tester().ExpectUniqueSample(
       "Profile.LacrosPrimaryProfileFirstRunEntryPoint",
-      LacrosFirstRunService::EntryPoint::kProcessStartup, 1);
+      FirstRunService::EntryPoint::kProcessStartup, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, OptIn) {
   // On the second run, the FRE is marked finished and we should skip it.
-  EXPECT_FALSE(ShouldOpenPrimaryProfileFirstRun(GetPrimaryProfile()));
+  EXPECT_FALSE(ShouldOpenFirstRun(GetPrimaryProfile()));
   EXPECT_FALSE(ProfilePicker::IsOpen());
   EXPECT_EQ(1u, BrowserList::GetInstance()->size());
 }
@@ -2428,7 +2436,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosManagedFirstRunBrowserTest,
 
   // No browser window should open because we closed the FRE UI early.
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
-  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun(profile));
+  EXPECT_TRUE(ShouldOpenFirstRun(profile));
 
   histogram_tester().ExpectUniqueSample(
       "Profile.LacrosPrimaryProfileFirstRunOutcome",
@@ -2437,7 +2445,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosManagedFirstRunBrowserTest,
   // After exit we still only have the one entry point logged.
   histogram_tester().ExpectUniqueSample(
       "Profile.LacrosPrimaryProfileFirstRunEntryPoint",
-      LacrosFirstRunService::EntryPoint::kProcessStartup, 1);
+      FirstRunService::EntryPoint::kProcessStartup, 1);
 }
 IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosManagedFirstRunBrowserTest,
                        QuitEarly) {
@@ -2494,7 +2502,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosManagedFirstRunBrowserTest,
 
   // No browser window should open because we closed the FRE UI early.
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
-  EXPECT_FALSE(ShouldOpenPrimaryProfileFirstRun(profile));
+  EXPECT_FALSE(ShouldOpenFirstRun(profile));
 
   histogram_tester().ExpectUniqueSample(
       "Profile.LacrosPrimaryProfileFirstRunOutcome",
@@ -2502,14 +2510,14 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosManagedFirstRunBrowserTest,
   // After exit we still only have the one entry point logged.
   histogram_tester().ExpectUniqueSample(
       "Profile.LacrosPrimaryProfileFirstRunEntryPoint",
-      LacrosFirstRunService::EntryPoint::kProcessStartup, 1);
+      FirstRunService::EntryPoint::kProcessStartup, 1);
 }
 IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosManagedFirstRunBrowserTest,
                        QuitAtEnd) {
   Profile* profile = GetPrimaryProfile();
 
   // On the second run, the FRE is marked finished and we should skip it.
-  EXPECT_FALSE(ShouldOpenPrimaryProfileFirstRun(profile));
+  EXPECT_FALSE(ShouldOpenFirstRun(profile));
   EXPECT_TRUE(chrome::enterprise_util::UserAcceptedAccountManagement(profile));
   EXPECT_FALSE(ProfilePicker::IsOpen());
   EXPECT_EQ(1u, BrowserList::GetInstance()->size());

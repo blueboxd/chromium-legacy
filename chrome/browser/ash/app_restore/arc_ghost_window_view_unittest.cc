@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ash/app_restore/arc_ghost_window_view.h"
 
+#include "ash/components/arc/arc_features.h"
 #include "base/callback_forward.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -74,6 +76,8 @@ class ArcGhostWindowViewTest : public testing::Test {
         /*avatar_id=*/0,
         IdentityTestEnvironmentProfileAdaptor::
             GetIdentityTestEnvironmentFactories());
+
+    feature_list_.InitAndEnableFeature(arc::kGhostWindowNewStyle);
   }
 
   void InstallApp(const std::string& app_id) {
@@ -86,11 +90,14 @@ class ArcGhostWindowViewTest : public testing::Test {
                  false /* should_notify_initialized */);
   }
 
-  void CreateView(arc::GhostWindowType type,
-                  int throbber_diameter,
-                  uint32_t theme_color) {
-    view_ = std::make_unique<ArcGhostWindowView>(type, throbber_diameter,
-                                                 theme_color);
+  void CreateView(arc::GhostWindowType type, uint32_t theme_color) {
+    view_ = std::make_unique<ArcGhostWindowView>(nullptr, "");
+    view_->SetThemeColor(theme_color);
+    view_->SetGhostWindowViewType(type);
+  }
+
+  void CreateEmptyView() {
+    view_ = std::make_unique<ArcGhostWindowView>(nullptr, "");
   }
 
   ArcGhostWindowView* view() { return view_.get(); }
@@ -104,6 +111,8 @@ class ArcGhostWindowViewTest : public testing::Test {
  private:
   std::unique_ptr<ArcGhostWindowView> view_;
 
+  base::test::ScopedFeatureList feature_list_;
+
   ash::FakeChromeUserManager* user_manager_;  // Not own.
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 
@@ -112,13 +121,26 @@ class ArcGhostWindowViewTest : public testing::Test {
 };
 
 TEST_F(ArcGhostWindowViewTest, IconLoadTest) {
-  const int kDiameter = 24;
   const uint32_t kThemeColor = SK_ColorWHITE;
   const std::string kAppId = "test_app";
   InstallApp(kAppId);
 
   int count = 0;
-  CreateView(arc::GhostWindowType::kFullRestore, kDiameter, kThemeColor);
+  CreateView(arc::GhostWindowType::kFullRestore, kThemeColor);
+  EXPECT_EQ(count, 0);
+
+  view()->icon_loaded_cb_for_testing_ = base::BindLambdaForTesting(
+      [&count](apps::IconValuePtr icon_value) { count++; });
+  view()->LoadIcon(kAppId);
+  EXPECT_EQ(count, 1);
+}
+
+TEST_F(ArcGhostWindowViewTest, EmptyViewIconLoadTest) {
+  const std::string kAppId = "test_app";
+  InstallApp(kAppId);
+
+  int count = 0;
+  CreateEmptyView();
   EXPECT_EQ(count, 0);
 
   view()->icon_loaded_cb_for_testing_ = base::BindLambdaForTesting(
@@ -128,15 +150,16 @@ TEST_F(ArcGhostWindowViewTest, IconLoadTest) {
 }
 
 TEST_F(ArcGhostWindowViewTest, FixupMessageTest) {
-  const int kDiameter = 24;
   const uint32_t kThemeColor = SK_ColorWHITE;
   const std::string kAppId = "test_app";
   InstallApp(kAppId);
 
-  CreateView(arc::GhostWindowType::kFixup, kDiameter, kThemeColor);
+  CreateView(arc::GhostWindowType::kFixup, kThemeColor);
 
-  EXPECT_NE(view()->message_label_, nullptr);
-  EXPECT_EQ(view()->message_label_->GetText(),
+  auto* message_label = static_cast<views::Label*>(
+      view()->GetViewByID(ContentID::ID_MESSAGE_LABEL));
+  EXPECT_NE(message_label, nullptr);
+  EXPECT_EQ(message_label->GetText(),
             l10n_util::GetStringUTF16(IDS_ARC_GHOST_WINDOW_APP_FIXUP_MESSAGE));
 }
 

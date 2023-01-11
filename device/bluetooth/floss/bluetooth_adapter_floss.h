@@ -20,6 +20,7 @@
 #include "device/bluetooth/bluetooth_socket_thread.h"
 #include "device/bluetooth/floss/bluetooth_low_energy_scan_session_floss.h"
 #include "device/bluetooth/floss/floss_adapter_client.h"
+#include "device/bluetooth/floss/floss_battery_manager_client.h"
 #include "device/bluetooth/floss/floss_dbus_client.h"
 #include "device/bluetooth/floss/floss_gatt_client.h"
 #include "device/bluetooth/floss/floss_lescan_client.h"
@@ -33,6 +34,7 @@
 namespace floss {
 
 class BluetoothDeviceFloss;
+class BluetoothAdvertisementFloss;
 
 // The BluetoothAdapterFloss class implements BluetoothAdapter for platforms
 // that use Floss, a dbus front-end for the Fluoride Bluetooth stack.
@@ -44,6 +46,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
     : public device::BluetoothAdapter,
       public floss::FlossManagerClient::Observer,
       public floss::FlossAdapterClient::Observer,
+      public floss::FlossBatteryManagerClient::
+          FlossBatteryManagerClientObserver,
       public ScannerClientObserver {
  public:
   static scoped_refptr<BluetoothAdapterFloss> CreateAdapter();
@@ -137,6 +141,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
                          uint8_t scanner_id,
                          GattStatus status) override;
   void ScanResultReceived(ScanResult scan_result) override;
+  void ScanResultLost(ScanResult scan_result) override;
 
  protected:
   // BluetoothAdapter:
@@ -150,6 +155,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
   // Init will get asynchronouly called once we know if Object Manager is
   // supported.
   void Init();
+
+  // Helper function to create a Floss device
+  std::unique_ptr<BluetoothDeviceFloss> CreateBluetoothDeviceFloss(
+      FlossDeviceId device);
 
   // Handle responses to most method calls
   void OnMethodResponse(base::OnceClosure callback,
@@ -195,6 +204,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
 
   void PopulateInitialDevices();
   void ClearAllDevices();
+  bool UpdateDevice(BluetoothDeviceFloss* device,
+                    BluetoothDeviceFloss* new_device);
 
   // floss::FlossAdapterClient::Observer override.
   void DiscoverableChanged(bool discoverable) override;
@@ -211,6 +222,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
       FlossAdapterClient::BondState bond_state) override;
   void AdapterDeviceConnected(const FlossDeviceId& device_id) override;
   void AdapterDeviceDisconnected(const FlossDeviceId& device_id) override;
+
+  // floss::FlossBatteryManagerClient::FlossBatteryManagerClientObserver
+  // override.
+  void BatteryInfoUpdated(std::string remote_address,
+                          BatterySet battery_set) override;
 
   // BluetoothAdapter:
   base::WeakPtr<BluetoothAdapter> GetWeakPtr() override;
@@ -249,6 +265,20 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
   // the ui thread but socket operations (including connect/disconnect) will be
   // run in this thread. See |BluetoothSocketNet| for more details.
   scoped_refptr<device::BluetoothSocketThread> socket_thread_;
+
+  // List of advertisements registered with this adapter. This list is used
+  // to ensure we unregister any advertisements that were registered with
+  // this adapter on adapter shutdown. This is a sub-optimal solution since
+  // we'll keep a list of all advertisements ever created by this adapter (the
+  // unregistered ones will just be inactive). This will be fixed with
+  // crbug.com/687396.
+  std::vector<scoped_refptr<BluetoothAdvertisementFloss>> advertisements_;
+
+  // Default BLE advertising interval.
+  // 100 ms is one of the recommended values on Floss AdvertisingSetParameters.
+  // b/253718595 will provide a 'no preference' option so that Floss can choose
+  // a default value for the advertising interval.
+  uint16_t interval_ms_ = 100;
 
   base::WeakPtrFactory<BluetoothAdapterFloss> weak_ptr_factory_{this};
 };

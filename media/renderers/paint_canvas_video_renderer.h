@@ -8,7 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/sequence_checker.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "cc/paint/paint_canvas.h"
@@ -201,11 +202,11 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
   // not keep a reference to the VideoFrame so necessary data is extracted out
   // of it.
   struct Cache {
-    explicit Cache(int frame_id);
+    explicit Cache(VideoFrame::ID frame_id);
     ~Cache();
 
     // VideoFrame::unique_id() of the videoframe used to generate the cache.
-    int frame_id;
+    VideoFrame::ID frame_id;
 
     // A PaintImage that can be used to draw into a PaintCanvas. This is sized
     // to the visible size of the VideoFrame. Its contents are generated lazily.
@@ -268,7 +269,7 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
   cc::PaintImage::Id renderer_stable_id_;
 
   // Used for DCHECKs to ensure method calls executed in the correct thread.
-  base::ThreadChecker thread_checker_;
+  base::SequenceChecker sequence_checker_;
 
   struct YUVTextureCache {
     YUVTextureCache();

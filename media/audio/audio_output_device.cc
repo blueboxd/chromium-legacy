@@ -53,8 +53,9 @@ AudioOutputDevice::AudioOutputDevice(
 void AudioOutputDevice::Initialize(const AudioParameters& params,
                                    RenderCallback* callback) {
   io_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&AudioOutputDevice::InitializeOnIOThread, this,
-                                params, callback));
+      FROM_HERE,
+      base::BindOnce(&AudioOutputDevice::InitializeOnIOThread, this, params,
+                     base::UnsafeDanglingUntriaged(callback)));
 }
 
 void AudioOutputDevice::InitializeOnIOThread(const AudioParameters& params,
@@ -112,6 +113,7 @@ void AudioOutputDevice::Start() {
 void AudioOutputDevice::Stop() {
   TRACE_EVENT0("audio", "AudioOutputDevice::Stop");
   {
+    base::ScopedAllowBaseSyncPrimitives allow;
     base::AutoLock auto_lock(audio_thread_lock_);
     audio_thread_.reset();
     stopping_hack_ = true;

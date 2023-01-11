@@ -63,6 +63,12 @@ BASE_FEATURE(kAutofillAddressProfileSavePromptAddressVerificationSupport,
              "AutofillAddressProfileSavePromptAddressVerificationSupport",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Use the heuristic parser to detected unfillable numeric types in field labels
+// and grant the heuristic precedence over non-override server predictions.
+BASE_FEATURE(kAutofillGivePrecedenceToNumericQuantitites,
+             "AutofillGivePrecedenceToNumericQuantitites",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // TODO(crbug.com/1135188): Remove this feature flag after the explicit save
 // prompts for address profiles is complete.
 // When enabled, address profile save problem will contain a dropdown for
@@ -173,14 +179,6 @@ BASE_FEATURE(kAutofillFillAndImportFromMoreFields,
              "AutofillFillAndImportFromMoreFields",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, autofill searches for format strings (like "MM/YY", "MM / YY",
-// "MM/YYYY") in the label or placeholder of input elements and uses these
-// to fill expiration dates.
-// TODO(crbug.com/1326244): Cleanup when launched.
-BASE_FEATURE(kAutofillFillCreditCardAsPerFormatString,
-             "AutofillFillCreditCardAsPerFormatString",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Kill switch for Autofill filling.
 BASE_FEATURE(kAutofillDisableFilling,
              "AutofillDisableFilling",
@@ -252,13 +250,6 @@ BASE_FEATURE(kAutofillEnableDependentLocalityParsing,
              "AutofillEnableDependentLocalityParsing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables the augmentation layer for setting-inaccessible fields, which allows
-// extending Autofill's address format by additional fields.
-// TODO(crbug.com/1300548) Remove when launched.
-BASE_FEATURE(kAutofillEnableExtendedAddressFormats,
-             "AutofillEnableExtendedAddressFormats",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Controls whether to save the first number in a form with multiple phone
 // numbers instead of aborting the import.
 // TODO(crbug.com/1167484) Remove once launched.
@@ -321,16 +312,6 @@ BASE_FEATURE(kAutofillEnableSupportForHonorificPrefixes,
 BASE_FEATURE(kAutofillEnableSupportForPhoneNumberTrunkTypes,
              "AutofillEnableSupportForPhoneNumberTrunkTypes",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When enabled, Autofill monitors whether JavaScript modifies autofilled
-// credit card expiration dates and tries to fix a specific failure scenario.
-// After filling an expiration date "05/2023", some websites try to fix the
-// formatting and replace it with "05 / 20" instead of "05 / 23". When this
-// experiment is enabled, Chrome replaces the "05 / 20" with "05 / 23".
-// TODO(crbug.com/1314360): Remove once launched.
-BASE_FEATURE(kAutofillRefillModifiedCreditCardExpirationDates,
-             "AutofillRefillModifiedCreditCardExpirationDates",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables autofill to function within a FencedFrame, and is disabled by
 // default.
@@ -416,6 +397,22 @@ BASE_FEATURE(kAutofillPreventOverridingPrefilledValues,
              "AutofillPreventOverridingPrefilledValues",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// We used to consider local heuristics only if at least 3 fields were
+// classified by the heuristics [*]. With this feature enabled, we require that
+// local heuristics discover at least 3 different fillable field *types*,
+// meaning that 3 fields of the same type don't meet the bar. This is motivated
+// by cases where we saw the same field type multiple times (e.g. due to the
+// occurrence of the term "name") which produced false positives. crbug/1352826
+// contains some statistics.
+// Note that "fillable" refers to the field type, not whether a specific field
+// is visible and editable by the user.
+// [*] Precisely, at least 3 fields had to have a fillable field type, except
+// that emails and other single field types were not bound to this rule.
+// TODO(crbug/1352826): Remove once experiment is finished.
+BASE_FEATURE(kAutofillMin3FieldTypesForLocalHeuristics,
+             "AutofillMin3FieldTypesForLocalHeuristics",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, use the parsing patterns from a JSON file for heuristics, rather
 // than the hardcoded ones from autofill_regex_constants.cc.
 // The specific pattern set is controlled by the
@@ -464,25 +461,18 @@ BASE_FEATURE(kAutofillProbableFormSubmissionInBrowser,
              "AutofillProbableFormSubmissionInBrowser",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If we observe a sequence of fields of (street address, address line 2), these
-// get rationalized to (address line 1, address line 2).
+// If we observe a sequence of fields of (street address, house number), these
+// get rationalized to (street name, house number).
 // TODO(crbug.com/1326425): Remove once feature is lanuched.
-BASE_FEATURE(kAutofillRationalizeStreetAddressAndAddressLine,
-             "AutofillRationalizeStreetAddressAndAddressLine",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kAutofillRationalizeStreetAddressAndHouseNumber,
+             "AutofillRationalizeStreetAddressAndHouseNumber",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Removes setting-inaccessible field types from existing profiles on startup.
 // TODO(crbug.com/1300548): Cleanup when launched.
 BASE_FEATURE(kAutofillRemoveInaccessibleProfileValuesOnStartup,
              "AutofillRemoveInaccessibleProfileValuesOnStartup",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// If enabled, invalid phone numbers are removed on profile import, rather than
-// invalidating the entire profile.
-// TODO(crbug.com/1298424): Cleanup when launched.
-BASE_FEATURE(kAutofillRemoveInvalidPhoneNumberOnImport,
-             "AutofillRemoveInvalidPhoneNumberOnImport",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether or not overall prediction are retrieved from the cache.
 BASE_FEATURE(kAutofillRetrieveOverallPredictionsFromCache,

@@ -23,29 +23,11 @@ constexpr float kMinimumTileHeightAfterConfigScale = 48.;
 // size.
 ash::AppListConfigType GetConfigTypeForDisplaySize(
     const gfx::Size& display_size) {
-  if (features::IsProductivityLauncherEnabled()) {
-    // Values from go/cros-launcher-spec
-    if (display_size.height() <= 675 || display_size.width() <= 675)
-      return AppListConfigType::kDense;
+  // Values from go/cros-launcher-spec
+  if (display_size.height() <= 675 || display_size.width() <= 675)
+    return AppListConfigType::kDense;
 
-    return AppListConfigType::kRegular;
-  }
-
-  // Landscape:
-  if (display_size.width() > display_size.height()) {
-    if (display_size.width() >= 1200)
-      return ash::AppListConfigType::kLarge;
-    if (display_size.width() >= 960)
-      return ash::AppListConfigType::kMedium;
-    return ash::AppListConfigType::kSmall;
-  }
-
-  // Portrait:
-  if (display_size.width() >= 768)
-    return ash::AppListConfigType::kLarge;
-  if (display_size.width() >= 600)
-    return ash::AppListConfigType::kMedium;
-  return ash::AppListConfigType::kSmall;
+  return AppListConfigType::kRegular;
 }
 
 }  // namespace
@@ -87,10 +69,8 @@ AppListConfig* AppListConfigProvider::GetConfigForType(AppListConfigType type,
   return result;
 }
 
-std::unique_ptr<AppListConfig>
-AppListConfigProvider::CreateForFullscreenAppList(
+std::unique_ptr<AppListConfig> AppListConfigProvider::CreateForTabletAppList(
     const gfx::Size& display_work_area_size,
-    int grid_rows,
     int grid_columns,
     const gfx::Size& available_size,
     const AppListConfig* current_config) {
@@ -98,37 +78,11 @@ AppListConfigProvider::CreateForFullscreenAppList(
       GetBaseConfigForDisplaySize(display_work_area_size);
 
   float scale_x = 1;
-  float scale_y = 1;
-  float inner_tile_scale_y = 1;
 
   const float min_config_scale =
       kMinimumTileHeightAfterConfigScale / base_config.grid_tile_height();
 
   const int min_grid_width = grid_columns * base_config.grid_tile_width();
-
-  // `scale_y` does not change when productivity launcher is enabled. Instead,
-  // the number of rows will be reduced to fit the grid vertically.
-  if (!features::IsProductivityLauncherEnabled()) {
-    const int min_grid_height = grid_rows * base_config.grid_tile_height();
-    if (available_size.height() < min_grid_height) {
-      scale_y = std::max(
-          min_config_scale,
-          static_cast<float>(available_size.height()) / min_grid_height);
-
-      // Adjust scale to reflect the fact the app list item title height does
-      // not get scaled. The adjustment is derived from: s * x + c = S * (x + c)
-      // and t = x + c With: S - the target grid scale,
-      //       x - scalable part of the tile (total title padding),
-      //       c - constant part of the tile,
-      //       t - tile height, and
-      //       s - the adjusted scale.
-      const int total_title_padding = base_config.grid_title_bottom_padding() +
-                                      base_config.grid_title_top_padding();
-      inner_tile_scale_y = (base_config.grid_tile_height() * (scale_y - 1) +
-                            total_title_padding) /
-                           total_title_padding;
-    }
-  }
 
   if (available_size.width() < min_grid_width) {
     scale_x =
@@ -137,14 +91,11 @@ AppListConfigProvider::CreateForFullscreenAppList(
   }
 
   if (current_config && current_config->type() == base_config.type() &&
-      current_config->scale_x() == scale_x &&
-      current_config->scale_y() == scale_y) {
+      current_config->scale_x() == scale_x) {
     return nullptr;
   }
 
-  return std::make_unique<AppListConfig>(base_config, scale_x, scale_y,
-                                         inner_tile_scale_y,
-                                         scale_y == min_config_scale);
+  return std::make_unique<AppListConfig>(base_config, scale_x);
 }
 
 std::set<AppListConfigType> AppListConfigProvider::GetAvailableConfigTypes() {

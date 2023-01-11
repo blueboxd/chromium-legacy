@@ -18,6 +18,7 @@
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/containers/flat_set.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -30,9 +31,8 @@
 #include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/rand_util.h"
-#include "base/ranges/ranges.h"
 #include "base/strings/escape.h"
-#include "base/strings/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
@@ -41,6 +41,7 @@
 #include "base/trace_event/typed_macros.h"
 #include "base/tracing/protos/chrome_track_event.pbzero.h"
 #include "build/build_config.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/favicon/core/favicon_backend.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
@@ -65,6 +66,7 @@
 #include "sql/error_delegate_util.h"
 #include "sql/sqlite_result_code.h"
 #include "sql/sqlite_result_code_values.h"
+#include "sql/transaction.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -271,7 +273,6 @@ HistoryBackend::HistoryBackend(
     std::unique_ptr<HistoryBackendClient> backend_client,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : delegate_(std::move(delegate)),
-      scheduled_kill_db_(false),
       expirer_(this, backend_client.get(), task_runner),
       recent_redirects_(kMaxRedirectCount),
       backend_client_(std::move(backend_client)),
@@ -816,9 +817,6 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
       UpdateSegments(request.url, from_visit_id, last_visit_id, t,
                      request.time);
     }
-
-    // Update the referrer's duration.
-    UpdateVisitDuration(from_visit_id, request.time);
   } else {
     // Redirect case. Add the redirect chain.
 
@@ -942,9 +940,6 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
           UpdateSegments(redirects[redirect_index], from_visit_id,
                          last_visit_id, t, request.time);
         }
-
-        // Update the referrer's duration.
-        UpdateVisitDuration(from_visit_id, request.time);
       }
 
       // Subsequent transitions in the redirect list must all be server
@@ -1031,7 +1026,7 @@ void HistoryBackend::InitImpl(
   db_->set_error_callback(base::BindRepeating(
       &HistoryBackend::DatabaseErrorCallback, base::Unretained(this)));
 
-  db_diagnostics_.clear();
+  diagnostics_string_.clear();
   sql::InitStatus status = db_->Init(history_name);
   switch (status) {
     case sql::INIT_OK:
@@ -1051,8 +1046,8 @@ void HistoryBackend::InitImpl(
       [[fallthrough]];
     }
     case sql::INIT_TOO_NEW: {
-      db_diagnostics_ += sql::GetCorruptFileDiagnosticsInfo(history_name);
-      delegate_->NotifyProfileError(status, db_diagnostics_);
+      diagnostics_string_ += sql::GetCorruptFileDiagnosticsInfo(history_name);
+      delegate_->NotifyProfileError(status, diagnostics_string_);
       db_.reset();
       return;
     }
@@ -1090,7 +1085,7 @@ void HistoryBackend::InitImpl(
   expirer_.SetDatabases(db_.get(), favicon_db_ptr);
 
   // Open the long-running transaction.
-  db_->BeginTransaction();
+  BeginSingletonTransaction();
 
   // Get the first item in our database.
   db_->GetStartDate(&first_recorded_time_);
@@ -1117,8 +1112,7 @@ void HistoryBackend::OnMemoryPressure(
 
 void HistoryBackend::CloseAllDatabases() {
   if (db_) {
-    // Commit the long-running transaction.
-    db_->CommitTransaction();
+    CommitSingletonTransactionIfItExists();
     db_.reset();
     // Forget the first recorded time since the database is closed.
     first_recorded_time_ = base::Time();
@@ -1471,7 +1465,6 @@ VisitID HistoryBackend::UpdateSyncedVisit(
   DCHECK_EQ(visit.url_id, 0);
   DCHECK(!visit.visit_time.is_null());
   DCHECK(!visit.originator_cache_guid.empty());
-  DCHECK(visit.transition & ui::PAGE_TRANSITION_CHAIN_END);
 
   if (!db_)
     return 0;
@@ -2662,6 +2655,7 @@ void HistoryBackend::SendFaviconChangedNotificationForIconURL(
 }
 
 void HistoryBackend::Commit() {
+  TRACE_EVENT0("browser", "HistoryBackend::Commit");
   if (!db_)
     return;
 
@@ -2680,16 +2674,16 @@ void HistoryBackend::Commit() {
   // some cases) but it hasn't been important yet.
   CancelScheduledCommit();
 
-  db_->CommitTransaction();
-  DCHECK_EQ(db_->transaction_nesting(), 0)
-      << "Somebody left a transaction open";
-  db_->BeginTransaction();
+  CommitSingletonTransactionIfItExists();
+  BeginSingletonTransaction();
 
+  // `FaviconBackend` has its OWN internal long-running transaction.
   if (favicon_backend_)
     favicon_backend_->Commit();
 }
 
 void HistoryBackend::ScheduleCommit() {
+  TRACE_EVENT0("browser", "HistoryBackend::ScheduleCommit");
   // Non-cancelled means there's an already scheduled commit. Note that
   // CancelableOnceClosure starts cancelled with the default constructor.
   if (!scheduled_commit_.IsCancelled())
@@ -2703,6 +2697,7 @@ void HistoryBackend::ScheduleCommit() {
 }
 
 void HistoryBackend::CancelScheduledCommit() {
+  TRACE_EVENT0("browser", "HistoryBackend::CancelScheduledCommit");
   scheduled_commit_.Cancel();
 }
 
@@ -2738,6 +2733,72 @@ void HistoryBackend::ProcessDBTaskImpl() {
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&HistoryBackend::ProcessDBTaskImpl, this));
   }
+}
+
+void HistoryBackend::BeginSingletonTransaction() {
+  TRACE_EVENT0("browser", "HistoryBackend::BeginSingletonTransaction");
+  // TODO(crbug.com/1321483): Convert to DCHECKs after sussing out all the
+  // transaction bugs in History.
+  CHECK(!singleton_transaction_);
+
+  CHECK_EQ(db_->transaction_nesting(), 0);
+  singleton_transaction_ = db_->CreateTransaction();
+
+  bool success = singleton_transaction_->Begin();
+  UMA_HISTOGRAM_BOOLEAN("History.Backend.TransactionBeginSuccess", success);
+  if (success) {
+    CHECK_EQ(db_->transaction_nesting(), 1);
+  } else {
+    // Failing to begin the transaction is weird but it's not the end of the
+    // world. History can operate (slowly) without the long-running transaction,
+    // and we'll try to start one again at the next commit interval. Clear out
+    // the `singleton_transaction_` pointer, because it's only kept around if
+    // it was successfully begun.
+    singleton_transaction_.reset();
+
+    // TODO(crbug.com/1321483): Remove DumpWithoutCrashing after fixing
+    // transaction related bugs in History.
+    base::debug::DumpWithoutCrashing();
+  }
+}
+
+void HistoryBackend::CommitSingletonTransactionIfItExists() {
+  TRACE_EVENT0("browser",
+               "HistoryBackend::CommitSingletonTransactionIfItExists");
+  // This can happen if the transaction was not successfully started.
+  // TODO(crbug.com/1321483): Convert to DCHECKs after sussing out all the
+  // transaction bugs in History.
+  if (!singleton_transaction_) {
+    CHECK_EQ(db_->transaction_nesting(), 0)
+        << "There should not be any transactions other than the singleton one.";
+    return;
+  }
+
+  CHECK_EQ(db_->transaction_nesting(), 1)
+      << "Someone opened multiple transactions.";
+
+  bool success = singleton_transaction_->Commit();
+  UMA_HISTOGRAM_BOOLEAN("History.Backend.TransactionCommitSuccess", success);
+  if (success) {
+    CHECK_EQ(db_->transaction_nesting(), 0)
+        << "Someone left a transaction open.";
+  } else {
+    // These diagnostic codes don't contain PII, and have already been cleared
+    // by Privacy to be used for error telemetry.
+    static crash_reporter::CrashKeyString<8> error_code_key(
+        "sql_diagnostics_error_code");
+    error_code_key.Set(base::NumberToString(diagnostics_.error_code));
+    static crash_reporter::CrashKeyString<8> version_key(
+        "sql_diagnostics_version");
+    version_key.Set(base::NumberToString(diagnostics_.version));
+    static crash_reporter::CrashKeyString<256> error_message_key(
+        "sql_diagnostics_error_message");
+    error_message_key.Set(diagnostics_.error_message);
+    // TODO(crbug.com/1321483): Remove DumpWithoutCrashing after fixing
+    // transaction related bugs in History.
+    base::debug::DumpWithoutCrashing();
+  }
+  singleton_transaction_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2911,25 +2972,17 @@ void HistoryBackend::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
 }
 
 void HistoryBackend::DatabaseErrorCallback(int error, sql::Statement* stmt) {
-  // TODO(https://crbug.com/1321483): Remove this top block after we've debugged
-  // the problematic SQL statement, and have restored considering SQLITE_ERROR
-  // as catastrophic.
-  constexpr char kHistoryDatabaseSqliteErrorUma[] =
-      "History.DatabaseSqliteError";
-  if (sql::ToSqliteResultCode(error) == sql::SqliteResultCode::kError) {
-    sql::DatabaseDiagnostics diagnostics;
-    db_diagnostics_ = db_->GetDiagnosticInfo(error, stmt, &diagnostics);
-    TRACE_EVENT_INSTANT(
-        "history", "HistoryBackend::DatabaseErrorCallback",
-        perfetto::protos::pbzero::ChromeTrackEvent::kSqlDiagnostics,
-        diagnostics);
+  // Collect Perfetto traces of any database errors, catastrophic or not, so
+  // we can detect wrong SQL statements in the wild.
+  diagnostics_string_ = db_->GetDiagnosticInfo(error, stmt, &diagnostics_);
+  TRACE_EVENT_INSTANT(
+      "history", "HistoryBackend::DatabaseErrorCallback",
+      perfetto::protos::pbzero::ChromeTrackEvent::kSqlDiagnostics,
+      diagnostics_);
 
-    // Record UMA at the end because we want to use PREEMPTIVE_TRACING_MODE.
-    sql::UmaHistogramSqliteResult(kHistoryDatabaseSqliteErrorUma, error);
-  } else if (!scheduled_kill_db_ && sql::IsErrorCatastrophic(error)) {
+  // Raze the database for catastrophic errors.
+  if (!scheduled_kill_db_ && sql::IsErrorCatastrophic(error)) {
     scheduled_kill_db_ = true;
-
-    db_diagnostics_ = db_->GetDiagnosticInfo(error, stmt);
 
     // Don't just do the close/delete here, as we are being called by `db` and
     // that seems dangerous.
@@ -2940,12 +2993,14 @@ void HistoryBackend::DatabaseErrorCallback(int error, sql::Statement* stmt) {
     // (then it can be cleared immediately).
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&HistoryBackend::KillHistoryDatabase, this));
-
-    sql::UmaHistogramSqliteResult(kHistoryDatabaseSqliteErrorUma, error);
   }
+
+  // Record UMA at the end because we want to use PREEMPTIVE_TRACING_MODE.
+  sql::UmaHistogramSqliteResult("History.DatabaseSqliteError", error);
 }
 
 void HistoryBackend::KillHistoryDatabase() {
+  TRACE_EVENT0("browser", "HistoryBackend::KillHistoryDatabase");
   scheduled_kill_db_ = false;
   if (!db_)
     return;
@@ -2958,8 +3013,9 @@ void HistoryBackend::KillHistoryDatabase() {
     history_sync_bridge_->OnDatabaseError();
 
   // Rollback transaction because Raze() cannot be called from within a
-  // transaction.
-  db_->RollbackTransaction();
+  // transaction. Deleting the object causes the rollback in the destructor.
+  singleton_transaction_.reset();
+
   bool success = db_->Raze();
   UMA_HISTOGRAM_BOOLEAN("History.KillHistoryDatabaseResult", success);
 
@@ -2967,8 +3023,6 @@ void HistoryBackend::KillHistoryDatabase() {
   // databases which will be closed.
   expirer_.SetDatabases(nullptr, nullptr);
 
-  // Reopen a new transaction for `db_` for the sake of CloseAllDatabases().
-  db_->BeginTransaction();
   CloseAllDatabases();
 }
 
@@ -3137,9 +3191,9 @@ bool HistoryBackend::ClearAllMainHistory(const URLRows& kept_urls) {
   // Vacuum to reclaim the space from the dropped tables. This must be done
   // when there is no transaction open, and we assume that our long-running
   // transaction is currently open.
-  db_->CommitTransaction();
+  CommitSingletonTransactionIfItExists();
   db_->Vacuum();
-  db_->BeginTransaction();
+  BeginSingletonTransaction();
   db_->GetStartDate(&first_recorded_time_);
 
   return true;

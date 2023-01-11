@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_view.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_anchor_query_map.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_disable_side_effects_scope.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
@@ -51,6 +52,15 @@ void SortInPreOrder(HeapVector<NGLogicalOOFNodeForFragmentation>* nodes) {
                const NGLogicalOOFNodeForFragmentation& b) {
               return a.box->IsBeforeInPreOrder(*b.box);
             });
+}
+
+bool MayHaveAnchorQuery(
+    const HeapVector<NGLogicalOOFNodeForFragmentation>& nodes) {
+  for (const NGLogicalOOFNodeForFragmentation& node : nodes) {
+    if (node.box->MayHaveAnchorQuery())
+      return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -89,7 +99,8 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
     : container_builder_(container_builder),
       is_absolute_container_(is_absolute_container),
       is_fixed_container_(is_fixed_container),
-      has_block_fragmentation_(container_space.HasBlockFragmentation()) {
+      has_block_fragmentation_(
+          InvolvedInBlockFragmentation(*container_builder)) {
   // TODO(almaher): Should we early return here in the case of block
   // fragmentation? If not, what should |allow_first_tier_oof_cache_| be set to
   // in this case?
@@ -745,6 +756,10 @@ void NGOutOfFlowLayoutPart::LayoutCandidates(
     HeapVector<NGLogicalOutOfFlowPositionedNode>* candidates,
     const LayoutBox* only_layout,
     HeapHashSet<Member<const LayoutObject>>* placed_objects) {
+  const WritingModeConverter conainer_converter(
+      container_builder_->GetWritingDirection(), container_builder_->Size());
+  const NGFragmentItemsBuilder::ItemWithOffsetList* items = nullptr;
+  absl::optional<NGLogicalAnchorQueryMap> anchor_queries;
   while (candidates->size() > 0) {
     if (!has_block_fragmentation_ ||
         container_builder_->IsInitialColumnBalancingPass())
@@ -776,9 +791,27 @@ void NGOutOfFlowLayoutPart::LayoutCandidates(
             continue;
           }
         }
+
+        // If the containing block is inline, it may have a different anchor
+        // query than |container_builder_|. Compute the anchor query for it.
+        const bool needs_anchor_queries =
+            candidate.inline_container.container &&
+            container_builder_->AnchorQuery();
+        if (needs_anchor_queries && !anchor_queries) {
+          if (NGFragmentItemsBuilder* items_builder =
+                  container_builder_->ItemsBuilder()) {
+            items = &items_builder->Items(conainer_converter.OuterSize());
+          }
+          anchor_queries.emplace(*container_builder_->Node().GetLayoutBox(),
+                                 container_builder_->Children(), items,
+                                 conainer_converter);
+        }
+
         NodeInfo node_info = SetupNodeInfo(candidate);
-        NodeToLayout node_to_layout = {node_info,
-                                       CalculateOffset(node_info, only_layout)};
+        NodeToLayout node_to_layout = {
+            node_info,
+            CalculateOffset(node_info, only_layout, /* is_first_run */ false,
+                            needs_anchor_queries ? &*anchor_queries : nullptr)};
         const NGLayoutResult* result =
             LayoutOOFNode(node_to_layout, only_layout);
         container_builder_->AddResult(
@@ -788,6 +821,11 @@ void NGOutOfFlowLayoutPart::LayoutCandidates(
         if (container_builder_->IsInitialColumnBalancingPass()) {
           container_builder_->PropagateTallestUnbreakableBlockSize(
               result->TallestUnbreakableBlockSize());
+        }
+        if (needs_anchor_queries) {
+          DCHECK(anchor_queries);
+          if (result->PhysicalFragment().HasAnchorQueryToPropagate())
+            anchor_queries->SetChildren(container_builder_->Children(), items);
         }
         placed_objects->insert(layout_box);
       } else {
@@ -1133,7 +1171,6 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
                         container_builder_->BorderScrollbarPadding())
           .block_size;
 
-  NGLogicalAnchorQueryForFragmentation stitched_anchor_queries;
   NGBoxFragmentBuilder* builder_for_anchor_query = container_builder_;
   if (outer_container_builder_) {
     // If this is an inner layout of the nested block fragmentation, and if this
@@ -1148,9 +1185,9 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
       }
     }
   }
-  stitched_anchor_queries.Update(
-      builder_for_anchor_query->Children(), *descendants,
+  NGLogicalAnchorQueryMap stitched_anchor_queries(
       *builder_for_anchor_query->Node().GetLayoutBox(),
+      builder_for_anchor_query->Children(),
       builder_for_anchor_query->GetWritingDirection());
 
   // |descendants| are sorted by fragmentainers, and then by the layout order,
@@ -1158,10 +1195,9 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
   // fragmentainers by overflow, |descendants| need to be re-sorted by the
   // pre-order. Note that both |SortInPreOrder| and |IsInPreOrder| are not
   // cheap, limit only when needed.
-  if (stitched_anchor_queries.HasAnchorsOnOutOfFlowObjects() &&
-      !IsInPreOrder(*descendants)) {
+  const bool may_have_anchors_on_oof = MayHaveAnchorQuery(*descendants);
+  if (may_have_anchors_on_oof && !IsInPreOrder(*descendants))
     SortInPreOrder(descendants);
-  }
 
   HeapVector<HeapVector<NodeToLayout>> descendants_to_layout;
   ClearCollectionScope<HeapVector<HeapVector<NodeToLayout>>>
@@ -1179,9 +1215,6 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
       // The CSS containing block of the last descendant, to group |descendants|
       // by the CSS containing block.
       const LayoutObject* last_css_containing_block = nullptr;
-      const NGLogicalAnchorQuery* stitched_anchor_query =
-          &NGLogicalAnchorQuery::Empty();
-      DCHECK(stitched_anchor_query);
 
       // Sort the descendants by fragmentainer index in |descendants_to_layout|.
       // This will ensure that the descendants are laid out in the correct
@@ -1208,14 +1241,17 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
         // differently when the containing block is different, and may refer to
         // other containing blocks that were already laid out.
         //
+        // Do this only when needed, because doing so may rebuild fragmentainers
+        // multiple times, which can hit the performance when there are many
+        // containing blocks in the block formatting context.
+        //
         // Use |LayoutObject::Container|, not |LayoutObject::ContainingBlock|.
         // The latter is not the CSS containing block for inline boxes. See the
         // comment of |LayoutObject::ContainingBlock|.
         //
         // Note |descendant.containing_block.fragment| is |ContainingBlock|, not
         // the CSS containing block.
-        DCHECK(stitched_anchor_query);
-        if (stitched_anchor_queries.ShouldLayoutByContainingBlock()) {
+        if (!stitched_anchor_queries.IsEmpty() || may_have_anchors_on_oof) {
           const LayoutObject* css_containing_block =
               descendant.box->Container();
           DCHECK(css_containing_block);
@@ -1224,18 +1260,14 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
             // if it has anchor query, for the performance reasons to minimize
             // the number of rebuilding fragmentainer fragments.
             if (last_css_containing_block &&
-                (!stitched_anchor_query->IsEmpty() ||
-                 stitched_anchor_queries.HasAnchorsOnOutOfFlowObjects())) {
+                (last_css_containing_block->MayHaveAnchorQuery() ||
+                 may_have_anchors_on_oof)) {
               has_new_descendants_span = true;
               descendants_span = descendants_span.subspan(
                   &descendant - descendants_span.data());
               break;
             }
             last_css_containing_block = css_containing_block;
-            stitched_anchor_query =
-                &stitched_anchor_queries.StitchedAnchorQuery(
-                    *css_containing_block);
-            DCHECK(stitched_anchor_query);
           }
         }
 
@@ -1243,7 +1275,7 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
         NodeToLayout node_to_layout = {
             node_info,
             CalculateOffset(node_info, /* only_layout */ nullptr,
-                            /* is_first_run */ true, stitched_anchor_query)};
+                            /* is_first_run */ true, &stitched_anchor_queries)};
         node_to_layout.containing_block_fragment =
             descendant.containing_block.Fragment();
         node_to_layout.offset_info.original_offset =
@@ -1312,22 +1344,28 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
       }
       descendants_to_layout.Shrink(0);
 
-      // When laying out OOFs by containing blocks, and there are more
-      // containing blocks, update anchor queries and layout OOFs in the next
-      // containing block.
       if (!has_new_descendants_span)
         break;
-      stitched_anchor_queries.Update(
-          builder_for_anchor_query->Children(), descendants_span,
-          *builder_for_anchor_query->Node().GetLayoutBox(),
-          builder_for_anchor_query->GetWritingDirection());
+      // If laying out by containing blocks and there are more containing blocks
+      // to be laid out, move on to the next containing block. Before laying
+      // them out, if OOFs have anchors, update the anchor queries.
+      if (may_have_anchors_on_oof) {
+        stitched_anchor_queries.SetChildren(
+            builder_for_anchor_query->Children());
+      }
     }
 
     // Sweep any descendants that might have been bubbled up from the fragment
     // to the |container_builder_|. This happens when we have nested absolute
     // position elements.
+    //
+    // Don't do this if we are in a column balancing pass, though, since we
+    // won't propagate OOF info of nested OOFs in this case. Any OOFs already
+    // added to the builder should remain there so that they can be handled
+    // later.
     descendants->Shrink(0);
-    container_builder_->SwapOutOfFlowFragmentainerDescendants(descendants);
+    if (!column_balancing_info_)
+      container_builder_->SwapOutOfFlowFragmentainerDescendants(descendants);
   }
 }
 
@@ -1445,8 +1483,6 @@ const NGLayoutResult* NGOutOfFlowLayoutPart::LayoutOOFNode(
   const NGLayoutResult* layout_result =
       Layout(oof_node_to_layout, fragmentainer_constraint_space,
              is_known_to_be_last_fragmentainer);
-  NGBoxStrut scrollbars_after =
-      ComputeScrollbarsForNonAnonymous(node_info.node);
 
   // Since out-of-flow positioning sets up a constraint space with fixed
   // inline-size, the regular layout code (|NGBlockNode::Layout()|) cannot
@@ -1459,6 +1495,8 @@ const NGLayoutResult* NGOutOfFlowLayoutPart::LayoutOOFNode(
     WritingDirectionMode writing_mode_direction =
         node_info.node.Style().GetWritingDirection();
     bool freeze_horizontal = false, freeze_vertical = false;
+    NGBoxStrut scrollbars_after =
+        ComputeScrollbarsForNonAnonymous(node_info.node);
     bool ignore_first_inline_freeze =
         scrollbars_after.InlineSum() && scrollbars_after.BlockSum();
     // If we're in a measure pass, freeze both scrollbars right away, to avoid
@@ -1488,7 +1526,7 @@ const NGLayoutResult* NGOutOfFlowLayoutPart::LayoutOOFNode(
       PaintLayerScrollableArea::FreezeScrollbarsRootScope freezer(
           *node_info.node.GetLayoutBox(), freeze_horizontal, freeze_vertical);
 
-      if (!IsResumingLayout(oof_node_to_layout.break_token)) {
+      if (!IsBreakInside(oof_node_to_layout.break_token)) {
         // The offset itself does not need to be recalculated. However, the
         // |node_dimensions| and |initial_layout_result| may need to be updated,
         // so recompute the OffsetInfo.
@@ -1524,7 +1562,7 @@ NGOutOfFlowLayoutPart::OffsetInfo NGOutOfFlowLayoutPart::CalculateOffset(
     const NodeInfo& node_info,
     const LayoutBox* only_layout,
     bool is_first_run,
-    const NGLogicalAnchorQuery* stitched_anchor_query) {
+    const NGLogicalAnchorQueryMap* anchor_queries) {
   const ComputedStyle* style = &node_info.node.Style();
 
   // If `@position-fallback` exists, let |TryCalculateOffset| check if the
@@ -1547,9 +1585,9 @@ NGOutOfFlowLayoutPart::OffsetInfo NGOutOfFlowLayoutPart::CalculateOffset(
   while (true) {
     const bool test_if_margin_box_fits = next_fallback_style;
     OffsetInfo offset_info;
-    if (TryCalculateOffset(node_info, *style, only_layout,
-                           stitched_anchor_query, test_if_margin_box_fits,
-                           is_first_run, &offset_info)) {
+    if (TryCalculateOffset(node_info, *style, only_layout, anchor_queries,
+                           test_if_margin_box_fits, is_first_run,
+                           &offset_info)) {
       return offset_info;
     }
 
@@ -1565,7 +1603,7 @@ bool NGOutOfFlowLayoutPart::TryCalculateOffset(
     const NodeInfo& node_info,
     const ComputedStyle& candidate_style,
     const LayoutBox* only_layout,
-    const NGLogicalAnchorQuery* stitched_anchor_query,
+    const NGLogicalAnchorQueryMap* anchor_queries,
     bool test_if_margin_box_fits,
     bool is_first_run,
     OffsetInfo* const offset_info) {
@@ -1601,12 +1639,15 @@ bool NGOutOfFlowLayoutPart::TryCalculateOffset(
   absl::optional<NGAnchorEvaluatorImpl> anchor_evaluator_storage;
   const WritingModeConverter container_converter(
       container_writing_direction, node_info.container_physical_content_size);
-  if (stitched_anchor_query) {
+  if (anchor_queries) {
     // When the containing block is block-fragmented, the |container_builder_|
     // is the fragmentainer, not the containing block, and the coordinate system
     // is stitched. Use the given |anchor_query|.
+    const LayoutObject* css_containing_block =
+        node_info.node.GetLayoutBox()->Container();
+    DCHECK(css_containing_block);
     anchor_evaluator_storage.emplace(
-        *stitched_anchor_query, container_converter,
+        *anchor_queries, *css_containing_block, container_converter,
         container_converter.ToPhysical(node_info.container_info.rect).offset,
         candidate_writing_direction.GetWritingMode());
   } else if (const NGLogicalAnchorQuery* anchor_query =
@@ -2343,7 +2384,7 @@ void NGOutOfFlowLayoutPart::ReplaceFragment(
 
   // Replace the entry in the parent fragment. Locating the parent fragment
   // isn't straight-forward if the containing block is a multicol container.
-  LayoutBlock* containing_block = box.ContainingNGBlock();
+  LayoutBox* containing_block = box.ContainingNGBox();
 
   if (box.IsOutOfFlowPositioned()) {
     // If the inner multicol is out-of-flow positioned, its fragments will be
@@ -2355,7 +2396,7 @@ void NGOutOfFlowLayoutPart::ReplaceFragment(
     // fragmentation context root.
     while (containing_block->IsOutOfFlowPositioned() &&
            !containing_block->IsLayoutView())
-      containing_block = containing_block->ContainingNGBlock();
+      containing_block = containing_block->ContainingNGBox();
     // If we got to the root LayoutView, it has to mean that it establishes a
     // fragmentation context (i.e. we're printing).
     if (containing_block->IsLayoutView())

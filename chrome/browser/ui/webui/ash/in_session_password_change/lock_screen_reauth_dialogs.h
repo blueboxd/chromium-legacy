@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/webui/ash/in_session_password_change/base_lock_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
+#include "chrome/browser/ui/webui/ash/login/network_state_informer.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -112,7 +112,7 @@ class LockScreenStartReauthDialog
 
   void OnCaptivePortalDialogReadyForTesting();
 
-  scoped_refptr<chromeos::NetworkStateInformer> network_state_informer_;
+  scoped_refptr<NetworkStateInformer> network_state_informer_;
   bool is_network_dialog_visible_ = false;
   bool is_proxy_auth_in_progress_ = false;
   bool should_reload_gaia_ = false;

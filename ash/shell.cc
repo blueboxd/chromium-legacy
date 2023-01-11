@@ -35,6 +35,8 @@
 #include "ash/clipboard/clipboard_history_controller_impl.h"
 #include "ash/clipboard/control_v_histogram_recorder.h"
 #include "ash/color_enhancement/color_enhancement_controller.h"
+#include "ash/components/fwupd/firmware_update_manager.h"
+#include "ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/controls/contextual_tooltip.h"
@@ -121,6 +123,7 @@
 #include "ash/system/camera/autozoom_controller_impl.h"
 #include "ash/system/caps_lock_notification_controller.h"
 #include "ash/system/diagnostics/diagnostics_log_controller.h"
+#include "ash/system/federated/federated_service_controller.h"
 #include "ash/system/firmware_update/firmware_update_notification_controller.h"
 #include "ash/system/geolocation/geolocation_controller.h"
 #include "ash/system/human_presence/human_presence_orientation_controller.h"
@@ -156,6 +159,7 @@
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/usb_peripheral/usb_peripheral_notification_controller.h"
+#include "ash/system/video_conference/video_conference_tray_controller.h"
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/tray_action/tray_action.h"
@@ -202,6 +206,7 @@
 #include "base/notreached.h"
 #include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
+#include "chromeos/ash/components/dbus/fwupd/fwupd_client.h"
 #include "chromeos/ash/components/dbus/usb/usbguard_client.h"
 #include "chromeos/ash/services/assistant/public/cpp/features.h"
 #include "chromeos/dbus/init/initialize_dbus_client.h"
@@ -566,6 +571,22 @@ void Shell::NotifyShelfAlignmentChanged(aura::Window* root_window,
     observer.OnShelfAlignmentChanged(root_window, old_alignment);
 }
 
+void Shell::AddAccessibilityEventHandler(
+    ui::EventHandler* handler,
+    AccessibilityEventHandlerManager::HandlerType type) {
+  if (!accessibility_event_handler_manager_) {
+    accessibility_event_handler_manager_ =
+        std::make_unique<AccessibilityEventHandlerManager>();
+  }
+
+  accessibility_event_handler_manager_->AddAccessibilityEventHandler(handler,
+                                                                     type);
+}
+void Shell::RemoveAccessibilityEventHandler(ui::EventHandler* handler) {
+  accessibility_event_handler_manager_->RemoveAccessibilityEventHandler(
+      handler);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, private:
 
@@ -666,7 +687,7 @@ Shell::~Shell() {
   RemovePreTargetHandler(toplevel_window_event_handler_.get());
   RemovePostTargetHandler(toplevel_window_event_handler_.get());
   RemovePreTargetHandler(system_gesture_filter_.get());
-  RemovePreTargetHandler(mouse_cursor_filter_.get());
+  RemoveAccessibilityEventHandler(mouse_cursor_filter_.get());
   RemovePreTargetHandler(modality_filter_.get());
   RemovePreTargetHandler(tooltip_controller_.get());
 
@@ -895,6 +916,11 @@ Shell::~Shell() {
   // Depends on |focus_controller_|, so must be destroyed before.
   window_tree_host_manager_.reset();
 
+  // The UI has been destructed, so it's now OK to destruct the video conference
+  // UI controller.
+  if (features::IsVcControlsUiEnabled())
+    video_conference_tray_controller_.reset();
+
   // The desks controller is destroyed after the window tree host manager and
   // before the focus controller. At this point it is guaranteed that querying
   // the active desk is no longer needed.
@@ -945,6 +971,8 @@ Shell::~Shell() {
 
   firmware_update_notification_controller_.reset();
 
+  firmware_update_manager_.reset();
+
   pcie_peripheral_notification_controller_.reset();
 
   usb_peripheral_notification_controller_.reset();
@@ -966,10 +994,16 @@ Shell::~Shell() {
 
   multi_capture_service_client_.reset();
 
+  // Observes `SessionController` and must be destroyed before it.
+  federated_service_controller_.reset();
+
   UsbguardClient::Shutdown();
 
   // Must be shut down after detachable_base_handler_.
   HammerdClient::Shutdown();
+
+  if (FwupdClient::Get())
+    FwupdClient::Shutdown();
 
   for (auto& observer : shell_observers_)
     observer.OnShellDestroyed();
@@ -1001,9 +1035,6 @@ void Shell::Init(
 
   // These controllers call Shell::Get() in their constructors, so they cannot
   // be in the member initialization list.
-  if (features::IsCrosPrivacyHubEnabled()) {
-    privacy_hub_controller_ = std::make_unique<PrivacyHubController>();
-  }
   touch_devices_controller_ = std::make_unique<TouchDevicesController>();
   detachable_base_handler_ =
       std::make_unique<DetachableBaseHandler>(local_state_);
@@ -1050,10 +1081,6 @@ void Shell::Init(
         std::make_unique<diagnostics::DiagnosticsLogController>();
   }
 
-  firmware_update_notification_controller_ =
-      std::make_unique<FirmwareUpdateNotificationController>(
-          message_center::MessageCenter::Get());
-
   pcie_peripheral_notification_controller_ =
       std::make_unique<PciePeripheralNotificationController>(
           message_center::MessageCenter::Get());
@@ -1090,8 +1117,9 @@ void Shell::Init(
   wallpaper_controller_ = WallpaperControllerImpl::Create(local_state_);
 
   if (features::IsRgbKeyboardEnabled()) {
-    // Initialized after |wallpaper_controller_| because we will need to observe
-    // when the extracted wallpaper color changes.
+    // Initialized after |rgb_keyboard_manager_| to observe the state of rgb
+    // keyboard and |wallpaper_controller_| because we will need to observe when
+    // the extracted wallpaper color changes.
     keyboard_backlight_color_controller_ =
         std::make_unique<KeyboardBacklightColorController>();
   }
@@ -1269,8 +1297,9 @@ void Shell::Init(
   drag_drop_controller_ = std::make_unique<DragDropController>();
 
   mouse_cursor_filter_ = std::make_unique<MouseCursorEventFilter>();
-  AddPreTargetHandler(mouse_cursor_filter_.get(),
-                      ui::EventTarget::Priority::kAccessibility);
+  AddAccessibilityEventHandler(
+      mouse_cursor_filter_.get(),
+      AccessibilityEventHandlerManager::HandlerType::kCursor);
 
   if (features::IsAdaptiveChargingEnabled()) {
     adaptive_charging_controller_ =
@@ -1379,11 +1408,25 @@ void Shell::Init(
   system_notification_controller_ =
       std::make_unique<SystemNotificationController>();
 
+  if (features::IsCrosPrivacyHubEnabled()) {
+    // One of the subcontrollers accesses the SystemNotificationController.
+    privacy_hub_controller_ = std::make_unique<PrivacyHubController>();
+  }
+
   // WmModeController should be created before initializing the window tree
   // hosts, since the latter will initialize the shelf on each display, which
   // hosts the WM mode tray button.
   if (features::IsWmModeEnabled())
     wm_mode_controller_ = std::make_unique<WmModeController>();
+
+  // This controller MUST be initialized before the UI is constructed. The
+  // video conferencing views will have their own reference to this controller,
+  // may be observers of it, and will assume it exists for as long as they
+  // themselves exist.
+  if (features::IsVcControlsUiEnabled()) {
+    video_conference_tray_controller_ =
+        std::make_unique<VideoConferenceTrayController>();
+  }
 
   window_tree_host_manager_->InitHosts();
 
@@ -1451,6 +1494,11 @@ void Shell::Init(
 
   if (chromeos::wm::features::IsFloatWindowEnabled())
     float_controller_ = std::make_unique<FloatController>();
+
+  if (features::IsFederatedServiceEnabled()) {
+    federated_service_controller_ =
+        std::make_unique<federated::FederatedServiceController>();
+  }
 
   // Injects the factory which fulfills the implementation of the text context
   // menu exclusive to CrOS.
@@ -1620,6 +1668,24 @@ void Shell::OnSessionStateChanged(session_manager::SessionState state) {
   if (is_session_active && !shelf_window_watcher_) {
     shelf_window_watcher_ =
         std::make_unique<ShelfWindowWatcher>(shelf_controller()->model());
+  }
+
+  // Initialize the fwupd (firmware updater) DBus client only when the user
+  // session is active. Since the fwupd service is only relevant during an
+  // active user session, this prevents a bug in which the service would start
+  // up earlier than expected and causes a delay during boot.
+  // See b/250002264 for more details.
+  if (is_session_active && features::IsFirmwareUpdaterAppEnabled() &&
+      !FwupdClient::Get() && !firmware_update_notification_controller_) {
+    chromeos::InitializeDBusClient<FwupdClient>(dbus_bus_.get());
+    firmware_update_manager_ = std::make_unique<FirmwareUpdateManager>();
+    // The notification controller is registered as an observer before
+    // requesting updates to allow a notification to be shown if a critical
+    // firmware update is found.
+    firmware_update_notification_controller_ =
+        std::make_unique<FirmwareUpdateNotificationController>(
+            message_center::MessageCenter::Get());
+    firmware_update_manager_->RequestAllUpdates();
   }
 
   // Disable drag-and-drop during OOBE and GAIA login screens by only enabling

@@ -32,7 +32,6 @@
 
 #include <memory>
 
-#include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
@@ -40,6 +39,7 @@
 #include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/frame/view_transition_state.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
@@ -81,7 +81,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/storage/blink_storage_key.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -117,9 +116,6 @@ enum class CommitResult : int32_t;
 namespace {
 struct SameSizeAsDocumentLoader;
 }  // namespace
-
-// Enables code caching for inline scripts.
-BASE_DECLARE_FEATURE(kCacheInlineScriptCode);
 
 // The DocumentLoader fetches a main resource and handles the result.
 // TODO(https://crbug.com/855189). This was originally structured to have a
@@ -330,7 +326,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   }
 
   UseCounterImpl& GetUseCounter() { return use_counter_; }
-  Dactyloscoper& GetDactyloscoper() { return dactyloscoper_; }
 
   PrefetchedSignedExchangeManager* GetPrefetchedSignedExchangeManager() const;
 
@@ -439,6 +434,15 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       const KURL& url,
       const ResourceResponse& response);
 
+  // This needs to be kept as public to be accessible from
+  // SameSizeAsDocumentLoader as GCC will fail to allow access
+  // even if it is friend of DocumentLoader
+  class DecodedBodyData;
+
+  network::mojom::NavigationDeliveryType GetNavigationDeliveryType() const {
+    return navigation_delivery_type_;
+  }
+
  protected:
   // Based on its MIME type, if the main document's response corresponds to an
   // MHTML archive, then every resources will be loaded from this archive.
@@ -470,7 +474,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   friend struct SameSizeAsDocumentLoader;
   class BodyData;
   class EncodedBodyData;
-  class DecodedBodyData;
 
   Frame* CalculateOwnerFrame();
   scoped_refptr<SecurityOrigin> CalculateOrigin(Document* owner_document);
@@ -730,8 +733,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // report feature usage to UMA histograms per page load.
   UseCounterImpl use_counter_;
 
-  Dactyloscoper dactyloscoper_;
-
   const base::TickClock* clock_;
 
   const Vector<OriginTrialFeature> initiator_origin_trial_features_;
@@ -773,6 +774,12 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   // Reduced accept language for top-level frame.
   const AtomicString reduced_accept_language_;
+
+  const network::mojom::NavigationDeliveryType navigation_delivery_type_;
+
+  // Provides state from the previous Document that will be replaced by this
+  // navigation for a ViewTransition.
+  absl::optional<ViewTransitionState> view_transition_state_;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

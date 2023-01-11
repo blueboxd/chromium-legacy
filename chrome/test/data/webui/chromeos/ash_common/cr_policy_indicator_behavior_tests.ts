@@ -8,7 +8,7 @@
 import './cr_policy_strings.js';
 
 import {CrPolicyIndicatorBehavior, CrPolicyIndicatorType} from 'chrome://resources/ash/common/cr_policy_indicator_behavior.js';
-import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {isChromeOS} from 'chrome://resources/js/platform.js';
 import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
@@ -29,8 +29,7 @@ suite('CrPolicyIndicatorBehavior', function() {
   let indicator: TestIndicatorElement;
 
   setup(function() {
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     indicator =
         document.createElement('test-indicator') as TestIndicatorElement;
     document.body.appendChild(indicator);

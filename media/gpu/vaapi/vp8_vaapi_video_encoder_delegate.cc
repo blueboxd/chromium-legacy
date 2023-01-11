@@ -152,6 +152,7 @@ Vp8FrameHeader GetDefaultVp8FrameHeader(bool keyframe,
 
 constexpr uint8_t kMinSupportedVP8TemporalLayers = 2;
 constexpr uint8_t kMaxSupportedVP8TemporalLayers = 3;
+constexpr size_t kTemporalLayerCycle = 4;
 
 bool UpdateFrameHeaderForTemporalLayerEncoding(
     const size_t num_layers,
@@ -176,7 +177,6 @@ bool UpdateFrameHeaderForTemporalLayerEncoding(
     metadata.layer_sync = false;
     buffer_flags.fill(kUpdate);
   } else {
-    constexpr size_t kTemporalLayerCycle = 4;
     constexpr std::pair<Vp8Metadata,
                         std::array<BufferFlags, kNumVp8ReferenceBuffers>>
         kFrameConfigs[][kTemporalLayerCycle] = {
@@ -234,6 +234,27 @@ bool UpdateFrameHeaderForTemporalLayerEncoding(
   return true;
 }
 
+size_t GetActiveTemporalLayers(
+    const VideoBitrateAllocation& bitrate_allocation) {
+  size_t temporal_id = 0;
+  while (temporal_id < VideoBitrateAllocation::kMaxTemporalLayers &&
+         bitrate_allocation.GetBitrateBps(0, temporal_id) != 0) {
+    temporal_id++;
+  }
+  return temporal_id;
+}
+
+bool VP8TLEncodingIsEnabled() {
+  // TODO(b/202926617): Remove once VP8 TL encoding is enabled by default.
+  const static bool enable_vp8_tl_encoding =
+#if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
+      base::FeatureList::IsEnabled(kVaapiVp8TemporalLayerHWEncoding);
+#else
+      false;
+#endif
+  return enable_vp8_tl_encoding;
+}
+
 }  // namespace
 
 VP8VaapiVideoEncoderDelegate::EncodeParams::EncodeParams()
@@ -285,14 +306,7 @@ bool VP8VaapiVideoEncoderDelegate::Initialize(
 
   if (config.HasTemporalLayer()) {
     CHECK_EQ(config.spatial_layers.size(), 1u);
-    // TODO(b/202926617): Remove once VP8 TL encoding is enabled by default.
-    const bool enable_vp8_tl_encoding =
-#if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
-        base::FeatureList::IsEnabled(kVaapiVp8TemporalLayerHWEncoding);
-#else
-        false;
-#endif
-    if (enable_vp8_tl_encoding) {
+    if (VP8TLEncodingIsEnabled()) {
       num_temporal_layers_ = config.spatial_layers[0].num_of_temporal_layers;
       if (num_temporal_layers_ > kMaxSupportedVP8TemporalLayers ||
           num_temporal_layers_ < kMinSupportedVP8TemporalLayers) {
@@ -435,16 +449,33 @@ bool VP8VaapiVideoEncoderDelegate::UpdateRates(
       current_params_.framerate == framerate) {
     return true;
   }
-  VLOGF(2) << "New bitrate: " << bitrate_allocation.ToString()
-           << ", new framerate: " << framerate;
+  DVLOGF(2) << "New bitrate: " << bitrate_allocation.ToString()
+            << ", new framerate: " << framerate;
 
   current_params_.bitrate_allocation = bitrate_allocation;
   current_params_.framerate = framerate;
 
+  if (VP8TLEncodingIsEnabled()) {
+    const size_t new_num_temporal_layers =
+        GetActiveTemporalLayers(bitrate_allocation);
+    if (new_num_temporal_layers != num_temporal_layers_) {
+      VLOGF(2) << "The number of temporal layers is changed, from "
+               << base::strict_cast<int>(num_temporal_layers_) << " to "
+               << new_num_temporal_layers;
+      num_temporal_layers_ =
+          base::checked_cast<uint8_t>(new_num_temporal_layers);
+      static_assert(base::bits::IsPowerOfTwo(kTemporalLayerCycle),
+                    "temporal layer cycle must be power of two");
+      // The number of temporal layers is changed. We need to start with the
+      // bottom temporal layer structure and frames in non-bottom temporal
+      // layers don't reference frames.
+      frame_num_ = base::bits::AlignUp(frame_num_, kTemporalLayerCycle);
+    }
+  }
+
   rate_ctrl_->UpdateRateControl(
       CreateRateControlConfig(visible_size_, current_params_,
                               bitrate_allocation, num_temporal_layers_));
-
   return true;
 }
 
@@ -489,8 +520,8 @@ void VP8VaapiVideoEncoderDelegate::SetFrameHeader(
           ? picture.metadata_for_encoding->temporal_idx
           : 0;
 
-  rate_ctrl_->ComputeQP(frame_params);
-  picture.frame_hdr->quantization_hdr.y_ac_qi = rate_ctrl_->GetQP();
+  picture.frame_hdr->quantization_hdr.y_ac_qi =
+      rate_ctrl_->ComputeQP(frame_params);
   DVLOGF(4) << "qp="
             << static_cast<int>(picture.frame_hdr->quantization_hdr.y_ac_qi)
             << (keyframe ? " (keyframe)" : "")

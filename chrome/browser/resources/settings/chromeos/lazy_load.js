@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Uncomment as these modules are migrated to Polymer 3.
 import './crostini_page/bruschetta_subpage.js';
 import './crostini_page/crostini_arc_adb.js';
 import './crostini_page/crostini_arc_adb_confirmation_dialog.js';
@@ -52,7 +51,7 @@ import './os_printing_page/cups_add_printer_manufacturer_model_dialog.js';
 import './os_printing_page/cups_edit_printer_dialog.js';
 import './os_printing_page/cups_nearby_printers.js';
 import './os_printing_page/cups_printer_dialog_error.js';
-import './os_printing_page/cups_printer_shared_css.js';
+import './os_printing_page/cups_printer_shared.css.js';
 import './os_printing_page/cups_printers_entry.js';
 import './os_printing_page/cups_printers.js';
 import './os_printing_page/cups_saved_printers.js';

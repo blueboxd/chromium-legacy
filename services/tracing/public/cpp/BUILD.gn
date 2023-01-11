@@ -88,6 +88,8 @@ target(tracing_lib_type, "cpp") {
       "perfetto/traced_value_proto_writer.h",
       "perfetto/track_event_thread_local_event_sink.cc",
       "perfetto/track_event_thread_local_event_sink.h",
+      "perfetto/track_name_recorder.cc",
+      "perfetto/track_name_recorder.h",
       "stack_sampling/tracing_sampler_profiler.cc",
       "stack_sampling/tracing_sampler_profiler.h",
       "trace_event_agent.cc",
@@ -113,15 +115,6 @@ target(tracing_lib_type, "cpp") {
         "perfetto/java_heap_profiler/hprof_parser_android.h",
         "perfetto/java_heap_profiler/java_heap_profiler_android.cc",
         "perfetto/java_heap_profiler/java_heap_profiler_android.h",
-        "stack_sampling/reached_code_data_source_android.cc",
-        "stack_sampling/reached_code_data_source_android.h",
-      ]
-    }
-
-    if (is_android && current_cpu == "arm64") {
-      sources += [
-        "stack_sampling/stack_unwinder_arm64_android.cc",
-        "stack_sampling/stack_unwinder_arm64_android.h",
       ]
     }
 
@@ -178,15 +171,6 @@ target(tracing_lib_type, "cpp") {
 
     if (is_chromeos_ash) {
       deps += [ "//chromeos/dbus/constants" ]
-    }
-
-    if (is_android && can_unwind_with_cfi_table && is_official_build) {
-      sources += [
-        "stack_sampling/stack_sampler_android.cc",
-        "stack_sampling/stack_sampler_android.h",
-        "stack_sampling/stack_unwinder_android.cc",
-        "stack_sampling/stack_unwinder_android.h",
-      ]
     }
   }  # !is_ios && !is_nacl
 }

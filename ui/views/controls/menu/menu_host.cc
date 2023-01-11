@@ -31,7 +31,7 @@
 #include "ui/aura/window.h"
 #endif
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 #include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
@@ -85,9 +85,9 @@ class PreMenuEventDispatchHandler : public ui::EventHandler,
     window_ = nullptr;
   }
 
-  raw_ptr<MenuController> menu_controller_;
-  raw_ptr<SubmenuView> submenu_;
-  raw_ptr<aura::Window> window_;
+  raw_ptr<MenuController, DanglingUntriaged> menu_controller_;
+  raw_ptr<SubmenuView, DanglingUntriaged> submenu_;
+  raw_ptr<aura::Window, DanglingUntriaged> window_;
 };
 #endif  // USE_AURA
 
@@ -111,8 +111,7 @@ void TransferGesture(ui::GestureRecognizer* gesture_recognizer,
 ////////////////////////////////////////////////////////////////////////////////
 // MenuHost, public:
 
-MenuHost::MenuHost(SubmenuView* submenu)
-    : submenu_(submenu), destroying_(false), ignore_capture_lost_(false) {
+MenuHost::MenuHost(SubmenuView* submenu) : submenu_(submenu) {
   set_auto_release_capture(false);
 }
 

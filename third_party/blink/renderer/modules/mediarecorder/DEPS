@@ -5,7 +5,8 @@ include_rules = [
     "+base/memory/shared_memory_mapping.h",
     "+base/strings/string_piece.h",
     "+base/task/task_runner_util.h",
-    "+base/threading/thread_task_runner_handle.h",
+    "+base/threading/sequenced_task_runner_handle.h",
+    "+base/threading/thread_restrictions.h",
     "+cc/paint",
     "+media",
     "+skia/ext/platform_canvas.h",
@@ -18,7 +19,7 @@ include_rules = [
     '+third_party/opus',
     "+third_party/libvpx",
     "+third_party/libyuv",
-    "+third_party/openh264/src/codec/api/svc",
+    "+third_party/openh264/src/codec/api/wels",
     "+ui/gfx/geometry",
 ]
 

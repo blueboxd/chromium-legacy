@@ -14,6 +14,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -71,7 +72,7 @@
 #include "ui/aura/window_delegate.h"
 #endif
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -114,7 +115,7 @@ bool AcceleratorShouldCancelMenu(const ui::Accelerator& accelerator) {
 #endif
 
 bool ShouldIgnoreScreenBoundsForMenus() {
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   // Some platforms, such as Wayland, disallow client applications to manipulate
   // global screen coordinates, requiring menus to be positioned relative to
   // their parent windows. See comment in ozone_platform_wayland.cc.
@@ -2283,9 +2284,7 @@ void MenuController::BuildPathsAndCalculateDiff(
   BuildMenuItemPath(new_item, new_path);
 
   *first_diff_at = static_cast<size_t>(std::distance(
-      old_path->cbegin(), std::mismatch(old_path->cbegin(), old_path->cend(),
-                                        new_path->cbegin(), new_path->cend())
-                              .first));
+      old_path->begin(), base::ranges::mismatch(*old_path, *new_path).first));
 }
 
 void MenuController::BuildMenuItemPath(MenuItemView* item,
@@ -3333,7 +3332,7 @@ void MenuController::SetNextHotTrackedView(
   const size_t num_menu_items = menu_items.size();
   if (num_menu_items <= 1)
     return;
-  const auto i = std::find(menu_items.cbegin(), menu_items.cend(), item);
+  const auto i = base::ranges::find(menu_items, item);
   DCHECK(i != menu_items.cend());
   auto index = static_cast<size_t>(std::distance(menu_items.cbegin(), i));
 
@@ -3469,6 +3468,11 @@ void MenuController::OnMenuEdgeReached() {
 
 void MenuController::SetEnabledScrollButtons(bool enabled) {
   scroll_buttons_enabled = enabled;
+}
+
+void MenuController::SetMenuRoundedCorners(
+    absl::optional<gfx::RoundedCornersF> corners) {
+  rounded_corners_ = corners;
 }
 
 }  // namespace views

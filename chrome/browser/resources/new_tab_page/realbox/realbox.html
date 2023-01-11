@@ -1,4 +1,4 @@
-<style>
+<style include="cr-icons">
   :host {
     --ntp-realbox-border-radius: calc(0.5 * var(--ntp-realbox-height));
     --ntp-realbox-height: 44px;
@@ -24,22 +24,29 @@
   }
 
   :host([match-searchbox]) {
-    --ntp-realbox-height: 46px;
     box-shadow: none;
   }
 
   :host([match-searchbox]:not([matches-are-visible]):hover) {
+    border: 1px solid transparent;
     box-shadow: var(--ntp-realbox-shadow);
   }
 
   :host([match-searchbox]:not([is-dark]):not([matches-are-visible]):not(:hover)) {
     border: 1px solid var(--color-realbox-border);
-    height: calc(var(--ntp-realbox-height) - 2px);
   }
 
   #inputWrapper {
     height: 100%;
     position: relative;
+  }
+
+  :host([themed-icons]) #voiceSearchButton {
+    --iron-icon-fill-color: var(--color-new-tab-page-primary-foreground);
+  }
+
+  :host(:not([themed-icons])) #voiceSearchButton {
+    background-image: url(chrome://new-tab-page/icons/googlemic_clr_24px.svg);
   }
 
   input {
@@ -106,6 +113,10 @@
   }
 
   .realbox-icon-button {
+    background-color: transparent;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 21px 21px;
     border: none;
     border-radius: 2px;
     cursor: pointer;
@@ -118,15 +129,8 @@
     width: 26px;
   }
 
-  #voiceSearchButton {
-    background: url(icons/googlemic_clr_24px.svg) no-repeat center;
-    background-size: 21px 21px;
-  }
-
-  #lensSearchButton {
-    /* TODO: Update background to use Lens logo. See crbug.com/1370120 */
-    background: lime;
-    background-size: 21px 21px;
+  :host #lensSearchButton {
+    background-image: url(chrome://new-tab-page/icons/lens_icon.svg);
   }
 
   :host([realbox-lens-search-enabled_]):host-context([dir='rtl']) #voiceSearchButton {
@@ -172,9 +176,12 @@
       default-icon="[[realboxIcon_]]" in-searchbox>
   </ntp-realbox-icon>
   <button id="voiceSearchButton"
-      class="realbox-icon-button" 
-      on-click="onVoiceSearchClick_"
-      title="$i18n{voiceSearchButtonLabel}">
+    class="realbox-icon-button"
+    on-click="onVoiceSearchClick_"
+    title="$i18n{voiceSearchButtonLabel}">
+    <template is="dom-if" if="[[themedIcons]]">
+      <iron-icon class="realbox-icon-button-icon" icon="cr:mic"></iron-icon>
+    </template>
   </button>
   <template is="dom-if" if="[[realboxLensSearchEnabled_]]">
     <button id="lensSearchButton"

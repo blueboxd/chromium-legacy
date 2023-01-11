@@ -58,9 +58,11 @@ absl::optional<base::FilePath> GetOverrideFilePath(UpdaterScope scope);
 bool DeleteFileAndEmptyParentDirectories(
     const absl::optional<base::FilePath>& file_path);
 
-// TODO(crbug.com/1372590) - remove function when the bug is closed.
-// Returns the path of the updater_test.exe in the "out" directory of the build.
-base::FilePath GetUpdaterTestPath();
+#if BUILDFLAG(IS_WIN)
+// Change Windows Defender settings to skip scanning the paths used by the
+// updater if test runs with the flag `exclude-paths-from-win-defender`.
+void MaybeExcludePathsFromWindowsDefender();
+#endif
 
 }  // namespace updater::test
 

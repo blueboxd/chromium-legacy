@@ -6,7 +6,6 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> mövzu, <ph name="CPU_MAX_CLOCK_SPEED" /> GHs)</translation>
 <translation id="1047773237499189053">Yeni funksiya əlçatandır, ətraflı məlumat üçün Yuxarı ox düyməsini istifadə edin.</translation>
 <translation id="1059913517121127803">Skanlamanı başlatmaq mümkün olmadı</translation>
-<translation id="1062407476771304334">Əvəz edin</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Qoruyucu divar aşkarlandı</translation>
 <translation id="1075811647922107217">Səhifə ölçüsü</translation>
@@ -72,6 +71,7 @@
 <translation id="1567064801249837505">Albomlar</translation>
 <translation id="1572585716423026576">Divar kağızı kimi ayarlayın</translation>
 <translation id="1578784163189013834">Ekran qoruyucusu üçün arxa fon seçin</translation>
+<translation id="160633243685262989">Şəkli Önizləyin</translation>
 <translation id="1615335640928990664"><ph name="FRIENDLY_DATE" /> tarixindən bəri data istifadəsi</translation>
 <translation id="1621067168122174824">Şarj testini icra edin</translation>
 <translation id="1639239467298939599">Yüklənir</translation>
@@ -139,7 +139,6 @@
 <translation id="2161394479394250669">Çap işini ləğv edin</translation>
 <translation id="2163937499206714165">Qaranlıq rejimi aktiv edin</translation>
 <translation id="2180197493692062006">Xəta oldu. Tətbiqi yenidən açmağa çalışın.</translation>
-<translation id="2182088270354640012">Rəyiniz üçün təşəkkür edirik. Rəyiniz Chrome OS'i təkmilləşdirməyə kömək edir və Chrome OS komandası tərəfindən nəzərdən keçiriləcək. Təqdim olunan hesabatların çoxluğuna görə birbaşa cavab ala bilməyəcəksiniz.</translation>
 <translation id="2209788852729124853">Nəqliyyat Sayğaclarını sıfırlayın</translation>
 <translation id="2212733584906323460">Ad Həlli</translation>
 <translation id="2217935453350629363">Cari sürət</translation>
@@ -221,6 +220,7 @@
 <translation id="315116470104423982">Mobil data</translation>
 <translation id="3156846309055100599"><ph name="PAGE_NUMBER" /> saylı səhifə skanlanır...</translation>
 <translation id="315738237743207937">Avtorizasiya portalı aşkarlanıb</translation>
+<translation id="3160172848211257835"><ph name="BEGIN_LINK1" />Sistem və tətbiq məlumatı<ph name="END_LINK1" /> və <ph name="BEGIN_LINK2" />göstəriciləri<ph name="END_LINK2" /> göndərin</translation>
 <translation id="3170673040743561620">Sənədinizi skanerə yerləşdirin</translation>
 <translation id="3188257591659621405">Fayllarım</translation>
 <translation id="319101249942218879">Avatar şəkli dəyişib</translation>
@@ -305,6 +305,7 @@
 <translation id="4044093238444069296">Giriş ilə əlaqə saxlamaq olmur</translation>
 <translation id="4046123991198612571">Növbəti trek</translation>
 <translation id="404928562651467259">XƏBƏRDARLIQ</translation>
+<translation id="4060260348856573701">Yeni APN</translation>
 <translation id="4093865285251893588">Profil şəkli</translation>
 <translation id="409427325554347132">Test məlumatlarını yadda saxlayın</translation>
 <translation id="4110686435123617899"><ph name="TITLE" /> <ph name="DESC" /> albomunu seçin</translation>
@@ -333,6 +334,7 @@
 <translation id="4297501883039923494">Dayanıb - Naməlum xəta</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> şəkil</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> düyməsi basılıb</translation>
+<translation id="435692326371619097">Şəbəkə APN ayarlarını idarə edin. APN-lər mobil şəbəkə ilə internet arasında əlaqə yaradır. <ph name="BEGIN_LINK" />Ətraflı məlumat<ph name="END_LINK" /></translation>
 <translation id="4378373042927530923">İşə salınmayıb</translation>
 <translation id="4378551569595875038">Qoşulur...</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -481,7 +483,6 @@
 <translation id="5669267381087807207">Aktivləşir</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Ailə</translation>
-<translation id="5695599963893094957">Klaviaturanızda istənilən düyməni basın. Eyni anda maksimum 4 düyməyə basa bilərsiniz.</translation>
 <translation id="5701381305118179107">Mərkəzi edin</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" />/<ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109"><ph name="DEVICE_NAME" /> cihazını güncəlləyin</translation>
@@ -583,6 +584,7 @@
 <translation id="6575134580692778371">Konfiqurasiya edilməyib</translation>
 <translation id="6579509898032828423">Bu fotonu istifadə edin</translation>
 <translation id="6596816719288285829">IP Ünvanı</translation>
+<translation id="6599673642868607614">Rəyiniz üçün təşəkkür edirik. Rəyiniz Chromebook təcrübəsini təkmilləşdirməmizə kömək edir və komandamız tərəfindən nəzərdən keçiriləcək. Çox sayda hesabat olduğu üçün cavab göndərə bilməyəcəyik.</translation>
 <translation id="6618744767048954150">İcra olunur</translation>
 <translation id="6620487321149975369">Manual olaraq silinməsə, çap işləri tarixçədə görünəcək</translation>
 <translation id="6624819909909965616">10 MB-dan böyük faylı yükləmək mümkün deyil</translation>
@@ -604,6 +606,7 @@
 <translation id="6766275201586212568">DNS həlləri alınmadı</translation>
 <translation id="6768237774506518020">DNS həllinin alınmama faizi yüksəkdir</translation>
 <translation id="6791471867139427246">klaviatura işıq rəngi</translation>
+<translation id="6793680441750437230">Klaviaturanızda istənilən düyməni basın. Eyni anda maksimum 4 düyməyə basa bilərsiniz. Dialoqu bağlamaq üçün Alt + Esc düyməsini basın.</translation>
 <translation id="680983167891198932">Açar</translation>
 <translation id="6816797338148849397">Seçiminizlə əlaqəli məlumat əlçatandır. Giriş üçün Yuxarı ox düyməsini istifadə edin.</translation>
 <translation id="6853312040151791195">Deşarj faizi</translation>
@@ -627,6 +630,7 @@
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">Alınmadı - Doğrulama Alınmadı</translation>
 <translation id="7103252855940681301"><ph name="NAME" /> adlı cihaz <ph name="INDEX" />/<ph name="COUNT" />.</translation>
+<translation id="7130438335435247835">Giriş nöqtəsi adı (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{Ad serveri}other{Ad serverləri}}</translation>
 <translation id="7143207342074048698">Qoşulur</translation>
 <translation id="7144878232160441200">Yenidən cəhd edin</translation>
@@ -671,6 +675,7 @@
 <translation id="7535791657097741517">İşıqlı temanı aktiv edin</translation>
 <translation id="7550715992156305117">Diaqnostika Rejimləri</translation>
 <translation id="7551123448725492271">Cihaz audio cihazdır.</translation>
+<translation id="7559239713112547082">Skrinşotu Önizləyin</translation>
 <translation id="7561454561030345039">Bu əməliyyat admininiz tərəfindən idarə olunur</translation>
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7570674786725311828">USB taçskrin</translation>
@@ -687,9 +692,9 @@
 <translation id="773153675489693198">Dövrə sayı</translation>
 <translation id="7747039790905080783">Öncədən paylaşılan açar</translation>
 <translation id="7762130827864645708">Parolunuz uğurla dəyişdirildi. Bundan sonra yeni paroldan istifadə edin.</translation>
-<translation id="7762839321248874531"><ph name="BEGIN_LINK1" />Sistem və tətbiq məlumatı<ph name="END_LINK1" /> və <ph name="BEGIN_LINK2" />göstəriciləri<ph name="END_LINK2" /> göndərin</translation>
 <translation id="7763470514545477072">Domen sonluğunun uyğunluğu</translation>
 <translation id="7769672763586021400">Model ID</translation>
+<translation id="7778717409420828014">Rəyiniz Chromebook təcrübəsini təkmilləşdirməmizə kömək edir və komandamız tərəfindən nəzərdən keçiriləcək. Çox sayda hesabat olduğu üçün cavab göndərə bilməyəcəyik.</translation>
 <translation id="7784116172884276937">DNS serveri ayarlanmayıb</translation>
 <translation id="779591286616261875">Yeni hesabat göndərin</translation>
 <translation id="7799817062559422778">İşıqlı rejim</translation>
@@ -824,7 +829,6 @@
 <translation id="9082718469794970195">Bu videonu istifadə edin</translation>
 <translation id="9087578468327036362">Bu sorğunu bildirin</translation>
 <translation id="9088306295921699330">Cari istifadə</translation>
-<translation id="9092255287806472980">Rəyiniz Chrome OS'i təkmilləşdirməyə kömək edir və komandamız tərəfindən nəzərdən keçiriləcək. Çox sayda hesabat olduğu üçün cavab göndərə bilməyəcəyik.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> üçün bileti yeniləyin</translation>
 <translation id="9106415115617144481"><ph name="PAGE_NUMBER" /> saylı səhifə skanlanır</translation>

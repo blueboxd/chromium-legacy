@@ -275,6 +275,10 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
 
         super.performPreInflationStartup();
 
+        if (mIntentDataProvider.isPartialHeightCustomTab()) {
+            overridePendingTransition(R.anim.slide_in_up, R.anim.no_anim);
+        }
+
         WebappExtras webappExtras = getIntentDataProvider().getWebappExtras();
         if (webappExtras != null) {
             // Set the title for web apps so that TalkBack says the web app's short name instead of

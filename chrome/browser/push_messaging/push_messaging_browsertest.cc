@@ -391,8 +391,9 @@ class PushMessagingBrowserTestBase : public InProcessBrowserTest {
   gcm::GCMProfileServiceFactory::ScopedTestingFactoryInstaller
       scoped_testing_factory_installer_;
 
-  raw_ptr<gcm::FakeGCMProfileService> gcm_service_;
-  raw_ptr<instance_id::FakeGCMDriverForInstanceID> gcm_driver_;
+  raw_ptr<gcm::FakeGCMProfileService, DanglingUntriaged> gcm_service_;
+  raw_ptr<instance_id::FakeGCMDriverForInstanceID, DanglingUntriaged>
+      gcm_driver_;
   base::HistogramTester histogram_tester_;
 
   std::unique_ptr<NotificationDisplayServiceTester> notification_tester_;
@@ -400,7 +401,7 @@ class PushMessagingBrowserTestBase : public InProcessBrowserTest {
 
  private:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
-  raw_ptr<PushMessagingServiceImpl> push_service_;
+  raw_ptr<PushMessagingServiceImpl, DanglingUntriaged> push_service_;
 };
 
 void PushMessagingBrowserTestBase::RequestAndAcceptPermission() {
@@ -2844,7 +2845,7 @@ class PushMessagingIncognitoBrowserTest : public PushMessagingBrowserTestBase {
 
  protected:
   content::test::PrerenderTestHelper prerender_helper_;
-  raw_ptr<Browser> incognito_browser_ = nullptr;
+  raw_ptr<Browser, DanglingUntriaged> incognito_browser_ = nullptr;
 };
 
 // Regression test for https://crbug.com/476474
@@ -2885,7 +2886,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingIncognitoBrowserTest, WarningToCorrectRFH) {
   ASSERT_EQ("AbortError - Registration failed - permission denied",
             script_result);
 
-  console_observer.Wait();
+  ASSERT_TRUE(console_observer.Wait());
   EXPECT_EQ(1u, console_observer.messages().size());
 }
 
@@ -2943,7 +2944,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingIncognitoBrowserTest,
   } while (script_result !=
            "\"AbortError - Registration failed - permission denied\"");
 
-  console_observer.Wait();
+  ASSERT_TRUE(console_observer.Wait());
   EXPECT_EQ(1u, console_observer.messages().size());
 }
 

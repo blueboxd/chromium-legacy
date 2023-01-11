@@ -16,68 +16,25 @@ using FooToken = base::TokenType<class FooTokenTag>;
 using BarToken = base::TokenType<class BarTokenTag>;
 using BazToken = base::TokenType<class BazTokenTag>;
 
-// Test MultiTokenVariantCount.
-static_assert(internal::MultiTokenVariantCount<FooToken, BarToken>::kValue == 2,
-              "unexpected count");
-static_assert(
-    internal::MultiTokenVariantCount<FooToken, BarToken, BazToken>::kValue == 3,
-    "unexpected count");
+static_assert(internal::IsBaseTokenTypeV<FooToken>);
+static_assert(!internal::IsBaseTokenTypeV<int>);
 
-// Test MultiTokenTypeRepeated.
-static_assert(!internal::MultiTokenTypeRepeated<FooToken>::kValue,
-              "unexpected repeated value");
-static_assert(!internal::MultiTokenTypeRepeated<FooToken, FooToken>::kValue,
-              "unexpected repeated value");
-static_assert(
-    !internal::MultiTokenTypeRepeated<FooToken, FooToken, BarToken>::kValue,
-    "unexpected repeated value");
-static_assert(
-    internal::MultiTokenTypeRepeated<FooToken, FooToken, BarToken, FooToken>::
-        kValue,
-    "unexpected repeated value");
-static_assert(
-    internal::MultiTokenTypeRepeated<FooToken, BarToken, FooToken, FooToken>::
-        kValue,
-    "unexpected repeated value");
-
-// Test MultiTokenAnyTypeRepeated.
-static_assert(!internal::MultiTokenAnyTypeRepeated<FooToken>::kValue,
-              "unexpected any repeated value");
-static_assert(!internal::MultiTokenAnyTypeRepeated<FooToken, BarToken>::kValue,
-              "unexpected any repeated value");
-static_assert(
-    !internal::MultiTokenAnyTypeRepeated<FooToken, BarToken, BazToken>::kValue,
-    "unexpected any repeated value");
-static_assert(
-    internal::MultiTokenAnyTypeRepeated<FooToken, BarToken, FooToken>::kValue,
-    "unexpected any repeated value");
-static_assert(
-    internal::MultiTokenAnyTypeRepeated<FooToken, BarToken, BarToken>::kValue,
-    "unexpected any repeated value");
-
-// Test MultiTokenVariantIsTokenType.
-static_assert(internal::MultiTokenVariantIsTokenType<FooToken>::kValue,
-              "unexpected is token type value");
-static_assert(!internal::MultiTokenVariantIsTokenType<int>::kValue,
-              "unexpected is token type value");
-
-// Test MultiTokenAllVariantsAreTokenType.
-static_assert(
-    internal::MultiTokenAllVariantsAreTokenType<FooToken, BarToken>::kValue,
-    "unexpected all variants are token type value");
-static_assert(!internal::MultiTokenAllVariantsAreTokenType<FooToken,
-                                                           BarToken,
-                                                           int>::kValue,
-              "unexpected all variants are token type value");
+static_assert(internal::AreAllUnique<int>);
+static_assert(!internal::AreAllUnique<int, int>);
+static_assert(!internal::AreAllUnique<int, char, int>);
 
 using FooBarToken = MultiToken<FooToken, BarToken>;
 using FooBarBazToken = MultiToken<FooToken, BarToken, BazToken>;
+
+static_assert(FooBarBazToken::IndexOf<FooToken>() == FooBarBazToken::Tag{0});
+static_assert(FooBarBazToken::IndexOf<BarToken>() == FooBarBazToken::Tag{1});
+static_assert(FooBarBazToken::IndexOf<BazToken>() == FooBarBazToken::Tag{2});
 
 TEST(MultiTokenTest, MultiTokenWorks) {
   // Test default initialization.
   FooBarToken token1;
   EXPECT_FALSE(token1.value().is_empty());
-  EXPECT_EQ(0u, token1.variant_index());
+  EXPECT_EQ(FooBarToken::Tag{0}, token1.variant_index());
   EXPECT_TRUE(token1.Is<FooToken>());
   EXPECT_FALSE(token1.Is<BarToken>());
 
@@ -86,7 +43,7 @@ TEST(MultiTokenTest, MultiTokenWorks) {
   FooBarToken token2(bar);
   EXPECT_EQ(token2.value(), bar.value());
   EXPECT_FALSE(token2.value().is_empty());
-  EXPECT_EQ(1u, token2.variant_index());
+  EXPECT_EQ(FooBarToken::Tag{1}, token2.variant_index());
   EXPECT_FALSE(token2.Is<FooToken>());
   EXPECT_TRUE(token2.Is<BarToken>());
 
@@ -99,15 +56,6 @@ TEST(MultiTokenTest, MultiTokenWorks) {
   EXPECT_FALSE(token3.Is<FooToken>());
   EXPECT_TRUE(token3.Is<BarToken>());
 
-  // Test comparison operators.
-  EXPECT_FALSE(token1 == token2);
-  EXPECT_TRUE(token1 != token2);
-  EXPECT_TRUE(token2 == token3);
-  EXPECT_FALSE(token2 != token3);
-  EXPECT_EQ(token1 < token2, token1.value() < token2.value());
-  EXPECT_FALSE(token2 < token3);
-  EXPECT_FALSE(token3 < token2);
-
   // Test hasher.
   EXPECT_EQ(FooBarToken::Hasher()(token2),
             base::UnguessableTokenHash()(token2.value()));
@@ -119,6 +67,69 @@ TEST(MultiTokenTest, MultiTokenWorks) {
   FooToken foo(token1.value());
   EXPECT_EQ(foo, token1.GetAs<FooToken>());
   EXPECT_EQ(token2.GetAs<BarToken>(), token3.GetAs<BarToken>());
+}
+
+TEST(MultiTokenTest, Comparison) {
+  // Tests comparisons between:
+  // - two multi tokens that hold different types and underlying values
+  // - two multi tokens that hold the same type and underlying value
+  {
+    FooBarToken token1 = FooToken();
+    FooBarToken token2 = BarToken();
+    FooBarToken token3 = token2;
+
+    EXPECT_FALSE(token1 == token2);
+    EXPECT_TRUE(token1 != token2);
+    EXPECT_TRUE(token2 == token3);
+    EXPECT_FALSE(token2 != token3);
+
+    // absl::variant and std::variant order by index. If the indexes are equal
+    // (e.g. the same type is held in both), then the comparison operator of the
+    // held type is used.
+    EXPECT_TRUE(token1 < token2);
+    EXPECT_TRUE(token1 < token3);
+    EXPECT_FALSE(token2 < token3);
+
+    EXPECT_TRUE(token1 <= token2);
+    EXPECT_TRUE(token1 <= token3);
+    EXPECT_TRUE(token2 <= token3);
+    EXPECT_TRUE(token3 <= token2);
+
+    EXPECT_FALSE(token1 > token2);
+    EXPECT_FALSE(token1 > token3);
+    EXPECT_FALSE(token2 > token3);
+
+    EXPECT_FALSE(token1 >= token2);
+    EXPECT_FALSE(token1 >= token3);
+    EXPECT_TRUE(token2 >= token3);
+    EXPECT_TRUE(token3 >= token2);
+  }
+
+  // Tests comparisons between two multi tokens that hold the same type but
+  // different underlying values.
+  {
+    // Necessary because std::minmax() returns a pair of references.
+    FooToken foo1;
+    FooToken foo2;
+    const auto& [lesser, greater] = std::minmax(foo1, foo2);
+    FooBarToken token1 = lesser;
+    FooBarToken token2 = greater;
+
+    EXPECT_FALSE(token1 == token2);
+    EXPECT_TRUE(token1 != token2);
+
+    EXPECT_TRUE(token1 < token2);
+    EXPECT_FALSE(token2 < token1);
+
+    EXPECT_FALSE(token1 > token2);
+    EXPECT_TRUE(token2 > token1);
+
+    EXPECT_TRUE(token1 <= token2);
+    EXPECT_FALSE(token2 <= token1);
+
+    EXPECT_FALSE(token1 >= token2);
+    EXPECT_TRUE(token2 >= token1);
+  }
 }
 
 }  // namespace blink

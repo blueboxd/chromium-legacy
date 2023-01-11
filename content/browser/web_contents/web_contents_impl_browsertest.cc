@@ -18,6 +18,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
@@ -140,7 +141,7 @@ void ResizeWebContentsView(Shell* shell,
 
 class WebContentsImplBrowserTest : public ContentBrowserTest {
  public:
-  WebContentsImplBrowserTest() = default;
+  WebContentsImplBrowserTest();
   void SetUp() override {
     RenderWidgetHostImpl::DisableResizeAckCheckForTesting();
     ContentBrowserTest::SetUp();
@@ -161,7 +162,17 @@ class WebContentsImplBrowserTest : public ContentBrowserTest {
         static_cast<WebContentsImpl*>(shell()->web_contents());
     return web_contents->current_fullscreen_frame_;
   }
+
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+WebContentsImplBrowserTest::WebContentsImplBrowserTest() {
+  // The WebDisplayModeDelegate does not trigger any of the layout used to
+  // complete SurfaceSync for Fullscreen transitions.
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kSurfaceSyncFullscreenKillswitch);
+}
 
 // Keeps track of data from LoadNotificationDetails so we can later verify that
 // they are correct, after the LoadNotificationDetails object is deleted.
@@ -1004,8 +1015,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, LoadProgress) {
 
   const std::vector<double>& progresses = delegate->progresses;
   // All updates should be in order ...
-  if (std::adjacent_find(progresses.begin(), progresses.end(),
-                         std::greater<>()) != progresses.end()) {
+  if (base::ranges::adjacent_find(progresses, std::greater<>()) !=
+      progresses.end()) {
     ADD_FAILURE() << "Progress values should be in order: "
                   << ::testing::PrintToString(progresses);
   }
@@ -1025,8 +1036,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, LoadProgressWithFrames) {
 
   const std::vector<double>& progresses = delegate->progresses;
   // All updates should be in order ...
-  if (std::adjacent_find(progresses.begin(), progresses.end(),
-                         std::greater<>()) != progresses.end()) {
+  if (base::ranges::adjacent_find(progresses, std::greater<>()) !=
+      progresses.end()) {
     ADD_FAILURE() << "Progress values should be in order: "
                   << ::testing::PrintToString(progresses);
   }
@@ -1308,7 +1319,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       "Not allowed to load local resource: view-source:*");
   EXPECT_TRUE(ExecJs(shell()->web_contents(),
                      "window.open('" + kViewSourceURL.spec() + "');"));
-  console_observer.Wait();
+  ASSERT_TRUE(console_observer.Wait());
   // Original page shouldn't navigate away, no new tab should be opened.
   EXPECT_EQ(kUrl, shell()->web_contents()->GetLastCommittedURL());
   EXPECT_EQ(1u, Shell::windows().size());
@@ -1328,7 +1339,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   EXPECT_TRUE(ExecJs(shell()->web_contents(),
                      "window.location = '" + kViewSourceURL.spec() + "';"));
-  console_observer.Wait();
+  ASSERT_TRUE(console_observer.Wait());
   // Original page shouldn't navigate away.
   EXPECT_EQ(kUrl, shell()->web_contents()->GetLastCommittedURL());
   EXPECT_FALSE(shell()
@@ -1989,13 +2000,11 @@ class WebContentsImplBrowserTestWithDifferentOriginSubframeDialogSuppression
     : public WebContentsImplBrowserTest {
  public:
   void SetUp() override {
+    scoped_feature_list_.Reset();
     scoped_feature_list_.InitAndEnableFeature(
         features::kSuppressDifferentOriginSubframeJSDialogs);
     WebContentsImplBrowserTest::SetUp();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(
@@ -2542,13 +2551,11 @@ class WebContentsImplBrowserTestUserAgentOverrideSubstring
     : public WebContentsImplBrowserTest {
  public:
   void SetUp() override {
+    scoped_feature_list_.Reset();
     scoped_feature_list_.InitAndEnableFeature(
         blink::features::kUserAgentOverrideExperiment);
     WebContentsImplBrowserTest::SetUp();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Verify UserAgentOverride histograms
@@ -2748,13 +2755,11 @@ class WebContentsImplBrowserTestClientHintsEnabled
     : public WebContentsImplBrowserTest {
  public:
   void SetUp() override {
+    scoped_feature_list_.Reset();
     scoped_feature_list_.InitAndEnableFeature(
         blink::features::kUserAgentClientHint);
     WebContentsImplBrowserTest::SetUp();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Verifies client hints are updated when the user-agent is changed in
@@ -2850,6 +2855,7 @@ class WebContentsImplBrowserTestReduceAcceptLanguageOn
     : public WebContentsImplBrowserTest {
  public:
   void SetUp() override {
+    scoped_feature_list_.Reset();
     scoped_feature_list_.InitWithFeatures(
         {network::features::kReduceAcceptLanguage}, {});
     WebContentsImplBrowserTest::SetUp();
@@ -2894,14 +2900,15 @@ class WebContentsImplBrowserTestReduceAcceptLanguageOn
             ->browser_context()
             ->GetReduceAcceptLanguageControllerDelegate();
 
-    delegate->PersistReducedLanguage(url::Origin::Create(url), persist_lang);
+    url::Origin origin = url::Origin::Create(url);
+    delegate->PersistReducedLanguage(origin, persist_lang);
     const absl::optional<std::string>& language =
-        delegate->GetReducedLanguage(url::Origin::Create(url));
+        delegate->GetReducedLanguage(origin);
     EXPECT_EQ(expect_lang, language);
-  }
 
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+    delegate->ClearReducedLanguage(origin);
+    EXPECT_FALSE(delegate->GetReducedLanguage(origin).has_value());
+  }
 };
 
 // Verifies accept-language are updated when DidStartNavigation().
@@ -5114,10 +5121,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       GURL("https://google.com"), ui::ClipboardFormatType::PlainTextType(),
       "random pasted text",
       base::BindLambdaForTesting(
-          [&web_contents](
-              content::ContentBrowserClient::ClipboardPasteContentAllowed
-                  allowed) {
-            EXPECT_TRUE(allowed);
+          [&web_contents](const absl::optional<std::string>& data) {
+            EXPECT_TRUE(data);
             EXPECT_TRUE(web_contents->ShouldIgnoreUnresponsiveRenderer());
           }));
   EXPECT_FALSE(web_contents->ShouldIgnoreUnresponsiveRenderer());
@@ -5182,12 +5187,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, RenderIdleTime) {
 class WebContentsImplBrowserTestWindowControlsOverlay
     : public WebContentsImplBrowserTest {
  public:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kWebAppWindowControlsOverlay);
-    WebContentsImplBrowserTest::SetUp();
-  }
-
   void ValidateTitlebarAreaCSSValue(const std::string& name,
                                     int expected_result) {
     SCOPED_TRACE(name);
@@ -5253,9 +5252,6 @@ class WebContentsImplBrowserTestWindowControlsOverlay
     TitleWatcher title_watcher(web_contents, u"ongeometrychange");
     std::ignore = title_watcher.WaitAndGetTitle();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTestWindowControlsOverlay,
@@ -5605,7 +5601,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplAllowInsecureLocalhostBrowserTest,
   observer.SetPattern("*SSL certificate*");
 
   ASSERT_TRUE(NavigateToURL(shell(), url));
-  observer.Wait();
+  ASSERT_TRUE(observer.Wait());
 }
 
 class WebContentsPrerenderBrowserTest : public WebContentsImplBrowserTest {

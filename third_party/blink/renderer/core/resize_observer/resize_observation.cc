@@ -6,24 +6,54 @@
 
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
-#include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_box_options.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_utilities.h"
-#include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_graphics_element.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "ui/gfx/geometry/size_f.h"
 
 namespace blink {
 
+namespace {
+
+// Given |box_option|, compute the appropriate size for an SVG element that
+// does not have an associated layout box.
+gfx::SizeF ComputeZoomAdjustedSVGBox(ResizeObserverBoxOptions box_option,
+                                     const LayoutObject& layout_object) {
+  DCHECK(layout_object.IsSVGChild());
+  auto* svg_graphics_element =
+      DynamicTo<SVGGraphicsElement>(layout_object.GetNode());
+  if (!svg_graphics_element)
+    return gfx::SizeF();
+  const gfx::SizeF bounding_box_size = svg_graphics_element->GetBBox().size();
+  switch (box_option) {
+    case ResizeObserverBoxOptions::kBorderBox:
+    case ResizeObserverBoxOptions::kContentBox:
+      return bounding_box_size;
+    case ResizeObserverBoxOptions::kDevicePixelContentBox: {
+      const ComputedStyle& style = layout_object.StyleRef();
+      const LayoutSize scaled_bounding_box_size(
+          gfx::ScaleSize(bounding_box_size, style.EffectiveZoom()));
+      return ResizeObserverUtilities::ComputeSnappedDevicePixelContentBox(
+          scaled_bounding_box_size, layout_object, style);
+    }
+  }
+}
+
+// Set the initial observation size to something impossible so that the first
+// gather observation step always will pick up a new observation.
+constexpr LayoutSize kInitialObservationSize(-1, -1);
+
+}  // namespace
+
 ResizeObservation::ResizeObservation(Element* target,
                                      ResizeObserver* observer,
                                      ResizeObserverBoxOptions observed_box)
     : target_(target),
       observer_(observer),
-      observation_size_(0, 0),
+      observation_size_(kInitialObservationSize),
       observed_box_(observed_box) {
   DCHECK(target_);
 }
@@ -58,33 +88,15 @@ size_t ResizeObservation::TargetDepth() {
 }
 
 LayoutSize ResizeObservation::ComputeTargetSize() const {
-  if (target_) {
-    if (LayoutObject* layout_object = target_->GetLayoutObject()) {
-      const ComputedStyle& style = layout_object->StyleRef();
-      if (auto* svg_graphics_element =
-              DynamicTo<SVGGraphicsElement>(target_.Get())) {
-        LayoutSize bounding_box_size =
-            LayoutSize(svg_graphics_element->GetBBox().size());
-        switch (observed_box_) {
-          case ResizeObserverBoxOptions::kBorderBox:
-          case ResizeObserverBoxOptions::kContentBox:
-            return bounding_box_size;
-          case ResizeObserverBoxOptions::kDevicePixelContentBox: {
-            bounding_box_size.Scale(style.EffectiveZoom());
-            LayoutSize snapped_device_pixel_content_box_size = LayoutSize(
-                ResizeObserverUtilities::ComputeSnappedDevicePixelContentBox(
-                    bounding_box_size, layout_object, style));
-
-            return snapped_device_pixel_content_box_size;
-          }
-        }
-      }
-      if (!layout_object->IsBox())
-        return LayoutSize();
-
-      return LayoutSize(ResizeObserverUtilities::ComputeZoomAdjustedBox(
-          observed_box_, layout_object, style));
-    }
+  if (!target_ || !target_->GetLayoutObject())
+    return LayoutSize();
+  const LayoutObject& layout_object = *target_->GetLayoutObject();
+  if (layout_object.IsSVGChild()) {
+    return LayoutSize(ComputeZoomAdjustedSVGBox(observed_box_, layout_object));
+  }
+  if (const auto* layout_box = DynamicTo<LayoutBox>(layout_object)) {
+    return LayoutSize(ResizeObserverUtilities::ComputeZoomAdjustedBox(
+        observed_box_, *layout_box, layout_box->StyleRef()));
   }
   return LayoutSize();
 }

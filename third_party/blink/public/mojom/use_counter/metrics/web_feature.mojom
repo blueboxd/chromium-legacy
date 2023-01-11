@@ -2138,8 +2138,8 @@ enum WebFeature {
   kAnimationFrameCancelledWithinFrame = 2793,
   kSchedulingIsInputPending = 2794,
   kV8StringNormalize = 2795,
-  kU2FCryptotokenRegister = 2812,
-  kU2FCryptotokenSign = 2813,
+  kOBSOLETE_U2FCryptotokenRegister = 2812,
+  kOBSOLETE_U2FCryptotokenSign = 2813,
   kCSSValueAppearanceInnerSpinButton = 2814,
   kCSSValueAppearanceMeter = 2815,
   kCSSValueAppearanceProgressBar = 2816,
@@ -3087,7 +3087,7 @@ enum WebFeature {
   kV8TCPSocket_RemoteAddress_AttributeGetter = 3778,
   kV8TCPSocket_RemotePort_AttributeGetter = 3779,
   kCSSSelectorTargetText = 3780,
-  kPopupElement = 3781,
+  kPopoverAttribute = 3781,
   kOBSOLETE_V8HTMLPopupElement_Show_Method = 3782,
   kOBSOLETE_V8HTMLPopupElement_Hide_Method = 3783,
   kOBSOLETE_WindowOpenWithAdditionalBoolParameter = 3784,
@@ -3238,7 +3238,7 @@ enum WebFeature {
   kHiddenBackfaceWith3D = 3927,
   kMainFrameNonSecurePrivateAddressSpace = 3928,
   kHTMLMediaElementControlsListNoPlaybackRate = 3930,
-  kDocumentTransition = 3931,
+  kOBSOLETE_DocumentTransition = 3931,
   kSpeculationRules = 3932,
   kV8AbortSignal_Abort_Method = 3933,
   kSelectionBackgroundColorInversion = 3934,
@@ -3464,6 +3464,8 @@ enum WebFeature {
   kWindowProxyCrossOriginAccessFromOtherPageTop = 4143,
   kWindowProxyCrossOriginAccessFromOtherPageWindow = 4144,
   kPrivateNetworkAccessFetchedWorkerScript = 4145,
+  // The items above roughly this point are available in the M99 branch.
+
   kFrameNameContainsBrace = 4146,
   kFrameNameContainsNewline = 4147,
   kAbortSignalThrowIfAborted = 4148,
@@ -3496,6 +3498,8 @@ enum WebFeature {
   kMediaCapabilitiesEncodingInfoWebrtc = 4175,
   kUsbDeviceForget = 4176,
   kPartitionedCookies = 4177,
+  // The items above roughly this point are available in the M100 branch.
+
   kSecureContextIncorrectForSharedWorker = 4178,
   kV8FunctionPrototypeArguments = 4179,
   kV8FunctionPrototypeCaller = 4180,
@@ -3507,9 +3511,11 @@ enum WebFeature {
   kPressureObserver_TakeRecords = 4186,
   kPrivacySandboxAdsAPIs = 4187,
   kFledge = 4188,
-  kElementShowPopup = 4189,
-  kElementHidePopup = 4190,
-  kValidPopupAttribute = 4191,
+  // The items above roughly this point are available in the M101 branch.
+
+  kElementShowPopover = 4189,
+  kElementHidePopover = 4190,
+  kValidPopoverAttribute = 4191,
   kDeprecationExample = 4192, // Used as an example Deprecation code pointer.
   kRTCLocalSdpModificationOpusStereo = 4193,
   kNavigatorUAData_Mobile = 4194,
@@ -3530,6 +3536,8 @@ enum WebFeature {
   kOBSOLETE_LegacyConstraintGoogCpuOveruseDetection = 4209,
   kAudioContextOutputLatency = 4210,
   kV8Window_QueryLocalFonts_Method = 4211,
+  // The items above roughly this point are available in the M102 branch.
+
   kCSSAtRuleScope = 4212,
   kOBSOLETE_DeferredShapingDisabledByPositioned = 4213,
   kCapabilityDelegationOfFullscreenRequest = 4214,
@@ -3546,6 +3554,8 @@ enum WebFeature {
   kFedCmLogout = 4225,
   kFedCmLogoutRps = 4226,
   kV8Navigator_DeprecatedReplaceInURN_Method = 4227,
+  // The items above roughly this point are available in the M103 branch.
+
   kWebAppBorderless = 4228,
   kPaymentInstruments = 4229,
   kV8PaymentInstruments_Clear_Method = 4230,
@@ -3576,7 +3586,7 @@ enum WebFeature {
   kCrossOriginOpenerPolicyRestrictPropertiesReportOnly = 4255,
   kEventTimingInteractionId = 4256,
   kSecurePaymentConfirmationOptOut = 4257,
-  kAnyPopupAttribute = 4258,
+  kAnyPopoverAttribute = 4258,
   kDeferredShapingWorked = 4259,
   kOBSOLETE_DeferredShapingReshapedByForceLayout = 4260,
   kMediaSourceGetHandle = 4261,
@@ -3602,6 +3612,8 @@ enum WebFeature {
   kV8PendingBeacon_Deactivate_Method = 4281,
   kOBSOLETE_kV8PendingBeacon_SetData_Method = 4282,
   kV8PendingBeacon_SendNow_Method = 4283,
+  // The items above roughly this point are available in the M104 branch.
+
   kTabSharingBarSwitchToCapturer = 4284,
   kTabSharingBarSwitchToCapturee = 4285,
   kAutomaticLazyAds = 4286,
@@ -3646,14 +3658,18 @@ enum WebFeature {
   kV8PendingGetBeacon_SetURL_Method = 4325,
   kV8PendingPostBeacon_Constructor = 4326,
   kV8PendingPostBeacon_SetData_Method = 4327,
-  kContentVisibilityAutoStateChangeHandlerRegistered = 4328,
+  kContentVisibilityAutoStateChangedHandlerRegistered = 4328,
   kReplacedElementPaintedWithLargeOverflow = 4329,
+  // The items above roughly this point are available in the M105 branch.
+
   kFlexboxAbsPosJustifyContent = 4330,
   kMultipleFetchHandlersInServiceWorker = 4331,
   kStorageAccessAPI_requestStorageAccessForOrigin_Method = 4332,
   kPrivateAggregationApiAll = 4333,
   kPrivateAggregationApiFledge = 4334,
   kPrivateAggregationApiSharedStorage = 4335,
+  // The items above roughly this point are available in the M106 branch.
+
   kDeferredShaping2ReshapedByComputedStyle = 4336,
   kDeferredShaping2ReshapedByDomContentLoaded = 4337,
   kDeferredShaping2ReshapedByFcp = 4338,
@@ -3681,6 +3697,8 @@ enum WebFeature {
   kDestructiveDocumentWriteAfterModuleScript = 4360,
   kCSSAtSupportsDropInvalidWhileForgivingParsing = 4361,
   kPermissionsPolicyUnload = 4362,
+  // The items above roughly this point are available in the M107 branch.
+
   kServiceWorkerSkippedForSubresourceLoad = 4363,
   kClientHintsPrefersReducedMotion = 4364,
   kWakeLockAcquireScreenLockWithoutActivation = 4365,
@@ -3690,7 +3708,23 @@ enum WebFeature {
   kSerivceWorkerFallbackMainResource = 4369,
   kGetDisplayMediaWithoutUserActivation = 4370,
   kBackForwardCacheNotRestoredReasons = 4371,
+  kCSSNesting = 4372,
+  kSandboxIneffectiveAllowOriginAllowScript = 4373,
+  kDocumentOpenDifferentWindow = 4374,
+  kDocumentOpenMutateSandbox = 4375,
+  kEligibleForImageLoadingPrioritizationFix = 4376,
+  kExecutedNonTrivialJavaScriptURL = 4377,
+  kStorageBucketsOpen = 4378,
+  kPerformanceEntryBufferSwaps = 4379,
+  kClearPerformanceEntries = 4380,
   kViewportDependentLazyLoadedImageWithoutSizesAttribute = 4381,
+  kV8MediaStreamTrack_ApplyConstraints_Method = 4382,
+  kViewTransition = 4383,
+  // The items above roughly this point are available in the M108 branch.
+
+  kElementTogglePopover = 4384,
+  kLayoutMediaInlineChildren = 4385,
+  kReduceAcceptLanguage = 4386,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

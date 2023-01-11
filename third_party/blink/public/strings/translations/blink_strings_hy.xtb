@@ -13,7 +13,6 @@
 <translation id="1637811476055996098">Ընտրել ֆայլեր</translation>
 <translation id="1681022320378710418">ընթացիկ ժամը</translation>
 <translation id="1727839386348365796">Պիպետ</translation>
-<translation id="1727886345390570319">թաքցնել փակված ենթագրերի ընտրացանկը</translation>
 <translation id="1729654308190250600">Էլփոստի հասցեի տողը չպետք է դատարկ լինի:</translation>
 <translation id="1758486001363313524">Այլ…</translation>
 <translation id="1787192514241997742">ընդհանուր ժամանակը՝ <ph name="REMAINING_TIME" /></translation>
@@ -61,7 +60,6 @@
 <translation id="4103419683916926126">Միլիվայրկյաններ</translation>
 <translation id="4201051445878709314">Ցուցադրել նախորդ ամիսը</translation>
 <translation id="4360991593054037559">Մուտքագրեք ճիշտ արժեք: Մոտակա երկու ճիշտ արժեքներն են՝ <ph name="VALID_VALUE_LOW" /> և <ph name="VALID_VALUE_HIGHER" />:</translation>
-<translation id="4371899966896349864">թաքցնել նվագարկման արագության ընտրացանկը</translation>
 <translation id="4522570452068850558">Մանրամասներ</translation>
 <translation id="4664250907885839816">«<ph name="ATSIGN" />»-ին հաջորդող մասը չպետք է պարունակի «<ph name="INVALIDCHARACTER" />» նշանը:</translation>
 <translation id="4718048029184481307">Նվագարկվում է «նկար նկարի մեջ» ռեժիմում</translation>
@@ -81,6 +79,7 @@
 <translation id="5117590920725113268">Ցուցադրել հաջորդ ամիսը</translation>
 <translation id="5164977714490026579">Արժեքը պետք է լինի մեծ կամ հավասար <ph name="MINIMUM" />-ին:</translation>
 <translation id="5196716972587102051">2</translation>
+<translation id="5199514351668672591">վերադառնալ ընտրանքներին</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> ՊԲ</translation>
 <translation id="5272594226096532950">Նշված չէ։ Խմբում, տարբերակ <ph name="INDEX" />՝ <ph name="COUNT" />-ից։</translation>
 <translation id="5307600278924710095">Մուտքագրեք «<ph name="ATSIGN" />»-ին հաջորդող մասը: «<ph name="INVALIDADDRESS" />»-ը թերի է:</translation>

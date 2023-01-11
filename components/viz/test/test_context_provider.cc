@@ -215,16 +215,11 @@ void TestSharedImageInterface::PresentSwapChain(
 
 #if BUILDFLAG(IS_FUCHSIA)
 void TestSharedImageInterface::RegisterSysmemBufferCollection(
-    gfx::SysmemBufferCollectionId id,
-    zx::channel token,
+    zx::eventpair service_handle,
+    zx::channel sysmem_token,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     bool register_with_image_pipe) {
-  NOTREACHED();
-}
-
-void TestSharedImageInterface::ReleaseSysmemBufferCollection(
-    gfx::SysmemBufferCollectionId id) {
   NOTREACHED();
 }
 #endif  // BUILDFLAG(IS_FUCHSIA)
@@ -292,7 +287,7 @@ scoped_refptr<TestContextProvider> TestContextProvider::CreateWorker(
       /*support_locking=*/true);
 
   // Worker contexts are bound to the thread they are created on.
-  auto result = worker_context_provider->BindToCurrentThread();
+  auto result = worker_context_provider->BindToCurrentSequence();
   if (result != gpu::ContextResult::kSuccess)
     return nullptr;
   return worker_context_provider;
@@ -392,7 +387,7 @@ void TestContextProvider::Release() const {
   base::RefCountedThreadSafe<TestContextProvider>::Release();
 }
 
-gpu::ContextResult TestContextProvider::BindToCurrentThread() {
+gpu::ContextResult TestContextProvider::BindToCurrentSequence() {
   // This is called on the thread the context will be used.
   DCHECK(context_thread_checker_.CalledOnValidThread());
 

@@ -4,12 +4,12 @@
 
 #include "components/browsing_data/core/counters/autofill_counter.h"
 
-#include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/ranges/algorithm.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -100,7 +100,8 @@ void AutofillCounter::Count() {
   credit_cards_query_ = web_data_service_->GetCreditCards(this);
 
   // Count the addresses.
-  addresses_query_ = web_data_service_->GetAutofillProfiles(this);
+  addresses_query_ = web_data_service_->GetAutofillProfiles(
+      autofill::AutofillProfile::Source::kLocal, this);
 }
 
 void AutofillCounter::OnWebDataServiceRequestDone(
@@ -148,8 +149,8 @@ void AutofillCounter::OnWebDataServiceRequestDone(
             result.get())
             ->GetValue();
 
-    num_credit_cards_ = std::count_if(
-        credit_cards.begin(), credit_cards.end(),
+    num_credit_cards_ = base::ranges::count_if(
+        credit_cards,
         [start, end](const std::unique_ptr<autofill::CreditCard>& card) {
           return (card->modification_date() >= start &&
                   card->modification_date() < end);
@@ -165,8 +166,8 @@ void AutofillCounter::OnWebDataServiceRequestDone(
             result.get())
             ->GetValue();
 
-    num_addresses_ = std::count_if(
-        addresses.begin(), addresses.end(),
+    num_addresses_ = base::ranges::count_if(
+        addresses,
         [start,
          end](const std::unique_ptr<autofill::AutofillProfile>& address) {
           return (address->modification_date() >= start &&

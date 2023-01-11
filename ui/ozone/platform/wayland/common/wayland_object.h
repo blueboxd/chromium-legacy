@@ -10,12 +10,6 @@
 #include "base/check.h"
 #include "ui/ozone/platform/wayland/common/wayland.h"
 
-#define CHROME_WAYLAND_CHECK_VERSION(x, y, z)                   \
-  (WAYLAND_VERSION_MAJOR > x ||                                 \
-   (WAYLAND_VERSION_MAJOR == x && WAYLAND_VERSION_MINOR > y) || \
-   (WAYLAND_VERSION_MAJOR == x && WAYLAND_VERSION_MINOR == y && \
-    WAYLAND_VERSION_MICRO >= z))
-
 struct wl_proxy;
 
 namespace ui {
@@ -93,6 +87,19 @@ bool CanBind(const std::string& interface,
              uint32_t available_version,
              uint32_t min_version,
              uint32_t max_version);
+
+// Calculates the version of an interface that we want to bind to, given:
+// - |impl_version|, the maximum version that we have implemented support for;
+// - |compositor_version|, the maximum version advertised by the compositor; and
+// - |libwayland_version|, the maximum version that libwayland-client can handle
+//   (can be accessed using INTERFACE_NAME_interface.version). Binding to a
+//   version higher than this would lead to an "interface X has no event Y"
+//   runtime error. This is particularly relevant when building with
+//   use_system_libwayland = true.
+// The result is the minimum of the three versions.
+uint32_t CalculateBindVersion(uint32_t impl_version,
+                              uint32_t compositor_version,
+                              int libwayland_version);
 
 }  // namespace wl
 
@@ -210,11 +217,6 @@ DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_exporter_v2)
 DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_exported_v2)
 DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_output_manager_v1)
 DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_output_v1)
-DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_popup_v6)
-DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_positioner_v6)
-DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_shell_v6)
-DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_surface_v6)
-DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_toplevel_v6)
 DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_toplevel_decoration_v1)
 
 #endif  // UI_OZONE_PLATFORM_WAYLAND_COMMON_WAYLAND_OBJECT_H_

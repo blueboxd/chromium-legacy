@@ -13,8 +13,8 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "ios/chrome/browser/signin/constants.h"
 #import "ios/chrome/browser/signin/pattern_account_restriction.h"
+#import "ios/chrome/browser/signin/system_identity.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 
 class PrefService;
@@ -78,19 +78,19 @@ class ChromeAccountManagerService : public KeyedService,
   // Returns whether `email` is restricted.
   bool IsEmailRestricted(base::StringPiece email) const;
 
-  // Returns the ChromeIdentity with gaia ID equals to `gaia_id` or nil if
+  // Returns the SystemIdentity with gaia ID equals to `gaia_id` or nil if
   // no matching identity is found. There are two overloads to reduce the
   // need to convert between NSString* and std::string.
-  ChromeIdentity* GetIdentityWithGaiaID(NSString* gaia_id) const;
-  ChromeIdentity* GetIdentityWithGaiaID(base::StringPiece gaia_id) const;
+  id<SystemIdentity> GetIdentityWithGaiaID(NSString* gaia_id) const;
+  id<SystemIdentity> GetIdentityWithGaiaID(base::StringPiece gaia_id) const;
 
-  // Returns all ChromeIdentity objects, sorted by the ordering used in the
+  // Returns all SystemIdentity objects, sorted by the ordering used in the
   // account manager, which is typically based on the keychain ordering of
   // accounts.
-  NSArray<ChromeIdentity*>* GetAllIdentities() const;
+  NSArray<id<SystemIdentity>>* GetAllIdentities() const;
 
-  // Returns the first ChromeIdentity object.
-  ChromeIdentity* GetDefaultIdentity() const;
+  // Returns the first SystemIdentity object.
+  id<SystemIdentity> GetDefaultIdentity() const;
 
   // Returns the identity avatar. If the avatar is not available, it is fetched
   // in background (a notification will be received when it will be available),

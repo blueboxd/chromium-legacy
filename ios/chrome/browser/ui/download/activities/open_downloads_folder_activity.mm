@@ -7,8 +7,7 @@
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
-#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
-#import "ios/chrome/browser/ui/icons/download_icon.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
@@ -36,7 +35,11 @@ NSString* const kOpenDownloadsFolderActivityType =
 }
 
 - (UIImage*)activityImage {
-  return DefaultSymbolTemplateWithPointSize(kOpenInDownloadsSymbol,
+  if (@available(iOS 15, *)) {
+    return DefaultSymbolTemplateWithPointSize(kOpenInDownloadsSymbol,
+                                              kSymbolDownloadInfobarPointSize);
+  }
+  return DefaultSymbolTemplateWithPointSize(kOpenInDownloadsiOS14Symbol,
                                             kSymbolDownloadInfobarPointSize);
 }
 

@@ -230,23 +230,12 @@ IN_PROC_BROWSER_TEST_F(
                   BlockListedFeatures()));
 }
 
-// TODO(crbug.com/1336055): It may be possible to re-enable this test now that
-// crbug.com/1229182 has been resolved. This was originally disabled due to
-// flakiness on Cast Audio Linux.
-#if BUILDFLAG(IS_CASTOS)
-#define MAYBE_PagesWithCacheControlNoStoreCookieModifiedBackTwice \
-  DISABLED_PagesWithCacheControlNoStoreCookieModifiedBackTwice
-#else
-#define MAYBE_PagesWithCacheControlNoStoreCookieModifiedBackTwice \
-  PagesWithCacheControlNoStoreCookieModifiedBackTwice
-#endif  // BUILDFLAG(IS_CASTOS)
 // Test that a page with cache-control:no-store enters bfcache with the flag on,
 // and if a cookie is modified, it gets evicted with cookie changed, but if
 // navigated away again and navigated back, it gets evicted without cookie
 // change marked.
-IN_PROC_BROWSER_TEST_F(
-    BackForwardCacheBrowserTestAllowCacheControlNoStore,
-    MAYBE_PagesWithCacheControlNoStoreCookieModifiedBackTwice) {
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestAllowCacheControlNoStore,
+                       PagesWithCacheControlNoStoreCookieModifiedBackTwice) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url_a(embedded_test_server()->GetURL(
@@ -429,14 +418,13 @@ IN_PROC_BROWSER_TEST_F(
   // 1) Load the document and specify no-store for the main resource.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImplWrapper rfh_a(current_frame_host());
-  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a.get());
   rfh_a->GetBackForwardCacheMetrics()->SetObserverForTesting(this);
   // Use blocklisted feature.
   EXPECT_TRUE(ExecJs(rfh_a.get(), "window.foo = new BroadcastChannel('foo');"));
 
   // 2) Navigate away. |rfh_a| should not enter bfcache.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  delete_observer_rfh_a.WaitUntilDeleted();
+  ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
 
   // 3) Go back.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
@@ -469,7 +457,6 @@ IN_PROC_BROWSER_TEST_F(
   // 1) Load the document and specify no-store for the main resource.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImplWrapper rfh_a(current_frame_host());
-  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a.get());
   rfh_a->GetBackForwardCacheMetrics()->SetObserverForTesting(this);
 
   // 2) Navigate away. |rfh_a| should enter bfcache.
@@ -478,7 +465,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // 3) Evict |rfh_a| by JavaScriptExecution.
   EvictByJavaScript(rfh_a.get());
-  delete_observer_rfh_a.WaitUntilDeleted();
+  ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
 
   // 4) Go back.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
@@ -668,23 +655,13 @@ IN_PROC_BROWSER_TEST_F(
           BlockListedFeatures()));
 }
 
-// TODO(crbug.com/1336055): It may be possible to re-enable this test now that
-// crbug.com/1229182 has been resolved. This was originally disabled due to
-// flakiness on Cast Audio Linux.
-#if BUILDFLAG(IS_CASTOS)
-#define MAYBE_PagesWithCacheControlNoStoreHTTPOnlyCookieModifiedBackTwice \
-  DISABLED_PagesWithCacheControlNoStoreHTTPOnlyCookieModifiedBackTwice
-#else
-#define MAYBE_PagesWithCacheControlNoStoreHTTPOnlyCookieModifiedBackTwice \
-  PagesWithCacheControlNoStoreHTTPOnlyCookieModifiedBackTwice
-#endif  // BUILDFLAG(IS_CASTOS)
 // Test that a page with cache-control:no-store enters bfcache with the flag on,
 // and if a HTTPOnly cookie is modified, it gets evicted with cookie changed,
 // but if navigated away again and navigated back, it gets evicted without
 // HTTPOnly cookie change marked.
 IN_PROC_BROWSER_TEST_F(
     BackForwardCacheBrowserTestAllowCacheControlNoStore,
-    MAYBE_PagesWithCacheControlNoStoreHTTPOnlyCookieModifiedBackTwice) {
+    PagesWithCacheControlNoStoreHTTPOnlyCookieModifiedBackTwice) {
   CreateHttpsServer();
   net::test_server::ControllableHttpResponse response(https_server(),
                                                       "/main_document");
@@ -810,23 +787,9 @@ IN_PROC_BROWSER_TEST_F(
   ExpectRestored(FROM_HERE);
 }
 
-// Test that a page with cache-control:no-store enters bfcache with the flag on,
-// but gets evicted if cookies change.
-// Turned off on cast for https://crbug.com/1281665 .
-//
-// TODO(crbug.com/1336055): It may be possible to re-enable this test now that
-// crbug.com/1229182 has been resolved. This was originally disabled due to
-// flakiness on Cast.
-#if BUILDFLAG(IS_CASTOS)
-#define MAYBE_PagesWithCacheControlNoStoreEvictedIfCookieChange \
-        DISABLED_PagesWithCacheControlNoStoreEvictedIfCookieChange
-#else
-#define MAYBE_PagesWithCacheControlNoStoreEvictedIfCookieChange \
-        PagesWithCacheControlNoStoreEvictedIfCookieChange
-#endif  // BUILDFLAG(IS_CASTOS)
 IN_PROC_BROWSER_TEST_F(
     BackForwardCacheBrowserTestRestoreCacheControlNoStoreUnlessCookieChange,
-    MAYBE_PagesWithCacheControlNoStoreEvictedIfCookieChange) {
+    PagesWithCacheControlNoStoreEvictedIfCookieChange) {
   net::test_server::ControllableHttpResponse response(embedded_test_server(),
                                                       "/main_document");
   net::test_server::ControllableHttpResponse response2(embedded_test_server(),

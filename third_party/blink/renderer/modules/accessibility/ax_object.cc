@@ -2328,6 +2328,30 @@ ax::mojom::blink::Role AXObject::ComputeFinalRoleForSerialization() const {
   if (role_ == ax::mojom::blink::Role::kSvgRoot && !UnignoredChildCount())
     return ax::mojom::blink::Role::kImage;
 
+  // DPUB ARIA 1.1 deprecated doc-biblioentry and doc-endnote, but it's still
+  // possible to create these internal roles / platform mappings with a listitem
+  // (native or ARIA) inside of a doc-bibliography or doc-endnotes section.
+  if (role_ == ax::mojom::blink::Role::kListItem) {
+    AXObject* ancestor = CachedParentObject();
+    if (ancestor && ancestor->RoleValue() == ax::mojom::blink::Role::kList) {
+      // Go up to the root, or next list, checking to see if the list item is
+      // inside an endnote or bibliography section. If it is, remap the role.
+      // The remapping does not occur for list items multiple levels deep.
+      while (true) {
+        ancestor = ancestor->CachedParentObject();
+        if (!ancestor)
+          break;
+        ax::mojom::blink::Role ancestor_role = ancestor->RoleValue();
+        if (ancestor_role == ax::mojom::blink::Role::kList)
+          break;
+        if (ancestor_role == ax::mojom::blink::Role::kDocBibliography)
+          return ax::mojom::blink::Role::kDocBiblioEntry;
+        if (ancestor_role == ax::mojom::blink::Role::kDocEndnotes)
+          return ax::mojom::blink::Role::kDocEndnote;
+      }
+    }
+  }
+
   // TODO(accessibility): Consider moving the image vs. image map role logic
   // here. Currently it is implemented in AXPlatformNode subclasses and thus
   // not available to the InspectorAccessibilityAgent.
@@ -2690,6 +2714,9 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
   last_modification_count_ = cache.ModificationCount();
 
 #if DCHECK_IS_ON()  // Required in order to get Lifecycle().ToString()
+  DCHECK(!is_computing_role_)
+      << "Updating cached values while computing a role is dangerous as it "
+         "can lead to code that uses the AXObject before it is ready.";
   DCHECK(!is_updating_cached_values_)
       << "Reentering UpdateCachedAttributeValuesIfNeeded() on same node: "
       << GetNode();
@@ -3362,6 +3389,9 @@ bool AXObject::LastKnownIsIncludedInTreeValue() const {
 }
 
 ax::mojom::blink::Role AXObject::DetermineAccessibilityRole() {
+#if DCHECK_IS_ON()
+  base::AutoReset<bool> reentrancy_protector(&is_computing_role_, true);
+#endif
   DCHECK(!IsDetached());
 
   return NativeRoleIgnoringAria();
@@ -3768,7 +3798,7 @@ String AXObject::RecursiveTextAlternative(
     const AXObject& ax_obj,
     const AXObject* aria_label_or_description_root,
     AXObjectSet& visited) {
-  ax::mojom::blink::NameFrom tmp_name_from;
+  ax::mojom::blink::NameFrom tmp_name_from = ax::mojom::blink::NameFrom::kNone;
   return RecursiveTextAlternative(ax_obj, aria_label_or_description_root,
                                   visited, tmp_name_from);
 }
@@ -3812,6 +3842,13 @@ const ComputedStyle* AXObject::GetComputedStyle() const {
 // * "content-visibility: auto" is "paint when it's scrolled into the viewport,
 //   but its layout information is not updated when it isn't"
 bool AXObject::ComputeIsHiddenViaStyle(const ComputedStyle* style) const {
+  // The the parent element of text is hidden, then the text is hidden too.
+  // This helps provide more consistent results in edge cases, e.g. text inside
+  // of a <canvas> or display:none content.
+  if (RoleValue() == ax::mojom::blink::Role::kStaticText &&
+      ParentObject()->IsHiddenViaStyle())
+    return true;
+
   if (style) {
     if (GetLayoutObject())
       return style->Visibility() != EVisibility::kVisible;
@@ -3942,6 +3979,12 @@ String AXObject::AriaTextAlternative(
   String text_alternative;
   bool already_visited = visited.Contains(this);
   visited.insert(this);
+
+  // Slots are elements that cannot be named.
+  if (IsA<HTMLSlotElement>(GetNode())) {
+    *found_text_alternative = false;
+    return String();
+  }
 
   // Step 2A from: http://www.w3.org/TR/accname-aam-1.1
   // If you change this logic, update AXNodeObject::nameFromLabelElement, too.
@@ -4530,30 +4573,6 @@ ax::mojom::blink::Role AXObject::DetermineAriaRoleAttribute() const {
       role = ax::mojom::blink::Role::kComboBoxMenuButton;
   }
 
-  // DPUB ARIA 1.1 deprecated doc-biblioentry and doc-endnote, but it's still
-  // possible to create these internal roles / platform mappings with a listitem
-  // (native or ARIA) inside of a doc-bibliography or doc-endnotes section.
-  if (role == ax::mojom::blink::Role::kListItem ||
-      NativeRoleIgnoringAria() == ax::mojom::blink::Role::kListItem) {
-    AXObject* ancestor = ParentObjectUnignored();
-    if (ancestor && ancestor->RoleValue() == ax::mojom::blink::Role::kList) {
-      // Go up to the root, or next list, checking to see if the list item is
-      // inside an endnote or bibliography section. If it is, remap the role.
-      // The remapping does not occur for list items multiple levels deep.
-      while (true) {
-        ancestor = ancestor->ParentObjectUnignored();
-        if (!ancestor)
-          break;
-        ax::mojom::blink::Role ancestor_role = ancestor->RoleValue();
-        if (ancestor_role == ax::mojom::blink::Role::kList)
-          break;
-        if (ancestor_role == ax::mojom::blink::Role::kDocBibliography)
-          return ax::mojom::blink::Role::kDocBiblioEntry;
-        if (ancestor_role == ax::mojom::blink::Role::kDocEndnotes)
-          return ax::mojom::blink::Role::kDocEndnote;
-      }
-    }
-  }
   return role;
 }
 
@@ -5808,16 +5827,16 @@ void AXObject::GetRelativeBounds(AXObject** out_container,
 
   // Compute the transform between the container's coordinate space and this
   // object.
-  TransformationMatrix transform = layout_object->LocalToAncestorTransform(
+  gfx::Transform transform = layout_object->LocalToAncestorTransform(
       To<LayoutBoxModelObject>(container_layout_object));
 
   // If the transform is just a simple translation, apply that to the
   // bounding box, but if it's a non-trivial transformation like a rotation,
   // scaling, etc. then return the full matrix instead.
   if (transform.IsIdentityOr2DTranslation()) {
-    out_bounds_in_container.Offset(transform.To2DTranslation());
+    out_bounds_in_container.Offset(transform.To2dTranslation());
   } else {
-    out_container_transform = transform.ToTransform();
+    out_container_transform = transform;
   }
 }
 

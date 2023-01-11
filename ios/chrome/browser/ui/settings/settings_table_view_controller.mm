@@ -48,6 +48,7 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/system_identity.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -63,8 +64,7 @@
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/icons/buildflags.h"
-#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
-#import "ios/chrome/browser/ui/icons/settings_icon.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/settings/about_chrome_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
@@ -111,7 +111,6 @@
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_api.h"
 #import "net/base/mac/url_conversions.h"
 #import "ui/base/l10n/l10n_util_mac.h"
@@ -695,29 +694,6 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 
 #pragma mark - Model Items
 
-- (TableViewItem*)signInTextItem {
-  if (_signinPromoViewMediator) {
-    TableViewSigninPromoItem* signinPromoItem =
-        [[TableViewSigninPromoItem alloc]
-            initWithType:SettingsItemTypeSigninPromo];
-    signinPromoItem.text =
-        l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_SETTINGS_WITH_UNITY);
-    signinPromoItem.configurator =
-        [_signinPromoViewMediator createConfigurator];
-    signinPromoItem.delegate = _signinPromoViewMediator;
-    [_signinPromoViewMediator signinPromoViewIsVisible];
-    return signinPromoItem;
-  }
-  if (!_hasRecordedSigninImpression) {
-    // Once the Settings are open, this button impression will at most be
-    // recorded once until they are closed.
-    signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
-        signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
-    _hasRecordedSigninImpression = YES;
-  }
-  return [self accountSignInItem];
-}
-
 - (TableViewItem*)accountSignInItem {
   AccountSignInItem* signInTextItem =
       [[AccountSignInItem alloc] initWithType:SettingsItemTypeSignInButton];
@@ -825,7 +801,13 @@ UIImage* GetBrandedGoogleServicesSymbol() {
       l10n_util::GetNSString(IDS_IOS_SETTINGS_SET_DEFAULT_BROWSER);
 
   if (UseSymbols()) {
-    defaultBrowser.iconImage = DefaultSettingsRootSymbol(kDefaultBrowserSymbol);
+    if (@available(iOS 15, *)) {
+      defaultBrowser.iconImage =
+          DefaultSettingsRootSymbol(kDefaultBrowserSymbol);
+    } else {
+      defaultBrowser.iconImage =
+          DefaultSettingsRootSymbol(kDefaultBrowseriOS14Symbol);
+    }
     defaultBrowser.iconBackgroundColor = [UIColor colorNamed:kPurple500Color];
     defaultBrowser.iconTintColor = UIColor.whiteColor;
     defaultBrowser.iconCornerRadius = kColorfulBackgroundSymbolCornerRadius;
@@ -1260,12 +1242,17 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 - (TableViewSwitchItem*)viewSourceSwitchItem {
   TableViewSwitchItem* viewSourceItem = nil;
   if (UseSymbols()) {
-    viewSourceItem = [self
-             switchItemWithType:SettingsItemTypeViewSource
-                          title:@"View source menu"
-                         symbol:DefaultSettingsRootSymbol(@"keyboard.badge.eye")
-          symbolBackgroundColor:[UIColor colorNamed:kGrey400Color]
-        accessibilityIdentifier:nil];
+    UIImage* image;
+    if (@available(iOS 16, *)) {
+      image = DefaultSettingsRootSymbol(@"keyboard.badge.eye");
+    } else {
+      image = DefaultSettingsRootSymbol(@"keyboard");
+    }
+    viewSourceItem = [self switchItemWithType:SettingsItemTypeViewSource
+                                        title:@"View source menu"
+                                       symbol:image
+                        symbolBackgroundColor:[UIColor colorNamed:kGrey400Color]
+                      accessibilityIdentifier:nil];
 
   } else {
     viewSourceItem = [self switchItemWithType:SettingsItemTypeViewSource

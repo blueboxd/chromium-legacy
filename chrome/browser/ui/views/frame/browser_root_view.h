@@ -95,7 +95,7 @@ class BrowserRootView : public views::internal::RootView {
     DropInfo();
     ~DropInfo();
 
-    raw_ptr<DropTarget> target = nullptr;
+    raw_ptr<DropTarget, DanglingUntriaged> target = nullptr;
 
     // Where to drop the url.
     absl::optional<DropIndex> index;
@@ -136,7 +136,7 @@ class BrowserRootView : public views::internal::RootView {
                          ui::mojom::DragOperation& output_drag_op);
 
   // The BrowserView.
-  raw_ptr<BrowserView> browser_view_ = nullptr;
+  raw_ptr<BrowserView, DanglingUntriaged> browser_view_ = nullptr;
 
   // Used to calculate partial offsets in scrolls that occur for a smooth
   // scroll device.

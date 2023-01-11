@@ -12,14 +12,17 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_forward.h"
+#include "base/check.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"  // For CHECK macros.
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -79,11 +82,11 @@ void SendWebSocketResponseOnCmdThread(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     HttpServer* http_server,
     int connection_id,
-    const std::string& data) {
+    std::string data) {
   io_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&HttpServer::SendOverWebSocket,
-                     base::Unretained(http_server), connection_id, data));
+      FROM_HERE, base::BindOnce(&HttpServer::SendOverWebSocket,
+                                base::Unretained(http_server), connection_id,
+                                std::move(data)));
 }
 
 void SendWebSocketResponseOnSessionThread(
@@ -91,11 +94,11 @@ void SendWebSocketResponseOnSessionThread(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     HttpServer* http_server,
     int connection_id,
-    const std::string& data) {
+    std::string data) {
   cmd_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SendWebSocketResponseOnCmdThread, io_task_runner,
-                     base::Unretained(http_server), connection_id, data));
+      FROM_HERE, base::BindOnce(&SendWebSocketResponseOnCmdThread,
+                                io_task_runner, base::Unretained(http_server),
+                                connection_id, std::move(data)));
 }
 
 void CloseWebSocketOnCmdThread(
@@ -153,7 +156,7 @@ class WrapperURLLoaderFactory : public network::mojom::URLLoaderFactory {
   WrapperURLLoaderFactory(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : url_loader_factory_(std::move(url_loader_factory)),
-        network_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+        network_task_runner_(base::SequencedTaskRunner::GetCurrentDefault()) {}
 
   WrapperURLLoaderFactory(const WrapperURLLoaderFactory&) = delete;
   WrapperURLLoaderFactory& operator=(const WrapperURLLoaderFactory&) = delete;
@@ -1414,11 +1417,11 @@ HttpHandler::PrepareStandardResponse(
       if (first == std::string::npos || last == std::string::npos) {
         inner_params->SetStringPath("data.text", "");
       } else {
-        std::string alertText = message.substr(first, last - first);
-        auto colon = alertText.find(":");
-        if (colon != std::string::npos && alertText.size() > (colon + 2))
-          alertText = alertText.substr(colon + 2);
-        inner_params->SetStringPath("data.text", alertText);
+        std::string alert_text = message.substr(first, last - first);
+        auto colon = alert_text.find(":");
+        if (colon != std::string::npos && alert_text.size() > (colon + 2))
+          alert_text = alert_text.substr(colon + 2);
+        inner_params->SetStringPath("data.text", alert_text);
       }
     }
   } else {
@@ -1459,15 +1462,8 @@ void HttpHandler::OnWebSocketRequest(HttpServer* http_server,
     SendWebSocketRejectResponse(http_server, connection_id,
                                 net::HTTP_BAD_REQUEST, err_msg);
     return;
-  } else if (it->second != -1) {
-    std::string err_msg = "bad request only one connection for session id " +
-                          session_id + " is allowed";
-    VLOG(0) << "HttpHandler WebSocketRequest error " << err_msg;
-    SendWebSocketRejectResponse(http_server, connection_id,
-                                net::HTTP_BAD_REQUEST, err_msg);
-    return;
   } else {
-    session_connection_map_[session_id] = connection_id;
+    session_connection_map_[session_id].push_back(connection_id);
     connection_session_map_[connection_id] = session_id;
 
     auto thread_it = session_thread_map_.find(session_id);
@@ -1545,6 +1541,7 @@ void HttpHandler::OnWebSocketMessage(HttpServer* http_server,
 
   base::Value::Dict params;
   params.Set("bidiCommand", data);
+  params.Set("connectionId", connection_id);
 
   auto callback = base::BindRepeating(
       [](base::RepeatingCallback<void(const Status&)> send_error,
@@ -1596,7 +1593,10 @@ void HttpHandler::OnClose(HttpServer* http_server, int connection_id) {
     return;
   }
   std::string session_id = it->second;
-  session_connection_map_[session_id] = -1;
+  std::vector<int>& bucket = session_connection_map_[session_id];
+  auto bucket_it = base::ranges::find(bucket, connection_id);
+  DCHECK(bucket_it != bucket.end());
+  bucket.erase(bucket_it);
   connection_session_map_.erase(it);
 
   auto thread_it = session_thread_map_.find(session_id);

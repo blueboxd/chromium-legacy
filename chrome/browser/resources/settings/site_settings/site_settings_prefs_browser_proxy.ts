@@ -8,7 +8,7 @@
  */
 
 // clang-format off
-import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {sendWithPromise} from 'chrome://resources/js/cr.js';
 
 import {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource} from './constants.js';
 // clang-format on
@@ -68,6 +68,7 @@ export interface SiteGroup {
   fpsNumMembers?: number;
   fpsEnterpriseManaged?: boolean;
   hasInstalledPWA: boolean;
+  isolatedWebAppName?: string;
 }
 
 /**
@@ -80,6 +81,7 @@ export interface RawSiteException {
   isEmbargoed: boolean;
   origin: string;
   displayName: string;
+  isolatedWebAppName?: string;
   type: string;
   setting: ContentSetting;
   source: SiteSettingSource;
@@ -96,6 +98,7 @@ export interface SiteException {
   isEmbargoed: boolean;
   origin: string;
   displayName: string;
+  isolatedWebAppName?: string;
   setting: ContentSetting;
   enforcement: chrome.settingsPrivate.Enforcement|null;
   controlledBy: chrome.settingsPrivate.ControlledBy;
@@ -111,6 +114,7 @@ export interface SiteException {
  */
 export interface RecentSitePermissions {
   origin: string;
+  isolatedWebAppName?: string;
   incognito: boolean;
   recentPermissions: RawSiteException[];
 }

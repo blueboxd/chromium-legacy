@@ -192,7 +192,9 @@ bool InputMethodEngine::DeleteSurroundingText(int context_id,
   ui::TextInputTarget* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
   if (input_context) {
-    input_context->DeleteSurroundingText(offset, number_of_chars);
+    const uint32_t before =
+        offset >= 0 ? 0U : static_cast<uint32_t>(-1 * offset);
+    input_context->DeleteSurroundingText(before, number_of_chars - before);
   }
 
   return true;
@@ -603,7 +605,7 @@ void InputMethodEngine::CancelPendingKeyEvents() {
   pending_key_events_.clear();
 }
 
-void InputMethodEngine::FocusIn(
+void InputMethodEngine::Focus(
     const ui::TextInputMethod::InputContext& input_context) {
   current_input_type_ = input_context.type;
 
@@ -616,14 +618,7 @@ void InputMethodEngine::FocusIn(
   observer_->OnFocus(active_component_id_, context_id_, input_context);
 }
 
-void InputMethodEngine::OnTouch(ui::EventPointerType pointerType) {
-  if (!IsActive() || current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
-    return;
-
-  observer_->OnTouch(pointerType);
-}
-
-void InputMethodEngine::FocusOut() {
+void InputMethodEngine::Blur() {
   if (!IsActive() || current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
     return;
 
@@ -634,13 +629,20 @@ void InputMethodEngine::FocusOut() {
   observer_->OnBlur(active_component_id_, context_id);
 }
 
+void InputMethodEngine::OnTouch(ui::EventPointerType pointerType) {
+  if (!IsActive() || current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
+    return;
+
+  observer_->OnTouch(pointerType);
+}
+
 void InputMethodEngine::Enable(const std::string& component_id) {
   active_component_id_ = component_id;
   observer_->OnActivate(component_id);
   const ui::TextInputMethod::InputContext& input_context =
       ui::IMEBridge::Get()->GetCurrentInputContext();
   current_input_type_ = input_context.type;
-  FocusIn(input_context);
+  Focus(input_context);
 
   InputMethodManager::Get()->GetActiveIMEState()->EnableInputView();
   auto* keyboard_client = ChromeKeyboardControllerClient::Get();
@@ -736,6 +738,11 @@ void InputMethodEngine::CandidateClicked(uint32_t index) {
 void InputMethodEngine::AssistiveWindowButtonClicked(
     const ui::ime::AssistiveWindowButton& button) {
   observer_->OnAssistiveWindowButtonClicked(button);
+}
+
+void InputMethodEngine::AssistiveWindowChanged(
+    const ash::ime::AssistiveWindow& window) {
+  observer_->OnAssistiveWindowChanged(window);
 }
 
 void InputMethodEngine::SetMirroringEnabled(bool mirroring_enabled) {

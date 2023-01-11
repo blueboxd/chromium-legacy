@@ -209,9 +209,7 @@ SafeBrowsingUrlCheckerImpl::~SafeBrowsingUrlCheckerImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (state_ == STATE_CHECKING_URL) {
-    if (can_check_db_) {
-      database_manager_->CancelCheck(this);
-    }
+    CancelCheckIfRelevant();
     const GURL& url = urls_[next_index_].url;
     TRACE_EVENT_NESTABLE_ASYNC_END1("safe_browsing", "CheckUrl",
                                     TRACE_ID_LOCAL(this), "url", url.spec());
@@ -268,6 +266,7 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
     const GURL& url,
     SBThreatType threat_type,
     const ThreatMetadata& metadata) {
+  is_async_database_manager_check_in_progress_ = false;
   OnUrlResult(url, threat_type, metadata, /*is_from_real_time_check=*/false);
 }
 
@@ -361,9 +360,7 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
 }
 
 void SafeBrowsingUrlCheckerImpl::OnTimeout() {
-  if (can_check_db_) {
-    database_manager_->CancelCheck(this);
-  }
+  CancelCheckIfRelevant();
 
   // Any pending callbacks on this URL check should be skipped.
   weak_factory_.InvalidateWeakPtrs();
@@ -461,10 +458,9 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
 
       bool check_allowlist =
           can_check_db_ && can_check_high_confidence_allowlist_;
-      AsyncMatch match =
-          (check_allowlist)
-              ? database_manager_->CheckUrlForHighConfidenceAllowlist(url, this)
-              : AsyncMatch::NO_MATCH;
+      AsyncMatch match = (check_allowlist)
+                             ? CallCheckUrlForHighConfidenceAllowlist(url)
+                             : AsyncMatch::NO_MATCH;
       urls_[next_index_].did_check_allowlist = check_allowlist;
       RecordLocalMatchResult(match, request_destination_,
                              url_lookup_service_metric_suffix_);
@@ -498,11 +494,7 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
           break;
       }
     } else {
-      safe_synchronously =
-          can_check_db_
-              ? database_manager_->CheckBrowseUrl(
-                    url, url_checker_delegate_->GetThreatTypes(), this)
-              : true;
+      safe_synchronously = can_check_db_ ? CallCheckBrowseUrl(url) : true;
     }
 
     if (safe_synchronously) {
@@ -583,7 +575,6 @@ SBThreatType SafeBrowsingUrlCheckerImpl::CheckWebUIUrls(const GURL& url) {
 bool SafeBrowsingUrlCheckerImpl::RunNextCallback(bool proceed,
                                                  bool showed_interstitial) {
   DCHECK_LT(next_index_, urls_.size());
-
   // OnCompleteCheck may delete *this*. Do not access internal members after
   // the call.
   auto weak_self = weak_factory_.GetWeakPtr();
@@ -605,6 +596,7 @@ void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
        can_rt_check_subresource_url_);
   DCHECK(is_expected_request_destination);
 
+  is_async_database_manager_check_in_progress_ = false;
   const GURL& url = urls_[next_index_].url;
   if (did_match_allowlist) {
     ui_task_runner_->PostTask(
@@ -695,9 +687,7 @@ void SafeBrowsingUrlCheckerImpl::StartLookupOnUIThread(
 
 void SafeBrowsingUrlCheckerImpl::PerformHashBasedCheck(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!can_check_db_ ||
-      database_manager_->CheckBrowseUrl(
-          url, url_checker_delegate_->GetThreatTypes(), this)) {
+  if (!can_check_db_ || CallCheckBrowseUrl(url)) {
     // No match found in the local database. Safe to call |OnUrlResult| here
     // directly.
     OnUrlResult(url, SB_THREAT_TYPE_SAFE, ThreatMetadata(),
@@ -789,6 +779,34 @@ void SafeBrowsingUrlCheckerImpl::LogRTLookupResponse(
         FROM_HERE, base::BindOnce(&WebUIDelegate::AddToRTLookupResponses,
                                   base::Unretained(webui_delegate_),
                                   url_web_ui_token_, response));
+  }
+}
+
+bool SafeBrowsingUrlCheckerImpl::CallCheckBrowseUrl(const GURL& url) {
+  bool is_safe_synchronously = database_manager_->CheckBrowseUrl(
+      url, url_checker_delegate_->GetThreatTypes(), this);
+  if (!is_safe_synchronously) {
+    is_async_database_manager_check_in_progress_ = true;
+  }
+  return is_safe_synchronously;
+}
+
+AsyncMatch SafeBrowsingUrlCheckerImpl::CallCheckUrlForHighConfidenceAllowlist(
+    const GURL& url) {
+  AsyncMatch result =
+      database_manager_->CheckUrlForHighConfidenceAllowlist(url, this);
+  if (result == AsyncMatch::ASYNC) {
+    // It is unexpected that the high confidence allowlist would return async.
+    // However, until the CheckUrlForHighConfidenceAllowlist code is refactored
+    // to make that case impossible, we still handle it.
+    is_async_database_manager_check_in_progress_ = true;
+  }
+  return result;
+}
+
+void SafeBrowsingUrlCheckerImpl::CancelCheckIfRelevant() {
+  if (is_async_database_manager_check_in_progress_) {
+    database_manager_->CancelCheck(this);
   }
 }
 

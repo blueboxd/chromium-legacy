@@ -12,10 +12,12 @@
 #include "base/time/time.h"
 #include "base/time/time_override.h"
 #include "base/values.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_trigger_data.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_values.h"
-#include "content/browser/attribution_reporting/attribution_aggregation_keys.h"
-#include "content/browser/attribution_reporting/attribution_filter_data.h"
+#include "components/attribution_reporting/aggregatable_trigger_data.h"
+#include "components/attribution_reporting/aggregatable_values.h"
+#include "components/attribution_reporting/aggregation_keys.h"
+#include "components/attribution_reporting/constants.h"
+#include "components/attribution_reporting/event_trigger_data.h"
+#include "components/attribution_reporting/filters.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
@@ -25,7 +27,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
-#include "third_party/blink/public/common/attribution_reporting/constants.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -89,6 +90,8 @@ using ::testing::Optional;
 using ::testing::Pair;
 using ::testing::SizeIs;
 
+using AttributionFilters = ::attribution_reporting::Filters;
+
 // Pick an arbitrary offset time to test correct handling.
 constexpr base::Time kOffsetTime = base::Time::UnixEpoch() + base::Days(5);
 
@@ -121,8 +124,11 @@ TEST(AttributionSimulatorInputParserTest, ValidSourceParses) {
         "source_event_id": "123",
         "destination": "https://a.d.test",
         "expiry": "864000",
+        "event_report_window": "864000",
+        "aggregatable_report_window": "864000",
         "priority": "-5",
-        "debug_key": "14"
+        "debug_key": "14",
+        "debug_reporting": true
       }
     },
     {
@@ -143,6 +149,8 @@ TEST(AttributionSimulatorInputParserTest, ValidSourceParses) {
         "source_event_id": "789",
         "destination": "https://c.d.test",
         "expiry": "864001",
+        "event_report_window": "864001",
+        "aggregatable_report_window": "864001",
         "filter_data": {
           "a": [],
           "b": ["c", "d"]
@@ -158,6 +166,8 @@ TEST(AttributionSimulatorInputParserTest, ValidSourceParses) {
         "source_event_id": "789",
         "destination": "https://c.d.test",
         "expiry": "864001",
+        "event_report_window": "691201",
+        "aggregatable_report_window": "432001",
         "aggregation_keys": {
           "a": "0x1"
         }
@@ -181,8 +191,11 @@ TEST(AttributionSimulatorInputParserTest, ValidSourceParses) {
                    .SetDestinationOrigin(
                        url::Origin::Create(GURL("https://a.d.test")))
                    .SetExpiry(base::Days(10))
+                   .SetEventReportWindow(base::Days(10))
+                   .SetAggregatableReportWindow(base::Days(10))
                    .SetPriority(-5)
                    .SetDebugKey(14)
+                   .SetDebugReporting(true)
                    .Build(),
                _),
           Pair(SourceBuilder(kOffsetTime + base::Milliseconds(1643235573123))
@@ -194,9 +207,11 @@ TEST(AttributionSimulatorInputParserTest, ValidSourceParses) {
                    .SetSourceEventId(0)  // default
                    .SetDestinationOrigin(
                        url::Origin::Create(GURL("https://b.d.test")))
-                   .SetExpiry(base::Days(30))   // default
-                   .SetPriority(0)              // default
-                   .SetDebugKey(absl::nullopt)  // default
+                   .SetExpiry(base::Days(30))                    // default
+                   .SetEventReportWindow(base::Days(30))         // default
+                   .SetAggregatableReportWindow(base::Days(30))  // default
+                   .SetPriority(0)                               // default
+                   .SetDebugKey(absl::nullopt)                   // default
                    .Build(),
                _),
           Pair(
@@ -210,13 +225,17 @@ TEST(AttributionSimulatorInputParserTest, ValidSourceParses) {
                   .SetDestinationOrigin(
                       url::Origin::Create(GURL("https://c.d.test")))
                   .SetExpiry(base::Days(10))  // rounded to whole number of days
-                  .SetPriority(0)             // default
+                  .SetEventReportWindow(
+                      base::Days(10))  // rounded to whole number of days
+                  .SetAggregatableReportWindow(
+                      base::Days(10))  // rounded to whole number of days
+                  .SetPriority(0)      // default
                   .SetDebugKey(absl::nullopt)  // default
-                  .SetFilterData(
-                      *AttributionFilterData::FromSourceFilterValues({
-                          {"a", {}},
-                          {"b", {"c", "d"}},
-                      }))
+                  .SetDebugReporting(false)    // default
+                  .SetFilterData(*attribution_reporting::FilterData::Create({
+                      {"a", {}},
+                      {"b", {"c", "d"}},
+                  }))
                   .Build(),
               _),
           Pair(
@@ -230,10 +249,16 @@ TEST(AttributionSimulatorInputParserTest, ValidSourceParses) {
                   .SetDestinationOrigin(
                       url::Origin::Create(GURL("https://c.d.test")))
                   .SetExpiry(base::Days(10))  // rounded to whole number of days
-                  .SetPriority(0)             // default
+                  .SetEventReportWindow(
+                      base::Days(8))  // rounded to whole number of days
+                  .SetAggregatableReportWindow(
+                      base::Days(5))  // rounded to whole number of days
+                  .SetPriority(0)     // default
                   .SetDebugKey(absl::nullopt)  // default
+                  .SetDebugReporting(false)    // default
                   .SetAggregationKeys(
-                      *AttributionAggregationKeys::FromKeys({{"a", 1}}))
+                      *attribution_reporting::AggregationKeys::FromKeys(
+                          {{"a", 1}}))
                   .Build(),
               _))));
   EXPECT_THAT(error_stream.str(), IsEmpty());
@@ -252,6 +277,8 @@ TEST(AttributionSimulatorInputParserTest, OutputRetainsInputJSON) {
           "destination": "https://d.test",
           "filter_data": {"a": ["b", "c"]},
           "expiry": "864000",
+          "event_report_window": "864000",
+          "aggregatable_report_window": "864000",
           "priority": "-5",
           "debug_key": "14"
         }
@@ -330,7 +357,8 @@ TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
           "key_piece": "0x1"
         }],
         "aggregatable_values": {"a": 1},
-        "aggregatable_deduplication_key": "789"
+        "aggregatable_deduplication_key": "789",
+        "debug_reporting": true
       }
     }
   ]})json";
@@ -350,38 +378,41 @@ TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
                       /*reporting_origin=*/
                       url::Origin::Create(GURL("https://a.r.test")),
                       /*filters=*/
-                      *AttributionFilterData::FromTriggerFilterValues({
+                      *AttributionFilters::Create({
                           {"a", {"b", "c"}},
                           {"d", {}},
                       }),
                       /*not_filters=*/
-                      *AttributionFilterData::FromTriggerFilterValues({
+                      *AttributionFilters::Create({
                           {"e", {"f"}},
                       }),
                       /*debug_key=*/14,
                       /*aggregatable_dedup_key=*/absl::nullopt,
                       {
-                          AttributionTrigger::EventTriggerData(
+                          attribution_reporting::EventTriggerData(
                               /*data=*/10,
                               /*priority=*/-5,
                               /*dedup_key=*/123,
                               /*filters=*/
-                              *AttributionFilterData::FromTriggerFilterValues({
+                              *AttributionFilters::Create({
                                   {"x", {"y"}},
                               }),
                               /*not_filters=*/
-                              *AttributionFilterData::FromTriggerFilterValues({
+                              *AttributionFilters::Create({
                                   {"z", {}},
                               })),
-                          AttributionTrigger::EventTriggerData(
+                          attribution_reporting::EventTriggerData(
                               /*data=*/0,
                               /*priority=*/0,
                               /*dedup_key=*/absl::nullopt,
-                              /*filters=*/AttributionFilterData(),
-                              /*not_filters=*/AttributionFilterData()),
+                              /*filters=*/AttributionFilters(),
+                              /*not_filters=*/AttributionFilters()),
                       },
                       /*aggregatable_trigger_data=*/{},
-                      /*aggregatable_values=*/AttributionAggregatableValues()),
+                      /*aggregatable_values=*/
+                      attribution_reporting::AggregatableValues(),
+                      /*is_within_fenced_frame=*/false,
+                      /*debug_reporting=*/false),
                   .time = kOffsetTime + base::Milliseconds(1643235576123),
               },
               _),
@@ -392,13 +423,16 @@ TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
                       url::Origin::Create(GURL("https://a.d2.test")),
                       /*reporting_origin=*/
                       url::Origin::Create(GURL("https://b.r.test")),
-                      /*filters=*/AttributionFilterData(),
-                      /*not_filters=*/AttributionFilterData(),
+                      /*filters=*/AttributionFilters(),
+                      /*not_filters=*/AttributionFilters(),
                       /*debug_key=*/absl::nullopt,
                       /*aggregatable_dedup_key=*/absl::nullopt,
                       /*event_triggers=*/{},
                       /*aggregatable_trigger_data=*/{},
-                      /*aggregatable_values=*/AttributionAggregatableValues()),
+                      /*aggregatable_values=*/
+                      attribution_reporting::AggregatableValues(),
+                      /*is_within_fenced_frame=*/false,
+                      /*debug_reporting=*/false),
                   .time = kOffsetTime + base::Milliseconds(1643235575123),
               },
               _),
@@ -409,19 +443,21 @@ TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
                       url::Origin::Create(GURL("https://a.d2.test")),
                       /*reporting_origin=*/
                       url::Origin::Create(GURL("https://b.r.test")),
-                      /*filters=*/AttributionFilterData(),
-                      /*not_filters=*/AttributionFilterData(),
+                      /*filters=*/AttributionFilters(),
+                      /*not_filters=*/AttributionFilters(),
                       /*debug_key=*/absl::nullopt,
                       /*aggregatable_dedup_key=*/789,
                       /*event_triggers=*/{},
-                      {AttributionAggregatableTriggerData::CreateForTesting(
+                      {*attribution_reporting::AggregatableTriggerData::Create(
                           absl::MakeUint128(/*high=*/0, /*low=*/1),
                           /*source_keys=*/{"a"},
-                          /*filters=*/AttributionFilterData(),
-                          /*not_filters=*/AttributionFilterData())},
+                          /*filters=*/AttributionFilters(),
+                          /*not_filters=*/AttributionFilters())},
                       /*aggregatable_values=*/
-                      AttributionAggregatableValues::CreateForTesting(
-                          {{"a", 1}})),
+                      *attribution_reporting::AggregatableValues::Create(
+                          {{"a", 1}}),
+                      /*is_within_fenced_frame=*/false,
+                      /*debug_reporting=*/true),
                   .time = kOffsetTime + base::Milliseconds(1643235574123),
               },
               _))));
@@ -551,8 +587,8 @@ TEST(AttributionSimulatorInputParserTest, InvalidAggregatableTriggerDataSize) {
     size_t size;
     bool valid;
   } kTestCases[]{
-      {blink::kMaxAttributionAggregatableTriggerDataPerTrigger, true},
-      {blink::kMaxAttributionAggregatableTriggerDataPerTrigger + 1, false},
+      {attribution_reporting::kMaxAggregatableTriggerDataPerTrigger, true},
+      {attribution_reporting::kMaxAggregatableTriggerDataPerTrigger + 1, false},
   };
 
   static constexpr char kError[] =
@@ -593,8 +629,8 @@ TEST(AttributionSimulatorInputParserTest, InvalidEventTriggerDataSize) {
     size_t size;
     bool valid;
   } kTestCases[]{
-      {blink::kMaxAttributionEventTriggerData, true},
-      {blink::kMaxAttributionEventTriggerData + 1, false},
+      {attribution_reporting::kMaxEventTriggerData, true},
+      {attribution_reporting::kMaxEventTriggerData + 1, false},
   };
 
   static constexpr char kError[] =
@@ -994,6 +1030,14 @@ const ParseErrorTestCase kParseErrorTestCases[] = {
         R"json({"triggers":[{
           "Attribution-Reporting-Register-Trigger": {
             "aggregatable_deduplication_key": 123
+          }
+        }]})json",
+    },
+    {
+        R"(["triggers"][0]["Attribution-Reporting-Register-Trigger"]["debug_reporting"]: must be a boolean)",
+        R"json({"triggers":[{
+          "Attribution-Reporting-Register-Trigger": {
+            "debug_reporting": 123
           }
         }]})json",
     },

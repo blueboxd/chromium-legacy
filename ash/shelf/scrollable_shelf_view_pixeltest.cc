@@ -6,8 +6,8 @@
 #include "ash/shelf/shelf_menu_model_adapter.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/test/scrollable_shelf_test_base.h"
-#include "ash/test/ash_pixel_diff_test_helper.h"
-#include "ash/test/ash_pixel_test_init_params.h"
+#include "ash/test/pixel/ash_pixel_differ.h"
+#include "ash/test/pixel/ash_pixel_test_init_params.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
 
@@ -26,14 +26,12 @@ class ScrollableShelfViewPixelRTLTest
     : public ScrollableShelfViewPixelRTLTestBase,
       public testing::WithParamInterface<bool /*is_rtl=*/> {
  public:
-  void SetUp() override {
+  // ScrollableShelfViewPixelRTLTestBase:
+  absl::optional<pixel_test::InitParams> CreatePixelTestInitParams()
+      const override {
     pixel_test::InitParams init_params;
-    if (GetParam())
-      init_params.under_rtl = true;
-    PrepareForPixelDiffTest(/*screenshot_prefix=*/"scrollable_shelf_view_pixel",
-                            init_params);
-
-    ScrollableShelfViewPixelRTLTestBase::SetUp();
+    init_params.under_rtl = GetParam();
+    return init_params;
   }
 };
 
@@ -42,20 +40,21 @@ INSTANTIATE_TEST_SUITE_P(RTL, ScrollableShelfViewPixelRTLTest, testing::Bool());
 // Verifies the scrollable shelf under overflow.
 TEST_P(ScrollableShelfViewPixelRTLTest, Basics) {
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      GetParam() ? "overflow_rtl" : "overflow",
-      GetPrimaryShelf()->GetWindow()));
+      "overflow.rev_0", GetPrimaryShelf()->GetWindow()));
 }
 
 class ScrollableShelfViewWithGuestModePixelTest
-    : public ScrollableShelfViewPixelRTLTestBase,
+    : public ScrollableShelfTestBase,
       public testing::WithParamInterface<bool /*use_guest_mode=*/> {
  public:
   // ScrollableShelfTestBase:
+  absl::optional<pixel_test::InitParams> CreatePixelTestInitParams()
+      const override {
+    return pixel_test::InitParams();
+  }
+
   void SetUp() override {
     set_start_session(false);
-    PrepareForPixelDiffTest(
-        /*screenshot_prefix=*/"scrollable_shelf_view_with_guest_mode_pixel",
-        pixel_test::InitParams());
 
     ScrollableShelfTestBase::SetUp();
     if (GetParam())
@@ -80,7 +79,7 @@ TEST_P(ScrollableShelfViewWithGuestModePixelTest, VerifyShelfContextMenu) {
 
   // Verify the shelf context menu and the shelf.
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      GetParam() ? "shelf_context_menu_in_guest_mode" : "shelf_context_menu",
+      "shelf_context_menu.rev_0",
       GetPrimaryShelf()
           ->shelf_widget()
           ->shelf_view_for_testing()

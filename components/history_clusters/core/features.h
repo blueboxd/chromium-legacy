@@ -23,6 +23,9 @@ BASE_DECLARE_FEATURE(kJourneys);
 // Enables labelling of Journeys in UI.
 BASE_DECLARE_FEATURE(kJourneysLabels);
 
+// Enables images for Journeys in UI.
+BASE_DECLARE_FEATURE(kJourneysImages);
+
 // Enables persisting and using persisted clusters.
 BASE_DECLARE_FEATURE(kPersistedClusters);
 
@@ -57,6 +60,12 @@ BASE_DECLARE_FEATURE(kHistoryClustersUseContinueOnShutdown);
 
 // Enables use of additional keyword filtering operations on clusters.
 BASE_DECLARE_FEATURE(kHistoryClustersKeywordFiltering);
+
+// Enables experimentation for how to dedupe visits in clusters.
+BASE_DECLARE_FEATURE(kHistoryClustersVisitDeduping);
+
+// Enables visits from other synced devices to be included in clusters.
+BASE_DECLARE_FEATURE(kJourneysIncludeSyncedVisits);
 
 // Order consistently with config.h.
 

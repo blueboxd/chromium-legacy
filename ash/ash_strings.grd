@@ -2,6 +2,15 @@
 
 <!--
 This file contains the strings for ash.
+
+Style notes:
+* Most strings are "Sentence case" with the first word capitalized and other
+  words not capitalized
+* Specific features may be capitalized (e.g. "Bluetooth", "Nearby Share") even
+  if they appear in the middle of a string
+* Most strings do not end in a period (e.g. "Show settings")
+* Multi-phrase strings that contain a period in the middle also have a period
+  at the end (e.g. "Show Bluetooth settings. Bluetooth is on.")
 -->
 
 <grit base_dir="." latest_public_release="0" current_release="1"
@@ -427,10 +436,10 @@ This file contains the strings for ash.
         <ph name="SECONDS">$1<ex>40</ex></ph> sec
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NEARBY_SHARE_SETTINGS_TOOLTIP" desc="Tooltip text for the status tray button that shows settings for the Nearby Share feature.">
-        Show Nearby Share settings.
+        Show Nearby Share settings
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NEARBY_SHARE_TOGGLE_TOOLTIP" desc="Tooltip text used for the Nearby Share status tray button, which toggles Nearby Share high visibility mode on/off.">
-        Toggle Nearby Share high visibility.
+        Toggle Nearby Share high visibility
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_BUTTON_LABEL" desc="The shorter label used for the button in the status tray to toggle the Night Light feature (which controls the color temperature of the screen) on or off. [CHAR_LIMIT=14]">
         Night Light
@@ -472,7 +481,7 @@ This file contains the strings for ash.
         Cast
       </message>
       <message name="IDS_ASH_STATUS_TRAY_CAST_TOOLTIP" desc="The tooltip text used for Cast button in system tray bubble.">
-        Show cast devices.
+        Show cast devices
       </message>
       <message name="IDS_ASH_STATUS_TRAY_CAST_NOTIFICATION_TITLE" desc="The notification title to tell the user we are casting to a cast device.">
         Casting to <ph name="RECEIVER_NAME">$1<ex>Living Room</ex></ph>
@@ -487,7 +496,7 @@ This file contains the strings for ash.
         Dark theme
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DARK_THEME_TOGGLE_TOOLTIP" desc="The tooltip text used for the button in the status tray to toggle the Dark theme feature on or off.">
-        Toggle Dark theme. <ph name="STATE_TEXT">$1<ex>Dark theme is on.</ex></ph>
+        Toggle Dark theme. <ph name="STATE_TEXT">$1<ex>Dark theme is on</ex></ph>.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DARK_THEME_ENABLED_STATE_TOOLTIP" desc="The tooltip text indicating the Dark theme feature is on.">
         Dark theme is on
@@ -578,10 +587,10 @@ This file contains the strings for ash.
         Bluetooth
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_TOGGLE_TOOLTIP" desc="The tooltip text in the button that toggles Blueooth enabled/disabled.">
-        Toggle Bluetooth. <ph name="STATE_TEXT">$1<ex>Connected to 2 devices</ex></ph>
+        Toggle Bluetooth. <ph name="STATE_TEXT">$1<ex>Connected to 2 devices</ex></ph>.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_SETTINGS_TOOLTIP" desc="The tooltip text in the button that shows Blueooth settings.">
-        Show Bluetooth settings. <ph name="STATE_TEXT">$1<ex>Connected to 2 devices</ex></ph>
+        Show Bluetooth settings. <ph name="STATE_TEXT">$1<ex>Connected to 2 devices</ex></ph>.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_ENABLED_TOOLTIP" desc="The tooltip text to notify that bluetooth is enabled.">
         Bluetooth is on
@@ -949,7 +958,7 @@ This file contains the strings for ash.
         Show keyboard settings
       </message>
       <message name="IDS_ASH_STATUS_TRAY_IME_TOOLTIP_WITH_NAME" desc="The tooltip text used for IME button in system tray bubble.">
-        Show keyboard settings. <ph name="KEYBOARD_NAME">$1<ex>US keyboard</ex></ph> is selected
+        Show keyboard settings. <ph name="KEYBOARD_NAME">$1<ex>US keyboard</ex></ph> is selected.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_IME" desc="The label used as the header in the IME popup. [CHAR_LIMIT=18]">
         Input methods
@@ -996,6 +1005,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SELECT_TO_SPEAK" desc="The label used in the accessibility menu of the system tray to toggle on/off the select-to-speak feature.">
         Select-to-speak
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SELECT_TO_SPEAK_INSTRUCTIONS" desc="The tooltip text used while hovering the Select-to-speak action button in the system tray, when Select-to-speak is activated, and ready for the user to select text.">
+        Highlight text on your screen
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SELECT_TO_SPEAK_STOP_INSTRUCTIONS" desc="The tooltip text used while hovering the Select-to-speak action button in the system tray, when Select-to-speak is speaking text, and can be stopped by clicking the button.">
+        Close Select-to-speak
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION" desc="The label used in the accessibility menu of the system tray to toggle on/off the speak to type feature.">
         Dictation
       </message>
@@ -1019,6 +1034,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_AUTOCLICK" desc="The label and title used in the accessibility menu of the system tray to toggle on/off automatic mouse clicks.">
         Automatic clicks
+      </message>
+      <message name="IDS_ASH_AUTOCLICK_MENU" desc="The name of the automatic clicks menu.">
+        Automatic clicks menu
       </message>
       <message name="IDS_ASH_AUTOCLICK_OPTION_LEFT_CLICK" desc="The tooltip text for a menu option for the automatic clicks menu that results in the next automatic click being a left-click.">
         Left click
@@ -1676,6 +1694,39 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STYLUS_TOOLS_CREATE_NOTE_ACTION" desc="Title of the capture screen action in the stylus tools (a pop-up panel next to the status tray). Clicking this opens up an application that the user can quickly jot a note down in.">
         Create note
       </message>
+      <!-- Modifiers -->
+      <message name="IDS_KSV_MODIFIER_CONTROL" desc="Name of [Ctrl] key. Shouldn't be translated in many languages.">
+        Ctrl
+      </message>
+      <message name="IDS_KSV_MODIFIER_ALT" desc="Name of [Alt] key. Shouldn't be translated in many languages.">
+        Alt
+      </message>
+      <message name="IDS_KSV_MODIFIER_SHIFT" desc="Name of [Shift] key. Shouldn't be translated in many languages.">
+        Shift
+      </message>
+      <message name="IDS_KSV_MODIFIER_SEARCH" desc="Name of [Search] key.">
+        Search
+      </message>
+      <message name="IDS_KSV_MODIFIER_LAUNCHER" desc="Name of [Launcher] key.">
+        Launcher
+      </message>
+
+      <!-- Keys with special label -->
+      <message name="IDS_KSV_KEY_ESCAPE" desc="Name of [Esc] key. Shouldn't be translated in many languages.">
+        Esc
+      </message>
+      <message name="IDS_KSV_KEY_SPACE" desc="Name of [Space] key.">
+        Space
+      </message>
+      <message name="IDS_KSV_KEY_OVERVIEW" desc="Name of the key on a Chromebook keyboard that triggers the overview mode.">
+        Overview mode key
+      </message>
+      <message name="IDS_KSV_KEY_FULLSCREEN" desc="Name of the key on a Chromebook keyboard that triggers the fullscreen.">
+        Fullscreen key
+      </message>
+      <message name="IDS_KSV_KEY_SNAPSHOT" desc="Name of the key on a Chromebook keyboard that triggers the capture mode.">
+        Capture mode key
+      </message>
       <message name="IDS_ASH_STYLUS_TOOLS_ENTER_CAPTURE_MODE_ACTION" desc="Title of the enter capture mode action in the stylus tools (a pop-up panel next to the status tray). This enters capture mode, which allows users to take screenshots and record video. Capture mode has an UI for users to modify what gets screenshotted or recorded.">
         Screen capture
       </message>
@@ -2069,6 +2120,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_DESKS_CLOSE_ALL_UNDONE_NOTIFICATION" desc="ChromeVox announcement that is read when the user presses the button to undo desk removal.">
         Desk and windows reopened
       </message>
+      <message name="IDS_ASH_DESKS_NAME_HIGHLIGHT_NOTIFICATION" desc="Alert spoken by screen readers when user tabs to the name view of a virtual desk.">
+        Press enter or search + space to select the text for editing.
+      </message>
 
       <!-- Status tray charging strings. -->
       <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE" desc="The title of a notification indicating that a low-current USB charger has been connected.">
@@ -2423,10 +2477,10 @@ Connect your device to power.
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_TOGGLE_TOOLTIP" desc="The tooltip text for the button that toggles network enabled/disabled state.">
-        Toggle network connection. <ph name="STATE_TEXT">$1<ex>Connected to public wifi</ex></ph>
+        Toggle network connection. <ph name="STATE_TEXT">$1<ex>Connected to public wifi</ex></ph>.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS_TOOLTIP" desc="The tooltip text for the button that shows network list.">
-        Show network list. <ph name="STATE_TEXT">$1<ex>Connected to public wifi</ex></ph>
+        Show network list. <ph name="STATE_TEXT">$1<ex>Connected to public wifi</ex></ph>.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_PROGRESS_ACCESSIBLE_NAME" desc="The accessible name for the progress bar shown in the network settings.">
         Scanning
@@ -2959,7 +3013,7 @@ Connect your device to power.
         IME menu button
       </message>
       <message name="IDS_ASH_SELECT_TO_SPEAK_TRAY_ACCESSIBLE_NAME" desc="The accessible text for the select-to-speak menu icon in the status tray.">
-        Select-to-Speak button
+        Select-to-speak button
       </message>
       <message name="IDS_ASH_AUTOCLICK_TRAY_ACCESSIBLE_NAME" desc="The accessible text for the automatic clicks menu icon in the status tray.">
         Automatic clicks button
@@ -3482,6 +3536,9 @@ Connect your device to power.
       </message>
       <message name="IDS_ASH_LOGIN_DISPLAY_PASSWORD_BUTTON_ACCESSIBLE_NAME_SHOW" desc="Text to be spoken when the focus is set to the display password button (in Show state) on login screen.">
         Show password
+      </message>
+      <message name="IDS_ASH_LOGIN_CAPS_LOCK_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the Caps Lock button on login screen.">
+        Caps Lock is on
       </message>
       <message name="IDS_ASH_LOGIN_DISPLAY_PASSWORD_BUTTON_ACCESSIBLE_NAME_HIDE" desc="Text to be spoken when the focus is set to the display password button (in Hide state) on login screen.">
         Hide password
@@ -4068,6 +4125,10 @@ Connect your device to power.
         Date and time settings
       </message>
 
+      <message name="IDS_ASH_CALENDAR_DISABLED_BY_ADMIN" desc="The label used in the managed button in the calendar view system settings.">
+        Disabled by admin
+      </message>
+
       <message name="IDS_ASH_CLOSE_BUTTON_ACCESSIBLE_DESCRIPTION" desc="The accessible label used in the close button in the calendar event list view.">
         Close event panel
       </message>
@@ -4105,6 +4166,18 @@ Connect your device to power.
 
       <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_TOOL_TIP" desc="The tool tip label of a calendar event entry.">
         <ph name="event_summary">$1<ex>Lunch break</ex></ph>, <ph name="time_range">$2<ex>1:00 - 1:30 PM</ex></ph>
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_DAYS_ELAPSED" desc="In the event list view, used to display '(Day n / n)'.">
+        (Day <ph name="current_day">$1<ex>1</ex></ph>/<ph name="total_days">$2<ex>5</ex></ph>)
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_STARTS_AT_TIME" desc="In the event list view, the start of multi-day events will show 'Starts at hh:nn (Day n / n)'.">
+        Starts at <ph name="start_time">$1<ex>9 AM</ex></ph> <ph name="days_elapsed">$2<ex>(Day 1/2)</ex></ph>
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_ENDS_AT_TIME" desc="In the event list view, the end of multi-day events will show 'Ends at hh:nn (Day n / n)'.">
+        Ends at <ph name="end_time">$1<ex>10 AM</ex></ph> <ph name="days_elapsed">$2<ex>(Day 2/2)</ex></ph>
       </message>
 
       <message name="IDS_ASH_CALENDAR_NO_EVENT_BUTTON_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar `Open in Google Calendar` button.">
@@ -4395,6 +4468,17 @@ Here are some things you can try to get started.
         <ph name="SCREEN_SHARE_STATUS">$2<ex>Camera in use</ex></ph>
       </message>
 
+      <!-- Strings for Privacy Hub camera and microphone switch notifications -->
+      <message name="IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_TITLE" desc="Title for a notification shown to the users when an app tries to use the microphone and camera while both are disabled.">
+        Microphone and camera accesses are off on this device
+      </message>
+      <message name="IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_MESSAGE" desc="Message for a notification shown to the users when an app tries to use the microphone and camera while both are disabled.">
+        Turn on the accesses to allow apps and webpages with the permission to use the microphone(s) and camera(s) on this device.
+      </message>
+      <message name="IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_BUTTON" desc="Label for an action button that enables microphone and camera.">
+        Turn on both accesses
+      </message>
+
       <!-- Strings for camera privacy hub switch notifications -->
       <message name="IDS_PRIVACY_HUB_WANT_TO_TURN_OFF_CAMERA_NOTIFICATION_TITLE" desc="Title for a notification shown to the users when they disable camera via the hardware switch.">
         Do you want to turn off the camera access on this device?
@@ -4417,16 +4501,16 @@ Here are some things you can try to get started.
 
       <!-- Strings for microphone mute switch notification -->
       <message name="IDS_MICROPHONE_MUTED_NOTIFICATION_TITLE" desc="Title for a notification shown to the users when an app tries to use the microphone while the microphone is muted.i Similar to IDS_MICROPHONE_MUTED_NOTIFICATION_TITLE_WITH_APP_NAME, except this message contains a generic app name string. Used when the name of the app that's using the microphone cannot be determined.">
-          An app wants to use the microphone
-      </message>
-      <message name="IDS_MICROPHONE_MUTED_NOTIFICATION_TITLE_WITH_APP_NAME" desc="Title for a notification shown to the users when an app tries to use the microphone while the microphone is muted. Similar to IDS_MICROPHONE_MUTED_NOTIFICATION_TITLE, except this message has a placeholder for the app name.">
-        <ph name="APP_NAME">$1<ex>Parallels Desktop</ex></ph> wants to use the microphone
+          Turn on microphone access?
       </message>
       <message name="IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE" desc="Message for a notification shown to the users when an app tries to use the microphone while the microphone is muted.">
-        Your microphone is currently turned off
+        Allows microphone access for all apps and websites with the microphone permission
+      </message>
+      <message name="IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE_WITH_APP_NAME" desc="Message for a notification shown to the users when an app tries to use the microphone while the microphone is muted.">
+        Allows microphone access for <ph name="APP_NAME">$1<ex>Zoom</ex></ph> and all apps and websites with the microphone permission
       </message>
       <message name="IDS_MICROPHONE_MUTED_NOTIFICATION_ACTION_BUTTON" desc="Label for an action button in a notification shown to the users when an app tries to use the microphone while the microphone is muted. The button, when tapped unmutes the microphone.">
-        TURN ON MICROPHONE
+        Turn on microphone access
       </message>
       <message name="IDS_MICROPHONE_MUTE_SWITCH_ON_NOTIFICATION_MESSAGE" desc="Message for a notification shown to the users when an app tries to use the microphone while the microphone mute switch, which disables microphone input, is turned on.">
         Your microphone is off. Turn on your device’s microphone button.
@@ -4841,6 +4925,9 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_SAVE_TO_SELECT_FOLDER" desc="The label of the menu item button for selecting a folder to store the captured images and videos.">
         Select folder...
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_DEMO_TOOLS_SHOW_KEYS_AND_CLICKS" desc="The label of the menu item toggle button to show keyboard shortcut and clicks during video recording.">
+        Show keys and clicks
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_A11Y_TITLE" desc="The label of window hosting the screen capture toolbar that will be read by ChromeVox when prompted for title.">
         Screen capture, tools to take screenshots and screen recordings
@@ -5365,12 +5452,6 @@ New install
       </message>
       <message name="IDS_APP_LIST_LEARN_MORE" desc="Text of Learn more links.">
         Learn more
-      </message>
-      <message name="IDS_APP_LIST_MANAGE_SETTINGS" desc="Text of Manage settings links.">
-        Manage settings
-      </message>
-      <message name="IDS_APP_LIST_SUGGESTED_CONTENT_INFO" desc="Text shown in launcher to notify users about Suggested Content. Suggested Content includes app search recommendations and website recommendations which can show up in places such as launcher search and suggestion chips.">
-          ChromeOS shows suggestions for new content to explore. Sends statistics to improve quality only if you’ve chosen to share usage data. <ph name="MANAGE_SETTINGS">$1<ex>Manage settings</ex></ph>
       </message>
       <message name="IDS_APP_ACCESSIBILITY_APP_WITH_STAR_RATING_ARC" desc="Accessibility text for a Play Store app with star rating.">
         <ph name="APP_NAME_TYPE">$1<ex>Snapchat, Playstore App</ex></ph>, Star rating <ph name="RATING_SCORE">$2<ex>5.0</ex></ph>

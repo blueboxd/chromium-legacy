@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/files/file_util.h"
-#include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
+#include "chrome/browser/ash/fileapi/file_system_backend_delegate.h"
 
 namespace storage {
 class AsyncFileUtil;
@@ -24,9 +24,9 @@ class WatcherManager;
 namespace ash {
 namespace file_system_provider {
 
-// Delegate implementation of the some methods in chromeos::FileSystemBackend
+// Delegate implementation of the some methods in FileSystemBackend
 // for provided file systems.
-class BackendDelegate : public chromeos::FileSystemBackendDelegate {
+class BackendDelegate : public FileSystemBackendDelegate {
  public:
   BackendDelegate();
 

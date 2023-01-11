@@ -7,8 +7,13 @@ example_value: false
 features:
   dynamic_refresh: true
   per_profile: true
+items:
+- caption: Allow locking the screen
+  value: true
+- caption: Do not allow locking the screen
+  value: false
 owners:
-- file://components/policy/resources/OWNERS
+- file://components/policy/OWNERS
 - emaxx@chromium.org
 schema:
   type: boolean

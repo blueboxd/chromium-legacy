@@ -5,14 +5,18 @@
 /**
  * @fileoverview Common page for reading and writing preferences from
  * the background context (background page or options page).
- *
  */
+import {AbstractTts} from '../common/abstract_tts.js';
 import {BridgeConstants} from '../common/bridge_constants.js';
 import {BridgeHelper} from '../common/bridge_helper.js';
+import {Msgs} from '../common/msgs.js';
 
+import {ChromeVox} from './chromevox.js';
 import {ConsoleTts} from './console_tts.js';
 import {EventStreamLogger} from './logging/event_stream_logger.js';
 import {LogUrlWatcher} from './logging/log_url_watcher.js';
+import {Output} from './output/output.js';
+import {TtsBackground} from './tts_background.js';
 
 /**
  * This object has default values of preferences and contains the common
@@ -21,16 +25,6 @@ import {LogUrlWatcher} from './logging/log_url_watcher.js';
  */
 export class ChromeVoxPrefs {
   constructor() {
-    let lastRunVersion = localStorage['lastRunVersion'];
-    if (!lastRunVersion) {
-      lastRunVersion = '1.16.0';
-    }
-    let loadExistingSettings = true;
-    // TODO(dtseng): Logic below needs clarification. Perhaps needs a
-    // 'lastIncompatibleVersion' member.
-    if (lastRunVersion === '1.16.0') {
-      loadExistingSettings = false;
-    }
     localStorage['lastRunVersion'] = chrome.runtime.getManifest().version;
 
     // Clear per session preferences.
@@ -39,22 +33,35 @@ export class ChromeVoxPrefs {
 
     // Default per session sticky to off.
     localStorage['sticky'] = false;
-
-    this.init();
   }
 
   /**
    * Merge the default values of all known prefs with what's found in
    * localStorage.
    */
-  init() {
+  static init() {
+    ChromeVoxPrefs.instance = new ChromeVoxPrefs();
+
     // Set the default value of any pref that isn't already in localStorage.
     for (const pref in ChromeVoxPrefs.DEFAULT_PREFS) {
       if (localStorage[pref] === undefined) {
         localStorage[pref] = ChromeVoxPrefs.DEFAULT_PREFS[pref];
       }
     }
-    this.enableOrDisableLogUrlWatcher_();
+    ChromeVoxPrefs.instance.enableOrDisableLogUrlWatcher_();
+
+    BridgeHelper.registerHandler(
+        BridgeConstants.ChromeVoxPrefs.TARGET,
+        BridgeConstants.ChromeVoxPrefs.Action.GET_PREFS,
+        () => ChromeVoxPrefs.instance.getPrefs());
+    BridgeHelper.registerHandler(
+        BridgeConstants.ChromeVoxPrefs.TARGET,
+        BridgeConstants.ChromeVoxPrefs.Action.SET_LOGGING_PREFS,
+        (key, value) => ChromeVoxPrefs.instance.setLoggingPrefs(key, value));
+    BridgeHelper.registerHandler(
+        BridgeConstants.ChromeVoxPrefs.TARGET,
+        BridgeConstants.ChromeVoxPrefs.Action.SET_PREF,
+        (key, value) => ChromeVoxPrefs.instance.setPref(key, value));
   }
 
   /**
@@ -90,11 +97,28 @@ export class ChromeVoxPrefs {
   setLoggingPrefs(key, value) {
     localStorage[key] = value;
     if (key === 'enableSpeechLogging') {
-      ConsoleTts.getInstance().setEnabled(value);
+      TtsBackground.console.setEnabled(value);
     } else if (key === 'enableEventStreamLogging') {
       EventStreamLogger.instance.notifyEventStreamFilterChangedAll(value);
     }
     this.enableOrDisableLogUrlWatcher_();
+  }
+
+  /**
+   * Sets the value of the sticky mode pref, as well as updating the listeners
+   * and announcing.
+   * @param {boolean} value
+   */
+  setAndAnnounceStickyPref(value) {
+    chrome.accessibilityPrivate.setKeyboardListener(true, value);
+    new Output()
+        .withInitialSpeechProperties(AbstractTts.PERSONALITY_ANNOTATION)
+        .withString(
+            value ? Msgs.getMsg('sticky_mode_enabled') :
+                    Msgs.getMsg('sticky_mode_disabled'))
+        .go();
+    this.setPref('sticky', value);
+    ChromeVox.isStickyPrefOn = value;
   }
 
   enableOrDisableLogUrlWatcher_() {
@@ -209,18 +233,5 @@ ChromeVoxPrefs.loggingPrefs = {
   EVENT: 'enableEventStreamLogging',
 };
 
-/** @type {!ChromeVoxPrefs} */
-ChromeVoxPrefs.instance = new ChromeVoxPrefs();
-
-BridgeHelper.registerHandler(
-    BridgeConstants.ChromeVoxPrefs.TARGET,
-    BridgeConstants.ChromeVoxPrefs.Action.GET_PREFS,
-    () => ChromeVoxPrefs.instance.getPrefs());
-BridgeHelper.registerHandler(
-    BridgeConstants.ChromeVoxPrefs.TARGET,
-    BridgeConstants.ChromeVoxPrefs.Action.SET_LOGGING_PREFS,
-    (key, value) => ChromeVoxPrefs.instance.setLoggingPrefs(key, value));
-BridgeHelper.registerHandler(
-    BridgeConstants.ChromeVoxPrefs.TARGET,
-    BridgeConstants.ChromeVoxPrefs.Action.SET_PREF,
-    (key, value) => ChromeVoxPrefs.instance.setPref(key, value));
+/** @type {ChromeVoxPrefs} */
+ChromeVoxPrefs.instance;

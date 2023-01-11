@@ -7,21 +7,16 @@
 #include <memory>
 
 #include "ash/public/cpp/desk_template.h"
-#include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/wm/desks/templates/saved_desk_animations.h"
 #include "ash/wm/desks/templates/saved_desk_item_view.h"
 #include "ash/wm/desks/templates/saved_desk_name_view.h"
-#include "ash/wm/desks/templates/saved_desk_presenter.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_session.h"
 #include "base/i18n/string_compare.h"
 #include "base/ranges/algorithm.h"
-#include "third_party/icu/source/common/unicode/uloc.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/aura/window.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -54,7 +49,9 @@ constexpr int kGridPaddingDp = 24;
 // when the grid was first shown.
 constexpr std::size_t kMaxTemplateCount = 6u;
 
-constexpr gfx::Transform kEndTransform;
+gfx::Transform GetEndTransform() {
+  return gfx::Transform();
+}
 
 // Scale for adding/deleting grid items.
 constexpr float kAddOrDeleteItemScale = 0.75f;
@@ -322,7 +319,7 @@ void SavedDeskGridView::AnimateGridItems(
           .Once()
           .Offset(kBoundsChangeAnimationDuration -
                   kTemplateViewsScaleAndFadeDuration)
-          .SetTransform(layer, kEndTransform)
+          .SetTransform(layer, GetEndTransform())
           .SetOpacity(layer, 1.f)
           .SetDuration(kTemplateViewsScaleAndFadeDuration);
       continue;

@@ -60,6 +60,20 @@ enum class PasswordNotesStateForUMA {
   kMaxValue = kSetOnlyInBackupButCorrupted,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PendingInvalidationStatus {
+  kAcknowledged = 0,
+  kLost = 1,
+  kInvalidationsOverflow = 2,
+  // kSameVersion = 3,
+  // Invalidation list already has another invalidation with the same version.
+  kSameKnownVersion = 4,
+  kSameUnknownVersion = 5,
+  kDataTypeNotConnected = 6,
+  kMaxValue = kDataTypeNotConnected,
+};
+
 // A smart cache for sync types to communicate with the sync thread.
 //
 // When the sync data type wants to talk to the sync server, it will
@@ -123,6 +137,8 @@ class ModelTypeWorker : public UpdateHandler,
       const sync_pb::SyncEntity& update_entity,
       UpdateResponseData* response_data);
 
+  static void LogPendingInvalidationStatus(PendingInvalidationStatus status);
+
   // Initializes the two relevant communication channels: ModelTypeWorker ->
   // ModelTypeProcessor (GetUpdates) and ModelTypeProcessor -> ModelTypeWorker
   // (Commit). Both channels are closed when the worker is destroyed. This is
@@ -161,6 +177,10 @@ class ModelTypeWorker : public UpdateHandler,
       const SyncEntityList& applicable_updates,
       StatusController* status) override;
   void ApplyUpdates(StatusController* status) override;
+  void RecordRemoteInvalidation(
+      std::unique_ptr<SyncInvalidation> incoming) override;
+  void CollectPendingInvalidations(sync_pb::GetUpdateTriggers* msg) override;
+  bool HasPendingInvalidations() const override;
 
   // CommitQueue implementation.
   void NudgeForCommit() override;
@@ -185,11 +205,28 @@ class ModelTypeWorker : public UpdateHandler,
 
   bool IsEncryptionEnabledForTest() const { return encryption_enabled_; }
 
+  static constexpr size_t kMaxPendingInvalidations = 10u;
+
  private:
   struct UnknownEncryptionKeyInfo {
     // Not increased if the cryptographer knows it's in a pending state
     // (cf. Cryptographer::CanEncrypt()).
     int get_updates_while_should_have_been_known = 0;
+  };
+  struct PendingInvalidation {
+    PendingInvalidation();
+    PendingInvalidation(const PendingInvalidation&) = delete;
+    PendingInvalidation& operator=(const PendingInvalidation&) = delete;
+    PendingInvalidation(PendingInvalidation&&);
+    PendingInvalidation& operator=(PendingInvalidation&&);
+    PendingInvalidation(std::unique_ptr<SyncInvalidation> invalidation,
+                        bool is_processed);
+    ~PendingInvalidation();
+
+    std::unique_ptr<SyncInvalidation> pending_invalidation;
+    // |is_processed| is true, if the invalidation included to GetUpdates
+    // trigger message.
+    bool is_processed = false;
   };
 
   // Sends |pending_updates_| and |model_type_state_| to the processor if there
@@ -263,6 +300,21 @@ class ModelTypeWorker : public UpdateHandler,
   // Removes elements of |unknown_encryption_keys_by_name_| that no longer fit
   // the definition of an unknown key, and returns their info.
   std::vector<UnknownEncryptionKeyInfo> RemoveKeysNoLongerUnknown();
+
+  // Sends copy of |pending_invalidations_| vector to |model_type_processor_|
+  // to store them in storage along |model_type_state_|.
+  void SendPendingInvalidationsToProcessor();
+
+  // Copies |pending_invalidations_| vector to |model_type_state_|.
+  void UpdateModelTypeStateInvalidations();
+
+  // The (up to kMaxPayloads) most recent invalidations received since the last
+  // successful sync cycle.
+  std::vector<PendingInvalidation> pending_invalidations_;
+
+  // Whether any invalidations were dropped due to overflow since the last
+  // GetUpdates cycle.
+  bool has_dropped_invalidation_ = false;
 
   // Returns whether |pending_updates_| contain any non-deletion update.
   bool HasNonDeletionUpdates() const;
@@ -382,7 +434,7 @@ class GetLocalChangesRequest
   friend class base::RefCountedThreadSafe<GetLocalChangesRequest>;
   ~GetLocalChangesRequest() override;
 
-  raw_ptr<CancelationSignal> cancelation_signal_;
+  raw_ptr<CancelationSignal, DanglingUntriaged> cancelation_signal_;
   base::WaitableEvent response_accepted_;
   CommitRequestDataList response_;
 };

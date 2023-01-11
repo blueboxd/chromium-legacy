@@ -34,6 +34,10 @@ bool EvictFileFromSystemCacheWithRetry(const FilePath& file);
 // success.
 bool DieFileDie(const FilePath& file, bool recurse);
 
+// Convenience wrapper for `base::GetTempDir()` that returns the temp dir as a
+// `base::FilePath`.
+FilePath GetTempDirForTesting();
+
 // Creates a a new unique directory and returns the generated path. The
 // directory will be automatically deleted when the test completes. Failure
 // upon creation or deletion will cause a test failure.
@@ -74,7 +78,8 @@ class FilePermissionRestorer {
 
  private:
   const FilePath path_;
-  raw_ptr<void> info_;  // The opaque stored permission information.
+  raw_ptr<void, DanglingUntriaged>
+      info_;       // The opaque stored permission information.
   size_t length_;  // The length of the stored permission information.
 };
 

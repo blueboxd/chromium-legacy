@@ -698,6 +698,7 @@ void SetKeysForCrashLogging(const GPUInfo& gpu_info) {
       base::StringPrintf("0x%04x", active_gpu.vendor_id));
   crash_keys::gpu_device_id.Set(
       base::StringPrintf("0x%04x", active_gpu.device_id));
+  crash_keys::gpu_count.Set(base::StringPrintf("%d", gpu_info.GpuCount()));
 #endif  // !BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(IS_WIN)
   crash_keys::gpu_sub_sys_id.Set(
@@ -906,6 +907,8 @@ IntelGpuSeriesType GetIntelGpuSeriesType(uint32_t vendor_id,
       case 0x4F00:
       case 0x5600:
         return IntelGpuSeriesType::kAlchemist;
+      case 0xa700:
+        return IntelGpuSeriesType::kRaptorlake;
       default:
         break;
     }
@@ -951,6 +954,7 @@ std::string GetIntelGpuGeneration(uint32_t vendor_id, uint32_t device_id) {
       case IntelGpuSeriesType::kDG1:
       case IntelGpuSeriesType::kAlderlake:
       case IntelGpuSeriesType::kAlchemist:
+      case IntelGpuSeriesType::kRaptorlake:
         return "12";
       default:
         break;

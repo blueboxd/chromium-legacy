@@ -15,15 +15,20 @@ using OutlinePainterTest = RenderingTest;
 
 TEST_F(OutlinePainterTest, FocusRingOutset) {
   auto initial_style = ComputedStyle::CreateInitialStyleSingleton();
-  auto style = ComputedStyle::Clone(*initial_style);
-  style->SetOutlineStyle(EBorderStyle::kSolid);
-  style->SetOutlineStyleIsAuto(true);
+  ComputedStyleBuilder builder(*initial_style);
+  builder.SetOutlineStyle(EBorderStyle::kSolid);
+  builder.SetOutlineStyleIsAuto(true);
+  auto style = builder.TakeStyle();
   LayoutObject::OutlineInfo info =
       LayoutObject::OutlineInfo::GetFromStyle(*style);
   EXPECT_EQ(2, OutlinePainter::OutlineOutsetExtent(*style, info));
-  style->SetEffectiveZoom(4.75);
+  builder = ComputedStyleBuilder(*style);
+  builder.SetEffectiveZoom(4.75);
+  style = builder.TakeStyle();
   EXPECT_EQ(10, OutlinePainter::OutlineOutsetExtent(*style, info));
-  style->SetEffectiveZoom(10);
+  builder = ComputedStyleBuilder(*style);
+  builder.SetEffectiveZoom(10);
+  style = builder.TakeStyle();
   EXPECT_EQ(20, OutlinePainter::OutlineOutsetExtent(*style, info));
 }
 

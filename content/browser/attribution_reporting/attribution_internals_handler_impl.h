@@ -9,6 +9,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
+#include "components/attribution_reporting/source_registration_error.mojom-forward.h"
 #include "content/browser/attribution_reporting/attribution_internals.mojom.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
@@ -75,11 +76,13 @@ class AttributionInternalsHandlerImpl
   void OnSourcesChanged() override;
   void OnReportsChanged(AttributionReport::Type report_type) override;
   void OnSourceHandled(const StorableSource& source,
+                       absl::optional<uint64_t> cleared_debug_key,
                        StorableSource::Result result) override;
   void OnReportSent(const AttributionReport& report,
                     bool is_debug_report,
                     const SendResult& info) override;
   void OnTriggerHandled(const AttributionTrigger& trigger,
+                        absl::optional<uint64_t> cleared_debug_key,
                         const CreateReportResult& result) override;
   void OnFailedSourceRegistration(
       const std::string& header_value,

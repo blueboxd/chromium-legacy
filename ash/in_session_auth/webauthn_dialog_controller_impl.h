@@ -51,6 +51,10 @@ class WebAuthNDialogControllerImpl : public WebAuthNDialogController {
 
  private:
   bool IsFingerprintAvailable(const AccountId& account_id);
+  void CheckAuthFactorAvailability(const AccountId& account_id,
+                                   const std::string& origin_name,
+                                   uint32_t auth_methods,
+                                   aura::Window* source_window);
   void OnStartFingerprintAuthSession(AccountId account_id,
                                      uint32_t auth_methods,
                                      aura::Window* source_window,
@@ -68,6 +72,9 @@ class WebAuthNDialogControllerImpl : public WebAuthNDialogController {
       base::OnceCallback<void(bool, FingerprintState)> views_callback,
       bool success,
       FingerprintState fingerprint_state);
+
+  // Process final cleanup tasks.
+  void ProcessFinalCleanups();
 
   // Called when auth succeeds to close the dialog and report success.
   void OnAuthSuccess();

@@ -6544,8 +6544,7 @@ TEST_F(RenderTextTest, HarfBuzz_Clusters) {
   run.shape.glyph_to_char.resize(4);
 
   for (size_t i = 0; i < std::size(cases); ++i) {
-    std::copy(cases[i].glyph_to_char, cases[i].glyph_to_char + 4,
-              run.shape.glyph_to_char.begin());
+    base::ranges::copy(cases[i].glyph_to_char, run.shape.glyph_to_char.begin());
     run.font_params.is_rtl = cases[i].is_rtl;
 
     for (size_t j = 0; j < 4; ++j) {
@@ -6642,8 +6641,7 @@ TEST_F(RenderTextTest, HarfBuzz_SubglyphGraphemePartition) {
   render_text->SetText(u"abcd");
 
   for (size_t i = 0; i < std::size(cases); ++i) {
-    std::copy(cases[i].glyph_to_char, cases[i].glyph_to_char + 2,
-              run.shape.glyph_to_char.begin());
+    base::ranges::copy(cases[i].glyph_to_char, run.shape.glyph_to_char.begin());
     run.font_params.is_rtl = cases[i].is_rtl;
     for (int j = 0; j < 2; ++j)
       run.shape.positions[j].set(j * 10, 0);

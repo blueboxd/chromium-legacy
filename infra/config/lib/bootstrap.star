@@ -122,11 +122,13 @@ def _bootstrap_properties(ctx):
         fail("There is no buildbucket configuration file to reformat properties")
 
     for bucket in cfg.buckets:
+        if not proto.has(bucket, "swarming"):
+            continue
         bucket_name = bucket.name
         for builder in bucket.swarming.builders:
             builder_name = builder.name
             bootstrap_node = _BOOTSTRAP.get(bucket_name, builder_name)
-            if not bootstrap_node:
+            if not bootstrap_node or bootstrap_node.props.bootstrap == False:
                 continue
             executable = bootstrap_node.props.executable
             recipe_bootstrappability_node = _RECIPE_BOOTSTRAPPABILITY.get(executable)

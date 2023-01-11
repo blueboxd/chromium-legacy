@@ -254,9 +254,7 @@ TEST_F(FuzzyTokenizedStringMatchTest, BenchmarkCompleteNonMatchMultiToken) {
     const double relevance = CalculateRelevance(query, text);
     VLOG(1) << FormatRelevanceResult(query, text, relevance,
                                      /*query_first*/ false);
-    // TODO(crbug.com/1336160): Expect score is zero. Currently, the
-    // presence of whitespace in both text and query causes
-    // inappropriately high relevance scoring.
+    EXPECT_NEAR(relevance, kCompleteMismatchScore, kEps);
   }
 }
 
@@ -1366,9 +1364,8 @@ TEST_F(FuzzyTokenizedStringMatchTest, PrefixMatcherTest) {
   {
     std::u16string query(u"coc");
     std::u16string text(u"Clash of Clan");
-    EXPECT_NEAR(FuzzyTokenizedStringMatch::PrefixMatcher(
-                    TokenizedString(query), TokenizedString(text),
-                    /* use_acronym_matcher = */ true),
+    EXPECT_NEAR(FuzzyTokenizedStringMatch::AcronymMatcher(
+                    TokenizedString(query), TokenizedString(text)),
                 0.84, 0.01);
   }
   // TODO(crbug.com/1336160): Consider allowing acronym matching for query with
@@ -1379,9 +1376,8 @@ TEST_F(FuzzyTokenizedStringMatchTest, PrefixMatcherTest) {
   {
     std::u16string query(u"c o c");
     std::u16string text(u"Clash of Clan");
-    EXPECT_EQ(FuzzyTokenizedStringMatch::PrefixMatcher(
-                  TokenizedString(query), TokenizedString(text),
-                  /* use_acronym_matcher = */ true),
+    EXPECT_EQ(FuzzyTokenizedStringMatch::AcronymMatcher(TokenizedString(query),
+                                                        TokenizedString(text)),
               0.0);
   }
   {

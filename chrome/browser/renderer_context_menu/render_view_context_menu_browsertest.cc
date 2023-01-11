@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/pdf/pdf_frame_util.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -322,7 +324,7 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     std::string response_file_extension;
     std::vector<lens::mojom::LatencyLogPtr> response_log_data;
     chrome_render_frame->RequestImageForContextNode(
-        0, request_size, request_image_format,
+        0, request_size, request_image_format, chrome::mojom::kDefaultQuality,
         base::BindOnce(callback, &response_image_data, &response_original_size,
                        &response_file_extension, &response_log_data,
                        run_loop.QuitClosure()));
@@ -485,9 +487,11 @@ class PdfPluginContextMenuBrowserTest : public InProcessBrowserTest {
   content::RenderFrameHost* extension_frame() { return extension_frame_; }
 
  private:
-  raw_ptr<content::RenderFrameHost> extension_frame_ = nullptr;
+  raw_ptr<content::RenderFrameHost, DanglingUntriaged> extension_frame_ =
+      nullptr;
   guest_view::TestGuestViewManagerFactory factory_;
-  raw_ptr<guest_view::TestGuestViewManager> test_guest_view_manager_;
+  raw_ptr<guest_view::TestGuestViewManager, DanglingUntriaged>
+      test_guest_view_manager_;
 };
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
@@ -1818,7 +1822,7 @@ class SearchByRegionBrowserBaseTest : public InProcessBrowserTest {
     EXPECT_THAT(content,
                 testing::MatchesRegex(
                     expected_content.substr(0, query_start_pos) +
-                    ".*ep=crs&re=dcsp&s=csp&st=\\d+&sideimagesearch=1"));
+                    ".*ep=crs&re=dcsp&s=csp&st=\\d+&lm.+=&sideimagesearch=1"));
     if (quit_closure_)
       quit_closure_.Run();
   }
@@ -2124,7 +2128,7 @@ IN_PROC_BROWSER_TEST_F(SearchByRegionWithUnifiedSidePanelBrowserTest,
   // Match the query parameters, without the value of start_time.
   EXPECT_THAT(new_tab_content, testing::MatchesRegex(
                                    expected_content.substr(0, query_start_pos) +
-                                   ".*ep=crs&re=df&s=&st=\\d+"));
+                                   ".*ep=crs&re=df&s=&st=\\d+&lm.+="));
 }
 
 IN_PROC_BROWSER_TEST_F(SearchByRegionWithUnifiedSidePanelBrowserTest,
@@ -2317,6 +2321,7 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
   bool response_received = false;
   chrome_render_frame->RequestImageForContextNode(
       0, gfx::Size(2048, 2048), chrome::mojom::ImageFormat::JPEG,
+      chrome::mojom::kDefaultQuality,
       base::BindOnce(callback, &response_received, run_loop.QuitClosure()));
   run_loop.Run();
 
@@ -2488,14 +2493,17 @@ class PdfOcrContextMenuBrowserTest : public PdfPluginContextMenuBrowserTest,
                                      public ::testing::WithParamInterface<int> {
  public:
   PdfOcrContextMenuBrowserTest() {
-    if (IsPdfOcrEnabled())
+    if (IsPdfOcrEnabled()) {
       scoped_feature_list_.InitAndEnableFeature(features::kPdfOcr);
-    else
+    } else {
       scoped_feature_list_.InitAndDisableFeature(features::kPdfOcr);
+    }
     accessibility_state_utils::OverrideIsScreenReaderEnabledForTesting(
         IsScreenReaderEnabled());
-    screen_ai::ScreenAIInstallState::GetInstance()->SetComponentReadyForTesting(
-        IsComponentReady());
+    if (IsComponentReady()) {
+      screen_ai::ScreenAIInstallState::GetInstance()
+          ->set_component_ready_for_testing();
+    }
   }
 
   PdfOcrContextMenuBrowserTest(const PdfOcrContextMenuBrowserTest&) = delete;
@@ -2518,7 +2526,9 @@ class PdfOcrContextMenuBrowserTest : public PdfPluginContextMenuBrowserTest,
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_P(PdfOcrContextMenuBrowserTest, PdfOcr) {
+// TODO(crbug.com/1278249): Re-enable this test once a mock OCR Service has been
+// created.
+IN_PROC_BROWSER_TEST_P(PdfOcrContextMenuBrowserTest, DISABLED_PdfOcr) {
   std::unique_ptr<TestRenderViewContextMenu> menu = SetupAndCreateMenu();
   ASSERT_EQ(menu->IsItemPresent(IDC_CONTENT_CONTEXT_RUN_PDF_OCR),
             IsPdfOcrEnabled() && IsScreenReaderEnabled() && IsComponentReady());
@@ -2528,7 +2538,8 @@ INSTANTIATE_TEST_SUITE_P(All,
                          PdfOcrContextMenuBrowserTest,
                          ::testing::Range(0, 8));
 
-#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE) && (BUILDFLAG(IS_LINUX) ||
+        // BUILDFLAG(IS_MAC))
 
 #endif  // BUILDFLAG(ENABLE_PDF)
 

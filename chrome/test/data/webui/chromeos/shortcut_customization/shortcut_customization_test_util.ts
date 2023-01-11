@@ -4,32 +4,34 @@
 
 import {AcceleratorInfo, AcceleratorState, AcceleratorType} from 'chrome://shortcut-customization/js/shortcut_types.js';
 
-export function createDefaultAccelerator(
+export function createDefaultAcceleratorInfo(
     modifier: number, keycode: number, keyDisplay: string,
     locked = false): AcceleratorInfo {
   return {
     accelerator: {
       modifiers: modifier,
-      key: keycode,
-      keyDisplay: keyDisplay,
+      keyCode: keycode,
     },
-    type: AcceleratorType.DEFAULT,
-    state: AcceleratorState.ENABLED,
+    hasKeyEvent: true,
+    keyDisplay: keyDisplay,
     locked: locked,
+    state: AcceleratorState.kEnabled,
+    type: AcceleratorType.kDefault,
   };
 }
 
-export function createUserAccelerator(
+export function createUserAcceleratorInfo(
     modifier: number, keycode: number, keyDisplay: string,
     locked = false): AcceleratorInfo {
   return {
     accelerator: {
       modifiers: modifier,
-      key: keycode,
-      keyDisplay: keyDisplay,
+      keyCode: keycode,
     },
-    type: AcceleratorType.USER_DEFINED,
-    state: AcceleratorState.ENABLED,
+    hasKeyEvent: true,
+    keyDisplay: keyDisplay,
     locked: locked,
+    state: AcceleratorState.kEnabled,
+    type: AcceleratorType.kUser,
   };
 }

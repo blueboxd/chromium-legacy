@@ -166,22 +166,7 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
   g_end_of_task_runner = new EndOfTaskRunner;
   Thread::Current()->AddTaskObserver(g_end_of_task_runner);
 
-#if BUILDFLAG(IS_ANDROID)
-  // Initialize CrashMemoryMetricsReporterImpl in order to assure that memory
-  // allocation does not happen in OnOOMCallback.
-  CrashMemoryMetricsReporterImpl::Instance();
-#endif
-
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || \
-    BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-  // Initialize UserLevelMemoryPressureSignalGenerator so it starts monitoring.
-  if (UserLevelMemoryPressureSignalGenerator::Enabled())
-    UserLevelMemoryPressureSignalGenerator::Instance();
-
-  // Start reporting the highest private memory footprint after the first
-  // navigation.
-  HighestPmfReporter::Instance();
-#endif
+  GetBlinkInitializer().RegisterMemoryWatchers();
 
   // Initialize performance manager.
   RendererResourceCoordinatorImpl::MaybeInitialize();
@@ -218,24 +203,21 @@ void SetIsCrossOriginIsolated(bool value) {
 }
 
 // Function defined in third_party/blink/public/web/blink.h.
-void SetIsIsolatedApplication(bool value) {
-  Agent::SetIsIsolatedApplication(value);
+void SetIsIsolatedContext(bool value) {
+  Agent::SetIsIsolatedContext(value);
 }
 
 void BlinkInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
   ModulesInitializer::RegisterInterfaces(binders);
-  Thread* main_thread = Thread::MainThread();
-  // GetSingleThreadTaskRunner() uses GetTaskRunner() internally.
-  // crbug.com/781664
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
-      main_thread->GetDeprecatedTaskRunner();
-  if (!main_thread_task_runner)
-    return;
+      Thread::MainThread()->GetTaskRunner(MainThreadTaskRunnerRestricted());
+  CHECK(main_thread_task_runner);
 
 #if BUILDFLAG(IS_ANDROID)
   binders.Add<mojom::blink::OomIntervention>(
       ConvertToBaseRepeatingCallback(
-          CrossThreadBindRepeating(&OomInterventionImpl::BindReceiver)),
+          CrossThreadBindRepeating(&OomInterventionImpl::BindReceiver,
+                                   WTF::RetainedRef(main_thread_task_runner))),
       main_thread_task_runner);
 
   binders.Add<mojom::blink::CrashMemoryMetricsReporter>(
@@ -265,6 +247,26 @@ void BlinkInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
       ConvertToBaseRepeatingCallback(
           CrossThreadBindRepeating(&V8DetailedMemoryReporterImpl::Bind)),
       main_thread_task_runner);
+}
+
+void BlinkInitializer::RegisterMemoryWatchers() {
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
+      Thread::MainThread()->GetTaskRunner(MainThreadTaskRunnerRestricted());
+#if BUILDFLAG(IS_ANDROID)
+  // Initialize CrashMemoryMetricsReporterImpl in order to assure that memory
+  // allocation does not happen in OnOOMCallback.
+  CrashMemoryMetricsReporterImpl::Instance();
+#endif
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || \
+    BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  // Initialize UserLevelMemoryPressureSignalGenerator so it starts monitoring.
+  UserLevelMemoryPressureSignalGenerator::Initialize(main_thread_task_runner);
+
+  // Start reporting the highest private memory footprint after the first
+  // navigation.
+  HighestPmfReporter::Initialize(main_thread_task_runner);
+#endif
 }
 
 void BlinkInitializer::InitLocalFrame(LocalFrame& frame) const {

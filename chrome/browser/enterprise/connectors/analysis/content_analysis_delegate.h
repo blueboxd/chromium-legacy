@@ -34,6 +34,29 @@ namespace enterprise_connectors {
 class ContentAnalysisDialog;
 class FilesRequestHandler;
 
+// A BinaryUploadService::Request implementation that gets the data to scan
+// from a string.  This class is public to allow testing.
+class StringAnalysisRequest
+    : public safe_browsing::BinaryUploadService::Request {
+ public:
+  StringAnalysisRequest(
+      CloudOrLocalAnalysisSettings settings,
+      std::string text,
+      safe_browsing::BinaryUploadService::ContentAnalysisCallback callback);
+  ~StringAnalysisRequest() override;
+
+  StringAnalysisRequest(const StringAnalysisRequest&) = delete;
+  StringAnalysisRequest& operator=(const StringAnalysisRequest&) = delete;
+
+  // safe_browsing::BinaryUploadService::Request implementation.
+  void GetRequestData(DataCallback callback) override;
+
+ private:
+  Data data_;
+  safe_browsing::BinaryUploadService::Result result_ =
+      safe_browsing::BinaryUploadService::Result::FILE_TOO_LARGE;
+};
+
 // A class that performs deep scans of data (for example malicious or sensitive
 // content checks) before allowing a page to access it.
 //
@@ -217,6 +240,7 @@ class ContentAnalysisDelegate : public ContentAnalysisDelegateBase {
 
   // Methods to either show the final result in the analysis dialog and to
   // cancel the dialog.  These methods are protected and virtual for testing.
+  // Returns false if the UI was not enabled to indicate no action was taken.
   virtual bool ShowFinalResultInDialog();
   virtual bool CancelDialog();
 

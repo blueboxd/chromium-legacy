@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
+#include "third_party/blink/renderer/core/frame/history_user_activation_state.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter_impl.h"
 #include "third_party/blink/renderer/core/html/closewatcher/close_watcher.h"
@@ -452,7 +453,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void ClearIsolatedWorldCSPForTesting(int32_t world_id);
 
   bool CrossOriginIsolatedCapability() const override;
-  bool IsolatedApplicationCapability() const override;
+  bool IsIsolatedContext() const override;
 
   // These delegate to the document_.
   ukm::UkmRecorder* UkmRecorder() override;
@@ -488,6 +489,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   CloseWatcher::WatcherStack* closewatcher_stack() {
     return closewatcher_stack_;
+  }
+
+  HistoryUserActivationState& history_user_activation_state() {
+    return history_user_activation_state_;
   }
 
   void IncrementNavigationId() { navigation_id_++; }
@@ -616,6 +621,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   Member<Fence> fence_;
 
   Member<CloseWatcher::WatcherStack> closewatcher_stack_;
+
+  HistoryUserActivationState history_user_activation_state_;
 
   // If set, this window is a Document Picture in Picture window.
   // https://github.com/steimelchrome/document-pip-explainer/blob/main/explainer.md

@@ -94,6 +94,7 @@ void InterestGroupAuctionReporter::RequestSellerWorklet(
   if (auction_worklet_manager_->RequestSellerWorklet(
           seller_info->auction_config->decision_logic_url,
           seller_info->auction_config->trusted_scoring_signals_url,
+          *seller_info->subresource_url_builder,
           seller_info->auction_config->seller_experiment_group_id,
           base::BindOnce(&InterestGroupAuctionReporter::OnSellerWorkletReceived,
                          base::Unretained(this), base::Unretained(seller_info),
@@ -190,35 +191,39 @@ void InterestGroupAuctionReporter::OnSellerReportResultComplete(
   }
 
   if (!seller_ad_beacon_map.empty()) {
+    bool has_bad_beacon_map = false;
     for (const auto& element : seller_ad_beacon_map) {
       if (!IsEventLevelReportingUrlValid(element.second)) {
         mojo::ReportBadMessage(base::StrCat(
             {"Invalid seller beacon URL for '", element.first, "'"}));
-        // TODO(mmenke): Call into other worklets, despite failure.
-        OnReportingComplete(
-            /*success=*/false);
-        return;
+        // No need to skip rest of work on failure - all fields are validated
+        // and consumed independently, and it's not worth the complexity to make
+        // sure everything is dropped when a field is invalid.
+        has_bad_beacon_map = true;
+        break;
       }
     }
-    if (seller_info == &top_level_seller_winning_bid_info_) {
-      ad_beacon_map_.metadata[blink::mojom::ReportingDestination::kSeller] =
-          seller_ad_beacon_map;
-    } else {
-      ad_beacon_map_
-          .metadata[blink::mojom::ReportingDestination::kComponentSeller] =
-          seller_ad_beacon_map;
+    if (!has_bad_beacon_map) {
+      if (seller_info == &top_level_seller_winning_bid_info_) {
+        ad_beacon_map_.metadata[blink::mojom::ReportingDestination::kSeller] =
+            seller_ad_beacon_map;
+      } else {
+        ad_beacon_map_
+            .metadata[blink::mojom::ReportingDestination::kComponentSeller] =
+            seller_ad_beacon_map;
+      }
     }
   }
 
   if (seller_report_url) {
     if (!IsEventLevelReportingUrlValid(*seller_report_url)) {
       mojo::ReportBadMessage("Invalid seller report URL");
-      // TODO(mmenke): Call into other worklets, despite failure.
-      OnReportingComplete(/*success=*/false);
-      return;
+      // No need to skip rest of work on failure - all fields are validated and
+      // consumed independently, and it's not worth the complexity to make sure
+      // everything is dropped when a field is invalid.
+    } else {
+      report_urls_.push_back(*seller_report_url);
     }
-
-    report_urls_.push_back(*seller_report_url);
   }
 
   errors_.insert(errors_.end(), errors.begin(), errors.end());
@@ -252,10 +257,9 @@ void InterestGroupAuctionReporter::RequestBidderWorklet(
   const blink::InterestGroup& interest_group =
       winning_bid_info_.storage_interest_group->interest_group;
 
-  const blink::AuctionConfig* auction_config =
-      GetBidderAuction().auction_config;
+  const SellerWinningBidInfo& bidder_auction = GetBidderAuction();
   absl::optional<uint16_t> experiment_group_id =
-      InterestGroupAuction::GetBuyerExperimentId(*auction_config,
+      InterestGroupAuction::GetBuyerExperimentId(*bidder_auction.auction_config,
                                                  interest_group.owner);
 
   // base::Unretained is safe to use for these callbacks because destroying
@@ -264,7 +268,8 @@ void InterestGroupAuctionReporter::RequestBidderWorklet(
   if (auction_worklet_manager_->RequestBidderWorklet(
           interest_group.bidding_url.value_or(GURL()),
           interest_group.bidding_wasm_helper_url,
-          interest_group.trusted_bidding_signals_url, experiment_group_id,
+          interest_group.trusted_bidding_signals_url,
+          *bidder_auction.subresource_url_builder, experiment_group_id,
           base::BindOnce(&InterestGroupAuctionReporter::OnBidderWorkletReceived,
                          base::Unretained(this), signals_for_winner),
           base::BindOnce(
@@ -347,40 +352,40 @@ void InterestGroupAuctionReporter::OnBidderReportWinComplete(
   }
 
   if (!bidder_ad_beacon_map.empty()) {
+    bool has_bad_beacon_map = false;
     for (const auto& element : bidder_ad_beacon_map) {
       if (!IsEventLevelReportingUrlValid(element.second)) {
         mojo::ReportBadMessage(base::StrCat(
             {"Invalid bidder beacon URL for '", element.first, "'"}));
-        OnReportingComplete(
-            /*success=*/false);
-        return;
+        has_bad_beacon_map = true;
+        break;
+        // No need to skip rest of work on failure - all fields are validated
+        // and consumed independently, and it's not worth the complexity to make
+        // sure everything is dropped when a field is invalid.
       }
     }
-    ad_beacon_map_.metadata[blink::mojom::ReportingDestination::kBuyer] =
-        bidder_ad_beacon_map;
+    if (!has_bad_beacon_map) {
+      ad_beacon_map_.metadata[blink::mojom::ReportingDestination::kBuyer] =
+          bidder_ad_beacon_map;
+    }
   }
 
   if (bidder_report_url) {
     if (!IsEventLevelReportingUrlValid(*bidder_report_url)) {
       mojo::ReportBadMessage("Invalid bidder report URL");
-      OnReportingComplete(/*success=*/false);
-      return;
+      // No need to skip rest of work on failure - all fields are validated and
+      // consumed independently, and it's not worth the complexity to make sure
+      // everything is dropped when a field is invalid.
+    } else {
+      report_urls_.push_back(*bidder_report_url);
     }
-
-    report_urls_.push_back(*bidder_report_url);
   }
 
-  OnReportingComplete(/*success=*/true, errors);
+  OnReportingComplete(errors);
 }
 
 void InterestGroupAuctionReporter::OnReportingComplete(
-    bool success,
     const std::vector<std::string>& errors) {
-  if (!success) {
-    private_aggregation_requests_.clear();
-    ad_beacon_map_ = ReportingMetadata();
-    report_urls_.clear();
-  }
   errors_.insert(errors_.end(), errors.begin(), errors.end());
   std::move(callback_).Run();
 }

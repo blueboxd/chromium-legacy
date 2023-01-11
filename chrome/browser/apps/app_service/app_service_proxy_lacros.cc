@@ -18,7 +18,9 @@
 #include "chrome/browser/apps/app_service/browser_app_instance_forwarder.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
+#include "chrome/browser/apps/app_service/launch_result_type.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/apps/app_service/metrics/website_metrics_service_lacros.h"
 #include "chrome/browser/apps/app_service/publishers/extension_apps.h"
 #include "chrome/browser/extensions/extension_keeplist_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
@@ -174,16 +176,6 @@ void AppServiceProxyLacros::LaunchAppWithFiles(
   ProxyLaunch(std::move(params));
 }
 
-void AppServiceProxyLacros::LaunchAppWithFiles(
-    const std::string& app_id,
-    int32_t event_flags,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::FilePathsPtr file_paths) {
-  LaunchAppWithFiles(app_id, event_flags,
-                     ConvertMojomLaunchSourceToLaunchSource(launch_source),
-                     ConvertMojomFilePathsToFilePaths(std::move(file_paths)));
-}
-
 void AppServiceProxyLacros::LaunchAppWithIntent(
     const std::string& app_id,
     int32_t event_flags,
@@ -217,71 +209,17 @@ void AppServiceProxyLacros::LaunchAppWithIntent(
   std::move(callback).Run(true);
 }
 
-void AppServiceProxyLacros::LaunchAppWithIntent(
-    const std::string& app_id,
-    int32_t event_flags,
-    apps::mojom::IntentPtr intent,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::WindowInfoPtr window_info,
-    apps::mojom::Publisher::LaunchAppWithIntentCallback callback) {
-  CHECK(intent);
-
-  if (!remote_crosapi_app_service_proxy_) {
-    std::move(callback).Run(/*success=*/false);
-    return;
-  }
-
-  if (crosapi_app_service_proxy_version_ <
-      int{crosapi::mojom::AppServiceProxy::MethodMinVersions::
-              kLaunchMinVersion}) {
-    LOG(WARNING) << "Ash AppServiceProxy version "
-                 << crosapi_app_service_proxy_version_
-                 << " does not support Launch().";
-    std::move(callback).Run(/*success=*/false);
-    return;
-  }
-
-  auto params = CreateCrosapiLaunchParamsWithEventFlags(
-      this, app_id, event_flags,
-      ConvertMojomLaunchSourceToLaunchSource(launch_source),
-      window_info ? window_info->display_id : display::kInvalidDisplayId);
-  params->intent =
-      apps_util::ConvertAppServiceToCrosapiIntent(intent, profile_);
-
-  ProxyLaunch(std::move(params));
-  std::move(callback).Run(/*success=*/true);
-}
-
 void AppServiceProxyLacros::LaunchAppWithUrl(const std::string& app_id,
                                              int32_t event_flags,
                                              GURL url,
                                              LaunchSource launch_source,
-                                             WindowInfoPtr window_info) {
+                                             WindowInfoPtr window_info,
+                                             LaunchCallback callback) {
   LaunchAppWithIntent(
       app_id, event_flags,
       std::make_unique<apps::Intent>(apps_util::kIntentActionView, url),
-      launch_source, std::move(window_info), base::DoNothing());
-}
-
-void AppServiceProxyLacros::LaunchAppWithUrlForBind(const std::string& app_id,
-                                                    int32_t event_flags,
-                                                    GURL url,
-                                                    LaunchSource launch_source,
-                                                    WindowInfoPtr window_info) {
-  LaunchAppWithIntent(
-      app_id, event_flags,
-      std::make_unique<apps::Intent>(apps_util::kIntentActionView, url),
-      launch_source, std::move(window_info), base::DoNothing());
-}
-
-void AppServiceProxyLacros::LaunchAppWithUrl(
-    const std::string& app_id,
-    int32_t event_flags,
-    GURL url,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::WindowInfoPtr window_info) {
-  LaunchAppWithIntent(app_id, event_flags, apps_util::CreateIntentFromUrl(url),
-                      launch_source, std::move(window_info), {});
+      launch_source, std::move(window_info),
+      base::BindOnce(ConvertBoolToLaunchResult).Then(std::move(callback)));
 }
 
 void AppServiceProxyLacros::LaunchAppWithParams(AppLaunchParams&& params,
@@ -310,12 +248,6 @@ void AppServiceProxyLacros::SetPermission(const std::string& app_id,
   NOTIMPLEMENTED();
 }
 
-void AppServiceProxyLacros::SetPermission(
-    const std::string& app_id,
-    apps::mojom::PermissionPtr permission) {
-  NOTIMPLEMENTED();
-}
-
 void AppServiceProxyLacros::Uninstall(const std::string& app_id,
                                       UninstallSource uninstall_source,
                                       gfx::NativeWindow parent_window) {
@@ -327,15 +259,6 @@ void AppServiceProxyLacros::Uninstall(const std::string& app_id,
   } else {
     NOTIMPLEMENTED();
   }
-}
-
-void AppServiceProxyLacros::Uninstall(
-    const std::string& app_id,
-    apps::mojom::UninstallSource uninstall_source,
-    gfx::NativeWindow parent_window) {
-  Uninstall(app_id,
-            ConvertMojomUninstallSourceToUninstallSource(uninstall_source),
-            parent_window);
 }
 
 void AppServiceProxyLacros::UninstallSilently(
@@ -356,13 +279,6 @@ void AppServiceProxyLacros::UninstallSilently(
 
   remote_crosapi_app_service_proxy_->UninstallSilently(app_id,
                                                        uninstall_source);
-}
-
-void AppServiceProxyLacros::UninstallSilently(
-    const std::string& app_id,
-    apps::mojom::UninstallSource uninstall_source) {
-  UninstallSilently(
-      app_id, ConvertMojomUninstallSourceToUninstallSource(uninstall_source));
 }
 
 void AppServiceProxyLacros::StopApp(const std::string& app_id) {
@@ -401,9 +317,9 @@ std::vector<std::string> AppServiceProxyLacros::GetAppIdsForUrl(
     const GURL& url,
     bool exclude_browsers,
     bool exclude_browser_tab_apps) {
-  auto intent_launch_info =
-      GetAppsForIntent(apps_util::CreateIntentFromUrl(url), exclude_browsers,
-                       exclude_browser_tab_apps);
+  auto intent_launch_info = GetAppsForIntent(
+      std::make_unique<apps::Intent>(apps_util::kIntentActionView, url),
+      exclude_browsers, exclude_browser_tab_apps);
   std::vector<std::string> app_ids;
   for (auto& entry : intent_launch_info) {
     app_ids.push_back(std::move(entry.app_id));
@@ -412,17 +328,11 @@ std::vector<std::string> AppServiceProxyLacros::GetAppIdsForUrl(
 }
 
 std::vector<IntentLaunchInfo> AppServiceProxyLacros::GetAppsForIntent(
-    const apps::mojom::IntentPtr& mojom_intent,
+    const IntentPtr& intent,
     bool exclude_browsers,
     bool exclude_browser_tab_apps) {
   std::vector<IntentLaunchInfo> intent_launch_info;
-  if (apps_util::OnlyShareToDrive(mojom_intent) ||
-      !apps_util::IsIntentValid(mojom_intent)) {
-    return intent_launch_info;
-  }
-
-  auto intent = ConvertMojomIntentToIntent(mojom_intent);
-  if (!intent) {
+  if (!intent || intent->OnlyShareToDrive() || !intent->IsIntentValid()) {
     return intent_launch_info;
   }
 
@@ -472,7 +382,7 @@ std::vector<IntentLaunchInfo> AppServiceProxyLacros::GetAppsForFiles(
     const std::vector<GURL>& filesystem_urls,
     const std::vector<std::string>& mime_types) {
   return GetAppsForIntent(
-      apps_util::CreateShareIntentFromFiles(filesystem_urls, mime_types));
+      apps_util::MakeShareIntent(filesystem_urls, mime_types));
 }
 
 void AppServiceProxyLacros::AddPreferredApp(const std::string& app_id,
@@ -539,6 +449,12 @@ void AppServiceProxyLacros::SetCrosapiAppServiceProxyForTesting(
   // Set the proxy version to the newest version for testing.
   crosapi_app_service_proxy_version_ =
       crosapi::mojom::AppServiceProxy::Version_;
+}
+
+void AppServiceProxyLacros::SetWebsiteMetricsServiceForTesting(
+    std::unique_ptr<apps::WebsiteMetricsServiceLacros>
+        website_metrics_service) {
+  metrics_service_ = std::move(website_metrics_service);
 }
 
 base::WeakPtr<AppServiceProxyLacros> AppServiceProxyLacros::GetWeakPtr() {
@@ -633,6 +549,13 @@ void AppServiceProxyLacros::Initialize() {
   content::URLDataSource::Add(profile_,
                               std::make_unique<apps::AppIconSource>(profile_));
 
+  if (!profile_->AsTestingProfile()) {
+    metrics_service_ = std::make_unique<WebsiteMetricsServiceLacros>(profile_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&AppServiceProxyLacros::InitWebsiteMetrics,
+                                  weak_ptr_factory_.GetWeakPtr()));
+  }
+
   auto* service = chromeos::LacrosService::Get();
 
   if (!service || !service->IsAvailable<crosapi::mojom::AppServiceProxy>()) {
@@ -659,6 +582,8 @@ void AppServiceProxyLacros::Initialize() {
 }
 
 void AppServiceProxyLacros::Shutdown() {
+  metrics_service_.reset();
+
   if (lacros_web_apps_controller_) {
     lacros_web_apps_controller_->Shutdown();
   }
@@ -702,6 +627,12 @@ void AppServiceProxyLacros::ProxyLaunch(
     return;
   }
   remote_crosapi_app_service_proxy_->Launch(std::move(params));
+}
+
+void AppServiceProxyLacros::InitWebsiteMetrics() {
+  if (metrics_service_) {
+    metrics_service_->Start();
+  }
 }
 
 }  // namespace apps

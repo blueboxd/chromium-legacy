@@ -7,15 +7,12 @@
 
 #include <stdint.h>
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-
-namespace absl {
-class uint128;
-}  // namespace absl
 
 namespace blink {
 
@@ -37,15 +34,13 @@ namespace attribution_response_parsing {
 //   "key_piece": "0x5"
 // }]
 //
-// Returns whether parsing was successful.
-CORE_EXPORT bool ParseAggregationKeys(
-    const JSONValue* json,
-    WTF::HashMap<String, absl::uint128>& aggregation_keys);
+// Returns `nullptr` on failure.
+CORE_EXPORT mojom::blink::AttributionAggregationKeysPtr ParseAggregationKeys(
+    const JSONValue* json);
 
-// Parses a debug key, which is a 64-bit unsigned integer encoded as a base-10
-// string. Returns `nullptr` on failure.
-CORE_EXPORT mojom::blink::AttributionDebugKeyPtr ParseDebugKey(
-    const String& string);
+// Parses a 64-bit unsigned integer encoded as a base-10
+// string. Returns `absl::nullopt` on failure.
+CORE_EXPORT absl::optional<uint64_t> ParseUint64(const String& string);
 
 CORE_EXPORT bool ParseSourceRegistrationHeader(
     const String& json_string,
@@ -76,9 +71,9 @@ CORE_EXPORT bool ParseEventTriggerData(
 // }
 //
 // Returns whether parsing was successful.
-CORE_EXPORT bool ParseAttributionFilterData(
+CORE_EXPORT bool ParseFilterValues(
     const JSONValue* json,
-    mojom::blink::AttributionFilterData& filter_data);
+    WTF::HashMap<String, WTF::Vector<String>>& filter_values);
 
 // Example JSON schema:
 // [{

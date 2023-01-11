@@ -49,7 +49,7 @@ namespace cc {
 
 enum class ActivelyScrollingType;
 class DebugRectHistory;
-class DocumentTransitionRequest;
+class ViewTransitionRequest;
 class DroppedFrameCounter;
 class HeadsUpDisplayLayerImpl;
 class ImageDecodeCache;
@@ -313,12 +313,15 @@ class CC_EXPORT LayerTreeImpl {
   gfx::PointF TotalMaxScrollOffset() const;
 
   void AddPresentationCallbacks(
-      std::vector<PresentationTimeCallbackBuffer::MainCallback> callbacks);
-  std::vector<PresentationTimeCallbackBuffer::MainCallback>
+      std::vector<PresentationTimeCallbackBuffer::Callback> callbacks);
+  std::vector<PresentationTimeCallbackBuffer::Callback>
   TakePresentationCallbacks();
-  bool has_presentation_callbacks() const {
-    return !presentation_callbacks_.empty();
-  }
+
+  void AddSuccessfulPresentationCallbacks(
+      std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback>
+          callbacks);
+  std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback>
+  TakeSuccessfulPresentationCallbacks();
 
   // The following viewport related property nodes will only ever be set on the
   // main-frame's renderer (i.e. OOPIF and UI compositors will not have these
@@ -791,16 +794,15 @@ class CC_EXPORT LayerTreeImpl {
     return host_impl_->viewport_mobile_optimized();
   }
 
-  // Add a document transition request from the embedder.
-  void AddDocumentTransitionRequest(
-      std::unique_ptr<DocumentTransitionRequest> request);
+  // Add a view transition request from the embedder.
+  void AddViewTransitionRequest(std::unique_ptr<ViewTransitionRequest> request);
 
-  // Returns all of the document transition requests stored so far, and empties
+  // Returns all of the view transition requests stored so far, and empties
   // the internal list.
-  std::vector<std::unique_ptr<DocumentTransitionRequest>>
-  TakeDocumentTransitionRequests();
+  std::vector<std::unique_ptr<ViewTransitionRequest>>
+  TakeViewTransitionRequests();
 
-  bool HasDocumentTransitionRequests() const;
+  bool HasViewTransitionRequests() const;
 
   void ClearVisualUpdateDurations();
   void SetVisualUpdateDurations(
@@ -960,8 +962,9 @@ class CC_EXPORT LayerTreeImpl {
   // Display transform hint to tag frames generated from this tree.
   gfx::OverlayTransform display_transform_hint_ = gfx::OVERLAY_TRANSFORM_NONE;
 
-  std::vector<PresentationTimeCallbackBuffer::MainCallback>
-      presentation_callbacks_;
+  std::vector<PresentationTimeCallbackBuffer::Callback> presentation_callbacks_;
+  std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback>
+      successful_presentation_callbacks_;
 
   // Event metrics that are reported back from the main thread.
   EventMetrics::List events_metrics_from_main_thread_;
@@ -969,8 +972,7 @@ class CC_EXPORT LayerTreeImpl {
   std::unique_ptr<gfx::DelegatedInkMetadata> delegated_ink_metadata_;
 
   // Document transition requests to be transferred to Viz.
-  std::vector<std::unique_ptr<DocumentTransitionRequest>>
-      document_transition_requests_;
+  std::vector<std::unique_ptr<ViewTransitionRequest>> view_transition_requests_;
 
   // The cumulative time spent performing visual updates for all Surfaces before
   // this one.

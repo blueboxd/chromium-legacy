@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_promo_signin_mediator.h"
 
 #import "base/cancelable_callback.h"
-#import "base/mac/foundation_util.h"
 #import "base/threading/thread_task_runner_handle.h"
 #import "components/prefs/pref_service.h"
 #import "components/signin/ios/browser/features.h"
@@ -15,9 +14,9 @@
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/system_identity.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_completion_info.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -263,10 +262,8 @@ constexpr NSInteger kSigninTimeoutDurationSeconds = 10;
         signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN) {
       self.userPrefService->SetInteger(prefs::kSigninWebSignDismissalCount, 0);
     }
-    ChromeIdentity* chromeIdentity =
-        base::mac::ObjCCastStrict<ChromeIdentity>(signingIdentity);
     [self.delegate consistencyPromoSigninMediatorSignInDone:self
-                                               withIdentity:chromeIdentity];
+                                               withIdentity:signingIdentity];
     return;
   }
   [self cancelSigninWithError:ConsistencyPromoSigninMediatorErrorGeneric];

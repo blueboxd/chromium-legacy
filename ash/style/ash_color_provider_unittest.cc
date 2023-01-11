@@ -267,7 +267,7 @@ INSTANTIATE_TEST_SUITE_P(
           SkColorSetRGB(0x20, 0x21, 0x24)},
          {ColorMode::kLight,
           ColorProvider::ContentLayerType::kIconColorSecondary,
-          SkColorSetRGB(0x9A, 0xA0, 0xA6)},
+          SkColorSetRGB(0x5F, 0x63, 0x68)},
          {ColorMode::kLight, ColorProvider::ContentLayerType::kIconColorAlert,
           SkColorSetRGB(0xD9, 0x30, 0x25)},
          {ColorMode::kLight, ColorProvider::ContentLayerType::kIconColorWarning,
@@ -308,9 +308,6 @@ INSTANTIATE_TEST_SUITE_P(
          {ColorMode::kLight,
           ColorProvider::ContentLayerType::kAppStateIndicatorColorInactive,
           SkColorSetARGB(0x60, 0x20, 0x21, 0x24)},
-
-         {ColorMode::kLight, ColorProvider::ContentLayerType::kShelfHandleColor,
-          SkColorSetARGB(0x24, 0x0, 0x0, 0x0)},
 
          {ColorMode::kLight,
           ColorProvider::ContentLayerType::kSliderColorActive,
@@ -402,7 +399,7 @@ INSTANTIATE_TEST_SUITE_P(
           SkColorSetRGB(0xE8, 0xEA, 0xED)},
          {ColorMode::kDark,
           ColorProvider::ContentLayerType::kIconColorSecondary,
-          SkColorSetRGB(0x9A, 0xA0, 0xA6)},
+          SkColorSetRGB(0xBD, 0xC1, 0xC6)},
          {ColorMode::kDark, ColorProvider::ContentLayerType::kIconColorAlert,
           SkColorSetRGB(0xF2, 0x8B, 0x82)},
          {ColorMode::kDark, ColorProvider::ContentLayerType::kIconColorWarning,
@@ -442,9 +439,6 @@ INSTANTIATE_TEST_SUITE_P(
          {ColorMode::kDark,
           ColorProvider::ContentLayerType::kAppStateIndicatorColorInactive,
           SkColorSetARGB(0x60, 0xE8, 0xEA, 0xED)},
-
-         {ColorMode::kDark, ColorProvider::ContentLayerType::kShelfHandleColor,
-          SkColorSetARGB(0x24, 0xFF, 0xFF, 0xFF)},
 
          {ColorMode::kDark, ColorProvider::ContentLayerType::kSliderColorActive,
           SkColorSetRGB(0x8A, 0xB4, 0xF8)},

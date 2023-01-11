@@ -9,14 +9,18 @@
 
 #import "base/files/file_path.h"
 #import "base/files/file_util.h"
+#import "base/files/scoped_temp_dir.h"
 #import "base/ios/ios_util.h"
 #import "base/run_loop.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "base/test/metrics/histogram_tester.h"
 #import "base/test/task_environment.h"
+#import "components/crash/core/app/crashpad.h"
+#import "components/crash/core/common/reporter_running_ios.h"
 #import "ios/chrome/app/application_delegate/mock_metrickit_metric_payload.h"
 #import "testing/platform_test.h"
+#import "third_party/crashpad/crashpad/client/crash_report_database.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 
@@ -24,36 +28,34 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-base::FilePath MetricKitReportDirectory() {
-  NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
-                                                       NSUserDomainMask, YES);
-  NSString* documents_directory = [paths objectAtIndex:0];
-  NSString* metric_kit_report_directory = [documents_directory
-      stringByAppendingPathComponent:kChromeMetricKitPayloadsDirectory];
-
-  return base::FilePath(base::SysNSStringToUTF8(metric_kit_report_directory));
-}
-
-NSString* const kEnableMetricKit = @"EnableMetricKit";
-}
-
 class MetricKitSubscriberTest : public PlatformTest {
  public:
-  MetricKitSubscriberTest() {
-    base::DeletePathRecursively(MetricKitReportDirectory());
-    NSUserDefaults* standard_defaults = [NSUserDefaults standardUserDefaults];
-    [standard_defaults setBool:YES forKey:kEnableMetricKit];
+  void SetUp() override {
+    ASSERT_FALSE(crash_reporter::internal::GetCrashReportDatabase());
+    ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
+    database_dir_path_ = database_dir_.GetPath();
+    database_ = crashpad::CrashReportDatabase::Initialize(database_dir_path_);
+    crash_reporter::internal::SetCrashReportDatabaseForTesting(
+        database_.get(), &database_dir_path_);
+
+    std::vector<crash_reporter::Report> reports;
+    crash_reporter::GetReports(&reports);
+    ASSERT_EQ(reports.size(), 0u);
+    crash_reporter::SetCrashpadRunning(true);
   }
 
-  ~MetricKitSubscriberTest() override {
-    base::DeletePathRecursively(MetricKitReportDirectory());
-    NSUserDefaults* standard_defaults = [NSUserDefaults standardUserDefaults];
-    [standard_defaults removeObjectForKey:kEnableMetricKit];
+  void TearDown() override {
+    crash_reporter::internal::SetCrashReportDatabaseForTesting(nullptr,
+                                                               nullptr);
   }
+
+  auto Database() { return database_.get(); }
 
  private:
+  base::ScopedTempDir database_dir_;
+  base::FilePath database_dir_path_;
   base::test::TaskEnvironment task_environment_;
+  std::unique_ptr<crashpad::CrashReportDatabase> database_;
 };
 
 TEST_F(MetricKitSubscriberTest, Metrics) {
@@ -134,36 +136,6 @@ TEST_F(MetricKitSubscriberTest, Metrics) {
   tester.ExpectBucketCount("IOS.MetricKit.ForegroundExitData", 2, 19);
 }
 
-// Tests that Metrickit reports are correctly saved in the document directory.
-TEST_F(MetricKitSubscriberTest, SaveMetricsReport) {
-  id mock_report = OCMClassMock([MXMetricPayload class]);
-  NSDate* date = [NSDate date];
-  std::string file_data("report content");
-  NSData* data = [NSData dataWithBytes:file_data.c_str()
-                                length:file_data.size()];
-  NSDateFormatter* formatter = [[NSDateFormatter alloc] init];
-  [formatter setDateFormat:@"yyyyMMdd_HHmmss"];
-  [formatter setTimeZone:[NSTimeZone timeZoneWithName:@"UTC"]];
-  NSString* file_name = [NSString
-      stringWithFormat:@"Metrics-%@.json", [formatter stringFromDate:date]];
-
-  base::FilePath file_path =
-      MetricKitReportDirectory().Append(base::SysNSStringToUTF8(file_name));
-  OCMStub([mock_report timeStampEnd]).andReturn(date);
-  OCMStub([mock_report JSONRepresentation]).andReturn(data);
-  NSArray* array = @[ mock_report ];
-  [[MetricKitSubscriber sharedInstance] didReceiveMetricPayloads:array];
-
-  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
-      base::test::ios::kWaitForFileOperationTimeout, ^bool() {
-        base::RunLoop().RunUntilIdle();
-        return base::PathExists(file_path);
-      }));
-  std::string content;
-  base::ReadFileToString(file_path, &content);
-  EXPECT_EQ(content, file_data);
-}
-
 TEST_F(MetricKitSubscriberTest, SaveDiagnosticReport) {
   id mock_report = OCMClassMock([MXDiagnosticPayload class]);
   NSDate* date = [NSDate date];
@@ -173,22 +145,49 @@ TEST_F(MetricKitSubscriberTest, SaveDiagnosticReport) {
   NSDateFormatter* formatter = [[NSDateFormatter alloc] init];
   [formatter setDateFormat:@"yyyyMMdd_HHmmss"];
   [formatter setTimeZone:[NSTimeZone timeZoneWithName:@"UTC"]];
-  NSString* file_name = [NSString
-      stringWithFormat:@"Diagnostic-%@.json", [formatter stringFromDate:date]];
-
-  base::FilePath file_path =
-      MetricKitReportDirectory().Append(base::SysNSStringToUTF8(file_name));
   OCMStub([mock_report timeStampEnd]).andReturn(date);
   OCMStub([mock_report JSONRepresentation]).andReturn(data);
   NSArray* array = @[ mock_report ];
+
+  id mock_diagnostic = OCMClassMock([MXCrashDiagnostic class]);
+  OCMStub([mock_diagnostic JSONRepresentation]).andReturn(data);
+  NSArray* mock_diagnostics = @[ mock_diagnostic ];
+  OCMStub([mock_report crashDiagnostics]).andReturn(mock_diagnostics);
   [[MetricKitSubscriber sharedInstance] didReceiveDiagnosticPayloads:array];
 
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForFileOperationTimeout, ^bool() {
         base::RunLoop().RunUntilIdle();
-        return base::PathExists(file_path);
+        std::vector<crash_reporter::Report> reports;
+        crash_reporter::GetReports(&reports);
+        return reports.size() == 1;
       }));
-  std::string content;
-  base::ReadFileToString(file_path, &content);
-  EXPECT_EQ(content, file_data);
+
+  std::vector<crash_reporter::Report> reports;
+  crash_reporter::GetReports(&reports);
+  ASSERT_EQ(reports.size(), 1u);
+
+  std::unique_ptr<const crashpad::CrashReportDatabase::UploadReport>
+      upload_report;
+  crashpad::UUID uuid;
+  uuid.InitializeFromString(reports[0].local_id);
+  EXPECT_EQ(Database()->GetReportForUploading(uuid, &upload_report),
+            crashpad::CrashReportDatabase::kNoError);
+
+  std::map<std::string, crashpad::FileReader*> attachments =
+      upload_report->GetAttachments();
+  EXPECT_EQ(attachments.size(), 1u);
+  ASSERT_NE(attachments.find("MetricKit"), attachments.end());
+  char result_buffer[sizeof(file_data)];
+  attachments["MetricKit"]->Read(result_buffer, sizeof(result_buffer));
+
+  NSData* result_data = [NSData dataWithBytes:result_buffer
+                                       length:sizeof(result_buffer)];
+
+  NSError* error = nil;
+  result_data =
+      [result_data decompressedDataUsingAlgorithm:NSDataCompressionAlgorithmZlib
+                                            error:&error];
+  ASSERT_NE(result_data, nil);
+  EXPECT_EQ(memcmp([data bytes], [result_data bytes], data.length), 0);
 }

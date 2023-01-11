@@ -21,9 +21,12 @@ BASE_DECLARE_FEATURE(kAccuracyTipsFeature);
 // for example to control how often collection should occur.
 BASE_DECLARE_FEATURE(kAdSamplerTriggerFeature);
 
-// Enables including some information in protection requests sent to Safe
-// Browsing.
-BASE_DECLARE_FEATURE(kBetterTelemetryAcrossReports);
+// Killswitch for client side phishing detection. Since client side models are
+// run on a large fraction of navigations, crashes due to the model are very
+// impactful, even if only a small fraction of users have a bad version of the
+// model. This Finch flag allows us to remediate long-tail component versions
+// while we fix the root cause.
+BASE_DECLARE_FEATURE(kClientSideDetectionKillswitch);
 
 // The client side detection model is a flatbuffer.
 BASE_DECLARE_FEATURE(kClientSideDetectionModelIsFlatBuffer);
@@ -38,13 +41,6 @@ const char kClientSideDetectionTagParamName[] = "reporter_omaha_tag";
 
 // Enables client side detection referrer chain.
 BASE_DECLARE_FEATURE(kClientSideDetectionReferrerChain);
-
-// Killswitch for client side phishing detection. Since client side models are
-// run on a large fraction of navigations, crashes due to the model are very
-// impactful, even if only a small fraction of users have a bad version of the
-// model. This Finch flag allows us to remediate long-tail component versions
-// while we fix the root cause.
-BASE_DECLARE_FEATURE(kClientSideDetectionKillswitch);
 
 // Controls whether an access token is attached to scanning requests triggered
 // by enterprise Connectors.
@@ -81,11 +77,18 @@ BASE_DECLARE_FEATURE(kDownloadBubbleV2);
 // server-side.
 BASE_DECLARE_FEATURE(kDownloadTailoredWarnings);
 
-// Enables Enhanced Safe Browsing.
+// Enables Enhanced Safe Browsing. Launched on all platforms in M106.
 BASE_DECLARE_FEATURE(kEnhancedProtection);
 
 // Phase 2 of Enhanced Safe Browsing changes.
 BASE_DECLARE_FEATURE(kEnhancedProtectionPhase2IOS);
+
+// Enables instructional improvements when users are directed to the security
+// settings page to enable Enhanced Safe Browsing. Enables the In-page help
+// (IPH) Bubble to be shown when the user is referred from an ESB promotion.
+// The ESB option will also be collapsed on page load. If not enabled,
+// no IPH bubble will appear and the ESB option will be expanded on page load.
+BASE_DECLARE_FEATURE(kEsbIphBubbleAndCollapseSettings);
 
 // Enables collection of signals related to extension activity and uploads
 // of telemetry reports to SB servers.
@@ -140,33 +143,32 @@ BASE_DECLARE_FEATURE(kNestedArchives);
 // Enable omitting non-user gesture from referrer chain.
 BASE_DECLARE_FEATURE(kOmitNonUserGesturesFromReferrerChain);
 
+// Controls whether we are using admin rules for filtering URLs, showing warn or
+// block intersitial and reporting the interstitial shown event on enterprise
+// managed browsers.
+BASE_DECLARE_FEATURE(kRealTimeUrlFilteringForEnterprise);
+
 // Bypass RealTime URL Lookup allowlist for enterprise users.
 BASE_DECLARE_FEATURE(kRealTimeUrlLookupForEnterpriseAllowlistBypass);
+
+// Controls whether download Client Safe Browsing Reports are sent under the
+// new triggers
+BASE_DECLARE_FEATURE(kSafeBrowsingCsbrrNewDownloadTrigger);
 
 // Controls whether Client Safe Browsing Reports are sent with a GAIA-tied token
 // for Enhanced Safe Browsing users
 BASE_DECLARE_FEATURE(kSafeBrowsingCsbrrWithToken);
 
-// Controls whether we are performing enterprise download checks for users
-// with the appropriate policies enabled.
-BASE_DECLARE_FEATURE(kSafeBrowsingEnterpriseCsd);
-
 // Controls whether we are disabling consumer download checks for users using
 // the enterprise download checks.
 BASE_DECLARE_FEATURE(kSafeBrowsingDisableConsumerCsdForEnterprise);
 
-// Controls whether page load tokens are added to Safe Browsing requests.
-BASE_DECLARE_FEATURE(kSafeBrowsingPageLoadToken);
+// Controls whether we are performing enterprise download checks for users
+// with the appropriate policies enabled.
+BASE_DECLARE_FEATURE(kSafeBrowsingEnterpriseCsd);
 
 // Controls whether cookies are removed when the access token is present.
 BASE_DECLARE_FEATURE(kSafeBrowsingRemoveCookiesInAuthRequests);
-
-// Controls the daily quota for the suspicious site trigger.
-BASE_DECLARE_FEATURE(kSuspiciousSiteTriggerQuotaFeature);
-
-// Controls whether to send sample pings of Protego allowlist domains on
-// the allowlist to Safe Browsing.
-BASE_DECLARE_FEATURE(kSendSampledPingsForProtegoAllowlistDomains);
 
 // Controls whether the new 7z evaluation is performed on downloads.
 BASE_DECLARE_FEATURE(kSevenZipEvaluationEnabled);
@@ -176,6 +178,9 @@ BASE_DECLARE_FEATURE(kSevenZipEvaluationEnabled);
 // The feature is only set by Finch so that we can differentiate between
 // default and control groups of the experiment.
 BASE_DECLARE_FEATURE(kSimplifiedUrlDisplay);
+
+// Controls the daily quota for the suspicious site trigger.
+BASE_DECLARE_FEATURE(kSuspiciousSiteTriggerQuotaFeature);
 
 // Controls whether to automatically enable Enhanced Protection for desktop
 // tailored security users. If not enabled, users of tailored security are
@@ -194,16 +199,13 @@ BASE_DECLARE_FEATURE(kTailoredSecurityIntegration);
 // be lower case.
 BASE_DECLARE_FEATURE(kThreatDomDetailsTagAndAttributeFeature);
 
-// Controls whether Chrome uses new download warning UX.
-BASE_DECLARE_FEATURE(kUseNewDownloadWarnings);
+// Controls whether we send visual features in password reuse pings.
+BASE_DECLARE_FEATURE(kVisualFeaturesForReusePings);
 
 // Controls the behavior of visual features in CSD pings. This feature is
 // checked for the final size of the visual features and the minimum size of
 // the screen.
 BASE_DECLARE_FEATURE(kVisualFeaturesSizes);
-
-// Controls whether we send visual features in password reuse pings.
-BASE_DECLARE_FEATURE(kVisualFeaturesForReusePings);
 
 base::Value::List GetFeatureStatusList();
 

@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
@@ -63,7 +63,7 @@ class WebAppPolicyManager {
   void SetSystemWebAppDelegateMap(
       const ash::SystemWebAppDelegateMap* system_web_apps_delegate_map);
 
-  void Start();
+  void Start(base::OnceClosure initialization_complete);
 
   void ReinstallPlaceholderAppIfNecessary(const GURL& url);
 
@@ -132,7 +132,7 @@ class WebAppPolicyManager {
 
   void RefreshPolicyInstalledApps();
 #if BUILDFLAG(IS_CHROMEOS)
-  void RefreshPolicyInstalledIsolatedApps();
+  void RefreshPolicyInstalledIsolatedWebApps();
 #endif
   void RefreshPolicySettings();
   void OnAppsSynchronized(
@@ -172,7 +172,8 @@ class WebAppPolicyManager {
   raw_ptr<WebAppSyncBridge> sync_bridge_ = nullptr;
   raw_ptr<const ash::SystemWebAppDelegateMap> system_web_apps_delegate_map_ =
       nullptr;
-  raw_ptr<OsIntegrationManager> os_integration_manager_ = nullptr;
+  raw_ptr<OsIntegrationManager, DanglingUntriaged> os_integration_manager_ =
+      nullptr;
 
   PrefChangeRegistrar pref_change_registrar_;
   PrefChangeRegistrar local_state_pref_change_registrar_;

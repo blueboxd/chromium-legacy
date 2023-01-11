@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ash/platform_keys/key_permissions/key_permissions_service_impl.h"
 
+#include <stdint.h>
+
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -28,8 +30,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace ash {
-namespace platform_keys {
+namespace ash::platform_keys {
 
 using ::chromeos::platform_keys::Status;
 using ::chromeos::platform_keys::TokenId;
@@ -50,18 +51,20 @@ KeyPermissionsServiceImpl::KeyPermissionsServiceImpl(
 KeyPermissionsServiceImpl::~KeyPermissionsServiceImpl() = default;
 
 void KeyPermissionsServiceImpl::CanUserGrantPermissionForKey(
-    const std::string& public_key_spki_der,
+    std::vector<uint8_t> public_key_spki_der,
     CanUserGrantPermissionForKeyCallback callback) {
+  std::string public_key_str(public_key_spki_der.begin(),
+                             public_key_spki_der.end());
   platform_keys_service_->GetKeyLocations(
-      public_key_spki_der,
+      public_key_str,
       base::BindOnce(
           &KeyPermissionsServiceImpl::CanUserGrantPermissionForKeyWithLocations,
-          weak_factory_.GetWeakPtr(), public_key_spki_der,
+          weak_factory_.GetWeakPtr(), std::move(public_key_spki_der),
           std::move(callback)));
 }
 
 void KeyPermissionsServiceImpl::CanUserGrantPermissionForKeyWithLocations(
-    const std::string& public_key_spki_der,
+    std::vector<uint8_t> public_key_spki_der,
     CanUserGrantPermissionForKeyCallback callback,
     const std::vector<TokenId>& key_locations,
     Status key_locations_retrieval_status) {
@@ -85,13 +88,14 @@ void KeyPermissionsServiceImpl::CanUserGrantPermissionForKeyWithLocations(
                          CanUserGrantPermissionForKeyWithLocationsAndFlag,
                      weak_factory_.GetWeakPtr(), public_key_spki_der,
                      std::move(callback), key_locations);
-  IsCorporateKeyWithLocations(public_key_spki_der, std::move(bound_callback),
-                              key_locations, key_locations_retrieval_status);
+  IsCorporateKeyWithLocations(std::move(public_key_spki_der),
+                              std::move(bound_callback), key_locations,
+                              key_locations_retrieval_status);
 }
 
 void KeyPermissionsServiceImpl::
     CanUserGrantPermissionForKeyWithLocationsAndFlag(
-        const std::string& public_key_spki_der,
+        std::vector<uint8_t> public_key_spki_der,
         CanUserGrantPermissionForKeyCallback callback,
         const std::vector<TokenId>& key_locations,
         absl::optional<bool> corporate_key,
@@ -114,17 +118,19 @@ void KeyPermissionsServiceImpl::
 }
 
 void KeyPermissionsServiceImpl::IsCorporateKey(
-    const std::string& public_key_spki_der,
+    std::vector<uint8_t> public_key_spki_der,
     IsCorporateKeyCallback callback) {
+  std::string public_key_str(public_key_spki_der.begin(),
+                             public_key_spki_der.end());
   platform_keys_service_->GetKeyLocations(
-      public_key_spki_der,
+      std::move(public_key_str),
       base::BindOnce(&KeyPermissionsServiceImpl::IsCorporateKeyWithLocations,
-                     weak_factory_.GetWeakPtr(), public_key_spki_der,
+                     weak_factory_.GetWeakPtr(), std::move(public_key_spki_der),
                      std::move(callback)));
 }
 
 void KeyPermissionsServiceImpl::IsCorporateKeyWithLocations(
-    const std::string& public_key_spki_der,
+    std::vector<uint8_t> public_key_spki_der,
     IsCorporateKeyCallback callback,
     const std::vector<TokenId>& key_locations,
     Status status) {
@@ -146,7 +152,7 @@ void KeyPermissionsServiceImpl::IsCorporateKeyWithLocations(
                 base::BindOnce(
                     &KeyPermissionsServiceImpl::IsCorporateKeyWithKpmResponse,
                     weak_factory_.GetWeakPtr(), std::move(callback)),
-                KeyUsage::kCorporate, public_key_spki_der);
+                KeyUsage::kCorporate, std::move(public_key_spki_der));
         return;
     }
   }
@@ -157,7 +163,7 @@ void KeyPermissionsServiceImpl::IsCorporateKeyWithLocations(
         base::BindOnce(
             &KeyPermissionsServiceImpl::IsCorporateKeyWithKpmResponse,
             weak_factory_.GetWeakPtr(), std::move(callback)),
-        KeyUsage::kCorporate, public_key_spki_der);
+        KeyUsage::kCorporate, std::move(public_key_spki_der));
     return;
   }
 
@@ -179,17 +185,19 @@ void KeyPermissionsServiceImpl::IsCorporateKeyWithKpmResponse(
 }
 
 void KeyPermissionsServiceImpl::SetCorporateKey(
-    const std::string& public_key_spki_der,
+    std::vector<uint8_t> public_key_spki_der,
     SetCorporateKeyCallback callback) {
+  std::string public_key_str(public_key_spki_der.begin(),
+                             public_key_spki_der.end());
   platform_keys_service_->GetKeyLocations(
-      public_key_spki_der,
+      std::move(public_key_str),
       base::BindOnce(&KeyPermissionsServiceImpl::SetCorporateKeyWithLocations,
                      weak_factory_.GetWeakPtr(), public_key_spki_der,
                      std::move(callback)));
 }
 
 void KeyPermissionsServiceImpl::SetCorporateKeyWithLocations(
-    const std::string& public_key_spki_der,
+    std::vector<uint8_t> public_key_spki_der,
     SetCorporateKeyCallback callback,
     const std::vector<TokenId>& key_locations,
     Status key_locations_retrieval_status) {
@@ -211,17 +219,17 @@ void KeyPermissionsServiceImpl::SetCorporateKeyWithLocations(
     case TokenId::kSystem:
       KeyPermissionsManagerImpl::GetSystemTokenKeyPermissionsManager()
           ->AllowKeyForUsage(std::move(callback), KeyUsage::kCorporate,
-                             public_key_spki_der);
+                             std::move(public_key_spki_der));
       return;
     case TokenId::kUser: {
       DCHECK(is_regular_user_profile_);
 
       profile_key_permissions_manager_->AllowKeyForUsage(
-          std::move(callback), KeyUsage::kCorporate, public_key_spki_der);
+          std::move(callback), KeyUsage::kCorporate,
+          std::move(public_key_spki_der));
       return;
     }
   }
 }
 
-}  // namespace platform_keys
-}  // namespace ash
+}  // namespace ash::platform_keys

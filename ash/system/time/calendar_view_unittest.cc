@@ -13,7 +13,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/icon_button.h"
 #include "ash/system/message_center/unified_message_center_bubble.h"
-#include "ash/system/message_center/unified_message_center_view.h"
+#include "ash/system/notification_center/notification_center_view.h"
 #include "ash/system/time/calendar_event_list_view.h"
 #include "ash/system/time/calendar_model.h"
 #include "ash/system/time/calendar_month_view.h"
@@ -32,6 +32,7 @@
 #include "base/time/time.h"
 #include "base/time/time_override.h"
 #include "chromeos/ash/components/settings/scoped_timezone_settings.h"
+#include "google_apis/common/api_error_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
@@ -52,6 +53,7 @@ using ::google_apis::calendar::EventList;
 
 constexpr char kTestUser[] = "user@test";
 constexpr int kLoadingBarIndex = 2;
+constexpr char kManagedPage[] = "ChromeOS.SystemTray.OpenHelpPageForManaged";
 
 }  // namespace
 
@@ -177,6 +179,8 @@ class CalendarViewTest : public AshTestBase {
     return calendar_view_->reset_to_today_button_;
   }
   views::Button* settings_button() { return calendar_view_->settings_button_; }
+
+  views::Button* managed_button() { return calendar_view_->managed_button_; }
   IconButton* up_button() { return calendar_view_->up_button_; }
   IconButton* down_button() { return calendar_view_->down_button_; }
   views::View* close_button() {
@@ -1221,6 +1225,67 @@ TEST_F(CalendarViewTest, EventListBoundsTest) {
   EXPECT_EQ(bottom_of_scroll_view_visible_area, top_of_event_list_view);
 }
 
+TEST_F(CalendarViewTest, AdminDisabledTest) {
+  base::Time date;
+  // Create a monthview based on Jun,7th 2021.
+  ASSERT_TRUE(base::Time::FromString("7 Jun 2021 10:00 GMT", &date));
+  // Set time override.
+  SetFakeNow(date);
+  base::subtle::ScopedTimeClockOverrides time_override(
+      &CalendarViewTest::FakeTimeNow, /*time_ticks_override=*/nullptr,
+      /*thread_ticks_override=*/nullptr);
+  Shell::Get()->session_controller()->GetActivePrefService()->SetBoolean(
+      ash::prefs::kCalendarIntegrationEnabled, false);
+
+  CreateCalendarView();
+
+  auto* focus_manager = calendar_view()->GetFocusManager();
+  // Todays DateCellView should be focused on open.
+  ASSERT_TRUE(focus_manager->GetFocusedView()->GetClassName());
+  ASSERT_TRUE(focus_manager->GetFocusedView());
+
+  // Moves to the back button.
+  PressTab();
+
+  // Moves to the next focusable view - managed icon button.
+  PressTab();
+  EXPECT_EQ(managed_button(), focus_manager->GetFocusedView());
+
+  // Moves to the next focusable view. Today's button.
+  PressTab();
+  EXPECT_EQ(reset_to_today_button(), focus_manager->GetFocusedView());
+
+  // Moves to settings button.
+  PressTab();
+  EXPECT_EQ(settings_button(), focus_manager->GetFocusedView());
+
+  // Moves back to managed icon button.
+  PressShiftTab();
+  PressShiftTab();
+  EXPECT_EQ(managed_button(), focus_manager->GetFocusedView());
+}
+
+TEST_F(CalendarViewTest, ManagedButtonTest) {
+  base::HistogramTester histogram_tester;
+  base::Time date;
+  // Create a monthview based on Jun,7th 2021.
+  ASSERT_TRUE(base::Time::FromString("7 Jun 2021 10:00 GMT", &date));
+  // Set time override.
+  SetFakeNow(date);
+  base::subtle::ScopedTimeClockOverrides time_override(
+      &CalendarViewTest::FakeTimeNow, /*time_ticks_override=*/nullptr,
+      /*thread_ticks_override=*/nullptr);
+  Shell::Get()->session_controller()->GetActivePrefService()->SetBoolean(
+      ash::prefs::kCalendarIntegrationEnabled, false);
+  CreateCalendarView();
+
+  // Click on managed button to open chrome://management.
+  GestureTapOn(managed_button());
+
+  // Expect increment to UMA histogram count for managed page - enterprise.
+  histogram_tester.ExpectBucketCount(kManagedPage, 0, 1);
+}
+
 // A test class for testing animation. This class cannot set fake now since it's
 // using `MOCK_TIME` to test the animations, and it can't inherit from
 // CalendarAnimationTest due to the same reason.
@@ -1360,6 +1425,9 @@ class CalendarViewAnimationTest : public AshTestBase {
   views::ScrollView* scroll_view() { return calendar_view_->scroll_view_; }
   views::View* event_list_view() { return calendar_view_->event_list_view_; }
   CalendarModel* calendar_model() { return calendar_model_; }
+  calendar_test_utils::CalendarClientTestImpl* calendar_client() {
+    return calendar_client_.get();
+  }
 
   std::map<base::Time, CalendarModel::FetchingStatus> on_screen_month() {
     return calendar_view_->on_screen_month_;
@@ -1825,6 +1893,85 @@ TEST_F(CalendarViewAnimationTest,
   EXPECT_FALSE(calendar_view()->children()[kLoadingBarIndex]->GetVisible());
 }
 
+// Tests the loading bar visibility for when fetching events errors.
+TEST_F(CalendarViewAnimationTest, LoadingBarVisibilityForErrorFetchingEvents) {
+  base::Time date;
+  ASSERT_TRUE(base::Time::FromString("04 May 2022 15:00 GMT", &date));
+
+  // Sets the timezone to "America/Los_Angeles".
+  ash::system::ScopedTimezoneSettings timezone_settings(u"America/Los_Angeles");
+
+  // Tests when the `CalendarView` size is small to hold only one month on
+  // screen.
+  UpdateDisplay("800x200");
+  CreateCalendarView();
+  // Advances the time to allow `on_screen_month_` to initialize.
+  task_environment()->FastForwardBy(
+      calendar_test_utils::kAnimationSettleDownDuration);
+  UpdateMonth(date);
+
+  EXPECT_EQ(1U, on_screen_month().size());
+
+  // Sets the fetching status of current month to be kFetching, and tests the
+  // loading bar is visible.
+  base::Time start_of_month = calendar_utils::GetStartOfMonthUTC(date);
+  base::Time current_date =
+      calendar_view()->calendar_view_controller()->currently_shown_date();
+  base::Time start_of_current_month = calendar_utils::GetStartOfMonthUTC(
+      current_date + calendar_utils::GetTimeDifference(current_date));
+  EXPECT_EQ(start_of_month, start_of_current_month);
+
+  calendar_client()->SetError(google_apis::NO_CONNECTION);
+  calendar_model()->FetchEvents(start_of_current_month);
+  task_environment()->FastForwardBy(
+      calendar_test_utils::kAnimationSettleDownDuration);
+  EXPECT_TRUE(calendar_view()->children()[kLoadingBarIndex]->GetVisible());
+
+  // Waits until the events are fetched, and tests the loading bar is invisible.
+  WaitUntilFetched();
+  EXPECT_FALSE(calendar_view()->children()[kLoadingBarIndex]->GetVisible());
+}
+
+// Tests the loading bar visibility for when fetching events times out.
+TEST_F(CalendarViewAnimationTest,
+       LoadingBarVisibilityForTimeoutFetchingEvents) {
+  base::Time date;
+  ASSERT_TRUE(base::Time::FromString("04 May 2022 15:00 GMT", &date));
+
+  // Sets the timezone to "America/Los_Angeles".
+  ash::system::ScopedTimezoneSettings timezone_settings(u"America/Los_Angeles");
+
+  // Tests when the `CalendarView` size is small to hold only one month on
+  // screen.
+  UpdateDisplay("800x200");
+  CreateCalendarView();
+  // Advances the time to allow `on_screen_month_` to initialize.
+  task_environment()->FastForwardBy(
+      calendar_test_utils::kAnimationSettleDownDuration);
+  UpdateMonth(date);
+
+  EXPECT_EQ(1U, on_screen_month().size());
+
+  // Sets the fetching status of current month to be kFetching, and tests the
+  // loading bar is visible.
+  base::Time start_of_month = calendar_utils::GetStartOfMonthUTC(date);
+  base::Time current_date =
+      calendar_view()->calendar_view_controller()->currently_shown_date();
+  base::Time start_of_current_month = calendar_utils::GetStartOfMonthUTC(
+      current_date + calendar_utils::GetTimeDifference(current_date));
+  EXPECT_EQ(start_of_month, start_of_current_month);
+
+  calendar_client()->ForceTimeout();
+  calendar_model()->FetchEvents(start_of_current_month);
+  task_environment()->FastForwardBy(
+      calendar_test_utils::kAnimationSettleDownDuration);
+  EXPECT_TRUE(calendar_view()->children()[kLoadingBarIndex]->GetVisible());
+
+  // Waits until the events are fetched, and tests the loading bar is invisible.
+  WaitUntilFetched();
+  EXPECT_FALSE(calendar_view()->children()[kLoadingBarIndex]->GetVisible());
+}
+
 // Tests that the EventListView does not crash if shown during the initial open.
 TEST_F(CalendarViewAnimationTest, QuickShowEventListInitialOpen) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
@@ -1892,7 +2039,7 @@ class CalendarViewWithMessageCenterTest : public AshTestBase {
   views::FocusManager* message_center_focus_manager() {
     return GetPrimaryUnifiedSystemTray()
         ->message_center_bubble()
-        ->message_center_view()
+        ->notification_center_view()
         ->GetFocusManager();
   }
 

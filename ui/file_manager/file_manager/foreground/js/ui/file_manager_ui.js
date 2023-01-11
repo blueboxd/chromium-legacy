@@ -3,17 +3,18 @@
 // found in the LICENSE file.
 
 import {assertInstanceof} from 'chrome://resources/js/assert.js';
-import {decorate, define as crUiDefine} from 'chrome://resources/js/cr/ui.js';
+import {decorate, define as crUiDefine} from '../../../common/js/ui.js';
 
 import {DialogType} from '../../../common/js/dialog_type.js';
+import {queryDecoratedElement, queryRequiredElement} from '../../../common/js/dom_utils.js';
 import {str, strf, util} from '../../../common/js/util.js';
 import {AllowedPaths} from '../../../common/js/volume_manager_types.js';
 import {BreadcrumbContainer} from '../../../containers/breadcrumb_container.js';
 import {NudgeContainer} from '../../../containers/nudge_container.js';
 import {VolumeManager} from '../../../externs/volume_manager.js';
+import {XfConflictDialog} from '../../../widgets/xf_conflict_dialog.js';
 import {XfDlpRestrictionDetailsDialog} from '../../../widgets/xf_dlp_restriction_details_dialog.js';
 import {FilesPasswordDialog} from '../../elements/files_password_dialog.js';
-import {FilesToast} from '../../elements/files_toast.js';
 import {FilesTooltip} from '../../elements/files_tooltip.js';
 import {BannerController} from '../banner_controller.js';
 import {LaunchParam} from '../launch_param.js';
@@ -159,13 +160,19 @@ export class FileManagerUI {
      * Dialog for formatting
      * @const {!HTMLElement}
      */
-    this.formatDialog = util.queryRequiredElement('#format-dialog');
+    this.formatDialog = queryRequiredElement('#format-dialog');
 
     /**
      * Dialog for password prompt
      * @type {?FilesPasswordDialog}
      */
     this.passwordDialog_ = null;
+
+    /**
+     * Dialog for resolving file conflicts.
+     * @type {?XfConflictDialog}
+     */
+    this.xfConflictDialog_ = null;
 
     /**
      * Dialog for DLP (Data Leak Prevention) restriction details.
@@ -178,7 +185,7 @@ export class FileManagerUI {
      * @type {!HTMLElement}
      */
     this.dialogContainer =
-        util.queryRequiredElement('.dialog-container', this.element);
+        queryRequiredElement('.dialog-container', this.element);
     this.dialogContainer.addEventListener('relayout', (event) => {
       this.layoutChanged_();
     });
@@ -188,8 +195,7 @@ export class FileManagerUI {
      * @type {!Menu}
      * @const
      */
-    this.textContextMenu =
-        util.queryDecoratedElement('#text-context-menu', Menu);
+    this.textContextMenu = queryDecoratedElement('#text-context-menu', Menu);
 
     /**
      * Breadcrumb controller.
@@ -202,7 +208,7 @@ export class FileManagerUI {
      * @type {!HTMLElement}
      * @const
      */
-    this.toolbar = util.queryRequiredElement('.dialog-header', this.element);
+    this.toolbar = queryRequiredElement('.dialog-header', this.element);
 
     /**
      * The tooltip element.
@@ -217,7 +223,7 @@ export class FileManagerUI {
      * @type {!HTMLElement}
      * @const
      */
-    this.actionbar = util.queryRequiredElement('#action-bar', this.toolbar);
+    this.actionbar = queryRequiredElement('#action-bar', this.toolbar);
 
     /**
      * The navigation list.
@@ -225,7 +231,7 @@ export class FileManagerUI {
      * @const
      */
     this.dialogNavigationList =
-        util.queryRequiredElement('.dialog-navigation-list', this.element);
+        queryRequiredElement('.dialog-navigation-list', this.element);
 
     /**
      * Search box.
@@ -233,51 +239,30 @@ export class FileManagerUI {
      * @const
      */
     this.searchBox = new SearchBox(
-        util.queryRequiredElement('#search-box', this.element),
-        util.queryRequiredElement('#search-wrapper', this.element),
-        util.queryRequiredElement('#search-button', this.element));
+        queryRequiredElement('#search-box', this.element),
+        queryRequiredElement('#search-wrapper', this.element),
+        queryRequiredElement('#search-button', this.element));
 
     /**
      * Toggle-view button.
      * @type {!Element}
      * @const
      */
-    this.toggleViewButton =
-        util.queryRequiredElement('#view-button', this.element);
+    this.toggleViewButton = queryRequiredElement('#view-button', this.element);
 
     /**
      * The button to sort the file list.
      * @type {!MultiMenuButton}
      * @const
      */
-    this.sortButton =
-        util.queryDecoratedElement('#sort-button', MultiMenuButton);
-
-    /**
-     * Ripple effect of sort button.
-     * @type {!FilesToggleRippleElement}
-     * @const
-     */
-    this.sortButtonToggleRipple =
-        /** @type {!FilesToggleRippleElement} */ (
-            util.queryRequiredElement('files-toggle-ripple', this.sortButton));
+    this.sortButton = queryDecoratedElement('#sort-button', MultiMenuButton);
 
     /**
      * The button to open gear menu.
      * @type {!MultiMenuButton}
      * @const
      */
-    this.gearButton =
-        util.queryDecoratedElement('#gear-button', MultiMenuButton);
-
-    /**
-     * Ripple effect of gear button.
-     * @type {!FilesToggleRippleElement}
-     * @const
-     */
-    this.gearButtonToggleRipple =
-        /** @type {!FilesToggleRippleElement} */ (
-            util.queryRequiredElement('files-toggle-ripple', this.gearButton));
+    this.gearButton = queryDecoratedElement('#gear-button', MultiMenuButton);
 
     /**
      * @type {!GearMenu}
@@ -291,7 +276,7 @@ export class FileManagerUI {
      * @const
      */
     this.selectionMenuButton =
-        util.queryDecoratedElement('#selection-menu-button', MultiMenuButton);
+        queryDecoratedElement('#selection-menu-button', MultiMenuButton);
 
     /**
      * Directory tree.
@@ -312,7 +297,7 @@ export class FileManagerUI {
      * @const
      */
     this.activityProgressPanel =
-        util.queryRequiredElement('#progress-panel', this.element);
+        queryRequiredElement('#progress-panel', this.element);
 
     /**
      * List container.
@@ -325,7 +310,7 @@ export class FileManagerUI {
      * @const
      */
     this.fileContextMenu =
-        util.queryDecoratedElement('#file-context-menu', MultiMenu);
+        queryDecoratedElement('#file-context-menu', MultiMenu);
 
     /**
      * @public {!FilesMenuItem}
@@ -333,21 +318,20 @@ export class FileManagerUI {
      */
     this.defaultTaskMenuItem =
         /** @type {!FilesMenuItem} */
-        (util.queryRequiredElement(
-            '#default-task-menu-item', this.fileContextMenu));
+        (queryRequiredElement('#default-task-menu-item', this.fileContextMenu));
 
     /**
      * @public @const {!MenuItem}
      */
     this.tasksSeparator = /** @type {!MenuItem} */
-        (util.queryRequiredElement('#tasks-separator', this.fileContextMenu));
+        (queryRequiredElement('#tasks-separator', this.fileContextMenu));
 
     /**
      * The combo button to specify the task.
      * @type {!ComboButton}
      * @const
      */
-    this.taskMenuButton = util.queryDecoratedElement('#tasks', ComboButton);
+    this.taskMenuButton = queryDecoratedElement('#tasks', ComboButton);
     this.taskMenuButton.showMenu = function(shouldSetFocus) {
       // Prevent the empty menu from opening.
       if (!this.menu.length) {
@@ -375,7 +359,7 @@ export class FileManagerUI {
      * @const
      */
     this.providersMenu = new ProvidersMenu(
-        providersModel, util.queryDecoratedElement('#providers-menu', Menu));
+        providersModel, queryDecoratedElement('#providers-menu', Menu));
 
     /**
      * @public {!ActionsSubmenu}
@@ -402,21 +386,21 @@ export class FileManagerUI {
      * @const {!HTMLElement}
      */
     this.fileTypeFilterContainer =
-        util.queryRequiredElement('#file-type-filter-container', this.element);
+        queryRequiredElement('#file-type-filter-container', this.element);
 
     /**
      * Empty folder element inside the file list container.
      * @type {!HTMLElement}
      * @const
      */
-    this.emptyFolder = util.queryRequiredElement('#empty-folder', this.element);
+    this.emptyFolder = queryRequiredElement('#empty-folder', this.element);
 
     /**
      * A hidden div that can be used to announce text to screen
      * reader/ChromeVox.
      * @private {!HTMLElement}
      */
-    this.a11yMessage_ = util.queryRequiredElement('#a11y-msg', this.element);
+    this.a11yMessage_ = queryRequiredElement('#a11y-msg', this.element);
 
     if (window.IN_TEST) {
       /**
@@ -468,6 +452,20 @@ export class FileManagerUI {
   }
 
   /**
+   * Gets conflict dialog.
+   * @return {!XfConflictDialog}
+   */
+  get conflictDialog() {
+    if (this.xfConflictDialog_) {
+      return this.xfConflictDialog_;
+    }
+    this.xfConflictDialog_ = /** @type {!XfConflictDialog} */ (
+        document.createElement('xf-conflict-dialog'));
+    this.element.appendChild(this.xfConflictDialog_);
+    return this.xfConflictDialog_;
+  }
+
+  /**
    * Gets the DlpRestrictionDetails dialog.
    * @return {?XfDlpRestrictionDetailsDialog}
    */
@@ -495,22 +493,22 @@ export class FileManagerUI {
   initAdditionalUI(table, grid, volumeManager) {
     // List container.
     this.listContainer = new ListContainer(
-        util.queryRequiredElement('#list-container', this.element), table, grid,
+        queryRequiredElement('#list-container', this.element), table, grid,
         this.dialogType_);
 
     // Breadcrumb container.
     this.breadcrumbContainer_ = new BreadcrumbContainer(
-        util.queryRequiredElement('#location-breadcrumbs', this.element));
+        queryRequiredElement('#location-breadcrumbs', this.element));
 
     // Splitter.
     this.decorateSplitter_(
-        util.queryRequiredElement('#navigation-list-splitter', this.element));
+        queryRequiredElement('#navigation-list-splitter', this.element));
 
     // Init context menus.
     contextMenuHandler.setContextMenu(grid, this.fileContextMenu);
     contextMenuHandler.setContextMenu(table.list, this.fileContextMenu);
     contextMenuHandler.setContextMenu(
-        util.queryRequiredElement('.drive-welcome.page'), this.fileContextMenu);
+        queryRequiredElement('.drive-welcome.page'), this.fileContextMenu);
 
     // Add window resize handler.
     document.defaultView.addEventListener('resize', this.relayout.bind(this));
@@ -557,7 +555,7 @@ export class FileManagerUI {
     // bar buttons can become wide enough to extend past the available viewport,
     // and this.layoutChanged_() is used to clamp their size to the viewport.
     const resizeObserver = new ResizeObserver(() => this.layoutChanged_());
-    resizeObserver.observe(util.queryRequiredElement('div.dialog-header'));
+    resizeObserver.observe(queryRequiredElement('div.dialog-header'));
   }
 
   /**
@@ -589,11 +587,28 @@ export class FileManagerUI {
 
     // Set up the context menu for the volume/shortcut items in directory tree.
     this.directoryTree.contextMenuForRootItems =
-        util.queryDecoratedElement('#roots-context-menu', Menu);
+        queryDecoratedElement('#roots-context-menu', Menu);
     this.directoryTree.contextMenuForSubitems =
-        util.queryDecoratedElement('#directory-tree-context-menu', Menu);
+        queryDecoratedElement('#directory-tree-context-menu', Menu);
     this.directoryTree.disabledContextMenu =
-        util.queryDecoratedElement('#disabled-context-menu', Menu);
+        queryDecoratedElement('#disabled-context-menu', Menu);
+
+    // The context menu event that is created via keyboard navigation is
+    // dispatched to the `directoryTree` however the tree items actually have
+    // the context menu handlers. To ensure they receive the event, recompute
+    // their location and re-dispatch the "contextmenu" event to the item that
+    // is selected.
+    this.directoryTree.addEventListener('contextmenu', e => {
+      const selectedItem = this.directoryTree?.selectedItem?.rowElement;
+      if (!selectedItem) {
+        return;
+      }
+      const domRect = selectedItem.getBoundingClientRect();
+      const x = domRect.x + (domRect.width / 2);
+      const y = domRect.y + (domRect.height / 2);
+      this.directoryTree.selectedItem.dispatchEvent(
+          new PointerEvent(e.type, {...e, clientX: x, clientY: y}));
+    });
   }
 
   /**

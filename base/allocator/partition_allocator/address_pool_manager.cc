@@ -17,10 +17,11 @@
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_notreached.h"
+#include "base/allocator/partition_allocator/pkey.h"
 #include "base/allocator/partition_allocator/reservation_offset_table.h"
 #include "build/build_config.h"
 
-#if BUILDFLAG(IS_APPLE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(ENABLE_PKEYS)
 #include <sys/mman.h>
 #endif
 
@@ -292,6 +293,9 @@ bool AddressPoolManager::GetStats(AddressSpaceStats* stats) {
   if (IsConfigurablePoolAvailable()) {
     GetPoolStats(kConfigurablePoolHandle, &stats->configurable_pool_stats);
   }
+#if BUILDFLAG(ENABLE_PKEYS)
+  GetPoolStats(kPkeyPoolHandle, &stats->pkey_pool_stats);
+#endif
   return true;
 }
 
@@ -341,9 +345,11 @@ uintptr_t AddressPoolManager::Reserve(pool_handle handle,
                                       uintptr_t requested_address,
                                       size_t length) {
   PA_DCHECK(!(length & DirectMapAllocationGranularityOffsetMask()));
-  uintptr_t address = AllocPages(requested_address, length, kSuperPageSize,
-                                 PageAccessibilityConfiguration::kInaccessible,
-                                 PageTag::kPartitionAlloc);
+  uintptr_t address =
+      AllocPages(requested_address, length, kSuperPageSize,
+                 PageAccessibilityConfiguration(
+                     PageAccessibilityConfiguration::kInaccessible),
+                 PageTag::kPartitionAlloc);
   return address;
 }
 

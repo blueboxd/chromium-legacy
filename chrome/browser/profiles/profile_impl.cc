@@ -262,6 +262,8 @@ using bookmarks::BookmarkModel;
 using content::BrowserThread;
 using content::DownloadManagerDelegate;
 
+class ScopedAllowBlockingForProfile : public base::ScopedAllowBlocking {};
+
 namespace {
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
@@ -291,7 +293,7 @@ base::Time CreateProfileDirectory(base::SequencedTaskRunner* io_task_runner,
   // base::CreateDirectory() should be lightweight I/O operations and avoiding
   // the headache of sequencing all otherwise unrelated I/O after these
   // justifies running them on the main thread.
-  base::ThreadRestrictions::ScopedAllowIO allow_io_to_create_directory;
+  ScopedAllowBlockingForProfile allow_io_to_create_directory;
 
   // If the readme exists, the profile directory must also already exist.
   if (base::PathExists(path.Append(chrome::kReadmeFilename)))
@@ -451,9 +453,9 @@ ProfileImpl::ProfileImpl(
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  const bool is_regular_profile = ash::ProfileHelper::IsRegularProfile(this);
+  const bool is_user_profile = ash::ProfileHelper::IsUserProfile(this);
 
-  if (is_regular_profile) {
+  if (is_user_profile) {
     const user_manager::User* user =
         ash::ProfileHelper::Get()->GetUserByProfile(this);
     // A |User| instance should always exist for a profile which is not the
@@ -492,7 +494,7 @@ ProfileImpl::ProfileImpl(
   SimpleKeyMap::GetInstance()->Associate(this, key_.get());
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (is_regular_profile) {
+  if (is_user_profile) {
     // |ash::InitializeAccountManager| is called during a User's session
     // initialization but some tests do not properly login to a User Session.
     // This invocation of |ash::InitializeAccountManager| is used only during
@@ -571,6 +573,8 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (force_immediate_policy_load)
     ash::DeviceSettingsService::Get()->LoadImmediately();
+  else
+    ash::DeviceSettingsService::Get()->LoadIfNotPresent();
 
   policy::CreateConfigurationPolicyProvider(
       this, force_immediate_policy_load, io_task_runner_,
@@ -836,6 +840,9 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
 
   if (breadcrumbs::IsEnabled())
     BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(this);
+
+  // Request an OriginTrialsControllerDelegate to ensure it is initialized.
+  GetOriginTrialsControllerDelegate();
 }
 
 base::FilePath ProfileImpl::last_selected_directory() {
@@ -876,7 +883,7 @@ ProfileImpl::~ProfileImpl() {
   }
 
   for (Profile* otr_profile : raw_otr_profiles)
-    ProfileDestroyer::DestroyOffTheRecordProfileNow(otr_profile);
+    ProfileDestroyer::DestroyOTRProfileImmediately(otr_profile);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (!primary_otr_available) {
@@ -1544,7 +1551,7 @@ GURL ProfileImpl::GetHomePage() {
     // TODO(evanm): clean up usage of DIR_CURRENT.
     //   http://code.google.com/p/chromium/issues/detail?id=60630
     // For now, allow this code to call getcwd().
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlocking allow_blocking;
 
     base::FilePath browser_directory;
     base::PathService::Get(base::DIR_CURRENT, &browser_directory);

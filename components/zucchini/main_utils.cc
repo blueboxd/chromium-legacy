@@ -76,6 +76,7 @@ constexpr Command kCommands[] = {
     {"match", "-match <old_file> <new_file> [-impose=#+#=#+#,#+#=#+#,...]", 2,
      &MainMatch},
     {"crc32", "-crc32 <file>", 1, &MainCrc32},
+    {"suffix-array", "-suffix-array <file>", 1, &MainSuffixArray},
 };
 
 /******** GetPeakMemoryMetrics ********/
@@ -255,5 +256,6 @@ zucchini::status::Code RunZucchiniCommand(const base::CommandLine& command_line,
   }
 
   ScopedResourceUsageTracker resource_usage_tracker;
-  return command_use->command_function({command_line, paths, out, err});
+  return command_use->command_function(
+      {raw_ref(command_line), raw_ref(paths), raw_ref(out), raw_ref(err)});
 }

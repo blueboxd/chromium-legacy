@@ -14,9 +14,11 @@
 #include "services/network/public/mojom/link_header.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-shared.h"
+#include "services/network/public/mojom/url_response_head.mojom-shared.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/common/frame/view_transition_state.h"
 #include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
@@ -41,6 +43,7 @@
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_history_item.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_navigation_timings.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
@@ -322,15 +325,18 @@ struct BLINK_EXPORT WebNavigationParams {
 
   // The origin in which a navigation should commit. When provided, Blink
   // should use this origin directly and not compute locally the new document
-  // origin.
+  // origin. It is currently only specified on error document navigations, where
+  // the origin should be an opaque origin based on the URL that failed to load.
   //
   // TODO(https://crbug.com/888079): Always provide origin_to_commit.
   WebSecurityOrigin origin_to_commit;
 
   // The storage key of the document that will be created by the navigation.
-  // This is compatible with the `origin_to_commit`. Until the browser will be
-  // able to compute the `origin_to_commit` in all cases
-  // (https://crbug.com/888079), this is actually just a provisional
+  // This is compatible with the origin that the browser calculates for this
+  // navigation. Currently, the final origin used by a navigation is still
+  // determined by the renderer, except when `origin_to_commit` above is set.
+  // Until the browser is able to compute the origin accurately in all cases
+  // (see https://crbug.com/888079), this is actually just a provisional
   // `storage_key`. The final storage key is computed by the document loader
   // taking into account the origin computed by the renderer.
   StorageKey storage_key;
@@ -487,6 +493,15 @@ struct BLINK_EXPORT WebNavigationParams {
   // language negotiation on the top-level document, all subresource requests
   // will inherit the Accept-Language header value of the top-level document.
   WebString reduced_accept_language;
+
+  // Carries on the `navigational_delivery_type` in `NavigationParam` on the
+  // renderer side.
+  network::mojom::NavigationDeliveryType navigation_delivery_type =
+      network::mojom::NavigationDeliveryType::kDefault;
+
+  // Provides cached state from the previous Document that will be replaced by
+  // this navigation for a ViewTransition.
+  absl::optional<ViewTransitionState> view_transition_state;
 };
 
 }  // namespace blink

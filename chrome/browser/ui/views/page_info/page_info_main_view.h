@@ -25,7 +25,7 @@ class LabelButton;
 
 class ChromePageInfoUiDelegate;
 class ChosenObjectView;
-class PageInfoHoverButton;
+class RichHoverButton;
 class PageInfoNavigationHandler;
 class PageInfoSecurityContentView;
 class PermissionToggleRowView;
@@ -123,9 +123,9 @@ class PageInfoMainView : public views::View,
   // subpage and a separator.
   [[nodiscard]] std::unique_ptr<views::View> CreateAdPersonalizationSection();
 
-  raw_ptr<PageInfo> presenter_;
+  raw_ptr<PageInfo, DanglingUntriaged> presenter_;
 
-  raw_ptr<ChromePageInfoUiDelegate> ui_delegate_;
+  raw_ptr<ChromePageInfoUiDelegate, DanglingUntriaged> ui_delegate_;
 
   raw_ptr<PageInfoNavigationHandler> navigation_handler_;
 
@@ -133,13 +133,13 @@ class PageInfoMainView : public views::View,
   std::u16string details_text_ = std::u16string();
 
   // The button that opens the "Connection" subpage.
-  raw_ptr<PageInfoHoverButton> connection_button_ = nullptr;
+  raw_ptr<RichHoverButton, DanglingUntriaged> connection_button_ = nullptr;
 
   // The view that contains the certificate, cookie, and permissions sections.
   raw_ptr<views::View> site_settings_view_ = nullptr;
 
   // The button that opens the "Cookies" dialog.
-  raw_ptr<PageInfoHoverButton> cookie_button_ = nullptr;
+  raw_ptr<RichHoverButton> cookie_button_ = nullptr;
 
   // The button that opens up "Site Settings".
   raw_ptr<views::View> site_settings_link_ = nullptr;
@@ -153,7 +153,8 @@ class PageInfoMainView : public views::View,
   raw_ptr<views::View> about_this_site_section_ = nullptr;
 
   // The view that contains `SecurityInformationView` and a certificate button.
-  raw_ptr<PageInfoSecurityContentView> security_content_view_ = nullptr;
+  raw_ptr<PageInfoSecurityContentView, DanglingUntriaged>
+      security_content_view_ = nullptr;
 
   // The section that contains 'Ad personalization' button that opens a
   // subpage.

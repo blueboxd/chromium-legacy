@@ -25,6 +25,7 @@
 #include "chrome/browser/web_applications/test/fake_web_app_ui_manager.h"
 #include "chrome/browser/web_applications/test/test_file_utils.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
@@ -52,7 +53,9 @@ std::unique_ptr<KeyedService> FakeWebAppProvider::BuildDefault(
   // Do not call default production StartImpl if in TestingProfile.
   provider->SetRunSubsystemStartupTasks(false);
 
-  // TODO(crbug.com/973324): `SetDefaultFakeSubsystems` by default.
+  // TODO(crbug.com/973324): Consider calling `SetDefaultFakeSubsystems` in the
+  // constructor instead.
+  provider->SetDefaultFakeSubsystems();
   provider->ConnectSubsystems();
 
   return provider;
@@ -80,7 +83,14 @@ FakeWebAppProvider::~FakeWebAppProvider() = default;
 
 void FakeWebAppProvider::SetRunSubsystemStartupTasks(
     bool run_subsystem_startup_tasks) {
+  CheckNotStarted();
   run_subsystem_startup_tasks_ = run_subsystem_startup_tasks;
+}
+
+void FakeWebAppProvider::SetSynchronizePreinstalledAppsOnStartup(
+    bool synchronize_on_startup) {
+  CheckNotStarted();
+  synchronize_preinstalled_app_on_startup_ = synchronize_on_startup;
 }
 
 void FakeWebAppProvider::SetRegistrar(
@@ -92,7 +102,7 @@ void FakeWebAppProvider::SetRegistrar(
 void FakeWebAppProvider::SetDatabaseFactory(
     std::unique_ptr<AbstractWebAppDatabaseFactory> database_factory) {
   CheckNotStarted();
-  database_factory_ = std::move(database_factory_);
+  database_factory_ = std::move(database_factory);
 }
 
 void FakeWebAppProvider::SetSyncBridge(
@@ -184,6 +194,16 @@ AbstractWebAppDatabaseFactory& FakeWebAppProvider::GetDatabaseFactory() const {
   return *database_factory_;
 }
 
+WebAppUiManager& FakeWebAppProvider::GetUiManager() const {
+  DCHECK(ui_manager_);
+  return *ui_manager_;
+}
+
+WebAppInstallManager& FakeWebAppProvider::GetInstallManager() const {
+  DCHECK(install_manager_);
+  return *install_manager_;
+}
+
 void FakeWebAppProvider::StartWithSubsystems() {
   CheckNotStarted();
   SetRunSubsystemStartupTasks(true);
@@ -221,7 +241,7 @@ void FakeWebAppProvider::SetDefaultFakeSubsystems() {
 
   SetWebAppPolicyManager(std::make_unique<WebAppPolicyManager>(profile_));
 
-  SetCommandManager(std::make_unique<WebAppCommandManager>(profile_));
+  SetCommandManager(std::make_unique<WebAppCommandManager>(profile_, this));
 
   SetPreinstalledWebAppManager(
       std::make_unique<PreinstalledWebAppManager>(profile_));
@@ -235,6 +255,8 @@ void FakeWebAppProvider::ShutDownUiManagerForTesting() {
 }
 
 void FakeWebAppProvider::Shutdown() {
+  if (command_scheduler_)
+    command_scheduler_->Shutdown();
   if (command_manager_)
     command_manager_->Shutdown();
   if (ui_manager_)
@@ -260,6 +282,8 @@ void FakeWebAppProvider::CheckNotStarted() const {
 }
 
 void FakeWebAppProvider::StartImpl() {
+  preinstalled_web_app_manager_->SetSkipStartupSynchronizeForTesting(
+      !synchronize_preinstalled_app_on_startup_);
   if (run_subsystem_startup_tasks_) {
     WebAppProvider::StartImpl();
   } else {

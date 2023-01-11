@@ -27,6 +27,8 @@ class DEVICE_BLUETOOTH_EXPORT FakeFlossAdapterClient
   static const char kKeyboardAddress[];
   static const char kPhoneAddress[];
   static const char kOldDeviceAddress[];
+  static const char kClassicAddress[];
+  static const char kClassicName[];
   static const uint32_t kPasskey;
   static const uint32_t kHeadsetClassOfDevice;
 
@@ -45,6 +47,8 @@ class DEVICE_BLUETOOTH_EXPORT FakeFlossAdapterClient
                      FlossDeviceId device) override;
   void GetRemoteClass(ResponseCallback<uint32_t> callback,
                       FlossDeviceId device) override;
+  void GetRemoteAppearance(ResponseCallback<uint16_t> callback,
+                           FlossDeviceId device) override;
   void GetConnectionState(ResponseCallback<uint32_t> callback,
                           const FlossDeviceId& device) override;
   void GetRemoteUuids(

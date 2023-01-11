@@ -21,6 +21,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/file_system_access/chrome_file_system_access_permission_context.h"
 #include "chrome/browser/net/cert_verifier_configuration.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
@@ -89,6 +90,7 @@
 #include "net/base/url_util.h"
 #include "net/net_buildflags.h"
 #include "services/device/public/cpp/device_features.h"
+#include "third_party/blink/public/common/features_generated.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -292,6 +294,13 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"aboutGetHelpUsingChrome", IDS_SETTINGS_GET_HELP_USING_CHROME},
     {"aboutPageTitle", IDS_SETTINGS_ABOUT_PROGRAM},
     {"aboutProductTitle", IDS_PRODUCT_NAME},
+    {"aboutLearnMoreUpdatingErrors",
+     IDS_SETTINGS_ABOUT_PAGE_LEARN_MORE_UPDATE_ERRORS},
+    {"aboutLearnMoreSystemRequirements",
+     IDS_SETTINGS_ABOUT_PAGE_LEARN_MORE_SYSTEM_REQUIREMENTS},
+#if BUILDFLAG(IS_MAC)
+    {"aboutLearnMoreUpdating", IDS_SETTINGS_ABOUT_PAGE_LEARN_MORE_UPDATING},
+#endif
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -1014,6 +1023,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_ADDRESS_REMOVE_CONFIRMATION_TITLE},
     {"removeAddressConfirmationDescription",
      IDS_SETTINGS_ADDRESS_REMOVE_CONFIRMATION_DESCRIPTION},
+    {"addressRemovedMessage", IDS_SETTINGS_ADDRESS_REMOVED_MESSAGE},
     {"removeCreditCard", IDS_SETTINGS_CREDIT_CARD_REMOVE},
     {"clearCreditCard", IDS_SETTINGS_CREDIT_CARD_CLEAR},
     {"creditCardType", IDS_SETTINGS_AUTOFILL_CREDIT_CARD_TYPE_COLUMN_LABEL},
@@ -2061,6 +2071,8 @@ void AddSearchStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES_AND_SITE_SEARCH},
       {"searchPageTitle", IDS_SETTINGS_SEARCH},
       {"searchExplanation", IDS_SETTINGS_SEARCH_EXPLANATION},
+      {"searchExplanationLearnMoreA11yLabel",
+       IDS_SETTINGS_SEARCH_EXPLANATION_ACCESSIBILITY_LABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -2497,6 +2509,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_CLEAR_DISPLAYED_STORAGE_DIALOG_TITLE},
     {"siteSettingsFirstPartySetsLearnMore",
      IDS_SETTINGS_SITE_SETTINGS_FIRST_PARTY_SETS_LEARN_MORE},
+    {"siteSettingsFirstPartySetsLearnMoreAccessibility",
+     IDS_SETTINGS_SITE_SETTINGS_FIRST_PARTY_SETS_LEARN_MORE_ACCESSIBILITY},
     {"siteSettingsClearAllStorageDescription",
      IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_DESCRIPTION},
     {"siteSettingsClearDisplayedStorageDescription",
@@ -2517,6 +2531,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_SIGN_OUT},
     {"siteSettingsClearDisplayedStorageSignOut",
      IDS_SETTINGS_SITE_SETTINGS_CLEAR_DISPLAYED_STORAGE_SIGN_OUT},
+    {"siteSettingsSiteDetailsSubpageAccessibilityLabel",
+     IDS_SETTINGS_SITE_SETTINGS_SITE_DETAILS_SUBPAGE_ACCESSIBILITY_LABEL},
     {"firstPartySetsMembershipLabel",
      IDS_SETTINGS_SITE_SETTINGS_FIRST_PARTY_SETS_MEMBERSHIP_LABEL},
     {"firstPartySetsMoreActionsTitle",
@@ -2954,6 +2970,15 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean("enableWebBluetoothNewPermissionsBackend",
                           base::FeatureList::IsEnabled(
                               features::kWebBluetoothNewPermissionsBackend));
+
+  html_source->AddBoolean(
+      "enableMathMLCore",
+      base::FeatureList::IsEnabled(blink::features::kMathMLCore));
+
+  html_source->AddBoolean(
+      "showPersistentPermissions",
+      base::FeatureList::IsEnabled(
+          features::kFileSystemAccessPersistentPermissions));
 
   // The exception placeholder should not be translated. See crbug.com/1095878.
   html_source->AddString("addSiteExceptionPlaceholder", "[*.]example.com");

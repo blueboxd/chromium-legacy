@@ -53,7 +53,6 @@
 #import "ios/chrome/browser/crash_report/crash_helper.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/flags/about_flags.h"
-#import "ios/chrome/browser/ios_thread_profiler.h"
 #import "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
 #import "ios/chrome/browser/metrics/ios_expired_histograms_array.h"
 #import "ios/chrome/browser/open_from_clipboard/create_clipboard_recent_content.h"
@@ -65,6 +64,7 @@
 #import "ios/chrome/browser/signin/signin_util.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/translate/translate_service_ios.h"
+#import "ios/chrome/browser/web/ios_thread_profiler.h"
 #import "ios/chrome/common/channel_info.h"
 #import "ios/components/security_interstitials/safe_browsing/safe_browsing_service.h"
 #import "ios/web/public/thread/web_task_traits.h"
@@ -217,6 +217,11 @@ void IOSChromeMainParts::PreCreateThreads() {
   }
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  // Convert freeform experimental settings into switches before initializing
+  // local state, in case any of the settings affect policy.
+  AppendSwitchesFromExperimentalSettings(command_line);
+
   // Get the variation IDs passed through the command line. This is done early
   // on because ConvertFlagsToSwitches() will append to the command line
   // the variation IDs from flags (so that they are visible in about://version).
@@ -229,10 +234,6 @@ void IOSChromeMainParts::PreCreateThreads() {
   const std::string command_line_variation_ids =
       command_line->GetSwitchValueASCII(
           variations::switches::kForceVariationIds);
-
-  // Convert freeform experimental settings into switches before initializing
-  // local state, in case any of the settings affect policy.
-  AppendSwitchesFromExperimentalSettings(command_line);
 
   // Initialize local state.
   local_state_ = application_context_->GetLocalState();
@@ -364,8 +365,6 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
   language::LanguageUsageMetrics::RecordAcceptLanguages(
       last_used_browser_state->GetPrefs()->GetString(
           language::prefs::kAcceptLanguages));
-  language::LanguageUsageMetrics::RecordApplicationLanguage(
-      application_context_->GetApplicationLocale());
   translate::TranslateMetricsLoggerImpl::LogApplicationStartMetrics(
       ChromeIOSTranslateClient::CreateTranslatePrefs(
           last_used_browser_state->GetPrefs()));

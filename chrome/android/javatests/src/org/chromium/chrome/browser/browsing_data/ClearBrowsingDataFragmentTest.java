@@ -64,7 +64,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataFragment.DialogOption;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -73,7 +72,6 @@ import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
 import org.chromium.components.browser_ui.settings.SpinnerPreference;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
@@ -87,7 +85,6 @@ import java.util.Set;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@EnableFeatures({ChromeFeatureList.ENABLE_CBD_SIGN_OUT})
 @Batch(Batch.PER_CLASS)
 public class ClearBrowsingDataFragmentTest {
     @Rule
@@ -209,7 +206,8 @@ public class ClearBrowsingDataFragmentTest {
     @Test
     @MediumTest
     public void testTabsSwitcher() {
-        setDataTypesToClear(ClearBrowsingDataFragment.getAllOptions().toArray(new Integer[0]));
+        Set<Integer> allOptions = ClearBrowsingDataFragment.getAllOptions();
+        setDataTypesToClear(allOptions.toArray(new Integer[allOptions.size()]));
         // Set "Advanced" as the user's cached preference.
         when(mBrowsingDataBridgeMock.getLastClearBrowsingDataTab(any())).thenReturn(1);
 
@@ -246,7 +244,8 @@ public class ClearBrowsingDataFragmentTest {
     @Test
     @MediumTest
     public void testClearingEverything() {
-        setDataTypesToClear(ClearBrowsingDataFragment.getAllOptions().toArray(new Integer[0]));
+        Set<Integer> allOptions = ClearBrowsingDataFragment.getAllOptions();
+        setDataTypesToClear(allOptions.toArray(new Integer[allOptions.size()]));
 
         final ClearBrowsingDataFragment preferences =
                 (ClearBrowsingDataFragment) startPreferences().getMainFragment();

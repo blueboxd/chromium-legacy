@@ -21,8 +21,10 @@
 #include "chromeos/ash/components/network/hotspot_state_handler.h"
 #include "chromeos/ash/components/network/managed_cellular_pref_handler.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler_impl.h"
+#include "chromeos/ash/components/network/metrics/cellular_network_metrics_logger.h"
 #include "chromeos/ash/components/network/metrics/connection_info_metrics_logger.h"
 #include "chromeos/ash/components/network/metrics/esim_policy_login_metrics_logger.h"
+#include "chromeos/ash/components/network/metrics/hidden_network_metrics_helper.h"
 #include "chromeos/ash/components/network/metrics/vpn_network_metrics_helper.h"
 #include "chromeos/ash/components/network/network_activation_handler_impl.h"
 #include "chromeos/ash/components/network/network_cert_loader.h"
@@ -65,6 +67,7 @@ NetworkHandler::NetworkHandler()
   managed_cellular_pref_handler_.reset(new ManagedCellularPrefHandler());
   cellular_metrics_logger_.reset(new CellularMetricsLogger());
   connection_info_metrics_logger_.reset(new ConnectionInfoMetricsLogger());
+  hidden_network_metrics_helper_.reset(new HiddenNetworkMetricsHelper());
   vpn_network_metrics_helper_.reset(new VpnNetworkMetricsHelper());
   if (base::FeatureList::IsEnabled(features::kHiddenNetworkMigration)) {
     hidden_network_handler_.reset(new HiddenNetworkHandler());
@@ -146,6 +149,7 @@ void NetworkHandler::Init() {
                                  managed_network_configuration_handler_.get());
   connection_info_metrics_logger_->Init(network_state_handler_.get(),
                                         network_connection_handler_.get());
+  hidden_network_metrics_helper_->Init(network_configuration_handler_.get());
   vpn_network_metrics_helper_->Init(network_configuration_handler_.get());
   if (network_cert_migrator_)
     network_cert_migrator_->Init(network_state_handler_.get());
@@ -206,6 +210,9 @@ void NetworkHandler::InitializePrefServices(
       network_configuration_handler_.get(), network_connection_handler_.get(),
       network_state_handler_.get(), logged_in_profile_prefs, device_prefs,
       is_enterprise_managed_));
+  cellular_network_metrics_logger_.reset(new CellularNetworkMetricsLogger(
+      network_state_handler_.get(), network_metadata_store_.get(),
+      connection_info_metrics_logger_.get()));
   if (base::FeatureList::IsEnabled(ash::features::kHiddenNetworkMigration)) {
     hidden_network_handler_->SetNetworkMetadataStore(
         network_metadata_store_.get());

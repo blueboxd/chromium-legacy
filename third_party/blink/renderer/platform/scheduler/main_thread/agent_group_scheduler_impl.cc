@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/dummy_schedulers.h"
 
@@ -15,7 +16,8 @@ namespace scheduler {
 // static
 std::unique_ptr<WebAgentGroupScheduler>
 WebAgentGroupScheduler::CreateForTesting() {
-  return CreateDummyAgentGroupScheduler();
+  return std::make_unique<WebAgentGroupScheduler>(
+      CreateDummyAgentGroupScheduler());
 }
 
 MainThreadTaskQueue::QueueCreationParams DefaultTaskQueueCreationParams(
@@ -49,17 +51,11 @@ AgentGroupSchedulerImpl::AgentGroupSchedulerImpl(
       main_thread_scheduler_(main_thread_scheduler) {
   DCHECK(!default_task_queue_->GetFrameScheduler());
   DCHECK_EQ(default_task_queue_->GetAgentGroupScheduler(), this);
-  agents_ = MakeGarbageCollected<HeapHashSet<WeakMember<Agent>>>();
 }
 
-AgentGroupSchedulerImpl::~AgentGroupSchedulerImpl() {
-  for (Agent* agent : *agents_) {
-    agent->SchedulerDestroyed();
-  }
-
+void AgentGroupSchedulerImpl::Dispose() {
   default_task_queue_->DetachFromMainThreadScheduler();
   compositor_task_queue_->DetachFromMainThreadScheduler();
-  main_thread_scheduler_.RemoveAgentGroupScheduler(this);
 }
 
 std::unique_ptr<PageScheduler> AgentGroupSchedulerImpl::CreatePageScheduler(
@@ -94,10 +90,6 @@ WebThreadScheduler& AgentGroupSchedulerImpl::GetMainThreadScheduler() {
   return main_thread_scheduler_;
 }
 
-AgentGroupScheduler& AgentGroupSchedulerImpl::AsAgentGroupScheduler() {
-  return *this;
-}
-
 void AgentGroupSchedulerImpl::BindInterfaceBroker(
     mojo::PendingRemote<mojom::BrowserInterfaceBroker> remote_broker) {
   DCHECK(!broker_.is_bound());
@@ -118,19 +110,26 @@ v8::Isolate* AgentGroupSchedulerImpl::Isolate() {
 }
 
 void AgentGroupSchedulerImpl::AddAgent(Agent* agent) {
-  DCHECK(agents_->find(agent) == agents_->end());
-  agents_->insert(agent);
-}
-
-void AgentGroupSchedulerImpl::RemoveAgent(Agent* agent) {
-  DCHECK(agents_->find(agent) != agents_->end());
-  agents_->erase(agent);
+  DCHECK(agents_.find(agent) == agents_.end());
+  agents_.insert(agent);
 }
 
 void AgentGroupSchedulerImpl::PerformMicrotaskCheckpoint() {
-  for (Agent* agent : *agents_) {
+  // This code is performance sensitive so we do not wish to allocate
+  // memory, use an inline vector of 10.
+  HeapVector<Member<Agent>, 10> agents;
+  for (Agent* agent : agents_) {
+    agents.push_back(agent);
+  }
+  for (Agent* agent : agents) {
+    DCHECK(agents_.Contains(agent));
     agent->PerformMicrotaskCheckpoint();
   }
+}
+
+void AgentGroupSchedulerImpl::Trace(Visitor* visitor) const {
+  AgentGroupScheduler::Trace(visitor);
+  visitor->Trace(agents_);
 }
 
 }  // namespace scheduler

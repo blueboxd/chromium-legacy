@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ash/login/screens/multidevice_setup_screen.h"
 
-#include "ash/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
-#include "ash/services/multidevice_setup/public/cpp/oobe_completion_tracker.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -14,7 +12,9 @@
 #include "chrome/browser/ash/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/ash/multidevice_setup/oobe_completion_tracker_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/webui/chromeos/login/multidevice_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/multidevice_setup_screen_handler.h"
+#include "chromeos/ash/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
+#include "chromeos/ash/services/multidevice_setup/public/cpp/oobe_completion_tracker.h"
 
 // Enable VLOG level 1.
 #undef ENABLED_VLOG_LEVEL

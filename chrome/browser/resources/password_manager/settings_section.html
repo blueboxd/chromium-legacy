@@ -6,8 +6,39 @@
   cr-link-row[hide-icon]::part(icon) {
     display: none;
   }
+
+  #blockedSitesTitle {
+    margin-top: 28px;
+  }
+
+  .blocked-site-content {
+    border-top: var(--cr-separator-line);
+    flex: 1;
+    min-height: var(--section-min-height);
+  }
+
+  .blocked-site-content[first] {
+    border-top: none;
+  }
+
+  .favicon,
+  #blockedSitesHeader {
+    margin-inline-end: 20px;
+    margin-inline-start: 20px;
+  }
+
+  .site-url {
+    flex: 1;
+  }
+
+  cr-icon-button {
+    --cr-icon-button-icon-size: 16px;
+    --cr-icon-button-margin-start: 0px;
+    --cr-icon-button-margin-end: 10px;
+  }
+
 </style>
-<h2 class="page-title">$i18n{settings}</h2>
+<h3 class="page-title">$i18n{settings}</h3>
 <div class="card">
   <pref-toggle-button id="passwordToggle"
       label="$i18n{savePasswordsLabel}"
@@ -30,4 +61,31 @@
       label="$i18n{exportPasswords}"
       sub-label="$i18n{exportPasswordsDescription}" hide-icon>
   </cr-link-row>
+  <cr-link-row id="addShortcut" class="cr-row"
+      label="$i18n{addShortcut}"
+      sub-label="$i18n{addShortcutDescription}" hide-icon>
+    <cr-button class="header-aligned-button"
+        on-click="onAddShortcutClick_" aria-label="$i18n{addShortcut}">
+      $i18n{addShortcut}
+    </cr-button>
+  </cr-link-row>
+</div>
+<h3 id="blockedSitesTitle" class="page-title">$i18n{blockedSitesTitle}</h3>
+<div class="card" id="blockedSites">
+  <div class="flex-centered single-line-label">
+    <div id="blockedSitesHeader" class="cr-secondary-text label">
+      [[getBlockedSitesDescription_(blockedSites_)]]
+    </div>
+  </div>
+  <div id="blockedSitesList" class="hr" hidden="[[!blockedSites_.length]]">
+    <template is="dom-repeat" items="[[blockedSites_]]">
+      <div class="flex-centered">
+        <site-favicon class="favicon" url="[[item.urls.link]]"></site-favicon>
+        <div class="blocked-site-content flex-centered" first$="[[!index]]">
+          <div class="label site-url">[[item.urls.shown]]</div>
+          <cr-icon-button class="icon-clear"></cr-icon-button>
+        </div>
+      </div>
+    </template>
+  </div>
 </div>

@@ -101,6 +101,7 @@ constants_source_path = "$target_gen_dir/policy_constants.cc"
 app_restrictions_path = "$target_gen_dir/app_restrictions.xml"
 risk_tag_header_path = "$target_gen_dir/risk_tag.h"
 
+policy_templates_deps_file = "$policy_templates_base_dir/policy_templates.d"
 policy_templates_generated_json_path =
     "$policy_templates_base_dir/policy_templates.json"
 
@@ -186,25 +187,37 @@ action("full_runtime_code_generate") {
   ]
 }
 
-policy_templates_grd_file = "resources/policy_templates.grd"
+policy_templates_grd_file = "resources/policy_templates.build.grd"
 
 # Generates a single policy_templates.json with a real JSON format.
 action("generate_policy_templates") {
   script = "resources/policy_templates.py"
-  inputs = [ "resources/policy_templates.json" ]
-  outputs = [ policy_templates_generated_json_path ]
+  depfile = policy_templates_deps_file
+  outputs = [
+    "$policy_templates_generated_json_path",
+    "$policy_templates_deps_file",
+  ]
   args = [
     "--dest",
     rebase_path(policy_templates_generated_json_path, root_build_dir),
+    "--depfile",
+    rebase_path(policy_templates_deps_file, root_build_dir),
   ]
 }
 
 # Translates policy_templates.json into various languages.
 grit("translate_policy_templates") {
+  deps = [ ":generate_policy_templates" ]
   source = policy_templates_grd_file
-  inputs = [ "resources/policy_templates.json" ]
+  inputs = [ policy_templates_generated_json_path ]
   output_dir = "$root_gen_dir/chrome"
   outputs = policy_templates_translation_outputs
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    "-E",
+    "root_src_dir=" + rebase_path("//", root_build_dir),
+  ]
 }
 
 # Generate the various templates and docs (admx, doc, json, etc.)

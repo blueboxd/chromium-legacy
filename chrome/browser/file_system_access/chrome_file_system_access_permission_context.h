@@ -15,10 +15,7 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/timer/timer.h"
-#include "components/content_settings/core/common/content_settings_types.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "components/permissions/object_permission_context_base.h"
-#include "components/permissions/permission_util.h"
 #include "content/public/browser/file_system_access_permission_context.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
@@ -108,8 +105,12 @@ class ChromeFileSystemAccessPermissionContext
   std::u16string GetPickerTitle(
       const blink::mojom::FilePickerOptionsPtr& options) override;
 
-  ContentSetting GetReadGuardContentSetting(const url::Origin& origin);
-  ContentSetting GetWriteGuardContentSetting(const url::Origin& origin);
+  void NotifyEntryMoved(const url::Origin& origin,
+                        const base::FilePath& old_path,
+                        const base::FilePath& new_path) override;
+
+  ContentSetting GetReadGuardContentSetting(const url::Origin& origin) const;
+  ContentSetting GetWriteGuardContentSetting(const url::Origin& origin) const;
 
   void SetMaxIdsPerOriginForTesting(unsigned int max_ids) {
     max_ids_per_origin_ = max_ids;
@@ -164,6 +165,12 @@ class ChromeFileSystemAccessPermissionContext
 
   HostContentSettingsMap* content_settings() { return content_settings_.get(); }
 
+  // Dictionary key for the FILE_SYSTEM_ACCESS_CHOOSER_DATA setting.
+  // This key is defined in this header file because it is used both in
+  // the chrome_file_system_access_permission_context and the
+  // site_settings_helper, which displays File System Access permissions on the
+  // chrome://settings/content/filesystem UI.
+  static constexpr char kPermissionPathKey[] = "path";
   // This long after the handle has last been used, revoke the persisted
   // permission.
   static constexpr base::TimeDelta
@@ -185,7 +192,7 @@ class ChromeFileSystemAccessPermissionContext
 
   // Returns whether persisted permission grants for the origin are subject to
   // the extended permission duration policy.
-  bool OriginHasExtendedPermissions(const url::Origin& origin);
+  bool OriginHasExtendedPermissions(const url::Origin& origin) const;
 
  private:
   enum class MetricsOptions { kRecord, kDoNotRecord };
@@ -193,7 +200,14 @@ class ChromeFileSystemAccessPermissionContext
   class PermissionGrantImpl;
   void PermissionGrantDestroyed(PermissionGrantImpl* grant);
 
-  void DidConfirmSensitiveDirectoryAccess(
+  // Checks whether the file or directory at `path` corresponds to a directory
+  // Chrome considers sensitive (i.e. system files). Calls `callback` with
+  // whether the path is on the blocklist.
+  void CheckPathAgainstBlocklist(PathType path_type,
+                                 const base::FilePath& path,
+                                 HandleType handle_type,
+                                 base::OnceCallback<void(bool)> callback);
+  void DidCheckPathAgainstBlocklist(
       const url::Origin& origin,
       const base::FilePath& path,
       HandleType handle_type,
@@ -236,7 +250,7 @@ class ChromeFileSystemAccessPermissionContext
 
   bool AncestorHasActivePermission(const url::Origin& origin,
                                    const base::FilePath& path,
-                                   GrantType grant_type);
+                                   GrantType grant_type) const;
   absl::optional<base::Value> GetPersistedPermission(
       const url::Origin& origin,
       const base::FilePath& path);
@@ -246,7 +260,7 @@ class ChromeFileSystemAccessPermissionContext
                               GrantType grant_type,
                               MetricsOptions options);
   bool PersistentPermissionIsExpired(const base::Time& last_used,
-                                     bool has_extended_permissions);
+                                     bool has_extended_permissions) const;
 
   base::WeakPtr<ChromeFileSystemAccessPermissionContext> GetWeakPtr();
 

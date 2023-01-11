@@ -10,7 +10,6 @@
 #include "components/services/screen_ai/public/cpp/utilities.h"
 #include "sandbox/linux/syscall_broker/broker_command.h"
 #include "sandbox/linux/syscall_broker/broker_file_permission.h"
-#include "ui/accessibility/accessibility_features.h"
 
 using sandbox::syscall_broker::BrokerFilePermission;
 using sandbox::syscall_broker::MakeBrokerCommandSet;
@@ -34,7 +33,6 @@ bool ScreenAIPreSandboxHook(sandbox::policy::SandboxLinux::Options options) {
       VLOG(2) << "Screen AI library loaded pre-sandboxing:" << library_path;
     }
   }
-  screen_ai::StoreComponentBinaryPath(library_path);
 
   auto* instance = sandbox::policy::SandboxLinux::GetInstance();
 
@@ -47,11 +45,6 @@ bool ScreenAIPreSandboxHook(sandbox::policy::SandboxLinux::Options options) {
   if (!library_path.empty()) {
     permissions.push_back(BrokerFilePermission::ReadOnlyRecursive(
         library_path.DirName().MaybeAsASCII() + base::FilePath::kSeparators));
-  }
-
-  if (features::IsScreenAIDebugModeEnabled()) {
-    permissions.push_back(
-        BrokerFilePermission::ReadWriteCreateRecursive("/tmp/"));
   }
 
   instance->StartBrokerProcess(

@@ -44,10 +44,6 @@ BASE_FEATURE(kMessagesForAndroidInfrastructure,
              "MessagesForAndroidInfrastructure",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kMessagesForAndroidInstantApps,
-             "MessagesForAndroidInstantApps",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kMessagesForAndroidNearOomReduction,
              "MessagesForAndroidNearOomReduction",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -81,24 +77,9 @@ BASE_FEATURE(kMessagesForAndroidReaderMode,
              "MessagesForAndroidReaderMode",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kMessagesForAndroidSafetyTip,
-             "MessagesForAndroidSafetyTip",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kMessagesForAndroidSaveCard,
              "MessagesForAndroidSaveCard",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-constexpr base::FeatureParam<bool>
-    kMessagesForAndroidSaveCard_UseFollowupButtonText{
-        &kMessagesForAndroidSaveCard,
-        "save_card_message_use_followup_button_text", false};
-
-constexpr base::FeatureParam<bool> kMessagesForAndroidSaveCard_UseGPayIcon{
-    &kMessagesForAndroidSaveCard, "save_card_message_use_gpay_icon", true};
-
-constexpr base::FeatureParam<bool> kMessagesForAndroidSaveCard_UseDialogV2{
-    &kMessagesForAndroidSaveCard, "save_card_dialog_v2_enabled", false};
 
 BASE_FEATURE(kMessagesForAndroidStackingAnimation,
              "MessagesForAndroidStackingAnimation",
@@ -112,18 +93,9 @@ constexpr base::FeatureParam<bool>
     kMessagesForAndroidUpdatePassword_UseFollowupButtonText{
         &kMessagesForAndroidUpdatePassword, "use_followup_button_text", false};
 
-BASE_FEATURE(kMessagesForAndroidReduceLayoutChanges,
-             "MessagesForAndroidReduceLayoutChanges",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 bool IsAdsBlockedMessagesUiEnabled() {
   return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
          base::FeatureList::IsEnabled(kMessagesForAndroidAdsBlocked);
-}
-
-bool IsInstantAppsMessagesUiEnabled() {
-  return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
-         base::FeatureList::IsEnabled(kMessagesForAndroidInstantApps);
 }
 
 bool IsNearOomReductionMessagesUiEnabled() {
@@ -144,11 +116,6 @@ bool IsPasswordMessagesUiEnabled() {
 bool IsPopupBlockedMessagesUiEnabled() {
   return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
          base::FeatureList::IsEnabled(kMessagesForAndroidPopupBlocked);
-}
-
-bool IsSafetyTipMessagesUiEnabled() {
-  return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
-         base::FeatureList::IsEnabled(kMessagesForAndroidSafetyTip);
 }
 
 bool IsSaveCardMessagesUiEnabled() {
@@ -177,18 +144,6 @@ bool IsPermissionUpdateMessagesUiEnabled() {
 
 int GetSavePasswordMessageDismissDurationMs() {
   return kMessagesForAndroidPasswords_MessageDismissDurationMs.Get();
-}
-
-bool UseFollowupButtonTextForSaveCardMessage() {
-  return kMessagesForAndroidSaveCard_UseFollowupButtonText.Get();
-}
-
-bool UseGPayIconForSaveCardMessage() {
-  return kMessagesForAndroidSaveCard_UseGPayIcon.Get();
-}
-
-bool UseDialogV2ForSaveCardMessage() {
-  return kMessagesForAndroidSaveCard_UseDialogV2.Get();
 }
 
 static jboolean JNI_MessageFeatureList_IsEnabled(

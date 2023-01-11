@@ -47,6 +47,8 @@ user_data_auth::AuthIntent SerializeIntent(AuthSessionIntent intent) {
       return user_data_auth::AUTH_INTENT_DECRYPT;
     case AuthSessionIntent::kVerifyOnly:
       return user_data_auth::AUTH_INTENT_VERIFY_ONLY;
+    case AuthSessionIntent::kWebAuthn:
+      return user_data_auth::AUTH_INTENT_WEBAUTHN;
   }
 }
 
@@ -57,6 +59,8 @@ absl::optional<AuthSessionIntent> DeserializeIntent(
       return AuthSessionIntent::kDecrypt;
     case user_data_auth::AUTH_INTENT_VERIFY_ONLY:
       return AuthSessionIntent::kVerifyOnly;
+    case user_data_auth::AUTH_INTENT_WEBAUTHN:
+      return AuthSessionIntent::kWebAuthn;
     default:
       NOTIMPLEMENTED() << "Other intents not implemented yet, intent: "
                        << intent;
@@ -126,6 +130,36 @@ void AuthPerformer::InvalidateAuthSession(std::unique_ptr<UserContext> context,
 
   client_->InvalidateAuthSession(
       request, base::BindOnce(&AuthPerformer::OnInvalidateAuthSession,
+                              weak_factory_.GetWeakPtr(), std::move(context),
+                              std::move(callback)));
+}
+
+void AuthPerformer::PrepareAuthFactor(std::unique_ptr<UserContext> context,
+                                      cryptohome::AuthFactorType type,
+                                      AuthOperationCallback callback) {
+  CHECK(!context->GetAuthSessionId().empty());
+
+  user_data_auth::PrepareAuthFactorRequest request;
+  request.set_auth_session_id(context->GetAuthSessionId());
+  request.set_auth_factor_type(cryptohome::ConvertFactorTypeToProto(type));
+  request.set_purpose(::user_data_auth::PURPOSE_AUTHENTICATE_AUTH_FACTOR);
+
+  client_->PrepareAuthFactor(
+      request, base::BindOnce(&AuthPerformer::OnPrepareAuthFactor,
+                              weak_factory_.GetWeakPtr(), std::move(context),
+                              std::move(callback)));
+}
+
+void AuthPerformer::TerminateAuthFactor(std::unique_ptr<UserContext> context,
+                                        cryptohome::AuthFactorType type,
+                                        AuthOperationCallback callback) {
+  CHECK(!context->GetAuthSessionId().empty());
+  user_data_auth::TerminateAuthFactorRequest request;
+  request.set_auth_session_id(context->GetAuthSessionId());
+  request.set_auth_factor_type(cryptohome::ConvertFactorTypeToProto(type));
+
+  client_->TerminateAuthFactor(
+      request, base::BindOnce(&AuthPerformer::OnTerminateAuthFactor,
                               weak_factory_.GetWeakPtr(), std::move(context),
                               std::move(callback)));
 }
@@ -507,7 +541,7 @@ void AuthPerformer::OnInvalidateAuthSession(
     AuthOperationCallback callback,
     absl::optional<user_data_auth::InvalidateAuthSessionReply> reply) {
   // The auth session is useless even if we failed to invalidate it.
-  context->SetAuthSessionId("");
+  context->ResetAuthSessionId();
 
   auto error = user_data_auth::ReplyToCryptohomeError(reply);
   if (error != user_data_auth::CRYPTOHOME_ERROR_NOT_SET &&
@@ -517,7 +551,34 @@ void AuthPerformer::OnInvalidateAuthSession(
     return;
   }
 
-  context->SetAuthSessionId("");
+  std::move(callback).Run(std::move(context), absl::nullopt);
+}
+
+void AuthPerformer::OnPrepareAuthFactor(
+    std::unique_ptr<UserContext> context,
+    AuthOperationCallback callback,
+    absl::optional<user_data_auth::PrepareAuthFactorReply> reply) {
+  auto error = user_data_auth::ReplyToCryptohomeError(reply);
+  if (error != user_data_auth::CRYPTOHOME_ERROR_NOT_SET) {
+    LOGIN_LOG(ERROR) << "Could not prepare auth factor " << error;
+    std::move(callback).Run(std::move(context), AuthenticationError{error});
+    return;
+  }
+
+  std::move(callback).Run(std::move(context), absl::nullopt);
+}
+
+void AuthPerformer::OnTerminateAuthFactor(
+    std::unique_ptr<UserContext> context,
+    AuthOperationCallback callback,
+    absl::optional<user_data_auth::TerminateAuthFactorReply> reply) {
+  auto error = user_data_auth::ReplyToCryptohomeError(reply);
+  if (error != user_data_auth::CRYPTOHOME_ERROR_NOT_SET) {
+    LOGIN_LOG(ERROR) << "Could not terminate auth factor " << error;
+    std::move(callback).Run(std::move(context), AuthenticationError{error});
+    return;
+  }
+
   std::move(callback).Run(std::move(context), absl::nullopt);
 }
 

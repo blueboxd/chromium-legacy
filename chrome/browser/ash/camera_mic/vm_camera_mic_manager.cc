@@ -8,6 +8,7 @@
 #include <tuple>
 #include <utility>
 
+#include "ash/constants/ash_constants.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
@@ -318,9 +319,14 @@ class VmCameraMicManager::VmInfo : public message_center::NotificationObserver {
   void CloseNotification(NotificationType type) const {
     DCHECK_NE(type, kNoNotification);
 
+    auto notification_id = GetNotificationId(vm_type_, type);
+    if (ash::features::IsPrivacyIndicatorsEnabled()) {
+      notification_id =
+          ash::GetPrivacyIndicatorsNotificationId(notification_id);
+    }
+
     NotificationDisplayService::GetForProfile(profile_)->Close(
-        NotificationHandler::Type::TRANSIENT,
-        GetNotificationId(vm_type_, type));
+        NotificationHandler::Type::TRANSIENT, notification_id);
   }
 
   // message_center::NotificationObserver:
@@ -427,8 +433,21 @@ void VmCameraMicManager::MaybeSubscribeToCameraService(
   // OnActiveClientChange() will be called automatically after the
   // subscription, so there is no need to get the current status here.
   camera->AddActiveClientObserver(this);
-  OnCameraHWPrivacySwitchStatusChanged(
-      /*camera_id=*/-1, camera->AddCameraPrivacySwitchObserver(this));
+  auto privacy_switch_state = cros::mojom::CameraPrivacySwitchState::UNKNOWN;
+  auto device_id_to_privacy_switch_state =
+      camera->AddCameraPrivacySwitchObserver(this);
+  // TODO(b/255249223): Handle multiple cameras with privacy controls properly.
+  for (const auto& it : device_id_to_privacy_switch_state) {
+    cros::mojom::CameraPrivacySwitchState state = it.second;
+    if (state == cros::mojom::CameraPrivacySwitchState::ON) {
+      privacy_switch_state = state;
+      break;
+    } else if (state == cros::mojom::CameraPrivacySwitchState::OFF) {
+      privacy_switch_state = state;
+    }
+  }
+  OnCameraHWPrivacySwitchStateChanged(
+      /*device_id=*/std::string(), privacy_switch_state);
 }
 
 void VmCameraMicManager::UpdateVmInfo(VmType vm,
@@ -464,14 +483,18 @@ bool VmCameraMicManager::IsNotificationActive(
 
 void VmCameraMicManager::OnActiveClientChange(
     cros::mojom::CameraClientType type,
-    bool is_active) {
+    bool is_new_active_client,
+    const base::flat_set<std::string>& active_device_ids) {
   // Crostini does not support camera yet.
+  bool client_active_state_changed =
+      is_new_active_client || active_device_ids.empty();
 
-  if (type == cros::mojom::CameraClientType::PLUGINVM) {
+  if (client_active_state_changed &&
+      type == cros::mojom::CameraClientType::PLUGINVM) {
     content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&VmCameraMicManager::SetCameraAccessing,
-                       base::Unretained(this), VmType::kPluginVm, is_active));
+        FROM_HERE, base::BindOnce(&VmCameraMicManager::SetCameraAccessing,
+                                  base::Unretained(this), VmType::kPluginVm,
+                                  !active_device_ids.empty()));
   }
 }
 
@@ -479,8 +502,8 @@ void VmCameraMicManager::SetCameraAccessing(VmType vm, bool accessing) {
   UpdateVmInfo(vm, &VmInfo::SetCameraAccessing, accessing);
 }
 
-void VmCameraMicManager::OnCameraHWPrivacySwitchStatusChanged(
-    int32_t camera_id,
+void VmCameraMicManager::OnCameraHWPrivacySwitchStateChanged(
+    const std::string& device_id,
     cros::mojom::CameraPrivacySwitchState state) {
   using cros::mojom::CameraPrivacySwitchState;
   bool is_on;

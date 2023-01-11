@@ -15,7 +15,6 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
-#include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_surface.h"
@@ -69,9 +68,13 @@ SkiaOutputDeviceVulkan::~SkiaOutputDeviceVulkan() {
   if (UNLIKELY(!vulkan_surface_))
     return;
 
-  auto* fence_helper = context_provider_->GetDeviceQueue()->GetFenceHelper();
-  fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
-      std::move(vulkan_surface_));
+  {
+    base::ScopedBlockingCall scoped_blocking_call(
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
+    vkQueueWaitIdle(context_provider_->GetDeviceQueue()->GetVulkanQueue());
+  }
+
+  vulkan_surface_->Destroy();
 }
 
 #if BUILDFLAG(IS_WIN)

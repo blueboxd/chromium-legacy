@@ -58,11 +58,8 @@ declare_args() {
   # on-device decoding and bitstream passthrough as supported by device.
   enable_platform_dts_audio = false
 
-  # TODO(crbug.com/1329657): Remove the `is_fuchsia` condition once fuchsia
-  # builds set enable_cast_receiver.
   enable_mse_mpeg2ts_stream_parser =
-      proprietary_codecs &&
-      (enable_cast_receiver || is_fuchsia || use_fuzzing_engine)
+      proprietary_codecs && (enable_cast_receiver || use_fuzzing_engine)
 
   # Enable Dolby Vision demuxing. Enable by default for Chromecast. Actual
   # decoding must be provided by the platform. Note some Dolby Vision profiles
@@ -77,16 +74,13 @@ declare_args() {
   enable_platform_encrypted_dolby_vision = false
 
   # Enable HLS with SAMPLE-AES decryption.
-  #
-  # TODO(crbug.com/1329657): Remove the `is_fuchsia` condition once fuchsia
-  # builds set enable_cast_receiver.
   enable_hls_sample_aes =
-      proprietary_codecs && (enable_cast_receiver || is_fuchsia)
+      proprietary_codecs && (enable_cast_receiver || use_fuzzing_engine)
 
   # Enable logging override, e.g. enable DVLOGs through level 2 at build time.
-  # On Chromecast, these are logged as INFO.
-  # On Fuchsia, these are logged as VLOGs.
-  enable_logging_override = is_cast_media_device || is_fuchsia
+  # On Cast devices, these are logged as INFO.
+  # When enabled on Fuchsia, these are logged as VLOGs.
+  enable_logging_override = is_cast_media_device
 
   enable_dav1d_decoder = !is_ios
 
@@ -106,8 +100,7 @@ declare_args() {
        is_android || is_linux)
 }
 
-# Use another declare_args() to allow dependence on
-# |enable_hevc_parser_and_hw_decoder|.
+# Use another declare_args() to allow dependence on args defined above.
 declare_args() {
   # If overriding this to false, possibly via its component values,
   # `enable_libaom` should likely also be overriddent to false.
@@ -205,10 +198,11 @@ declare_args() {
   # Enables the use of library CDMs that implements the interface defined at
   # media/cdm/api/content_decryption_module.h. If true, the actually library CDM
   # will be hosted in the mojo CDM service running in the CDM (utility) process.
-  # Used for all desktop platforms except Fuchsia (crbug.com/1265618).
-  enable_library_cdms = toolkit_views && !is_fuchsia && !is_castos
+  # Used for all desktop platforms.
+  enable_library_cdms = toolkit_views && !is_castos
 }
 
+# Use another declare_args() to allow dependence on `enable_library_cdms`.
 declare_args() {
   # Enables host verification for CDMs.
   # Windows and Mac.

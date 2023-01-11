@@ -6,12 +6,12 @@
 
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
+#import "ios/chrome/browser/signin/system_identity.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/first_run_signin_logger.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/force_signin_logger.h"
 #import "ios/chrome/browser/ui/first_run/legacy_signin/legacy_signin_screen_consumer.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -99,8 +99,8 @@
 
 #pragma mark - Properties
 
-- (void)setSelectedIdentity:(ChromeIdentity*)selectedIdentity {
-  if ([self.selectedIdentity isEqual:selectedIdentity])
+- (void)setSelectedIdentity:(id<SystemIdentity>)selectedIdentity {
+  if ([_selectedIdentity isEqual:selectedIdentity])
     return;
   // nil is allowed only if there is no other identity.
   DCHECK(selectedIdentity || !self.accountManagerService->HasIdentities());
@@ -124,8 +124,7 @@
     return;
   }
 
-  if (!self.selectedIdentity ||
-      !self.accountManagerService->IsValidIdentity(self.selectedIdentity)) {
+  if (!self.accountManagerService->IsValidIdentity(self.selectedIdentity)) {
     self.selectedIdentity = self.accountManagerService->GetDefaultIdentity();
   }
 }
@@ -139,16 +138,16 @@
 #pragma mark - Private
 
 - (void)updateConsumer {
-  if (!self.selectedIdentity) {
+  id<SystemIdentity> selectedIdentity = self.selectedIdentity;
+  if (!selectedIdentity) {
     [self.consumer noIdentityAvailable];
   } else {
     UIImage* avatar = self.accountManagerService->GetIdentityAvatarWithIdentity(
-        self.selectedIdentity, IdentityAvatarSize::Regular);
-    [self.consumer
-        setSelectedIdentityUserName:self.selectedIdentity.userFullName
-                              email:self.selectedIdentity.userEmail
-                          givenName:self.selectedIdentity.userGivenName
-                             avatar:avatar];
+        selectedIdentity, IdentityAvatarSize::Regular);
+    [self.consumer setSelectedIdentityUserName:selectedIdentity.userFullName
+                                         email:selectedIdentity.userEmail
+                                     givenName:selectedIdentity.userGivenName
+                                        avatar:avatar];
   }
 }
 

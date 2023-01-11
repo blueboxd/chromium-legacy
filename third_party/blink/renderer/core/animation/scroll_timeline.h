@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/scroll/scroll_snapshot_client.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -33,7 +34,8 @@ class WorkletAnimationBase;
 // control the conversion of scroll amount to time output.
 //
 // Spec: https://wicg.github.io/scroll-animations/#scroll-timelines
-class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
+class CORE_EXPORT ScrollTimeline : public AnimationTimeline,
+                                   public ScrollSnapshotClient {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -109,16 +111,10 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   void GetCurrentAndMaxOffset(const LayoutBox*,
                               double& current_offset,
                               double& max_offset) const;
-  // Invalidates scroll timeline as a result of scroller properties change.
-  // This may lead the timeline to request a new animation frame.
-  virtual void Invalidate();
 
   // Mark every effect target of every Animation attached to this timeline
   // for style recalc.
   void InvalidateEffectTargetStyle();
-
-  // See DocumentAnimations::ValidateTimelines
-  bool ValidateState();
 
   cc::AnimationTimeline* EnsureCompositorTimeline() override;
   void UpdateCompositorTimeline() override;
@@ -134,12 +130,6 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   void AnimationDetached(Animation*) override;
 
   void Trace(Visitor*) const override;
-
-  // Invalidates scroll timelines with a given scroller node.
-  // Called when scroller properties, affecting scroll timeline state, change.
-  // These properties are scroller offset, content size, viewport size,
-  // overflow, adding and removal of scrollable area.
-  static void Invalidate(Node* node);
 
   // Duration is the maximum value a timeline may generate for current time.
   // Used to convert time values to proportional values.
@@ -173,7 +163,10 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
       PaintLayerScrollableArea* scrollable_area,
       ScrollOrientation physical_orientation) const;
 
-  void SnapshotState();
+  // ScrollSnapshotClient:
+  void UpdateSnapshot() override;
+  bool ValidateSnapshot() override;
+  bool ShouldScheduleNextService() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ScrollTimelineTest, MultipleScrollOffsetsClamping);
@@ -197,10 +190,6 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   };
 
   TimelineState ComputeTimelineState();
-
-  // Use time_check true to request next service if time has changed.
-  // false - regardless of time change.
-  void ScheduleNextServiceInternal(bool time_check);
 
   ReferenceType reference_type_;
   Member<Element> reference_element_;

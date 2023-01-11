@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/no_destructor.h"
 #include "chrome/browser/profiles/profile.h"
 
 #include <stddef.h>
@@ -42,6 +43,7 @@
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_observer.h"
+#include "chrome/browser/profiles/profile_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -261,7 +263,7 @@ class BrowserCloseObserver : public BrowserListObserver {
   }
 
  private:
-  raw_ptr<Browser> browser_;
+  raw_ptr<Browser, DanglingUntriaged> browser_;
   base::RunLoop run_loop_;
 };
 
@@ -529,7 +531,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, MAYBE_ProfileReadmeCreated) {
 
 // The EndSession IO synchronization is only critical on Windows, but also
 // happens under the USE_OZONE define. See BrowserProcessImpl::EndSession.
-#if BUILDFLAG(IS_WIN) || defined(USE_OZONE)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_OZONE)
 
 namespace {
 
@@ -636,7 +638,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
   ASSERT_TRUE(succeeded) << "profile->EndSession() timed out too often.";
 }
 
-#endif  // BUILDFLAG(IS_WIN) || defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_OZONE)
 
 // The following tests make sure that it's safe to shut down while one of the
 // Profile's URLLoaderFactories is in use by a SimpleURLLoader.
@@ -851,7 +853,8 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTestWithoutDestroyProfile,
   watcher1.Watch(otr_profile1);
   watcher2.Watch(otr_profile2);
 
-  ProfileDestroyer::DestroyProfileWhenAppropriate(regular_profile.release());
+  ProfileDestroyer::DestroyOriginalProfileWhenAppropriate(
+      std::move(regular_profile));
 
   EXPECT_TRUE(watcher1.destroyed());
   EXPECT_TRUE(watcher2.destroyed());
@@ -881,7 +884,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DestroyOnOTRProfileAmongMany) {
       incognito_browser->profile()->GetIOTaskRunner();
 
   // Request the destruction of one OTR profile:
-  ProfileDestroyer::DestroyProfileWhenAppropriate(otr_profile[1]);
+  ProfileDestroyer::DestroyOTRProfileWhenAppropriate(otr_profile[1]);
   EXPECT_FALSE(watcher[0].destroyed());
   EXPECT_TRUE(watcher[1].destroyed());
   EXPECT_FALSE(watcher[2].destroyed());
@@ -906,7 +909,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DestroyOnOTRProfileAmongMany) {
   EXPECT_FALSE(watcher[2].destroyed());
 
   // Cleanup
-  ProfileDestroyer::DestroyProfileWhenAppropriate(otr_profile[2]);
+  ProfileDestroyer::DestroyOTRProfileWhenAppropriate(otr_profile[2]);
   watcher[2].WaitForDestruction();
 }
 
@@ -914,32 +917,28 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DestroyOnOTRProfileAmongMany) {
 class ProfileBrowserTestWithDestroyProfile : public ProfileBrowserTest {
  public:
   ProfileBrowserTestWithDestroyProfile() {
+    keep_alive_ = std::make_unique<ScopedKeepAlive>(
+        KeepAliveOrigin::BROWSER, KeepAliveRestartOption::DISABLED);
+
     scoped_feature_list_.InitAndEnableFeature(
         features::kDestroyProfileOnBrowserClose);
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  std::unique_ptr<ScopedKeepAlive> keep_alive_;
 };
 
+// Main profile is not yet destroyed on Lacros, test below to test destroying
+// secondary profiles  on Lacros`LacrosSecondaryProfilesDestroyOnBrowserClose`.
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 // Verifies the regular Profile doesn't get destroyed as long as there's an OTR
 // Profile around.
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTestWithDestroyProfile,
                        OTRProfileKeepsRegularProfileAlive) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-
-  // Closing all windows (as we're about to do) triggers BrowserProcess
-  // shutdown, which makes ~ScopedProfileKeepAlive() a no-op. We don't want that
-  // for this test, because we check HasKeepAliveForTesting().
-  //
-  // Instantiate a second Profile, just so the KeepAliveRegistry refcount stays
-  // above 0.
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  Profile* profile2 = profile_manager->GetProfile(
-      profile_manager->user_data_dir().AppendASCII("Profile 2"));
-  CreateBrowser(profile2);
-
   Profile* regular_profile = browser()->profile();
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
   EXPECT_FALSE(profile_manager->HasKeepAliveForTesting(
       regular_profile, ProfileKeepAliveOrigin::kOffTheRecordProfile));
 
@@ -967,13 +966,63 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTestWithDestroyProfile,
       regular_profile, ProfileKeepAliveOrigin::kOffTheRecordProfile));
 
   // Destroy the OTR profile. *Now* the regular Profile should get deleted.
-  ProfileDestroyer::DestroyProfileWhenAppropriate(otr_profile);
+  ProfileDestroyer::DestroyOTRProfileWhenAppropriate(otr_profile);
   otr_watcher.WaitForDestruction();
   regular_watcher.WaitForDestruction();
 
   EXPECT_TRUE(regular_watcher.destroyed());
   EXPECT_TRUE(otr_watcher.destroyed());
 }
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+//  Test secondary profiles deleted on browser close on lacros.
+//  Main profile remains alive.
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTestWithDestroyProfile,
+                       LacrosSecondaryProfilesDestroyOnBrowserClose) {
+  Profile* main_profile = browser()->profile();
+  ASSERT_TRUE(Profile::IsMainProfilePath(main_profile->GetPath()));
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  // Create a secondary profile.
+  Profile* secondary_profile = profiles::testing::CreateProfileSync(
+      profile_manager, profile_manager->GenerateNextProfileDirectoryPath());
+  ASSERT_FALSE(Profile::IsMainProfilePath(secondary_profile->GetPath()));
+
+  // Creates a browser for the secondary profile.
+  Browser* secondary_browser = CreateBrowser(secondary_profile);
+  Browser* main_browser = browser();
+
+  EXPECT_TRUE(profile_manager->HasKeepAliveForTesting(
+      main_profile, ProfileKeepAliveOrigin::kLacrosMainProfile));
+  EXPECT_FALSE(profile_manager->HasKeepAliveForTesting(
+      secondary_profile, ProfileKeepAliveOrigin::kLacrosMainProfile));
+
+  // Destruction Watchers for both profiles.
+  ProfileDestructionWatcher main_watcher;
+  ProfileDestructionWatcher secondary_watcher;
+  main_watcher.Watch(main_profile);
+  secondary_watcher.Watch(secondary_profile);
+
+  // Close both browsers.
+  CloseBrowserSynchronously(secondary_browser);
+  CloseBrowserSynchronously(main_browser);
+  base::RunLoop().RunUntilIdle();
+
+  // Main profile has no more active browsers.
+  EXPECT_FALSE(profile_manager->HasKeepAliveForTesting(
+      main_profile, ProfileKeepAliveOrigin::kBrowserWindow));
+  // But still has the `ProfileKeepAliveOrigin::kLacrosMainProfile` KeepAlive
+  EXPECT_TRUE(profile_manager->HasKeepAliveForTesting(
+      main_profile, ProfileKeepAliveOrigin::kLacrosMainProfile));
+  // So the profile is not destroyed on browser close.
+  EXPECT_FALSE(main_watcher.destroyed());
+
+  // The secondary profile is destroyed on browser close.
+  EXPECT_TRUE(secondary_watcher.destroyed());
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Tests Profile::GetAllOffTheRecordProfiles

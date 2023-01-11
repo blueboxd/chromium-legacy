@@ -98,6 +98,7 @@ test("chromeos_unittests") {
   configs += [ "//build/config/linux/dbus" ]
 
   deps = [
+    "//base",
     "//base/test:test_support",
     "//build:chromeos_buildflags",
     "//mojo/core/embedder",
@@ -105,7 +106,7 @@ test("chromeos_unittests") {
 
   sources = [ "test/run_all_unittests.cc" ]
 
-  # Tests that common to Ash and Lacros.
+  # Tests that are common to Ash and Lacros.
   deps += [
     "//chromeos/constants:unit_tests",
     "//chromeos/system:unit_tests",
@@ -114,6 +115,7 @@ test("chromeos_unittests") {
   if (is_chromeos_ash) {
     deps += [
       ":test_support",
+      "//chromeos/ash/components:test_support",
       "//chromeos/ash/components:unit_tests",
       "//chromeos/ash/components/dbus:test_support",
       "//chromeos/ash/components/network:test_support",
@@ -181,19 +183,14 @@ if (is_chromeos_ash && is_chromeos_device) {
 
   # Tast test sources live in the Chromium OS repository.
   # To diagnose tast failures or disable tests, see go/tast-failures
+  # For any builders that run this target, it should also build Lacros.
   tast_test("chrome_all_tast_tests") {
-    # To disable a specific test, add it to the
-    # tast_disabled_tests_from_chrome_all list in "tast_control.gni" and cite
-    # a bug.
-    tast_disabled_tests = tast_disabled_tests_from_chrome_all
-  }
-
-  tast_test("chrome_all_tast_tests_with_lacros") {
-    # To disable a specific test, add it to the
-    # tast_disabled_tests_from_chrome_all list in "tast_control.gni" and cite
-    # a bug.
-    tast_disabled_tests = tast_disabled_tests_from_chrome_all
     deploy_lacros_chrome = true
+
+    # To disable a specific test, add it to the
+    # tast_disabled_tests_from_chrome_all list in "tast_control.gni" and cite
+    # a bug.
+    tast_disabled_tests = tast_disabled_tests_from_chrome_all
   }
 
   tast_test("chrome_all_tast_tests_informational") {

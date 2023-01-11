@@ -49,6 +49,14 @@ enum TimeUnit {
   SECOND = 7;
 }
 
+// Used to identify the source of the model whether it is a client side or
+// server side model.
+enum ModelSource {
+  UNKNOWN_MODEL_SOURCE = 0;
+  SERVER_MODEL_SOURCE = 1;   // Represents server side model.
+  DEFAULT_MODEL_SOURCE = 2;  // Represents client side model.
+}
+
 message UMAFeature {
   // The type of signal this feature refers to.
   // Note: SignalType::UKM_EVENT type is only used for SignalStorageConfig and
@@ -345,4 +353,22 @@ message SegmentationModelMetadata {
 
   // Whether the client should upload the input and output tensors through UKM.
   optional bool upload_tensors = 13;
+
+  // Describes the return type of the model score. Used for recording
+  // histograms.
+  enum OutputDescription {
+    UNKNOWN_RETURN_TYPE = 0;
+    // Model returns either 0 or 1.
+    RETURN_TYPE_HEURISTIC = 1;
+    // Model returns an int corresponding to a specific subsegment. Assume
+    // between 0 and 100.
+    RETURN_TYPE_MULTISEGMENT = 2;
+    // Model returns a float between 0 and 1.
+    RETURN_TYPE_PROBABILITY = 3;
+    // Model returns any float value.
+    // TODO(haileywang): Add support for recording histograms of float return
+    // type.
+    RETURN_TYPE_FLOAT = 4;
+  }
+  optional OutputDescription return_type = 14;
 }

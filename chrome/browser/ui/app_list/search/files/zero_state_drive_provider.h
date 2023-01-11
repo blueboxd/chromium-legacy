@@ -57,11 +57,9 @@ class ZeroStateDriveProvider : public SearchProvider,
       const power_manager::ScreenIdleState& proto) override;
 
   // SearchProvider:
-  void Start(const std::u16string& query) override;
   void StartZeroState() override;
-  void ViewClosing() override;
+  void StopZeroState() override;
   ash::AppListSearchResultType ResultType() const override;
-  bool ShouldBlockZeroState() const override;
 
  private:
   // Called when file suggestion data are fetched from the service.
@@ -114,7 +112,12 @@ class ZeroStateDriveProvider : public SearchProvider,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<ZeroStateDriveProvider> weak_factory_{this};
+  // Used to guard the task of updating the item suggest cache.
+  base::WeakPtrFactory<ZeroStateDriveProvider> update_cache_weak_factory_{this};
+
+  // Used to guard the query for drive file suggestions.
+  base::WeakPtrFactory<ZeroStateDriveProvider> suggestion_query_weak_factory_{
+      this};
 };
 
 }  // namespace app_list

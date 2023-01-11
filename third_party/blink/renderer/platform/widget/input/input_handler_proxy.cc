@@ -272,7 +272,7 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
   input_handler_->NotifyInputEvent();
 
   int64_t trace_id = event->latency_info().trace_id();
-  TRACE_EVENT("input,benchmark", "LatencyInfo.Flow",
+  TRACE_EVENT("input,benchmark,latencyInfo", "LatencyInfo.Flow",
               [trace_id](perfetto::EventContext ctx) {
                 ChromeLatencyInfo* info =
                     ctx.event()->set_chrome_latency_info();
@@ -1310,11 +1310,19 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
     cc::InputHandlerPointerResult pointer_result = HandlePointerDown(
         event_with_callback, touch_event.touches[0].PositionInWidget());
     if (pointer_result.type == cc::PointerResultType::kScrollbarScroll) {
-      client_->SetAllowedTouchAction(
-          allowed_touch_action, touch_event.unique_touch_event_id, DID_HANDLE);
+      client_->SetAllowedTouchAction(allowed_touch_action);
       return DID_HANDLE;
     }
   }
+
+  // main_thread_touch_sequence_start_disposition_ will indicate that touchmoves
+  // in the sequence should be sent to the main thread if the touchstart event
+  // was blocking. We may change |result| from DROP_EVENT if there is a touchend
+  // listener so we need to update main_thread_touch_sequence_start_disposition_
+  // here (before the check for a touchend listener) so that we send touchmoves
+  // only IF we send the (blocking) touchstart.
+  if (!(result == DID_HANDLE || result == DROP_EVENT))
+    main_thread_touch_sequence_start_disposition_ = result;
 
   // If |result| is still DROP_EVENT look at the touch end handler as we may
   // not want to discard the entire touch sequence. Note this code is
@@ -1348,8 +1356,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
   TRACE_EVENT_INSTANT2(
       "input", "Allowed TouchAction", TRACE_EVENT_SCOPE_THREAD, "TouchAction",
       cc::TouchActionToString(allowed_touch_action), "disposition", result);
-  client_->SetAllowedTouchAction(allowed_touch_action,
-                                 touch_event.unique_touch_event_id, result);
+  client_->SetAllowedTouchAction(allowed_touch_action);
 
   return result;
 }
@@ -1376,13 +1383,24 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchMove(
       touch_event.touch_start_or_first_touch_move) {
     bool is_touching_scrolling_layer;
     cc::TouchAction allowed_touch_action = cc::TouchAction::kAuto;
-    EventDisposition result = HitTestTouchEvent(
-        touch_event, &is_touching_scrolling_layer, &allowed_touch_action);
+    EventDisposition result;
+    bool is_main_thread_touch_sequence_with_blocking_start =
+        main_thread_touch_sequence_start_disposition_.has_value() &&
+        main_thread_touch_sequence_start_disposition_.value() == DID_NOT_HANDLE;
+    // If the touchmove occurs in a touch sequence that's being forwarded to
+    // the main thread, we can avoid the hit test since we want to also forward
+    // touchmoves in the sequence to the main thread.
+    if (is_main_thread_touch_sequence_with_blocking_start) {
+      touch_result_ = main_thread_touch_sequence_start_disposition_.value();
+      result = touch_result_.value();
+    } else {
+      result = HitTestTouchEvent(touch_event, &is_touching_scrolling_layer,
+                                 &allowed_touch_action);
+    }
     TRACE_EVENT_INSTANT2(
         "input", "Allowed TouchAction", TRACE_EVENT_SCOPE_THREAD, "TouchAction",
         cc::TouchActionToString(allowed_touch_action), "disposition", result);
-    client_->SetAllowedTouchAction(allowed_touch_action,
-                                   touch_event.unique_touch_event_id, result);
+    client_->SetAllowedTouchAction(allowed_touch_action);
     return result;
   }
   return touch_result_.value();
@@ -1403,6 +1421,10 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchEnd(
   }
   if (touch_event.touches_length == 1)
     touch_result_.reset();
+
+  if (main_thread_touch_sequence_start_disposition_.has_value())
+    main_thread_touch_sequence_start_disposition_.reset();
+
   return DID_NOT_HANDLE;
 }
 

@@ -5,9 +5,6 @@
 /**
  * @fileoverview Installs Language Detection management functions on the
  * __gCrWeb object.
- *
- * TODO(crbug.com/659442): Enable checkTypes error for this file.
- * @suppress {checkTypes}
  */
 
 __gCrWeb.languageDetection = {};
@@ -131,7 +128,7 @@ __gCrWeb.languageDetection['detectLanguage'] = function() {
   // |-detectLanguage| to the native side.
   // Matches desktop implementation.
   // Note: This should stay in sync with the constant in
-  // language_detection_controller.mm .
+  // ios_language_detection_tab_helper.mm .
   const kMaxIndexChars = 65535;
   const captureBeginTime = new Date();
   __gCrWeb.languageDetection.activeRequests += 1;

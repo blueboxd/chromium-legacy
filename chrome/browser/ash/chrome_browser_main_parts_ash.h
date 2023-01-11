@@ -66,12 +66,12 @@ class ArcKioskAppManager;
 class AudioSurveyHandler;
 class BluetoothPrefStateObserver;
 class BulkPrintersCalculatorFactory;
+class CameraGeneralSurveyHandler;
 class CrosUsbDetector;
 class DebugdNotificationHandler;
 class DemoModeResourcesRemover;
 class EventRewriterDelegateImpl;
 class FastTransitionObserver;
-class FirmwareUpdateManager;
 class FwupdDownloadClientImpl;
 class GnubbyNotification;
 class IdleActionWarningObserver;
@@ -267,8 +267,6 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<LoginScreenExtensionsStorageCleaner>
       login_screen_extensions_storage_cleaner_;
 
-  std::unique_ptr<FirmwareUpdateManager> firmware_update_manager_;
-
   std::unique_ptr<GnubbyNotification> gnubby_notification_;
   std::unique_ptr<system::BreakpadConsentWatcher> breakpad_consent_watcher_;
 
@@ -282,6 +280,8 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
       quick_pair_delegate_;
 
   std::unique_ptr<AudioSurveyHandler> audio_survey_handler_;
+
+  std::unique_ptr<CameraGeneralSurveyHandler> camera_general_survey_handler_;
 
   std::unique_ptr<ash::memory::ZramWritebackController>
       zram_writeback_controller_;

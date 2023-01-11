@@ -21,6 +21,7 @@
 #include "ash/app_list/views/paged_apps_grid_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/shell.h"
@@ -496,13 +497,9 @@ void AppListView::InitChildWidget() {
   GetViewAccessibility().OverridePreviousFocus(search_box_widget);
 }
 
-void AppListView::Show(AppListViewState preferred_state, bool is_side_shelf) {
+void AppListView::Show(AppListViewState preferred_state) {
   if (!time_shown_.has_value())
     time_shown_ = base::Time::Now();
-  // The opacity of the AppListView may have been manipulated by overview mode,
-  // so reset it before it is shown.
-  GetWidget()->GetLayer()->SetOpacity(1.0f);
-  is_side_shelf_ = is_side_shelf;
 
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   AddAccelerator(ui::Accelerator(ui::VKEY_BROWSER_BACK, ui::EF_NONE));
@@ -640,11 +637,6 @@ void AppListView::UpdatePageResetTimer(bool app_list_visibility) {
 }
 
 gfx::Insets AppListView::GetMainViewInsetsForShelf() const {
-  if (is_side_shelf()) {
-    // Set both horizontal insets so the app list remains centered on the
-    // screen.
-    return gfx::Insets::VH(0, delegate_->GetShelfSize());
-  }
   return gfx::Insets::TLBR(0, 0, delegate_->GetShelfSize(), 0);
 }
 
@@ -727,27 +719,7 @@ void AppListView::SetChildViewsForStateTransition(
   // Do not update the contents view state on closing.
   if (target_state != AppListViewState::kClosed) {
     app_list_main_view_->contents_view()->SetActiveState(
-        AppListState::kStateApps, !is_side_shelf_);
-  }
-
-  if (target_state == AppListViewState::kClosed && is_side_shelf_) {
-    // Reset the search box to be shown again. This is done after the animation
-    // is complete normally, but there is no animation when |is_side_shelf_|.
-    search_box_view_->ClearSearchAndDeactivateSearchBox();
-  }
-}
-
-void AppListView::MaybeIncreasePrivacyInfoRowShownCounts(
-    AppListViewState new_state) {
-  AppListStateTransitionSource transition =
-      GetAppListStateTransitionSource(new_state);
-  switch (transition) {
-    case kFullscreenAllAppsToFullscreenSearch:
-      if (app_list_main_view()->contents_view()->IsShowingSearchResults())
-        delegate_->MaybeIncreaseSuggestedContentInfoShownCount();
-      break;
-    default:
-      break;
+        AppListState::kStateApps, /*animate=*/true);
   }
 }
 
@@ -1005,7 +977,6 @@ void AppListView::SetState(AppListViewState new_state) {
   state_transition_notifier_->Reset(new_state);
 
   StartAnimationForState(new_state);
-  MaybeIncreasePrivacyInfoRowShownCounts(new_state);
   RecordStateTransitionForUma(new_state);
   app_list_state_ = new_state;
   if (delegate_)
@@ -1067,8 +1038,8 @@ void AppListView::OnAppListVisibilityChanged(bool shown) {
 
 base::TimeDelta AppListView::GetStateTransitionAnimationDuration(
     AppListViewState target_state) {
-  if (is_side_shelf_ || (target_state == AppListViewState::kClosed &&
-                         delegate_->ShouldDismissImmediately())) {
+  if (target_state == AppListViewState::kClosed &&
+      delegate_->ShouldDismissImmediately()) {
     return base::Milliseconds(kAppListAnimationDurationImmediateMs);
   }
 
@@ -1086,7 +1057,9 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
   base::TimeDelta animation_duration =
       GetStateTransitionAnimationDuration(target_state);
 
-  ApplyBoundsAnimation(target_state, animation_duration);
+  if (!app_list_features::IsAnimateScaleOnTabletModeTransitionEnabled())
+    ApplyBoundsAnimation(target_state, animation_duration);
+
   app_list_main_view_->contents_view()->OnAppListViewTargetStateChanged(
       target_state);
   app_list_main_view_->contents_view()->AnimateToViewState(target_state,
@@ -1095,14 +1068,6 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
 
 void AppListView::ApplyBoundsAnimation(AppListViewState target_state,
                                        base::TimeDelta duration_ms) {
-  if (is_side_shelf_) {
-    // There is no animation in side shelf.
-    // Mark the state transition as complete directly, as no animations that
-    // for `state_transition_notifier_` to observe are run in this case.
-    state_transition_notifier_->SetTransitionDone();
-    return;
-  }
-
   gfx::Rect target_bounds = GetPreferredWidgetBoundsForState(target_state);
 
   // When closing the view should animate to the shelf bounds. The workspace
@@ -1288,16 +1253,6 @@ void AppListView::OnBoundsAnimationCompleted(AppListViewState target_state) {
                                                  was_animation_interrupted);
 }
 
-void AppListView::SetShelfHasRoundedCorners(bool shelf_has_rounded_corners) {
-  if (shelf_has_rounded_corners_ == shelf_has_rounded_corners)
-    return;
-  shelf_has_rounded_corners_ = shelf_has_rounded_corners;
-  absl::optional<base::TimeTicks> animation_end_timestamp;
-  if (GetWidget() && GetWidget()->GetLayer()->GetAnimator()->is_animating()) {
-    animation_end_timestamp = animation_end_timestamp_;
-  }
-}
-
 void AppListView::RedirectKeyEventToSearchBox(ui::KeyEvent* event) {
   if (event->handled())
     return;
@@ -1413,12 +1368,10 @@ int AppListView::GetPreferredWidgetYForState(AppListViewState state) const {
     case AppListViewState::kFullscreenSearch:
       return fullscreen_height;
     case AppListViewState::kClosed:
-      // Align the widget y with shelf y to avoid flicker in show animation. In
-      // side shelf mode, the widget y is the top of work area because the
-      // widget does not animate.
-      return (is_side_shelf_ ? work_area_bounds.y()
-                             : work_area_bounds.bottom()) -
-             display.bounds().y();
+      if (app_list_features::IsAnimateScaleOnTabletModeTransitionEnabled())
+        return fullscreen_height;
+      // Align the widget y with shelf y to avoid flicker in show animation.
+      return work_area_bounds.bottom() - display.bounds().y();
   }
 }
 

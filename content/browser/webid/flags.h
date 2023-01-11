@@ -15,17 +15,11 @@ bool IsFedCmAutoSigninEnabled();
 // Whether FedCM IDP sign-out is enabled.
 bool IsFedCmIdpSignoutEnabled();
 
-// Whether manifest list fetching and validation is enabled.
-bool IsFedCmManifestValidationEnabled();
-
 // Whether multiple identity providers are enabled.
 bool IsFedCmMultipleIdentityProvidersEnabled();
 
 // Whether IdpSigninStatus is enabled.
 bool IsFedCmIdpSigninStatusEnabled();
-
-// Whether FedCM iframe support is enabled.
-bool IsFedCmIframeSupportEnabled();
 
 // Whether metrics endpoint is enabled.
 bool IsFedCmMetricsEndpointEnabled();

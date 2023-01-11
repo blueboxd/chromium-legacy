@@ -74,11 +74,7 @@ class FileSearchProviderTest : public testing::Test {
   }
 
   const SearchProvider::Results& LastResults() {
-    if (app_list_features::IsCategoricalSearchEnabled()) {
-      return search_controller_->last_results();
-    } else {
-      return provider_->results();
-    }
+    return search_controller_->last_results();
   }
 
   void Wait() { task_environment_.RunUntilIdle(); }
@@ -239,6 +235,24 @@ TEST_F(FileSearchProviderTest, HighScoringFilesHaveScoreInRightRange) {
   // The scores should be properly in order and not exceed 1.0.
   EXPECT_GT(results[0]->relevance(), results[1]->relevance());
   EXPECT_LE(results[0]->relevance(), 1.0);
+}
+
+TEST_F(FileSearchProviderTest, ResultsNotReturnedAfterClearingSearch) {
+  // Make two identically named files with different access times.
+  const base::Time time = base::Time::Now();
+  const base::Time earlier_time = time - base::Days(5);
+  CreateDirectory("dir");
+  WriteFile("file");
+  TouchFile(Path("file"), earlier_time, time);
+
+  // Start search, and cancel it before the provider has had a chance to return
+  // results.
+  provider_->Start(u"file");
+
+  provider_->StopQuery();
+  Wait();
+
+  EXPECT_EQ(LastResults().size(), 0u);
 }
 
 class FileSearchProviderTrashTest : public FileSearchProviderTest {

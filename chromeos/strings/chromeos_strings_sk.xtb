@@ -6,7 +6,6 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (počet vlákien: <ph name="THREAD_COUNT" />, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">K dispozícii je nová funkcia. Viac sa dozviete pomocou šípky nahor.</translation>
 <translation id="1059913517121127803">Skenovanie sa nepodarilo spustiť</translation>
-<translation id="1062407476771304334">Nahradiť</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Bol zistený firewall</translation>
 <translation id="1075811647922107217">Veľkosť stránky</translation>
@@ -72,6 +71,7 @@
 <translation id="1567064801249837505">Albumy</translation>
 <translation id="1572585716423026576">Nastaviť ako tapetu</translation>
 <translation id="1578784163189013834">Vybrať pozadie šetriča obrazovky</translation>
+<translation id="160633243685262989">Zobraziť ukážku obrázka</translation>
 <translation id="1615335640928990664">Spotreba dát od <ph name="FRIENDLY_DATE" /></translation>
 <translation id="1621067168122174824">Spustiť test nabitia</translation>
 <translation id="1639239467298939599">Načítava sa</translation>
@@ -139,7 +139,6 @@
 <translation id="2161394479394250669">Zrušiť tlačovú úlohu</translation>
 <translation id="2163937499206714165">Zapnúť tmavý režim</translation>
 <translation id="2180197493692062006">Vyskytol sa problém. Skúste aplikáciu znova otvoriť.</translation>
-<translation id="2182088270354640012">Ďakujeme za spätnú väzbu. Vaša spätná väzba pomáha zlepšovať Chrome OS a skontroluje ju tím systému Chrome OS. Vzhľadom na veľký počet odoslaných hlásení vám priamo neodpovieme.</translation>
 <translation id="2209788852729124853">Resetovať počítadlá návštevnosti</translation>
 <translation id="2212733584906323460">Preklad názvu</translation>
 <translation id="2217935453350629363">Aktuálna rýchlosť</translation>
@@ -221,6 +220,7 @@
 <translation id="315116470104423982">Mobilné dátové prenosy</translation>
 <translation id="3156846309055100599">Skenuje sa <ph name="PAGE_NUMBER" />. strana…</translation>
 <translation id="315738237743207937">Bol rozpoznaný prihlasovací portál</translation>
+<translation id="3160172848211257835">Odoslať <ph name="BEGIN_LINK1" />informácie o systéme a aplikáciách<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />metriky<ph name="END_LINK2" /></translation>
 <translation id="3170673040743561620">Položte dokument na skener</translation>
 <translation id="3188257591659621405">Moje súbory</translation>
 <translation id="319101249942218879">Obrázok avatara bol zmenený</translation>
@@ -333,6 +333,7 @@
 <translation id="4297501883039923494">Zastavené – neznáma chyba</translation>
 <translation id="4300073214558989">Počet obrázkov: <ph name="IMAGE_COUNT" /></translation>
 <translation id="4333390807948134856">Bol stlačený kláves <ph name="KEY_NAME" /></translation>
+<translation id="435692326371619097">Spravujte nastavenia názvov prístupových bodov (APN) siete. Názvy prístupových bodov umožňujú nadviazať pripojenie medzi mobilnou sieťou a internetom. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="4378373042927530923">Nebolo spustené</translation>
 <translation id="4378551569595875038">Pripája sa...</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -482,7 +483,6 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="5669267381087807207">Aktivuje sa</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Rodina</translation>
-<translation id="5695599963893094957">Stlačte ľubovoľný kláves na klávesnici. Môžete stlačiť až štyri klávesy naraz.</translation>
 <translation id="5701381305118179107">Na stred</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> z <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Aktualizovať zariadenie <ph name="DEVICE_NAME" /></translation>
@@ -584,6 +584,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="6575134580692778371">Nenakonfigurované</translation>
 <translation id="6579509898032828423">Použiť túto fotku</translation>
 <translation id="6596816719288285829">Adresa IP</translation>
+<translation id="6599673642868607614">Ďakujeme vám za spätnú väzbu. Vaša spätná väzba nám pomáha zlepšiť prostredie Chromebooku a skontroluje ju náš tím. Vzhľadom na veľký počet hlásení vám nebudeme môcť odpovedať.</translation>
 <translation id="6618744767048954150">Beží</translation>
 <translation id="6620487321149975369">Tlačové úlohy sa budú zobrazovať v histórii, dokým ich neodstránite ručne</translation>
 <translation id="6624819909909965616">Súbor väčší než 10 MB sa nedá nahrať</translation>
@@ -628,6 +629,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">Nepodarilo sa – nepodarilo sa autorizovať</translation>
 <translation id="7103252855940681301"><ph name="INDEX" />. zariadenie z <ph name="COUNT" /> s názvom <ph name="NAME" />.</translation>
+<translation id="7130438335435247835">Názov prístupového bodu (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{Menný server}few{Menné servery}many{Name servers}other{Menné servery}}</translation>
 <translation id="7143207342074048698">Pripája sa</translation>
 <translation id="7144878232160441200">Skúsiť znova</translation>
@@ -672,6 +674,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="7535791657097741517">Zapnúť svetlý motív</translation>
 <translation id="7550715992156305117">Diagnostické postupy</translation>
 <translation id="7551123448725492271">Zariadenie je audio zariadenie.</translation>
+<translation id="7559239713112547082">Zobraziť ukážku snímky obrazovky</translation>
 <translation id="7561454561030345039">Túto akciu ovláda váš správca</translation>
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7570674786725311828">Dotyková obrazovka USB</translation>
@@ -688,9 +691,9 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="773153675489693198">Počet cyklov</translation>
 <translation id="7747039790905080783">Predzdieľaný kľúč</translation>
 <translation id="7762130827864645708">Zmena hesla bola úspešná. Odteraz používajte nové heslo.</translation>
-<translation id="7762839321248874531">Odoslať <ph name="BEGIN_LINK1" />informácie o systéme a aplikáciách<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />metriky<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Zhoda prípony domény</translation>
 <translation id="7769672763586021400">ID modelu</translation>
+<translation id="7778717409420828014">Vaša spätná väzba nám pomáha zlepšiť prostredie Chromebooku a skontroluje ju náš tím. Vzhľadom na veľký počet hlásení vám nebudeme môcť odpovedať.</translation>
 <translation id="7784116172884276937">Nie sú nastavené žiadne servery DNS</translation>
 <translation id="779591286616261875">Odoslať nové hlásenie</translation>
 <translation id="7799817062559422778">Svetlý režim</translation>
@@ -825,7 +828,6 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="9082718469794970195">Použiť toto video</translation>
 <translation id="9087578468327036362">Nahlásiť tento dopyt</translation>
 <translation id="9088306295921699330">Aktuálne využitie</translation>
-<translation id="9092255287806472980">Vaša spätná väzba pomáha zlepšovať ChromeOS a náš tím ju skontroluje. Vzhľadom na veľký počet hlásení vám nebudeme môcť odpovedať.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="910415269708673980">Obnoviť tiket pre <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Skenuje sa <ph name="PAGE_NUMBER" />. strana</translation>

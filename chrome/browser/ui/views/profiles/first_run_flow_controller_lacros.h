@@ -5,16 +5,18 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_FIRST_RUN_FLOW_CONTROLLER_LACROS_H_
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_FIRST_RUN_FLOW_CONTROLLER_LACROS_H_
 
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/views/profiles/profile_management_flow_controller.h"
 
-class LacrosFirstRunSignedInFlowController;
-
 class FirstRunFlowControllerLacros : public ProfileManagementFlowController {
  public:
+  // Profile management flow controller that will run the FRE for `profile` in
+  // `host`.
+  // `first_run_exited_callback` is guaranteed to be called when the flow is
+  // exited.
   FirstRunFlowControllerLacros(
       ProfilePickerWebContentsHost* host,
+      ClearHostClosure clear_host_callback,
       Profile* profile,
       ProfilePicker::DebugFirstRunExitedCallback first_run_exited_callback);
 
@@ -25,17 +27,16 @@ class FirstRunFlowControllerLacros : public ProfileManagementFlowController {
   ~FirstRunFlowControllerLacros() override;
 
  private:
-  void ExitFlowAndRun(ProfilePicker::BrowserOpenedCallback callback);
+  void ExitFlowAndRun(Profile* profile, PostHostClearedCallback callback);
+  void MarkSyncConfirmationSeen();
 
   // Captures the operation that the user expected to run at the time we chose
-  // to show them the FRE. When we complete the FRE, we run this and we expect
-  // that it will cause a browser to be opened.
+  // to show them the FRE. When we exit the FRE, we MUST run this. We expect
+  // that it will cause a UI for the primary profile to be opened.
   ProfilePicker::DebugFirstRunExitedCallback first_run_exited_callback_;
 
-  // Gives access to the signed-in flow controller, which is owned by the step.
-  // TODO(crbug.com/1358845): Remove it once we can monitor advancement after
-  // the first screen as a navigation from chrome://intro.
-  base::WeakPtr<LacrosFirstRunSignedInFlowController> signed_in_flow_;
+  // Tracks whether the user got to the last step of the FRE flow.
+  bool sync_confirmation_seen_ = false;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PROFILES_FIRST_RUN_FLOW_CONTROLLER_LACROS_H_

@@ -13,18 +13,19 @@ import './profile_picker_shared.css.js';
 
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
-import {assertNotReached} from 'chrome://resources/js/assert.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
+// clang-format off
 // <if expr="chromeos_lacros">
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-// </if>
-
-import {WebUIListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// <if expr="chromeos_lacros">
 import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
 // </if>
+
+import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// clang-format on
+
+
 
 import {ManageProfilesBrowserProxy, ManageProfilesBrowserProxyImpl, ProfileState} from './manage_profiles_browser_proxy.js';
 import {getTemplate} from './profile_card_menu.html.js';
@@ -64,7 +65,7 @@ export interface ProfileCardMenuElement {
 }
 
 const ProfileCardMenuElementBase =
-    WebUIListenerMixin(I18nMixin(PolymerElement));
+    WebUiListenerMixin(I18nMixin(PolymerElement));
 
 export class ProfileCardMenuElement extends ProfileCardMenuElementBase {
   static get is() {
@@ -102,6 +103,11 @@ export class ProfileCardMenuElement extends ProfileCardMenuElementBase {
           ProfileStatistics.BOOKMARKS,
           ProfileStatistics.AUTOFILL,
         ],
+      },
+
+      moreActionsButtonAriaLabel_: {
+        type: String,
+        computed: 'computeMoreActionsButtonAriaLabel_(profileState)',
       },
 
       removeWarningText_: {
@@ -161,6 +167,11 @@ export class ProfileCardMenuElement extends ProfileCardMenuElementBase {
           .addEventListener('click', () => this.onAccountSettingsClicked_());
     });
     // </if>
+  }
+
+  private computeMoreActionsButtonAriaLabel_(): string {
+    return this.i18n(
+        'profileMenuAriaLabel', this.profileState.localProfileName);
   }
 
   // <if expr="not chromeos_lacros">
@@ -231,7 +242,6 @@ export class ProfileCardMenuElement extends ProfileCardMenuElementBase {
         return this.i18n('removeWarningAutofill');
       default:
         assertNotReached();
-        return '';
     }
   }
 

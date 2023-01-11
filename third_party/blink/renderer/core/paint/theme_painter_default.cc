@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/text/writing_mode.h"
 #include "third_party/blink/renderer/platform/theme/web_theme_engine_helper.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_utils.h"
@@ -107,8 +108,16 @@ DirectionFlippingScope::~DirectionFlippingScope() {
 
 gfx::Rect DeterminateProgressValueRectFor(const LayoutProgress& layout_progress,
                                           const gfx::Rect& rect) {
-  int dx = rect.width() * layout_progress.GetPosition();
-  return gfx::Rect(rect.x(), rect.y(), dx, rect.height());
+  int dx = rect.width();
+  int dy = rect.height();
+  int y = rect.y();
+  if (IsHorizontalWritingMode(layout_progress.StyleRef().GetWritingMode())) {
+    dx *= layout_progress.GetPosition();
+  } else {
+    dy *= layout_progress.GetPosition();
+    y += rect.height() - dy;
+  }
+  return gfx::Rect(rect.x(), y, dx, dy);
 }
 
 gfx::Rect IndeterminateProgressValueRectFor(
@@ -117,18 +126,29 @@ gfx::Rect IndeterminateProgressValueRectFor(
   // Value comes from default of GTK+.
   static const int kProgressActivityBlocks = 5;
 
-  int value_width = rect.width() / kProgressActivityBlocks;
-  int movable_width = rect.width() - value_width;
-  if (movable_width <= 0)
-    return gfx::Rect();
-
+  int x = rect.x();
+  int y = rect.y();
+  int value_width = rect.width();
+  int value_height = rect.height();
   double progress = layout_progress.AnimationProgress();
-  if (progress < 0.5) {
-    return gfx::Rect(rect.x() + progress * 2 * movable_width, rect.y(),
-                     value_width, rect.height());
+
+  if (IsHorizontalWritingMode(layout_progress.StyleRef().GetWritingMode())) {
+    value_width = value_width / kProgressActivityBlocks;
+    int movable_width = rect.width() - value_width;
+    if (movable_width <= 0)
+      return gfx::Rect();
+    x = progress < 0.5 ? x + progress * 2 * movable_width
+                       : rect.x() + (1.0 - progress) * 2 * movable_width;
+  } else {
+    value_height = value_height / kProgressActivityBlocks;
+    int movable_height = rect.height() - value_height;
+    if (movable_height <= 0)
+      return gfx::Rect();
+    y = progress < 0.5 ? y + progress * 2 * movable_height
+                       : rect.y() + (1.0 - progress) * 2 * movable_height;
   }
-  return gfx::Rect(rect.x() + (1.0 - progress) * 2 * movable_width, rect.y(),
-                   value_width, rect.height());
+
+  return gfx::Rect(x, y, value_width, value_height);
 }
 
 gfx::Rect ProgressValueRectFor(const LayoutProgress& layout_progress,
@@ -460,6 +480,8 @@ bool ThemePainterDefault::PaintProgressBar(const Element& element,
   extra_params.progress_bar.value_rect_width = value_rect.width();
   extra_params.progress_bar.value_rect_height = value_rect.height();
   extra_params.progress_bar.zoom = style.EffectiveZoom();
+  extra_params.progress_bar.is_horizontal =
+      IsHorizontalWritingMode(layout_progress->StyleRef().GetWritingMode());
 
   DirectionFlippingScope scope(layout_object, paint_info, rect);
   WebThemeEngineHelper::GetNativeThemeEngine()->Paint(
@@ -512,8 +534,6 @@ bool ThemePainterDefault::PaintSearchFieldCancelButton(
       cancel_button_size, cancel_button_size);
   gfx::Rect painting_rect = ConvertToPaintingRect(
       input_layout_box, cancel_button_object, cancel_button_rect, r);
-  mojom::blink::ColorScheme color_scheme =
-      cancel_button_object.StyleRef().UsedColorScheme();
   DEFINE_STATIC_REF(Image, cancel_image,
                     (Image::LoadPlatformResource(IDR_SEARCH_CANCEL)));
   DEFINE_STATIC_REF(Image, cancel_pressed_image,
@@ -549,6 +569,8 @@ bool ThemePainterDefault::PaintSearchFieldCancelButton(
             text_is_dark ? cancel_pressed_image_hc_light_mode
                          : cancel_pressed_image_dark_mode;
   } else {
+    mojom::blink::ColorScheme color_scheme =
+        cancel_button_object.StyleRef().UsedColorScheme();
     color_scheme_adjusted_cancel_image =
         color_scheme == mojom::blink::ColorScheme::kLight
             ? cancel_image
@@ -561,8 +583,6 @@ bool ThemePainterDefault::PaintSearchFieldCancelButton(
   Image* target_image = To<Element>(cancel_button_object.GetNode())->IsActive()
                             ? color_scheme_adjusted_cancel_pressed_image
                             : color_scheme_adjusted_cancel_image;
-  // TODO(penglin): It's no need to do further classification here but
-  // force Dark mode may not pick up the correct resource image now.
   paint_info.context.DrawImage(
       target_image, Image::kSyncDecode, ImageAutoDarkMode::Disabled(),
       ImagePaintTimingInfo(), gfx::RectF(painting_rect));

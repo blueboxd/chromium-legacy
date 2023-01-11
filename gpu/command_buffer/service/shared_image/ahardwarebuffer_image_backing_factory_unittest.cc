@@ -565,11 +565,9 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, Overlay) {
           gl_legacy_shared_image.mailbox());
   EXPECT_TRUE(overlay_representation);
 
-  auto scoped_read_access =
-      overlay_representation->BeginScopedReadAccess(true /* needs_gl_image */);
+  auto scoped_read_access = overlay_representation->BeginScopedReadAccess();
   EXPECT_TRUE(scoped_read_access);
-  EXPECT_TRUE(scoped_read_access->gl_image());
-  auto buffer = scoped_read_access->gl_image()->GetAHardwareBuffer();
+  auto buffer = scoped_read_access->GetAHardwareBufferFenceSync();
   DCHECK(buffer);
   scoped_read_access.reset();
   skia_representation.reset();

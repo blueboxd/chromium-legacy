@@ -7,17 +7,11 @@ import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
-import("//components/exo/buildflags.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
 
 assert(use_ozone)
 assert(is_chromeos_ash)
-
-buildflag_header("buildflags") {
-  header = "buildflags.h"
-  flags = [ "ENABLE_COLOR_MANAGER=$enable_color_manager" ]
-}
 
 if (use_xkbcommon) {
   pkg_config("xkbcommon") {
@@ -393,22 +387,9 @@ test("exo_unittests") {
   }
 
   if (is_chromeos_ash) {
-    sources += [
-      "../../ash/test/ash_test_suite.cc",
-      "../../ash/test/ash_test_suite.h",
-    ]
-
     deps += [
-      "//ash:test_support",
-      "//ash/public/cpp",
+      "//chromeos/ash/components:test_support",
       "//components/exo/server:unit_tests",
-      "//ui/display:display_manager_test_api",
-    ]
-
-    data_deps += [
-      "//ash/resources:ash_test_resources_100_percent",
-      "//ash/resources:ash_test_resources_200_percent",
-      "//ash/strings:ash_test_strings",
     ]
   }
 }

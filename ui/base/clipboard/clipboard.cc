@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -30,7 +31,7 @@ bool Clipboard::IsSupportedClipboardBuffer(ClipboardBuffer buffer) {
   // Use lambda instead of local helper function in order to access private
   // member IsSelectionBufferAvailable().
   static auto IsSupportedSelectionClipboard = []() -> bool {
-#if defined(USE_OZONE) && !BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_OZONE) && !BUILDFLAG(IS_CHROMEOS)
     ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
     CHECK(clipboard);
     return clipboard->IsSelectionBufferAvailable();
@@ -60,8 +61,7 @@ void Clipboard::SetAllowedThreads(
   base::AutoLock lock(ClipboardMapLock());
 
   AllowedThreads().clear();
-  std::copy(allowed_threads.begin(), allowed_threads.end(),
-            std::back_inserter(AllowedThreads()));
+  base::ranges::copy(allowed_threads, std::back_inserter(AllowedThreads()));
 }
 
 // static

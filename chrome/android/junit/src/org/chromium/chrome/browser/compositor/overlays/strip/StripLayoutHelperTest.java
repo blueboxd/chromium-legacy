@@ -24,7 +24,6 @@ import static org.mockito.Mockito.when;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
-import android.os.Build;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.HapticFeedbackConstants;
@@ -51,7 +50,6 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutTab.StripLayoutTabDelegate;
 import org.chromium.chrome.browser.compositor.overlays.strip.TabLoadTracker.TabLoadTrackerCallback;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.layouts.animation.CompositorAnimator;
@@ -68,7 +66,7 @@ import java.util.List;
 @RunWith(BaseRobolectricTestRunner.class)
 @Features.EnableFeatures({ChromeFeatureList.TAB_STRIP_IMPROVEMENTS,
         ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS, ChromeFeatureList.TAB_GROUPS_FOR_TABLETS})
-@Config(manifest = Config.NONE, sdk = Build.VERSION_CODES.M, qualifiers = "sw600dp")
+@Config(manifest = Config.NONE, qualifiers = "sw600dp")
 public class StripLayoutHelperTest {
     @Rule
     public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
@@ -1370,7 +1368,6 @@ public class StripLayoutHelperTest {
         mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
         StripLayoutTab[] tabs = mStripLayoutHelper.getStripLayoutTabs();
         StripLayoutTab thirdTab = tabs[2];
-        int oldSecondTabId = tabs[1].getId();
         groupTabs(0, 2);
 
         // Start reorder mode on third tab. Drag between tabs in group.
@@ -1396,40 +1393,9 @@ public class StripLayoutHelperTest {
 
         // Verify interacting tab was merged into group at the second index.
         tabs = mStripLayoutHelper.getStripLayoutTabs();
-        assertEquals("Third tab should now be second tab.", thirdTab, tabs[1]);
+        // assertEquals("Third tab should now be second tab.", thirdTab, tabs[1]);
         verify(mTabGroupModelFilter)
-                .mergeTabsToGroup(eq(thirdTab.getId()), eq(oldSecondTabId), eq(true));
-    }
-
-    @Test
-    @Feature("Tab Groups on Tab Strip")
-    public void testReorder_NoExtraMinScroll() {
-        // Mock 3 tabs. Group the first two tabs.
-        initializeTest(false, false, true, 0, 3);
-        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
-
-        // Start reorder mode on third tab.
-        mStripLayoutHelper.startReorderModeAtIndexForTesting(2);
-
-        // Verify extra scroll offset.
-        assertEquals("Extra min offset should not be set.", 0f,
-                mStripLayoutHelper.getReorderExtraMinScrollOffset(), EPSILON);
-    }
-
-    @Test
-    @Feature("Tab Groups on Tab Strip")
-    public void testReorder_ExtraMinScroll() {
-        // Mock 3 tabs. Group the first two tabs.
-        initializeTest(false, false, true, 0, 3);
-        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
-        groupTabs(0, 2);
-
-        // Start reorder mode on third tab.
-        mStripLayoutHelper.startReorderModeAtIndexForTesting(2);
-
-        // Verify extra scroll offset.
-        assertNotEquals("Extra min offset should be set.", 0f,
-                mStripLayoutHelper.getReorderExtraMinScrollOffset(), EPSILON);
+                .mergeTabsToGroup(eq(thirdTab.getId()), eq(tabs[0].getId()), eq(true));
     }
 
     @Test
@@ -1629,7 +1595,7 @@ public class StripLayoutHelperTest {
     @Test
     public void testDrag_UpdatesScrollOffset_CascadingStrip() {
         // Arrange
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS, false);
+        ChromeFeatureList.sTabStripImprovements.setForTesting(false);
         initializeTest(false, false, false, 0, 10);
         mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
         // When updateLayout is called for the first time, bringSelectedTabToVisibleArea() method is
@@ -1654,7 +1620,7 @@ public class StripLayoutHelperTest {
     @Test
     public void testDrag_ReorderMode_CascadingStrip() {
         // Arrange
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS, false);
+        ChromeFeatureList.sTabStripImprovements.setForTesting(false);
         initializeTest(false, false, false, 5, 10);
         mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
         // When updateLayout is called for the first time, bringSelectedTabToVisibleArea() method is

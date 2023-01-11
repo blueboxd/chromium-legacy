@@ -438,7 +438,7 @@ TEST_F(StyleCascadeTest, ApplyGenerations) {
   EXPECT_EQ("10px", cascade.ComputedValue("--x"));
   EXPECT_EQ("20px", cascade.ComputedValue("width"));
 
-  cascade.State().StyleRef().SetWidth(Length::Auto());
+  cascade.State().StyleBuilder().SetWidth(Length::Auto());
   cascade.State().StyleRef().SetVariableData("--x", nullptr, true);
   EXPECT_EQ(g_null_atom, cascade.ComputedValue("--x"));
   EXPECT_EQ("auto", cascade.ComputedValue("width"));
@@ -2012,6 +2012,17 @@ TEST_F(StyleCascadeTest, SubstituteAnimationTaintedInStandardProperty) {
   EXPECT_EQ("15px", cascade.ComputedValue("width"));
 }
 
+TEST_F(StyleCascadeTest, SubstituteAnimationTaintedInAnimationDelay) {
+  TestCascade cascade(GetDocument());
+  cascade.Add(AnimationTaintedSet("--x", "1s"));
+  cascade.Add("animation-delay-start", "var(--x)");
+  cascade.Add("animation-delay-end", "var(--x)");
+  cascade.Apply();
+  EXPECT_EQ("1s", cascade.ComputedValue("--x"));
+  EXPECT_EQ("0s", cascade.ComputedValue("animation-delay-start"));
+  EXPECT_EQ("0s", cascade.ComputedValue("animation-delay-end"));
+}
+
 TEST_F(StyleCascadeTest, SubstituteAnimationTaintedInAnimationProperty) {
   TestCascade cascade(GetDocument());
   cascade.Add("--x", "20s");
@@ -2519,7 +2530,7 @@ TEST_F(StyleCascadeTest, AnimatedVisitedImportantOverride) {
     )HTML");
 
   TestCascade cascade(GetDocument());
-  cascade.State().Style()->SetInsideLink(EInsideLink::kInsideVisitedLink);
+  cascade.State().StyleBuilder().SetInsideLink(EInsideLink::kInsideVisitedLink);
 
   cascade.Add(ParseDeclarationBlock("background-color:red !important"),
               CascadeOrigin::kAuthor, CSSSelector::kMatchVisited);
@@ -2535,11 +2546,15 @@ TEST_F(StyleCascadeTest, AnimatedVisitedImportantOverride) {
 
   auto style = cascade.TakeStyle();
 
-  style->SetInsideLink(EInsideLink::kInsideVisitedLink);
+  ComputedStyleBuilder builder(*style);
+  builder.SetInsideLink(EInsideLink::kInsideVisitedLink);
+  style = builder.TakeStyle();
   EXPECT_EQ(Color(255, 0, 0),
             style->VisitedDependentColor(GetCSSPropertyBackgroundColor()));
 
-  style->SetInsideLink(EInsideLink::kNotInsideLink);
+  builder = ComputedStyleBuilder(*style);
+  builder.SetInsideLink(EInsideLink::kNotInsideLink);
+  style = builder.TakeStyle();
   EXPECT_EQ(Color(150, 150, 150),
             style->VisitedDependentColor(GetCSSPropertyBackgroundColor()));
 }
@@ -2563,11 +2578,15 @@ TEST_F(StyleCascadeTest, AnimatedVisitedHighPrio) {
 
   auto style = cascade.TakeStyle();
 
-  style->SetInsideLink(EInsideLink::kInsideVisitedLink);
+  ComputedStyleBuilder builder(*style);
+  builder.SetInsideLink(EInsideLink::kInsideVisitedLink);
+  style = builder.TakeStyle();
   EXPECT_EQ(Color(150, 150, 150),
             style->VisitedDependentColor(GetCSSPropertyColor()));
 
-  style->SetInsideLink(EInsideLink::kNotInsideLink);
+  builder = ComputedStyleBuilder(*style);
+  builder.SetInsideLink(EInsideLink::kNotInsideLink);
+  style = builder.TakeStyle();
   EXPECT_EQ(Color(150, 150, 150),
             style->VisitedDependentColor(GetCSSPropertyColor()));
 }
@@ -3065,7 +3084,7 @@ TEST_F(StyleCascadeTest, InternalVisitedColorLonghand) {
   cascade.Add("color:green", CascadeOrigin::kAuthor);
   cascade.Add("color:red", CascadeOrigin::kAuthor, CSSSelector::kMatchVisited);
 
-  cascade.State().Style()->SetInsideLink(EInsideLink::kInsideVisitedLink);
+  cascade.State().StyleBuilder().SetInsideLink(EInsideLink::kInsideVisitedLink);
   cascade.Apply();
 
   EXPECT_EQ("rgb(0, 128, 0)", cascade.ComputedValue("color"));
@@ -3083,7 +3102,7 @@ TEST_F(StyleCascadeTest, VarInInternalVisitedColorShorthand) {
   cascade.Add("outline-color:green", CascadeOrigin::kAuthor,
               CSSSelector::kMatchLink);
 
-  cascade.State().Style()->SetInsideLink(EInsideLink::kInsideVisitedLink);
+  cascade.State().StyleBuilder().SetInsideLink(EInsideLink::kInsideVisitedLink);
   cascade.Apply();
 
   EXPECT_EQ("rgb(0, 128, 0)", cascade.ComputedValue("outline-color"));
@@ -3142,10 +3161,10 @@ TEST_F(StyleCascadeTest, FilterTransformOrigin) {
 }
 
 TEST_F(StyleCascadeTest, HasAuthorBackground) {
-  Vector<String> properties = {"background-attachment", "background-blend-mode",
-                               "background-clip",       "background-image",
-                               "background-origin",     "background-position-x",
-                               "background-position-y", "background-size"};
+  Vector<String> properties = {"background-attachment", "background-clip",
+                               "background-image",      "background-origin",
+                               "background-position-x", "background-position-y",
+                               "background-size"};
 
   for (String property : properties) {
     TestCascade cascade(GetDocument());
@@ -3415,11 +3434,15 @@ TEST_F(StyleCascadeTest, RootColorNotModifiedByEmptyCascade) {
 
   auto style = cascade.TakeStyle();
 
-  style->SetInsideLink(EInsideLink::kInsideVisitedLink);
+  ComputedStyleBuilder builder(*style);
+  builder.SetInsideLink(EInsideLink::kInsideVisitedLink);
+  style = builder.TakeStyle();
   EXPECT_EQ(Color(255, 0, 0),
             style->VisitedDependentColor(GetCSSPropertyColor()));
 
-  style->SetInsideLink(EInsideLink::kNotInsideLink);
+  builder = ComputedStyleBuilder(*style);
+  builder.SetInsideLink(EInsideLink::kNotInsideLink);
+  style = builder.TakeStyle();
   EXPECT_EQ(Color(255, 0, 0),
             style->VisitedDependentColor(GetCSSPropertyColor()));
 }
@@ -3443,10 +3466,14 @@ TEST_F(StyleCascadeTest, InitialColor) {
 
   auto style = cascade.TakeStyle();
 
-  style->SetInsideLink(EInsideLink::kInsideVisitedLink);
+  ComputedStyleBuilder builder(*style);
+  builder.SetInsideLink(EInsideLink::kInsideVisitedLink);
+  style = builder.TakeStyle();
   EXPECT_EQ(Color::kWhite, style->VisitedDependentColor(GetCSSPropertyColor()));
 
-  style->SetInsideLink(EInsideLink::kNotInsideLink);
+  builder = ComputedStyleBuilder(*style);
+  builder.SetInsideLink(EInsideLink::kNotInsideLink);
+  style = builder.TakeStyle();
   EXPECT_EQ(Color::kWhite, style->VisitedDependentColor(GetCSSPropertyColor()));
 }
 

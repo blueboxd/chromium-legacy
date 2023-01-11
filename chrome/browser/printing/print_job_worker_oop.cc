@@ -10,7 +10,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/printing/print_backend_service_manager.h"
-#include "chrome/browser/printing/print_error_dialog.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
 #include "components/device_event_log/device_event_log.h"
@@ -358,10 +357,6 @@ void PrintJobWorkerOop::OnFailure() {
   PrintJobWorker::OnFailure();
 }
 
-void PrintJobWorkerOop::ShowErrorDialog() {
-  ShowPrintErrorDialog();
-}
-
 void PrintJobWorkerOop::UnregisterServiceManagerClient() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (service_manager_client_id_.has_value()) {
@@ -413,7 +408,6 @@ void PrintJobWorkerOop::NotifyFailure(mojom::ResultCode result) {
     uma_result = PrintOopResult::kCanceled;
   }
   base::UmaHistogramEnumeration(kPrintOopPrintResultHistogramName, uma_result);
-  ShowErrorDialog();
 
   // Initiate rest of regular failure handling.
   task_runner()->PostTask(FROM_HERE,
@@ -557,7 +551,8 @@ void PrintJobWorkerOop::SendRenderPrintedDocument(
   PrintBackendServiceManager& service_mgr =
       PrintBackendServiceManager::GetInstance();
   service_mgr.RenderPrintedDocument(
-      device_name_, document_cookie, data_type, std::move(serialized_data),
+      device_name_, document_cookie, document()->page_count(), data_type,
+      std::move(serialized_data),
       base::BindOnce(&PrintJobWorkerOop::OnDidRenderPrintedDocument,
                      ui_weak_factory_.GetWeakPtr()));
 }

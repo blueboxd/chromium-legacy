@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/holding_space/holding_space_downloads_delegate.h"
 
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_metrics.h"
 #include "ash/public/cpp/holding_space/holding_space_progress.h"
@@ -72,10 +71,7 @@ gfx::ImageSkia CreateErrorPlaceholderImageSkia(
               color_name,
               /*is_dark_mode=*/
               dark_background.value_or(
-                  DarkLightModeControllerImpl::Get()->IsDarkModeEnabled()),
-              /*use_debug_colors=*/
-              base::FeatureList::IsEnabled(
-                  features::kSemanticColorsDebugOverride))));
+                  DarkLightModeControllerImpl::Get()->IsDarkModeEnabled()))));
 }
 
 // Returns the singleton `crosapi::DownloadControllerAsh` if it exists.
@@ -867,23 +863,26 @@ void HoldingSpaceDownloadsDelegate::CreateOrUpdateHoldingSpaceItem(
   // Commands.
   std::vector<HoldingSpaceItem::InProgressCommand> in_progress_commands;
   if (!in_progress_download->GetProgress().IsComplete()) {
-    in_progress_commands.push_back(
-        in_progress_download->IsPaused()
-            ? HoldingSpaceItem::InProgressCommand(
-                  HoldingSpaceCommandId::kResumeItem,
-                  IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_RESUME, &kResumeIcon,
-                  base::BindRepeating(&HoldingSpaceDownloadsDelegate::Resume,
-                                      weak_factory_.GetWeakPtr()))
-            : HoldingSpaceItem::InProgressCommand(
-                  HoldingSpaceCommandId::kPauseItem,
-                  IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_PAUSE, &kPauseIcon,
-                  base::BindRepeating(&HoldingSpaceDownloadsDelegate::Pause,
-                                      weak_factory_.GetWeakPtr())));
-    in_progress_commands.push_back(HoldingSpaceItem::InProgressCommand(
+    if (!(in_progress_download->IsDangerous() ||
+          in_progress_download->IsMixedContent())) {
+      in_progress_commands.push_back(
+          in_progress_download->IsPaused()
+              ? HoldingSpaceItem::InProgressCommand(
+                    HoldingSpaceCommandId::kResumeItem,
+                    IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_RESUME, &kResumeIcon,
+                    base::BindRepeating(&HoldingSpaceDownloadsDelegate::Resume,
+                                        weak_factory_.GetWeakPtr()))
+              : HoldingSpaceItem::InProgressCommand(
+                    HoldingSpaceCommandId::kPauseItem,
+                    IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_PAUSE, &kPauseIcon,
+                    base::BindRepeating(&HoldingSpaceDownloadsDelegate::Pause,
+                                        weak_factory_.GetWeakPtr())));
+    }
+    in_progress_commands.emplace_back(
         HoldingSpaceCommandId::kCancelItem,
         IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_CANCEL, &kCancelIcon,
         base::BindRepeating(&HoldingSpaceDownloadsDelegate::Cancel,
-                            weak_factory_.GetWeakPtr())));
+                            weak_factory_.GetWeakPtr()));
   }
 
   // Update.

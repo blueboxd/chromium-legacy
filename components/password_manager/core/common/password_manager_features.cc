@@ -47,11 +47,6 @@ BASE_FEATURE(kForceEnablePasswordDomainCapabilities,
              "ForceEnablePasswordDomainCapabilities",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables favicons in Password Manager.
-BASE_FEATURE(kEnableFaviconForPasswords,
-             "EnableFaviconForPasswords",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables the overwriting of prefilled username fields if the server predicted
 // the field to contain a placeholder value.
 BASE_FEATURE(kEnableOverwritingPlaceholderUsernames,
@@ -110,7 +105,7 @@ BASE_FEATURE(kInferConfirmationPasswordField,
 // Manager.
 BASE_FEATURE(kIOSEnablePasswordManagerBrandingUpdate,
              "IOSEnablePasswordManagerBrandingUpdate",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_IOS)
 // Removes the list of passwords from the Settings UI and adds a separate
@@ -168,6 +163,11 @@ BASE_FEATURE(kPasswordChangeInSettings,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
+// Enables automatic password change for account store credentials.
+BASE_FEATURE(kPasswordChangeAccountStoreUsers,
+             "PasswordChangeAccountStoreUsers",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables .well-known based password change flow from leaked password dialog.
 BASE_FEATURE(kPasswordChangeWellKnown,
              "PasswordChangeWellKnown",
@@ -217,6 +217,14 @@ BASE_FEATURE(kRecoverFromNeverSaveAndroid,
              "RecoverFromNeverSaveAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+// Enables a revamped version of the password management bubble triggered by
+// manually clicking on the key icon in the omnibox.
+BASE_FEATURE(kRevampedPasswordManagementBubble,
+             "RevampedPasswordManagementBubble",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
 // Enables the password strength indicator.
 BASE_FEATURE(kPasswordStrengthIndicator,
              "PasswordStrengthIndicator",
@@ -228,14 +236,6 @@ BASE_FEATURE(kPasswordStrengthIndicator,
 BASE_FEATURE(kSkipUndecryptablePasswords,
              "SkipUndecryptablePasswords",
              base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
-#if BUILDFLAG(IS_LINUX)
-// When enabled, all undecryptable passwords are deleted from the local database
-// during initial sync flow.
-BASE_FEATURE(kSyncUndecryptablePasswordsLinux,
-             "SyncUndecryptablePasswordsLinux",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 #if BUILDFLAG(IS_ANDROID)

@@ -14,6 +14,7 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/run_loop.h"
+#include "base/test/gtest_util.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -131,8 +132,10 @@ TEST(ClientSidePhishingModelTest, NotifiesForFile) {
   const std::string file_contents = "visual model file";
   file.WriteAtCurrentPos(file_contents.data(), file_contents.size());
 
+  ClientSideModel model;
+  model.set_max_words_per_term(0);  // Required field.
   ClientSidePhishingModel::GetInstance()->PopulateFromDynamicUpdate(
-      "", std::move(file));
+      model.SerializeAsString(), std::move(file));
 
   run_loop.Run();
 
@@ -181,8 +184,10 @@ TEST(ClientSidePhishingModelTest, DoesNotNotifyOnBadFollowingUpdate) {
   const std::string file_contents = "visual model file";
   file.WriteAtCurrentPos(file_contents.data(), file_contents.size());
 
+  ClientSideModel model;
+  model.set_max_words_per_term(0);  // Required field.
   ClientSidePhishingModel::GetInstance()->PopulateFromDynamicUpdate(
-      "", std::move(file));
+      model.SerializeAsString(), std::move(file));
 
   run_loop.RunUntilIdle();
 
@@ -385,13 +390,11 @@ TEST(ClientSidePhishingModelTest, FlatbufferonFollowingUpdate) {
             CSDModelType::kFlatbuffer);
 
   // Mapping should be undone automatically, even with a region copy lying
-  // around. Death tests misbehave on Android, or the memory may be re-mapped.
-  // See https://crbug.com/815537 and base/test/gtest_util.h.
+  // around.
   // Can remove this if flaky.
   // Windows ASAN flake: crbug.com/1234652
-#if defined(GTEST_HAS_DEATH_TEST) && !BUILDFLAG(IS_ANDROID) && \
-    !(BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER))
-  EXPECT_DEATH_IF_SUPPORTED(memset(memory_addr, 'G', 1), "");
+#if !(BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER))
+  BASE_EXPECT_DEATH(memset(memory_addr, 'G', 1), "");
 #endif
 }
 

@@ -17,7 +17,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
-#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
@@ -471,14 +470,6 @@ std::string GetSignonRealm(const GURL& url) {
   return url.ReplaceComponents(rep).spec();
 }
 
-bool UsesPasswordManagerGoogleBranding(bool is_syncing) {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  return true;
-#else
-  return is_syncing;
-#endif  // GOOGLE_CHROME_BRANDING
-}
-
 #if BUILDFLAG(IS_IOS)
 bool IsCredentialProviderEnabledOnStartup(const PrefService* prefs) {
   return prefs->GetBoolean(
@@ -490,5 +481,25 @@ void SetCredentialProviderEnabledOnStartup(PrefService* prefs, bool enabled) {
       password_manager::prefs::kCredentialProviderEnabledOnStartup, enabled);
 }
 #endif
+
+bool IsNumeric(char16_t c) {
+  return '0' <= c && c <= '9';
+}
+
+bool IsLetter(char16_t c) {
+  return IsLowercaseLetter(c) || IsUppercaseLetter(c);
+}
+
+bool IsLowercaseLetter(char16_t c) {
+  return 'a' <= c && c <= 'z';
+}
+
+bool IsUppercaseLetter(char16_t c) {
+  return 'A' <= c && c <= 'Z';
+}
+
+bool IsSpecialSymbol(char16_t c) {
+  return base::Contains(kSpecialSymbols, c);
+}
 
 }  // namespace password_manager_util

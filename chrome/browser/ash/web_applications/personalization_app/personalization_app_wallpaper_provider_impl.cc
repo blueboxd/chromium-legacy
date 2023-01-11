@@ -6,9 +6,11 @@
 
 #include <stdint.h>
 #include <algorithm>
+#include <cstdint>
 #include <iterator>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "ash/constants/ash_features.h"
@@ -24,11 +26,18 @@
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "ash/webui/personalization_app/mojom/personalization_app_mojom_traits.h"
 #include "ash/webui/personalization_app/proto/backdrop_wallpaper.pb.h"
+#include "base/base64.h"
 #include "base/bind.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/notreached.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/wallpaper/wallpaper_enumerator.h"
@@ -47,6 +56,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -58,9 +68,12 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/image/image_util.h"
 #include "url/gurl.h"
 
 namespace ash::personalization_app {
@@ -72,7 +85,7 @@ using ash::personalization_app::GetAccountId;
 using ash::personalization_app::GetUser;
 
 constexpr int kLocalImageThumbnailSizeDip = 256;
-constexpr int kCurrentWallpaperThumbnailSizeDip = 512;
+constexpr int kCurrentWallpaperThumbnailSizeDip = 1024;
 
 const gfx::ImageSkia GetResizedImage(const gfx::ImageSkia& image) {
   // Resize the image maintaining our aspect ratio.
@@ -94,6 +107,38 @@ const std::string GetOnlineWallpaperKey(ash::WallpaperInfo info) {
   return info.asset_id.has_value()
              ? base::NumberToString(info.asset_id.value())
              : base::UnguessableToken::Create().ToString();
+}
+
+scoped_refptr<base::RefCountedMemory> ResizeAndEncodeWallpaperImage(
+    gfx::ImageSkia image) {
+  auto resized = gfx::Image(GetResizedImage(image));
+  scoped_refptr<base::RefCountedMemory> jpg_bytes = new base::RefCountedBytes();
+  std::vector<uint8_t> jpg_buffer;
+  // Conversion quality between 0 - 100. Manually tested to use 90 for good
+  // performance with reasonable quality.
+  const int quality = 90;
+  if (gfx::JPEG1xEncodedDataFromImage(resized, quality, &jpg_buffer)) {
+    jpg_bytes = base::RefCountedBytes::TakeVector(&jpg_buffer);
+  } else {
+    // Cannot convert to JPEG, use PNG
+    jpg_bytes = resized.As1xPNGBytes();
+  }
+  return jpg_bytes;
+}
+
+std::string GetJpegDataUrl(const unsigned char* data, size_t size) {
+  std::string output = "data:image/jpeg;base64,";
+  base::Base64EncodeAppend(base::make_span(data, size), &output);
+  return output;
+}
+
+std::string GetBitmapJpegDataUrl(const SkBitmap& bitmap) {
+  std::vector<unsigned char> output;
+  if (!gfx::JPEGCodec::Encode(bitmap, /*quality=*/90, &output)) {
+    LOG(ERROR) << "Unable to encode bitmap";
+    return std::string();
+  }
+  return GetJpegDataUrl(output.data(), output.size());
 }
 
 }  // namespace
@@ -123,6 +168,23 @@ void PersonalizationAppWallpaperProviderImpl::BindInterface(
         receiver) {
   wallpaper_receiver_.reset();
   wallpaper_receiver_.Bind(std::move(receiver));
+}
+
+void PersonalizationAppWallpaperProviderImpl::GetWallpaperAsJpegBytes(
+    content::WebUIDataSource::GotDataCallback callback) {
+  // |GetWallpaperAsJpegBytes| is called in the hot path of switching wallpaper
+  // on the UI thread right after user makes a new selection. Make sure to do
+  // resizing and encoding on a task runner to avoid locking up the UI as the
+  // user's wallpaper is being set.
+  auto* wallpaper_controller = ash::WallpaperController::Get();
+  auto image = wallpaper_controller->GetWallpaperImage();
+  image.MakeThreadSafe();
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&ResizeAndEncodeWallpaperImage, image),
+      std::move(callback));
 }
 
 bool PersonalizationAppWallpaperProviderImpl::IsEligibleForGooglePhotos() {
@@ -286,7 +348,10 @@ void PersonalizationAppWallpaperProviderImpl::FetchGooglePhotosPhotos(
             profile_);
   }
   google_photos_photos_fetcher_->AddRequestAndStartIfNecessary(
-      item_id, album_id, resume_token, /*shuffle=*/false, std::move(callback));
+      item_id, album_id, resume_token, /*shuffle=*/false,
+      base::BindOnce(
+          &PersonalizationAppWallpaperProviderImpl::OnFetchGooglePhotosPhotos,
+          weak_ptr_factory_.GetWeakPtr(), album_id, std::move(callback)));
 }
 
 void PersonalizationAppWallpaperProviderImpl::GetDefaultImageThumbnail(
@@ -353,7 +418,6 @@ void PersonalizationAppWallpaperProviderImpl::OnWallpaperResized() {
   wallpaper_attribution_info_fetcher_.reset();
   attribution_weak_ptr_factory_.InvalidateWeakPtrs();
 
-  auto* controller = WallpaperController::Get();
   auto* client = WallpaperControllerClientImpl::Get();
 
   absl::optional<ash::WallpaperInfo> info =
@@ -365,12 +429,6 @@ void PersonalizationAppWallpaperProviderImpl::OnWallpaperResized() {
     return;
   }
 
-  const gfx::ImageSkia& current_wallpaper = controller->GetWallpaperImage();
-  const gfx::ImageSkia& current_wallpaper_resized =
-      GetResizedImage(current_wallpaper);
-  const GURL& wallpaper_data_url =
-      GURL(webui::GetBitmapDataUrl(*current_wallpaper_resized.bitmap()));
-
   switch (info->type) {
     case ash::WallpaperType::kDaily:
     case ash::WallpaperType::kOnline: {
@@ -380,15 +438,13 @@ void PersonalizationAppWallpaperProviderImpl::OnWallpaperResized() {
         // look up all collections and match URL.
         FetchCollections(base::BindOnce(
             &PersonalizationAppWallpaperProviderImpl::FindAttribution,
-            attribution_weak_ptr_factory_.GetWeakPtr(), *info,
-            wallpaper_data_url));
+            attribution_weak_ptr_factory_.GetWeakPtr(), *info));
         return;
       }
 
       backdrop::Collection collection;
       collection.set_collection_id(info->collection_id);
-      FindAttribution(*info, wallpaper_data_url,
-                      std::vector<backdrop::Collection>{collection});
+      FindAttribution(*info, std::vector<backdrop::Collection>{collection});
       return;
     }
     case ash::WallpaperType::kCustomized: {
@@ -405,8 +461,7 @@ void PersonalizationAppWallpaperProviderImpl::OnWallpaperResized() {
 
       NotifyWallpaperChanged(
           ash::personalization_app::mojom::CurrentWallpaper::New(
-              wallpaper_data_url, std::move(attribution), info->layout,
-              info->type, key));
+              std::move(attribution), info->layout, info->type, key));
 
       return;
     }
@@ -416,8 +471,7 @@ void PersonalizationAppWallpaperProviderImpl::OnWallpaperResized() {
           GetAccountId(profile_), info->location,
           base::BindOnce(&PersonalizationAppWallpaperProviderImpl::
                              SendGooglePhotosAttribution,
-                         weak_ptr_factory_.GetWeakPtr(), *info,
-                         wallpaper_data_url));
+                         weak_ptr_factory_.GetWeakPtr(), *info));
       return;
     case ash::WallpaperType::kDefault:
     case ash::WallpaperType::kDevice:
@@ -426,14 +480,30 @@ void PersonalizationAppWallpaperProviderImpl::OnWallpaperResized() {
     case ash::WallpaperType::kThirdParty:
       NotifyWallpaperChanged(
           ash::personalization_app::mojom::CurrentWallpaper::New(
-              wallpaper_data_url, /*attribution=*/std::vector<std::string>(),
-              info->layout, info->type,
+              /*attribution=*/std::vector<std::string>(), info->layout,
+              info->type,
               /*key=*/base::UnguessableToken::Create().ToString()));
       return;
     case ash::WallpaperType::kCount:
-      mojo::ReportBadMessage("Impossible WallpaperType received");
-      return;
+      break;
   }
+
+  // This can happen when a WallpaperType object from a different version of
+  // ChromeOS persists through an upgrade or is synced to a different
+  // version of ChromeOS. Handle the error as gracefully as possible. Pick a
+  // safe wallpaper type `kOneShot` to send to personalization app.
+  NotifyWallpaperChanged(ash::personalization_app::mojom::CurrentWallpaper::New(
+      /*attribution=*/std::vector<std::string>(), info->layout,
+      ash::WallpaperType::kOneShot,
+      /*key=*/base::UnguessableToken::Create().ToString()));
+
+  // Continue to record data on how frequently this happens.
+  SCOPED_CRASH_KEY_STRING32(
+      "Wallpaper", "WallpaperType",
+      base::NumberToString(
+          static_cast<std::underlying_type_t<WallpaperType>>(info->type)));
+  base::debug::DumpWithoutCrashing();
+  return;
 }
 
 void PersonalizationAppWallpaperProviderImpl::OnWallpaperPreviewEnded() {
@@ -557,33 +627,58 @@ void PersonalizationAppWallpaperProviderImpl::SelectGooglePhotosPhoto(
 }
 
 void PersonalizationAppWallpaperProviderImpl::SelectGooglePhotosAlbum(
-    const std::string& id,
-    SelectGooglePhotosAlbumCallback callback) {
+    const std::string& album_id,
+    SetDailyRefreshCallback callback) {
   if (!is_google_photos_enterprise_enabled_) {
-    std::move(callback).Run(false);
+    std::move(callback).Run(mojom::SetDailyRefreshResponse::New(
+        /*success=*/false, /*force_refresh=*/false));
     LOG(WARNING) << "Rejected attempt to set Google Photos wallpaper while "
                  << "disabled via enterprise setting.";
     return;
   }
 
-  if (pending_select_google_photos_album_callback_)
-    std::move(pending_select_google_photos_album_callback_).Run(false);
-  pending_select_google_photos_album_callback_ = std::move(callback);
+  if (pending_set_daily_refresh_callback_) {
+    std::move(pending_set_daily_refresh_callback_)
+        .Run(mojom::SetDailyRefreshResponse::New(/*success=*/false,
+                                                 /*force_refresh=*/false));
+  }
+  pending_set_daily_refresh_callback_ = std::move(callback);
   WallpaperControllerClientImpl* client = WallpaperControllerClientImpl::Get();
   DCHECK(client);
 
   client->RecordWallpaperSourceUMA(ash::WallpaperType::kDailyGooglePhotos);
 
-  client->SetGooglePhotosWallpaper(
-      ash::GooglePhotosWallpaperParams(
-          GetAccountId(profile_), id,
-          /*daily_refresh=*/true,
-          ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
-          /*preview_mode=*/false,
-          /*dedup_key=*/absl::nullopt),
-      base::BindOnce(
-          &PersonalizationAppWallpaperProviderImpl::OnGooglePhotosAlbumSelected,
-          backend_weak_ptr_factory_.GetWeakPtr()));
+  bool force_refresh = true;
+  if (album_id.empty()) {
+    // Empty |album_id| means disabling daily refresh.
+    force_refresh = false;
+  } else {
+    // Only force refresh if the album does not contain the current wallpaper
+    // image.
+    const auto& it = album_id_dedup_key_map_.find(album_id);
+    absl::optional<ash::WallpaperInfo> info =
+        client->GetActiveUserWallpaperInfo();
+    if (info.has_value() && info->dedup_key.has_value()) {
+      force_refresh =
+          it == album_id_dedup_key_map_.end() ||
+          it->second.find(info->dedup_key.value()) == it->second.end();
+    }
+  }
+  DVLOG(1) << __func__ << " force_refresh=" << force_refresh;
+
+  auto* controller = WallpaperController::Get();
+  controller->SetGooglePhotosDailyRefreshAlbumId(GetAccountId(profile_),
+                                                 album_id);
+
+  if (force_refresh) {
+    controller->UpdateDailyRefreshWallpaper(base::BindOnce(
+        &PersonalizationAppWallpaperProviderImpl::OnDailyRefreshWallpaperForced,
+        backend_weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+  std::move(pending_set_daily_refresh_callback_)
+      .Run(mojom::SetDailyRefreshResponse::New(
+          /*success=*/true, /*force_refresh=*/false));
 }
 
 void PersonalizationAppWallpaperProviderImpl::
@@ -601,9 +696,52 @@ void PersonalizationAppWallpaperProviderImpl::SetCurrentWallpaperLayout(
 }
 
 void PersonalizationAppWallpaperProviderImpl::SetDailyRefreshCollectionId(
-    const std::string& collection_id) {
-  WallpaperController::Get()->SetDailyRefreshCollectionId(
-      GetAccountId(profile_), collection_id);
+    const std::string& collection_id,
+    SetDailyRefreshCallback callback) {
+  if (pending_set_daily_refresh_callback_) {
+    std::move(pending_set_daily_refresh_callback_)
+        .Run(mojom::SetDailyRefreshResponse::New(/*success=*/false,
+                                                 /*force_refresh=*/false));
+  }
+  pending_set_daily_refresh_callback_ = std::move(callback);
+
+  auto* controller = WallpaperController::Get();
+  controller->SetDailyRefreshCollectionId(GetAccountId(profile_),
+                                          collection_id);
+
+  absl::optional<ash::WallpaperInfo> info =
+      controller->GetActiveUserWallpaperInfo();
+  DCHECK(info);
+  if (info->type != WallpaperType::kDaily) {
+    // Daily refresh is disabled.
+    std::move(pending_set_daily_refresh_callback_)
+        .Run(mojom::SetDailyRefreshResponse::New(
+            /*success=*/true, /*force_refresh=*/false));
+    return;
+  }
+
+  bool force_refresh = !info->asset_id.has_value();
+  if (info->asset_id.has_value()) {
+    const auto& it = image_asset_id_map_.find(info->asset_id.value());
+
+    // Only force refresh if the current wallpaper image does not belong to
+    // this collection.
+    force_refresh = it == image_asset_id_map_.end() ||
+                    it->second.collection_id != collection_id;
+  }
+  DVLOG(1) << __func__ << " info=" << info.value()
+           << " collection_id=" << collection_id
+           << " force_refresh=" << force_refresh;
+  if (force_refresh) {
+    controller->UpdateDailyRefreshWallpaper(base::BindOnce(
+        &PersonalizationAppWallpaperProviderImpl::OnDailyRefreshWallpaperForced,
+        weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  std::move(pending_set_daily_refresh_callback_)
+      .Run(mojom::SetDailyRefreshResponse::New(
+          /*success=*/true, /*force_refresh=*/false));
 }
 
 void PersonalizationAppWallpaperProviderImpl::GetDailyRefreshCollectionId(
@@ -724,6 +862,31 @@ void PersonalizationAppWallpaperProviderImpl::OnFetchGooglePhotosEnabled(
   std::move(callback).Run(state);
 }
 
+void PersonalizationAppWallpaperProviderImpl::OnFetchGooglePhotosPhotos(
+    absl::optional<std::string> album_id,
+    FetchGooglePhotosPhotosCallback callback,
+    mojo::StructPtr<mojom::FetchGooglePhotosPhotosResponse> response) {
+  if (!album_id || !response || response.is_null()) {
+    // Skip processing |album_id_dedup_key_map_| if there is no info on album or
+    // response is invalid.
+    std::move(callback).Run(std::move(response));
+    return;
+  }
+
+  // Process |album_id_dedup_key_map_|.
+  auto& photos = response->photos;
+  if (photos.has_value()) {
+    auto& photos_val = photos.value();
+    std::set<std::string> dedup_keys;
+    for (auto& photo : photos_val) {
+      if (photo->dedup_key.has_value())
+        dedup_keys.insert(photo->dedup_key.value());
+    }
+    album_id_dedup_key_map_.insert({album_id.value(), std::move(dedup_keys)});
+  }
+  std::move(callback).Run(std::move(response));
+}
+
 void PersonalizationAppWallpaperProviderImpl::OnGetDefaultImage(
     GetDefaultImageThumbnailCallback callback,
     const gfx::ImageSkia& image) {
@@ -754,7 +917,7 @@ void PersonalizationAppWallpaperProviderImpl::OnGetLocalImageThumbnail(
     std::move(callback).Run(GURL());
     return;
   }
-  std::move(callback).Run(GURL(webui::GetBitmapDataUrl(*bitmap)));
+  std::move(callback).Run(GURL(GetBitmapJpegDataUrl(*bitmap)));
 }
 
 void PersonalizationAppWallpaperProviderImpl::OnOnlineWallpaperSelected(
@@ -769,12 +932,6 @@ void PersonalizationAppWallpaperProviderImpl::OnGooglePhotosWallpaperSelected(
   std::move(pending_select_google_photos_photo_callback_).Run(success);
 }
 
-void PersonalizationAppWallpaperProviderImpl::OnGooglePhotosAlbumSelected(
-    bool success) {
-  DCHECK(pending_select_google_photos_album_callback_);
-  std::move(pending_select_google_photos_album_callback_).Run(success);
-}
-
 void PersonalizationAppWallpaperProviderImpl::OnLocalImageSelected(
     bool success) {
   DCHECK(pending_select_local_image_callback_);
@@ -787,16 +944,23 @@ void PersonalizationAppWallpaperProviderImpl::OnDailyRefreshWallpaperUpdated(
   std::move(pending_update_daily_refresh_wallpaper_callback_).Run(success);
 }
 
+void PersonalizationAppWallpaperProviderImpl::OnDailyRefreshWallpaperForced(
+    bool success) {
+  DCHECK(pending_set_daily_refresh_callback_);
+  std::move(pending_set_daily_refresh_callback_)
+      .Run(
+          mojom::SetDailyRefreshResponse::New(success, /*force_refresh=*/true));
+}
+
 void PersonalizationAppWallpaperProviderImpl::FindAttribution(
     const ash::WallpaperInfo& info,
-    const GURL& wallpaper_data_url,
     const absl::optional<std::vector<backdrop::Collection>>& collections) {
   DCHECK(!wallpaper_attribution_info_fetcher_);
   if (!collections.has_value() || collections->empty()) {
     NotifyWallpaperChanged(
         ash::personalization_app::mojom::CurrentWallpaper::New(
-            wallpaper_data_url, /*attribution=*/std::vector<std::string>(),
-            info.layout, info.type, GetOnlineWallpaperKey(info)));
+            /*attribution=*/std::vector<std::string>(), info.layout, info.type,
+            GetOnlineWallpaperKey(info)));
 
     return;
   }
@@ -808,13 +972,12 @@ void PersonalizationAppWallpaperProviderImpl::FindAttribution(
 
   wallpaper_attribution_info_fetcher_->Start(base::BindOnce(
       &PersonalizationAppWallpaperProviderImpl::FindAttributionInCollection,
-      attribution_weak_ptr_factory_.GetWeakPtr(), info, wallpaper_data_url,
-      current_index, collections));
+      attribution_weak_ptr_factory_.GetWeakPtr(), info, current_index,
+      collections));
 }
 
 void PersonalizationAppWallpaperProviderImpl::FindAttributionInCollection(
     const ash::WallpaperInfo& info,
-    const GURL& wallpaper_data_url,
     std::size_t current_index,
     const absl::optional<std::vector<backdrop::Collection>>& collections,
     bool success,
@@ -843,7 +1006,7 @@ void PersonalizationAppWallpaperProviderImpl::FindAttributionInCollection(
       attributions.push_back(attr.text());
     NotifyWallpaperChanged(
         ash::personalization_app::mojom::CurrentWallpaper::New(
-            wallpaper_data_url, attributions, info.layout, info.type,
+            attributions, info.layout, info.type,
             /*key=*/base::NumberToString(backend_image->asset_id())));
     wallpaper_attribution_info_fetcher_.reset();
     return;
@@ -854,8 +1017,8 @@ void PersonalizationAppWallpaperProviderImpl::FindAttributionInCollection(
   if (current_index >= collections->size()) {
     NotifyWallpaperChanged(
         ash::personalization_app::mojom::CurrentWallpaper::New(
-            wallpaper_data_url, /*attribution=*/std::vector<std::string>(),
-            info.layout, info.type, GetOnlineWallpaperKey(info)));
+            /*attribution=*/std::vector<std::string>(), info.layout, info.type,
+            GetOnlineWallpaperKey(info)));
     wallpaper_attribution_info_fetcher_.reset();
     return;
   }
@@ -864,8 +1027,8 @@ void PersonalizationAppWallpaperProviderImpl::FindAttributionInCollection(
       collections->at(current_index).collection_id());
   fetcher->Start(base::BindOnce(
       &PersonalizationAppWallpaperProviderImpl::FindAttributionInCollection,
-      attribution_weak_ptr_factory_.GetWeakPtr(), info, wallpaper_data_url,
-      current_index, collections));
+      attribution_weak_ptr_factory_.GetWeakPtr(), info, current_index,
+      collections));
   // resetting the previous fetcher last because the current method is bound
   // to a callback owned by the previous fetcher.
   wallpaper_attribution_info_fetcher_ = std::move(fetcher);
@@ -873,7 +1036,6 @@ void PersonalizationAppWallpaperProviderImpl::FindAttributionInCollection(
 
 void PersonalizationAppWallpaperProviderImpl::SendGooglePhotosAttribution(
     const ash::WallpaperInfo& info,
-    const GURL& wallpaper_data_url,
     mojo::StructPtr<ash::personalization_app::mojom::GooglePhotosPhoto> photo,
     bool success) {
   // If the fetch for |photo| succeeded but |photo| does not exist, that means
@@ -900,7 +1062,7 @@ void PersonalizationAppWallpaperProviderImpl::SendGooglePhotosAttribution(
   // NOTE: Old clients may not support |dedup_key| when setting Google Photos
   // wallpaper, so use |location| in such cases for backwards compatibility.
   NotifyWallpaperChanged(ash::personalization_app::mojom::CurrentWallpaper::New(
-      wallpaper_data_url, attribution, info.layout, info.type,
+      attribution, info.layout, info.type,
       /*key=*/info.dedup_key.value_or(info.location)));
 }
 

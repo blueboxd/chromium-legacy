@@ -14,11 +14,11 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
-#include "chrome/browser/ash/login/demo_mode/demo_resources.h"
+#include "chrome/browser/ash/extensions/external_cache_impl.h"
+#include "chrome/browser/ash/login/demo_mode/demo_components.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/extensions/external_cache_impl.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/common/extension_urls.h"
@@ -101,7 +101,7 @@ void DemoExtensionsExternalLoader::LoadApp(const std::string& app_id) {
   // prefs from the Offline Demo Resources, so we don't call LoadApp() if the
   // enrollment is offline. Instead, we should merge these prefs or treat the
   // cache as a separate provider.
-  external_cache_->UpdateExtensionsListWithDict(std::move(prefs));
+  external_cache_->UpdateExtensionsList(std::move(prefs));
 }
 
 void DemoExtensionsExternalLoader::StartLoading() {
@@ -115,17 +115,17 @@ void DemoExtensionsExternalLoader::OnExtensionListsUpdated(
   DCHECK(external_cache_);
   // Notifies the provider that the extensions have either been downloaded or
   // found in cache, and are ready to be installed.
-  LoadFinishedWithDict(prefs.Clone());
+  LoadFinished(prefs.Clone());
 }
 
 void DemoExtensionsExternalLoader::StartLoadingFromOfflineDemoResources() {
   DemoSession* demo_session = DemoSession::Get();
-  DCHECK(demo_session->resources()->loaded());
+  DCHECK(demo_session->components()->resources_component_loaded());
 
   base::FilePath demo_extension_list =
-      demo_session->resources()->GetExternalExtensionsPrefsPath();
+      demo_session->components()->GetExternalExtensionsPrefsPath();
   if (demo_extension_list.empty()) {
-    LoadFinishedWithDict(base::Value::Dict());
+    LoadFinished(base::Value::Dict());
     return;
   }
 
@@ -142,7 +142,7 @@ void DemoExtensionsExternalLoader::StartLoadingFromOfflineDemoResources() {
 void DemoExtensionsExternalLoader::DemoExternalExtensionsPrefsLoaded(
     absl::optional<base::Value::Dict> prefs) {
   if (!prefs.has_value()) {
-    LoadFinishedWithDict(base::Value::Dict());
+    LoadFinished(base::Value::Dict());
     return;
   }
   DemoSession* demo_session = DemoSession::Get();
@@ -170,10 +170,10 @@ void DemoExtensionsExternalLoader::DemoExternalExtensionsPrefsLoaded(
 
     value_dict.Set(
         extensions::ExternalProviderImpl::kExternalCrx,
-        demo_session->resources()->GetAbsolutePath(relative_path).value());
+        demo_session->components()->GetAbsolutePath(relative_path).value());
   }
 
-  LoadFinishedWithDict(std::move(prefs).value());
+  LoadFinished(std::move(prefs).value());
 }
 
 }  // namespace ash

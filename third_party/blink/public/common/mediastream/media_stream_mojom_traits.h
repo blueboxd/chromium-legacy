@@ -66,10 +66,6 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::MediaStreamDeviceDataView,
 template <>
 struct BLINK_COMMON_EXPORT
     StructTraits<blink::mojom::TrackControlsDataView, blink::TrackControls> {
-  static bool requested(const blink::TrackControls& controls) {
-    return controls.requested;
-  }
-
   static const blink::mojom::MediaStreamType& stream_type(
       const blink::TrackControls& controls) {
     return controls.stream_type;
@@ -102,6 +98,11 @@ struct BLINK_COMMON_EXPORT
 
   static bool disable_local_echo(const blink::StreamControls& controls) {
     return controls.disable_local_echo;
+  }
+
+  static bool suppress_local_audio_playback(
+      const blink::StreamControls& controls) {
+    return controls.suppress_local_audio_playback;
   }
 
   static bool exclude_system_audio(const blink::StreamControls& controls) {

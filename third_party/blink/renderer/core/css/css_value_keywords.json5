@@ -1305,10 +1305,11 @@
     "longer",
     "decreasing",
     "increasing",
-    "specified",
 
     // For gradient interpolations in certain color spaces
     "in",
+    // The color-mix function https://www.w3.org/TR/css-color-5/#color-mix
+    "color-mix",
 
     // transform
     "matrix",
@@ -1359,6 +1360,8 @@
     "atan",
     // "atan2",
     "acos",
+
+    "pi",
 
     //<calc-constant>
     //https://drafts.csswg.org/css-values/#calc-syntax
@@ -1480,7 +1483,7 @@
     // (device-posture) media feature
     "continuous",
     "folded",
-    
+
     // scrollbar-gutter
     // auto
     "stable",

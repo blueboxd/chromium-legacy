@@ -28,7 +28,7 @@ import {CrDialogElement} from '//resources/cr_elements/cr_dialog/cr_dialog.js';
 import {CrInputElement} from '//resources/cr_elements/cr_input/cr_input.js';
 import {assert, assertNotReached} from '//resources/js/assert_ts.js';
 import {focusWithoutInk} from '//resources/js/focus_without_ink.js';
-import {WebUIListenerMixin, WebUIListenerMixinInterface} from '//resources/cr_elements/web_ui_listener_mixin.js';
+import {WebUiListenerMixin, WebUiListenerMixinInterface} from '//resources/cr_elements/web_ui_listener_mixin.js';
 import {IronCollapseElement} from '//resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import {flush, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
@@ -76,8 +76,8 @@ export interface SettingsSyncPageElement {
  */
 
 const SettingsSyncPageElementBase =
-    RouteObserverMixin(WebUIListenerMixin(I18nMixin(PolymerElement))) as {
-      new (): PolymerElement & WebUIListenerMixinInterface &
+    RouteObserverMixin(WebUiListenerMixin(I18nMixin(PolymerElement))) as {
+      new (): PolymerElement & WebUiListenerMixinInterface &
           I18nMixinInterface & RouteObserverMixinInterface,
     };
 
@@ -235,7 +235,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
   private showSetupCancelDialog_: boolean;
   // </if>
 
-  private enterPassphraseLabel_: string;
+  private enterPassphraseLabel_: TrustedHTML;
   private existingPassphraseLabel_: string;
 
   private browserProxy_: SyncBrowserProxy = SyncBrowserProxyImpl.getInstance();
@@ -546,15 +546,15 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
     return !!this.syncPrefs && this.syncPrefs.encryptAllData;
   }
 
-  private computeEnterPassphraseLabel_(): string {
+  private computeEnterPassphraseLabel_(): TrustedHTML {
     if (!this.syncPrefs || !this.syncPrefs.encryptAllData) {
-      return '';
+      return window.trustedTypes!.emptyHTML;
     }
 
     if (!this.syncPrefs.explicitPassphraseTime) {
       // TODO(crbug.com/1207432): There's no reason why this dateless label
       // shouldn't link to 'syncErrorsHelpUrl' like the other one.
-      return this.i18n('enterPassphraseLabel');
+      return this.i18nAdvanced('enterPassphraseLabel');
     }
 
     return this.i18nAdvanced('enterPassphraseLabelWithDate', {

@@ -10,6 +10,7 @@
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/messaging/channel_endpoint.h"
 #include "extensions/browser/api/messaging/message_service.h"
@@ -20,6 +21,7 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/trace_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using content::BrowserThread;
 using content::RenderProcessHost;
@@ -139,6 +141,69 @@ bool IsValidSourceContext(RenderProcessHost& process,
   return true;
 }
 
+// Returns true if `source_url` can be legitimately claimed/used by `process`.
+// Otherwise reports a bad IPC message and returns false (expecting the caller
+// to not take any action based on the rejected, untrustworthy `source_url`).
+bool IsValidSourceUrl(content::RenderProcessHost& process,
+                      const GURL& source_url,
+                      const PortContext& source_context) {
+  if (!base::FeatureList::IsEnabled(
+          extensions_features::kExtensionSourceUrlEnforcement)) {
+    return true;
+  }
+
+  // Some scenarios may end up with an empty `source_url` (e.g. this may have
+  // been triggered by the ExtensionApiTabTest.TabConnect test).
+  //
+  // TODO(https://crbug.com/1370079): Remove this workaround once the bug is
+  // fixed.
+  if (source_url.is_empty())
+    return true;
+
+  auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
+  if (source_context.is_for_render_frame()) {
+    // We don't just use (or compare against) the trustworthy
+    // `render_frame_host->GetLastCommittedURL()` because the renderer-side and
+    // browser-side URLs may differ in some scenarios (e.g. see
+    // https://crbug.com/1197308).
+    if (!policy->CanCommitURL(process.GetID(), source_url)) {
+      bad_message::ReceivedBadMessage(
+          &process, bad_message::EMF_INVALID_SOURCE_URL_FROM_FRAME);
+      return false;
+    }
+  } else if (source_context.is_for_service_worker()) {
+    // Validate `source_context` before using it to validate `source_url`.
+    if (!IsValidSourceContext(process, source_context))
+      return false;
+
+    // The `base_origin` and `url_origin` below are considered trustworthy,
+    // because `source_context` has been validated above.
+    url::Origin base_origin = Extension::CreateOriginFromExtensionId(
+        source_context.worker->extension_id);
+    url::Origin url_origin = url::Origin::Resolve(source_url, base_origin);
+
+    // The CanCommitURL check (in the `is_for_render_frame` branch of the `if`
+    // statement) can't cover service workers (see
+    // https://crbug.com/1038996#c35) so we do an origin-based check instead.
+    if (!policy->CanAccessDataForOrigin(process.GetID(), url_origin)) {
+      bad_message::ReceivedBadMessage(
+          &process, bad_message::EMF_INVALID_SOURCE_URL_FROM_WORKER);
+      return false;
+    }
+  } else {
+    DCHECK(source_context.is_for_native_host());
+    // `ExtensionHostMsg_OpenChannelToExtension` is sent in
+    // `//extensions/renderer/ipc_message_sender.cc` only for frames and
+    // workers (and never for native hosts).
+    bad_message::ReceivedBadMessage(
+        &process,
+        bad_message::EMF_INVALID_OPEN_CHANNEL_TO_EXTENSION_FROM_NATIVE_HOST);
+    return false;
+  }
+
+  return true;
+}
+
 base::debug::CrashKeyString* GetTargetIdCrashKey() {
   static auto* crash_key = base::debug::AllocateCrashKeyString(
       "ExternalConnectionInfo-target_id", base::debug::CrashKeySize::Size64);
@@ -182,6 +247,47 @@ class ScopedExternalConnectionInfoCrashKeys {
   url::debug::ScopedOriginCrashKey source_origin_;
   base::debug::ScopedCrashKeyString source_url_;
 };
+
+// Validates whether `source_context` can be legitimately used in the IPC
+// messages sent from the given renderer `process`.  If the validation fails, or
+// the sender is not associated with an extension, then `nullopt` is returned.
+// The sender should ignore the IPC when `nullopt` is returned.
+absl::optional<ExtensionId> ValidateSourceContextAndExtractExtensionId(
+    content::RenderProcessHost& process,
+    const PortContext& source_context) {
+  if (!IsValidSourceContext(process, source_context))
+    return absl::nullopt;
+
+  if (source_context.is_for_service_worker())
+    return source_context.worker->extension_id;
+
+  if (source_context.is_for_render_frame()) {
+    content::RenderFrameHost* frame = content::RenderFrameHost::FromID(
+        process.GetID(), source_context.frame->routing_id);
+    if (!frame) {
+      // Not calling ReceivedBadMessage because it is possible that the frame
+      // got deleted before the IPC arrived.
+      return absl::nullopt;
+    }
+
+    // These extension IPCs are on the same pipe as DidCommit() (and thus can't
+    // arrive out-of-order), and therefore we can rely on
+    // `frame->GetLastCommittedOrigin()` to return the origin of the IPC sender.
+    const url::Origin& origin = frame->GetLastCommittedOrigin();
+    if (origin.scheme() != kExtensionScheme) {
+      bad_message::ReceivedBadMessage(
+          &process, bad_message::EMF_NON_EXTENSION_SENDER_FRAME);
+      return absl::nullopt;
+    }
+
+    return origin.host();
+  }
+
+  DCHECK(source_context.is_for_native_host());
+  bad_message::ReceivedBadMessage(
+      &process, bad_message::EMF_NON_EXTENSION_SENDER_NATIVE_HOST);
+  return absl::nullopt;
+}
 
 }  // namespace
 
@@ -273,7 +379,10 @@ void MessagingAPIMessageFilter::OnOpenChannelToExtension(
   ScopedExternalConnectionInfoCrashKeys info_crash_keys(info);
   debug::ScopedPortContextCrashKeys port_context_crash_keys(source_context);
   if (!IsValidMessagingSource(*process, info.source_endpoint) ||
+      !IsValidSourceUrl(*process, info.source_url, source_context) ||
       !IsValidSourceContext(*process, source_context)) {
+    // No need to call ReceivedBadMessage here, because it will be called (when
+    // appropriate) within IsValidSourceContext and/or IsValidMessagingSource.
     return;
   }
 
@@ -297,8 +406,11 @@ void MessagingAPIMessageFilter::OnOpenChannelToNativeApp(
               ChromeTrackEvent::kRenderProcessHost, *process);
 
   debug::ScopedPortContextCrashKeys port_context_crash_keys(source_context);
-  if (!IsValidSourceContext(*process, source_context))
+  if (!IsValidSourceContext(*process, source_context)) {
+    // No need to call ReceivedBadMessage here, because it will be called (when
+    // appropriate) within IsValidSourceContext.
     return;
+  }
 
   ChannelEndpoint source_endpoint(browser_context_, render_process_id_,
                                   source_context);
@@ -309,7 +421,6 @@ void MessagingAPIMessageFilter::OnOpenChannelToNativeApp(
 void MessagingAPIMessageFilter::OnOpenChannelToTab(
     const PortContext& source_context,
     const ExtensionMsg_TabTargetConnectionInfo& info,
-    const std::string& extension_id,
     const std::string& channel_name,
     const PortId& port_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -319,9 +430,11 @@ void MessagingAPIMessageFilter::OnOpenChannelToTab(
   TRACE_EVENT("extensions", "MessageFilter::OnOpenChannelToTab",
               ChromeTrackEvent::kRenderProcessHost, *process);
 
-  if (!util::CanRendererHostExtensionOrigin(render_process_id_, extension_id)) {
-    bad_message::ReceivedBadMessage(
-        process, bad_message::EMF_INVALID_EXTENSION_ID_FOR_TAB_MSG);
+  absl::optional<ExtensionId> extension_id =
+      ValidateSourceContextAndExtractExtensionId(*process, source_context);
+  if (!extension_id) {
+    // No need to call ReceivedBadMessage here, because it will be called (when
+    // appropriate) within ValidateSourceContextAndExtractExtensionId.
     return;
   }
 
@@ -329,7 +442,7 @@ void MessagingAPIMessageFilter::OnOpenChannelToTab(
                                   source_context);
   MessageService::Get(browser_context_)
       ->OpenChannelToTab(source_endpoint, port_id, info.tab_id, info.frame_id,
-                         info.document_id, extension_id, channel_name);
+                         info.document_id, *extension_id, channel_name);
 }
 
 void MessagingAPIMessageFilter::OnOpenMessagePort(const PortContext& source,

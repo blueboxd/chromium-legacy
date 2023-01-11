@@ -34,7 +34,7 @@ suite('AmbientSubpageTest', function() {
   setup(() => {
     loadTimeData.overrideValues({
       isAmbientModeAllowed: true,
-      isAmbientModeAnimationEnabled: true,
+      isAmbientSubpageUIChangeEnabled: true,
     });
     const mocks = baseSetup();
     ambientProvider = mocks.ambientProvider;
@@ -768,14 +768,20 @@ suite('AmbientSubpageTest', function() {
       });
 
   test('displays zero state when ambient mode is disabled', async () => {
+    // Disables `isAmbientSubpageUIChangeEnabled` to show the previous UI.
+    loadTimeData.overrideValues({['isAmbientSubpageUIChangeEnabled']: false});
+
     ambientSubpageElement = await displayMainSettings(
         TopicSource.kArtGallery, TemperatureUnit.kFahrenheit,
         /*ambientModeEnabled=*/ false);
 
+    // Main settings should be present.
+    const mainSettings =
+        ambientSubpageElement.shadowRoot!.querySelector('#mainSettings');
+    assertTrue(!!mainSettings);
+
     // Preview image should be absent.
-    assertEquals(
-        ambientSubpageElement.shadowRoot!.querySelector('ambient-preview'),
-        null);
+    assertEquals(mainSettings.querySelector('ambient-preview'), null);
 
     // Topic source list should be absent.
     assertEquals(
@@ -791,5 +797,31 @@ suite('AmbientSubpageTest', function() {
     const zeroState =
         ambientSubpageElement.shadowRoot!.querySelector('ambient-zero-state');
     assertTrue(!!zeroState);
+  });
+
+  test('displays ambient preview when ambient mode is disabled', async () => {
+    ambientSubpageElement = await displayMainSettings(
+        TopicSource.kArtGallery, TemperatureUnit.kFahrenheit,
+        /*ambientModeEnabled=*/ false);
+
+    // Preview image should be present.
+    const ambientPreview =
+        ambientSubpageElement.shadowRoot!.querySelector('ambient-preview');
+    assertTrue(!!ambientPreview);
+
+    // Topic source list should be absent.
+    assertEquals(
+        ambientSubpageElement.shadowRoot!.querySelector('topic-source-list'),
+        null);
+
+    // Weather unit should be absent.
+    assertEquals(
+        ambientSubpageElement.shadowRoot!.querySelector('ambient-weather-unit'),
+        null);
+
+    // Zero state should not be present.
+    assertEquals(
+        ambientSubpageElement.shadowRoot!.querySelector('ambient-zero-state'),
+        null);
   });
 });

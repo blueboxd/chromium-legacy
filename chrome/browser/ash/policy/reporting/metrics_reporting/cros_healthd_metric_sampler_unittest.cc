@@ -7,6 +7,7 @@
 
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
+#include "chrome/browser/ash/policy/reporting/metrics_reporting/cros_healthd_info_metric_sampler_test_utils.h"
 #include "chromeos/ash/services/cros_healthd/public/cpp/fake_cros_healthd.h"
 #include "components/reporting/util/test_support_callbacks.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,19 +26,9 @@ struct TbtTestCase {
   std::vector<reporting::ThunderboltSecurityLevel> reporting_security_levels;
 };
 
-struct MemoryEncryptionTestCase {
-  std::string test_name;
-  cros_healthd::EncryptionState healthd_encryption_state;
-  reporting::MemoryEncryptionState reporting_encryption_state;
-  cros_healthd::CryptoAlgorithm healthd_encryption_algorithm;
-  reporting::MemoryEncryptionAlgorithm reporting_encryption_algorithm;
-  int64_t max_keys;
-  int64_t key_length;
-};
-
 // Memory constants.
-constexpr int64_t kTmeMaxKeys = 2;
-constexpr int64_t kTmeKeysLength = 4;
+static constexpr int64_t kTmeMaxKeys = 2;
+static constexpr int64_t kTmeKeysLength = 4;
 
 // Boot Performance constants.
 constexpr int64_t kBootUpSeconds = 5054;
@@ -46,52 +37,6 @@ constexpr int64_t kShutdownSeconds = 44003;
 constexpr int64_t kShutdownTimestampSeconds = 49;
 constexpr char kShutdownReason[] = "user-request";
 constexpr char kShutdownReasonNotApplicable[] = "N/A";
-
-cros_healthd::KeylockerInfoPtr CreateKeylockerInfo(bool configured) {
-  return cros_healthd::KeylockerInfo::New(configured);
-}
-
-cros_healthd::TelemetryInfoPtr CreateCpuResult(
-    cros_healthd::KeylockerInfoPtr keylocker_info) {
-  auto telemetry_info = cros_healthd::TelemetryInfo::New();
-  telemetry_info->cpu_result =
-      cros_healthd::CpuResult::NewCpuInfo(cros_healthd::CpuInfo::New(
-          /*num_total_threads=*/0,
-          /*architecture=*/cros_healthd::CpuArchitectureEnum::kX86_64,
-          /*physical_cpus=*/std::vector<cros_healthd::PhysicalCpuInfoPtr>(),
-          /*temperature_channels=*/
-          std::vector<cros_healthd::CpuTemperatureChannelPtr>(),
-          /*keylocker_info=*/std::move(keylocker_info)));
-
-  return telemetry_info;
-}
-
-cros_healthd::TelemetryInfoPtr CreateUsbBusResult(
-    std::vector<cros_healthd::BusDevicePtr> usb_devices) {
-  auto telemetry_info = cros_healthd::TelemetryInfo::New();
-  telemetry_info->bus_result =
-      cros_healthd::BusResult::NewBusDevices(std::move(usb_devices));
-  return telemetry_info;
-}
-
-cros_healthd::TelemetryInfoPtr CreateThunderboltBusResult(
-    std::vector<cros_healthd::ThunderboltSecurityLevel> security_levels) {
-  auto telemetry_info = cros_healthd::TelemetryInfo::New();
-  std::vector<cros_healthd::BusDevicePtr> bus_devices;
-
-  for (const auto& security_level : security_levels) {
-    auto tbt_device = cros_healthd::BusDevice::New();
-    tbt_device->bus_info = cros_healthd::BusInfo::NewThunderboltBusInfo(
-        cros_healthd::ThunderboltBusInfo::New(
-            security_level,
-            std::vector<cros_healthd::ThunderboltBusInterfaceInfoPtr>()));
-    bus_devices.push_back(std::move(tbt_device));
-  }
-
-  telemetry_info->bus_result =
-      cros_healthd::BusResult::NewBusDevices(std::move(bus_devices));
-  return telemetry_info;
-}
 
 cros_healthd::AudioInfoPtr CreateAudioInfo(
     bool output_mute,
@@ -115,26 +60,6 @@ cros_healthd::TelemetryInfoPtr CreateAudioResult(
   return telemetry_info;
 }
 
-cros_healthd::MemoryEncryptionInfoPtr CreateMemoryEncryptionInfo(
-    cros_healthd::EncryptionState encryption_state,
-    int64_t max_keys,
-    int64_t key_length,
-    cros_healthd::CryptoAlgorithm encryption_algorithm) {
-  return cros_healthd::MemoryEncryptionInfo::New(
-      encryption_state, max_keys, key_length, encryption_algorithm);
-}
-
-cros_healthd::TelemetryInfoPtr CreateMemoryResult(
-    cros_healthd::MemoryEncryptionInfoPtr memory_encryption_info) {
-  auto telemetry_info = cros_healthd::TelemetryInfo::New();
-  telemetry_info->memory_result =
-      cros_healthd::MemoryResult::NewMemoryInfo(cros_healthd::MemoryInfo::New(
-          /*total_memory=*/0, /*free_memory=*/0, /*available_memory=*/0,
-          /*page_faults_since_last_boot=*/0,
-          std::move(memory_encryption_info)));
-  return telemetry_info;
-}
-
 cros_healthd::TelemetryInfoPtr CreateBootPerformanceResult(
     int64_t boot_up_seconds,
     int64_t boot_up_timestamp_seconds,
@@ -147,17 +72,6 @@ cros_healthd::TelemetryInfoPtr CreateBootPerformanceResult(
           cros_healthd::BootPerformanceInfo::New(
               boot_up_seconds, boot_up_timestamp_seconds, shutdown_seconds,
               shutdown_timestamp_seconds, shutdown_reason));
-  return telemetry_info;
-}
-
-cros_healthd::TelemetryInfoPtr CreateInputInfo(
-    std::string library_name,
-    std::vector<cros_healthd::TouchscreenDevicePtr> touchscreen_devices) {
-  auto telemetry_info = cros_healthd::TelemetryInfo::New();
-  telemetry_info->input_result =
-      cros_healthd::InputResult::NewInputInfo(cros_healthd::InputInfo::New(
-          library_name, std::move(touchscreen_devices)));
-
   return telemetry_info;
 }
 
@@ -260,9 +174,9 @@ class CrosHealthdMetricSamplerTbtTest
     : public CrosHealthdMetricSamplerTest,
       public testing::WithParamInterface<TbtTestCase> {};
 
-class CrosHealthdMetricSamplerMemoryEncryptionTest
+class CrosHealthdMetricSamplerMemoryInfoTest
     : public CrosHealthdMetricSamplerTest,
-      public testing::WithParamInterface<MemoryEncryptionTestCase> {};
+      public testing::WithParamInterface<MemoryInfoTestCase> {};
 
 TEST_F(CrosHealthdMetricSamplerTest, TestUsbTelemetryMultipleEntries) {
   // Max value for 8-bit unsigned integer
@@ -405,9 +319,8 @@ TEST_F(CrosHealthdMetricSamplerTest, TestUsbTelemetry) {
   EXPECT_EQ(usb_telemetry.firmware_version(), kFirmwareVersion);
 }
 
-TEST_P(CrosHealthdMetricSamplerMemoryEncryptionTest,
-       TestMemoryEncryptionReporting) {
-  const MemoryEncryptionTestCase& test_case = GetParam();
+TEST_P(CrosHealthdMetricSamplerMemoryInfoTest, TestMemoryInfoeporting) {
+  const auto& test_case = GetParam();
   const absl::optional<MetricData> optional_result = CollectData(
       CreateMemoryResult(CreateMemoryEncryptionInfo(
           test_case.healthd_encryption_state, test_case.max_keys,
@@ -417,17 +330,7 @@ TEST_P(CrosHealthdMetricSamplerMemoryEncryptionTest,
 
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();
-
-  ASSERT_TRUE(result.has_info_data());
-  ASSERT_TRUE(result.info_data().has_memory_info());
-  ASSERT_TRUE(result.info_data().memory_info().has_tme_info());
-
-  const auto& tme_info = result.info_data().memory_info().tme_info();
-  EXPECT_EQ(tme_info.encryption_state(), test_case.reporting_encryption_state);
-  EXPECT_EQ(tme_info.encryption_algorithm(),
-            test_case.reporting_encryption_algorithm);
-  EXPECT_EQ(tme_info.max_keys(), test_case.max_keys);
-  EXPECT_EQ(tme_info.key_length(), test_case.key_length);
+  AssertMemoryInfo(result, test_case);
 }
 
 TEST_P(CrosHealthdMetricSamplerTbtTest, TestTbtSecurityLevels) {
@@ -674,9 +577,9 @@ TEST_F(CrosHealthdMetricSamplerTest, BootPerformanceShutdownReasonNA) {
 }
 
 TEST_F(CrosHealthdMetricSamplerTest, TestTouchScreenInfoInternalSingle) {
-  constexpr char kSampleLibrary[] = "SampleLibrary";
-  constexpr char kSampleDevice[] = "SampleDevice";
-  constexpr int kTouchPoints = 10;
+  static constexpr char kSampleLibrary[] = "SampleLibrary";
+  static constexpr char kSampleDevice[] = "SampleDevice";
+  static constexpr int kTouchPoints = 10;
 
   auto input_device = cros_healthd::TouchscreenDevice::New(
       cros_healthd::InputDevice::New(
@@ -689,7 +592,7 @@ TEST_F(CrosHealthdMetricSamplerTest, TestTouchScreenInfoInternalSingle) {
   touchscreen_devices.push_back(std::move(input_device));
 
   const absl::optional<MetricData> optional_result = CollectData(
-      CreateInputInfo(kSampleLibrary, std::move(touchscreen_devices)),
+      CreateInputResult(kSampleLibrary, std::move(touchscreen_devices)),
       cros_healthd::ProbeCategoryEnum::kInput,
       CrosHealthdMetricSampler::MetricType::kInfo);
 
@@ -720,11 +623,11 @@ TEST_F(CrosHealthdMetricSamplerTest, TestTouchScreenInfoInternalSingle) {
 }
 
 TEST_F(CrosHealthdMetricSamplerTest, TestTouchScreenInfoInternalMultiple) {
-  constexpr char kSampleLibrary[] = "SampleLibrary";
-  constexpr char kSampleDevice[] = "SampleDevice";
-  constexpr char kSampleDevice2[] = "SampleDevice2";
-  constexpr int kTouchPoints = 10;
-  constexpr int kTouchPoints2 = 5;
+  static constexpr char kSampleLibrary[] = "SampleLibrary";
+  static constexpr char kSampleDevice[] = "SampleDevice";
+  static constexpr char kSampleDevice2[] = "SampleDevice2";
+  static constexpr int kTouchPoints = 10;
+  static constexpr int kTouchPoints2 = 5;
 
   auto input_device_first = cros_healthd::TouchscreenDevice::New(
       cros_healthd::InputDevice::New(
@@ -745,7 +648,7 @@ TEST_F(CrosHealthdMetricSamplerTest, TestTouchScreenInfoInternalMultiple) {
   touchscreen_devices.push_back(std::move(input_device_second));
 
   const absl::optional<MetricData> optional_result = CollectData(
-      CreateInputInfo(kSampleLibrary, std::move(touchscreen_devices)),
+      CreateInputResult(kSampleLibrary, std::move(touchscreen_devices)),
       cros_healthd::ProbeCategoryEnum::kInput,
       CrosHealthdMetricSampler::MetricType::kInfo);
 
@@ -802,7 +705,7 @@ TEST_F(CrosHealthdMetricSamplerTest, TestTouchScreenInfoExternal) {
   touchscreen_devices.push_back(std::move(input_device));
 
   const absl::optional<MetricData> optional_result = CollectData(
-      CreateInputInfo("SampleLibrary", std::move(touchscreen_devices)),
+      CreateInputResult("SampleLibrary", std::move(touchscreen_devices)),
       cros_healthd::ProbeCategoryEnum::kInput,
       CrosHealthdMetricSampler::MetricType::kInfo);
 
@@ -821,7 +724,7 @@ TEST_F(CrosHealthdMetricSamplerTest, TestTouchScreenInfoDisabled) {
   touchscreen_devices.push_back(std::move(input_device));
 
   const absl::optional<MetricData> optional_result = CollectData(
-      CreateInputInfo("SampleLibrary", std::move(touchscreen_devices)),
+      CreateInputResult("SampleLibrary", std::move(touchscreen_devices)),
       cros_healthd::ProbeCategoryEnum::kInput,
       CrosHealthdMetricSampler::MetricType::kInfo);
 
@@ -1096,9 +999,9 @@ INSTANTIATE_TEST_SUITE_P(
            info) { return info.param.test_name; });
 
 INSTANTIATE_TEST_SUITE_P(
-    CrosHealthdMetricSamplerMemoryEncryptionTests,
-    CrosHealthdMetricSamplerMemoryEncryptionTest,
-    testing::ValuesIn<MemoryEncryptionTestCase>({
+    CrosHealthdMetricSamplerMemoryInfoTests,
+    CrosHealthdMetricSamplerMemoryInfoTest,
+    testing::ValuesIn<MemoryInfoTestCase>({
         {"UnknownEncryptionState", cros_healthd::EncryptionState::kUnknown,
          ::reporting::MEMORY_ENCRYPTION_STATE_UNKNOWN,
          cros_healthd::CryptoAlgorithm::kUnknown,
@@ -1137,7 +1040,7 @@ INSTANTIATE_TEST_SUITE_P(
          kTmeKeysLength},
     }),
     [](const testing::TestParamInfo<
-        CrosHealthdMetricSamplerMemoryEncryptionTest::ParamType>& info) {
+        CrosHealthdMetricSamplerMemoryInfoTest::ParamType>& info) {
       return info.param.test_name;
     });
 

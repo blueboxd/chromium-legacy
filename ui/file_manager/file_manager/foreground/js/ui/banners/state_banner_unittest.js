@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {decorate} from 'chrome://resources/js/cr/ui.js';
+import {decorate} from '../../../../common/js/ui.js';
 import {Command} from '../command.js';
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
 
@@ -20,11 +20,6 @@ let stateBanner;
  * @returns {{ restore: function(), getSubpage: (function(): string)}}
  */
 function mockOpenSettingsSubpage() {
-  /** @suppress {const} */
-  window.chrome = window.chrome || {};
-
-  /** @suppress {const} */
-  window.chrome.fileManagerPrivate = window.chrome.fileManagerPrivate || {};
   const actualOpenSettingsSubpage =
       chrome.fileManagerPrivate.openSettingsSubpage;
   /** @type {string} */

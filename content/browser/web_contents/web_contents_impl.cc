@@ -76,6 +76,7 @@
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/permissions/permission_util.h"
 #include "content/browser/portal/portal.h"
+#include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/preloading/prerender/prerender_host_registry.h"
 #include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/cross_process_frame_connector.h"
@@ -173,6 +174,7 @@
 #include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/ax_tree_combiner.h"
+#include "ui/base/ime/mojom/virtual_keyboard_types.mojom.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/color/color_provider_manager.h"
@@ -283,32 +285,6 @@ class CloseDialogCallbackWrapper
   ~CloseDialogCallbackWrapper() = default;
 
   CloseCallback callback_;
-};
-
-// This is a small helper class created while a JavaScript dialog is showing
-// and destroyed when it's dismissed. Clients can register callbacks to receive
-// a notification when the dialog is dismissed.
-class JavaScriptDialogDismissNotifier {
- public:
-  JavaScriptDialogDismissNotifier() = default;
-
-  JavaScriptDialogDismissNotifier(const JavaScriptDialogDismissNotifier&) =
-      delete;
-  JavaScriptDialogDismissNotifier& operator=(
-      const JavaScriptDialogDismissNotifier&) = delete;
-
-  ~JavaScriptDialogDismissNotifier() {
-    for (auto& callback : callbacks_) {
-      std::move(callback).Run();
-    }
-  }
-
-  void NotifyOnDismiss(base::OnceClosure callback) {
-    callbacks_.push_back(std::move(callback));
-  }
-
- private:
-  std::vector<base::OnceClosure> callbacks_;
 };
 
 bool FrameCompareDepth(RenderFrameHostImpl* a, RenderFrameHostImpl* b) {
@@ -442,14 +418,14 @@ base::flat_set<WebContentsImpl*>* FullscreenContentsSet(
   return set_holder->set();
 }
 
-// Returns true if `host` has the Window Placement permission granted.
-bool IsWindowPlacementGranted(RenderFrameHost* host) {
+// Returns true if `host` has the Window Management permission granted.
+bool IsWindowManagementGranted(RenderFrameHost* host) {
   content::PermissionController* permission_controller =
       host->GetBrowserContext()->GetPermissionController();
   DCHECK(permission_controller);
 
   return permission_controller->GetPermissionStatusForCurrentDocument(
-             blink::PermissionType::WINDOW_PLACEMENT, host) ==
+             blink::PermissionType::WINDOW_MANAGEMENT, host) ==
          blink::mojom::PermissionStatus::GRANTED;
 }
 
@@ -470,7 +446,7 @@ int64_t AdjustRequestedWindowBounds(gfx::Rect* bounds, RenderFrameHost* host) {
   // Check, but do not prompt, for permission to place windows on other screens.
   // Sites generally need permission to get such bounds in the first place.
   // Also clamp offscreen bounds to the window's current screen.
-  if (!bounds->Intersects(display.bounds()) || !IsWindowPlacementGranted(host))
+  if (!bounds->Intersects(display.bounds()) || !IsWindowManagementGranted(host))
     display = screen->GetDisplayNearestView(host->GetNativeView());
 
   bounds->AdjustToFit(display.work_area());
@@ -537,6 +513,32 @@ size_t GetFrameTreeSize(FrameTree* frame_tree) {
 }
 
 }  // namespace
+
+// This is a small helper class created while a JavaScript dialog is showing
+// and destroyed when it's dismissed. Clients can register callbacks to receive
+// a notification when the dialog is dismissed.
+class JavaScriptDialogDismissNotifier {
+ public:
+  JavaScriptDialogDismissNotifier() = default;
+
+  JavaScriptDialogDismissNotifier(const JavaScriptDialogDismissNotifier&) =
+      delete;
+  JavaScriptDialogDismissNotifier& operator=(
+      const JavaScriptDialogDismissNotifier&) = delete;
+
+  ~JavaScriptDialogDismissNotifier() {
+    for (auto& callback : callbacks_) {
+      std::move(callback).Run();
+    }
+  }
+
+  void NotifyOnDismiss(base::OnceClosure callback) {
+    callbacks_.push_back(std::move(callback));
+  }
+
+ private:
+  std::vector<base::OnceClosure> callbacks_;
+};
 
 CreatedWindow::CreatedWindow() = default;
 CreatedWindow::CreatedWindow(std::unique_ptr<WebContentsImpl> contents,
@@ -922,9 +924,10 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
           std::make_unique<MediaWebContentsObserver>(this)),
       is_overlay_content_(false),
       showing_context_menu_(false),
-      prerender_host_registry_(blink::features::IsPrerender2Enabled()
-                                   ? std::make_unique<PrerenderHostRegistry>()
-                                   : nullptr),
+      prerender_host_registry_(
+          blink::features::IsPrerender2Enabled()
+              ? std::make_unique<PrerenderHostRegistry>(*this)
+              : nullptr),
       audible_power_mode_voter_(
           power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
               "PowerModeVoter.Audible")) {
@@ -1839,7 +1842,7 @@ void WebContentsImpl::SetUserAgentOverride(
       // page may not allow another navigation including a reload, depending
       // on conditions.
       frame_tree->GetMainFrame()->CancelPrerendering(
-          PrerenderHost::FinalStatus::kUaChangeRequiresReload);
+          PrerenderFinalStatus::kUaChangeRequiresReload);
     } else {
       frame_tree->controller().Reload(ReloadType::BYPASSING_CACHE, true);
     }
@@ -2244,6 +2247,26 @@ void WebContentsImpl::OnVerticalScrollDirectionChanged(
                         "scroll_direction", static_cast<int>(scroll_direction));
   observers_.NotifyObservers(
       &WebContentsObserver::DidChangeVerticalScrollDirection, scroll_direction);
+}
+
+int WebContentsImpl::GetVirtualKeyboardResizeHeight() {
+  // Only consider a web contents to be insetted by the virtual keyboard if it
+  // is in the currently active tab.
+  if (GetVisibility() != Visibility::VISIBLE)
+    return 0;
+
+  // The only mode where the virtual keyboard causes the web contents to be
+  // resized is kResizesContent.
+  if (GetPrimaryPage().virtual_keyboard_mode() !=
+      ui::mojom::VirtualKeyboardMode::kResizesContent) {
+    return 0;
+  }
+
+  // The virtual keyboard never resizes content when fullscreened.
+  if (IsFullscreen())
+    return 0;
+
+  return GetDelegate() ? GetDelegate()->GetVirtualKeyboardHeight(this) : 0;
 }
 
 void WebContentsImpl::OnAudioStateChanged() {
@@ -2996,8 +3019,7 @@ void WebContentsImpl::Stop() {
   ForEachFrameTree(base::BindRepeating(
       [](FrameTree* frame_tree) { frame_tree->StopLoading(); }));
   if (blink::features::IsPrerender2Enabled()) {
-    GetPrerenderHostRegistry()->CancelAllHosts(
-        PrerenderHost::FinalStatus::kStop);
+    GetPrerenderHostRegistry()->CancelAllHosts(PrerenderFinalStatus::kStop);
   }
   observers_.NotifyObservers(&WebContentsObserver::NavigationStopped);
 }
@@ -3455,6 +3477,11 @@ void WebContentsImpl::EnterFullscreenMode(
   DCHECK(requesting_frame->IsActive());
   DCHECK(ContainsOrIsFocusedWebContents());
 
+  // When WebView is the `delegate_` we can end up with VisualProperties changes
+  // synchronously. Notify the view ahead so it can handle the transition.
+  if (auto* view = GetRenderWidgetHostView())
+    static_cast<RenderWidgetHostViewBase*>(view)->EnterFullscreenMode(options);
+
   if (delegate_) {
     delegate_->EnterFullscreenModeForTab(requesting_frame, options);
 
@@ -3471,6 +3498,11 @@ void WebContentsImpl::EnterFullscreenMode(
 void WebContentsImpl::ExitFullscreenMode(bool will_cause_resize) {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::ExitFullscreenMode",
                         "will_cause_resize", will_cause_resize);
+  // When WebView is the `delegate_` we can end up with VisualProperties changes
+  // synchronously. Notify the view ahead so it can handle the transition.
+  if (auto* view = GetRenderWidgetHostView())
+    static_cast<RenderWidgetHostViewBase*>(view)->ExitFullscreenMode();
+
   if (delegate_) {
     delegate_->ExitFullscreenModeForTab(this);
 
@@ -4201,7 +4233,7 @@ void WebContentsImpl::ShowCreatedWindow(
 
   // Drop fullscreen when opening a WebContents to prohibit deceptive behavior.
   // Only drop fullscreen on the specific destination display, if it is known.
-  // This supports sites using cross-screen window placement capabilities to
+  // This supports sites using cross-screen window management capabilities to
   // retain fullscreen and open a window on another screen.
   ForSecurityDropFullscreen(display_id).RunAndReset();
 
@@ -5837,6 +5869,11 @@ bool WebContentsImpl::ShouldPreserveAbortedURLs() {
   return delegate_->ShouldPreserveAbortedURLs(this);
 }
 
+void WebContentsImpl::NotifyNavigationStateChangedFromController(
+    InvalidateTypes changed_flags) {
+  NotifyNavigationStateChanged(changed_flags);
+}
+
 void WebContentsImpl::DidNavigateMainFramePreCommit(
     FrameTreeNode* frame_tree_node,
     bool navigation_is_within_page) {
@@ -7126,8 +7163,9 @@ void WebContentsImpl::RunFileChooser(
 double WebContentsImpl::GetPendingPageZoomLevel() {
 #if BUILDFLAG(IS_ANDROID)
   // On Android, use the default page zoom level when the AccessibilityPageZoom
-  // feature is not enabled.
-  if (!base::FeatureList::IsEnabled(features::kAccessibilityPageZoom)) {
+  // and RequestDesktopSiteZoom features are not enabled.
+  if (!base::FeatureList::IsEnabled(features::kAccessibilityPageZoom) &&
+      !base::FeatureList::IsEnabled(features::kRequestDesktopSiteZoom)) {
     return 0.0;
   }
 #endif
@@ -7425,7 +7463,7 @@ void WebContentsImpl::SetWindowRect(const gfx::Rect& new_bounds) {
 
   // Drop fullscreen when placing a WebContents to prohibit deceptive behavior.
   // Only drop fullscreen on the specific destination display, which is known.
-  // This supports sites using cross-screen window placement capabilities to
+  // This supports sites using cross-screen window management capabilities to
   // retain fullscreen and place a window on another screen.
   ForSecurityDropFullscreen(display_id).RunAndReset();
 
@@ -8777,6 +8815,12 @@ void WebContentsImpl::SetHasPersistentVideo(bool has_persistent_video) {
   has_persistent_video_ = has_persistent_video;
   NotifyPreferencesChanged();
   media_web_contents_observer()->RequestPersistentVideo(has_persistent_video);
+
+  // This is Picture-in-Picture on Android S+.
+  if (auto* view = GetRenderWidgetHostView()) {
+    static_cast<RenderWidgetHostViewBase*>(view)->SetHasPersistentVideo(
+        has_persistent_video);
+  }
 }
 
 void WebContentsImpl::SetSpatialNavigationDisabled(bool disabled) {
@@ -9046,8 +9090,8 @@ void WebContentsImpl::IsClipboardPasteContentAllowed(
 
 void WebContentsImpl::IsClipboardPasteContentAllowedWrapperCallback(
     IsClipboardPasteContentAllowedCallback callback,
-    ClipboardPasteContentAllowed allowed) {
-  std::move(callback).Run(allowed);
+    const absl::optional<std::string>& data) {
+  std::move(callback).Run(data);
   --suppress_unresponsive_renderer_count_;
 }
 
@@ -9540,9 +9584,8 @@ bool WebContentsImpl::IsPrerender2Disabled() {
   return prerender2_disabled_ || !GetDelegate()->IsPrerender2Supported(*this);
 }
 
-bool WebContentsImpl::CancelPrerendering(
-    FrameTreeNode* frame_tree_node,
-    PrerenderHost::FinalStatus final_status) {
+bool WebContentsImpl::CancelPrerendering(FrameTreeNode* frame_tree_node,
+                                         PrerenderFinalStatus final_status) {
   if (!blink::features::IsPrerender2Enabled())
     return false;
 

@@ -53,8 +53,8 @@ feedstore::StreamStructure::Type TranslateNodeType(
       return feedstore::StreamStructure::STREAM;
     case feedwire::Feature::CONTENT:
       return feedstore::StreamStructure::CONTENT;
-    case feedwire::Feature::CLUSTER:
-      return feedstore::StreamStructure::CLUSTER;
+    case feedwire::Feature::GROUP:
+      return feedstore::StreamStructure::GROUP;
     default:
       return feedstore::StreamStructure::UNKNOWN_TYPE;
   }
@@ -340,8 +340,13 @@ RefreshResponseData TranslateWireResponse(
       chrome_response_metadata.privacy_notice_fulfilled());
 
   for (const feedstore::Content& content : result->content) {
+    feedstore::StreamContentHashList* hash_list = nullptr;
     for (auto& metadata : content.prefetch_metadata()) {
-      result->stream_data.add_content_hashes(
+      if (!metadata.has_uri())
+        continue;
+      if (hash_list == nullptr)
+        hash_list = result->stream_data.add_content_hashes();
+      hash_list->add_hashes(
           feedstore::ContentHashFromPrefetchMetadata(metadata));
     }
   }

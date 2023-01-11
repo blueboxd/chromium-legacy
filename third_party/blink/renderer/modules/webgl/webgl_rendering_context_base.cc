@@ -539,19 +539,20 @@ WebGLRenderingContextBase::CreateContextProviderInternal(
   Platform::ContextAttributes context_attributes = ToPlatformContextAttributes(
       attributes, context_type, SupportOwnOffscreenSurface(execution_context));
 
-  std::unique_ptr<WebGraphicsContext3DProvider> context_provider;
-  const auto& url = execution_context->Url();
-  if (IsMainThread()) {
-    context_provider =
-        Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
-            context_attributes, url, graphics_info);
-  } else {
-    context_provider = CreateContextProviderOnWorkerThread(context_attributes,
-                                                           graphics_info, url);
+  // To run our tests with Chrome rendering on the low power GPU and WebGL on
+  // the high performance GPU, we need to force the power preference attribute.
+  if (base::FeatureList::IsEnabled(
+          blink::features::kForceHighPerformanceGPUForWebGL)) {
+    context_attributes.prefer_low_power_gpu = false;
   }
-  if (context_provider && !context_provider->BindToCurrentThread()) {
+
+  const auto& url = execution_context->Url();
+  std::unique_ptr<WebGraphicsContext3DProvider> context_provider =
+      CreateOffscreenGraphicsContext3DProvider(context_attributes,
+                                               graphics_info, url);
+  if (context_provider && !context_provider->BindToCurrentSequence()) {
     context_provider = nullptr;
-    graphics_info->error_message = String("bindToCurrentThread failed: " +
+    graphics_info->error_message = String("BindToCurrentSequence failed: " +
                                           String(graphics_info->error_message));
   }
   if (!context_provider || g_should_fail_context_creation_for_testing) {
@@ -1065,13 +1066,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
   context_provider->ContextGL()->GetIntegerv(GL_MAX_VIEWPORT_DIMS,
                                              max_viewport_dims_);
   InitializeWebGLContextLimits(context_provider.get());
-
-  // TODO(https://crbug.com/1208480): Move color space to being a read-write
-  // attribute instead of a context creation attribute.
-  if (RuntimeEnabledFeatures::CanvasColorManagementV2Enabled()) {
-    drawing_buffer_color_space_ = requested_attributes.color_space;
-    pixel_format_deprecated_ = requested_attributes.pixel_format;
-  }
 
   scoped_refptr<DrawingBuffer> buffer =
       CreateDrawingBuffer(std::move(context_provider), graphics_info);
@@ -2424,6 +2418,11 @@ void WebGLRenderingContextBase::compressedTexImage2D(
   GLsizei data_length;
   if (!ExtractDataLengthIfValid("compressedTexImage2D", data, &data_length))
     return;
+  if (static_cast<size_t>(data_length) > kMaximumSupportedArrayBufferSize) {
+    SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
+                      "ArrayBufferView size exceeds the supported range");
+    return;
+  }
   ContextGL()->CompressedTexImage2D(target, level, internalformat, width,
                                     height, border, data_length,
                                     data->BaseAddressMaybeShared());
@@ -2447,6 +2446,11 @@ void WebGLRenderingContextBase::compressedTexSubImage2D(
   GLsizei data_length;
   if (!ExtractDataLengthIfValid("compressedTexSubImage2D", data, &data_length))
     return;
+  if (static_cast<size_t>(data_length) > kMaximumSupportedArrayBufferSize) {
+    SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
+                      "ArrayBufferView size exceeds the supported range");
+    return;
+  }
   ContextGL()->CompressedTexSubImage2D(target, level, xoffset, yoffset, width,
                                        height, format, data_length,
                                        data->BaseAddressMaybeShared());
@@ -3267,7 +3271,6 @@ ScriptValue WebGLRenderingContextBase::getExtension(ScriptState* script_state,
   if (name == WebGLDebugRendererInfo::ExtensionName()) {
     ExecutionContext* context = ExecutionContext::From(script_state);
     UseCounter::Count(context, WebFeature::kWebGLDebugRendererInfo);
-    Dactyloscoper::Record(context, WebFeature::kWebGLDebugRendererInfo);
   }
 
   WebGLExtension* extension = EnableExtensionIfSupported(name);
@@ -8094,10 +8097,16 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
   total *= pixels->TypeSize();
   total += total_bytes_required;
   total += skip_bytes;
-  if (!total.IsValid() ||
-      pixels->byteLength() < static_cast<size_t>(total.ValueOrDie())) {
+  uint32_t total_val;
+  if (!total.AssignIfValid(&total_val) ||
+      pixels->byteLength() < static_cast<size_t>(total_val)) {
     SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                       "ArrayBufferView not big enough for request");
+    return false;
+  }
+  if (static_cast<size_t>(total_val) > kMaximumSupportedArrayBufferSize) {
+    SynthesizeGLError(GL_INVALID_VALUE, function_name,
+                      "ArrayBufferView size exceeds the supported range");
     return false;
   }
   return true;
@@ -8509,19 +8518,12 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
       CreationAttributes(), context_type_,
       SupportOwnOffscreenSurface(execution_context));
   Platform::GraphicsInfo gl_info;
-  std::unique_ptr<WebGraphicsContext3DProvider> context_provider;
   const auto& url = Host()->GetExecutionContextUrl();
 
-  if (IsMainThread()) {
-    context_provider =
-        Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
-            attributes, url, &gl_info);
-  } else {
-    context_provider =
-        CreateContextProviderOnWorkerThread(attributes, &gl_info, url);
-  }
+  std::unique_ptr<WebGraphicsContext3DProvider> context_provider =
+      CreateOffscreenGraphicsContext3DProvider(attributes, &gl_info, url);
   scoped_refptr<DrawingBuffer> buffer;
-  if (context_provider && context_provider->BindToCurrentThread()) {
+  if (context_provider && context_provider->BindToCurrentSequence()) {
     // Construct a new drawing buffer with the new GL context.
     buffer = CreateDrawingBuffer(std::move(context_provider), gl_info);
     // If DrawingBuffer::create() fails to allocate a fbo, |drawingBuffer| is

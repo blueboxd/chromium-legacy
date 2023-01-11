@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/containers/contains.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/types/expected.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
@@ -29,11 +30,14 @@ extern DEVICE_BLUETOOTH_EXPORT const char kAdapterService[];
 extern DEVICE_BLUETOOTH_EXPORT const char kManagerService[];
 extern DEVICE_BLUETOOTH_EXPORT const char kAdapterInterface[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGattInterface[];
+extern DEVICE_BLUETOOTH_EXPORT const char kBatteryManagerInterface[];
 extern DEVICE_BLUETOOTH_EXPORT const char kManagerInterface[];
 extern DEVICE_BLUETOOTH_EXPORT const char kExperimentalInterface[];
 extern DEVICE_BLUETOOTH_EXPORT const char kManagerObject[];
 extern DEVICE_BLUETOOTH_EXPORT const char kAdapterObjectFormat[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGattObjectFormat[];
+extern DEVICE_BLUETOOTH_EXPORT const char kMediaObjectFormat[];
+extern DEVICE_BLUETOOTH_EXPORT const char kBatteryManagerObjectFormat[];
 
 // Other interfaces
 extern DEVICE_BLUETOOTH_EXPORT const char kSocketManagerInterface[];
@@ -51,6 +55,7 @@ extern DEVICE_BLUETOOTH_EXPORT const char kCancelBondProcess[];
 extern DEVICE_BLUETOOTH_EXPORT const char kRemoveBond[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetRemoteType[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetRemoteClass[];
+extern DEVICE_BLUETOOTH_EXPORT const char kGetRemoteAppearance[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetConnectionState[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetRemoteUuids[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetBondState[];
@@ -96,11 +101,14 @@ extern DEVICE_BLUETOOTH_EXPORT const char kGetFlossEnabled[];
 extern DEVICE_BLUETOOTH_EXPORT const char kSetFlossEnabled[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetState[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetAvailableAdapters[];
+extern DEVICE_BLUETOOTH_EXPORT const char kGetDefaultAdapter[];
+extern DEVICE_BLUETOOTH_EXPORT const char kSetDesiredDefaultAdapter[];
 extern DEVICE_BLUETOOTH_EXPORT const char kRegisterCallback[];
 extern DEVICE_BLUETOOTH_EXPORT const char kCallbackInterface[];
 
 extern DEVICE_BLUETOOTH_EXPORT const char kOnHciDeviceChanged[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnHciEnabledChanged[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnDefaultAdapterChanged[];
 }  // namespace manager
 
 namespace socket_manager {
@@ -155,6 +163,7 @@ extern DEVICE_BLUETOOTH_EXPORT const char kOnCharacteristicRead[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnCharacteristicWrite[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnExecuteWrite[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnDescriptorRead[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnDescriptorWrite[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnNotify[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnReadRemoteRssi[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnConfigureMtu[];
@@ -188,6 +197,14 @@ extern DEVICE_BLUETOOTH_EXPORT const char
 extern DEVICE_BLUETOOTH_EXPORT const char kOnPeriodicAdvertisingDataSet[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnPeriodicAdvertisingEnabled[];
 }  // namespace advertiser
+
+namespace battery_manager {
+extern DEVICE_BLUETOOTH_EXPORT const char kCallbackInterface[];
+extern DEVICE_BLUETOOTH_EXPORT const char kRegisterBatteryCallback[];
+extern DEVICE_BLUETOOTH_EXPORT const char kGetBatteryInformation[];
+
+extern DEVICE_BLUETOOTH_EXPORT const char kOnBatteryInfoUpdated[];
+}  // namespace battery_manager
 
 namespace experimental {
 extern DEVICE_BLUETOOTH_EXPORT const char kSetLLPrivacy[];
@@ -288,21 +305,26 @@ DEVICE_BLUETOOTH_EXPORT const DBusTypeInfo& GetDBusTypeInfo(const T*);
 
 template <typename T>
 const DBusTypeInfo& GetDBusTypeInfo(const std::vector<T>*) {
-  static DBusTypeInfo elem_info = GetDBusTypeInfo(static_cast<T*>(nullptr));
-  static DBusTypeInfo info{"a" + elem_info.dbus_signature,
-                           "vector<" + elem_info.type_name + ">"};
-  return info;
+  static base::NoDestructor<DBusTypeInfo> elem_info(
+      GetDBusTypeInfo(static_cast<T*>(nullptr)));
+  static base::NoDestructor<DBusTypeInfo> info{
+      {"a" + elem_info->dbus_signature,
+       "vector<" + elem_info->type_name + ">"}};
+  return *info;
 }
 
 template <typename T, typename U>
 const DBusTypeInfo& GetDBusTypeInfo(const std::map<T, U>*) {
-  static DBusTypeInfo key_info = GetDBusTypeInfo(static_cast<T*>(nullptr));
-  static DBusTypeInfo val_info = GetDBusTypeInfo(static_cast<U*>(nullptr));
-  static DBusTypeInfo info{std::string("a{") + key_info.dbus_signature +
-                               val_info.dbus_signature + std::string("}"),
-                           std::string("map<") + key_info.type_name + ", " +
-                               val_info.type_name + std::string(">")};
-  return info;
+  static base::NoDestructor<DBusTypeInfo> key_info(
+      GetDBusTypeInfo(static_cast<T*>(nullptr)));
+  static base::NoDestructor<DBusTypeInfo> val_info(
+      GetDBusTypeInfo(static_cast<U*>(nullptr)));
+  static base::NoDestructor<DBusTypeInfo> info{
+      {std::string("a{") + key_info->dbus_signature + val_info->dbus_signature +
+           std::string("}"),
+       std::string("map<") + key_info->type_name + ", " + val_info->type_name +
+           std::string(">")}};
+  return *info;
 }
 
 // Restrict all access to DBus client initialization to FlossDBusManager so we
@@ -357,6 +379,9 @@ class DEVICE_BLUETOOTH_EXPORT FlossDBusClient {
 
   // Convert adapter number to gatt object path.
   static dbus::ObjectPath GenerateGattPath(int adapter_index);
+
+  // Convert adapter number to battery_manager object path.
+  static dbus::ObjectPath GenerateBatteryManagerPath(int adapter_index);
 
   // Generalized DBus serialization (used for generalized method call
   // invocation).

@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">Адрабіць</translation>
 <translation id="2084108471225856927">Налады прылады</translation>
 <translation id="2084809735218147718">Спеўная падзяка</translation>
-<translation id="2085470240340828803">Файл пад назвай "<ph name="FILENAME" />" ужо існуе. Што трэба зрабіць?</translation>
 <translation id="2088690981887365033">Сетка VPN</translation>
 <translation id="2122305276694332719">Аўтаматычнае падключэнне да схаванай сеткі дазваляе іншым бачыць вашу прыладу і некаторыя налады сеткі, а таму не рэкамендуецца.</translation>
 <translation id="2125607626296734455">Кхмерская</translation>
@@ -456,7 +455,6 @@
 <translation id="4900532980794411603">Абагуліць з Parallels Desktop</translation>
 <translation id="4902546322522096650">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />%, падключыцца</translation>
 <translation id="4906580650526544301">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />%, зарад акумулятара тэлефона – <ph name="BATTERY_STATUS" />%, падрабязныя звесткі</translation>
-<translation id="4929673617759421391">Зададзеная адміністратарам палітыка блакіруе магчымасць устаўляць гэты файл</translation>
 <translation id="4935975195727477204">Кветка гацаніі</translation>
 <translation id="4943368462779413526">Мяч для амерыканскага футбола</translation>
 <translation id="4961158930123534723">1 папка абагулена з Parallels Desktop</translation>
@@ -533,6 +531,7 @@
 <translation id="5428105026674456456">Іспанская</translation>
 <translation id="5438282218546237410">Няма вынікаў па запыце "<ph name="SEARCH_TERM" />".</translation>
 <translation id="5449551289610225147">Несапраўдны пароль</translation>
+<translation id="5459064203055649751">Файл з такой назвай (<ph name="FILENAME" />) ужо існуе. Замяніць яго файлам, які вы перамяшчаеце?</translation>
 <translation id="5463231940765244860">Увесці</translation>
 <translation id="5469868506864199649">Італьянская</translation>
 <translation id="5473333559083690127">Паўторна ўвядзіце новы PIN-код</translation>
@@ -653,6 +652,7 @@
 <translation id="6495925982925244349">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />%, знаходзіцца пад кіраваннем адміністратара, падрабязныя звесткі</translation>
 <translation id="649877868557234318">Выманне файла "<ph name="FILE_NAME" />" ажыццяўляецца ў папку "<ph name="FOLDER_NAME" />"</translation>
 <translation id="6499681088828539489">Забараніць проксі-серверы для абагуленых сетак</translation>
+<translation id="6503285896705205014">Зададзеная адміністратарам палітыка блакіруе магчымасць капіраваць файлы (<ph name="COUNT" />)</translation>
 <translation id="6509122719576673235">Нарвежская</translation>
 <translation id="6528513914570774834">Дазволіць іншым карыстальнікам прылады выкарыстоўваць гэту сетку</translation>
 <translation id="653019979737152879">Ідзе сінхранізацыя файла "<ph name="FILE_NAME" />"...</translation>
@@ -755,6 +755,7 @@
 <translation id="7357762654218998920">Гэты тып файла не падтрымліваецца. <ph name="BEGIN_LINK_HELP" />Даведайцеся больш<ph name="END_LINK_HELP" /> пра адкрыццё файлаў на Chrome OS.</translation>
 <translation id="7359359531237882347">Ідзе капіраванне элементаў (<ph name="NUMBER_OF_ITEMS" />)...</translation>
 <translation id="7375951387215729722">Файлы ў спісе адсартаваны па параметры "<ph name="COLUMN_NAME" />" (у пачатку будуць нядаўна змененыя).</translation>
+<translation id="7377161162143020057">Зададзеная адміністратарам палітыка блакіруе магчымасць капіраваць гэты файл</translation>
 <translation id="7402503521691663770">Прылады з Chrome OS Flex</translation>
 <translation id="7408870451288633753">Чэшская</translation>
 <translation id="7417453074306512035">Эфіопская раскладка</translation>
@@ -976,7 +977,6 @@
 <translation id="9183302530794969518">Дакументы Google</translation>
 <translation id="9189836632794948435">Казахская</translation>
 <translation id="9200427192836333033">Вынята элементаў: <ph name="NUMBER_OF_ITEMS" />.</translation>
-<translation id="9210751050717126865">Зададзеная адміністратарам палітыка блакіруе магчымасць устаўляць файлы (<ph name="COUNT" />)</translation>
 <translation id="9213073329713032541">Пачалося ўсталяванне.</translation>
 <translation id="9219103736887031265">Відарысы</translation>
 <translation id="9219908252191632183">Месячны ландшафт</translation>

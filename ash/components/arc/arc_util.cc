@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/ash/components/dbus/upstart/upstart_client.h"
+#include "chromeos/version/version_loader.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -47,6 +48,7 @@ constexpr char kManualStart[] = "manual";
 constexpr const char kCrosSystemPath[] = "/usr/bin/crossystem";
 
 // ArcVmUreadaheadMode param value strings.
+constexpr char kReadahead[] = "readahead";
 constexpr char kGenerate[] = "generate";
 constexpr char kDisabled[] = "disabled";
 
@@ -75,7 +77,7 @@ void OnConfigureUpstartJobs(std::deque<JobDesc> jobs,
 
   if (!result && is_start) {
     LOG(ERROR) << "Failed to start " << job_name;
-    // TODO(yusukes): Record UMA for this case.
+    // TODO(khmel): Record UMA for this case.
     std::move(callback).Run(false);
     return;
   }
@@ -113,6 +115,21 @@ bool IsArcAvailable() {
 bool IsArcVmEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ash::switches::kEnableArcVm);
+}
+
+int GetArcAndroidSdkVersionAsInt() {
+  const auto arc_version_str =
+      chromeos::version_loader::GetArcAndroidSdkVersion();
+  if (!arc_version_str) {
+    LOG(ERROR) << "ARC SDK version is unknown";
+    return kMaxArcVersion;
+  }
+  int arc_version;
+  if (!base::StringToInt(*arc_version_str, &arc_version)) {
+    LOG(WARNING) << "ARC SDK version is not a number: " << *arc_version_str;
+    return kMaxArcVersion;
+  }
+  return arc_version;
 }
 
 bool IsArcVmRtVcpuEnabled(uint32_t cpus) {
@@ -160,7 +177,9 @@ ArcVmUreadaheadMode GetArcVmUreadaheadMode(SystemMemoryInfoCallback callback) {
     const std::string value =
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             ash::switches::kArcVmUreadaheadMode);
-    if (value == kGenerate) {
+    if (value == kReadahead) {
+      mode = ArcVmUreadaheadMode::READAHEAD;
+    } else if (value == kGenerate) {
       mode = ArcVmUreadaheadMode::GENERATE;
     } else if (value == kDisabled) {
       mode = ArcVmUreadaheadMode::DISABLED;

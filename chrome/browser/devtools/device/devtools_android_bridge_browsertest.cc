@@ -1,10 +1,11 @@
 // Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include <algorithm>
+
 #include <array>
 
 #include "base/bind.h"
+#include "base/ranges/algorithm.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
 #include "chrome/browser/devtools/device/tcp_device_provider.h"
@@ -29,8 +30,7 @@ static void assign_from_callback(scoped_refptr<TCPDeviceProvider>* store,
 
 static std::string SetToString(const std::set<std::string>& values) {
   std::ostringstream result;
-  std::copy(values.begin(), values.end(),
-            std::ostream_iterator<std::string>(result, ", "));
+  base::ranges::copy(values, std::ostream_iterator<std::string>(result, ", "));
   std::string result_string = result.str();
   return result_string.substr(0, result_string.length() - 2);
 }
@@ -65,18 +65,18 @@ IN_PROC_BROWSER_TEST_F(DevToolsAndroidBridgeTest, DiscoveryListChanges) {
                AllTargetsString(provider).c_str());
 
   int invocations = called;
-  base::ListValue list;
+  base::Value::List list;
   list.Append("somehost:2000");
 
-  service->Set(prefs::kDevToolsTCPDiscoveryConfig, list);
+  service->SetList(prefs::kDevToolsTCPDiscoveryConfig, list.Clone());
 
   EXPECT_LT(invocations, called);
   EXPECT_NE(nullptr, provider);
   EXPECT_STREQ("somehost:2000", AllTargetsString(provider).c_str());
 
   invocations = called;
-  list.ClearList();
-  service->Set(prefs::kDevToolsTCPDiscoveryConfig, list);
+  list.clear();
+  service->SetList(prefs::kDevToolsTCPDiscoveryConfig, list.Clone());
 
   EXPECT_LT(invocations, called);
   EXPECT_EQ(nullptr, provider);
@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsAndroidBridgeTest, DiscoveryListChanges) {
   list.Append("<not really a good address.");
   list.Append("d:3");
   list.Append("c:2");
-  service->Set(prefs::kDevToolsTCPDiscoveryConfig, list);
+  service->SetList(prefs::kDevToolsTCPDiscoveryConfig, std::move(list));
 
   EXPECT_LT(invocations, called);
   EXPECT_NE(nullptr, provider);

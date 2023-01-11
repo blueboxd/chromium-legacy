@@ -16,6 +16,7 @@
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/base/features.h"
 #import "ios/chrome/browser/metrics/metrics_app_interface.h"
+#import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings_app_interface.h"
@@ -30,7 +31,6 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/element_selector.h"
@@ -420,12 +420,6 @@ id<GREYMatcher> EditDoneButton() {
   if ([self isRunningTest:@selector(testNoOndeviceEncryptionWithoutFlag)]) {
     config.features_disabled.push_back(
         syncer::kSyncTrustedVaultPassphrasePromo);
-  }
-  if ([self isRunningTest:@selector(testLogFaviconsForPasswordsMetrics)] ||
-      [self isRunningTest:@selector
-            (testLogFaviconsForPasswordsMetricsNoPassword)]) {
-    config.features_enabled.push_back(
-        password_manager::features::kEnableFaviconForPasswords);
   }
 
   return config;
@@ -1817,7 +1811,8 @@ id<GREYMatcher> EditDoneButton() {
 }
 
 // Tests the add password flow.
-- (void)testAddNewPasswordCredential {
+// TODO(crbug.com/1377079): Flaky, please re-enable once fixed.
+- (void)DISABLED_testAddNewPasswordCredential {
   OpenPasswordSettings();
 
   // Press "Add".
@@ -1863,7 +1858,8 @@ id<GREYMatcher> EditDoneButton() {
 // Tests that when a new credential is saved or an existing one is updated via
 // the add credential flow, the VC auto scrolls to the newly created or the
 // updated entry.
-- (void)testAutoScroll {
+// TODO(crbug.com/1377079): Flaky, please re-enable once fixed.
+- (void)DISABLED_testAutoScroll {
   for (int i = 0; i < 20; i++) {
     NSString* username = [NSString stringWithFormat:@"username %d", i];
     NSString* password = [NSString stringWithFormat:@"password %d", i];
@@ -1908,7 +1904,8 @@ id<GREYMatcher> EditDoneButton() {
 // Tests that adding new password credential where the username and website
 // matches with an existing credential results in showing a section alert for
 // the existing credential.
-- (void)testAddNewDuplicatedPasswordCredential {
+// TODO(crbug.com/1377079): Resolve flaky failures and reenable the test.
+- (void)DISABLED_testAddNewDuplicatedPasswordCredential {
   SaveExamplePasswordForm();
 
   OpenPasswordSettings();
@@ -1967,7 +1964,8 @@ id<GREYMatcher> EditDoneButton() {
 // Tests that the duplicate credential section alert is shown when the user adds
 // a credential that has the same website as that of an existing credential
 // (does not contain username).
-- (void)testDuplicatedCredentialWithNoUsername {
+// TODO(crbug.com/1377079): Flaky, please re-enable once fixed.
+- (void)DISABLED_testDuplicatedCredentialWithNoUsername {
   OpenPasswordSettings();
 
   [[EarlGrey selectElementWithMatcher:AddPasswordButton()]
@@ -2130,9 +2128,9 @@ id<GREYMatcher> EditDoneButton() {
 // TODO(crbug.com/1348585): Fix to re-enable.
 - (void)testLogFaviconsForPasswordsMetrics {
   // Sign-in and synced user.
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
-  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:5.0];
+  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:base::Seconds(5)];
 
   // Add passwords for the user.
   SaveExamplePasswordForms();

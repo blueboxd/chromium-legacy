@@ -5,6 +5,7 @@
 #include "content/public/common/content_features.h"
 
 #include "base/feature_list.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/common/buildflags.h"
@@ -29,12 +30,6 @@ BASE_FEATURE(kAllowContentInitiatedDataUrlNavigations,
 BASE_FEATURE(kAndroidDownloadableFontsMatching,
              "AndroidDownloadableFontsMatching",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-#if BUILDFLAG(IS_WIN)
-BASE_FEATURE(kAudioProcessHighPriorityWin,
-             "AudioProcessHighPriorityWin",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
 
 // Launches the audio service on the browser startup.
 BASE_FEATURE(kAudioServiceLaunchOnStartup,
@@ -103,6 +98,12 @@ BASE_FEATURE(kBackForwardCache,
 BASE_FEATURE(kBackForwardCacheMediaSessionService,
              "BackForwardCacheMediaSessionService",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Set a time limit for the page to enter the cache. Disabling this prevents
+// flakes during testing.
+BASE_FEATURE(kBackForwardCacheEntryTimeout,
+             "BackForwardCacheEntryTimeout",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable back/forward cache for screen reader users. This flag should be
 // removed once the https://crbug.com/1271450 is resolved.
@@ -373,11 +374,6 @@ const char kFedCmIdpSignoutFieldTrialParamName[] = "IdpSignout";
 // cross-origin iframes.
 const char kFedCmIframeSupportFieldTrialParamName[] = "IframeSupport";
 
-// Kill switch for FedCm manifest validation.
-BASE_FEATURE(kFedCmManifestValidation,
-             "FedCmManifestValidation",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables usage of the FedCM API with metrics endpoint at the same time.
 BASE_FEATURE(kFedCmMetricsEndpoint,
              "FedCmMetricsEndpoint",
@@ -400,7 +396,7 @@ BASE_FEATURE(kFirstPartySets,
 
 // Controls whether to clear sites data on FPS transitions.
 const base::FeatureParam<bool> kFirstPartySetsClearSiteDataOnChangedSets{
-    &kFirstPartySets, "FirstPartySetsClearSiteDataOnChangedSets", false};
+    &kFirstPartySets, "FirstPartySetsClearSiteDataOnChangedSets", true};
 
 // Controls whether the client is considered a dogfooder for the FirstPartySets
 // feature.
@@ -411,6 +407,15 @@ const base::FeatureParam<bool> kFirstPartySetsIsDogfooder{
 // ccTLD aliases).
 const base::FeatureParam<int> kFirstPartySetsMaxAssociatedSites{
     &kFirstPartySets, "FirstPartySetsMaxAssociatedSites", 3};
+
+// Controls the maximum time duration an outermost frame navigation should be
+// deferred by FPS initialization.
+// Using 2s as the starting default timeout. This is based on the UMA metric
+// `History.ClearBrowsingData.Duration.OriginDeletion`.
+const base::FeatureParam<base::TimeDelta>
+    kFirstPartySetsNavigationThrottleTimeout{
+        &kFirstPartySets, "FirstPartySetsNavigationThrottleTimeout",
+        base::Seconds(2)};
 
 // Whether to initialize the font manager when the renderer starts on a
 // background thread.
@@ -534,24 +539,6 @@ BASE_FEATURE(kIsolateOrigins,
              "IsolateOrigins",
              base::FEATURE_DISABLED_BY_DEFAULT);
 const char kIsolateOriginsFieldTrialParamName[] = "OriginsList";
-
-// Allow process isolation of iframes with the 'sandbox' attribute set. Whether
-// or not such an iframe will be isolated may depend on options specified with
-// the attribute. Note: At present, only iframes with origin-restricted
-// sandboxes are isolated.
-BASE_FEATURE(kIsolateSandboxedIframes,
-             "IsolateSandboxedIframes",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<IsolateSandboxedIframesGrouping>::Option
-    isolated_sandboxed_iframes_grouping_types[] = {
-        {IsolateSandboxedIframesGrouping::kPerSite, "per-site"},
-        {IsolateSandboxedIframesGrouping::kPerOrigin, "per-origin"},
-        {IsolateSandboxedIframesGrouping::kPerDocument, "per-document"}};
-const base::FeatureParam<IsolateSandboxedIframesGrouping>
-    kIsolateSandboxedIframesGroupingParam{
-        &kIsolateSandboxedIframes, "grouping",
-        IsolateSandboxedIframesGrouping::kPerSite,
-        &isolated_sandboxed_iframes_grouping_types};
 
 // Enables the TC39 Array grouping proposal.
 BASE_FEATURE(kJavaScriptArrayGrouping,
@@ -914,6 +901,24 @@ BASE_FEATURE(kSkipEarlyCommitPendingForCrashedFrame,
              "SkipEarlyCommitPendingForCrashedFrame",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables bypassing the service worker fetch handler. Unlike
+// `kServiceWorkerSkipIgnorableFetchHandler`, this feature starts the service
+// worker for subsequent requests.
+BASE_FEATURE(kServiceWorkerBypassFetchHandler,
+             "ServiceWorkerBypassFetchHandler",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<ServiceWorkerBypassFetchHandlerTarget>::Option
+    service_worker_bypass_fetch_handler_target_options[] = {{
+        ServiceWorkerBypassFetchHandlerTarget::kMainResource,
+        "main_resource",
+    }};
+const base::FeatureParam<ServiceWorkerBypassFetchHandlerTarget>
+    kServiceWorkerBypassFetchHandlerTarget{
+        &kServiceWorkerBypassFetchHandler, "bypass_for",
+        ServiceWorkerBypassFetchHandlerTarget::kMainResource,
+        &service_worker_bypass_fetch_handler_target_options};
+
 // Enables skipping the service worker fetch handler if the fetch handler is
 // identified as ignorable.
 BASE_FEATURE(kServiceWorkerSkipIgnorableFetchHandler,
@@ -940,12 +945,11 @@ BASE_FEATURE(kSavePageAsWebBundle,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Browser-side feature flag for Secure Payment Confirmation (SPC) that also
-// controls the render side feature state. SPC initial launch is intended
-// only for Mac devices with Touch ID and and Windows devices with
-// Windows Hello authentication available and setup.
+// controls the render side feature state. SPC is not currently available on
+// Linux or ChromeOS, as it requires platform authenticator support.
 BASE_FEATURE(kSecurePaymentConfirmation,
              "SecurePaymentConfirmationBrowser",
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
@@ -1121,6 +1125,13 @@ BASE_FEATURE(kSuppressDifferentOriginSubframeJSDialogs,
              "SuppressDifferentOriginSubframeJSDialogs",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// To disable the updated fullscreen handling of the companion Viz
+// SurfaceSyncThrottling flag. Disabling this will restore the base
+// SurfaceSyncThrottling path.
+BASE_FEATURE(kSurfaceSyncFullscreenKillswitch,
+             "SurfaceSyncFullscreenKillswitch",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Dispatch touch events to "SyntheticGestureController" for events from
 // Devtool Protocol Input.dispatchTouchEvent to simulate touch events close to
 // real OS events.
@@ -1141,7 +1152,12 @@ BASE_FEATURE(kThreadingOptimizationsOnIO,
 // cannot be started).
 BASE_FEATURE(kTouchDragAndContextMenu,
              "TouchDragAndContextMenu",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_ANDROID)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 #if BUILDFLAG(IS_ANDROID)
 // When the context menu is triggered, the browser allows motion in a small
@@ -1172,14 +1188,10 @@ BASE_FEATURE(kTouchpadOverscrollHistoryNavigation,
 #endif
 );
 
-// When TreatBootstrapAsDefault is enabled, the browser will execute tasks with
-// the kBootstrap task type on the default task queues (based on priority of
-// the task) rather than a dedicated high-priority task queue. Intended to
-// evaluate the impact of the already-launched prioritization of bootstrap
-// tasks (crbug.com/1258621).
-BASE_FEATURE(kTreatBootstrapAsDefault,
-             "TreatBootstrapAsDefault",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+// Enable TrustedTypes .fromLiteral support.
+BASE_FEATURE(kTrustedTypesFromLiteral,
+             "TrustedTypesFromLiteral",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // This feature is for a reverse Origin Trial, enabling SharedArrayBuffer for
 // sites as they migrate towards requiring cross-origin isolation for these
@@ -1213,11 +1225,6 @@ BASE_FEATURE(kVideoPlaybackQuality,
 // Enables future V8 VM features
 BASE_FEATURE(kV8VmFuture, "V8VmFuture", base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enable window controls overlays for desktop PWAs
-BASE_FEATURE(kWebAppWindowControlsOverlay,
-             "WebAppWindowControlsOverlay",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enable WebAssembly baseline compilation (Liftoff).
 BASE_FEATURE(kWebAssemblyBaseline,
              "WebAssemblyBaseline",
@@ -1226,7 +1233,7 @@ BASE_FEATURE(kWebAssemblyBaseline,
 // Enable memory protection for code JITed for WebAssembly.
 BASE_FEATURE(kWebAssemblyCodeProtection,
              "WebAssemblyCodeProtection",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && defined(ARCH_CPU_X86_64)
 // Use memory protection keys in userspace (PKU) (if available) to protect code
@@ -1254,12 +1261,6 @@ BASE_FEATURE(kWebAssemblyDynamicTiering,
 BASE_FEATURE(kWebAssemblyLazyCompilation,
              "WebAssemblyLazyCompilation",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enable WebAssembly SIMD.
-// https://github.com/WebAssembly/Simd
-BASE_FEATURE(kWebAssemblySimd,
-             "WebAssemblySimd",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable WebAssembly tiering (Liftoff -> TurboFan).
 BASE_FEATURE(kWebAssemblyTiering,
@@ -1412,6 +1413,12 @@ BASE_FEATURE(kRequestDesktopSiteAdditions,
 // Refer to the launch bug (https://crbug.com/1244979) for more information.
 BASE_FEATURE(kRequestDesktopSiteExceptions,
              "RequestDesktopSiteExceptions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Request Desktop Site zoom for Android. Apply a pre-defined page zoom level
+// when desktop user agent is used.
+BASE_FEATURE(kRequestDesktopSiteZoom,
+             "RequestDesktopSiteZoom",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Screen Capture API support for Android

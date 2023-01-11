@@ -146,7 +146,7 @@ const char TranslatePrefs::kPrefTranslateIgnoredCount[] =
 const char TranslatePrefs::kPrefTranslateAcceptedCount[] =
     "translate_accepted_count";
 
-// Deprecated 10/2021.
+// TODO(crbug/1303963): Deprecated 10/2021. Check status of bug before removing.
 const char TranslatePrefs::kPrefAlwaysTranslateListDeprecated[] =
     "translate_whitelists";
 
@@ -608,11 +608,16 @@ bool TranslatePrefs::IsSiteOnNeverPromptList(base::StringPiece site) const {
   return prefs_->GetDict(prefs::kPrefNeverPromptSitesWithTime).Find(site);
 }
 
-void TranslatePrefs::AddSiteToNeverPromptList(base::StringPiece site) {
+void TranslatePrefs::AddSiteToNeverPromptList(base::StringPiece site,
+                                              base::Time time) {
   DCHECK(!site.empty());
   AddValueToNeverPromptList(kPrefNeverPromptSitesDeprecated, site);
   ScopedDictPrefUpdate update(prefs_, prefs::kPrefNeverPromptSitesWithTime);
-  update->Set(site, base::TimeToValue(base::Time::Now()));
+  update->Set(site, base::TimeToValue(time));
+}
+
+void TranslatePrefs::AddSiteToNeverPromptList(base::StringPiece site) {
+  AddSiteToNeverPromptList(site, base::Time::Now());
 }
 
 void TranslatePrefs::RemoveSiteFromNeverPromptList(base::StringPiece site) {
@@ -970,7 +975,8 @@ void TranslatePrefs::RegisterProfilePrefs(
 // static
 void TranslatePrefs::RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
-  // Deprecated 10/2021.
+  // TODO(crbug/1303963): Deprecated 10/2021. Check status of bug before
+  // removing.
   registry->RegisterDictionaryPref(kPrefAlwaysTranslateListDeprecated);
 }
 
@@ -993,24 +999,6 @@ void TranslatePrefs::MigrateNeverPromptSites() {
     }
   }
   deprecated_list.clear();
-}
-
-// static
-void TranslatePrefs::MigrateObsoleteProfilePrefs(PrefService* profile_prefs) {
-  // TODO(crbug/1291356): Remove this method.
-  const base::Value* deprecated_always_translate_list =
-      profile_prefs->GetUserPrefValue(kPrefAlwaysTranslateListDeprecated);
-  if (deprecated_always_translate_list &&
-      !profile_prefs->GetUserPrefValue(prefs::kPrefAlwaysTranslateList)) {
-    profile_prefs->Set(prefs::kPrefAlwaysTranslateList,
-                       *deprecated_always_translate_list);
-  }
-}
-
-// static
-void TranslatePrefs::ClearObsoleteProfilePrefs(PrefService* profile_prefs) {
-  // TODO(crbug/1291356): Remove this method.
-  profile_prefs->ClearPref(kPrefAlwaysTranslateListDeprecated);
 }
 
 bool TranslatePrefs::IsValueOnNeverPromptList(const char* pref_id,

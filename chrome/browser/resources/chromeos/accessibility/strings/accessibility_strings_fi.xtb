@@ -26,6 +26,7 @@
 <translation id="1161762950103988776">Siirtyminen</translation>
 <translation id="1164857107703583584">Siirtymiskomentojen avulla pystyt liikkumaan verkkosivulla tehokkaasti.</translation>
 <translation id="1175914831232945926">Numerot</translation>
+<translation id="1181003590763099524">siirrä alkuun</translation>
 <translation id="1188858454923323853">täydentävä</translation>
 <translation id="1189258430971676908">Harjoittelualue: avattavat listat</translation>
 <translation id="1195238899008218998">Jälkipuhe</translation>
@@ -150,6 +151,7 @@
 <translation id="1914424852593176649">Koko <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678"><ph name="DOT" /> sointu</translation>
 <translation id="1923956950274750765">Keskitumma violetti</translation>
+<translation id="1928535370180099152">korosta edellinen merkki</translation>
 <translation id="1928932365747995741">Ei edellisiä muokattavia tekstikenttiä</translation>
 <translation id="1964135212174907577">Seuraava objekti</translation>
 <translation id="1966649499058910679">Korosta jokainen sana kun se lausutaan</translation>
@@ -203,6 +205,7 @@
 <translation id="2381733276052567791">Vaihtaa puheen päälle tai pois päältä.</translation>
 <translation id="2390264819538553347">Siirry eteenpäin painamalla Enter ja taaksepäin painamalla askelpalautinta.</translation>
 <translation id="2398579267367951220">Hae sivulta kirjoittamalla. Siirry tulokseen painamalla Enter, selaa tuloksia ylä- ja alanuolella, muuta hakua jatkamalla kirjoittamista tai peru painamalla Esc.</translation>
+<translation id="2407047351320112166">korosta seuraava merkki</translation>
 <translation id="240709722712693803">Sinivioletti</translation>
 <translation id="2410298923485357543">Käytä luonnollista ääntä laitteen ollessa yhteydessä verkkoon</translation>
 <translation id="2416512023405990736">Valitsematon valintaruutu</translation>
@@ -326,6 +329,7 @@
 <translation id="309749186376891736">Siirrä kohdistinta</translation>
 <translation id="3103579948980282461">Keskitumma punavioletti</translation>
 <translation id="3104705064753753826">ilm.ikk.</translation>
+<translation id="3105857328626674463">korosta edellinen sana</translation>
 <translation id="3109724472072898302">Tiivistetty</translation>
 <translation id="311015743332597320">Pyyhkäise oikealle neljällä sormella</translation>
 <translation id="3112457281078985179">Käynnistä tai sulje ChromeVox painamalla Control + Alt + Z.</translation>
@@ -354,6 +358,7 @@
 <translation id="3241052487511142956">Edellinen käyty linkki</translation>
 <translation id="3241638166094654466">Kunkin rivin solut:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3247621388192105674">siirrä loppuun</translation>
 <translation id="3260949043575829030">Edellinen samanlainen kohde</translation>
 <translation id="3270069636408109001">Ei seuraavia taulukoita</translation>
 <translation id="3273791280096244679">Tallenna tunniste</translation>
@@ -380,6 +385,7 @@
 <translation id="3389259863310851658">Edellinen lomakekenttä</translation>
 <translation id="3393605254399152980">Vetämällä yhdellä sormella kuulet, mitä kohtaa kosket</translation>
 <translation id="3406283310380167331">Näytä muotojen luettelo</translation>
+<translation id="3407726812456125464">Kuuntele valittu teksti</translation>
 <translation id="3414400929511680526">Vaalea syvänsininen</translation>
 <translation id="3418936350470374046">Ei alla olevia soluja</translation>
 <translation id="3419269701801640163">liitä</translation>
@@ -562,6 +568,7 @@
 <translation id="4780458943471935919">Vieritä seuraavalle sivulle</translation>
 <translation id="4784215347943747396">Ohjaa laitetta vain 1–2 kytkimellä</translation>
 <translation id="4786285211967466855">Ei edellisiä tason 1 otsikoita</translation>
+<translation id="4786591486270126089">Vaihda ääneen automaattisesti kielen perusteella</translation>
 <translation id="4787577491510559358">Sano nykyisen kohteen muotoilu</translation>
 <translation id="479989351350248267">haku</translation>
 <translation id="4804818685124855865">Katkaise yhteys</translation>
@@ -945,11 +952,13 @@
 <translation id="743783356331413498">Esimerkki</translation>
 <translation id="7439060726180460871">Hakemisto</translation>
 <translation id="744163271241493234">pwded</translation>
+<translation id="7443479558101073378">korosta seuraava sana</translation>
 <translation id="7465123027577412805">Käytetäänkö luonnollista ääntä?</translation>
 <translation id="7491962110804786152">sarkain</translation>
 <translation id="7492497529767769458">Siirry seuraavaan osioon. Näitä ovat esimerkiksi tila-alue ja Käynnistysohjelma.</translation>
 <translation id="7505149250476994901">Sano "iso kirjain" ennen kirjainta</translation>
 <translation id="7533226154149229506">Vaalea kultapiisku</translation>
+<translation id="7541021454094606506">poista kaikki</translation>
 <translation id="7543255924852002459">Hylkää tunniste</translation>
 <translation id="7552432549459840808">Hyödyllisiä Chrome-pikanäppäimiä</translation>
 <translation id="7553679324939294712">lisää <ph name="INSERT_PHRASE" /> tämän eteen: <ph name="BEFORE_PHRASE" /></translation>

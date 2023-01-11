@@ -63,6 +63,8 @@ class CORE_EXPORT ViewTimeline : public ScrollTimeline {
   AnimationTimeline::TimeDelayPair TimelineOffsetsToTimeDelays(
       const Timing& timing) const override;
 
+  void Trace(Visitor*) const override;
+
  protected:
   const Inset& GetInset() const { return inset_; }
 
@@ -77,7 +79,13 @@ class CORE_EXPORT ViewTimeline : public ScrollTimeline {
   mutable double viewport_size_;
   mutable double start_side_inset_;
   mutable double end_side_inset_;
+  mutable double start_offset_ = 0;
+  mutable double end_offset_ = 0;
   Inset inset_;
+  // If either of the following elements are non-null, we need to update
+  // |inset_| on a style change.
+  Member<const CSSValue> style_dependant_start_inset_;
+  Member<const CSSValue> style_dependant_end_inset_;
 };
 
 template <>

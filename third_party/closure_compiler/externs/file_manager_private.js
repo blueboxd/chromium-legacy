@@ -85,14 +85,12 @@ chrome.fileManagerPrivate.MountCompletedStatus = {
   ERROR_PATH_NOT_MOUNTED: 'error_path_not_mounted',
   ERROR_DIRECTORY_CREATION_FAILED: 'error_directory_creation_failed',
   ERROR_INVALID_MOUNT_OPTIONS: 'error_invalid_mount_options',
-  ERROR_INVALID_UNMOUNT_OPTIONS: 'error_invalid_unmount_options',
   ERROR_INSUFFICIENT_PERMISSIONS: 'error_insufficient_permissions',
   ERROR_MOUNT_PROGRAM_NOT_FOUND: 'error_mount_program_not_found',
   ERROR_MOUNT_PROGRAM_FAILED: 'error_mount_program_failed',
   ERROR_INVALID_DEVICE_PATH: 'error_invalid_device_path',
   ERROR_UNKNOWN_FILESYSTEM: 'error_unknown_filesystem',
   ERROR_UNSUPPORTED_FILESYSTEM: 'error_unsupported_filesystem',
-  ERROR_INVALID_ARCHIVE: 'error_invalid_archive',
   ERROR_NEED_PASSWORD: 'error_need_password',
   ERROR_IN_PROGRESS: 'error_in_progress',
   ERROR_CANCELLED: 'error_cancelled',
@@ -111,17 +109,6 @@ chrome.fileManagerPrivate.TransferState = {
   IN_PROGRESS: 'in_progress',
   COMPLETED: 'completed',
   FAILED: 'failed',
-};
-
-/** @enum {string} */
-chrome.fileManagerPrivate.CopyOrMoveProgressStatusType = {
-  BEGIN: 'begin',
-  PROGRESS: 'progress',
-  END_COPY: 'end_copy',
-  END_MOVE: 'end_move',
-  END_REMOVE_SOURCE: 'end_remove_source',
-  SUCCESS: 'success',
-  ERROR: 'error',
 };
 
 /** @enum {string} */
@@ -266,14 +253,6 @@ chrome.fileManagerPrivate.Source = {
 };
 
 /** @enum {string} */
-chrome.fileManagerPrivate.Verb = {
-  OPEN_WITH: 'open_with',
-  ADD_TO: 'add_to',
-  PACK_WITH: 'pack_with',
-  SHARE_WITH: 'share_with',
-};
-
-/** @enum {string} */
 chrome.fileManagerPrivate.SourceRestriction = {
   ANY_SOURCE: 'any_source',
   NATIVE_SOURCE: 'native_source',
@@ -380,7 +359,6 @@ chrome.fileManagerPrivate.FileTaskDescriptor;
  * @typedef {{
  *   descriptor: !chrome.fileManagerPrivate.FileTaskDescriptor,
  *   title: string,
- *   verb: (!chrome.fileManagerPrivate.Verb|undefined),
  *   iconUrl: (string|undefined),
  *   isDefault: (boolean|undefined),
  *   isGenericFileHandler: (boolean|undefined)
@@ -537,17 +515,6 @@ chrome.fileManagerPrivate.DriveSyncErrorEvent;
  * }}
  */
 chrome.fileManagerPrivate.DriveConfirmDialogEvent;
-
-/**
- * @typedef {{
- *   type: !chrome.fileManagerPrivate.CopyOrMoveProgressStatusType,
- *   sourceUrl: (string|undefined),
- *   destinationUrl: (string|undefined),
- *   size: (number|undefined),
- *   error: (string|undefined)
- * }}
- */
-chrome.fileManagerPrivate.CopyOrMoveProgressStatus;
 
 /**
  * @typedef {{
@@ -826,12 +793,6 @@ chrome.fileManagerPrivate.DialogCallerInformation;
 chrome.fileManagerPrivate.ParsedTrashInfoFile;
 
 /**
- * Logout the current user for navigating to the re-authentication screen for
- * the Google account.
- */
-chrome.fileManagerPrivate.logoutUserForReauthentication = function() {};
-
-/**
  * Cancels file selection.
  */
 chrome.fileManagerPrivate.cancelDialog = function() {};
@@ -864,8 +825,8 @@ chrome.fileManagerPrivate.setDefaultTask = function(descriptor, entries, mimeTyp
  * Gets the list of tasks that can be performed over selected files. |entries|
  * Array of selected entries |callback|
  * @param {!Array<!Entry>} entries
- * @param {function((!Array<!chrome.fileManagerPrivate.FileTask>|undefined))}
- *     callback |tasks| The list of matched file entries for this task.
+ * @param {function((!chrome.fileManagerPrivate.ResultingTasks|undefined))}
+ *     callback The list of matched file tasks for the entries.
  */
 chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {};
 
@@ -1033,11 +994,12 @@ chrome.fileManagerPrivate.getVolumeMetadataList = function(callback) {};
  * directory.
  * @param {!Array<!Entry>} entries
  * @param {!DirectoryEntry} destinationEntry
+ * @param {boolean} isMove true if the operation is move. false if copy.
  * @param {!Array<!Entry>} callback Entries of the files not allowed to be
  *     transferred.
  */
 chrome.fileManagerPrivate.getDisallowedTransfers = function(
-    entries, destinationEntry, callback) {};
+    entries, destinationEntry, isMove, callback) {};
 
 /**
  * Returns a list of files that are restricted by any Data Leak Prevention
@@ -1079,28 +1041,6 @@ chrome.fileManagerPrivate.getDlpBlockedComponents = function(
  * the caller.
  */
 chrome.fileManagerPrivate.getDialogCaller = function(callback) {};
-
-/**
- * Starts to copy an entry. If the source is a directory, the copy is done
- * recursively. |entry| Entry of the source entry to be copied. |parent| Entry
- * of the destination directory. |newName| Name of the new entry. It must not
- * contain '/'. |callback| Completion callback.
- * @param {!Entry} entry
- * @param {!DirectoryEntry} parentEntry
- * @param {string} newName
- * @param {function((number|undefined))} callback |copyId| ID of the copy task.
- *     Can be used to identify the progress, and to cancel the task.
- */
-chrome.fileManagerPrivate.startCopy = function(entry, parentEntry, newName,
-    callback) {};
-
-/**
- * Cancels the running copy task. |copyId| ID of the copy task to be cancelled.
- * |callback| Completion callback of the cancel.
- * @param {number} copyId
- * @param {function()} callback Callback that does not take arguments.
- */
-chrome.fileManagerPrivate.cancelCopy = function(copyId, callback) {};
 
 /**
  * Retrieves total and remaining size of a mount point. |volumeId| ID of the
@@ -1614,9 +1554,6 @@ chrome.fileManagerPrivate.onFileTransfersUpdated;
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onPinTransfersUpdated;
-
-/** @type {!ChromeEvent} */
-chrome.fileManagerPrivate.onCopyProgress;
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onDirectoryChanged;

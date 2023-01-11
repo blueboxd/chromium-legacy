@@ -1167,7 +1167,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirContextMenuComputers"),
         TestCase("dirContextMenuTrash").EnableTrash(),
         TestCase("dirContextMenuShortcut"),
-        TestCase("dirContextMenuFocus")));
+        TestCase("dirContextMenuFocus"),
+        TestCase("dirContextMenuKeyboardNavigation")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DriveSpecific, /* drive_specific.js */
@@ -1196,7 +1197,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveWelcomeBanner"),
         TestCase("driveOfflineInfoBanner").EnableDriveDssPin(),
         TestCase("driveOfflineInfoBannerWithoutFlag"),
-        TestCase("driveInlineSyncStatus").EnableInlineStatusSync()
+        TestCase("driveInlineSyncStatusSingleFile").EnableInlineStatusSync(),
+        TestCase("driveInlineSyncStatusParentFolder").EnableInlineStatusSync()
         // TODO(b/189173190): Enable
         // TestCase("driveEnableDocsOfflineDialog"),
         // TODO(b/189173190): Enable
@@ -1360,6 +1362,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("changeDefaultDialogScrollList"),
                       TestCase("genericTaskIsNotExecuted"),
                       TestCase("genericTaskAndNonGenericTask"),
+                      TestCase("executeViaDblClick"),
                       TestCase("noActionBarOpenForDirectories")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
@@ -1669,7 +1672,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("metricsRecordEnum"),
                       TestCase("metricsOpenSwa"),
+// TODO(https://crbug.com/1303472): Fix flakes and re-enable.
+#if !BUILDFLAG(IS_CHROMEOS)
                       TestCase("metricsRecordDirectoryListLoad"),
+#endif
                       TestCase("metricsRecordUpdateAvailableApps")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
@@ -1678,7 +1684,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestCase("breadcrumbsNavigate"),
                       TestCase("breadcrumbsDownloadsTranslation"),
                       TestCase("breadcrumbsRenderShortPath"),
-                      TestCase("breadcrumbsEliderButtonHidden"),
+                      TestCase("breadcrumbsEliderButtonNotExist"),
                       TestCase("breadcrumbsRenderLongPath"),
                       TestCase("breadcrumbsMainButtonClick"),
                       TestCase("breadcrumbsMainButtonEnterKey"),

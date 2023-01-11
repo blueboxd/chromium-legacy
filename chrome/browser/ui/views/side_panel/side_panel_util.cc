@@ -8,6 +8,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/strcat.h"
+#include "chrome/browser/history_clusters/history_clusters_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -64,7 +65,11 @@ void SidePanelUtil::PopulateGlobalEntries(Browser* browser,
       ->CreateAndRegisterEntry(global_registry);
 
   // Add history clusters.
+  auto* history_clusters_service =
+      HistoryClustersServiceFactory::GetForBrowserContext(browser->profile());
   if (base::FeatureList::IsEnabled(features::kSidePanelJourneys) &&
+      history_clusters_service &&
+      history_clusters_service->IsJourneysEnabled() &&
       !browser->profile()->IsIncognitoProfile()) {
     auto* history_clusters_side_panel_coordinator =
         HistoryClustersSidePanelCoordinator::GetOrCreateForBrowser(browser);

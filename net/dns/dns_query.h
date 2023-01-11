@@ -11,7 +11,7 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 
@@ -48,7 +48,7 @@ class NET_EXPORT_PRIVATE DnsQuery {
   // If |opt_rdata| is not null, an OPT record will be added to the "Additional"
   // section of the query.
   DnsQuery(uint16_t id,
-           const base::StringPiece& qname,
+           base::StringPiece qname,
            uint16_t qtype,
            const OptRecordRdata* opt_rdata = nullptr,
            PaddingStrategy padding_strategy = PaddingStrategy::NONE);

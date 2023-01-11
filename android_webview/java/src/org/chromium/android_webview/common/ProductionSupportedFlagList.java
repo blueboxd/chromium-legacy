@@ -159,6 +159,9 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_COUNTRY_FROM_LOCAL_NAME,
                     "Chrome needs to map country names to country codes. If enabled, the lookup "
                             + "considers all locales that are registered for a country."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_MIN3_FIELD_TYPES_FOR_LOCAL_HEURISTICS,
+                    "Require at least 3 distinct field types for local heuristics to return "
+                            + "classifications."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_DEPENDENT_LOCALITY_PARSING,
                     "Enables parsing dependent locality fields (e.g. Bairros in Brazil)."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_RANKING_FORMULA,
@@ -177,12 +180,9 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_PARSE_MERCHANT_PROMO_CODE_FIELDS,
                     "When enabled, Autofill will attempt to find merchant promo/coupon/gift code "
                             + "fields when parsing forms."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_RATIONALIZE_STREET_ADDRESS_AND_ADDRESS_LINE,
-                    "Rationalizes (street address, address line 2) field sequences to "
-                            + "(address line1, address line 2)."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_FILL_CREDIT_CARD_AS_PER_FORMAT_STRING,
-                    "When enabled, Autofill tries to infer the credit card expiry date format "
-                            + "from the label and placeholder."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_RATIONALIZE_STREET_ADDRESS_AND_HOUSE_NUMBER,
+                    "Rationalizes (street address, house number) field sequences to "
+                            + "(street name, house number)."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_CONSIDER_PLACEHOLDER_FOR_PARSING,
                     "When enabled, Autofill local heuristics consider the placeholder attribute "
                             + "for determining field types."),
@@ -245,18 +245,10 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(ContentFeatures.FONT_MANAGER_EARLY_INIT,
                     "Whether to initialize the font manager when the renderer starts on a "
                             + "background thread."),
-            Flag.baseFeature(ContentFeatures.TREAT_BOOTSTRAP_AS_DEFAULT,
-                    "Executes tasks with  the kBootstrap task type on the default task queues "
-                            + "(based on priority of the task) rather than a dedicated "
-                            + "high-priority task queue."),
             Flag.baseFeature(BlinkFeatures.PREFETCH_ANDROID_FONTS,
                     "Enables prefetching Android fonts on renderer startup."),
-            Flag.baseFeature(AwFeatures.WEBVIEW_LEGACY_TLS_SUPPORT,
-                    "Whether legacy TLS versions (TLS 1.0/1.1) conections are allowed."),
             Flag.baseFeature(BlinkFeatures.INITIAL_NAVIGATION_ENTRY,
                     "Enables creation of initial NavigationEntries on WebContents creation."),
-            Flag.baseFeature(BlinkFeatures.CANVAS2D_STAYS_GPU_ON_READBACK,
-                    "Accelerated canvases that a read back from remain accelerated."),
             Flag.baseFeature(BlinkFeatures.EARLY_BODY_LOAD,
                     "Enables loading the response body earlier in navigation."),
             Flag.baseFeature(BlinkFeatures.DEFAULT_STYLE_SHEETS_EARLY_INIT,
@@ -276,10 +268,6 @@ public final class ProductionSupportedFlagList {
                     "Restricts insertion of XRequestedWith header on outgoing requests "
                             + "to those that have been allow-listed through the appropriate "
                             + "developer API."),
-            Flag.baseFeature(
-                    AwFeatures.WEBVIEW_SYNTHESIZE_PAGE_LOAD_ONLY_ON_INITIAL_MAIN_DOCUMENT_ACCESS,
-                    "Only synthesize page load for URL spoof prevention at most once,"
-                            + " on initial main document access."),
             Flag.baseFeature(BlinkFeatures.VIEWPORT_HEIGHT_CLIENT_HINT_HEADER,
                     "Enables the use of sec-ch-viewport-height client hint."),
             Flag.baseFeature(BlinkFeatures.USER_AGENT_OVERRIDE_EXPERIMENT,
@@ -337,6 +325,9 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkSchedulerFeatures.THREADED_SCROLL_PREVENT_RENDERING_STARVATION,
                     "Enable rendering starvation-prevention during threaded scrolling."
                             + " See https://crbug.com/1315279."),
+            Flag.baseFeature(BlinkSchedulerFeatures.PRIORITIZE_COMPOSITING_AFTER_DELAY_TRIALS,
+                    "Controls the delay after which main thread compositing tasks "
+                            + "are prioritized over other non-input tasks."),
             Flag.baseFeature(BaseFeatures.NO_WAKE_UPS_FOR_CANCELED_TASKS,
                     "Controls whether wake ups are possible for canceled tasks."),
             Flag.baseFeature(BaseFeatures.REMOVE_CANCELED_TASKS_IN_TASK_QUEUE,
@@ -344,13 +335,11 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BaseFeatures.ALWAYS_ABANDON_SCHEDULED_TASK,
                     "Controls whether or not the scheduled task is always abandoned when a timer "
                             + "is stopped or resets."),
-            Flag.baseFeature(BlinkFeatures.THROTTLE_INTERSECTION_OBSERVER_UMA,
-                    "Reduces fine-grained UMA metrics for IntersectionObserver."),
             Flag.baseFeature(BlinkFeatures.PRETOKENIZE_CSS,
                     "If enabled, CSS will be tokenized in a background thread when possible."),
-            Flag.baseFeature(BlinkFeatures.DOCUMENT_TRANSITION,
-                    "Enables the experimental Shared Element Transitions API."
-                            + " See https://github.com/WICG/shared-element-transitions/blob/main/explainer.md."),
+            Flag.baseFeature(BlinkFeatures.VIEW_TRANSITION,
+                    "Enables the experimental View Transitions API."
+                            + " See https://github.com/WICG/view-transitions/blob/main/explainer.md."),
             Flag.baseFeature(BlinkFeatures.CSS_OVERFLOW_FOR_REPLACED_ELEMENTS,
                     "Enables respecting the CSS overflow property on replaced elements."
                             + " See https://chromestatus.com/feature/5137515594383360."),
@@ -381,9 +370,17 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.WEB_RTC_METRONOME,
                     "Inject a metronome into webrtc to allow task coalescing, "
                             + " including synchronized decoding."),
+            Flag.baseFeature(BlinkFeatures.FAST_PATH_PAINT_PROPERTY_UPDATES,
+                    "If enabled, some paint property updates (e.g., transform "
+                            + "changes) will be applied directly instead of "
+                            + "using the property tree builder."),
             Flag.baseFeature(BlinkFeatures.THREADED_BODY_LOADER,
                     "If enabled, reads and decodes navigation body data off the main thread."),
             Flag.baseFeature("PreconnectOnRedirect"),
+            Flag.baseFeature(BlinkFeatures.SEND_MOUSE_EVENTS_DISABLED_FORM_CONTROLS,
+                    "This changes event propagation for disabled form controls."),
+            Flag.baseFeature(ContentFeatures.SURFACE_SYNC_FULLSCREEN_KILLSWITCH,
+                    "Disable to turn off the new SurfaceSync Fullscreen path."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

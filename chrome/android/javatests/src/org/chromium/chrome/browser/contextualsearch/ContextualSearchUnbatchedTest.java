@@ -126,7 +126,7 @@ public class ContextualSearchUnbatchedTest extends ContextualSearchInstrumentati
                             + "that tracks which suggestion was selected!",
                     1,
                     RecordHistogram.getHistogramValueCountForTesting(
-                            "Search.RelatedSearches.SelectedSuggestionIndex", whichSuggestion + 1));
+                            "Search.RelatedSearches.SelectedSuggestionIndex", whichSuggestion));
         }
         Assert.assertEquals(
                 "Failed to log that Related Searches were shown but none selected in the "
@@ -214,9 +214,6 @@ public class ContextualSearchUnbatchedTest extends ContextualSearchInstrumentati
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     public void testRelatedSearchesItemNotSelected(@EnabledFeature int enabledFeature)
             throws Exception {
-        // If this experiment under development is active, skip this test for now.
-        if (enabledFeature == EnabledFeature.CONTEXTUAL_TRIGGERS) return;
-
         FeatureList.setTestFeatures(ENABLE_RELATED_SEARCHES_IN_BAR);
         mPolicy.overrideAllowSendingPageUrlForTesting(true);
         FakeResolveSearch fakeSearch = simulateResolveSearch("intelligence");
@@ -248,7 +245,7 @@ public class ContextualSearchUnbatchedTest extends ContextualSearchInstrumentati
 
         // Select a Related Searches suggestion.
         RelatedSearchesControl relatedSearchesControl = mPanel.getRelatedSearchesInBarControl();
-        final int chipToSelect = 2;
+        final int chipToSelect = 3;
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> relatedSearchesControl.selectChipForTest(chipToSelect));
         Assert.assertEquals("The Related Searches query was not shown in the Bar!",

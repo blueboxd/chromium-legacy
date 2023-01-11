@@ -10,6 +10,7 @@
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/components/arc/storage_manager/arc_storage_manager.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/system/sys_info.h"
 #include "base/task/thread_pool.h"
@@ -17,19 +18,15 @@
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_util.h"
+#include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_util.h"
 #include "chromeos/ash/components/cryptohome/userdataauth_util.h"
 #include "chromeos/ash/components/dbus/spaced/spaced_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
-#include "components/browsing_data/content/cache_storage_helper.h"
 #include "components/browsing_data/content/conditional_cache_counting_helper.h"
 #include "components/browsing_data/content/cookie_helper.h"
-#include "components/browsing_data/content/database_helper.h"
-#include "components/browsing_data/content/file_system_helper.h"
-#include "components/browsing_data/content/indexed_db_helper.h"
 #include "components/browsing_data/content/local_storage_helper.h"
-#include "components/browsing_data/content/service_worker_helper.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -49,6 +46,27 @@ void GetFreeDiskSpaceBlocking(const base::FilePath& mount_path,
   int64_t size = base::SysInfo::AmountOfFreeDiskSpace(mount_path);
   if (size >= 0)
     *available_bytes = size;
+}
+
+// Computes the size of My Files and Play files.
+int64_t ComputeLocalFilesSize(const base::FilePath& my_files_path,
+                              const base::FilePath& android_files_path) {
+  int64_t size = 0;
+
+  // Compute directory size of My Files.
+  size += base::ComputeDirectorySize(my_files_path);
+
+  // Compute directory size of Play Files.
+  size += base::ComputeDirectorySize(android_files_path);
+
+  // Remove size of Download. If Android is enabled, the size of the Download
+  // folder is counted in both My Files and Play files. If Android is disabled,
+  // the Download folder doesn't exist and the returned size is 0.
+  const base::FilePath download_files_path =
+      android_files_path.AppendASCII("Download");
+  size -= base::ComputeDirectorySize(download_files_path);
+
+  return size;
 }
 
 }  // namespace
@@ -166,31 +184,9 @@ void MyFilesSizeCalculator::PerformCalculation() {
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&MyFilesSizeCalculator::ComputeLocalFilesSize,
-                     base::Unretained(this), my_files_path, android_files_path),
+      base::BindOnce(&ComputeLocalFilesSize, my_files_path, android_files_path),
       base::BindOnce(&MyFilesSizeCalculator::OnGetMyFilesSize,
                      weak_ptr_factory_.GetWeakPtr()));
-}
-
-int64_t MyFilesSizeCalculator::ComputeLocalFilesSize(
-    const base::FilePath& my_files_path,
-    const base::FilePath& android_files_path) {
-  int64_t size = 0;
-
-  // Compute directory size of My Files.
-  size += base::ComputeDirectorySize(my_files_path);
-
-  // Compute directory size of Play Files.
-  size += base::ComputeDirectorySize(android_files_path);
-
-  // Remove size of Download. If Android is enabled, the size of the Download
-  // folder is counted in both My Files and Play files. If Android is disabled,
-  // the Download folder doesn't exist and the returned size is 0.
-  const base::FilePath download_files_path =
-      android_files_path.AppendASCII("Download");
-  size -= base::ComputeDirectorySize(download_files_path);
-
-  return size;
 }
 
 void MyFilesSizeCalculator::OnGetMyFilesSize(int64_t total_bytes) {
@@ -220,16 +216,8 @@ void BrowsingDataSizeCalculator::PerformCalculation() {
         storage_partition->GetPath(),
         new browsing_data::CookieHelper(storage_partition,
                                         base::NullCallback()),
-        new browsing_data::DatabaseHelper(profile_),
         new browsing_data::LocalStorageHelper(profile_),
-        new browsing_data::IndexedDBHelper(storage_partition),
-        base::MakeRefCounted<browsing_data::FileSystemHelper>(
-            storage_partition->GetFileSystemContext(),
-            browsing_data_file_system_util::GetAdditionalFileSystemTypes(),
-            storage_partition->GetNativeIOContext()),
-        new browsing_data::ServiceWorkerHelper(
-            storage_partition->GetServiceWorkerContext()),
-        new browsing_data::CacheStorageHelper(storage_partition));
+        BrowsingDataQuotaHelper::Create(profile_));
   }
   site_data_size_collector_->Fetch(
       base::BindOnce(&BrowsingDataSizeCalculator::OnGetBrowsingDataSize,
@@ -430,12 +418,10 @@ void OtherUsersSizeCalculator::OnGetOtherUserSize(
     return;
   int64_t other_users_total_bytes;
   // If all the requests succeed, shows the total bytes in the UI.
-  if (std::count(user_sizes_.begin(), user_sizes_.end(), -1) == 0) {
-    other_users_total_bytes =
-        std::accumulate(user_sizes_.begin(), user_sizes_.end(), 0LL);
-  } else {
-    other_users_total_bytes = -1;
-  }
+  other_users_total_bytes =
+      base::Contains(user_sizes_, -1)
+          ? -1
+          : std::accumulate(user_sizes_.begin(), user_sizes_.end(), 0LL);
   NotifySizeCalculated(other_users_total_bytes);
 }
 

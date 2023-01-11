@@ -33,6 +33,7 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_suite.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "media/base/media_switches.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
@@ -41,7 +42,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/linux/gbm_defines.h"
 
-#if defined(USE_OZONE) && BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_OZONE) && BUILDFLAG(IS_LINUX)
 // GN doesn't understand conditional includes, so we need nogncheck here.
 // See crbug.com/1125897.
 #include "ui/ozone/public/ozone_platform.h"  // nogncheck
@@ -120,14 +121,6 @@ absl::optional<VAEntrypoint> StringToVAEntrypoint(
   return it != kStringToVAEntrypoint.end()
              ? absl::make_optional<VAEntrypoint>(it->second)
              : absl::nullopt;
-}
-
-std::unique_ptr<base::test::ScopedFeatureList> CreateScopedFeatureList() {
-  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list->InitWithFeatures(
-      /*enabled_features=*/{media::kVaapiAV1Decoder},
-      /*disabled_features=*/{});
-  return scoped_feature_list;
 }
 
 unsigned int ToVaRTFormat(uint32_t va_fourcc) {
@@ -233,11 +226,8 @@ const char* VAProfileToString(VAProfile profile) {
 
 class VaapiTest : public testing::Test {
  public:
-  VaapiTest() : scoped_feature_list_(CreateScopedFeatureList()) {}
+  VaapiTest() = default;
   ~VaapiTest() override = default;
-
- private:
-  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 };
 
 std::map<VAProfile, std::vector<VAEntrypoint>> ParseVainfo(
@@ -931,28 +921,21 @@ INSTANTIATE_TEST_SUITE_P(
 
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
-  {
-    // Enables/Disables features during PreSandboxInitialization(). We have to
-    // destruct ScopedFeatureList after it because base::TestSuite::Run()
-    // creates a ScopedFeatureList and multiple concurrent ScopedFeatureLists
-    // are not allowed.
-    auto scoped_feature_list = media::CreateScopedFeatureList();
 
-#if defined(USE_OZONE) && BUILDFLAG(IS_LINUX)
-    // Initialize Ozone so that the VADisplayState can decide if we're running
-    // on top of a platform that can deal with VA-API buffers.
-    // TODO(b/230370976): we may no longer need to initialize Ozone since we
-    // don't use it for buffer allocation.
-    ui::OzonePlatform::InitParams params;
-    params.single_process = true;
-    ui::OzonePlatform::InitializeForUI(params);
-    ui::OzonePlatform::InitializeForGPU(params);
+#if BUILDFLAG(IS_OZONE) && BUILDFLAG(IS_LINUX)
+  // Initialize Ozone so that the VADisplayState can decide if we're running
+  // on top of a platform that can deal with VA-API buffers.
+  // TODO(b/230370976): we may no longer need to initialize Ozone since we
+  // don't use it for buffer allocation.
+  ui::OzonePlatform::InitParams params;
+  params.single_process = true;
+  ui::OzonePlatform::InitializeForUI(params);
+  ui::OzonePlatform::InitializeForGPU(params);
 #endif
 
-    // PreSandboxInitialization() loads and opens the driver, queries its
-    // capabilities and fills in the VASupportedProfiles.
-    media::VaapiWrapper::PreSandboxInitialization();
-  }
+  // PreSandboxInitialization() loads and opens the driver, queries its
+  // capabilities and fills in the VASupportedProfiles.
+  media::VaapiWrapper::PreSandboxInitialization();
 
   return base::LaunchUnitTests(
       argc, argv,

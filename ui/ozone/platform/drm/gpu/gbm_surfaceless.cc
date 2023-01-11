@@ -46,8 +46,7 @@ GbmSurfaceless::GbmSurfaceless(GbmSurfaceFactory* surface_factory,
       window_(std::move(window)),
       widget_(widget),
       has_implicit_external_sync_(
-          display->ext->b_EGL_ARM_implicit_external_sync),
-      has_image_flush_external_(display->ext->b_EGL_EXT_image_flush_external) {
+          display->ext->b_EGL_ARM_implicit_external_sync) {
   surface_factory_->RegisterSurface(window_->widget(), this);
   supports_plane_gpu_fences_ = window_->SupportsGpuFences();
   unsubmitted_frames_.push_back(std::make_unique<PendingFrame>());
@@ -71,11 +70,11 @@ gfx::SwapResult GbmSurfaceless::SwapBuffers(PresentationCallback callback,
 }
 
 bool GbmSurfaceless::ScheduleOverlayPlane(
-    gl::GLImage* image,
+    gl::OverlayImage image,
     std::unique_ptr<gfx::GpuFence> gpu_fence,
     const gfx::OverlayPlaneData& overlay_plane_data) {
-  unsubmitted_frames_.back()->overlays.push_back(
-      gl::GLSurfaceOverlay(image, std::move(gpu_fence), overlay_plane_data));
+  unsubmitted_frames_.back()->overlays.emplace_back(
+      std::move(image), std::move(gpu_fence), overlay_plane_data);
   return true;
 }
 
@@ -130,16 +129,13 @@ void GbmSurfaceless::SwapBuffersAsync(
     return;
   }
 
-  if ((!has_image_flush_external_ && !supports_plane_gpu_fences_) ||
-      requires_gl_flush_on_swap_buffers_) {
+  if (!supports_plane_gpu_fences_ || requires_gl_flush_on_swap_buffers_) {
     glFlush();
   }
 
 #if BUILDFLAG(USE_OPENGL_APITRACE)
   gl::TerminateFrame();  // Notify end of frame at buffer swap request.
 #endif
-
-  unsubmitted_frames_.back()->Flush();
 
   PendingFrame* frame = unsubmitted_frames_.back().get();
   frame->completion_callback = std::move(completion_callback);
@@ -241,11 +237,6 @@ bool GbmSurfaceless::PendingFrame::ScheduleOverlayPlanes(
     if (!overlay.ScheduleOverlayPlane(widget))
       return false;
   return true;
-}
-
-void GbmSurfaceless::PendingFrame::Flush() {
-  for (const auto& overlay : overlays)
-    overlay.Flush();
 }
 
 void GbmSurfaceless::SubmitFrame() {

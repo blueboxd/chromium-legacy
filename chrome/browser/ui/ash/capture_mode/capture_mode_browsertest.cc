@@ -16,6 +16,7 @@
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/file_manager/file_manager_test_util.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
 #include "media/base/media_switches.h"
@@ -193,8 +195,9 @@ class CaptureModeBrowserTest : public InProcessBrowserTest {
   void SetupDlpReporting() {
     SetupDlpRulesManager();
     // Set up mock report queue.
-    SetReportQueueForReportingManager(helper_->GetReportingManager(), events_,
-                                      base::SequencedTaskRunnerHandle::Get());
+    SetReportQueueForReportingManager(
+        helper_->GetReportingManager(), events_,
+        base::SequencedTaskRunner::GetCurrentDefault());
   }
 
  protected:
@@ -837,7 +840,12 @@ class CaptureModeProjectorBrowserTests : public CaptureModeCameraBrowserTests {
     auto* profile = browser()->profile();
     ash::SystemWebAppManager::GetForTest(profile)
         ->InstallSystemAppsForTesting();
+
+    ui_test_utils::BrowserChangeObserver browser_opened(
+        nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
     ash::ProjectorClient::Get()->OpenProjectorApp();
+    browser_opened.Wait();
+
     Browser* app_browser =
         FindSystemWebAppBrowser(profile, ash::SystemWebAppType::PROJECTOR);
     ASSERT_TRUE(app_browser);

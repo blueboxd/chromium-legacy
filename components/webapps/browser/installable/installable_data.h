@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -80,25 +81,25 @@ struct InstallableData {
 
   // The URL of the the web app manifest. Empty if the site has no
   // <link rel="manifest"> tag.
-  const GURL& manifest_url;
+  const raw_ref<const GURL> manifest_url;
 
   // The parsed web app manifest.
-  const blink::mojom::Manifest& manifest;
+  const raw_ref<const blink::mojom::Manifest> manifest;
 
   // The URL of the chosen primary icon.
-  const GURL& primary_icon_url;
+  const raw_ref<const GURL> primary_icon_url;
 
   // nullptr if the most appropriate primary icon couldn't be determined or
   // downloaded. The underlying primary icon is owned by the InstallableManager;
   // clients must copy the bitmap if they want to to use it.
-  raw_ptr<const SkBitmap> primary_icon;
+  raw_ptr<const SkBitmap, DanglingUntriaged> primary_icon;
 
   // Whether the primary icon had the 'maskable' purpose, meaningless if no
   // primary_icon was requested.
   const bool has_maskable_primary_icon;
 
   // The URL of the chosen splash icon.
-  const GURL& splash_icon_url;
+  const raw_ref<const GURL> splash_icon_url;
 
   // nullptr if the most appropriate splash icon couldn't be determined or
   // downloaded. The underlying splash icon is owned by the InstallableManager;
@@ -106,14 +107,14 @@ struct InstallableData {
   // icon is optional, no error code is set if it cannot be fetched, and clients
   // specifying |valid_splash_icon| must check that the bitmap exists before
   // using it.
-  raw_ptr<const SkBitmap> splash_icon;
+  raw_ptr<const SkBitmap, DanglingUntriaged> splash_icon;
 
   // Whether the splash icon had the 'maskable' purpose, meaningless if no
   // splash_icon was requested.
   const bool has_maskable_splash_icon;
 
   // The screenshots to show in the install UI.
-  const std::vector<Screenshot>& screenshots;
+  const raw_ref<const std::vector<Screenshot>> screenshots;
 
   // true if the site has a valid, installable web app manifest. If
   // |valid_manifest| or |worker_check_passed| was true and the site isn't

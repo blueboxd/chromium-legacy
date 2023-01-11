@@ -78,7 +78,7 @@ class WaylandEventSource : public PlatformEventSource,
   void SetShutdownCb(base::OnceCallback<void()> shutdown_cb);
 
   // Starts polling for events from the wayland connection file descriptor.
-  // This method assumes connection is already estabilished and input objects
+  // This method assumes connection is already established and input objects
   // are already bound and properly initialized.
   void StartProcessingEvents();
 
@@ -107,10 +107,12 @@ class WaylandEventSource : public PlatformEventSource,
   void OnPointerFocusChanged(WaylandWindow* window,
                              const gfx::PointF& location,
                              wl::EventDispatchPolicy dispatch_policy) override;
-  void OnPointerButtonEvent(EventType evtype,
-                            int changed_button,
-                            WaylandWindow* window,
-                            wl::EventDispatchPolicy dispatch_policy) override;
+  void OnPointerButtonEvent(
+      EventType evtype,
+      int changed_button,
+      WaylandWindow* window,
+      wl::EventDispatchPolicy dispatch_policy,
+      bool allow_release_of_unpressed_button = false) override;
   void OnPointerMotionEvent(const gfx::PointF& location,
                             wl::EventDispatchPolicy dispatch_policy) override;
   void OnPointerAxisEvent(const gfx::Vector2dF& offset) override;
@@ -260,10 +262,11 @@ class WaylandEventSource : public PlatformEventSource,
     float force = std::numeric_limits<float>::quiet_NaN();
   };
 
-  // Last known pointer stylus type (eg mouse, pen, eraser or touch).
-  absl::optional<StylusData> last_pointer_stylus_tool_;
+  // Last known pointer stylus data (eg {mouse, pen, eraser or touch}, tilt and
+  // force).
+  absl::optional<StylusData> last_pointer_stylus_data_;
 
-  // Last known touch stylus type (eg touch, pen or eraser).
+  // Last known touch stylus data (eg {touch, pen or eraser}, tilt and force).
   base::flat_map<PointerId, absl::optional<StylusData>> last_touch_stylus_data_;
 
   // Order set of touch events to be dispatching on the next
@@ -273,6 +276,11 @@ class WaylandEventSource : public PlatformEventSource,
   // Order set of pointer events to be dispatching on the next
   // wl_pointer::frame event.
   std::deque<std::unique_ptr<FrameData>> pointer_frames_;
+
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Status of fling.
+  bool is_fling_active_ = false;
+#endif
 
   // Map that keeps track of the current touch points, associating touch IDs to
   // to the surface/location where they happened.

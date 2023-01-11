@@ -88,11 +88,14 @@ class ContentAnalysisDialog : public views::DialogDelegate,
 
   static void SetMinimumPendingDialogTimeForTesting(base::TimeDelta delta);
   static void SetSuccessDialogTimeoutForTesting(base::TimeDelta delta);
+  static void SetShowDialogDelayForTesting(base::TimeDelta delta);
 
   static base::TimeDelta GetMinimumPendingDialogTime();
   static base::TimeDelta GetSuccessDialogTimeout();
+  static base::TimeDelta ShowDialogDelay();
 
   ContentAnalysisDialog(std::unique_ptr<ContentAnalysisDelegateBase> delegate,
+                        bool is_cloud,
                         content::WebContents* web_contents,
                         safe_browsing::DeepScanAccessPoint access_point,
                         int files_count,
@@ -139,6 +142,11 @@ class ContentAnalysisDialog : public views::DialogDelegate,
     return delegate_->BypassRequiresJustification();
   }
 
+  // Cancels the dialog if it was visible, then deletes the object.  Returns
+  // false if the UI was not visible to indicate that the object is simply
+  // deletng itself.
+  bool CancelDialogAndDelete();
+
   // Returns the side image's logo color depending on `dialog_state_`.
   ui::ColorId GetSideImageLogoColor() const;
 
@@ -165,6 +173,9 @@ class ContentAnalysisDialog : public views::DialogDelegate,
   // Friend the unit test class for this so it can call the private dtor.
   friend class ContentAnalysisDialogPlainTest;
 
+  // Friend to allow use of TaskRunner::DeleteSoon().
+  friend class base::DeleteHelper<ContentAnalysisDialog>;
+
   // Enum used to represent what the dialog is currently showing.
   enum class State {
     // The dialog is shown with an explanation that the scan is being performed
@@ -188,6 +199,9 @@ class ContentAnalysisDialog : public views::DialogDelegate,
   };
 
   ~ContentAnalysisDialog() override;
+
+  // Callback function of delayed timer to make the dialog visible.
+  void ShowDialogNow();
 
   void UpdateStateFromFinalResult(FinalContentAnalysisResult final_result);
 
@@ -272,13 +286,14 @@ class ContentAnalysisDialog : public views::DialogDelegate,
 
   std::unique_ptr<ContentAnalysisDelegateBase> delegate_;
 
-  raw_ptr<content::WebContents> web_contents_;
+  raw_ptr<content::WebContents, DanglingUntriaged> web_contents_;
 
   // Views above the buttons. `contents_view_` owns every other view.
   raw_ptr<views::BoxLayoutView> contents_view_ = nullptr;
   raw_ptr<DeepScanningTopImageView> image_ = nullptr;
   raw_ptr<DeepScanningSideIconImageView> side_icon_image_ = nullptr;
-  raw_ptr<DeepScanningSideIconSpinnerView> side_icon_spinner_ = nullptr;
+  raw_ptr<DeepScanningSideIconSpinnerView, DanglingUntriaged>
+      side_icon_spinner_ = nullptr;
   raw_ptr<views::Label> message_ = nullptr;
 
   // The following views are also owned by `contents_view_`, but remain nullptr
@@ -319,6 +334,15 @@ class ContentAnalysisDialog : public views::DialogDelegate,
   // This is used to decide whether the dialog should go away without user input
   // or not.
   bool accepted_or_cancelled_ = false;
+
+  // True when performing a cloud-based content analysis, false when performing
+  // a locally based content analysis.
+  bool is_cloud_ = true;
+
+  // A reference to the top level web contents of the tab whose content is
+  // being analyzed.  Input events of this contents are ignored for the life
+  // time of the dialog.
+  base::WeakPtr<content::WebContents> top_level_contents_;
 
   base::WeakPtrFactory<ContentAnalysisDialog> weak_ptr_factory_{this};
 };

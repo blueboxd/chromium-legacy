@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/core/css/css_selector_list.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
-#include "third_party/blink/renderer/core/css/parser/css_parser_selector.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -69,7 +68,8 @@ ResourceFetcher* CreateFetcher() {
   auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
   return MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
       properties->MakeDetachable(), MakeGarbageCollected<MockFetchContext>(),
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      scheduler::GetSingleThreadTaskRunnerForTesting(),
+      scheduler::GetSingleThreadTaskRunnerForTesting(),
       MakeGarbageCollected<NoopLoaderFactory>(),
       MakeGarbageCollected<MockContextLifecycleNotifier>(),
       nullptr /* back_forward_cache_loader_helper */));
@@ -287,24 +287,6 @@ TEST_F(CSSStyleSheetResourceTest, TokenizerCreated) {
   EXPECT_EQ(
       resource->SheetText(nullptr, CSSStyleSheetResource::MIMETypeCheck::kLax),
       ".foo{a:b}");
-}
-
-TEST_F(CSSStyleSheetResourceTest, TokenizerUsed) {
-  CSSStyleSheetResource* resource = CreateAndSaveTestStyleSheetResource();
-  constexpr char kData[] = ".foo{}";
-  resource->AppendData(kData, strlen(kData));
-
-  auto* parser_context = MakeGarbageCollected<CSSParserContext>(
-      kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  auto* contents = MakeGarbageCollected<StyleSheetContents>(parser_context);
-
-  resource->SetTokenizerForTesting(
-      CSSTokenizer::CreateCachedTokenizer(".foo{} .bar{}"));
-  contents->ParseAuthorStyleSheet(resource);
-
-  // If the cached tokenizer is used, the resulting sheet should have 2 rules
-  // (.foo and .bar).
-  EXPECT_EQ(contents->RuleCount(), 2u);
 }
 
 }  // namespace

@@ -91,6 +91,8 @@ class ChromeBackForwardCacheBrowserTest : public InProcessBrowserTest {
     EnableFeatureAndSetParams(features::kBackForwardCache,
                               "ignore_outstanding_network_request_for_testing",
                               "true");
+    // Entry to the cache can be slow during testing and cause flakiness.
+    DisableFeature(features::kBackForwardCacheEntryTimeout);
     // Allow BackForwardCache for all devices regardless of their memory.
     DisableFeature(features::kBackForwardCacheMemoryControls);
 
@@ -106,8 +108,7 @@ class ChromeBackForwardCacheBrowserTest : public InProcessBrowserTest {
   }
 
   void SetupFeaturesAndParameters() {
-    std::vector<base::test::ScopedFeatureList::FeatureAndParams>
-        enabled_features;
+    std::vector<base::test::FeatureRefAndParams> enabled_features;
 
     for (const auto& [feature, params] : features_with_params_) {
       enabled_features.emplace_back(*feature, params);

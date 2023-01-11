@@ -208,6 +208,10 @@ bool IsFixupWindowEnabled() {
   return base::FeatureList::IsEnabled(arc::kFixupWindowFeature);
 }
 
+bool IsInstantResponseOpenEnabled() {
+  return base::FeatureList::IsEnabled(arc::kInstantResponseWindowOpen);
+}
+
 }  // namespace
 
 // Package names, kept in sorted order.
@@ -315,6 +319,9 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
   if (window_info)
     window_info->display_id = GetValidDisplayId(window_info->display_id);
 
+  // Activate ARC in case still not active.
+  ArcSessionManager::Get()->AllowActivation();
+
   ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(context);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
   absl::optional<std::string> launch_intent_to_send = launch_intent;
@@ -380,7 +387,7 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
       // Block launch request if failed to launch ghost window.
       return false;
     } else if (full_restore::features::IsArcWindowPredictorEnabled() &&
-               IsArcVmEnabled()) {
+               arc::GetArcAndroidSdkVersionAsInt() >= arc::kArcVersionR) {
       if (WindowPredictor::GetInstance()->LaunchArcAppWithGhostWindow(
               profile, app_id, *app_info, event_flags,
               GhostWindowType::kAppLaunch, window_info)) {
@@ -420,6 +427,16 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
       launch_intent_to_send =
           AppendLaunchIntent(launch_intent_to_send.value(), extra);
     }
+  } else if (IsInstantResponseOpenEnabled() &&
+             !WindowPredictor::GetInstance()->IsAppPendingLaunch(profile,
+                                                                 app_id)) {
+    // For some devices, launch ghost window and app at the same time.
+    if (WindowPredictor::GetInstance()->LaunchArcAppWithGhostWindow(
+            profile, app_id, *app_info, event_flags,
+            GhostWindowType::kAppLaunch, window_info)) {
+      return true;
+    }
+    VLOG(2) << "Failed to launch ghost window, fallback to launch directly.";
   }
 
   arc::ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMA(context);

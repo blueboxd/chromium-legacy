@@ -262,7 +262,11 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       DISABLED_NavigationsAreFullyCommitted) {
+                       NavigationsAreFullyCommitted) {
+  // Sometimes messages arrive from a renderer to browser for the page in
+  // back/forward cache (message on content.mojom.FrameHost), because the input
+  // task queue is currently not frozen. Do not fail for unexpected messages.
+  DoNotFailForUnexpectedMessagesWhileCached();
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // During a navigation, the document being navigated *away from* can either be
@@ -756,7 +760,36 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(rfh_b_2->IsInBackForwardCache());
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, EvictPageWithInfiniteLoop) {
+class BackForwardCacheEntryTimeoutBrowserTest
+    : public BackForwardCacheBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
+    feature_list_.InitAndEnableFeature(features::kBackForwardCacheEntryTimeout);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheEntryTimeoutBrowserTest, BusyPagehide) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.test", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.test", "/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImplWrapper rfh(current_frame_host());
+  ASSERT_TRUE(ExecJs(rfh.get(), R"(
+      addEventListener("pagehide", () => {while(1){}});
+  )"));
+  ASSERT_TRUE(NavigateToURL(shell(), url_b));
+  ASSERT_TRUE(rfh.WaitUntilRenderFrameDeleted());
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+  ExpectNotRestored({NotRestoredReason::kTimeoutPuttingInCache}, {}, {}, {}, {},
+                    FROM_HERE);
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheEntryTimeoutBrowserTest,
+                       EvictPageWithInfiniteLoop) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
@@ -1042,7 +1075,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, TimedEviction) {
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImplWrapper rfh_a(current_frame_host());
-  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a.get());
   rfh_a->GetBackForwardCacheMetrics()->SetObserverForTesting(this);
 
   // 2) Navigate to B.
@@ -1053,14 +1085,13 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, TimedEviction) {
   task_runner->FastForwardBy(time_to_live_in_back_forward_cache - delta);
 
   // 4) Confirm A is still in BackForwardCache.
-  ASSERT_FALSE(delete_observer_rfh_a.deleted());
+  ASSERT_FALSE(rfh_a.IsDestroyed());
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // 5) Fast forward to when eviction is due.
   task_runner->FastForwardBy(delta);
 
   // 6) Confirm A is evicted.
-  delete_observer_rfh_a.WaitUntilDeleted();
   EXPECT_EQ(current_frame_host(), rfh_b.get());
 
   // 7) Go back to A.
@@ -2391,7 +2422,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  delegate.WaitForInBackForwardCacheAck();
+  ASSERT_TRUE(delegate.WaitForInBackForwardCacheAck());
   ASSERT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
@@ -2428,7 +2459,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  delegate.WaitForInBackForwardCacheAck();
+  ASSERT_TRUE(delegate.WaitForInBackForwardCacheAck());
   RenderFrameHostImpl* rfh_b = current_frame_host();
   ASSERT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
@@ -3724,7 +3755,6 @@ IN_PROC_BROWSER_TEST_F(CustomTTLBackForwardCacheBrowserTest,
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImplWrapper rfh_a(current_frame_host());
-  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a.get());
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
@@ -3734,14 +3764,14 @@ IN_PROC_BROWSER_TEST_F(CustomTTLBackForwardCacheBrowserTest,
   task_runner->FastForwardBy(time_to_live_in_back_forward_cache - delta);
 
   // 4) Confirm A is still in BackForwardCache.
-  ASSERT_FALSE(delete_observer_rfh_a.deleted());
+  ASSERT_FALSE(rfh_a.IsDestroyed());
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // 5) Fast forward to when eviction is due.
   task_runner->FastForwardBy(delta);
 
   // 6) Confirm A is evicted.
-  delete_observer_rfh_a.WaitUntilDeleted();
+  ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
   EXPECT_EQ(current_frame_host(), rfh_b.get());
 
   // 7) Go back to A.

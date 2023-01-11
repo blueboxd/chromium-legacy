@@ -155,13 +155,13 @@
 // Tests sync server converted helpers in chrome_earl_grey.h.
 - (void)testSyncServerHelpers {
   [ChromeEarlGrey startSync];
-  [ChromeEarlGrey waitForSyncInitialized:NO syncTimeout:10.0];
+  [ChromeEarlGrey waitForSyncInitialized:NO syncTimeout:base::Seconds(10)];
   [ChromeEarlGrey clearSyncServerData];
 }
 
 // Tests executeJavaScript:error: in chrome_earl_grey.h
 - (void)testExecuteJavaScript {
-  auto result = [ChromeEarlGrey evaluateJavaScript:@"0"];
+  base::Value result = [ChromeEarlGrey evaluateJavaScript:@"0"];
   NSNumber* actualResult = [NSNumber numberWithInt:result.GetDouble()];
   GREYAssertEqualObjects(@0, actualResult,
                          @"Actual JavaScript execution result: %@",
@@ -238,8 +238,7 @@
 }
 
 // Tests gracefully kill through AppLaunchManager.
-// TODO(crbug.com/1354554): Test flaky on smoke.
-- (void)DISABLED_testAppLaunchManagerForceRelaunchByCleanShutdown {
+- (void)testAppLaunchManagerForceRelaunchByCleanShutdown {
   [ChromeEarlGrey openNewTab];
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithFeaturesEnabled:{}
       disabled:{}

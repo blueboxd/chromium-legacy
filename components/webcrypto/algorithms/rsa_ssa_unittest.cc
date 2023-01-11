@@ -7,6 +7,8 @@
 
 #include "base/check_op.h"
 #include "base/containers/span.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/webcrypto/algorithm_dispatch.h"
 #include "components/webcrypto/algorithms/test_helpers.h"
@@ -22,18 +24,120 @@ namespace {
 
 // Helper for ImportJwkRsaFailures. Restores the JWK JSON
 // dictionary to a good state
-void RestoreJwkRsaDictionary(base::DictionaryValue* dict) {
-  dict->DictClear();
-  dict->SetString("kty", "RSA");
-  dict->SetString("alg", "RS256");
-  dict->SetString("use", "sig");
-  dict->SetBoolean("ext", false);
-  dict->SetString(
+base::Value::Dict BuildTestJwkPublicKey() {
+  base::Value::Dict jwk;
+  jwk.Set("kty", "RSA");
+  jwk.Set("alg", "RS256");
+  jwk.Set("use", "sig");
+  jwk.Set("ext", false);
+  jwk.Set(
       "n",
       "qLOyhK-OtQs4cDSoYPFGxJGfMYdjzWxVmMiuSBGh4KvEx-CwgtaTpef87Wdc9GaFEncsDLxk"
       "p0LGxjD1M8jMcvYq6DPEC_JYQumEu3i9v5fAEH1VvbZi9cTg-rmEXLUUjvc5LdOq_5OuHmtm"
       "e7PUJHYW1PW6ENTP0ibeiNOfFvs");
-  dict->SetString("e", "AQAB");
+  jwk.Set("e", "AQAB");
+  return jwk;
+}
+
+base::Value::Dict BuildTestJwkPrivateKey() {
+  base::Value::Dict jwk;
+  jwk.Set("kty", "RSA");
+  jwk.Set("d",
+          "ZmJJJ3PBfirgPEOb844fI_1_zXn3A09X9fkk-65xeTNo3JeigTPpuB54FC_"
+          "GXUmqiXLVx5gynO6cwl9wjxVKYQ");
+  jwk.Set("dp", "DOUuUiDhtjpnCuIjcGRWhQYok8NeUO5XV1Uwx1-DxtU");
+  jwk.Set("dq", "mKOBL1e74J8OuGtW1kc2-s4VEP5Eeiwe__TAeBm-roE");
+  jwk.Set("e", "AQAB");
+  jwk.Set("n",
+          "tFJAFt_UiJsHlRavDgOxOnYKTHkV-"
+          "cF1aTDtkzNg6WYt9geaPbAvFnR3FVO0BFsl8tzPzMOTkI_kbOfCfAw3FQ");
+  jwk.Set("p", "7kMQn01JVhyHM7B85hLUuNBDsXiboMc4Di81qmxX7r0");
+  jwk.Set("q", "wb7rEiGxG4CrybVYns9voNQM2NPCuCEgWPLA_vCkuzk");
+  jwk.Set("qi", "6rrPQ4YaOLNGtG7TrLXUR_FSWpOFSUveHTHbFQU6iNU");
+  return jwk;
+}
+
+void SwapDictMembers(base::Value::Dict& d, const char* a, const char* b) {
+  auto va = d.Extract(a);
+  auto vb = d.Extract(b);
+  CHECK(va);
+  CHECK(vb);
+  d.Set(a, std::move(*vb));
+  d.Set(b, std::move(*va));
+}
+
+std::string FlipHexByte(base::StringPiece hex, size_t index) {
+  auto bytes = HexStringToBytes(hex);
+  bytes[index] ^= 0xff;
+  return base::HexEncode(base::make_span(bytes));
+}
+
+blink::WebCryptoAlgorithm RS256Algorithm() {
+  return CreateRsaHashedImportAlgorithm(
+      blink::kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+      blink::kWebCryptoAlgorithmIdSha256);
+}
+
+blink::WebCryptoKey ImportJwkRS256OrDie(base::StringPiece jwk) {
+  std::vector<uint8_t> jwk_bytes(jwk.begin(), jwk.end());
+  blink::WebCryptoKey key;
+  Status status =
+      ImportKey(blink::kWebCryptoKeyFormatJwk, jwk_bytes, RS256Algorithm(),
+                true, blink::kWebCryptoKeyUsageSign, &key);
+  CHECK(status.IsSuccess()) << StatusToString(status);
+  return key;
+}
+
+blink::WebCryptoKey ImportJwkRS256OrDie(const base::Value::Dict& jwk) {
+  blink::WebCryptoKey key;
+  Status status = ImportKeyJwkFromDict(jwk, RS256Algorithm(), false,
+                                       blink::kWebCryptoKeyUsageSign, &key);
+  CHECK(status.IsSuccess()) << StatusToString(status);
+  return key;
+}
+
+Status ImportJwkRS256MustFail(base::StringPiece jwk) {
+  std::vector<uint8_t> jwk_bytes(jwk.begin(), jwk.end());
+  blink::WebCryptoKey key;
+  Status status =
+      ImportKey(blink::kWebCryptoKeyFormatJwk, jwk_bytes, RS256Algorithm(),
+                true, blink::kWebCryptoKeyUsageSign, &key);
+  CHECK(!status.IsSuccess());
+  return status;
+}
+
+Status ImportJwkRS256MustFail(const base::Value::Dict& jwk) {
+  blink::WebCryptoKey key;
+  return ImportKeyJwkFromDict(jwk, RS256Algorithm(), false,
+                              blink::kWebCryptoKeyUsageSign, &key);
+}
+
+Status ImportSpkiRS256MustFail(base::StringPiece spki) {
+  auto spki_bytes = HexStringToBytes(spki);
+  blink::WebCryptoKey key;
+  // Note: SPKI keys can only be used for verification, not signing.
+  Status status =
+      ImportKey(blink::kWebCryptoKeyFormatSpki, spki_bytes, RS256Algorithm(),
+                true, blink::kWebCryptoKeyUsageVerify, &key);
+  CHECK(!status.IsSuccess());
+  return status;
+}
+
+Status ImportPkcs8RS256MustFail(base::StringPiece pkcs8) {
+  auto pkcs8_bytes = HexStringToBytes(pkcs8);
+  blink::WebCryptoKey key;
+  Status status =
+      ImportKey(blink::kWebCryptoKeyFormatPkcs8, pkcs8_bytes, RS256Algorithm(),
+                true, blink::kWebCryptoKeyUsageSign, &key);
+  CHECK(!status.IsSuccess());
+  return status;
+}
+
+std::vector<uint8_t> ExportPkcs8OrDie(blink::WebCryptoKey key) {
+  std::vector<uint8_t> exported;
+  Status status = ExportKey(blink::kWebCryptoKeyFormatPkcs8, key, &exported);
+  CHECK(status.IsSuccess()) << StatusToString(status);
+  return exported;
 }
 
 class WebCryptoRsaSsaTest : public WebCryptoTestBase {};
@@ -190,115 +294,93 @@ TEST_F(WebCryptoRsaSsaTest, ImportRsaPrivateKeyJwkToPkcs8RoundTrip) {
   ASSERT_EQ(HexStringToBytes(kPrivateKeyPkcs8DerHex), exported_key_pkcs8);
 }
 
-// Tests importing multiple RSA private keys from JWK, and then exporting to
-// PKCS8.
-//
+const char kRsa512Jwk_0[] =
+    R"({
+      "alg": "RS256",
+      "d": "DXYeCQ4W_Yv9zN4vCIQQtgvunsoeWfPeRvYEgVAIYdhuNFRmcinD9UuNP70VOoe2qiZ0DNAjsQn-uYCW9TEZ4Q",
+      "dp": "5f8auF7xPSfhZlklUtBnKFYKEDaYR2dFWg_zQB7oCzE",
+      "dq": "hkRVAMcErDAaCKp0V3QzWYhY_J22nJkiNXIxHz4Ja2c",
+      "e": "AQAB",
+      "kty": "RSA",
+      "n": "yLuHfrJbqUSFFqhUu70z585pWrw1IFcnBCccj43uwGOiesMkx0SWw4jyk3UNTux5AO-7VVCU8jb7237YYaOmOw",
+      "p": "8rLWJeMlHCtwZstui6p8jyai6m7GQ6fC1hK17vxA_JE",
+      "q": "07vkNpoE6SUze7Af2KEP6M_sz8dABZ3EQJuQ6JfiDAs",
+      "qi": "kxd6mc-3AhJtuixmzrSywxvwVwChdEG4I6WVTBe_bvE"
+   })";
+// Note that the first letter of "d" has been changed.
+const char kRsa512Jwk_0_Damaged[] =
+    R"({
+      "alg": "RS256",
+      "d": "EXYeCQ4W_Yv9zN4vCIQQtgvunsoeWfPeRvYEgVAIYdhuNFRmcinD9UuNP70VOoe2qiZ0DNAjsQn-uYCW9TEZ4Q",
+      "dp": "5f8auF7xPSfhZlklUtBnKFYKEDaYR2dFWg_zQB7oCzE",
+      "dq": "hkRVAMcErDAaCKp0V3QzWYhY_J22nJkiNXIxHz4Ja2c",
+      "e": "AQAB",
+      "kty": "RSA",
+      "n": "yLuHfrJbqUSFFqhUu70z585pWrw1IFcnBCccj43uwGOiesMkx0SWw4jyk3UNTux5AO-7VVCU8jb7237YYaOmOw",
+      "p": "8rLWJeMlHCtwZstui6p8jyai6m7GQ6fC1hK17vxA_JE",
+      "q": "07vkNpoE6SUze7Af2KEP6M_sz8dABZ3EQJuQ6JfiDAs",
+      "qi": "kxd6mc-3AhJtuixmzrSywxvwVwChdEG4I6WVTBe_bvE"
+   })";
+const char kRsa512Pkcs8_0[] =
+    "30820156020100300D06092A864886F70D0101010500048201403082013C020100024100C8"
+    "BB877EB25BA9448516A854BBBD33E7CE695ABC3520572704271C8F8DEEC063A27AC324C744"
+    "96C388F293750D4EEC7900EFBB555094F236FBDB7ED861A3A63B020301000102400D761E09"
+    "0E16FD8BFDCCDE2F088410B60BEE9ECA1E59F3DE46F60481500861D86E3454667229C3F54B"
+    "8D3FBD153A87B6AA26740CD023B109FEB98096F53119E1022100F2B2D625E3251C2B7066CB"
+    "6E8BAA7C8F26A2EA6EC643A7C2D612B5EEFC40FC91022100D3BBE4369A04E925337BB01FD8"
+    "A10FE8CFECCFC740059DC4409B90E897E20C0B022100E5FF1AB85EF13D27E166592552D067"
+    "28560A1036984767455A0FF3401EE80B3102210086445500C704AC301A08AA745774335988"
+    "58FC9DB69C99223572311F3E096B6702210093177A99CFB702126DBA2C66CEB4B2C31BF057"
+    "00A17441B823A5954C17BF6EF1";
+
+const char kRsa512Jwk_1[] =
+    R"({
+      "alg": "RS256",
+      "d": "phZ8gCMB14I-A35dwg7j16uSd91COBNN4GuwZchy7FPGH0hNzaH2jOYBU3sWy2ORxwWN8PbKqKOkZb8mh4v_gQ",
+      "dp": "PPEZjFS3paYuOvD2ROr6Es1mP2gGeM_9QNouoZjbpZE",
+      "dq": "pXDNDS8Z77HJXB2EsG40JLsNv-sUkakmAbEzwDfSoFE",
+      "e": "AQAB",
+      "kty": "RSA",
+      "n": "zg5KF3GIFp9XJdOMD9Iz-SeC_CVdUeI-gTxw2Igpd8FB0cJllMxg6n3FALqZ7YKPAp7rCL3VYhu-GR8OnqhNaQ",
+      "p": "8TlLFr-SEpz_ItKjdarp9q8S8_2OHy2RFysdY6yGndE",
+      "q": "2q2EDZHQQ_dp9-Cx2Z8kWn7sYo8K9caFneAJge8ZpBk",
+      "qi": "GT51ibfjUV05KRQhyjiqeCkGT12aAWvLzKRsaV9VE54"
+   })";
+const char kRsa512Pkcs8_1[] =
+    "30820155020100300D06092A864886F70D01010105000482013F3082013B020100024100CE"
+    "0E4A177188169F5725D38C0FD233F92782FC255D51E23E813C70D8882977C141D1C26594CC"
+    "60EA7DC500BA99ED828F029EEB08BDD5621BBE191F0E9EA84D690203010001024100A6167C"
+    "802301D7823E037E5DC20EE3D7AB9277DD4238134DE06BB065C872EC53C61F484DCDA1F68C"
+    "E601537B16CB6391C7058DF0F6CAA8A3A465BF26878BFF81022100F1394B16BF92129CFF22"
+    "D2A375AAE9F6AF12F3FD8E1F2D91172B1D63AC869DD1022100DAAD840D91D043F769F7E0B1"
+    "D99F245A7EEC628F0AF5C6859DE00981EF19A41902203CF1198C54B7A5A62E3AF0F644EAFA"
+    "12CD663F680678CFFD40DA2EA198DBA591022100A570CD0D2F19EFB1C95C1D84B06E3424BB"
+    "0DBFEB1491A92601B133C037D2A0510220193E7589B7E3515D39291421CA38AA7829064F5D"
+    "9A016BCBCCA46C695F55139E";
+
 // This is a regression test for http://crbug.com/378315, for which importing
 // a sequence of keys from JWK could yield the wrong key. The first key would
 // be imported correctly, however every key after that would actually import
 // the first key.
-TEST_F(WebCryptoRsaSsaTest, ImportMultipleRSAPrivateKeysJwk) {
-  // For this test to be meaningful the keys MUST be kept alive before importing
-  // new keys.
-  std::vector<blink::WebCryptoKey> live_keys;
-
-  base::Value::List keys = ReadJsonTestFileAsList("rsa_private_keys.json");
-  for (const auto& key_values : keys) {
-    SCOPED_TRACE(&key_values - &keys[0]);
-
-    ASSERT_TRUE(key_values.is_dict());
-    const base::DictionaryValue* key_values_dict =
-        &base::Value::AsDictionaryValue(key_values);
-
-    // Get the JWK representation of the key.
-    const base::DictionaryValue* key_jwk;
-    ASSERT_TRUE(key_values_dict->GetDictionary("jwk", &key_jwk));
-
-    // Get the PKCS8 representation of the key.
-    std::string pkcs8_hex_string;
-    ASSERT_TRUE(key_values_dict->GetString("pkcs8", &pkcs8_hex_string));
-    std::vector<uint8_t> pkcs8_bytes = HexStringToBytes(pkcs8_hex_string);
-
-    // Get the modulus length for the key.
-    absl::optional<int> modulus_length_bits =
-        key_values_dict->FindIntKey("modulusLength");
-    ASSERT_TRUE(modulus_length_bits);
-
-    blink::WebCryptoKey private_key;
-
-    // Import the key from JWK.
-    ASSERT_EQ(Status::Success(),
-              ImportKeyJwkFromDict(
-                  *key_jwk,
-                  CreateRsaHashedImportAlgorithm(
-                      blink::kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
-                      blink::kWebCryptoAlgorithmIdSha256),
-                  true, blink::kWebCryptoKeyUsageSign, &private_key));
-
-    live_keys.push_back(private_key);
-
-    EXPECT_EQ(
-        *modulus_length_bits,
-        static_cast<int>(
-            private_key.Algorithm().RsaHashedParams()->ModulusLengthBits()));
-
-    // Export to PKCS8 and verify that it matches expectation.
-    std::vector<uint8_t> exported_key_pkcs8;
-    ASSERT_EQ(Status::Success(), ExportKey(blink::kWebCryptoKeyFormatPkcs8,
-                                           private_key, &exported_key_pkcs8));
-
-    EXPECT_BYTES_EQ(pkcs8_bytes, exported_key_pkcs8);
-  }
+TEST_F(WebCryptoRsaSsaTest, ImportMultipleRsaKeysJwk) {
+  // Ensure that both keys stay alive across the whole test body, to ensure the
+  // existence of one doesn't impact the other.
+  std::vector<blink::WebCryptoKey> keys = {
+      ImportJwkRS256OrDie(kRsa512Jwk_0),
+      ImportJwkRS256OrDie(kRsa512Jwk_1),
+  };
+  EXPECT_EQ(HexStringToBytes(kRsa512Pkcs8_0), ExportPkcs8OrDie(keys[0]));
+  EXPECT_EQ(HexStringToBytes(kRsa512Pkcs8_1), ExportPkcs8OrDie(keys[1]));
 }
 
 // Import an RSA private key using JWK. Next import a JWK containing the same
 // modulus, but mismatched parameters for the rest. It should NOT be possible
 // that the second import retrieves the first key. See http://crbug.com/378315
 // for how that could happen.
-TEST_F(WebCryptoRsaSsaTest, ImportJwkExistingModulusAndInvalid) {
-  base::Value::List key_list = ReadJsonTestFileAsList("rsa_private_keys.json");
-
-  // Import a 1024-bit private key.
-  const base::Value& key1_props_value = key_list[1];
-  ASSERT_TRUE(key1_props_value.is_dict());
-  const base::DictionaryValue* key1_props =
-      &base::Value::AsDictionaryValue(key1_props_value);
-  const base::DictionaryValue* key1_jwk;
-  ASSERT_TRUE(key1_props->GetDictionary("jwk", &key1_jwk));
-
-  blink::WebCryptoKey key1;
-  ASSERT_EQ(
-      Status::Success(),
-      ImportKeyJwkFromDict(*key1_jwk,
-                           CreateRsaHashedImportAlgorithm(
-                               blink::kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
-                               blink::kWebCryptoAlgorithmIdSha256),
-                           true, blink::kWebCryptoKeyUsageSign, &key1));
-
-  ASSERT_EQ(1024u, key1.Algorithm().RsaHashedParams()->ModulusLengthBits());
-
-  // Construct a JWK using the modulus of key1, but all the other fields from
-  // another key (also a 1024-bit private key).
-  base::Value& key2_props_value = key_list[5];
-  ASSERT_TRUE(key2_props_value.is_dict());
-  base::DictionaryValue* key2_props = const_cast<base::DictionaryValue*>(
-      &base::Value::AsDictionaryValue(key2_props_value));
-  base::DictionaryValue* key2_jwk;
-  ASSERT_TRUE(key2_props->GetDictionary("jwk", &key2_jwk));
-  std::string modulus;
-  key1_jwk->GetString("n", &modulus);
-  key2_jwk->SetString("n", modulus);
-
-  // This should fail, as the n,e,d parameters are not consistent. It MUST NOT
-  // somehow return the key created earlier.
-  blink::WebCryptoKey key2;
-  ASSERT_EQ(
-      Status::OperationError(),
-      ImportKeyJwkFromDict(*key2_jwk,
-                           CreateRsaHashedImportAlgorithm(
-                               blink::kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
-                               blink::kWebCryptoAlgorithmIdSha256),
-                           true, blink::kWebCryptoKeyUsageSign, &key2));
+TEST_F(WebCryptoRsaSsaTest, ImportCorruptKeyReusedModulus) {
+  blink::WebCryptoKey key = ImportJwkRS256OrDie(kRsa512Jwk_0);
+  EXPECT_EQ(Status::OperationError(),
+            ImportJwkRS256MustFail(kRsa512Jwk_0_Damaged));
 }
 
 TEST_F(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
@@ -619,50 +701,6 @@ TEST_F(WebCryptoRsaSsaTest, SignVerifyFailures) {
   EXPECT_FALSE(is_match);
 }
 
-TEST_F(WebCryptoRsaSsaTest, SignVerifyKnownAnswer) {
-  // Import the key pair.
-  blink::WebCryptoAlgorithm import_algorithm = CreateRsaHashedImportAlgorithm(
-      blink::kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
-      blink::kWebCryptoAlgorithmIdSha1);
-  blink::WebCryptoKey public_key;
-  blink::WebCryptoKey private_key;
-  ASSERT_NO_FATAL_FAILURE(ImportRsaKeyPair(
-      HexStringToBytes(kPublicKeySpkiDerHex),
-      HexStringToBytes(kPrivateKeyPkcs8DerHex), import_algorithm, false,
-      blink::kWebCryptoKeyUsageVerify, blink::kWebCryptoKeyUsageSign,
-      &public_key, &private_key));
-
-  blink::WebCryptoAlgorithm algorithm =
-      CreateAlgorithm(blink::kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5);
-
-  // Validate the signatures are computed and verified as expected.
-  base::Value::List tests = ReadJsonTestFileAsList("pkcs1v15_sign.json");
-
-  std::vector<uint8_t> signature;
-  for (const auto& test_value : tests) {
-    SCOPED_TRACE(&test_value - &tests[0]);
-
-    ASSERT_TRUE(test_value.is_dict());
-    const base::DictionaryValue* test =
-        &base::Value::AsDictionaryValue(test_value);
-
-    std::vector<uint8_t> test_message =
-        GetBytesFromHexString(test, "message_hex");
-    std::vector<uint8_t> test_signature =
-        GetBytesFromHexString(test, "signature_hex");
-
-    signature.clear();
-    ASSERT_EQ(Status::Success(),
-              Sign(algorithm, private_key, test_message, &signature));
-    EXPECT_BYTES_EQ(test_signature, signature);
-
-    bool is_match = false;
-    ASSERT_EQ(Status::Success(), Verify(algorithm, public_key, test_signature,
-                                        test_message, &is_match));
-    EXPECT_TRUE(is_match);
-  }
-}
-
 // Try importing an RSA-SSA public key with unsupported key usages using SPKI
 // format. RSA-SSA public keys only support the 'verify' usage.
 TEST_F(WebCryptoRsaSsaTest, ImportRsaSsaPublicKeyBadUsage_SPKI) {
@@ -700,15 +738,13 @@ TEST_F(WebCryptoRsaSsaTest, ImportRsaSsaPublicKeyBadUsage_JWK) {
       blink::kWebCryptoKeyUsageEncrypt | blink::kWebCryptoKeyUsageDecrypt,
   };
 
-  base::DictionaryValue dict;
-  RestoreJwkRsaDictionary(&dict);
-  dict.RemoveKey("use");
-  dict.SetString("alg", "RS256");
+  base::Value::Dict jwk = BuildTestJwkPublicKey();
+  jwk.Remove("use");
 
   for (auto usage : kBadUsages) {
     blink::WebCryptoKey public_key;
     ASSERT_EQ(Status::ErrorCreateKeyBadUsages(),
-              ImportKeyJwkFromDict(dict, algorithm, false, usage, &public_key));
+              ImportKeyJwkFromDict(jwk, algorithm, false, usage, &public_key));
   }
 }
 
@@ -898,8 +934,6 @@ TEST_F(WebCryptoRsaSsaTest, ImportExportJwkRsaPublicKey) {
 }
 
 TEST_F(WebCryptoRsaSsaTest, ImportJwkRsaFailures) {
-  base::DictionaryValue dict;
-  RestoreJwkRsaDictionary(&dict);
   blink::WebCryptoAlgorithm algorithm = CreateRsaHashedImportAlgorithm(
       blink::kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
       blink::kWebCryptoAlgorithmIdSha256);
@@ -914,7 +948,8 @@ TEST_F(WebCryptoRsaSsaTest, ImportJwkRsaFailures) {
 
   // Baseline pass.
   EXPECT_EQ(Status::Success(),
-            ImportKeyJwkFromDict(dict, algorithm, false, usages, &key));
+            ImportKeyJwkFromDict(BuildTestJwkPublicKey(), algorithm, false,
+                                 usages, &key));
   EXPECT_EQ(algorithm.Id(), key.Algorithm().Id());
   EXPECT_FALSE(key.Extractable());
   EXPECT_EQ(blink::kWebCryptoKeyUsageVerify, key.Usages());
@@ -923,24 +958,23 @@ TEST_F(WebCryptoRsaSsaTest, ImportJwkRsaFailures) {
   // The following are specific failure cases for when kty = "RSA".
 
   // Fail if either "n" or "e" is not present or malformed.
-  for (auto* const parm : {"n", "e"}) {
+  for (auto* const param : {"n", "e"}) {
+    base::Value::Dict jwk = BuildTestJwkPublicKey();
+
     // Fail on missing parameter.
-    dict.RemoveKey(parm);
+    jwk.Remove(param);
     EXPECT_NE(Status::Success(),
-              ImportKeyJwkFromDict(dict, algorithm, false, usages, &key));
-    RestoreJwkRsaDictionary(&dict);
+              ImportKeyJwkFromDict(jwk, algorithm, false, usages, &key));
 
     // Fail on bad b64 parameter encoding.
-    dict.SetString(parm, "Qk3f0DsytU8lfza2au #$% Htaw2xpop9yTuH0");
+    jwk.Set(param, "Qk3f0DsytU8lfza2au #$% Htaw2xpop9yTuH0");
     EXPECT_NE(Status::Success(),
-              ImportKeyJwkFromDict(dict, algorithm, false, usages, &key));
-    RestoreJwkRsaDictionary(&dict);
+              ImportKeyJwkFromDict(jwk, algorithm, false, usages, &key));
 
     // Fail on empty parameter.
-    dict.SetString(parm, "");
-    EXPECT_EQ(Status::ErrorJwkEmptyBigInteger(parm),
-              ImportKeyJwkFromDict(dict, algorithm, false, usages, &key));
-    RestoreJwkRsaDictionary(&dict);
+    jwk.Set(param, "");
+    EXPECT_EQ(Status::ErrorJwkEmptyBigInteger(param),
+              ImportKeyJwkFromDict(jwk, algorithm, false, usages, &key));
   }
 }
 
@@ -964,32 +998,184 @@ TEST_F(WebCryptoRsaSsaTest, ImportRsaSsaJwkBadUsageAndData) {
                 &key));
 }
 
-// Imports invalid JWK/SPKI/PKCS8 data and verifies that it fails as expected.
-TEST_F(WebCryptoRsaSsaTest, ImportInvalidKeyData) {
-  base::Value::List tests = ReadJsonTestFileAsList("bad_rsa_keys.json");
-  for (const auto& test_value : tests) {
-    SCOPED_TRACE(&test_value - &tests[0]);
+TEST_F(WebCryptoRsaSsaTest, ImportValidJwkPrivateKey) {
+  ImportJwkRS256OrDie(BuildTestJwkPrivateKey());
+}
 
-    ASSERT_TRUE(test_value.is_dict());
-    const base::DictionaryValue* test =
-        &base::Value::AsDictionaryValue(test_value);
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidJwkPrivateKey_SwapPQ) {
+  auto key = BuildTestJwkPrivateKey();
+  SwapDictMembers(key, "p", "q");
+  EXPECT_EQ(StatusToString(ImportJwkRS256MustFail(key)), "OperationError");
+}
 
-    blink::WebCryptoKeyFormat key_format = GetKeyFormatFromJsonTestCase(test);
-    std::vector<uint8_t> key_data =
-        GetKeyDataFromJsonTestCase(test, key_format);
-    std::string test_error;
-    ASSERT_TRUE(test->GetString("error", &test_error));
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidJwkPrivateKey_SwapPQDPDQ) {
+  auto key = BuildTestJwkPrivateKey();
+  SwapDictMembers(key, "p", "q");
+  SwapDictMembers(key, "dp", "dq");
+  EXPECT_EQ(StatusToString(ImportJwkRS256MustFail(key)), "OperationError");
+}
 
-    blink::WebCryptoKeyUsageMask usages = blink::kWebCryptoKeyUsageSign;
-    if (key_format == blink::kWebCryptoKeyFormatSpki)
-      usages = blink::kWebCryptoKeyUsageVerify;
-    blink::WebCryptoKey key;
-    Status status = ImportKey(key_format, key_data,
-                              CreateRsaHashedImportAlgorithm(
-                                  blink::kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
-                                  blink::kWebCryptoAlgorithmIdSha256),
-                              true, usages, &key);
-    EXPECT_EQ(test_error, StatusToString(status));
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidJwkPrivateKey_MissingMostOptionals) {
+  auto key = BuildTestJwkPrivateKey();
+  for (const auto* param : {"q", "dp", "dq", "qi"})
+    key.Remove(param);
+  EXPECT_EQ(StatusToString(ImportJwkRS256MustFail(key)),
+            "DataError: The required JWK member \"q\" was missing");
+}
+
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidJwkPrivateKey_MissingAllOptionals) {
+  // This is a deliberate spec divergence: while JWK allows keys that are
+  // missing all these attributes (because they are all optional), Chromium
+  // doesn't. That's because without those attributes, we wouldn't be able to
+  // serialize these keys as PKCS#8 keys anyway, which would break a bunch
+  // of assumptions throughout our implementation.
+  //
+  // See: https://crbug.com/374927
+  auto key = BuildTestJwkPrivateKey();
+  for (const auto* param : {"p", "q", "dp", "dq", "qi"})
+    key.Remove(param);
+  EXPECT_EQ(StatusToString(ImportJwkRS256MustFail(key)),
+            "DataError: The required JWK member \"p\" was missing");
+}
+
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidJwkPrivateKey_LeadingZeroesOnE) {
+  auto key = BuildTestJwkPrivateKey();
+  key.Set("e", "AAEAAQ");  // 00 01 00 01
+  EXPECT_EQ("DataError: The JWK \"e\" member contained a leading zero.",
+            StatusToString(ImportJwkRS256MustFail(key)));
+}
+
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidJwkPrivateKey_Base64PaddingInD) {
+  auto key = BuildTestJwkPrivateKey();
+  auto d = *key.FindString("d");
+  key.Set("d", d + "==");
+  EXPECT_EQ(
+      "DataError: The JWK member \"d\" could not be base64url decoded or"
+      " contained padding",
+      StatusToString(ImportJwkRS256MustFail(key)));
+}
+
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidJwkPrivateKey_Base64UrlInN) {
+  auto key = BuildTestJwkPrivateKey();
+  auto n = *key.FindString("n");
+  ASSERT_TRUE(base::ReplaceChars(n, "_", "/", &n));
+  key.Set("n", n);
+  EXPECT_EQ(
+      "DataError: The JWK member \"n\" could not be base64url decoded or"
+      " contained padding",
+      StatusToString(ImportJwkRS256MustFail(key)));
+}
+
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidJwkPrivateKey_Base64UrlInDQ) {
+  auto key = BuildTestJwkPrivateKey();
+  auto dq = *key.FindString("dq");
+  ASSERT_TRUE(base::ReplaceChars(dq, "-", "+", &dq));
+  key.Set("dq", dq);
+  EXPECT_EQ(
+      "DataError: The JWK member \"dq\" could not be base64url decoded or"
+      " contained padding",
+      StatusToString(ImportJwkRS256MustFail(key)));
+}
+
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidSpki_Empty) {
+  EXPECT_EQ("DataError", StatusToString(ImportSpkiRS256MustFail("")));
+}
+
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidSpki_BadDER) {
+  EXPECT_EQ("DataError", StatusToString(ImportSpkiRS256MustFail("618333c4cb")));
+}
+
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidSpki_NotRSA) {
+  EXPECT_EQ("DataError",
+            StatusToString(ImportSpkiRS256MustFail(
+                "3059301306072A8648CE3D020106082A8648CE3D030107034200049CB0CF69"
+                "303DAFC761D4E4687B4ECF039E6D34AB964AF80810D8D558A4A8D6F72D5123"
+                "3A1788920A86EE08A1962C79EFA317FB7879E297DAD2146DB995FA1C78")));
+}
+
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidSpki_TrailingData) {
+  EXPECT_EQ(
+      "DataError",
+      StatusToString(ImportSpkiRS256MustFail(
+          "30819F300D06092A864886F70D010101050003818D0030818902818100A56E4A0E70"
+          "1017589A5187DC7EA841D156F2EC0E36AD52A44DFEB1E61F7AD991D8C51056FFEDB1"
+          "62B4C0F283A12A88A394DFF526AB7291CBB307CEABFCE0B1DFD5CD9508096D5B2B8B"
+          "6DF5D671EF6377C0921CB23C270A70E2598E6FF89D19F105ACC2D3F0CB35F29280E1"
+          "386B6F64C4EF22E1E1F20D0CE8CFFB2249BD9A2137020301000100000000")));
+}
+
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidPkcs8_Empty) {
+  EXPECT_EQ("DataError", StatusToString(ImportPkcs8RS256MustFail("")));
+}
+
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidPkcs8_BadDER) {
+  EXPECT_EQ("DataError",
+            StatusToString(ImportPkcs8RS256MustFail("618333c4cb")));
+}
+
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidPkcs8_CRTValuesAreZero) {
+  EXPECT_EQ(
+      "DataError",
+      StatusToString(ImportPkcs8RS256MustFail(
+          "30820138020100300D06092A864886F70D0101010500048201223082011E02010002"
+          "818100A56E4A0E701017589A5187DC7EA841D156F2EC0E36AD52A44DFEB1E61F7AD9"
+          "91D8C51056FFEDB162B4C0F283A12A88A394DFF526AB7291CBB307CEABFCE0B1DFD5"
+          "CD9508096D5B2B8B6DF5D671EF6377C0921CB23C270A70E2598E6FF89D19F105ACC2"
+          "D3F0CB35F29280E1386B6F64C4EF22E1E1F20D0CE8CFFB2249BD9A21370203010001"
+          "02818033A5042A90B27D4F5451CA9BBBD0B44771A101AF884340AEF9885F2A4BBE92"
+          "E894A724AC3C568C8F97853AD07C0266C8C6A3CA0929F1E8F11231884429FC4D9AE5"
+          "5FEE896A10CE707C3ED7E734E44727A39574501A532683109C2ABACABA283C31B4BD"
+          "2F53C3EE37E352CEE34F9E503BD80C0622AD79C6DCEE883547C6A3B3250201000201"
+          "00020100020100020100")));
+}
+
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidPkcs8_NotRSA) {
+  EXPECT_EQ("DataError",
+            StatusToString(ImportPkcs8RS256MustFail(
+                "308187020100301306072A8648CE3D020106082A8648CE3D030107046D306B"
+                "02010104201FE33950C5F461124AE992C2BDFDF1C73B1615F571BD567E60D1"
+                "9AA1F48CDF42A144034200047C110C66DCFDA807F6E69E45DDB3C74F69A148"
+                "4D203E8DC5ADA8E9A9DD7CB3C70DF448986E51BDE5D1576F99901F9C2C6A80"
+                "6A47FD907643A72B835597EFC8C6")));
+}
+
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidPkcs8_TrailingData) {
+  EXPECT_EQ(
+      "DataError",
+      StatusToString(ImportPkcs8RS256MustFail(
+          "30820275020100300D06092A864886F70D01010105000482025F3082025B02010002"
+          "818100A56E4A0E701017589A5187DC7EA841D156F2EC0E36AD52A44DFEB1E61F7AD9"
+          "91D8C51056FFEDB162B4C0F283A12A88A394DFF526AB7291CBB307CEABFCE0B1DFD5"
+          "CD9508096D5B2B8B6DF5D671EF6377C0921CB23C270A70E2598E6FF89D19F105ACC2"
+          "D3F0CB35F29280E1386B6F64C4EF22E1E1F20D0CE8CFFB2249BD9A21370203010001"
+          "02818033A5042A90B27D4F5451CA9BBBD0B44771A101AF884340AEF9885F2A4BBE92"
+          "E894A724AC3C568C8F97853AD07C0266C8C6A3CA0929F1E8F11231884429FC4D9AE5"
+          "5FEE896A10CE707C3ED7E734E44727A39574501A532683109C2ABACABA283C31B4BD"
+          "2F53C3EE37E352CEE34F9E503BD80C0622AD79C6DCEE883547C6A3B325024100E7E8"
+          "942720A877517273A356053EA2A1BC0C94AA72D55C6E86296B2DFC967948C0A72CBC"
+          "CCA7EACB35706E09A1DF55A1535BD9B3CC34160B3B6DCD3EDA8E6443024100B69DCA"
+          "1CF7D4D7EC81E75B90FCCA874ABCDE123FD2700180AA90479B6E48DE8D67ED24F9F1"
+          "9D85BA275874F542CD20DC723E6963364A1F9425452B269A6799FD024028FA139386"
+          "55BE1F8A159CBACA5A72EA190C30089E19CD274A556F36C4F6E19F554B34C0777904"
+          "27BBDD8DD3EDE2448328F385D81B30E8E43B2FFFA02786197902401A8B38F398FA71"
+          "2049898D7FB79EE0A77668791299CDFA09EFC0E507ACB21ED74301EF5BFD48BE455E"
+          "AEB6E1678255827580A8E4E8E14151D1510A82A3F2E729024027156ABA4126D24A81"
+          "F3A528CBFB27F56886F840A9F6E86E17A44B94FE9319584B8E22FDDE1E5A2E3BD8AA"
+          "5BA8D8584194EB2190ACF832B847F13A3D24A79F4D00000000")));
+}
+
+TEST_F(WebCryptoRsaSsaTest, ImportInvalidPkcs8_CorruptFields) {
+  const struct {
+    size_t byte;
+    const char* name;
+  } kTestCases[] = {
+      {50, "n"},  {168, "e"},  {175, "d"},  {333, "p"},
+      {373, "q"}, {450, "dp"}, {550, "dq"}, {600, "qi"},
+  };
+  for (const auto& test : kTestCases) {
+    std::string key = FlipHexByte(kPrivateKeyPkcs8DerHex, test.byte);
+    EXPECT_EQ("DataError", StatusToString(ImportPkcs8RS256MustFail(key)))
+        << "byte flip should have invalidated key: " << test.name;
   }
 }
 

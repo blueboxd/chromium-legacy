@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
@@ -51,14 +52,14 @@ class VisibleUnitsTest : public EditingTestBase {
   std::string TestSnapBackward(
       const std::string& selection_text,
       EditingBoundaryCrossingRule rule = kCannotCrossEditingBoundary) {
-    const Position position = SetSelectionTextToBody(selection_text).Base();
+    const Position position = SetCaretTextToBody(selection_text);
     return GetCaretTextFromBody(MostBackwardCaretPosition(position, rule));
   }
 
   std::string TestSnapForward(
       const std::string& selection_text,
       EditingBoundaryCrossingRule rule = kCannotCrossEditingBoundary) {
-    const Position position = SetSelectionTextToBody(selection_text).Base();
+    const Position position = SetCaretTextToBody(selection_text);
     return GetCaretTextFromBody(MostForwardCaretPosition(position, rule));
   }
 };
@@ -937,6 +938,44 @@ TEST_F(VisibleUnitsTest, SnapForwardWithZeroWidthSpace) {
             TestSnapForward("<p>ab|<wbr><wbr>cd</p>"));
   EXPECT_EQ("<p>ab|\u200B\u200Bcd</p>",
             TestSnapForward("<p>ab|\u200B\u200Bcd</p>"));
+}
+
+TEST_F(VisibleUnitsTest, FirstRectForRangeHorizontal) {
+  LoadAhem();
+  InsertStyleElement("div { font:20px/20px Ahem;}");
+  const SelectionInDOMTree selection =
+      SetSelectionTextToBody("<div>^abcdef|</div>");
+  const gfx::Rect rect = FirstRectForRange(selection.ComputeRange());
+  EXPECT_EQ(gfx::Rect(8, 8, 120, 20), rect);
+}
+
+TEST_F(VisibleUnitsTest, FirstRectForRangeHorizontalWrap) {
+  LoadAhem();
+  InsertStyleElement("div { font:20px/20px Ahem; inline-size:60px;}");
+  const SelectionInDOMTree selection =
+      SetSelectionTextToBody("<div>^abc def|</div>");
+  const gfx::Rect rect = FirstRectForRange(selection.ComputeRange());
+  EXPECT_EQ(gfx::Rect(8, 8, 59, 20), rect);
+}
+
+TEST_F(VisibleUnitsTest, FirstRectForRangeVertical) {
+  LoadAhem();
+  InsertStyleElement("div { writing-mode:vertical-rl; font:20px/20px Ahem;}");
+  const SelectionInDOMTree selection =
+      SetSelectionTextToBody("<div>^abcdef|</div>");
+  const gfx::Rect rect = FirstRectForRange(selection.ComputeRange());
+  EXPECT_EQ(gfx::Rect(8, 8, 20, 119), rect);
+}
+
+TEST_F(VisibleUnitsTest, FirstRectForRangeVerticalWrap) {
+  LoadAhem();
+  InsertStyleElement(
+      "div { writing-mode:vertical-rl; font:20px/20px Ahem; "
+      "inline-size:60px;}");
+  const SelectionInDOMTree selection =
+      SetSelectionTextToBody("<div>^abc def|</div>");
+  const gfx::Rect rect = FirstRectForRange(selection.ComputeRange());
+  EXPECT_EQ(gfx::Rect(28, 8, 20, 59), rect);
 }
 
 }  // namespace visible_units_test

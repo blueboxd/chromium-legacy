@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
-import '../../components/oobe_cr_lottie.m.js';
+import '../../components/oobe_cr_lottie.js';
 import '../../components/common_styles/common_styles.m.js';
 import '../../components/common_styles/oobe_dialog_host_styles.m.js';
-import '../../components/dialogs/oobe_adaptive_dialog.m.js';
-import '../../components/buttons/oobe_back_button.m.js';
-import '../../components/buttons/oobe_next_button.m.js';
-import '../../components/buttons/oobe_text_button.m.js';
+import '../../components/dialogs/oobe_adaptive_dialog.js';
+import '../../components/buttons/oobe_back_button.js';
+import '../../components/buttons/oobe_next_button.js';
+import '../../components/buttons/oobe_text_button.js';
 
 import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 

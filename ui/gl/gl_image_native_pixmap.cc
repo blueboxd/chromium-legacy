@@ -84,6 +84,7 @@ EGLint FourCC(gfx::BufferFormat format) {
       return DRM_FORMAT_P010;
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_F16:
+    case gfx::BufferFormat::YUVA_420_TRIPLANAR:
       return 0;
   }
 
@@ -131,8 +132,6 @@ GLImageNativePixmap::GLImageNativePixmap(const gfx::Size& size,
     : GLImageEGL(size),
       format_(format),
       plane_(plane),
-      has_image_flush_external_(gl::GLSurfaceEGL::GetGLDisplayEGL()
-                                    ->ext->b_EGL_EXT_image_flush_external),
       has_image_dma_buf_export_(gl::GLSurfaceEGL::GetGLDisplayEGL()
                                     ->ext->b_EGL_MESA_image_dma_buf_export) {}
 
@@ -242,13 +241,6 @@ bool GLImageNativePixmap::Initialize(scoped_refptr<gfx::NativePixmap> pixmap) {
     did_initialize_ = true;
   }
 
-  pixmap_ = pixmap;
-  return true;
-}
-
-bool GLImageNativePixmap::InitializeForOverlay(
-    scoped_refptr<gfx::NativePixmap> pixmap) {
-  DCHECK(!pixmap_);
   pixmap_ = pixmap;
   return true;
 }
@@ -390,22 +382,6 @@ bool GLImageNativePixmap::CopyTexSubImage(unsigned target,
                                           const gfx::Point& offset,
                                           const gfx::Rect& rect) {
   return false;
-}
-
-void GLImageNativePixmap::Flush() {
-  if (!has_image_flush_external_)
-    return;
-
-  EGLDisplay display = gl::GLSurfaceEGL::GetGLDisplayEGL()->GetDisplay();
-  const EGLAttrib attribs[] = {
-      EGL_NONE,
-  };
-  if (!eglImageFlushExternalEXT(display, egl_image_, attribs)) {
-    // TODO(reveman): Investigate why we're hitting the following log
-    // statement on ARM devices. b/63364517
-    DLOG(WARNING) << "Failed to flush rendering";
-    return;
-  }
 }
 
 void GLImageNativePixmap::OnMemoryDump(

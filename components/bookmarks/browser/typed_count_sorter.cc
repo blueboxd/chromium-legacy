@@ -4,6 +4,10 @@
 
 #include "components/bookmarks/browser/typed_count_sorter.h"
 
+#include <algorithm>
+
+#include "base/memory/raw_ref.h"
+#include "base/ranges/algorithm.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 
 namespace bookmarks {
@@ -33,11 +37,11 @@ class UrlTypedCountPairNodeLookupFunctor {
       : url_node_map_(url_node_map) {}
 
   const TitledUrlNode* operator()(const UrlTypedCountPair& pair) const {
-    return url_node_map_[pair.first];
+    return (*url_node_map_)[pair.first];
   }
 
  private:
-  UrlNodeMap& url_node_map_;
+  const raw_ref<UrlNodeMap> url_node_map_;
 };
 
 }  // namespace
@@ -64,9 +68,8 @@ void TypedCountSorter::SortMatches(const TitledUrlNodeSet& matches,
     client_->GetTypedCountForUrls(&url_typed_count_map);
 
     UrlTypedCountPairs url_typed_counts;
-    std::copy(url_typed_count_map.begin(),
-              url_typed_count_map.end(),
-              std::back_inserter(url_typed_counts));
+    base::ranges::copy(url_typed_count_map,
+                       std::back_inserter(url_typed_counts));
     std::sort(url_typed_counts.begin(),
               url_typed_counts.end(),
               UrlTypedCountPairSortFunctor());

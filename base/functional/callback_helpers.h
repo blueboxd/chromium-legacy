@@ -20,6 +20,7 @@
 #include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/functional/callback_tags.h"
 
 namespace base {
 
@@ -114,6 +115,24 @@ SplitOnceCallback(OnceCallback<void(Args...)> callback) {
   return std::make_pair(wrapped_once, wrapped_once);
 }
 
+// Convenience helper to allow a `closure` to be used in a context which is
+// expecting a callback with arguments. Returns a null callback if `closure` is
+// null.
+template <typename... Args>
+RepeatingCallback<void(Args...)> IgnoreArgs(RepeatingClosure closure) {
+  return closure ? BindRepeating([](Args...) {}).Then(std::move(closure))
+                 : RepeatingCallback<void(Args...)>();
+}
+
+// Convenience helper to allow a `closure` to be used in a context which is
+// expecting a callback with arguments. Returns a null callback if `closure` is
+// null.
+template <typename... Args>
+OnceCallback<void(Args...)> IgnoreArgs(OnceClosure closure) {
+  return closure ? BindOnce([](Args...) {}).Then(std::move(closure))
+                 : OnceCallback<void(Args...)>();
+}
+
 // ScopedClosureRunner is akin to std::unique_ptr<> for Closures. It ensures
 // that the Closure is executed no matter how the current scope exits.
 // If you are looking for "ScopedCallback", "CallbackRunner", or
@@ -176,6 +195,20 @@ constexpr auto NullCallbackAs() {
 template <typename Signature>
 constexpr auto DoNothingAs() {
   return internal::DoNothingCallbackTag::WithSignature<Signature>();
+}
+
+// Similar to DoNothing above, but with bound arguments. This helper is useful
+// for keeping objects alive until the callback runs.
+// Example:
+//
+// void F(base::OnceCallback<void(int)> result_callback);
+//
+// std::unique_ptr<MyClass> ptr;
+// F(base::DoNothingWithBoundArgs(std::move(ptr)));
+template <typename... Args>
+constexpr auto DoNothingWithBoundArgs(Args&&... args) {
+  return internal::DoNothingCallbackTag::WithBoundArguments(
+      std::forward<Args>(args)...);
 }
 
 // Useful for creating a Closure that will delete a pointer when invoked. Only

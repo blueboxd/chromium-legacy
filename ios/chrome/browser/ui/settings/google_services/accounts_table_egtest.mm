@@ -5,6 +5,8 @@
 #import <UIKit/UIKit.h>
 
 #import "base/test/ios/wait_util.h"
+#import "base/time/time.h"
+#import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
@@ -18,7 +20,6 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/web_http_server_chrome_test_case.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "net/test/embedded_test_server/embedded_test_server.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -37,7 +38,7 @@ using chrome_test_util::SignOutAccountsButton;
 namespace {
 
 // Constant for timeout while waiting for asynchronous sync operations.
-const NSTimeInterval kSyncOperationTimeout = 10.0;
+constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
 }
 
 // Integration tests using the Account Settings screen.
@@ -68,7 +69,7 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 // Tests that the Sync and Account Settings screen are correctly popped if the
 // signed in account is removed.
 - (void)testSignInPopUpAccountOnSyncSettings {
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
 
   // Sign In `identity`, then open the Sync Settings.
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
@@ -90,7 +91,7 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 // Tests that the Account Settings screen is correctly popped if the signed in
 // account is removed while the "Disconnect Account" dialog is up.
 - (void)testSignInPopUpAccountOnDisconnectAccount {
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   // Sign In `fakeIdentity`, then open the Account Settings.
@@ -114,8 +115,8 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 // Tests that the Account Settings screen is correctly reloaded when one of
 // the non-primary account is removed.
 - (void)testSignInReloadOnRemoveAccount {
-  FakeChromeIdentity* fakeIdentity1 = [FakeChromeIdentity fakeIdentity1];
-  FakeChromeIdentity* fakeIdentity2 = [FakeChromeIdentity fakeIdentity2];
+  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity2 = [FakeSystemIdentity fakeIdentity2];
   [SigninEarlGrey addFakeIdentity:fakeIdentity2];
 
   // Sign In `fakeIdentity`, then open the Account Settings.
@@ -140,7 +141,7 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 // Opens the MyGoogleUI for the primary account, and then the primary account
 // is removed while MyGoogle UI is still opened.
 - (void)testRemoveAccountWithMyGoogleUIOpened {
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
 
   // Sign In `fakeIdentity`, then open the Account Settings.
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
@@ -167,9 +168,9 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 // The goal of this test is to confirm the dialog can be opened several times.
 // Related to http://crbug.com/1180798
 - (void)testRemoveAccountSeveralTime {
-  FakeChromeIdentity* fakeIdentity1 = [FakeChromeIdentity fakeIdentity1];
-  FakeChromeIdentity* fakeIdentity2 = [FakeChromeIdentity fakeIdentity2];
-  FakeChromeIdentity* fakeIdentity3 = [FakeChromeIdentity fakeManagedIdentity];
+  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity2 = [FakeSystemIdentity fakeIdentity2];
+  FakeSystemIdentity* fakeIdentity3 = [FakeSystemIdentity fakeManagedIdentity];
   [SigninEarlGrey addFakeIdentity:fakeIdentity2];
   [SigninEarlGrey addFakeIdentity:fakeIdentity3];
 
@@ -193,7 +194,7 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 // Tests that the Account Settings screen is popped and the user signed out
 // when the account is removed.
 - (void)testSignOutOnRemoveAccount {
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
 
   // Sign In `fakeIdentity`, then open the Account Settings.
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
@@ -214,7 +215,7 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 // Tests that selecting sign-out from a non-managed account keeps the user's
 // synced data.
 - (void)testSignOutFromNonManagedAccountKeepsData {
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
 
   // Sign In `fakeIdentity`.
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
@@ -238,8 +239,10 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 
 // Tests that selecting sign-out and clear data from a non-managed user account
 // clears the user's synced data.
-- (void)testSignOutAndClearDataFromNonManagedAccountClearsData {
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+// TODO(crbug.com/1377798): fails on iPhone SE because the screen is too small
+// to present both the prompt to select and account and the background view.
+- (void)DISABLED_testSignOutAndClearDataFromNonManagedAccountClearsData {
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
 
   // Sign In `fakeIdentity`.
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
@@ -262,10 +265,12 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 }
 
 // Tests that signing out from a managed user account clears the user's data.
-- (void)testsSignOutFromManagedAccount {
+// TODO(crbug.com/1377800): fails on iPhone SE because the screen is too small
+// to present both the prompt to select and account and the background view.
+- (void)DISABLED_testsSignOutFromManagedAccount {
   // Sign In `fakeManagedIdentity`.
   [SigninEarlGreyUI
-      signinWithFakeIdentity:[FakeChromeIdentity fakeManagedIdentity]];
+      signinWithFakeIdentity:[FakeSystemIdentity fakeManagedIdentity]];
 
   // Add a bookmark after sync is initialized.
   [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kSyncOperationTimeout];
@@ -288,8 +293,8 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 // signing in and out from account A, then signing in to account B, properly
 // identifies the user with account B.
 - (void)testSwitchingAccountsWithClearedData {
-  FakeChromeIdentity* fakeIdentity1 = [FakeChromeIdentity fakeIdentity1];
-  FakeChromeIdentity* fakeIdentity2 = [FakeChromeIdentity fakeIdentity2];
+  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity2 = [FakeSystemIdentity fakeIdentity2];
   [SigninEarlGrey addFakeIdentity:fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity2];
 
@@ -305,7 +310,7 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 // Tests that the user isn't signed out and the UI is correct when the
 // sign-out is cancelled in the Account Settings screen.
 - (void)testSignOutCancelled {
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
 
   // Sign In `fakeIdentity`, then open the Account Settings.
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
@@ -335,7 +340,7 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 // it is a managed account. Regression test for crbug.com/1208381.
 - (void)testsManagedAccountRemovedFromAnotherGoogleApp {
   // Sign In `fakeManagedIdentity`.
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeManagedIdentity];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeManagedIdentity];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
 
   // Add a bookmark after sync is initialized.
@@ -363,7 +368,7 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 // Tests to open the sign-out confirmation dialog, and then remove the primary
 // account while the dialog is still opened.
 - (void)testRemovePrimaryAccountWhileSignOutConfirmation {
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
@@ -392,8 +397,8 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 // Tests to open the sign-out confirmation dialog, and then remove a secondary
 // account while the dialog is still opened.
 - (void)testRemoveSecondaryAccountWhileSignOutConfirmation {
-  FakeChromeIdentity* fakeIdentity1 = [FakeChromeIdentity fakeIdentity1];
-  FakeChromeIdentity* fakeIdentity2 = [FakeChromeIdentity fakeIdentity2];
+  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity2 = [FakeSystemIdentity fakeIdentity2];
   [SigninEarlGrey addFakeIdentity:fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity2];
 
@@ -423,7 +428,7 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 // Tests to open the sign-out confirmation dialog, and then open an external
 // URL.
 - (void)testInterruptDuringSignOutConfirmation {
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
@@ -448,7 +453,7 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 // Tests that opening and closing the sign-out confirmation dialog does
 // not affect the user's sign-in state.
 - (void)testDismissSignOutConfirmationTwice {
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
@@ -483,7 +488,7 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 
 // Tests to sign out with a non managed account without syncing.
 - (void)testSignOutWithNonManagedAccountFromNoneSyncingAccount {
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
@@ -506,7 +511,7 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 // Tests to sign out with a managed account without syncing.
 - (void)testSignOutWithManagedAccountFromNoneSyncingAccount {
   // Sign In `fakeManagedIdentity`.
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeManagedIdentity];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeManagedIdentity];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
 
   [BookmarkEarlGrey setupStandardBookmarks];
@@ -525,7 +530,7 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 
 // Tests that the sign-out footer is not shown when the user is not syncing.
 - (void)testSignOutFooterForSignInOnlyUser {
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
@@ -541,7 +546,7 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 
 // Tests that the sign-out footer is shown when the user is syncing.
 - (void)testSignOutFooterForSignInAndSyncUser {
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:YES];

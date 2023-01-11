@@ -20,9 +20,11 @@
 #include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-blink.h"
+#include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom-blink.h"
 #include "third_party/blink/public/mojom/conversions/conversions.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/attribution_response_parsing.h"
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
@@ -332,6 +334,13 @@ AttributionSrcLoader::ResourceClient* AttributionSrcLoader::DoRegistration(
   auto* client = MakeGarbageCollected<ResourceClient>(
       this, src_type, associated_with_navigation);
   ++num_resource_clients_;
+
+  // TODO(https://crbug.com/1374121): If this registration is
+  // `associated_with_navigation`, there is a risk that the navigation will
+  // complete before the resource fetch here is complete. In this case, the
+  // browser will mark the page as frozen. This will cause MojoURLLoaderClient
+  // to store the request and never dispatch it, causing ResponseReceived() to
+  // never be called.
   RawResource::Fetch(params, local_frame_->DomWindow()->Fetcher(), client);
 
   RecordAttributionSrcRequestStatus(AttributionSrcRequestStatus::kRequested);
@@ -406,6 +415,22 @@ bool AttributionSrcLoader::CanRegister(const KURL& url,
                                        absl::optional<uint64_t> request_id,
                                        bool log_issues) {
   return !!ReportingOriginForUrlIfValid(url, element, request_id, log_issues);
+}
+
+AtomicString AttributionSrcLoader::GetSupportHeader() const {
+  static constexpr const char kAttributionSupportWeb[] = "web";
+  static constexpr const char kAttributionSupportWebAndOs[] = "web, os";
+
+  if (HasOsSupport()) {
+    return kAttributionSupportWebAndOs;
+  } else {
+    return kAttributionSupportWeb;
+  }
+}
+
+bool AttributionSrcLoader::HasOsSupport() const {
+  return Platform::Current()->GetOsSupportForAttributionReporting() ==
+         mojom::blink::AttributionOsSupport::kEnabled;
 }
 
 bool AttributionSrcLoader::MaybeRegisterAttributionHeaders(
@@ -566,6 +591,12 @@ void AttributionSrcLoader::ResourceClient::HandleResponseHeaders(
                                             /*element=*/nullptr, request_id);
   if (!reporting_origin)
     return;
+
+  if (loader_->HasOsSupport()) {
+    // TODO(crbug.com/1366863): Read and handle
+    // Attribution-Reporting-Register-OS-Source and
+    // Attribution-Reporting-Register-OS-Trigger headers.
+  }
 
   HandleResponseHeaders(std::move(reporting_origin), source_json, trigger_json,
                         request_id);

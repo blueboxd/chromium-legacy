@@ -32,7 +32,7 @@ class ResourcePoolTest : public testing::Test {
     context_support_ = context_support.get();
     context_provider_ =
         viz::TestContextProvider::Create(std::move(context_support));
-    context_provider_->BindToCurrentThread();
+    context_provider_->BindToCurrentSequence();
     resource_provider_ = std::make_unique<viz::ClientResourceProvider>();
     test_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
     resource_pool_ = std::make_unique<ResourcePool>(
@@ -290,7 +290,7 @@ TEST_F(ResourcePoolTest, BusyResourcesNotFreed) {
 
   resource_pool_->ReleaseResource(std::move(resource));
   EXPECT_EQ(40000u, resource_pool_->GetTotalMemoryUsageForTesting());
-  EXPECT_EQ(0u, resource_pool_->memory_usage_bytes());
+  EXPECT_EQ(40000u, resource_pool_->memory_usage_bytes());
   EXPECT_EQ(1u, resource_pool_->GetBusyResourceCountForTesting());
 
   // Wait for our resource pool to evict resources. Wait 10x the expiration
@@ -300,8 +300,14 @@ TEST_F(ResourcePoolTest, BusyResourcesNotFreed) {
   // Busy resources are still held, since they may be in flight to the display
   // compositor and should not be freed.
   EXPECT_EQ(40000u, resource_pool_->GetTotalMemoryUsageForTesting());
-  EXPECT_EQ(0u, resource_pool_->memory_usage_bytes());
+  EXPECT_EQ(40000u, resource_pool_->memory_usage_bytes());
   EXPECT_EQ(1u, resource_pool_->GetBusyResourceCountForTesting());
+
+  resource_provider_->ReleaseAllExportedResources(/*lose=*/false);
+
+  EXPECT_EQ(40000u, resource_pool_->GetTotalMemoryUsageForTesting());
+  EXPECT_EQ(0u, resource_pool_->memory_usage_bytes());
+  EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
 }
 
 TEST_F(ResourcePoolTest, UnusedResourcesEventuallyFreed) {

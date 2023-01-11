@@ -165,6 +165,8 @@ class WaylandWindow : public PlatformWindow,
                  WmDragHandler::DragFinishedCallback drag_finished_callback,
                  WmDragHandler::LocationDelegate* delegate) override;
   void CancelDrag() override;
+  void UpdateDragImage(const gfx::ImageSkia& image,
+                       const gfx::Vector2d& offset) override;
 
   // PlatformWindow
   void Show(bool inactive) override;
@@ -222,6 +224,7 @@ class WaylandWindow : public PlatformWindow,
     bool is_maximized = false;
     bool is_fullscreen = false;
     bool is_activated = false;
+    bool is_minimized = false;
     bool is_snapped_primary = false;
     bool is_snapped_secondary = false;
     bool is_floated = false;

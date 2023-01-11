@@ -20,7 +20,6 @@ import androidx.fragment.app.FragmentController;
 import androidx.fragment.app.FragmentHostCallback;
 import androidx.fragment.app.FragmentManager;
 
-import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 import java.lang.reflect.Constructor;
@@ -139,21 +138,23 @@ public abstract class FragmentHostingRemoteFragmentImpl extends RemoteFragmentIm
 
         @Override
         public boolean onHasView() {
+            // This is always false.
             return mFragmentImpl.getView() != null;
         }
 
         @Override
         public View onFindViewById(int id) {
+            // This is always null.
             return onHasView() ? mFragmentImpl.getView().findViewById(id) : null;
         }
     }
 
-    protected FragmentHostingRemoteFragmentImpl(IRemoteFragmentClient remoteFragmentClient) {
-        super(remoteFragmentClient);
+    protected FragmentHostingRemoteFragmentImpl() {
+        super();
     }
 
     @Override
-    public void onAttach(Context embedderContext) {
+    protected void onAttach(Context embedderContext) {
         StrictModeWorkaround.apply();
         super.onAttach(embedderContext);
 
@@ -173,28 +174,28 @@ public abstract class FragmentHostingRemoteFragmentImpl extends RemoteFragmentIm
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         StrictModeWorkaround.apply();
         super.onCreate(savedInstanceState);
         mFragmentController.dispatchCreate();
     }
 
     @Override
-    public void onDestroyView() {
+    protected void onDestroyView() {
         StrictModeWorkaround.apply();
         super.onDestroyView();
         mFragmentController.dispatchDestroyView();
     }
 
     @Override
-    public void onDestroy() {
+    protected void onDestroy() {
         StrictModeWorkaround.apply();
         super.onDestroy();
         mFragmentController.dispatchDestroy();
     }
 
     @Override
-    public void onDetach() {
+    protected void onDetach() {
         StrictModeWorkaround.apply();
         super.onDetach();
         mContext = null;
@@ -209,7 +210,7 @@ public abstract class FragmentHostingRemoteFragmentImpl extends RemoteFragmentIm
     }
 
     @Override
-    public void onStart() {
+    protected void onStart() {
         super.onStart();
 
         if (!mStarted) {
@@ -222,19 +223,19 @@ public abstract class FragmentHostingRemoteFragmentImpl extends RemoteFragmentIm
     }
 
     @Override
-    public void onStop() {
+    protected void onStop() {
         super.onStop();
         mFragmentController.dispatchStop();
     }
 
     @Override
-    public void onResume() {
+    protected void onResume() {
         super.onResume();
         mFragmentController.dispatchResume();
     }
 
     @Override
-    public void onPause() {
+    protected void onPause() {
         super.onPause();
         mFragmentController.dispatchPause();
     }

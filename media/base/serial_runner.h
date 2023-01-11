@@ -9,14 +9,10 @@
 
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace media {
 
@@ -81,7 +77,7 @@ class MEDIA_EXPORT SerialRunner {
 
   void RunNextInSeries(PipelineStatus last_status);
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   Queue bound_fns_;
   PipelineStatusCallback done_cb_;
 

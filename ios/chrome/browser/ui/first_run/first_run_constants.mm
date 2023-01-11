@@ -10,9 +10,6 @@
 
 namespace first_run {
 
-NSString* const kUMAMetricsButtonAccessibilityIdentifier =
-    @"UMAMetricsButtonAccessibilityIdentifier";
-
 NSString* const kFirstRunWelcomeScreenAccessibilityIdentifier =
     @"firstRunWelcomeScreenAccessibilityIdentifier";
 
@@ -33,6 +30,9 @@ NSString* const kTermsOfServiceURL = @"internal://terms-of-service";
 
 // URL for the metric reporting text.
 NSString* const kMetricReportingURL = @"internal://metric-reporting";
+
+NSString* const kLaunchScreenAccessibilityIdentifier =
+    @"launchScreenAccessibilityIdentifier";
 
 NSString* const kEnterpriseLoadingScreenAccessibilityIdentifier =
     @"enterpriseLoadingScreenAccessibilityIdentifier";

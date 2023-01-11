@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/svg/svg_animated_length.h"
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
 #include "third_party/blink/renderer/core/svg/svg_text_content_element.h"
+#include "third_party/blink/renderer/platform/wtf/text/code_point_iterator.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -158,9 +159,9 @@ void NGSvgTextLayoutAlgorithm::SetFlags(
                            item.TextLength());
     // 2.2. Set middle to true if the character at index i is the second or
     // later character that corresponds to a typographic character.
-    for (unsigned text_offset = item_string.NextCodePointOffset(0);
-         text_offset < item_string.length();
-         text_offset = item_string.NextCodePointOffset(text_offset)) {
+    WTF::CodePointIterator iterator = item_string.begin();
+    const WTF::CodePointIterator end = item_string.end();
+    for (++iterator; iterator != end; ++iterator) {
       SvgPerCharacterInfo middle_info;
       middle_info.middle = true;
       middle_info.item_index = info.item_index;
@@ -312,11 +313,11 @@ void NGSvgTextLayoutAlgorithm::ResolveTextLength(
                              return !info.middle && !info.text_length_resolved;
                            });
     // 2.4.3. Let n = n + number of resolved descendant nodes − 1.
-    n += std::count_if(resolved_descendant_node_starts.begin(),
-                       resolved_descendant_node_starts.end(),
-                       [i, j_plus_1](const auto& start_index) {
-                         return i <= start_index && start_index < j_plus_1;
-                       }) -
+    n += base::ranges::count_if(resolved_descendant_node_starts,
+                                [i, j_plus_1](const auto& start_index) {
+                                  return i <= start_index &&
+                                         start_index < j_plus_1;
+                                }) -
          1;
     // 2.4.4. Find the per-character adjustment small-delta = delta/n.
     float character_delta = n != 0 ? delta / n : delta;

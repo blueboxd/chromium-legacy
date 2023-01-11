@@ -14,6 +14,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/common/buildflags.h"
 #include "components/offline_pages/buildflags/buildflags.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -553,6 +554,10 @@ extern const char kWebRTCUDPPortRange[];
 extern const char kWebRtcEventLogCollectionAllowed[];
 extern const char kWebRtcLocalIpsAllowedUrls[];
 extern const char kWebRTCAllowLegacyTLSProtocols[];
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(ENABLE_DICE_SUPPORT)
+extern const char kFirstRunFinished[];
+#endif
 
 #if !BUILDFLAG(IS_ANDROID)
 extern const char kHasSeenWelcomePage[];
@@ -1250,6 +1255,7 @@ extern const char kLastWhatsNewVersion[];
 #if !BUILDFLAG(IS_ANDROID)
 extern const char kLensRegionSearchEnabled[];
 extern const char kSidePanelHorizontalAlignment[];
+extern const char kLensDesktopNTPSearchEnabled[];
 #endif
 
 extern const char kPrivacyGuideViewed[];
@@ -1266,6 +1272,7 @@ extern const char kSCTAuditingHashdanceReportCount[];
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kConsumerAutoUpdateToggle[];
+extern const char kHindiInscriptLayoutEnabled[];
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -1280,6 +1287,10 @@ extern const char kStrictMimetypeCheckForWorkerScriptsEnabled[];
 #if BUILDFLAG(IS_ANDROID)
 extern const char kVirtualKeyboardResizesLayoutByDefault[];
 #endif
+
+extern const char kAccessControlAllowMethodsInCORSPreflightSpecConformant[];
+
+extern const char kDIPSTimerLastUpdate[];
 
 }  // namespace prefs
 

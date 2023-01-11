@@ -212,6 +212,44 @@ _BANNED_JAVA_FUNCTIONS : Sequence[BanRule] = (
       ),
       False,
     ),
+    BanRule(
+      r'/(?<!\bsuper\.)(?<!\bIntent )\bregisterReceiver\(',
+      (
+       'Do not call android.content.Context.registerReceiver (or an override) '
+       'directly. Use one of the wrapper methods defined in '
+       'org.chromium.base.ContextUtils, such as '
+       'registerProtectedBroadcastReceiver, '
+       'registerExportedBroadcastReceiver, or '
+       'registerNonExportedBroadcastReceiver. See their documentation for '
+       'which one to use.',
+      ),
+      True,
+      excluded_paths=(
+          r'.*Test[^a-z]',
+          r'third_party/',
+          'base/android/java/src/org/chromium/base/ContextUtils.java',
+      ),
+    ),
+    BanRule(
+      r'/(?:extends|new)\s*(?:android.util.)?Property<[A-Za-z.]+,\s*(?:Integer|Float)>',
+      (
+       'Do not use Property<..., Integer|Float>, but use FloatProperty or '
+       'IntProperty because it will avoid unnecessary autoboxing of '
+       'primitives.',
+      ),
+    ),
+    BanRule(
+      'requestLayout()',
+      (
+          'Layouts can be expensive. Prefer using ViewUtils.requestLayout(), '
+          'which emits a trace event with additional information to help with '
+          'scroll jank investigations. See http://crbug.com/1354176.',
+      ),
+      False,
+      excluded_paths=(
+          'ui/android/java/src/org/chromium/ui/base/ViewUtils.java',
+      ),
+    ),
 )
 
 _BANNED_OBJC_FUNCTIONS : Sequence[BanRule] = (
@@ -720,7 +758,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
     ),
     BanRule(
-      r'\b(absl|std)::any\b',
+      r'/\b(absl|std)::any\b',
       (
         'absl::any / std::any are not safe to use in a component build.',
       ),
@@ -733,6 +771,185 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       (
         'std::bind is banned because of lifetime risks.',
         'Use base::BindOnce or base::BindRepeating instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    BanRule(
+      (
+        r'/\b(?:'
+        r'std::linear_congruential_engine|std::mersenne_twister_engine|'
+        r'std::subtract_with_carry_engine|std::discard_block_engine|'
+        r'std::independent_bits_engine|std::shuffle_order_engine|'
+        r'std::minstd_rand0|std::minstd_rand|'
+        r'std::mt19937|std::mt19937_64|'
+        r'std::ranlux24_base|std::ranlux48_base|std::ranlux24|std::ranlux48|'
+        r'std::knuth_b|'
+        r'std::default_random_engine|'
+        r'std::random_device'
+        r')\b'
+      ),
+      (
+        'STL random number engines and generators are banned. Use the ',
+        'helpers in base/rand_util.h instead, e.g. base::RandBytes() or ',
+        'base::RandomBitGenerator.'
+      ),
+      True,
+      [
+        # Not an error in third_party folders.
+        _THIRD_PARTY_EXCEPT_BLINK,
+        # Various tools which build outside of Chrome.
+        r'testing/libfuzzer',
+        r'tools/android/io_benchmark/',
+        # Fuzzers are allowed to use standard library random number generators
+        # since fuzzing speed + reproducibility is important.
+        r'tools/ipc_fuzzer/',
+        r'.+_fuzzer\.cc$',
+        r'.+_fuzzertest\.cc$',
+        # TODO(https://crbug.com/1380528): These are all unsanctioned uses of
+        # the standard library's random number generators, and should be
+        # migrated to the //base equivalent.
+        r'ash/ambient/model/ambient_topic_queue\.cc',
+        r'base/allocator/partition_allocator/partition_alloc_unittest\.cc',
+        r'base/ranges/algorithm_unittest\.cc',
+        r'base/test/launcher/test_launcher\.cc',
+        r'cc/metrics/video_playback_roughness_reporter_unittest\.cc',
+        r'chrome/browser/apps/app_service/metrics/website_metrics\.cc',
+        r'chrome/browser/ash/power/auto_screen_brightness/monotone_cubic_spline_unittest\.cc',
+        r'chrome/browser/ash/printing/zeroconf_printer_detector_unittest\.cc',
+        r'chrome/browser/nearby_sharing/contacts/nearby_share_contact_manager_impl_unittest\.cc',
+        r'chrome/browser/nearby_sharing/contacts/nearby_share_contacts_sorter_unittest\.cc',
+        r'chrome/browser/privacy_budget/mesa_distribution_unittest\.cc',
+        r'chrome/browser/web_applications/test/web_app_test_utils\.cc',
+        r'chrome/browser/web_applications/test/web_app_test_utils\.cc',
+        r'chrome/browser/win/conflicts/module_blocklist_cache_util_unittest\.cc',
+        r'chrome/chrome_cleaner/logging/detailed_info_sampler\.cc',
+        r'chromeos/ash/components/memory/userspace_swap/swap_storage_unittest\.cc',
+        r'chromeos/ash/components/memory/userspace_swap/userspace_swap\.cc',
+        r'components/metrics/metrics_state_manager\.cc',
+        r'components/omnibox/browser/history_quick_provider_performance_unittest\.cc',
+        r'components/zucchini/disassembler_elf_unittest\.cc',
+        r'content/browser/webid/federated_auth_request_impl\.cc',
+        r'content/browser/webid/federated_auth_request_impl\.cc',
+        r'media/cast/test/utility/udp_proxy\.h',
+        r'sql/recover_module/module_unittest\.cc',
+      ],
+    ),
+    BanRule(
+      r'/\babsl::bind_front\b',
+      (
+        'absl::bind_front is banned. Use base::BindOnce() or '
+        'base::BindRepeating() instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    BanRule(
+      r'/\bABSL_FLAG\b',
+      (
+        'ABSL_FLAG is banned. Use base::CommandLine instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    BanRule(
+      r'/\babsl::c_',
+      (
+        'Abseil container utilities are banned. Use base/ranges/algorithm.h',
+        'instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    BanRule(
+      r'/\babsl::FunctionRef\b',
+      (
+        'absl::FunctionRef is banned. Use base::FunctionRef instead.',
+      ),
+      True,
+      [
+        # base::Bind{Once,Repeating} references absl::FunctionRef to disallow
+        # interoperability.
+        r'^base/functional/bind_internal\.h',
+        # base::FunctionRef is implemented on top of absl::FunctionRef.
+        r'^base/functional/function_ref.*\..+',
+        # Not an error in third_party folders.
+        _THIRD_PARTY_EXCEPT_BLINK,
+      ],
+    ),
+    BanRule(
+      r'/\babsl::(Insecure)?BitGen\b',
+      (
+        'absl random number generators are banned. Use the helpers in '
+        'base/rand_util.h instead, e.g. base::RandBytes() or ',
+        'base::RandomBitGenerator.'
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    BanRule(
+      r'/\babsl::Span\b',
+      (
+        'absl::Span is banned. Use base::span instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    BanRule(
+      r'/\babsl::StatusOr\b',
+      (
+        'absl::StatusOr is banned. Use base::expected instead.',
+      ),
+      True,
+      [
+        # Needed to use liburlpattern API.
+        r'third_party/blink/renderer/core/url_pattern/.*',
+        # Not an error in third_party folders.
+        _THIRD_PARTY_EXCEPT_BLINK
+      ],
+    ),
+    BanRule(
+      r'/\babsl::StrFormat\b',
+      (
+        'absl::StrFormat is banned for now. Use base::StringPrintf instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    BanRule(
+      r'/\babsl::string_view\b',
+      (
+        'absl::string_view is banned. Use base::StringPiece instead.',
+      ),
+      True,
+      [
+        # Needed to use liburlpattern API.
+        r'third_party/blink/renderer/core/url_pattern/.*',
+        # Not an error in third_party folders.
+        _THIRD_PARTY_EXCEPT_BLINK
+      ],
+    ),
+    BanRule(
+      r'/\babsl::(StrSplit|StrJoin|StrCat|StrAppend|Substitute|StrContains)\b',
+      (
+        'Abseil string utilities are banned. Use base/strings instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    BanRule(
+      r'/\babsl::(Mutex|CondVar|Notification|Barrier|BlockingCounter)\b',
+      (
+        'Abseil synchronization primitives are banned. Use',
+        'base/synchronization instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    BanRule(
+      r'/\babsl::(Duration|Time|TimeZone|CivilDay)\b',
+      (
+        'Abseil\'s time library is banned. Use base/time instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
@@ -1143,22 +1360,6 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       ),
     ),
     BanRule(
-      r'/\babsl::FunctionRef\b',
-      (
-        'absl::FunctionRef is banned. Use base::FunctionRef instead.',
-      ),
-      True,
-      [
-        # base::Bind{Once,Repeating} references absl::FunctionRef to disallow
-        # interoperability.
-        r'^base/functional/bind_internal\.h',
-        # base::FunctionRef is implemented on top of absl::FunctionRef.
-        r'^base/functional/function_ref.*\..+',
-        # Not an error in third_party folders.
-        _THIRD_PARTY_EXCEPT_BLINK,
-      ],
-    ),
-    BanRule(
       r'base::Feature k',
       (
           'Please use BASE_DECLARE_FEATURE() or BASE_FEATURE() instead of ',
@@ -1167,6 +1368,19 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       True,
       [
         _THIRD_PARTY_EXCEPT_BLINK,
+      ],
+    ),
+    BanRule(
+      r'\bchartorune\b',
+      (
+        'chartorune is not memory-safe, unless you can guarantee the input ',
+        'string is always null-terminated. Otherwise, please use charntorune ',
+        'from libphonenumber instead.'
+      ),
+      True,
+      [
+        _THIRD_PARTY_EXCEPT_BLINK,
+        # Exceptions to this rule should have a fuzzer.
       ],
     ),
 )
@@ -1334,13 +1548,17 @@ _KNOWN_ROBOTS = set(
                     'wpt-autoroller', 'chrome-weblayer-builder',
                     'lacros-version-skew-roller', 'skylab-test-cros-roller',
                     'infra-try-recipes-tester', 'lacros-tracking-roller',
-                    'lacros-sdk-version-roller')
+                    'lacros-sdk-version-roller', 'chrome-automated-expectation',
+                    'chromium-automated-expectation')
   ) | set('%s@skia-public.iam.gserviceaccount.com' % s
           for s in ('chromium-autoroll', 'chromium-release-autoroll')
   ) | set('%s@skia-corp.google.com.iam.gserviceaccount.com' % s
           for s in ('chromium-internal-autoroll',)
   ) | set('%s@owners-cleanup-prod.google.com.iam.gserviceaccount.com' % s
-          for s in ('swarming-tasks',))
+          for s in ('swarming-tasks',)
+  ) | set('%s@fuchsia-infra.iam.gserviceaccount.com' % s
+          for s in ('global-integration-try-builder',
+                    'global-integration-ci-builder'))
 
 _INVALID_GRD_FILE_LINE = [
         (r'<file lang=.* path=.*', 'Path should come before lang in GRD files.')
@@ -4367,6 +4585,36 @@ def CheckWATCHLISTS(input_api, output_api):
 
     return []
 
+def CheckGnRebasePath(input_api, output_api):
+    """Checks that target_gen_dir is not used wtih "//" in rebase_path().
+
+    Developers should use root_build_dir instead of "//" when using target_gen_dir because
+    Chromium is sometimes built outside of the source tree.
+    """
+
+    def gn_files(f):
+        return input_api.FilterSourceFile(f, files_to_check=(r'.+\.gn', ))
+
+    rebase_path_regex = input_api.re.compile(r'rebase_path\(("\$target_gen_dir"|target_gen_dir), ("/"|"//")\)')
+    problems = []
+    for f in input_api.AffectedSourceFiles(gn_files):
+        for line_num, line in f.ChangedContents():
+            if rebase_path_regex.search(line):
+                problems.append(
+                    'Absolute path in rebase_path() in %s:%d' %
+                    (f.LocalPath(), line_num))
+
+    if problems:
+        return [
+            output_api.PresubmitPromptWarning(
+                'Using an absolute path in rebase_path()',
+                items=sorted(problems),
+                long_text=(
+                    'rebase_path() should use root_build_dir instead of "/" ',
+                    'since builds can be initiated from outside of the source ',
+                    'root.'))
+        ]
+    return []
 
 def CheckGnGlobForward(input_api, output_api):
     """Checks that forward_variables_from(invoker, "*") follows best practices.
@@ -4399,7 +4647,6 @@ def CheckGnGlobForward(input_api, output_api):
                     '#Using-forward_variables_from'))
         ]
     return []
-
 
 def CheckNewHeaderWithoutGnChangeOnUpload(input_api, output_api):
     """Checks that newly added header files have corresponding GN changes.
@@ -6413,5 +6660,44 @@ Mockito.mock()/spy() cause issues with our Java optimizer. You have 3 options:
    builtin type which we don't ship, or a class you know R8 will treat
    specially, you can ignore this warning.
 """, error_locations))
+
+    return results
+
+def CheckNoJsInIos(input_api, output_api):
+    """Checks to make sure that JavaScript files are not used on iOS."""
+
+    def _FilterFile(affected_file):
+        return input_api.FilterSourceFile(
+            affected_file,
+            files_to_skip=input_api.DEFAULT_FILES_TO_SKIP +
+                          (r'^ios/third_party/*', r'^third_party/*'),
+            files_to_check=[r'^ios/.*\.js$', r'.*/ios/.*\.js$'])
+
+    error_paths = []
+    warning_paths = []
+
+    for f in input_api.AffectedSourceFiles(_FilterFile):
+        local_path = f.LocalPath()
+
+        if input_api.os_path.splitext(local_path)[1] == '.js':
+            if f.Action() == 'A':
+                error_paths.append(local_path)
+            elif f.Action() != 'D':
+                warning_paths.append(local_path)
+
+    results = []
+
+    if warning_paths:
+        results.append(output_api.PresubmitPromptWarning(
+            'TypeScript is now fully supported for iOS feature scripts. '
+            'Consider converting JavaScript files to TypeScript. See '
+            '//ios/web/public/js_messaging/README.md for more details.',
+            warning_paths))
+
+    if error_paths:
+        results.append(output_api.PresubmitError(
+            'Do not use JavaScript on iOS as TypeScript is fully supported. '
+            'See //ios/web/public/js_messaging/README.md for help using '
+            'scripts on iOS.', error_paths))
 
     return results

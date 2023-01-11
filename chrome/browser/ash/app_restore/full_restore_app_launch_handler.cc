@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "ash/constants/ash_switches.h"
+#include "ash/metrics/login_unlock_throughput_recorder.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
@@ -16,7 +18,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics.h"
 #include "chrome/browser/ash/app_restore/app_restore_arc_task_handler.h"
-#include "chrome/browser/ash/app_restore/arc_app_launch_handler.h"
+#include "chrome/browser/ash/app_restore/arc_app_queue_restore_handler.h"
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
@@ -245,7 +247,8 @@ void FullRestoreAppLaunchHandler::MaybeRestore() {
   VLOG(1) << "Restore apps in " << profile()->GetPath();
   if (auto* arc_task_handler =
           app_restore::AppRestoreArcTaskHandler::GetForProfile(profile())) {
-    arc_task_handler->GetFullRestoreArcAppLaunchHandler()->RestoreArcApps(this);
+    arc_task_handler->GetFullRestoreArcAppQueueRestoreHandler()->RestoreArcApps(
+        this);
   }
 
   MaybeRestoreLacros();
@@ -449,6 +452,10 @@ void FullRestoreAppLaunchHandler::LogRestoreData() {
     return;
   }
 
+  LoginUnlockThroughputRecorder* throughput_recorder =
+      Shell::HasInstance() ? Shell::Get()->login_unlock_throughput_recorder()
+                           : nullptr;
+
   int arc_app_count = 0;
   int other_app_count = 0;
   for (const auto& it : restore_data()->app_id_to_launch_list()) {
@@ -460,6 +467,12 @@ void FullRestoreAppLaunchHandler::LogRestoreData() {
       continue;
     }
 
+    if (throughput_recorder) {
+      for (const auto& window : it.second) {
+        throughput_recorder->AddScheduledRestoreWindow(
+            window.first, it.first, LoginUnlockThroughputRecorder::kBrowser);
+      }
+    }
     ++other_app_count;
   }
   VLOG(1) << "There is restore data: Browser("

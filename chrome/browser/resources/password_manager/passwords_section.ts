@@ -8,6 +8,7 @@ import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import './strings.m.js';
 import './password_list_item.js';
 
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -21,7 +22,9 @@ export interface PasswordsSectionElement {
   };
 }
 
-export class PasswordsSectionElement extends PolymerElement {
+const PasswordsSectionElementBase = I18nMixin(PolymerElement);
+
+export class PasswordsSectionElement extends PasswordsSectionElementBase {
   static get is() {
     return 'passwords-section';
   }
@@ -33,28 +36,32 @@ export class PasswordsSectionElement extends PolymerElement {
   static get properties() {
     return {
       /**
-       * Passwords displayed in the device-only subsection.
+       * Password groups displayed in the UI.
        */
-      passwords_: {
+      groups_: {
         type: Array,
         value: () => [],
       },
     };
   }
 
-  private passwords_: chrome.passwordsPrivate.PasswordUiEntry[] = [];
+  private groups_: chrome.passwordsPrivate.CredentialGroup[] = [];
 
   private setSavedPasswordsListener_: (
       (entries: chrome.passwordsPrivate.PasswordUiEntry[]) => void)|null = null;
 
   override connectedCallback() {
     super.connectedCallback();
-    this.setSavedPasswordsListener_ = passwordList => {
-      this.passwords_ = passwordList;
+    const updateGroups = () => {
+      PasswordManagerImpl.getInstance().getCredentialGroups().then(
+          groups => this.groups_ = groups);
     };
 
-    PasswordManagerImpl.getInstance().getSavedPasswordList().then(
-        passwords => this.passwords_ = passwords);
+    this.setSavedPasswordsListener_ = _passwordList => {
+      updateGroups();
+    };
+
+    updateGroups();
     PasswordManagerImpl.getInstance().addSavedPasswordListChangedListener(
         this.setSavedPasswordsListener_);
   }

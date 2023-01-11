@@ -77,6 +77,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--magic-vm-cache=magic_cros_vm_cache",
           "--strip-chrome"
         ],
         "merge": {
@@ -121,7 +122,8 @@
       },
       {
         "args": [
-          "--strip-chrome"
+          "--strip-chrome",
+          "--magic-vm-cache=magic_cros_vm_cache"
         ],
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
@@ -169,7 +171,8 @@
     "gtest_tests": [
       {
         "args": [
-          "--ozone-platform=headless"
+          "--ozone-platform=headless",
+          "--magic-vm-cache=magic_cros_vm_cache"
         ],
         "merge": {
           "args": [],
@@ -205,6 +208,9 @@
         "test_id_prefix": "ninja://ui/aura:aura_unittests/"
       },
       {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -241,7 +247,8 @@
       {
         "args": [
           "--test-launcher-jobs=1",
-          "--gtest_filter=-*UsingRealWebcam_CaptureMjpeg*"
+          "--gtest_filter=-*UsingRealWebcam_CaptureMjpeg*",
+          "--magic-vm-cache=magic_cros_vm_cache"
         ],
         "merge": {
           "args": [],
@@ -277,6 +284,9 @@
         "test_id_prefix": "ninja://media/capture:capture_unittests/"
       },
       {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -311,6 +321,9 @@
         "test_id_prefix": "ninja://cc:cc_unittests/"
       },
       {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -346,12 +359,15 @@
             ]
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 10
+          "shards": 15
         },
         "test": "chrome_all_tast_tests",
         "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/"
       },
       {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
         "experiment_percentage": 100,
         "merge": {
           "args": [],
@@ -392,6 +408,9 @@
         "test_id_prefix": "ninja://chromeos:chrome_variations_tast_tests/"
       },
       {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -427,7 +446,8 @@
       },
       {
         "args": [
-          "--strip-chrome"
+          "--strip-chrome",
+          "--magic-vm-cache=magic_cros_vm_cache"
         ],
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
@@ -467,6 +487,9 @@
         "test_id_prefix": "ninja://chromeos:disk_usage_tast_test/"
       },
       {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -501,6 +524,9 @@
         "test_id_prefix": "ninja://ui/display:display_unittests/"
       },
       {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -535,6 +561,9 @@
         "test_id_prefix": "ninja://google_apis:google_apis_unittests/"
       },
       {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -569,6 +598,9 @@
         "test_id_prefix": "ninja://ipc:ipc_tests/"
       },
       {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -603,6 +635,9 @@
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
       {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -638,7 +673,8 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.media_unittests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.media_unittests.filter",
+          "--magic-vm-cache=magic_cros_vm_cache"
         ],
         "merge": {
           "args": [],
@@ -674,6 +710,9 @@
         "test_id_prefix": "ninja://media:media_unittests/"
       },
       {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -708,6 +747,9 @@
         "test_id_prefix": "ninja://media/midi:midi_unittests/"
       },
       {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -744,7 +786,8 @@
       {
         "args": [
           "--vpython-dir=../../vpython_dir_linux_amd64",
-          "--gtest_filter=-PythonUtils.PythonRunTime"
+          "--gtest_filter=-PythonUtils.PythonRunTime",
+          "--magic-vm-cache=magic_cros_vm_cache"
         ],
         "merge": {
           "args": [],
@@ -794,7 +837,8 @@
       },
       {
         "args": [
-          "--stop-ui"
+          "--stop-ui",
+          "--magic-vm-cache=magic_cros_vm_cache"
         ],
         "merge": {
           "args": [],
@@ -831,6 +875,7 @@
       },
       {
         "args": [
+          "--magic-vm-cache=magic_cros_vm_cache",
           "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter"
         ],
         "merge": {
@@ -867,6 +912,9 @@
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/"
       },
       {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -901,6 +949,9 @@
         "test_id_prefix": "ninja://pdf:pdf_unittests/"
       },
       {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -937,7 +988,8 @@
       {
         "args": [
           "--stop-ui",
-          "--test-launcher-jobs=1"
+          "--test-launcher-jobs=1",
+          "--magic-vm-cache=magic_cros_vm_cache"
         ],
         "merge": {
           "args": [],
@@ -973,6 +1025,9 @@
         "test_id_prefix": "ninja://chrome/browser/metrics/perf:profile_provider_unittest/"
       },
       {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1007,6 +1062,9 @@
         "test_id_prefix": "ninja://sql:sql_unittests/"
       },
       {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1055,7 +1113,8 @@
           "--env-var",
           "LIBVA_FOOL_POSTP",
           "1",
-          "--gtest_filter=\"VaapiTest.*\""
+          "--gtest_filter=\"VaapiTest.*\"",
+          "--magic-vm-cache=magic_cros_vm_cache"
         ],
         "merge": {
           "args": [],
@@ -1098,7 +1157,8 @@
           "--remote=127.0.0.1",
           "--remote-ssh-port=9222",
           "--xvfb",
-          "--typ-max-failures=3"
+          "--typ-max-failures=3",
+          "--magic-vm-cache=magic_cros_vm_cache"
         ],
         "isolate_name": "telemetry_perf_unittests",
         "merge": {
@@ -1146,7 +1206,8 @@
           "--browser=cros-chrome",
           "--remote=127.0.0.1",
           "--remote-ssh-port=9222",
-          "--typ-max-failures=3"
+          "--typ-max-failures=3",
+          "--magic-vm-cache=magic_cros_vm_cache"
         ],
         "isolate_name": "telemetry_unittests",
         "merge": {
@@ -1334,8 +1395,8 @@
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
         },
-        "test": "chrome_all_tast_tests_with_lacros",
-        "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests_with_lacros/",
+        "test": "chrome_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/",
         "trigger_script": {
           "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
         }
@@ -1593,62 +1654,7 @@
     "additional_compile_targets": [
       "chromiumos_preflight"
     ],
-    "gtest_tests": [
-      {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.base_unittests.filter"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_type": "octopus",
-              "os": "ChromeOS",
-              "pool": "chrome.tests"
-            }
-          ],
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "base_unittests",
-        "test_id_prefix": "ninja://base:base_unittests/",
-        "trigger_script": {
-          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
-        }
-      },
-      {
-        "args": [
-          "--strip-chrome"
-        ],
-        "merge": {
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_type": "octopus",
-              "os": "ChromeOS",
-              "pool": "chrome.tests"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "disk_usage_tast_test",
-        "test_id_prefix": "ninja://chromeos:disk_usage_tast_test/",
-        "trigger_script": {
-          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
-        }
-      }
-    ]
+    "gtest_tests": []
   },
   "chromeos-reven-chrome": {
     "additional_compile_targets": [
@@ -1656,6 +1662,9 @@
     ],
     "gtest_tests": [
       {
+        "args": [
+          "--magic-vm-cache=magic_cros_reven_vm_cache"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1698,7 +1707,8 @@
       },
       {
         "args": [
-          "--strip-chrome"
+          "--strip-chrome",
+          "--magic-vm-cache=magic_cros_reven_vm_cache"
         ],
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
@@ -1766,7 +1776,7 @@
       "chrome",
       "linux_symbols",
       "symupload",
-      "strip_chrome_binary"
+      "strip_lacros_files"
     ],
     "gtest_tests": [
       {
@@ -1866,14 +1876,14 @@
       "chrome",
       "linux_symbols",
       "symupload",
-      "strip_chrome_binary"
+      "strip_lacros_files"
     ],
     "skylab_tests": [
       {
         "args": [],
-        "cros_board": "atlas",
-        "cros_img": "atlas-release/R108-15183.59.0",
-        "name": "lacros_all_tast_tests ATLAS_RELEASE_STABLE",
+        "cros_board": "dedede",
+        "cros_img": "dedede-release/R109-15201.0.0",
+        "name": "lacros_all_tast_tests DEDEDE_RELEASE_LKGM",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -1883,12 +1893,108 @@
         "test": "lacros_all_tast_tests",
         "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
         "timeout_sec": 10800,
-        "variant_id": "ATLAS_RELEASE_STABLE"
+        "variant_id": "DEDEDE_RELEASE_LKGM"
+      },
+      {
+        "args": [],
+        "cros_board": "dedede",
+        "cros_img": "dedede-release/R108-15183.14.0",
+        "name": "lacros_all_tast_tests DEDEDE_RELEASE_DEV",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "DEDEDE_RELEASE_DEV"
+      },
+      {
+        "args": [],
+        "cros_board": "dedede",
+        "cros_img": "dedede-release/R108-15183.28.0",
+        "name": "lacros_all_tast_tests DEDEDE_RELEASE_BETA",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "DEDEDE_RELEASE_BETA"
+      },
+      {
+        "args": [],
+        "cros_board": "dedede",
+        "cros_img": "dedede-release/R107-15117.86.0",
+        "name": "lacros_all_tast_tests DEDEDE_RELEASE_STABLE",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "DEDEDE_RELEASE_STABLE"
       },
       {
         "args": [],
         "cros_board": "eve",
-        "cros_img": "eve-release/R108-15183.69.0",
+        "cros_img": "eve-release/R109-15201.0.0",
+        "name": "lacros_all_tast_tests EVE_RELEASE_LKGM",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "EVE_RELEASE_LKGM"
+      },
+      {
+        "args": [],
+        "cros_board": "eve",
+        "cros_img": "eve-release/R108-15183.14.0",
+        "name": "lacros_all_tast_tests EVE_RELEASE_DEV",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "EVE_RELEASE_DEV"
+      },
+      {
+        "args": [],
+        "cros_board": "eve",
+        "cros_img": "eve-release/R108-15183.28.0",
+        "name": "lacros_all_tast_tests EVE_RELEASE_BETA",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "EVE_RELEASE_BETA"
+      },
+      {
+        "args": [],
+        "cros_board": "eve",
+        "cros_img": "eve-release/R107-15117.87.0",
         "name": "lacros_all_tast_tests EVE_RELEASE_STABLE",
         "resultdb": {
           "enable": true,
@@ -1908,7 +2014,7 @@
       "chrome",
       "linux_symbols",
       "symupload",
-      "strip_chrome_binary"
+      "strip_lacros_files"
     ],
     "gtest_tests": [
       {
@@ -1977,13 +2083,61 @@
       "chrome",
       "linux_symbols",
       "symupload",
-      "strip_chrome_binary"
+      "strip_lacros_files"
     ],
     "skylab_tests": [
       {
         "args": [],
         "cros_board": "jacuzzi",
-        "cros_img": "jacuzzi-release/R108-15183.69.0",
+        "cros_img": "jacuzzi-release/R109-15201.0.0",
+        "name": "lacros_all_tast_tests JACUZZI_RELEASE_LKGM",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "JACUZZI_RELEASE_LKGM"
+      },
+      {
+        "args": [],
+        "cros_board": "jacuzzi",
+        "cros_img": "jacuzzi-release/R108-15183.14.0",
+        "name": "lacros_all_tast_tests JACUZZI_RELEASE_DEV",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "JACUZZI_RELEASE_DEV"
+      },
+      {
+        "args": [],
+        "cros_board": "jacuzzi",
+        "cros_img": "jacuzzi-release/R108-15183.28.0",
+        "name": "lacros_all_tast_tests JACUZZI_RELEASE_BETA",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "JACUZZI_RELEASE_BETA"
+      },
+      {
+        "args": [],
+        "cros_board": "jacuzzi",
+        "cros_img": "jacuzzi-release/R107-15117.86.0",
         "name": "lacros_all_tast_tests JACUZZI_RELEASE_STABLE",
         "resultdb": {
           "enable": true,
@@ -2003,7 +2157,7 @@
       "chrome",
       "linux_symbols",
       "symupload",
-      "strip_chrome_binary"
+      "strip_lacros_files"
     ],
     "isolated_scripts": [
       {
@@ -2034,9 +2188,26 @@
       "chrome",
       "linux_symbols",
       "symupload",
-      "strip_chrome_binary"
+      "strip_lacros_files"
     ],
-    "skylab_tests": []
+    "skylab_tests": [
+      {
+        "args": [],
+        "cros_board": "herobrine",
+        "cros_img": "herobrine-release/R109-15201.0.0",
+        "name": "lacros_fyi_tast_tests HEROBRINE_RELEASE_LKGM",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros_unstable\" && !informational)",
+        "test": "lacros_fyi_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_fyi_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "HEROBRINE_RELEASE_LKGM"
+      }
+    ]
   },
   "linux-chrome": {
     "additional_compile_targets": [
@@ -2240,8 +2411,8 @@
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ash_crosapi_browsertests",
-        "test_id_prefix": "ninja://chrome/test:ash_crosapi_browsertests/"
+        "test": "ash_crosapi_tests",
+        "test_id_prefix": "ninja://chrome/test:ash_crosapi_tests/"
       },
       {
         "merge": {
@@ -4025,7 +4196,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10-19042",
+              "os": "Windows-10",
               "pool": "chrome.tests"
             }
           ],
@@ -4050,7 +4221,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10-19042",
+              "os": "Windows-10",
               "pool": "chrome.tests"
             }
           ],
@@ -4082,7 +4253,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10-19042",
+              "os": "Windows-10",
               "pool": "chrome.tests.finch"
             }
           ],
@@ -4112,7 +4283,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10-19042",
+              "os": "Windows-10",
               "pool": "chrome.tests"
             }
           ],

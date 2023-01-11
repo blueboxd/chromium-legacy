@@ -37,9 +37,6 @@ namespace {
 typedef std::map<std::string, std::string> VariationParams;
 typedef HUPScoringParams::ScoreBuckets ScoreBuckets;
 
-// Field trial names.
-const char kStopTimerFieldTrialName[] = "OmniboxStopTimer";
-
 void InitializeBucketsFromString(const std::string& bucket_string,
                                  ScoreBuckets* score_buckets) {
   // Clear the buckets.
@@ -207,57 +204,6 @@ void OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(
     field_trial_hashes->push_back(
         variations::HashName(kBundledExperimentFieldTrialName));
   }
-}
-
-base::TimeDelta OmniboxFieldTrial::StopTimerFieldTrialDuration() {
-  int stop_timer_ms;
-  if (base::StringToInt(
-          base::FieldTrialList::FindFullName(kStopTimerFieldTrialName),
-          &stop_timer_ms))
-    return base::Milliseconds(stop_timer_ms);
-  return base::Milliseconds(1500);
-}
-
-base::Time OmniboxFieldTrial::GetLocalHistoryZeroSuggestAgeThreshold() {
-  std::string param_value = base::GetFieldTrialParamValueByFeature(
-      omnibox::kOmniboxLocalZeroSuggestAgeThreshold,
-      OmniboxFieldTrial::kOmniboxLocalZeroSuggestAgeThresholdParam);
-
-  // If the field trial param is not found or cannot be parsed to an unsigned
-  // integer, return the default value.
-  unsigned int param_value_as_int = 0;
-  if (!base::StringToUint(param_value, &param_value_as_int)) {
-    param_value_as_int = 60;
-  }
-  return (base::Time::Now() - base::Days(param_value_as_int));
-}
-
-bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
-    OmniboxEventProto::PageClassification current_page_classification,
-    int* max_relevance) {
-  // The value of the rule is a string that encodes an integer containing
-  // the max relevance.
-  const std::string& max_relevance_str =
-      OmniboxFieldTrial::internal::GetValueForRuleInContext(
-          kShortcutsScoringMaxRelevanceRule, current_page_classification);
-  if (max_relevance_str.empty())
-    return false;
-  if (!base::StringToInt(max_relevance_str, max_relevance))
-    return false;
-  return true;
-}
-
-bool OmniboxFieldTrial::SearchHistoryPreventInlining(
-    OmniboxEventProto::PageClassification current_page_classification) {
-  return OmniboxFieldTrial::internal::GetValueForRuleInContext(
-             kSearchHistoryRule, current_page_classification) ==
-         "PreventInlining";
-}
-
-bool OmniboxFieldTrial::SearchHistoryDisable(
-    OmniboxEventProto::PageClassification current_page_classification) {
-  return OmniboxFieldTrial::internal::GetValueForRuleInContext(
-             kSearchHistoryRule, current_page_classification) == "Disable";
 }
 
 void OmniboxFieldTrial::GetDemotionsByType(
@@ -624,6 +570,12 @@ bool OmniboxFieldTrial::IsOnDeviceHeadSuggestEnabledForAnyMode() {
          IsOnDeviceHeadSuggestEnabledForNonIncognito();
 }
 
+bool OmniboxFieldTrial::IsOnDeviceTailSuggestEnabled() {
+  // Tail model will only be enabled when head provider is also enabled.
+  return base::FeatureList::IsEnabled(omnibox::kOnDeviceTailModel) &&
+         IsOnDeviceHeadSuggestEnabledForAnyMode();
+}
+
 std::string OmniboxFieldTrial::OnDeviceHeadModelLocaleConstraint(
     bool is_incognito) {
   const base::Feature* feature =
@@ -646,12 +598,20 @@ bool OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kSiteSearchStarterPack);
 }
 
+// Omnibox UI simplification - Uniform Suggestion Row Heights
+
+bool IsUniformRowHeightEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kUniformRowHeight);
+}
+
+const base::FeatureParam<int> OmniboxFieldTrial::kSuggestionRowHeight(
+    &omnibox::kUniformRowHeight,
+    "OmniboxUniformRowHeight",
+    36);
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";
-const char OmniboxFieldTrial::kShortcutsScoringMaxRelevanceRule[] =
-    "ShortcutsScoringMaxRelevance";
-const char OmniboxFieldTrial::kSearchHistoryRule[] = "SearchHistory";
 const char OmniboxFieldTrial::kDemoteByTypeRule[] = "DemoteByType";
 const char OmniboxFieldTrial::kHQPBookmarkValueRule[] = "HQPBookmarkValue";
 const char OmniboxFieldTrial::kHQPTypedValueRule[] = "HQPTypedValue";
@@ -706,9 +666,6 @@ const char
     OmniboxFieldTrial::kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevicesParam[] =
         "MaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevices";
 
-const char OmniboxFieldTrial::kOmniboxLocalZeroSuggestAgeThresholdParam[] =
-    "OmniboxLocalZeroSuggestAgeThreshold";
-
 const char OmniboxFieldTrial::kMaxZeroSuggestMatchesParam[] =
     "MaxZeroSuggestMatches";
 const char OmniboxFieldTrial::kOmniboxMaxURLMatchesParam[] =
@@ -759,11 +716,11 @@ const base::FeatureParam<bool>
 const base::FeatureParam<bool> kAutocompleteStabilityDontCopyDoneProviders(
     &omnibox::kAutocompleteStability,
     "AutocompleteStabilityDontCopyDoneProviders",
-    false);
+    true);
 const base::FeatureParam<bool> kAutocompleteStabilityAsyncProvidersFirst(
     &omnibox::kAutocompleteStability,
     "AutocompleteStabilityAsyncProvidersFirst",
-    false);
+    true);
 const base::FeatureParam<bool>
     kAutocompleteStabilityUpdateResultDebounceFromLastRun(
         &omnibox::kUpdateResultDebounce,
@@ -812,6 +769,21 @@ bool IsZeroSuggestPrefetchingEnabledInContext(
   }
 }
 
+// Determines the age threshold in days for local zero-prefix suggestions.
+const base::FeatureParam<int> kOmniboxLocalZeroSuggestAgeThresholdParam(
+    &omnibox::kOmniboxLocalZeroSuggestAgeThreshold,
+    "OmniboxLocalZeroSuggestAgeThreshold",
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+    60);
+#else
+    90);
+#endif
+
+base::Time GetLocalHistoryZeroSuggestAgeThreshold() {
+  return (base::Time::Now() -
+          base::Days(kOmniboxLocalZeroSuggestAgeThresholdParam.Get()));
+}
+
 const base::FeatureParam<bool> kZeroSuggestIgnoreDuplicateVisits(
     &omnibox::kLocalHistorySuggestRevamp,
     "ZeroSuggestIgnoreDuplicateVisits",
@@ -819,7 +791,11 @@ const base::FeatureParam<bool> kZeroSuggestIgnoreDuplicateVisits(
 const base::FeatureParam<bool> kPrefixSuggestIgnoreDuplicateVisits(
     &omnibox::kLocalHistorySuggestRevamp,
     "PrefixSuggestIgnoreDuplicateVisits",
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
     false);
+#else
+    true);
+#endif
 
 // Short bookmarks.
 

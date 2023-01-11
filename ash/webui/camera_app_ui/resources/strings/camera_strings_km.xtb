@@ -31,6 +31,8 @@
 <translation id="1862930711583847113">មិនអាច​នាំចេញ <ph name="FILE" /> បានទេ</translation>
 <translation id="1899697626337024495">កម្រិតច្បាស់នៃរូបថត</translation>
 <translation id="1925845977604399247">ចូលទៅ​កាន់សាលរូបភាព</translation>
+<translation id="199526504800285197">ការថត​ត្រូវបាន​បញ្ឈប់</translation>
+<translation id="1995951722691075581">ការថត​របស់អ្នក​បានឈប់ ដោយសារ​ទំហំផ្ទុក​របស់ឧបករណ៍​នៅសល់តិច។ ដើម្បីថត​វីដេអូ​ច្រើនទៀត អ្នកត្រូវតែ​សម្អាតទំហំផ្ទុក​​នៅលើ​ឧបករណ៍​របស់អ្នក។</translation>
 <translation id="2022953316617983419">​កូដ QR</translation>
 <translation id="2036868001356139588">រយៈពេល​កម្មវិធី​កំណត់ម៉ោង</translation>
 <translation id="2050339315714019657">បញ្ឈរ</translation>
@@ -47,6 +49,7 @@
 <translation id="2501953888035679275">ថតរូប និង​ថតវីដេអូ​ដោយ​ប្រើ​កាមេរ៉ា​របស់អ្នក។</translation>
 <translation id="2517472476991765520">ស្កេន</translation>
 <translation id="2549985041256363841">ចាប់​ផ្តើម​ថត</translation>
+<translation id="2577915835281444458">ការថត​នឹង​ឈប់​ក្នុងពេល​ឆាប់ៗនេះ។ សូមចូលទៅ​កាន់​ទំហំផ្ទុក​ឧបករណ៍ ដើម្បី​សម្អាតទំហំផ្ទុក។</translation>
 <translation id="2599796128805996109">កាមេរ៉ាក្រោយ</translation>
 <translation id="2759905922487820242"><ph name="CURRENT" /> / <ph name="MAXIMAL" /> វិ</translation>
 <translation id="2761536921376153655">ប្រភេទនៃការស្កេន</translation>
@@ -77,6 +80,7 @@
 <translation id="3810838688059735925">វីដេអូ</translation>
 <translation id="3838931309141338733">ស្កេន​បារកូដ</translation>
 <translation id="3892148308691398805">ចម្លង​អត្ថបទ</translation>
+<translation id="4060608699153044055">អ្នកមិនអាច​ថត​បានទេ ដោយសារ​ទំហំផ្ទុក​របស់​ឧបករណ៍​នៅសល់តិច។ ដើម្បីចាប់ផ្ដើម​ថត អ្នកត្រូវ​សម្អាតទំហំផ្ទុក​នៅលើ​ឧបករណ៍​របស់អ្នក។</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> MP</translation>
 <translation id="4118525110028899586">ផ្អាក​ការថត</translation>
 <translation id="4121305183798804752">បានរកឃើញ​ឯកសារ</translation>
@@ -90,6 +94,7 @@
 <translation id="4445542136948522167">ឈប់ថតរូប</translation>
 <translation id="4497569853498380347">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" />) <ph name="MEGAPIXEL" /> មេហ្គាភីកសែល</translation>
 <translation id="4570032796877367747">កាមេរ៉ាមុខ</translation>
+<translation id="4598556348158889687">ការគ្រប់គ្រងទំហំផ្ទុក</translation>
 <translation id="4620818268515773682">ប៊ូតុងបិទ/បើកសំឡេងមីក្រូហ្វូន។ ការបិទសំឡេង​ត្រូវបានបិទ</translation>
 <translation id="4628948037717959914">រូបថត</translation>
 <translation id="4649291346448517080">មិន​អាច​រក្សាទុក​ឯកសារបាន​ទេ</translation>
@@ -159,6 +164,7 @@
 <translation id="7748344063862150053">ជ្រុងខាងលើផ្នែកខាងស្ដាំនៃឯកសារ</translation>
 <translation id="7933675232020478311">កំពុងផ្លាស់ទី​ក្នុងទិសដៅ​ខាងស្ដាំ​ផ្នែកខាងក្រោម</translation>
 <translation id="7983668134180549431">បានរកឃើញ​អត្ថបទ។</translation>
+<translation id="8079255378695216066">មិនអាចចាប់ផ្ដើមថតបានទេ</translation>
 <translation id="8120146556401698679">រំកិល ផ្អៀង ពង្រីកបង្រួម</translation>
 <translation id="8131740175452115882">អះអាង</translation>
 <translation id="8145038249676204903">ប្ដូរទៅថតរូប</translation>

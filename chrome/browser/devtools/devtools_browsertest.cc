@@ -2483,8 +2483,8 @@ class StaticURLDataSource : public content::URLDataSource {
   void StartDataRequest(const GURL& url,
                         const content::WebContents::Getter& wc_getter,
                         GotDataCallback callback) override {
-    std::string data(content_);
-    std::move(callback).Run(base::RefCountedString::TakeString(&data));
+    std::move(callback).Run(
+        base::MakeRefCounted<base::RefCountedString>(std::string(content_)));
   }
   std::string GetMimeType(const GURL& url) override { return "text/html"; }
   bool ShouldAddContentSecurityPolicy() override { return false; }
@@ -2806,12 +2806,12 @@ class DevToolsPolicyTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(DevToolsPolicyTest, OpenBlockedDevTools) {
-  base::ListValue blocklist;
+  base::Value::List blocklist;
   blocklist.Append("devtools://*");
   policy::PolicyMap policies;
   policies.Set(policy::key::kURLBlocklist, policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               blocklist.Clone(), nullptr);
+               base::Value(std::move(blocklist)), nullptr);
   provider_.UpdateChromePolicy(policies);
 
   WebContents* wc = browser()->tab_strip_model()->GetActiveWebContents();

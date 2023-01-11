@@ -1278,11 +1278,17 @@ void FeatureInfo::InitializeFeatures() {
     feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::P010);
   }
 
+#if BUILDFLAG(IS_MAC)
+  if (base::mac::IsAtLeastOS11()) {
+    feature_flags_.gpu_memory_buffer_formats.Add(
+        gfx::BufferFormat::YUVA_420_TRIPLANAR);
+  }
+#endif  // BUILDFLAG(IS_MAC)
+
   // TODO(gman): Add support for these extensions.
   //     GL_OES_depth32
 
   if (gfx::HasExtension(extensions, "GL_ANGLE_texture_usage")) {
-    feature_flags_.angle_texture_usage = true;
     AddExtensionString("GL_ANGLE_texture_usage");
     validators_.texture_parameter.AddValue(GL_TEXTURE_USAGE_ANGLE);
   }

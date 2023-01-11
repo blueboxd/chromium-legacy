@@ -79,6 +79,7 @@ import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ApplicationViewportInsetSupplier;
 import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.EventOffsetHandler;
+import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.mojom.VirtualKeyboardMode;
 import org.chromium.ui.resources.ResourceManager;
@@ -762,7 +763,7 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     private void updateInMotion() {
-        // TODO(skym): Track fling as well.
+        // TODO(https://crbug.com/1378716): Track fling as well.
         boolean inMotion = mInGesture || mContentViewScrolling;
         mInMotionSupplier.set(inMotion);
     }
@@ -770,7 +771,7 @@ public class CompositorViewHolder extends FrameLayout
     /**
      * Aggregated supplier for whether the compositor's content is moving. Currently tracking in
      * touch event and in scroll event. Performance is critical while this supplier returns true,
-     * and clients that have expensive operations may consider defering until after the motion is
+     * and clients that have expensive operations may consider deferring until after the motion is
      * over.
      */
     public ObservableSupplier<Boolean> getInMotionSupplier() {
@@ -1164,7 +1165,8 @@ public class CompositorViewHolder extends FrameLayout
                             || layoutParams.bottomMargin != (int) bottomMargin)) {
                 layoutParams.topMargin = (int) topMargin;
                 layoutParams.bottomMargin = (int) bottomMargin;
-                child.requestLayout();
+                ViewUtils.requestLayout(
+                        child, "CompositorViewHolder.applyMarginToFullscreenChildViews");
                 TraceEvent.instant("FullscreenManager:child.requestLayout()");
             }
         }
@@ -1868,6 +1870,22 @@ public class CompositorViewHolder extends FrameLayout
 
     void setCompositorViewForTesting(CompositorView compositorView) {
         mCompositorView = compositorView;
+    }
+
+    /**
+     * Returns its height, in physical pixels, of the virtual keyboard if shown or 0 if hidden.
+     */
+    public int getVirtualKeyboardHeight() {
+        // TODO(https://crbug.com/1211066): This class shouldn't know so much about bottom insets.
+        // Make this an external value that CompositorViewHolder consumes.
+        int keyboardHeight = KeyboardVisibilityDelegate.getInstance().calculateKeyboardHeight(
+                this.getRootView());
+        int keyboardAccessoriesHeight = mAutofillUiBottomInsetSupplier != null
+                        && mAutofillUiBottomInsetSupplier.get() != null
+                ? mAutofillUiBottomInsetSupplier.get()
+                : 0;
+
+        return keyboardHeight + keyboardAccessoriesHeight;
     }
 
     @VirtualKeyboardMode.EnumType

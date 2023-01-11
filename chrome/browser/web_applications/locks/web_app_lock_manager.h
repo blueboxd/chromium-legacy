@@ -9,22 +9,29 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ref.h"
+#include "base/types/pass_key.h"
 #include "chrome/browser/web_applications/web_app_id.h"
-#include "components/services/storage/indexed_db/locks/partitioned_lock_manager_impl.h"
+#include "components/services/storage/indexed_db/locks/partitioned_lock_manager.h"
 
 namespace web_app {
 
 class AppLock;
-class Lock;
+class AppLockDescription;
+class LockDescription;
 class NoopLock;
-class SharedWebContentsLock;
-class SharedWebContentsWithAppLock;
+class NoopLockDescription;
+class SharedWebContentsLockDescription;
+class SharedWebContentsWithAppLockDescription;
+class WebAppProvider;
 
 // This class handles acquiring and upgrading locks in the WebAppProvider
 // system.
 class WebAppLockManager {
  public:
-  WebAppLockManager();
+  using PassKey = base::PassKey<WebAppLockManager>;
+
+  explicit WebAppLockManager(WebAppProvider& provider);
   ~WebAppLockManager();
 
   // Returns if the lock for the shared web contents is free.  This means no one
@@ -35,23 +42,32 @@ class WebAppLockManager {
   // complete. This call will CHECK-fail if the lock has already been used in an
   // `AcquireLock` call. The lock is considered released when the `lock` is
   // destroyed.
-  void AcquireLock(Lock& lock, base::OnceClosure on_lock_acquired);
+  void AcquireLock(LockDescription& lock, base::OnceClosure on_lock_acquired);
+
+  // (https://crbug.com/1375870): Consider passing lock_holder's weak ptr as a
+  // parameter explicitly same as `PartitionedLockManager`.
+  template <class LockType>
+  void AcquireLock(
+      LockDescription& lock_description,
+      base::OnceCallback<void(std::unique_ptr<LockType>)> on_lock_acquired);
 
   // Upgrades the given lock to a new one, and will call `on_lock_acquired` on
   // when the new lock has been acquired. This call will CHECK-fail if `lock`
   // was not already used in a call to `AcquireLock`.
-  std::unique_ptr<SharedWebContentsWithAppLock> UpgradeAndAcquireLock(
-      std::unique_ptr<SharedWebContentsLock> lock,
-      const base::flat_set<AppId>& app_ids,
-      base::OnceClosure on_lock_acquired);
+  std::unique_ptr<SharedWebContentsWithAppLockDescription>
+  UpgradeAndAcquireLock(std::unique_ptr<SharedWebContentsLockDescription> lock,
+                        const base::flat_set<AppId>& app_ids,
+                        base::OnceClosure on_lock_acquired);
 
-  std::unique_ptr<AppLock> UpgradeAndAcquireLock(
+  std::unique_ptr<AppLockDescription> UpgradeAndAcquireLock(
+      std::unique_ptr<NoopLockDescription> lock_description,
       std::unique_ptr<NoopLock> lock,
       const base::flat_set<AppId>& app_ids,
-      base::OnceClosure on_lock_acquired);
+      base::OnceCallback<void(std::unique_ptr<AppLock>)> on_lock_acquired);
 
  private:
-  content::PartitionedLockManagerImpl lock_manager_{2};
+  content::PartitionedLockManager lock_manager_;
+  raw_ref<WebAppProvider> provider_;
 };
 
 }  // namespace web_app

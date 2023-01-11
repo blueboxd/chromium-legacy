@@ -175,6 +175,7 @@ source_set("policy_specific_browser_tests") {
     "site_isolation_policy_browsertest.cc",
     "test/certificate_transparency_policy_browsertest.cc",
     "test/event_path_policy_browsertest.cc",
+    "test/hsts_policy_browsertest.cc",
     "test/network_prediction_policy_browsertest.cc",
     "test/safe_browsing_policy_browsertest.cc",
     "test/shared_clipboard_enabled_browsertest.cc",
@@ -225,6 +226,7 @@ source_set("policy_specific_browser_tests") {
       "test/developer_tools_policy_browsertest.cc",
       "test/download_directory_browsertest.cc",
       "test/hide_webstore_icon_policy_browsertest.cc",
+      "test/lens_desktop_ntp_search_enabled_policy_browsertest.cc",
       "test/local_fonts_policy_browsertest.cc",
       "test/media_stream_policy_browsertest.cc",
       "test/prefixed_storage_info_policy_browsertest.cc",
@@ -234,7 +236,7 @@ source_set("policy_specific_browser_tests") {
       "test/unthrottled_nested_timeout_policy_browsertest.cc",
       "test/web_rtc_event_log_collection_allowed_policy_browsertest.cc",
       "test/web_rtc_local_ips_allowed_urls_policy_browsertest.cc",
-      "test/window_placement_policy_browsertest.cc",
+      "test/window_management_policy_browsertest.cc",
     ]
 
     deps += [
@@ -248,6 +250,7 @@ source_set("policy_specific_browser_tests") {
       "//components/policy/core/common:common_constants",
       "//components/policy/proto",
       "//components/policy/test_support",
+      "//components/search",
       "//components/webrtc:webrtc",
     ]
   }
@@ -431,10 +434,7 @@ source_set("unit_tests") {
   }
 
   if (is_chromeos_ash) {
-    sources += [
-      "networking/network_configuration_updater_ash_unittest.cc",
-      "networking/policy_cert_service_factory_ash_unittest.cc",
-    ]
+    sources += [ "networking/network_configuration_updater_ash_unittest.cc" ]
   }
 
   deps = []
@@ -452,8 +452,8 @@ source_set("unit_tests") {
   if (is_chromeos_ash) {
     deps += [
       "//chrome/browser/ash",
-      "//chrome/browser/chromeos:test_support",
-      "//chromeos/system:system",
+      "//chrome/browser/ash:test_support",
+      "//chromeos/system",
     ]
   }
 }

@@ -86,6 +86,7 @@
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/agent_group_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 #include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
@@ -1293,15 +1294,25 @@ std::unique_ptr<WebURLLoader> ResourceFetcher::CreateURLLoader(
   // TODO(http://crbug.com/1252983): Revert this to DCHECK.
   CHECK(loader_factory_);
 
-  // Set |unfreezable_task_runner| to the thread task-runner for keepalive
-  // fetches because we want it to keep running even after the frame is
-  // detached. It's pretty fragile to do that with the
-  // |unfreezable_task_runner_| that's saved in the ResourceFetcher, because
-  // that task runner is frame-associated.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      unfreezable_task_runner_;
+  if (request.GetKeepalive()) {
+    // Set the `task_runner` to the `AgentGroupScheduler`'s task-runner for
+    // keepalive fetches because we want it to keep running even after the
+    // frame is detached. It's pretty fragile to do that with the
+    // `unfreezable_task_runner_` that's saved in the ResourceFetcher, because
+    // that task runner is frame-associated.
+    if (auto* frame_or_worker_scheduler = GetFrameOrWorkerScheduler()) {
+      if (auto* frame_scheduler =
+              frame_or_worker_scheduler->ToFrameScheduler()) {
+        task_runner =
+            frame_scheduler->GetAgentGroupScheduler()->DefaultTaskRunner();
+      }
+    }
+  }
+
   return loader_factory_->CreateURLLoader(
-      ResourceRequest(request), options, freezable_task_runner_,
-      request.GetKeepalive() ? Thread::Current()->GetDeprecatedTaskRunner()
-                             : unfreezable_task_runner_,
+      ResourceRequest(request), options, freezable_task_runner_, task_runner,
       WebBackForwardCacheLoaderHelper(back_forward_cache_loader_helper_));
 }
 
@@ -2182,10 +2193,45 @@ void ResourceFetcher::UpdateAllImageResourcePriorities() {
     if (!resource->IsLoading())
       continue;
 
-    ResourcePriority resource_priority = resource->PriorityFromObservers();
+    auto priorities = resource->PriorityFromObservers();
+    ResourcePriority resource_priority = priorities.first;
     ResourceLoadPriority computed_load_priority = ComputeLoadPriority(
         ResourceType::kImage, resource->GetResourceRequest(),
         resource_priority.visibility);
+
+    ResourcePriority resource_priority_excluding_image_loader =
+        priorities.second;
+    ResourceLoadPriority computed_load_priority_excluding_image_loader =
+        ComputeLoadPriority(
+            ResourceType::kImage, resource->GetResourceRequest(),
+            resource_priority_excluding_image_loader.visibility);
+
+    // When enabled, `priority` is used, which considers the resource priority
+    // via ImageLoader, i.e. ImageResourceContent
+    // -> ImageLoader (as ImageResourceObserver)
+    // -> LayoutImageResource
+    // -> LayoutObject.
+    //
+    // The same priority is considered in `priority_excluding_image_loader` via
+    // ImageResourceContent
+    // -> LayoutObject (as ImageResourceObserver),
+    // but the LayoutObject might be not registered yet as an
+    // ImageResourceObserver while loading.
+    // See https://crbug.com/1369823 for details.
+    static const bool fix_enabled =
+        base::FeatureList::IsEnabled(features::kImageLoadingPrioritizationFix);
+
+    if (computed_load_priority !=
+        computed_load_priority_excluding_image_loader) {
+      // Mark pages affected by this fix for performance evaluation.
+      use_counter_->CountUse(
+          WebFeature::kEligibleForImageLoadingPrioritizationFix);
+    }
+    if (!fix_enabled) {
+      resource_priority = resource_priority_excluding_image_loader;
+      computed_load_priority = computed_load_priority_excluding_image_loader;
+    }
+
     // Only boost the priority of an image, never lower it. This ensures that
     // there isn't priority churn if images move in and out of the viewport, or
     // are displayed more than once, both in and out of the viewport.

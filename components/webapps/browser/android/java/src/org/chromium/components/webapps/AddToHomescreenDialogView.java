@@ -24,6 +24,7 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -95,7 +96,8 @@ public class AddToHomescreenDialogView
                     mShortcutTitleInput.getLayoutParams().height =
                             mProgressBarView.getMeasuredHeight()
                             + mShortcutTitleInput.getPaddingBottom();
-                    v.requestLayout();
+                    ViewUtils.requestLayout(v,
+                            "AddToHomescreenDialogView.<init>.OnLayoutChangeListener.onLayoutChange");
                     v.removeOnLayoutChangeListener(this);
                 }
             }
@@ -136,6 +138,7 @@ public class AddToHomescreenDialogView
     protected void setTitle(String title) {
         mAppNameView.setText(title);
         mShortcutTitleInput.setText(title);
+        mIconView.setContentDescription(title);
     }
 
     void setUrl(String url) {

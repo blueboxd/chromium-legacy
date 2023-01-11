@@ -31,6 +31,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "absl/algorithm/container.h"
 #include "absl/base/internal/raw_logging.h"
 #include "absl/base/macros.h"
 #include "absl/container/btree_map.h"
@@ -40,6 +41,7 @@
 #include "absl/flags/flag.h"
 #include "absl/hash/hash_testing.h"
 #include "absl/memory/memory.h"
+#include "absl/random/random.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
@@ -3319,6 +3321,32 @@ TEST(Btree, ReusePoisonMemory) {
   set.erase(0);
   set.insert(0);
 }
+
+TEST(Btree, IteratorSubtraction) {
+  absl::BitGen bitgen;
+  std::vector<int> vec;
+  // Randomize the set's insertion order so the nodes aren't all full.
+  for (int i = 0; i < 1000000; ++i) vec.push_back(i);
+  absl::c_shuffle(vec, bitgen);
+
+  absl::btree_set<int> set;
+  for (int i : vec) set.insert(i);
+
+  for (int i = 0; i < 1000; ++i) {
+    size_t begin = absl::Uniform(bitgen, 0u, set.size());
+    size_t end = absl::Uniform(bitgen, begin, set.size());
+    ASSERT_EQ(end - begin, set.find(end) - set.find(begin))
+        << begin << " " << end;
+  }
+}
+
+#ifndef NDEBUG
+TEST(Btree, DereferencingEndIterator) {
+  absl::btree_set<int> set;
+  for (int i = 0; i < 1000; ++i) set.insert(i);
+  EXPECT_DEATH(*set.end(), R"regex(Dereferencing end\(\) iterator)regex");
+}
+#endif
 
 }  // namespace
 }  // namespace container_internal

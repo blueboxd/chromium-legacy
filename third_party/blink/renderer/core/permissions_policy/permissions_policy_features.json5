@@ -201,6 +201,11 @@
       permissions_policy_name: "clipboard-write",
     },
     {
+      name: "ComputePressure",
+      permissions_policy_name: "compute-pressure",
+      depends_on: ["ComputePressure"],
+    },
+    {
       name: "CrossOriginIsolated",
       permissions_policy_name: "cross-origin-isolated",
     },
@@ -233,11 +238,6 @@
       permissions_policy_name: "execution-while-not-rendered",
       feature_default: "EnableForAll",
       depends_on: ["FreezeFramesOnVisibility"],
-    },
-    {
-      name: "IdentityCredentialsGet",
-      permissions_policy_name: "identity-credentials-get",
-      depends_on: ["FedCmIframeSupport"],
     },
     {
       name: "FocusWithoutUserActivation",
@@ -273,6 +273,11 @@
       depends_on: ["WebHID"],
     },
     {
+      name: "IdentityCredentialsGet",
+      permissions_policy_name: "identity-credentials-get",
+      depends_on: ["FedCmIframeSupport"],
+    },
+    {
       name: "IdleDetection",
       permissions_policy_name: "idle-detection",
       depends_on: ["IdleDetection"],
@@ -289,6 +294,11 @@
     {
       name: "KeyboardMap",
       permissions_policy_name: "keyboard-map",
+    },
+    {
+      name: "LocalFonts",
+      permissions_policy_name: "local-fonts",
+      depends_on: ["FontAccess"],
     },
     {
       name: "Magnetometer",
@@ -398,12 +408,6 @@
     {
       name: "WindowPlacement",
       permissions_policy_name: "window-placement",
-      depends_on: ["WindowPlacement"],
-    },
-    {
-      name: "LocalFonts",
-      permissions_policy_name: "local-fonts",
-      depends_on: ["FontAccess"],
     },
   ],
 }

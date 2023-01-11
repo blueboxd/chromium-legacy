@@ -651,6 +651,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual int GetBottomControlsMinHeight();
   virtual bool ShouldAnimateBrowserControlsHeightChanges();
   virtual bool DoBrowserControlsShrinkRendererSize(WebContents* web_contents);
+  virtual int GetVirtualKeyboardHeight(WebContents* web_contents);
   // Returns true if the top controls should only expand at the top of the page,
   // so they'll only be visible if the page is scrolled to the top.
   virtual bool OnlyExpandTopControlsAtPageTop();
@@ -663,7 +664,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Requests to print an out-of-process subframe for the specified WebContents.
   // |rect| is the rectangular area where its content resides in its parent
   // frame. |document_cookie| is a unique id for a printed document associated
-  // with a print job. |subframe_host| is the render frame host of the subframe
+  // with a print job. |subframe_host| is the RenderFrameHost of the subframe
   // to be printed.
   virtual void PrintCrossProcessSubframe(WebContents* web_contents,
                                          const gfx::Rect& rect,
@@ -674,7 +675,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Requests to capture a paint preview of a subframe for the specified
   // WebContents. |rect| is the rectangular area where its content resides in
   // its parent frame. |guid| is a globally unique identitier for an entire
-  // paint preview. |render_frame_host| is the render frame host of the subframe
+  // paint preview. |render_frame_host| is the RenderFrameHost of the subframe
   // to be captured.
   virtual void CapturePaintPreviewOfSubframe(
       WebContents* web_contents,

@@ -13,7 +13,6 @@
 #include "ash/app_list/model/app_icon_load_helper.h"
 #include "ash/app_list/model/app_list_item_observer.h"
 #include "ash/ash_export.h"
-#include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -250,6 +249,8 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // rows.
   void SetMostRecentGridIndex(GridIndex new_grid_index, int columns);
 
+  GridIndex most_recent_grid_index() { return most_recent_grid_index_; }
+
   bool has_pending_row_change() { return has_pending_row_change_; }
   void reset_has_pending_row_change() { has_pending_row_change_ = false; }
 
@@ -405,8 +406,7 @@ class ASH_EXPORT AppListItemView : public views::Button,
   IconImageView* icon_ = nullptr;  // Strongly typed child view.
   views::Label* title_ = nullptr;  // Strongly typed child view.
 
-  // Draws a dot next to the title for newly installed apps. Only exists when
-  // ProductivityLauncher is enabled.
+  // Draws a dot next to the title for newly installed apps.
   views::View* new_install_dot_ = nullptr;
 
   // The context menu model adapter used for app item view.

@@ -1,4 +1,21 @@
 [
+  "Top-level string entries are treated as comments.",
+
+  "Each object entry defines a virtual suite with the following fields:       ",
+  " prefix: The name of the virtual suite. A virtual test name will be like   ",
+  "     virtual/<prefix>/<base-test-name>.                                    ",
+  " platforms: A list of platforms on which the virtual suite will run.       ",
+  "     Linux is recommended if the test suite is platform-agnostic.          ",
+  " bases: A list of test directories or names that will be run under the     ",
+  "     virtual suite.                                                        ",
+  " exclusive_tests (optional): \"ALL\" or a list containing a subset of      ",
+  "     `bases` specifying the tests that will be exclusively run under this  ",
+  "     virtual suite. The specified base tests will be skipped. Corresponding",
+  "     virtual tests under other virtual suites that don't specify the tests ",
+  "     in their `exclusive_tests` list will be skipped, too.                 ",
+  " args: A list of command line switches that will be passed to the test     ",
+  "     driver for the tests under this virtual suite.                        ",
+
   {
     "prefix": "anonymous-iframe-origin-trial",
     "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
@@ -22,6 +39,8 @@
               "http/tests/inspector-protocol/network",
               "http/tests/serviceworker/reduce-accept-language/fetch-event-headers.html",
               "navigator_language/reduce_accept_language"],
+    "exclusive_tests": ["http/tests/serviceworker/reduce-accept-language/fetch-event-headers.html",
+                        "navigator_language/reduce_accept_language"],
     "args": ["--enable-features=ReduceAcceptLanguage"]
   },
   {
@@ -36,6 +55,8 @@
     "bases": ["regress/regress-1104580.html"],
     "args": ["--enable-unsafe-webgpu"]
   },
+
+  "The skipped base tests require a compositor, e.g. some uses requestIdleCallback",
   {
     "prefix": "threaded",
     "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
@@ -52,25 +73,35 @@
               "external/wpt/feature-policy/experimental-features",
               "external/wpt/permissions-policy/experimental-features",
               "external/wpt/html/canvas/offscreen/manual/convert-to-blob",
+              "external/wpt/pointerevents/pointerlock/pointerevent_getPredictedEvents_when_pointerlocked-manual.html",
+              "external/wpt/pointerevents/pointerevent_predicted_events_attributes-manual.html",
               "external/wpt/scroll-animations",
               "external/wpt/requestidlecallback",
               "external/wpt/web-animations/crashtests",
               "external/wpt/web-animations/timing-model/animations",
               "fast/events/pointerevents/pinch",
-              "lifecycle",
               "http/tests/devtools/isolated-code-cache",
               "http/tests/devtools/tracing",
               "http/tests/worklet",
               "printing",
               "synthetic_gestures",
               "transitions"],
+    "exclusive_tests": ["external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html",
+                        "external/wpt/permissions-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html",
+                        "external/wpt/pointerevents/pointerlock/pointerevent_getPredictedEvents_when_pointerlocked-manual.html",
+                        "external/wpt/pointerevents/pointerevent_predicted_events_attributes-manual.html",
+                        "external/wpt/requestidlecallback",
+                        "http/tests/devtools/isolated-code-cache"],
     "args": ["--enable-threaded-compositing"]
   },
+
   {
     "prefix": "attribution-reporting-debug-mode",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["wpt_internal/attribution-reporting"],
-    "args": ["--attribution-reporting-debug-mode"]
+    "exclusive_tests": "ALL",
+    "args": ["--attribution-reporting-debug-mode",
+             "--enable-features=AttributionReportingCrossAppWeb"]
   },
   {
     "prefix": "off-main-thread-css-paint",
@@ -98,6 +129,9 @@
     "args": ["--enable-threaded-compositing",
              "--disable-composited-antialiasing"]
   },
+
+  "The skipped base test requires a compositor to pass as root scrollbar scrolling",
+  "is always done on the compositor thread",
   {
     "prefix": "threaded-prefer-compositing",
     "platforms": ["Linux", "Mac", "Win"],
@@ -105,13 +139,15 @@
               "fast/scroll-snap",
               "fast/scrolling",
               "external/wpt/css/cssom-view"],
+    "exclusive_tests": ["fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar-thumb-scaled.html"],
     "args": ["--enable-threaded-compositing",
              "--enable-prefer-compositing-to-lcd-text"]
   },
   {
     "prefix": "gpu-rasterization",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["images"],
+    "bases": ["images",
+              "external/wpt/css/css-images/gradient"],
     "args": ["--enable-gpu-rasterization"]
   },
   {
@@ -134,10 +170,6 @@
     "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
     "bases": ["fast/css3-text/css3-text-decoration/stable",
               "fast/dom/Window",
-              "external/wpt/css/css-color/parsing/",
-              "external/wpt/css/css-transitions/parsing/",
-              "external/wpt/css/css-animations/parsing/",
-              "external/wpt/css/css-images/parsing/",
               "http/tests/navigation",
               "http/tests/sendbeacon",
               "http/tests/serviceworker/webexposed",
@@ -145,8 +177,8 @@
               "inspector-protocol/dom-snapshot",
               "media/stable",
               "webexposed",
-              "compositing/filters"
-              ],
+              "compositing/filters"],
+    "exclusive_tests": ["media/stable"],
     "args": ["--stable-release-mode",
              "--disable-auto-wpt-origin-isolation",
              "--disable-field-trial-config"]
@@ -155,6 +187,7 @@
     "prefix": "feature-policy-permissions",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/mediacapture-streams"],
+    "exclusive_tests": ["external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html"],
     "args": ["--use-fake-device-for-media-stream",
              "--use-fake-ui-for-media-stream"]
   },
@@ -178,6 +211,23 @@
              "--disable-composited-antialiasing"]
   },
   {
+    "prefix": "media-foundation-for-clear-dcomp",
+    "platforms": ["Win"],
+    "bases": ["external/wpt/media-source",
+              "media"],
+    "args": ["--use-gpu-in-tests",
+             "--enable-features=MediaFoundationClearPlayback,MediaFoundationClearRendering:strategy/direct-composition"]
+  },
+  {
+    "prefix": "media-foundation-for-clear-frameserver",
+    "platforms": ["Win"],
+    "bases": ["external/wpt/media-source",
+              "media"],
+    "args": ["--use-gpu-in-tests",
+             "--force-mfmediaengine-renderer",
+             "--enable-features=MediaFoundationClearRendering:strategy/frame-server"]
+  },
+  {
     "prefix": "media-gpu-accelerated",
     "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
     "bases": ["external/wpt/media-source",
@@ -187,8 +237,7 @@
   {
     "prefix": "shared_array_buffer_on_desktop",
     "platforms": ["Linux"],
-    "bases": ["external/wpt/html/browsers/origin/origin-keyed-agent-clusters",
-              "external/wpt/wasm/jsapi/memory",
+    "bases": ["external/wpt/wasm/jsapi/memory",
               "fast/workers/worker-atomics-wait.html",
               "fast/workers/worker-sharedarraybuffer-transfer.html",
               "fast/workers/chromium/worker-sharedarraybuffer-transfer-two-workers.html",
@@ -199,6 +248,7 @@
     "prefix": "mse-1mb-buffers",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/media/media-source/stream_memory_tests"],
+    "exclusive_tests": ["http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-1mb-buffers.html"],
     "args": ["--mse-audio-buffer-size-limit-mb=1",
              "--mse-video-buffer-size-limit-mb=1"]
   },
@@ -220,6 +270,7 @@
     "prefix": "compute-pressure",
     "platforms": ["Linux", "Mac"],
     "bases": ["external/wpt/compute-pressure"],
+    "exclusive_tests": "ALL",
     "args": ["--enable-features=ComputePressure"]
   },
   {
@@ -244,6 +295,7 @@
               "http/tests/csspaint/hidpi",
               "http/tests/images/document-policy",
               "http/tests/inspector-protocol/page/page-captureScreenshot-clip-emulation.js"],
+    "exclusive_tests": ["fast/hidpi/static"],
     "args": ["--force-device-scale-factor=2"]
   },
   {
@@ -251,6 +303,7 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/inspector-protocol/emulation/emulation-set-disabled-image-types-jxl.js",
               "images/jxl"],
+    "exclusive_tests": ["http/tests/inspector-protocol/emulation/emulation-set-disabled-image-types-jxl.js"],
     "args": ["--enable-features=JXL"]
   },
   {
@@ -258,6 +311,7 @@
     "platforms": ["Linux", "Win"],
     "bases": ["fast/events/synthetic-events",
               "fast/hidpi/static"],
+    "exclusive_tests": ["fast/hidpi/static"],
     "args": ["--force-device-scale-factor=1.5"]
   },
   {
@@ -265,6 +319,13 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/cookies"],
     "args": ["--disable-features=SchemefulSameSite"]
+  },
+  {
+    "prefix": "dark-mode-classifier-transparency-and-num-colors",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["dark-mode/images"],
+    "args": ["--blink-settings=preferredColorScheme=0,forceDarkModeEnabled=true",
+             "--dark-mode-settings=ImageClassifierPolicy=1"]
   },
   {
     "prefix": "dark-mode-default",
@@ -388,6 +449,7 @@
     "prefix": "wbn-from-network",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/web-bundle"],
+    "exclusive_tests": ["external/wpt/web-bundle/wbn-from-network"],
     "args": ["--enable-features=WebBundlesFromNetwork"]
   },
   {
@@ -410,8 +472,7 @@
               "http/tests/inspector-protocol",
               "http/tests/origin_trials",
               "http/tests/workers",
-              "inspector-protocol/worker",
-              "wpt_internal/fenced_frame/serviceWorker-dedicated-worker.https.html"
+              "inspector-protocol/worker"
             ],
     "args": ["--enable-features=PlzDedicatedWorker"]
   },
@@ -420,7 +481,9 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/direct-sockets",
     	      "wpt_internal/direct-sockets"],
-    "args": ["--isolated-app-origins=https://web-platform.test"]
+    "exclusive_tests": "ALL",
+    "args": ["--enable-features=IsolatedWebApps",
+             "--isolated-app-origins=https://web-platform.test"]
   },
   {
     "prefix": "display-compositor-pixel-dump",
@@ -433,38 +496,36 @@
     "prefix": "webgl-extra-video-texture-metadata",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["fast/webgl/video-metadata"],
+    "exclusive_tests": ["fast/webgl/video-metadata/texImage-video-last-uploaded-metadata.html"],
     "args": ["--enable-blink-features=ExtraWebGLVideoTextureMetadata"]
   },
+
+  "The Wasm code cache test requires access to V8 internals, so only the",
+  "virtual test should be run.",
   {
     "prefix": "wasm-code-caching",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/wasm/caching"],
+    "exclusive_tests": "ALL",
     "args": ["--js-flags=--allow-natives-syntax"]
   },
-  {
-    "prefix": "wasm-csp",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [
-      "wasm",
-      "external/wpt/content-security-policy/wasm-unsafe-eval"],
-    "args": ["--disable-blink-features=WebAssemblyCSP"]
-  },
-  {
-    "prefix": "split-http-cache-not-site-per-process",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["http/tests/devtools/isolated-code-cache"],
-    "args": ["--enable-features=SplitCacheByNetworkIsolationKey",
-             "--disable-site-isolation-trials",
-             "--enable-threaded-compositing"]
-  },
-  {
-    "prefix": "not-split-http-cache-not-site-per-process",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["http/tests/devtools/isolated-code-cache"],
-    "args": ["--disable-features=SplitCacheByNetworkIsolationKey",
-             "--disable-site-isolation-trials",
-             "--enable-threaded-compositing"]
-  },
+
+  "==== Tests incompatible with the default WPT Origin Isolation start here ==VV",
+  "The section below lists web tests that are incompatible with the WPT Origin",
+  "Isolation mode of Site Isolation (see",
+  "WebTestContentBrowserClient::GetOriginsRequiringDedicatedProcess) which",
+  "isolates WPT origins on top of the default site-per-process mode (see",
+  "ContentBrowserClient::ShouldEnableStrictSiteIsolation).",
+
+  "--------------------------- document.domain -----------------------",
+  "To test OOPIF support in various web platform features, we isolate all WPT",
+  "*origins* (under assumptions that hopefully some WPT tests will exercise",
+  "cross-origin scenarios, but that cross-site test coverage is unlikely).",
+  "*Origin* isolation is incompatible with document.domain and this means that",
+  "tests exercising document.domain might fail - such tests are listed as",
+  "Skip below.  Note that by default Site Isolation isolates *sites* rather",
+  "than *origin* and therefore avoids problems related to document.domain",
+  "compatibility.",
   {
     "prefix": "not-site-per-process",
     "platforms": ["Linux", "Mac", "Win"],
@@ -474,7 +535,6 @@
       "external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html",
       "external/wpt/dom/events/EventListener-incumbent-global-1.sub.html",
       "external/wpt/dom/events/EventListener-incumbent-global-2.sub.html",
-      "external/wpt/html/browsers/origin/origin-keyed-agent-clusters",
       "http/tests/dom/EventListener-incumbent-global-1.html",
       "http/tests/dom/EventListener-incumbent-global-2.html",
       "external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html",
@@ -491,12 +551,19 @@
       "external/wpt/navigation-api/navigate-event/cross-window/open-crossdocument-crossorigin-sameorigindomain.sub.html",
       "external/wpt/navigation-api/navigate-event/cross-window/open-samedocument-crossorigin-sameorigindomain.sub.html",
       "external/wpt/navigation-api/navigate-event/cross-window/submit-crossdocument-crossorigin-sameorigindomain.sub.html",
-      "external/wpt/navigation-api/navigate-event/cross-window/submit-samedocument-crossorigin-sameorigindomain.sub.html",
-
-      "http/tests/printing/cross-site-frame-scrolled.html",
-      "http/tests/printing/cross-site-frame.html"],
+      "external/wpt/navigation-api/navigate-event/cross-window/submit-samedocument-crossorigin-sameorigindomain.sub.html"
+    ],
+    "exclusive_tests": "ALL",
     "args": ["--disable-site-isolation-trials"]
   },
+
+  "----------------------- origin-keyed agent clusters --------------------",
+  "Origin-keyed agent clusters web platform tests are for the feature at",
+  "https://html.spec.whatwg.org/#origin-keyed-agent-clusters. It doesn't make",
+  "sense to test that feature when web-platform.test domains are being forced",
+  "into origin-isolation mode. Note that since we also want coverage of this",
+  "feature with site isolation enabled, we use a different virtual test suite",
+  "than not-site-per-process, named no-auto-wpt-origin-isolation.",
   {
     "prefix": "no-auto-wpt-origin-isolation",
     "platforms": ["Linux", "Mac", "Win"],
@@ -505,9 +572,11 @@
       "external/wpt/html/infrastructure/urls/terminology-0",
       "external/wpt/navigation-api/navigate-event/cross-window"
     ],
+    "exclusive_tests": ["external/wpt/html/browsers/origin/origin-keyed-agent-clusters"],
     "args": ["--disable-auto-wpt-origin-isolation",
              "--reset-browsing-instance-between-tests"]
   },
+
   {
     "prefix": "focusless-spat-nav",
     "platforms": ["Linux", "Mac", "Win"],
@@ -520,6 +589,7 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/navigation/frozen-useragent.html",
               "http/tests/navigation/useragent.php"],
+    "exclusive_tests": ["http/tests/navigation/frozen-useragent.html"],
     "args": ["--enable-features=ReduceUserAgent"]
   },
   {
@@ -546,6 +616,7 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/forced-colors-mode",
               "html/details_summary/color-scheme-validation"],
+    "exclusive_tests": ["external/wpt/forced-colors-mode"],
     "args": ["--force-high-contrast",
              "--enable-blink-features=ForcedColors,ForcedColorsPreserveParentColor"]
   },
@@ -565,6 +636,7 @@
     "prefix": "force-eager",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/measure-memory"],
+    "exclusive_tests": "ALL",
     "args": ["--enable-blink-features=MeasureMemory,ForceEagerMeasureMemory"]
   },
   {
@@ -637,6 +709,13 @@
              "--force-device-scale-factor=2"]
   },
   {
+    "prefix": "fluent-non-overlay-scrollbar-dark-mode",
+    "platforms": ["Win"],
+    "bases": ["fast/forms/color-scheme/scrollbar"],
+    "args": ["--enable-features=FluentScrollbar",
+             "--blink-settings=preferredColorScheme=0"]
+  },
+  {
     "prefix": "text-antialias",
     "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
     "bases": [],
@@ -670,6 +749,7 @@
     "prefix": "split-cache-by-include-credentials",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/fetch/http-cache"],
+    "exclusive_tests": "ALL",
     "args": ["--enable-features=SplitCacheByIncludeCredentials"]
   },
   {
@@ -677,12 +757,14 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/fetch/http-cache",
               "external/wpt/signed-exchange"],
+    "exclusive_tests": ["external/wpt/fetch/http-cache"],
     "args": ["--enable-features=SplitCacheByNetworkIsolationKey"]
   },
   {
     "prefix": "not-split-http-cache",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/fetch/http-cache"],
+    "exclusive_tests": "ALL",
     "args": ["--disable-features=SplitCacheByNetworkIsolationKey"]
   },
   {
@@ -696,12 +778,6 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/client-hints", "wpt_internal/client-hints"],
     "args": ["--disable-features=PrefersReducedMotionClientHintHeader"]
-  },
-  {
-    "prefix": "disable-wildcard-subdomains-in-permissions-policy",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/permissions-policy/"],
-    "args": ["--disable-features=WildcardSubdomainsInPermissionsPolicy"]
   },
   {
     "prefix": "storage-access-api",
@@ -730,6 +806,7 @@
         "http/tests/inspector-protocol/trust-tokens",
         "wpt_internal/trust-tokens"
     ],
+    "exclusive_tests": "ALL",
     "args": [
         "--enable-features=TrustTokens",
         "--enable-blink-features=TrustTokens,TrustTokensAlwaysAllowIssuance",
@@ -745,6 +822,14 @@
       "fast/dom/shadow"
     ],
     "args": ["--disable-features=OffsetParentNewSpecBehavior"]
+  },
+  {
+    "prefix": "streaming-declarative-shadow-dom-disabled",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/shadow-dom/declarative"
+    ],
+    "args": ["--disable-features=StreamingDeclarativeShadowDOM"]
   },
   {
     "prefix": "document-domain-disabled-by-default",
@@ -769,6 +854,7 @@
                "http/tests/inspector-protocol/portals",
                "http/tests/portals",
                "wpt_internal/portals" ],
+    "exclusive_tests": "ALL",
     "args": [ "--enable-features=Portals,PortalsCrossOrigin" ]
   },
   {
@@ -786,6 +872,7 @@
       "wpt_internal/storage/quota/partitioned-webkitPersistentStorage-quota-usage-details.tentative.sub.html",
       "wpt_internal/storage/quota/partitioned-webkitStorageInfo-temporary-quota-usage-details.tentative.sub.html",
       "wpt_internal/storage/quota/partitioned-webkitStorageInfo-persistent-quota-usage-details.tentative.sub.html",
+      "external/wpt/FileAPI/BlobURL/cross-partition.tentative.https.html",
       "external/wpt/storage/partitioned-estimate-usage-details-caches.tentative.https.sub.html",
       "external/wpt/storage/partitioned-estimate-usage-details-indexeddb.tentative.https.sub.html",
       "external/wpt/storage/partitioned-estimate-usage-details-service-workers.tentative.https.sub.html",
@@ -802,23 +889,41 @@
       "external/wpt/webstorage/localstorage-about-blank-3P-iframe-opens-3P-window.partitioned.tentative.html",
       "fast/filesystem",
       "external/wpt/html/browsers/windows/post-message",
+      "http/tests/inspector-protocol/storage/dom-storage-set-items-by-storage-key.js",
+      "http/tests/inspector-protocol/storage/indexed-db-set-items-by-storage-key.js",
       "http/tests/storage/partitioned-storage"
     ],
     "args": [ "--enable-features=ThirdPartyStoragePartitioning" ]
   },
   {
-    "prefix": "post-message-different-partition-same-origin-blocked",
+    "prefix": "post-message-first-party-to-third-party-different-bucket-same-origin-blocked",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/html/browsers/windows/post-message"],
-    "args": ["--enable-features=PostMessageDifferentPartitionSameOriginBlocked"]
+    "args": ["--enable-features=PostMessageFirstPartyToThirdPartyDifferentBucketSameOriginBlocked"]
   },
+  {
+    "prefix": "post-message-third-party-to-first-party-different-bucket-same-origin-blocked",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/html/browsers/windows/post-message"],
+    "args": ["--enable-features=PostMessageThirdPartyToFirstPartyDifferentBucketSameOriginBlocked"]
+  },
+  {
+    "prefix": "post-message-third-party-to-third-party-different-bucket-same-origin-blocked",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/html/browsers/windows/post-message"],
+    "args": ["--enable-features=PostMessageThirdPartyToThirdPartyDifferentBucketSameOriginBlocked"]
+  },
+
+  "isInputPending requires threaded compositing and layerized iframes",
   {
     "prefix": "threaded-composited-iframes",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/is-input-pending"],
+    "exclusive_tests": "ALL",
     "args": ["--enable-threaded-compositing",
              "--disable-auto-wpt-origin-isolation"]
   },
+
   {
     "prefix": "oopr-canvas2d",
     "platforms": ["Linux", "Mac", "Win"],
@@ -831,6 +936,7 @@
     "prefix": "disable-frequency-capping-for-overlay-popup-detection",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/subresource_filter/overlay_popup_ad"],
+    "exclusive_tests": "ALL",
     "args": ["--disable-features=FrequencyCappingForOverlayPopupDetection"]
   },
   {
@@ -852,7 +958,7 @@
               "external/wpt/html/anonymous-iframe/",
               "http/tests/cookies/partitioned-cookies",
               "http/tests/inspector-protocol/network/"],
-    "args": ["--enable-features=PartitionedCookies,PartitionedCookiesBypassOriginTrial"]
+    "args": ["--enable-features=PartitionedCookies"]
   },
   {
     "prefix": "prerender",
@@ -860,7 +966,11 @@
     "bases": [ "external/wpt/speculation-rules/prerender",
                "wpt_internal/prerender",
                "http/tests/inspector-protocol/prerender"],
-    "args": [ "--enable-features=SameSiteCrossOriginForSpeculationRulesPrerender" ]
+    "exclusive_tests": ["external/wpt/speculation-rules/prerender/referrer-policy-from-rules.html"],
+    "args": [
+      "--enable-blink-features=SpeculationRulesReferrerPolicyKey",
+      "--enable-features=SameSiteCrossOriginForSpeculationRulesPrerender"
+    ]
   },
   {
     "prefix": "no-different-origin-dialogs",
@@ -892,36 +1002,49 @@
   },
   {
     "prefix": "no-alloc-direct-call",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["fast/canvas", "external/wpt/html/canvas"],
+    "platforms": ["Linux"],
+    "bases": ["fast/canvas"],
     "args": ["--enable-fake-no-alloc-direct-call-for-testing"]
   },
   {
-    "prefix": "document-transition",
+    "prefix": "view-transition",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["wpt_internal/document-transition",
-              "document-transition",
-              "inspector-protocol/css/css-get-styles-for-document-transition.js"],
-    "args": ["--enable-features=DocumentTransition",
+    "bases": ["external/wpt/css/css-view-transitions",
+              "wpt_internal/view-transition",
+              "view-transition",
+              "inspector-protocol/css/css-get-styles-for-view-transition.js"],
+    "exclusive_tests": "ALL",
+    "args": ["--enable-features=ViewTransition",
              "--enable-threaded-compositing",
              "--enable-gpu-rasterization"]
   },
   {
-    "prefix": "document-transition-wide-gamut",
+    "prefix": "view-transition-on-navigation",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["wpt_internal/document-transition",
-              "document-transition",
-              "inspector-protocol/css/css-get-styles-for-document-transition.js"],
-    "args": ["--enable-features=DocumentTransition",
+    "bases": ["wpt_internal/view-transition-on-navigation"],
+    "exclusive_tests": "ALL",
+    "args": ["--enable-features=ViewTransition,ViewTransitionOnNavigation",
+             "--enable-threaded-compositing",
+             "--enable-gpu-rasterization"]
+  },
+  {
+    "prefix": "view-transition-wide-gamut",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/css/css-view-transitions",
+              "wpt_internal/view-transition",
+              "view-transition",
+              "inspector-protocol/css/css-get-styles-for-view-transition.js"],
+    "exclusive_tests": "ALL",
+    "args": ["--enable-features=ViewTransition",
              "--enable-threaded-compositing",
              "--enable-gpu-rasterization",
              "--force-color-profile=display-p3-d65"]
   },
   {
-    "prefix": "popup-disabled",
+    "prefix": "popover-disabled",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [],
-    "args": ["--disable-blink-features=HTMLSelectMenuElement,HTMLPopupAttribute"]
+    "args": ["--disable-blink-features=HTMLSelectMenuElement,HTMLPopoverAttribute"]
   },
   {
     "prefix": "object-param-url",
@@ -957,6 +1080,7 @@
       "wpt_internal/lazyembed",
       "wpt_internal/async-script-scheduling"
     ],
+    "exclusive_tests": ["wpt_internal/lazyembed"],
     "args": [
       "--enable-features=AutomaticLazyFrameLoadingToEmbeds:timeout/1000,AutomaticLazyFrameLoadingToEmbedUrls:allowed_websites/http%3A%2F%2Fbad3p.test%3A3001%7C%2Fembed,AutomaticLazyFrameLoadingToAds:timeout/5000,DelayAsyncScriptExecution:delay_async_exec_target/cross_site_with_allow_list/delay_async_exec_allow_list/http%3A%2F%2Fbad3p.test",
       "--disable-field-trial-config"
@@ -1011,6 +1135,16 @@
     "args": ["--enable-features=LowPriorityScriptLoading"]
   },
   {
+    "prefix": "lcp-multiple-updates-per-element",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/largest-contentful-paint/update-on-style-change.tentative.html"
+    ],
+    "args": [
+      "--enable-features=LCPMultipleUpdatesPerElement"
+    ]
+  },
+  {
     "prefix": "initially-invisible-images-lcp",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/largest-contentful-paint/initially-invisible-images.html"],
@@ -1038,6 +1172,14 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "wpt_internal/shared_storage",
+      "external/wpt/shared-storage",
+      "http/tests/inspector-protocol/storage/shared-storage.js",
+      "http/tests/inspector-protocol/storage/shared-storage-delete.js",
+      "http/tests/inspector-protocol/storage/shared-storage-set.js",
+      "http/tests/inspector-protocol/storage/shared-storage-tracking-disabled.js"
+    ],
+    "exclusive_tests": [
+      "wpt_internal/shared_storage",
       "external/wpt/shared-storage"
     ],
     "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride"]
@@ -1047,6 +1189,14 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "wpt_internal/shared_storage",
+      "external/wpt/shared-storage",
+      "http/tests/inspector-protocol/storage/shared-storage.js",
+      "http/tests/inspector-protocol/storage/shared-storage-delete.js",
+      "http/tests/inspector-protocol/storage/shared-storage-set.js",
+      "http/tests/inspector-protocol/storage/shared-storage-tracking-disabled.js"
+    ],
+    "exclusive_tests": [
+      "wpt_internal/shared_storage",
       "external/wpt/shared-storage"
     ],
     "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/shadow_dom,PrivacySandboxAdsAPIsOverride"]
@@ -1054,9 +1204,8 @@
   {
     "prefix": "task-tracking",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": [
-      "wpt_internal/task-tracking"
-    ],
+    "bases": ["wpt_internal/task-tracking"],
+    "exclusive_tests": "ALL",
     "args": ["--enable-blink-features=UnexposedTaskIds"]
   },
   {
@@ -1068,7 +1217,12 @@
       "http/tests/inspector-protocol/fenced-frame",
       "external/wpt/html/anonymous-iframe"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,Prerender2,NoncedPartitionedCookies"]
+    "exclusive_tests": [
+      "http/tests/fenced_frame",
+      "wpt_internal/fenced_frame",
+      "http/tests/inspector-protocol/fenced-frame"
+    ],
+    "args": ["--enable-features=FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,NoncedPartitionedCookies"]
   },
   {
     "prefix": "fenced-frame-shadow-dom",
@@ -1078,7 +1232,12 @@
       "wpt_internal/fenced_frame",
       "external/wpt/html/anonymous-iframe"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/shadow_dom,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,Prerender2,NoncedPartitionedCookies", "--force-renderer-accessibility"]
+    "exclusive_tests": [
+      "http/tests/fenced_frame",
+      "wpt_internal/fenced_frame"
+    ],
+    "args": ["--enable-features=FencedFrames:implementation_type/shadow_dom,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,NoncedPartitionedCookies",
+             "--force-renderer-accessibility"]
   },
   {
     "prefix": "disable-custom-element-default-style",
@@ -1118,6 +1277,9 @@
     ],
     "args": ["--enable-blink-features=HighlightOverlayPainting"]
   },
+
+  "The following tests never pass in the default Blink test runner due to",
+  "forced frame updates, but still pass in the full browser.",
   {
     "prefix": "no-forced-frame-updates",
     "platforms": ["Linux", "Mac", "Win"],
@@ -1125,8 +1287,10 @@
       "external/wpt/css/css-transitions/render-blocking",
       "external/wpt/html/dom/render-blocking"
     ],
+    "exclusive_tests": "ALL",
     "args": ["--enable-features=NoForcedFrameUpdatesForWebTests"]
   },
+
   {
     "prefix": "enable-system-cursor-size-for-svg",
     "platforms": ["Linux", "Mac", "Win"],
@@ -1143,15 +1307,22 @@
     "args": ["--enable-features=DocumentPictureInPictureAPI",
              "--enable-blink-features=DocumentPictureInPictureAPI"]
   },
+
+  "Tests in the virtual/origin-agent-cluster-default suite. These tests",
+  "require isolation behaviour as in the actual browser and are therefore",
+  "incompatible with auto-wpt-origin-isolation. Thus they are only run in",
+  "their virtual test suite.",
   {
     "prefix": "origin-agent-cluster-default",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [ "wpt_internal/origin-agent-cluster-default" ],
+    "exclusive_tests": "ALL",
     "args": [
       "--enable-features=OriginAgentClusterDefaultWarning",
       "--disable-auto-wpt-origin-isolation"
     ]
   },
+
   {
     "prefix": "webauthn-remote-desktop-client-override",
     "platforms": ["Linux", "Mac", "Win"],
@@ -1167,6 +1338,7 @@
       "external/wpt/mediacapture-streams/MediaStreamTrack-iframe-transfer.https.html",
       "external/wpt/mediacapture-streams/MediaStreamTrack-iframe-audio-transfer.https.html"
     ],
+    "exclusive_tests": "ALL",
     "args": [
       "--enable-blink-features=MediaStreamTrackTransfer",
       "--enable-features=MediaStreamTrackTransfer",
@@ -1217,6 +1389,10 @@
     "bases": [ "external/wpt/html/cross-origin-opener-policy/tentative/restrict-properties" ],
     "args": [ "--enable-features=CoopRestrictProperties" ]
   },
+
+  "These tests require the experimental speculative prefetch feature, and",
+  "requires extra switches to enable content implementation of speculation",
+  "rules prefetch.",
   {
     "prefix": "prefetch",
     "platforms": ["Linux", "Mac", "Win"],
@@ -1224,8 +1400,9 @@
       "external/wpt/speculation-rules/prefetch",
       "http/tests/inspector-protocol/prefetch"
     ],
+    "exclusive_tests": "ALL",
     "args": [
-      "--enable-blink-features=SpeculationRulesPrefetchProxy,SpeculationRulesFetchFromHeader",
+      "--enable-blink-features=SpeculationRulesPrefetchProxy,SpeculationRulesFetchFromHeader,SpeculationRulesReferrerPolicyKey",
       "--enable-features=SpeculationRulesPrefetchProxy,PrefetchUseContentRefactor",
       "--bypass-prefetch-proxy-for-host=not-web-platform.test",
       "--isolated-prerender-allow-all-domains"
@@ -1236,6 +1413,10 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/sanitizer-api/sanitizer-names.https.html",
+      "external/wpt/sanitizer-api/sanitizer-names.https.tentative.html",
+      "virtual/mathml-disabled/sanitizer-api-math-namespace-designator.html"
+    ],
+    "exclusive_tests": [
       "external/wpt/sanitizer-api/sanitizer-names.https.tentative.html",
       "virtual/mathml-disabled/sanitizer-api-math-namespace-designator.html"
     ],
@@ -1251,9 +1432,10 @@
     "prefix": "pending-beacon",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
-      "external/wpt/unload-beacon",
-      "wpt_internal/pending_beacon"
+      "external/wpt/pending-beacon",
+      "wpt_internal/pending-beacon"
     ],
+    "exclusive_tests": "ALL",
     "args": [
       "--enable-features=PendingBeaconAPI:requires_origin_trial/false"
     ]
@@ -1313,6 +1495,7 @@
     "prefix": "js-shared-memory",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["wpt_internal/js/shared_memory"],
+    "exclusive_tests": "ALL",
     "args": ["--enable-features=JavaScriptExperimentalSharedMemory"]
   },
   {
@@ -1320,5 +1503,21 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/custom-elements/scoped-registry"],
     "args": ["--disable-blink-features=ScopedCustomElementRegistry"]
+  },
+  {
+    "prefix": "abort-signal-remove",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/eyedropper",
+      "external/wpt/idle-detection",
+      "external/wpt/web-nfc"
+    ],
+    "args": ["--disable-features=AbortSignalHandleBasedRemoval"]
+  },
+  {
+    "prefix": "devtools-tab-target",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["http/tests/devtools/extensions", "http/tests/devtools/tracing", "http/tests/devtools/coverage"],
+    "args": ["--content-shell-devtools-tab-target"]
   }
 ]

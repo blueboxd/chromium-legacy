@@ -12,10 +12,10 @@ import 'chrome://support-tool/url_generator.js';
 
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {BrowserProxy, BrowserProxyImpl, DataCollectorItem, IssueDetails, PIIDataItem, UrlGenerationResult} from 'chrome://support-tool/browser_proxy.js';
+import {BrowserProxy, BrowserProxyImpl, DataCollectorItem, IssueDetails, PiiDataItem, UrlGenerationResult} from 'chrome://support-tool/browser_proxy.js';
 import {DataExportResult, SupportToolElement, SupportToolPageIndex} from 'chrome://support-tool/support_tool.js';
 import {UrlGeneratorElement} from 'chrome://support-tool/url_generator.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
@@ -39,7 +39,7 @@ const ALL_DATA_COLLECTORS: DataCollectorItem[] = [
   {name: 'data collector 5', isIncluded: false, protoEnum: 5},
 ];
 
-const PII_ITEMS: PIIDataItem[] = [
+const PII_ITEMS: PiiDataItem[] = [
   {
     piiTypeDescription: 'IP Address',
     piiType: 0,
@@ -121,7 +121,7 @@ class TestSupportToolBrowserProxy extends TestBrowserProxy implements
     this.methodCalled('cancelDataCollection');
   }
 
-  startDataExport(piiDataItems: PIIDataItem[]) {
+  startDataExport(piiDataItems: PiiDataItem[]) {
     this.methodCalled('startDataExport', [piiDataItems]);
   }
 
@@ -152,8 +152,7 @@ suite('SupportToolTest', function() {
 
   setup(async function() {
     loadTimeData.overrideValues(strings);
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     browserProxy = new TestSupportToolBrowserProxy();
     BrowserProxyImpl.setInstance(browserProxy);
     supportTool = document.createElement('support-tool');
@@ -271,8 +270,7 @@ suite('UrlGeneratorTest', function() {
   let browserProxy: TestSupportToolBrowserProxy;
 
   setup(async function() {
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     browserProxy = new TestSupportToolBrowserProxy();
     BrowserProxyImpl.setInstance(browserProxy);
     urlGenerator = document.createElement('url-generator');

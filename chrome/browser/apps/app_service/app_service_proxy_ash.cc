@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_util.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_registry.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
 #include "chrome/browser/apps/app_service/instance_registry_updater.h"
@@ -54,7 +55,7 @@ policy::DlpFilesController* GetDlpFilesController() {
 }  // namespace
 
 AppServiceProxyAsh::AppServiceProxyAsh(Profile* profile)
-    : AppServiceProxyBase(profile) {
+    : AppServiceProxyBase(profile), icon_reader(profile), icon_writer(profile) {
   if (web_app::IsWebAppsCrosapiEnabled()) {
     browser_app_instance_tracker_ =
         std::make_unique<apps::BrowserAppInstanceTracker>(profile_,
@@ -191,15 +192,6 @@ void AppServiceProxyAsh::Uninstall(const std::string& app_id,
   UninstallImpl(app_id, uninstall_source, parent_window, base::DoNothing());
 }
 
-void AppServiceProxyAsh::Uninstall(
-    const std::string& app_id,
-    apps::mojom::UninstallSource uninstall_source,
-    gfx::NativeWindow parent_window) {
-  UninstallImpl(app_id,
-                ConvertMojomUninstallSourceToUninstallSource(uninstall_source),
-                parent_window, base::DoNothing());
-}
-
 void AppServiceProxyAsh::OnApps(std::vector<AppPtr> deltas,
                                 AppType app_type,
                                 bool should_notify_initialized) {
@@ -329,30 +321,14 @@ void AppServiceProxyAsh::LaunchAppWithIntent(const std::string& app_id,
 
   policy::DlpFilesController* files_controller = GetDlpFilesController();
   if (files_controller) {
-    files_controller->CheckIfLaunchAllowed(app_id, std::move(intent_copy),
-                                           std::move(launch_callback));
-  } else {
-    std::move(launch_callback).Run(/*is_allowed=*/true);
-  }
-}
-
-void AppServiceProxyAsh::LaunchAppWithIntent(
-    const std::string& app_id,
-    int32_t event_flags,
-    apps::mojom::IntentPtr intent,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::WindowInfoPtr window_info,
-    apps::mojom::Publisher::LaunchAppWithIntentCallback callback) {
-  apps::IntentPtr intent_copy = apps::ConvertMojomIntentToIntent(intent);
-  base::OnceCallback launch_callback = base::BindOnce(
-      &AppServiceProxyAsh::LaunchAppWithMojoIntentIfAllowed,
-      weak_ptr_factory_.GetWeakPtr(), app_id, event_flags, std::move(intent),
-      std::move(launch_source), std::move(window_info), std::move(callback));
-
-  policy::DlpFilesController* files_controller = GetDlpFilesController();
-  if (files_controller) {
-    files_controller->CheckIfLaunchAllowed(app_id, std::move(intent_copy),
-                                           std::move(launch_callback));
+    auto app_found = app_registry_cache_.ForOneApp(
+        app_id, [&files_controller, &intent_copy,
+                 &launch_callback](const apps::AppUpdate& update) {
+          files_controller->CheckIfLaunchAllowed(update, std::move(intent_copy),
+                                                 std::move(launch_callback));
+        });
+    if (!app_found)
+      std::move(launch_callback).Run(/*is_allowed=*/true);
   } else {
     std::move(launch_callback).Run(/*is_allowed=*/true);
   }
@@ -451,17 +427,10 @@ void AppServiceProxyAsh::OnUninstallDialogClosed(
   if (uninstall) {
     app_registry_cache_.ForOneApp(app_id, RecordAppBounce);
 
-    if (base::FeatureList::IsEnabled(apps::kAppServiceUninstallWithoutMojom)) {
-      auto* publisher = GetPublisher(app_type);
-      DCHECK(publisher);
-      publisher->Uninstall(app_id, uninstall_source,
-                           /*clear_site_data=*/false, /*report_abuse=*/false);
-    } else if (app_service_.is_connected()) {
-      app_service_->Uninstall(
-          ConvertAppTypeToMojomAppType(app_type), app_id,
-          ConvertUninstallSourceToMojomUninstallSource(uninstall_source),
-          clear_site_data, report_abuse);
-    }
+    auto* publisher = GetPublisher(app_type);
+    DCHECK(publisher);
+    publisher->Uninstall(app_id, uninstall_source,
+                         /*clear_site_data=*/false, /*report_abuse=*/false);
 
     PerformPostUninstallTasks(app_type, app_id, uninstall_source);
   }
@@ -736,21 +705,31 @@ void AppServiceProxyAsh::LaunchAppWithIntentIfAllowed(
       std::move(window_info), std::move(callback));
 }
 
-void AppServiceProxyAsh::LaunchAppWithMojoIntentIfAllowed(
-    const std::string& app_id,
-    int32_t event_flags,
-    apps::mojom::IntentPtr intent,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::WindowInfoPtr window_info,
-    apps::mojom::Publisher::LaunchAppWithIntentCallback callback,
-    bool is_allowed) {
-  if (!is_allowed) {
-    std::move(callback).Run(/*success=*/false);
+bool AppServiceProxyAsh::ShouldReadIcons() {
+  return base::FeatureList::IsEnabled(kUnifiedAppServiceIconLoading);
+}
+
+void AppServiceProxyAsh::ReadIcons(const std::string& app_id,
+                                   int32_t size_hint_in_dip,
+                                   const IconKey& icon_key,
+                                   IconType icon_type,
+                                   LoadIconCallback callback) {
+  icon_reader.ReadIcons(
+      app_id, size_hint_in_dip, static_cast<IconEffects>(icon_key.icon_effects),
+      icon_type,
+      base::BindOnce(&AppServiceProxyAsh::OnIconRead,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void AppServiceProxyAsh::OnIconRead(LoadIconCallback callback,
+                                    IconValuePtr iv) {
+  if (!iv || (iv->uncompressed.isNull() && iv->compressed.empty())) {
+    // TODO(crbug.com/1380608): Call the publisher to fetch the icon.
+    std::move(callback).Run(std::make_unique<apps::IconValue>());
     return;
   }
-  AppServiceProxyBase::LaunchAppWithIntent(
-      app_id, event_flags, std::move(intent), std::move(launch_source),
-      std::move(window_info), std::move(callback));
+
+  std::move(callback).Run(std::move(iv));
 }
 
 }  // namespace apps

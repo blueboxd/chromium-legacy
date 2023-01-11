@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "ash/services/device_sync/public/cpp/device_sync_client.h"
-#include "ash/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -17,6 +15,8 @@
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "chromeos/ash/components/tether/tether_component.h"
 #include "chromeos/ash/components/tether/tether_host_fetcher.h"
+#include "chromeos/ash/services/device_sync/public/cpp/device_sync_client.h"
+#include "chromeos/ash/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -33,11 +33,9 @@ class PrefRegistrySyncable;
 
 namespace ash {
 
-class NetworkStateHandler;
-
 namespace secure_channel {
 class SecureChannelClient;
-}
+}  // namespace secure_channel
 
 namespace tether {
 
@@ -111,7 +109,7 @@ class TetherService
   // TetherComponent::Observer:
   void OnShutdownComplete() override;
 
-  // chromeos::device_sync::DeviceSyncClient::Observer:
+  // ash::device_sync::DeviceSyncClient::Observer:
   void OnReady() override;
 
   // ash::multidevice_setup::MultiDeviceSetupClient::Observer:

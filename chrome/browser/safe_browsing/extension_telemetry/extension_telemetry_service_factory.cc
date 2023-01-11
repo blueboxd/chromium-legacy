@@ -42,6 +42,7 @@ ExtensionTelemetryServiceFactory::GetInstance() {
 ExtensionTelemetryServiceFactory::ExtensionTelemetryServiceFactory()
     : ProfileKeyedServiceFactory("ExtensionTelemetryService",
                                  ProfileSelections::BuildForRegularProfile()) {
+  DependsOn(NetworkContextServiceFactory::GetInstance());
   DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
   DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
   DependsOn(extensions::ExtensionManagementFactory::GetInstance());
@@ -64,6 +65,10 @@ KeyedService* ExtensionTelemetryServiceFactory::BuildServiceInstanceFor(
 
 bool ExtensionTelemetryServiceFactory::ServiceIsCreatedWithBrowserContext()
     const {
+  return true;
+}
+
+bool ExtensionTelemetryServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
 }  // namespace safe_browsing

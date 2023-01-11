@@ -2066,6 +2066,35 @@ class GnGlobForwardTest(unittest.TestCase):
     self.assertEqual([], warnings)
 
 
+class GnRebasePathTest(unittest.TestCase):
+  def testAddAbsolutePath(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockAffectedFile('base/BUILD.gn', ['rebase_path("$target_gen_dir", "//")']),
+        MockAffectedFile('base/root/BUILD.gn', ['rebase_path("$target_gen_dir", "/")']),
+        MockAffectedFile('base/variable/BUILD.gn', ['rebase_path(target_gen_dir, "/")']),
+    ]
+    warnings = PRESUBMIT.CheckGnRebasePath(mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+    msg = '\n'.join(warnings[0].items)
+    self.assertIn('base/BUILD.gn', msg)
+    self.assertIn('base/root/BUILD.gn', msg)
+    self.assertIn('base/variable/BUILD.gn', msg)
+    self.assertEqual(3, len(warnings[0].items))
+
+  def testValidUses(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockAffectedFile('base/foo/BUILD.gn', ['rebase_path("$target_gen_dir", root_build_dir)']),
+        MockAffectedFile('base/bar/BUILD.gn', ['rebase_path("$target_gen_dir", root_build_dir, "/")']),
+        MockAffectedFile('base/baz/BUILD.gn', ['rebase_path(target_gen_dir, root_build_dir)']),
+        MockAffectedFile('base/baz/BUILD.gn', ['rebase_path(target_gen_dir, "//some/arbitrary/path")']),
+        MockAffectedFile('base/okay_slash/BUILD.gn', ['rebase_path(".", "//")']),
+    ]
+    warnings = PRESUBMIT.CheckGnRebasePath(mock_input_api, MockOutputApi())
+    self.assertEqual([], warnings)
+
+
 class NewHeaderWithoutGnChangeTest(unittest.TestCase):
   def testAddHeaderWithoutGn(self):
     mock_input_api = MockInputApi()
@@ -2769,6 +2798,48 @@ class BannedTypeCheckTest(unittest.TestCase):
     self.assertFalse('some/cpp/nocheck/file.cc' in results[1].message)
     self.assertFalse('some/cpp/comment/file.cc' in results[0].message)
     self.assertFalse('some/cpp/comment/file.cc' in results[1].message)
+
+  def testBannedCppRandomFunctions(self):
+    banned_rngs = [
+        'absl::BitGen',
+        'absl::InsecureBitGen',
+        'std::linear_congruential_engine',
+        'std::mersenne_twister_engine',
+        'std::subtract_with_carry_engine',
+        'std::discard_block_engine',
+        'std::independent_bits_engine',
+        'std::shuffle_order_engine',
+        'std::minstd_rand0',
+        'std::minstd_rand',
+        'std::mt19937',
+        'std::mt19937_64',
+        'std::ranlux24_base',
+        'std::ranlux48_base',
+        'std::ranlux24',
+        'std::ranlux48',
+        'std::knuth_b',
+        'std::default_random_engine',
+        'std::random_device',
+    ]
+    for banned_rng in banned_rngs:
+      input_api = MockInputApi()
+      input_api.files = [
+        MockFile('some/cpp/problematic/file.cc',
+                 [f'{banned_rng} engine;']),
+        MockFile('third_party/blink/problematic/file.cc',
+                 [f'{banned_rng} engine;']),
+        MockFile('third_party/ok/file.cc',
+                 [f'{banned_rng} engine;']),
+      ]
+      results = PRESUBMIT.CheckNoBannedFunctions(input_api, MockOutputApi())
+      self.assertEqual(1, len(results), banned_rng)
+      self.assertTrue('some/cpp/problematic/file.cc' in results[0].message,
+                      banned_rng)
+      self.assertTrue(
+          'third_party/blink/problematic/file.cc' in results[0].message,
+          banned_rng)
+      self.assertFalse(
+          'third_party/ok/file.cc' in results[0].message, banned_rng)
 
   def testBannedIosObjcFunctions(self):
     input_api = MockInputApi()
@@ -4737,6 +4808,42 @@ class LayoutInTestsTest(unittest.TestCase):
     ]
     errors = PRESUBMIT.CheckNoLayoutCallsInTests(mock_input, MockOutputApi())
     self.assertEqual(0, len(errors))
+
+class AssertNoJsInIosTest(unittest.TestCase):
+    def testErrorJs(self):
+        input_api = MockInputApi()
+        input_api.files = [
+            MockFile('components/feature/ios/resources/script.js', []),
+            MockFile('ios/chrome/feature/resources/script.js', []),
+        ]
+        results = PRESUBMIT.CheckNoJsInIos(input_api, MockOutputApi())
+        self.assertEqual(1, len(results))
+        self.assertEqual('error', results[0].type)
+        self.assertEqual(2, len(results[0].items))
+
+    def testNonError(self):
+        input_api = MockInputApi()
+        input_api.files = [
+            MockFile('chrome/resources/script.js', []),
+            MockFile('components/feature/ios/resources/script.ts', []),
+            MockFile('ios/chrome/feature/resources/script.ts', []),
+            MockFile('ios/web/feature/resources/script.ts', []),
+            MockFile('ios/third_party/script.js', []),
+            MockFile('third_party/ios/script.js', []),
+        ]
+        results = PRESUBMIT.CheckNoJsInIos(input_api, MockOutputApi())
+        self.assertEqual(0, len(results))
+
+    def testExistingFilesWarningOnly(self):
+        input_api = MockInputApi()
+        input_api.files = [
+            MockFile('ios/chrome/feature/resources/script.js', [], action='M'),
+            MockFile('ios/chrome/feature/resources/script2.js', [], action='D'),
+        ]
+        results = PRESUBMIT.CheckNoJsInIos(input_api, MockOutputApi())
+        self.assertEqual(1, len(results))
+        self.assertEqual('warning', results[0].type)
+        self.assertEqual(1, len(results[0].items))
 
 if __name__ == '__main__':
   unittest.main()

@@ -416,7 +416,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
       return nullptr;
     SetNeedsUnbufferedInputEvents(true);
     frame_dispatcher_ = std::make_unique<CanvasResourceDispatcher>(
-        nullptr,
+        nullptr, GetDocument().GetTaskRunner(TaskType::kInternalDefault),
         GetPage()
             ->GetPageScheduler()
             ->GetAgentGroupScheduler()
@@ -442,6 +442,17 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
 void HTMLCanvasElement::configureHighDynamicRange(
     const CanvasHighDynamicRangeOptions* options,
     ExceptionState& exception_state) {
+  gfx::HDRMode hdr_mode = gfx::HDRMode::kDefault;
+  if (options->hasMode()) {
+    switch (options->mode().AsEnum()) {
+      case V8CanvasHighDynamicRangeMode::Enum::kDefault:
+        hdr_mode = gfx::HDRMode::kDefault;
+        break;
+      case V8CanvasHighDynamicRangeMode::Enum::kExtended:
+        hdr_mode = gfx::HDRMode::kExtended;
+        break;
+    }
+  }
   absl::optional<gfx::HDRMetadata> hdr_metadata;
   if (options->hasSmpteSt2086Metadata()) {
     hdr_metadata = gfx::HDRMetadata();
@@ -465,22 +476,14 @@ void HTMLCanvasElement::configureHighDynamicRange(
     NOTIMPLEMENTED();
   }
 
-  CanvasResourceHost::SetHDRMetadata(hdr_metadata);
+  CanvasResourceHost::SetHDRConfiguration(hdr_mode, hdr_metadata);
   if (context_ && (IsWebGL() || IsWebGPU())) {
     // TODO(https://crbug.com/1274220): Implement HDR support for WebGL and
     // WebGPU.
     NOTIMPLEMENTED();
   } else if (canvas2d_bridge_) {
-    canvas2d_bridge_->SetHDRMetadata(hdr_metadata);
+    canvas2d_bridge_->SetHDRConfiguration(hdr_mode, hdr_metadata);
   }
-}
-
-ScriptPromise HTMLCanvasElement::convertToBlob(
-    ScriptState* script_state,
-    const ImageEncodeOptions* options,
-    ExceptionState& exception_state) {
-  return CanvasRenderingContextHost::convertToBlob(script_state, options,
-                                                   exception_state, context_);
 }
 
 bool HTMLCanvasElement::ShouldBeDirectComposited() const {
@@ -1308,10 +1311,14 @@ void HTMLCanvasElement::SetCanvas2DLayerBridgeInternal(
     // resource provider fails, the canvas will fallback to CPU rendering.
     UMA_HISTOGRAM_BOOLEAN(
         "Blink.Canvas.2DLayerBridge.WillReadFrequently",
-        context_ && context_->CreationAttributes().will_read_frequently);
+        context_ &&
+            context_->CreationAttributes().will_read_frequently ==
+                CanvasContextCreationAttributesCore::WillReadFrequently::kTrue);
 
-    if (ShouldAccelerate() && context_ &&
-        !context_->CreationAttributes().will_read_frequently) {
+    bool will_read_frequently =
+        context_->CreationAttributes().will_read_frequently ==
+        CanvasContextCreationAttributesCore::WillReadFrequently::kTrue;
+    if (ShouldAccelerate() && context_ && !will_read_frequently) {
       canvas2d_bridge_ = Create2DLayerBridge(RasterMode::kGPU);
     }
     if (!canvas2d_bridge_) {

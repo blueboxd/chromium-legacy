@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">Desfacer</translation>
 <translation id="2084108471225856927">Axustes do dispositivo</translation>
 <translation id="2084809735218147718">Signo de agradecemento</translation>
-<translation id="2085470240340828803">Xa existe un ficheiro denominado "<ph name="FILENAME" />". Que queres facer?</translation>
 <translation id="2088690981887365033">Rede VPN</translation>
 <translation id="2122305276694332719">Ao conectarte automaticamente a unha rede oculta, outros usuarios poden ver o teu dispositivo e parte da configuración de rede. Por iso esta opción non é recomendable.</translation>
 <translation id="2125607626296734455">Khmer</translation>
@@ -456,7 +455,6 @@
 <translation id="4900532980794411603">Compartir con Parallels Desktop</translation>
 <translation id="4902546322522096650">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, conectar</translation>
 <translation id="4906580650526544301">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, batería do teléfono ao <ph name="BATTERY_STATUS" /> %, detalles</translation>
-<translation id="4929673617759421391">A política do administrador bloqueou a función de pegar este ficheiro</translation>
 <translation id="4935975195727477204">Flor de gazania</translation>
 <translation id="4943368462779413526">Fútbol</translation>
 <translation id="4961158930123534723">Compartiuse 1 cartafol con Parallels Desktop</translation>
@@ -533,6 +531,7 @@
 <translation id="5428105026674456456">Español</translation>
 <translation id="5438282218546237410">Non hai ningún resultado para <ph name="SEARCH_TERM" />.</translation>
 <translation id="5449551289610225147">Contrasinal non válido</translation>
+<translation id="5459064203055649751">Xa existe un ficheiro denominado "<ph name="FILENAME" />". Queres substituílo polo que estás transferindo?</translation>
 <translation id="5463231940765244860">Introducir</translation>
 <translation id="5469868506864199649">Italiano</translation>
 <translation id="5473333559083690127">Volve introducir o novo PIN</translation>
@@ -653,6 +652,7 @@
 <translation id="6495925982925244349">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, xestionada polo teu administrador, detalles</translation>
 <translation id="649877868557234318">Extraendo <ph name="FILE_NAME" /> en <ph name="FOLDER_NAME" /></translation>
 <translation id="6499681088828539489">Non permitir proxys para redes compartidas</translation>
+<translation id="6503285896705205014">A política do administrador bloqueou a función de copiar <ph name="COUNT" /> ficheiros</translation>
 <translation id="6509122719576673235">Noruegués</translation>
 <translation id="6528513914570774834">Permitir que outros usuarios deste dispositivo utilicen esta rede</translation>
 <translation id="653019979737152879">Sincronizando <ph name="FILE_NAME" />...</translation>
@@ -755,6 +755,7 @@
 <translation id="7357762654218998920">Este tipo de ficheiro non é compatible. Obtén <ph name="BEGIN_LINK_HELP" />máis información<ph name="END_LINK_HELP" /> sobre como abrir ficheiros en Chrome OS.</translation>
 <translation id="7359359531237882347">Copiando <ph name="NUMBER_OF_ITEMS" /> elementos…</translation>
 <translation id="7375951387215729722">A lista de ficheiros está en orde descendente segundo os datos da columna <ph name="COLUMN_NAME" />.</translation>
+<translation id="7377161162143020057">A política do administrador bloqueou a función de copiar este ficheiro</translation>
 <translation id="7402503521691663770">Dispositivos Chrome OS Flex</translation>
 <translation id="7408870451288633753">Checo</translation>
 <translation id="7417453074306512035">Teclado etíope</translation>
@@ -976,7 +977,6 @@
 <translation id="9183302530794969518">Documentos de Google</translation>
 <translation id="9189836632794948435">Kazako</translation>
 <translation id="9200427192836333033">Extraéronse <ph name="NUMBER_OF_ITEMS" /> elementos.</translation>
-<translation id="9210751050717126865">A política do administrador bloqueou a función de pegar <ph name="COUNT" /> ficheiros</translation>
 <translation id="9213073329713032541">Iniciouse correctamente a instalación.</translation>
 <translation id="9219103736887031265">Imaxes</translation>
 <translation id="9219908252191632183">Paisaxe lunar</translation>

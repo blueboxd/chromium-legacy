@@ -269,6 +269,7 @@ FrameTreeNode::~FrameTreeNode() {
 
   DestroyInnerFrameTreeIfExists();
 
+  devtools_instrumentation::OnFrameTreeNodeDestroyed(*this);
   // Do not dispatch notification for the root frame as ~WebContentsImpl already
   // dispatches it for now.
   // TODO(https://crbug.com/1170277): This is only needed because the FrameTree
@@ -1097,6 +1098,11 @@ void FrameTreeNode::ClearOpenerReferences() {
 bool FrameTreeNode::AncestorOrSelfHasCSPEE() const {
   // Check if CSPEE is set in this frame or any ancestor frames.
   return csp_attribute() || (parent() && parent()->required_csp());
+}
+
+void FrameTreeNode::RestartNavigationAsCrossDocument(
+    std::unique_ptr<NavigationRequest> navigation_request) {
+  navigator().RestartNavigationAsCrossDocument(std::move(navigation_request));
 }
 
 }  // namespace content

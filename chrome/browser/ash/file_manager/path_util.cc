@@ -32,14 +32,14 @@
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
+#include "chrome/browser/ash/fileapi/external_file_url_util.h"
+#include "chrome/browser/ash/fileapi/file_system_backend.h"
 #include "chrome/browser/ash/guest_os/guest_os_session_tracker.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_mount_provider.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/smb_client/smb_service.h"
 #include "chrome/browser/ash/smb_client/smb_service_factory.h"
 #include "chrome/browser/ash/smb_client/smbfs_share.h"
-#include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
-#include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/download/download_dir_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -526,15 +526,15 @@ bool ConvertFileSystemURLToPathInsideVM(
       *inside = inside->Append(kCrostiniMapShortcutsSharedWithMe);
     }
     // Computers -> Computers
-  } else if (id == chromeos::kSystemMountNameRemovable) {
+  } else if (id == ash::kSystemMountNameRemovable) {
     // Removable.
-    *inside = vm_mount.Append(chromeos::kSystemMountNameRemovable);
+    *inside = vm_mount.Append(ash::kSystemMountNameRemovable);
   } else if (id == GetAndroidFilesMountPointName()) {
     // PlayFiles.
     *inside = vm_mount.Append(kCrostiniMapPlayFiles);
-  } else if (id == chromeos::kSystemMountNameArchive) {
+  } else if (id == ash::kSystemMountNameArchive) {
     // Archive.
-    *inside = vm_mount.Append(chromeos::kSystemMountNameArchive);
+    *inside = vm_mount.Append(ash::kSystemMountNameArchive);
   } else if (id == GetCrostiniMountPointName(profile)) {
     // Crostini.
     if (map_crostini_home) {
@@ -645,20 +645,20 @@ bool ConvertPathInsideVMToFileSystemURL(
                  .Append(relative_path);
     }
     // Computers -> Computers
-  } else if (base::FilePath(chromeos::kSystemMountNameRemovable)
+  } else if (base::FilePath(ash::kSystemMountNameRemovable)
                  .AppendRelativePath(path, &relative_path)) {
     // Removable subdirs only.
-    mount_name = chromeos::kSystemMountNameRemovable;
+    mount_name = ash::kSystemMountNameRemovable;
     path = relative_path;
   } else if (AppendRelativePath(base::FilePath(kCrostiniMapPlayFiles), path,
                                 &relative_path)) {
     // PlayFiles.
     mount_name = GetAndroidFilesMountPointName();
     path = relative_path;
-  } else if (base::FilePath(chromeos::kSystemMountNameArchive)
+  } else if (base::FilePath(ash::kSystemMountNameArchive)
                  .AppendRelativePath(path, &relative_path)) {
     // Archive subdirs only.
-    mount_name = chromeos::kSystemMountNameArchive;
+    mount_name = ash::kSystemMountNameArchive;
     path = relative_path;
   } else if (base::FilePath(kCrostiniMapSmbFs)
                  .AppendRelativePath(path, &relative_path)) {
@@ -819,8 +819,8 @@ bool ConvertPathToArcUrl(const base::FilePath& path,
   }
 
   // Convert paths under /special or other paths forced to use external URL.
-  GURL external_file_url = chromeos::CreateExternalFileURLFromPath(
-      primary_profile, path, force_external);
+  GURL external_file_url =
+      ash::CreateExternalFileURLFromPath(primary_profile, path, force_external);
 
   if (!external_file_url.is_empty()) {
     *arc_url_out = arc::EncodeToChromeContentProviderUrl(external_file_url);
@@ -1023,8 +1023,8 @@ bool ExtractMountNameFileSystemNameFullPath(const base::FilePath& absolute_path,
   size_t fs_start = 0;
   size_t slash_pos = value.find(base::FilePath::kSeparators[0]);
   *mount_name = *file_system_name = value.substr(0, slash_pos);
-  if (*mount_name == chromeos::kSystemMountNameRemovable ||
-      *mount_name == chromeos::kSystemMountNameArchive) {
+  if (*mount_name == ash::kSystemMountNameRemovable ||
+      *mount_name == ash::kSystemMountNameArchive) {
     if (slash_pos == std::string::npos) {
       return false;
     }

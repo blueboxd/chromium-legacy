@@ -314,16 +314,11 @@ void DirectRenderer::DrawFrame(
     OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane =
         nullptr;
     if (output_surface_->IsDisplayedAsOverlayPlane()) {
-      // OutputSurface::GetOverlayMailbox() returns the mailbox for the last
-      // used buffer, which is most likely different from the one being used
-      // this frame. However, for the purpose of testing the overlay
-      // configuration, the mailbox for ANY buffer from BufferQueue is good
-      // enough because they're all created with identical properties.
       current_frame()->output_surface_plane =
           overlay_processor_->ProcessOutputSurfaceAsOverlay(
               device_viewport_size, surface_resource_size, frame_buffer_format,
               frame_color_space, frame_has_alpha, 1.0f /*opacity*/,
-              output_surface_->GetOverlayMailbox());
+              GetPrimaryPlaneOverlayTestingMailbox());
       primary_plane = &(current_frame()->output_surface_plane.value());
     }
 
@@ -920,7 +915,7 @@ gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
   // For the non-root render pass.
   gfx::Rect damage_rect = render_pass->damage_rect;
   if (!frame_buffer_damage.IsEmpty()) {
-    gfx::Transform inverse_transform(gfx::Transform::kSkipInitialization);
+    gfx::Transform inverse_transform;
     if (render_pass->transform_to_root_target.GetInverse(&inverse_transform)) {
       // |frame_buffer_damage| is in the root target space. Transform the damage
       // from the root to the non-root space before it's added.
@@ -1119,6 +1114,11 @@ gfx::Rect DirectRenderer::GetDelegatedInkTrailDamageRect() {
   }
 
   return gfx::Rect();
+}
+
+gpu::Mailbox DirectRenderer::GetPrimaryPlaneOverlayTestingMailbox() {
+  NOTREACHED();
+  return gpu::Mailbox();
 }
 
 }  // namespace viz

@@ -20,8 +20,8 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_suite.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -232,6 +232,8 @@ void AppTestHelper::FirstTaskRun() {
     {"enter_test_mode", WithSwitch("url", Wrap(&EnterTestMode))},
     {"exit_test_mode", WithSystemScope(Wrap(&ExitTestMode))},
     {"set_group_policies", WithSwitch("values", Wrap(&SetGroupPolicies))},
+    {"fill_log", WithSystemScope(Wrap(&FillLog))},
+    {"expect_log_rotated", WithSystemScope(Wrap(&ExpectLogRotated))},
     {"expect_active_updater", WithSystemScope(Wrap(&ExpectActiveUpdater))},
     {"expect_registered",
      WithSwitch("app_id", WithSystemScope(Wrap(&ExpectRegistered)))},

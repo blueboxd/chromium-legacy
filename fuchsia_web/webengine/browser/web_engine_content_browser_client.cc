@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string_split.h"
+#include "build/chromecast_buildflags.h"
 #include "components/embedder_support/user_agent_utils.h"
 #include "components/policy/content/safe_sites_navigation_throttle.h"
 #include "components/site_isolation/features.h"
@@ -46,6 +47,7 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom.h"
+#include "third_party/widevine/cdm/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -92,9 +94,13 @@ static constexpr char const* kRendererSwitchesToCopy[] = {
     switches::kUseOverlaysForVideo,
     switches::kMinVideoDecoderOutputBufferSize,
 
-    // TODO(crbug/1013412): Delete these two switches when fixed.
+// TODO(crbug/1013412): Delete these two switches when fixed.
+#if BUILDFLAG(ENABLE_WIDEVINE)
     switches::kEnableWidevine,
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
     switches::kPlayreadyKeySystem,
+#endif
+#endif
 
     // Pass to the renderer process for consistency with Chrome.
     network::switches::kUnsafelyTreatInsecureOriginAsSecure,
@@ -115,9 +121,7 @@ static constexpr char const* kAllProcessSwitchesToCopy[] = {
 }  // namespace
 
 WebEngineContentBrowserClient::WebEngineContentBrowserClient()
-    : cors_exempt_headers_(GetCorsExemptHeaders()),
-      allow_insecure_content_(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAllowRunningInsecureContent)) {
+    : cors_exempt_headers_(GetCorsExemptHeaders()) {
   // Logging in this class ensures this is logged once per web_instance.
   LogComponentStartWithVersion("WebEngine web_instance");
 }
@@ -160,11 +164,17 @@ blink::UserAgentMetadata WebEngineContentBrowserClient::GetUserAgentMetadata() {
 void WebEngineContentBrowserClient::OverrideWebkitPrefs(
     content::WebContents* web_contents,
     blink::web_pref::WebPreferences* web_prefs) {
-  // Disable WebSQL support since it's being removed from the web platform.
+  // Disable WebSQL support since it is being removed from the web platform
+  // and does not work. See crbug.com/1317431.
   web_prefs->databases_enabled = false;
 
-  if (allow_insecure_content_)
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
+  static bool allow_insecure_content =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowRunningInsecureContent);
+  if (allow_insecure_content)
     web_prefs->allow_running_insecure_content = true;
+#endif
 
   FrameImpl* frame = FrameImpl::FromWebContents(web_contents);
   // This method may be called when a |web_contents| is instantiated but an
@@ -300,7 +310,7 @@ WebEngineContentBrowserClient::CreateURLLoaderThrottles(
     content::NavigationUIData* navigation_ui_data,
     int frame_tree_node_id) {
   if (frame_tree_node_id == content::RenderFrameHost::kNoFrameTreeNodeId) {
-    // TODO(crbug.com/976975): Add support for service workers.
+    // TODO(crbug.com/1378791): Add support for workers.
     return {};
   }
 

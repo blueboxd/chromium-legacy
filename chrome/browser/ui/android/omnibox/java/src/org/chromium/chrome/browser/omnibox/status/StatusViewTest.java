@@ -156,6 +156,36 @@ public class StatusViewTest extends BlankUiTestActivityTestCase {
     @MediumTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
+    public void statusView_goneWhenIncognitoBadgeVisible() {
+        // Set location_bar_status_icon is VISIBLE in the beginning.
+        runOnUiThreadBlocking(() -> {
+            mStatusModel.set(StatusProperties.STATUS_ICON_RESOURCE,
+                    new StatusIconResource(R.drawable.ic_search, 0));
+        });
+        onView(withId(R.id.location_bar_status_icon_frame)).check((view, e) -> {
+            assertEquals(View.VISIBLE, view.getVisibility());
+        });
+
+        // Verify that the incognito badge is not inflated by default.
+        assertFalse(mStatusModel.get(StatusProperties.INCOGNITO_BADGE_VISIBLE));
+        onView(withId(R.id.location_bar_incognito_badge)).check(doesNotExist());
+
+        // Set incognito badge visible.
+        runOnUiThreadBlocking(
+                () -> { mStatusModel.set(StatusProperties.INCOGNITO_BADGE_VISIBLE, true); });
+        onView(withId(R.id.location_bar_incognito_badge)).check(matches(isCompletelyDisplayed()));
+
+        runOnUiThreadBlocking(
+                () -> { mStatusModel.set(StatusProperties.STATUS_ICON_RESOURCE, null); });
+        onView(withId(R.id.location_bar_status_icon_frame)).check((view, e) -> {
+            assertEquals(View.GONE, view.getVisibility());
+        });
+    }
+
+    @Test
+    @MediumTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @Feature({"Omnibox"})
     public void testSearchEngineLogo_incognito_noMarginEnd() {
         // Set incognito badge visible.
         runOnUiThreadBlocking(
@@ -228,7 +258,7 @@ public class StatusViewTest extends BlankUiTestActivityTestCase {
         runOnUiThreadBlocking(
                 () -> mStatusModel.set(StatusProperties.STATUS_ICON_RESOURCE, statusIconResource));
 
-        onView(withId(R.id.location_bar_status_icon)).check((view, e) -> {
+        onView(withId(R.id.location_bar_status_icon_frame)).check((view, e) -> {
             assertEquals(View.VISIBLE, view.getVisibility());
             assertEquals(1.0, view.getAlpha(), 0.0);
         });

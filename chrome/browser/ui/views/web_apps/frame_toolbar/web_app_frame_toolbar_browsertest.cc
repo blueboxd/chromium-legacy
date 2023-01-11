@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -34,7 +33,6 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
-#include "chrome/browser/web_applications/manifest_update_task.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -246,11 +244,6 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, ThemeChange) {
   ASSERT_TRUE(https_server()->Start());
   const GURL app_url = https_server()->GetURL("/banners/theme-color.html");
   helper()->InstallAndLaunchWebApp(browser(), app_url);
-
-  // This is to ensure that for manifest updates, we auto
-  // accept the identity dialog and bypass the window closing requirement.
-  chrome::SetAutoAcceptAppIdentityUpdateForTesting(true);
-  web_app::ManifestUpdateTask::BypassWindowCloseWaitingForTesting() = true;
 
   content::WebContents* web_contents =
       helper()->app_browser()->tab_strip_model()->GetActiveWebContents();
@@ -476,7 +469,7 @@ class WebAppFrameToolbarBrowserTest_Borderless
     return app_id;
   }
 
-  void GrantWindowPlacementPermission() {
+  void GrantWindowManagementPermission() {
     auto* web_contents = helper()->browser_view()->GetActiveWebContents();
 
     std::string permission_auto_approve_script = R"(
@@ -516,14 +509,14 @@ class WebAppFrameToolbarBrowserTest_Borderless
 };
 
 IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_Borderless,
-                       AppUsesBorderlessModeAndHasWindowPlacementPermission) {
+                       AppUsesBorderlessModeAndHasWindowManagementPermission) {
   InstallAndLaunchWebApp(/*uses_borderless=*/true);
-  GrantWindowPlacementPermission();
+  GrantWindowManagementPermission();
 
   ASSERT_TRUE(helper()->browser_view()->borderless_mode_enabled_for_testing());
   ASSERT_TRUE(helper()
                   ->browser_view()
-                  ->window_placement_permission_granted_for_testing());
+                  ->window_management_permission_granted_for_testing());
   ASSERT_TRUE(helper()->browser_view()->IsBorderlessModeEnabled());
   ASSERT_FALSE(
       helper()->web_app_frame_toolbar()->GetAppMenuButton()->GetVisible());
@@ -550,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_Borderless,
   EXPECT_TRUE(EvalJs(web_contents, match_media_standalone).ExtractBool());
   ASSERT_EQ(blue, EvalJs(web_contents, get_background_color));
 
-  GrantWindowPlacementPermission();
+  GrantWindowManagementPermission();
   ASSERT_TRUE(helper()->browser_view()->IsBorderlessModeEnabled());
 
   // Validate that after granting the permission the display-mode matches with
@@ -561,12 +554,12 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_Borderless,
 
 IN_PROC_BROWSER_TEST_F(
     WebAppFrameToolbarBrowserTest_Borderless,
-    AppUsesBorderlessModeAndDoesNotHaveWindowPlacementPermission) {
+    AppUsesBorderlessModeAndDoesNotHaveWindowManagementPermission) {
   InstallAndLaunchWebApp(/*uses_borderless=*/true);
   ASSERT_TRUE(helper()->browser_view()->borderless_mode_enabled_for_testing());
   ASSERT_FALSE(helper()
                    ->browser_view()
-                   ->window_placement_permission_granted_for_testing());
+                   ->window_management_permission_granted_for_testing());
   ASSERT_FALSE(helper()->browser_view()->IsBorderlessModeEnabled());
 }
 
@@ -576,7 +569,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_Borderless,
   ASSERT_FALSE(helper()->browser_view()->borderless_mode_enabled_for_testing());
   ASSERT_FALSE(helper()
                    ->browser_view()
-                   ->window_placement_permission_granted_for_testing());
+                   ->window_management_permission_granted_for_testing());
   ASSERT_FALSE(helper()->browser_view()->IsBorderlessModeEnabled());
   ASSERT_TRUE(
       helper()->web_app_frame_toolbar()->GetAppMenuButton()->GetVisible());
@@ -614,10 +607,7 @@ class WebAppFrameToolbarBrowserTest_WindowControlsOverlay
   };
 
   WebAppFrameToolbarBrowserTest_WindowControlsOverlay() {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{safe_browsing::kDownloadBubble,
-                              features::kWebAppWindowControlsOverlay},
-        /*disabled_features=*/{});
+    scoped_feature_list_.InitAndEnableFeature(safe_browsing::kDownloadBubble);
   }
 
   void SetUp() override {

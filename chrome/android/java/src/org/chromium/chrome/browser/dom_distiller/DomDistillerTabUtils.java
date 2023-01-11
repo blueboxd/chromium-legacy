@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.dom_distiller;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.FeatureList;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -27,6 +28,9 @@ public class DomDistillerTabUtils {
 
     /** Used to specify whether mobile friendly is enabled for testing purposes. */
     private static Boolean sExcludeMobileFriendlyForTesting;
+
+    @DistillerHeuristicsType
+    private static Integer sHeuristicsForTesting;
 
     private DomDistillerTabUtils() {
     }
@@ -115,9 +119,21 @@ public class DomDistillerTabUtils {
     }
 
     /**
+     * Set a test value of DistillerHeuristicsType.
+     */
+    @VisibleForTesting
+    public static void setDistillerHeuristicsForTesting(
+            @DistillerHeuristicsType Integer distillerHeuristicsType) {
+        sHeuristicsForTesting = distillerHeuristicsType;
+    }
+
+    /**
      * Cached version of DomDistillerTabUtilsJni.get().getDistillerHeuristics().
      */
     public static @DistillerHeuristicsType int getDistillerHeuristics() {
+        if (sHeuristicsForTesting != null) {
+            return sHeuristicsForTesting;
+        }
         if (sHeuristics == null) {
             sHeuristics = DomDistillerTabUtilsJni.get().getDistillerHeuristics();
         }
@@ -130,7 +146,7 @@ public class DomDistillerTabUtils {
      * @return True if it should.
      */
     public static boolean isCctMode() {
-        if (!ChromeFeatureList.isInitialized()) return false;
+        if (!FeatureList.isInitialized()) return false;
         return ChromeFeatureList.isEnabled(ChromeFeatureList.READER_MODE_IN_CCT);
     }
 

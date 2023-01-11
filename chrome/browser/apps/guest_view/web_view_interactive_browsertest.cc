@@ -70,12 +70,31 @@
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ui/ozone/buildflags.h"
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+
 using extensions::AppWindow;
 using extensions::ExtensionsAPIClient;
 using guest_view::GuestViewBase;
 using guest_view::GuestViewManager;
 using guest_view::TestGuestViewManager;
 using guest_view::TestGuestViewManagerFactory;
+
+// The build flag OZONE_PLATFORM_WAYLAND is only available on
+// Linux or ChromeOS, so this simplifies the next set of ifdefs.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(OZONE_PLATFORM_WAYLAND)
+#define OZONE_PLATFORM_WAYLAND
+#endif  // BUILDFLAG(OZONE_PLATFORM_WAYLAND)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if !defined(OZONE_PLATFORM_WAYLAND)
+// Some test helpers, like ui_test_utils::SendMouseMoveSync, don't work properly
+// on some platforms. Tests that require these helpers need to be skipped for
+// these cases.
+#define SUPPORTS_SYNC_MOUSE_UTILS
+#endif
 
 #if BUILDFLAG(IS_MAC)
 // This class observes the RenderWidgetHostViewCocoa corresponding to the outer
@@ -485,8 +504,8 @@ class WebViewInteractiveTest : public extensions::PlatformAppBrowserTest {
  protected:
   TestGuestViewManagerFactory factory_;
   // Only set if `SetupTest` or `TestHelper` are called.
-  raw_ptr<guest_view::GuestViewBase> guest_view_;
-  raw_ptr<content::WebContents> embedder_web_contents_;
+  raw_ptr<guest_view::GuestViewBase, DanglingUntriaged> guest_view_;
+  raw_ptr<content::WebContents, DanglingUntriaged> embedder_web_contents_;
 
   gfx::Point corner_;
   bool mouse_click_result_;
@@ -549,20 +568,14 @@ class WebViewPointerLockInteractiveTest : public WebViewInteractiveTest {};
 // with WebViewInteractiveTest (see crbug.com/582562).
 class DISABLED_WebViewPopupInteractiveTest : public WebViewInteractiveTest {};
 
-// ui_test_utils::SendMouseMoveSync doesn't seem to work on OS_MAC, and
-// likely won't work on many other platforms as well, so for now this test
-// is for Windows and Linux only. As of Sept 17th, 2013 this test is disabled
-// on Windows due to flakines, see http://crbug.com/293445.
-
-// Disabled on Linux Aura because pointer lock does not work on Linux Aura.
-// crbug.com/341876
-
 // Timeouts flakily: crbug.com/1003345
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-IN_PROC_BROWSER_TEST_F(WebViewPointerLockInteractiveTest,
-                       DISABLED_PointerLock) {
+#if defined(SUPPORTS_SYNC_MOUSE_UTILS) && !BUILDFLAG(IS_CHROMEOS) && \
+    !BUILDFLAG(IS_MAC) && defined(NDEBUG)
+#define MAYBE_PointerLock PointerLock
+#else
+#define MAYBE_PointerLock DISABLED_PointerLock
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewPointerLockInteractiveTest, MAYBE_PointerLock) {
   SetupTest("web_view/pointer_lock",
             "/extensions/platform_apps/web_view/pointer_lock/guest.html");
 
@@ -585,15 +598,6 @@ IN_PROC_BROWSER_TEST_F(WebViewPointerLockInteractiveTest,
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(
       gfx::Point(corner().x() + 74, corner().y() + 74)));
   MoveMouseInsideWindowWithListener(gfx::Point(75, 75), "mouse-move");
-
-#if BUILDFLAG(IS_WIN)
-  // When the mouse is unlocked on win aura, sending a test mouse click clicks
-  // where the mouse moved to while locked. I was unable to figure out why, and
-  // since the issue only occurs with the test mouse events, just fix it with
-  // a simple workaround - moving the mouse back to where it should be.
-  // TODO(mthiesse): Fix Win Aura simulated mouse events while mouse locked.
-  MoveMouseInsideWindowWithListener(gfx::Point(75, 25), "mouse-move");
-#endif
 
   ExtensionTestMessageListener unlocked_listener("unlocked");
   // Send a key press to unlock the mouse.
@@ -635,8 +639,13 @@ IN_PROC_BROWSER_TEST_F(WebViewPointerLockInteractiveTest,
 }
 
 // flaky http://crbug.com/412086
+#if defined(SUPPORTS_SYNC_MOUSE_UTILS) && !BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_PointerLockFocus PointerLockFocus
+#else
+#define MAYBE_PointerLockFocus DISABLED_PointerLockFocus
+#endif
 IN_PROC_BROWSER_TEST_F(WebViewPointerLockInteractiveTest,
-                       DISABLED_PointerLockFocus) {
+                       MAYBE_PointerLockFocus) {
   SetupTest("web_view/pointer_lock_focus",
             "/extensions/platform_apps/web_view/pointer_lock_focus/guest.html");
 
@@ -656,8 +665,6 @@ IN_PROC_BROWSER_TEST_F(WebViewPointerLockInteractiveTest,
   // Wait for page to receive (successful) mouse unlock response.
   ASSERT_TRUE(unlocked_listener.WaitUntilSatisfied());
 }
-
-#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 // Tests that if a <webview> is focused before navigation then the guest starts
 // off focused.
@@ -1255,20 +1262,18 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, TextSelection) {
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, WordLookup) {
   SetupTest("web_view/text_selection",
             "/extensions/platform_apps/web_view/text_selection/guest.html");
-  ASSERT_TRUE(DeprecatedGuestWebContents());
+  ASSERT_TRUE(GetGuestView());
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
 
   content::TextInputTestLocalFrame text_input_local_frame;
-  text_input_local_frame.SetUp(
-      DeprecatedGuestWebContents()->GetPrimaryMainFrame());
+  text_input_local_frame.SetUp(GetGuestRenderFrameHost());
 
   // Lookup some string through context menu.
   ContextMenuNotificationObserver menu_observer(IDC_CONTENT_CONTEXT_LOOK_UP);
   // Simulating a mouse click at a position to highlight text in guest and
   // showing the context menu.
-  SimulateRWHMouseClick(
-      DeprecatedGuestWebContents()->GetRenderViewHost()->GetWidget(),
-      blink::WebMouseEvent::Button::kRight, 20, 20);
+  SimulateRWHMouseClick(GetGuestRenderFrameHost()->GetRenderWidgetHost(),
+                        blink::WebMouseEvent::Button::kRight, 20, 20);
   // Wait for the response form the guest renderer.
   text_input_local_frame.WaitForGetStringForRange();
 

@@ -174,19 +174,20 @@ class WrappedSkiaCompoundImageRepresentation : public SkiaImageRepresentation {
     return wrapped_->SupportsMultipleConcurrentReadAccess();
   }
 
-  sk_sp<SkSurface> BeginWriteAccess(
+  std::vector<sk_sp<SkSurface>> BeginWriteAccess(
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
+      const gfx::Rect& update_rect,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) final {
     compound_backing()->NotifyBeginAccess(SharedImageAccessStream::kSkia,
                                           AccessMode::kWrite);
     return wrapped_->BeginWriteAccess(final_msaa_count, surface_props,
-                                      begin_semaphores, end_semaphores,
-                                      end_state);
+                                      update_rect, begin_semaphores,
+                                      end_semaphores, end_state);
   }
-  sk_sp<SkPromiseImageTexture> BeginWriteAccess(
+  std::vector<sk_sp<SkPromiseImageTexture>> BeginWriteAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) final {
@@ -195,11 +196,9 @@ class WrappedSkiaCompoundImageRepresentation : public SkiaImageRepresentation {
     return wrapped_->BeginWriteAccess(begin_semaphores, end_semaphores,
                                       end_state);
   }
-  void EndWriteAccess(sk_sp<SkSurface> surface) final {
-    wrapped_->EndWriteAccess(std::move(surface));
-  }
+  void EndWriteAccess() final { wrapped_->EndWriteAccess(); }
 
-  sk_sp<SkPromiseImageTexture> BeginReadAccess(
+  std::vector<sk_sp<SkPromiseImageTexture>> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) final {
@@ -272,7 +271,9 @@ class WrappedOverlayCompoundImageRepresentation
   void EndReadAccess(gfx::GpuFenceHandle release_fence) final {
     return wrapped_->EndReadAccess(std::move(release_fence));
   }
+#if BUILDFLAG(IS_WIN)
   gl::GLImage* GetGLImage() final { return wrapped_->GetGLImage(); }
+#endif
 
  private:
   const SharedImageAccessStream access_stream_;

@@ -40,7 +40,7 @@ class AppStoreRatingSceneAgentTest : public PlatformTest {
     CreateFakeSceneState();
     CreateAppStoreRatingSceneAgent();
   }
-  
+
   ~AppStoreRatingSceneAgentTest() override { ClearUserDefaults(); }
 
  protected:

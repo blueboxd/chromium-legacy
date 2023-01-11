@@ -1,3 +1,6 @@
+// Copyright 2022 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 {
   children: [
     {
@@ -22,6 +25,7 @@
     {
       protocol: [
         "fuchsia.accessibility.semantics.SemanticsManager",
+        "fuchsia.element.GraphicalPresenter",
         "fuchsia.ui.composition.Allocator",
         "fuchsia.ui.composition.Flatland",
         "fuchsia.ui.input3.Keyboard",

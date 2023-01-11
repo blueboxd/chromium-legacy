@@ -20,6 +20,7 @@
 #include "base/containers/flat_tree.h"
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/notreached.h"
 #include "base/numerics/clamped_math.h"
 #include "base/numerics/safe_conversions.h"
@@ -42,7 +43,6 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
-#include "chrome/browser/web_applications/manifest_update_task.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
@@ -108,8 +108,7 @@
 #include "base/mac/mac_util.h"
 #endif
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
-    (BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 #include "base/command_line.h"
 #include "chrome/browser/web_applications/os_integration/url_handler_manager_impl.h"
 #include "chrome/browser/web_applications/test/fake_web_app_origin_association_manager.h"
@@ -268,7 +267,7 @@ class UpdateCheckResultAwaiter {
   }
 
   void OnResult(const GURL& url, ManifestUpdateResult result) {
-    if (url != url_) {
+    if (url != *url_) {
       SetCallback();
       return;
     }
@@ -277,15 +276,15 @@ class UpdateCheckResultAwaiter {
   }
 
  private:
-  raw_ptr<Browser> browser_ = nullptr;
-  const GURL& url_;
+  raw_ptr<Browser, DanglingUntriaged> browser_ = nullptr;
+  const raw_ref<const GURL> url_;
   base::RunLoop run_loop_;
   absl::optional<ManifestUpdateResult> result_;
 };
 
 void WaitForUpdatePendingCallback(const GURL& url) {
   base::RunLoop run_loop;
-  ManifestUpdateTask::SetUpdatePendingCallbackForTesting(
+  ManifestUpdateManager::SetUpdatePendingCallbackForTesting(
       base::BindLambdaForTesting([&](const GURL& update_url) {
         if (url == update_url)
           run_loop.Quit();
@@ -1214,7 +1213,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
 }
 
 // TODO(crbug.com/1342625): Test is flaky.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
 #define MAYBE_CheckDoesFindIconUrlChangeForDefaultApps \
   DISABLED_CheckDoesFindIconUrlChangeForDefaultApps
 #else
@@ -2237,7 +2236,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerWebAppsBrowserTest,
 }
 
 // Functional tests. More tests for detecting file handler updates are
-// available in unit tests at ManifestUpdateTaskTest.
+// available in unit tests at ManifestUpdateDataFetchUtilsTest.
 class ManifestUpdateManagerBrowserTestWithFileHandling
     : public ManifestUpdateManagerBrowserTest {
  public:
@@ -3249,8 +3248,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerIconUpdatingBrowserTest,
 class ManifestUpdateManagerBrowserTest_UrlHandlers
     : public ManifestUpdateManagerBrowserTest {
  public:
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
-    (BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   void SetUpUrlHandlerManager() {
     auto url_handler_manager =
         std::make_unique<UrlHandlerManagerImpl>(browser()->profile());
@@ -3388,8 +3386,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest_UrlHandlers,
   ASSERT_EQ(0u, url_handlers.size());
 }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
-    (BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest_UrlHandlers,
                        NoHandlersChangeUpdateAssociations) {
   constexpr char kManifestTemplate[] = R"(
@@ -4632,10 +4629,15 @@ std::string GenerateColoredIconList(int installability_icon,
   return "\n    [\n" + icon_list + "    ]\n  ";
 }
 
-// Disabled due to test flakiness: https://crbug.com/1341954
+// Disabled due to test flakiness: https://crbug.com/1341617
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#define MAYBE_CheckCombinations DISABLED_CheckCombinations
+#else
+#define MAYBE_CheckCombinations CheckCombinations
+#endif
 IN_PROC_BROWSER_TEST_P(
     ManifestUpdateManagerBrowserTest_AppIdentityParameterized,
-    CheckCombinations) {
+    MAYBE_CheckCombinations) {
   constexpr char kManifestTemplate[] = R"(
     {
       "name": "$1",
@@ -4646,7 +4648,7 @@ IN_PROC_BROWSER_TEST_P(
     }
   )";
 
-  ManifestUpdateTask::BypassWindowCloseWaitingForTesting() = true;
+  ManifestUpdateManager::BypassWindowCloseWaitingForTesting() = true;
 
   testing::TestParamInfo<
       std::tuple<AppIdTestParam, AppIdTestParam, AppIdTestParam>>
@@ -4981,6 +4983,8 @@ IN_PROC_BROWSER_TEST_P(
 
   EXPECT_EQ(ExpectTitleUpdate() ? "Different app name" : "Test app name",
             GetProvider().registrar().GetAppShortName(app_id));
+
+  ManifestUpdateManager::BypassWindowCloseWaitingForTesting() = false;
 }
 
 INSTANTIATE_TEST_SUITE_P(

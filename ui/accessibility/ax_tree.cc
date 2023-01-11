@@ -16,6 +16,7 @@
 #include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
@@ -580,7 +581,7 @@ struct AXTreeUpdateState {
   // Keep track of the pending tree update to help create useful error messages.
   // TODO(crbug.com/1156601) Revert this once we have the crash data we need
   // (crrev.com/c/2892259).
-  const AXTreeUpdate& pending_tree_update;
+  const raw_ref<const AXTreeUpdate> pending_tree_update;
 
  private:
   PendingStructureChanges* GetPendingStructureChanges(AXNodeID node_id) const {
@@ -593,7 +594,7 @@ struct AXTreeUpdateState {
       AXNodeID node_id) {
     auto iter = node_id_to_pending_data.find(node_id);
     if (iter == node_id_to_pending_data.cend()) {
-      const AXNode* node = tree.GetFromId(node_id);
+      const AXNode* node = tree->GetFromId(node_id);
       iter = node_id_to_pending_data
                  .emplace(std::make_pair(
                      node_id, std::make_unique<PendingStructureChanges>(node)))
@@ -604,7 +605,7 @@ struct AXTreeUpdateState {
 
   // We need to hold onto a reference to the AXTree so that we can
   // lazily initialize |PendingStructureChanges| objects.
-  const AXTree& tree;
+  const raw_ref<const AXTree> tree;
 };
 
 AXTree::NodeSetSizePosInSetInfo::NodeSetSizePosInSetInfo() = default;
@@ -1218,7 +1219,10 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     // Clears |node_set_size_pos_in_set_info_map_|
     node_set_size_pos_in_set_info_map_.clear();
 
+    // A set to track which nodes have already been added to |changes|, so that
+    // nodes aren't added twice.
     std::set<AXNodeID> visited_observer_changes;
+
     for (const AXNodeData& updated_node_data : update_state.updated_nodes) {
       AXNode* node = GetFromId(updated_node_data.id);
       if (!node ||
@@ -1253,7 +1257,7 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
                               : AXTreeObserver::NODE_CREATED;
         }
       }
-      changes.push_back(AXTreeObserver::Change(node, change));
+      changes.emplace_back(node, change);
     }
 
     // Clear cached information in `AXComputedNodeData` for every node that has
@@ -1272,6 +1276,8 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     // Update the unignored cached values as necessary, ensuring that we only
     // update once for each unignored node.
     // If the node is ignored, we must update from an unignored ancestor.
+    // TODO(alexs) Look into removing this loop and adding unignored ancestors
+    // at the same place we add ids to updated_unignored_cached_values_ids.
     std::set<AXNodeID> updated_unignored_cached_values_ids;
     for (AXNodeID node_id :
          update_state.invalidate_unignored_cached_values_ids) {
@@ -1280,6 +1286,14 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
           updated_unignored_cached_values_ids.insert(unignored_ancestor->id())
               .second) {
         unignored_ancestor->UpdateUnignoredCachedValues();
+        // If the node was ignored, then it's unignored ancestor need to be
+        // considered part of the changed node list, allowing properties such as
+        // hypertext to be recomputed.
+        if (unignored_ancestor->id() != node_id &&
+            visited_observer_changes.emplace(unignored_ancestor->id()).second) {
+          changes.emplace_back(unignored_ancestor,
+                               AXTreeObserver::NODE_CHANGED);
+        }
       }
     }
 
@@ -2202,7 +2216,7 @@ bool AXTree::CreateNewChildVector(AXNode* node,
                         ? *update_state->pending_root_id
                         : kInvalidAXNodeID)
                 << "\nTree update: "
-                << update_state->pending_tree_update.ToString();
+                << update_state->pending_tree_update->ToString();
 
           // Add a crash key so we can figure out why this is happening.
           static crash_reporter::CrashKeyString<256> ax_tree_error(
@@ -2691,7 +2705,7 @@ void AXTree::RecordError(const AXTreeUpdateState& update_state,
   // Log additional crash keys so we can debug bad tree updates.
   base::debug::SetCrashKeyString(ax_tree_error_key, new_error);
   base::debug::SetCrashKeyString(ax_tree_update_key,
-                                 update_state.pending_tree_update.ToString());
+                                 update_state.pending_tree_update->ToString());
   base::debug::SetCrashKeyString(ax_tree_key, TreeToStringHelper(root_, 1));
   base::debug::SetCrashKeyString(ax_tree_data_key, data().ToString());
 
@@ -2699,7 +2713,7 @@ void AXTree::RecordError(const AXTreeUpdateState& update_state,
   // rely on AccessibilityFatalError(), which will not crash until multiple
   // errors occur.
   SANITIZER_NOTREACHED() << new_error << "\n"
-                         << update_state.pending_tree_update.ToString() << "\n"
+                         << update_state.pending_tree_update->ToString() << "\n"
                          << ToString();
 }
 

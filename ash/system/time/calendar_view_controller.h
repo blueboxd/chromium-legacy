@@ -110,6 +110,12 @@ class ASH_EXPORT CalendarViewController {
   // The calendar events of the selected date.
   SingleDayEventList SelectedDateEvents();
 
+  // Selected date events split into two lists, one of multi day events only,
+  // the other excluding multi day events i.e. same day events. These are
+  // displayed to the user in two separate list views.
+  std::tuple<SingleDayEventList, SingleDayEventList>
+  SelectedDateEventsSplitByMultiDayAndSameDay();
+
   // The calendar events number of the `date`.
   int GetEventNumber(base::Time date);
 
@@ -171,6 +177,7 @@ class ASH_EXPORT CalendarViewController {
   friend class CalendarViewAnimationTest;
   friend class CalendarViewEventListViewTest;
   friend class CalendarViewTest;
+  friend class CalendarViewEventListItemViewJellyTest;
 
   // Adds the time difference and returns the adjusted time.
   base::Time ApplyTimeDifference(base::Time date);

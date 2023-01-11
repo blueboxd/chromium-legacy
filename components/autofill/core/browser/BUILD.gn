@@ -113,6 +113,8 @@ static_library("browser") {
     "browser_autofill_manager.cc",
     "browser_autofill_manager.h",
     "browser_autofill_manager_test_delegate.h",
+    "contact_info_sync_util.cc",
+    "contact_info_sync_util.h",
     "data_model/address.cc",
     "data_model/address.h",
     "data_model/autofill_data_model.cc",
@@ -168,6 +170,8 @@ static_library("browser") {
     "fast_checkout_delegate_impl.h",
     "field_filler.cc",
     "field_filler.h",
+    "field_type_utils.cc",
+    "field_type_utils.h",
     "field_types.cc",
     "field_types.h",
     "form_data_importer.cc",
@@ -195,6 +199,8 @@ static_library("browser") {
     "form_parsing/merchant_promo_code_field.h",
     "form_parsing/name_field.cc",
     "form_parsing/name_field.h",
+    "form_parsing/numeric_quantity_field.cc",
+    "form_parsing/numeric_quantity_field.h",
     "form_parsing/phone_field.cc",
     "form_parsing/phone_field.h",
     "form_parsing/price_field.cc",
@@ -263,8 +269,6 @@ static_library("browser") {
     "metrics/form_events/form_event_logger_base.cc",
     "metrics/form_events/form_event_logger_base.h",
     "metrics/form_events/form_events.h",
-    "metrics/form_interactions_counter.cc",
-    "metrics/form_interactions_counter.h",
     "metrics/payments/credit_card_save_metrics.cc",
     "metrics/payments/credit_card_save_metrics.h",
     "metrics/payments/local_card_migration_metrics.cc",
@@ -301,6 +305,10 @@ static_library("browser") {
     "payments/credit_card_save_strike_database.h",
     "payments/full_card_request.cc",
     "payments/full_card_request.h",
+    "payments/iban_save_manager.cc",
+    "payments/iban_save_manager.h",
+    "payments/iban_save_strike_database.cc",
+    "payments/iban_save_strike_database.h",
     "payments/legal_message_line.cc",
     "payments/legal_message_line.h",
     "payments/offer_notification_handler.cc",
@@ -382,7 +390,6 @@ static_library("browser") {
     "ui/address_form_label_formatter.h",
     "ui/address_phone_form_label_formatter.cc",
     "ui/address_phone_form_label_formatter.h",
-    "ui/autofill_image_fetcher.cc",
     "ui/autofill_image_fetcher.h",
     "ui/autofill_popup_delegate.h",
     "ui/contact_form_label_formatter.cc",
@@ -393,9 +400,13 @@ static_library("browser") {
     "ui/label_formatter.h",
     "ui/label_formatter_utils.cc",
     "ui/label_formatter_utils.h",
+    "ui/payments/bubble_show_options.cc",
+    "ui/payments/bubble_show_options.h",
     "ui/payments/card_unmask_prompt_controller.h",
     "ui/payments/card_unmask_prompt_controller_impl.cc",
     "ui/payments/card_unmask_prompt_controller_impl.h",
+    "ui/payments/card_unmask_prompt_options.cc",
+    "ui/payments/card_unmask_prompt_options.h",
     "ui/payments/card_unmask_prompt_view.h",
     "ui/payments/payments_bubble_closed_reasons.h",
     "ui/payments/virtual_card_enroll_bubble_controller.h",
@@ -813,6 +824,7 @@ source_set("unit_tests") {
     "autofill_suggestion_generator_unittest.cc",
     "autofill_type_unittest.cc",
     "browser_autofill_manager_unittest.cc",
+    "contact_info_sync_util_unittest.cc",
     "data_model/address_unittest.cc",
     "data_model/autofill_data_model_unittest.cc",
     "data_model/autofill_profile_comparator_unittest.cc",
@@ -832,6 +844,7 @@ source_set("unit_tests") {
     "data_model/phone_number_unittest.cc",
     "fast_checkout_delegate_impl_unittest.cc",
     "field_filler_unittest.cc",
+    "field_type_utils_unittest.cc",
     "field_types_unittest.cc",
     "form_data_importer_unittest.cc",
     "form_data_importer_utils_unittest.cc",
@@ -843,6 +856,7 @@ source_set("unit_tests") {
     "form_parsing/iban_field_unittest.cc",
     "form_parsing/merchant_promo_code_field_unittest.cc",
     "form_parsing/name_field_unittest.cc",
+    "form_parsing/numeric_quantity_field_unittest.cc",
     "form_parsing/parsing_test_utils.cc",
     "form_parsing/parsing_test_utils.h",
     "form_parsing/phone_field_unittest.cc",
@@ -877,6 +891,7 @@ source_set("unit_tests") {
     "payments/credit_card_otp_authenticator_unittest.cc",
     "payments/credit_card_save_manager_unittest.cc",
     "payments/full_card_request_unittest.cc",
+    "payments/iban_save_manager_unittest.cc",
     "payments/legal_message_line_unittest.cc",
     "payments/payments_client_unittest.cc",
     "payments/payments_requests/get_details_for_enrollment_request_unittest.cc",
@@ -900,8 +915,8 @@ source_set("unit_tests") {
     "test_utils/test_profiles.h",
     "touch_to_fill_delegate_impl_unittest.cc",
     "ui/address_combobox_model_unittest.cc",
-    "ui/autofill_image_fetcher_unittest.cc",
     "ui/country_combobox_model_unittest.cc",
+    "ui/payments/bubble_show_options_unittest.cc",
     "ui/payments/card_unmask_prompt_controller_impl_unittest.cc",
     "ui/region_combobox_model_unittest.cc",
     "ui/suggestion_selection_unittest.cc",
@@ -915,6 +930,7 @@ source_set("unit_tests") {
     "webdata/autofill_wallet_offer_sync_bridge_unittest.cc",
     "webdata/autofill_wallet_sync_bridge_unittest.cc",
     "webdata/autofill_wallet_usage_data_sync_bridge_unittest.cc",
+    "webdata/contact_info_sync_bridge_unittest.cc",
     "webdata/web_data_service_unittest.cc",
   ]
 
@@ -1059,4 +1075,13 @@ fuzzer_test("autofill_phone_number_i18n_fuzzer") {
   ]
 
   dict = "geo/phone_number_i18n_fuzzer.dict"
+}
+
+fuzzer_test("autofill_legal_message_line_fuzzer") {
+  sources = [ "payments/legal_message_line_fuzzer.cc" ]
+  deps = [
+    ":browser",
+    "//base",
+    "//third_party/abseil-cpp:absl",
+  ]
 }

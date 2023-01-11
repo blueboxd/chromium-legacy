@@ -47,11 +47,11 @@ class MockPolicyLoader : public AsyncPolicyLoader {
   MockPolicyLoader& operator=(const MockPolicyLoader&) = delete;
   ~MockPolicyLoader() override;
 
-  // Load() returns a std::unique_ptr<PolicyBundle> but it can't be mocked
-  // because std::unique_ptr is moveable but not copyable. This override
+  // Load() returns a PolicyBundle but it can't be mocked
+  // because PolicyBundle is moveable but not copyable. This override
   // forwards the call to MockLoad() which returns a PolicyBundle*, and returns
-  // a copy wrapped in a std::unique_ptr.
-  std::unique_ptr<PolicyBundle> Load() override;
+  // a copy wrapped.
+  PolicyBundle Load() override;
 
   MOCK_METHOD0(MockLoad, const PolicyBundle*());
   MOCK_METHOD0(InitOnBackgroundThread, void());
@@ -64,14 +64,8 @@ MockPolicyLoader::MockPolicyLoader(
 
 MockPolicyLoader::~MockPolicyLoader() {}
 
-std::unique_ptr<PolicyBundle> MockPolicyLoader::Load() {
-  std::unique_ptr<PolicyBundle> bundle;
-  const PolicyBundle* loaded = MockLoad();
-  if (loaded) {
-    bundle = std::make_unique<PolicyBundle>();
-    bundle->CopyFrom(*loaded);
-  }
-  return bundle;
+PolicyBundle MockPolicyLoader::Load() {
+  return MockLoad()->Clone();
 }
 
 }  // namespace

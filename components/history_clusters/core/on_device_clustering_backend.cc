@@ -22,6 +22,7 @@
 #include "components/history_clusters/core/content_annotations_cluster_processor.h"
 #include "components/history_clusters/core/content_visibility_cluster_finalizer.h"
 #include "components/history_clusters/core/features.h"
+#include "components/history_clusters/core/full_membership_cluster_processor.h"
 #include "components/history_clusters/core/history_clusters_util.h"
 #include "components/history_clusters/core/keyword_cluster_finalizer.h"
 #include "components/history_clusters/core/label_cluster_finalizer.h"
@@ -340,6 +341,8 @@ OnDeviceClusteringBackend::ClusterVisitsOnBackgroundThread(
   // The cluster finalizers to be run.
   std::vector<std::unique_ptr<ClusterFinalizer>> cluster_finalizers;
 
+  cluster_processors.push_back(
+      std::make_unique<FullMembershipClusterProcessor>());
   if (GetConfig().content_clustering_enabled) {
     cluster_processors.push_back(
         std::make_unique<ContentAnnotationsClusterProcessor>(
@@ -386,7 +389,7 @@ OnDeviceClusteringBackend::ClusterVisitsOnBackgroundThread(
 
   // Process clusters.
   for (const auto& processor : cluster_processors) {
-    clusters = processor->ProcessClusters(clusters);
+    processor->ProcessClusters(&clusters);
   }
 
   // Run finalizers that dedupe and score visits within a cluster and

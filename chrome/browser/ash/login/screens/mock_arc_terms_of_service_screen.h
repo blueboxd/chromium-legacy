@@ -5,15 +5,16 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_SCREENS_MOCK_ARC_TERMS_OF_SERVICE_SCREEN_H_
 #define CHROME_BROWSER_ASH_LOGIN_SCREENS_MOCK_ARC_TERMS_OF_SERVICE_SCREEN_H_
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/login/screens/arc_terms_of_service_screen.h"
-#include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/arc_terms_of_service_screen_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace ash {
 
 class MockArcTermsOfServiceScreen : public ArcTermsOfServiceScreen {
  public:
-  MockArcTermsOfServiceScreen(ArcTermsOfServiceScreenView* view,
+  MockArcTermsOfServiceScreen(base::WeakPtr<ArcTermsOfServiceScreenView> view,
                               const ScreenExitCallback& exit_callback);
   ~MockArcTermsOfServiceScreen() override;
 

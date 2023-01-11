@@ -149,7 +149,6 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/constants/ash_pref_names.h"
-#include "ash/services/multidevice_setup/public/cpp/prefs.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_prefs.h"
 #include "chrome/browser/ash/accessibility/magnifier_type.h"
 #include "chrome/browser/ash/app_restore/full_restore_prefs.h"
@@ -164,6 +163,7 @@
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/policy/default_geolocation_policy_handler.h"
 #include "chrome/browser/policy/os_color_mode_policy_handler.h"
+#include "chromeos/ash/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/components/disks/disks_prefs.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "components/account_manager_core/pref_names.h"
@@ -214,6 +214,9 @@ using ::ash::MagnifierType;
 // clang-format off
 const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 // Policies for all platforms - Start
+  { key::kAssistantWebEnabled,
+    autofill_assistant::prefs::kAutofillAssistantEnabled,
+    base::Value::Type::BOOLEAN },
   { key::kComponentUpdatesEnabled,
     prefs::kComponentUpdatesEnabled,
     base::Value::Type::BOOLEAN },
@@ -263,6 +266,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kHistoryClustersVisible,
     history_clusters::prefs::kVisible,
+    base::Value::Type::BOOLEAN },
+  { key::kAllowWebAuthnWithBrokenTlsCerts,
+    webauthn::pref_names::kAllowWithBrokenCerts,
     base::Value::Type::BOOLEAN },
 // Policies for all platforms - End
 #if BUILDFLAG(IS_ANDROID)
@@ -321,9 +327,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAmbientAuthenticationInPrivateModesEnabled,
     prefs::kAmbientAuthenticationInPrivateModesEnabled,
     base::Value::Type::INTEGER },
-  { key::kAssistantWebEnabled,
-    autofill_assistant::prefs::kAutofillAssistantEnabled,
-    base::Value::Type::BOOLEAN },
   { key::kAudioCaptureAllowed,
     prefs::kAudioCaptureAllowed,
     base::Value::Type::BOOLEAN },
@@ -469,6 +472,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kIsolatedAppsDeveloperModeAllowed,
     policy_prefs::kIsolatedAppsDeveloperModeAllowed,
     base::Value::Type::BOOLEAN },
+  { key::kLensDesktopNTPSearchEnabled,
+    prefs::kLensDesktopNTPSearchEnabled,
+    base::Value::Type::BOOLEAN },
   { key::kLensRegionSearchEnabled,
     prefs::kLensRegionSearchEnabled,
     base::Value::Type::BOOLEAN },
@@ -570,14 +576,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kScreenCaptureAllowedByOrigins,
     prefs::kScreenCaptureAllowedByOrigins,
     base::Value::Type::LIST },
-#if BUILDFLAG(ENABLE_EXTENSIONS)
   { key::kSecurityKeyPermitAttestation,
     prefs::kSecurityKeyPermitAttestation,
     base::Value::Type::LIST },
-  { key::kLoadCryptoTokenExtension,
-    extensions::pref_names::kLoadCryptoTokenExtension,
-    base::Value::Type::BOOLEAN },
-#endif // BUILDFLAG(ENABLE_EXTENSIONS)
   { key::kSerialAllowAllPortsForUrls,
     prefs::kManagedSerialAllowAllPortsForUrls,
     base::Value::Type::LIST },
@@ -689,9 +690,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSetTimeoutWithout1MsClampEnabled,
     policy_prefs::kSetTimeoutWithout1MsClampEnabled,
     base::Value::Type::BOOLEAN },
-  { key::kUnthrottledNestedTimeoutEnabled,
-    policy_prefs::kUnthrottledNestedTimeoutEnabled,
-    base::Value::Type::BOOLEAN },
   { key::kDefaultCookiesSetting,
     prefs::kManagedDefaultCookiesSetting,
     base::Value::Type::INTEGER },
@@ -729,10 +727,14 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kManagedDefaultGeolocationSetting,
     base::Value::Type::INTEGER },
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) \
-    || BUILDFLAG(IS_FUCHSIA)
+    || BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_MAC)
   { key::kRequireOnlineRevocationChecksForLocalAnchors,
     prefs::kCertRevocationCheckingRequiredLocalAnchors,
     base::Value::Type::BOOLEAN },
+#endif  // #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+        // || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) \
+    || BUILDFLAG(IS_FUCHSIA)
   { key::kFullscreenAllowed,
     prefs::kFullscreenAllowed,
     base::Value::Type::BOOLEAN },
@@ -1008,6 +1010,13 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDeviceLoginScreenKeyboardFocusHighlightEnabled,
     nullptr,
     base::Value::Type::BOOLEAN },
+  // Note that this pref exists in both user PrefStore and local_state
+  // PrefStore, and it is intended that the device policy is mapped to
+  // both. See the comment at the definition of
+  // ash::prefs::kPersonalizationKeyboardBacklightColor for details.
+  { key::kDeviceKeyboardBacklightColor,
+    ash::prefs::kPersonalizationKeyboardBacklightColor,
+    base::Value::Type::INTEGER },
   { key::kRebootAfterUpdate,
     prefs::kRebootAfterUpdate,
     base::Value::Type::BOOLEAN },
@@ -1082,6 +1091,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::LIST },
   { key::kArcAppInstallEventLoggingEnabled,
     prefs::kArcAppInstallEventLoggingEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kHindiInscriptLayoutEnabled,
+    prefs::kHindiInscriptLayoutEnabled,
     base::Value::Type::BOOLEAN },
   { key::kNetworkFileSharesAllowed,
     prefs::kNetworkFileSharesAllowed,
@@ -1649,12 +1661,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
 #endif  // !BUILDFLAG(IS_MAC) && BUILDFLAG(ENABLE_EXTENSIONS)
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  { key::kSecurityKeyPermitAttestation,
-    prefs::kSecurityKeyPermitAttestation,
-    base::Value::Type::LIST },
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
 #if !BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
   { key::kBlockExternalExtensions,
     extensions::pref_names::kBlockExternalExtensions,
@@ -1730,8 +1736,8 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     policy_prefs::kScreenTimeEnabled,
     base::Value::Type::BOOLEAN},
 #endif
-  { key::kUrlParamFilterEnabled,
-    policy_prefs::kUrlParamFilterEnabled,
+  { key::kAccessControlAllowMethodsInCORSPreflightSpecConformant,
+    prefs::kAccessControlAllowMethodsInCORSPreflightSpecConformant,
     base::Value::Type::BOOLEAN},
   { key::kEventPathEnabled,
     policy_prefs::kEventPathEnabled,
@@ -1741,9 +1747,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     ash::prefs::kUrlParameterToAutofillSAMLUsername,
     base::Value::Type::STRING },
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-  { key::kPersistentQuotaEnabled,
-    storage::kPersistentQuotaEnabled,
-    base::Value::Type::BOOLEAN },
   { key::kPrefixedStorageInfoEnabled,
     storage::kPrefixedStorageInfoEnabled,
     base::Value::Type::BOOLEAN },
@@ -1935,11 +1938,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<
           enterprise_connectors::EnterpriseConnectorsPolicyHandler>(
-          key::kSendDownloadToCloudEnterpriseConnector,
-          enterprise_connectors::kSendDownloadToCloudPref, chrome_schema));
-  handlers->AddHandler(
-      std::make_unique<
-          enterprise_connectors::EnterpriseConnectorsPolicyHandler>(
           key::kOnFileAttachedEnterpriseConnector,
           enterprise_connectors::kOnFileAttachedPref,
           enterprise_connectors::kOnFileAttachedScopePref, chrome_schema));
@@ -2081,7 +2079,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kIsolatedWebAppInstallForceList,
       prefs::kIsolatedWebAppInstallForceList, chrome_schema,
-      SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING,
+      SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
 #if defined(USE_CUPS)

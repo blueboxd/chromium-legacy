@@ -19,6 +19,8 @@
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/network/mojo_key_network_delegate.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/shared_command_constants.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/installer/key_rotation_manager.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/installer/management_service/metrics_utils.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/installer/management_service/mojo_helper/mojo_helper.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/installer/management_service/rotate_util.h"
 #include "chrome/common/channel_info.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -32,12 +34,21 @@ namespace enterprise_connectors {
 
 namespace {
 
+// Records an UMA metric when a failure occurs and logs a failure error message.
+enterprise_connectors::Status RecordFailure(ManagementServiceError error,
+                                            const std::string& log_message) {
+  RecordError(error);
+  SYSLOG(ERROR) << log_message;
+  return kFailure;
+}
+
 // Verifies group permissions for the chrome-management-service binary.
 bool CheckBinaryPermissions() {
   base::FilePath exe_path;
   if (!base::PathService::Get(base::DIR_EXE, &exe_path)) {
-    SYSLOG(ERROR) << "The chrome-management-service failed. Could not get the "
-                  << "path to the chrome-management-service.";
+    RecordFailure(ManagementServiceError::kFilePathResolutionFailure,
+                  "The chrome-management-service failed. Could not get the "
+                  "path to the chrome-management-service.");
     return false;
   }
   exe_path = exe_path.Append(constants::kBinaryFileName);
@@ -45,8 +56,9 @@ bool CheckBinaryPermissions() {
   // Gets the chromemgmt group gid stored on the device.
   struct group* chrome_mgmt_group = getgrnam(constants::kGroupName);
   if (!chrome_mgmt_group) {
-    SYSLOG(ERROR) << "The chrome-management-service failed. Device missing the "
-                  << "necessary group permissions to run the command.";
+    RecordFailure(ManagementServiceError::kManagementGroupIdDoesNotExist,
+                  "The chrome-management-service failed. Device missing the "
+                  "necessary group permissions to run the command.");
     return false;
   }
   gid_t chrome_mgmt_gid = chrome_mgmt_group->gr_gid;
@@ -57,8 +69,9 @@ bool CheckBinaryPermissions() {
   gid_t binary_gid = st.st_gid;
 
   if (getegid() != chrome_mgmt_gid || binary_gid != chrome_mgmt_gid) {
-    SYSLOG(ERROR) << "The chrome-management-service failed. Incorrect "
-                  << "permissions for the chrome-management-service.";
+    RecordFailure(ManagementServiceError::kBinaryMissingManagementGroupID,
+                  "The chrome-management-service failed. Incorrect permissions "
+                  "for the chrome-management-service.");
     return false;
   }
   return true;
@@ -69,15 +82,19 @@ bool CheckBinaryPermissions() {
 ChromeManagementService::ChromeManagementService()
     : permissions_callback_(base::BindOnce(&CheckBinaryPermissions)),
       rotation_callback_(base::BindOnce(&ChromeManagementService::StartRotation,
-                                        base::Unretained(this))) {}
+                                        base::Unretained(this))),
+      mojo_helper_(MojoHelper::Create()) {}
 
 ChromeManagementService::ChromeManagementService(
     PermissionsCallback permissions_callback,
-    RotationCallback rotation_callback)
+    RotationCallback rotation_callback,
+    std::unique_ptr<MojoHelper> mojo_helper)
     : permissions_callback_(std::move(permissions_callback)),
-      rotation_callback_(std::move(rotation_callback)) {
+      rotation_callback_(std::move(rotation_callback)),
+      mojo_helper_(std::move(mojo_helper)) {
   DCHECK(permissions_callback_);
   DCHECK(rotation_callback_);
+  DCHECK(mojo_helper_);
 }
 
 ChromeManagementService::~ChromeManagementService() = default;
@@ -85,33 +102,61 @@ ChromeManagementService::~ChromeManagementService() = default;
 int ChromeManagementService::Run(const base::CommandLine* command_line,
                                  uint64_t pipe_name) {
   if (!command_line || !command_line->HasSwitch(switches::kRotateDTKey)) {
-    SYSLOG(ERROR)
-        << "Device trust key rotation failed. Command missing rotate details.";
-    return kFailure;
+    return RecordFailure(
+        ManagementServiceError::kCommandMissingRotateDTKey,
+        "Device trust key rotation failed. Command missing rotate key switch.");
   }
 
   if (!std::move(permissions_callback_).Run())
     return kFailure;
 
-  mojo::IncomingInvitation invitation = mojo::IncomingInvitation::Accept(
-      mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
-          *command_line));
-
-  mojo::ScopedMessagePipeHandle pipe = invitation.ExtractMessagePipe(pipe_name);
-
-  auto pending_remote_url_loader_factory =
-      mojo::PendingRemote<network::mojom::URLLoaderFactory>(std::move(pipe), 0);
-  if (!pending_remote_url_loader_factory.is_valid()) {
-    SYSLOG(ERROR) << "Device trust key rotation failed. Could not "
-                     "connect to the browser process.";
-    return kFailure;
+  auto platform_channel_endpoint =
+      mojo_helper_->GetEndpointFromCommandLine(*command_line);
+  if (!platform_channel_endpoint.is_valid()) {
+    return RecordFailure(
+        ManagementServiceError::kInvalidPlatformChannelEndpoint,
+        "Device trust key rotation failed. Invalid platform channel endpoint "
+        "in command line.");
   }
 
-  remote_url_loader_factory_.Bind(std::move(pending_remote_url_loader_factory));
+  mojo::IncomingInvitation invitation =
+      mojo_helper_->AcceptMojoInvitation(std::move(platform_channel_endpoint));
+  if (!invitation.is_valid()) {
+    return RecordFailure(
+        ManagementServiceError::kInvalidMojoInvitation,
+        "Device trust key rotation failed. The mojo invitation is invalid.");
+  }
+
+  mojo::ScopedMessagePipeHandle pipe =
+      mojo_helper_->ExtractMojoMessage(std::move(invitation), pipe_name);
+  if (!pipe.is_valid()) {
+    return RecordFailure(ManagementServiceError::kInvalidMessagePipeHandle,
+                         "Device trust key rotation failed. Invalid message "
+                         "pipe in mojo invitation.");
+  }
+
+  auto pending_remote_url_loader_factory =
+      mojo_helper_->CreatePendingRemote(std::move(pipe));
+
+  if (!pending_remote_url_loader_factory.is_valid()) {
+    return RecordFailure(
+        ManagementServiceError::kInvalidPendingUrlLoaderFactory,
+        "Device trust key rotation failed. Invalid url pending remote loader "
+        "factory.");
+  }
+
+  mojo_helper_->BindRemote(remote_url_loader_factory_,
+                           std::move(pending_remote_url_loader_factory));
   if (!remote_url_loader_factory_.is_bound()) {
-    SYSLOG(ERROR) << "Device trust key rotation failed. Could not "
-                     "connect to the browser process.";
-    return kFailure;
+    return RecordFailure(ManagementServiceError::kUnBoundUrlLoaderFactory,
+                         "Device trust key rotation failed. The url loader "
+                         "factory failed to bind to the browser process.");
+  }
+
+  if (!mojo_helper_->CheckRemoteConnection(remote_url_loader_factory_)) {
+    return RecordFailure(ManagementServiceError::kDisconnectedUrlLoaderFactory,
+                         "Device trust key rotation failed. The url loader "
+                         "factory failed to connect to the browser process.");
   }
 
   return std::move(rotation_callback_).Run(command_line);

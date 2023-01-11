@@ -316,6 +316,10 @@
     return;
   [base::mac::ObjCCast<TabGridViewController>(self.baseViewController)
       prepareForAppearance];
+  if (IsTabGridSortedByRecency()) {
+    [self.incognitoTabsMediator prepareToShowTabGrid];
+    [self.regularTabsMediator prepareToShowTabGrid];
+  }
 }
 
 - (void)showTabGrid {
@@ -689,9 +693,6 @@
   self.remoteTabsMediator.browserState = regularBrowserState;
   self.remoteTabsMediator.consumer = baseViewController.remoteTabsConsumer;
   self.remoteTabsMediator.webStateList = regularWebStateList;
-  // TODO(crbug.com/845636) : Currently, the image data source must be set
-  // before the mediator starts updating its consumer. Fix this so that order of
-  // calls does not matter.
   baseViewController.remoteTabsViewController.imageDataSource =
       self.remoteTabsMediator;
   baseViewController.remoteTabsViewController.delegate =

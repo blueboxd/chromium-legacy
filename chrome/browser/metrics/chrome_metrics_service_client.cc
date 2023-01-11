@@ -31,10 +31,10 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_piece.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -407,7 +407,11 @@ class ProfileClientImpl
     return g_browser_process->profile_manager()->GetNumberOfProfiles();
   }
 
-  PrefService* GetPrefService() override {
+  PrefService* GetLocalState() override {
+    return g_browser_process->local_state();
+  }
+
+  PrefService* GetProfilePrefs() override {
     Profile* profile = cached_metrics_profile_.GetMetricsProfile();
     if (!profile)
       return nullptr;
@@ -692,7 +696,7 @@ void ChromeMetricsServiceClient::Initialize() {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   metrics::structured::Recorder::GetInstance()->SetUiTaskRunner(
-      base::SequencedTaskRunnerHandle::Get());
+      base::SequencedTaskRunner::GetCurrentDefault());
 
   AsyncInitSystemProfileProvider();
 #endif
@@ -1072,7 +1076,7 @@ bool ChromeMetricsServiceClient::RegisterForProfileEvents(Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Ignore the signin, lock screen app and lock screen profile for sync
   // disables / history deletion.
-  if (!ash::ProfileHelper::IsRegularProfile(profile)) {
+  if (!ash::ProfileHelper::IsUserProfile(profile)) {
     // No listeners, but still a success case.
     return true;
   }
@@ -1153,19 +1157,24 @@ void ChromeMetricsServiceClient::OnUkmAllowedStateChanged(bool total_purge) {
   if (!ukm_service_)
     return;
 
+  const ukm::UkmConsentState consent_state = GetUkmConsentState();
+
+  // Purge recording if the required consent has been revoked.
   if (total_purge) {
     ukm_service_->Purge();
     ukm_service_->ResetClientState(ukm::ResetReason::kOnUkmAllowedStateChanged);
   } else {
-    if (!IsUkmAllowedWithExtensionsForAllProfiles())
+    if (!consent_state.Has(ukm::UkmConsentType::EXTENSIONS))
       ukm_service_->PurgeExtensionsData();
-    if (!IsUkmAllowedWithAppsForAllProfiles())
+    if (!consent_state.Has(ukm::UkmConsentType::APPS))
       ukm_service_->PurgeAppsData();
   }
 
-  // Broadcast UKM consent state change. This doesn't include extension or app
-  // consent change.
-  ukm_service_->OnUkmAllowedStateChanged(IsUkmAllowedForAllProfiles());
+  // Notify the recording service of changed metrics consent.
+  ukm_service_->UpdateRecording(consent_state);
+
+  // Broadcast UKM consent state change.
+  ukm_service_->OnUkmAllowedStateChanged(consent_state);
 
   // Signal service manager to enable/disable UKM based on new states.
   UpdateRunningServices();
@@ -1257,14 +1266,6 @@ void ChromeMetricsServiceClient::SetIsProcessRunningForTesting(
 
 bool ChromeMetricsServiceClient::IsUkmAllowedForAllProfiles() {
   return UkmConsentStateObserver::IsUkmAllowedForAllProfiles();
-}
-
-bool ChromeMetricsServiceClient::IsUkmAllowedWithAppsForAllProfiles() {
-  return UkmConsentStateObserver::IsUkmAllowedWithAppsForAllProfiles();
-}
-
-bool ChromeMetricsServiceClient::IsUkmAllowedWithExtensionsForAllProfiles() {
-  return UkmConsentStateObserver::IsUkmAllowedWithExtensionsForAllProfiles();
 }
 
 bool g_observer_registration_failed = false;

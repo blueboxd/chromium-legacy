@@ -144,7 +144,7 @@ bool HasDiskImage(const vm_tools::concierge::StartArcVmRequest& request,
 }
 
 // A debugd client that can fail to start Concierge.
-// TODO(yusukes): Merge the feature to FakeDebugDaemonClient.
+// TODO(khmel): Merge the feature to FakeDebugDaemonClient.
 class TestDebugDaemonClient : public ash::FakeDebugDaemonClient {
  public:
   TestDebugDaemonClient() = default;
@@ -173,7 +173,7 @@ class TestDebugDaemonClient : public ash::FakeDebugDaemonClient {
 };
 
 // A concierge that remembers the parameter passed to StartArcVm.
-// TODO(yusukes): Merge the feature to FakeConciergeClient.
+// TODO(khmel): Merge the feature to FakeConciergeClient.
 class TestConciergeClient : public ash::FakeConciergeClient {
  public:
   static void Initialize() { new TestConciergeClient(); }
@@ -707,7 +707,7 @@ TEST_F(ArcVmClientAdapterTest, SetUserInfo) {
 
 // Tests that SetUserInfo() doesn't crash even when empty strings are passed.
 // Currently, ArcSessionRunner's tests call SetUserInfo() that way.
-// TODO(yusukes): Once ASR's tests are fixed, remove this test and use DCHECKs
+// TODO(khmel): Once ASR's tests are fixed, remove this test and use DCHECKs
 // in SetUserInfo().
 TEST_F(ArcVmClientAdapterTest, SetUserInfoEmpty) {
   adapter()->SetUserInfo(cryptohome::Identification(), std::string(),
@@ -2197,7 +2197,7 @@ TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeEnabledNoSystemMemoryInfo) {
 
 // Test that StartArcVmRequest::memory_mib is limited to k32bitVmRamMaxMib when
 // crosvm is a 32-bit process.
-// TODO(yusukes): Remove this once crosvm becomes 64 bit binary on ARM.
+// TODO(khmel): Remove this once crosvm becomes 64 bit binary on ARM.
 TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeEnabledOn32Bit) {
   class TestDelegate : public ArcVmClientAdapterDelegate {
     bool GetSystemMemoryInfo(base::SystemMemoryInfoKB* info) override {
@@ -2651,6 +2651,71 @@ TEST_F(ArcVmClientAdapterTest, ConvertUpgradeParams_EnableTtsCacheSetup) {
   UpgradeArcWithParams(true, std::move(upgrade_params));
   EXPECT_TRUE(base::Contains(boot_notification_server()->received_data(),
                              "ro.boot.skip_tts_cache=0"));
+}
+
+// Test that update_o4c_list_via_a2c2 is not set with the feature flag disabled.
+TEST_F(ArcVmClientAdapterTest, ArcUpdateO4CListViaA2C2Disabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(kArcUpdateO4CListViaA2C2);
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_FALSE(request.update_o4c_list_via_a2c2());
+}
+
+// Test that update_o4c_list_via_a2c2 is set with the feature flag enabled.
+TEST_F(ArcVmClientAdapterTest, ArcUpdateO4CListViaA2C2Enabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kArcUpdateO4CListViaA2C2);
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_TRUE(request.update_o4c_list_via_a2c2());
+}
+
+TEST_F(ArcVmClientAdapterTest, mglruReclaimDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(arc::kMglruReclaim, false);
+  StartMiniArcWithParams(true, GetPopulatedStartParams());
+  auto req = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_EQ(req.mglru_reclaim_interval(), 0);
+  EXPECT_EQ(req.mglru_reclaim_swappiness(), 0);
+}
+
+TEST_F(ArcVmClientAdapterTest, mglruReclaimEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["interval"] = "30000";
+  params["swappiness"] = "100";
+  feature_list.InitAndEnableFeatureWithParameters(kMglruReclaim, params);
+  StartMiniArcWithParams(true, GetPopulatedStartParams());
+  auto req = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_EQ(req.mglru_reclaim_interval(), 30000);
+  EXPECT_EQ(req.mglru_reclaim_swappiness(), 100);
+}
+
+TEST_F(ArcVmClientAdapterTest, LazyWebViewInitEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(kEnableLazyWebViewInit, true);
+  StartParams start_params(GetPopulatedStartParams());
+
+  StartMiniArcWithParams(true, std::move(start_params));
+
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_TRUE(base::Contains(request.params(),
+                             "androidboot.arc.web_view_zygote.lazy_init=1"));
+}
+
+TEST_F(ArcVmClientAdapterTest, LazyWebViewInitDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(kEnableLazyWebViewInit, false);
+  StartParams start_params(GetPopulatedStartParams());
+
+  StartMiniArcWithParams(true, std::move(start_params));
+
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_FALSE(HasParameterWithPrefix(
+      request, "androidboot.arc.web_view_zygote.lazy_init="));
 }
 
 }  // namespace

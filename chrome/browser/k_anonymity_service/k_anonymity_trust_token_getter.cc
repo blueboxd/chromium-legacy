@@ -42,7 +42,8 @@ constexpr net::NetworkTrafficAnnotationTag
     policy {
       cookies_allowed: NO
       setting:
-        "TBD"
+        "Disable features using k-anonymity, such as FLEDGE and Attribution "
+        "Reporting."
       chrome_policy {
       }
     }
@@ -54,7 +55,7 @@ constexpr net::NetworkTrafficAnnotationTag
 
 KAnonymityTrustTokenGetter::PendingRequest::PendingRequest(
     KAnonymityTrustTokenGetter::TryGetTrustTokenAndKeyCallback callback)
-    : request_start(base::Time::Now()), callback(std::move(callback)) {}
+    : request_start(base::TimeTicks::Now()), callback(std::move(callback)) {}
 
 KAnonymityTrustTokenGetter::PendingRequest::~PendingRequest() = default;
 
@@ -83,6 +84,7 @@ KAnonymityTrustTokenGetter::~KAnonymityTrustTokenGetter() = default;
 void KAnonymityTrustTokenGetter::TryGetTrustTokenAndKey(
     TryGetTrustTokenAndKeyCallback callback) {
   if (!base::FeatureList::IsEnabled(network::features::kTrustTokens) ||
+      !identity_manager_ ||
       !identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
     std::move(callback).Run(absl::nullopt);
     return;
@@ -247,7 +249,7 @@ void KAnonymityTrustTokenGetter::FetchTrustTokenKeyCommitment(
       base::BindOnce(
           &KAnonymityTrustTokenGetter::OnFetchedTrustTokenKeyCommitment,
           weak_ptr_factory_.GetWeakPtr(), non_unique_user_id),
-      /*max_body_size=*/1024);
+      /*max_body_size=*/4096);
 }
 
 void KAnonymityTrustTokenGetter::OnFetchedTrustTokenKeyCommitment(
@@ -479,7 +481,7 @@ void KAnonymityTrustTokenGetter::CompleteOneRequest() {
       KAnonymityTrustTokenGetterAction::kGetTrustTokenSuccess);
   // Only record timing UMA when we actually fetched a token.
   RecordTrustTokenGet(pending_callbacks_.front().request_start,
-                      base::Time::Now());
+                      base::TimeTicks::Now());
   DoCallback(true);
   if (!pending_callbacks_.empty())
     TryGetTrustTokenAndKeyInternal();

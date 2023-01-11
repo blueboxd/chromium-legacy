@@ -62,15 +62,12 @@ class ShortcutsProvider : public AutocompleteProvider,
       const std::u16string& keyword,
       ShortcutsBackend* backend);
 
-  int CalculateScore(const std::u16string& terms,
-                     const ShortcutsDatabase::Shortcut& shortcut,
-                     int max_relevance);
-
-  // Like `CalculateScore`, but aggregates the factors from a vector of
-  // `shortcuts`. I.e., considers the shortest shortcut when computing fraction
-  // typed, considers the most recent shortcut when considering last visit, and
-  // considers the sum of visit counts.
-  int CalculateAggregateScore(
+  // Aggregates the scoring factors from a vector of `shortcuts`. Specifically:
+  // - Considers the shortest shortcut when computing fraction typed.
+  // - Considers the most recent shortcut when considering last visit.
+  // - Considers the sum of `number_of_hits`.
+  // Returns the relevance score and summed `number_of_hits`.
+  std::pair<int, int> CalculateAggregateScore(
       const std::u16string& terms,
       const std::vector<const ShortcutsDatabase::Shortcut*>& shortcuts,
       int max_relevance);

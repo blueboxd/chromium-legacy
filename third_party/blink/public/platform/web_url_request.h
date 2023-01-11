@@ -33,7 +33,7 @@
 
 #include <memory>
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "net/base/request_priority.h"
@@ -317,7 +317,7 @@ class BLINK_PLATFORM_EXPORT WebURLRequest {
   std::unique_ptr<ResourceRequest> owned_resource_request_;
 
   // Should never be null.
-  raw_ptr<ResourceRequest> resource_request_;
+  raw_ptr<ResourceRequest, DanglingUntriaged> resource_request_;
 };
 
 }  // namespace blink

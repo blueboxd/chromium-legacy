@@ -13,10 +13,12 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {DiagnosticsBrowserProxy, DiagnosticsBrowserProxyImpl} from './diagnostics_browser_proxy.js';
-import {ConnectedDevicesObserverReceiver, InputDataProviderInterface, KeyboardInfo, TouchDeviceInfo, TouchDeviceType} from './input_data_provider.mojom-webui.js';
+import {ConnectedDevicesObserverReceiver, ConnectionType, InputDataProviderInterface, InternalDisplayPowerStateObserverReceiver, KeyboardInfo, TouchDeviceInfo, TouchDeviceType} from './input_data_provider.mojom-webui.js';
 import {getTemplate} from './input_list.html.js';
 import {KeyboardTesterElement} from './keyboard_tester.js';
 import {getInputDataProvider} from './mojo_interface_provider.js';
+import {TouchpadTesterElement} from './touchpad_tester.js';
+import {TouchscreenTesterElement} from './touchscreen_tester.js';
 
 /**
  * @fileoverview
@@ -62,17 +64,28 @@ export class InputListElement extends InputListElementBase {
         computed: 'computeShowTouchscreens_(touchscreens_.length)',
       },
 
+      touchscreenIdUnderTesting: {
+        type: Number,
+        value: -1,
+        notify: true,
+      },
     };
   }
 
   protected showTouchpads_: boolean;
   protected showTouchscreens_: boolean;
+  // The evdev id of touchscreen under testing.
+  protected touchscreenIdUnderTesting: number = -1;
   private keyboards_: KeyboardInfo[];
   private touchpads_: TouchDeviceInfo[];
   private touchscreens_: TouchDeviceInfo[];
   private connectedDevicesObserverReceiver_: ConnectedDevicesObserverReceiver|
       null = null;
+  private internalDisplayPowerStateObserverReceiver_:
+      InternalDisplayPowerStateObserverReceiver|null = null;
   private keyboardTester: KeyboardTesterElement|null = null;
+  private touchscreenTester: TouchscreenTesterElement|null = null;
+  private touchpadTester: TouchpadTesterElement|null = null;
   private browserProxy_: DiagnosticsBrowserProxy =
       DiagnosticsBrowserProxyImpl.getInstance();
   private inputDataProvider_: InputDataProviderInterface =
@@ -92,6 +105,7 @@ export class InputListElement extends InputListElementBase {
     this.browserProxy_.initialize();
     this.loadInitialDevices_();
     this.observeConnectedDevices_();
+    this.observeInternalDisplayPowerState();
   }
 
   private loadInitialDevices_(): void {
@@ -110,6 +124,40 @@ export class InputListElement extends InputListElementBase {
         new ConnectedDevicesObserverReceiver(this);
     this.inputDataProvider_.observeConnectedDevices(
         this.connectedDevicesObserverReceiver_.$.bindNewPipeAndPassRemote());
+  }
+
+  private observeInternalDisplayPowerState(): void {
+    this.internalDisplayPowerStateObserverReceiver_ =
+        new InternalDisplayPowerStateObserverReceiver(this);
+    this.inputDataProvider_.observeInternalDisplayPowerState(
+        this.internalDisplayPowerStateObserverReceiver_.$
+            .bindNewPipeAndPassRemote());
+  }
+
+  /**
+   * Implements
+   * InternalDisplayPowerStateObserver.OnInternalDisplayPowerStateChanged.
+   * @param isDisplayOn Just applied value of whether the display power is on.
+   */
+  onInternalDisplayPowerStateChanged(isDisplayOn: boolean): void {
+    // Find the internal touchscreen.
+    const index = this.touchscreens_.findIndex(
+        (device: TouchDeviceInfo) =>
+            device.connectionType === ConnectionType.kInternal);
+    if (index != -1) {
+      // Copy object to enforce dom to re-render.
+      const internalTouchscreen = {...this.touchscreens_[index]};
+      internalTouchscreen.testable = isDisplayOn;
+      this.splice('touchscreens_', index, 1, internalTouchscreen);
+
+      // If the internal display becomes untestable, and it is currently under
+      // testing, close the touchscreen tester.
+      if (!isDisplayOn &&
+          internalTouchscreen.id === this.touchscreenIdUnderTesting) {
+        assert(this.touchscreenTester);
+        this.touchscreenTester.closeTester();
+      }
+    }
   }
 
   /**
@@ -166,6 +214,13 @@ export class InputListElement extends InputListElementBase {
   onTouchDeviceDisconnected(id: number): void {
     this.removeDeviceById_('touchpads_', id);
     this.removeDeviceById_('touchscreens_', id);
+
+    // If the touchscreen under testing is disconnected, close the touchscreen
+    // tester.
+    if (id === this.touchscreenIdUnderTesting) {
+      assert(this.touchscreenTester);
+      this.touchscreenTester.closeTester();
+    }
   }
 
   private handleKeyboardTestButtonClick_(e: CustomEvent): void {
@@ -179,13 +234,28 @@ export class InputListElement extends InputListElementBase {
   }
 
   /**
+   * Shows touchpad-tester interface when input-card "test" button for specific
+   * device is clicked.
+   */
+  protected handleTouchpadTestButtonClick_(e: CustomEvent): void {
+    this.touchpadTester =
+        this.shadowRoot!.querySelector(TouchpadTesterElement.is);
+    assert(this.touchpadTester);
+    const touchpad: TouchDeviceInfo|undefined = this.touchpads_.find(
+        (touchpad: TouchDeviceInfo) => touchpad.id === e.detail.evdevId);
+    assert(touchpad);
+    this.touchpadTester.show(touchpad);
+  }
+
+  /**
    * Handles when the touchscreen Test button is clicked.
    */
-  private handleTouchscreenTestButtonClick_(): void {
-    const touchscreenTester =
+  private handleTouchscreenTestButtonClick_(e: CustomEvent): void {
+    this.touchscreenTester =
         this.shadowRoot!.querySelector('touchscreen-tester');
-    assert(touchscreenTester);
-    touchscreenTester.showTester();
+    assert(this.touchscreenTester);
+    this.touchscreenIdUnderTesting = e.detail.evdevId;
+    this.touchscreenTester.showTester(e.detail.evdevId);
   }
 
   /**

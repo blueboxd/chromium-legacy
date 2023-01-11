@@ -78,6 +78,12 @@ void PrePaintTreeWalk::WalkTree(LocalFrameView& root_frame_view) {
     ShowAllPropertyTrees(root_frame_view);
 #endif
 
+  bool was_opacity_updated = root_frame_view.UpdateAllPendingOpacityUpdates();
+  bool was_transform_updated = root_frame_view.UpdateAllPendingTransforms();
+
+  if (was_opacity_updated || was_transform_updated)
+    needs_invalidate_chrome_client_ = true;
+
   // If the page has anything changed, we need to inform the chrome client
   // so that the client will initiate repaint of the contents if needed (e.g.
   // when this page is embedded as a non-composited content of another page).
@@ -85,7 +91,6 @@ void PrePaintTreeWalk::WalkTree(LocalFrameView& root_frame_view) {
     if (auto* client = root_frame_view.GetChromeClient())
       client->InvalidateContainer();
   }
-  root_frame_view.UpdateAllPendingTransforms();
 }
 
 void PrePaintTreeWalk::Walk(LocalFrameView& frame_view,
@@ -690,19 +695,19 @@ void PrePaintTreeWalk::WalkFragmentationContextRootChildren(
       containing_block_context = &fragment_context.current;
       containing_block_context->paint_offset += child.offset;
 
-      // Keep track of the paint offset at the fragmentainer. This is needed
-      // when entering OOF descendants. OOFs have the nearest fragmentainer as
-      // their containing block, so when entering them during LayoutObject tree
-      // traversal, we have to compensate for this.
-      containing_block_context->paint_offset_for_oof_in_fragmentainer =
-          containing_block_context->paint_offset;
-
       if (object.IsLayoutView()) {
         // Out-of-flow positioned descendants are positioned relatively to this
         // fragmentainer (page).
         fragment_context.absolute_position = *containing_block_context;
         fragment_context.fixed_position = *containing_block_context;
       }
+
+      // Keep track of the paint offset at the fragmentainer. This is needed
+      // when entering OOF descendants. OOFs have the nearest fragmentainer as
+      // their containing block, so when entering them during LayoutObject tree
+      // traversal, we have to compensate for this.
+      containing_block_context->paint_offset_for_oof_in_fragmentainer =
+          containing_block_context->paint_offset;
     }
 
     WalkChildren(actual_parent, box_fragment, fragmentainer_context);
@@ -962,18 +967,24 @@ void PrePaintTreeWalk::WalkChildren(
     if (traversable_fragment) {
       if (!box->IsLayoutFlowThread() &&
           (!box->IsLayoutNGObject() || !box->PhysicalFragmentCount())) {
-        // Leave LayoutNGBoxFragment-accompanied child LayoutObject traversal,
-        // since this object doesn't support that (or has no fragments (happens
-        // for table columns)). We need to switch back to legacy LayoutObject
-        // traversal for its children. We're then also assuming that we're
-        // either not block-fragmenting, or that this is monolithic content. We
-        // may re-enter LayoutNGBoxFragment-accompanied traversal if we get to a
-        // descendant that supports that.
-        DCHECK(
-            !box->FlowThreadContainingBlock() ||
-            (box->GetNGPaginationBreakability() == LayoutBox::kForbidBreaks));
+        // We can traverse PhysicalFragments in LayoutMedia though it's not
+        // a LayoutNGObject.
+        if (!RuntimeEnabledFeatures::LayoutMediaNGContainerEnabled() ||
+            !box->IsMedia()) {
+          // Leave LayoutNGBoxFragment-accompanied child LayoutObject
+          // traversal, since this object doesn't support that (or has no
+          // fragments (happens for table columns)). We need to switch back to
+          // legacy LayoutObject traversal for its children. We're then also
+          // assuming that we're either not block-fragmenting, or that this is
+          // monolithic content. We may re-enter
+          // LayoutNGBoxFragment-accompanied traversal if we get to a
+          // descendant that supports that.
+          DCHECK(
+              !box->FlowThreadContainingBlock() ||
+              (box->GetNGPaginationBreakability() == LayoutBox::kForbidBreaks));
 
-        traversable_fragment = nullptr;
+          traversable_fragment = nullptr;
+        }
       }
     } else if (box->PhysicalFragmentCount()) {
       // Enter LayoutNGBoxFragment-accompanied child LayoutObject traversal if

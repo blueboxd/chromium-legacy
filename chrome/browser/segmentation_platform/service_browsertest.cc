@@ -21,6 +21,7 @@
 #include "components/segmentation_platform/internal/execution/mock_model_provider.h"
 #include "components/segmentation_platform/public/config.h"
 #include "components/segmentation_platform/public/features.h"
+#include "components/segmentation_platform/public/model_provider.h"
 #include "components/segmentation_platform/public/segment_selection_result.h"
 #include "components/segmentation_platform/public/segmentation_platform_service.h"
 #include "components/ukm/ukm_service.h"
@@ -43,13 +44,13 @@ class SegmentationPlatformTest : public InProcessBrowserTest {
  public:
   SegmentationPlatformTest() {
     feature_list_.InitWithFeaturesAndParameters(
-        {base::test::ScopedFeatureList::FeatureAndParams(
-             features::kSegmentationPlatformFeature, {}),
-         base::test::ScopedFeatureList::FeatureAndParams(
+        {base::test::FeatureRefAndParams(features::kSegmentationPlatformFeature,
+                                         {}),
+         base::test::FeatureRefAndParams(
              features::kSegmentationStructuredMetricsFeature, {}),
-         base::test::ScopedFeatureList::FeatureAndParams(
+         base::test::FeatureRefAndParams(
              features::kSegmentationPlatformUkmEngine, {}),
-         base::test::ScopedFeatureList::FeatureAndParams(
+         base::test::FeatureRefAndParams(
              features::kSegmentationPlatformLowEngagementFeature,
              {{"enable_default_model", "true"}})},
         {});
@@ -181,11 +182,11 @@ IN_PROC_BROWSER_TEST_F(SegmentationPlatformUkmModelTest,
   MockModelProvider* provider = utils_.GetDefaultOverride(kSegmentId);
 
   EXPECT_CALL(*provider, ExecuteModelWithInput(_, _))
-      .WillRepeatedly(Invoke([&](const std::vector<float>& inputs,
+      .WillRepeatedly(Invoke([&](const ModelProvider::Request& inputs,
                                  ModelProvider::ExecutionCallback callback) {
         // There are no UKM metrics written to the database, count = 0.
-        EXPECT_EQ(std::vector<float>({0}), inputs);
-        std::move(callback).Run(0.5);
+        EXPECT_EQ(ModelProvider::Request({0}), inputs);
+        std::move(callback).Run(ModelProvider::Response(1, 0.5));
       }));
 
   WaitForPlatformInit();
@@ -211,12 +212,12 @@ IN_PROC_BROWSER_TEST_F(SegmentationPlatformUkmModelTest,
   MockModelProvider* provider = utils_.GetDefaultOverride(kSegmentId);
 
   EXPECT_CALL(*provider, ExecuteModelWithInput(_, _))
-      .WillRepeatedly(Invoke([](const std::vector<float>& inputs,
+      .WillRepeatedly(Invoke([](const ModelProvider::Request& inputs,
                                 ModelProvider::ExecutionCallback callback) {
         // Expected input is 2 since we recorded 2 UKM metrics in the previous
         // session.
-        EXPECT_EQ(std::vector<float>({2}), inputs);
-        std::move(callback).Run(0.5);
+        EXPECT_EQ(ModelProvider::Request({2}), inputs);
+        std::move(callback).Run(ModelProvider::Response(1, 0.5));
       }));
 
   WaitForPlatformInit();

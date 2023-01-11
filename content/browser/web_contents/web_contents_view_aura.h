@@ -12,7 +12,6 @@
 #include "base/callback_helpers.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
@@ -84,10 +83,6 @@ class CONTENT_EXPORT WebContentsViewAura
 
     // Location local to WebContentsViewAura.
     gfx::PointF localized_location;
-
-    // Root location of the drop target event.
-    gfx::PointF root_location;
-
     // The supported DnD operation of the source. A bitmask of
     // ui::mojom::DragOperations.
     int source_operations;
@@ -269,7 +264,7 @@ class CONTENT_EXPORT WebContentsViewAura
                            std::unique_ptr<DropData> drop_data,
                            base::WeakPtr<RenderWidgetHostViewBase> target,
                            absl::optional<gfx::PointF> transformed_pt);
-  void DragUpdatedCallback(DropMetadata drop_metadata,
+  void DragUpdatedCallback(ui::DropTargetEvent event,
                            std::unique_ptr<DropData> drop_data,
                            base::WeakPtr<RenderWidgetHostViewBase> target,
                            absl::optional<gfx::PointF> transformed_pt);

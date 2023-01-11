@@ -5,7 +5,7 @@
 // API for integration testing. To be used on test images with a test component
 // extension.
 [platforms=("chromeos"),
- implemented_in="chrome/browser/chromeos/extensions/autotest_private/autotest_private_api.h"]
+ implemented_in="chrome/browser/ash/extensions/autotest_private/autotest_private_api.h"]
 namespace autotestPrivate {
 
   enum ShelfAlignmentType {
@@ -78,7 +78,8 @@ namespace autotestPrivate {
     Fullscreen,
     LeftSnapped,
     RightSnapped,
-    PIP
+    PIP,
+    Floated
   };
 
   // A subset of WM event types in ash::WMEventType. We may add more in the
@@ -89,7 +90,8 @@ namespace autotestPrivate {
     WMEventMinimize,
     WMEventFullscreen,
     WMEventSnapLeft,
-    WMEventSnapRight
+    WMEventSnapRight,
+    WMEventFloat
   };
 
   // Display orientation type.
@@ -611,6 +613,8 @@ namespace autotestPrivate {
   dictionary DesksInfo {
     long activeDeskIndex;
     long numDesks;
+    boolean isAnimating;
+    DOMString[] deskContainers;
   };
 
   callback GetShelfItemsCallback = void (ShelfItem[] items);
@@ -1498,6 +1502,10 @@ namespace autotestPrivate {
     [supportsPromises] static void removeFuseboxTempDir(
         DOMString fuseboxFilePath,
         RemoveFuseboxTempDirCallback callback);
+
+    // Remove the specified component extension.
+    [supportsPromises] static void removeComponentExtension(
+        DOMString extensionId, VoidCallback callback);
   };
 
   interface Events {

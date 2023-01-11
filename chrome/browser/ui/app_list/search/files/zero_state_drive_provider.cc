@@ -48,7 +48,7 @@ void LogLatency(base::TimeDelta latency) {
                           latency);
 }
 
-// TODO(crbug.com/1258415): This exists to reroute results depending on which
+// TODO(crbug.com/1378869): This exists to reroute results depending on which
 // launcher is enabled, and should be removed after the new launcher launch.
 ash::SearchResultDisplayType GetDisplayType() {
   return ash::features::IsProductivityLauncherEnabled()
@@ -110,7 +110,7 @@ void ZeroStateDriveProvider::OnFileSystemMounted() {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&ZeroStateDriveProvider::MaybeUpdateCache,
-                       weak_factory_.GetWeakPtr()),
+                       update_cache_weak_factory_.GetWeakPtr()),
         kFirstUpdateDelay);
   }
 }
@@ -141,9 +141,13 @@ void ZeroStateDriveProvider::ScreenIdleStateChanged(
   screen_off_ = proto.off();
 }
 
-void ZeroStateDriveProvider::ViewClosing() {
+void ZeroStateDriveProvider::StopZeroState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // Cancel any in-flight queries for this provider.
+  suggestion_query_weak_factory_.InvalidateWeakPtrs();
+
+  // Update the cache for when the zero state is next requested.
   static const bool kUpdateCache = base::GetFieldTrialParamByFeatureAsBool(
       ash::features::kProductivityLauncher, "itemsuggest_query_on_view_closing",
       true);
@@ -156,34 +160,29 @@ ash::AppListSearchResultType ZeroStateDriveProvider::ResultType() const {
   return ash::AppListSearchResultType::kZeroStateDrive;
 }
 
-bool ZeroStateDriveProvider::ShouldBlockZeroState() const {
-  return true;
-}
-
-void ZeroStateDriveProvider::Start(const std::u16string& query) {
-  ClearResultsSilently();
-}
-
 void ZeroStateDriveProvider::StartZeroState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  ClearResultsSilently();
 
   query_start_time_ = base::TimeTicks::Now();
 
   // Cancel any in-flight queries for this provider.
-  weak_factory_.InvalidateWeakPtrs();
+  suggestion_query_weak_factory_.InvalidateWeakPtrs();
 
   file_suggest_service_->GetSuggestFileData(
       FileSuggestionType::kDriveFile,
       base::BindOnce(&ZeroStateDriveProvider::OnSuggestFileDataFetched,
-                     weak_factory_.GetWeakPtr()));
+                     suggestion_query_weak_factory_.GetWeakPtr()));
 }
 
 void ZeroStateDriveProvider::OnSuggestFileDataFetched(
     const absl::optional<SuggestResults>& suggest_results) {
   // Fail to fetch the suggest data, so return early.
-  if (!suggest_results)
+  if (!suggest_results) {
+    // Send empty result list to search controller to unblock zero state.
+    SearchProvider::Results empty_results;
+    SwapResults(&empty_results);
     return;
+  }
 
   SetSearchResults(*suggest_results);
 }

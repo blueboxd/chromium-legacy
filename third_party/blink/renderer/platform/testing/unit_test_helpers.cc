@@ -32,9 +32,9 @@
 #include "base/run_loop.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
@@ -61,13 +61,19 @@ base::FilePath WebTestsFilePath() {
 }  // namespace
 
 void RunPendingTasks() {
-  Thread::Current()->GetDeprecatedTaskRunner()->PostTask(
+  // If we are already in a RunLoop fail. A posted task to exit the another
+  // nested run loop will never execute and lead to a timeout.
+  DCHECK(!base::RunLoop::IsRunningOnCurrentThread());
+  scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
       FROM_HERE, WTF::BindOnce(&ExitRunLoop));
   EnterRunLoop();
 }
 
 void RunDelayedTasks(base::TimeDelta delay) {
-  Thread::Current()->GetDeprecatedTaskRunner()->PostDelayedTask(
+  // If we are already in a RunLoop fail. A posted task to exit the another
+  // nested run loop will never execute and lead to a timeout.
+  DCHECK(!base::RunLoop::IsRunningOnCurrentThread());
+  scheduler::GetSingleThreadTaskRunnerForTesting()->PostDelayedTask(
       FROM_HERE, WTF::BindOnce(&ExitRunLoop), delay);
   EnterRunLoop();
 }

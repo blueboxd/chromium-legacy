@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/unguessable_token.h"
@@ -22,6 +22,7 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/base/media_export.h"
+#include "media/base/video_frame.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -44,13 +45,13 @@ class MaskFilterInfo;
 
 namespace media {
 class PaintCanvasVideoRenderer;
-class VideoFrame;
 
 // Specifies what type of data is contained in the mailboxes, as well as how
 // many mailboxes will be present.
 enum class VideoFrameResourceType {
   NONE,
   YUV,
+  YUVA,
   RGB,
   RGBA_PREMULTIPLIED,
   RGBA,
@@ -162,7 +163,7 @@ class MEDIA_EXPORT VideoResourceUpdater
   PlaneResource* RecycleOrAllocateResource(const gfx::Size& resource_size,
                                            viz::ResourceFormat resource_format,
                                            const gfx::ColorSpace& color_space,
-                                           int unique_id,
+                                           VideoFrame::ID unique_id,
                                            int plane_index);
   PlaneResource* AllocateResource(const gfx::Size& plane_size,
                                   viz::ResourceFormat format,

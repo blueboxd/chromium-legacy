@@ -9,12 +9,16 @@
 
 #include <vector>
 
-#include "content/browser/attribution_reporting/attribution_aggregatable_trigger_data.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_values.h"
-#include "content/browser/attribution_reporting/attribution_filter_data.h"
+#include "components/attribution_reporting/aggregatable_values.h"
+#include "components/attribution_reporting/filters.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
+
+namespace attribution_reporting {
+class AggregatableTriggerData;
+struct EventTriggerData;
+}  // namespace attribution_reporting
 
 namespace content {
 
@@ -43,7 +47,9 @@ class CONTENT_EXPORT AttributionTrigger {
     kNoMatchingSourceFilterData = 10,
     kProhibitedByBrowserPolicy = 11,
     kNoMatchingConfigurations = 12,
-    kMaxValue = kNoMatchingConfigurations,
+    kExcessiveReports = 13,
+    kFalselyAttributedSource = 14,
+    kMaxValue = kFalselyAttributedSource,
   };
 
   // Represents the potential aggregatable outcomes from attempting to register
@@ -67,50 +73,22 @@ class CONTENT_EXPORT AttributionTrigger {
     kMaxValue = kDeduplicated,
   };
 
-  struct CONTENT_EXPORT EventTriggerData {
-    // Data associated with trigger.
-    // Will be sanitized to a lower entropy by the `AttributionStorageDelegate`
-    // before storage.
-    uint64_t data;
-
-    // Priority specified in conversion redirect. Used to prioritize which
-    // reports to send among multiple different reports for the same attribution
-    // source. Defaults to 0 if not provided.
-    int64_t priority;
-
-    // Key specified in conversion redirect for deduplication against existing
-    // conversions with the same source. If absent, no deduplication is
-    // performed.
-    absl::optional<uint64_t> dedup_key;
-
-    // The filters used to determine whether this `EventTriggerData'`s fields
-    // are used.
-    AttributionFilterData filters;
-
-    // The negated filters used to determine whether this `EventTriggerData'`s
-    // fields are used.
-    AttributionFilterData not_filters;
-
-    EventTriggerData(uint64_t data,
-                     int64_t priority,
-                     absl::optional<uint64_t> dedup_key,
-                     AttributionFilterData filters,
-                     AttributionFilterData not_filters);
-  };
-
   // Should only be created with values that the browser process has already
   // validated. |conversion_destination| should be filled by a navigation origin
   // known by the browser process.
   AttributionTrigger(
       url::Origin destination_origin,
       url::Origin reporting_origin,
-      AttributionFilterData filters,
-      AttributionFilterData not_filters,
+      attribution_reporting::Filters filters,
+      attribution_reporting::Filters not_filters,
       absl::optional<uint64_t> debug_key,
       absl::optional<uint64_t> aggregatable_dedup_key,
-      std::vector<EventTriggerData> event_triggers,
-      std::vector<AttributionAggregatableTriggerData> aggregatable_trigger_data,
-      AttributionAggregatableValues aggregatable_values);
+      std::vector<attribution_reporting::EventTriggerData> event_triggers,
+      std::vector<attribution_reporting::AggregatableTriggerData>
+          aggregatable_trigger_data,
+      attribution_reporting::AggregatableValues aggregatable_values,
+      bool is_within_fenced_frame,
+      bool debug_reporting);
 
   AttributionTrigger(const AttributionTrigger&);
   AttributionTrigger& operator=(const AttributionTrigger&);
@@ -122,9 +100,11 @@ class CONTENT_EXPORT AttributionTrigger {
 
   const url::Origin& reporting_origin() const { return reporting_origin_; }
 
-  const AttributionFilterData& filters() const { return filters_; }
+  const attribution_reporting::Filters& filters() const { return filters_; }
 
-  const AttributionFilterData& not_filters() const { return not_filters_; }
+  const attribution_reporting::Filters& not_filters() const {
+    return not_filters_;
+  }
 
   absl::optional<uint64_t> debug_key() const { return debug_key_; }
 
@@ -134,18 +114,23 @@ class CONTENT_EXPORT AttributionTrigger {
 
   void ClearDebugKey() { debug_key_ = absl::nullopt; }
 
-  const std::vector<EventTriggerData>& event_triggers() const {
+  const std::vector<attribution_reporting::EventTriggerData>& event_triggers()
+      const {
     return event_triggers_;
   }
 
-  const std::vector<AttributionAggregatableTriggerData>&
+  const std::vector<attribution_reporting::AggregatableTriggerData>&
   aggregatable_trigger_data() const {
     return aggregatable_trigger_data_;
   }
 
-  const AttributionAggregatableValues& aggregatable_values() const {
+  const attribution_reporting::AggregatableValues& aggregatable_values() const {
     return aggregatable_values_;
   }
+
+  bool is_within_fenced_frame() const { return is_within_fenced_frame_; }
+
+  bool debug_reporting() const { return debug_reporting_; }
 
  private:
   // Origin that this conversion event occurred on.
@@ -155,9 +140,9 @@ class CONTENT_EXPORT AttributionTrigger {
   // reports.
   url::Origin reporting_origin_;
 
-  AttributionFilterData filters_;
+  attribution_reporting::Filters filters_;
 
-  AttributionFilterData not_filters_;
+  attribution_reporting::Filters not_filters_;
 
   absl::optional<uint64_t> debug_key_;
 
@@ -165,10 +150,17 @@ class CONTENT_EXPORT AttributionTrigger {
   // the same source. If absent, no deduplication is performed.
   absl::optional<uint64_t> aggregatable_dedup_key_;
 
-  std::vector<EventTriggerData> event_triggers_;
+  std::vector<attribution_reporting::EventTriggerData> event_triggers_;
 
-  std::vector<AttributionAggregatableTriggerData> aggregatable_trigger_data_;
-  AttributionAggregatableValues aggregatable_values_;
+  std::vector<attribution_reporting::AggregatableTriggerData>
+      aggregatable_trigger_data_;
+  attribution_reporting::AggregatableValues aggregatable_values_;
+
+  // Whether the trigger is registered within a fenced frame tree.
+  bool is_within_fenced_frame_;
+
+  // Whether debug reporting is enabled.
+  bool debug_reporting_;
 };
 
 }  // namespace content

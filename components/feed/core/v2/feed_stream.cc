@@ -4,16 +4,20 @@
 
 #include "components/feed/core/v2/feed_stream.h"
 
+#include <algorithm>
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -50,6 +54,7 @@
 #include "components/feed/core/v2/stream_model.h"
 #include "components/feed/core/v2/surface_updater.h"
 #include "components/feed/core/v2/tasks/clear_all_task.h"
+#include "components/feed/core/v2/tasks/clear_stream_task.h"
 #include "components/feed/core/v2/tasks/load_stream_task.h"
 #include "components/feed/core/v2/tasks/prefetch_images_task.h"
 #include "components/feed/core/v2/tasks/upload_actions_task.h"
@@ -248,12 +253,17 @@ void FeedStream::InitializeComplete(WaitForStoreInitializeTask::Result result) {
   for (const feedstore::StreamData& stream_data :
        result.startup_data.stream_data) {
     StreamType stream_type =
-        feedstore::StreamTypeFromKey(stream_data.stream_id());
+        feedstore::StreamTypeFromId(stream_data.stream_id());
     if (stream_type.IsValid()) {
       GetStream(stream_type).content_ids =
           feedstore::GetContentIds(stream_data);
     }
+    if (stream_type.IsForYou()) {
+      GetStream(stream_type).viewed_content_hashes =
+          feedstore::GetViewedContentHashes(metadata_, stream_type);
+    }
   }
+
   metadata_populated_ = true;
   metrics_reporter_->OnMetadataInitialized(
       IsFeedEnabledByEnterprisePolicy(), IsArticlesListVisible(), IsSignedIn(),
@@ -264,7 +274,7 @@ void FeedStream::InitializeComplete(WaitForStoreInitializeTask::Result result) {
   for (const feedstore::StreamData& stream_data :
        result.startup_data.stream_data) {
     StreamType stream_type =
-        feedstore::StreamTypeFromKey(stream_data.stream_id());
+        feedstore::StreamTypeFromId(stream_data.stream_id());
     if (stream_type.IsValid())
       MaybeNotifyHasUnreadContent(stream_type);
   }
@@ -307,12 +317,26 @@ void FeedStream::StreamLoadComplete(LoadStreamTask::Result result) {
   if (stream.model)
     content_stats = stream.model->GetContentStats();
 
-  metrics_reporter_->OnLoadStream(
-      stream.type, result.load_from_store_status, result.final_status,
+  // stream_metadata is an optional because in some scenarios StreamLoadComplete
+  // is called bypassing the task queue. In this case WaitForStoreInitialize
+  // task is not completed first and the metadata is not populated. Thus, we
+  // dont need to track content_lifetime.
+  absl::optional<feedstore::Metadata::StreamMetadata> stream_metadata;
+  if (metadata_populated_) {
+    feedstore::Metadata metadata = GetMetadata();
+    stream_metadata =
+        feedstore::MetadataForStream(metadata, result.stream_type);
+  }
+  const MetricsReporter::LoadStreamResultSummary result_summary = {
+      result.load_from_store_status,
+      result.final_status,
       result.load_type == LoadType::kInitialLoad,
-      result.loaded_new_content_from_network, result.stored_content_age,
-      content_stats, GetContentOrder(result.stream_type),
-      std::move(result.latencies));
+      result.loaded_new_content_from_network,
+      result.stored_content_age,
+      GetContentOrder(result.stream_type),
+      stream_metadata};
+  metrics_reporter_->OnLoadStream(stream.type, result_summary, content_stats,
+                                  std::move(result.latencies));
 
   stream.model_loading_in_progress = false;
   stream.surface_updater->LoadStreamComplete(
@@ -480,6 +504,15 @@ void FeedStream::AddUnloadModelIfNoSurfacesAttachedTask(
       FROM_HERE, std::make_unique<offline_pages::ClosureTask>(base::BindOnce(
                      &FeedStream::UnloadModelIfNoSurfacesAttachedTask,
                      base::Unretained(this), stream_type)));
+  // If this is a SingleWebFeed stream, remove it and delete stream data on a
+  // delay.
+  if (stream_type.IsSingleWebFeed()) {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&FeedStream::ClearStream, GetWeakPtr(), stream_type,
+                       sequence_number),
+        GetFeedConfig().single_web_feed_stream_clear_timeout);
+  }
 }
 
 void FeedStream::UnloadModelIfNoSurfacesAttachedTask(
@@ -589,6 +622,9 @@ void FeedStream::ManualRefresh(const StreamType& stream_type,
   }
 
   last_refresh_scheduled_on_interaction_time_ = base::TimeTicks();
+
+  metrics_reporter_->OnManualRefresh(stream_type, metadata_,
+                                     stream.content_ids);
 }
 
 void FeedStream::ExecuteOperations(
@@ -957,7 +993,7 @@ RequestMetadata FeedStream::GetSignedInRequestMetadata() const {
 RequestMetadata FeedStream::GetRequestMetadata(const StreamType& stream_type,
                                                bool is_for_next_page) const {
   const Stream* stream = FindStream(stream_type);
-  // TODO(crbug.com/1370127) handle null channel streams
+  // TODO(crbug.com/1370127) handle null single web feed streams
   DCHECK(stream);
   RequestMetadata result;
   if (is_for_next_page) {
@@ -1101,8 +1137,10 @@ void FeedStream::LoadTaskComplete(const LoadStreamTask::Result& result) {
   }
   if (result.loaded_new_content_from_network) {
     SetStreamStale(result.stream_type, false);
-    if (result.stream_type.IsForYou())
+    if (result.stream_type.IsForYou()) {
       UpdateExperiments(result.experiments);
+      CheckDuplicatedContentsOnRefresh();
+    }
   }
 
   MaybeNotifyHasUnreadContent(result.stream_type);
@@ -1161,6 +1199,13 @@ void FeedStream::FinishClearAll() {
     }
   }
   web_feed_subscription_coordinator_->ClearAllFinished();
+}
+
+void FeedStream::FinishClearStream(const StreamType& stream_type) {
+  Stream* stream = FindStream(stream_type);
+  if (stream && stream_type.IsSingleWebFeed()) {
+    streams_.erase(stream_type);
+  }
 }
 
 ImageFetchId FeedStream::FetchImage(
@@ -1236,10 +1281,16 @@ void FeedStream::UnloadModel(const StreamType& stream_type) {
     stream->surface_updater->SetModel(nullptr);
     stream->model.reset();
   }
-  // If this is a channel stream remove it from streams_ as well
-  if (stream_type.IsChannelFeed()) {
-    streams_.erase(stream_type);
+}
+
+void FeedStream::ClearStream(const StreamType& stream_type,
+                             int sequence_number) {
+  Stream* stream = FindStream(stream_type);
+  if (!stream || stream->unload_on_detach_sequence_number != sequence_number) {
+    return;
   }
+  task_queue_.AddTask(FROM_HERE,
+                      std::make_unique<ClearStreamTask>(this, stream_type));
 }
 
 void FeedStream::UnloadModels() {
@@ -1299,9 +1350,17 @@ void FeedStream::ReportSliceViewed(SurfaceId surface_id,
   metrics_reporter_->ContentSliceViewed(stream_type, index,
                                         stream.model->GetContentList().size());
 
+  ContentRevision content_revision = ToContentRevision(slice_id);
+
   privacy_notice_card_tracker_.OnCardViewed(
-      stream.model->signed_in(),
-      stream.model->FindContentId(ToContentRevision(slice_id)));
+      stream.model->signed_in(), stream.model->FindContentId(content_revision));
+
+  if (stream_type.IsForYou()) {
+    const feedstore::Content* content =
+        stream.model->FindContent(content_revision);
+    if (content)
+      AddViewedContentHashes(*content);
+  }
 }
 
 // Notifies observers if 'HasUnreadContent' has changed for `stream_type`.
@@ -1465,6 +1524,129 @@ void FeedStream::ScheduleFeedCloseRefresh(const StreamType& type) {
   schedule.refresh_offsets = {delay, delay * 2, delay * 3};
   schedule.type = RequestSchedule::Type::kFeedCloseRefresh;
   SetRequestSchedule(type, std::move(schedule));
+}
+
+void FeedStream::CheckDuplicatedContentsOnRefresh() {
+  StreamType stream_type = StreamType(StreamKind::kForYou);
+  Stream& stream = GetStream(stream_type);
+  feedstore::Metadata metadata = GetMetadata();
+  feedstore::Metadata::StreamMetadata& stream_metadata =
+      MetadataForStream(metadata, stream_type);
+
+  // Update the most recent list to include the currently view contents.
+  // This is done in the following steps:
+  // 1) If the currently viewed content hash is found in the most recent list,
+  //    it means that the content was viewed in previous sessions. We need to
+  //    remove the content hash from its old position and add it back later.
+  // 2) Append the currently viewed content hashes.
+  std::vector<uint32_t> most_recent_viewed_content_hashes(
+      metadata.most_recent_viewed_content_hashes().begin(),
+      metadata.most_recent_viewed_content_hashes().end());
+  base::flat_set<uint32_t> viewed_content_hashes(
+      stream_metadata.viewed_content_hashes().begin(),
+      stream_metadata.viewed_content_hashes().end());
+  most_recent_viewed_content_hashes.erase(
+      std::remove_if(most_recent_viewed_content_hashes.begin(),
+                     most_recent_viewed_content_hashes.end(),
+                     [&viewed_content_hashes](uint32_t x) {
+                       return viewed_content_hashes.contains(x);
+                     }),
+      most_recent_viewed_content_hashes.end());
+  most_recent_viewed_content_hashes.insert(
+      most_recent_viewed_content_hashes.end(),
+      stream_metadata.viewed_content_hashes().begin(),
+      stream_metadata.viewed_content_hashes().end());
+
+  // Check and report the content duplication.
+  if (!stream.content_ids.IsEmpty()) {
+    base::flat_set<uint32_t> most_recent_content_hashes(
+        most_recent_viewed_content_hashes.begin(),
+        most_recent_viewed_content_hashes.end());
+    bool is_duplicated_at_pos_1 = false;
+    bool is_duplicated_at_pos_2 = false;
+    bool is_duplicated_at_pos_3 = false;
+    int duplicate_count_for_top_10 = 0;
+    int duplicate_count_for_all = 0;
+    int total_count = 0;
+    int pos = 0;
+    for (const feedstore::StreamContentHashList& hash_list :
+         stream.content_ids.original_hashes()) {
+      if (hash_list.hashes_size() == 0)
+        continue;
+
+      // For position specific metrics, only the first item is checked for
+      // duplication if there are more than one items in a row, like carousel,
+      // collection or 2-column.
+      if (pos < 10 &&
+          most_recent_content_hashes.contains(hash_list.hashes(0))) {
+        duplicate_count_for_top_10++;
+        if (pos == 0)
+          is_duplicated_at_pos_1 = true;
+        else if (pos == 1)
+          is_duplicated_at_pos_2 = true;
+        else if (pos == 2)
+          is_duplicated_at_pos_3 = true;
+      }
+
+      for (uint32_t hash : hash_list.hashes()) {
+        total_count++;
+        if (most_recent_content_hashes.contains(hash)) {
+          duplicate_count_for_all++;
+        }
+      }
+
+      pos++;
+    }
+
+    // Don't report the duplication metrics for the first time.
+    if (most_recent_viewed_content_hashes.size() > 0 && total_count > 0) {
+      metrics_reporter_->ReportContentDuplication(
+          is_duplicated_at_pos_1, is_duplicated_at_pos_2,
+          is_duplicated_at_pos_3,
+          static_cast<int>(duplicate_count_for_top_10 * 10),
+          static_cast<int>(100 * duplicate_count_for_all / total_count));
+    }
+  }
+
+  // Reset `viewed_content_hashes` after each refresh.
+  stream_metadata.clear_viewed_content_hashes();
+  stream.viewed_content_hashes.clear();
+
+  // Cap the most recent list.
+  size_t max_size = static_cast<size_t>(
+      GetFeedConfig().max_most_recent_viewed_content_hashes);
+  if (most_recent_viewed_content_hashes.size() > max_size) {
+    most_recent_viewed_content_hashes.erase(
+        most_recent_viewed_content_hashes.begin(),
+        most_recent_viewed_content_hashes.begin() +
+            (most_recent_viewed_content_hashes.size() - max_size));
+  }
+  metadata.mutable_most_recent_viewed_content_hashes()->Assign(
+      most_recent_viewed_content_hashes.begin(),
+      most_recent_viewed_content_hashes.end());
+
+  SetMetadata(metadata);
+}
+
+void FeedStream::AddViewedContentHashes(const feedstore::Content& content) {
+  // Count only the 1st item in the collection.
+  if (content.prefetch_metadata_size() == 0)
+    return;
+  StreamType stream_type = StreamType(StreamKind::kForYou);
+  const auto& prefetch_metadata = content.prefetch_metadata(0);
+  int32_t content_hash =
+      feedstore::ContentHashFromPrefetchMetadata(prefetch_metadata);
+  if (!content_hash)
+    return;
+  Stream& stream = GetStream(stream_type);
+  if (!stream.viewed_content_hashes.contains(content_hash)) {
+    feedstore::Metadata metadata = GetMetadata();
+    stream.viewed_content_hashes.insert(content_hash);
+    feedstore::Metadata::StreamMetadata& stream_metadata =
+        MetadataForStream(metadata, stream_type);
+    stream_metadata.add_viewed_content_hashes(content_hash);
+    SetMetadata(metadata);
+  }
 }
 
 }  // namespace feed

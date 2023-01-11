@@ -36,7 +36,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.AutoclosedSessionDuration" units="ms"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>jinsukkim@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>cct-team@google.com</owner>
@@ -65,7 +65,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.Branding.BrandingCheckDuration" units="ms"
-    expires_after="2023-02-09">
+    expires_after="2023-04-16">
   <owner>wenyufu@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -77,7 +77,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.Branding.BrandingDecision"
-    enum="CustomTabsBrandingDecision" expires_after="2023-02-09">
+    enum="CustomTabsBrandingDecision" expires_after="2023-04-16">
   <owner>wenyufu@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -159,7 +159,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.CloseCause" enum="CustomTabsCloseCause"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>jinsukkim@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>cct-team@google.com</owner>
@@ -208,7 +208,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.DetachedResourceRequest.FinalStatus"
-    enum="NetErrorCodes" expires_after="2023-02-26">
+    enum="NetErrorCodes" expires_after="2023-04-30">
   <owner>lizeb@chromium.org</owner>
   <owner>cct-team@google.com</owner>
   <summary>
@@ -231,7 +231,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.HadInteractionOnClose" enum="Boolean"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>wenyufu@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -395,16 +395,16 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="CustomTabs.RetainableSessions.TimeBetweenLaunch{IdentifierType}"
+    name="CustomTabs.RetainableSessionsV2.TimeBetweenLaunch{IdentifierType}"
     units="seconds" expires_after="2023-02-12">
   <owner>wenyufu@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
-    When a CCT session is launched, if it is launch with the same Uri and same
-    taskId, record the duration between previous CCT closure and current CCT
-    launch. Recorded on CCT launch.
+    When a CCT session is launched, if it is launched with same URL and has the
+    same package name or the same taskId + referrer combo, record the duration
+    between previous CCT closure and current CCT launch. Recorded on CCT launch.
 
-    A CCT can be defined as retainable if: 1) it is launching with the same Uri
+    A CCT can be defined as retainable if 1) it is launching with the same URL
     as the most recently closed CCT; 2) it is launched from the same embedded
     app as the most recently closed CCT; 3) the most recently closed CCT had
     user interactions. See &quot;CustomTabs.HadInteractionOnClose&quot; for
@@ -427,7 +427,8 @@ chromium-metrics-reviews@google.com.
         summary="Apps not consistently using CCT services. Referrer and
                  package are used together."/>
     <variant name=".PackageName"
-        summary="Apps using CCT services. Package name is used as identifier."/>
+        summary="Apps that provide package name. Package name is used as
+                 identifier."/>
     <variant name=".Referrer"
         summary="Apps not connecting with CCT services. Activity referrer is
                  used as identifier."/>
@@ -599,7 +600,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TrustedWebActivity.ExtraCommandSuccess.{command}"
-    enum="BooleanSuccess" expires_after="2022-11-23">
+    enum="BooleanSuccess" expires_after="2023-11-01">
   <owner>mvanouwerkerk@google.com</owner>
   <owner>peconn@chromium.org</owner>
   <owner>
@@ -662,7 +663,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TrustedWebActivity.Notification.PermissionRequestResult"
-    enum="ContentSetting" expires_after="2022-12-04">
+    enum="ContentSetting" expires_after="2023-11-01">
   <owner>mvanouwerkerk@chromium.org</owner>
   <owner>peconn@chromium.org</owner>
   <owner>

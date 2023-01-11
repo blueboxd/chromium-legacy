@@ -145,8 +145,7 @@ void AddContentColors(ui::ColorMixer& mixer,
   mixer[kColorAshTextColorPositive] = {cros_tokens::kColorPositive};
   mixer[kColorAshTextColorURL] = {cros_tokens::kColorProminent};
   mixer[kColorAshIconColorPrimary] = {kColorAshTextColorPrimary};
-  // TODO(skau): Figure out if this should be kColorSecondary instead.
-  mixer[kColorAshIconColorSecondary] = {cros_tokens::kColorDisabledDark};
+  mixer[kColorAshIconColorSecondary] = {cros_tokens::kColorSecondary};
   mixer[kColorAshIconColorAlert] = {kColorAshTextColorAlert};
   mixer[kColorAshIconColorWarning] = {kColorAshTextColorWarning};
   mixer[kColorAshIconColorPositive] = {kColorAshTextColorPositive};
@@ -170,7 +169,14 @@ void AddContentColors(ui::ColorMixer& mixer,
   mixer[kColorAshAppStateIndicatorColor] = {kColorAshTextColorPrimary};
   mixer[kColorAshAppStateIndicatorColorInactive] =
       ui::SetAlpha(kColorAshAppStateIndicatorColor, kDisabledColorOpacity);
-  mixer[kColorAshShelfHandleColor] = {kColorAshSeparatorColor};
+  mixer[kColorAshShelfHandleColor] = {cros_tokens::kIconColorSecondary};
+  mixer[kColorAshShelfTooltipBackgroundColor] = {
+      features::IsDarkLightModeEnabled() ? kColorAshInvertedShieldAndBase80
+                                         : kColorAshShieldAndBase80};
+  mixer[kColorAshShelfTooltipForegroundColor] = {
+      features::IsDarkLightModeEnabled()
+          ? cros_tokens::kTextColorPrimaryInverted
+          : cros_tokens::kTextColorPrimary};
   mixer[kColorAshSliderColorActive] = {kColorAshTextColorURL};
   mixer[kColorAshSliderColorInactive] = {kColorAshScrollBarColor};
   mixer[kColorAshRadioColorActive] = {kColorAshTextColorURL};
@@ -249,7 +255,7 @@ void RemapLegacySemanticColors(ui::ColorMixer& mixer) {
   mixer[cros_tokens::kColorSelection] = {
       cros_tokens::kCrosSysOnPrimaryContainer};
 
-  mixer[cros_tokens::kBgColor] = {cros_tokens::kCrosSysAppBase2};
+  mixer[cros_tokens::kBgColor] = {cros_tokens::kCrosSysAppBase};
   mixer[cros_tokens::kBgColorElevation1] = {
       cros_tokens::kCrosSysAppBaseElevated};
   mixer[cros_tokens::kBgColorElevation2Light] = {
@@ -263,9 +269,9 @@ void RemapLegacySemanticColors(ui::ColorMixer& mixer) {
   mixer[cros_tokens::kBgColorElevation5] = {
       cros_tokens::kCrosSysAppBaseElevated};
   mixer[cros_tokens::kBgColorDroppedElevation1] = {
-      cros_tokens::kCrosSysAppBase1};
+      cros_tokens::kCrosSysAppBaseShaded};
   mixer[cros_tokens::kBgColorDroppedElevation2] = {
-      cros_tokens::kCrosSysAppBase1};
+      cros_tokens::kCrosSysAppBaseShaded};
 }
 
 // Adds the dynamic color palette tokens based on user_color. This is the base
@@ -407,27 +413,13 @@ void AddAshColorMixer(ui::ColorProvider* provider,
   AddControlsColors(mixer, key);
   AddContentColors(mixer, key);
 
-  if (!features::IsProductivityLauncherEnabled() &&
-      !features::IsDarkLightModeEnabled()) {
-    mixer[kColorAshAssistantGreetingEnabled] = {
-        cros_tokens::kColorPrimaryLight};
-    mixer[kColorAshSuggestionChipViewTextView] = {
-        cros_tokens::kColorSecondaryLight};
-    mixer[kColorAshAssistantQueryHighConfidenceLabel] = {
-        cros_tokens::kColorPrimaryLight};
-    mixer[kColorAshAssistantQueryLowConfidenceLabel] = {
-        cros_tokens::kColorSecondaryLight};
-    mixer[kColorAshAssistantTextColorPrimary] = {
-        cros_tokens::kColorPrimaryLight};
-  } else {
-    mixer[kColorAshAssistantGreetingEnabled] = {cros_tokens::kColorPrimary};
-    mixer[kColorAshSuggestionChipViewTextView] = {cros_tokens::kColorSecondary};
-    mixer[kColorAshAssistantQueryHighConfidenceLabel] = {
-        cros_tokens::kColorPrimary};
-    mixer[kColorAshAssistantQueryLowConfidenceLabel] = {
-        cros_tokens::kColorSecondary};
-    mixer[kColorAshAssistantTextColorPrimary] = {cros_tokens::kColorPrimary};
-  }
+  mixer[kColorAshAssistantGreetingEnabled] = {cros_tokens::kColorPrimary};
+  mixer[kColorAshSuggestionChipViewTextView] = {cros_tokens::kColorSecondary};
+  mixer[kColorAshAssistantQueryHighConfidenceLabel] = {
+      cros_tokens::kColorPrimary};
+  mixer[kColorAshAssistantQueryLowConfidenceLabel] = {
+      cros_tokens::kColorSecondary};
+  mixer[kColorAshAssistantTextColorPrimary] = {cros_tokens::kColorPrimary};
 
   mixer[ui::kColorAshActionLabelFocusRingEdit] = {
       cros_tokens::kColorProminentDark};
@@ -480,6 +472,12 @@ void AddAshColorMixer(ui::ColorProvider* provider,
 
   mixer[kColorAshButtonIconDisabledColor] =
       ui::SetAlpha(kColorAshButtonIconColor, kDisabledColorOpacity);
+  mixer[kColorAshIconSecondaryDisabledColor] =
+      ui::SetAlpha(cros_tokens::kCrosSysSecondary, kDisabledColorOpacity);
+  mixer[kColorAshIconPrimaryDisabledColor] =
+      ui::SetAlpha(cros_tokens::kCrosSysPrimary, kDisabledColorOpacity);
+  mixer[KColorAshTextDisabledColor] =
+      ui::SetAlpha(cros_tokens::kCrosSysOnSurface, kDisabledColorOpacity);
 }
 
 }  // namespace ash

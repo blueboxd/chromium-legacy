@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="2084108471225856927">Настройки на устройството</translation>
 <translation id="2084809735218147718">Благодарност</translation>
-<translation id="2085470240340828803">Вече съществува файл с име „<ph name="FILENAME" />“. Какво искате да направите?</translation>
 <translation id="2088690981887365033">VPN мрежа</translation>
 <translation id="2122305276694332719">Автоматичното свързване със скрита мрежа дава възможност на другите хора да виждат устройството ви и някои мрежови настройки и не се препоръчва.</translation>
 <translation id="2125607626296734455">Кхмерски</translation>
@@ -456,7 +455,6 @@
 <translation id="4900532980794411603">Споделяне с Parallels Desktop</translation>
 <translation id="4902546322522096650">Мрежа <ph name="NETWORK_INDEX" /> от <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, сила на сигнала <ph name="SIGNAL_STRENGTH" />%, свързване</translation>
 <translation id="4906580650526544301">Мрежа <ph name="NETWORK_INDEX" /> от <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, сила на сигнала <ph name="SIGNAL_STRENGTH" />%, батерия на телефона <ph name="BATTERY_STATUS" />%, подробности</translation>
-<translation id="4929673617759421391">Поставянето на този файл е блокирано чрез администраторско правило</translation>
 <translation id="4935975195727477204">Газания</translation>
 <translation id="4943368462779413526">Футболна топка</translation>
 <translation id="4961158930123534723">1 папка е споделена с Parallels Desktop</translation>
@@ -534,6 +532,7 @@
 <translation id="5428105026674456456">испански</translation>
 <translation id="5438282218546237410">Няма резултати за <ph name="SEARCH_TERM" />.</translation>
 <translation id="5449551289610225147">Паролата е невалидна</translation>
+<translation id="5459064203055649751">Вече съществува файл с име „<ph name="FILENAME" />“. Искате ли да го замените с този, който премествате?</translation>
 <translation id="5463231940765244860">Въвеждане</translation>
 <translation id="5469868506864199649">италиански</translation>
 <translation id="5473333559083690127">Въведете пак новия ПИН</translation>
@@ -654,6 +653,7 @@
 <translation id="6495925982925244349">Мрежа <ph name="NETWORK_INDEX" /> от <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, сила на сигнала <ph name="SIGNAL_STRENGTH" />%, управлява се от администратора ви, подробности</translation>
 <translation id="649877868557234318"><ph name="FILE_NAME" /> се извлича в(ъв) „<ph name="FOLDER_NAME" />“</translation>
 <translation id="6499681088828539489">Забраняване на прокси сървърите за споделените мрежи</translation>
+<translation id="6503285896705205014">Копирането на <ph name="COUNT" /> файла е блокирано чрез администраторско правило</translation>
 <translation id="6509122719576673235">норвежки</translation>
 <translation id="6528513914570774834">Разрешаване на другите потребители на устройството да използват тази мрежа</translation>
 <translation id="653019979737152879">„<ph name="FILE_NAME" />“ се синхронизира...</translation>
@@ -756,6 +756,7 @@
 <translation id="7357762654218998920">Този файлов тип не се поддържа. <ph name="BEGIN_LINK_HELP" />Научете повече<ph name="END_LINK_HELP" /> за отварянето на файлове в Chrome OS.</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> елемента се копират...</translation>
 <translation id="7375951387215729722">Списъкът с файлове е сортиран в низходящ ред по <ph name="COLUMN_NAME" />.</translation>
+<translation id="7377161162143020057">Копирането на този файл е блокирано чрез администраторско правило</translation>
 <translation id="7402503521691663770">Устройства с ChromeOS Flex</translation>
 <translation id="7408870451288633753">Чешки</translation>
 <translation id="7417453074306512035">Етиопска клавиатура</translation>
@@ -977,7 +978,6 @@
 <translation id="9183302530794969518">Google Документи</translation>
 <translation id="9189836632794948435">Казахски</translation>
 <translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> елемента са извлечени.</translation>
-<translation id="9210751050717126865">Поставянето на <ph name="COUNT" /> файла е блокирано чрез администраторско правило</translation>
 <translation id="9213073329713032541">Инсталирането стартира успешно.</translation>
 <translation id="9219103736887031265">Изображения</translation>
 <translation id="9219908252191632183">Лунен пейзаж</translation>

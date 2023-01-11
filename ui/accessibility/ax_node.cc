@@ -153,7 +153,7 @@ AXNode* AXNode::GetParentCrossingTreeBoundary() const {
     return parent_;
   const AXTreeManager* manager = GetManager();
   if (manager)
-    return manager->GetParentNodeFromParentTreeAsAXNode();
+    return manager->GetParentNodeFromParentTree();
   return nullptr;
 }
 
@@ -171,12 +171,22 @@ AXNode* AXNode::GetUnignoredParentCrossingTreeBoundary() const {
   if (!unignored_parent) {
     const AXTreeManager* manager = GetManager();
     if (manager)
-      unignored_parent = manager->GetParentNodeFromParentTreeAsAXNode();
+      unignored_parent = manager->GetParentNodeFromParentTree();
   }
   return unignored_parent;
 }
 
-base::stack<AXNode*> AXNode::GetAncestorsCrossingTreeBoundary() const {
+base::queue<AXNode*> AXNode::GetAncestorsCrossingTreeBoundaryAsQueue() const {
+  base::queue<AXNode*> ancestors;
+  AXNode* ancestor = const_cast<AXNode*>(this);
+  while (ancestor) {
+    ancestors.push(ancestor);
+    ancestor = ancestor->GetParentCrossingTreeBoundary();
+  }
+  return ancestors;
+}
+
+base::stack<AXNode*> AXNode::GetAncestorsCrossingTreeBoundaryAsStack() const {
   base::stack<AXNode*> ancestors;
   AXNode* ancestor = const_cast<AXNode*>(this);
   while (ancestor) {
@@ -638,9 +648,10 @@ AXNode* AXNode::GetLowestCommonAncestor(const AXNode& other) {
     return this;
 
   AXNode* common_ancestor = nullptr;
-  base::stack<AXNode*> our_ancestors = GetAncestorsCrossingTreeBoundary();
+  base::stack<AXNode*> our_ancestors =
+      GetAncestorsCrossingTreeBoundaryAsStack();
   base::stack<AXNode*> other_ancestors =
-      other.GetAncestorsCrossingTreeBoundary();
+      other.GetAncestorsCrossingTreeBoundaryAsStack();
   while (!our_ancestors.empty() && !other_ancestors.empty() &&
          our_ancestors.top() == other_ancestors.top()) {
     common_ancestor = our_ancestors.top();
@@ -655,9 +666,10 @@ absl::optional<int> AXNode::CompareTo(const AXNode& other) const {
     return 0;
 
   AXNode* common_ancestor = nullptr;
-  base::stack<AXNode*> our_ancestors = GetAncestorsCrossingTreeBoundary();
+  base::stack<AXNode*> our_ancestors =
+      GetAncestorsCrossingTreeBoundaryAsStack();
   base::stack<AXNode*> other_ancestors =
-      other.GetAncestorsCrossingTreeBoundary();
+      other.GetAncestorsCrossingTreeBoundaryAsStack();
   while (!our_ancestors.empty() && !other_ancestors.empty() &&
          our_ancestors.top() == other_ancestors.top()) {
     common_ancestor = our_ancestors.top();
@@ -1967,6 +1979,12 @@ bool AXNode::IsLeaf() const {
   // any children.
   if (data().IsAtomicTextField() || IsText())
     return true;
+
+  // Non atomic text fields may have children that we want to expose.
+  // For example, a <div contenteditable> may have child elements such as
+  // more <div>s that we want to expose.
+  if (data().IsNonAtomicTextField())
+    return false;
 
   // Roles whose children are only presentational according to the ARIA and
   // HTML5 Specs should be hidden from screen readers.

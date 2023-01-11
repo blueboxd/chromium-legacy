@@ -15,20 +15,21 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/attribution_reporting/aggregatable_trigger_data.h"
+#include "components/attribution_reporting/aggregatable_values.h"
+#include "components/attribution_reporting/aggregation_keys.h"
+#include "components/attribution_reporting/constants.h"
+#include "components/attribution_reporting/filters.h"
 #include "content/browser/aggregation_service/aggregatable_report.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_trigger_data.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_values.h"
-#include "content/browser/attribution_reporting/attribution_aggregation_keys.h"
-#include "content/browser/attribution_reporting/attribution_filter_data.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
+#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/common/aggregatable_report.mojom.h"
 #include "net/base/schemeful_site.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
-#include "third_party/blink/public/common/attribution_reporting/constants.h"
 
 namespace content {
 
@@ -49,21 +50,22 @@ std::string SerializeTimeRoundedDownToWholeDayInSeconds(base::Time time) {
 }  // namespace
 
 std::vector<AggregatableHistogramContribution> CreateAggregatableHistogram(
-    const AttributionFilterData& source_filter_data,
-    const AttributionAggregationKeys& keys,
-    const std::vector<AttributionAggregatableTriggerData>&
+    const attribution_reporting::FilterData& source_filter_data,
+    AttributionSourceType source_type,
+    const attribution_reporting::AggregationKeys& keys,
+    const std::vector<attribution_reporting::AggregatableTriggerData>&
         aggregatable_trigger_data,
-    const AttributionAggregatableValues& aggregatable_values) {
+    const attribution_reporting::AggregatableValues& aggregatable_values) {
   int num_trigger_data_filtered = 0;
 
-  AttributionAggregationKeys::Keys buckets = keys.keys();
+  attribution_reporting::AggregationKeys::Keys buckets = keys.keys();
 
   // For each piece of trigger data specified, check if its filters/not_filters
   // match for the given source, and if applicable modify the bucket based on
   // the given key piece.
   for (const auto& data : aggregatable_trigger_data) {
-    if (!AttributionFiltersMatch(source_filter_data, data.filters(),
-                                 data.not_filters())) {
+    if (!AttributionFiltersMatch(source_filter_data, source_type,
+                                 data.filters(), data.not_filters())) {
       ++num_trigger_data_filtered;
       continue;
     }
@@ -77,7 +79,7 @@ std::vector<AggregatableHistogramContribution> CreateAggregatableHistogram(
     }
   }
 
-  const AttributionAggregatableValues::Values& values =
+  const attribution_reporting::AggregatableValues::Values& values =
       aggregatable_values.values();
 
   std::vector<AggregatableHistogramContribution> contributions;
@@ -102,7 +104,7 @@ std::vector<AggregatableHistogramContribution> CreateAggregatableHistogram(
 
   const int kExclusiveMaxHistogramValue = 101;
 
-  static_assert(blink::kMaxAttributionAggregationKeysPerSourceOrTrigger <
+  static_assert(attribution_reporting::kMaxAggregationKeysPerSourceOrTrigger <
                     kExclusiveMaxHistogramValue,
                 "Bump the version for histogram "
                 "Conversions.AggregatableReport.NumContributionsPerReport");

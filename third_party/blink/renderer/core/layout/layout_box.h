@@ -254,11 +254,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // TODO(crbug.com/962299): This is incorrect in some cases.
   int PixelSnappedWidth() const {
     NOT_DESTROYED();
-    return frame_rect_.PixelSnappedWidth();
+    return SnapSizeToPixel(Size().Width(), Location().X());
   }
   int PixelSnappedHeight() const {
     NOT_DESTROYED();
-    return frame_rect_.PixelSnappedHeight();
+    return SnapSizeToPixel(Size().Height(), Location().Y());
   }
 
   void SetX(LayoutUnit x) {
@@ -310,13 +310,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
   LayoutUnit LogicalWidth() const {
     NOT_DESTROYED();
-    return StyleRef().IsHorizontalWritingMode() ? frame_rect_.Width()
-                                                : frame_rect_.Height();
+    LayoutSize size = Size();
+    return StyleRef().IsHorizontalWritingMode() ? size.Width() : size.Height();
   }
   LayoutUnit LogicalHeight() const {
     NOT_DESTROYED();
-    return StyleRef().IsHorizontalWritingMode() ? frame_rect_.Height()
-                                                : frame_rect_.Width();
+    LayoutSize size = Size();
+    return StyleRef().IsHorizontalWritingMode() ? size.Height() : size.Width();
   }
 
   // Logical height of the object, including content overflowing the
@@ -404,7 +404,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     auto location = Location();
     return LayoutSize(location.X(), location.Y());
   }
-  LayoutSize Size() const {
+  virtual LayoutSize Size() const {
     NOT_DESTROYED();
     return frame_rect_.Size();
   }
@@ -447,11 +447,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutRect FrameRect() const {
     NOT_DESTROYED();
     return LayoutRect(Location(), Size());
-  }
-  void SetFrameRect(const LayoutRect& rect) {
-    NOT_DESTROYED();
-    SetLocation(rect.Location());
-    SetSize(rect.Size());
   }
 
   // Note that those functions have their origin at this box's CSS border box.
@@ -806,11 +801,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // of a single line).
   LayoutUnit OffsetWidth() const final {
     NOT_DESTROYED();
-    return frame_rect_.Width();
+    return Size().Width();
   }
   LayoutUnit OffsetHeight() const final {
     NOT_DESTROYED();
-    return frame_rect_.Height();
+    return Size().Height();
   }
 
   // TODO(crbug.com/962299): This is incorrect in some cases.
@@ -1233,6 +1228,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void ClearLayoutResults();
   // Clear LayoutObject fields of physical fragments.
   void DisassociatePhysicalFragments();
+
+  void RebuildFragmentTreeSpine();
 
   // Call when NG fragment count or size changed. Only call if the fragment
   // count is or was larger than 1.
@@ -1711,6 +1708,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
   bool ShouldBeConsideredAsReplaced() const;
 
+  // Return true if this block establishes a fragmentation context root (e.g. a
+  // multicol container).
+  virtual bool IsFragmentationContextRoot() const {
+    NOT_DESTROYED();
+    return false;
+  }
   void UpdateFragmentationInfoForChild(LayoutBox&);
   bool ChildNeedsRelayoutForPagination(const LayoutBox&) const;
   void MarkChildForPaginationRelayoutIfNeeded(LayoutBox&, SubtreeLayoutScope&);
@@ -1790,7 +1793,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     if (LIKELY(!HasFlippedBlocksWritingMode()))
       return position;
     DCHECK(!IsHorizontalWritingMode());
-    return frame_rect_.Width() - (position + width);
+    return Size().Width() - (position + width);
   }
   // Inherit other flipping methods from LayoutObject.
   using LayoutObject::FlipForWritingMode;
@@ -2150,29 +2153,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // See StickyPositionScrollingConstraints::constraining_rect.
   PhysicalRect ComputeStickyConstrainingRect() const;
 
-  // Returns the LayoutObject of the anchor element specified by the CSS
-  // 'anchor-scroll' property. Returns nullptr if the anchor query is invalid.
-  const LayoutObject* AnchorScrollObject() const;
-
-  // If the AnchorScrollObject() is non-null and in a different scroll
-  // container, returns that container, so that at paint time, we can apply an
-  // offset to this element when the returned scroll container is scrolled.
-  // Returns nullptr otherwise.
-  const LayoutBox* AnchorScrollContainer() const;
-
-  struct AnchorScrollData {
-    const PaintLayer* inner_most_scroll_container_layer = nullptr;
-    const PaintLayer* outer_most_scroll_container_layer = nullptr;
-    gfx::Vector2dF accumulated_scroll_offset;
-    gfx::Vector2d accumulated_scroll_origin;
-
-    STACK_ALLOCATED();
-  };
-  AnchorScrollData ComputeAnchorScrollData() const;
-
-  // Utility function that returns and rounds accumulated_scroll_offset of
-  // AnchorScrollData as a PhysicalOffset.
-  PhysicalOffset ComputeAnchorScrollOffset() const;
+  bool HasAnchorScrollTranslation() const;
+  PhysicalOffset AnchorScrollTranslationOffset() const;
 
  protected:
   ~LayoutBox() override;
@@ -2279,6 +2261,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // confused with the CSS property 'direction'.
   // Returns the CSS 'direction' property value when it is not atomic inline.
   TextDirection ResolvedDirection() const;
+
+  // RecalcLayoutOverflow implementations for LayoutNG.
+  RecalcLayoutOverflowResult RecalcLayoutOverflowNG();
+  RecalcLayoutOverflowResult RecalcChildLayoutOverflowNG();
 
  private:
   inline bool LayoutOverflowIsSet() const {

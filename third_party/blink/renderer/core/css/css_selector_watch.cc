@@ -33,7 +33,6 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
-#include "third_party/blink/renderer/core/css/parser/css_parser_selector.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -155,10 +154,10 @@ void CSSSelectorWatch::WatchCSSSelectors(const Vector<String>& selectors) {
   // UA stylesheets always parse in the insecure context mode.
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kUASheetMode, SecureContextMode::kInsecureContext);
-  Arena arena;
+  HeapVector<CSSSelector> arena;
   for (const auto& selector : selectors) {
-    CSSSelectorVector selector_vector =
-        CSSParser::ParseSelector(context, nullptr, selector, arena);
+    base::span<CSSSelector> selector_vector = CSSParser::ParseSelector(
+        context, /*parent_rule_for_nesting=*/nullptr, nullptr, selector, arena);
     if (selector_vector.empty())
       continue;
 

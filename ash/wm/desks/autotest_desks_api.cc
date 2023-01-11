@@ -37,18 +37,10 @@ class DeskAnimationObserver : public DesksController::Observer {
   DeskAnimationObserver& operator=(const DeskAnimationObserver& rhs) = delete;
 
   // DesksController::Observer:
-  void OnDeskAdded(const Desk* desk) override {}
-  void OnDeskRemoved(const Desk* desk) override {}
-  void OnDeskReordered(int old_index, int new_index) override {}
-  void OnDeskActivationChanged(const Desk* activated,
-                               const Desk* deactivated) override {}
-  void OnDeskSwitchAnimationLaunching() override {}
   void OnDeskSwitchAnimationFinished() override {
     std::move(on_desk_animation_complete_).Run();
     delete this;
   }
-  void OnDeskNameChanged(const Desk* desk,
-                         const std::u16string& new_name) override {}
 
  private:
   base::OnceClosure on_desk_animation_complete_;
@@ -103,9 +95,6 @@ class ChainedDeskAnimationObserver : public ui::LayerAnimationObserver,
   }
 
   // DesksController::Observer:
-  void OnDeskAdded(const Desk* desk) override {}
-  void OnDeskRemoved(const Desk* desk) override {}
-  void OnDeskReordered(int old_index, int new_index) override {}
   void OnDeskActivationChanged(const Desk* activated,
                                const Desk* deactivated) override {
     // The first activation changed happens when the initial ending screenshot
@@ -120,13 +109,10 @@ class ChainedDeskAnimationObserver : public ui::LayerAnimationObserver,
                            ->GetAnimationLayerForTesting();
     animation_layer_->GetAnimator()->AddObserver(this);
   }
-  void OnDeskSwitchAnimationLaunching() override {}
   void OnDeskSwitchAnimationFinished() override {
     std::move(on_desk_animation_complete_).Run();
     delete this;
   }
-  void OnDeskNameChanged(const Desk* desk,
-                         const std::u16string& new_name) override {}
 
  private:
   const bool going_left_;
@@ -140,6 +126,12 @@ class ChainedDeskAnimationObserver : public ui::LayerAnimationObserver,
 AutotestDesksApi::AutotestDesksApi() = default;
 
 AutotestDesksApi::~AutotestDesksApi() = default;
+
+AutotestDesksApi::DesksInfo::DesksInfo() = default;
+
+AutotestDesksApi::DesksInfo::DesksInfo(const DesksInfo&) = default;
+
+AutotestDesksApi::DesksInfo::~DesksInfo() = default;
 
 bool AutotestDesksApi::CreateNewDesk() {
   if (!DesksController::Get()->CanCreateDesks())
@@ -221,9 +213,21 @@ bool AutotestDesksApi::IsWindowInDesk(aura::Window* window, int desk_index) {
 
 AutotestDesksApi::DesksInfo AutotestDesksApi::GetDesksInfo() const {
   auto* controller = DesksController::Get();
+
   DesksInfo info;
   info.active_desk_index = controller->GetActiveDeskIndex();
   info.num_desks = controller->desks().size();
+  info.is_animating = !!controller->animation();
+
+  // Get the names of all desk containers. We just need any root window here
+  // since desks and their corresponding containers are laid out the same for
+  // all roots.
+  aura::Window* root = Shell::GetPrimaryRootWindow();
+  for (const auto& desk : controller->desks()) {
+    aura::Window* container = desk->GetDeskContainerForRoot(root);
+    info.desk_containers.push_back(container->GetName());
+  }
+
   return info;
 }
 

@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">ପୂର୍ବବତ୍</translation>
 <translation id="2084108471225856927">ଡିଭାଇସ୍ ସେଟିଂସ୍</translation>
 <translation id="2084809735218147718">ଠାରରେ ଧନ୍ୟବାଦ ଜଣାଇବା</translation>
-<translation id="2085470240340828803">"<ph name="FILENAME" />" ନାମକ ଗୋଟିଏ ଫାଇଲ୍ ପୂର୍ବରୁ ବିଦ୍ୟମାନ ଅଛି। ଆପଣ କ’ଣ କରିବାକୁ ଚାହାନ୍ତି?</translation>
 <translation id="2088690981887365033">VPN ନେଟ୍‌ୱାର୍କ</translation>
 <translation id="2122305276694332719">ଏକ ଗୋପନୀୟ ଥିବା ନେଟ୍‌ୱାର୍କ ସହିତ ସ୍ୱଚାଳିତ ଭାବରେ ସଂଯୋଗ କଲେ ଅନ୍ୟ ଲୋକମାନେ ଆପଣଙ୍କ ଡିଭାଇସ୍ ଆଉ କିଛି ନେଟ୍‌ୱାର୍କ ସେଟିଂସ୍‌କୁ ଦେଖିପାରିବେ ଏବଂ ଏହା ସୁପାରିଶ କରାଯାଏ ନାହିଁ।</translation>
 <translation id="2125607626296734455">ଖମେର୍</translation>
@@ -456,7 +455,6 @@
 <translation id="4900532980794411603">Parallels Desktop ସହ ସେୟାର୍ କରନ୍ତୁ</translation>
 <translation id="4902546322522096650"><ph name="NETWORK_COUNT" />ଟିର <ph name="NETWORK_INDEX" /> ନେଟ୍‌ୱାର୍କ, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, ସିଗ୍‌ନାଲ୍‌ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />%, ସଂଯୋଗ କରନ୍ତୁ</translation>
 <translation id="4906580650526544301"><ph name="NETWORK_COUNT" />ଟିରୁ <ph name="NETWORK_INDEX" /> ନମ୍ବର ନେଟୱାର୍କ, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, ସିଗନାଲର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />%, ଫୋନ୍ ବ୍ୟାଟେରୀ <ph name="BATTERY_STATUS" />%, ବିବରଣୀ</translation>
-<translation id="4929673617759421391">ଆଡମିନିଷ୍ଟ୍ରେଟର ନୀତି ଅନୁଯାୟୀ ଏହି ଫାଇଲ ପେଷ୍ଟ କରିବାକୁ ବ୍ଲକ କରାଯାଇଛି</translation>
 <translation id="4935975195727477204">ଗାଜାନିଆ ଫୁଲ</translation>
 <translation id="4943368462779413526">ଫୁଟ୍‍ବଲ୍‌</translation>
 <translation id="4961158930123534723">Parallels Desktop ସହ 1ଟି ଫୋଲ୍ଡର ସେୟାର୍ କରାଯାଇଛି</translation>
@@ -528,6 +526,7 @@
 <translation id="5428105026674456456">ସ୍ପାନିଶ୍</translation>
 <translation id="5438282218546237410"><ph name="SEARCH_TERM" /> ପାଇଁ କୌଣସି ଫଳାଫଳ ନାହିଁ।</translation>
 <translation id="5449551289610225147">ଅବୈଧ ପାସ୍‌ୱର୍ଡ</translation>
+<translation id="5459064203055649751">"<ph name="FILENAME" />" ନାମକ ଗୋଟିଏ ଫାଇଲ ପୂର୍ବରୁ ଉପଲବ୍ଧ ଅଛି। ଆପଣ ମୁଭ କରୁଥିବା ଏକ ଫାଇଲ ସହ ଏହାକୁ ପରିବର୍ତ୍ତନ କରିବା ପାଇଁ ଚାହୁଁଛନ୍ତି?</translation>
 <translation id="5463231940765244860">ଲେଖନ୍ତୁ</translation>
 <translation id="5469868506864199649">ଇଟାଲିୟାନ୍</translation>
 <translation id="5473333559083690127">ନୂଆ PIN ପୁଣି ଲେଖନ୍ତୁ</translation>
@@ -648,6 +647,7 @@
 <translation id="6495925982925244349"><ph name="NETWORK_COUNT" />ଟିର <ph name="NETWORK_INDEX" /> ନେଟ୍‌ୱାର୍କ, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ସିଗ୍‍ନାଲ୍‍ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />%, ଆପଣଙ୍କର ଆଡ୍‍ମିନିଷ୍ଟ୍ରେଟର୍‍ଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ, ବିବରଣୀ</translation>
 <translation id="649877868557234318"><ph name="FOLDER_NAME" />କୁ <ph name="FILE_NAME" /> ଏକ୍ସଟ୍ରାକ୍ଟ କରାଯାଉଛି</translation>
 <translation id="6499681088828539489">ସେୟାର୍ ହୋଇଥିବା ନେଟ୍‌ୱାର୍କ ପାଇଁ ପ୍ରୋକ୍ସିକୁ ଅନୁମତି ଦିଅନ୍ତୁ ନାହିଁ</translation>
+<translation id="6503285896705205014">ଆଡମିନିଷ୍ଟ୍ରେଟର ନୀତି ଅନୁଯାୟୀ <ph name="COUNT" />ଟି ଫାଇଲ କପି କରିବାକୁ ବ୍ଲକ କରାଯାଇଛି</translation>
 <translation id="6509122719576673235">ନରୱେଜିଆନ୍</translation>
 <translation id="6528513914570774834">ଏହି ଡିଭାଇସ୍‌ର ଅନ୍ୟ ଉପଯୋଗକର୍ତ୍ତାଙ୍କୁ ଏହି ନେଟ୍‌ୱର୍କ ବ୍ୟବହାର କରିବାକୁ ଅନୁମତି ଦିଅନ୍ତୁ</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" /> ସିଙ୍କ୍ ହେଉଛି...</translation>
@@ -750,6 +750,7 @@
 <translation id="7357762654218998920">ଏହି ଫାଇଲର ପ୍ରକାର ସମର୍ଥିତ ନୁହେଁ। ChromeOSରେ ଫାଇଲଗୁଡ଼ିକୁ ଖୋଲିବା ବିଷୟରେ <ph name="BEGIN_LINK_HELP" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="END_LINK_HELP" />।</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" />ଟି ଆଇଟମ୍‌ କପି ହେଉଛି...</translation>
 <translation id="7375951387215729722"><ph name="COLUMN_NAME" /> ଦ୍ୱାରା ଫାଇଲ୍‌ର ତାଲିକା ବଡ଼ରୁ ସାନ କ୍ରମରେ ସଜାଯାଇଛି।</translation>
+<translation id="7377161162143020057">ଆଡମିନିଷ୍ଟ୍ରେଟର ନୀତି ଅନୁଯାୟୀ ଏହି ଫାଇଲ କପି କରିବାକୁ ବ୍ଲକ କରାଯାଇଛି</translation>
 <translation id="7402503521691663770">ChromeOS Flex ଡିଭାଇସଗୁଡ଼ିକ</translation>
 <translation id="7408870451288633753">ଚେକ୍</translation>
 <translation id="7417453074306512035">ଇଥିଓପିକ୍ କୀବୋର୍ଡ</translation>
@@ -971,7 +972,6 @@
 <translation id="9183302530794969518">Google Docs</translation>
 <translation id="9189836632794948435">କାଜାଖ୍</translation>
 <translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" />ଟି ଆଇଟମକୁ ଏକ୍ସଟ୍ରାକ୍ଟ କରାଯାଇଛି।</translation>
-<translation id="9210751050717126865">ଆଡମିନିଷ୍ଟ୍ରେଟର ନୀତି ଅନୁଯାୟୀ <ph name="COUNT" />ଟି ଫାଇଲ ପେଷ୍ଟ କରିବାକୁ ବ୍ଲକ କରାଯାଇଛି</translation>
 <translation id="9213073329713032541">ସଫଳତାପୂର୍ବକ ଇନ୍‌ଷ୍ଟଲେସନ୍ ଆରମ୍ଭ ହେଲା।</translation>
 <translation id="9219103736887031265">Images</translation>
 <translation id="9219908252191632183">ଲୁନାର୍</translation>

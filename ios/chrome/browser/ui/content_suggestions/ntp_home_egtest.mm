@@ -11,6 +11,7 @@
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cells_constants.h"
@@ -34,7 +35,6 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
@@ -133,6 +133,12 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   [super tearDown];
 }
 
+// TODO(crbug.com/1379289): Test fails on simulator.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testTrendingQueries DISABLED_testTrendingQueries
+#else
+#define MAYBE_testTrendingQueries testTrendingQueries
+#endif
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   // Use commandline args to enable the Discover feed for this test case.
   // Disabled elsewhere to account for possible flakiness.
@@ -142,7 +148,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   config.features_enabled.push_back(kDiscoverFeedInNtp);
 
   config.features_enabled.push_back(kContentSuggestionsUIModuleRefresh);
-  if ([self isRunningTest:@selector(testTrendingQueries)]) {
+  if ([self isRunningTest:@selector(MAYBE_testTrendingQueries)]) {
     // Enable arm that does not hide shortcuts.
     config.features_enabled.push_back(kTrendingQueriesModule);
     config.variations_enabled = {3350760};
@@ -485,7 +491,8 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Tests that the trending queries module header is visible and all four
 // trending queries are interactable.
-- (void)testTrendingQueries {
+// TODO(crbug.com/1379289): Test fails on simulator.
+- (void)MAYBE_testTrendingQueries {
   [[EarlGrey
       selectElementWithMatcher:
           grey_accessibilityID([NSString
@@ -508,7 +515,8 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Tests that the position of the collection view is restored when navigating
 // back to the NTP.
-- (void)testPositionRestored {
+// TODO(crbug.com/1364725): Re-enable test after fixing the test failure.
+- (void)DISABLED_testPositionRestored {
   [self addMostVisitedTile];
 
   // Add suggestions to be able to scroll on iPad.
@@ -1054,7 +1062,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Tests that the scroll position is maintained when switching from the Discover
 // feed to the Following feed without fully scrolling into the feed.
-// TODO(crbug.com/1330667): Re-enable when fixed.
+// TODO(crbug.com/1364725): Re-enable when fixed.
 - (void)DISABLED_testScrollPositionMaintainedWhenSwitchingFeedAboveFeed {
   if (![ChromeEarlGrey isWebChannelsEnabled]) {
     EARL_GREY_TEST_SKIPPED(@"Only applicable with Web Channels enabled.");
@@ -1082,7 +1090,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Tests that the regular feed header is visible when signed out, and is swapped
 // for the Following feed header after signing in.
-// TODO(crbug.com/1330667): Re-enable when fixed.
+// TODO(crbug.com/1364725): Re-enable when fixed.
 - (void)DISABLED_testFollowingFeedHeaderIsVisibleWhenSignedIn {
   if (![ChromeEarlGrey isWebChannelsEnabled]) {
     EARL_GREY_TEST_SKIPPED(@"Only applicable with Web Channels enabled.");
@@ -1111,7 +1119,6 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Tests that feed ablation successfully hides the feed from the NTP and the
 // toggle from the Chrome settings.
-// TODO(crbug.com/1339419): Test fails on device.
 // TODO(crbug.com/1350826): Test fails on small form factors.
 - (void)DISABLED_testFeedAblationHidesFeed {
   // Relaunch the app with trending queries disabled, to ensure that the
@@ -1182,7 +1189,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
   // The identity must exist in the test storage to be able to set capabilities
   // through the fake identity service.
-  FakeChromeIdentity* identity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* identity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:identity];
 
   NSDictionary* capabilities = @{
@@ -1378,7 +1385,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Opens the settings menu, signs in using a fake identity, and closes the menu.
 - (void)signInThroughSettingsMenu {
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI

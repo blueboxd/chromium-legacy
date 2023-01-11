@@ -6,6 +6,12 @@
 
 namespace arc {
 
+// Controls whether to always start ARC automatically, or wait for the user's
+// action to start it later in an on-demand manner.
+BASE_FEATURE(kArcOnDemandFeature,
+             "ArcOnDemand",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls ACTION_BOOT_COMPLETED broadcast for third party applications on ARC.
 // When disabled, third party apps will not receive this broadcast.
 BASE_FEATURE(kBootCompletedBroadcastFeature,
@@ -22,11 +28,22 @@ BASE_FEATURE(kDocumentsProviderUnknownSizeFeature,
              "ArcDocumentsProviderUnknownSize",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls whether an Android VPN (ArcHostVpn) should be started when a host
+// VPN is started.
+BASE_FEATURE(kEnableArcHostVpn,
+             "ArcHostVpn",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether files shared to ARC Nearby Share are shared through the
 // FuseBox filesystem, instead of the default method (through a temporary path
 // managed by file manager).
 BASE_FEATURE(kEnableArcNearbyShareFuseBox,
              "ArcNearbyShareFuseBox",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether WebView Zygote is lazily initialized in ARC.
+BASE_FEATURE(kEnableLazyWebViewInit,
+             "LazyWebViewInit",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether crosvm for ARCVM does per-VM core scheduling on devices with
@@ -82,6 +99,11 @@ BASE_FEATURE(kFixupWindowFeature,
              "ArcFixupWindowFeature",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls whether new UI style for ARC ghost window.
+BASE_FEATURE(kGhostWindowNewStyle,
+             "ArcGhostWindowNewStyle",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Used for overriding config params for the virtio-blk feature above.
 BASE_FEATURE(kVirtioBlkDataConfigOverride,
              "ArcVirtioBlkDataConfigOverride",
@@ -118,6 +140,12 @@ const base::FeatureParam<int> kGuestZramSize{&kGuestZram, "size", 0};
 const base::FeatureParam<int> kGuestZramSwappiness{&kGuestZram, "swappiness",
                                                    0};
 
+// Enables/disables ghost when user launch ARC app from shelf/launcher when
+// App already ready for launch.
+BASE_FEATURE(kInstantResponseWindowOpen,
+             "ArcInstantResponseWindowOpen",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables/disables mlock() of guest memory for ARCVM.
 // Often used in combination with kGuestZram.
 BASE_FEATURE(kLockGuestMemory,
@@ -140,6 +168,25 @@ const base::FeatureParam<int> kLogdConfigSize{&kLogdConfig, "size", 0};
 BASE_FEATURE(kKeyboardShortcutHelperIntegrationFeature,
              "ArcKeyboardShortcutHelperIntegration",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls ARCVM MGLRU reclaim feature.
+BASE_FEATURE(kMglruReclaim,
+             "ArcMglruReclaim",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls the interval between MGLRU reclaims in milliseconds
+// A value of 0 will disable the MGLRU reclaim feature
+const base::FeatureParam<int> kMglruReclaimInterval{&kMglruReclaim, "interval",
+                                                    0};
+
+// Controls the swappiness of MGLRU reclaims, in the range of 0 to 200
+// 0 means only filecache will be used while 200 means only swap will be used
+// any value in between will be a mix of both
+// The lower the value, the higher the ratio of freeing filecache pages
+// Implementation and a more detailed description can be found in ChromeOS
+// src/third_party/kernel/v5.10-arcvm/mm/vmscan.c
+const base::FeatureParam<int> kMglruReclaimSwappiness{&kMglruReclaim,
+                                                      "swappiness", 0};
 
 // Toggles between native bridge implementations for ARC.
 // Note, that we keep the original feature name to preserve
@@ -183,6 +230,11 @@ BASE_FEATURE(kRtVcpuQuadCore,
 BASE_FEATURE(kSaveRawFilesOnTracing,
              "ArcSaveRawFilesOnTracing",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether to update the O4C list via A2C2.
+BASE_FEATURE(kArcUpdateO4CListViaA2C2,
+             "ArcUpdateO4CListViaA2C2",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, unclaimed USB device will be attached to ARCVM by default.
 BASE_FEATURE(kUsbDeviceDefaultAttachToArcVm,

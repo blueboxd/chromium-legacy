@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/first_run/legacy_signin/legacy_signin_screen_coordinator.h"
 
-#import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/app_state_observer.h"
@@ -105,15 +104,25 @@
 }
 
 - (void)start {
-  if (!signin::IsSigninAllowedByPolicy()) {
-    self.attemptStatus = first_run::SignInAttemptStatus::SKIPPED_BY_POLICY;
-    [self finishPresentingAndSkipRemainingScreens:NO];
-    return;
-  }
-
   ChromeBrowserState* browserState = self.browser->GetBrowserState();
   AuthenticationService* authenticationService =
       AuthenticationServiceFactory::GetForBrowserState(browserState);
+  switch (authenticationService->GetServiceStatus()) {
+    case AuthenticationService::ServiceStatus::SigninDisabledByUser:
+      // This case should not happen, unless testers trigger the FRE while
+      // sign-in is disabled by user.
+    case AuthenticationService::ServiceStatus::SigninDisabledByInternal:
+      self.attemptStatus = first_run::SignInAttemptStatus::NOT_SUPPORTED;
+      [self finishPresentingAndSkipRemainingScreens:NO];
+      return;
+    case AuthenticationService::ServiceStatus::SigninDisabledByPolicy:
+      self.attemptStatus = first_run::SignInAttemptStatus::SKIPPED_BY_POLICY;
+      [self finishPresentingAndSkipRemainingScreens:NO];
+      return;
+    case AuthenticationService::ServiceStatus::SigninAllowed:
+    case AuthenticationService::ServiceStatus::SigninForcedByPolicy:
+      break;
+  }
 
   if (authenticationService->GetPrimaryIdentity(
           signin::ConsentLevel::kSignin)) {
@@ -250,8 +259,7 @@
 - (void)identityChooserCoordinator:(IdentityChooserCoordinator*)coordinator
                  didSelectIdentity:(id<SystemIdentity>)identity {
   CHECK_EQ(self.identityChooserCoordinator, coordinator);
-  self.mediator.selectedIdentity =
-      base::mac::ObjCCastStrict<ChromeIdentity>(identity);
+  self.mediator.selectedIdentity = identity;
 }
 
 #pragma mark - PolicyWatcherBrowserAgentObserving
@@ -353,8 +361,6 @@
   DCHECK(self.mediator.selectedIdentity);
 
   self.attemptStatus = first_run::SignInAttemptStatus::ATTEMPTED;
-
-  DCHECK(self.mediator.selectedIdentity);
   AuthenticationFlow* authenticationFlow =
       [[AuthenticationFlow alloc] initWithBrowser:self.browser
                                          identity:self.mediator.selectedIdentity

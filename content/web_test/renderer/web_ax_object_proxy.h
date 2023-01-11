@@ -12,6 +12,7 @@
 
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "third_party/blink/public/web/web_ax_context.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "ui/accessibility/ax_event_intent.h"
 #include "v8/include/v8.h"
@@ -29,6 +30,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
     virtual ~Factory() {}
     virtual v8::Local<v8::Object> GetOrCreate(
         const blink::WebAXObject& object) = 0;
+    virtual blink::WebAXContext* GetAXContext() = 0;
   };
 
   static gin::WrapperInfo kWrapperInfo;
@@ -254,19 +256,18 @@ class RootWebAXObjectProxy : public WebAXObjectProxy {
   bool IsRoot() const override;
 };
 
-// Provides simple lifetime management of the WebAXObjectProxy instances: all
-// WebAXObjectProxys ever created from the controller are stored in a list and
-// cleared explicitly.
 class WebAXObjectProxyList : public WebAXObjectProxy::Factory {
  public:
-  WebAXObjectProxyList();
+  explicit WebAXObjectProxyList(blink::WebAXContext&);
   ~WebAXObjectProxyList() override;
 
   void Clear();
   v8::Local<v8::Object> GetOrCreate(const blink::WebAXObject&) override;
+  blink::WebAXContext* GetAXContext() override;
 
  private:
   std::vector<v8::Global<v8::Object>> elements_;
+  blink::WebAXContext* const ax_context_;
 };
 
 }  // namespace content

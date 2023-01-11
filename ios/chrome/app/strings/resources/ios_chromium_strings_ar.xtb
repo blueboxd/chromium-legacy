@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
-<translation id="102360288709523007">‏ساعد في تحسين Chromium بإرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google.</translation>
 <translation id="1047130070405668746">‏اختيار Chromium</translation>
 <translation id="1091252999271033193">‏يعني هذا أنّ Chromium سيطلب دائمًا استخدام الموقع الإلكتروني المتوافق مع الأجهزة الجوّالة.</translation>
 <translation id="1185134272377778587">‏لمحة عن Chromium</translation>
@@ -17,6 +16,7 @@
 <translation id="1617663976202781617">‏البيانات من مزامنة Chromium</translation>
 <translation id="1722370509450468186">سيتم حفظ كلمة المرور في حسابك (<ph name="EMAIL" />).</translation>
 <translation id="1736662517232558588">‏تم محو بيانات Chromium</translation>
+<translation id="177102542580335555">‏يتم توفير حماية أمنية عادية لهذا الملف الشخصي على Chromium.</translation>
 <translation id="1838412507805038478">‏لقد تحقق Chromium من أن <ph name="ISSUER" /> أصدر شهادة الموقع الإلكتروني هذه.</translation>
 <translation id="1843424232666537147">‏يتمتع Chromium بميزات تساعدك على إدارة بياناتك على الإنترنت ومدى السرعة التي بمقدورك تحميل صفحات الويب من خلالها.
 <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
@@ -54,6 +54,7 @@
 <translation id="4432744876818348753">‏يمكنك تسجيل الدخول للاستفادة إلى أقصى حدّ من Chromium</translation>
 <translation id="4555020257205549924">‏عند تفعيل هذه الميزة، سيقترح Chromium ترجمة الصفحات المكتوبة بلغات أخرى باستخدام "ترجمة Google". <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="4585809515399340748">‏يمكنك الآن استخدام Chromium في أي وقت تنقر فيه على الروابط في الرسائل والمستندات والتطبيقات الأخرى.</translation>
+<translation id="4633738821577273991">‏يمكنك الاستفادة من ميزة "الحماية المحسّنة للتصفّح الآمن" لهذا الملف الشخصي على Chromium أيضًا.</translation>
 <translation id="4654936625574199632">‏للمساعدة على تحسين التطبيق، يرسل متصفِّح Chromium بيانات الاستخدام والتعطُّل إلى Google. <ph name="BEGIN_LINK" />إدارة<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">‏تفعيل الماسح الضوئي في Chromium</translation>
 <translation id="4736424910885271643">‏سيتم محو بيانات Chromium المخزَّنة على هذا الجهاز لأنّ حسابك تتم إدارته من خلال <ph name="HOSTED_DOMAIN" /></translation>
@@ -73,7 +74,6 @@
 <translation id="5862307444128926510">‏مرحبًا بك في Chromium</translation>
 <translation id="5945387852661427312">‏إنك تسجل الدخول باستخدام حساب تتم إدارته من خلال <ph name="DOMAIN" /> وتمنح مشرفه الحق في التحكم في بياناتك على Chromium. سيؤدي ذلك إلى جعل بياناتك مرتبطة دائمًا بهذا الحساب. كما سيؤدي الخروج من Chromium إلى حذف بياناتك من هذا الجهاز، ولكن ستظل هذه البيانات مخزَّنة على حسابك في Google.</translation>
 <translation id="5983312940147103417">‏تحسين أداء متصفِّح Chromium</translation>
-<translation id="602807004951640891">‏يعني استخدامك لمتصفّح Chromium موافقتك على <ph name="BEGIN_LINK_TOS" />بنود الخدمة<ph name="END_LINK_TOS" />.</translation>
 <translation id="6062449165341879460">‏ستتمكن مؤسستك <ph name="DOMAIN" /> من الوصول إلى البيانات والإشارات المرجعية والسجلّ وكلمات المرور الخاصة بمتصفِّح Chromium والإعدادات الأخرى التي تخزنها في هذا الحساب. سيتم محو البيانات من هذا الجهاز عند تسجيل الخروج.  ومع ذلك، ستبقى بياناتك مُخزَّنة في حساب Google المُدار، وستكون متاحة لمؤسستك. يمكن لمؤسستك ضبط سياسات المُستخدِم الخاصة بذلك الحساب لتغيير سلوك متصفِّح Chromium.</translation>
 <translation id="6119647025869519954">‏لجعل Chromium المتصفِّح التلقائي، اتّبِع الخطوات التالية:
 1. افتح Settings (الإعدادات).
@@ -116,6 +116,7 @@
 <translation id="8073677936375100957">‏هل تريد محو بيانات Chromium من هذا الجهاز؟</translation>
 <translation id="8240981428553046115">‏تعذّر على Chromium البحث عن تحديثات. يُرجى إعادة المحاولة لاحقًا.</translation>
 <translation id="8308172444429103994">‏معلومة مفيدة عن Chromium: يمكنك تسجيل الدخول بشكل أسرع من خلال اختيار كلمة المرور المحفوظة الخاصة بك أعلى لوحة المفاتيح.</translation>
+<translation id="8409374867500149834">‏يوفِّر لك Chromium أعلى مستوى من الحماية ضد المواقع الإلكترونية الضارة.</translation>
 <translation id="858114650497379505">‏يمكنك استخدام كلمات المرور التي حفظتها في "مدير كلمات المرور" في التطبيقات الأخرى على هاتف iPhone.</translation>
 <translation id="8586442755830160949">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لصالح The Chromium Authors. جميع الحقوق محفوظة.</translation>
 <translation id="865600487977764604">‏يوفّر لك هذا الوضع حماية في Chromium، ويمكن استخدامه لتحسين مستوى أمانك في تطبيقات Google الأخرى عندما تكون مسجِّلاً دخولك.</translation>

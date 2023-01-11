@@ -14,6 +14,29 @@ class Desk;
 }
 
 namespace extensions {
+
+class WmDesksPrivateGetSavedDesksFunction : public ExtensionFunction {
+ public:
+  WmDesksPrivateGetSavedDesksFunction();
+  WmDesksPrivateGetSavedDesksFunction(
+      const WmDesksPrivateGetSavedDesksFunction&) = delete;
+  WmDesksPrivateGetSavedDesksFunction& operator=(
+      const WmDesksPrivateGetSavedDesksFunction&) = delete;
+
+  DECLARE_EXTENSION_FUNCTION("wmDesksPrivate.getSavedDesks",
+                             WMDESKSPRIVATE_GETSAVEDDESKS)
+
+ protected:
+  ~WmDesksPrivateGetSavedDesksFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+  void OnGetSavedDesks(
+      const std::vector<const ash::DeskTemplate*>& desk_templates,
+      std::string error_string);
+};
+
 class WmDesksPrivateGetDeskTemplateJsonFunction : public ExtensionFunction {
  public:
   WmDesksPrivateGetDeskTemplateJsonFunction();
@@ -132,8 +155,8 @@ class WmDesksPrivateSaveActiveDeskFunction : public ExtensionFunction {
   // ExtensionFunction:
   ResponseAction Run() override;
 
-  void OnSavedActiveDesk(std::unique_ptr<ash::DeskTemplate> desk_template,
-                         std::string error_string);
+  void OnSavedActiveDesk(std::string error_string,
+                         std::unique_ptr<ash::DeskTemplate> desk_template);
 };
 
 class WmDesksPrivateDeleteSavedDeskFunction : public ExtensionFunction {

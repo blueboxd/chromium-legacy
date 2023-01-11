@@ -59,7 +59,7 @@ suite('CrSettingsReviewNotificationPermissionsInteractiveUITest', function() {
     browserProxy.setNotificationPermissionReview(mockData);
     SiteSettingsPrefsBrowserProxyImpl.setInstance(browserProxy);
 
-    document.body.innerHTML = window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     testElement = document.createElement('review-notification-permissions');
     document.body.appendChild(testElement);
 

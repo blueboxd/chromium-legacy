@@ -474,8 +474,7 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
   //       don't rely on kResultsPerProvided and default relevance ordering
   //       (B > A).
   RegisterTemplateURL(kTestTemplateURLKeyword,
-                      "http://aqs/{searchTerms}/"
-                      "{google:assistedQueryStats}{google:searchboxStats}");
+                      "http://aqs/{searchTerms}/{google:assistedQueryStats}");
 
   AutocompleteController::Providers providers;
 
@@ -1282,8 +1281,7 @@ TEST_F(AutocompleteProviderTest, GetDestinationURL_AssistedQueryStatsOnly) {
 
   // The protocol needs to be https.
   RegisterTemplateURL(kTestTemplateURLKeyword,
-                      "https://aqs/{searchTerms}/"
-                      "{google:assistedQueryStats}{google:searchboxStats}");
+                      "https://aqs/{searchTerms}/{google:assistedQueryStats}");
   url = GetDestinationURL(match, base::Milliseconds(2456));
   EXPECT_TRUE(url.path().empty());
 
@@ -1369,8 +1367,7 @@ TEST_F(AutocompleteProviderTest, GetDestinationURL_SearchboxStatsOnly) {
 
   // The protocol needs to be https.
   RegisterTemplateURL(kTestTemplateURLKeyword,
-                      "https://foo/{searchTerms}/"
-                      "{google:assistedQueryStats}{google:searchboxStats}");
+                      "https://foo/{searchTerms}/{google:assistedQueryStats}");
   url = GetDestinationURL(match, base::Milliseconds(2456));
   EXPECT_TRUE(url.path().empty());
 
@@ -1488,8 +1485,7 @@ TEST_F(AutocompleteProviderTest,
 
   // The protocol needs to be https.
   RegisterTemplateURL(kTestTemplateURLKeyword,
-                      "https://foo/{searchTerms}/"
-                      "{google:assistedQueryStats}{google:searchboxStats}");
+                      "https://foo/{searchTerms}/{google:assistedQueryStats}");
   url = GetDestinationURL(match, base::Milliseconds(2456));
   EXPECT_TRUE(url.path().empty());
 
@@ -1509,20 +1505,14 @@ TEST_F(AutocompleteProviderTest,
   url = GetDestinationURL(match, base::Milliseconds(2456));
   EXPECT_TRUE(url.path().empty());
 
-  // If searchbox_stats is not set, assisted_query_stats is not reported either.
+  // Both assisted_query_stats and searchbox_stats need to have been set.
   match.search_terms_args->assisted_query_stats =
       "chrome.0.69i57j69i58j5l2j0l3j69i59";
-  match.search_terms_args->searchbox_stats.clear_client_name();
-  url = GetDestinationURL(match, base::Milliseconds(2456));
-  EXPECT_TRUE(url.path().empty());
-
-  // Both assisted_query_stats and searchbox_stats need to have been set.
-  match.search_terms_args->searchbox_stats.set_client_name("chrome");
   url = GetDestinationURL(match, base::Milliseconds(2456));
   EXPECT_EQ(
       "//"
-      "aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j0j0&gs_lcrp="
-      "EgZjaHJvbWXSAQgyNDU2ajBqMA&",
+      "gs_lcrp=EgZjaHJvbWXSAQgyNDU2ajBqMA&aqs=chrome.0."
+      "69i57j69i58j5l2j0l3j69i59.2456j0j0&",
       url.path());
 }
 

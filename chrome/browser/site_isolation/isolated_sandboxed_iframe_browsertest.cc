@@ -20,6 +20,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 class TestMemoryDetails : public MetricsMemoryDetails {
@@ -75,13 +76,13 @@ class IsolatedSandboxedIframeBrowserTest : public InProcessBrowserTest {
     // BrowsingInstances.
     if (enable_isolate_sandboxed_iframes_) {
       feature_list_.InitWithFeatures(
-          /* enable_features */ {features::kIsolateSandboxedIframes,
+          /* enable_features */ {blink::features::kIsolateSandboxedIframes,
                                  features::kDisableProcessReuse},
           /* disable_features */ {features::kSpareRendererForSitePerProcess});
     } else {
       feature_list_.InitWithFeatures(
           /* enable_features */ {features::kDisableProcessReuse},
-          /* disable_features */ {features::kIsolateSandboxedIframes,
+          /* disable_features */ {blink::features::kIsolateSandboxedIframes,
                                   features::kSpareRendererForSitePerProcess});
     }
   }
@@ -577,8 +578,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedSandboxedIframeBrowserTest,
 IN_PROC_BROWSER_TEST_F(IsolatedSandboxedIframeBrowserTest,
                        CspSandboxedMainframeWithSameSiteOpener) {
   GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL popup_url(
-      embedded_test_server()->GetURL("a.com", "/cryptotoken/csp-sandbox.html"));
+  GURL popup_url(embedded_test_server()->GetURL("a.com", "/csp-sandbox.html"));
   EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -611,8 +611,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedSandboxedIframeBrowserTest,
 // when when visited directly.
 IN_PROC_BROWSER_TEST_F(IsolatedSandboxedIframeBrowserTest,
                        CspSandboxedMainframeVisitedDirectly) {
-  GURL main_url(
-      embedded_test_server()->GetURL("a.com", "/cryptotoken/csp-sandbox.html"));
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/csp-sandbox.html"));
   EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
 
   // Verify histograms are updated.

@@ -58,4 +58,21 @@ void MockReduceAcceptLanguageControllerDelegate::PersistReducedLanguage(
   reduce_accept_language_map_[origin] = language;
 }
 
+void MockReduceAcceptLanguageControllerDelegate::ClearReducedLanguage(
+    const url::Origin& origin) {
+  if (!origin.GetURL().SchemeIsHTTPOrHTTPS()) {
+    return;
+  }
+  reduce_accept_language_map_.erase(origin);
+}
+
+void MockReduceAcceptLanguageControllerDelegate::SetUserAcceptLanguages(
+    const std::string& languages) {
+  std::string accept_languages_str =
+      net::HttpUtil::ExpandLanguageList(languages);
+  user_accept_languages_ =
+      base::SplitString(accept_languages_str, ",", base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+}
+
 }  // namespace content

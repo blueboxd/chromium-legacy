@@ -5,12 +5,12 @@
 #ifndef UI_GL_GL_SURFACE_OVERLAY_H_
 #define UI_GL_GL_SURFACE_OVERLAY_H_
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_plane_data.h"
 #include "ui/gl/gl_export.h"
-#include "ui/gl/gl_image.h"
 
 namespace gfx {
 class GpuFence;
@@ -21,7 +21,7 @@ namespace gl {
 // For saving the properties of a GLImage overlay plane and scheduling it later.
 class GL_EXPORT GLSurfaceOverlay {
  public:
-  GLSurfaceOverlay(GLImage* image,
+  GLSurfaceOverlay(scoped_refptr<gfx::NativePixmap> pixmap,
                    std::unique_ptr<gfx::GpuFence> gpu_fence,
                    const gfx::OverlayPlaneData& overlay_plane_data);
   GLSurfaceOverlay(GLSurfaceOverlay&& other);
@@ -33,13 +33,11 @@ class GL_EXPORT GLSurfaceOverlay {
   // This should be called at most once.
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget);
 
-  void Flush() const;
-
   gfx::GpuFence* gpu_fence() const { return gpu_fence_.get(); }
   int z_order() const { return overlay_plane_data_.z_order; }
 
  private:
-  scoped_refptr<GLImage> image_;
+  scoped_refptr<gfx::NativePixmap> pixmap_;
   std::unique_ptr<gfx::GpuFence> gpu_fence_;
   gfx::OverlayPlaneData overlay_plane_data_;
 };

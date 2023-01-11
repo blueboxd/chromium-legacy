@@ -119,6 +119,7 @@ AutofillSuggestionGenerator::GetSuggestionsForCreditCards(
     const std::string& app_locale,
     bool* should_display_gpay_logo,
     bool* with_offer) {
+  DCHECK(type.group() == FieldTypeGroup::kCreditCard);
   std::vector<Suggestion> suggestions;
 
   std::map<std::string, AutofillOfferData*> card_linked_offers_map =
@@ -354,90 +355,6 @@ void AutofillSuggestionGenerator::SplitFrontendId(
   *profile_backend_id = InternalIdToBackendId(profile_int_id);
 }
 
-// TODO(crbug.com/1346331): Separate logic for desktop, Android dropdown, and
-// Keyboard Accessory.
-Suggestion AutofillSuggestionGenerator::CreateCreditCardSuggestion(
-    const CreditCard& credit_card,
-    const AutofillType& type,
-    bool prefix_matched_suggestion,
-    bool virtual_card_option,
-    const std::string& app_locale,
-    bool card_linked_offer_available) const {
-  // The kAutofillKeyboardAccessory feature is only available on Android. So for
-  // other platforms, we'd always use the obfuscation_length of 4.
-  int obfuscation_length =
-      base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory) ? 2
-                                                                         : 4;
-
-  Suggestion suggestion;
-  suggestion.main_text =
-      type.GetStorableType() == CREDIT_CARD_NUMBER
-          ? Suggestion::Text(credit_card.CardIdentifierStringForAutofillDisplay(
-                                 GetDisplayNicknameForCreditCard(credit_card),
-                                 obfuscation_length),
-                             Suggestion::Text::IsPrimary(true))
-          : Suggestion::Text(credit_card.GetInfo(type, app_locale),
-                             Suggestion::Text::IsPrimary(true));
-#if BUILDFLAG(IS_ANDROID)
-  if (!base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory) &&
-      base::FeatureList::IsEnabled(
-          features::kAutofillEnableVirtualCardMetadata) &&
-      type.GetStorableType() == CREDIT_CARD_NUMBER) {
-    // For the Android dropdown, populate the card name (nickname/product
-    // description/network) and the last 4 digits separately to allow them to
-    // be shown in separate views. If the suggestion text overflows, only the
-    // card name gets truncated in the view.
-    suggestion.main_text =
-        Suggestion::Text(credit_card.CardNameForAutofillDisplay(
-                             GetDisplayNicknameForCreditCard(credit_card)),
-                         Suggestion::Text::IsPrimary(true));
-    suggestion.minor_text = Suggestion::Text(
-        credit_card.ObfuscatedLastFourDigits(obfuscation_length),
-        Suggestion::Text::IsPrimary(true));
-  }
-#endif
-
-  suggestion.icon = credit_card.CardIconStringForAutofillSuggestion();
-  suggestion.payload = Suggestion::BackendId(credit_card.guid());
-  suggestion.match = prefix_matched_suggestion ? Suggestion::PREFIX_MATCH
-                                               : Suggestion::SUBSTRING_MATCH;
-#if BUILDFLAG(IS_ANDROID)
-  // The card art icon should always be shown at the start of the suggestion.
-  suggestion.is_icon_at_start = true;
-#endif  // BUILDFLAG(IS_ANDROID)
-
-  std::u16string card_label =
-      GetCardLabel(credit_card, type, app_locale, obfuscation_length);
-  if (!card_label.empty())
-    suggestion.labels = {{Suggestion::Text(std::move(card_label))}};
-
-  // For virtual cards, make some adjustments for the suggestion contents.
-  if (virtual_card_option) {
-    // We don't show card linked offers for virtual card options.
-    AdjustSuggestionContentForVirtualCard(&suggestion, credit_card, type);
-  } else if (card_linked_offer_available) {
-    // If Keyboard Accessory is not enabled (i.e. Desktop or Clank dropdown),
-    // populate an offer label.
-    if (!base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)) {
-      suggestion.labels.emplace_back(
-          std::vector<Suggestion::Text>{Suggestion::Text(
-              l10n_util::GetStringUTF16(IDS_AUTOFILL_OFFERS_CASHBACK))});
-
-      // Otherwise for Keyboard Accessory, set Suggestion::feature_for_iph and
-      // change the suggestion icon only if card linked offers are also enabled.
-    } else if (base::FeatureList::IsEnabled(
-                   features::kAutofillEnableOffersInClankKeyboardAccessory)) {
-#if BUILDFLAG(IS_ANDROID)
-      suggestion.feature_for_iph =
-          feature_engagement::kIPHKeyboardAccessoryPaymentOfferFeature.name;
-      suggestion.icon = "offerTag";
-#endif
-    }
-  }
-
-  return suggestion;
-}
-
 bool AutofillSuggestionGenerator::ShouldShowVirtualCardOption(
     const CreditCard* candidate_card) const {
   switch (candidate_card->record_type()) {
@@ -480,11 +397,116 @@ const CreditCard* AutofillSuggestionGenerator::GetServerCardForLocalCard(
   return nullptr;
 }
 
+InternalId AutofillSuggestionGenerator::BackendIdToInternalIdForTesting(
+    const Suggestion::BackendId& backend_id) {
+  return BackendIdToInternalId(backend_id);
+}
+
+Suggestion::BackendId
+AutofillSuggestionGenerator::InternalIdToBackendIdForTesting(
+    InternalId internal_id) {
+  return InternalIdToBackendId(internal_id);
+}
+
+// TODO(crbug.com/1346331): Separate logic for desktop, Android dropdown, and
+// Keyboard Accessory.
+Suggestion AutofillSuggestionGenerator::CreateCreditCardSuggestion(
+    const CreditCard& credit_card,
+    const AutofillType& type,
+    bool prefix_matched_suggestion,
+    bool virtual_card_option,
+    const std::string& app_locale,
+    bool card_linked_offer_available) const {
+  DCHECK(type.group() == FieldTypeGroup::kCreditCard);
+
+  // The kAutofillKeyboardAccessory feature is only available on Android. So for
+  // other platforms, we'd always use the obfuscation_length of 4.
+  int obfuscation_length =
+      base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory) ? 2
+                                                                         : 4;
+
+  Suggestion suggestion;
+  suggestion.main_text =
+      type.GetStorableType() == CREDIT_CARD_NUMBER
+          ? Suggestion::Text(credit_card.CardIdentifierStringForAutofillDisplay(
+                                 GetDisplayNicknameForCreditCard(credit_card),
+                                 obfuscation_length),
+                             Suggestion::Text::IsPrimary(true))
+          : Suggestion::Text(credit_card.GetInfo(type, app_locale),
+                             Suggestion::Text::IsPrimary(true));
+#if BUILDFLAG(IS_ANDROID)
+  if (!base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory) &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillEnableVirtualCardMetadata) &&
+      base::FeatureList::IsEnabled(features::kAutofillEnableCardProductName) &&
+      type.GetStorableType() == CREDIT_CARD_NUMBER) {
+    // For the Android dropdown, populate the card name (nickname/product
+    // description/network) and the last 4 digits separately to allow them to
+    // be shown in separate views. If the suggestion text overflows, only the
+    // card name gets truncated in the view.
+    suggestion.main_text =
+        Suggestion::Text(credit_card.CardNameForAutofillDisplay(
+                             GetDisplayNicknameForCreditCard(credit_card)),
+                         Suggestion::Text::IsPrimary(true));
+    suggestion.minor_text = Suggestion::Text(
+        credit_card.ObfuscatedLastFourDigits(obfuscation_length),
+        Suggestion::Text::IsPrimary(true));
+  }
+#endif
+
+  suggestion.icon = credit_card.CardIconStringForAutofillSuggestion();
+  suggestion.payload = Suggestion::BackendId(credit_card.guid());
+  suggestion.match = prefix_matched_suggestion ? Suggestion::PREFIX_MATCH
+                                               : Suggestion::SUBSTRING_MATCH;
+#if BUILDFLAG(IS_ANDROID)
+  // The card art icon should always be shown at the start of the suggestion.
+  suggestion.is_icon_at_start = true;
+#endif  // BUILDFLAG(IS_ANDROID)
+
+  // TODO (crbug.com/1364155): For the Android dropdown, when card name + last 4
+  // digits appears on the second line, split it into card name
+  // (nickname/product name/network) and last 4 digits.
+  std::u16string card_label =
+      GetCardLabel(credit_card, type, app_locale, obfuscation_length);
+  if (!card_label.empty())
+    suggestion.labels = {{Suggestion::Text(std::move(card_label))}};
+
+  SetCardArtURL(suggestion, credit_card, virtual_card_option);
+
+  // For virtual cards, make some adjustments for the suggestion contents.
+  if (virtual_card_option) {
+    // We don't show card linked offers for virtual card options.
+    AdjustVirtualCardSuggestionContent(suggestion, credit_card, type);
+  } else if (card_linked_offer_available) {
+    // If Keyboard Accessory is not enabled (i.e. Desktop or Clank dropdown),
+    // populate an offer label.
+    if (!base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)) {
+      suggestion.labels.push_back(
+          std::vector<Suggestion::Text>{Suggestion::Text(
+              l10n_util::GetStringUTF16(IDS_AUTOFILL_OFFERS_CASHBACK))});
+
+      // Otherwise for Keyboard Accessory, set Suggestion::feature_for_iph and
+      // change the suggestion icon only if card linked offers are also enabled.
+    } else if (base::FeatureList::IsEnabled(
+                   features::kAutofillEnableOffersInClankKeyboardAccessory)) {
+#if BUILDFLAG(IS_ANDROID)
+      suggestion.feature_for_iph =
+          feature_engagement::kIPHKeyboardAccessoryPaymentOfferFeature.name;
+      suggestion.icon = "offerTag";
+#endif
+    }
+  }
+
+  return suggestion;
+}
+
 std::u16string AutofillSuggestionGenerator::GetCardLabel(
     const CreditCard& credit_card,
     const AutofillType& type,
     const std::string& app_locale,
     int obfuscation_length) const {
+  DCHECK(type.group() == FieldTypeGroup::kCreditCard);
+
   // If the focused field is a card number field.
   if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
@@ -529,50 +551,74 @@ std::u16string AutofillSuggestionGenerator::GetCardLabel(
 #endif
 }
 
-void AutofillSuggestionGenerator::AdjustSuggestionContentForVirtualCard(
-    Suggestion* suggestion,
+void AutofillSuggestionGenerator::AdjustVirtualCardSuggestionContent(
+    Suggestion& suggestion,
     const CreditCard& credit_card,
     const AutofillType& type) const {
-  GURL card_art_url_for_virtual_card_option;
-  if (credit_card.record_type() == CreditCard::MASKED_SERVER_CARD) {
-    card_art_url_for_virtual_card_option = credit_card.card_art_url();
-  } else if (credit_card.record_type() == CreditCard::LOCAL_CARD) {
+  if (credit_card.record_type() == CreditCard::LOCAL_CARD) {
     const CreditCard* server_duplicate_card =
         GetServerCardForLocalCard(&credit_card);
     DCHECK(server_duplicate_card);
-    card_art_url_for_virtual_card_option =
-        server_duplicate_card->card_art_url();
-    suggestion->payload = Suggestion::BackendId(server_duplicate_card->guid());
+    suggestion.payload = Suggestion::BackendId(server_duplicate_card->guid());
   }
 
-  suggestion->frontend_id = POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY;
-  suggestion->feature_for_iph =
+  suggestion.frontend_id = POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY;
+  suggestion.feature_for_iph =
       feature_engagement::kIPHAutofillVirtualCardSuggestionFeature.name;
 
   // TODO(crbug.com/1344629): Update "Virtual card" label for other fields.
   // For virtual cards, prefix "Virtual card" label to field suggestions. For
   // card number field in a dropdown, show the "Virtual card" label below the
   // card number for Metadata experiment.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnableVirtualCardMetadata) &&
-      type.GetStorableType() == CREDIT_CARD_NUMBER &&
-      !base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)) {
-    suggestion->labels = {{Suggestion::Text(l10n_util::GetStringUTF16(
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillEnableVirtualCardMetadata) ||
+      base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)) {
+    suggestion.minor_text.value = suggestion.main_text.value;
+    suggestion.main_text.value = l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE);
+  } else if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
+    // If the focused field is a credit card number field, reset all labels and
+    // populate only the virtual card text.
+    suggestion.labels = {{Suggestion::Text(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE))}};
   } else {
-    suggestion->minor_text.value = suggestion->main_text.value;
-    suggestion->main_text.value = l10n_util::GetStringUTF16(
-        IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE);
+    // Otherwise, add the virtual card text after the original label, so it
+    // will be shown on the third line.
+    suggestion.labels.push_back(std::vector<Suggestion::Text>{
+        Suggestion::Text(l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE))});
+  }
+}
+
+void AutofillSuggestionGenerator::SetCardArtURL(
+    Suggestion& suggestion,
+    const CreditCard& credit_card,
+    bool virtual_card_option) const {
+  if (!virtual_card_option &&
+      !base::FeatureList::IsEnabled(features::kAutofillEnableCardArtImage)) {
+    return;
   }
 
+  GURL card_art_url;
+  if (credit_card.record_type() == CreditCard::MASKED_SERVER_CARD) {
+    card_art_url = credit_card.card_art_url();
+  } else if (credit_card.record_type() == CreditCard::LOCAL_CARD) {
+    const CreditCard* server_duplicate_card =
+        GetServerCardForLocalCard(&credit_card);
+    if (server_duplicate_card)
+      card_art_url = server_duplicate_card->card_art_url();
+  }
+
+  if (card_art_url.is_empty() || !card_art_url.is_valid())
+    return;
+
 #if BUILDFLAG(IS_ANDROID)
-  suggestion->custom_icon_url = card_art_url_for_virtual_card_option;
+  suggestion.custom_icon_url = card_art_url;
 #else
-  gfx::Image* image = personal_data_->GetCreditCardArtImageForUrl(
-      card_art_url_for_virtual_card_option);
+  gfx::Image* image = personal_data_->GetCreditCardArtImageForUrl(card_art_url);
   if (image)
-    suggestion->custom_icon = *image;
-#endif  // BUILDFLAG(IS_ANDROID)
+    suggestion.custom_icon = *image;
+#endif
 }
 
 InternalId AutofillSuggestionGenerator::BackendIdToInternalId(

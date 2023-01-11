@@ -29,7 +29,7 @@ class Profile;
 namespace webapps {
 enum class UninstallResultCode;
 enum class WebappUninstallSource;
-}
+}  // namespace webapps
 
 namespace web_app {
 
@@ -67,6 +67,7 @@ class WebAppInstallFinalizer {
     const webapps::WebappInstallSource install_surface;
     bool locally_installed = true;
     bool overwrite_existing_manifest_fields = true;
+    bool skip_icon_writes_on_download_failure = false;
 
     absl::optional<WebAppChromeOsData> chromeos_data;
     absl::optional<ash::SystemWebAppData> system_web_app_data;
@@ -181,12 +182,15 @@ class WebAppInstallFinalizer {
   void SetWebAppManifestFieldsAndWriteData(
       const WebAppInstallInfo& web_app_info,
       std::unique_ptr<WebApp> web_app,
-      CommitCallback commit_callback);
+      CommitCallback commit_callback,
+      bool skip_icon_writes_on_download_failure);
 
-  void WriteTranslations(const AppId& app_id,
-                         const WebAppInstallInfo& web_app_info,
-                         CommitCallback commit_callback,
-                         bool success);
+  void WriteTranslations(
+      const AppId& app_id,
+      const base::flat_map<std::string, blink::Manifest::TranslationItem>&
+          translations,
+      CommitCallback commit_callback,
+      bool success);
 
   void CommitToSyncBridge(std::unique_ptr<WebApp> web_app,
                           CommitCallback commit_callback,
@@ -225,15 +229,17 @@ class WebAppInstallFinalizer {
       const AppId& app_id,
       const WebAppInstallInfo& new_web_app_info);
 
-  raw_ptr<WebAppInstallManager> install_manager_ = nullptr;
-  raw_ptr<WebAppRegistrar> registrar_ = nullptr;
-  raw_ptr<WebAppSyncBridge> sync_bridge_ = nullptr;
-  raw_ptr<WebAppUiManager> ui_manager_ = nullptr;
-  raw_ptr<OsIntegrationManager> os_integration_manager_ = nullptr;
-  raw_ptr<WebAppIconManager> icon_manager_ = nullptr;
-  raw_ptr<WebAppPolicyManager> policy_manager_ = nullptr;
-  raw_ptr<WebAppTranslationManager> translation_manager_ = nullptr;
-  raw_ptr<WebAppCommandManager> command_manager_ = nullptr;
+  raw_ptr<WebAppInstallManager, DanglingUntriaged> install_manager_ = nullptr;
+  raw_ptr<WebAppRegistrar, DanglingUntriaged> registrar_ = nullptr;
+  raw_ptr<WebAppSyncBridge, DanglingUntriaged> sync_bridge_ = nullptr;
+  raw_ptr<WebAppUiManager, DanglingUntriaged> ui_manager_ = nullptr;
+  raw_ptr<OsIntegrationManager, DanglingUntriaged> os_integration_manager_ =
+      nullptr;
+  raw_ptr<WebAppIconManager, DanglingUntriaged> icon_manager_ = nullptr;
+  raw_ptr<WebAppPolicyManager, DanglingUntriaged> policy_manager_ = nullptr;
+  raw_ptr<WebAppTranslationManager, DanglingUntriaged> translation_manager_ =
+      nullptr;
+  raw_ptr<WebAppCommandManager, DanglingUntriaged> command_manager_ = nullptr;
 
   const raw_ptr<Profile> profile_;
   bool started_ = false;

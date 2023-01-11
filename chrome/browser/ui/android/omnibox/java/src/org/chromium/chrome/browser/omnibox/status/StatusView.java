@@ -27,11 +27,13 @@ import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.components.browser_ui.widget.ChromeTransitionDrawable;
 import org.chromium.components.browser_ui.widget.CompositeTouchDelegate;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.util.TokenHolder;
 import org.chromium.ui.widget.Toast;
 
@@ -57,6 +59,8 @@ public class StatusView extends LinearLayout {
     private int mTouchDelegateEndOffset;
 
     private ImageView mIconView;
+    private View mIconBackground;
+    private View mIconViewFrame;
     private TextView mVerboseStatusTextView;
     private View mSeparatorView;
     private View mStatusExtraSpace;
@@ -90,6 +94,8 @@ public class StatusView extends LinearLayout {
         super.onFinishInflate();
 
         mIconView = findViewById(R.id.location_bar_status_icon);
+        mIconBackground = findViewById(R.id.location_bar_status_icon_bg);
+        mIconViewFrame = findViewById(R.id.location_bar_status_icon_frame);
         mVerboseStatusTextView = findViewById(R.id.location_bar_verbose_status);
         mSeparatorView = findViewById(R.id.location_bar_verbose_status_separator);
         mStatusExtraSpace = findViewById(R.id.location_bar_verbose_status_extra_space);
@@ -101,7 +107,7 @@ public class StatusView extends LinearLayout {
      * Return whether search engine status icon is visible.
      */
     public boolean isSearchEngineStatusIconVisible() {
-        return mIconView.getVisibility() == VISIBLE;
+        return mIconViewFrame.getVisibility() == VISIBLE;
     }
 
     /**
@@ -147,14 +153,14 @@ public class StatusView extends LinearLayout {
         //
         // Note: this will be compacted once we start using LayoutTransition with StatusView.
 
-        boolean isIconHidden = mIconView.getVisibility() == View.GONE;
+        boolean isIconHidden = mIconViewFrame.getVisibility() == View.GONE;
         if (!wantIconHidden && (isIconHidden || mAnimatingStatusIconHide)) {
             // Action 1: animate showing, if icon was either hidden or hiding.
             if (mAnimatingStatusIconHide) mIconView.animate().cancel();
             mAnimatingStatusIconHide = false;
             mAnimatingStatusIconShow = true;
             keepControlsShownForAnimation();
-            mIconView.setVisibility(View.VISIBLE);
+            mIconViewFrame.setVisibility(View.VISIBLE);
             mIconView.animate()
                     .alpha(1.0f)
                     .setDuration(getIconAnimationDuration())
@@ -180,7 +186,7 @@ public class StatusView extends LinearLayout {
                     .setDuration(mAnimationsEnabled ? getIconAnimationDuration() : 0)
                     .alpha(0.0f)
                     .withEndAction(() -> {
-                        mIconView.setVisibility(View.GONE);
+                        mIconViewFrame.setVisibility(View.GONE);
                         mIconView.setAlpha(1f);
                         mAnimatingStatusIconHide = false;
                         allowBrowserControlsHide();
@@ -327,11 +333,11 @@ public class StatusView extends LinearLayout {
 
     /** Specify the status icon visibility. */
     void setStatusIconShown(boolean showIcon) {
-        if (mIconView == null) return;
+        if (mIconViewFrame == null) return;
         // Check if layout was requested before changing our child view.
         boolean wasLayoutPreviouslyRequested = isLayoutRequested();
 
-        mIconView.setVisibility(showIcon ? VISIBLE : GONE);
+        mIconViewFrame.setVisibility(showIcon ? VISIBLE : GONE);
         updateTouchDelegate();
         if (mIsAnimatingStatusIconChange && !showIcon) {
             // If the icon view is hidden before it gets a chance to draw, our animation status will
@@ -343,8 +349,16 @@ public class StatusView extends LinearLayout {
         // due to a stale measurement cache. Post a task to request layout to force this visibility
         // change (crbug.com/1345552).
         if (wasLayoutPreviouslyRequested && getHandler() != null) {
-            getHandler().post(() -> requestLayout());
+            getHandler().post(
+                    () -> ViewUtils.requestLayout(this, "StatusView.setStatusIconShown Runnable"));
         }
+    }
+
+    /** Specify the status icon background visibility. */
+    void setStatusIconBackgroundVisibility(boolean showIconBackground) {
+        if (mIconView == null || mIconBackground == null) return;
+
+        mIconBackground.setVisibility(showIconBackground ? VISIBLE : INVISIBLE);
     }
 
     /**
@@ -462,9 +476,10 @@ public class StatusView extends LinearLayout {
         if (touchDelegateBounds.equals(new Rect())) return;
 
         boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
-        if (mTouchDelegateStartOffset == 0) {
+        if (mTouchDelegateStartOffset == 0
+                && !OmniboxFeatures.shouldShowModernizeVisualUpdate(getContext())) {
             mTouchDelegateStartOffset =
-                    getResources().getDimensionPixelSize(R.dimen.location_bar_lateral_padding);
+                    getResources().getDimensionPixelSize(R.dimen.location_bar_start_padding);
         }
         if (mTouchDelegateEndOffset == 0) {
             mTouchDelegateEndOffset =
@@ -521,7 +536,7 @@ public class StatusView extends LinearLayout {
 
     /** @return True if the status icon is currently visible. */
     private boolean isIconVisible() {
-        return mStatusIconDrawable != null && mIconView.getVisibility() != GONE
+        return mStatusIconDrawable != null && mIconViewFrame.getVisibility() != GONE
                 && mIconView.getAlpha() != 0;
     }
 

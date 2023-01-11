@@ -25,6 +25,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_split.h"
 #include "base/task/task_runner.h"
 #include "base/task/task_traits.h"
@@ -44,7 +45,7 @@
 #include "chrome/browser/ash/arc/policy/arc_policy_util.h"
 #include "chrome/browser/ash/arc/session/arc_provisioning_result.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
-#include "chrome/browser/ash/login/demo_mode/demo_resources.h"
+#include "chrome/browser/ash/login/demo_mode/demo_components.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/policy/handlers/powerwash_requirements_checker.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -60,7 +61,7 @@
 #include "chrome/browser/ui/app_list/arc/intent.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/webui/chromeos/diagnostics_dialog.h"
+#include "chrome/browser/ui/webui/ash/diagnostics_dialog.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/system/statistics_provider.h"
@@ -459,6 +460,8 @@ ArcSessionManager::ArcSessionManager(
     : arc_session_runner_(std::move(arc_session_runner)),
       adb_sideloading_availability_delegate_(
           std::move(adb_sideloading_availability_delegate)),
+      android_management_checker_factory_(
+          ArcRequirementChecker::GetDefaultAndroidManagementCheckerFactory()),
       attempt_user_exit_callback_(
           base::BindRepeating(chrome::AttemptUserExit)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -833,6 +836,7 @@ void ArcSessionManager::ShutdownSession() {
 void ArcSessionManager::ResetArcState() {
   pre_start_time_ = base::TimeTicks();
   start_time_ = base::TimeTicks();
+  activation_delay_elapsed_timer_.reset();
   arc_sign_in_timer_.Stop();
   playstore_launcher_.reset();
   requirement_checker_.reset();
@@ -926,14 +930,6 @@ void ArcSessionManager::AllowActivation() {
 
 bool ArcSessionManager::IsPlaystoreLaunchRequestedForTesting() const {
   return playstore_launcher_.get();
-}
-
-void ArcSessionManager::OnBackgroundAndroidManagementCheckedForTesting(
-    ArcAndroidManagementChecker::CheckResult result) {
-  DCHECK(requirement_checker_);
-  requirement_checker_
-      ->OnBackgroundAndroidManagementCheckedForTesting(  // IN-TEST
-          result);
 }
 
 void ArcSessionManager::OnVmStarted(
@@ -1062,15 +1058,38 @@ bool ArcSessionManager::RequestEnableImpl() {
 
   if (skip_terms_of_service_negotiation) {
     state_ = State::READY;
-    if (activation_is_allowed_)
+    if (activation_is_allowed_) {
       StartArcForRegularBoot();
-    else
-      VLOG(1) << "Activation is not allowed yet. Not starting ARC for now.";
+    } else {
+      DCHECK(!activation_necessity_checker_);
+      activation_necessity_checker_ =
+          std::make_unique<ArcActivationNecessityChecker>(
+              profile_, adb_sideloading_availability_delegate_.get());
+      activation_necessity_checker_->Check(
+          base::BindOnce(&ArcSessionManager::OnActivationNecessityChecked,
+                         weak_ptr_factory_.GetWeakPtr()));
+    }
     return true;
   }
 
   MaybeStartTermsOfServiceNegotiation();
   return false;
+}
+
+void ArcSessionManager::OnActivationNecessityChecked(bool result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(activation_necessity_checker_);
+
+  base::UmaHistogramBoolean("Arc.DelayedActivation.ActivationIsDelayed",
+                            !result);
+
+  activation_necessity_checker_.reset();
+  if (result) {
+    AllowActivation();
+  } else {
+    activation_delay_elapsed_timer_ = std::make_unique<base::ElapsedTimer>();
+    VLOG(1) << "Activation is not allowed yet. Not starting ARC for now.";
+  }
 }
 
 void ArcSessionManager::RequestDisable(bool remove_arc_data) {
@@ -1181,8 +1200,8 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
     // faster.
     StartMiniArc();
   }
-  requirement_checker_ =
-      std::make_unique<ArcRequirementChecker>(profile_, support_host_.get());
+  requirement_checker_ = std::make_unique<ArcRequirementChecker>(
+      profile_, support_host_.get(), android_management_checker_factory_);
   requirement_checker_->AddObserver(this);
   requirement_checker_->StartRequirementChecks(
       is_terms_of_service_negotiation_needed,
@@ -1262,8 +1281,8 @@ void ArcSessionManager::StartBackgroundRequirementChecks() {
     return;
   }
 
-  requirement_checker_ =
-      std::make_unique<ArcRequirementChecker>(profile_, support_host_.get());
+  requirement_checker_ = std::make_unique<ArcRequirementChecker>(
+      profile_, support_host_.get(), android_management_checker_factory_);
   requirement_checker_->StartBackgroundChecks(
       base::BindOnce(&ArcSessionManager::OnBackgroundRequirementChecksDone,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -1329,9 +1348,9 @@ void ArcSessionManager::StartArc() {
   const auto* demo_session = ash::DemoSession::Get();
   params.is_demo_session = demo_session && demo_session->started();
   if (params.is_demo_session) {
-    DCHECK(demo_session->resources()->loaded());
+    DCHECK(demo_session->components()->resources_component_loaded());
     params.demo_session_apps_path =
-        demo_session->resources()->GetDemoAppsPath();
+        demo_session->components()->GetDemoAndroidAppsPath();
   }
 
   params.management_transition = GetManagementTransition(profile_);
@@ -1356,6 +1375,11 @@ void ArcSessionManager::StartArcForRegularBoot() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::READY);
   DCHECK(activation_is_allowed_);
+
+  if (activation_delay_elapsed_timer_) {
+    base::UmaHistogramLongTimes("Arc.DelayedActivation.Delay",
+                                activation_delay_elapsed_timer_->Elapsed());
+  }
 
   VLOG(1) << "Starting ARC for a regular boot.";
   StartArc();
@@ -1533,8 +1557,8 @@ void ArcSessionManager::OnSendFeedbackClicked() {
 
 void ArcSessionManager::OnRunNetworkTestsClicked() {
   DCHECK(support_host_);
-  chromeos::DiagnosticsDialog::ShowDialog(
-      chromeos::DiagnosticsDialog::DiagnosticsPage::kConnectivity,
+  ash::DiagnosticsDialog::ShowDialog(
+      ash::DiagnosticsDialog::DiagnosticsPage::kConnectivity,
       support_host_->GetNativeWindow());
 
   // Network-related error occured so collect UMA stats on user action.

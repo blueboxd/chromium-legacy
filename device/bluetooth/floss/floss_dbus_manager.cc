@@ -15,9 +15,15 @@
 #include "dbus/message.h"
 #include "dbus/object_manager.h"
 #include "dbus/object_proxy.h"
+#include "device/bluetooth/floss/fake_floss_adapter_client.h"
+#include "device/bluetooth/floss/fake_floss_advertiser_client.h"
+#include "device/bluetooth/floss/fake_floss_gatt_client.h"
+#include "device/bluetooth/floss/fake_floss_lescan_client.h"
 #include "device/bluetooth/floss/fake_floss_manager_client.h"
+#include "device/bluetooth/floss/fake_floss_socket_manager.h"
 #include "device/bluetooth/floss/floss_adapter_client.h"
 #include "device/bluetooth/floss/floss_advertiser_client.h"
+#include "device/bluetooth/floss/floss_battery_manager_client.h"
 #include "device/bluetooth/floss/floss_lescan_client.h"
 #include "device/bluetooth/floss/floss_manager_client.h"
 #include "device/bluetooth/floss/floss_socket_manager.h"
@@ -172,12 +178,20 @@ bool FlossDBusManager::HasActiveAdapter() const {
   return active_adapter_ != kInvalidAdapter;
 }
 
-FlossManagerClient* FlossDBusManager::GetManagerClient() {
-  return client_bundle_->manager_client();
+int FlossDBusManager::GetActiveAdapter() const {
+  return active_adapter_;
 }
 
 FlossAdapterClient* FlossDBusManager::GetAdapterClient() {
   return client_bundle_->adapter_client();
+}
+
+FlossGattClient* FlossDBusManager::GetGattClient() {
+  return client_bundle_->gatt_client();
+}
+
+FlossManagerClient* FlossDBusManager::GetManagerClient() {
+  return client_bundle_->manager_client();
 }
 
 FlossSocketManager* FlossDBusManager::GetSocketManager() {
@@ -190,6 +204,10 @@ FlossLEScanClient* FlossDBusManager::GetLEScanClient() {
 
 FlossAdvertiserClient* FlossDBusManager::GetAdvertiserClient() {
   return client_bundle_->advertiser_client();
+}
+
+FlossBatteryManagerClient* FlossDBusManager::GetBatteryManagerClient() {
+  return client_bundle_->battery_manager_client();
 }
 
 void FlossDBusManager::InitializeAdapterClients(int adapter) {
@@ -208,12 +226,16 @@ void FlossDBusManager::InitializeAdapterClients(int adapter) {
   // Initialize any adapter clients.
   client_bundle_->adapter_client()->Init(GetSystemBus(), kAdapterService,
                                          active_adapter_);
+  client_bundle_->gatt_client()->Init(GetSystemBus(), kAdapterService,
+                                      active_adapter_);
   client_bundle_->socket_manager()->Init(GetSystemBus(), kAdapterService,
                                          active_adapter_);
   client_bundle_->lescan_client()->Init(GetSystemBus(), kAdapterService,
                                         active_adapter_);
   client_bundle_->advertiser_client()->Init(GetSystemBus(), kAdapterService,
                                             active_adapter_);
+  client_bundle_->battery_manager_client()->Init(
+      GetSystemBus(), kAdapterService, active_adapter_);
 }
 
 void FlossDBusManagerSetter::SetFlossManagerClient(
@@ -224,6 +246,11 @@ void FlossDBusManagerSetter::SetFlossManagerClient(
 void FlossDBusManagerSetter::SetFlossAdapterClient(
     std::unique_ptr<FlossAdapterClient> client) {
   FlossDBusManager::Get()->client_bundle_->adapter_client_ = std::move(client);
+}
+
+void FlossDBusManagerSetter::SetFlossGattClient(
+    std::unique_ptr<FlossGattClient> client) {
+  FlossDBusManager::Get()->client_bundle_->gatt_client_ = std::move(client);
 }
 
 void FlossDBusManagerSetter::SetFlossSocketManager(
@@ -239,6 +266,12 @@ void FlossDBusManagerSetter::SetFlossLEScanClient(
 void FlossDBusManagerSetter::SetFlossAdvertiserClient(
     std::unique_ptr<FlossAdvertiserClient> client) {
   FlossDBusManager::Get()->client_bundle_->advertiser_client_ =
+      std::move(client);
+}
+
+void FlossDBusManagerSetter::SetFlossBatteryManagerClient(
+    std::unique_ptr<FlossBatteryManagerClient> client) {
+  FlossDBusManager::Get()->client_bundle_->battery_manager_client_ =
       std::move(client);
 }
 
@@ -260,9 +293,11 @@ void FlossClientBundle::ResetAdapterClients() {
   }
 
   adapter_client_ = FlossAdapterClient::Create();
+  gatt_client_ = FlossGattClient::Create();
   socket_manager_ = FlossSocketManager::Create();
   lescan_client_ = FlossLEScanClient::Create();
   advertiser_client_ = FlossAdvertiserClient::Create();
+  battery_manager_client_ = FlossBatteryManagerClient::Create();
 }
 
 }  // namespace floss

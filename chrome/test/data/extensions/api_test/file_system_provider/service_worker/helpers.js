@@ -1,7 +1,62 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import {TestFileSystemProvider} from '/_test_resources/api_test/file_system_provider/service_worker/provider.js';
+
+/** A blocking queue implementation.  */
+export class Queue {
+  constructor() {
+    /**
+     * Items currently in the queue.
+     * @private {!Array<!Object>}
+     */
+    this.items_ = [];
+    /**
+     * Readers waiting for an item to be pushed to the queue.
+     * @private {!Array<function(!Object)>}
+     */
+    this.readers = [];
+  }
+
+  /**
+   * Pushes an item into the queue and unblocks the first waiting reader if
+   * there are any. This method returns immediately and will never block.
+   *
+   * @param {!Object} item
+   */
+  push(item) {
+    if (this.readers.length > 0) {
+      this.readers.shift()(item);
+      return;
+    }
+    this.items_.push(item);
+  }
+
+  /**
+   * Pops the first item from the queue. If the queue is empty, will wait until
+   * an item is available.
+   *
+   * @returns {!Object}
+   */
+  async pop() {
+    if (this.items_.length > 0) {
+      return this.items_.shift();
+    }
+    return new Promise(resolve => {
+      this.readers.push(resolve);
+    });
+  }
+
+  clear() {
+    this.items_ = [];
+  }
+
+  /** @returns {number} */
+  size() {
+    return this.items_.length;
+  }
+};
+
 
 /**
  * @param {function(...?)} fn
@@ -11,13 +66,39 @@ import {TestFileSystemProvider} from '/_test_resources/api_test/file_system_prov
 export async function promisifyWithLastError(fn, ...args) {
   return new Promise((resolve, reject) => {
     fn(...args, (result) => {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
+      const error = chrome.runtime.lastError;
+      if (error) {
+        reject(new Error(error.message));
       } else {
         resolve(result);
       }
     });
   });
+}
+
+/**
+ * Catch error thrown in an async function.
+ *
+ * @param {!Promise<?>} promise
+ * @returns {?Object} thrown error, or null if the function returns
+ *    successfully. Function's return value is discarded.
+ */
+export async function catchError(promise) {
+  try {
+    await promise;
+    return null;
+  } catch (e) {
+    return e;
+  }
+}
+
+/**
+ * @param {!FileEntry} fileEntry
+ * @returns {!Promise<!FileWriter>}
+ */
+ export async function createWriter(fileEntry) {
+  return new Promise(
+      (resolve, reject) => fileEntry.createWriter(resolve, reject));
 }
 
 /**
@@ -29,40 +110,74 @@ export async function promisifyWithLastError(fn, ...args) {
  *    not found.
  */
 export async function getVolumeInfo(fileSystemId) {
-  const volumeList = await new Promise(
-      resolve => chrome.fileManagerPrivate.getVolumeMetadataList(resolve));
+  const volumeList = await promisifyWithLastError(
+      chrome.fileManagerPrivate.getVolumeMetadataList);
   for (const volume of volumeList) {
-    // For extension backed providers, the provider id is equal to extension
-    // id.
-    if (volume.providerId === chrome.runtime.id &&
-        volume.fileSystemId === fileSystemId) {
+    if (volume.fileSystemId === fileSystemId) {
       return volume;
     }
   }
-  return null;
+  throw new Error(`volume not found: ${fileSystemId}`);
 };
 
 /**
- * @param {number=} openedFilesLimit Limit of opened files at once. If 0 or
- *     unspecified, then not limited.
+ * Wrappers for chrome.fileSystemProvider.* are still needed for Closure to
+ * work, as it's not aware they are returning promises if callbacks are omitted.
+ * @returns {!Promise<!Array<!chrome.fileSystemProvider.FileSystemInfo>>}
+ * @suppress {checkTypes}
+ */
+export async function getAllFsInfos() {
+  return chrome.fileSystemProvider.getAll();
+}
+
+/**
+ * @param {!FileEntry|!DirectoryEntry} entry
+ * @returns {!Promise<!Metadata>}
+ */
+ export async function getMetadata(entry) {
+  return new Promise((resolve, reject) => entry.getMetadata(resolve, reject));
+}
+
+/**
+ * Async wrapper.
+ * @param {string} fileSystemId
+ * @returns {!Promise<void>}
+ * @suppress {checkTypes}
+ */
+export async function unmount(fileSystemId) {
+  return chrome.fileSystemProvider.unmount({fileSystemId});
+}
+
+/**
+ * Async wrapper.
+ * @param {string} fileSystemId
+ * @returns {!Promise<!chrome.fileSystemProvider.FileSystemInfo>}
+ * @suppress {checkTypes}
+ */
+export async function getFsInfoById(fileSystemId) {
+  return chrome.fileSystemProvider.get(fileSystemId);
+}
+
+/**
+ * @param {{
+ *    openedFilesLimit: (number|undefined),
+ *    supportsNotifyTag:(boolean|undefined)
+ * }=} optionsOverride
  * @returns {!Promise<{fileSystem: !FileSystem, volumeInfo:
  *     !chrome.fileManagerPrivate.VolumeMetadata}>} information about the
  *     mounted filesystem instance.
  */
-async function mount(openedFilesLimit) {
-  const fileSystemId = TestFileSystemProvider.FILESYSTEM_ID;
+async function mount(optionsOverride) {
   const options = {
-    fileSystemId,
+    fileSystemId: TestFileSystemProvider.FILESYSTEM_ID,
     displayName: 'Test Filesystem',
     writable: true,
+    ...optionsOverride,
   };
-  if (openedFilesLimit) {
-    options.openedFilesLimit = openedFilesLimit;
-  }
   await promisifyWithLastError(chrome.fileSystemProvider.mount, options);
-  const volumeInfo = await getVolumeInfo(fileSystemId);
+  const volumeInfo = await getVolumeInfo(options.fileSystemId);
   if (!volumeInfo) {
-    throw new Error(`volume not found for filesystem: ${fileSystemId}`);
+    throw new Error(`volume not found for filesystem: ${options.fileSystemId}`);
   }
   const fileSystem = await promisifyWithLastError(
       chrome.fileSystem.requestFileSystem,
@@ -124,7 +239,7 @@ export class MountedTestFileSystem {
     await promisifyWithLastError(chrome.fileSystemProvider.unmount, {
       fileSystemId: TestFileSystemProvider.FILESYSTEM_ID,
     });
-    const {fileSystem, volumeInfo} = await mount(openedFilesLimit);
+    const {fileSystem, volumeInfo} = await mount({openedFilesLimit});
     this.fileSystem = fileSystem;
     this.volumeInfo = volumeInfo;
   }
@@ -161,103 +276,146 @@ export class MountedTestFileSystem {
 /**
  * Create a mounted test filesystem instance.
  *
- * @param {number=} openedFilesLimit Limit of opened files at once. If 0 or
- *     unspecified, then not limited.
+ * @param {{
+ *    openedFilesLimit: (number|undefined),
+ *    supportsNotifyTag: (boolean|undefined)
+ * }=} optionsOverride
  * @return {!Promise<!MountedTestFileSystem>}
  */
-export async function mountTestFileSystem(openedFilesLimit) {
-  const {fileSystem, volumeInfo} = await mount(openedFilesLimit);
+export async function mountTestFileSystem(optionsOverride) {
+  const {fileSystem, volumeInfo} = await mount(optionsOverride);
   return new MountedTestFileSystem(fileSystem, volumeInfo);
 }
 
 /**
- * @suppress {checkTypes}
- * @returns {string} request ID
+ * A proxy to a FileSystemProvider instance running in a different context (or
+ * different extension) to be called from test code. All the calls and arguments
+ * are forwarded as is to the test provider, see corresponding functions in
+ * FileSystemProvider for descriptions.
  */
-function generateRequestId() {
-  return crypto.randomUUID();
-}
+export class ProviderProxy {
+  constructor(extensionId) {
+    /**
+     * Target extension ID to send messages to.
+     *
+     * @private {string}
+     */
+    this.extensionId_ = extensionId;
+  }
 
-async function callServiceWorker(commandId, ...args) {
-  const requestId = generateRequestId();
-  const swContainer = navigator.serviceWorker;
-  const sw = (await swContainer.ready).active;
-
-  return new Promise((resolve, reject) => {
-    const onReply = (e) => {
-      const {requestId, response, error} = e.data;
-      if (requestId === requestId) {
-        swContainer.removeEventListener('message', onReply);
-        if (error) {
-          reject(new Error(`service worker returned: ${error}`));
-        } else {
-          resolve(response);
-        }
-      }
-    };
-    setTimeout(() => {
-      swContainer.removeEventListener('message', onReply);
-      reject(new Error(
-          `request to service worker timed out: ${commandId} args: ` +
-          JSON.stringify(args)));
-    }, 5000);
-    swContainer.addEventListener('message', onReply)
-    sw.postMessage({requestId, commandId, args});
-  });
-}
-
-/**
- * A proxy to a FileSystemProvider instance running in a service worker to be
- * called from test code. All the calls and arguments are forwarded as is to the
- * test provider, see corresponding functions in FileSystemProvider for
- * descriptions.
- */
-export const remoteProvider = {
   /**
    * @param {!Object<string, !Object>} files
    * @returns {!Promise<void>}
    */
-  addFiles: async (files) => callServiceWorker('addFiles', files),
+  async addFiles(files) {
+    return this.callProvider('addFiles', files);
+  }
+
   /**
    * @param {number} requestId
    * @returns {!Promise<void>}
    */
-  continueRequest: async (requestId) =>
-      callServiceWorker('continueRequest', requestId),
+  async continueRequest(requestId) {
+    return this.callProvider('continueRequest', requestId);
+  }
+
   /**
    * @param {string} eventName
    * @returns {!Promise<number>}
    */
-  getEventCount: async (eventName) =>
-      callServiceWorker('getEventCount', eventName),
+  async getEventCount(eventName) {
+    return this.callProvider('getEventCount', eventName);
+  }
+
   /**
    * @param {string} filePath
    * @returns {!Promise<string>}
    */
-  getFileContents: async (filePath) =>
-      callServiceWorker('getFileContents', filePath),
+  async getFileContents(filePath) {
+    return this.callProvider('getFileContents', filePath);
+  }
+
   /**
    * @returns {!Promise<number>}
    */
-  getOpenedFiles: async () => callServiceWorker('getOpenedFiles'),
+  async getOpenedFiles() {
+    return this.callProvider('getOpenedFiles');
+  }
+
+  /**
+   * @param {string} entryPath
+   * @param {boolean} recursive
+   * @param {string} tag
+   */
+  async triggerNotify(entryPath, recursive, tag) {
+    return this.callProvider('triggerNotify', entryPath, recursive, tag);
+  }
+
+  /**
+   * @param {string} url
+   * @returns {!Promise<number>}
+   */
+  async openTab(url) {
+    return this.callProvider('openTab', url);
+  }
+
+  /** @param {number} tabId */
+  async closeTab(tabId) {
+    return this.callProvider('closeTab', tabId);
+  }
+
+  /**
+   * @param {string} url
+   * @returns {!Promise<number>}
+   */
+  async openWindow(url) {
+    return this.callProvider('openWindow', url);
+  }
+
   /**
    * @param {string} key
    * @param {?} value
    */
-  setConfig: async (key, value) => callServiceWorker('setConfig', key, value),
+  async setConfig(key, value) {
+    return this.callProvider('setConfig', key, value);
+  }
+
   /**
    * @param {string} handlerName
    * @param {boolean} enabled
    */
-  setHandlerEnabled: async (handlerName, enabled) =>
-      callServiceWorker('setHandlerEnabled', handlerName, enabled),
+  async setHandlerEnabled(handlerName, enabled) {
+    return this.callProvider('setHandlerEnabled', handlerName, enabled);
+  }
+
   /**
    * @returns {!Promise<void>}
    */
-  resetState: async () => callServiceWorker('resetState'),
+  async resetState() {
+    return this.callProvider('resetState');
+  }
+
   /**
    * @param {string} funcName
    * @returns {!Promise<!Object>}
    */
-  waitForEvent: async (funcName) => callServiceWorker('waitForEvent', funcName),
+  async waitForEvent(funcName) {
+    return this.callProvider('waitForEvent', funcName);
+  }
+
+  async callProvider(commandId, ...args) {
+    const {response, error} = await promisifyWithLastError(
+        chrome.runtime.sendMessage, this.extensionId_, {commandId, args},
+        /*options=*/ {});
+    if (error) {
+      throw new Error(`service worker returned: ${error}`);
+    }
+    return response;
+  }
 };
+
+/**
+ * Default provider proxy: sends messages to the same extension (but could still
+ * be in a different context, i.e. foreground page vs service worker).
+ */
+export const remoteProvider = new ProviderProxy(chrome.runtime.id);

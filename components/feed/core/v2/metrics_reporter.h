@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/public/common_enums.h"
@@ -99,17 +100,34 @@ class MetricsReporter {
 
   // Stream events.
 
+  struct LoadStreamResultSummary {
+    LoadStreamResultSummary();
+    LoadStreamResultSummary(
+        LoadStreamStatus load_from_store_status,
+        LoadStreamStatus final_status,
+        bool is_initial_load,
+        bool loaded_new_content_from_network,
+        base::TimeDelta stored_content_age,
+        ContentOrder content_order,
+        absl::optional<feedstore::Metadata::StreamMetadata> stream_metadata);
+    ~LoadStreamResultSummary();
+    LoadStreamStatus load_from_store_status;
+    LoadStreamStatus final_status;
+    bool is_initial_load;
+    bool loaded_new_content_from_network;
+    base::TimeDelta stored_content_age;
+    ContentOrder content_order;
+    absl::optional<feedstore::Metadata::StreamMetadata> stream_metadata;
+  };
   virtual void OnLoadStream(const StreamType& stream_type,
-                            LoadStreamStatus load_from_store_status,
-                            LoadStreamStatus final_status,
-                            bool is_initial_load,
-                            bool loaded_new_content_from_network,
-                            base::TimeDelta stored_content_age,
+                            const LoadStreamResultSummary& result_summary,
                             const ContentStats& content_stats,
-                            ContentOrder content_order,
                             std::unique_ptr<LoadLatencyTimes> load_latencies);
   virtual void OnBackgroundRefresh(const StreamType& stream_type,
                                    LoadStreamStatus final_status);
+  void OnManualRefresh(const StreamType& stream_type,
+                       const feedstore::Metadata& metadata,
+                       const ContentHashSet& content_hashes);
   virtual void OnLoadMoreBegin(const StreamType& stream_type,
                                SurfaceId surface_id);
   virtual void OnLoadMore(const StreamType& stream_type,
@@ -150,6 +168,12 @@ class MetricsReporter {
   void OnInfoCardDismissedExplicitly(const StreamType& stream_type,
                                      int info_card_type);
   void OnInfoCardStateReset(const StreamType& stream_type, int info_card_type);
+
+  void ReportContentDuplication(bool is_duplicated_at_pos_1,
+                                bool is_duplicated_at_pos_2,
+                                bool is_duplicated_at_pos_3,
+                                int duplicate_percentage_for_first_10,
+                                int duplicate_percentaget_for_all);
 
  private:
   // State replicated for reporting per-stream-type metrics.
@@ -234,6 +258,7 @@ class MetricsReporter {
 
   class GoodVisitState {
    public:
+    explicit GoodVisitState(PersistentMetricsData& data);
     void OnScroll();
     void OnGoodExplicitInteraction();
     void OnOpenComplete(base::TimeDelta open_duration);
@@ -242,11 +267,11 @@ class MetricsReporter {
 
    private:
     void MaybeReportGoodVisit();
+    void Reset();
 
-    base::Time visit_start_{}, visit_end_{};
-    bool did_report_good_visit_ = false;
-    base::TimeDelta time_in_feed_{};
-    bool did_scroll_ = false;
+    // Owned by MetricsReporter. Will live through the lifetime of
+    // GoodVisitState.
+    PersistentMetricsData& data_;
   };
   absl::optional<GoodVisitState> good_visit_state_;
 

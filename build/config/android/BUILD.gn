@@ -33,13 +33,6 @@ config("compiler") {
     "ANDROID_NDK_VERSION_ROLL=${android_ndk_version}_1",
   ]
 
-  if (current_cpu == "mips64el") {
-    cflags += [
-      # Have to force IAS for mips64.
-      "-fintegrated-as",
-    ]
-  }
-
   ldflags = [
     # Don't allow visible symbols from libraries that contain
     # assembly code with symbols that aren't hidden properly.
@@ -52,6 +45,13 @@ config("compiler") {
     # by shrinking the alignment gap between segments. This also causes all
     # segments to be mapped adjacently, which breakpad relies on.
     ldflags += [ "-Wl,-z,max-page-size=4096" ]
+
+    # Use non-standard (non-Itanium) ABI for Android64. This shrinks vtables
+    # in half and places them to .rodata, which greatly improves memory
+    # footprint. It should be safe, assuming all of C++ in Chromium is
+    # compiled with this flag.
+    cflags_cc = [ "-fexperimental-relative-c++-abi-vtables" ]
+    ldflags += [ "-fexperimental-relative-c++-abi-vtables" ]
   }
 
   if (current_cpu == "arm64") {
@@ -100,16 +100,6 @@ config("runtime_library") {
 
   if (current_cpu == "arm" && arm_version == 6) {
     libs += [ "atomic" ]
-  }
-
-  if (current_cpu == "mipsel") {
-    libs += [ "atomic" ]
-  }
-
-  # TODO(jdduke) Re-enable on mips after resolving linking
-  # issues with libc++ (crbug.com/456380).
-  if (current_cpu != "mipsel" && current_cpu != "mips64el") {
-    ldflags += [ "-Wl,--warn-shared-textrel" ]
   }
 }
 

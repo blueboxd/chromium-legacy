@@ -23,7 +23,7 @@ void SetProfileTestData(AutofillProfile* profile) {
                        "theking@gmail.com", "RCA", "3734 Elvis Presley Blvd.",
                        "Apt. 10", "Memphis", "Tennessee", "38116", "US",
                        "12345678901");
-  profile->set_guid(kTestGuid);
+  profile->set_guid(kTestProfileId);
 }
 }  // namespace
 
@@ -193,13 +193,13 @@ void AutofillMetricsBaseTest::OnCreditCardFetchingSuccessful(
                       : CreditCard::RecordType::MASKED_SERVER_CARD);
   credit_card_.SetNumber(real_pan);
 
-  autofill_manager().OnCreditCardFetched(CreditCardFetchResult::kSuccess,
-                                         &credit_card_, u"123");
+  autofill_manager().OnCreditCardFetchedForTest(CreditCardFetchResult::kSuccess,
+                                                &credit_card_, u"123");
 }
 
 void AutofillMetricsBaseTest::OnCreditCardFetchingFailed() {
-  autofill_manager().OnCreditCardFetched(CreditCardFetchResult::kPermanentError,
-                                         nullptr, u"");
+  autofill_manager().OnCreditCardFetchedForTest(
+      CreditCardFetchResult::kPermanentError, nullptr, u"");
 }
 
 void AutofillMetricsBaseTest::RecreateCreditCards(
@@ -209,7 +209,9 @@ void AutofillMetricsBaseTest::RecreateCreditCards(
     bool masked_card_is_enrolled_for_virtual_card) {
   personal_data().ClearCreditCards();
   if (include_local_credit_card) {
-    CreditCard local_credit_card = test::GetCreditCard();
+    CreditCard local_credit_card;
+    test::SetCreditCardInfo(&local_credit_card, "Test User",
+                            "4111111111111111" /* Visa */, "11", "2022", "1");
     local_credit_card.set_guid("10000000-0000-0000-0000-000000000001");
     personal_data().AddCreditCard(local_credit_card);
   }
@@ -242,8 +244,10 @@ std::string AutofillMetricsBaseTest::CreateLocalMasterCard(
     personal_data().ClearCreditCards();
   }
   std::string guid("10000000-0000-0000-0000-000000000003");
-  CreditCard local_credit_card = test::GetCreditCard();
-  local_credit_card.SetNumber(u"5454545454545454" /* Mastercard */);
+  CreditCard local_credit_card;
+  test::SetCreditCardInfo(&local_credit_card, "Test User",
+                          "5454545454545454" /* Mastercard */, "08", "2022",
+                          "1");
   local_credit_card.set_guid(guid);
   personal_data().AddCreditCard(local_credit_card);
   return guid;
@@ -254,17 +258,20 @@ AutofillMetricsBaseTest::CreateLocalAndDuplicateServerCreditCard() {
   personal_data().ClearCreditCards();
 
   // Local credit card creation.
-  CreditCard local_credit_card = test::GetCreditCard();
+  CreditCard local_credit_card;
+  test::SetCreditCardInfo(&local_credit_card, "Test User",
+                          "4111111111111111" /* Visa */, "11", "2022", "1");
   std::string local_card_guid("10000000-0000-0000-0000-000000000001");
   local_credit_card.set_guid(local_card_guid);
   personal_data().AddCreditCard(local_credit_card);
 
   // Duplicate masked server card with same card information as local card.
-  CreditCard masked_server_credit_card = test::GetCreditCard();
-  masked_server_credit_card.set_record_type(CreditCard::MASKED_SERVER_CARD);
-  masked_server_credit_card.set_server_id("server_id_2");
+  CreditCard masked_server_credit_card(CreditCard::MASKED_SERVER_CARD,
+                                       "server_id_2");
   std::string server_card_guid("10000000-0000-0000-0000-000000000002");
   masked_server_credit_card.set_guid(server_card_guid);
+  test::SetCreditCardInfo(&masked_server_credit_card, "Test User",
+                          "4111111111111111" /* Visa */, "11", "2022", "1");
   masked_server_credit_card.set_instrument_id(1);
   masked_server_credit_card.SetNetworkForMaskedCard(kVisaCard);
   masked_server_credit_card.SetNumber(u"1111");
@@ -314,7 +321,7 @@ void AutofillMetricsBaseTest::CreateTestAutofillProfiles() {
                        "theking@gmail.com", "RCA", "3734 Elvis Presley Blvd.",
                        "Apt. 10", "Memphis", "Tennessee", "38116", "US",
                        "12345678901");
-  profile1.set_guid(kTestGuid);
+  profile1.set_guid(kTestProfileId);
   personal_data().AddProfile(profile1);
 
   AutofillProfile profile2;

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
@@ -44,7 +45,7 @@ class LoginHandler : public content::LoginDelegate,
                    const password_manager::PasswordForm& observed_form);
 
     const raw_ptr<password_manager::HttpAuthManager> model;
-    const password_manager::PasswordForm& form;
+    const raw_ref<const password_manager::PasswordForm> form;
   };
 
   ~LoginHandler() override;
@@ -234,7 +235,8 @@ class LoginNotificationDetails {
  private:
   LoginNotificationDetails() = default;
 
-  raw_ptr<LoginHandler> handler_;  // Where to send the response.
+  raw_ptr<LoginHandler, DanglingUntriaged>
+      handler_;  // Where to send the response.
 };
 
 // Details to provide the NotificationObserver.  Used by the automation proxy

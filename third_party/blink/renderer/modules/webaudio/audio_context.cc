@@ -10,6 +10,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -26,6 +27,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_listener.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_sink_info.h"
 #include "third_party/blink/renderer/modules/webaudio/media_element_audio_source_node.h"
 #include "third_party/blink/renderer/modules/webaudio/media_stream_audio_destination_node.h"
 #include "third_party/blink/renderer/modules/webaudio/media_stream_audio_source_node.h"
@@ -158,6 +160,20 @@ AudioContext* AudioContext::Create(Document& document,
     sample_rate = context_options->sampleRate();
   }
 
+  // The empty string means the default audio device.
+  auto frame_token = document.domWindow()->GetLocalFrameToken();
+  WebAudioSinkDescriptor sink_descriptor(String(""), frame_token);
+
+  if (document.domWindow()->IsSecureContext() && context_options->hasSinkId()) {
+    if (context_options->sinkId()->IsString()) {
+      sink_descriptor = WebAudioSinkDescriptor(
+          context_options->sinkId()->GetAsString(), frame_token);
+    } else {
+      // Create a descriptor that represents a silent sink device.
+      sink_descriptor = WebAudioSinkDescriptor(frame_token);
+    }
+  }
+
   // Validate options before trying to construct the actual context.
   if (sample_rate.has_value() &&
       !audio_utilities::IsValidAudioBufferSampleRate(sample_rate.value())) {
@@ -173,8 +189,8 @@ AudioContext* AudioContext::Create(Document& document,
   }
 
   SCOPED_UMA_HISTOGRAM_TIMER("WebAudio.AudioContext.CreateTime");
-  AudioContext* audio_context =
-      MakeGarbageCollected<AudioContext>(document, latency_hint, sample_rate);
+  AudioContext* audio_context = MakeGarbageCollected<AudioContext>(
+      document, latency_hint, sample_rate, sink_descriptor);
   ++hardware_context_count;
   audio_context->UpdateStateIfNeeded();
 
@@ -206,15 +222,22 @@ AudioContext* AudioContext::Create(Document& document,
 
 AudioContext::AudioContext(Document& document,
                            const WebAudioLatencyHint& latency_hint,
-                           absl::optional<float> sample_rate)
+                           absl::optional<float> sample_rate,
+                           WebAudioSinkDescriptor sink_descriptor)
     : BaseAudioContext(&document, kRealtimeContext),
       context_id_(context_id++),
       audio_context_manager_(document.GetExecutionContext()),
       permission_service_(document.GetExecutionContext()),
-      permission_receiver_(this, document.GetExecutionContext()) {
+      permission_receiver_(this, document.GetExecutionContext()),
+      sink_descriptor_(sink_descriptor),
+      v8_sink_id_(
+          MakeGarbageCollected<V8UnionAudioSinkInfoOrString>(String(""))),
+      media_device_service_(document.GetExecutionContext()),
+      media_device_service_receiver_(this, document.GetExecutionContext()) {
   SendLogMessage(GetAudioContextLogString(latency_hint, sample_rate));
-  destination_node_ =
-      RealtimeAudioDestinationNode::Create(this, latency_hint, sample_rate);
+
+  destination_node_ = RealtimeAudioDestinationNode::Create(
+      this, sink_descriptor_, latency_hint, sample_rate);
 
   switch (GetAutoplayPolicy()) {
     case AutoplayPolicy::Type::kNoUserGestureRequired:
@@ -264,6 +287,17 @@ AudioContext::AudioContext(Document& document,
       WTF::BindOnce(&AudioContext::DidInitialPermissionCheck,
                     WrapPersistent(this),
                     CreatePermissionDescriptor(microphone_permission_name)));
+
+  // Initializes MediaDeviceService and `output_device_ids_` only for a valid
+  // device identifier that is not the default sink or a silent sink.
+  if (sink_descriptor_.Type() ==
+          WebAudioSinkDescriptor::AudioSinkType::kAudible &&
+      !sink_descriptor_.SinkId().IsEmpty()) {
+    InitializeMediaDeviceService();
+  }
+
+  // Initializes `v8_sink_id_` with the given `sink_descriptor_`.
+  UpdateV8SinkId();
 }
 
 void AudioContext::Uninitialize() {
@@ -274,6 +308,7 @@ void AudioContext::Uninitialize() {
   StopRendering();
   DidClose();
   RecordAutoplayMetrics();
+  UninitializeMediaDeviceService();
   BaseAudioContext::Uninitialize();
 }
 
@@ -296,6 +331,9 @@ void AudioContext::Trace(Visitor* visitor) const {
   visitor->Trace(permission_service_);
   visitor->Trace(permission_receiver_);
   visitor->Trace(set_sink_id_resolvers_);
+  visitor->Trace(media_device_service_);
+  visitor->Trace(media_device_service_receiver_);
+  visitor->Trace(v8_sink_id_);
   BaseAudioContext::Trace(visitor);
 }
 
@@ -521,13 +559,14 @@ double AudioContext::outputLatency() const {
   return std::round(output_position_.hardware_output_latency / factor) * factor;
 }
 
-ScriptPromise AudioContext::setSinkId(ScriptState* script_state,
-                                      const String& sink_id,
-                                      ExceptionState& exception_state) {
+ScriptPromise AudioContext::setSinkId(
+    ScriptState* script_state,
+    const V8UnionAudioSinkOptionsOrString* v8_sink_id,
+    ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
   SetSinkIdResolver* resolver =
-      SetSinkIdResolver::Create(script_state, *this, sink_id);
+      SetSinkIdResolver::Create(script_state, *this, *v8_sink_id);
   ScriptPromise promise = resolver->Promise();
 
   if (ContextState() == kClosed) {
@@ -537,10 +576,15 @@ ScriptPromise AudioContext::setSinkId(ScriptState* script_state,
 
   set_sink_id_resolvers_.push_back(resolver);
 
-  // When there's only one resolver in the queue, we start it immediately
-  // because there is no preceding resolver will start it.
-  if (set_sink_id_resolvers_.size() == 1) {
-    resolver->Start();
+  // Lazily initializes MediaDeviceService upon setSinkId() call.
+  if (!is_media_device_service_initialized_) {
+    InitializeMediaDeviceService();
+  } else {
+    // MediaDeviceService is initialized, so we can start a resolver if it is
+    // the only request in the queue.
+    if (set_sink_id_resolvers_.size() == 1) {
+      resolver->Start();
+    }
   }
 
   return promise;
@@ -919,9 +963,121 @@ double AudioContext::GetOutputLatencyQuantizingFactor() const {
       : kOutputLatencyQuatizingFactor;
 }
 
-void AudioContext::NotifySetSinkIdIsDone(const String& sink_id) {
-  sink_id_ = sink_id;
+void AudioContext::NotifySetSinkIdIsDone(
+    WebAudioSinkDescriptor pending_sink_descriptor) {
+  sink_descriptor_ = pending_sink_descriptor;
+  UpdateV8SinkId();
   DispatchEvent(*Event::Create(event_type_names::kSinkchange));
+}
+
+void AudioContext::InitializeMediaDeviceService() {
+  auto* execution_context = GetExecutionContext();
+
+  execution_context->GetBrowserInterfaceBroker().GetInterface(
+      media_device_service_.BindNewPipeAndPassReceiver(
+          execution_context->GetTaskRunner(TaskType::kInternalMediaRealTime)));
+
+  media_device_service_->AddMediaDevicesListener(
+      /* audio input */ true,
+      /* video input */ false,
+      /* audio output */ true,
+      media_device_service_receiver_.BindNewPipeAndPassRemote(
+          execution_context->GetTaskRunner(TaskType::kInternalMediaRealTime)));
+
+  is_media_device_service_initialized_ = true;
+
+  media_device_service_->EnumerateDevices(
+      /* audio input */ false,
+      /* video input */ false,
+      /* audio output */ true,
+      /* request_video_input_capabilities */ false,
+      /* request_audio_input_capabilities */ false,
+      WTF::BindOnce(&AudioContext::DevicesEnumerated,
+                    WrapWeakPersistent(this)));
+}
+
+void AudioContext::DevicesEnumerated(
+    const Vector<Vector<WebMediaDeviceInfo>>& enumeration,
+    Vector<mojom::blink::VideoInputDeviceCapabilitiesPtr>
+        video_input_capabilities,
+    Vector<mojom::blink::AudioInputDeviceCapabilitiesPtr>
+        audio_input_capabilities) {
+  Vector<WebMediaDeviceInfo> output_devices =
+      enumeration[static_cast<wtf_size_t>(
+          mojom::blink::MediaDeviceType::MEDIA_AUDIO_OUTPUT)];
+
+  OnDevicesChanged(mojom::blink::MediaDeviceType::MEDIA_AUDIO_OUTPUT,
+                   output_devices);
+
+  // Start the first resolver in the queue once `output_device_ids_` is
+  // initialized from `OnDeviceChanged()` above.
+  if (!set_sink_id_resolvers_.empty()) {
+    set_sink_id_resolvers_.front()->Start();
+  }
+}
+
+void AudioContext::OnDevicesChanged(mojom::blink::MediaDeviceType device_type,
+                                    const Vector<WebMediaDeviceInfo>& devices) {
+  if (device_type == mojom::blink::MediaDeviceType::MEDIA_AUDIO_OUTPUT) {
+    output_device_ids_.clear();
+    for (auto device : devices) {
+      if (device.device_id == "default") {
+        // Use the empty string to represent the default audio sink.
+        output_device_ids_.insert(String(""));
+      } else {
+        output_device_ids_.insert(String::FromUTF8(device.device_id));
+      }
+    }
+  }
+
+  // On some platforms, unplugging the current audio device doesn't
+  // automatically fallback to the default audio device. When the current
+  // `sink_descriptor_` becomes invalid here, we need to manually call
+  // `SetSinkDescriptor()` to fallback to the default audio output
+  // device to keep the audio playing.
+  if (!IsValidSinkDescriptor(sink_descriptor_)) {
+    GetExecutionContext()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kOther,
+            mojom::ConsoleMessageLevel::kInfo,
+            "AudioContext: Fallback to default device due to audio device "
+            "changed."));
+    sink_descriptor_ = WebAudioSinkDescriptor(
+        String(""),
+        To<LocalDOMWindow>(GetExecutionContext())->GetLocalFrameToken());
+    auto* destination_node = destination();
+    if (destination_node) {
+      static_cast<RealtimeAudioDestinationNode*>(destination_node)
+          ->SetSinkDescriptor(sink_descriptor_, base::DoNothing());
+    }
+    UpdateV8SinkId();
+  }
+}
+
+void AudioContext::UninitializeMediaDeviceService() {
+  if (media_device_service_.is_bound()) {
+    media_device_service_.reset();
+  }
+  if (media_device_service_receiver_.is_bound()) {
+    media_device_service_receiver_.reset();
+  }
+  output_device_ids_.clear();
+}
+
+void AudioContext::UpdateV8SinkId() {
+  if (sink_descriptor_.Type() ==
+      WebAudioSinkDescriptor::AudioSinkType::kSilent) {
+    v8_sink_id_->Set(AudioSinkInfo::Create(String("none")));
+  } else {
+    v8_sink_id_->Set(sink_descriptor_.SinkId());
+  }
+}
+
+bool AudioContext::IsValidSinkDescriptor(
+    const WebAudioSinkDescriptor& sink_descriptor) {
+  return sink_descriptor.Type() ==
+             WebAudioSinkDescriptor::AudioSinkType::kSilent ||
+         output_device_ids_.Contains(sink_descriptor.SinkId());
 }
 
 }  // namespace blink

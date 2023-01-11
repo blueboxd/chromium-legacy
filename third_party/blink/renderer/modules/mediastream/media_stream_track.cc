@@ -20,9 +20,11 @@ class GetOpenDeviceRequestCallbacks final : public UserMediaRequest::Callbacks {
  public:
   ~GetOpenDeviceRequestCallbacks() override = default;
 
-  void OnSuccess(const MediaStreamVector& streams) override {}
+  void OnSuccess(const MediaStreamVector& streams,
+                 CaptureController* capture_controller) override {}
   void OnError(ScriptWrappable* callback_this_value,
-               const V8MediaStreamError* error) override {}
+               const V8MediaStreamError* error,
+               CaptureController* capture_controller) override {}
 };
 
 }  // namespace
@@ -94,6 +96,7 @@ MediaStreamTrack* MediaStreamTrack::FromTransferredState(
       window, user_media_client, UserMediaRequestType::kDisplayMedia, audio,
       video, /*should_prefer_current_tab=*/false,
       /*auto_select_all_screens=*/false,
+      /*capture_controller=*/nullptr,
       MakeGarbageCollected<GetOpenDeviceRequestCallbacks>(),
       IdentifiableSurface());
   if (!request) {
@@ -101,8 +104,8 @@ MediaStreamTrack* MediaStreamTrack::FromTransferredState(
   }
 
   // TODO(1288839): Create a TransferredMediaStreamTrack implementing interfaces
-  // supporting BrowserCaptureMediaStreamTrack or FocusableMediaStreamTrack
-  // operations when needed (or support these behaviors in some other way).
+  // supporting BrowserCaptureMediaStreamTrack operations when needed (or
+  // support these behaviors in some other way).
   TransferredMediaStreamTrack* transferred_media_stream_track =
       MakeGarbageCollected<TransferredMediaStreamTrack>(
           ExecutionContext::From(script_state), data);

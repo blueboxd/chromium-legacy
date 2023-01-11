@@ -146,17 +146,18 @@ int LayoutThemeDefault::SliderTickOffsetFromTrackCenter() const {
   return 7;
 }
 
-void LayoutThemeDefault::AdjustSliderThumbSize(ComputedStyle& style) const {
+void LayoutThemeDefault::AdjustSliderThumbSize(
+    ComputedStyleBuilder& builder) const {
   gfx::Size size = WebThemeEngineHelper::GetNativeThemeEngine()->GetSize(
       WebThemeEngine::kPartSliderThumb);
 
-  float zoom_level = style.EffectiveZoom();
-  if (style.EffectiveAppearance() == kSliderThumbHorizontalPart) {
-    style.SetWidth(Length::Fixed(size.width() * zoom_level));
-    style.SetHeight(Length::Fixed(size.height() * zoom_level));
-  } else if (style.EffectiveAppearance() == kSliderThumbVerticalPart) {
-    style.SetWidth(Length::Fixed(size.height() * zoom_level));
-    style.SetHeight(Length::Fixed(size.width() * zoom_level));
+  float zoom_level = builder.EffectiveZoom();
+  if (builder.EffectiveAppearance() == kSliderThumbHorizontalPart) {
+    builder.SetWidth(Length::Fixed(size.width() * zoom_level));
+    builder.SetHeight(Length::Fixed(size.height() * zoom_level));
+  } else if (builder.EffectiveAppearance() == kSliderThumbVerticalPart) {
+    builder.SetWidth(Length::Fixed(size.height() * zoom_level));
+    builder.SetHeight(Length::Fixed(size.width() * zoom_level));
   }
 }
 
@@ -177,7 +178,7 @@ void LayoutThemeDefault::SetSelectionColors(Color active_background_color,
 }
 
 void LayoutThemeDefault::AdjustInnerSpinButtonStyle(
-    ComputedStyle& style) const {
+    ComputedStyleBuilder& style) const {
   gfx::Size size = WebThemeEngineHelper::GetNativeThemeEngine()->GetSize(
       WebThemeEngine::kPartInnerSpinButton);
 
@@ -191,32 +192,35 @@ Color LayoutThemeDefault::PlatformFocusRingColor() const {
   return focus_ring_color;
 }
 
-void LayoutThemeDefault::AdjustButtonStyle(ComputedStyle& style) const {
-  if (style.EffectiveAppearance() == kPushButtonPart) {
-    // Ignore line-height.
-    style.SetLineHeight(ComputedStyleInitialValues::InitialLineHeight());
-  }
+void LayoutThemeDefault::AdjustButtonStyle(
+    ComputedStyleBuilder& builder) const {
+  // Ignore line-height.
+  if (builder.EffectiveAppearance() == kPushButtonPart)
+    builder.SetLineHeight(ComputedStyleInitialValues::InitialLineHeight());
 }
 
 void LayoutThemeDefault::AdjustSearchFieldCancelButtonStyle(
-    ComputedStyle& style) const {
+    ComputedStyleBuilder& builder) const {
   // Scale the button size based on the font size
-  float font_scale = style.FontSize() / kDefaultControlFontPixelSize;
+  float font_scale =
+      builder.InternalStyle()->FontSize() / kDefaultControlFontPixelSize;
   int cancel_button_size = static_cast<int>(lroundf(std::min(
       std::max(kMinCancelButtonSize, kDefaultCancelButtonSize * font_scale),
       kMaxCancelButtonSize)));
-  style.SetWidth(Length::Fixed(cancel_button_size));
-  style.SetHeight(Length::Fixed(cancel_button_size));
+  builder.SetWidth(Length::Fixed(cancel_button_size));
+  builder.SetHeight(Length::Fixed(cancel_button_size));
 }
 
-void LayoutThemeDefault::AdjustMenuListStyle(ComputedStyle& style) const {
-  LayoutTheme::AdjustMenuListStyle(style);
+void LayoutThemeDefault::AdjustMenuListStyle(
+    ComputedStyleBuilder& builder) const {
+  LayoutTheme::AdjustMenuListStyle(builder);
   // Height is locked to auto on all browsers.
-  style.SetLineHeight(ComputedStyleInitialValues::InitialLineHeight());
+  builder.ResetLineHeight();
 }
 
-void LayoutThemeDefault::AdjustMenuListButtonStyle(ComputedStyle& style) const {
-  AdjustMenuListStyle(style);
+void LayoutThemeDefault::AdjustMenuListButtonStyle(
+    ComputedStyleBuilder& builder) const {
+  AdjustMenuListStyle(builder);
 }
 
 // The following internal paddings are in addition to the user-supplied padding.

@@ -12,10 +12,13 @@ import 'chrome://resources/ash/common/network/network_property_list_mojo.js';
 import 'chrome://resources/ash/common/network/network_proxy.js';
 import 'chrome://resources/ash/common/network/network_shared.css.js';
 import 'chrome://resources/ash/common/network/network_siminfo.js';
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_page_host_style.css.js';
 import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
+import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
+import 'chrome://resources/ash/common/network/apn_list.js';
 import './strings.m.js';
 
 import {I18nBehavior} from 'chrome://resources/ash/common/i18n_behavior.js';
@@ -112,6 +115,21 @@ Polymer({
 
     /** @private {!GlobalPolicy|undefined} */
     globalPolicy_: Object,
+
+    /** @private */
+    apnExpanded_: Boolean,
+
+    /**
+     * Return true if apnRevamp feature flag is enabled.
+     * @private
+     */
+    isApnRevampEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.valueExists('apnRevamp') &&
+            loadTimeData.getBoolean('apnRevamp');
+      },
+    },
   },
 
   /**
@@ -434,8 +452,38 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isCellular_(managedProperties) {
-    return managedProperties.type == NetworkType.kCellular;
+  shouldShowApnList_(managedProperties) {
+    return !this.isApnRevampEnabled_ &&
+        managedProperties.type == NetworkType.kCellular;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowApnSection_(managedProperties) {
+    return this.isApnRevampEnabled_ &&
+        managedProperties.type === NetworkType.kCellular;
+  },
+
+  /**
+   * @param {!ManagedProperties|undefined}
+   *     managedProperties
+   * @param {boolean} apnExpanded
+   * @return {string}
+   * @private
+   */
+  getApnRowSublabel_(managedProperties, apnExpanded) {
+    if (managedProperties.type !== NetworkType.kCellular ||
+        !managedProperties.typeProperties.cellular.connectedApn) {
+      return '';
+    }
+    // Don't show the connected APN if the section has been expanded.
+    if (apnExpanded) {
+      return '';
+    }
+    return managedProperties.typeProperties.cellular.connectedApn
+        .accessPointName;
   },
 
   /**

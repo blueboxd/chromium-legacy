@@ -60,6 +60,7 @@ import org.chromium.components.signin.identitymanager.PrimaryAccountChangeEvent;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -186,7 +187,7 @@ public class FeedSurfaceMediator
     private static PrefService sPrefServiceForTest;
     private static final int SPAN_COUNT_SMALL_WIDTH = 1;
     private static final int SPAN_COUNT_LARGE_WIDTH = 2;
-    private static final int SMALL_WIDTH = 600;
+    private static final int SMALL_WIDTH_DP = 600;
 
     private final FeedSurfaceCoordinator mCoordinator;
     private final Context mContext;
@@ -209,6 +210,7 @@ public class FeedSurfaceMediator
     private boolean mFeedEnabled;
     private boolean mTouchEnabled = true;
     private boolean mStreamContentChanged;
+    private boolean mIsStickyHeaderEnabledInLayout;
     private int mThumbnailWidth;
     private int mThumbnailHeight;
     private int mThumbnailScrollY;
@@ -343,8 +345,13 @@ public class FeedSurfaceMediator
         mCoordinator.getView().addOnLayoutChangeListener(
                 (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
                     mSnapScrollHelper.handleScroll();
+                    float pixelToDp = mContext.getResources().getDisplayMetrics().density;
+                    int widthDp = (int) ((right - left) / pixelToDp);
+                    int heightDp = (int) ((bottom - top) / pixelToDp);
+                    mIsStickyHeaderEnabledInLayout = (widthDp >= 360 && heightDp >= 360);
                     if (FeedFeatures.isMultiColumnFeedEnabled(mContext)) {
-                        boolean useSingleSpan = (right - left) <= SMALL_WIDTH;
+                        boolean useSingleSpan =
+                                (right - left) <= ViewUtils.dpToPx(mContext, SMALL_WIDTH_DP);
                         Stream stream = mTabToStreamMap.get(mSectionHeaderModel.get(
                                 SectionHeaderListProperties.CURRENT_TAB_INDEX_KEY));
                         boolean supportsOptions = (stream != null) && stream.supportsOptions();
@@ -489,6 +496,21 @@ public class FeedSurfaceMediator
 
             @Override
             public void onScrolled(RecyclerView v, int dx, int dy) {
+                if (ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_HEADER_STICK_TO_TOP)) {
+                    int headerPosition = mCoordinator.getFeedHeaderPosition();
+                    int toolbarHeight = mCoordinator.getToolbarHeight();
+                    // When the distance from the header to the top is bigger than the toolbar
+                    // height, it hasn't yet reached the position where it should be fixed/sticky,
+                    // so the sticky header is kept hidden. Show it otherwise.
+                    boolean isHeaderOutOfView = headerPosition < toolbarHeight;
+                    boolean isStickyHeaderVisible =
+                            isHeaderOutOfView && mIsStickyHeaderEnabledInLayout;
+                    mSectionHeaderModel.set(
+                            SectionHeaderListProperties.STICKY_HEADER_VISIBLILITY_KEY,
+                            isStickyHeaderVisible);
+                    mCoordinator.setToolbarHairlineVisibility(!isStickyHeaderVisible);
+                }
+
                 if (mSnapScrollHelper != null) {
                     mSnapScrollHelper.handleScroll();
                 }

@@ -31,6 +31,8 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/services/app_service/public/cpp/icon_info.h"
 #include "components/webapps/browser/install_result_code.h"
+#include "components/webapps/browser/installable/installable_manager.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -91,8 +93,6 @@ class InstallFromSyncTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
     FakeWebAppProvider* provider = FakeWebAppProvider::Get(profile());
-    provider->SetDefaultFakeSubsystems();
-    provider->SetRunSubsystemStartupTasks(true);
     auto command_url_loader = std::make_unique<TestWebAppUrlLoader>();
     command_manager_url_loader_ = command_url_loader.get();
     provider->GetCommandManager().SetUrlLoaderForTesting(
@@ -253,9 +253,9 @@ TEST_F(InstallFromSyncTest, SuccessWithManifest) {
               GetWebAppInstallInfo(testing::_, base::test::IsNotNullCallback()))
       .WillOnce(base::test::RunOnceCallback<1>(CreateSiteInstallInfo()));
 
-  EXPECT_CALL(*data_retriever,
-              CheckInstallabilityAndRetrieveManifest(
-                  testing::_, true, base::test::IsNotNullCallback()))
+  EXPECT_CALL(*data_retriever, CheckInstallabilityAndRetrieveManifest(
+                                   testing::_, true,
+                                   base::test::IsNotNullCallback(), testing::_))
       .WillOnce(base::test::RunOnceCallback<2>(CreateManifest(true),
                                                kWebAppManifestUrl, true, true));
 
@@ -294,9 +294,9 @@ TEST_F(InstallFromSyncTest, SuccessWithoutManifest) {
               GetWebAppInstallInfo(testing::_, base::test::IsNotNullCallback()))
       .WillOnce(base::test::RunOnceCallback<1>(CreateSiteInstallInfo()));
 
-  EXPECT_CALL(*data_retriever,
-              CheckInstallabilityAndRetrieveManifest(
-                  testing::_, true, base::test::IsNotNullCallback()))
+  EXPECT_CALL(*data_retriever, CheckInstallabilityAndRetrieveManifest(
+                                   testing::_, true,
+                                   base::test::IsNotNullCallback(), testing::_))
       .WillOnce(base::test::RunOnceCallback<2>(nullptr, kWebAppManifestUrl,
                                                true, true));
 
@@ -335,9 +335,9 @@ TEST_F(InstallFromSyncTest, SuccessManifestNoIcons) {
               GetWebAppInstallInfo(testing::_, base::test::IsNotNullCallback()))
       .WillOnce(base::test::RunOnceCallback<1>(CreateSiteInstallInfo()));
 
-  EXPECT_CALL(*data_retriever,
-              CheckInstallabilityAndRetrieveManifest(
-                  testing::_, true, base::test::IsNotNullCallback()))
+  EXPECT_CALL(*data_retriever, CheckInstallabilityAndRetrieveManifest(
+                                   testing::_, true,
+                                   base::test::IsNotNullCallback(), testing::_))
       .WillOnce(base::test::RunOnceCallback<2>(CreateManifest(/*icons=*/false),
                                                kWebAppManifestUrl, true, true));
 
@@ -449,9 +449,9 @@ TEST_F(InstallFromSyncTest, FallbackManifestIdMismatch) {
   auto manifest = CreateManifest(true);
   manifest->id = u"other_path/index.html";
 
-  EXPECT_CALL(*data_retriever,
-              CheckInstallabilityAndRetrieveManifest(
-                  testing::_, true, base::test::IsNotNullCallback()))
+  EXPECT_CALL(*data_retriever, CheckInstallabilityAndRetrieveManifest(
+                                   testing::_, true,
+                                   base::test::IsNotNullCallback(), testing::_))
       .WillOnce(base::test::RunOnceCallback<2>(std::move(manifest),
                                                kWebAppManifestUrl, true, true));
 
@@ -501,9 +501,10 @@ TEST_F(InstallFromSyncTest, TwoInstalls) {
         .WillOnce(
             base::test::RunOnceCallback<1>(CreateSiteInstallInfo(kWebAppUrl)));
 
-    EXPECT_CALL(*data_retriever1,
-                CheckInstallabilityAndRetrieveManifest(
-                    testing::_, true, base::test::IsNotNullCallback()))
+    EXPECT_CALL(
+        *data_retriever1,
+        CheckInstallabilityAndRetrieveManifest(
+            testing::_, true, base::test::IsNotNullCallback(), testing::_))
         .WillOnce(base::test::RunOnceCallback<2>(
             CreateManifest(true, kWebAppUrl), kWebAppManifestUrl, true, true));
 
@@ -519,9 +520,10 @@ TEST_F(InstallFromSyncTest, TwoInstalls) {
         .WillOnce(base::test::RunOnceCallback<1>(
             CreateSiteInstallInfo(kOtherWebAppUrl)));
 
-    EXPECT_CALL(*data_retriever2,
-                CheckInstallabilityAndRetrieveManifest(
-                    testing::_, true, base::test::IsNotNullCallback()))
+    EXPECT_CALL(
+        *data_retriever2,
+        CheckInstallabilityAndRetrieveManifest(
+            testing::_, true, base::test::IsNotNullCallback(), testing::_))
         .WillOnce(base::test::RunOnceCallback<2>(
             CreateManifest(true, kOtherWebAppUrl), kWebAppManifestUrl, true,
             true));
@@ -658,6 +660,67 @@ TEST_F(InstallFromSyncTest, Shutdown) {
             result.install_code);
   EXPECT_EQ(result.installed_app_id, app_id);
   EXPECT_FALSE(registrar().IsInstalled(app_id));
+}
+
+TEST_F(InstallFromSyncTest, ShutdownDoesNotCrash) {
+  class CustomInstallableManager : public webapps::InstallableManager {
+   public:
+    CustomInstallableManager(content::WebContents* web_contents,
+                             WebAppCommandManager* command_manager)
+        : webapps::InstallableManager(web_contents),
+          command_manager_(command_manager) {}
+    ~CustomInstallableManager() override = default;
+
+   private:
+    // webapps::InstallableManager:
+    void GetData(const webapps::InstallableParams& params,
+                 webapps::InstallableCallback callback) override {
+      command_manager_->Shutdown();
+    }
+
+    WebAppCommandManager* const command_manager_;
+  };
+
+  class CustomWebAppDataRetriever : public WebAppDataRetriever {
+   public:
+    explicit CustomWebAppDataRetriever(WebAppCommandManager* command_manager)
+        : command_manager_(command_manager) {}
+    ~CustomWebAppDataRetriever() override = default;
+
+   private:
+    void GetWebAppInstallInfo(content::WebContents* web_contents,
+                              GetWebAppInstallInfoCallback callback) override {
+      web_contents->SetUserData(content::WebContentsUserData<
+                                    webapps::InstallableManager>::UserDataKey(),
+                                std::make_unique<CustomInstallableManager>(
+                                    web_contents, command_manager_));
+
+      std::move(callback).Run(std::make_unique<WebAppInstallInfo>());
+    }
+
+    WebAppCommandManager* const command_manager_;
+  };
+
+  const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, kWebAppUrl);
+  command_manager_url_loader().AddPrepareForLoadResults(
+      {WebAppUrlLoader::Result::kUrlLoaded});
+  url_loader().SetNextLoadUrlResult(kWebAppUrl,
+                                    WebAppUrlLoader::Result::kUrlLoaded);
+
+  base::RunLoop loop;
+  auto data_retriever =
+      std::make_unique<CustomWebAppDataRetriever>(&command_manager());
+  auto command = CreateCommand(
+      std::move(data_retriever), CreateParams(app_id, kWebAppUrl),
+      base::BindLambdaForTesting([&](const AppId& id,
+                                     webapps::InstallResultCode code) {
+        EXPECT_EQ(
+            code,
+            webapps::InstallResultCode::kCancelledOnWebAppProviderShuttingDown);
+        loop.Quit();
+      }));
+  command_manager().ScheduleCommand(std::move(command));
+  loop.Run();
 }
 
 TEST_F(InstallFromSyncTest, SyncUninstall) {

@@ -26,11 +26,6 @@ var hasWindow = !!this.window;
 var testing = {};
 (function(exports) {
 /**
- * Holds the original version of the |chrome| object.
- */
-const originalChrome = null;
-
-/**
  * Hold the currentTestCase across between preLoad and run.
  * @type {TestCase}
  */
@@ -475,10 +470,10 @@ function testDone(result) {
     } else if (chrome.send) {
       // For WebUI and v8 unit tests.
       chrome.send('testResult', result);
-    } else if (window.domAutomationController.send) {
+    } else if (chrome.test.sendScriptResult) {
       // For extension tests.
       const valueResult = {'result': success, message: errorMessage};
-      window.domAutomationController.send(JSON.stringify(valueResult));
+      chrome.test.sendScriptResult(JSON.stringify(valueResult));
     } else {
       assertNotReached('No test framework available');
     }

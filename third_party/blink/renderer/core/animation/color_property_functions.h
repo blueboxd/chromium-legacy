@@ -11,6 +11,7 @@
 namespace blink {
 
 class ComputedStyle;
+class ComputedStyleBuilder;
 class CSSProperty;
 
 struct OptionalStyleColor {
@@ -44,9 +45,11 @@ class ColorPropertyFunctions {
   static OptionalStyleColor GetVisitedColor(const CSSProperty&,
                                             const ComputedStyle&);
   static void SetUnvisitedColor(const CSSProperty&,
-                                ComputedStyle&,
+                                ComputedStyleBuilder&,
                                 const Color&);
-  static void SetVisitedColor(const CSSProperty&, ComputedStyle&, const Color&);
+  static void SetVisitedColor(const CSSProperty&,
+                              ComputedStyleBuilder&,
+                              const Color&);
 };
 
 }  // namespace blink

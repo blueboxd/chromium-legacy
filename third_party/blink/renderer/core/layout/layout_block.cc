@@ -220,10 +220,10 @@ static bool BorderOrPaddingLogicalDimensionChanged(
 // <text>. Squared to avoid computing the square root. See
 // SVGLayoutSupport::CalculateScreenFontSizeScalingFactor().
 static double ComputeSquaredLocalFontSizeScalingFactor(
-    const TransformationMatrix* transform) {
+    const gfx::Transform* transform) {
   if (!transform)
     return 1;
-  const auto affine = transform->ToAffineTransform();
+  const auto affine = AffineTransform::FromTransform(*transform);
   return affine.XScaleSquared() + affine.YScaleSquared();
 }
 
@@ -1121,7 +1121,7 @@ void LayoutBlock::RemovePositionedObjects(
     // It is parent blocks job to add positioned child to positioned objects
     // list of its containing block.
     // Parent layout needs to be invalidated to ensure this happens.
-    positioned_object->MarkParentForOutOfFlowPositionedChange();
+    positioned_object->MarkParentForSpannerOrOutOfFlowPositionedChange();
     return true;
   };
 
@@ -2270,14 +2270,18 @@ LayoutBlock* LayoutBlock::CreateAnonymousWithParentAndDisplay(
       new_display = EDisplay::kBlock;
       break;
   }
-  scoped_refptr<ComputedStyle> new_style =
-      parent->GetDocument().GetStyleResolver().CreateAnonymousStyleWithDisplay(
-          parent->StyleRef(), new_display);
+  ComputedStyleBuilder new_style_builder =
+      parent->GetDocument()
+          .GetStyleResolver()
+          .CreateAnonymousStyleBuilderWithDisplay(parent->StyleRef(),
+                                                  new_display);
 
   LegacyLayout legacy =
       parent->ForceLegacyLayout() ? LegacyLayout::kForce : LegacyLayout::kAuto;
 
-  parent->UpdateAnonymousChildStyle(nullptr, *new_style);
+  parent->UpdateAnonymousChildStyle(nullptr, new_style_builder);
+  scoped_refptr<const ComputedStyle> new_style = new_style_builder.TakeStyle();
+
   LayoutBlock* layout_block;
   if (new_display == EDisplay::kFlex) {
     layout_block = LayoutObjectFactory::CreateFlexibleBox(parent->GetDocument(),
@@ -2322,21 +2326,6 @@ RecalcLayoutOverflowResult LayoutBlock::RecalcChildLayoutOverflow() {
 
   result.Unite(RecalcPositionedDescendantsLayoutOverflow());
   return result;
-}
-
-void LayoutBlock::RebuildFragmentTreeSpine() {
-  DCHECK(PhysicalFragmentCount());
-  // If this box has an associated layout-result, rebuild the spine of the
-  // fragment-tree to ensure consistency.
-  LayoutBlock* cb = this;
-  while (cb && cb->PhysicalFragmentCount() && !cb->NeedsLayout()) {
-    // Create and set a new identical results.
-    for (auto& layout_result : cb->layout_results_) {
-      layout_result =
-          NGLayoutResult::CloneWithPostLayoutFragments(*layout_result);
-    }
-    cb = cb->ContainingNGBlock();
-  }
 }
 
 void LayoutBlock::RecalcChildVisualOverflow() {

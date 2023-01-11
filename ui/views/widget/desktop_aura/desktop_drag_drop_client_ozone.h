@@ -24,11 +24,9 @@
 #include "ui/platform_window/wm/wm_drop_handler.h"
 #include "ui/views/views_export.h"
 
-namespace aura {
-namespace client {
+namespace aura::client {
 class DragDropDelegate;
-}
-}  // namespace aura
+}  // namespace aura::client
 
 namespace ui {
 class DropTargetEvent;
@@ -89,6 +87,10 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
       const gfx::Point& root_location,
       int allowed_operations,
       ui::mojom::DragEventSource source) override;
+#if BUILDFLAG(IS_LINUX)
+  void UpdateDragImage(const gfx::ImageSkia& image,
+                       const gfx::Vector2d& offset) override;
+#endif
   void DragCancel() override;
   bool IsDragDropInProgress() override;
   void AddObserver(aura::client::DragDropClientObserver* observer) override;

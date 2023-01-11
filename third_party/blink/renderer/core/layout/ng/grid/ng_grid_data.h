@@ -22,8 +22,14 @@ struct CORE_EXPORT NGGridPlacementData {
   // Subgrids need to map named lines from every parent grid. This constructor
   // should be used exclusively by subgrids to differentiate such scenario.
   NGGridPlacementData(const ComputedStyle& grid_style,
-                      const NGGridLineResolver& parent_line_resolver)
-      : line_resolver(grid_style, parent_line_resolver) {}
+                      const NGGridLineResolver& parent_line_resolver,
+                      GridArea subgrid_area)
+      : line_resolver(grid_style, parent_line_resolver, subgrid_area) {
+    if (subgrid_area.columns.IsTranslatedDefinite())
+      subgridded_column_span_size = subgrid_area.SpanSize(kForColumns);
+    if (subgrid_area.rows.IsTranslatedDefinite())
+      subgridded_row_span_size = subgrid_area.SpanSize(kForRows);
+  }
 
   // This constructor only copies inputs to the auto-placement algorithm.
   NGGridPlacementData(const NGGridPlacementData& other)
@@ -50,11 +56,6 @@ struct CORE_EXPORT NGGridPlacementData {
     return subgrid_span_size == kNotFound;
   }
 
-  bool IsSubgriddedToParent() const {
-    return subgridded_column_span_size != kNotFound ||
-           subgridded_row_span_size != kNotFound;
-  }
-
   NGGridLineResolver line_resolver;
   wtf_size_t subgridded_column_span_size{kNotFound};
   wtf_size_t subgridded_row_span_size{kNotFound};
@@ -79,6 +80,8 @@ struct CORE_EXPORT NGGridLayoutData {
 
  public:
   NGGridLayoutData() = default;
+  NGGridLayoutData(NGGridLayoutData&&) = default;
+  NGGridLayoutData& operator=(NGGridLayoutData&&) = default;
 
   NGGridLayoutData(std::unique_ptr<NGGridLayoutTrackCollection> columns,
                    std::unique_ptr<NGGridLayoutTrackCollection> rows)

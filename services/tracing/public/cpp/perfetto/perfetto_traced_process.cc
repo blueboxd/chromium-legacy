@@ -9,7 +9,6 @@
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/thread_id_name_manager.h"
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_log.h"
 #include "base/tracing/perfetto_platform.h"
@@ -19,13 +18,12 @@
 #include "services/tracing/public/cpp/perfetto/perfetto_tracing_backend.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
+#include "services/tracing/public/cpp/perfetto/track_name_recorder.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "services/tracing/public/mojom/tracing_service.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/tracing.h"
-#include "third_party/perfetto/protos/perfetto/trace/track_event/process_descriptor.gen.h"
-#include "third_party/perfetto/protos/perfetto/trace/track_event/thread_descriptor.gen.h"
 
 #if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 // As per 'gn help check':
@@ -77,48 +75,6 @@ void OnPerfettoLogMessage(perfetto::base::LogMessageCallbackArgs args) {
   ::logging::LogMessage(args.filename, args.line, severity).stream()
       << args.message;
 }
-
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-// Set track descriptors for the current process and all its threads.
-// At this point tracing is already initialized, so for some threads (e.g.
-// created just before or concurrently with this function),
-// PerfettoPlatform::OnThreadNameChanged will also set the same descriptor.
-// This is not a problem because the Perfetto code is guarded by a lock
-// and the value of the descriptor is the same.
-void SetTrackDescriptors() {
-  int process_id = base::trace_event::TraceLog::GetInstance()->process_id();
-  std::string process_name =
-      base::trace_event::TraceLog::GetInstance()->process_name();
-
-  auto process_track = perfetto::ProcessTrack::Current();
-  auto process_track_desc = process_track.Serialize();
-  process_track_desc.mutable_process()->set_pid(process_id);
-  process_track_desc.mutable_process()->set_process_name(process_name);
-  perfetto::TrackEvent::SetTrackDescriptor(process_track,
-                                           std::move(process_track_desc));
-
-  const auto thread_ids = base::ThreadIdNameManager::GetInstance()->GetIds();
-  for (base::PlatformThreadId thread_id : thread_ids) {
-    const char* thread_name =
-        base::ThreadIdNameManager::GetInstance()->GetName(thread_id);
-    auto thread_track = perfetto::ThreadTrack::ForThread(thread_id);
-    auto thread_track_desc = thread_track.Serialize();
-    thread_track_desc.mutable_thread()->set_pid(process_id);
-    thread_track_desc.mutable_thread()->set_thread_name(thread_name);
-    perfetto::TrackEvent::SetTrackDescriptor(thread_track,
-                                             std::move(thread_track_desc));
-  }
-  // Main thread is special, it's not registered with ThreadIdNameManager.
-  const char* thread_name =
-      base::ThreadIdNameManager::GetInstance()->GetNameForCurrentThread();
-  auto thread_track = perfetto::ThreadTrack::Current();
-  auto thread_track_desc = thread_track.Serialize();
-  thread_track_desc.mutable_thread()->set_pid(process_id);
-  thread_track_desc.mutable_thread()->set_thread_name(thread_name);
-  perfetto::TrackEvent::SetTrackDescriptor(thread_track,
-                                           std::move(thread_track_desc));
-}
-#endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
 }  // namespace
 
@@ -196,7 +152,7 @@ PerfettoTracedProcess* PerfettoTracedProcess::Get() {
 PerfettoTracedProcess::PerfettoTracedProcess()
     : producer_client_(std::make_unique<ProducerClient>(GetTaskRunner())),
       platform_(std::make_unique<base::tracing::PerfettoPlatform>()),
-      tracing_backend_(std::make_unique<PerfettoTracingBackend>(*this)) {
+      tracing_backend_(std::make_unique<PerfettoTracingBackend>()) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -205,15 +161,13 @@ PerfettoTracedProcess::~PerfettoTracedProcess() {}
 void PerfettoTracedProcess::SetConsumerConnectionFactory(
     ConsumerConnectionFactory factory,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  consumer_connection_factory_ = factory;
-  consumer_connection_task_runner_ = task_runner;
+  tracing_backend_->SetConsumerConnectionFactory(factory, task_runner);
 }
 
 void PerfettoTracedProcess::ConnectProducer(
     mojo::PendingRemote<mojom::PerfettoService> perfetto_service) {
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-  DCHECK(pending_producer_callback_);
-  std::move(pending_producer_callback_).Run(std::move(perfetto_service));
+  tracing_backend_->OnProducerConnected(std::move(perfetto_service));
 #else   // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   producer_client_->Connect(std::move(perfetto_service));
 #endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
@@ -240,61 +194,6 @@ PerfettoTracedProcess::SetSystemProducerForTesting(
   auto old_for_testing = std::move(system_producer_);
   system_producer_ = std::move(producer);
   return old_for_testing;
-}
-
-void PerfettoTracedProcess::CreateProducerConnection(
-    base::OnceCallback<void(mojo::PendingRemote<mojom::PerfettoService>)>
-        callback) {
-  // This is called on Perfetto's internal TracingMuxerImpl thread, so we need
-  // to hop over to the tracing sequence.
-  GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](base::OnceCallback<void(
-                 mojo::PendingRemote<mojom::PerfettoService>)> callback) {
-            DCHECK_CALLED_ON_VALID_SEQUENCE(
-                PerfettoTracedProcess::Get()->sequence_checker_);
-            // Perfetto will attempt to create the producer connection as soon
-            // as the client library is initialized, which is before we have a a
-            // connection to the tracing service. Store the connection callback
-            // until ConnectProducer() is called.
-            // DCHECK(!pending_producer_callback_);
-            PerfettoTracedProcess::Get()->pending_producer_callback_ =
-                std::move(callback);
-          },
-          std::move(callback)));
-}
-
-void PerfettoTracedProcess::CreateConsumerConnection(
-    base::OnceCallback<void(mojo::PendingRemote<mojom::ConsumerHost>)>
-        callback) {
-  // This is called on Perfetto's internal TracingMuxerImpl thread, so we need
-  // to hop over to the tracing sequence.
-  GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](base::OnceCallback<void(mojo::PendingRemote<mojom::ConsumerHost>)>
-                 callback) {
-            auto* self = PerfettoTracedProcess::Get();
-            DCHECK_CALLED_ON_VALID_SEQUENCE(self->sequence_checker_);
-            self->consumer_connection_task_runner_->PostTask(
-                FROM_HERE,
-                base::BindOnce(
-                    [](ConsumerConnectionFactory factory,
-                       base::OnceCallback<void(
-                           mojo::PendingRemote<mojom::ConsumerHost>)>
-                           callback) {
-                      auto& tracing_service = factory();
-                      mojo::PendingRemote<mojom::ConsumerHost>
-                          consumer_host_remote;
-                      tracing_service.BindConsumerHost(
-                          consumer_host_remote
-                              .InitWithNewPipeAndPassReceiver());
-                      std::move(callback).Run(std::move(consumer_host_remote));
-                    },
-                    self->consumer_connection_factory_, std::move(callback)));
-          },
-          std::move(callback)));
 }
 
 // We never destroy the taskrunner as we may need it for cleanup
@@ -433,7 +332,7 @@ void PerfettoTracedProcess::SetupClientLibrary(bool enable_consumer) {
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   perfetto::TrackEvent::Register();
   tracing::TracingSamplerProfiler::RegisterDataSource();
-  SetTrackDescriptors();
+  TrackNameRecorder::GetInstance();
   CustomEventRecorder::GetInstance();
 #endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 

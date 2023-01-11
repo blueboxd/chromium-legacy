@@ -39,6 +39,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/permissions_manager.h"
 #include "extensions/browser/pref_types.h"
 #include "extensions/browser/ui_util.h"
 #include "extensions/common/extension.h"
@@ -385,9 +386,9 @@ void InstalledLoader::LoadAllExtensions() {
       // UI thread because reloads should be very rare, and the complexity
       // added by delaying the time when the extensions service knows about
       // all extensions is significant.  See crbug.com/37548 for details.
-      // |allow_io| disables tests that file operations run on the file
+      // |allow_blocking| disables tests that file operations run on the file
       // thread.
-      base::ThreadRestrictions::ScopedAllowIO allow_io;
+      base::ScopedAllowBlocking allow_blocking;
 
       std::string error;
       scoped_refptr<const Extension> extension(file_util::LoadExtension(
@@ -670,7 +671,8 @@ void InstalledLoader::RecordExtensionsMetrics() {
     // RuntimeHostPermissions feature is disabled.
     if (scripting_modifier.CanAffectExtension()) {
       bool extension_has_withheld_hosts =
-          scripting_modifier.HasWithheldHostPermissions();
+          PermissionsManager::Get(profile)->HasWithheldHostPermissions(
+              extension->id());
       UMA_HISTOGRAM_BOOLEAN(
           "Extensions.RuntimeHostPermissions.ExtensionHasWithheldHosts",
           extension_has_withheld_hosts);

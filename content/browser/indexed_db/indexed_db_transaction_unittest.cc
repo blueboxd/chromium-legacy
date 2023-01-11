@@ -15,7 +15,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
-#include "components/services/storage/indexed_db/locks/partitioned_lock_manager_impl.h"
+#include "components/services/storage/indexed_db/locks/partitioned_lock_manager.h"
 #include "content/browser/indexed_db/fake_indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
@@ -59,8 +59,7 @@ class IndexedDBTransactionTest : public testing::Test {
   IndexedDBTransactionTest()
       : task_environment_(std::make_unique<base::test::TaskEnvironment>()),
         backing_store_(std::make_unique<IndexedDBFakeBackingStore>()),
-        factory_(std::make_unique<MockIndexedDBFactory>()),
-        lock_manager_(kIndexedDBLockLevelCount) {}
+        factory_(std::make_unique<MockIndexedDBFactory>()) {}
 
   IndexedDBTransactionTest(const IndexedDBTransactionTest&) = delete;
   IndexedDBTransactionTest& operator=(const IndexedDBTransactionTest&) = delete;
@@ -127,7 +126,7 @@ class IndexedDBTransactionTest : public testing::Test {
     return connection;
   }
 
-  PartitionedLockManagerImpl* lock_manager() { return &lock_manager_; }
+  PartitionedLockManager* lock_manager() { return &lock_manager_; }
 
  protected:
   std::unique_ptr<base::test::TaskEnvironment> task_environment_;
@@ -138,7 +137,7 @@ class IndexedDBTransactionTest : public testing::Test {
   bool error_called_ = false;
 
  private:
-  PartitionedLockManagerImpl lock_manager_;
+  PartitionedLockManager lock_manager_;
 };
 
 class IndexedDBTransactionTestMode
@@ -544,10 +543,9 @@ TEST_F(IndexedDBTransactionTest, AbortCancelsLockRequest) {
   // Acquire a lock to block the transaction's lock acquisition.
   bool locks_recieved = false;
   std::vector<PartitionedLockManager::PartitionedLockRequest> lock_requests;
-  lock_requests.emplace_back(kDatabaseRangeLockLevel, GetDatabaseLockRange(id),
+  lock_requests.emplace_back(GetDatabaseLockId(id),
                              PartitionedLockManager::LockType::kShared);
-  lock_requests.emplace_back(kObjectStoreRangeLockLevel,
-                             GetObjectStoreLockRange(id, object_store_id),
+  lock_requests.emplace_back(GetObjectStoreLockId(id, object_store_id),
                              PartitionedLockManager::LockType::kExclusive);
   PartitionedLockHolder temp_lock_receiver;
   lock_manager()->AcquireLocks(lock_requests,

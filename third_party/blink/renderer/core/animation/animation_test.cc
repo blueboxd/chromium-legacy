@@ -216,7 +216,7 @@ class AnimationAnimationTestNoCompositing : public PaintTestConfigurations,
   void SimulateAwaitReady() { SimulateFrame(last_frame_time); }
 
   void SimulateMicrotask() {
-    GetDocument().GetAgent()->event_loop()->PerformMicrotaskCheckpoint();
+    GetDocument().GetAgent().event_loop()->PerformMicrotaskCheckpoint();
   }
 
   void SimulateFrameForScrollAnimations() {
@@ -1398,6 +1398,16 @@ TEST_P(AnimationAnimationTestCompositing, PreCommitWithUnresolvedStartTimes) {
   // At this point, a call to PreCommit should bail out and tell us to wait for
   // next commit because there are no resolved start times.
   EXPECT_FALSE(animation->PreCommit(0, nullptr, true));
+}
+
+TEST_P(AnimationAnimationTestCompositing, SynchronousCancel) {
+  // Start with a composited animation.
+  ResetWithCompositedAnimation();
+  ASSERT_TRUE(animation->HasActiveAnimationsOnCompositor());
+
+  animation->cancel();
+  ASSERT_FALSE(animation->HasActiveAnimationsOnCompositor());
+  EXPECT_FALSE(animation->CompositorPending());
 }
 
 namespace {

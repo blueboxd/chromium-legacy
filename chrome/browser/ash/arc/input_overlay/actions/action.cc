@@ -220,7 +220,7 @@ bool Action::ParseFromProto(const ActionProto& proto) {
   original_input_ = InputElement::ConvertFromProto(proto.input_element());
   current_input_ = std::make_unique<InputElement>(*original_input_);
 
-  if (!proto.positions().empty()) {
+  if (beta_ && !proto.positions().empty()) {
     std::vector<Position> positions;
     for (const auto& pos_proto : proto.positions()) {
       auto position = Position::ConvertFromProto(pos_proto);
@@ -248,6 +248,8 @@ void Action::OverwriteFromProto(const ActionProto& proto) {
       current_positions_[0] = *position;
     position.reset();
   }
+  if (beta_ && proto.has_deleted())
+    deleted_ = proto.deleted();
 }
 
 bool Action::InitFromEditor() {
@@ -346,21 +348,21 @@ void Action::PrepareToBindPosition(std::unique_ptr<Position> position) {
 
 void Action::RestoreToDefault() {
   bool restored = false;
-  if (beta_) {
-    pending_position_.reset();
-    if (!original_positions_.empty()) {
-      pending_position_ = std::make_unique<Position>(original_positions_[0]);
-    } else {
-      // TODO(cuicuiruan): ActionMove by mouse may have empty position.
-      // Implement this once UX/UI confirmed.
-      NOTREACHED();
-    }
-    restored = true;
-  }
   if (GetCurrentDisplayedInput() != *original_input_) {
     pending_input_.reset();
     pending_input_ = std::make_unique<InputElement>(*original_input_);
     restored = true;
+  }
+  if (beta_) {
+    if (GetCurrentDisplayedPosition() != original_positions_[0]) {
+      pending_position_.reset();
+      pending_position_ = std::make_unique<Position>(original_positions_[0]);
+      restored = true;
+    }
+    if (deleted_) {
+      deleted_ = false;
+      restored = true;
+    }
   }
 
   // For unit test, |action_view_| could be nullptr.
@@ -387,6 +389,9 @@ bool Action::IsOverlapped(const InputElement& input_element) {
 }
 
 const Position& Action::GetCurrentDisplayedPosition() {
+  // TODO(b/229912890): When mouse overlay is involved, |original_positions_|
+  // may be empty. Add the situation for empty |original_positions_| when
+  // supporting mouse.
   DCHECK(!original_positions_.empty());
 
   return pending_position_
@@ -430,6 +435,38 @@ int Action::GetUIRadius() {
   return std::max(static_cast<int>(*radius_ * min), kMinRadius);
 }
 
+bool Action::IsDefaultAction() const {
+  return id_ <= kMaxDefaultActionID;
+}
+
+bool Action::CreateTouchPressedEvent(const base::TimeTicks& time_stamp,
+                                     std::list<ui::TouchEvent>& touch_events) {
+  if (touch_id_) {
+    LOG(ERROR) << "Touch ID shouldn't be set for the initial press.";
+    return false;
+  }
+
+  touch_id_ = TouchIdManager::GetInstance()->ObtainTouchID();
+  if (!touch_id_) {
+    LOG(ERROR) << "Failed to obtain a new touch ID.";
+    return false;
+  }
+
+  CreateTouchEvent(ui::EventType::ET_TOUCH_PRESSED, time_stamp, touch_events);
+  return true;
+}
+
+void Action::CreateTouchMovedEvent(const base::TimeTicks& time_stamp,
+                                   std::list<ui::TouchEvent>& touch_events) {
+  CreateTouchEvent(ui::EventType::ET_TOUCH_MOVED, time_stamp, touch_events);
+}
+
+void Action::CreateTouchReleasedEvent(const base::TimeTicks& time_stamp,
+                                      std::list<ui::TouchEvent>& touch_events) {
+  CreateTouchEvent(ui::EventType::ET_TOUCH_RELEASED, time_stamp, touch_events);
+  OnTouchReleased();
+}
+
 bool Action::IsRepeatedKeyEvent(const ui::KeyEvent& key_event) {
   if ((key_event.flags() & ui::EF_IS_REPEAT) &&
       (key_event.type() == ui::ET_KEY_PRESSED)) {
@@ -460,22 +497,6 @@ bool Action::VerifyOnKeyRelease(ui::DomCode code) {
   return true;
 }
 
-void Action::OnTouchReleased() {
-  DCHECK(touch_id_);
-  TouchIdManager::GetInstance()->ReleaseTouchID(*touch_id_);
-  touch_id_ = absl::nullopt;
-  keys_pressed_.clear();
-  if (original_positions_.empty())
-    return;
-  current_position_idx_ =
-      (current_position_idx_ + 1) % original_positions_.size();
-}
-
-void Action::OnTouchCancelled() {
-  OnTouchReleased();
-  current_position_idx_ = 0;
-}
-
 void Action::PostUnbindInputProcess() {
   if (!action_view_)
     return;
@@ -492,21 +513,31 @@ std::unique_ptr<ActionProto> Action::ConvertToProtoIfCustomized() const {
   auto proto = std::make_unique<ActionProto>();
   proto->set_id(id_);
 
-  if (id_ <= kMaxDefaultActionID) {
-    if (*original_input_ == *current_input_) {
-      if (!beta_ || original_positions_ == current_positions_)
-        return nullptr;
-    } else {
+  if (IsDefaultAction()) {
+    // Check if the default action is customized.
+    bool customized = false;
+    if (*original_input_ != *current_input_) {
       proto->set_allocated_input_element(
           current_input_->ConvertToProto().release());
+      customized = true;
     }
 
-    if (beta_ && original_positions_ != current_positions_) {
-      // Now only supports changing and saving the first touch position.
-      auto pos_proto = current_positions_[0].ConvertToProto();
-      *proto->add_positions() = *pos_proto;
-      pos_proto.reset();
+    if (beta_) {
+      if (original_positions_ != current_positions_) {
+        // Now only supports changing and saving the first touch position.
+        auto pos_proto = current_positions_[0].ConvertToProto();
+        *proto->add_positions() = *pos_proto;
+        pos_proto.reset();
+        customized = true;
+      }
+      if (deleted_) {
+        proto->set_deleted(true);
+        customized = true;
+      }
     }
+
+    if (!customized)
+      return nullptr;
   } else if (beta_) {
     // Save everything for user-added action.
     proto->set_allocated_input_element(
@@ -548,6 +579,35 @@ void Action::UpdateTouchDownPositions() {
             << "}";
   }
   DCHECK_EQ(touch_down_positions_.size(), original_positions_.size());
+}
+
+void Action::OnTouchReleased() {
+  last_touch_root_location_.set_x(0);
+  last_touch_root_location_.set_y(0);
+  DCHECK(touch_id_);
+  TouchIdManager::GetInstance()->ReleaseTouchID(*touch_id_);
+  touch_id_ = absl::nullopt;
+  keys_pressed_.clear();
+  if (original_positions_.empty())
+    return;
+  current_position_idx_ =
+      (current_position_idx_ + 1) % original_positions_.size();
+}
+
+void Action::OnTouchCancelled() {
+  OnTouchReleased();
+  current_position_idx_ = 0;
+}
+
+void Action::CreateTouchEvent(ui::EventType type,
+                              const base::TimeTicks& time_stamp,
+                              std::list<ui::TouchEvent>& touch_events) {
+  DCHECK(touch_id_);
+  touch_events.emplace_back(
+      type, last_touch_root_location_, last_touch_root_location_, time_stamp,
+      ui::PointerDetails(ui::EventPointerType::kTouch, *touch_id_));
+  ui::Event::DispatcherApi(&(touch_events.back()))
+      .set_target(touch_injector_->window());
 }
 
 }  // namespace input_overlay

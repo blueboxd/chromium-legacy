@@ -11,32 +11,41 @@ source_set("variations") {
     "ios_chrome_variations_service_client.mm",
   ]
   deps = [
-    ":first_run",
+    ":store",
     "//base",
     "//components/variations",
     "//components/variations/service",
     "//components/version_info",
-    "//ios/chrome/browser",
+    "//ios/chrome/browser/application_context",
     "//ios/chrome/common",
     "//ios/web",
   ]
 }
 
-source_set("first_run") {
+source_set("fetcher") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "ios_chrome_first_run_variations_seed_manager.h",
-    "ios_chrome_first_run_variations_seed_manager.mm",
-    "ios_chrome_seed_response.h",
-    "ios_chrome_seed_response.mm",
+    "ios_chrome_variations_seed_fetcher.h",
+    "ios_chrome_variations_seed_fetcher.mm",
   ]
   deps = [
+    ":store",
     "//base",
     "//build:branding_buildflags",
     "//components/variations",
     "//components/version_info:version_info",
     "//ios/chrome/common",
     "//net",
+  ]
+}
+
+source_set("store") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "ios_chrome_seed_response.h",
+    "ios_chrome_seed_response.mm",
+    "ios_chrome_variations_seed_store.h",
+    "ios_chrome_variations_seed_store.mm",
   ]
 }
 
@@ -81,7 +90,7 @@ source_set("eg_app_support+eg2") {
     "//components/prefs",
     "//components/variations",
     "//components/variations:test_support",
-    "//ios/chrome/browser",
+    "//ios/chrome/browser/application_context",
     "//ios/chrome/test/app:test_support",
   ]
 }
@@ -126,4 +135,24 @@ source_set("eg2_tests") {
     "//ios/third_party/earl_grey2:test_lib",
   ]
   frameworks = [ "UIKit.framework" ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "ios_chrome_variations_seed_fetcher+testing.h",
+    "ios_chrome_variations_seed_fetcher_unittest.mm",
+  ]
+  deps = [
+    ":fetcher",
+    ":store",
+    "//base",
+    "//base/test:test_support",
+    "//components/variations",
+    "//components/version_info:version_info",
+    "//net",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
 }

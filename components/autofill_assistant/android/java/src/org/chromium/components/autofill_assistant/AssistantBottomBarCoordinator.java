@@ -30,6 +30,7 @@ import org.chromium.components.autofill_assistant.generic_ui.AssistantGenericUiM
 import org.chromium.components.autofill_assistant.header.AssistantHeaderCoordinator;
 import org.chromium.components.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.components.autofill_assistant.infobox.AssistantInfoBoxCoordinator;
+import org.chromium.components.autofill_assistant.legal_disclaimer.AssistantLegalDisclaimerCoordinator;
 import org.chromium.components.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.components.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
 import org.chromium.components.autofill_assistant.user_data.AssistantCollectUserDataModel;
@@ -43,6 +44,7 @@ import org.chromium.components.image_fetcher.ImageFetcher;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ApplicationViewportInsetSupplier;
+import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.util.AccessibilityUtil;
 
@@ -76,6 +78,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
     private final ObservableSupplierImpl<Integer> mInsetSupplier = new ObservableSupplierImpl<>();
     private AssistantInfoBoxCoordinator mInfoBoxCoordinator;
     private AssistantCollectUserDataCoordinator mCollectUserDataCoordinator;
+    private AssistantLegalDisclaimerCoordinator mLegalDisclaimerCoordinator;
 
     // The transition triggered whenever the layout of the BottomSheet content changes.
     private final TransitionSet mLayoutTransition =
@@ -157,6 +160,8 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
                 new AssistantGenericUiCoordinator(activity, model.getPersistentGenericUiModel());
         AssistantGenericUiCoordinator genericUiCoordinator =
                 new AssistantGenericUiCoordinator(activity, model.getGenericUiModel());
+        mLegalDisclaimerCoordinator =
+                new AssistantLegalDisclaimerCoordinator(activity, model.getLegalDisclaimerModel());
 
         // We don't want to animate the carousels children views as they are already animated by the
         // recyclers ItemAnimator, so we exclude them to avoid a clash between the animations.
@@ -182,6 +187,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
         scrollableContentContainer.addView(mCollectUserDataCoordinator.getView());
         scrollableContentContainer.addView(formCoordinator.getView());
         scrollableContentContainer.addView(genericUiCoordinator.getView());
+        mRootViewContainer.addView(mLegalDisclaimerCoordinator.getView());
         mRootViewContainer.addView(mActionsCoordinator.getView());
 
         // Set children top margins to have a spacing between them.
@@ -270,6 +276,9 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
                 mContent.setPeekModeDisabled(model.get(AssistantModel.PEEK_MODE_DISABLED));
             } else if (AssistantModel.HANDLE_BACK_PRESS == propertyKey) {
                 mContent.setHandleBackPress(model.get(AssistantModel.HANDLE_BACK_PRESS));
+            } else if (AssistantModel.DISABLE_SCROLLBAR_FADING == propertyKey) {
+                mScrollableContent.setScrollbarFadingEnabled(
+                        !model.get(AssistantModel.DISABLE_SCROLLBAR_FADING));
             }
         });
 
@@ -292,7 +301,10 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
         mAccessibilityObserver = (talkbackEnabled) -> {
             setViewportMode(talkbackEnabled ? AssistantViewportMode.RESIZE_VISUAL_VIEWPORT
                                             : mTargetViewportMode);
-            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, mRootViewContainer::requestLayout);
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+                ViewUtils.requestLayout(mRootViewContainer,
+                        "AssistantBottomBarCoordinator.<init>.mAccessibilityObserver Runnable");
+            });
         };
         mAccessibilityUtil.addObserver(mAccessibilityObserver);
     }

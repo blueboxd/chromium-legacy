@@ -13,12 +13,18 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/updater/win/protocol_parser_xml.h"
+#include "chrome/updater/win/win_util.h"
+#include "components/update_client/protocol_parser.h"
+#include "components/update_client/utils.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
 namespace {
+
+constexpr char kArchAmd64Omaha3[] = "x64";
 
 absl::optional<base::FilePath> GetOfflineManifest(
     const base::FilePath& offline_dir,
@@ -74,12 +80,14 @@ std::unique_ptr<ProtocolParserXML> ParseOfflineManifest(
 
 }  // namespace
 
-void ReadInstallCommandFromManifest(const base::FilePath& offline_dir,
-                                    const std::string& app_id,
-                                    const std::string& install_data_index,
-                                    base::FilePath& installer_path,
-                                    std::string& install_args,
-                                    std::string& install_data) {
+void ReadInstallCommandFromManifest(
+    const base::FilePath& offline_dir,
+    const std::string& app_id,
+    const std::string& install_data_index,
+    update_client::ProtocolParser::Results& results,
+    base::FilePath& installer_path,
+    std::string& install_args,
+    std::string& install_data) {
   if (offline_dir.empty()) {
     VLOG(1) << "Unexpected: offline install without an offline directory.";
     return;
@@ -91,13 +99,14 @@ void ReadInstallCommandFromManifest(const base::FilePath& offline_dir,
     return;
   }
 
-  const std::vector<update_client::ProtocolParser::Result>& results =
+  results = manifest_parser->results();
+  const std::vector<update_client::ProtocolParser::Result>& app_list =
       manifest_parser->results().list;
   auto it = base::ranges::find_if(
-      results, [&app_id](const update_client::ProtocolParser::Result& result) {
+      app_list, [&app_id](const update_client::ProtocolParser::Result& result) {
         return base::EqualsCaseInsensitiveASCII(result.extension_id, app_id);
       });
-  if (it == std::end(results)) {
+  if (it == std::end(app_list)) {
     VLOG(2) << "No manifest data for app: " << app_id;
     return;
   }
@@ -114,6 +123,82 @@ void ReadInstallCommandFromManifest(const base::FilePath& offline_dir,
     }
     install_data = data_iter->text;
   }
+}
+
+bool IsArchitectureSupported(const std::string& arch,
+                             const std::string& current_architecture) {
+  if (arch.empty())
+    return true;
+
+  // This code accounts for Omaha 3 Offline manifests having `arch` as "x64",
+  // but `GetArchitecture` returning "x86_64" for amd64.
+  if (arch == current_architecture ||
+      (arch == kArchAmd64Omaha3 &&
+       current_architecture == update_client::kArchAmd64)) {
+    return true;
+  }
+
+  using IsWow64GuestMachineSupportedFunc = HRESULT(WINAPI*)(USHORT, BOOL*);
+  const IsWow64GuestMachineSupportedFunc is_wow64_guest_machine_supported =
+      reinterpret_cast<IsWow64GuestMachineSupportedFunc>(::GetProcAddress(
+          ::GetModuleHandle(L"kernel32.dll"), "IsWow64GuestMachineSupported"));
+
+  if (is_wow64_guest_machine_supported) {
+    const base::flat_map<std::string, int> kNativeArchitectureStringsToImages =
+        {
+            {update_client::kArchIntel, IMAGE_FILE_MACHINE_I386},
+            {kArchAmd64Omaha3, IMAGE_FILE_MACHINE_AMD64},
+            {update_client::kArchAmd64, IMAGE_FILE_MACHINE_AMD64},
+            {update_client::kArchArm64, IMAGE_FILE_MACHINE_ARM64},
+        };
+
+    const auto image = kNativeArchitectureStringsToImages.find(arch);
+    if (image != kNativeArchitectureStringsToImages.end()) {
+      BOOL is_machine_supported = false;
+      if (SUCCEEDED(is_wow64_guest_machine_supported(
+              static_cast<USHORT>(image->second), &is_machine_supported))) {
+        return is_machine_supported;
+      }
+    }
+  }
+
+  return arch == update_client::kArchIntel;
+}
+
+bool IsArchitectureCompatible(const std::string& arch_list,
+                              const std::string& current_architecture) {
+  std::vector<std::string> architectures = base::SplitString(
+      arch_list, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  if (architectures.empty())
+    return true;
+
+  base::ranges::sort(architectures);
+
+  if (base::ranges::find_if(
+          architectures, [&current_architecture](const std::string& narch) {
+            if (narch[0] != '-')
+              return false;
+
+            const std::string arch = narch.substr(1);
+
+            // This code accounts for Omaha 3 Offline manifests having `arch` as
+            // "x64", but `GetArchitecture` returning "x86_64" for amd64.
+            return (arch == current_architecture ||
+                    (arch == kArchAmd64Omaha3 &&
+                     current_architecture == update_client::kArchAmd64));
+          }) != architectures.end()) {
+    return false;
+  }
+
+  std::erase_if(architectures,
+                [](const std::string& arch) { return arch[0] == '-'; });
+
+  return architectures.empty() ||
+         base::ranges::find_if(
+             architectures, [&current_architecture](const std::string& arch) {
+               return IsArchitectureSupported(arch, current_architecture);
+             }) != architectures.end();
 }
 
 }  // namespace updater

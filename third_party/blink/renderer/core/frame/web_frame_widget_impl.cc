@@ -57,7 +57,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_non_composited_widget_client.h"
-#include "third_party/blink/public/web/web_performance.h"
+#include "third_party/blink/public/web/web_performance_metrics_for_reporting.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view_client.h"
@@ -121,13 +121,14 @@
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
-#include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
-#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
+#include "third_party/blink/renderer/core/paint/timing/first_meaningful_paint_detector.h"
+#include "third_party/blink/renderer/core/paint/timing/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
@@ -1352,6 +1353,24 @@ void WebFrameWidgetImpl::DidObserveFirstScrollDelay(
   }
 }
 
+void WebFrameWidgetImpl::WillBeginMainFrame() {
+  if (!RuntimeEnabledFeatures::ViewTransitionOnNavigationEnabled())
+    return;
+
+  ForEachLocalFrameControlledByWidget(
+      local_root_->GetFrame(),
+      WTF::BindRepeating([](WebLocalFrameImpl* local_frame) {
+        auto* document = local_frame->GetFrame()->GetDocument();
+        if (!document)
+          return;
+
+        if (auto* transition =
+                ViewTransitionUtils::GetActiveTransition(*document)) {
+          transition->WillBeginMainFrame();
+        }
+      }));
+}
+
 std::unique_ptr<cc::LayerTreeFrameSink>
 WebFrameWidgetImpl::AllocateNewLayerTreeFrameSink() {
   return nullptr;
@@ -1599,6 +1618,10 @@ void WebFrameWidgetImpl::ApplyVisualPropertiesSizing(
   // hierarchy via the VisualProperties waterfall.
   widget_base_->SetVisibleViewportSizeInDIPs(
       visual_properties.visible_viewport_size);
+
+  virtual_keyboard_resize_height_physical_px_ =
+      visual_properties.virtual_keyboard_resize_height_physical_px;
+  DCHECK(!virtual_keyboard_resize_height_physical_px_ || ForTopMostMainFrame());
 
   if (ForMainFrame()) {
     if (!AutoResizeMode()) {
@@ -2061,7 +2084,6 @@ void WebFrameWidgetImpl::ResetMeaningfulLayoutStateForMainFrame() {
 }
 
 void WebFrameWidgetImpl::InitializeCompositing(
-    scheduler::WebAgentGroupScheduler& agent_group_scheduler,
     const display::ScreenInfos& screen_infos,
     const cc::LayerTreeSettings* settings) {
   DCHECK(View()->does_composite());
@@ -2300,7 +2322,8 @@ std::unique_ptr<cc::WebVitalMetrics> WebFrameWidgetImpl::GetWebVitalMetrics() {
     return nullptr;
 
   // This class should be called at most once per commit.
-  WebPerformance perf = LocalRootImpl()->Performance();
+  WebPerformanceMetricsForReporting perf =
+      LocalRootImpl()->PerformanceMetricsForReporting();
   auto metrics = std::make_unique<cc::WebVitalMetrics>();
   if (perf.FirstInputDelay().has_value()) {
     metrics->first_input_delay = perf.FirstInputDelay().value();
@@ -4359,6 +4382,11 @@ void WebFrameWidgetImpl::SetMayThrottleIfUndrawnFrames(
     return;
   widget_base_->LayerTreeHost()->SetMayThrottleIfUndrawnFrames(
       may_throttle_if_undrawn_frames);
+}
+
+int WebFrameWidgetImpl::GetVirtualKeyboardResizeHeight() const {
+  DCHECK(!virtual_keyboard_resize_height_physical_px_ || ForTopMostMainFrame());
+  return virtual_keyboard_resize_height_physical_px_;
 }
 
 bool WebFrameWidgetImpl::GetMayThrottleIfUndrawnFramesForTesting() {

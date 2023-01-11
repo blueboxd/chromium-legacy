@@ -159,7 +159,7 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
   LogicalSize GetReplacedSizeOverrideIfAny(const NGConstraintSpace&) const;
 
   // Returns the transform to apply to a child (e.g. for layout-overflow).
-  absl::optional<TransformationMatrix> GetTransformForChildFragment(
+  absl::optional<gfx::Transform> GetTransformForChildFragment(
       const NGPhysicalBoxFragment& child_fragment,
       PhysicalSize size) const;
 
@@ -218,8 +218,9 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
   void StoreMargins(const NGConstraintSpace&, const NGBoxStrut& margins);
   void StoreMargins(const NGPhysicalBoxStrut& margins);
 
-  // Write the inline-size of columns in a multicol container to legacy.
-  void StoreColumnInlineSize(LayoutUnit);
+  // Write the inline-size and number of columns in a multicol container to
+  // legacy.
+  void StoreColumnSizeAndCount(LayoutUnit inline_size, int count);
 
   static bool CanUseNewLayout(const LayoutBox&);
   bool CanUseNewLayout() const;

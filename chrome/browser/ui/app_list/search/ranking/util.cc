@@ -32,6 +32,7 @@ Category StringToCategory(const std::string& value) {
 Category ResultTypeToCategory(ResultType result_type) {
   switch (result_type) {
     case ResultType::kInstalledApp:
+    case ResultType::kZeroStateApp:
     case ResultType::kInstantApp:
     case ResultType::kInternalApp:
     case ResultType::kGames:
@@ -44,8 +45,6 @@ Category ResultTypeToCategory(ResultType result_type) {
       return Category::kWeb;
     case ResultType::kZeroStateFile:
     case ResultType::kZeroStateDrive:
-    case ResultType::kFileChip:
-    case ResultType::kDriveChip:
     case ResultType::kFileSearch:
     case ResultType::kDriveSearch:
       return Category::kFiles;
@@ -59,7 +58,6 @@ Category ResultTypeToCategory(ResultType result_type) {
     case ResultType::kPlayStoreReinstallApp:
     case ResultType::kPlayStoreApp:
       return Category::kPlayStore;
-    case ResultType::kAssistantChip:
     case ResultType::kAssistantText:
       return Category::kSearchAndAssistant;
     // Never used in the search backend.

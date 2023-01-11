@@ -16,7 +16,6 @@
 #include "chrome/browser/password_manager/password_store_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -55,7 +54,7 @@ PasswordStoreFactory::PasswordStoreFactory()
           "PasswordStore",
           ProfileSelections::BuildRedirectedInIncognito()) {
   DependsOn(AffiliationServiceFactory::GetInstance());
-  DependsOn(WebDataServiceFactory::GetInstance());
+  DependsOn(CredentialsCleanerRunnerFactory::GetInstance());
 }
 
 PasswordStoreFactory::~PasswordStoreFactory() = default;
@@ -67,7 +66,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 
   scoped_refptr<PasswordStore> ps;
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC) || \
-    defined(USE_OZONE)
+    BUILDFLAG(IS_OZONE)
   // Since SyncService has dependency on PasswordStore keyed service, there
   // are no guarantees that during the construction of the password store
   // about the sync service existence. And hence we cannot directly query the
@@ -93,12 +92,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper =
       std::make_unique<AffiliatedMatchHelper>(affiliation_service);
 
-  if (!ps->Init(profile->GetPrefs(), std::move(affiliated_match_helper))) {
-    // TODO(crbug.com/479725): Remove the LOG once this error is visible in the
-    // UI.
-    LOG(WARNING) << "Could not initialize password store.";
-    return nullptr;
-  }
+  ps->Init(profile->GetPrefs(), std::move(affiliated_match_helper));
 
   auto network_context_getter = base::BindRepeating(
       [](Profile* profile) -> network::mojom::NetworkContext* {

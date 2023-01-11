@@ -25,10 +25,12 @@
 #import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/commerce/price_alert_util.h"
+#import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/download/background_service/background_download_service_factory.h"
 #import "ios/chrome/browser/push_notification/push_notification_delegate.h"
 #import "ios/chrome/browser/push_notification/push_notification_util.h"
 #import "ios/chrome/browser/ui/keyboard/features.h"
+#import "ios/chrome/browser/ui/keyboard/menu_builder.h"
 #import "ios/chrome/browser/ui/main/scene_controller.h"
 #import "ios/chrome/browser/ui/main/scene_delegate.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
@@ -160,6 +162,9 @@ const int kMainIntentCheckDelay = 1;
 }
 
 - (void)applicationWillTerminate:(UIApplication*)application {
+  // Any report captured from this point on should be noted as after terminate.
+  crash_keys::SetCrashedAfterAppWillTerminate();
+
   // If `self.didFinishLaunching` is NO, that indicates that the app was
   // terminated before startup could be run. In this situation, skip running
   // shutdown, since the app was never fully started.
@@ -382,7 +387,7 @@ const int kMainIntentCheckDelay = 1;
   [super buildMenuWithBuilder:builder];
 
   if (IsKeyboardShortcutsMenuEnabled()) {
-    // TODO(crbug.com/1371848): Build the menu.
+    [MenuBuilder buildMainMenuWithBuilder:builder];
   }
 }
 

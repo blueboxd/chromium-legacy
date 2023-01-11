@@ -3398,6 +3398,23 @@
       ]
     },
     {
+      "id": 346,
+      "cr_bugs": [1062184],
+      "description": "Enable HDR video playing through overlay on Intel",
+      "os": {
+        "type": "win"
+      },
+      "intel_gpu_series": [
+        "icelake",
+        "tigerlake",
+        "alderlake",
+        "alchemist"
+      ],
+      "features": [
+        "force_rgb10a2_overlay_support_flags"
+      ]
+    },
+    {
       "id": 347,
       "cr_bugs": [1119491],
       "description": "Intel GPUs fail to report BGRA8 overlay support",
@@ -3547,8 +3564,11 @@
       "intel_gpu_series": [
         "icelake",
         "tigerlake",
+        "rocketlake",
+        "dg1",
         "alderlake",
-        "alchemist"
+        "alchemist",
+        "raptorlake"
       ],
       "features": [
         "supports_two_yuv_hardware_overlays"
@@ -3960,7 +3980,7 @@
     {
       "id": 394,
       "cr_bugs": [1318380],
-      "description": "Don't use video processor super resolution on Intel Gen9 and older GPUs and non-Intel GPUs.",
+      "description": "Only enable video processor super resolution on Intel Gen10+ GPUs and NVIDIA GPUs with 530+ drivers",
       "os": {
         "type" : "win"
       },
@@ -3974,6 +3994,17 @@
           "driver_version": {
             "op": ">",
             "value": "27.20.100.8681"
+          }
+        },
+        {
+          "vendor_id": "0x10de",
+          "os": {
+            "type" : "win"
+          },
+          "driver_version": {
+            "schema": "nvidia_driver",
+            "op": ">",
+            "value": "530.00"
           }
         }
       ],
@@ -4109,6 +4140,62 @@
       },
       "features": [
         "disable_accelerated_av1_encode"
+      ]
+    },
+    {
+      "id": 404,
+      "description": "Disable EGL_EXT_image_dma_buf_import_modifiers for Exo KMS modifier discovery on kms_swrast/llvmpipe",
+      "os": {
+        "type": "chromeos"
+      },
+      "gl_renderer": "llvmpipe.*",
+      "features": [
+        "disable_egl_ext_image_dma_buf_import_modifiers"
+      ]
+    },
+    {
+      "id": 405,
+      "description": "Disable EGL_EXT_image_dma_buf_import_modifiers for Exo KMS modifier discovery on old proprietary Mali drivers",
+      "os": {
+        "type": "chromeos"
+      },
+      "gl_renderer": "Mali.*",
+      "gl_version_string": ".*r26p0-01rel0.*",
+      "features": [
+        "disable_egl_ext_image_dma_buf_import_modifiers"
+      ]
+    },
+    {
+      "id": 406,
+      "description": "VP9 decoder rejects submitted bitstream buffer on some old Intel drivers.",
+      "cr_bugs": [1376513],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "between",
+        "value": "23.20.16.4974",
+        "value2": "23.20.16.5044"
+      },
+      "features": [
+        "disable_accelerated_vp9_decode"
+      ]
+    },
+    {
+      "id": 407,
+      "cr_bugs": [1355946],
+      "description": "ANGLE does not permit rendering to RGB external textures",
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "ANGLE.*Samsung Xclipse 920.*",
+      "comment": [
+        "This issue affects the Samsung Galaxy S22 with Exynos chipsets which uses ANGLE",
+        "as the system GLES driver, and the cause appears be overly strict validation."
+      ],
+      "features": [
+        "disable_rendering_to_rgb_external_texture"
       ]
     }
   ]

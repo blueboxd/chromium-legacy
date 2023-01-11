@@ -20,6 +20,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/guid.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -49,11 +50,6 @@
 
 namespace metrics {
 namespace {
-
-// The argument used to generate a non-identifying entropy source. We want no
-// more than 13 bits of entropy, so use this max to return a number in the range
-// [0, 7999] as the entropy source (12.97 bits of entropy).
-const int kMaxLowEntropySize = 8000;
 
 int64_t ReadEnabledDate(PrefService* local_state) {
   return local_state->GetInt64(prefs::kMetricsReportingEnabledTimestamp);
@@ -199,7 +195,7 @@ class MetricsStateMetricsProvider : public MetricsProvider {
 
   void ProvideCurrentSessionData(
       ChromeUserMetricsExtension* uma_proto) override {
-    if (cloned_install_detector_.ClonedInstallDetectedInCurrentSession())
+    if (cloned_install_detector_->ClonedInstallDetectedInCurrentSession())
       LogClonedInstall();
     log_normal_metric_state_.LogArtificialNonUniformity();
   }
@@ -218,9 +214,16 @@ class MetricsStateMetricsProvider : public MetricsProvider {
   // The client id that was used to randomize field trials. An empty string if
   // the low entropy source was used to do randomization.
   const std::string initial_client_id_;
-  const ClonedInstallDetector& cloned_install_detector_;
+  const raw_ref<const ClonedInstallDetector> cloned_install_detector_;
   LogNormalMetricState log_normal_metric_state_;
 };
+
+bool ShouldEnableBenchmarking(bool force_benchmarking_mode) {
+  // TODO(crbug/1251680): See whether it's possible to consolidate the switches.
+  return force_benchmarking_mode ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             variations::switches::kEnableBenchmarking);
+}
 
 }  // namespace
 
@@ -235,14 +238,14 @@ MetricsStateManager::MetricsStateManager(
     EnabledStateProvider* enabled_state_provider,
     const std::wstring& backup_registry_key,
     const base::FilePath& user_data_dir,
-    EntropyProviderType default_entropy_provider_type,
+    EntropyParams entropy_params,
     StartupVisibility startup_visibility,
     StoreClientInfoCallback store_client_info,
     LoadClientInfoCallback retrieve_client_info,
     base::StringPiece external_client_id)
     : local_state_(local_state),
       enabled_state_provider_(enabled_state_provider),
-      default_entropy_provider_type_(default_entropy_provider_type),
+      entropy_params_(entropy_params),
       store_client_info_(std::move(store_client_info)),
       load_client_info_(std::move(retrieve_client_info)),
       clean_exit_beacon_(backup_registry_key, user_data_dir, local_state),
@@ -341,8 +344,7 @@ int MetricsStateManager::GetLowEntropySource() {
   return entropy_state_.GetLowEntropySource();
 }
 
-void MetricsStateManager::InstantiateFieldTrialList(
-    const char* enable_gpu_benchmarking_switch) {
+void MetricsStateManager::InstantiateFieldTrialList() {
   // Instantiate the FieldTrialList to support field trials. If an instance
   // already exists, this is likely a test scenario with a ScopedFeatureList, so
   // use the existing instance so that any overrides are still applied.
@@ -354,22 +356,17 @@ void MetricsStateManager::InstantiateFieldTrialList(
     std::ignore = leaked_field_trial_list;
   }
 
-  // TODO(crbug/1257204): Some FieldTrial-setup-related code is here and some is
-  // in VariationsFieldTrialCreator::SetUpFieldTrials(). It's not ideal that
-  // it's in two places.
-  //
   // When benchmarking is enabled, field trials' default groups are chosen, so
   // see whether benchmarking needs to be enabled here, before any field trials
   // are created.
+  // TODO(crbug/1257204): Some FieldTrial-setup-related code is here and some is
+  // in VariationsFieldTrialCreator::SetUpFieldTrials(). It's not ideal that
+  // it's in two places.
+  if (ShouldEnableBenchmarking(entropy_params_.force_benchmarking_mode))
+    base::FieldTrial::EnableBenchmarking();
+
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  // TODO(crbug/1251680): See whether it's possible to consolidate the switches.
-  if (command_line->HasSwitch(variations::switches::kEnableBenchmarking) ||
-      (enable_gpu_benchmarking_switch &&
-       command_line->HasSwitch(enable_gpu_benchmarking_switch))) {
-    base::FieldTrial::EnableBenchmarking();
-  }
-
   if (command_line->HasSwitch(variations::switches::kForceFieldTrialParams)) {
     bool result =
         variations::AssociateParamsFromString(command_line->GetSwitchValueASCII(
@@ -540,7 +537,10 @@ std::unique_ptr<const variations::EntropyProviders>
 MetricsStateManager::CreateEntropyProviders() {
   return std::make_unique<variations::EntropyProviders>(
       GetHighEntropySource(),
-      base::checked_cast<uint16_t>(GetLowEntropySource()), kMaxLowEntropySize);
+      variations::ValueInRange{
+          .value = base::checked_cast<uint32_t>(GetLowEntropySource()),
+          .range = EntropyState::kMaxLowEntropySize},
+      ShouldEnableBenchmarking(entropy_params_.force_benchmarking_mode));
 }
 
 // static
@@ -550,7 +550,7 @@ std::unique_ptr<MetricsStateManager> MetricsStateManager::Create(
     const std::wstring& backup_registry_key,
     const base::FilePath& user_data_dir,
     StartupVisibility startup_visibility,
-    EntropyProviderType default_entropy_provider_type,
+    EntropyParams entropy_params,
     StoreClientInfoCallback store_client_info,
     LoadClientInfoCallback retrieve_client_info,
     base::StringPiece external_client_id) {
@@ -559,7 +559,7 @@ std::unique_ptr<MetricsStateManager> MetricsStateManager::Create(
   if (!instance_exists_) {
     result.reset(new MetricsStateManager(
         local_state, enabled_state_provider, backup_registry_key, user_data_dir,
-        default_entropy_provider_type, startup_visibility,
+        entropy_params, startup_visibility,
         store_client_info.is_null() ? base::DoNothing()
                                     : std::move(store_client_info),
         retrieve_client_info.is_null()
@@ -615,7 +615,8 @@ std::string MetricsStateManager::GetHighEntropySource() {
   // If high entropy randomization is not supported in this context (e.g. in
   // webview), or if UMA is not enabled (so there is no client id), then high
   // entropy randomization is disabled.
-  if (default_entropy_provider_type_ == EntropyProviderType::kLow ||
+  if (entropy_params_.default_entropy_provider_type ==
+          EntropyProviderType::kLow ||
       initial_client_id_.empty()) {
     UpdateEntropySourceReturnedValue(ENTROPY_SOURCE_LOW);
     return "";

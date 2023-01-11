@@ -45,6 +45,9 @@ struct Config {
   // If no surfaces are attached, the stream model is unloaded after this
   // timeout.
   base::TimeDelta model_unload_timeout = base::Seconds(1);
+  // If no surfaces are attached, the singleWebFeed stream model is cleared
+  // after this timeout.
+  base::TimeDelta single_web_feed_stream_clear_timeout = base::Seconds(60);
   // How far ahead in number of items from last visible item to final item
   // before attempting to load more content.
   int load_more_trigger_lookahead = 5;
@@ -60,6 +63,8 @@ struct Config {
   base::TimeDelta session_id_max_age = base::Days(30);
   // Maximum number of images prefetched per refresh.
   int max_prefetch_image_requests_per_refresh = 50;
+  // Maximum size of most recent viewed content hash list.
+  int max_most_recent_viewed_content_hashes = 100;
 
   // Configuration for Web Feeds.
 

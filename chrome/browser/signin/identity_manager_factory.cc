@@ -71,6 +71,8 @@ IdentityManagerFactory::IdentityManagerFactory()
       base::BindRepeating([](content::BrowserContext* context) {
         return GetForProfile(Profile::FromBrowserContext(context));
       }));
+  // TODO(crbug.com/1380593): This should declare a dependency to
+  // CookieSettingsFactory but this causes a hang for some reason.
 }
 
 IdentityManagerFactory::~IdentityManagerFactory() {
@@ -139,7 +141,7 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   params.account_manager_facade =
       GetAccountManagerFacade(profile->GetPath().value());
-  params.is_regular_profile = ash::ProfileHelper::IsRegularProfile(profile);
+  params.is_regular_profile = ash::ProfileHelper::IsUserProfile(profile);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

@@ -229,7 +229,7 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
   bool are_bfc_offsets_equal;
   bool is_margin_strut_equal;
   bool is_exclusion_space_equal;
-  bool is_fragmented = IsResumingLayout(break_token) ||
+  bool is_fragmented = IsBreakInside(break_token) ||
                        physical_fragment.BreakToken() ||
                        PhysicalFragmentCount() > 1;
 
@@ -310,19 +310,6 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
         return nullptr;
 
       if (column_spanner_path || cached_layout_result->ColumnSpannerPath())
-        return nullptr;
-
-      // Break appeal may have been reduced because the fragment crosses the
-      // fragmentation line, to send a strong signal to break before it
-      // instead. If we actually ended up breaking before it, this break appeal
-      // may no longer be valid, since there could be more room in the next
-      // fragmentainer. Miss the cache.
-      //
-      // TODO(mstensho): Maybe this shouldn't be necessary. Look into how
-      // FinishFragmentation() clamps break appeal down to
-      // kBreakAppealLastResort. Maybe there are better ways.
-      if (break_token && break_token->IsBreakBefore() &&
-          cached_layout_result->BreakAppeal() < kBreakAppealPerfect)
         return nullptr;
 
       // If the node didn't break into multiple fragments, we might be able to
@@ -468,10 +455,20 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
     }
   }
 
-  // Simplified layout doesn't support fragmented nodes.
-  if (is_fragmented &&
-      cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout)
-    return nullptr;
+  if (is_fragmented) {
+    if (cached_layout_result->ExclusionSpace().HasFragmentainerBreak()) {
+      // The final exclusion space is a processed version of the old one when
+      // hitting the cache. One thing we don't support is copying the
+      // fragmentation bits over correctly. That's something we could fix, if
+      // the new resulting exclusion space otherwise is identical to the old
+      // one. But for now, keep it simple, and just give up.
+      return nullptr;
+    }
+
+    // Simplified layout doesn't support fragmented nodes.
+    if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout)
+      return nullptr;
+  }
 
   // We've performed all of the cache checks at this point. If we need
   // "simplified" layout then abort now.

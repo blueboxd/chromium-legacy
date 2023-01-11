@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/passwords/manage_passwords_test.h"
@@ -30,6 +31,8 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/focus_changed_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/views/controls/editable_combobox/editable_combobox.h"
+#include "ui/views/focus/focus_manager.h"
 
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
@@ -49,10 +52,11 @@ bool IsBubbleShowing() {
              ->IsVisible();
 }
 
-views::View* GetUsernameTextfield(const PasswordBubbleViewBase* bubble) {
+views::EditableCombobox* GetUsernameDropdown(
+    const PasswordBubbleViewBase* bubble) {
   const PasswordSaveUpdateView* save_bubble =
       static_cast<const PasswordSaveUpdateView*>(bubble);
-  return save_bubble->GetUsernameTextfieldForTest();
+  return save_bubble->username_dropdown_for_testing();
 }
 
 }  // namespace
@@ -94,8 +98,8 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, BasicOpenAndClose) {
   bubble = PasswordBubbleViewBase::manage_password_bubble();
   // A pending password with empty username should initially focus on the
   // username field.
-  EXPECT_EQ(GetUsernameTextfield(bubble),
-            bubble->GetFocusManager()->GetFocusedView());
+  EXPECT_TRUE(GetUsernameDropdown(bubble)->Contains(
+      bubble->GetFocusManager()->GetFocusedView()));
   PasswordBubbleViewBase::CloseCurrentBubble();
   EXPECT_FALSE(IsBubbleShowing());
 }
@@ -341,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest,
   PasswordBubbleViewBase* bubble =
       PasswordBubbleViewBase::manage_password_bubble();
   bool ran_event_task = false;
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(press_button, bubble, &ran_event_task));
   EXPECT_TRUE(IsBubbleShowing());
 

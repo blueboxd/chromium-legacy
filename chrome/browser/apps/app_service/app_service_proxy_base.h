@@ -75,7 +75,7 @@ struct IntentLaunchInfo {
 //
 // See components/services/app_service/README.md.
 class AppServiceProxyBase : public KeyedService,
-                            public apps::IconLoader,
+                            public IconLoader,
                             public apps::mojom::Subscriber,
                             public PreferredAppsImpl::Host {
  public:
@@ -128,7 +128,7 @@ class AppServiceProxyBase : public KeyedService,
       IconType icon_type,
       int32_t size_hint_in_dip,
       bool allow_placeholder_icon,
-      apps::LoadIconCallback callback) override;
+      LoadIconCallback callback) override;
 
   // Launches the app for the given |app_id|. |event_flags| provides additional
   // context about the action which launches the app (e.g. a middle click
@@ -158,12 +158,6 @@ class AppServiceProxyBase : public KeyedService,
                           int32_t event_flags,
                           LaunchSource launch_source,
                           std::vector<base::FilePath> file_paths);
-  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
-  // interface.
-  void LaunchAppWithFiles(const std::string& app_id,
-                          int32_t event_flags,
-                          apps::mojom::LaunchSource launch_source,
-                          apps::mojom::FilePathsPtr file_paths);
 
   // Launches an app for the given |app_id|, passing |intent| to the app.
   // |event_flags| provides additional context about the action which launch the
@@ -176,15 +170,6 @@ class AppServiceProxyBase : public KeyedService,
                                    LaunchSource launch_source,
                                    WindowInfoPtr window_info,
                                    LaunchCallback callback);
-  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
-  // interface.
-  virtual void LaunchAppWithIntent(
-      const std::string& app_id,
-      int32_t event_flags,
-      apps::mojom::IntentPtr intent,
-      apps::mojom::LaunchSource launch_source,
-      apps::mojom::WindowInfoPtr window_info,
-      apps::mojom::Publisher::LaunchAppWithIntentCallback callback);
 
   // Launches an app for the given |app_id|, passing |url| to the app.
   // |event_flags| provides additional context about the action which launch the
@@ -195,21 +180,8 @@ class AppServiceProxyBase : public KeyedService,
                         int32_t event_flags,
                         GURL url,
                         LaunchSource launch_source,
-                        WindowInfoPtr window_info = nullptr);
-  // TODO(crbug.com/1253250): Will be replaced with LaunchAppWithUrl once the
-  // mojom LaunchAppWithUrl interface is removed.
-  void LaunchAppWithUrlForBind(const std::string& app_id,
-                               int32_t event_flags,
-                               GURL url,
-                               LaunchSource launch_source,
-                               WindowInfoPtr window_info = nullptr);
-  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
-  // interface.
-  void LaunchAppWithUrl(const std::string& app_id,
-                        int32_t event_flags,
-                        GURL url,
-                        apps::mojom::LaunchSource launch_source,
-                        apps::mojom::WindowInfoPtr window_info = nullptr);
+                        WindowInfoPtr window_info = nullptr,
+                        LaunchCallback callback = base::DoNothing());
 
   // Launches an app for the given |params.app_id|. The |params| can also
   // contain other param such as launch container, window diposition, etc.
@@ -220,10 +192,6 @@ class AppServiceProxyBase : public KeyedService,
 
   // Sets |permission| for the app identified by |app_id|.
   void SetPermission(const std::string& app_id, PermissionPtr permission);
-  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
-  // interface.
-  void SetPermission(const std::string& app_id,
-                     apps::mojom::PermissionPtr permission);
 
   // Uninstalls an app for the given |app_id|. If |parent_window| is specified,
   // the uninstall dialog will be created as a modal dialog anchored at
@@ -231,20 +199,11 @@ class AppServiceProxyBase : public KeyedService,
   virtual void Uninstall(const std::string& app_id,
                          UninstallSource uninstall_source,
                          gfx::NativeWindow parent_window) = 0;
-  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
-  // interface.
-  virtual void Uninstall(const std::string& app_id,
-                         apps::mojom::UninstallSource uninstall_source,
-                         gfx::NativeWindow parent_window) = 0;
 
   // Uninstalls an app for the given |app_id| without prompting the user to
   // confirm.
   void UninstallSilently(const std::string& app_id,
                          UninstallSource uninstall_source);
-  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
-  // interface.
-  void UninstallSilently(const std::string& app_id,
-                         apps::mojom::UninstallSource uninstall_source);
 
   // Stops the current running app for the given |app_id|.
   void StopApp(const std::string& app_id);
@@ -346,16 +305,17 @@ class AppServiceProxyBase : public KeyedService,
 
  protected:
   // An adapter, presenting an IconLoader interface based on the underlying
-  // Mojo service (or on a fake implementation for testing).
+  // service (or on a fake implementation for testing).
   //
   // Conceptually, the ASP (the AppServiceProxyBase) is itself such an adapter:
   // UI clients call the IconLoader::LoadIconFromIconKey method (which the ASP
-  // implements) and the ASP translates (i.e. adapts) these to Mojo calls (or
-  // C++ calls to the Fake). This diagram shows control flow going left to
-  // right (with "=c=>" and "=m=>" denoting C++ and Mojo calls), and the
-  // responses (callbacks) then run right to left in LIFO order:
+  // implements) and the ASP translates (i.e. adapts) these to publisher's
+  // LoadIcon calls (or C++ calls to the Fake). This diagram shows control flow
+  // going left to right (with "=c=>" and "=> Publisher::LoadIcon" denoting C++
+  // and publisher's LoadIcon calls), and the responses (callbacks) then run
+  // right to left in LIFO order:
   //
-  //   UI =c=> ASP =+=m=> MojoService
+  //   UI =c=> ASP => Publisher::LoadIcon
   //                |       or
   //                +=c=> Fake
   //
@@ -370,7 +330,8 @@ class AppServiceProxyBase : public KeyedService,
   //
   //           +------------------ ASP ------------------+
   //           |                                         |
-  //   UI =c=> | Outer =c=> MoreDecorators... =c=> Inner | =+=m=> MojoService
+  //   UI =c=> | Outer =c=> MoreDecorators... =c=> Inner | =>
+  //   Publisher::LoadIcon
   //           |                                         |  |       or
   //           +-----------------------------------------+  +=c=> Fake
   //
@@ -450,6 +411,17 @@ class AppServiceProxyBase : public KeyedService,
 
   virtual void OnLaunched(LaunchCallback callback,
                           LaunchResult&& launch_result);
+
+  // Returns true if we should read icon image files from the local app_service
+  // icon directory on disk, e.g. for ChromeOS. Otherwise, returns false.
+  virtual bool ShouldReadIcons();
+
+  // Reads icon image files from the local app_service icon directory on disk.
+  virtual void ReadIcons(const std::string& app_id,
+                         int32_t size_hint_in_dip,
+                         const IconKey& icon_key,
+                         IconType icon_type,
+                         LoadIconCallback callback) {}
 
   base::flat_map<AppType, AppPublisher*> publishers_;
 

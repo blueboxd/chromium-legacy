@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import '../../elements/files_toggle_ripple.js';
-
 import {assert} from 'chrome://resources/js/assert.js';
-import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
+import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
 
+import {htmlEscape, queryRequiredElement} from '../../../common/js/dom_utils.js';
 import {FileType} from '../../../common/js/file_type.js';
 import {metrics} from '../../../common/js/metrics.js';
 import {strf, util} from '../../../common/js/util.js';
@@ -29,10 +28,9 @@ export class SearchBox extends EventTarget {
 
     /**
      * Autocomplete List.
-     * @type {!SearchBox.AutocompleteList}
+     * @type {!SearchAutocompleteList}
      */
-    this.autocompleteList =
-        new SearchBox.AutocompleteList(element.ownerDocument);
+    this.autocompleteList = new SearchAutocompleteList(element.ownerDocument);
 
     /**
      * Root element of the search box.
@@ -51,15 +49,6 @@ export class SearchBox extends EventTarget {
      * @type {!Element}
      */
     this.searchButton = searchButton;
-
-    /**
-     * Ripple effect of search button.
-     * @private {!FilesToggleRippleElement}
-     * @const
-     */
-    this.searchButtonToggleRipple_ =
-        /** @type {!FilesToggleRippleElement} */ (util.queryRequiredElement(
-            'files-toggle-ripple', this.searchButton));
 
     /**
      * Text input of the search box.
@@ -93,7 +82,7 @@ export class SearchBox extends EventTarget {
     this.clearButton_.addEventListener(
         'click', this.onClearButtonClick_.bind(this));
     const dispatchItemSelect = () => {
-      dispatchSimpleEvent(this, SearchBox.EventType.ITEM_SELECT);
+      dispatchSimpleEvent(this, SearchBoxEventType.ITEM_SELECT);
     };
     this.autocompleteList.handleEnterKeydown = dispatchItemSelect;
     this.autocompleteList.addEventListener('mousedown', dispatchItemSelect);
@@ -187,7 +176,7 @@ export class SearchBox extends EventTarget {
    */
   onInput_() {
     this.updateStyles_();
-    dispatchSimpleEvent(this, SearchBox.EventType.TEXT_CHANGE);
+    dispatchSimpleEvent(this, SearchBoxEventType.TEXT_CHANGE);
   }
 
   /**
@@ -210,7 +199,6 @@ export class SearchBox extends EventTarget {
     this.searchWrapper.classList.toggle('has-cursor', true);
     this.autocompleteList.attachToInput(this.inputElement);
     this.updateStyles_();
-    this.searchButtonToggleRipple_.activated = true;
     metrics.recordUserAction('SelectSearch');
   }
 
@@ -225,7 +213,6 @@ export class SearchBox extends EventTarget {
     this.searchWrapper.classList.toggle('hide-pending', true);
     this.autocompleteList.detach();
     this.updateStyles_();
-    this.searchButtonToggleRipple_.activated = false;
   }
 
   /**
@@ -324,27 +311,25 @@ export class SearchBox extends EventTarget {
  * Event type.
  * @enum {string}
  */
-SearchBox.EventType = {
+export const SearchBoxEventType = {
   // Dispatched when the text in the search box is changed.
   TEXT_CHANGE: 'textchange',
   // Dispatched when the item in the auto complete list is selected.
   ITEM_SELECT: 'itemselect',
 };
 
-/**
- * Autocomplete list for search box.
- */
-SearchBox.AutocompleteList = class extends AutocompleteList {
+/** Autocomplete list for search box.  */
+class SearchAutocompleteList extends AutocompleteList {
   /**
    * @param {Document} document Document.
    */
   constructor(document) {
     super();
-    this.__proto__ = SearchBox.AutocompleteList.prototype;
+    this.__proto__ = SearchAutocompleteList.prototype;
     this.id = 'autocomplete-list';
     this.autoExpands = true;
-    this.itemConstructor = /** @type {function(new:ListItem, *)} */ (
-        SearchBox.AutocompleteListItem_.bind(null, document));
+    this.itemConstructor = /** @type {function(*): ListItem} */ (
+        SearchAutocompleteListItem.bind(null, document));
     this.addEventListener('mouseover', this.onMouseOver_.bind(this));
   }
 
@@ -373,13 +358,10 @@ SearchBox.AutocompleteList = class extends AutocompleteList {
       this.selectedItem = event.target.itemInfo;
     }
   }
-};
+}
 
-/**
- * ListItem element for autocomplete.
- * @private
- */
-SearchBox.AutocompleteListItem_ = class AutocompleteListItem_ extends ListItem {
+/** ListItem element for autocomplete. */
+class SearchAutocompleteListItem extends ListItem {
   /**
    * @param {Document} document Document.
    * @param {SearchItem|chrome.fileManagerPrivate.DriveMetadataSearchResult}
@@ -398,8 +380,7 @@ SearchBox.AutocompleteListItem_ = class AutocompleteListItem_ extends ListItem {
 
     if (item.isHeaderItem) {
       icon.setAttribute('search-icon', '');
-      text.innerHTML =
-          strf('SEARCH_DRIVE_HTML', util.htmlEscape(item.searchQuery));
+      text.innerHTML = strf('SEARCH_DRIVE_HTML', htmlEscape(item.searchQuery));
     } else {
       const iconType = FileType.getIcon(item.entry);
       icon.setAttribute('file-type-icon', iconType);
@@ -410,4 +391,4 @@ SearchBox.AutocompleteListItem_ = class AutocompleteListItem_ extends ListItem {
     this.appendChild(icon);
     this.appendChild(text);
   }
-};
+}

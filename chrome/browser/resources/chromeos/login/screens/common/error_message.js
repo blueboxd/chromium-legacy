@@ -9,13 +9,13 @@
 import '//resources/js/action_link.js';
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '//resources/polymer/v3_0/iron-iconset-svg/iron-iconset-svg.js';
-import '../../components/buttons/oobe_back_button.m.js';
-import '../../components/buttons/oobe_text_button.m.js';
+import '../../components/buttons/oobe_back_button.js';
+import '../../components/buttons/oobe_text_button.js';
 import '../../components/common_styles/common_styles.m.js';
-import '../../components/dialogs/oobe_adaptive_dialog.m.js';
-import '../../components/network_select_login.m.js';
+import '../../components/dialogs/oobe_adaptive_dialog.js';
+import '../../components/network_select_login.js';
 
-import {SanitizeInnerHtmlOpts} from '//resources/js/parse_html_subset.js';
+import {SanitizeInnerHtmlOpts} from '//resources/ash/common/parse_html_subset.js';
 import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.m.js';

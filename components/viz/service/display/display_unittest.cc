@@ -124,6 +124,8 @@ class StubDisplayClient : public DisplayClient {
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override {}
   void DisplayDidCompleteSwapWithSize(const gfx::Size& pixel_size) override {}
+  void DisplayAddChildWindowToBrowser(
+      gpu::SurfaceHandle child_window) override {}
   void SetWideColorEnabled(bool enabled) override {}
   void SetPreferredFrameInterval(base::TimeDelta interval) override {}
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
@@ -182,7 +184,7 @@ class DisplayTest : public testing::Test {
 
   void SetUpGpuDisplay(const RendererSettings& settings) {
     scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
-    provider->BindToCurrentThread();
+    provider->BindToCurrentSequence();
     std::unique_ptr<FakeSkiaOutputSurface> skia_output_surface =
         FakeSkiaOutputSurface::Create3d(std::move(provider));
     skia_output_surface_ = skia_output_surface.get();
@@ -749,8 +751,8 @@ TEST_F(DisplayTest, BackdropFilterTest) {
           render_pass_id_generator.GenerateNextId(), sub_surface_rect,
           no_damage, gfx::Transform(), cc::FilterOperations(), backdrop_filters,
           gfx::RRectF(gfx::RectF(sub_surface_rect), 0), SubtreeCaptureId(),
-          sub_surface_rect.size(), SharedElementResourceId(), false, false,
-          false, false, false);
+          sub_surface_rect.size(), ViewTransitionElementResourceId(), false,
+          false, false, false, false);
       pass_list.push_back(std::move(bd_pass));
 
       CompositorFrame frame = CompositorFrameBuilder()
@@ -4386,7 +4388,7 @@ TEST_F(DisplayTest, PixelMovingForegroundFilterTest) {
           no_damage, gfx::Transform(), foreground_filters,
           cc::FilterOperations(), gfx::RRectF(gfx::RectF(sub_surface_rect), 0),
           SubtreeCaptureId(), sub_surface_rect.size(),
-          SharedElementResourceId(), false, false, false, false, false);
+          ViewTransitionElementResourceId(), false, false, false, false, false);
       pass_list.push_back(std::move(bd_pass));
 
       CompositorFrame frame = CompositorFrameBuilder()
@@ -4555,7 +4557,7 @@ class SkiaDelegatedInkRendererTest : public DisplayTest {
   void EnablePrediction() {
     base::FieldTrialParams params;
     params["predicted_points"] = ::features::kDraw1Point12Ms;
-    base::test::ScopedFeatureList::FeatureAndParams prediction_params = {
+    base::test::FeatureRefAndParams prediction_params = {
         features::kDrawPredictedInkPoint, params};
 
     feature_list_.Reset();
@@ -5045,7 +5047,7 @@ class DelegatedInkDisplayTest
  public:
   void SetUpGpuDisplaySkiaWithPlatformInk(const RendererSettings& settings) {
     scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
-    provider->BindToCurrentThread();
+    provider->BindToCurrentSequence();
     std::unique_ptr<FakeSkiaOutputSurface> skia_output_surface =
         FakeSkiaOutputSurface::Create3d(std::move(provider));
     // Set the delegated ink capability on the output surface to true so that

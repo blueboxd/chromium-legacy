@@ -91,62 +91,6 @@ void AppServiceMojomImpl::Launch(apps::mojom::AppType app_type,
   iter->second->Launch(app_id, event_flags, launch_source,
                        std::move(window_info));
 }
-void AppServiceMojomImpl::LaunchAppWithFiles(
-    apps::mojom::AppType app_type,
-    const std::string& app_id,
-    int32_t event_flags,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::FilePathsPtr file_paths) {
-  CHECK(file_paths);
-  auto iter = publishers_.find(app_type);
-  if (iter == publishers_.end()) {
-    return;
-  }
-  iter->second->LaunchAppWithFiles(app_id, event_flags, launch_source,
-                                   std::move(file_paths));
-}
-
-void AppServiceMojomImpl::LaunchAppWithIntent(
-    apps::mojom::AppType app_type,
-    const std::string& app_id,
-    int32_t event_flags,
-    apps::mojom::IntentPtr intent,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::WindowInfoPtr window_info,
-    LaunchAppWithIntentCallback callback) {
-  auto iter = publishers_.find(app_type);
-  if (iter == publishers_.end()) {
-    std::move(callback).Run(/*success=*/false);
-    return;
-  }
-  iter->second->LaunchAppWithIntent(app_id, event_flags, std::move(intent),
-                                    launch_source, std::move(window_info),
-                                    std::move(callback));
-}
-
-void AppServiceMojomImpl::SetPermission(apps::mojom::AppType app_type,
-                                        const std::string& app_id,
-                                        apps::mojom::PermissionPtr permission) {
-  auto iter = publishers_.find(app_type);
-  if (iter == publishers_.end()) {
-    return;
-  }
-  iter->second->SetPermission(app_id, std::move(permission));
-}
-
-void AppServiceMojomImpl::Uninstall(
-    apps::mojom::AppType app_type,
-    const std::string& app_id,
-    apps::mojom::UninstallSource uninstall_source,
-    bool clear_site_data,
-    bool report_abuse) {
-  auto iter = publishers_.find(app_type);
-  if (iter == publishers_.end()) {
-    return;
-  }
-  iter->second->Uninstall(app_id, uninstall_source, clear_site_data,
-                          report_abuse);
-}
 
 void AppServiceMojomImpl::PauseApp(apps::mojom::AppType app_type,
                                    const std::string& app_id) {
@@ -232,17 +176,6 @@ void AppServiceMojomImpl::SetWindowMode(apps::mojom::AppType app_type,
     return;
   }
   iter->second->SetWindowMode(app_id, window_mode);
-}
-
-void AppServiceMojomImpl::SetRunOnOsLoginMode(
-    apps::mojom::AppType app_type,
-    const std::string& app_id,
-    apps::mojom::RunOnOsLoginMode run_on_os_login_mode) {
-  auto iter = publishers_.find(app_type);
-  if (iter == publishers_.end()) {
-    return;
-  }
-  iter->second->SetRunOnOsLoginMode(app_id, run_on_os_login_mode);
 }
 
 void AppServiceMojomImpl::OnPublisherDisconnected(

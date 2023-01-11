@@ -111,8 +111,8 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
     base::FieldTrialParams iph_demo_params;
     iph_demo_params[feature_engagement::kIPHDemoModeFeatureChoiceParam] =
         feature_engagement::kIPHDesktopPwaInstallFeature.name;
-    base::test::ScopedFeatureList::FeatureAndParams iph_demo(
-        feature_engagement::kIPHDemoMode, iph_demo_params);
+    base::test::FeatureRefAndParams iph_demo(feature_engagement::kIPHDemoMode,
+                                             iph_demo_params);
 
     // kIPHDemoMode will bypass IPH framework's triggering validation so that
     // we can test PWA specific triggering logic.
@@ -326,9 +326,10 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
   std::string intercept_request_path_;
   std::string intercept_request_response_;
 
-  raw_ptr<PageActionIconView> pwa_install_view_ = nullptr;
-  raw_ptr<content::WebContents> web_contents_ = nullptr;
-  raw_ptr<webapps::TestAppBannerManagerDesktop> app_banner_manager_ = nullptr;
+  raw_ptr<PageActionIconView, DanglingUntriaged> pwa_install_view_ = nullptr;
+  raw_ptr<content::WebContents, DanglingUntriaged> web_contents_ = nullptr;
+  raw_ptr<webapps::TestAppBannerManagerDesktop, DanglingUntriaged>
+      app_banner_manager_ = nullptr;
 
  private:
   web_app::OsIntegrationManager::ScopedSuppressForTesting os_hooks_suppress_;

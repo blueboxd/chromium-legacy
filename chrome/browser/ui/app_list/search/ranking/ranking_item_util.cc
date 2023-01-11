@@ -18,6 +18,7 @@ RankingItemType RankingItemTypeFromSearchResult(
     const ChromeSearchResult& result) {
   switch (result.result_type()) {
     case ash::AppListSearchResultType::kInstalledApp:
+    case ash::AppListSearchResultType::kZeroStateApp:
     case ash::AppListSearchResultType::kInternalApp:
     case ash::AppListSearchResultType::kGames:
       return RankingItemType::kApp;
@@ -32,7 +33,6 @@ RankingItemType RankingItemTypeFromSearchResult(
     case ash::AppListSearchResultType::kInstantApp:
     case ash::AppListSearchResultType::kAnswerCard:
     case ash::AppListSearchResultType::kPlayStoreReinstallApp:
-    case ash::AppListSearchResultType::kAssistantChip:
     case ash::AppListSearchResultType::kOsSettings:
     case ash::AppListSearchResultType::kInternalPrivacyInfo:
     case ash::AppListSearchResultType::kAssistantText:
@@ -51,10 +51,6 @@ RankingItemType RankingItemTypeFromSearchResult(
       return RankingItemType::kZeroStateFile;
     case ash::AppListSearchResultType::kZeroStateDrive:
       return RankingItemType::kDriveQuickAccess;
-    case ash::AppListSearchResultType::kFileChip:
-      return RankingItemType::kZeroStateFileChip;
-    case ash::AppListSearchResultType::kDriveChip:
-      return RankingItemType::kDriveQuickAccessChip;
   }
 }
 

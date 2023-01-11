@@ -17,8 +17,10 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_bound.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/policy/messaging_layer/upload/upload_provider.h"
@@ -66,12 +68,27 @@ void ReportingClient::CreateLocalStorageModule(
   LOG(WARNING) << "Store reporting data locally";
   DCHECK(!StorageSelector::is_use_missive())
       << "Can only be used in local mode";
+  StorageOptions options;
+  options.set_directory(local_reporting_path);
+  options.set_signature_verification_public_key(verification_key);
   StorageModule::Create(
-      StorageOptions()
-          .set_directory(local_reporting_path)
-          .set_signature_verification_public_key(verification_key),
-      std::move(async_start_upload_cb), EncryptionModule::Create(),
-      CompressionModule::Create(512, compression_algorithm), std::move(cb));
+      options, std::move(async_start_upload_cb),
+      EncryptionModule::Create(
+          /*renew_encryption_key_period=*/base::Days(1), options.clock()),
+      CompressionModule::Create(512, compression_algorithm),
+      // Callback wrapper changes result type from `StorageModule` to
+      // `StorageModuleInterface`.
+      base::BindOnce(
+          [](base::OnceCallback<void(
+                 StatusOr<scoped_refptr<StorageModuleInterface>>)> cb,
+             StatusOr<scoped_refptr<StorageModule>> result) {
+            if (!result.ok()) {
+              std::move(cb).Run(result.status());
+              return;
+            }
+            std::move(cb).Run(result.ValueOrDie());
+          },
+          std::move(cb)));
 }
 
 // static
@@ -215,34 +232,36 @@ void ReportingClient::Uploader::Helper::Completed(Status final_status) {
 }
 
 ReportingClient::ReportingClient()
-    : ReportQueueProvider(base::BindRepeating(
-          [](base::OnceCallback<void(
-                 StatusOr<scoped_refptr<StorageModuleInterface>>)>
-                 storage_created_cb) {
+    : ReportQueueProvider(
+          base::BindRepeating(
+              [](base::OnceCallback<void(
+                     StatusOr<scoped_refptr<StorageModuleInterface>>)>
+                     storage_created_cb) {
 #if BUILDFLAG(IS_CHROMEOS)
-            if (StorageSelector::is_use_missive()) {
-              StorageSelector::CreateMissiveStorageModule(
-                  std::move(storage_created_cb));
-              return;
-            }
+                if (StorageSelector::is_use_missive()) {
+                  StorageSelector::CreateMissiveStorageModule(
+                      std::move(storage_created_cb));
+                  return;
+                }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
-            // Storage location in the local file system (if local storage is
-            // enabled).
-            base::FilePath reporting_path;
-            const auto res =
-                base::PathService::Get(chrome::DIR_USER_DATA, &reporting_path);
-            DCHECK(res) << "Could not retrieve base path";
+                // Storage location in the local file system (if local storage
+                // is enabled).
+                base::FilePath reporting_path;
+                const auto res = base::PathService::Get(chrome::DIR_USER_DATA,
+                                                        &reporting_path);
+                DCHECK(res) << "Could not retrieve base path";
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-            reporting_path = reporting_path.Append("user");
+                reporting_path = reporting_path.Append("user");
 #endif
-            reporting_path = reporting_path.Append(kReportingDirectory);
-            CreateLocalStorageModule(
-                reporting_path, SignatureVerifier::VerificationKey(),
-                CompressionInformation::COMPRESSION_SNAPPY,
-                base::BindRepeating(&ReportingClient::AsyncStartUploader),
-                std::move(storage_created_cb));
-          })) {
+                reporting_path = reporting_path.Append(kReportingDirectory);
+                CreateLocalStorageModule(
+                    reporting_path, SignatureVerifier::VerificationKey(),
+                    CompressionInformation::COMPRESSION_SNAPPY,
+                    base::BindRepeating(&ReportingClient::AsyncStartUploader),
+                    std::move(storage_created_cb));
+              }),
+          base::ThreadTaskRunnerHandle::Get()) {
 }
 
 ReportingClient::~ReportingClient() = default;

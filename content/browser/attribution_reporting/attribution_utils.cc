@@ -11,7 +11,9 @@
 #include "base/json/json_writer.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
-#include "content/browser/attribution_reporting/attribution_filter_data.h"
+#include "base/values.h"
+#include "components/attribution_reporting/filters.h"
+#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 
 namespace content {
@@ -23,8 +25,8 @@ constexpr base::TimeDelta kWindowDeadlineOffset = base::Hours(1);
 base::span<const base::TimeDelta> EarlyDeadlines(
     AttributionSourceType source_type) {
   static constexpr base::TimeDelta kEarlyDeadlinesNavigation[] = {
-      base::Days(2) - kWindowDeadlineOffset,
-      base::Days(7) - kWindowDeadlineOffset,
+      base::Days(2),
+      base::Days(7),
   };
 
   switch (source_type) {
@@ -113,8 +115,7 @@ base::Time ReportTimeAtWindow(const CommonSourceInfo& source,
   return ReportTimeFromDeadline(source.source_time(), deadline);
 }
 
-std::string SerializeAttributionJson(const base::Value::Dict& body,
-                                     bool pretty_print) {
+std::string SerializeAttributionJson(base::ValueView body, bool pretty_print) {
   int options = pretty_print ? base::JSONWriter::OPTIONS_PRETTY_PRINT : 0;
 
   std::string output_json;
@@ -124,8 +125,9 @@ std::string SerializeAttributionJson(const base::Value::Dict& body,
   return output_json;
 }
 
-bool AttributionFilterDataMatch(const AttributionFilterData& source,
-                                const AttributionFilterData& trigger,
+bool AttributionFilterDataMatch(const attribution_reporting::FilterData& source,
+                                AttributionSourceType source_type,
+                                const attribution_reporting::Filters& trigger,
                                 bool negated) {
   // A filter is considered matched if the filter key is only present either on
   // the source or trigger, or the intersection of the filter values is
@@ -137,6 +139,16 @@ bool AttributionFilterDataMatch(const AttributionFilterData& source,
   // sufficient by the API definition).
   return base::ranges::all_of(
       trigger.filter_values(), [&](const auto& trigger_filter) {
+        if (trigger_filter.first ==
+            attribution_reporting::FilterData::kSourceTypeFilterKey) {
+          bool has_intersection = base::ranges::any_of(
+              trigger_filter.second, [&](const std::string& value) {
+                return value == AttributionSourceTypeToString(source_type);
+              });
+
+          return negated != has_intersection;
+        }
+
         auto source_filter = source.filter_values().find(trigger_filter.first);
         if (source_filter == source.filter_values().end())
           return true;
@@ -145,9 +157,8 @@ bool AttributionFilterDataMatch(const AttributionFilterData& source,
         // unique value itself. This means:
         //  - x:[] match x:[] is false when negated, and true otherwise.
         //  - x:[1,2,3] match x:[] is true when negated, and false otherwise.
-        if (trigger_filter.second.empty()) {
+        if (trigger_filter.second.empty())
           return negated != source_filter->second.empty();
-        }
 
         bool has_intersection = base::ranges::any_of(
             trigger_filter.second, [&](const std::string& value) {
@@ -159,19 +170,16 @@ bool AttributionFilterDataMatch(const AttributionFilterData& source,
       });
 }
 
-bool AttributionFiltersMatch(const AttributionFilterData& source_filter_data,
-                             const AttributionFilterData& trigger_filters,
-                             const AttributionFilterData& trigger_not_filters) {
-  if (!AttributionFilterDataMatch(source_filter_data, trigger_filters)) {
-    return false;
-  }
-
-  if (!AttributionFilterDataMatch(source_filter_data, trigger_not_filters,
-                                  /*negated=*/true)) {
-    return false;
-  }
-
-  return true;
+bool AttributionFiltersMatch(
+    const attribution_reporting::FilterData& source_filter_data,
+    AttributionSourceType source_type,
+    const attribution_reporting::Filters& trigger_filters,
+    const attribution_reporting::Filters& trigger_not_filters) {
+  return AttributionFilterDataMatch(source_filter_data, source_type,
+                                    trigger_filters) &&
+         AttributionFilterDataMatch(source_filter_data, source_type,
+                                    trigger_not_filters,
+                                    /*negated=*/true);
 }
 
 }  // namespace content

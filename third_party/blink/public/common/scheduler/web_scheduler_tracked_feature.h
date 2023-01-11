@@ -61,7 +61,12 @@ enum class WebSchedulerTrackedFeature : uint32_t {
   // TODO(altimin): Track this more accurately depending on the data.
   // See permission.mojom for more details.
   // kRequestedGeolocationPermission = 19,   // No longer blocking.
-  kRequestedNotificationsPermission = 20,
+
+  // Requesting for the notifications permission should never have blocked
+  // back/forward cache entry.
+  // https://crbug.com/1350944
+  // kRequestedNotificationsPermission = 20,
+
   kRequestedMIDIPermission = 21,
   kRequestedAudioCapturePermission = 22,
   kRequestedVideoCapturePermission = 23,
@@ -114,12 +119,13 @@ enum class WebSchedulerTrackedFeature : uint32_t {
   kWebTransport = 57,
   // This should be used only for testing.
   kDummy = 58,
+  kKeepaliveRequest = 59,
 
   // Please keep in sync with WebSchedulerTrackedFeature in
   // tools/metrics/histograms/enums.xml. These values should not be renumbered.
 
   // NB: This enum is used in a bitmask, so kMaxValue must be less than 64.
-  kMaxValue = kDummy,
+  kMaxValue = kKeepaliveRequest,
 };
 
 using WebSchedulerTrackedFeatures =

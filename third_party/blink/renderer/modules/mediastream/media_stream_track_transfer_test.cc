@@ -70,6 +70,19 @@ class MockUserMediaProcessor : public UserMediaProcessor {
   }
 };
 
+class UserMediaClientUnderTest : public UserMediaClient {
+ public:
+  UserMediaClientUnderTest(
+      LocalFrame* frame,
+      UserMediaProcessor* user_media_processor,
+      UserMediaProcessor* display_user_media_processor,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : UserMediaClient(frame,
+                        user_media_processor,
+                        display_user_media_processor,
+                        task_runner) {}
+};
+
 // ScopedMockUserMediaClient creates and installs a temporary UserMediaClient in
 // |window| when constructed and restores the original UserMediaClient when
 // destroyed. Uses a MockMojoMediaStreamDispatcherHost and
@@ -80,10 +93,14 @@ class ScopedMockUserMediaClient {
       : original_(Supplement<LocalDOMWindow>::From<UserMediaClient>(window)) {
     auto* user_media_processor =
         MakeGarbageCollected<MockUserMediaProcessor>(window->GetFrame());
+    auto* display_user_media_processor =
+        MakeGarbageCollected<MockUserMediaProcessor>(window->GetFrame());
     user_media_processor->set_media_stream_dispatcher_host_for_testing(
         mock_media_stream_dispatcher_host.CreatePendingRemoteAndBind());
-    temp_ = MakeGarbageCollected<UserMediaClient>(
-        window->GetFrame(), user_media_processor,
+    display_user_media_processor->set_media_stream_dispatcher_host_for_testing(
+        display_mock_media_stream_dispatcher_host.CreatePendingRemoteAndBind());
+    temp_ = MakeGarbageCollected<UserMediaClientUnderTest>(
+        window->GetFrame(), user_media_processor, display_user_media_processor,
         scheduler::GetSingleThreadTaskRunnerForTesting());
     Supplement<LocalDOMWindow>::ProvideTo<UserMediaClient>(*window,
                                                            temp_.Get());
@@ -104,6 +121,7 @@ class ScopedMockUserMediaClient {
   }
 
   MockMojoMediaStreamDispatcherHost mock_media_stream_dispatcher_host;
+  MockMojoMediaStreamDispatcherHost display_mock_media_stream_dispatcher_host;
 
  private:
   Persistent<UserMediaClient> temp_;
@@ -151,8 +169,8 @@ TEST(MediaStreamTrackTransferTest, TabCaptureVideoFromTransferredStateBasic) {
   data.track_impl_subtype = MediaStreamTrack::GetStaticWrapperTypeInfo();
   data.crop_version = absl::nullopt;
 #endif
-  scoped_user_media_client.mock_media_stream_dispatcher_host.SetStreamDevices(
-      DevicesTabCaptureVideo(data.session_id));
+  scoped_user_media_client.display_mock_media_stream_dispatcher_host
+      .SetStreamDevices(DevicesTabCaptureVideo(data.session_id));
 
   auto* new_track =
       MediaStreamTrack::FromTransferredState(scope.GetScriptState(), data);
@@ -178,73 +196,6 @@ TEST(MediaStreamTrackTransferTest, TabCaptureVideoFromTransferredStateBasic) {
   // TODO(crbug.com/1288839): the content hint needs to be set correctly
   // EXPECT_EQ(new_track->ContentHint(), "motion");
   EXPECT_EQ(new_track->readyState(), "live");
-
-  platform->RunUntilIdle();
-  ThreadState::Current()->CollectAllGarbageForTesting();
-}
-
-#if !BUILDFLAG(IS_ANDROID)
-TEST(MediaStreamTrackTransferTest, TabCaptureVideoFromTransferredStateFocus) {
-  V8TestingScope scope;
-  ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform;
-  ScopedMockUserMediaClient scoped_user_media_client(&scope.GetWindow());
-
-  auto data = TransferredValuesTabCaptureVideo();
-  scoped_user_media_client.mock_media_stream_dispatcher_host.SetStreamDevices(
-      DevicesTabCaptureVideo(data.session_id));
-
-  auto* new_track_super =
-      MediaStreamTrack::FromTransferredState(scope.GetScriptState(), data);
-
-  ASSERT_EQ(new_track_super->GetWrapperTypeInfo(),
-            BrowserCaptureMediaStreamTrack::GetStaticWrapperTypeInfo());
-  auto* new_track =
-      static_cast<BrowserCaptureMediaStreamTrack*>(new_track_super);
-
-  // Calling focus() should throw an exception.
-  ScriptState::Scope script_scope(ToScriptStateForMainWorld(&scope.GetFrame()));
-  auto* execution_context = scope.GetExecutionContext();
-  ExceptionState exception_state(execution_context->GetIsolate(),
-                                 ExceptionState::kExecutionContext, "Window",
-                                 "focus");
-  new_track->focus(
-      execution_context,
-      V8CaptureStartFocusBehavior(
-          V8CaptureStartFocusBehavior::Enum::kFocusCapturedSurface),
-      exception_state);
-  ASSERT_TRUE(exception_state.HadException());
-  DOMException* dom_exception = V8DOMException::ToImplWithTypeCheck(
-      execution_context->GetIsolate(), exception_state.GetException());
-  ASSERT_TRUE(dom_exception);
-  EXPECT_EQ(dom_exception->name(), "InvalidStateError");
-  exception_state.ClearException();
-
-  platform->RunUntilIdle();
-  ThreadState::Current()->CollectAllGarbageForTesting();
-}
-#endif  // !BUILDFLAG(IS_ANDROID)
-
-TEST(MediaStreamTrackTransferTest,
-     TabCaptureVideoFromTransferredStateConditionalFocus) {
-  ScopedConditionalFocusForTest conditional_focus(true);
-  // RegionCapture overrides ConditionalFocus, so we turn it off here to test
-  // FocusableMediaStreamTrack.
-  ScopedRegionCaptureForTest region_capture(false);
-  V8TestingScope scope;
-  ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform;
-  ScopedMockUserMediaClient scoped_user_media_client(&scope.GetWindow());
-
-  auto data = TransferredValuesTabCaptureVideo();
-  data.track_impl_subtype =
-      FocusableMediaStreamTrack::GetStaticWrapperTypeInfo();
-  data.crop_version = absl::nullopt;
-  scoped_user_media_client.mock_media_stream_dispatcher_host.SetStreamDevices(
-      DevicesTabCaptureVideo(data.session_id));
-
-  auto* new_track =
-      MediaStreamTrack::FromTransferredState(scope.GetScriptState(), data);
-  EXPECT_EQ(new_track->GetWrapperTypeInfo(),
-            FocusableMediaStreamTrack::GetStaticWrapperTypeInfo());
 
   platform->RunUntilIdle();
   ThreadState::Current()->CollectAllGarbageForTesting();
@@ -279,8 +230,8 @@ TEST(MediaStreamTrackTransferTest, TabCaptureAudioFromTransferredState) {
       media::mojom::DisplayCaptureSurfaceType::BROWSER,
       /*logical_surface=*/true, media::mojom::CursorCaptureType::NEVER,
       /*capture_handle=*/nullptr);
-  scoped_user_media_client.mock_media_stream_dispatcher_host.SetStreamDevices(
-      {absl::nullopt, device});
+  scoped_user_media_client.display_mock_media_stream_dispatcher_host
+      .SetStreamDevices({absl::nullopt, device});
 
   auto* new_track =
       MediaStreamTrack::FromTransferredState(scope.GetScriptState(), data);

@@ -24,9 +24,6 @@ try_.defaults.set(
     os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
-
-    # TODO(crbug.com/1362440): remove this.
-    omit_python2 = False,
 )
 
 consoles.list_view(
@@ -43,6 +40,7 @@ try_.builder(
 
 try_.builder(
     name = "leak_detection_linux",
+    goma_backend = None,
 )
 
 try_.builder(
@@ -95,10 +93,13 @@ try_.builder(
     mirrors = [
         "ci/linux-bfcache-rel",
     ],
+    goma_backend = None,
 )
 
 try_.builder(
     name = "linux-blink-heap-verification-try",
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -120,6 +121,8 @@ try_.builder(
     mirrors = [
         "ci/linux-extended-tracing-rel",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -133,6 +136,8 @@ try_.builder(
 
 try_.builder(
     name = "linux-headless-shell-rel",
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -147,6 +152,8 @@ try_.builder(
 try_.builder(
     name = "linux-mbi-mode-per-render-process-host-rel",
     mirrors = builder_config.copy_from("linux-rel"),
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -173,6 +180,9 @@ try_.builder(
     executable = "recipe:chromium_libfuzzer_trybot",
     main_list_view = "try",
     tryjob = try_.job(),
+
+    # TODO(crbug.com/1366987): remove this.
+    omit_python2 = False,
 )
 
 try_.builder(
@@ -186,6 +196,8 @@ try_.builder(
             "services/tracing/.+",
         ],
     ),
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.orchestrator_builder(
@@ -210,11 +222,14 @@ try_.orchestrator_builder(
     coverage_test_types = ["unit", "overall"],
     tryjob = try_.job(),
     experiments = {
-        "remove_src_checkout_experiment": 100,
+        "chromium_rts.inverted_rts": 100,
     },
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
+
+    # TODO(crbug.com/1366987): remove this.
+    omit_python2 = False,
 )
 
 try_.compilator_builder(
@@ -239,6 +254,30 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
+
+    # TODO(crbug.com/1366987): remove this.
+    omit_python2 = False,
+)
+
+try_.builder(
+    name = "linux-wayland-rel-inverse-fyi",
+    mirrors = [
+        "ci/Linux Builder (Wayland)",
+        "ci/Linux Tests (Wayland)",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
+    builderless = True,
+    experiments = {
+        "chromium_rts.inverted_rts": 100,
+        "chromium_rts.inverted_rts_bail_early": 100,
+    },
+
+    # TODO(crbug.com/1366987): remove this.
+    omit_python2 = False,
 )
 
 # TODO (crbug.com/1287228): Remove when orchestrator is confirmed to work
@@ -256,9 +295,6 @@ try_.orchestrator_builder(
         ),
     ),
     main_list_view = "try",
-    experiments = {
-        "remove_src_checkout_experiment": 100,
-    },
     use_orchestrator_pool = True,
 )
 
@@ -280,6 +316,8 @@ try_.builder(
     mirrors = [
         "ci/WebKit Linux MSAN",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -291,14 +329,20 @@ try_.builder(
 
 try_.builder(
     name = "linux-wpt-fyi-rel",
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "linux-wpt-identity-fyi-rel",
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "linux-wpt-input-fyi-rel",
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -310,6 +354,9 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
+
+    # TODO(crbug.com/1366987): remove this.
+    omit_python2 = False,
 )
 
 try_.builder(
@@ -334,14 +381,12 @@ try_.builder(
 )
 
 try_.builder(
-    name = "linux_chromium_analysis",
-)
-
-try_.builder(
     name = "linux_chromium_archive_rel_ng",
     mirrors = [
         "ci/linux-archive-rel",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.orchestrator_builder(
@@ -359,12 +404,32 @@ try_.orchestrator_builder(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
     ),
-    experiments = {
-        "remove_src_checkout_experiment": 100,
-    },
     # TODO (crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
+
+    # TODO(crbug.com/1366987): remove this.
+    omit_python2 = False,
+)
+
+try_.orchestrator_builder(
+    name = "linux_chromium_asan_rel_ng-inverse-fyi",
+    compilator = "linux_chromium_asan_rel_ng-compilator",
+    mirrors = [
+        "ci/Linux ASan LSan Builder",
+        "ci/Linux ASan LSan Tests (1)",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
+    experiments = {
+        "chromium_rts.inverted_rts": 100,
+        "chromium_rts.inverted_rts_bail_early": 100,
+    },
+    omit_python2 = False,
+    use_orchestrator_pool = True,
 )
 
 try_.compilator_builder(
@@ -381,6 +446,8 @@ try_.builder(
     cores = 32,
     # TODO(thakis): Remove once https://crbug.com/927738 is resolved.
     execution_timeout = 7 * time.hour,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -452,6 +519,9 @@ try_.builder(
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     main_list_view = "try",
     tryjob = try_.job(),
+
+    # TODO(crbug.com/1366987): remove this.
+    omit_python2 = False,
 )
 
 try_.builder(
@@ -463,6 +533,8 @@ try_.builder(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -484,6 +556,8 @@ try_.builder(
             "build/.*check_gn_headers.*",
         ],
     ),
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -492,8 +566,9 @@ try_.builder(
         "ci/Linux MSan Focal",
     ],
     execution_timeout = 16 * time.hour,
-    goma_jobs = goma.jobs.J150,
+    goma_backend = None,
     os = os.LINUX_FOCAL,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -503,7 +578,8 @@ try_.builder(
         "ci/Linux MSan Tests",
     ],
     execution_timeout = 6 * time.hour,
-    goma_jobs = goma.jobs.J150,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
 try_.orchestrator_builder(
@@ -521,12 +597,32 @@ try_.orchestrator_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(),
-    experiments = {
-        "remove_src_checkout_experiment": 100,
-    },
     # TODO (crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
+
+    # TODO(crbug.com/1366987): remove this.
+    omit_python2 = False,
+)
+
+try_.orchestrator_builder(
+    name = "linux_chromium_tsan_rel_ng-inverse-fyi",
+    mirrors = [
+        "ci/Linux TSan Builder",
+        "ci/Linux TSan Tests",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
+    compilator = "linux_chromium_tsan_rel_ng-compilator",
+    experiments = {
+        "chromium_rts.inverted_rts": 100,
+        "chromium_rts.inverted_rts_bail_early": 100,
+    },
+    use_orchestrator_pool = True,
+    omit_python2 = False,
 )
 
 try_.compilator_builder(
@@ -540,6 +636,8 @@ try_.builder(
     mirrors = [
         "ci/linux-ubsan-vptr",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -610,6 +708,8 @@ try_.builder(
             "content/browser/xr/.+",
         ],
     ),
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -660,27 +760,27 @@ try_.gpu.optional_tests_builder(
     main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
-            "chrome/browser/vr/.+",
-            "content/browser/xr/.+",
-            "content/test/gpu/.+",
-            "gpu/.+",
-            "media/audio/.+",
-            "media/base/.+",
-            "media/capture/.+",
-            "media/filters/.+",
-            "media/gpu/.+",
-            "media/mojo/.+",
-            "media/renderers/.+",
-            "media/video/.+",
-            "testing/buildbot/tryserver.chromium.linux.json",
-            "testing/trigger_scripts/.+",
-            "third_party/blink/renderer/modules/mediastream/.+",
-            "third_party/blink/renderer/modules/webcodecs/.+",
-            "third_party/blink/renderer/modules/webgl/.+",
-            "third_party/blink/renderer/platform/graphics/gpu/.+",
-            "tools/clang/scripts/update.py",
-            "tools/mb/mb_config_expectations/tryserver.chromium.linux.json",
-            "ui/gl/.+",
+            cq.location_filter(path_regexp = "chrome/browser/vr/.+"),
+            cq.location_filter(path_regexp = "content/browser/xr/.+"),
+            cq.location_filter(path_regexp = "content/test/gpu/.+"),
+            cq.location_filter(path_regexp = "gpu/.+"),
+            cq.location_filter(path_regexp = "media/audio/.+"),
+            cq.location_filter(path_regexp = "media/base/.+"),
+            cq.location_filter(path_regexp = "media/capture/.+"),
+            cq.location_filter(path_regexp = "media/filters/.+"),
+            cq.location_filter(path_regexp = "media/gpu/.+"),
+            cq.location_filter(path_regexp = "media/mojo/.+"),
+            cq.location_filter(path_regexp = "media/renderers/.+"),
+            cq.location_filter(path_regexp = "media/video/.+"),
+            cq.location_filter(path_regexp = "testing/buildbot/tryserver.chromium.linux.json"),
+            cq.location_filter(path_regexp = "testing/trigger_scripts/.+"),
+            cq.location_filter(path_regexp = "third_party/blink/renderer/modules/mediastream/.+"),
+            cq.location_filter(path_regexp = "third_party/blink/renderer/modules/webcodecs/.+"),
+            cq.location_filter(path_regexp = "third_party/blink/renderer/modules/webgl/.+"),
+            cq.location_filter(path_regexp = "third_party/blink/renderer/platform/graphics/gpu/.+"),
+            cq.location_filter(path_regexp = "tools/clang/scripts/update.py"),
+            cq.location_filter(path_regexp = "tools/mb/mb_config_expectations/tryserver.chromium.linux.json"),
+            cq.location_filter(path_regexp = "ui/gl/.+"),
         ],
     ),
 )
@@ -704,11 +804,7 @@ try_.orchestrator_builder(
     ),
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
-    tryjob = try_.job(
-        experiment_percentage = 25,
-    ),
     experiments = {
-        "remove_src_checkout_experiment": 100,
         "chromium_rts.inverted_rts": 100,
         "chromium_rts.inverted_rts_bail_early": 100,
     },
@@ -730,4 +826,5 @@ try_.builder(
     cores = 16,
     builderless = False,
     experiments = {"chromium_rts.experimental_model": 100},
+    goma_backend = None,
 )

@@ -107,6 +107,7 @@ source_set("test_headers") {
     "platform/scheduler/test/web_mock_thread_scheduler.h",
     "test/frame_widget_test_helper.h",
     "test/test_web_frame_content_dumper.h",
+    "test/test_web_frame_helper.h",
   ]
   public_deps = [ ":blink_headers" ]
   deps = [
@@ -281,6 +282,7 @@ source_set("blink_headers") {
     "web/modules/autofill/web_form_element_observer.h",
     "web/modules/autofill_assistant/node_signals.h",
     "web/modules/canvas/canvas_test_utils.h",
+    "web/modules/credentialmanagement/throttle_helper.h",
     "web/modules/media/audio/audio_device_factory.h",
     "web/modules/media/audio/audio_input_ipc_factory.h",
     "web/modules/media/audio/audio_output_ipc_factory.h",
@@ -365,7 +367,8 @@ source_set("blink_headers") {
     "web/web_page_popup.h",
     "web/web_pepper_socket.h",
     "web/web_pepper_socket_client.h",
-    "web/web_performance.h",
+    "web/web_performance_metrics_for_nested_contexts.h",
+    "web/web_performance_metrics_for_reporting.h",
     "web/web_picture_in_picture_window_options.h",
     "web/web_plugin.h",
     "web/web_plugin_container.h",

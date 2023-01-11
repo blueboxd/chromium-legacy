@@ -24,6 +24,7 @@
 #include "base/fuchsia/scoped_fx_logger.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
+#include "build/chromecast_buildflags.h"
 #include "components/media_control/browser/media_blocker.h"
 #include "components/on_load_script_injector/browser/on_load_script_injector_host.h"
 #include "components/url_rewrite/browser/url_request_rewrite_rules_manager.h"
@@ -46,12 +47,15 @@ namespace content {
 class FromRenderFrameHost;
 }  // namespace content
 
-class ReceiverSessionClient;
 class ContextImpl;
 class FrameWindowTreeHost;
 class FrameLayoutManager;
 class MediaPlayerImpl;
 class NavigationPolicyHandler;
+
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
+class ReceiverSessionClient;
+#endif
 
 // Implementation of fuchsia.web.Frame based on content::WebContents.
 class WEB_ENGINE_EXPORT FrameImpl : public fuchsia::web::Frame,
@@ -210,6 +214,7 @@ class WEB_ENGINE_EXPORT FrameImpl : public fuchsia::web::Frame,
   // Destroys |this| and sends the FIDL |error| to the client.
   void CloseAndDestroyFrame(zx_status_t error);
 
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
   // Determines whether |message| is a Cast Streaming message and if so, handles
   // it. Returns whether it handled the message, regardless of whether that was
   // successful. If true is returned, |callback| has been called. Returns false
@@ -220,9 +225,10 @@ class WEB_ENGINE_EXPORT FrameImpl : public fuchsia::web::Frame,
                                        PostMessageCallback* callback);
 
   void MaybeStartCastStreaming(content::NavigationHandle* navigation_handle);
+#endif
 
-  // Updates zoom level for the specified |render_view_host|.
-  void UpdateRenderViewZoomLevel(content::RenderViewHost* render_view_host);
+  // Updates zoom level for the specified |render_frame_host|.
+  void UpdateRenderFrameZoomLevel(content::RenderFrameHost* render_frame_host);
 
   // Helper method for connecting to AccessibilityBridge on
   // |accessibility_bridge_|.
@@ -342,8 +348,8 @@ class WEB_ENGINE_EXPORT FrameImpl : public fuchsia::web::Frame,
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
   void RenderFrameCreated(content::RenderFrameHost* frame_host) override;
-  void RenderViewHostChanged(content::RenderViewHost* old_host,
-                             content::RenderViewHost* new_host) override;
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host) override;
   void DidFirstVisuallyNonEmptyPaint() override;
   void ResourceLoadComplete(
       content::RenderFrameHost* render_frame_host,
@@ -405,7 +411,6 @@ class WEB_ENGINE_EXPORT FrameImpl : public fuchsia::web::Frame,
   gfx::Size render_size_override_;
 
   std::unique_ptr<MediaPlayerImpl> media_player_;
-  std::unique_ptr<ReceiverSessionClient> receiver_session_client_;
   on_load_script_injector::OnLoadScriptInjectorHost<uint64_t> script_injector_;
 
   fidl::Binding<fuchsia::web::Frame> binding_;
@@ -425,6 +430,10 @@ class WEB_ENGINE_EXPORT FrameImpl : public fuchsia::web::Frame,
   // TODO(crbug.com/1291330): Remove.
   // Used to control which accessibility bridge version is live.
   bool use_v2_accessibility_bridge_ = true;
+
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
+  std::unique_ptr<ReceiverSessionClient> receiver_session_client_;
+#endif
 
   base::WeakPtrFactory<FrameImpl> weak_factory_{this};
 };

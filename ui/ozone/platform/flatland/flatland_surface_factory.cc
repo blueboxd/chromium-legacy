@@ -13,6 +13,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
 #include "base/memory/ptr_util.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
 #include "third_party/angle/src/common/fuchsia_egl/fuchsia_egl.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/native_pixmap.h"
@@ -25,11 +26,8 @@
 #include "ui/ozone/platform/flatland/flatland_sysmem_buffer_collection.h"
 #include "ui/ozone/platform/flatland/flatland_window.h"
 #include "ui/ozone/platform/flatland/flatland_window_manager.h"
-#include "ui/ozone/public/surface_ozone_canvas.h"
-
-#if BUILDFLAG(ENABLE_VULKAN)
 #include "ui/ozone/platform/flatland/vulkan_implementation_flatland.h"
-#endif
+#include "ui/ozone/public/surface_ozone_canvas.h"
 
 namespace ui {
 
@@ -161,30 +159,27 @@ FlatlandSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
 
 scoped_refptr<gfx::NativePixmap> FlatlandSurfaceFactory::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
-    VkDevice vk_device,
+    gpu::VulkanDeviceQueue* device_queue,
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     absl::optional<gfx::Size> framebuffer_size) {
   DCHECK(!framebuffer_size || framebuffer_size == size);
 
-  auto collection = flatland_sysmem_buffer_manager_.CreateCollection(
-      vk_device, size, format, usage, 1);
-  if (!collection)
-    return nullptr;
-
-  return collection->CreateNativePixmap(0, size);
+  VkDevice vk_device = device_queue->GetVulkanDevice();
+  return flatland_sysmem_buffer_manager_.CreateNativePixmap(vk_device, size,
+                                                            format, usage);
 }
 
 void FlatlandSurfaceFactory::CreateNativePixmapAsync(
     gfx::AcceleratedWidget widget,
-    VkDevice vk_device,
+    gpu::VulkanDeviceQueue* device_queue,
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     NativePixmapCallback callback) {
   std::move(callback).Run(
-      CreateNativePixmap(widget, vk_device, size, format, usage));
+      CreateNativePixmap(widget, device_queue, size, format, usage));
 }
 
 scoped_refptr<gfx::NativePixmap>
@@ -193,15 +188,14 @@ FlatlandSurfaceFactory::CreateNativePixmapFromHandle(
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::NativePixmapHandle handle) {
-  auto collection = flatland_sysmem_buffer_manager_.GetCollectionById(
-      handle.buffer_collection_id.value());
+  auto collection = flatland_sysmem_buffer_manager_.GetCollectionByHandle(
+      handle.buffer_collection_handle);
   if (!collection)
     return nullptr;
 
-  return collection->CreateNativePixmap(handle.buffer_index, size);
+  return collection->CreateNativePixmap(std::move(handle), size);
 }
 
-#if BUILDFLAG(ENABLE_VULKAN)
 std::unique_ptr<gpu::VulkanImplementation>
 FlatlandSurfaceFactory::CreateVulkanImplementation(
     bool use_swiftshader,
@@ -210,7 +204,6 @@ FlatlandSurfaceFactory::CreateVulkanImplementation(
       this, &flatland_sysmem_buffer_manager_, use_swiftshader,
       allow_protected_memory);
 }
-#endif
 
 void FlatlandSurfaceFactory::AddSurface(gfx::AcceleratedWidget widget,
                                         FlatlandSurface* surface) {

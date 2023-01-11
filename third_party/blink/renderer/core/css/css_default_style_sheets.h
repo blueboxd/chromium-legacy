@@ -79,7 +79,7 @@ class CSSDefaultStyleSheets final
 
   StyleSheetContents* DefaultStyleSheet() { return default_style_sheet_.Get(); }
   StyleSheetContents* QuirksStyleSheet() { return quirks_style_sheet_.Get(); }
-  StyleSheetContents* PopupStyleSheet() { return popup_style_sheet_.Get(); }
+  StyleSheetContents* PopoverStyleSheet() { return popover_style_sheet_.Get(); }
   StyleSheetContents* SelectMenuStyleSheet() {
     return selectmenu_style_sheet_.Get();
   }
@@ -94,6 +94,9 @@ class CSSDefaultStyleSheets final
   StyleSheetContents* MarkerStyleSheet() { return marker_style_sheet_.Get(); }
   StyleSheetContents* ForcedColorsStyleSheet() {
     return forced_colors_style_sheet_.Get();
+  }
+  StyleSheetContents* FormControlsNotVerticalSheet() {
+    return form_controls_not_vertical_style_sheet_.Get();
   }
 
   CORE_EXPORT void PrepareForLeakDetection();
@@ -147,11 +150,12 @@ class CSSDefaultStyleSheets final
   Member<StyleSheetContents> media_controls_style_sheet_;
   Member<StyleSheetContents> text_track_style_sheet_;
   Member<StyleSheetContents> fullscreen_style_sheet_;
-  Member<StyleSheetContents> popup_style_sheet_;
+  Member<StyleSheetContents> popover_style_sheet_;
   Member<StyleSheetContents> selectmenu_style_sheet_;
   Member<StyleSheetContents> webxr_overlay_style_sheet_;
   Member<StyleSheetContents> marker_style_sheet_;
   Member<StyleSheetContents> forced_colors_style_sheet_;
+  Member<StyleSheetContents> form_controls_not_vertical_style_sheet_;
 
   std::unique_ptr<UAStyleSheetLoader> media_controls_style_sheet_loader_;
 };

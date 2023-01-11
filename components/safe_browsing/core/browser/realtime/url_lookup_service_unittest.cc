@@ -81,7 +81,8 @@ class RealTimeUrlLookupServiceTest : public PlatformTest {
 
     content_setting_map_ = new HostContentSettingsMap(
         &test_pref_service_, false /* is_off_the_record */,
-        false /* store_last_modified */, false /* restore_session */);
+        false /* store_last_modified */, false /* restore_session */,
+        false /* should_record_metrics */);
     cache_manager_ = std::make_unique<VerdictCacheManager>(
         /*history_service=*/nullptr, content_setting_map_.get(),
         &test_pref_service_,
@@ -218,7 +219,7 @@ class RealTimeUrlLookupServiceTest : public PlatformTest {
   }
 
   void EnableRealTimeUrlLookupWithParameters(
-      const std::vector<base::test::ScopedFeatureList::FeatureAndParams>&
+      const std::vector<base::test::FeatureRefAndParams>&
           enabled_features_and_params,
       const std::vector<base::test::FeatureRef>& disabled_features) {
     EnableMbb();
@@ -325,19 +326,9 @@ TEST_F(RealTimeUrlLookupServiceTest, TestFillRequestProto) {
   }
 }
 
-TEST_F(RealTimeUrlLookupServiceTest, TestFillPageLoadToken_FeatureDisabled) {
-  feature_list_.InitAndDisableFeature(kSafeBrowsingPageLoadToken);
-  auto request = FillRequestProto(GURL(kTestUrl), GURL(), /*is_mainframe=*/true,
-                                  /*is_sampled_report=*/false);
-  // Page load tokens should not be attached because the feature flag is
-  // disabled.
-  ASSERT_EQ(0, request->population().page_load_tokens_size());
-}
-
 TEST_F(RealTimeUrlLookupServiceTest, TestFillPageLoadToken_FeatureEnabled) {
   GURL url(kTestUrl);
   GURL subframe_url(kTestSubframeUrl);
-  feature_list_.InitAndEnableFeature(kSafeBrowsingPageLoadToken);
 
   // mainframe URL
   {
@@ -1244,21 +1235,6 @@ TEST_F(RealTimeUrlLookupServiceTest,
   // Enable extended reporting.
   EnableExtendedReporting();
   rt_service()->set_bypass_probability_for_tests(true);
-  feature_list_.InitAndEnableFeature(
-      safe_browsing::kSendSampledPingsForProtegoAllowlistDomains);
-  // After enabling the feature, a sampled ping should be sent.
   EXPECT_TRUE(CanSendRTSampleRequest());
 }
-
-TEST_F(RealTimeUrlLookupServiceTest,
-       TestCanSendRTSampleRequest_FeatureDisabled) {
-  // Enable extended reporting.
-  EnableExtendedReporting();
-  rt_service()->set_bypass_probability_for_tests(true);
-  feature_list_.InitAndDisableFeature(
-      safe_browsing::kSendSampledPingsForProtegoAllowlistDomains);
-  // After enabling the feature, a sampled ping should be sent.
-  EXPECT_FALSE(CanSendRTSampleRequest());
-}
-
 }  // namespace safe_browsing

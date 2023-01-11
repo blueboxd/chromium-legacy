@@ -8,13 +8,18 @@ source_set("commands") {
   public = [
     "key_rotation_command.h",
     "key_rotation_command_factory.h",
+    "metrics_utils.h",
   ]
 
-  sources = [ "key_rotation_command_factory.cc" ]
+  sources = [
+    "key_rotation_command_factory.cc",
+    "metrics_utils.cc",
+  ]
 
   public_deps = [ "//base" ]
 
   deps = [
+    "//chrome/browser/enterprise/connectors/device_trust/common",
     "//components/prefs",
     "//services/network/public/cpp",
     "//third_party/abseil-cpp:absl",
@@ -90,6 +95,7 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//chrome/browser/enterprise/connectors/device_trust/common",
     "//testing/gtest",
   ]
 

@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -24,7 +23,7 @@
 #include "chrome/test/chromedriver/net/timeout.h"
 #include "chrome/test/chromedriver/session.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/webdriver/atoms.h"
+#include "third_party/selenium-atoms/atoms.h"
 
 namespace {
 
@@ -364,7 +363,7 @@ Status FindElementCommon(int interval_ms,
                          WebView* web_view,
                          const base::Value::Dict& params,
                          std::unique_ptr<base::Value>* value,
-                         bool isShadowRoot) {
+                         bool is_shadow_root) {
   const std::string* strategy = params.FindString("using");
   if (!strategy)
     return Status(kInvalidArgument, "'using' must be a string");
@@ -380,7 +379,7 @@ Status FindElementCommon(int interval_ms,
    * We have them disabled for now.
    * https://github.com/w3c/webdriver/issues/1610
    */
-  if (isShadowRoot && (*strategy == "tag name" || *strategy == "xpath")) {
+  if (is_shadow_root && (*strategy == "tag name" || *strategy == "xpath")) {
     return Status(kInvalidArgument, "invalid locator");
   }
 
@@ -398,7 +397,7 @@ Status FindElementCommon(int interval_ms,
   base::Value::List arguments;
   arguments.Append(std::move(locator));
   if (root_element_id) {
-    if (isShadowRoot)
+    if (is_shadow_root)
       arguments.Append(CreateShadowRoot(*root_element_id));
     else
       arguments.Append(CreateElement(*root_element_id));
@@ -486,7 +485,7 @@ Status GetActiveElement(Session* session,
   return status;
 }
 
-Status HasFocus(Session* session, WebView* web_view, bool* hasFocus) {
+Status HasFocus(Session* session, WebView* web_view, bool* has_focus) {
   std::unique_ptr<base::Value> value;
   Status status = web_view->EvaluateScript(
       session->GetCurrentFrameId(), "document.hasFocus()", false, &value);
@@ -494,7 +493,7 @@ Status HasFocus(Session* session, WebView* web_view, bool* hasFocus) {
     return status;
   if (!value->is_bool())
     return Status(kUnknownError, "document.hasFocus() returns non-boolean");
-  *hasFocus = value->GetBool();
+  *has_focus = value->GetBool();
   return Status(kOk);
 }
 

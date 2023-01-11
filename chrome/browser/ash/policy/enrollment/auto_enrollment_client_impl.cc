@@ -609,16 +609,15 @@ class AutoEnrollmentClientImpl::ServerStateRetriever {
     const DeviceStateMode device_state_mode = GetDeviceStateMode();
     switch (device_state_mode) {
       case RESTORE_MODE_NONE:
-        return AUTO_ENROLLMENT_STATE_NO_ENROLLMENT;
+        return AutoEnrollmentState::kNoEnrollment;
       case RESTORE_MODE_DISABLED:
-        return AUTO_ENROLLMENT_STATE_DISABLED;
+        return AutoEnrollmentState::kDisabled;
       case RESTORE_MODE_REENROLLMENT_REQUESTED:
       case RESTORE_MODE_REENROLLMENT_ENFORCED:
       case INITIAL_MODE_ENROLLMENT_ENFORCED:
-        return AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT;
       case RESTORE_MODE_REENROLLMENT_ZERO_TOUCH:
       case INITIAL_MODE_ENROLLMENT_ZERO_TOUCH:
-        return AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH;
+        return AutoEnrollmentState::kEnrollment;
     }
   }
 
@@ -693,11 +692,10 @@ class AutoEnrollmentClientImpl::ServerStateRetriever {
     if (parsed_response.license_type.has_value())
       state.Set(kDeviceStateLicenseType, *parsed_response.license_type);
 
+    // Store the enrollment state obtained from the server to local state.
+    // Depending on the value, this can be used later to trigger enrollment or
+    // to disable the device.
     local_state_->SetDict(prefs::kServerBackedDeviceState, std::move(state));
-
-    // TODO(https://crbug.com/1344737) This seems unnecessary (we are not
-    // shutting down, for instance).
-    local_state_->CommitPendingWrite();
 
     device_state_available_ = true;
     RunCallback(ServerStateRetrievalResult::kSuccess);
@@ -852,7 +850,7 @@ void AutoEnrollmentClientImpl::RequestServerStateAvailability() {
     return;
   }
 
-  ReportProgress(AUTO_ENROLLMENT_STATE_PENDING);
+  ReportProgress(AutoEnrollmentState::kPending);
 
   server_state_availability_requester_->Start(base::BindOnce(
       &AutoEnrollmentClientImpl::OnServerStateAvailabilityCompleted,
@@ -877,11 +875,11 @@ void AutoEnrollmentClientImpl::OnServerStateAvailabilityCompleted(
       break;
     case ServerStateAvailabilityResult::kConnectionError:
       state_ = State::kRequestServerStateAvailabilityConnectionError;
-      ReportProgress(AUTO_ENROLLMENT_STATE_CONNECTION_ERROR);
+      ReportProgress(AutoEnrollmentState::kConnectionError);
       break;
     case ServerStateAvailabilityResult::kServerError:
       state_ = State::kRequestServerStateAvailabilityServerError;
-      ReportProgress(AUTO_ENROLLMENT_STATE_SERVER_ERROR);
+      ReportProgress(AutoEnrollmentState::kServerError);
       break;
     case ServerStateAvailabilityResult::kAutoEnrollmentRetriableError:
       state_ = State::kRequestServerStateAvailabilityServerError;
@@ -905,7 +903,7 @@ void AutoEnrollmentClientImpl::RequestStateRetrieval() {
   DCHECK(!server_state_retriever_->GetAutoEnrollmentStateIfObtained());
   state_ = State::kRequestingStateRetrieval;
 
-  ReportProgress(AUTO_ENROLLMENT_STATE_PENDING);
+  ReportProgress(AutoEnrollmentState::kPending);
 
   server_state_retriever_->Start(
       base::BindOnce(&AutoEnrollmentClientImpl::OnStateRetrievalCompleted,
@@ -924,11 +922,11 @@ void AutoEnrollmentClientImpl::OnStateRetrievalCompleted(
       break;
     case ServerStateRetrievalResult::kConnectionError:
       state_ = State::kRequestStateRetrievalConnectionError;
-      ReportProgress(AUTO_ENROLLMENT_STATE_CONNECTION_ERROR);
+      ReportProgress(AutoEnrollmentState::kConnectionError);
       break;
     case ServerStateRetrievalResult::kServerError:
       state_ = State::kRequestStateRetrievalServerError;
-      ReportProgress(AUTO_ENROLLMENT_STATE_SERVER_ERROR);
+      ReportProgress(AutoEnrollmentState::kServerError);
       break;
   }
 }
@@ -946,7 +944,7 @@ void AutoEnrollmentClientImpl::ReportFinished() const {
   if (auto_enrollment_state_result) {
     ReportProgress(auto_enrollment_state_result.value());
   } else {
-    ReportProgress(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
+    ReportProgress(AutoEnrollmentState::kNoEnrollment);
   }
 }
 

@@ -1075,6 +1075,27 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Android.NonDefaultRdsPageLoad">
+  <owner>shuyng@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Records on each page load when the User Agent is overridden with site
+    exception.
+  </summary>
+  <metric name="UserAgentType" enum="UserAgentRequestType">
+    <summary>
+      An enum that records the type of user agent.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="Android.ScreenRotation">
   <owner>gangwu@chromium.org</owner>
   <owner>fgorski@chromium.org</owner>
@@ -2208,6 +2229,11 @@ be describing additional metrics about the same event.
       AutofillAssistantIntent was not undefined.
     </summary>
   </metric>
+  <metric name="AutofillFills">
+    <summary>
+      Number of Autofill fills invoked by the user on the current form.
+    </summary>
+  </metric>
   <metric name="FillingAcceptance">
     <summary>
       Has value 1 if user accepted the suggestion to fill values on a submitted
@@ -2244,6 +2270,21 @@ be describing additional metrics about the same event.
       It does not matter whether the user actually requested to fill the data.
       It does not matter either whether the data available for filling
       corresponded to the submitted data.
+    </summary>
+  </metric>
+  <metric name="FlowId">
+    <summary>
+      Hashed GUID linking together multiple emissions of this event if emitted
+      within a 20 minutes timeframe.
+    </summary>
+  </metric>
+  <metric name="FormElementUserModifications">
+    <summary>
+      Number of times a user focused on a form element and changed its value.
+      Consecutive value changes on the same form element are not counted,
+      neither are JS invoked changes. Also, re-focusing a form element and
+      changing its value is only counted if another form element's value was
+      changed in the meantime.
     </summary>
   </metric>
   <metric name="FormTypes">
@@ -5123,6 +5164,10 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="BrowsingTopics.DocumentBrowsingTopicsApiResult">
+  <obsolete>
+    Deprecated 10/2022 in favor of
+    BrowsingTopics.DocumentBrowsingTopicsApiResult2
+  </obsolete>
   <owner>yaoxia@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
   <summary>
@@ -5207,6 +5252,121 @@ be describing additional metrics about the same event.
     <summary>
       The version of the taxonomy applicable to `ReturnedTopic2`. This metric
       won't be recorded if the API returns less than 3 topics.
+    </summary>
+  </metric>
+</event>
+
+<event name="BrowsingTopics.DocumentBrowsingTopicsApiResult2">
+  <owner>yaoxia@chromium.org</owner>
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    The document.browsingTopics() result and other metadata. Recorded whenever
+    document.browsingTopics() is invoked from a context. If there are more than
+    3 candidate topics (e.g. due to custom configuration FeatureParam), only the
+    first 3 candidate topics will be recorded.
+  </summary>
+  <metric name="CandidateTopic0">
+    <summary>
+      The candidate topic ID at index 0. This metric won't be recorded if no
+      topics were derived from the candidate epochs (which can be due to
+      insufficient epochs, failed epoch topics calculation, cleared history, or
+      cleared/blocked individual topics).
+    </summary>
+  </metric>
+  <metric name="CandidateTopic0IsTrueTopTopic" enum="Boolean">
+    <summary>
+      Whether `CandidateTopic0` is a true top topic (as opposed to a padded or
+      random one). This metric will be recorded iff `CandidateTopic0` is
+      recorded.
+    </summary>
+  </metric>
+  <metric name="CandidateTopic0ModelVersion">
+    <summary>
+      The version of the model used to calculate `CandidateTopic0`. This metric
+      will be recorded iff `CandidateTopic0` is recorded.
+    </summary>
+  </metric>
+  <metric name="CandidateTopic0ShouldBeFiltered" enum="Boolean">
+    <summary>
+      Whether `CandidateTopic0` should be filtered. This metric will be recorded
+      iff `CandidateTopic0` is recorded.
+    </summary>
+  </metric>
+  <metric name="CandidateTopic0TaxonomyVersion">
+    <summary>
+      The version of the taxonomy applicable to `CandidateTopic0`. This metric
+      will be recorded iff `CandidateTopic0` is recorded.
+    </summary>
+  </metric>
+  <metric name="CandidateTopic1">
+    <summary>
+      The candidate topic ID at index 1. This metric won't be recorded if less
+      than 2 topics were derived from the candidate epochs (which can be due to
+      insufficient epochs, failed epoch topics calculation, cleared history, or
+      cleared/blocked individual topics).
+    </summary>
+  </metric>
+  <metric name="CandidateTopic1IsTrueTopTopic" enum="Boolean">
+    <summary>
+      Whether `CandidateTopic1` is a true top topic (as opposed to a padded or
+      random one). This metric will be recorded iff `CandidateTopic1` is
+      recorded.
+    </summary>
+  </metric>
+  <metric name="CandidateTopic1ModelVersion">
+    <summary>
+      The version of the model used to calculate `CandidateTopic1`. This metric
+      will be recorded iff `CandidateTopic1` is recorded.
+    </summary>
+  </metric>
+  <metric name="CandidateTopic1ShouldBeFiltered" enum="Boolean">
+    <summary>
+      Whether `CandidateTopic1` should be filtered. This metric will be recorded
+      iff `CandidateTopic1` is recorded.
+    </summary>
+  </metric>
+  <metric name="CandidateTopic1TaxonomyVersion">
+    <summary>
+      The version of the taxonomy applicable to `CandidateTopic1`. This metric
+      will be recorded iff `CandidateTopic1` is recorded.
+    </summary>
+  </metric>
+  <metric name="CandidateTopic2">
+    <summary>
+      The candidate topic ID at index 2. This metric won't be recorded if less
+      than 3 topics were derived from the candidate epochs (which can be due to
+      insufficient epochs, failed epoch topics calculation, cleared history, or
+      cleared/blocked individual topics).
+    </summary>
+  </metric>
+  <metric name="CandidateTopic2IsTrueTopTopic" enum="Boolean">
+    <summary>
+      Whether `CandidateTopic2` is a true top topic (as opposed to a padded or
+      random one). This metric will be recorded iff `CandidateTopic2` is
+      recorded.
+    </summary>
+  </metric>
+  <metric name="CandidateTopic2ModelVersion">
+    <summary>
+      The version of the model used to calculate `CandidateTopic2`. This metric
+      will be recorded iff `CandidateTopic2` is recorded.
+    </summary>
+  </metric>
+  <metric name="CandidateTopic2ShouldBeFiltered" enum="Boolean">
+    <summary>
+      Whether `CandidateTopic2` should be filtered. This metric will be recorded
+      iff `CandidateTopic2` is recorded.
+    </summary>
+  </metric>
+  <metric name="CandidateTopic2TaxonomyVersion">
+    <summary>
+      The version of the taxonomy applicable to `CandidateTopic2`. This metric
+      will be recorded iff `CandidateTopic2` is recorded.
+    </summary>
+  </metric>
+  <metric name="FailureReason" enum="BrowsingTopicsApiAccessFailureReason">
+    <summary>
+      The reason why the API access is not allowed.
     </summary>
   </metric>
 </event>
@@ -6560,6 +6720,37 @@ be describing additional metrics about the same event.
     <summary>
       The site engagement level of the redirect URL, at the time the redirect
       took place.
+    </summary>
+  </metric>
+</event>
+
+<event name="DIPS.TriggeringAction">
+  <owner>kaklilu@google.com</owner>
+  <summary>
+    Recorded on a repeated interval when DIPS may want to clear site storage to
+    improve user privacy. These metrics will be used to determine which
+    triggering action is most appropriate for our use case.
+
+    When these cases occur, the DIPS instance recording these metrics will keep
+    track of which triggering actions have already happened to prevent logging
+    duplicate metrics.
+  </summary>
+  <metric name="DidBounce" enum="Boolean">
+    <summary>
+      True for sites that redirected the user since the last time the DIPS
+      instance attempted to clear site storage.
+    </summary>
+  </metric>
+  <metric name="DidStatefulBounce" enum="Boolean">
+    <summary>
+      True for sites that redirected the user while accessing storage since the
+      last time the DIPS instance attempted to clear site storage.
+    </summary>
+  </metric>
+  <metric name="UsedStorage" enum="Boolean">
+    <summary>
+      True for sites wrote to the browser's storage since the last time the DIPS
+      instance attempted to clear site storage.
     </summary>
   </metric>
 </event>
@@ -12898,6 +13089,39 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="MobileFriendliness.TappedBadTargets">
+  <owner>kumagi@google.com</owner>
+  <owner>gaul@google.com</owner>
+  <metric name="CloseDisplayEdge" enum="Boolean">
+    <summary>
+      The distance from the center position of tapped target to display's edge
+      is less than 5mm.
+    </summary>
+  </metric>
+  <metric name="HighlyZoomed" enum="Boolean">
+    <summary>
+      Whether the page is manually 100%+ zoomed when tapped.
+    </summary>
+  </metric>
+  <metric name="TooClose" enum="Boolean">
+    <summary>
+      Whether the center of the tapped tap target is close less than 5mm to
+      other tap target's edge.
+    </summary>
+  </metric>
+  <metric name="TooSmall" enum="Boolean">
+    <summary>
+      Whether the tapped tap target is small as both width and height is less
+      than 7mm.
+    </summary>
+  </metric>
+  <metric name="Zoomed" enum="Boolean">
+    <summary>
+      Whether the page is manually 20%+ zoomed when tapped.
+    </summary>
+  </metric>
+</event>
+
 <event name="MobileMenu.DirectShare">
   <owner>sayman@chromium.org</owner>
   <summary>
@@ -15349,6 +15573,14 @@ be describing additional metrics about the same event.
       for the wide range of encountered values (less than 1:100000 to greater
       than 10000:1). This metric is recorded whenever the LCP candidate is an
       image, and omitted when it is text.
+    </summary>
+  </metric>
+  <metric name="PaintTiming.LargestContentfulPaintRequestPriority"
+      enum="NetRequestPriority">
+    <summary>
+      Resource loading priority used for the LCP candidate. This metric is
+      recorded whenever the LCP candidate is an image, and omitted when it is
+      text or video.
     </summary>
   </metric>
   <metric name="PaintTiming.LargestContentfulPaintType">

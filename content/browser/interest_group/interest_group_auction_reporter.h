@@ -20,6 +20,7 @@
 #include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
 #include "content/browser/interest_group/interest_group_storage.h"
+#include "content/browser/interest_group/subresource_url_authorizations.h"
 #include "content/common/content_export.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom-forward.h"
@@ -61,7 +62,9 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
     //
     // TODO(mmenke):  Figure out how to make this survive the auction (perhaps
     // pass ownership to the constructor).
-    base::raw_ptr<const blink::AuctionConfig> auction_config;
+    base::raw_ptr<const blink::AuctionConfig, DanglingUntriaged> auction_config;
+
+    std::unique_ptr<SubresourceUrlBuilder> subresource_url_builder;
 
     // Bid fed as input to the seller. If this is the top level seller and the
     // bid came from a component auction, it's the (optionally) modified bid
@@ -92,7 +95,8 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
     ~WinningBidInfo();
 
     // TODO(mmenke): Make this own the StorageInterestGroup.
-    base::raw_ptr<const StorageInterestGroup> storage_interest_group;
+    base::raw_ptr<const StorageInterestGroup, DanglingUntriaged>
+        storage_interest_group;
 
     GURL render_url;
     std::vector<GURL> ad_components;
@@ -134,7 +138,14 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   TakePrivateAggregationRequests() {
     return std::move(private_aggregation_requests_);
   }
+
+  // Retrieves the ad beacon map. May only be called once, since it takes
+  // ownership of the stored ad beacon map.
   ReportingMetadata TakeAdBeaconMap() { return std::move(ad_beacon_map_); }
+
+  // Retrieves any reporting URLs returned by ReportWin() and ReportResult()
+  // methods. May only be called after the reporter has completed. May only be
+  // called once, since it takes ownership of stored reporting URLs.
   std::vector<GURL> TakeReportUrls() { return std::move(report_urls_); }
 
  private:
@@ -191,7 +202,6 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
 
   // Invokes `callback_`.
   void OnReportingComplete(
-      bool success,
       const std::vector<std::string>& errors = std::vector<std::string>());
 
   // Retrieves the SellerWinningBidInfo of the auction the bidder was

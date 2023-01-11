@@ -15,9 +15,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/input_method/assistive_window_properties.h"
+#include "chrome/browser/ash/input_method/autocorrect_enums.h"
 #include "chrome/browser/ash/input_method/ime_rules_config.h"
 #include "chrome/browser/ash/input_method/suggestion_enums.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
 #include "ui/base/ime/ash/ime_bridge.h"
@@ -45,6 +47,28 @@ bool IsCurrentInputMethodExperimentalMultilingual() {
       input_method_manager->GetActiveIMEState()->GetCurrentInputMethod().id());
 }
 
+bool IsUsEnglishId(const std::string& engine_id) {
+  return engine_id == "xkb:us::eng";
+}
+
+AutocorrectPreference GetPhysicalKeyboardAutocorrectPref(
+    PrefService* prefs,
+    const std::string& engine_id) {
+  const base::Value::Dict& input_method_settings =
+      prefs->GetDict(::prefs::kLanguageInputMethodSpecificSettings);
+  const base::Value* autocorrect_setting =
+      input_method_settings.FindByDottedPath(
+          engine_id + ".physicalKeyboardAutoCorrectionLevel");
+
+  if (!autocorrect_setting)
+    return AutocorrectPreference::kDefault;
+  if (!autocorrect_setting->GetIfInt().has_value())
+    return AutocorrectPreference::kDefault;
+  if (autocorrect_setting->GetIfInt().value() > 0)
+    return AutocorrectPreference::kEnabled;
+  return AutocorrectPreference::kDisabled;
+}
+
 void LogAssistiveAutocorrectDelay(base::TimeDelta delay) {
   base::UmaHistogramMediumTimes("InputMethod.Assistive.Autocorrect.Delay",
                                 delay);
@@ -68,6 +92,7 @@ void LogAssistiveAutocorrectActionLatency(AutocorrectActions action,
       break;
     case AutocorrectActions::kReverted:
     case AutocorrectActions::kUserActionClearedUnderline:
+    case AutocorrectActions::kInvalidRange:
       base::UmaHistogramMediumTimes(
           "InputMethod.Assistive.AutocorrectV2.Latency.Reject", time_delta);
       break;
@@ -140,6 +165,16 @@ void RecordAssistiveSuccess(AssistiveType type) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Success", type);
 }
 
+void RecordPhysicalKeyboardAutocorrectPref(const std::string& engine_id,
+                                           const AutocorrectPreference& pref) {
+  if (IsUsEnglishId(engine_id)) {
+    base::UmaHistogramEnumeration(
+        "InputMethod.Assistive.AutocorrectV2.PkUserPreference.English", pref);
+  }
+  base::UmaHistogramEnumeration(
+      "InputMethod.Assistive.AutocorrectV2.PkUserPreference.All", pref);
+}
+
 bool CouldTriggerAutocorrectWithSurroundingText(const std::u16string& text,
                                                 size_t cursor_pos,
                                                 size_t anchor_pos) {
@@ -173,8 +208,9 @@ constexpr int kMaxValidationTries = 4;
 }  // namespace
 
 AutocorrectManager::AutocorrectManager(
-    SuggestionHandlerInterface* suggestion_handler)
-    : suggestion_handler_(suggestion_handler) {}
+    SuggestionHandlerInterface* suggestion_handler,
+    Profile* profile)
+    : suggestion_handler_(suggestion_handler), profile_(profile) {}
 
 AutocorrectManager::~AutocorrectManager() = default;
 
@@ -371,7 +407,25 @@ void AutocorrectManager::MeasureAndLogAssistiveAutocorrectQualityBreakdown(
   }
 }
 
+void AutocorrectManager::OnActivate(const std::string& engine_id) {
+  active_engine_id_ = engine_id;
+}
+
 bool AutocorrectManager::OnKeyEvent(const ui::KeyEvent& event) {
+  if (pending_user_pref_metric_ && IsVkAutocorrect()) {
+    // We only want to record a pending user pref metric if the user is
+    // currently using the physical keyboard.
+    pending_user_pref_metric_ = absl::nullopt;
+  }
+
+  if (pending_user_pref_metric_) {
+    const std::string& engine_id = pending_user_pref_metric_->engine_id;
+    RecordPhysicalKeyboardAutocorrectPref(
+        engine_id,
+        GetPhysicalKeyboardAutocorrectPref(profile_->GetPrefs(), engine_id));
+    pending_user_pref_metric_ = absl::nullopt;
+  }
+
   // OnKeyEvent is only used for interacting with the undo UI.
   if (!pending_autocorrect_.has_value() ||
       !pending_autocorrect_->undo_window_visible ||
@@ -379,7 +433,8 @@ bool AutocorrectManager::OnKeyEvent(const ui::KeyEvent& event) {
     return false;
   }
 
-  if (event.code() == ui::DomCode::ARROW_UP) {
+  if (event.code() == ui::DomCode::ARROW_UP ||
+      event.code() == ui::DomCode::TAB) {
     HighlightUndoButton();
     return true;
   }
@@ -491,6 +546,11 @@ void AutocorrectManager::OnSurroundingTextChanged(const std::u16string& text,
 }
 
 void AutocorrectManager::OnFocus(int context_id) {
+  if (active_engine_id_) {
+    pending_user_pref_metric_ =
+        PendingPhysicalKeyboardUserPrefMetric{.engine_id = *active_engine_id_};
+  }
+
   if (base::FeatureList::IsEnabled(ash::features::kImeRuleConfig)) {
     GetTextFieldContextualInfo(
         base::BindOnce(&AutocorrectManager::OnTextFieldContextualInfoChanged,
@@ -573,9 +633,12 @@ void AutocorrectManager::UndoAutocorrect() {
     // This will not quite work properly if there is text actually highlighted,
     // and cursor is at end of the highlight block, but no easy way around it.
     // First delete everything before cursor.
-    input_context->DeleteSurroundingText(
-        autocorrect_range.start() - surrounding_text.selection_range.start(),
-        autocorrect_range.length());
+    DCHECK(autocorrect_range.Contains(surrounding_text.selection_range));
+    const uint32_t before =
+        surrounding_text.selection_range.start() - autocorrect_range.start();
+    const uint32_t after =
+        autocorrect_range.end() - surrounding_text.selection_range.end();
+    input_context->DeleteSurroundingText(before, after);
 
     // Replace with the original text.
     input_context->CommitText(
@@ -606,7 +669,7 @@ void AutocorrectManager::ShowUndoWindow(
   const std::u16string autocorrected_text =
       text.substr(range.start(), range.length());
   AssistiveWindowProperties properties;
-  properties.type = ui::ime::AssistiveWindowType::kUndoWindow;
+  properties.type = ash::ime::AssistiveWindowType::kUndoWindow;
   properties.visible = true;
   properties.announce_string = l10n_util::GetStringFUTF16(
       IDS_SUGGESTION_AUTOCORRECT_UNDO_WINDOW_SHOWN,
@@ -648,7 +711,7 @@ void AutocorrectManager::HideUndoWindow() {
 
   std::string error;
   AssistiveWindowProperties properties;
-  properties.type = ui::ime::AssistiveWindowType::kUndoWindow;
+  properties.type = ash::ime::AssistiveWindowType::kUndoWindow;
   properties.visible = false;
   suggestion_handler_->SetAssistiveWindowProperties(context_id_, properties,
                                                     &error);
@@ -682,7 +745,7 @@ void AutocorrectManager::HighlightUndoButton() {
   std::string error;
   ui::ime::AssistiveWindowButton button = ui::ime::AssistiveWindowButton();
   button.id = ui::ime::ButtonId::kUndo;
-  button.window_type = ui::ime::AssistiveWindowType::kUndoWindow;
+  button.window_type = ash::ime::AssistiveWindowType::kUndoWindow;
   button.announce_string = l10n_util::GetStringFUTF16(
       IDS_SUGGESTION_AUTOCORRECT_UNDO_BUTTON,
       pending_autocorrect_->original_text);
@@ -711,13 +774,15 @@ void AutocorrectManager::AcceptOrClearPendingAutocorrect() {
   LogAssistiveAutocorrectInternalState(
       AutocorrectInternalStates::kSuggestionResolved);
 
-  if (!pending_autocorrect_->is_validated) {
+  if (!input_context) {
+    LogAssistiveAutocorrectAction(AutocorrectActions::kInvalidRange);
+    LogAssistiveAutocorrectInternalState(
+        AutocorrectInternalStates::kNoInputContext);
+  } else if (!pending_autocorrect_->is_validated) {
+    LogAssistiveAutocorrectAction(AutocorrectActions::kInvalidRange);
     LogAssistiveAutocorrectInternalState(
         AutocorrectInternalStates::kErrorRangeNotValidated);
-    LogAssistiveAutocorrectAction(
-        AutocorrectActions::kUserActionClearedUnderline);
-  } else if (input_context &&
-             !input_context->GetAutocorrectRange().is_empty()) {
+  } else if (!input_context->GetAutocorrectRange().is_empty()) {
     MeasureAndLogAssistiveAutocorrectQualityBreakdown(
         AutocorrectActions::kUserAcceptedAutocorrect);
     LogAssistiveAutocorrectInternalState(
@@ -728,13 +793,8 @@ void AutocorrectManager::AcceptOrClearPendingAutocorrect() {
     LogAssistiveAutocorrectAction(
       AutocorrectActions::kUserAcceptedAutocorrect);
   } else {
-    if (!input_context) {
-      LogAssistiveAutocorrectInternalState(
-          AutocorrectInternalStates::kNoInputContext);
-    } else {
-      MeasureAndLogAssistiveAutocorrectQualityBreakdown(
-          AutocorrectActions::kUserActionClearedUnderline);
-    }
+    MeasureAndLogAssistiveAutocorrectQualityBreakdown(
+        AutocorrectActions::kUserActionClearedUnderline);
     LogAssistiveAutocorrectAction(
       AutocorrectActions::kUserActionClearedUnderline);
   }

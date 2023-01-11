@@ -190,6 +190,10 @@ class AccessCodeCastSinkService : public KeyedService,
                            TestCheckMediaSinkForExpirationBeforeDelay);
   FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
                            TestCheckMediaSinkForExpirationAfterDelay);
+  FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
+                           RefreshStoredDeviceInfo);
+  FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
+                           RefreshStoredDeviceTimer);
 
   // Use |AccessCodeCastSinkServiceFactory::GetForProfile(..)| to get
   // an instance of this service.
@@ -336,7 +340,7 @@ class AccessCodeCastSinkService : public KeyedService,
 
   std::unique_ptr<AccessCodeCastPrefUpdater> pref_updater_;
 
-  raw_ptr<PrefService> prefs_;
+  raw_ptr<PrefService, DanglingUntriaged> prefs_;
 
   raw_ptr<signin::IdentityManager> identity_manager_ = nullptr;
 

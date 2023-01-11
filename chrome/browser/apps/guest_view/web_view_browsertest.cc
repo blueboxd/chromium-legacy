@@ -120,6 +120,7 @@
 #include "pdf/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/common/switches.h"
@@ -846,18 +847,29 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
 
   TestGuestViewManagerFactory factory_;
   // Note that these are only set if you launch app using LoadAppWithGuest().
-  raw_ptr<guest_view::GuestViewBase> guest_view_;
-  raw_ptr<content::WebContents> embedder_web_contents_;
+  raw_ptr<guest_view::GuestViewBase, DanglingUntriaged> guest_view_;
+  raw_ptr<content::WebContents, DanglingUntriaged> embedder_web_contents_;
 };
 
-class WebViewTest : public WebViewTestBase,
+class WebViewGuestSiteIsolationTest : public WebViewTestBase {
+ public:
+  explicit WebViewGuestSiteIsolationTest(
+      bool site_isolation_for_guests_enabled) {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kSiteIsolationForGuests, site_isolation_for_guests_enabled);
+  }
+  ~WebViewGuestSiteIsolationTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+class WebViewTest : public WebViewGuestSiteIsolationTest,
                     public testing::WithParamInterface<bool> {
  public:
-  WebViewTest() {
-    scoped_feature_list_.InitWithFeatureState(features::kSiteIsolationForGuests,
-                                              /*enabled=*/GetParam());
-  }
-  ~WebViewTest() override = default;
+  WebViewTest()
+      : WebViewGuestSiteIsolationTest(
+            /*site_isolation_for_guests_enabled=*/GetParam()) {}
 
   // Provides meaningful param names instead of /0 and /1.
   static std::string DescribeParams(
@@ -3365,7 +3377,7 @@ class DownloadManagerWaiter : public content::DownloadManager::Observer {
   ~DownloadManagerWaiter() override { download_manager_->RemoveObserver(this); }
 
   void WaitForInitialized() {
-    if (initialized_)
+    if (initialized_ || download_manager_->IsManagerInitialized())
       return;
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
@@ -3386,17 +3398,10 @@ class DownloadManagerWaiter : public content::DownloadManager::Observer {
 
 }  // namespace
 
-// TODO(crbug.com/994789): Flaky on MSan, Linux, Chrome OS, and Mac.
-#if defined(MEMORY_SANITIZER) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
-#define MAYBE_DownloadCookieIsolation DISABLED_DownloadCookieIsolation
-#else
-#define MAYBE_DownloadCookieIsolation DownloadCookieIsolation
-#endif
 // Downloads initiated from isolated guest parititons should use their
 // respective cookie stores. In addition, if those downloads are resumed, they
 // should continue to use their respective cookie stores.
-IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_DownloadCookieIsolation) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation) {
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(&HandleDownloadRequestWithCookie));
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
@@ -3418,26 +3423,29 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_DownloadCookieIsolation) {
   error_info.stream_offset = 0;
   error_injector->InjectError(error_info);
 
-  std::unique_ptr<content::DownloadTestObserver> interrupted_observer(
-      new content::DownloadTestObserverInterrupted(
-          download_manager, 2,
-          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+  auto download_op = [&](std::string cookie) {
+    // DownloadTestObserverInterrupted does not seem to reliably wait for
+    // multiple failed downloads, so we perform one download at a time.
+    content::DownloadTestObserverInterrupted interrupted_observer(
+        download_manager, 1,
+        content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
+    EXPECT_TRUE(content::ExecuteScript(
+        web_contents,
+        base::StringPrintf(
+            "startDownload('%s', '%s?cookie=%s')", cookie.c_str(),
+            embedded_test_server()->GetURL(kDownloadPathPrefix).spec().c_str(),
+            cookie.c_str())));
 
-  EXPECT_TRUE(content::ExecuteScript(
-      web_contents,
-      base::StringPrintf(
-          "startDownload('first', '%s?cookie=first')",
-          embedded_test_server()->GetURL(kDownloadPathPrefix).spec().c_str())));
-
-  EXPECT_TRUE(content::ExecuteScript(
-      web_contents,
-      base::StringPrintf(
-          "startDownload('second', '%s?cookie=second')",
-          embedded_test_server()->GetURL(kDownloadPathPrefix).spec().c_str())));
+    // This maps to DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED.
+    interrupted_observer.WaitForFinished();
+  };
 
   // Both downloads should fail due to the error that was injected above to the
-  // download manager. This maps to DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED.
-  interrupted_observer->WaitForFinished();
+  // download manager.
+  download_op("first");
+
+  // Note that the second webview uses an in-memory partition.
+  download_op("second");
 
   error_injector->ClearError();
 
@@ -3494,10 +3502,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
 
   content::DownloadManager* download_manager =
       web_contents->GetBrowserContext()->GetDownloadManager();
-  std::unique_ptr<content::DownloadTestObserver> interrupted_observer(
-      new content::DownloadTestObserverInterrupted(
-          download_manager, 2,
-          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
 
   scoped_refptr<content::TestFileErrorInjector> error_injector(
       content::TestFileErrorInjector::Create(download_manager));
@@ -3508,22 +3512,30 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
   error_info.stream_offset = 0;
   error_injector->InjectError(error_info);
 
-  EXPECT_TRUE(content::ExecuteScript(
-      web_contents,
-      base::StringPrintf(
-          "startDownload('first', '%s?cookie=first')",
-          embedded_test_server()->GetURL(kDownloadPathPrefix).spec().c_str())));
+  auto download_op = [&](std::string cookie) {
+    // DownloadTestObserverInterrupted does not seem to reliably wait for
+    // multiple failed downloads, so we perform one download at a time.
+    content::DownloadTestObserverInterrupted interrupted_observer(
+        download_manager, 1,
+        content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
 
-  // Note that the second webview uses an in-memory partition.
-  EXPECT_TRUE(content::ExecuteScript(
-      web_contents,
-      base::StringPrintf(
-          "startDownload('second', '%s?cookie=second')",
-          embedded_test_server()->GetURL(kDownloadPathPrefix).spec().c_str())));
+    EXPECT_TRUE(content::ExecuteScript(
+        web_contents,
+        base::StringPrintf(
+            "startDownload('%s', '%s?cookie=%s')", cookie.c_str(),
+            embedded_test_server()->GetURL(kDownloadPathPrefix).spec().c_str(),
+            cookie.c_str())));
+
+    // This maps to DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED.
+    interrupted_observer.WaitForFinished();
+  };
 
   // Both downloads should fail due to the error that was injected above to the
-  // download manager. This maps to DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED.
-  interrupted_observer->WaitForFinished();
+  // download manager.
+  download_op("first");
+
+  // Note that the second webview uses an in-memory partition.
+  download_op("second");
 
   // Wait for both downloads to be stored.
   task_runner->FastForwardUntilNoTasksRemain();
@@ -3531,19 +3543,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
   content::EnsureCookiesFlushed(profile());
 }
 
-// TODO(crbug.com/994789): Flaky on MSan, Linux, and ChromeOS.
-// TODO(crbug.com/1204299): Flaky on Windows. Consistently failing on Mac.
-#if defined(MEMORY_SANITIZER) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-#define MAYBE_DownloadCookieIsolation_CrossSession \
-  DISABLED_DownloadCookieIsolation_CrossSession
-#else
-#define MAYBE_DownloadCookieIsolation_CrossSession \
-  DownloadCookieIsolation_CrossSession
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-
-IN_PROC_BROWSER_TEST_P(WebViewTest,
-                       MAYBE_DownloadCookieIsolation_CrossSession) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation_CrossSession) {
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(&HandleDownloadRequestWithCookie));
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
@@ -3594,20 +3594,21 @@ IN_PROC_BROWSER_TEST_P(WebViewTest,
         download->GetRerouteInfo()));
   }
 
-  std::unique_ptr<content::DownloadTestObserver> completion_observer(
-      new content::DownloadTestObserverTerminal(
-          download_manager, 2,
-          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+  content::DownloadTestObserverTerminal completion_observer(
+      download_manager, 2,
+      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
 
   for (auto* download : downloads) {
     ASSERT_TRUE(download->CanResume());
     ASSERT_TRUE(download->GetFullPath().empty());
-    EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
-              download->GetLastReason());
+    ASSERT_TRUE(download::DOWNLOAD_INTERRUPT_REASON_CRASH ==
+                    download->GetLastReason() ||
+                download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED ==
+                    download->GetLastReason());
     download->Resume(true);
   }
 
-  completion_observer->WaitForFinished();
+  completion_observer.WaitForFinished();
 
   // Of the two downloads, ?cookie=first will succeed and ?cookie=second will
   // fail. The latter fails because the underlying storage partition was not
@@ -5563,11 +5564,25 @@ IN_PROC_BROWSER_TEST_P(WebViewPPAPITest, Shim_TestPluginLoadPermission) {
 }
 #endif  // BUILDFLAG(ENABLE_PPAPI)
 
-// Helper class to set up a fake Chrome Web Store URL which can be loaded in
-// tests.
-class WebstoreWebViewTest : public WebViewTest {
+// Domain which the Webstore hosted app is associated with in production.
+constexpr char kWebstoreURL[] = "https://chrome.google.com/";
+// Domain which the new Webstore is associated with in production.
+constexpr char kNewWebstoreURL[] = "https://chromewebstore.google.com/";
+// Domain for testing an overridden Webstore URL.
+constexpr char kWebstoreURLOverride[] = "https://webstore.override.test.com/";
+
+// Helper class for setting up and testing webview behavior with the Chrome
+// Webstore. The tuple param contains the Webstore URL under test and a boolen
+// that is passed to the base class to set if site isolation is enabled for
+// guests.
+class WebstoreWebViewTest
+    : public WebViewGuestSiteIsolationTest,
+      public testing::WithParamInterface<std::tuple<GURL, bool>> {
  public:
-  WebstoreWebViewTest() : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+  WebstoreWebViewTest()
+      : WebViewGuestSiteIsolationTest(::testing::get<1>(GetParam())),
+        https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
+        webstore_url_(std::move(::testing::get<0>(GetParam()))) {}
 
   WebstoreWebViewTest(const WebstoreWebViewTest&) = delete;
   WebstoreWebViewTest& operator=(const WebstoreWebViewTest&) = delete;
@@ -5575,44 +5590,71 @@ class WebstoreWebViewTest : public WebViewTest {
   ~WebstoreWebViewTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    https_server_.ServeFilesFromSourceDirectory("chrome/test/data");
+    // Serve files from the extensions test directory as it has a
+    // /webstore/ directory, which the Webstore hosted app expects for the URL
+    // it is associated with.
+    https_server_.ServeFilesFromSourceDirectory("chrome/test/data/extensions");
     ASSERT_TRUE(https_server_.InitializeAndListen());
 
-    // Override the webstore URL.
     command_line->AppendSwitchASCII(
-        ::switches::kAppsGalleryURL,
-        https_server()->GetURL("chrome.foo.com", "/frame_tree").spec());
+        network::switches::kHostResolverRules,
+        "MAP * " + https_server_.host_port_pair().ToString());
+    // Only override the webstore URL if this test case is testing the override.
+    if (webstore_url().spec() == kWebstoreURLOverride) {
+      command_line->AppendSwitchASCII(::switches::kAppsGalleryURL,
+                                      kWebstoreURLOverride);
+    }
     mock_cert_verifier_.SetUpCommandLine(command_line);
-    WebViewTest::SetUpCommandLine(command_line);
+    WebViewGuestSiteIsolationTest::SetUpCommandLine(command_line);
   }
 
   void SetUpOnMainThread() override {
     https_server_.StartAcceptingConnections();
     mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
-    WebViewTest::SetUpOnMainThread();
+    WebViewGuestSiteIsolationTest::SetUpOnMainThread();
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    WebViewTest::SetUpInProcessBrowserTestFixture();
+    WebViewGuestSiteIsolationTest::SetUpInProcessBrowserTestFixture();
     mock_cert_verifier_.SetUpInProcessBrowserTestFixture();
   }
 
   void TearDownInProcessBrowserTestFixture() override {
-    WebViewTest::TearDownInProcessBrowserTestFixture();
+    WebViewGuestSiteIsolationTest::TearDownInProcessBrowserTestFixture();
     mock_cert_verifier_.TearDownInProcessBrowserTestFixture();
   }
 
   net::EmbeddedTestServer* https_server() { return &https_server_; }
+  GURL webstore_url() { return webstore_url_; }
+
+  // Provides meaningful param names.
+  static std::string DescribeParams(
+      const testing::TestParamInfo<std::tuple<GURL, bool>>& info) {
+    std::string guest_isolation = ::testing::get<1>(info.param)
+                                      ? "SiteIsolationForGuestsEnabled"
+                                      : "SiteIsolationForGuestsDisabled";
+    GURL webstore_url(std::move(::testing::get<0>(info.param)));
+    if (webstore_url.spec() == kWebstoreURL)
+      return "OldWebstore_" + guest_isolation;
+    if (webstore_url.spec() == kWebstoreURLOverride)
+      return "WebstoreOverride_" + guest_isolation;
+    return "NewWebstore_" + guest_isolation;
+  }
 
  private:
   net::EmbeddedTestServer https_server_;
   content::ContentMockCertVerifier mock_cert_verifier_;
+  GURL webstore_url_;
 };
 
-INSTANTIATE_TEST_SUITE_P(WebViewTests,
-                         WebstoreWebViewTest,
-                         testing::Bool(),
-                         WebViewTest::DescribeParams);
+INSTANTIATE_TEST_SUITE_P(
+    WebViewTests,
+    WebstoreWebViewTest,
+    testing::Combine(testing::Values(GURL(kWebstoreURL),
+                                     GURL(kWebstoreURLOverride),
+                                     GURL(kNewWebstoreURL)),
+                     testing::Bool()),
+    WebstoreWebViewTest::DescribeParams);
 
 // Ensure that an attempt to load Chrome Web Store in a <webview> is blocked
 // and does not result in a renderer kill.  See https://crbug.com/1197674.
@@ -5622,16 +5664,16 @@ IN_PROC_BROWSER_TEST_P(WebstoreWebViewTest, NoRendererKillWithChromeWebStore) {
   ASSERT_TRUE(guest);
 
   // Navigate <webview> to a Chrome Web Store URL.  This should result in an
-  // error and shouldn't lead to a renderer kill.
-  const GURL webstore_url =
-      https_server()->GetURL("chrome.foo.com", "/frame_tree/simple.htm");
+  // error and shouldn't lead to a renderer kill. Note: the webstore hosted app
+  // requires the path to start with /webstore/, so for simplicity we serve a
+  // page from this path for all the different webstore URLs under test.
+  const GURL url = webstore_url().Resolve("/webstore/mock_store.html");
 
   content::TestNavigationObserver error_observer(
-      webstore_url, content::MessageLoopRunner::QuitMode::IMMEDIATE,
+      url, content::MessageLoopRunner::QuitMode::IMMEDIATE,
       /*ignore_uncommitted_navigations=*/false);
   error_observer.WatchExistingWebContents();
-  EXPECT_TRUE(
-      ExecuteScript(guest, "location.href = '" + webstore_url.spec() + "';"));
+  EXPECT_TRUE(ExecuteScript(guest, "location.href = '" + url.spec() + "';"));
   error_observer.Wait();
   EXPECT_FALSE(error_observer.last_navigation_succeeded());
   EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, error_observer.last_net_error_code());
@@ -5855,7 +5897,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessWebViewTest, ErrorPageInSubframe) {
                               "location.href = '" + error_url.spec() + "';"));
     load_observer.Wait();
     EXPECT_FALSE(load_observer.last_navigation_succeeded());
-    EXPECT_TRUE(ChildFrameAt(GetGuestRenderFrameHost(), 0)->IsErrorDocument());
+    auto* error_rfh = ChildFrameAt(GetGuestRenderFrameHost(), 0);
+    EXPECT_TRUE(error_rfh->IsErrorDocument());
+
+    // Double-check that the error page has an opaque origin, and that the
+    // precursor doesn't point to a.test.
+    url::Origin error_origin = error_rfh->GetLastCommittedOrigin();
+    EXPECT_TRUE(error_origin.opaque());
+    EXPECT_FALSE(error_origin.GetTupleOrPrecursorTupleIfOpaque().IsValid());
   }
 }
 

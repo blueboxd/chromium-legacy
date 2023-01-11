@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_validator.h"
 
+#include "base/functional/callback.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/common/url_constants.h"
@@ -13,20 +14,37 @@
 
 namespace web_app {
 
-absl::optional<std::string> IsolatedWebAppValidator::ValidateIntegrityBlock(
-    web_package::SignedWebBundleId web_bundle_id,
-    const std::vector<web_package::Ed25519PublicKey>& public_key_stack) {
+void IsolatedWebAppValidator::ValidateIntegrityBlock(
+    const web_package::SignedWebBundleId& expected_web_bundle_id,
+    const std::vector<web_package::Ed25519PublicKey>& public_key_stack,
+    base::OnceCallback<void(absl::optional<std::string>)> callback) {
   if (public_key_stack.empty()) {
-    return "The Isolated Web App must have at least one signature.";
+    std::move(callback).Run(
+        "The Isolated Web App must have at least one signature.");
+    return;
+  }
+
+  // The Web Bundle ID of the Isolated Web App must always be derived from the
+  // first public key in the stack.
+  auto actual_web_bundle_id =
+      web_package::SignedWebBundleId::CreateForEd25519PublicKey(
+          public_key_stack[0]);
+  if (actual_web_bundle_id != expected_web_bundle_id) {
+    std::move(callback).Run(
+        base::StringPrintf("The Web Bundle ID (%s) derived from the public key "
+                           "does not match the expected Web Bundle ID (%s).",
+                           actual_web_bundle_id.id().c_str(),
+                           expected_web_bundle_id.id().c_str()));
+    return;
   }
 
   // TODO(crbug.com/1365852): Check whether we trust the public keys contained
   // in the integrity block here.
-  return absl::nullopt;
+  std::move(callback).Run(absl::nullopt);
 }
 
 absl::optional<std::string> IsolatedWebAppValidator::ValidateMetadata(
-    web_package::SignedWebBundleId web_bundle_id,
+    const web_package::SignedWebBundleId& web_bundle_id,
     const GURL& primary_url,
     const std::vector<GURL>& entries) {
   // Verify that the primary URL of the bundle corresponds to the Signed Web
@@ -51,17 +69,13 @@ absl::optional<std::string> IsolatedWebAppValidator::ValidateMetadata(
           url_info.error().c_str());
     }
 
-    auto entry_web_bundle_id = url_info->ParseSignedWebBundleId();
-    if (!entry_web_bundle_id.has_value()) {
-      return base::StringPrintf(
-          "Invalid metadata: The URL of an exchange is invalid: %s",
-          entry_web_bundle_id.error().c_str());
-    }
+    const web_package::SignedWebBundleId& entry_web_bundle_id =
+        url_info->web_bundle_id();
     if (entry_web_bundle_id != web_bundle_id) {
       return base::StringPrintf(
           "Invalid metadata: The URL of an exchange contains the wrong Signed "
           "Web Bundle ID: %s",
-          entry_web_bundle_id->id().c_str());
+          entry_web_bundle_id.id().c_str());
     }
     if (entry.has_ref()) {
       return base::StringPrintf(

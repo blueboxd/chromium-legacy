@@ -14,14 +14,15 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_trigger_data.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_values.h"
-#include "content/browser/attribution_reporting/attribution_aggregation_keys.h"
-#include "content/browser/attribution_reporting/attribution_filter_data.h"
+#include "components/attribution_reporting/aggregatable_trigger_data.h"
+#include "components/attribution_reporting/aggregatable_values.h"
+#include "components/attribution_reporting/aggregation_keys.h"
+#include "components/attribution_reporting/event_trigger_data.h"
+#include "components/attribution_reporting/filters.h"
+#include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
@@ -47,6 +48,8 @@ namespace content {
 namespace {
 
 using ::attribution_reporting::mojom::SourceRegistrationError;
+
+using AttributionFilters = ::attribution_reporting::Filters;
 
 using ::testing::_;
 using ::testing::ElementsAre;
@@ -271,10 +274,11 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                .SetPriority(std::numeric_limits<int64_t>::max())
                .SetDedupKeys({13, 17})
                .SetAggregatableBudgetConsumed(1300)
-               .SetFilterData(*AttributionFilterData::FromSourceFilterValues(
+               .SetFilterData(*attribution_reporting::FilterData::Create(
                    {{"a", {"b", "c"}}}))
                .SetAggregationKeys(
-                   *AttributionAggregationKeys::FromKeys({{"a", 1}}))
+                   *attribution_reporting::AggregationKeys::FromKeys(
+                       {{"a", 1}}))
                .SetAggregatableDedupKeys({14, 18})
                .BuildStored(),
            SourceBuilder(now + base::Hours(2))
@@ -347,18 +351,25 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        FailedSourceRegistrationLogShown) {
   ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
-  auto reporter1 = url::Origin::Create(GURL("https://a.test"));
-
   static constexpr char wait_script[] = R"(
-    let table = document.querySelector('#logTable')
+    const table = document.querySelector('#logTable')
         .shadowRoot.querySelector('tbody');
+
+    const description = '<a href="https://github.com/WICG/attribution-report' +
+                        'ing-api/blob/main/EVENT.md#registering-attribution-' +
+                        'sources" target="_blank">Failed Source Registration' +
+                        '</a>';
+    const metadata = '<dl><dt>Failure Reason</dt><dd>invalid JSON</dd>' +
+                     '<dt>Report To</dt><dd>https://a.test</dd>' +
+                     '<dt>Attribution-Reporting-Register-Source Header</dt>'+
+                     '<dd><pre><code>!</code></pre></dd></dl>';
 
     let obs = new MutationObserver((_, obs) => {
       if (table.children.length === 1 &&
-          table.children[0].children.length >= 4 &&
-          table.children[0].children[1].innerText === 'invalid JSON' &&
-          table.children[0].children[2].innerText === 'https://a.test' &&
-          table.children[0].children[3].innerText === '!')  {
+          table.children[0].children.length >= 3 &&
+          table.children[0].children[1].innerHTML === description &&
+          table.children[0].children[2].innerHTML === metadata
+      )  {
         obs.disconnect();
         document.title = $1;
       }
@@ -372,6 +383,91 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   manager()->NotifySourceRegistrationFailure(
       "!", url::Origin::Create(GURL("https://a.test")),
       SourceRegistrationError::kInvalidJson);
+  EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
+                       ClearedDebugKeyFromSource_LogShown) {
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+
+  static constexpr char wait_script[] = R"(
+    const table = document.querySelector('#logTable')
+        .shadowRoot.querySelector('tbody');
+
+    const description = '<a href="https://github.com/WICG/attribution-report' +
+                    'ing-api/blob/main/EVENT.md#optional-extended-debugging-' +
+                    'reports" target="_blank">Cleared Debug Key</a>';
+    const metadata = '<dl><dt>Cleared Debug Key</dt><dd>1234</dd>' +
+                     '<dt>From</dt><dd>Source</dd>'+
+                     '<dt>Report To</dt><dd>https://report.test</dd></dl>';
+
+    let obs = new MutationObserver((_, obs) => {
+      if (table.children.length === 1 &&
+          table.children[0].children.length >= 3 &&
+          table.children[0].children[1].innerHTML === description &&
+          table.children[0].children[2].innerHTML === metadata
+      )  {
+        obs.disconnect();
+        document.title = $1;
+      }
+    });
+    obs.observe(table, {'childList': true});)";
+
+  ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+
+  TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
+
+  manager()->NotifySourceHandled(SourceBuilder().Build(),
+                                 StorableSource::Result::kSuccess,
+                                 /*cleared_debug_key=*/1234);
+
+  EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
+                       ClearedDebugKeyFromTrigger_LogShown) {
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+
+  static constexpr char wait_script[] = R"(
+    const table = document.querySelector('#logTable')
+        .shadowRoot.querySelector('tbody');
+
+    const description = '<a href="https://github.com/WICG/attribution-report' +
+                    'ing-api/blob/main/EVENT.md#optional-extended-debugging-' +
+                    'reports" target="_blank">Cleared Debug Key</a>';
+    const metadata = '<dl><dt>Cleared Debug Key</dt><dd>1234</dd>' +
+                     '<dt>From</dt><dd>Trigger</dd>'+
+                     '<dt>Report To</dt><dd>https://report.test</dd></dl>';
+
+    let obs = new MutationObserver((_, obs) => {
+      if (table.children.length === 1 &&
+          table.children[0].children.length >= 3 &&
+          table.children[0].children[1].innerHTML === description &&
+          table.children[0].children[2].innerHTML === metadata
+      )  {
+        obs.disconnect();
+        document.title = $1;
+      }
+    });
+    obs.observe(table, {'childList': true});)";
+
+  ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+
+  TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
+
+  manager()->NotifyTriggerHandled(
+      DefaultTrigger(),
+      CreateReportResult(
+          /*trigger_time=*/base::Time::Now(),
+          /*event_level_status=*/AttributionTrigger::EventLevelResult::kSuccess,
+          /*aggregatable_status=*/
+          AttributionTrigger::AggregatableResult::kSuccess,
+          /*replaced_event_level_report=*/absl::nullopt,
+          /*new_event_level_report=*/IrreleventEventLevelReport(),
+          /*new_aggregatable_report=*/IrreleventAggregatableReport(),
+          /*source=*/SourceBuilder().BuildStored()),
+      /*cleared_debug_key=*/1234);
+
   EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
 }
 
@@ -496,7 +592,9 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
               .SetReportTime(now + base::Hours(1))
               .SetPriority(11)
               .Build(),
-          /*new_event_level_report=*/IrreleventEventLevelReport()));
+          /*new_event_level_report=*/IrreleventEventLevelReport(),
+          /*new_aggregatable_report=*/absl::nullopt,
+          /*source=*/SourceBuilder().BuildStored()));
 
   {
     static constexpr char wait_script[] = R"(
@@ -920,41 +1018,42 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   const AttributionTrigger trigger(
       url::Origin::Create(GURL("https://d.test")),
       url::Origin::Create(GURL("https://r.test")),
-      /*filters=*/AttributionFilterData::CreateForTesting({{"a", {"b"}}}),
-      /*not_filters=*/AttributionFilterData::CreateForTesting({{"g", {"h"}}}),
+      /*filters=*/*AttributionFilters::Create({{"a", {"b"}}}),
+      /*not_filters=*/*AttributionFilters::Create({{"g", {"h"}}}),
       /*debug_key=*/1,
       /*aggregatable_dedup_key=*/18,
       {
-          AttributionTrigger::EventTriggerData(
+          attribution_reporting::EventTriggerData(
               /*data=*/2,
               /*priority=*/3,
               /*dedup_key=*/absl::nullopt,
               /*filters=*/
-              AttributionFilterData::CreateForTesting({{"c", {"d"}}}),
-              /*not_filters=*/AttributionFilterData()),
-          AttributionTrigger::EventTriggerData(
+              *AttributionFilters::Create({{"c", {"d"}}}),
+              /*not_filters=*/AttributionFilters()),
+          attribution_reporting::EventTriggerData(
               /*data=*/4,
               /*priority=*/5,
               /*dedup_key=*/6,
-              /*filters=*/AttributionFilterData(),
+              /*filters=*/AttributionFilters(),
               /*not_filters=*/
-              AttributionFilterData::CreateForTesting({{"e", {"f"}}})),
+              *AttributionFilters::Create({{"e", {"f"}}})),
       },
-      {AttributionAggregatableTriggerData::CreateForTesting(
+      {*attribution_reporting::AggregatableTriggerData::Create(
            /*key_piece=*/345,
            /*source_keys=*/{"a"},
            /*filters=*/
-           AttributionFilterData::CreateForTesting({{"c", {"d"}}}),
-           /*not_filters=*/AttributionFilterData()),
-       AttributionAggregatableTriggerData::CreateForTesting(
+           *AttributionFilters::Create({{"c", {"d"}}}),
+           /*not_filters=*/AttributionFilters()),
+       *attribution_reporting::AggregatableTriggerData::Create(
            /*key_piece=*/678,
            /*source_keys=*/{"b"},
-           /*filters=*/AttributionFilterData(),
+           /*filters=*/AttributionFilters(),
            /*not_filters=*/
-           AttributionFilterData::CreateForTesting({{"e", {"f"}}}))},
+           *AttributionFilters::Create({{"e", {"f"}}}))},
       /*aggregatable_values=*/
-      AttributionAggregatableValues::CreateForTesting(
-          {{"a", 123}, {"b", 456}}));
+      *attribution_reporting::AggregatableValues::Create(
+          {{"a", 123}, {"b", 456}}),
+      /*is_within_fenced_frame=*/false, /*debug_reporting=*/false);
 
   static constexpr char kWantEventTriggerJSON[] =
       R"json([ {  "data": "2",  "priority": "3",  "filters": {   "c": [    "d"   ]  } }, {  "data": "4",  "priority": "5",  "deduplication_key": "6",  "not_filters": {   "e": [    "f"   ]  } }])json";
@@ -998,7 +1097,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                 event_status, aggregatable_status,
                 /*replaced_event_level_report=*/absl::nullopt,
                 /*new_event_level_report=*/IrreleventEventLevelReport(),
-                /*new_aggregatable_report=*/IrreleventAggregatableReport()));
+                /*new_aggregatable_report=*/IrreleventAggregatableReport(),
+                /*source=*/SourceBuilder().BuildStored()));
       };
 
   notify_trigger_handled(AttributionTrigger::EventLevelResult::kSuccess,

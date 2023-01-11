@@ -12,7 +12,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <algorithm>
 #include <initializer_list>
 #include <sstream>
 #include <string>
@@ -25,6 +24,7 @@
 #include "base/containers/span.h"
 #include "base/cxx20_to_address.h"
 #include "base/strings/string_piece.h"  // For implicit conversions.
+#include "base/strings/string_util_internal.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -123,8 +123,8 @@ std::string StreamableToString(const Streamable&... values) {
 // so we don't want to use it here.
 template <typename CharT,
           typename = std::enable_if_t<std::is_integral<CharT>::value>>
-CharT ToLowerASCII(CharT c) {
-  return (c >= 'A' && c <= 'Z') ? (c + ('a' - 'A')) : c;
+constexpr CharT ToLowerASCII(CharT c) {
+  return internal::ToLowerASCII(c);
 }
 
 // ASCII-specific toupper.  The standard library's toupper is locale sensitive,
@@ -165,19 +165,14 @@ template<typename Char> struct CaseInsensitiveCompareASCII {
 // (unlike strcasecmp which can return values greater or less than 1/-1). For
 // full Unicode support, use base::i18n::ToLower or base::i18n::FoldCase
 // and then just call the normal string operators on the result.
-BASE_EXPORT int CompareCaseInsensitiveASCII(StringPiece a, StringPiece b);
-BASE_EXPORT int CompareCaseInsensitiveASCII(StringPiece16 a, StringPiece16 b);
-
-namespace internal {
-template <typename CharT, typename CharU>
-inline bool EqualsCaseInsensitiveASCIIT(BasicStringPiece<CharT> a,
-                                        BasicStringPiece<CharU> b) {
-  return std::equal(a.begin(), a.end(), b.begin(), b.end(),
-                    [](auto lhs, auto rhs) {
-                      return ToLowerASCII(lhs) == ToLowerASCII(rhs);
-                    });
+BASE_EXPORT constexpr int CompareCaseInsensitiveASCII(StringPiece a,
+                                                      StringPiece b) {
+  return internal::CompareCaseInsensitiveASCIIT(a, b);
 }
-}  // namespace internal
+BASE_EXPORT constexpr int CompareCaseInsensitiveASCII(StringPiece16 a,
+                                                      StringPiece16 b) {
+  return internal::CompareCaseInsensitiveASCIIT(a, b);
+}
 
 // Equality for ASCII case-insensitive comparisons. For full Unicode support,
 // use base::i18n::ToLower or base::i18n::FoldCase and then compare with either

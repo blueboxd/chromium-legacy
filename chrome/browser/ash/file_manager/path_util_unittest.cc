@@ -32,10 +32,10 @@
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_manager/volume_manager_factory.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/ash/fileapi/file_system_backend.h"
 #include "chrome/browser/ash/guest_os/public/types.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
@@ -362,10 +362,10 @@ TEST_F(FileManagerPathUtilTest, ConvertBetweenFileSystemURLAndPathInsideVM) {
       mount_point_drive.BaseName().value(), storage::kFileSystemTypeLocal,
       storage::FileSystemMountOption(), mount_point_drive);
   mount_points->RegisterFileSystem(
-      chromeos::kSystemMountNameRemovable, storage::kFileSystemTypeLocal,
+      ash::kSystemMountNameRemovable, storage::kFileSystemTypeLocal,
       storage::FileSystemMountOption(), base::FilePath(kRemovableMediaPath));
   mount_points->RegisterFileSystem(
-      chromeos::kSystemMountNameArchive, storage::kFileSystemTypeLocal,
+      ash::kSystemMountNameArchive, storage::kFileSystemTypeLocal,
       storage::FileSystemMountOption(), base::FilePath(kArchiveMountPath));
   // SmbFsShare comes up with a unique stable ID for the share, it can
   // just be faked here, the mount ID is expected to appear in the mount
@@ -520,11 +520,11 @@ TEST_F(FileManagerPathUtilTest, ExtractMountNameFileSystemNameFullPath) {
                                    storage::FileSystemMountOption(), downloads);
   base::FilePath removable = base::FilePath(kRemovableMediaPath);
   mount_points->RegisterFileSystem(
-      chromeos::kSystemMountNameRemovable, storage::kFileSystemTypeLocal,
+      ash::kSystemMountNameRemovable, storage::kFileSystemTypeLocal,
       storage::FileSystemMountOption(), base::FilePath(kRemovableMediaPath));
   base::FilePath archive = base::FilePath(kArchiveMountPath);
   mount_points->RegisterFileSystem(
-      chromeos::kSystemMountNameArchive, storage::kFileSystemTypeLocal,
+      ash::kSystemMountNameArchive, storage::kFileSystemTypeLocal,
       storage::FileSystemMountOption(), base::FilePath(kArchiveMountPath));
   std::string relative_path_1 = "foo";
   std::string relative_path_2 = "foo/bar";
@@ -1175,14 +1175,14 @@ TEST_F(FileManagerPathUtilTest, GetDisplayablePathTest) {
       ash::disks::Disk::Builder().SetDeviceLabel("removable_label").Build();
   volume_manager->AddVolumeForTesting(Volume::CreateForRemovable(
       {"/source_path/removable", "/mount_path/removable",
-       ash::MountType::kDevice, ash::MountError::kNone},
+       ash::MountType::kDevice, ash::MountError::kSuccess},
       removable_disk.get()));
 
   // The source path for archives need to be inside an already mounted volume,
   // so add it under the My Files volume.
   volume_manager->AddVolumeForTesting(Volume::CreateForRemovable(
       {"/mount_path/my_files/archive", "/mount_path/archive.zip",
-       ash::MountType::kArchive, ash::MountError::kNone},
+       ash::MountType::kArchive, ash::MountError::kSuccess},
       nullptr));
 
   volume_manager->AddVolumeForTesting(Volume::CreateForProvidedFileSystem(

@@ -15,19 +15,20 @@ import '../../css/wallpaper.css.js';
 import '../../common/icons.html.js';
 import '../../css/common.css.js';
 
-import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {CurrentWallpaper, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
-import {isPngDataUrl, isSelectionEvent} from '../utils.js';
+import {isImageDataUrl} from '../utils.js';
 
 import {DefaultImageSymbol, DisplayableImage, kDefaultImageSymbol} from './constants.js';
 import {getTemplate} from './local_images_element.html.js';
-import {getLoadingPlaceholderAnimationDelay, getPathOrSymbol, isDefaultImage, isFilePath} from './utils.js';
+import {getPathOrSymbol, isDefaultImage, isFilePath} from './utils.js';
 import {fetchLocalData, getDefaultImageThumbnail, selectWallpaper} from './wallpaper_controller.js';
+import {WallpaperGridItemSelectedEvent} from './wallpaper_grid_item_element.js';
 import {getWallpaperProvider} from './wallpaper_interface_provider.js';
 
 
@@ -132,7 +133,7 @@ export class LocalImages extends WithPersonalizationStore {
     this.imagesToDisplay_ = (images || []).filter(image => {
       const key = getPathOrSymbol(image);
       if (this.imageDataLoading_[key] === false) {
-        return isPngDataUrl(this.imageData_[key]);
+        return isImageDataUrl(this.imageData_[key]);
       }
       return true;
     });
@@ -154,36 +155,38 @@ export class LocalImages extends WithPersonalizationStore {
       const image = this.imagesToDisplay_[i];
       const key = getPathOrSymbol(image);
       const failed =
-          imageDataLoading[key] === false && !isPngDataUrl(imageData[key]);
+          imageDataLoading[key] === false && !isImageDataUrl(imageData[key]);
       if (failed) {
         this.splice('imagesToDisplay_', i, 1);
       }
     }
   }
 
-  private getAriaSelected_(
+  private isImageSelected_(
       image: FilePath|DefaultImageSymbol|null,
       currentSelected: LocalImages['currentSelected_'],
-      pendingSelected: LocalImages['pendingSelected_']): 'true'|'false' {
+      pendingSelected: LocalImages['pendingSelected_']): boolean {
     if (!image || (!currentSelected && !pendingSelected)) {
-      return 'false';
+      return false;
     }
     if (isDefaultImage(image)) {
-      return ((isDefaultImage(pendingSelected)) ||
-              (!pendingSelected && !!currentSelected &&
-               currentSelected.type === WallpaperType.kDefault))
-                 .toString() as 'true' |
-          'false';
+      return (
+          (isDefaultImage(pendingSelected)) ||
+          (!pendingSelected && !!currentSelected &&
+           currentSelected.type === WallpaperType.kDefault));
     }
-    return (isFilePath(pendingSelected) &&
-                image.path === pendingSelected.path ||
-            !!currentSelected && image.path === currentSelected.key &&
-                !pendingSelected)
-               .toString() as 'true' |
-        'false';
+    return (
+        isFilePath(pendingSelected) && image.path === pendingSelected.path ||
+        !!currentSelected && image.path === currentSelected.key &&
+            !pendingSelected);
   }
 
-  private getAriaLabel_(image: FilePath|DefaultImageSymbol|null): string {
+  private getAriaLabel_(
+      image: FilePath|DefaultImageSymbol|null,
+      imageDataLoading: LocalImages['imageDataLoading_']): string {
+    if (this.isImageLoading_(image, imageDataLoading)) {
+      return this.i18n('ariaLabelLoading');
+    }
     if (isDefaultImage(image)) {
       return this.i18n('defaultWallpaper');
     }
@@ -207,56 +210,35 @@ export class LocalImages extends WithPersonalizationStore {
         imageDataLoading[key] === true;
   }
 
-  private getLoadingPlaceholderAnimationDelay_(index: number): string {
-    return getLoadingPlaceholderAnimationDelay(index);
-  }
-
-  private isImageReady_(
+  private getImageData_(
       image: FilePath|DefaultImageSymbol|null,
       imageData: LocalImages['imageData_'],
-      imageDataLoading: LocalImages['imageDataLoading_']): boolean {
-    if (!image || !imageData || !imageDataLoading) {
-      return false;
+      imageDataLoading: LocalImages['imageDataLoading_']): Url|null {
+    if (!image || this.isImageLoading_(image, imageDataLoading)) {
+      return null;
     }
-    const key = getPathOrSymbol(image);
-    return isPngDataUrl(imageData[key]) && imageDataLoading[key] === false;
+    const data = imageData[getPathOrSymbol(image)];
+    // Return a "fail" url that will not load.
+    if (!isImageDataUrl(data)) {
+      return {url: ''};
+    }
+    return data;
   }
 
-  private getImageData_(
-      image: FilePath|DefaultImageSymbol,
-      imageData: LocalImages['imageData_']): string {
-    if (!isPngDataUrl(imageData[getPathOrSymbol(image)])) {
-      console.error('Requested image data of an image that failed to load');
+  private getImageDataId_(image: FilePath|DefaultImageSymbol|null): string {
+    if (!image) {
       return '';
     }
-    return imageData[getPathOrSymbol(image)].url;
-  }
-
-  private getImageDataId_(image: FilePath|DefaultImageSymbol): string {
     return isFilePath(image) ? image.path : image.toString();
   }
 
-  private onImageSelected_(event: Event) {
-    if (!isSelectionEvent(event)) {
-      return;
-    }
-    const dataId = (event.currentTarget as HTMLElement).dataset['id'];
+  private onImageSelected_(event: WallpaperGridItemSelectedEvent&
+                           {model: {item: FilePath | DefaultImageSymbol}}) {
     assert(
-        typeof dataId === 'string' && dataId.length > 0,
-        'image data id is required');
-    const image = this.images_!.find(image => {
-      if (isFilePath(image)) {
-        return dataId === image.path;
-      }
-      assert(
-          image === kDefaultImageSymbol, 'only one symbol should be present');
-      return dataId === image.toString();
-    });
-    if (!image) {
-      assertNotReached('Image with that path not found');
-      return;
-    }
-    selectWallpaper(image, this.wallpaperProvider_, this.getStore());
+        event.model.item === kDefaultImageSymbol ||
+            isFilePath(event.model.item),
+        'local image is a file path or default image');
+    selectWallpaper(event.model.item, this.wallpaperProvider_, this.getStore());
   }
 
   private getAriaIndex_(i: number): number {

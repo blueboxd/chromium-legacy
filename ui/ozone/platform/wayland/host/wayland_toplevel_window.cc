@@ -38,10 +38,19 @@
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
 #endif
 
+namespace wl {
+
+bool g_disallow_setting_decoration_insets_for_testing = false;
+
+void AllowClientSideDecorationsForTesting(bool allow) {
+  g_disallow_setting_decoration_insets_for_testing = !allow;
+}
+
+}  // namespace wl
+
 namespace ui {
 
 namespace {
-bool decorations_allowed_for_test_ = true;
 
 bool ShouldSetBounds(PlatformWindowState state) {
   return state == PlatformWindowState::kNormal ||
@@ -49,7 +58,8 @@ bool ShouldSetBounds(PlatformWindowState state) {
          state == PlatformWindowState::kSnappedSecondary ||
          state == PlatformWindowState::kFloated;
 }
-}
+
+}  // namespace
 
 constexpr int kVisibleOnAllWorkspaces = -1;
 
@@ -101,7 +111,6 @@ bool WaylandToplevelWindow::CreateShellToplevel() {
     zaura_surface_set_frame(aura_surface_.get(),
                             ZAURA_SURFACE_FRAME_TYPE_SHADOW);
   }
-
   if (screen_coordinates_enabled_)
     SetBoundsInDIP(GetBoundsInDIP());
 
@@ -148,6 +157,9 @@ void WaylandToplevelWindow::Show(bool inactive) {
   if (auto* drag_controller = connection()->window_drag_controller())
     drag_controller->OnToplevelWindowCreated(this);
 
+  if (inactive)
+    Deactivate();
+
   WaylandWindow::Show(inactive);
 }
 
@@ -165,6 +177,9 @@ void WaylandToplevelWindow::Hide() {
                            ZAURA_SURFACE_RELEASE_SINCE_VERSION) {
     aura_surface_.reset();
   }
+  if (gtk_surface1_)
+    gtk_surface1_.reset();
+
   shell_toplevel_.reset();
   connection()->Flush();
 }
@@ -313,9 +328,7 @@ bool WaylandToplevelWindow::ShouldUseNativeFrame() const {
   // This depends on availability of xdg-decoration protocol extension.
   // Returns false if there is no xdg-decoration protocol extension provided
   // even if use_native_frame_ is true.
-  return use_native_frame_ && const_cast<WaylandToplevelWindow*>(this)
-                                  ->connection()
-                                  ->xdg_decoration_manager_v1();
+  return use_native_frame_ && connection()->xdg_decoration_manager_v1();
 }
 
 bool WaylandToplevelWindow::ShouldUpdateWindowShape() const {
@@ -323,10 +336,8 @@ bool WaylandToplevelWindow::ShouldUpdateWindowShape() const {
 }
 
 bool WaylandToplevelWindow::CanSetDecorationInsets() const {
-  return decorations_allowed_for_test_ &&
-         const_cast<WaylandToplevelWindow*>(this)
-             ->connection()
-             ->SupportsSetWindowGeometry();
+  return connection()->SupportsSetWindowGeometry() &&
+         !wl::g_disallow_setting_decoration_insets_for_testing;
 }
 
 void WaylandToplevelWindow::SetOpaqueRegion(
@@ -364,11 +375,6 @@ bool WaylandToplevelWindow::IsScreenCoordinatesEnabled() const {
   return screen_coordinates_enabled_;
 }
 
-// static
-void WaylandToplevelWindow::AllowSettingDecorationInsetsForTest(bool allow) {
-  decorations_allowed_for_test_ = allow;
-}
-
 void WaylandToplevelWindow::UpdateWindowScale(bool update_bounds) {
   auto old_scale = window_scale();
   WaylandWindow::UpdateWindowScale(update_bounds);
@@ -395,8 +401,9 @@ void WaylandToplevelWindow::HandleAuraToplevelConfigure(
   // Store the old state to propagte state changes if Wayland decides to change
   // the state to something else.
   PlatformWindowState old_state = state_;
-  if (state_ == PlatformWindowState::kMinimized &&
-      !window_states.is_activated) {
+  if ((state_ == PlatformWindowState::kMinimized &&
+       !window_states.is_activated) ||
+      window_states.is_minimized) {
     state_ = PlatformWindowState::kMinimized;
   } else if (window_states.is_fullscreen) {
     state_ = PlatformWindowState::kFullScreen;
@@ -957,7 +964,9 @@ void WaylandToplevelWindow::SetUpShellIntegration() {
     UpdateSystemModal();
   }
 
-  if (connection()->gtk_shell1()) {
+  // We must not request a new GtkSurface if we already have one, else we get a
+  // "gtk_shell::get_gtk_surface already requested" error. (crbug.com/1380419)
+  if (connection()->gtk_shell1() && !gtk_surface1_) {
     gtk_surface1_ =
         connection()->gtk_shell1()->GetGtkSurface1(root_surface()->surface());
   }

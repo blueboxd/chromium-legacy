@@ -4,7 +4,7 @@
 
 import 'chrome://signin-reauth/signin_reauth_app.js';
 
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {SigninReauthAppElement} from 'chrome://signin-reauth/signin_reauth_app.js';
 import {SigninReauthBrowserProxyImpl} from 'chrome://signin-reauth/signin_reauth_browser_proxy.js';
@@ -20,8 +20,7 @@ suite('SigninReauthTest', function() {
   setup(function() {
     browserProxy = new TestSigninReauthBrowserProxy();
     SigninReauthBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     app = document.createElement('signin-reauth-app');
     document.body.append(app);
   });

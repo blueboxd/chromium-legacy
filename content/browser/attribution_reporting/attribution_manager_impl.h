@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/sequence_bound.h"
+#include "components/attribution_reporting/source_registration_error.mojom-forward.h"
 #include "content/browser/aggregation_service/aggregation_service.h"
 #include "content/browser/aggregation_service/report_scheduler_timer.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
+#include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom.h"
 
 namespace base {
 class FilePath;
@@ -50,6 +52,7 @@ class AttributionDataHostManager;
 class AttributionStorage;
 class AttributionStorageDelegate;
 class CreateReportResult;
+class OsLevelAttributionManager;
 class StoragePartitionImpl;
 class StoredSource;
 
@@ -82,6 +85,22 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
     const bool previous_;
   };
 
+  class CONTENT_EXPORT ScopedOsSupportForTesting {
+   public:
+    explicit ScopedOsSupportForTesting(blink::mojom::AttributionOsSupport);
+    ~ScopedOsSupportForTesting();
+
+    ScopedOsSupportForTesting(const ScopedOsSupportForTesting&) = delete;
+    ScopedOsSupportForTesting& operator=(const ScopedOsSupportForTesting&) =
+        delete;
+
+    ScopedOsSupportForTesting(ScopedOsSupportForTesting&&) = delete;
+    ScopedOsSupportForTesting& operator=(ScopedOsSupportForTesting&&) = delete;
+
+   private:
+    const blink::mojom::AttributionOsSupport previous_;
+  };
+
   static std::unique_ptr<AttributionManagerImpl> CreateForTesting(
       const base::FilePath& user_data_directory,
       size_t max_pending_events,
@@ -95,6 +114,12 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
       StoragePartitionImpl* storage_partition,
       const base::FilePath& user_data_directory,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
+
+  // Returns whether OS-level attribution is enabled. `kDisabled` is returned
+  // before the result is returned from the underlying platform (e.g. Android).
+  static blink::mojom::AttributionOsSupport GetOsSupport() {
+    return g_os_support_;
+  }
 
   AttributionManagerImpl(
       StoragePartitionImpl* storage_partition,
@@ -110,6 +135,7 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   void AddObserver(AttributionObserver* observer) override;
   void RemoveObserver(AttributionObserver* observer) override;
   AttributionDataHostManager* GetDataHostManager() override;
+  OsLevelAttributionManager* GetOsLevelManager() override;
   void HandleSource(StorableSource source) override;
   void HandleTrigger(AttributionTrigger trigger) override;
   void GetActiveSourcesForWebUI(
@@ -135,6 +161,13 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
  private:
   friend class AttributionManagerImplTest;
 
+  static void SetOsSupportForTesting(
+      blink::mojom::AttributionOsSupport os_support);
+
+  // TODO(crbug.com/1373536): The OS-level support should be derived from the
+  // underlying platform (e.g. Android).
+  static blink::mojom::AttributionOsSupport g_os_support_;
+
   using ReportSentCallback = AttributionReportSender::ReportSentCallback;
   using SourceOrTrigger = absl::variant<StorableSource, AttributionTrigger>;
 
@@ -146,13 +179,18 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
       std::unique_ptr<AttributionStorageDelegate> storage_delegate,
       std::unique_ptr<AttributionCookieChecker> cookie_checker,
       std::unique_ptr<AttributionReportSender> report_sender,
-      std::unique_ptr<AttributionDataHostManager> data_host_manager);
+      std::unique_ptr<AttributionDataHostManager> data_host_manager,
+      std::unique_ptr<OsLevelAttributionManager> os_level_manager);
 
   void MaybeEnqueueEvent(SourceOrTrigger event);
   void ProcessEvents();
   void ProcessNextEvent(bool is_debug_cookie_set);
-  void StoreSource(StorableSource source);
-  void StoreTrigger(AttributionTrigger trigger);
+  void StoreSource(StorableSource source,
+                   absl::optional<uint64_t> cleared_debug_key,
+                   bool is_debug_cookie_set);
+  void StoreTrigger(AttributionTrigger trigger,
+                    absl::optional<uint64_t> cleared_debug_key,
+                    bool is_debug_cookie_set);
 
   void GetReportsToSend();
   void OnGetReportsToSend(std::vector<AttributionReport> reports);
@@ -182,8 +220,13 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   void MarkReportCompleted(AttributionReport::Id report_id);
 
   void OnSourceStored(StorableSource source,
+                      absl::optional<uint64_t> cleared_debug_key,
+                      bool is_debug_cookie_set,
                       AttributionStorage::StoreSourceResult result);
-  void OnReportStored(AttributionTrigger trigger, CreateReportResult result);
+  void OnReportStored(AttributionTrigger trigger,
+                      absl::optional<uint64_t> cleared_debug_key,
+                      bool is_debug_cookie_set,
+                      CreateReportResult result);
 
   void MaybeSendDebugReport(AttributionReport&&);
 
@@ -192,6 +235,15 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   void NotifyReportSent(bool is_debug_report, AttributionReport, SendResult);
 
   bool IsReportAllowed(const AttributionReport&) const;
+
+  void MaybeSendVerboseDebugReport(
+      const StorableSource& source,
+      bool is_debug_cookie_set,
+      const AttributionStorage::StoreSourceResult& result);
+
+  void MaybeSendVerboseDebugReport(const AttributionTrigger& trigger,
+                                   bool is_debug_cookie_set,
+                                   const CreateReportResult& result);
 
   // Never null.
   const raw_ptr<StoragePartitionImpl> storage_partition_;
@@ -214,6 +266,8 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   ReportSchedulerTimer scheduler_timer_;
 
   std::unique_ptr<AttributionDataHostManager> data_host_manager_;
+
+  std::unique_ptr<OsLevelAttributionManager> os_level_manager_;
 
   // Storage policy for the browser context |this| is in. May be nullptr.
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;

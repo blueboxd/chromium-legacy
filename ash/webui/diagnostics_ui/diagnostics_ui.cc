@@ -12,13 +12,13 @@
 #include "ash/constants/ash_features.h"
 #include "ash/webui/common/backend/plural_string_handler.h"
 #include "ash/webui/common/keyboard_diagram_strings.h"
+#include "ash/webui/diagnostics_ui/backend/common/histogram_util.h"
+#include "ash/webui/diagnostics_ui/backend/connectivity/network_health_provider.h"
 #include "ash/webui/diagnostics_ui/backend/diagnostics_manager.h"
-#include "ash/webui/diagnostics_ui/backend/histogram_util.h"
-#include "ash/webui/diagnostics_ui/backend/input_data_provider.h"
-#include "ash/webui/diagnostics_ui/backend/network_health_provider.h"
+#include "ash/webui/diagnostics_ui/backend/input/input_data_provider.h"
 #include "ash/webui/diagnostics_ui/backend/session_log_handler.h"
-#include "ash/webui/diagnostics_ui/backend/system_data_provider.h"
-#include "ash/webui/diagnostics_ui/backend/system_routine_controller.h"
+#include "ash/webui/diagnostics_ui/backend/system/system_data_provider.h"
+#include "ash/webui/diagnostics_ui/backend/system/system_routine_controller.h"
 #include "ash/webui/diagnostics_ui/diagnostics_metrics.h"
 #include "ash/webui/diagnostics_ui/diagnostics_metrics_message_handler.h"
 #include "ash/webui/diagnostics_ui/mojom/network_health_provider.mojom.h"
@@ -42,7 +42,7 @@
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/chromeos/strings/network_element_localized_strings_provider.h"
+#include "ui/chromeos/strings/network/network_element_localized_strings_provider.h"
 #include "ui/resources/grit/webui_generated_resources.h"
 
 namespace ash {
@@ -60,7 +60,7 @@ diagnostics::metrics::NavigationView GetInitialView(const GURL url) {
   }
 
   // Note: Valid query strings map to strings in the GetUrlForPage located in
-  // chrome/browser/ui/webui/chromeos/diagnostics_dialog.cc.
+  // chrome/browser/ui/webui/ash/diagnostics_dialog.cc.
   const std::string& original_query = url.query();  // must outlive |query|.
   const base::StringPiece& query =
       base::TrimString(original_query, " \t", base::TRIM_ALL);
@@ -205,6 +205,7 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
       {"inputDescriptionUsbTouchpad", IDS_INPUT_DIAGNOSTICS_USB_TOUCHPAD},
       {"inputDescriptionUsbTouchscreen", IDS_INPUT_DIAGNOSTICS_USB_TOUCHSCREEN},
       {"inputDeviceTest", IDS_INPUT_DIAGNOSTICS_RUN_TEST},
+      {"inputDeviceUntestableNote", IDS_INPUT_DIAGNOSTICS_UNTESTABLE_NOTE},
       {"inputTesterDone", IDS_INPUT_DIAGNOSTICS_TESTER_DONE},
       {"inputText", IDS_DIAGNOSTICS_INPUT},
       {"internetConnectivityGroupLabel",
@@ -329,6 +330,7 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
       {"testWarningBadgeText", IDS_DIAGNOSTICS_TEST_WARNING_BADGE_TEXT},
       {"testSuccess", IDS_DIAGNOSTICS_TEST_SUCCESS_TEXT},
       {"testSucceededBadgeText", IDS_DIAGNOSTICS_TEST_SUCCESS_BADGE_TEXT},
+      {"touchpadTesterTitleText", IDS_INPUT_DIAGNOSTICS_TOUCHPAD_TESTER_TITLE},
       {"troubleConnecting", IDS_DIAGNOSTICS_TROUBLE_CONNECTING},
       {"troubleshootingText", IDS_DIAGNOSTICS_TROUBLESHOOTING_TEXT},
       {"versionInfo", IDS_DIAGNOSTICS_VERSION_INFO_TEXT},

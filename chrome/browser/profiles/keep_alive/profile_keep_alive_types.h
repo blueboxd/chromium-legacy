@@ -122,7 +122,16 @@ enum class ProfileKeepAliveOrigin {
   // something to show after the profile is destroyed. macOS-specific.
   kHistoryMenuBridge = 28,
 
-  kMaxValue = kHistoryMenuBridge,
+  // Protect Lacros Main Profile from being destroyed. Value expected to be set
+  // for main profile and never removed. Lacros main profile shouldn't be
+  // destroyed.
+  kLacrosMainProfile = 29,
+
+  // This profile is being created, and the SAML flow needs to be completed to
+  // finish signin in the user's account.
+  kProfileCreationSamlFlow = 30,
+
+  kMaxValue = kProfileCreationSamlFlow,
 };
 
 std::ostream& operator<<(std::ostream& out,

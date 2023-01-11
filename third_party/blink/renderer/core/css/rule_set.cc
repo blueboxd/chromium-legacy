@@ -502,12 +502,8 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
     StyleRuleBase* rule = rules[i].Get();
 
     if (auto* style_rule = DynamicTo<StyleRule>(rule)) {
-      for (const CSSSelector* selector = style_rule->FirstSelector(); selector;
-           selector = CSSSelectorList::Next(*selector)) {
-        wtf_size_t selector_index = style_rule->SelectorIndex(*selector);
-        AddRule(style_rule, selector_index, add_rule_flags, container_query,
-                cascade_layer, style_scope);
-      }
+      AddStyleRule(style_rule, medium, add_rule_flags, container_query,
+                   cascade_layer, style_scope);
     } else if (auto* page_rule = DynamicTo<StyleRulePage>(rule)) {
       page_rule->SetCascadeLayer(cascade_layer);
       AddPageRule(page_rule);
@@ -616,11 +612,23 @@ void RuleSet::AddRulesFromSheet(StyleSheetContents* sheet,
                 nullptr /* container_query */, cascade_layer, nullptr);
 }
 
-void RuleSet::AddStyleRule(StyleRule* rule, AddRuleFlags add_rule_flags) {
-  for (wtf_size_t selector_index = 0; selector_index != kNotFound;
-       selector_index = rule->IndexOfNextSelectorAfter(selector_index)) {
-    AddRule(rule, selector_index, add_rule_flags, nullptr /* container_query */,
-            nullptr /* cascade_layer */, nullptr /* scope */);
+void RuleSet::AddStyleRule(StyleRule* style_rule,
+                           const MediaQueryEvaluator& medium,
+                           AddRuleFlags add_rule_flags,
+                           const ContainerQuery* container_query,
+                           CascadeLayer* cascade_layer,
+                           const StyleScope* style_scope) {
+  for (const CSSSelector* selector = style_rule->FirstSelector(); selector;
+       selector = CSSSelectorList::Next(*selector)) {
+    wtf_size_t selector_index = style_rule->SelectorIndex(*selector);
+    AddRule(style_rule, selector_index, add_rule_flags, container_query,
+            cascade_layer, style_scope);
+  }
+
+  // Nested rules are taken to be added immediately after their parent rule.
+  if (style_rule->ChildRules() != nullptr) {
+    AddChildRules(*style_rule->ChildRules(), medium, add_rule_flags,
+                  container_query, cascade_layer, style_scope);
   }
 }
 
@@ -729,12 +737,7 @@ static wtf_size_t GetMinimumRulesetSizeForSubstringMatcher() {
   // have a match). We add a little bit of margin to compensate for the fact
   // that we also need to spend time building the tree, and the extra memory
   // in use.
-  //
-  // TODO(sesse): When the Finch experiment finishes, lock this to 50.
-  return base::FeatureList::IsEnabled(
-             blink::features::kSubstringSetTreeForAttributeBuckets)
-             ? 50
-             : std::numeric_limits<wtf_size_t>::max();
+  return 50;
 }
 
 bool RuleSet::CanIgnoreEntireList(base::span<const RuleData> list,

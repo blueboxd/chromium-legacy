@@ -96,7 +96,7 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 
 // Tests that find in page allows iteration between search results and displays
 // correct number of results.
-// TODO(crbug.com/1188709) : Fix failing test.
+// TODO(crbug.com/1109740) : Fix failing test.
 - (void)DISABLED_testFindInPage {
   // Type "find".
   [self typeFindInPageText:@"find"];
@@ -114,7 +114,7 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 // Tests that Find In Page search term retention is working as expected, e.g.
 // the search term is persisted between FIP runs, but in incognito search term
 // is not retained and not autofilled.
-// TODO(crbug.com/1188709) : Fix failing test.
+// TODO(crbug.com/1109740) : Fix failing test.
 - (void)DISABLED_testFindInPageRetainsSearchTerm {
   // Type "find".
   [self typeFindInPageText:@"find"];
@@ -130,8 +130,9 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
                     error:&error];
     return (error == nil);
   };
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(2.0, condition),
-             @"Timeout while waiting for Find Bar to close");
+  GREYAssert(
+      base::test::ios::WaitUntilConditionOrTimeout(base::Seconds(2), condition),
+      @"Timeout while waiting for Find Bar to close");
 
   // Open incognito page.
   [ChromeEarlGreyUI openNewIncognitoTab];
@@ -155,7 +156,7 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 }
 
 // Tests accessibility of the Find in Page screen.
-// TODO(crbug.com/1188709) : Fix failing test.
+// TODO(crbug.com/1109740) : Fix failing test.
 - (void)DISABLED_testAccessibilityOnFindInPage {
   [self typeFindInPageText:@"find"];
   [self assertResultStringIsResult:1 outOfTotal:2];
@@ -207,7 +208,7 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
     return (error == nil);
   };
   GREYAssert(
-      base::test::ios::WaitUntilConditionOrTimeout(2.0, condition),
+      base::test::ios::WaitUntilConditionOrTimeout(base::Seconds(2), condition),
       @"Timeout waiting for correct Find in Page results string to appear");
 }
 

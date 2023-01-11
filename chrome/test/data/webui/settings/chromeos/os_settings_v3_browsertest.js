@@ -39,7 +39,7 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
 var OSSettingsDevicePageV3Test = class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/device_page_tests.js&host=test';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/device_page_tests.js';
   }
 
   /** @override */
@@ -64,7 +64,7 @@ var OSSettingsPeoplePageAccountManagerV3Test =
     class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/people_page_account_manager_test.js&host=test';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/people_page_account_manager_test.js';
   }
 
   /** @override */
@@ -83,7 +83,7 @@ var OSSettingsPeoplePageAccountManagerWithArcAccountRestrictionsEnabledV3Test =
     class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/people_page_account_manager_test.js&host=test';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/people_page_account_manager_test.js';
   }
 
   /** @override */
@@ -103,7 +103,7 @@ TEST_F(
 var OSSettingsNearbyShareSubPageV3Test = class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/nearby_share_subpage_tests.js&host=test';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/nearby_share_subpage_tests.js';
   }
 
   /** @override */
@@ -119,7 +119,7 @@ TEST_F('OSSettingsNearbyShareSubPageV3Test', 'All', () => mocha.run());
 var OSSettingsPeoplePageOsSyncV3Test = class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_sync_controls_test.js&host=test';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_sync_controls_test.js';
   }
 };
 
@@ -133,7 +133,7 @@ var OSSettingsOsBluetoothDevicesSubpageV3Test =
     class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_bluetooth_devices_subpage_tests.js&host=test';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_bluetooth_devices_subpage_tests.js';
   }
 
   /** @override */
@@ -158,7 +158,7 @@ var OSSettingsOsBluetoothSavedDevicesSubpageV3Test =
     class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_saved_devices_subpage_tests.js&host=test';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_saved_devices_subpage_tests.js';
   }
 
   /** @override */
@@ -185,7 +185,7 @@ var OSSettingsOsBluetoothSavedDevicesListV3Test =
     class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_saved_devices_list_tests.js&host=test';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_saved_devices_list_tests.js';
   }
 
   /** @override */
@@ -208,7 +208,7 @@ var OSSettingsAppManagementAppDetailsV3Test =
     class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/app_management/app_details_item_test.js&host=test';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/app_management/app_details_item_test.js';
   }
 
   /** @override */
@@ -219,6 +219,66 @@ var OSSettingsAppManagementAppDetailsV3Test =
     };
   }
 };
+
+// TODO(b/162365553) Move this test back into the list of tests below once
+// APN revamp is launched.
+var OSSettingsApnSubpageV3Test = class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/apn_subpage_tests.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: super.featureList.enabled.concat(['ash::features::kApnRevamp'])
+    };
+  }
+};
+
+TEST_F('OSSettingsApnSubpageV3Test', 'AllJsTests', () => {
+  mocha.run();
+});
+
+// TODO(b/162365553) Move this test back into the list of tests below once
+// APN revamp is launched.
+var OSSettingsInternetDetailPageV3Test = class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/internet_detail_page_tests.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: super.featureList.enabled.concat(['ash::features::kApnRevamp'])
+    };
+  }
+};
+
+TEST_F('OSSettingsInternetDetailPageV3Test', 'AllJsTests', () => {
+  mocha.run();
+});
+
+// TODO(b/162365553) Move this test back into the list of tests below once
+// APN revamp is launched.
+var OSSettingsInternetPageV3Test = class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/internet_page_tests.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: super.featureList.enabled.concat(['ash::features::kApnRevamp'])
+    };
+  }
+};
+
+TEST_F('OSSettingsInternetPageV3Test', 'AllJsTests', () => {
+  mocha.run();
+});
 
 function crostiniTestGenPreamble() {
   GEN('crostini::FakeCrostiniFeatures fake_crostini_features;');
@@ -232,7 +292,7 @@ TEST_F('OSSettingsAppManagementAppDetailsV3Test', 'AllJsTests', () => {
 var OSSettingsCrostiniPageV3Test = class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/crostini_page_test.js&host=test';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/crostini_page_test.js';
   }
 
   /** @override */
@@ -249,7 +309,7 @@ var OSSettingsCrostiniExtraContainerPageV3Test =
     class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/crostini_extra_containers_subpage_test.js&host=test';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/crostini_extra_containers_subpage_test.js';
   }
 
   /** @override */
@@ -298,6 +358,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ],
  ['AppManagementToggleRow', 'app_management/toggle_row_test.js'],
  ['AppManagementUninstallButton', 'app_management/uninstall_button_test.js'],
+ [
+   'AudioAndCaptionsPage',
+   'audio_and_captions_page_tests.js',
+   {enabled: ['features::kAccessibilityOSSettingsVisibility']},
+ ],
  ['CellularNetworksList', 'cellular_networks_list_test.js'],
  ['CellularRoamingToggleButton', 'cellular_roaming_toggle_button_test.js'],
  ['CellularSetupDialog', 'cellular_setup_dialog_test.js'],
@@ -308,7 +373,17 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['CupsPrinterEntry', 'cups_printer_entry_tests.js'],
  ['CupsPrinterLandingPage', 'cups_printer_landing_page_tests.js'],
  ['CupsPrinterPage', 'cups_printer_page_tests.js'],
+ [
+   'CursorAndTouchpadPage',
+   'cursor_and_touchpad_page_tests.js',
+   {enabled: ['features::kAccessibilityOSSettingsVisibility']},
+ ],
  ['DateTimePage', 'date_time_page_tests.js'],
+ [
+   'DisplayAndMagnificationPage',
+   'display_and_magnification_page_tests.js',
+   {enabled: ['features::kAccessibilityOSSettingsVisibility']},
+ ],
  ['EsimInstallErrorDialog', 'esim_install_error_dialog_test.js'],
  ['EsimRemoveProfileDialog', 'esim_remove_profile_dialog_test.js'],
  ['EsimRenameDialog', 'esim_rename_dialog_test.js'],
@@ -322,10 +397,8 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['InputPage', 'input_page_test.js'],
  ['InternetConfig', 'internet_config_test.js'],
  ['InternetDetailMenu', 'internet_detail_menu_test.js'],
- ['InternetDetailPage', 'internet_detail_page_tests.js'],
  ['InternetKnownNetworksPage', 'internet_known_networks_page_tests.js'],
  ['InternetSubpage', 'internet_subpage_tests.js'],
- ['InternetPage', 'internet_page_tests.js'],
  ['KerberosAccounts', 'kerberos_accounts_test.js'],
  ['KerberosPage', 'kerberos_page_test.js'],
  [
@@ -366,6 +439,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ],
  ['MultideviceWifiSyncItem', 'multidevice_wifi_sync_item_tests.js'],
  ['NearbyShareConfirmPage', 'nearby_share_confirm_page_test.js'],
+ ['NearbyShareHighVisibilityPage', 'nearby_share_high_visibility_page_test.js'],
  ['NearbyShareReceiveDialog', 'nearby_share_receive_dialog_tests.js'],
  ['NetworkAlwaysOnVpn', 'network_always_on_vpn_test.js'],
  ['NetworkProxySection', 'network_proxy_section_test.js'],
@@ -451,7 +525,7 @@ function registerTest(testName, module, featureList) {
     /** @override */
     get browsePreload() {
       return `chrome://os-settings/test_loader.html?module=settings/chromeos/${
-          module}&host=test`;
+          module}`;
     }
   };
 

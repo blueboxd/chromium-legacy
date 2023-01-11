@@ -9,6 +9,7 @@
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/expanded_desks_bar_button.h"
 #include "ash/wm/desks/templates/saved_desk_dialog_controller.h"
+#include "ash/wm/desks/templates/saved_desk_icon_container.h"
 #include "ash/wm/desks/templates/saved_desk_item_view.h"
 #include "ash/wm/desks/templates/saved_desk_library_view.h"
 #include "ash/wm/desks/templates/saved_desk_presenter.h"
@@ -199,7 +200,7 @@ views::Button* GetExpandedStateDesksTemplatesButton() {
   const auto* desks_bar_view = overview_grid->desks_bar_view();
   return desks_bar_view
              ? desks_bar_view->expanded_state_desks_templates_button()
-                   ->inner_button()
+                   ->GetInnerButton()
              : nullptr;
 }
 

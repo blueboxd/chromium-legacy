@@ -4,7 +4,6 @@
 
 #include "content/web_test/renderer/web_frame_test_proxy.h"
 
-#include "base/strings/stringprintf.h"
 #include "components/plugins/renderer/plugin_placeholder.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/web_test/common/web_test_string_util.h"
@@ -351,11 +350,6 @@ void WebFrameTestProxy::DidAddMessageToConsole(
       level = "MESSAGE";
   }
   std::string console_message(std::string("CONSOLE ") + level + ": ");
-  // Console messages shouldn't be included in the expected output for
-  // web-platform-tests because they may create non-determinism not
-  // intended by the test author. They are still included in the stderr
-  // output for debug purposes.
-  bool dump_to_stderr = test_runner()->IsWebPlatformTestsMode();
   if (!message.text.IsEmpty()) {
     std::string new_message;
     new_message = message.text.Utf8();
@@ -368,11 +362,13 @@ void WebFrameTestProxy::DidAddMessageToConsole(
   }
   console_message += "\n";
 
-  if (dump_to_stderr) {
-    test_runner()->PrintMessageToStderr(console_message);
-  } else {
+  // Console messages shouldn't be included in the expected output for
+  // web-platform-tests because they may create non-determinism not
+  // intended by the test author. They are still included in the stderr
+  // output for debugging purposes.
+  test_runner()->PrintMessageToStderr(console_message);
+  if (!test_runner()->IsWebPlatformTestsMode())
     test_runner()->PrintMessage(console_message);
-  }
 }
 
 void WebFrameTestProxy::DidStartLoading() {
@@ -744,8 +740,6 @@ void WebFrameTestProxy::DidClearWindowObject() {
   // Avoid installing bindings on the about:blank in between tests. This is
   // especially problematic for web platform tests that would inject javascript
   // into the page when installing bindings.
-  v8::MicrotasksScope microtask_scope(blink::MainThreadIsolate(),
-                                      v8::MicrotasksScope::kDoNotRunMicrotasks);
   if (test_runner()->TestIsRunning()) {
     blink::WebLocalFrame* frame = GetWebFrame();
     // These calls will install the various JS bindings for web tests into the

@@ -36,14 +36,14 @@
     margin-inline-start: 32px;
   }
 
-  paper-tooltip::part(tooltip) {
-    min-width: 0;
-  }
-
   /* TODO(crbug.com/1345920): Use a .list-item instead of .cr-row. */
   .notification-permissions-list .cr-row {
     border-top-width: 0;
     padding-inline-end: 0;
+  }
+
+  #tooltip {
+    --paper-tooltip-min-width: max-content;
   }
 
   iron-icon[icon='settings:notifications-none'] {
@@ -151,7 +151,8 @@
       </cr-button>
     </div>
   </iron-collapse>
-  <paper-tooltip id="tooltip" fit-to-visible-bounds manual-mode position="top">
+  <paper-tooltip id="tooltip" fit-to-visible-bounds manual-mode position="top"
+      offset="3">
     $i18n{safetyCheckNotificationPermissionReviewDontAllowLabel}
   </paper-tooltip>
   <cr-action-menu role-description="$i18n{menu}">

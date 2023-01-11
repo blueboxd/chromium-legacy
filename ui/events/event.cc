@@ -32,7 +32,7 @@
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/transform_util.h"
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 #include "ui/base/ui_base_features.h"                               // nogncheck
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"          // nogncheck
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"  // nogncheck
@@ -145,13 +145,13 @@ std::string ScrollEventPhaseToString(ScrollEventPhase phase) {
   }
 }
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 uint32_t ScanCodeFromNative(const PlatformEvent& native_event) {
   const KeyEvent* event = static_cast<const KeyEvent*>(native_event);
   DCHECK(event->IsKeyEvent());
   return event->scan_code();
 }
-#endif  // defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_OZONE)
 
 bool IsNearZero(const float num) {
   // Epsilon of 1e-10 at 0.
@@ -309,7 +309,7 @@ Event::Event(const PlatformEvent& native_event, EventType type, int flags)
     latency()->set_source_event_type(EventTypeToLatencySourceEventType(type));
   ComputeEventLatencyOS(native_event);
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   source_device_id_ = native_event->source_device_id();
   if (auto* properties = native_event->properties())
     properties_ = std::make_unique<Properties>(*properties);
@@ -674,12 +674,17 @@ std::unique_ptr<Event> MouseWheelEvent::Clone() const {
   return std::make_unique<MouseWheelEvent>(*this);
 }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_FUCHSIA)
-// This value matches Windows and Fuchsia WHEEL_DELTA.
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_LINUX)
+// This value matches Windows, Fuchsia WHEEL_DELTA, and (roughly) Firefox on
+// Linux.
 // static
 const int MouseWheelEvent::kWheelDelta = 120;
 #else
-// This value matches GTK+ wheel scroll amount.
+// This is a legacy value that matches GTK+ wheel scroll amount.  Although being
+// inherited from Linux, it is no longer used on Linux itself, but is still used
+// on some other platforms.
+// See https://crbug.com/1270089 for the detailed reasoning.
+// static
 const int MouseWheelEvent::kWheelDelta = 53;
 #endif
 
@@ -807,7 +812,7 @@ std::unique_ptr<Event> TouchEvent::Clone() const {
 
 // static
 KeyEvent* KeyEvent::last_key_event_ = nullptr;
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 KeyEvent* KeyEvent::last_ibus_key_event_ = nullptr;
 #endif
 
@@ -817,12 +822,12 @@ KeyEvent::KeyEvent(const PlatformEvent& native_event)
 KeyEvent::KeyEvent(const PlatformEvent& native_event, int event_flags)
     : Event(native_event, EventTypeFromNative(native_event), event_flags),
       key_code_(KeyboardCodeFromNative(native_event)),
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
       scan_code_(ScanCodeFromNative(native_event)),
-#endif  // defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_OZONE)
       code_(CodeFromNative(native_event)),
       is_char_(IsCharFromNative(native_event)) {
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   DCHECK(native_event->IsKeyEvent());
   key_ = native_event->AsKeyEvent()->key_;
 #endif
@@ -870,9 +875,9 @@ KeyEvent::KeyEvent(char16_t character,
 KeyEvent::KeyEvent(const KeyEvent& rhs)
     : Event(rhs),
       key_code_(rhs.key_code_),
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
       scan_code_(rhs.scan_code_),
-#endif  // defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_OZONE)
       code_(rhs.code_),
       is_char_(rhs.is_char_),
       key_(rhs.key_) {
@@ -882,9 +887,9 @@ KeyEvent& KeyEvent::operator=(const KeyEvent& rhs) {
   if (this != &rhs) {
     Event::operator=(rhs);
     key_code_ = rhs.key_code_;
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
     scan_code_ = rhs.scan_code_;
-#endif  // defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_OZONE)
     code_ = rhs.code_;
     key_ = rhs.key_;
     is_char_ = rhs.is_char_;
@@ -951,7 +956,7 @@ void KeyEvent::ApplyLayout() const {
     return;
 
   KeyboardCode dummy_key_code;
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   if (KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()->Lookup(
           code, flags(), &key_, &dummy_key_code)) {
     return;
@@ -1031,7 +1036,7 @@ bool KeyEvent::IsRepeated(KeyEvent** last_key_event) {
 }
 
 KeyEvent** KeyEvent::GetLastKeyEvent() {
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   // Use a different static variable for key events that have non standard
   // state masks as it may be reposted by an IME. IBUS-GTK and fcitx-GTK uses
   // this field to detect the re-posted event for example. crbug.com/385873.

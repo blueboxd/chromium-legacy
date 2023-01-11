@@ -17,6 +17,7 @@ import android.view.Surface;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
@@ -88,11 +89,11 @@ public class CompositorView
     class ScreenStateReceiverWorkaround extends BroadcastReceiver {
         // True indicates we should destroy and recreate the surface manager.
         private boolean mNeedsReset;
-        private Surface mLastDestroyedSurface;
 
         ScreenStateReceiverWorkaround() {
             IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
-            getContext().getApplicationContext().registerReceiver(this, filter);
+            ContextUtils.registerProtectedBroadcastReceiver(
+                    getContext().getApplicationContext(), this, filter);
         }
 
         void shutDown() {

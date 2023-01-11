@@ -12,6 +12,8 @@
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "ash/webui/personalization_app/proto/backdrop_wallpaper.pb.h"
 #include "base/check_op.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -33,6 +35,11 @@ void FakePersonalizationAppWallpaperProvider::BindInterface(
         receiver) {
   wallpaper_receiver_.reset();
   wallpaper_receiver_.Bind(std::move(receiver));
+}
+
+void FakePersonalizationAppWallpaperProvider::GetWallpaperAsJpegBytes(
+    content::WebUIDataSource::GotDataCallback callback) {
+  std::move(callback).Run(base::MakeRefCounted<base::RefCountedBytes>());
 }
 
 bool FakePersonalizationAppWallpaperProvider::IsEligibleForGooglePhotos() {
@@ -132,7 +139,8 @@ void FakePersonalizationAppWallpaperProvider::SelectGooglePhotosPhoto(
 void FakePersonalizationAppWallpaperProvider::SelectGooglePhotosAlbum(
     const std::string& id,
     SelectGooglePhotosAlbumCallback callback) {
-  std::move(callback).Run(/*success=*/true);
+  std::move(callback).Run(mojom::SetDailyRefreshResponse::New(
+      /*success=*/false, /*force_refresh=*/false));
 }
 
 void FakePersonalizationAppWallpaperProvider::
@@ -155,7 +163,8 @@ void FakePersonalizationAppWallpaperProvider::SetCurrentWallpaperLayout(
 }
 
 void FakePersonalizationAppWallpaperProvider::SetDailyRefreshCollectionId(
-    const std::string& collection_id) {
+    const std::string& collection_id,
+    SetDailyRefreshCollectionIdCallback callback) {
   return;
 }
 

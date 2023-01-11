@@ -142,12 +142,7 @@ constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes = base::Minutes(1);
   [self providePasswordsToConsumer];
 
   _currentState = _passwordCheckManager->GetPasswordCheckState();
-  [self.consumer
-               setPasswordCheckUIState:
-                   [self computePasswordCheckUIStateWith:_currentState]
-      unmutedCompromisedPasswordsCount:_passwordCheckManager
-                                           ->GetUnmutedCompromisedCredentials()
-                                           .size()];
+  [self updateConsumerPasswordCheckState:_currentState];
 }
 
 - (void)deleteCredential:
@@ -271,13 +266,7 @@ constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes = base::Minutes(1);
   if (state == _currentState)
     return;
 
-  DCHECK(self.consumer);
-  [self.consumer
-               setPasswordCheckUIState:
-                   [self computePasswordCheckUIStateWith:state]
-      unmutedCompromisedPasswordsCount:_passwordCheckManager
-                                           ->GetUnmutedCompromisedCredentials()
-                                           .size()];
+  [self updateConsumerPasswordCheckState:state];
 }
 
 - (void)compromisedCredentialsDidChange {
@@ -286,14 +275,7 @@ constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes = base::Minutes(1);
       PasswordCheckState::kRunning)
     return;
 
-  DCHECK(self.consumer);
-
-  [self.consumer
-               setPasswordCheckUIState:
-                   [self computePasswordCheckUIStateWith:_currentState]
-      unmutedCompromisedPasswordsCount:_passwordCheckManager
-                                           ->GetUnmutedCompromisedCredentials()
-                                           .size()];
+  [self updateConsumerPasswordCheckState:_currentState];
 }
 
 #pragma mark - PasswordAutoFillStatusObserver
@@ -309,18 +291,38 @@ constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes = base::Minutes(1);
 
 // Provides passwords and blocked forms to the '_consumer'.
 - (void)providePasswordsToConsumer {
-  std::vector<password_manager::CredentialUIEntry> passwords, blockedSites;
-  for (const auto& credential :
-       _savedPasswordsPresenter->GetSavedCredentials()) {
-    if (credential.blocked_by_user) {
-      blockedSites.push_back(std::move(credential));
-    } else {
-      passwords.push_back(std::move(credential));
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordsGrouping)) {
+    [_consumer
+        setAffiliatedGroups:_savedPasswordsPresenter->GetAffiliatedGroups()
+               blockedSites:_savedPasswordsPresenter->GetBlockedSites()];
+  } else {
+    std::vector<password_manager::CredentialUIEntry> passwords, blockedSites;
+    for (const auto& credential :
+         _savedPasswordsPresenter->GetSavedCredentials()) {
+      if (credential.blocked_by_user) {
+        blockedSites.push_back(std::move(credential));
+      } else {
+        passwords.push_back(std::move(credential));
+      }
     }
+    [_consumer setPasswords:std::move(passwords)
+               blockedSites:std::move(blockedSites)];
   }
+}
 
-  [_consumer setPasswords:std::move(passwords)
-             blockedSites:std::move(blockedSites)];
+// Updates the `_consumer` Password Check UI State and Unmuted Compromised
+// Passwords.
+- (void)updateConsumerPasswordCheckState:
+    (PasswordCheckState)passwordCheckState {
+  DCHECK(self.consumer);
+
+  PasswordCheckUIState passwordCheckUIState =
+      [self computePasswordCheckUIStateWith:passwordCheckState];
+  NSInteger unmutedCompromisedPasswordsCount =
+      _passwordCheckManager->GetUnmutedCompromisedCredentials().size();
+  [self.consumer setPasswordCheckUIState:passwordCheckUIState
+        unmutedCompromisedPasswordsCount:unmutedCompromisedPasswordsCount];
 }
 
 // Returns PasswordCheckUIState based on PasswordCheckState.

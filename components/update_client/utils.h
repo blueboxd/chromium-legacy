@@ -10,13 +10,12 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/memory/ref_counted.h"
+#include "base/files/file_path.h"
 #include "components/update_client/update_client.h"
 
 class GURL;
 
 namespace base {
-class FilePath;
 class Value;
 }
 
@@ -24,6 +23,10 @@ namespace update_client {
 
 class Component;
 struct CrxComponent;
+
+extern const char kArchAmd64[];
+extern const char kArchIntel[];
+extern const char kArchArm64[];
 
 // Defines a name-value pair that represents an installer attribute.
 // Installer attributes are component-specific metadata, which may be serialized
@@ -38,8 +41,15 @@ bool IsHttpServerError(int status_code);
 
 // Deletes the file and its directory, if the directory is empty. If the
 // parent directory is not empty, the function ignores deleting the directory.
-// Returns true if the file and the empty directory are deleted.
+// Returns true if the file and the empty directory are deleted,
+// or if the file was deleted and the directory was not empty.
 bool DeleteFileAndEmptyParentDirectory(const base::FilePath& filepath);
+
+// Deletes the given directory, if the directory is empty. If the
+// directory is not empty, the function ignores deleting the directory.
+// Returns true if the directory is not empty or if the directory was empty
+// and successfully deleted.
+bool DeleteEmptyDirectory(const base::FilePath& filepath);
 
 // Returns the component id of the |component|. The component id is either the
 // app_id, if the member is set, or a string value derived from the public
@@ -86,6 +96,14 @@ CrxInstaller::Result ToInstallerResult(const T& error, int extended_error = 0) {
           static_cast<int>(error),
       extended_error);
 }
+
+// Returns a string representation of the processor architecture. Uses
+// `base::win::OSInfo::IsWowX86OnARM64` and
+// `base::win::OSInfo::IsWowAMD64OnARM64` if available on Windows (more
+// accurate).
+// If not, or not Windows, falls back to
+// `base::SysInfo().OperatingSystemArchitecture`.
+std::string GetArchitecture();
 
 }  // namespace update_client
 

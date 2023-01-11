@@ -26,7 +26,6 @@ import com.google.android.material.tabs.TabLayout;
 
 import org.chromium.chrome.browser.feed.FeedUma;
 import org.chromium.chrome.browser.feed.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.components.browser_ui.widget.highlight.PulseDrawable;
@@ -360,6 +359,12 @@ public class SectionHeaderView extends LinearLayout {
     }
 
     /**
+     * This method sets the sticky header options panel.
+     * @param optionsView the sticky header options panel view
+     */
+    void setStickyHeaderOptionsPanel(View optionsView) {}
+
+    /**
      * Sets whether the texts on the tab layout or title view is enabled.
      */
     void setTextsEnabled(boolean enabled) {
@@ -447,13 +452,6 @@ public class SectionHeaderView extends LinearLayout {
                         })
                         .setHighlightParams(params)
                         .build());
-    }
-
-    public boolean shouldUseWebFeedAwarenessIPH() {
-        return ChromeFeatureList
-                .getFieldTrialParamByFeature(
-                        ChromeFeatureList.WEB_FEED_AWARENESS, "awareness_style")
-                .equals("IPH");
     }
 
     /** Shows an IPH on the feed section header title. */
@@ -563,4 +561,10 @@ public class SectionHeaderView extends LinearLayout {
 
         tab.setContentDescription(contentDescription);
     }
+
+    /**
+     * This method sets visibility of the header if this header is sticky to the top of the screen.
+     * Does nothing otherwise.
+     */
+    void setStickyHeaderVisible(boolean isVisible) {}
 }

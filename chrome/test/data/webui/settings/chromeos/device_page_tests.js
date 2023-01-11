@@ -13,7 +13,7 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {isVisible} from 'chrome://webui-test/test_util.js';
 
-import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 import {crosAudioConfigActiveFakeSpeaker, crosAudioConfigDefaultFakeMicJack, crosAudioConfigDefaultFakeSpeaker, crosAudioConfigInactiveFakeMicJack, defaultFakeAudioSystemProperties, FakeCrosAudioConfig} from './fake_cros_audio_config.js';
 import {FakeSystemDisplay} from './fake_system_display.js';
@@ -398,11 +398,13 @@ suite('SettingsDevicePage', function() {
    * @param {boolean} lidClosedControlled
    * @param {boolean} hasLid
    * @param {boolean} adaptiveCharging
+   * @param {boolean} adaptiveChargingManaged
    */
   function sendPowerManagementSettings(
       possibleAcIdleBehaviors, possibleBatteryIdleBehaviors, currAcIdleBehavior,
       currBatteryIdleBehavior, acIdleManaged, batteryIdleManaged,
-      lidClosedBehavior, lidClosedControlled, hasLid, adaptiveCharging) {
+      lidClosedBehavior, lidClosedControlled, hasLid, adaptiveCharging,
+      adaptiveChargingManaged) {
     webUIListenerCallback('power-management-settings-changed', {
       possibleAcIdleBehaviors: possibleAcIdleBehaviors,
       possibleBatteryIdleBehaviors: possibleBatteryIdleBehaviors,
@@ -414,6 +416,7 @@ suite('SettingsDevicePage', function() {
       lidClosedControlled: lidClosedControlled,
       hasLid: hasLid,
       adaptiveCharging: adaptiveCharging,
+      adaptiveChargingManaged: adaptiveChargingManaged,
     });
     flush();
   }
@@ -1276,9 +1279,22 @@ suite('SettingsDevicePage', function() {
             displayDiv.click();
             assertEquals(
                 displayPage.displays[1].id, displayPage.selectedDisplay.id);
+            flush();
 
-            displayPage.updatePrimaryDisplay_({target: {value: '0'}});
-            displayPage.onOrientationChange_({target: {value: '90'}});
+            const primaryDisplaySelect =
+                displayPage.shadowRoot.getElementById('primaryDisplaySelect');
+            assertTrue(!!primaryDisplaySelect);
+            primaryDisplaySelect.value = '0';
+            primaryDisplaySelect.dispatchEvent(new CustomEvent('change'));
+            flush();
+
+            const orientationSelect =
+                displayPage.shadowRoot.getElementById('orientationSelect');
+            assertTrue(!!orientationSelect);
+            orientationSelect.value = '90';
+            orientationSelect.dispatchEvent(new CustomEvent('change'));
+            flush();
+
             fakeSystemDisplay.onDisplayChanged.callListeners();
 
             return Promise.all([
@@ -1301,7 +1317,12 @@ suite('SettingsDevicePage', function() {
             assertEquals(90, displayPage.displays[1].rotation);
 
             // Mirror the displays.
-            displayPage.onMirroredTap_({target: {blur: function() {}}});
+            const displayMirrorCheckbox =
+                displayPage.shadowRoot.getElementById('displayMirrorCheckbox');
+            assertTrue(!!displayMirrorCheckbox);
+            displayMirrorCheckbox.click();
+            flush();
+
             fakeSystemDisplay.onDisplayChanged.callListeners();
 
             return Promise.all([
@@ -1557,7 +1578,8 @@ suite('SettingsDevicePage', function() {
                   IdleBehavior.DISPLAY_OFF_SLEEP, false /* acIdleManaged */,
                   false /* batteryIdleManaged */, LidClosedBehavior.SUSPEND,
                   false /* lidClosedControlled */, true /* hasLid */,
-                  false /* adaptiveCharging */);
+                  false /* adaptiveCharging */,
+                  false /* adaptiveChargingManaged */);
             });
       });
 
@@ -1731,7 +1753,8 @@ suite('SettingsDevicePage', function() {
               IdleBehavior.DISPLAY_OFF, IdleBehavior.DISPLAY_OFF,
               false /* acIdleManaged */, false /* batteryIdleManaged */,
               lidBehavior, false /* lidClosedControlled */, true /* hasLid */,
-              false /* adaptiveCharging */);
+              false /* adaptiveCharging */,
+              false /* adaptiveChargingManaged */);
         };
 
         sendLid(LidClosedBehavior.SUSPEND);
@@ -1773,7 +1796,8 @@ suite('SettingsDevicePage', function() {
                      true /* acIdleManaged */, true /* batteryIdleManaged */,
                      LidClosedBehavior.DO_NOTHING,
                      false /* lidClosedControlled */, true /* hasLid */,
-                     false /* adaptiveCharging */);
+                     false /* adaptiveCharging */,
+                     false /* adaptiveChargingManaged */);
                  powerPage.async(resolve);
                })
             .then(function() {
@@ -1830,7 +1854,8 @@ suite('SettingsDevicePage', function() {
                   IdleBehavior.SHUT_DOWN, IdleBehavior.SHUT_DOWN,
                   true /* acIdleManaged */, true /* batteryIdleManaged */,
                   LidClosedBehavior.DO_NOTHING, false /* lidClosedControlled */,
-                  true /* hasLid */, false /* adaptiveCharging */);
+                  true /* hasLid */, false /* adaptiveCharging */,
+                  false /* adaptiveChargingManaged */);
               return new Promise(function(resolve) {
                 powerPage.async(resolve);
               });
@@ -1871,7 +1896,8 @@ suite('SettingsDevicePage', function() {
                      false /* acIdleManaged */, false /* batteryIdleManaged */,
                      LidClosedBehavior.DO_NOTHING,
                      false /* lidClosedControlled */, true /* hasLid */,
-                     false /* adaptiveCharging */);
+                     false /* adaptiveCharging */,
+                     false /* adaptiveChargingManaged */);
                  powerPage.async(resolve);
                })
             .then(function() {
@@ -1927,7 +1953,8 @@ suite('SettingsDevicePage', function() {
                   IdleBehavior.DISPLAY_OFF, IdleBehavior.DISPLAY_ON,
                   false /* acIdleManaged */, false /* batteryIdleManaged */,
                   LidClosedBehavior.SUSPEND, false /* lidClosedControlled */,
-                  true /* hasLid */, false /* adaptiveCharging */);
+                  true /* hasLid */, false /* adaptiveCharging */,
+                  false /* adaptiveChargingManaged */);
               return new Promise(function(resolve) {
                 powerPage.async(resolve);
               });
@@ -1979,7 +2006,8 @@ suite('SettingsDevicePage', function() {
                      true /* acIdleManaged */, true /* batteryIdleManaged */,
                      LidClosedBehavior.SHUT_DOWN,
                      true /* lidClosedControlled */, true /* hasLid */,
-                     false /* adaptiveCharging */);
+                     false /* adaptiveCharging */,
+                     false /* adaptiveChargingManaged */);
                  powerPage.async(resolve);
                })
             .then(function() {
@@ -2014,7 +2042,8 @@ suite('SettingsDevicePage', function() {
                   false /* acIdleManaged */, false /* batteryIdleManaged */,
                   LidClosedBehavior.STOP_SESSION,
                   true /* lidClosedControlled */, true /* hasLid */,
-                  false /* adaptiveCharging */);
+                  false /* adaptiveCharging */,
+                  false /* adaptiveChargingManaged */);
               return new Promise(function(resolve) {
                 powerPage.async(resolve);
               });
@@ -2064,7 +2093,8 @@ suite('SettingsDevicePage', function() {
                      IdleBehavior.DISPLAY_OFF_SLEEP, false /* acIdleManaged */,
                      false /* batteryIdleManaged */, LidClosedBehavior.SUSPEND,
                      false /* lidClosedControlled */, false /* hasLid */,
-                     false /* adaptiveCharging */);
+                     false /* adaptiveCharging */,
+                     false /* adaptiveChargingManaged */);
                  powerPage.async(resolve);
                })
             .then(function() {
@@ -2103,6 +2133,36 @@ suite('SettingsDevicePage', function() {
             routes.POWER, '424',
             lidClosedToggle.shadowRoot.querySelector('cr-toggle'),
             'Sleep when closed toggle');
+      });
+
+      test('Adaptive charging controlled by policy', async () => {
+        sendPowerManagementSettings(
+            [
+              IdleBehavior.DISPLAY_OFF_SLEEP,
+              IdleBehavior.DISPLAY_OFF,
+              IdleBehavior.DISPLAY_ON,
+            ],
+            [
+              IdleBehavior.DISPLAY_OFF_SLEEP,
+              IdleBehavior.DISPLAY_OFF,
+              IdleBehavior.DISPLAY_ON,
+            ],
+            IdleBehavior.DISPLAY_OFF_SLEEP, IdleBehavior.DISPLAY_OFF_SLEEP,
+            false /* acIdleManaged */, false /* batteryIdleManaged */,
+            LidClosedBehavior.SUSPEND, false /* lidClosedControlled */,
+            true /* hasLid */, true /* adaptiveCharging */,
+            true /* adaptiveCharingManaged */);
+
+        assertTrue(adaptiveChargingToggle.shadowRoot.querySelector('cr-toggle')
+                       .checked);
+
+        // Must have policy icon.
+        assertTrue(isVisible(adaptiveChargingToggle.shadowRoot.querySelector(
+            'cr-policy-pref-indicator')));
+
+        // Must have toggle locked.
+        assertTrue(adaptiveChargingToggle.shadowRoot.querySelector('cr-toggle')
+                       .disabled);
       });
 
       test('Deep link to adaptive charging', async () => {

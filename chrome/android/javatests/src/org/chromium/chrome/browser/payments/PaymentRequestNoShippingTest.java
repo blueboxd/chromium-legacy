@@ -18,8 +18,9 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.payments.Event;
@@ -41,13 +42,9 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @Override
     public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
-        String billingAddressId = helper.setProfile(
-                new AutofillProfile("", "https://example.com", true, "" /* honorific prefix */,
-                        "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
-                        "US", "650-253-0000", "jon.doe@gmail.com", "en-US"));
-        helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
-                "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
-                billingAddressId, "" /* serverId */));
+        helper.setProfile(new AutofillProfile("", "https://example.com", true,
+                "" /* honorific prefix */, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles",
+                "", "90291", "", "US", "650-253-0000", "jon.doe@gmail.com", "en-US"));
     }
 
     /** Click [X] to cancel payment. */
@@ -131,74 +128,28 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
                 new String[] {"Jon Doe", "4111111111111111", "12", "2050", "basic-card", "123"});
     }
 
-    /** Quickly pressing on [X] and then "add card" should not crash. */
-    @Test
-    @MediumTest
-    @DisabledTest(message = "crbug.com/1182234")
-    @Feature({"Payments"})
-    public void testQuickCloseAndAddCardShouldNotCrash() throws TimeoutException {
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
-        mPaymentRequestTestRule.clickInPaymentMethodAndWait(
-                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
-
-        // Quickly press on [X] and then "add card."
-        int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mPaymentRequestTestRule.getPaymentRequestUI()
-                    .getDialogForTest()
-                    .findViewById(R.id.close_button)
-                    .performClick();
-            mPaymentRequestTestRule.getPaymentRequestUI()
-                    .getPaymentMethodSectionForTest()
-                    .findViewById(R.id.payments_add_option_button)
-                    .performClick();
-        });
-        mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
-
-        mPaymentRequestTestRule.expectResultContains(
-                new String[] {"User closed the Payment Request UI."});
-    }
-
-    /** Quickly pressing on "cancel" and then "add card" should not crash. */
-    @Test
-    @MediumTest
-    @DisabledTest(message = "crbug.com/1182234")
-    @Feature({"Payments"})
-    public void testQuickCancelAndAddCardShouldNotCrash() throws TimeoutException {
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
-        mPaymentRequestTestRule.clickInPaymentMethodAndWait(
-                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
-
-        // Quickly press on "cancel" and then "add card."
-        int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mPaymentRequestTestRule.getPaymentRequestUI()
-                    .getDialogForTest()
-                    .findViewById(R.id.button_secondary)
-                    .performClick();
-            mPaymentRequestTestRule.getPaymentRequestUI()
-                    .getPaymentMethodSectionForTest()
-                    .findViewById(R.id.payments_add_option_button)
-                    .performClick();
-        });
-        mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
-
-        mPaymentRequestTestRule.expectResultContains(
-                new String[] {"User closed the Payment Request UI."});
-    }
-
     /**
      * Quickly dismissing the dialog (via Android's back button, for example) and then pressing on
      * "pay" should not crash.
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testQuickDismissAndPayShouldNotCrash() throws TimeoutException {
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        // Install two payment apps, so that the PaymentRequest UI is shown rather than skipped.
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                "https://alicepay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
-        // Quickly dismiss and then press on "pay."
+        mPaymentRequestTestRule.openPage();
+
+        mPaymentRequestTestRule.runJavaScriptAndWaitForUIEvent(
+                "triggerPaymentRequest([{supportedMethods:'https://bobpay.com'}, "
+                        + "{supportedMethods:'https://alicepay.com'}]);",
+                mPaymentRequestTestRule.getReadyToPay());
+
+        // Quickly dismiss and then press on "Continue"
         int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mPaymentRequestTestRule.getPaymentRequestUI().getDialogForTest().onBackPressed();
@@ -209,8 +160,16 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
         });
         mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
 
-        mPaymentRequestTestRule.expectResultContains(
-                new String[] {"User closed the Payment Request UI."});
+        // Currently, the above calls for the back button and pay button result in the
+        // PaymentRequest being in a bad state. The back button call is handled asynchronously by
+        // Android, and so the pay click happens first. The show() promise resolves, kicking off the
+        // must-call-complete timer, however the back button cancellation then tears down the
+        // PaymentRequest state - including setting the must-call-complete timer to failed.
+        //
+        // TODO(crbug.com/1375286): Avoid ending up in this state.
+        Assert.assertEquals("\"Failed to execute 'complete' on 'PaymentResponse': "
+                        + "Timed out after 60 seconds, complete() called too late\"",
+                mPaymentRequestTestRule.runJavaScriptAndWaitForPromise("getResult()"));
     }
 
     /**
@@ -219,10 +178,20 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testQuickDismissAndCloseShouldNotCrash() throws TimeoutException {
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        // Install two payment apps, so that the PaymentRequest UI is shown rather than skipped.
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                "https://alicepay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+
+        mPaymentRequestTestRule.openPage();
+
+        mPaymentRequestTestRule.runJavaScriptAndWaitForUIEvent(
+                "triggerPaymentRequest([{supportedMethods:'https://bobpay.com'}, "
+                        + "{supportedMethods:'https://alicepay.com'}]);",
+                mPaymentRequestTestRule.getReadyToPay());
 
         // Quickly dismiss and then press on [X].
         int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
@@ -235,8 +204,8 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
         });
         mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
 
-        mPaymentRequestTestRule.expectResultContains(
-                new String[] {"User closed the Payment Request UI."});
+        Assert.assertEquals("\"User closed the Payment Request UI.\"",
+                mPaymentRequestTestRule.runJavaScriptAndWaitForPromise("getResult()"));
     }
 
     /**
@@ -245,10 +214,20 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testQuickCloseAndDismissShouldNotCrash() throws TimeoutException {
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        // Install two payment apps, so that the PaymentRequest UI is shown rather than skipped.
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                "https://alicepay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+
+        mPaymentRequestTestRule.openPage();
+
+        mPaymentRequestTestRule.runJavaScriptAndWaitForUIEvent(
+                "triggerPaymentRequest([{supportedMethods:'https://bobpay.com'}, "
+                        + "{supportedMethods:'https://alicepay.com'}]);",
+                mPaymentRequestTestRule.getReadyToPay());
 
         // Quickly press on [X] and then dismiss.
         int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
@@ -261,8 +240,8 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
         });
         mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
 
-        mPaymentRequestTestRule.expectResultContains(
-                new String[] {"User closed the Payment Request UI."});
+        Assert.assertEquals("\"User closed the Payment Request UI.\"",
+                mPaymentRequestTestRule.runJavaScriptAndWaitForPromise("getResult()"));
     }
 
     /**

@@ -57,9 +57,13 @@ void StaticBitmapImageToVideoFrameCopier::Convert(
     return;
   }
 
-  // We might need to convert the frame into I420 pixel format, and 1x1 frame
-  // can't be read back into I420.
-  const bool too_small_for_i420 = image->width() == 1 || image->height() == 1;
+  if (image->width() == 1 || image->height() == 1) {
+    // We might need to convert the frame into I420 pixel format, and 1x1 frame
+    // can't be read back into I420. Capturing such a slim target is not a
+    // very practical thing to do anyway, so we're okay to fail here.
+    return;
+  }
+
   if (!image->IsTextureBacked()) {
     // Initially try accessing pixels directly if they are in memory.
     sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSwSkImage();
@@ -86,8 +90,7 @@ void StaticBitmapImageToVideoFrameCopier::Convert(
   }
 
   // Try async reading if image is texture backed.
-  if (!too_small_for_i420 &&
-      (image->CurrentFrameKnownToBeOpaque() || can_discard_alpha_)) {
+  if (image->CurrentFrameKnownToBeOpaque() || can_discard_alpha_) {
     // Split the callback so it can be used for both the GMB frame pool copy and
     // ReadYUVPixelsAsync fallback paths.
     auto split_callback = base::SplitOnceCallback(std::move(callback));
@@ -189,13 +192,14 @@ void StaticBitmapImageToVideoFrameCopier::ReadARGBPixelsAsync(
                                      ? kTopLeft_GrSurfaceOrigin
                                      : kBottomLeft_GrSurfaceOrigin;
 
+  gfx::Point src_point;
   gpu::MailboxHolder mailbox_holder = image->GetMailboxHolder();
   DCHECK(context_provider->RasterInterface());
   context_provider->RasterInterface()->WaitSyncTokenCHROMIUM(
       mailbox_holder.sync_token.GetConstData());
   context_provider->RasterInterface()->ReadbackARGBPixelsAsync(
-      mailbox_holder.mailbox, mailbox_holder.texture_target, image_origin, info,
-      temp_argb_frame->stride(media::VideoFrame::kARGBPlane),
+      mailbox_holder.mailbox, mailbox_holder.texture_target, image_origin,
+      src_point, info, temp_argb_frame->stride(media::VideoFrame::kARGBPlane),
       temp_argb_frame->GetWritableVisibleData(media::VideoFrame::kARGBPlane),
       WTF::BindOnce(&StaticBitmapImageToVideoFrameCopier::OnARGBPixelsReadAsync,
                     weak_ptr_factory_.GetWeakPtr(), image, temp_argb_frame,

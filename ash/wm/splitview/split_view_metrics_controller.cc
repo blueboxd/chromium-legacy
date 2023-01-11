@@ -93,12 +93,11 @@ bool IsRecordingTabletMultiDisplaySplitView() {
 // Number of root windows in split view.
 int NumRootWindowsInSplitViewRecording() {
   auto root_windows = Shell::GetAllRootWindows();
-  return std::count_if(root_windows.begin(), root_windows.end(),
-                       [](aura::Window* root_window) {
-                         return SplitViewController::Get(root_window)
-                             ->split_view_metrics_controller()
-                             ->in_split_view_recording();
-                       });
+  return base::ranges::count_if(root_windows, [](aura::Window* root_window) {
+    return SplitViewController::Get(root_window)
+        ->split_view_metrics_controller()
+        ->in_split_view_recording();
+  });
 }
 
 // Checks if the device is in tablet mode.
@@ -379,11 +378,6 @@ void SplitViewMetricsController::OnWindowActivated(ActivationReason reason,
   MaybeStartOrEndRecordBothSnappedClamshellSplitView();
 }
 
-void SplitViewMetricsController::OnDeskAdded(const Desk* desk) {}
-void SplitViewMetricsController::OnDeskRemoved(const Desk* desk) {}
-void SplitViewMetricsController::OnDeskReordered(int old_index, int new_index) {
-}
-
 void SplitViewMetricsController::OnDeskActivationChanged(
     const Desk* activated,
     const Desk* deactivated) {
@@ -396,12 +390,6 @@ void SplitViewMetricsController::OnDeskActivationChanged(
   // on both sides.
   MaybeStartOrEndRecordBothSnappedClamshellSplitView();
 }
-
-void SplitViewMetricsController::OnDeskSwitchAnimationLaunching() {}
-void SplitViewMetricsController::OnDeskSwitchAnimationFinished() {}
-void SplitViewMetricsController::OnDeskNameChanged(
-    const Desk* desk,
-    const std::u16string& new_name) {}
 
 void SplitViewMetricsController::OnWindowInitialized(aura::Window* window) {
   int32_t* activation_index =

@@ -50,6 +50,9 @@ class PrintJobWorker {
 
   /* The following functions may only be called before calling SetPrintJob(). */
 
+  // Initializes the print settings for PDF. Must be called on the UI thread.
+  std::unique_ptr<PrintSettings> GetPdfSettings();
+
   // Initializes the default print settings. Must be called on the UI thread.
   void GetDefaultSettings(SettingsCallback callback);
 
@@ -103,8 +106,7 @@ class PrintJobWorker {
   void StopSoon();
 
   // Signals the thread to exit and returns once the thread has exited.
-  // Virtual to support testing.
-  virtual void Stop();
+  void Stop();
 
   // Starts the thread.
   bool Start();

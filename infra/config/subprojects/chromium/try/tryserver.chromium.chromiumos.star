@@ -5,7 +5,7 @@
 
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "goma", "os")
+load("//lib/builders.star", "goma", "os", "reclient")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 load("//project.star", "settings")
@@ -14,16 +14,13 @@ try_.defaults.set(
     builder_group = "tryserver.chromium.chromiumos",
     cores = 8,
     orchestrator_cores = 2,
-    compilator_cores = 16,
+    compilator_cores = 32,
     executable = try_.DEFAULT_EXECUTABLE,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
     os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
-
-    # TODO(crbug.com/1362440): remove this.
-    omit_python2 = False,
 )
 
 consoles.list_view(
@@ -60,9 +57,6 @@ try_.orchestrator_builder(
     mirrors = ["ci/chromeos-amd64-generic-rel"],
     main_list_view = "try",
     tryjob = try_.job(),
-    experiments = {
-        "remove_src_checkout_experiment": 100,
-    },
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
@@ -116,9 +110,6 @@ try_.orchestrator_builder(
     ],
     compilator = "lacros-amd64-generic-rel-compilator",
     main_list_view = "try",
-    experiments = {
-        "remove_src_checkout_experiment": 100,
-    },
     use_orchestrator_pool = True,
 )
 
@@ -215,12 +206,33 @@ try_.builder(
 )
 
 try_.builder(
+    name = "chromeos-kevin-compile-rel",
+    mirrors = [
+        "ci/chromeos-kevin-rel",
+    ],
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
+)
+
+try_.builder(
     name = "chromeos-jacuzzi-rel",
     branch_selector = branches.CROS_LTS_MILESTONE,
     mirrors = [
         "ci/chromeos-jacuzzi-rel",
     ],
     main_list_view = "try",
+)
+
+try_.builder(
+    name = "chromeos-kevin-rel",
+    branch_selector = branches.CROS_LTS_MILESTONE,
+    mirrors = [
+        "ci/chromeos-kevin-rel",
+    ],
+    main_list_view = "try",
+    execution_timeout = 6 * time.hour,
 )
 
 try_.builder(
@@ -248,9 +260,6 @@ try_.orchestrator_builder(
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
     tryjob = try_.job(),
-    experiments = {
-        "remove_src_checkout_experiment": 100,
-    },
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
@@ -261,7 +270,6 @@ try_.compilator_builder(
     branch_selector = branches.CROS_LTS_MILESTONE,
     main_list_view = "try",
     goma_jobs = goma.jobs.J300,
-    cores = 32,
 )
 
 try_.builder(
@@ -283,9 +291,6 @@ try_.orchestrator_builder(
     check_for_flakiness = True,
     main_list_view = "try",
     tryjob = try_.job(),
-    experiments = {
-        "remove_src_checkout_experiment": 100,
-    },
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
@@ -328,6 +333,9 @@ try_.builder(
             "chrome/test/data/webui/chromeos/chromebox_for_meetings/.+",
         ],
     ),
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 # RTS builders

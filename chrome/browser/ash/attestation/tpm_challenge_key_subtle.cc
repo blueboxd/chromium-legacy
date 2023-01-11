@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ash/attestation/tpm_challenge_key_subtle.h"
 
+#include <stdint.h>
+
+#include <vector>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/check_op.h"
@@ -35,6 +39,7 @@
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 namespace attestation {
@@ -63,12 +68,13 @@ std::unique_ptr<TpmChallengeKeySubtle>
 TpmChallengeKeySubtleFactory::CreateForPreparedKey(
     AttestationKeyType key_type,
     bool will_register_key,
+    ::attestation::KeyType key_crypto_type,
     const std::string& key_name,
     const std::string& public_key,
     Profile* profile) {
   auto result = TpmChallengeKeySubtleFactory::Create();
-  result->RestorePreparedKeyState(key_type, will_register_key, key_name,
-                                  public_key, profile);
+  result->RestorePreparedKeyState(key_type, will_register_key, key_crypto_type,
+                                  key_name, public_key, profile);
   return result;
 }
 
@@ -152,6 +158,7 @@ TpmChallengeKeySubtleImpl::~TpmChallengeKeySubtleImpl() {
 void TpmChallengeKeySubtleImpl::RestorePreparedKeyState(
     AttestationKeyType key_type,
     bool will_register_key,
+    ::attestation::KeyType key_crypto_type,
     const std::string& key_name,
     const std::string& public_key,
     Profile* profile) {
@@ -163,6 +170,7 @@ void TpmChallengeKeySubtleImpl::RestorePreparedKeyState(
 
   key_type_ = key_type;
   will_register_key_ = will_register_key;
+  key_crypto_type_ = key_crypto_type;
   key_name_ = GetKeyNameWithDefault(key_type, key_name);
   public_key_ = public_key;
   profile_ = profile;
@@ -171,6 +179,7 @@ void TpmChallengeKeySubtleImpl::RestorePreparedKeyState(
 void TpmChallengeKeySubtleImpl::StartPrepareKeyStep(
     AttestationKeyType key_type,
     bool will_register_key,
+    ::attestation::KeyType key_crypto_type,
     const std::string& key_name,
     Profile* profile,
     TpmChallengeKeyCallback callback,
@@ -187,6 +196,7 @@ void TpmChallengeKeySubtleImpl::StartPrepareKeyStep(
 
   key_type_ = key_type;
   will_register_key_ = will_register_key;
+  key_crypto_type_ = key_crypto_type;
   key_name_ = GetKeyNameWithDefault(key_type, key_name);
   profile_ = profile;
   callback_ = std::move(callback);
@@ -510,9 +520,12 @@ void TpmChallengeKeySubtleImpl::AskForUserConsentCallback(bool result) {
 
   // Generate a new key and have it signed by PCA.
   attestation_flow_->GetCertificate(
-      GetCertificateProfile(), GetAccountIdForAttestationFlow(),
+      /*certificate_profile=*/GetCertificateProfile(),
+      /*account_id=*/GetAccountIdForAttestationFlow(),
       /*request_origin=*/std::string(),  // Not used.
-      /*force_new_key=*/true, ::attestation::KEY_TYPE_RSA, key_name_,
+      /*force_new_key=*/true, /*key_crypto_type=*/key_crypto_type_,
+      /*key_name=*/key_name_, /*profile_specific_data=*/absl::nullopt,
+      /*callback=*/
       base::BindOnce(&TpmChallengeKeySubtleImpl::GetCertificateCallback,
                      weak_factory_.GetWeakPtr()));
 }
@@ -666,7 +679,8 @@ void TpmChallengeKeySubtleImpl::RegisterKeyCallback(
   key_permissions_manager->AllowKeyForUsage(
       base::BindOnce(&TpmChallengeKeySubtleImpl::MarkCorporateKeyCallback,
                      weak_factory_.GetWeakPtr()),
-      platform_keys::KeyUsage::kCorporate, public_key_);
+      platform_keys::KeyUsage::kCorporate,
+      std::vector<uint8_t>(public_key_.begin(), public_key_.end()));
 }
 
 void TpmChallengeKeySubtleImpl::MarkCorporateKeyCallback(

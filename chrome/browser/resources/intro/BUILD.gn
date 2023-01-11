@@ -11,12 +11,21 @@ assert(is_chromeos_lacros || enable_dice_support)
 build_webui("build") {
   grd_prefix = "intro"
 
-  static_files = [ "intro.html" ]
+  static_files = [
+    "intro.html",
+    "images/left_background.svg",
+    "images/right_background.svg",
+    "images/left_background_dark_mode.svg",
+    "images/right_background_dark_mode.svg",
+  ]
 
   if (is_chromeos_lacros) {
     web_component_files = [ "lacros_app.ts" ]
   } else if (enable_dice_support) {
-    web_component_files = [ "dice_app.ts" ]
+    web_component_files = [
+      "dice_app.ts",
+      "sign_in_promo.ts",
+    ]
   }
 
   non_web_component_files = [ "browser_proxy.ts" ]

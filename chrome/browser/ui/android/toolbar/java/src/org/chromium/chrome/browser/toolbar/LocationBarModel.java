@@ -17,7 +17,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.FeatureList;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
@@ -178,6 +177,7 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     protected GURL mVisibleGurl = GURL.emptyGURL();
     protected String mFormattedFullUrl;
     protected String mUrlForDisplay;
+    private boolean mOmniboxUpdatedConnectionSecurityIndicatorsEnabled;
 
     /**
      * Default constructor for this class.
@@ -208,6 +208,8 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     public void initializeWithNative() {
         mOptimizationsEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SCROLL_OPTIMIZATIONS);
+        mOmniboxUpdatedConnectionSecurityIndicatorsEnabled = ChromeFeatureList.isEnabled(
+                ChromeFeatureList.OMNIBOX_UPDATED_CONNECTION_SECURITY_INDICATORS);
         mLastUsedNonOTRProfile = Profile.getLastUsedRegularProfile();
         mNativeLocationBarModelAndroid = LocationBarModelJni.get().init(LocationBarModel.this);
 
@@ -294,12 +296,12 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
 
     @Override
     public GURL getCurrentGurl() {
-        if (isInOverviewAndShowingOmnibox()) {
-            return UrlConstants.ntpGurl();
-        }
-
         if (mOptimizationsEnabled) {
             return mVisibleGurl;
+        }
+
+        if (isInOverviewAndShowingOmnibox()) {
+            return UrlConstants.ntpGurl();
         }
 
         Tab tab = getTab();
@@ -314,7 +316,6 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
                 mFormattedFullUrl = "";
                 mUrlForDisplay = "";
                 mVisibleGurl = UrlConstants.ntpGurl();
-                return;
             }
 
             GURL gurl = getUrlOfVisibleNavigationEntry();
@@ -693,9 +694,8 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
                 !mSearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito())
                 || mNtpDelegate.isCurrentlyVisible() || isInOverviewAndShowingOmnibox();
 
-        boolean useUpdatedConnectionSecurityIndicators = FeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.OMNIBOX_UPDATED_CONNECTION_SECURITY_INDICATORS)
+        boolean useUpdatedConnectionSecurityIndicators =
+                mOmniboxUpdatedConnectionSecurityIndicatorsEnabled
                 && !(hasTab() && mTab.isCustomTab());
 
         return SecurityStatusIcon.getSecurityIconResource(securityLevel, isSmallDevice,
@@ -816,7 +816,6 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
      */
     public void setStartSurfaceState(@StartSurfaceState int startSurfaceState) {
         mStartSurfaceState = startSurfaceState;
-        notifyUrlChanged();
     }
 
     @NativeMethods

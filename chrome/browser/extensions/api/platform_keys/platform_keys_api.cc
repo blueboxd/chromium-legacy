@@ -4,7 +4,11 @@
 
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_api.h"
 
+#include <stdint.h>
+
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/strings/string_piece.h"
 #include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
@@ -422,10 +426,8 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
     }
 
     service->SignRSAPKCS1Raw(
-        platform_keys_token_id,
-        std::string(params->data.begin(), params->data.end()),
-        std::string(params->public_key.begin(), params->public_key.end()),
-        extension_id(),
+        platform_keys_token_id, std::move(params->data),
+        std::move(params->public_key), extension_id(),
         base::BindOnce(&PlatformKeysInternalSignFunction::OnSigned, this));
   } else {
     chromeos::platform_keys::HashAlgorithm hash_algorithm;
@@ -453,10 +455,8 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
     }
 
     service->SignDigest(
-        platform_keys_token_id,
-        std::string(params->data.begin(), params->data.end()),
-        std::string(params->public_key.begin(), params->public_key.end()),
-        key_type, hash_algorithm, extension_id(),
+        platform_keys_token_id, std::move(params->data),
+        std::move(params->public_key), key_type, hash_algorithm, extension_id(),
         base::BindOnce(&PlatformKeysInternalSignFunction::OnSigned, this));
   }
 
@@ -464,13 +464,12 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
 }
 
 void PlatformKeysInternalSignFunction::OnSigned(
-    const std::string& signature,
+    std::vector<uint8_t> signature,
     absl::optional<crosapi::mojom::KeystoreError> error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!error) {
-    Respond(ArgumentList(api_pki::Sign::Results::Create(
-        std::vector<uint8_t>(signature.begin(), signature.end()))));
+    Respond(ArgumentList(api_pki::Sign::Results::Create(std::move(signature))));
   } else {
     Respond(
         Error(chromeos::platform_keys::KeystoreErrorToString(error.value())));
@@ -516,10 +515,9 @@ void PlatformKeysVerifyTLSServerCertificateFunction::FinishedVerification(
   if (net::IsCertificateError(verify_result)) {
     // Only report errors, not internal informational statuses.
     const int masked_cert_status = cert_status & net::CERT_STATUS_ALL_ERRORS;
-    for (size_t i = 0; i < std::size(kCertStatusErrors); ++i) {
-      if ((masked_cert_status & kCertStatusErrors[i].value) ==
-          kCertStatusErrors[i].value) {
-        result.debug_errors.push_back(kCertStatusErrors[i].name);
+    for (auto status_error : kCertStatusErrors) {
+      if ((masked_cert_status & status_error.value) == status_error.value) {
+        result.debug_errors.push_back(status_error.name);
       }
     }
   }

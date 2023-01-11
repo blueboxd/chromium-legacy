@@ -39,6 +39,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -137,10 +138,8 @@ class LoginShelfViewTest : public LoginTestBase,
       if (!login_shelf_view_->GetViewByID(id)->GetVisible())
         return false;
     }
-    const auto& children = login_shelf_view_->children();
-    const size_t visible_buttons =
-        std::count_if(children.cbegin(), login_shelf_view_->children().cend(),
-                      [](const auto* v) { return v->GetVisible(); });
+    const size_t visible_buttons = base::ranges::count_if(
+        login_shelf_view_->children(), &views::View::GetVisible);
     return visible_buttons == ids.size();
   }
 
@@ -176,6 +175,21 @@ class LoginShelfViewTest : public LoginTestBase,
 
     Shell::Get()->focus_cycler()->FocusWidget(login_shelf_widget);
     ExpectFocused(login_shelf_widget->GetContentsView());
+  }
+
+  // Confirm shutdown confirmation bubble.
+  void ShutdownAndConfirm() {
+    Click(LoginShelfView::kShutdown);
+    ui::test::EventGenerator* event_generator = GetEventGenerator();
+    event_generator->MoveMouseTo(
+        login_shelf_view_->GetShutdownConfirmationBubbleForTesting()
+            ->GetViewByID(static_cast<int>(
+                ShelfShutdownConfirmationBubble::ButtonId::kShutdown))
+            ->GetBoundsInScreen()
+            .CenterPoint());
+    event_generator->ClickLeftButton();
+
+    base::RunLoop().RunUntilIdle();
   }
 
   // Returns the widget where the login shelf view lives.
@@ -545,14 +559,14 @@ TEST_P(LoginShelfViewTest, ShouldShowGuestButtonWhenNoUserPods) {
 }
 
 TEST_P(LoginShelfViewTest, ClickShutdownButton) {
-  Click(LoginShelfView::kShutdown);
+  ShutdownAndConfirm();
   EXPECT_TRUE(Shell::Get()->lock_state_controller()->ShutdownRequested());
 }
 
 TEST_P(LoginShelfViewTest, ClickShutdownButtonOnLockScreen) {
   CreateUserSessions(1);
   NotifySessionStateChanged(SessionState::LOCKED);
-  Click(LoginShelfView::kShutdown);
+  ShutdownAndConfirm();
   EXPECT_TRUE(Shell::Get()->lock_state_controller()->ShutdownRequested());
 }
 
@@ -569,7 +583,7 @@ TEST_P(LoginShelfViewTest,
   CreateUserSessions(1);
   NotifySessionStateChanged(SessionState::LOCKED);
 
-  Click(LoginShelfView::kShutdown);
+  ShutdownAndConfirm();
   EXPECT_TRUE(Shell::Get()->lock_state_controller()->ShutdownRequested());
 }
 
@@ -888,13 +902,13 @@ TEST_P(LoginShelfViewTest, TapShutdownInTabletLoginPrimary) {
   NotifySessionStateChanged(session_manager::SessionState::LOGIN_PRIMARY);
   TabletModeControllerTestApi().EnterTabletMode();
 
-  Click(LoginShelfView::kShutdown);
+  ShutdownAndConfirm();
   EXPECT_TRUE(Shell::Get()->lock_state_controller()->ShutdownRequested());
 }
 
 TEST_P(LoginShelfViewTest, TapShutdownInTabletOobe) {
   TabletModeControllerTestApi().EnterTabletMode();
-  Click(LoginShelfView::kShutdown);
+  ShutdownAndConfirm();
   EXPECT_TRUE(Shell::Get()->lock_state_controller()->ShutdownRequested());
 }
 
@@ -953,7 +967,7 @@ TEST_P(LoginShelfViewTest, DisplayOn) {
       ash::Shell::Get()->display_configurator();
   ASSERT_TRUE(configurator->IsDisplayOn());
 
-  Click(LoginShelfView::kShutdown);
+  ShutdownAndConfirm();
   EXPECT_TRUE(Shell::Get()->lock_state_controller()->ShutdownRequested());
 }
 
@@ -987,7 +1001,7 @@ TEST_P(LoginShelfViewTest, DisplayOff) {
   }
 
   // This should go through.
-  Click(LoginShelfView::kShutdown);
+  ShutdownAndConfirm();
   EXPECT_TRUE(Shell::Get()->lock_state_controller()->ShutdownRequested());
 }
 

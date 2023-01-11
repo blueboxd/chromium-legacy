@@ -31,7 +31,6 @@ BASE_DECLARE_FEATURE(kBiometricAuthenticationInSettings);
 BASE_DECLARE_FEATURE(kBiometricTouchToFill);
 BASE_DECLARE_FEATURE(kDetectFormSubmissionOnFormClear);
 BASE_DECLARE_FEATURE(kForceEnablePasswordDomainCapabilities);
-BASE_DECLARE_FEATURE(kEnableFaviconForPasswords);
 BASE_DECLARE_FEATURE(kEnableOverwritingPlaceholderUsernames);
 BASE_DECLARE_FEATURE(kEnablePasswordsAccountStorage);
 BASE_DECLARE_FEATURE(kEnablePasswordGenerationForClearTextFields);
@@ -54,6 +53,7 @@ BASE_DECLARE_FEATURE(kSendPasswords);
 BASE_DECLARE_FEATURE(kLeakDetectionUnauthenticated);
 BASE_DECLARE_FEATURE(kPasswordChange);
 BASE_DECLARE_FEATURE(kPasswordChangeInSettings);
+BASE_DECLARE_FEATURE(kPasswordChangeAccountStoreUsers);
 BASE_DECLARE_FEATURE(kPasswordChangeWellKnown);
 BASE_DECLARE_FEATURE(kPasswordDomainCapabilitiesFetching);
 BASE_DECLARE_FEATURE(kPasswordImport);
@@ -65,11 +65,11 @@ BASE_DECLARE_FEATURE(kPasswordScriptsFetching);
 BASE_DECLARE_FEATURE(kPasswordsGrouping);
 BASE_DECLARE_FEATURE(kPasswordStrengthIndicator);
 BASE_DECLARE_FEATURE(kRecoverFromNeverSaveAndroid);
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
+BASE_DECLARE_FEATURE(kRevampedPasswordManagementBubble);
+#endif
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 BASE_DECLARE_FEATURE(kSkipUndecryptablePasswords);
-#endif
-#if BUILDFLAG(IS_LINUX)
-BASE_DECLARE_FEATURE(kSyncUndecryptablePasswordsLinux);
 #endif
 #if BUILDFLAG(IS_ANDROID)
 BASE_DECLARE_FEATURE(kPasswordEditDialogWithDetails);

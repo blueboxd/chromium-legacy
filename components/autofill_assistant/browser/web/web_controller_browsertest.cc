@@ -84,10 +84,11 @@ using ::testing::WithArgs;
 
 }  // namespace
 
-class WebControllerBrowserTest : public autofill_assistant::BaseBrowserTest,
+class WebControllerBrowserTest : public BaseBrowserTest,
                                  public content::WebContentsObserver {
  public:
-  WebControllerBrowserTest() {}
+  WebControllerBrowserTest()
+      : BaseBrowserTest(/* start_iframe_server= */ true) {}
 
   WebControllerBrowserTest(const WebControllerBrowserTest&) = delete;
   WebControllerBrowserTest& operator=(const WebControllerBrowserTest&) = delete;
@@ -915,8 +916,6 @@ document.getElementById("overlay_in_frame").style.visibility='hidden';
             }));
     ON_CALL(mock_script_executor_delegate, GetTriggerContext())
         .WillByDefault(Return(&trigger_context));
-    ON_CALL(mock_script_executor_delegate, GetService())
-        .WillByDefault(Return(&mock_service));
     GURL test_script_url("https://example.com");
     ON_CALL(mock_script_executor_delegate, GetScriptURL())
         .WillByDefault(testing::ReturnRef(test_script_url));
@@ -929,7 +928,8 @@ document.getElementById("overlay_in_frame").style.visibility='hidden';
         /* global_payload= */ std::string(),
         /* script_payload= */ std::string(),
         /* listener= */ nullptr, &ordered_interrupts,
-        &mock_script_executor_delegate, &fake_script_executor_ui_delegate,
+        &mock_script_executor_delegate, &mock_service,
+        &fake_script_executor_ui_delegate,
         /* is_interrupt_executor= */ false);
     base::RunLoop run_loop;
     script_executor.Run(
@@ -992,8 +992,6 @@ document.getElementById("overlay_in_frame").style.visibility='hidden';
     TriggerContext trigger_context;
     ON_CALL(mock_script_executor_delegate, GetTriggerContext())
         .WillByDefault(Return(&trigger_context));
-    ON_CALL(mock_script_executor_delegate, GetService())
-        .WillByDefault(Return(&mock_service));
     GURL test_script_url("https://example.com");
     ON_CALL(mock_script_executor_delegate, GetScriptURL())
         .WillByDefault(testing::ReturnRef(test_script_url));
@@ -1015,7 +1013,8 @@ document.getElementById("overlay_in_frame").style.visibility='hidden';
         /* global_payload= */ std::string(),
         /* script_payload= */ std::string(),
         /* listener= */ nullptr, &ordered_interrupts,
-        &mock_script_executor_delegate, &fake_script_executor_ui_delegate,
+        &mock_script_executor_delegate, &mock_service,
+        &fake_script_executor_ui_delegate,
         /* is_interrupt_executor= */ false);
     base::RunLoop run_loop;
     script_executor.Run(

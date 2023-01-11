@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/text_metrics.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -82,17 +83,18 @@ const auto kNoOverdraw = [](const SkIRect& clip_bounds) { return false; };
 // currently set to 500ms.
 const base::TimeDelta kTryRestoreContextInterval = base::Milliseconds(500);
 
-BaseRenderingContext2D::BaseRenderingContext2D()
+BaseRenderingContext2D::BaseRenderingContext2D(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : dispatch_context_lost_event_timer_(
-          Thread::Current()->GetDeprecatedTaskRunner(),
+          task_runner,
           this,
           &BaseRenderingContext2D::DispatchContextLostEvent),
       dispatch_context_restored_event_timer_(
-          Thread::Current()->GetDeprecatedTaskRunner(),
+          task_runner,
           this,
           &BaseRenderingContext2D::DispatchContextRestoredEvent),
       try_restore_context_event_timer_(
-          Thread::Current()->GetDeprecatedTaskRunner(),
+          task_runner,
           this,
           &BaseRenderingContext2D::TryRestoreContextEvent),
       clip_antialiasing_(kNotAntiAliased),
@@ -1288,8 +1290,7 @@ bool BaseRenderingContext2D::IsPointInStrokeInternal(const Path& path,
   stroke_data.SetLineJoin(GetState().GetLineJoin());
   stroke_data.SetMiterLimit(GetState().MiterLimit());
   Vector<float> line_dash(GetState().LineDash().size());
-  std::copy(GetState().LineDash().begin(), GetState().LineDash().end(),
-            line_dash.begin());
+  base::ranges::copy(GetState().LineDash(), line_dash.begin());
   stroke_data.SetLineDash(line_dash, GetState().LineDashOffset());
   return path.StrokeContains(transformed_point, stroke_data, ctm);
 }
@@ -2006,13 +2007,17 @@ ImageData* BaseRenderingContext2D::getImageDataInternal(
   FinalizeFrame();
 
   num_readbacks_performed_++;
+  CanvasContextCreationAttributesCore::WillReadFrequently
+      will_read_frequently_value = GetCanvasRenderingContextHost()
+                                       ->RenderingContext()
+                                       ->CreationAttributes()
+                                       .will_read_frequently;
   if (num_readbacks_performed_ == 2 && GetCanvasRenderingContextHost() &&
       GetCanvasRenderingContextHost()->RenderingContext()) {
-    bool will_read_frequently_enabled = GetCanvasRenderingContextHost()
-                                            ->RenderingContext()
-                                            ->CreationAttributes()
-                                            .will_read_frequently;
-    if (!will_read_frequently_enabled) {
+    if (will_read_frequently_value == CanvasContextCreationAttributesCore::
+                                          WillReadFrequently::kUndefined ||
+        will_read_frequently_value ==
+            CanvasContextCreationAttributesCore::WillReadFrequently::kFalse) {
       const String& message =
           "Canvas2D: Multiple readback operations using getImageData are "
           "faster with the willReadFrequently attribute set to true. See: "
@@ -2024,8 +2029,12 @@ ImageData* BaseRenderingContext2D::getImageDataInternal(
               mojom::blink::ConsoleMessageLevel::kWarning, message));
     }
   }
-  if (!base::FeatureList::IsEnabled(features::kCanvas2dStaysGPUOnReadback)) {
-    // GetImagedata is faster in Unaccelerated canvases.
+
+  // The default behavior before the willReadFrequently feature existed:
+  // Accelerated canvases fall back to CPU when there is a readback.
+  if (will_read_frequently_value ==
+      CanvasContextCreationAttributesCore::WillReadFrequently::kUndefined) {
+    // GetImageData is faster in Unaccelerated canvases.
     // In Desynchronized canvas disabling the acceleration will break
     // putImageData: crbug.com/1112060.
     if (IsAccelerated() && !IsDesynchronized()) {

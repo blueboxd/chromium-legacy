@@ -53,7 +53,8 @@ class TabStripSceneLayer : public SceneLayer {
                            jfloat width,
                            jfloat height,
                            jfloat y_offset,
-                           jboolean should_readd_background);
+                           jboolean should_readd_background,
+                           jint background_color);
 
   void UpdateStripScrim(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& jobj,
@@ -88,6 +89,7 @@ class TabStripSceneLayer : public SceneLayer {
       jfloat height,
       jboolean incognito,
       jboolean visible,
+      jfloat button_alpha,
       const base::android::JavaParamRef<jobject>& jresource_manager);
 
   void UpdateTabStripLeftFade(
@@ -95,14 +97,16 @@ class TabStripSceneLayer : public SceneLayer {
       const base::android::JavaParamRef<jobject>& jobj,
       jint resource_id,
       jfloat opacity,
-      const base::android::JavaParamRef<jobject>& jresource_manager);
+      const base::android::JavaParamRef<jobject>& jresource_manager,
+      jint leftFadeColor);
 
   void UpdateTabStripRightFade(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jobj,
       jint resource_id,
       jfloat opacity,
-      const base::android::JavaParamRef<jobject>& jresource_manager);
+      const base::android::JavaParamRef<jobject>& jresource_manager,
+      jint rightFadeColor);
 
   void PutStripTabLayer(
       JNIEnv* env,
@@ -126,6 +130,7 @@ class TabStripSceneLayer : public SceneLayer {
       jboolean is_loading,
       jfloat spinner_rotation,
       jfloat brightness,
+      jfloat opacity,
       const base::android::JavaParamRef<jobject>& jlayer_title_cache,
       const base::android::JavaParamRef<jobject>& jresource_manager);
 

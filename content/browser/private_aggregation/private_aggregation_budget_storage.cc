@@ -18,6 +18,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "components/sqlite_proto/key_value_data.h"
 #include "components/sqlite_proto/key_value_table.h"
@@ -38,8 +39,13 @@ constexpr char kBudgetsTableName[] = "private_aggregation_api_budgets";
 // When updating the database's schema, please increment the schema version.
 // This will raze the database. This is not necessary for backwards-compatible
 // updates to the proto format.
-// TODO(crbug.com/1335490): Add presubmit to enforce updating.
 constexpr int kCurrentSchemaVersion = 1;
+
+void RecordInitializationStatus(
+    PrivateAggregationBudgetStorage::InitStatus status) {
+  base::UmaHistogramEnumeration(
+      "PrivacySandbox.PrivateAggregation.BudgetStorage.InitStatus", status);
+}
 
 }  // namespace
 
@@ -110,6 +116,7 @@ bool PrivateAggregationBudgetStorage::InitializeOnDbSequence(
   // outcomes/errors.
   if (exclusively_run_in_memory) {
     if (!db->OpenInMemory()) {
+      RecordInitializationStatus(InitStatus::kFailedToOpenDbInMemory);
       return false;
     }
   } else {
@@ -117,10 +124,12 @@ bool PrivateAggregationBudgetStorage::InitializeOnDbSequence(
         base::DirectoryExists(path_to_db_dir) ||
         base::CreateDirectory(path_to_db_dir);
     if (!dir_exists_or_was_created) {
+      RecordInitializationStatus(InitStatus::kFailedToCreateDir);
       return false;
     }
     base::FilePath path_to_database = path_to_db_dir.Append(kDatabaseFilename);
     if (!db->Open(path_to_database)) {
+      RecordInitializationStatus(InitStatus::kFailedToOpenDbFile);
       return false;
     }
   }
@@ -130,6 +139,7 @@ bool PrivateAggregationBudgetStorage::InitializeOnDbSequence(
 
   budgets_data_.InitializeOnDBSequence();
 
+  RecordInitializationStatus(InitStatus::kSuccess);
   return true;
 }
 
@@ -139,6 +149,24 @@ void PrivateAggregationBudgetStorage::Shutdown() {
 
   // Guard against `Shutdown()` being called multiple times.
   if (db_) {
+    // Schedules `budgets_table_` tasks on the DB sequence for all pending
+    // updates. Since they are scheduled before the `DeleteSoon()` commands, the
+    // tasks will be able to complete before `budgets_table_` gets destroyed.
+    budgets_data_.FlushDataToDisk();
+
+    // The following protects `table_manager_` from holding a dangling pointer
+    // to `db_`. This is possible in the case that the
+    // PrivateAggregationBudgeter is deleted before `this` is finished
+    // initializing. In that case, we can delete the `db_` before the
+    // `table_manager_` is deleted.
+    // TODO(alexmt,csharrison): Consider refactoring the ownership here.
+    db_task_runner_->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(&sqlite_proto::ProtoTableManager::WillShutdown,
+                       base::Unretained(table_manager_.get())),
+        base::BindOnce([](sqlite_proto::ProtoTableManager*) {},
+                       base::RetainedRef(table_manager_)));
+
     // `budgets_table_` must be deleted on the database sequence.
     db_task_runner_->DeleteSoon(FROM_HERE, budgets_table_.release());
 
@@ -155,6 +183,11 @@ void PrivateAggregationBudgetStorage::FinishInitializationOnMainSequence(
     bool was_successful) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(owned_this);
+
+  base::UmaHistogramBoolean(
+      "PrivacySandbox.PrivateAggregation.BudgetStorage."
+      "ShutdownBeforeFinishingInitialization",
+      !db_);
 
   // If the initialization failed, `this` will be destroyed after its unique_ptr
   // passes out of scope here.

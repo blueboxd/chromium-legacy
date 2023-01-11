@@ -58,14 +58,18 @@ class ASH_EXPORT CameraPrivacySwitchController
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
 
-  // media::CameraPrivacySwitchObserver
-  void OnCameraHWPrivacySwitchStatusChanged(
-      int32_t camera_id,
+  // media::CameraPrivacySwitchObserver:
+  void OnCameraHWPrivacySwitchStateChanged(
+      const std::string& device_id,
+      cros::mojom::CameraPrivacySwitchState state) override;
+  void OnCameraSWPrivacySwitchStateChanged(
       cros::mojom::CameraPrivacySwitchState state) override;
 
   // media::CameraActiveClientObserver:
-  void OnActiveClientChange(cros::mojom::CameraClientType type,
-                            bool is_active) override;
+  void OnActiveClientChange(
+      cros::mojom::CameraClientType type,
+      bool is_active,
+      const base::flat_set<std::string>& device_ids) override;
 
   // Handles user toggling the camera switch on Privacy Hub UI.
   void OnPreferenceChanged(const std::string& pref_name);
@@ -83,6 +87,11 @@ class ASH_EXPORT CameraPrivacySwitchController
   // Retrieves the current value of the user pref.
   CameraSWPrivacySwitchSetting GetUserSwitchPreference();
 
+  // Set `prefs::kUserCameraAllowed` to the value of `enabled` and log the
+  // interaction from a notification. TODO(b/248211321) find a better location
+  // for this.
+  static void SetAndLogCameraPreferenceFromNotification(bool enabled);
+
  private:
   // Displays the "Do you want to turn the camera off" notification.
   void ShowHWCameraSwitchOffSWCameraSwitchOnNotification();
@@ -99,8 +108,10 @@ class ASH_EXPORT CameraPrivacySwitchController
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   std::unique_ptr<CameraPrivacySwitchAPI> switch_api_;
-  cros::mojom::CameraPrivacySwitchState camera_privacy_switch_state_;
-  bool is_camera_active_ = false;
+  cros::mojom::CameraPrivacySwitchState camera_privacy_switch_state_ =
+      cros::mojom::CameraPrivacySwitchState::UNKNOWN;
+  int active_camera_client_count_ = 0;
+  bool is_camera_observer_added_ = false;
 };
 
 }  // namespace ash

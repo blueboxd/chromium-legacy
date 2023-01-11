@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/app_list/search/files/mock_file_suggest_keyed_service.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_persistence_delegate.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_test_util.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_util.h"
 #include "chrome/browser/ui/ash/holding_space/scoped_test_mount_point.h"
 #include "chrome/browser/ui/webui/print_preview/pdf_printer_handler.h"
@@ -96,17 +97,6 @@ std::vector<HoldingSpaceItem::Type> GetHoldingSpaceItemTypes() {
   for (int i = 0; i <= static_cast<int>(HoldingSpaceItem::Type::kMaxValue); ++i)
     types.push_back(static_cast<HoldingSpaceItem::Type>(i));
   return types;
-}
-
-std::vector<std::pair<HoldingSpaceItem::Type, base::FilePath>>
-GetSuggestionsInModel(const HoldingSpaceModel* model) {
-  std::vector<std::pair<HoldingSpaceItem::Type, base::FilePath>>
-      model_suggestions;
-  for (const auto& item : model->items()) {
-    if (HoldingSpaceItem::IsSuggestion(item->type()))
-      model_suggestions.emplace_back(item->type(), item->file_path());
-  }
-  return model_suggestions;
 }
 
 std::unique_ptr<KeyedService> BuildArcFileSystemBridge(
@@ -2207,6 +2197,14 @@ TEST_P(HoldingSpaceKeyedServiceWithExperimentalFeatureTest,
   EXPECT_EQ(model->items()[0]->file_path(), current_path);
   EXPECT_EQ(model->items()[0]->progress().GetValue(), 0.5f);
 
+  // Not dangerous in-progress items should only have Cancel and Pause
+  // in-progress commands.
+  EXPECT_EQ(model->items()[0]->in_progress_commands().size(), 2u);
+  EXPECT_TRUE(holding_space_util::SupportsInProgressCommand(
+      model->items()[0].get(), HoldingSpaceCommandId::kCancelItem));
+  EXPECT_TRUE(holding_space_util::SupportsInProgressCommand(
+      model->items()[0].get(), HoldingSpaceCommandId::kPauseItem));
+
   {
     // Once the `ThumbnailLoader` has finished processing the request, the image
     // should represent the file type of the *target* file for the underlying
@@ -2241,6 +2239,11 @@ TEST_P(HoldingSpaceKeyedServiceWithExperimentalFeatureTest,
       DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT;
   UpdateFakeDownloadItem();
 
+  // Dangerous in-progress items should only have Cancel in-progress commands.
+  EXPECT_EQ(model->items()[0]->in_progress_commands().size(), 1u);
+  EXPECT_TRUE(holding_space_util::SupportsInProgressCommand(
+      model->items()[0].get(), HoldingSpaceCommandId::kCancelItem));
+
   {
     // Because the download has been marked as dangerous and maybe malicious,
     // the image should represent that the underlying download is in error.
@@ -2274,6 +2277,11 @@ TEST_P(HoldingSpaceKeyedServiceWithExperimentalFeatureTest,
   current_danger_type =
       download::DownloadDangerType::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
   UpdateFakeDownloadItem();
+
+  // Dangerous in-progress items should only have Cancel in-progress commands.
+  EXPECT_EQ(model->items()[0]->in_progress_commands().size(), 1u);
+  EXPECT_TRUE(holding_space_util::SupportsInProgressCommand(
+      model->items()[0].get(), HoldingSpaceCommandId::kCancelItem));
 
   {
     // Because the download has been marked as dangerous but *not* malicious,
@@ -2860,11 +2868,11 @@ class HoldingSpaceKeyedServicePrintToPdfIntegrationTest
     pdf_printer_handler_->SetPdfSavedClosureForTesting(run_loop.QuitClosure());
     pdf_printer_handler_->SetPrintToPdfPathForTesting(file_path);
 
-    std::string data;
-    pdf_printer_handler_->StartPrint(job_title,
-                                     /*settings=*/base::Value::Dict(),
-                                     base::RefCountedString::TakeString(&data),
-                                     /*callback=*/base::DoNothing());
+    pdf_printer_handler_->StartPrint(
+        job_title,
+        /*settings=*/base::Value::Dict(),
+        base::MakeRefCounted<base::RefCountedString>(std::string()),
+        /*callback=*/base::DoNothing());
 
     run_loop.Run();
   }
@@ -3146,7 +3154,7 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, SuggestionRemoval) {
   const bool suggestion_feature_enabled =
       features::IsHoldingSpaceSuggestionsEnabled();
   HoldingSpaceModel* model = HoldingSpaceController::Get()->model();
-  EXPECT_EQ(GetSuggestionsInModel(model).size(),
+  EXPECT_EQ(GetSuggestionsInModel(*model).size(),
             suggestion_feature_enabled ? 2u : 0u);
 
   // Remove all suggestions through the holding space client. Verify that
@@ -3183,7 +3191,7 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, VerifySuggestionsInModel) {
 
   // Check the model after Drive file suggestions update.
   HoldingSpaceModel* const model = HoldingSpaceController::Get()->model();
-  EXPECT_EQ(expected, GetSuggestionsInModel(model));
+  EXPECT_EQ(GetSuggestionsInModel(*model), expected);
 
   const base::FilePath file_path_2 = mount_point()->CreateArbitraryFile();
 
@@ -3200,7 +3208,7 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, VerifySuggestionsInModel) {
     expected = {{HoldingSpaceItem::Type::kLocalSuggestion, file_path_2},
                 {HoldingSpaceItem::Type::kDriveSuggestion, file_path_1}};
   }
-  EXPECT_EQ(expected, GetSuggestionsInModel(model));
+  EXPECT_EQ(GetSuggestionsInModel(*model), expected);
 
   const base::FilePath file_path_3 = mount_point()->CreateArbitraryFile();
 
@@ -3222,7 +3230,7 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, VerifySuggestionsInModel) {
                 {HoldingSpaceItem::Type::kDriveSuggestion, file_path_3},
                 {HoldingSpaceItem::Type::kDriveSuggestion, file_path_1}};
   }
-  EXPECT_EQ(expected, GetSuggestionsInModel(model));
+  EXPECT_EQ(GetSuggestionsInModel(*model), expected);
 
   // Update Drive file suggestions with an empty array.
   GetFileSuggestKeyedService()->SetSuggestionsForType(
@@ -3234,7 +3242,7 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, VerifySuggestionsInModel) {
   // enabled.
   if (suggestion_feature_enabled)
     expected = {{HoldingSpaceItem::Type::kLocalSuggestion, file_path_2}};
-  EXPECT_EQ(expected, GetSuggestionsInModel(model));
+  EXPECT_EQ(GetSuggestionsInModel(*model), expected);
 
   // Update local file suggestions with an empty array.
   GetFileSuggestKeyedService()->SetSuggestionsForType(
@@ -3244,7 +3252,7 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, VerifySuggestionsInModel) {
 
   // There should be no suggestions in the model.
   expected.clear();
-  EXPECT_EQ(expected, GetSuggestionsInModel(model));
+  EXPECT_EQ(GetSuggestionsInModel(*model), expected);
 }
 
 TEST_P(HoldingSpaceSuggestionsDelegateTest, DownloadsFolderNotSuggested) {
@@ -3275,7 +3283,7 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, DownloadsFolderNotSuggested) {
                 {HoldingSpaceItem::Type::kLocalSuggestion, other_folder_path}};
   }
 
-  EXPECT_EQ(GetSuggestionsInModel(HoldingSpaceController::Get()->model()),
+  EXPECT_EQ(GetSuggestionsInModel(*HoldingSpaceController::Get()->model()),
             expected);
 }
 
@@ -3304,7 +3312,7 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, PinAndUnpinSuggestions) {
 
   // Check the model after Drive file suggestions update.
   HoldingSpaceModel* const model = HoldingSpaceController::Get()->model();
-  EXPECT_EQ(expected, GetSuggestionsInModel(model));
+  EXPECT_EQ(GetSuggestionsInModel(*model), expected);
 
   const base::FilePath file_path_2 = mount_point()->CreateArbitraryFile();
 
@@ -3321,7 +3329,7 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, PinAndUnpinSuggestions) {
     expected = {{HoldingSpaceItem::Type::kLocalSuggestion, file_path_2},
                 {HoldingSpaceItem::Type::kDriveSuggestion, file_path_1}};
   }
-  EXPECT_EQ(expected, GetSuggestionsInModel(model));
+  EXPECT_EQ(GetSuggestionsInModel(*model), expected);
 
   // Pin the suggested Drive file and verify that the suggestion is removed
   // from the model if suggestions are enabled.
@@ -3331,20 +3339,22 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, PinAndUnpinSuggestions) {
       base::BindOnce(&CreateTestHoldingSpaceImage));
   const auto& pinned_item_id = pinned_item->id();
   model->AddItem(std::move(pinned_item));
+  task_environment()->RunUntilIdle();
 
   if (suggestion_feature_enabled)
     expected = {{HoldingSpaceItem::Type::kLocalSuggestion, file_path_2}};
-  EXPECT_EQ(expected, GetSuggestionsInModel(model));
+  EXPECT_EQ(GetSuggestionsInModel(*model), expected);
 
   // Unpin the suggested Drive file and verify that the suggestion is re-added
   // to the model if suggestions are enabled.
   model->RemoveItem(pinned_item_id);
+  task_environment()->RunUntilIdle();
 
   if (suggestion_feature_enabled) {
     expected = {{HoldingSpaceItem::Type::kLocalSuggestion, file_path_2},
                 {HoldingSpaceItem::Type::kDriveSuggestion, file_path_1}};
   }
-  EXPECT_EQ(expected, GetSuggestionsInModel(model));
+  EXPECT_EQ(GetSuggestionsInModel(*model), expected);
 
   // Add an uninitialized pinned item for the suggested local file to the model
   // and verify that there is no change to the model's suggestions.
@@ -3352,14 +3362,14 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, PinAndUnpinSuggestions) {
       model, HoldingSpaceItem::Type::kPinnedFile, file_path_2);
 
   // The `expected` suggestions should not have changed.
-  EXPECT_EQ(expected, GetSuggestionsInModel(model));
+  EXPECT_EQ(GetSuggestionsInModel(*model), expected);
 
   // Remove the suggested local file's uninitialized pinned item and verify
   // that there is no change to the model's suggestions.
   model->RemoveItem(uninitialized_pinned_item_ptr->id());
 
   // The `expected` suggestions should not have changed.
-  EXPECT_EQ(expected, GetSuggestionsInModel(model));
+  EXPECT_EQ(GetSuggestionsInModel(*model), expected);
 
   // Add an uninitialized pinned item for the suggested local file to the model
   // and verify that there is no change to the model's suggestions.
@@ -3367,16 +3377,135 @@ TEST_P(HoldingSpaceSuggestionsDelegateTest, PinAndUnpinSuggestions) {
       model, HoldingSpaceItem::Type::kPinnedFile, file_path_2);
 
   // The `expected` suggestions should not have changed.
-  EXPECT_EQ(expected, GetSuggestionsInModel(model));
+  EXPECT_EQ(GetSuggestionsInModel(*model), expected);
 
   // Initialize the pinned item for the suggested local file and verify that
   // the suggestion is removed from the model if suggestions are enabled.
   model->InitializeOrRemoveItem(partially_initialized_pinned_item_ptr->id(),
                                 GetFileSystemUrl(GetProfile(), file_path_2));
+  task_environment()->RunUntilIdle();
 
   if (suggestion_feature_enabled)
     expected = {{HoldingSpaceItem::Type::kDriveSuggestion, file_path_1}};
-  EXPECT_EQ(expected, GetSuggestionsInModel(model));
+  EXPECT_EQ(GetSuggestionsInModel(*model), expected);
+}
+
+// Verifies the file suggestion update on a profile with restored suggestions.
+TEST_P(HoldingSpaceSuggestionsDelegateTest, RestoreSuggestions) {
+  const base::FilePath drive_file = mount_point()->CreateArbitraryFile();
+  std::unique_ptr<HoldingSpaceItem> drive_file_suggestion =
+      HoldingSpaceItem::CreateFileBackedItem(
+          HoldingSpaceItem::Type::kDriveSuggestion, drive_file,
+          GetFileSystemUrl(GetProfile(), drive_file),
+          base::BindOnce(&CreateTestHoldingSpaceImage));
+
+  // Create a secondary profile with a persisted drive file suggestion.
+  TestingProfile* const secondary_profile = CreateSecondaryProfile(
+      base::BindLambdaForTesting([&](TestingPrefStore* pref_store) {
+        base::Value::List persisted_items;
+        persisted_items.Append(drive_file_suggestion->Serialize());
+        pref_store->SetValueSilently(
+            HoldingSpacePersistenceDelegate::kPersistencePath,
+            base::Value(std::move(persisted_items)),
+            PersistentPrefStore::DEFAULT_PREF_WRITE_FLAGS);
+      }));
+
+  // Activate `secondary_profile`. Wait until the model updates.
+  ActivateSecondaryProfile();
+  HoldingSpaceModelAttachedWaiter(secondary_profile).Wait();
+  HoldingSpaceModel* const secondary_holding_space_model =
+      HoldingSpaceController::Get()->model();
+  ItemsInitializedWaiter(secondary_holding_space_model).Wait();
+  const bool suggestion_feature_enabled =
+      features::IsHoldingSpaceSuggestionsEnabled();
+  EXPECT_EQ(secondary_holding_space_model->items().size(),
+            suggestion_feature_enabled ? 1u : 0u);
+
+  // Update local file suggestions on the secondary profile. Fast-forward to
+  // ensure the suggestion fetch completes.
+  const base::FilePath local_file = mount_point()->CreateArbitraryFile();
+  static_cast<app_list::MockFileSuggestKeyedService*>(
+      app_list::FileSuggestKeyedServiceFactory::GetInstance()->GetService(
+          secondary_profile))
+      ->SetSuggestionsForType(
+          app_list::FileSuggestionType::kLocalFile,
+          /*suggestions=*/std::vector<app_list::FileSuggestData>{
+              {app_list::FileSuggestionType::kLocalFile, local_file,
+               /*new_prediction_reason=*/absl::nullopt,
+               /*new_score=*/absl::nullopt}});
+  task_environment()->FastForwardBy(base::Seconds(1));
+
+  const auto& model_items = secondary_holding_space_model->items();
+  if (suggestion_feature_enabled) {
+    // The drive and local file suggestions should coexist in the model.
+    ASSERT_EQ(model_items.size(), 2u);
+    EXPECT_EQ(model_items[0]->file_path(), local_file);
+    EXPECT_EQ(model_items[1]->file_path(), drive_file);
+  } else {
+    EXPECT_TRUE(model_items.empty());
+  }
+}
+
+// Verifies by updating file suggestions in the holding space model which
+// contains the suggested files from an unmounted file system.
+TEST_P(HoldingSpaceSuggestionsDelegateTest, UpdateSuggestionsWithDelayedMount) {
+  auto delayed_mount = std::make_unique<ScopedTestMountPoint>(
+      "drivefs-delayed_mount",
+      /*file_system_type=*/storage::kFileSystemTypeDriveFs,
+      /*volume_type=*/file_manager::VOLUME_TYPE_GOOGLE_DRIVE);
+  const base::FilePath delayed_mount_file_path =
+      delayed_mount->GetRootPath().Append("delayed file");
+  auto delayed_holding_space_item = HoldingSpaceItem::CreateFileBackedItem(
+      HoldingSpaceItem::Type::kDriveSuggestion, delayed_mount_file_path,
+      GURL("filesystem:fake"), base::BindOnce(&CreateTestHoldingSpaceImage));
+
+  // Create a secondary profile with a persisted delayed file suggestion.
+  TestingProfile* const secondary_profile = CreateSecondaryProfile(
+      base::BindLambdaForTesting([&](TestingPrefStore* pref_store) {
+        base::Value::List persisted_items;
+        persisted_items.Append(delayed_holding_space_item->Serialize());
+        pref_store->SetValueSilently(
+            HoldingSpacePersistenceDelegate::kPersistencePath,
+            base::Value(std::move(persisted_items)),
+            PersistentPrefStore::DEFAULT_PREF_WRITE_FLAGS);
+      }));
+
+  // Activate `secondary_profile`. Wait until the model updates.
+  ActivateSecondaryProfile();
+  HoldingSpaceModelAttachedWaiter(secondary_profile).Wait();
+  HoldingSpaceModel* const secondary_holding_space_model =
+      HoldingSpaceController::Get()->model();
+  const bool suggestion_feature_enabled =
+      features::IsHoldingSpaceSuggestionsEnabled();
+  EXPECT_EQ(secondary_holding_space_model->items().size(),
+            suggestion_feature_enabled ? 1u : 0u);
+
+  // Update with a local file suggestion.
+  const base::FilePath local_file = mount_point()->CreateArbitraryFile();
+  static_cast<app_list::MockFileSuggestKeyedService*>(
+      app_list::FileSuggestKeyedServiceFactory::GetInstance()->GetService(
+          secondary_profile))
+      ->SetSuggestionsForType(
+          app_list::FileSuggestionType::kLocalFile,
+          /*suggestions=*/std::vector<app_list::FileSuggestData>{
+              {app_list::FileSuggestionType::kLocalFile, local_file,
+               /*new_prediction_reason=*/absl::nullopt,
+               /*new_score=*/absl::nullopt}});
+  task_environment()->FastForwardBy(base::Seconds(1));
+
+  const auto& model_items = secondary_holding_space_model->items();
+  if (suggestion_feature_enabled) {
+    ASSERT_EQ(model_items.size(), 2u);
+    EXPECT_EQ(model_items[0]->file_path(), local_file);
+    EXPECT_EQ(model_items[0]->type(), HoldingSpaceItem::Type::kLocalSuggestion);
+    EXPECT_TRUE(model_items[0]->IsInitialized());
+
+    EXPECT_EQ(model_items[1]->file_path(), delayed_mount_file_path);
+    EXPECT_EQ(model_items[1]->type(), HoldingSpaceItem::Type::kDriveSuggestion);
+    EXPECT_FALSE(model_items[1]->IsInitialized());
+  } else {
+    EXPECT_TRUE(model_items.empty());
+  }
 }
 
 }  // namespace ash

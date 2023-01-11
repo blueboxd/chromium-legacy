@@ -15,6 +15,7 @@
 #include "components/segmentation_platform/internal/proto/model_prediction.pb.h"
 #include "components/segmentation_platform/internal/proto/signal.pb.h"
 #include "components/segmentation_platform/internal/proto/signal_storage_config.pb.h"
+#include "components/sync_device_info/device_info_tracker.h"
 
 namespace history {
 class HistoryService;
@@ -29,6 +30,7 @@ class UkmDataManager;
 extern const char kTestSegmentationKey1[];
 extern const char kTestSegmentationKey2[];
 extern const char kTestSegmentationKey3[];
+extern const char kTestSegmentationKey4[];
 
 // Wrapper around SegmentationPlatformServiceImpl for testing. Holds and manages
 // a single platform instance.
@@ -68,6 +70,7 @@ class SegmentationPlatformServiceTestBase {
   TestModelProviderFactory::Data model_provider_data_;
   TestingPrefServiceSimple pref_service_;
   base::SimpleTestClock test_clock_;
+  std::unique_ptr<syncer::DeviceInfoTracker> device_info_tracker_;
   std::unique_ptr<SegmentationPlatformServiceImpl>
       segmentation_platform_service_impl_;
 };

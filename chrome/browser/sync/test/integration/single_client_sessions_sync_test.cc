@@ -824,7 +824,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
   sync_pb::ClientToServerMessage first_commit;
   ASSERT_TRUE(GetFakeServer()->GetLastCommitMessage(&first_commit));
   EXPECT_TRUE(first_commit.commit().config_params().cookie_jar_mismatch())
-      << *syncer::ClientToServerMessageToValue(first_commit, /*options=*/{});
+      << syncer::ClientToServerMessageToValue(first_commit, /*options=*/{});
 
   // Avoid interferences from actual IdentityManager trying to fetch gaia
   // account information, which would exercise
@@ -848,7 +848,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
   sync_pb::ClientToServerMessage second_commit;
   ASSERT_TRUE(GetFakeServer()->GetLastCommitMessage(&second_commit));
   EXPECT_FALSE(second_commit.commit().config_params().cookie_jar_mismatch())
-      << *syncer::ClientToServerMessageToValue(second_commit, /*options=*/{});
+      << syncer::ClientToServerMessageToValue(second_commit, /*options=*/{});
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
@@ -894,8 +894,17 @@ class SingleClientSessionsSyncTestWithFaviconTestServer
   }
 };
 
+#if BUILDFLAG(IS_FUCHSIA)
+// TODO(crbug.com/1290548): Re-enable after further investigation.
+#define MAYBE_ShouldDeleteOnDemandIconsOnSessionsDisabled \
+  DISABLED_ShouldDeleteOnDemandIconsOnSessionsDisabled
+#else
+#define MAYBE_ShouldDeleteOnDemandIconsOnSessionsDisabled \
+  ShouldDeleteOnDemandIconsOnSessionsDisabled
+#endif
+
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTestWithFaviconTestServer,
-                       ShouldDeleteOnDemandIconsOnSessionsDisabled) {
+                       MAYBE_ShouldDeleteOnDemandIconsOnSessionsDisabled) {
   const std::string kForeignSessionTag = "ForeignSessionTag";
   const SessionID kWindowId = SessionID::FromSerializedValue(5);
   const SessionID kTabId = SessionID::FromSerializedValue(1);

@@ -136,6 +136,7 @@ class NodeTraversal;
 class PerformanceMonitor;
 class PluginData;
 class PolicyContainer;
+class ScrollSnapshotClient;
 class SmoothScrollSequencer;
 class SpellChecker;
 class StorageKey;
@@ -429,6 +430,8 @@ class CORE_EXPORT LocalFrame final
   // framebusting defenses, in order to give the option of restarting the
   // navigation at a later time.
   bool CanNavigate(const Frame&, const KURL& destination_url = KURL());
+
+  void WillPotentiallyStartNavigation(const KURL& url) const;
 
   // Whether a navigation should replace the current history entry or not.
   // Note this isn't exhaustive; there are other cases where a navigation does a
@@ -805,6 +808,42 @@ class CORE_EXPORT LocalFrame final
 
   absl::optional<SkColor> GetFrameOverlayColorForTesting() const;
 
+  // Returns a PendingRemote resolved via this frame's BrowserInterfaceBroker
+  // for use when creating the PublicUrlManager instance in threaded worklets.
+  // See `WorkletGlobalScope::TakeBlobUrlStorePendingRemote()` for more info.
+  mojo::PendingRemote<mojom::blink::BlobURLStore>
+  GetBlobUrlStorePendingRemote();
+
+  void AddScrollSnapshotClient(ScrollSnapshotClient&);
+
+  // Take a snapshot for relevant scrollers at the beginning of a frame update.
+  // https://drafts.csswg.org/scroll-animations-1/#avoiding-cycles
+  void UpdateScrollSnapshots();
+
+  // All newly created ScrollSnapshotClients are considered "unvalidated". This
+  // means that the internal state of the client is considered tentative, and
+  // computing the actual state may require an additional style/layout pass.
+  //
+  // The lifecycle update will call this function after style and layout has
+  // completed. The function will then go though all unvalidated clients,
+  // and compare the current state snapshot to a fresh state snapshot. If they
+  // are equal, then the tentative state turned out to be correct, and no
+  // further action is needed. Otherwise, all effects targets associated with
+  // the client are marked for recalc, which causes the style/layout phase to
+  // run again.
+  //
+  // Returns true if all client states are correct, otherwise returns false.
+  //
+  // https://github.com/w3c/csswg-drafts/issues/5261
+  bool ValidateScrollSnapshotClients();
+
+  const HeapHashSet<WeakMember<ScrollSnapshotClient>>&
+  GetUnvalidatedScrollSnapshotClientsForTesting() {
+    return unvalidated_scroll_snapshot_clients_;
+  }
+
+  void ScheduleNextServiceForScrollSnapshotClients();
+
  private:
   friend class FrameNavigationDisabler;
   // LocalFrameMojoHandler is a part of LocalFrame.
@@ -845,7 +884,12 @@ class CORE_EXPORT LocalFrame final
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   void UpdateTaskTime(base::TimeDelta time) override;
-  void UpdateBackForwardCacheDisablingFeatures(uint64_t features_mask) override;
+  void UpdateBackForwardCacheDisablingFeatures(
+      uint64_t features_mask,
+      const BFCacheBlockingFeatureAndLocations&
+          non_sticky_features_and_js_locations,
+      const BFCacheBlockingFeatureAndLocations&
+          sticky_features_and_js_locations) override;
   const base::UnguessableToken& GetAgentClusterId() const override;
 
   // Activates the user activation states of this frame and all its ancestors.
@@ -1005,6 +1049,13 @@ class CORE_EXPORT LocalFrame final
   // binding to it or via a context menu with a selection being opened in a
   // frame.
   Member<TextFragmentHandler> text_fragment_handler_;
+
+  // ScrollSnapshotClients owned by elements in this frame. The clients must
+  // be registered at the actual elements as the references here are weak.
+  HeapHashSet<WeakMember<ScrollSnapshotClient>> scroll_snapshot_clients_;
+
+  HeapHashSet<WeakMember<ScrollSnapshotClient>>
+      unvalidated_scroll_snapshot_clients_;
 
   // Manages a transient affordance for this frame to enter fullscreen.
   TransientAllowFullscreen transient_allow_fullscreen_;

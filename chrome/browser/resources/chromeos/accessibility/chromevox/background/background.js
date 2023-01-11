@@ -17,6 +17,7 @@ import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
 import {QueueMode, TtsInterface, TtsSpeechProperties} from '../common/tts_interface.js';
 import {JaPhoneticMap} from '../third_party/tamachiyomi/ja_phonetic_map.js';
 
+import {AutoScrollHandler} from './auto_scroll_handler.js';
 import {BrailleBackground} from './braille/braille_background.js';
 import {BrailleCommandHandler} from './braille/braille_command_handler.js';
 import {ChromeVox} from './chromevox.js';
@@ -24,7 +25,6 @@ import {ChromeVoxState} from './chromevox_state.js';
 import {ChromeVoxBackground} from './classic_background.js';
 import {CommandHandler} from './command_handler.js';
 import {CommandHandlerInterface} from './command_handler_interface.js';
-import {ConsoleTts} from './console_tts.js';
 import {DesktopAutomationHandler} from './desktop_automation_handler.js';
 import {DesktopAutomationInterface} from './desktop_automation_interface.js';
 import {DownloadHandler} from './download_handler.js';
@@ -35,11 +35,12 @@ import {FocusBounds} from './focus_bounds.js';
 import {GestureCommandHandler} from './gesture_command_handler.js';
 import {BackgroundKeyboardHandler} from './keyboard_handler.js';
 import {LiveRegions} from './live_regions.js';
+import {EventStreamLogger} from './logging/event_stream_logger.js';
 import {LogStore} from './logging/log_store.js';
 import {MathHandler} from './math_handler.js';
 import {MediaAutomationHandler} from './media_automation_handler.js';
 import {Output} from './output/output.js';
-import {OutputEventType} from './output/output_types.js';
+import {OutputCustomEvent} from './output/output_types.js';
 import {PageLoadSoundHandler} from './page_load_sound_handler.js';
 import {PanelBackground} from './panel/panel_background.js';
 import {ChromeVoxPrefs} from './prefs.js';
@@ -58,9 +59,6 @@ const StateType = chrome.automation.StateType;
 export class Background extends ChromeVoxState {
   constructor() {
     super();
-
-    /** @private {!TtsBackground} */
-    this.backgroundTts_ = new TtsBackground();
 
     /** @private {CursorRange} */
     this.currentRange_ = null;
@@ -83,15 +81,15 @@ export class Background extends ChromeVoxState {
     /** @private {boolean} */
     this.talkBackEnabled_ = false;
 
-    /** @private {TtsInterface} */
-    this.tts_ = new CompositeTts()
-                    .add(this.backgroundTts)
-                    .add(ConsoleTts.getInstance());
+    this.init_();
   }
 
-  /** @override */
-  init() {
-    // Initialize legacy background page first.
+  /** @private */
+  init_() {
+    // Initialize braille, prefs, TTS, and legacy background page first.
+    BrailleBackground.init();
+    ChromeVoxPrefs.init();
+    TtsBackground.init();
     ChromeVoxBackground.init();
 
     chrome.accessibilityPrivate.onIntroduceChromeVox.addListener(
@@ -99,10 +97,21 @@ export class Background extends ChromeVoxState {
 
     // Export globals on ChromeVox.
     ChromeVox.braille = BrailleBackground.instance;
-    ChromeVox.tts = this.tts_;
     // Read-only earcons.
     Object.defineProperty(ChromeVox, 'earcons', {
       get: () => this.earcons_,
+    });
+
+    chrome.accessibilityPrivate.onAnnounceForAccessibility.addListener(
+        announceText => {
+          ChromeVox.tts.speak(announceText.join(' '), QueueMode.FLUSH);
+        });
+    chrome.accessibilityPrivate.onCustomSpokenFeedbackToggled.addListener(
+        enabled => this.talkBackEnabled_ = enabled);
+    chrome.accessibilityPrivate.onIntroduceChromeVox.addListener(
+        () => this.onIntroduceChromeVox_());
+    chrome.accessibilityPrivate.onShowChromeVoxTutorial.addListener(() => {
+      (new PanelCommand(PanelCommandType.TUTORIAL)).send();
     });
 
     chrome.clipboard.onClipboardDataChanged.addListener(() => {
@@ -111,15 +120,24 @@ export class Background extends ChromeVoxState {
     document.addEventListener('copy', event => {
       this.onClipboardCopyEvent_(event);
     });
+  }
 
+  static init() {
+    ChromeVoxState.instance = new Background();
+
+    // Initialize legacy background page first.
+    ChromeVoxBackground.init();
+
+    AutoScrollHandler.init();
     BackgroundKeyboardHandler.init();
-    ConsoleTts.init();
+    BrailleCommandHandler.init();
     DesktopAutomationHandler.init();
     DownloadHandler.init();
+    EventStreamLogger.init();
     FindHandler.init();
     FocusAutomationHandler.init();
     JaPhoneticData.init(JaPhoneticMap.MAP);
-    LiveRegions.init(this);
+    LiveRegions.init();
     LocaleOutputHelper.init();
     LogStore.init();
     MediaAutomationHandler.init();
@@ -127,19 +145,11 @@ export class Background extends ChromeVoxState {
     PanelBackground.init();
     RangeAutomationHandler.init();
 
-    chrome.accessibilityPrivate.onAnnounceForAccessibility.addListener(
-        announceText => {
-          ChromeVox.tts.speak(announceText.join(' '), QueueMode.FLUSH);
-        });
-    chrome.accessibilityPrivate.onCustomSpokenFeedbackToggled.addListener(
-        enabled => this.talkBackEnabled_ = enabled);
-    chrome.accessibilityPrivate.onShowChromeVoxTutorial.addListener(() => {
-      (new PanelCommand(PanelCommandType.TUTORIAL)).send();
-    });
-
     // Set the darkScreen state to false, since the display will be on whenever
     // ChromeVox starts.
     sessionStorage.setItem('darkScreen', 'false');
+
+    ChromeVoxState.resolveReadyPromise_();
   }
 
   /** @override */
@@ -148,11 +158,6 @@ export class Background extends ChromeVoxState {
       return this.currentRange_;
     }
     return null;
-  }
-
-  /** @override */
-  get backgroundTts() {
-    return this.backgroundTts_;
   }
 
   /** @override */
@@ -218,7 +223,7 @@ export class Background extends ChromeVoxState {
     position.y = loc.top + loc.height / 2;
     let url = root.docUrl;
     url = url.substring(0, url.indexOf('#')) || url;
-    ChromeVox.position[url] = position;
+    ChromeVoxState.position[url] = position;
   }
 
   /** @override */
@@ -330,7 +335,7 @@ export class Background extends ChromeVoxState {
     }
 
     o.withRichSpeechAndBraille(
-         selectedRange || range, prevRange, OutputEventType.NAVIGATE)
+         selectedRange || range, prevRange, OutputCustomEvent.NAVIGATE)
         .withInitialSpeechProperties(opt_speechProps);
 
     if (msg) {
@@ -511,5 +516,4 @@ export class Background extends ChromeVoxState {
 }
 
 InstanceChecker.closeExtraInstances();
-ChromeVoxState.instance = new Background();
-ChromeVoxState.instance.init();
+Background.init();

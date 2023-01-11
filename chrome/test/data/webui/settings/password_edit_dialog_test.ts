@@ -213,8 +213,7 @@ suite('PasswordEditDialog', function() {
   let elementFactory: PasswordSectionElementFactory;
 
   setup(function() {
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     // Override the PasswordManagerImpl for testing.
     passwordManager = new TestPasswordManagerProxy();
     PasswordManagerImpl.setInstance(passwordManager);
@@ -404,6 +403,7 @@ suite('PasswordEditDialog', function() {
   });
 
   test('hasCorrectInitialStateWhenAddPassword', function() {
+    loadTimeData.overrideValues({enablePasswordNotes: false});
     const addDialog = elementFactory.createPasswordEditDialog();
     assertAddDialogParts(addDialog);
     assertEquals(true, addDialog.$.websiteInput.autofocus);

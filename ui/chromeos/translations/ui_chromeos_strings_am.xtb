@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">ቀልብስ</translation>
 <translation id="2084108471225856927">የመሣሪያ ቅንብሮች</translation>
 <translation id="2084809735218147718">አመሰግናለሁን መፈረም</translation>
-<translation id="2085470240340828803">«<ph name="FILENAME" />» የሚባል ፋይል አስቀድሞ አለ። ምን ማድረግ ይፈልጋሉ?</translation>
 <translation id="2088690981887365033">VPN አውታረ መረብ</translation>
 <translation id="2122305276694332719">ወደ ተደበቀ አውታረ መረብ በራስ ሰር ማገናኘት ሌሎች የእርስዎን መሣሪያ እና አንዳንድ የአውታረ መረብ ቅንብሮችን እንዲመለከቱ ይፈቅድላቸዋል እንዲሁም የሚመከር አይደለም።</translation>
 <translation id="2125607626296734455">ክመርኛ</translation>
@@ -171,7 +170,7 @@
 <translation id="2464089476039395325">የኤችቲቲፒ ተኪ</translation>
 <translation id="2467267713099745100"><ph name="NETWORK_TYPE" /> አውታረ መረብ፣ ጠፍቷል</translation>
 <translation id="2468402215065996499">ታማጎቺ</translation>
-<translation id="2470939964922472929">የተሳሳተ ፒን ከልክ በላይ ብዙ ጊዜ ገብቷል። አዲስ ፒን ለማቀናበር በአገልግሎት አቅራቢዎ የቀረበውን ባለ8 አሃዝ የግል እገዳ ማንሻ ቁልፍ (PUK) ያስገቡ።</translation>
+<translation id="2470939964922472929">የተሳሳተ ፒን ከልክ በላይ ብዙ ጊዜ ገብቷል። አዲስ ፒን ለማቀናበር በአገልግሎት አቅራቢዎ የቀረበውን ባለ8 አኃዝ የግል እገዳ ማንሻ ቁልፍ (PUK) ያስገቡ።</translation>
 <translation id="2500392669976258912">የጉጃራቲ ፎነቲክ</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">ቃኝ</translation>
@@ -456,7 +455,6 @@
 <translation id="4900532980794411603">በParallels ዴስክቶፕ አጋራ</translation>
 <translation id="4902546322522096650">አውታረ መረብ <ph name="NETWORK_INDEX" /> ከ<ph name="NETWORK_COUNT" />፣ <ph name="NETWORK_NAME" />፣ <ph name="SECURITY_STATUS" />፣ ሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" />%፣ አገናኝ</translation>
 <translation id="4906580650526544301">አውታረ መረብ <ph name="NETWORK_INDEX" /> ከ<ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />፣ <ph name="PROVIDER_NAME" />፣ <ph name="CONNECTION_STATUS" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" />%፣ የስልክ ባትሪ <ph name="BATTERY_STATUS" />%፣ ዝርዝሮች</translation>
-<translation id="4929673617759421391">ይህን ፋይል መለጠፍ በአስተዳዳሪ መመሪያ ታግዷል</translation>
 <translation id="4935975195727477204">የጋንዛኒያ አበባ</translation>
 <translation id="4943368462779413526">የአሜሪካ እግር ኳስ</translation>
 <translation id="4961158930123534723">1 አቃፊ ለParallels ዴስክቶፕ ተጋርቷል</translation>
@@ -534,6 +532,7 @@
 <translation id="5428105026674456456">ስፓኒሽ</translation>
 <translation id="5438282218546237410">ለ <ph name="SEARCH_TERM" /> ምንም ውጤቶች የሉም።</translation>
 <translation id="5449551289610225147">ልክ ያልኾነ የይለፍ ቃል</translation>
+<translation id="5459064203055649751">«<ph name="FILENAME" />» የተባለ ፋይል አስቀድሞ አለ። እያንቀሳቀሱት ባለው እሱን ሊተኩት ይፈልጋሉ?</translation>
 <translation id="5463231940765244860">አስገባ</translation>
 <translation id="5469868506864199649">ጣሊያንኛ</translation>
 <translation id="5473333559083690127">አዲሱን ፒን ደግመው ያስገቡ</translation>
@@ -654,6 +653,7 @@
 <translation id="6495925982925244349">አውታረ መረብ <ph name="NETWORK_INDEX" /> ከ<ph name="NETWORK_COUNT" />፣ <ph name="NETWORK_NAME" />፣ <ph name="SECURITY_STATUS" />፣ <ph name="CONNECTION_STATUS" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" />%፣ በእርስዎ አስተዳዳሪ የሚተዳደር፣ ዝርዝሮች</translation>
 <translation id="649877868557234318"><ph name="FILE_NAME" />ን ወደ <ph name="FOLDER_NAME" /> በማውጣት ላይ</translation>
 <translation id="6499681088828539489">ለተጋሩ አውታረ መረቦች ተኪዎችን አትፍቀድ</translation>
+<translation id="6503285896705205014"><ph name="COUNT" /> ፋይሎችን ማባዛት በአስተዳዳሪ መመሪያ ታግዷል</translation>
 <translation id="6509122719576673235">ኖርዌጂያን</translation>
 <translation id="6528513914570774834">ሌሎች የዚህ መሣሪያ ተጠቃሚዎች ይህን አውታረ መረብ እንዲጠቀሙ ይፍቀዱላቸው</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" />ን በማመሳሰል ላይ...</translation>
@@ -756,6 +756,7 @@
 <translation id="7357762654218998920">ይህ የፋይል ዓይነት አይደገፍም። በChromeOS ላይ ፋይሎችን ስለመክፈት<ph name="BEGIN_LINK_HELP" />የበለጠ ይወቁ<ph name="END_LINK_HELP" />።</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> ንጥሎችን በመቅዳት ላይ...</translation>
 <translation id="7375951387215729722">የፋይል ዝርዝር በ<ph name="COLUMN_NAME" /> በቁልቁለት ተደርድሯል።</translation>
+<translation id="7377161162143020057">ይህን ፋይል ማባዛት በአስተዳዳሪ መመሪያ ታግዷል</translation>
 <translation id="7402503521691663770">የChromeOS Flex መሣሪያዎች</translation>
 <translation id="7408870451288633753">ቼክ</translation>
 <translation id="7417453074306512035">የግዕዝ ቁልፍ ሰሌዳ</translation>
@@ -921,7 +922,7 @@
 <translation id="8639391553632924850"><ph name="INPUT_LABEL" /> - ወደብ</translation>
 <translation id="8656768832129462377">አታረጋግጥ</translation>
 <translation id="8688591111840995413">መጥፎ የይለፍ ቃል</translation>
-<translation id="8698464937041809063">Google ሥዕል</translation>
+<translation id="8698464937041809063">Google ስዕል</translation>
 <translation id="8698877009525468705">ይህ ፋይል ምስጢራዊ እና ለአስተዳዳሪ መመሪያ ገደቦች ተገዢ ነው።</translation>
 <translation id="8712637175834984815">ገባኝ</translation>
 <translation id="8713112442029511308">ማልታኛ</translation>
@@ -977,7 +978,6 @@
 <translation id="9183302530794969518">Google ሰነድ</translation>
 <translation id="9189836632794948435">ካዛክኛ</translation>
 <translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> ንጥሎች ከማህደር ወጥተዋል።</translation>
-<translation id="9210751050717126865"><ph name="COUNT" /> ፋይሎችን መለጠፍ በአስተዳዳሪ መመሪያ ታግዷል</translation>
 <translation id="9213073329713032541">ጭነት በተሳካ ሁኔታ ጀምሯል።</translation>
 <translation id="9219103736887031265">ምስሎች</translation>
 <translation id="9219908252191632183">ጨረቃዊ</translation>

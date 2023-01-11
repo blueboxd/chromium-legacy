@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -212,7 +213,7 @@ class NavigateTabMessageHandler {
     navigate_listener_.Reset();
   }
 
-  raw_ptr<Profile> profile_;
+  raw_ptr<Profile, DanglingUntriaged> profile_;
   ExtensionTestMessageListener navigate_listener_;
 };
 
@@ -332,7 +333,7 @@ void WaitForExtraHeadersListener(base::WaitableEvent* event,
     return;
   }
 
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&WaitForExtraHeadersListener, event, browser_context));
 }
@@ -528,7 +529,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
 }
 
 class ExtensionDevToolsProtocolTest
-    : public ExtensionWebRequestApiTest,
+    : public ExtensionWebRequestApiTestWithContextType,
       public content::TestDevToolsProtocolClient {
  protected:
   void Attach() { AttachToWebContents(web_contents()); }
@@ -543,7 +544,15 @@ class ExtensionDevToolsProtocolTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionDevToolsProtocolTest,
+INSTANTIATE_TEST_SUITE_P(PersistentBackground,
+                         ExtensionDevToolsProtocolTest,
+                         ::testing::Values(ContextType::kPersistentBackground));
+
+INSTANTIATE_TEST_SUITE_P(ServiceWorker,
+                         ExtensionDevToolsProtocolTest,
+                         ::testing::Values(ContextType::kServiceWorker));
+
+IN_PROC_BROWSER_TEST_P(ExtensionDevToolsProtocolTest,
                        HeaderOverriddenByExtension) {
   Attach();
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -602,7 +611,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsProtocolTest,
   ASSERT_EQ(*cookie_value, "cookieValue");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionDevToolsProtocolTest,
+IN_PROC_BROWSER_TEST_P(ExtensionDevToolsProtocolTest,
                        HeaderOverrideViaProtocolAllowedByExtension) {
   Attach();
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -709,10 +718,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsProtocolTest,
   ASSERT_EQ(*cookie_value, "cookieValue");
 }
 
-// This test times out regularly on ASAN/MSAN trybots. See
-// https://crbug.com/733395.
-// TODO(crbug.com/1177120) Re-enable test
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, DISABLED_WebRequestTypes) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestTypes) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest/test_types")) << message_;
 }
@@ -725,7 +731,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, DISABLED_WebRequestTypes) {
 #else
 #define MAYBE_WebRequestTestOSDD WebRequestTestOSDD
 #endif
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_WebRequestTestOSDD) {
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
+                       MAYBE_WebRequestTestOSDD) {
   // An OSDD request is only generated when a main frame at is loaded at /, so
   // serve osdd/index.html from the root of the test server:
   embedded_test_server()->ServeFilesFromDirectory(
@@ -780,12 +787,29 @@ enum class ProfileMode {
   kIncognito,
 };
 
+struct ARTestParams {
+  ARTestParams(ProfileMode profile_mode, ContextType context_type)
+      : profile_mode(profile_mode), context_type(context_type) {}
+
+  ProfileMode profile_mode;
+  ContextType context_type;
+};
+
 class ExtensionWebRequestApiAuthRequiredTest
     : public ExtensionWebRequestApiTest,
-      public testing::WithParamInterface<ProfileMode> {
+      public testing::WithParamInterface<ARTestParams> {
+ public:
+  ExtensionWebRequestApiAuthRequiredTest()
+      : ExtensionWebRequestApiTest(GetParam().context_type) {}
+  ~ExtensionWebRequestApiAuthRequiredTest() override = default;
+  ExtensionWebRequestApiAuthRequiredTest(
+      const ExtensionWebRequestApiAuthRequiredTest&) = delete;
+  ExtensionWebRequestApiAuthRequiredTest& operator=(
+      ExtensionWebRequestApiAuthRequiredTest&) = delete;
+
  protected:
   static bool GetEnableIncognito() {
-    return GetParam() == ProfileMode::kIncognito;
+    return GetParam().profile_mode == ProfileMode::kIncognito;
   }
 
   static std::string FormatCustomArg(const char* test_name) {
@@ -879,12 +903,27 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
       << message_;
 }
 
-INSTANTIATE_TEST_SUITE_P(UserProfile,
-                         ExtensionWebRequestApiAuthRequiredTest,
-                         ::testing::Values(ProfileMode::kUserProfile));
-INSTANTIATE_TEST_SUITE_P(Incognito,
-                         ExtensionWebRequestApiAuthRequiredTest,
-                         ::testing::Values(ProfileMode::kIncognito));
+INSTANTIATE_TEST_SUITE_P(
+    PersistentBackground,
+    ExtensionWebRequestApiAuthRequiredTest,
+    ::testing::Values(ARTestParams(ProfileMode::kUserProfile,
+                                   ContextType::kPersistentBackground)));
+INSTANTIATE_TEST_SUITE_P(
+    PersistentBackgroundIncognito,
+    ExtensionWebRequestApiAuthRequiredTest,
+    ::testing::Values(ARTestParams(ProfileMode::kIncognito,
+                                   ContextType::kPersistentBackground)));
+
+INSTANTIATE_TEST_SUITE_P(
+    ServiceWorker,
+    ExtensionWebRequestApiAuthRequiredTest,
+    ::testing::Values(ARTestParams(ProfileMode::kUserProfile,
+                                   ContextType::kServiceWorker)));
+INSTANTIATE_TEST_SUITE_P(
+    ServiceWorkerIncognito,
+    ExtensionWebRequestApiAuthRequiredTest,
+    ::testing::Values(ARTestParams(ProfileMode::kIncognito,
+                                   ContextType::kServiceWorker)));
 
 IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
                        WebRequestBlocking) {
@@ -992,20 +1031,14 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
       << message_;
 }
 
-// TODO(crbug.com/1093066): The JS file for this test uses XmlHttpRequest,
-// which needs to be migrated to use fetch() to be compatible with
-// service workers.
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
                        WebRequestSubresourceRedirects) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest/test_subresource_redirects"))
       << message_;
 }
 
-// TODO(crbug.com/1093066): The JS file for this test uses XmlHttpRequest,
-// which needs to be migrated to use fetch() to be compatible with
-// service workers.
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
                        WebRequestSubresourceRedirectsWithExtraHeaders) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest/test_subresource_redirects",
@@ -1053,11 +1086,11 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestDeclarative1) {
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
+                       WebRequestDeclarative1) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest("webrequest",
-                               {.extension_url = "test_declarative1.html",
-                                .custom_arg = R"({"testSuite": "normal"})"}))
+  ASSERT_TRUE(RunExtensionTest("webrequest/test_declarative",
+                               {.custom_arg = R"({"testSuite": "normal1"})"}))
       << message_;
 }
 
@@ -1065,19 +1098,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestDeclarative1) {
 // until these tests are fixed and moved to the set of tests that aren't
 // broken or flaky. Should tests become flaky, they can be moved here.
 // See https://crbug.com/846555.
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
                        DISABLED_WebRequestDeclarative1Broken) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest("webrequest",
-                               {.extension_url = "test_declarative1.html",
-                                .custom_arg = R"({"testSuite": "broken"})"}))
+  ASSERT_TRUE(RunExtensionTest("webrequest/test_declarative",
+                               {.custom_arg = R"({"testSuite": "broken"})"}))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestDeclarative2) {
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
+                       WebRequestDeclarative2) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest("webrequest",
-                               {.extension_url = "test_declarative2.html"}))
+  ASSERT_TRUE(RunExtensionTest("webrequest/test_declarative",
+                               {.custom_arg = R"({"testSuite": "normal2"})"}))
       << message_;
 }
 
@@ -2180,13 +2213,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   ash::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  Profile* temp_profile =
-      Profile::CreateProfile(
-          profile_manager->user_data_dir().AppendASCII("profile"), nullptr,
-          Profile::CreateMode::CREATE_MODE_SYNCHRONOUS)
-          .release();
+  std::unique_ptr<Profile> temp_profile = Profile::CreateProfile(
+      profile_manager->user_data_dir().AppendASCII("profile"), nullptr,
+      Profile::CreateMode::CREATE_MODE_SYNCHRONOUS);
   // Create a WebRequestAPI instance that we can control the lifetime of.
-  auto api = std::make_unique<WebRequestAPI>(temp_profile);
+  auto api = std::make_unique<WebRequestAPI>(temp_profile.get());
   // Make sure we are proxying for |temp_profile|.
   api->ForceProxyForTesting();
   temp_profile->GetDefaultStoragePartition()->FlushNetworkInterfaceForTesting();
@@ -2194,7 +2225,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   mojo::Remote<network::mojom::URLLoaderFactory> factory;
   auto pending_receiver = factory.BindNewPipeAndPassReceiver();
   auto temp_web_contents =
-      WebContents::Create(WebContents::CreateParams(temp_profile));
+      WebContents::Create(WebContents::CreateParams(temp_profile.get()));
   content::RenderFrameHost* frame = temp_web_contents->GetPrimaryMainFrame();
   EXPECT_TRUE(api->MaybeProxyURLLoaderFactory(
       frame->GetProcess()->GetBrowserContext(), frame,
@@ -2233,7 +2264,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   // the ThreadPool here to avoid the posts coming from it.
   content::RunAllTasksUntilIdle();
 
-  ProfileDestroyer::DestroyProfileWhenAppropriate(temp_profile);
+  ProfileDestroyer::DestroyOriginalProfileWhenAppropriate(
+      std::move(temp_profile));
   client.Unbind();
   api.reset();
 }
@@ -2854,7 +2886,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
   ASSERT_TRUE(extension);
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
-  auto task_runner = base::SequencedTaskRunnerHandle::Get();
+  auto task_runner = base::SequencedTaskRunner::GetCurrentDefault();
   embedded_test_server()->RegisterRequestHandler(base::BindLambdaForTesting(
       [&](const net::test_server::HttpRequest& request)
           -> std::unique_ptr<net::test_server::HttpResponse> {
@@ -6035,7 +6067,7 @@ class ErrorObserver : public ErrorConsole::Observer {
 
  private:
   size_t errors_expected_;
-  raw_ptr<ErrorConsole> error_console_;
+  raw_ptr<ErrorConsole, DanglingUntriaged> error_console_;
   size_t errors_observed_ = 0;
   base::ScopedObservation<ErrorConsole, ErrorConsole::Observer> observation_{
       this};

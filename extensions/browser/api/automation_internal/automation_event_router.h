@@ -35,6 +35,7 @@ struct ExtensionMsg_AccessibilityLocationChangeParams;
 
 namespace extensions {
 struct AutomationListener;
+struct WorkerId;
 
 class AutomationEventRouterObserver {
  public:
@@ -43,7 +44,8 @@ class AutomationEventRouterObserver {
 };
 
 class AutomationEventRouter : public content::RenderProcessHostObserver,
-                              public AutomationEventRouterInterface {
+                              public AutomationEventRouterInterface,
+                              public ui::AXActionHandlerObserver {
  public:
   static AutomationEventRouter* GetInstance();
 
@@ -65,7 +67,11 @@ class AutomationEventRouter : public content::RenderProcessHostObserver,
       content::WebContents* web_contents);
 
   // Undoes the Register call above. May result in disabling of automation.
-  void UnregisterListenerWithDesktopPermission(int lsitener_process_id);
+  void UnregisterListenerWithDesktopPermission(int listener_process_id);
+
+  // Like the above function, but for all listeners. Definitely results in
+  // disabling of automation.
+  void UnregisterAllListenersWithDesktopPermission();
 
   // The following two methods should only be called by Lacros.
   void NotifyAllAutomationExtensionsGone();
@@ -73,6 +79,7 @@ class AutomationEventRouter : public content::RenderProcessHostObserver,
 
   void AddObserver(AutomationEventRouterObserver* observer);
   void RemoveObserver(AutomationEventRouterObserver* observer);
+  bool HasObserver(AutomationEventRouterObserver* observer);
 
   // AutomationEventRouterInterface:
   void DispatchAccessibilityEvents(const ui::AXTreeID& tree_id,
@@ -81,9 +88,7 @@ class AutomationEventRouter : public content::RenderProcessHostObserver,
                                    std::vector<ui::AXEvent> events) override;
   void DispatchAccessibilityLocationChange(
       const ExtensionMsg_AccessibilityLocationChangeParams& params) override;
-  void DispatchTreeDestroyedEvent(
-      ui::AXTreeID tree_id,
-      content::BrowserContext* browser_context) override;
+  void DispatchTreeDestroyedEvent(ui::AXTreeID tree_id) override;
   void DispatchActionResult(
       const ui::AXActionData& data,
       bool result,
@@ -138,6 +143,9 @@ class AutomationEventRouter : public content::RenderProcessHostObserver,
       const content::ChildProcessTerminationInfo& info) override;
   void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
+  // ui::AXActionHandlerObserver:
+  void TreeRemoved(ui::AXTreeID ax_tree_id) override;
+
   void RemoveAutomationListener(content::RenderProcessHost* host);
 
   // Called when the user switches profiles or when a listener is added
@@ -154,6 +162,8 @@ class AutomationEventRouter : public content::RenderProcessHostObserver,
 
   content::NotificationRegistrar registrar_;
   std::vector<std::unique_ptr<AutomationListener>> listeners_;
+
+  std::map<WorkerId, std::string> keepalive_request_uuid_for_worker_;
 
   raw_ptr<content::BrowserContext> active_context_;
 

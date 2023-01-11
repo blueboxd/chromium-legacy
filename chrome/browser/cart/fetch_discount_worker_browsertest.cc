@@ -197,7 +197,7 @@ class FetchDiscountWorkerBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_environment_adaptor_;
   base::CallbackListSubscription create_services_subscription_;
-  raw_ptr<CartService> service_;
+  raw_ptr<CartService, DanglingUntriaged> service_;
   bool satisfied_;
 };
 
@@ -213,8 +213,7 @@ class FetchFLCodelessDiscountWorkerBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
 
-    std::vector<base::test::ScopedFeatureList::FeatureAndParams>
-        enabled_features;
+    std::vector<base::test::FeatureRefAndParams> enabled_features;
     base::FieldTrialParams cart_params, coupon_params;
     cart_params[ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam] =
         "true";
@@ -371,8 +370,7 @@ class FetchFLCodeDiscountWorkerBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
 
-    std::vector<base::test::ScopedFeatureList::FeatureAndParams>
-        enabled_features;
+    std::vector<base::test::FeatureRefAndParams> enabled_features;
     base::FieldTrialParams cart_params, coupon_params;
     cart_params[ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam] =
         "true";
@@ -394,7 +392,7 @@ class FetchFLCodeDiscountWorkerBrowserTest
 
  protected:
   std::vector<std::string> parter_merchant_list_;
-  raw_ptr<CouponService> coupon_service_;
+  raw_ptr<CouponService, DanglingUntriaged> coupon_service_;
 };
 
 IN_PROC_BROWSER_TEST_F(FetchFLCodeDiscountWorkerBrowserTest,
@@ -484,16 +482,20 @@ class FetchCodeBasedDiscountWorkerBrowserTest
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
 
     std::vector<base::test::FeatureRefAndParams> enabled_features;
-    base::FieldTrialParams cart_params, coupon_params;
+    base::FieldTrialParams cart_params, coupon_params, code_based_rbd_param;
     cart_params[ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam] =
         "true";
     cart_params["CartDiscountFetcherEndpointParam"] =
         embedded_test_server()
             ->GetURL("/coupons/codebased_discounts.json")
             .spec();
-    cart_params[commerce::kCodeBasedRuleDiscountParam] = "true";
     enabled_features.emplace_back(ntp_features::kNtpChromeCartModule,
                                   cart_params);
+
+    code_based_rbd_param[commerce::kCodeBasedRuleDiscountParam] = "true";
+    enabled_features.emplace_back(commerce::kCodeBasedRBD,
+                                  code_based_rbd_param);
+
     coupon_params["coupon-partner-merchant-pattern"] =
         BuildPartnerMerchantPattern(parter_merchant_list_);
     coupon_params[commerce::kRetailCouponsWithCodeParam] = "true";
@@ -506,7 +508,7 @@ class FetchCodeBasedDiscountWorkerBrowserTest
 
  protected:
   std::vector<std::string> parter_merchant_list_;
-  raw_ptr<CouponService> coupon_service_;
+  raw_ptr<CouponService, DanglingUntriaged> coupon_service_;
 };
 
 IN_PROC_BROWSER_TEST_F(FetchCodeBasedDiscountWorkerBrowserTest,

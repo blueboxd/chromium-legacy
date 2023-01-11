@@ -29,12 +29,14 @@ class WebContents;
 namespace web_app {
 
 class AppLock;
+class AppLockDescription;
+class LockDescription;
 class NoopLock;
+class NoopLockDescription;
 class WebAppDataRetriever;
-class WebAppInstallFinalizer;
 
 // Install web app from manifest for current `WebContents`.
-class FetchManifestAndInstallCommand : public WebAppCommand {
+class FetchManifestAndInstallCommand : public WebAppCommandTemplate<NoopLock> {
  public:
   // `use_fallback` allows getting fallback information from current document
   // to enable installing a non-promotable site.
@@ -45,14 +47,13 @@ class FetchManifestAndInstallCommand : public WebAppCommand {
       WebAppInstallDialogCallback dialog_callback,
       OnceInstallCallback callback,
       bool use_fallback,
-      WebAppInstallFinalizer* install_finalizer,
       std::unique_ptr<WebAppDataRetriever> data_retriever);
 
   ~FetchManifestAndInstallCommand() override;
 
-  Lock& lock() const override;
+  LockDescription& lock_description() const override;
 
-  void Start() override;
+  void StartWithLock(std::unique_ptr<NoopLock> lock) override;
   void OnSyncSourceRemoved() override;
   void OnShutdown() override;
 
@@ -78,7 +79,8 @@ class FetchManifestAndInstallCommand : public WebAppCommand {
   // synchronously calls OnDidCheckForIntentToPlayStore() implicitly failing the
   // check if it cannot be made.
   void CheckForPlayStoreIntentOrGetIcons(base::flat_set<GURL> icon_urls,
-                                         bool skip_page_favicons);
+                                         bool skip_page_favicons,
+                                         std::unique_ptr<AppLock> app_lock);
 
   // Called when the asynchronous check for whether an intent to the Play Store
   // should be made returns.
@@ -112,8 +114,11 @@ class FetchManifestAndInstallCommand : public WebAppCommand {
 
   void LogInstallInfo();
 
-  std::unique_ptr<NoopLock> noop_lock_;
+  std::unique_ptr<NoopLockDescription> noop_lock_description_;
+  std::unique_ptr<AppLockDescription> app_lock_description_;
+
   std::unique_ptr<AppLock> app_lock_;
+  std::unique_ptr<NoopLock> noop_lock_;
 
   webapps::WebappInstallSource install_surface_;
   base::WeakPtr<content::WebContents> web_contents_;
@@ -123,7 +128,6 @@ class FetchManifestAndInstallCommand : public WebAppCommand {
   // Whether using fallback installation data from the document.
   bool use_fallback_ = false;
 
-  raw_ptr<WebAppInstallFinalizer> install_finalizer_;
   std::unique_ptr<WebAppDataRetriever> data_retriever_;
 
   InstallErrorLogEntry install_error_log_entry_;

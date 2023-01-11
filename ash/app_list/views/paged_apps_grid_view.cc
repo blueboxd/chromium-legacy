@@ -46,7 +46,6 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/views/animation/animation_builder.h"
-#include "ui/views/animation/bounds_animator.h"
 #include "ui/views/view.h"
 #include "ui/views/view_model_utils.h"
 #include "ui/views/widget/widget.h"
@@ -213,8 +212,7 @@ PagedAppsGridView::PagedAppsGridView(
 
   pagination_controller_ = std::make_unique<PaginationController>(
       &pagination_model_, PaginationController::SCROLL_AXIS_VERTICAL,
-      base::BindRepeating(&AppListRecordPageSwitcherSourceByEventType),
-      IsTabletMode());
+      base::BindRepeating(&AppListRecordPageSwitcherSourceByEventType));
 }
 
 PagedAppsGridView::~PagedAppsGridView() {
@@ -222,8 +220,6 @@ PagedAppsGridView::~PagedAppsGridView() {
 }
 
 void PagedAppsGridView::OnTabletModeChanged(bool started) {
-  pagination_controller_->set_is_tablet_mode(started);
-
   // Enable/Disable folder icons's background blur based on tablet mode.
   for (const auto& entry : view_model()->entries()) {
     auto* item_view = static_cast<AppListItemView*>(entry.view);
@@ -390,9 +386,6 @@ void PagedAppsGridView::OnMouseEvent(ui::MouseEvent* event) {
 void PagedAppsGridView::Layout() {
   if (ignore_layout())
     return;
-
-  if (bounds_animator()->IsAnimating())
-    bounds_animator()->Cancel();
 
   if (GetContentsBounds().IsEmpty())
     return;
@@ -865,7 +858,7 @@ void PagedAppsGridView::OnPageFlipTimer() {
 
   pagination_model_.SelectPage(page_flip_target_, true);
   if (!IsInFolder())
-    RecordPageSwitcherSource(kDragAppToBorder, IsTabletMode());
+    RecordPageSwitcherSource(kDragAppToBorder);
 
   BeginHideCurrentGhostImageView();
 }
@@ -935,10 +928,6 @@ void PagedAppsGridView::AnimateCardifiedState() {
   gfx::Point start_position = items_container()->origin();
   RecenterItemsContainer();
 
-  // Apps might be animating due to drag reorder. Cancel any active animations
-  // so that the cardified state animation can be applied.
-  bounds_animator()->Cancel();
-
   gfx::Vector2d translate_offset(
       0, start_position.y() - items_container()->origin().y());
 
@@ -954,18 +943,15 @@ void PagedAppsGridView::AnimateCardifiedState() {
   views::AnimationBuilder animations;
   cardified_animation_abort_handle_ = animations.GetAbortHandle();
   animations
-      .OnEnded(base::BindOnce(&PagedAppsGridView::MaybeCallOnBoundsAnimatorDone,
+      .OnEnded(base::BindOnce(&PagedAppsGridView::OnCardifiedStateAnimationDone,
                               weak_ptr_factory_.GetWeakPtr()))
       .OnAborted(
-          base::BindOnce(&PagedAppsGridView::MaybeCallOnBoundsAnimatorDone,
+          base::BindOnce(&PagedAppsGridView::OnCardifiedStateAnimationDone,
                          weak_ptr_factory_.GetWeakPtr()))
       .SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
       .Once()
       .SetDuration(base::Milliseconds(kDefaultAnimationDuration));
-
-  DCHECK(!bounds_animation_for_cardified_state_in_progress_);
-  bounds_animation_for_cardified_state_in_progress_ = true;
 
   AnimateAppListItemsForCardifiedState(&animations.GetCurrentSequence(),
                                        translate_offset);
@@ -1052,8 +1038,8 @@ void PagedAppsGridView::AnimateAppListItemsForCardifiedState(
 
     if (entry_view->has_pending_row_change()) {
       entry_view->reset_has_pending_row_change();
-      row_change_animator_->AnimateBetweenRows(entry_view, current_bounds,
-                                               target_bounds);
+      row_change_animator_->AnimateBetweenRows(
+          entry_view, current_bounds, target_bounds, animation_sequence);
       continue;
     }
 
@@ -1078,10 +1064,7 @@ void PagedAppsGridView::AnimateAppListItemsForCardifiedState(
   }
 }
 
-void PagedAppsGridView::MaybeCallOnBoundsAnimatorDone() {
-  DCHECK(bounds_animation_for_cardified_state_in_progress_);
-  bounds_animation_for_cardified_state_in_progress_ = false;
-
+void PagedAppsGridView::OnCardifiedStateAnimationDone() {
   DestroyLayerItemsIfNotNeeded();
 
   if (layer()->opacity() == 0.0f)
@@ -1333,7 +1316,7 @@ void PagedAppsGridView::AnimateOnNudgeRemoved() {
   }
 
   PrepareItemsForBoundsAnimation();
-  AnimateToIdealBounds();
+  AnimateToIdealBounds(/*top to bottom animation=*/true);
 }
 
 void PagedAppsGridView::SetCardifiedStateEndedTestCallback(

@@ -25,13 +25,15 @@ import './app_management_page/app_detail_view.js';
 import 'chrome://resources/cr_components/app_management/uninstall_button.js';
 import '../../controls/settings_dropdown_menu.js';
 
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
+import {App} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
 import {AppManagementEntryPoint, AppManagementEntryPointsHistogramName} from 'chrome://resources/cr_components/app_management/constants.js';
 import {getAppIcon, getSelectedApp} from 'chrome://resources/cr_components/app_management/util.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
+import {App as AppWithNotifications, AppNotificationsHandlerInterface, AppNotificationsObserverInterface, AppNotificationsObserverReceiver, Readiness} from '../../mojom-webui/os_apps_page/app_notification_handler.mojom-webui.js';
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {Route, Router} from '../../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
@@ -44,21 +46,21 @@ import {AppManagementStoreClient, AppManagementStoreClientInterface} from './app
 import {getAppNotificationProvider} from './app_notifications_page/mojo_interface_provider.js';
 
 /**
- * @param {!ash.settings.appNotification.mojom.App} app
+ * @param {!AppWithNotifications} app
  * @return {boolean}
  */
 export function isAppInstalled(app) {
   switch (app.readiness) {
-    case ash.settings.appNotification.mojom.Readiness.kReady:
-    case ash.settings.appNotification.mojom.Readiness.kDisabledByBlocklist:
-    case ash.settings.appNotification.mojom.Readiness.kDisabledByPolicy:
-    case ash.settings.appNotification.mojom.Readiness.kDisabledByUser:
-    case ash.settings.appNotification.mojom.Readiness.kTerminated:
+    case Readiness.kReady:
+    case Readiness.kDisabledByBlocklist:
+    case Readiness.kDisabledByPolicy:
+    case Readiness.kDisabledByUser:
+    case Readiness.kTerminated:
       return true;
-    case ash.settings.appNotification.mojom.Readiness.kUninstalledByUser:
-    case ash.settings.appNotification.mojom.Readiness.kUninstalledByMigration:
-    case ash.settings.appNotification.mojom.Readiness.kRemoved:
-    case ash.settings.appNotification.mojom.Readiness.kUnknown:
+    case Readiness.kUninstalledByUser:
+    case Readiness.kUninstalledByMigration:
+    case Readiness.kRemoved:
+    case Readiness.kUnknown:
       return false;
   }
   assertNotReached();
@@ -235,18 +237,17 @@ class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
     });
 
     /**
-     * @private {!ash.settings.appNotification.mojom.AppNotificationsHandlerInterface}
+     * @private {!AppNotificationsHandlerInterface}
      */
     this.mojoInterfaceProvider_ = getAppNotificationProvider();
 
     /**
-     * @private {!ash.settings.appNotification.mojom.AppNotificationsObserverReceiver}
+     * @private {!AppNotificationsObserverReceiver}
      */
     this.appNotificationsObserverReceiver_ =
-        new ash.settings.appNotification.mojom.AppNotificationsObserverReceiver(
+        new AppNotificationsObserverReceiver(
             /**
-             * @type {!ash.settings.appNotification.mojom.
-             * AppNotificationsObserverInterface}
+             * @type {!AppNotificationsObserverInterface}
              */
             (this));
 

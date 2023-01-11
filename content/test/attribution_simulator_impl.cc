@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ref.h"
 #include "content/public/test/attribution_simulator.h"
 
 #include <stddef.h>
@@ -36,6 +37,7 @@
 #include "content/browser/attribution_reporting/aggregatable_attribution_utils.h"
 #include "content/browser/attribution_reporting/attribution_cookie_checker.h"
 #include "content/browser/attribution_reporting/attribution_cookie_checker_impl.h"
+#include "content/browser/attribution_reporting/attribution_debug_report.h"
 #include "content/browser/attribution_reporting/attribution_default_random_generator.h"
 #include "content/browser/attribution_reporting/attribution_insecure_random_generator.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
@@ -234,27 +236,32 @@ class SentReportAccumulator : public AttributionReportSender {
     base::Value::List* reports;
     switch (report.GetReportType()) {
       case AttributionReport::Type::kEventLevel:
-        reports = is_debug_report ? &debug_event_level_reports_
-                                  : &event_level_reports_;
+        reports = is_debug_report ? &*debug_event_level_reports_
+                                  : &*event_level_reports_;
         break;
       case AttributionReport::Type::kAggregatableAttribution:
-        reports = is_debug_report ? &debug_aggregatable_reports_
-                                  : &aggregatable_reports_;
+        reports = is_debug_report ? &*debug_aggregatable_reports_
+                                  : &*aggregatable_reports_;
         break;
     }
 
-    reports->Append(json_converter_.ToJson(report, is_debug_report));
+    reports->Append(json_converter_->ToJson(report, is_debug_report));
 
     std::move(sent_callback)
         .Run(std::move(report), SendResult(SendResult::Status::kSent,
                                            /*http_response_code=*/200));
   }
 
-  base::Value::List& event_level_reports_;
-  base::Value::List& debug_event_level_reports_;
-  base::Value::List& aggregatable_reports_;
-  base::Value::List& debug_aggregatable_reports_;
-  const AttributionReportJsonConverter& json_converter_;
+  void SendReport(AttributionDebugReport report) override {
+    // TODO(crbug.com/1371970): Consider supporting debug reports in the
+    // simulator.
+  }
+
+  const raw_ref<base::Value::List> event_level_reports_;
+  const raw_ref<base::Value::List> debug_event_level_reports_;
+  const raw_ref<base::Value::List> aggregatable_reports_;
+  const raw_ref<base::Value::List> debug_aggregatable_reports_;
+  const raw_ref<const AttributionReportJsonConverter> json_converter_;
 };
 
 // Registers sources and triggers in the `AttributionManagerImpl` and records
@@ -357,6 +364,7 @@ class AttributionEventHandler : public AttributionObserver {
   // AttributionObserver:
 
   void OnSourceHandled(const StorableSource& source,
+                       absl::optional<uint64_t> cleared_debug_key,
                        StorableSource::Result result) override {
     DCHECK(!input_values_.empty());
     base::Value input_value = std::move(input_values_.front());
@@ -365,6 +373,7 @@ class AttributionEventHandler : public AttributionObserver {
     std::ostringstream reason;
     switch (result) {
       case StorableSource::Result::kSuccess:
+      case StorableSource::Result::kSuccessNoised:
         return;
       case StorableSource::Result::kInternalError:
       case StorableSource::Result::kInsufficientSourceCapacity:
@@ -379,10 +388,11 @@ class AttributionEventHandler : public AttributionObserver {
     dict.Set("reason", reason.str());
     dict.Set("source", std::move(input_value));
 
-    rejected_sources_.Append(std::move(dict));
+    rejected_sources_->Append(std::move(dict));
   }
 
   void OnTriggerHandled(const AttributionTrigger& trigger,
+                        absl::optional<uint64_t> cleared_debug_key,
                         const CreateReportResult& result) override {
     DCHECK(!input_values_.empty());
     base::Value input_value = std::move(input_values_.front());
@@ -393,7 +403,7 @@ class AttributionEventHandler : public AttributionObserver {
       case AttributionTrigger::EventLevelResult::kSuccess:
         break;
       case AttributionTrigger::EventLevelResult::kSuccessDroppedLowerPriority:
-        replaced_event_level_reports_.Append(json_converter_.ToJson(
+        replaced_event_level_reports_->Append(json_converter_->ToJson(
             *result.replaced_event_level_report(),
             /*is_debug_report=*/false,
             result.new_event_level_report()->external_report_id()));
@@ -410,6 +420,8 @@ class AttributionEventHandler : public AttributionObserver {
       case AttributionTrigger::EventLevelResult::kNoMatchingSourceFilterData:
       case AttributionTrigger::EventLevelResult::kProhibitedByBrowserPolicy:
       case AttributionTrigger::EventLevelResult::kNoMatchingConfigurations:
+      case AttributionTrigger::EventLevelResult::kExcessiveReports:
+      case AttributionTrigger::EventLevelResult::kFalselyAttributedSource:
         event_level_reason << result.event_level_status();
         break;
     }
@@ -449,7 +461,7 @@ class AttributionEventHandler : public AttributionObserver {
 
     dict.Set("trigger", std::move(input_value));
 
-    rejected_triggers_.Append(std::move(dict));
+    rejected_triggers_->Append(std::move(dict));
   }
 
   base::ScopedObservation<AttributionManagerImpl, AttributionObserver>
@@ -457,11 +469,11 @@ class AttributionEventHandler : public AttributionObserver {
 
   const base::raw_ptr<AttributionManagerImpl> manager_;
   const base::raw_ptr<StoragePartitionImpl> storage_partition_;
-  const AttributionReportJsonConverter& json_converter_;
+  const raw_ref<const AttributionReportJsonConverter> json_converter_;
 
-  base::Value::List& rejected_sources_;
-  base::Value::List& rejected_triggers_;
-  base::Value::List& replaced_event_level_reports_;
+  const raw_ref<base::Value::List> rejected_sources_;
+  const raw_ref<base::Value::List> rejected_triggers_;
+  const raw_ref<base::Value::List> replaced_event_level_reports_;
 
   base::circular_deque<base::Value> input_values_;
 };

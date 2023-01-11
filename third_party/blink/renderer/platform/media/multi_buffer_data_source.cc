@@ -268,7 +268,7 @@ void MultiBufferDataSource::OnRedirected(
     redirect_cb_.Run();
 }
 
-void MultiBufferDataSource::SetPreload(Preload preload) {
+void MultiBufferDataSource::SetPreload(media::DataSource::Preload preload) {
   DVLOG(1) << __func__ << "(" << preload << ")";
   DCHECK(render_task_runner_->BelongsToCurrentThread());
   preload_ = preload;
@@ -298,11 +298,20 @@ bool MultiBufferDataSource::PassedTimingAllowOriginCheck() {
   return url_data_->passed_timing_allow_origin_check();
 }
 
+bool MultiBufferDataSource::WouldTaintOrigin() {
+  // When the resource is redirected to another origin we think of it as
+  // tainted. This is actually not specified, and is under discussion.
+  // See https://github.com/whatwg/fetch/issues/737.
+  if (!HasSingleOrigin() && cors_mode() == UrlData::CORS_UNSPECIFIED)
+    return true;
+  return IsCorsCrossOrigin();
+}
+
 UrlData::CorsMode MultiBufferDataSource::cors_mode() const {
   return url_data_->cors_mode();
 }
 
-void MultiBufferDataSource::MediaPlaybackRateChanged(double playback_rate) {
+void MultiBufferDataSource::OnMediaPlaybackRateChanged(double playback_rate) {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
   if (playback_rate < 0 || playback_rate == playback_rate_)
     return;
@@ -312,7 +321,7 @@ void MultiBufferDataSource::MediaPlaybackRateChanged(double playback_rate) {
   UpdateBufferSizes();
 }
 
-void MultiBufferDataSource::MediaIsPlaying() {
+void MultiBufferDataSource::OnMediaIsPlaying() {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   // Always clear this since it can be set by OnBufferingHaveEnough() calls at

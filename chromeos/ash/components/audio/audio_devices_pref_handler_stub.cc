@@ -73,22 +73,31 @@ bool AudioDevicesPrefHandlerStub::GetDeviceActive(const AudioDevice& device,
 
 void AudioDevicesPrefHandlerStub::SetUserPriorityHigherThan(
     const AudioDevice& target,
-    const AudioDevice& base) {
+    const AudioDevice* base) {
   int t = user_priority_map_[target.stable_device_id];
-  int b = user_priority_map_[base.stable_device_id];
+  int b = 0;
+  if (base) {
+    b = user_priority_map_[base->stable_device_id];
+  }
 
   // Don't need to update the user priority of `target` if it's already has
   // higher priority than base.
   if (t > b)
     return;
+
   if (t != kUserPriorityNone) {
+    // before: [. . . t - - - b . . .]
+    // after:  [. . . - - - b t . . .]
     for (auto& it : user_priority_map_) {
       if (it.second > t && it.second <= b)
         user_priority_map_[it.first] -= 1;
     }
     user_priority_map_[target.stable_device_id] = b;
   } else {
+    // before: [. . . b + + +]
+    // after : [. . . b t + + +]
     for (auto& it : user_priority_map_) {
+      DCHECK(it.second > 0);
       if (it.second > b)
         user_priority_map_[it.first] += 1;
     }
@@ -96,13 +105,16 @@ void AudioDevicesPrefHandlerStub::SetUserPriorityHigherThan(
   }
 }
 
-int32_t AudioDevicesPrefHandlerStub::GetUserPriority(
-    const AudioDevice& device) {
+int AudioDevicesPrefHandlerStub::GetUserPriority(const AudioDevice& device) {
   if (user_priority_map_.find(device.stable_device_id) ==
       user_priority_map_.end())
     return kUserPriorityNone;
   return user_priority_map_[device.stable_device_id];
 }
+
+void AudioDevicesPrefHandlerStub::DropLeastRecentlySeenDevices(
+    const std::vector<AudioDevice>& connected_devices,
+    size_t keep_devices) {}
 
 bool AudioDevicesPrefHandlerStub::GetNoiseCancellationState() {
   return noise_cancellation_state_;

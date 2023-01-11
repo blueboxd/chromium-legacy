@@ -7,7 +7,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
-#include "chrome/browser/ui/views/page_info/page_info_hover_button.h"
+#include "chrome/browser/ui/views/controls/rich_hover_button.h"
 #include "chrome/browser/ui/views/page_info/security_information_view.h"
 #include "components/page_info/page_info_ui.h"
 #include "ui/views/view.h"
@@ -34,10 +34,10 @@ class PageInfoSecurityContentView : public views::View, public PageInfoUI {
 
   void SecurityDetailsClicked(const ui::Event& event);
 
-  raw_ptr<PageInfo> presenter_;
+  raw_ptr<PageInfo, DanglingUntriaged> presenter_;
 
   // The button that opens the "Certificate" dialog.
-  raw_ptr<PageInfoHoverButton> certificate_button_ = nullptr;
+  raw_ptr<RichHoverButton> certificate_button_ = nullptr;
 
   // The views that shows the status of the site's identity check.
   raw_ptr<SecurityInformationView> security_view_ = nullptr;

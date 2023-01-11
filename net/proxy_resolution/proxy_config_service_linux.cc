@@ -42,6 +42,8 @@
 
 namespace net {
 
+class ScopedAllowBlockingForSettingGetter : public base::ScopedAllowBlocking {};
+
 namespace {
 
 // This turns all rules with a hostname into wildcard matches, which will
@@ -276,7 +278,7 @@ class SettingGetterImplGSettings
     DCHECK(!task_runner_.get());
 
     if (!g_settings_schema_source_lookup(g_settings_schema_source_get_default(),
-                                         kProxyGSettingsSchema, FALSE) ||
+                                         kProxyGSettingsSchema, TRUE) ||
         !(client_ = g_settings_new(kProxyGSettingsSchema))) {
       // It's not clear whether/when this can return NULL.
       LOG(ERROR) << "Unable to create a gsettings client";
@@ -488,7 +490,7 @@ bool SettingGetterImplGSettings::CheckVersion(
 
   GSettings* client = nullptr;
   if (g_settings_schema_source_lookup(g_settings_schema_source_get_default(),
-                                      kProxyGSettingsSchema, FALSE)) {
+                                      kProxyGSettingsSchema, TRUE)) {
     client = g_settings_new(kProxyGSettingsSchema);
   }
   if (!client) {
@@ -520,7 +522,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter {
       : debounce_timer_(std::make_unique<base::OneShotTimer>()),
         env_var_getter_(env_var_getter) {
     // This has to be called on the UI thread (http://crbug.com/69057).
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    ScopedAllowBlockingForSettingGetter allow_blocking;
 
     // Derive the location(s) of the kde config dir from the environment.
     std::string home;
@@ -611,7 +613,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter {
   bool Init(const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner)
       override {
     // This has to be called on the UI thread (http://crbug.com/69057).
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    ScopedAllowBlockingForSettingGetter allow_blocking;
     DCHECK_LT(inotify_fd_, 0);
     inotify_fd_ = inotify_init();
     if (inotify_fd_ < 0) {

@@ -286,7 +286,7 @@ TEST_F(DrawPropertiesTest, TransformsForSingleLayer) {
   gfx::Transform translation_to_anchor;
   translation_to_anchor.Translate(5.0, 0.0);
   gfx::Transform expected_result = translation_to_anchor * layer_transform *
-                                   gfx::InvertAndCheck(translation_to_anchor);
+                                   translation_to_anchor.GetCheckedInverse();
   SetTransformOrigin(layer, gfx::Point3F(5.f, 0.f, 0.f));
   UpdateActiveTreeDrawProperties();
   EXPECT_TRANSFORM_EQ(expected_result, draw_property_utils::DrawTransform(
@@ -299,8 +299,7 @@ TEST_F(DrawPropertiesTest, TransformsForSingleLayer) {
   // current implementation of CalculateDrawProperties does this implicitly, but
   // it is still worth testing to detect accidental regressions.
   expected_result = position_transform * translation_to_anchor *
-                    layer_transform *
-                    gfx::InvertAndCheck(translation_to_anchor);
+                    layer_transform * translation_to_anchor.GetCheckedInverse();
   SetPostTranslation(layer, gfx::Vector2dF(0.f, 1.2f));
   UpdateActiveTreeDrawProperties();
   EXPECT_TRANSFORM_EQ(expected_result, draw_property_utils::DrawTransform(
@@ -454,7 +453,7 @@ TEST_F(DrawPropertiesTest, TransformsForSimpleHierarchy) {
   parent_translation_to_anchor.Translate(2.5, 3.0);
   gfx::Transform parent_composite_transform =
       parent_translation_to_anchor * parent_layer_transform *
-      gfx::InvertAndCheck(parent_translation_to_anchor);
+      parent_translation_to_anchor.GetCheckedInverse();
   SetTransform(parent, parent_layer_transform);
   SetPostTranslation(parent, gfx::Vector2dF());
   UpdateActiveTreeDrawProperties();
@@ -485,7 +484,7 @@ TEST_F(DrawPropertiesTest, TransformsForSingleRenderSurface) {
 
   gfx::Transform parent_composite_transform =
       parent_translation_to_anchor * parent_layer_transform *
-      gfx::InvertAndCheck(parent_translation_to_anchor);
+      parent_translation_to_anchor.GetCheckedInverse();
   gfx::Vector2dF parent_composite_scale =
       gfx::ComputeTransform2dScaleComponents(parent_composite_transform, 1.f);
   gfx::Transform surface_sublayer_transform;
@@ -493,7 +492,7 @@ TEST_F(DrawPropertiesTest, TransformsForSingleRenderSurface) {
                                    parent_composite_scale.y());
   gfx::Transform surface_sublayer_composite_transform =
       parent_composite_transform *
-      gfx::InvertAndCheck(surface_sublayer_transform);
+      surface_sublayer_transform.GetCheckedInverse();
 
   root->SetBounds(gfx::Size(1, 2));
   parent->SetBounds(gfx::Size(100, 120));
@@ -573,7 +572,7 @@ TEST_F(DrawPropertiesTest, TransformsForRenderSurfaceHierarchy) {
   layer_transform.Translate(1.0, 1.0);
 
   gfx::Transform A = translation_to_anchor * layer_transform *
-                     gfx::InvertAndCheck(translation_to_anchor);
+                     translation_to_anchor.GetCheckedInverse();
 
   gfx::Vector2dF surface1_parent_transform_scale =
       gfx::ComputeTransform2dScaleComponents(A, 1.f);
@@ -585,7 +584,7 @@ TEST_F(DrawPropertiesTest, TransformsForRenderSurfaceHierarchy) {
   gfx::Transform SS1 = surface1_sublayer_transform;
   // S1 = transform to move from render_surface1 pixels to the layer space of
   // the owning layer
-  gfx::Transform S1 = gfx::InvertAndCheck(surface1_sublayer_transform);
+  gfx::Transform S1 = surface1_sublayer_transform.GetCheckedInverse();
 
   gfx::Vector2dF surface2_parent_transform_scale =
       gfx::ComputeTransform2dScaleComponents(SS1 * A, 1.f);
@@ -597,7 +596,7 @@ TEST_F(DrawPropertiesTest, TransformsForRenderSurfaceHierarchy) {
   gfx::Transform SS2 = surface2_sublayer_transform;
   // S2 = transform to move from render_surface2 pixels to the layer space of
   // the owning layer
-  gfx::Transform S2 = gfx::InvertAndCheck(surface2_sublayer_transform);
+  gfx::Transform S2 = surface2_sublayer_transform.GetCheckedInverse();
 
   root->SetBounds(gfx::Size(1, 2));
   parent->SetBounds(gfx::Size(10, 10));
@@ -783,14 +782,9 @@ TEST_F(DrawPropertiesTest, LayerFullyContainedWithinClipInTargetSpace) {
 
   UpdateActiveTreeDrawProperties();
 
-  // Mapping grand_child's bounds to screen space produces an empty rect, but
-  // only because it is turned sideways.  The entire rect is contained inside
-  // the clip, and is only empty so long as the numerical precision of the
-  // transform is effectively perfect.  Currently we do the calculation the
-  // other way around, and the Projection of the screen space clip into layer
-  // space includes the entire bounds.
-  EXPECT_EQ(gfx::Rect(grand_child->bounds()),
-            grand_child->visible_layer_rect());
+  // Mapping grand_child's bounds to screen space produces an empty rect
+  // because it is turned sideways.
+  EXPECT_EQ(gfx::Rect(), grand_child->visible_layer_rect());
 }
 
 TEST_F(DrawPropertiesTest, TransformsForDegenerateIntermediateLayer) {
@@ -2039,7 +2033,7 @@ TEST_F(DrawPropertiesDrawRectsTest, DrawRectsFor3dPerspectiveWhenClippedByW) {
 
 static bool ProjectionClips(const gfx::Transform& map_transform,
                             const gfx::RectF& mapped_rect) {
-  gfx::Transform inverse(gfx::InvertAndCheck(map_transform));
+  gfx::Transform inverse = map_transform.GetCheckedInverse();
   bool clipped = false;
   if (!clipped)
     MathUtil::ProjectPoint(inverse, mapped_rect.top_right(), &clipped);
@@ -2416,11 +2410,9 @@ TEST_F(DrawPropertiesTest,
   LayerImpl* child = AddLayer<LayerImpl>();
   LayerImpl* grand_child = AddLayer<LayerImpl>();
 
-  gfx::Transform perspective;
-  perspective.ApplyPerspectiveDepth(SkDoubleToScalar(1e-12));
-
-  gfx::Transform rotation;
-  rotation.RotateAboutYAxis(45.0);
+  gfx::Transform scale = gfx::Transform::MakeScale(1e-15);
+  EXPECT_TRUE(scale.IsInvertible());
+  EXPECT_FALSE((scale * scale).IsInvertible());
 
   root->SetBounds(gfx::Size(100, 100));
   child->SetBounds(gfx::Size(100, 100));
@@ -2433,12 +2425,12 @@ TEST_F(DrawPropertiesTest,
   child_transform_node.flattens_inherited_transform = false;
   child_transform_node.post_translation = gfx::Vector2dF(10.f, 10.f);
   child_transform_node.sorting_context_id = 1;
-  child_transform_node.local = perspective;
+  child_transform_node.local = scale;
   CopyProperties(child, grand_child);
   auto& grand_child_transform_node = CreateTransformNode(grand_child);
   grand_child_transform_node.flattens_inherited_transform = false;
   grand_child_transform_node.sorting_context_id = 1;
-  grand_child_transform_node.local = rotation;
+  grand_child_transform_node.local = scale;
 
   UpdateActiveTreeDrawProperties();
 
@@ -2544,11 +2536,9 @@ TEST_F(DrawPropertiesTest, OcclusionForLayerWithUninvertibleDrawTransform) {
   LayerImpl* grand_child = AddLayer<LayerImpl>();
   LayerImpl* occluding_child = AddLayer<LayerImpl>();
 
-  gfx::Transform perspective;
-  perspective.ApplyPerspectiveDepth(SkDoubleToScalar(1e-12));
-
-  gfx::Transform rotation;
-  rotation.RotateAboutYAxis(45.0);
+  gfx::Transform scale = gfx::Transform::MakeScale(1e-15);
+  EXPECT_TRUE(scale.IsInvertible());
+  EXPECT_FALSE((scale * scale).IsInvertible());
 
   root->SetBounds(gfx::Size(1000, 1000));
   child->SetBounds(gfx::Size(300, 300));
@@ -2565,12 +2555,12 @@ TEST_F(DrawPropertiesTest, OcclusionForLayerWithUninvertibleDrawTransform) {
   child_transform_node.flattens_inherited_transform = false;
   child_transform_node.post_translation = gfx::Vector2dF(10.f, 10.f);
   child_transform_node.sorting_context_id = 1;
-  child_transform_node.local = perspective;
+  child_transform_node.local = scale;
   CopyProperties(child, grand_child);
   auto& grand_child_transform_node = CreateTransformNode(grand_child);
   grand_child_transform_node.flattens_inherited_transform = false;
   grand_child_transform_node.sorting_context_id = 1;
-  grand_child_transform_node.local = rotation;
+  grand_child_transform_node.local = scale;
   CopyProperties(root, occluding_child);
   CreateTransformNode(occluding_child).flattens_inherited_transform = false;
 
@@ -3357,14 +3347,16 @@ TEST_F(DrawPropertiesScalingTest, SmallIdealScale) {
   float expected_ideal_scale =
       device_scale_factor * page_scale_factor * initial_parent_scale;
   EXPECT_LT(expected_ideal_scale, 1.f);
-  EXPECT_EQ(gfx::Vector2dF(expected_ideal_scale, expected_ideal_scale),
-            parent->GetIdealContentsScale());
+  EXPECT_VECTOR2DF_EQ(
+      gfx::Vector2dF(expected_ideal_scale, expected_ideal_scale),
+      parent->GetIdealContentsScale());
 
   expected_ideal_scale = device_scale_factor * page_scale_factor *
                          initial_parent_scale * initial_child_scale;
   EXPECT_LT(expected_ideal_scale, 1.f);
-  EXPECT_EQ(gfx::Vector2dF(expected_ideal_scale, expected_ideal_scale),
-            child_scale->GetIdealContentsScale());
+  EXPECT_VECTOR2DF_EQ(
+      gfx::Vector2dF(expected_ideal_scale, expected_ideal_scale),
+      child_scale->GetIdealContentsScale());
 }
 
 TEST_F(DrawPropertiesScalingTest, IdealScaleForAnimatingLayer) {

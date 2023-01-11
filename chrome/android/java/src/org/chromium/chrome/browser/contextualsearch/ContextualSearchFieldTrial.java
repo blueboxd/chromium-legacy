@@ -30,10 +30,12 @@ public class ContextualSearchFieldTrial {
     static final String RELATED_SEARCHES_LANGUAGE_ALLOWLIST_PARAM_NAME = "language_allowlist";
     static final String RELATED_SEARCHES_LANGUAGE_DEFAULT_ALLOWLIST = "en";
     private static final String RELATED_SEARCHES_CONFIG_STAMP_PARAM_NAME = "stamp";
+    private static final String RELATED_SEARCHES_CONFIG_DEFAULT_STAMP = "1Rs";
 
     static final String RELATED_SEARCHES_SHOW_DEFAULT_QUERY_CHIP_PARAM_NAME = "default_query_chip";
     static final String RELATED_SEARCHES_DEFAULT_QUERY_CHIP_MAX_WIDTH_SP_PARAM_NAME =
             "default_query_max_width_sp";
+    private static final int RELATED_SEARCHES_DEFAULT_QUERY_CHIP_DEFAULT_MAX_WIDTH_SP = 115;
 
     static final String CONTEXTUAL_SEARCH_MINIMUM_PAGE_HEIGHT_NAME =
             "contextual_search_minimum_page_height_dp";
@@ -57,7 +59,11 @@ public class ContextualSearchFieldTrial {
      *         string is returned.
      */
     static String getRelatedSearchesExperimentConfigurationStamp() {
-        return getRelatedSearchesParam(RELATED_SEARCHES_CONFIG_STAMP_PARAM_NAME);
+        String stamp = getRelatedSearchesParam(RELATED_SEARCHES_CONFIG_STAMP_PARAM_NAME);
+        if (TextUtils.isEmpty(stamp)) {
+            stamp = RELATED_SEARCHES_CONFIG_DEFAULT_STAMP;
+        }
+        return stamp;
     }
 
     /**
@@ -85,27 +91,15 @@ public class ContextualSearchFieldTrial {
     static boolean showDefaultChipInBar() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.RELATED_SEARCHES_IN_BAR,
-                RELATED_SEARCHES_SHOW_DEFAULT_QUERY_CHIP_PARAM_NAME, false);
-    }
-
-    static boolean showDefaultChipInPanel() {
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.RELATED_SEARCHES_ALTERNATE_UX,
-                RELATED_SEARCHES_SHOW_DEFAULT_QUERY_CHIP_PARAM_NAME, false);
+                RELATED_SEARCHES_SHOW_DEFAULT_QUERY_CHIP_PARAM_NAME, true);
     }
 
     /* Return the max width of the bar's default chip in Sp. */
     static int getDefaultChipWidthSpInBar() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.RELATED_SEARCHES_IN_BAR,
-                RELATED_SEARCHES_DEFAULT_QUERY_CHIP_MAX_WIDTH_SP_PARAM_NAME, 0);
-    }
-
-    /* Return the max width of the panel's default chip in Sp. */
-    static int getDefaultChipWidthSpInPanel() {
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.RELATED_SEARCHES_ALTERNATE_UX,
-                RELATED_SEARCHES_DEFAULT_QUERY_CHIP_MAX_WIDTH_SP_PARAM_NAME, 0);
+                RELATED_SEARCHES_DEFAULT_QUERY_CHIP_MAX_WIDTH_SP_PARAM_NAME,
+                RELATED_SEARCHES_DEFAULT_QUERY_CHIP_DEFAULT_MAX_WIDTH_SP);
     }
 
     /** Return The minimum height dp for the contextual search page. */

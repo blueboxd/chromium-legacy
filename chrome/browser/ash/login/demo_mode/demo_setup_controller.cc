@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "ash/components/arc/arc_util.h"
+#include "ash/constants/ash_features.h"
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -16,10 +18,10 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/ash/login/demo_mode/demo_resources.h"
+#include "chrome/browser/ash/login/demo_mode/demo_components.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
@@ -262,10 +264,11 @@ DemoSetupController::DemoSetupError::CreateFromOtherEnrollmentError(
 // static
 DemoSetupController::DemoSetupError
 DemoSetupController::DemoSetupError::CreateFromComponentError(
-    component_updater::CrOSComponentManager::Error error) {
+    component_updater::CrOSComponentManager::Error error,
+    std::string component_name) {
   const std::string debug_message =
-      "Failed to load demo resources CrOS component with error: " +
-      std::to_string(static_cast<int>(error));
+      base::StringPrintf("Failed to load '%s' CrOS component with error: %d",
+                         component_name.c_str(), static_cast<int>(error));
   return DemoSetupError(ErrorCode::kOnlineComponentError,
                         RecoveryMethod::kCheckNetwork, debug_message);
 }
@@ -493,7 +496,7 @@ void DemoSetupController::Enroll(
 
   switch (demo_config_) {
     case DemoSession::DemoModeConfig::kOnline:
-      LoadDemoResourcesCrOSComponent();
+      LoadDemoComponents();
       return;
     case DemoSession::DemoModeConfig::kNone:
     case DemoSession::DemoModeConfig::kOfflineDeprecated:
@@ -501,31 +504,37 @@ void DemoSetupController::Enroll(
   }
 }
 
-void DemoSetupController::LoadDemoResourcesCrOSComponent() {
-  VLOG(1) << "Loading demo resources component";
+void DemoSetupController::LoadDemoComponents() {
+  VLOG(1) << "Loading demo resources and demo app components";
 
   download_start_time_ = base::TimeTicks::Now();
 
-  if (!demo_resources_)
-    demo_resources_ = std::make_unique<DemoResources>(demo_config_);
+  if (!demo_components_)
+    demo_components_ = std::make_unique<DemoComponents>(demo_config_);
 
   if (DBusThreadManager::Get()->IsUsingFakes()) {
-    demo_resources_->SetCrOSComponentLoadedForTesting(
+    demo_components_->SetCrOSComponentLoadedForTesting(
         base::FilePath(), component_error_for_tests_);
 
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&DemoSetupController::OnDemoResourcesCrOSComponentLoaded,
-                       weak_ptr_factory_.GetWeakPtr()));
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(&DemoSetupController::OnDemoComponentsLoaded,
+                                  weak_ptr_factory_.GetWeakPtr()));
     return;
   }
-
-  demo_resources_->EnsureLoaded(
-      base::BindOnce(&DemoSetupController::OnDemoResourcesCrOSComponentLoaded,
-                     weak_ptr_factory_.GetWeakPtr()));
+  base::OnceClosure load_callback =
+      base::BindOnce(&DemoSetupController::OnDemoComponentsLoaded,
+                     weak_ptr_factory_.GetWeakPtr());
+  if (chromeos::features::IsDemoModeSWAEnabled()) {
+    base::RepeatingClosure barrier_closure =
+        base::BarrierClosure(2, std::move(load_callback));
+    demo_components_->LoadResourcesComponent(barrier_closure);
+    demo_components_->LoadAppComponent(barrier_closure);
+  } else {
+    demo_components_->LoadResourcesComponent(std::move(load_callback));
+  }
 }
 
-void DemoSetupController::OnDemoResourcesCrOSComponentLoaded() {
+void DemoSetupController::OnDemoComponentsLoaded() {
   DCHECK_EQ(demo_config_, DemoSession::DemoModeConfig::kOnline);
 
   base::TimeDelta download_duration =
@@ -534,11 +543,26 @@ void DemoSetupController::OnDemoResourcesCrOSComponentLoaded() {
                                  download_duration);
   SetCurrentSetupStep(DemoSetupStep::kEnrollment);
 
-  if (demo_resources_->component_error().value() !=
+  auto resources_component_error =
+      demo_components_->resources_component_error().value_or(
+          component_updater::CrOSComponentManager::Error::NOT_FOUND);
+  if (resources_component_error !=
       component_updater::CrOSComponentManager::Error::NONE) {
     SetupFailed(DemoSetupError::CreateFromComponentError(
-        demo_resources_->component_error().value()));
+        resources_component_error,
+        DemoComponents::kDemoModeResourcesComponentName));
     return;
+  }
+
+  if (chromeos::features::IsDemoModeSWAEnabled()) {
+    auto app_component_error = demo_components_->app_component_error().value_or(
+        component_updater::CrOSComponentManager::Error::NOT_FOUND);
+    if (app_component_error !=
+        component_updater::CrOSComponentManager::Error::NONE) {
+      SetupFailed(DemoSetupError::CreateFromComponentError(
+          app_component_error, DemoComponents::kDemoModeAppComponentName));
+      return;
+    }
   }
 
   VLOG(1) << "Starting online enrollment";

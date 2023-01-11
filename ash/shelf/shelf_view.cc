@@ -1036,14 +1036,15 @@ void ShelfView::UpdateSeparatorIndex() {
 
   const bool can_drag_view_across_separator =
       drag_view_ && CanDragAcrossSeparator(drag_view_);
-  for (size_t index = model()->item_count(); index > 0; --index) {
-    const size_t i = index - 1;
+  for (int index = model()->item_count(); index > 0; --index) {
+    const int i = index - 1;
+    DCHECK_GE(i, 0);
     const auto& item = model()->items()[i];
     if (IsItemPinned(item)) {
-      // Dragged pinned item may be moved to the unpinned side of the shelf and
-      // may end up right of an unpinned app. Dismisses the dragged item to
-      // check the next one.
-      if (i == dragged_item_index && can_drag_view_across_separator)
+      // The dragged item is temporarily moved to the end of the shelf if it is
+      // ripped off by dragging. Ignore this case and continue to find the
+      // correct separator index.
+      if (dragged_off_shelf_ && i == model()->item_count() - 1)
         continue;
 
       last_pinned_index = i;
@@ -1213,6 +1214,8 @@ void ShelfView::EndDrag(bool cancel,
   drag_icon_bounds_in_screen_ = gfx::Rect();
   drag_and_drop_shelf_id_ = ShelfID();
   is_active_drag_and_drop_host_ = false;
+
+  HandleShelfParty();
 }
 
 void ShelfView::SwapButtons(views::View* button_to_swap, bool with_next) {
@@ -1571,7 +1574,8 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
 }
 
 void ShelfView::MoveDragViewTo(int primary_axis_coordinate) {
-  if (visible_views_indices_.empty()) {
+  if (visible_views_indices_.empty() ||
+      !IsItemPinned(model_->items()[visible_views_indices_.front()])) {
     DCHECK(model_->in_shelf_party());
     if (shelf_->IsHorizontalAlignment()) {
       if (drag_view_->x() != app_icons_layout_offset_)
@@ -1611,7 +1615,7 @@ void ShelfView::MoveDragViewTo(int primary_axis_coordinate) {
   target_index = base::clamp(target_index, indices.first, indices.second);
 
   // Check the relative position of |drag_view_| and its ideal bounds if it can
-  // be dragged across the separator to pin or unpin.
+  // be dragged across the separator to pin.
   if (CanDragAcrossSeparator(drag_view_)) {
     // Compare the center points of |drag_view_| and its ideal bounds to
     // determine whether the separator should be moved to the left or right by
@@ -1856,7 +1860,7 @@ bool ShelfView::ShouldUpdateDraggedViewPinStatus(size_t dragged_view_index) {
   if (!features::IsDragUnpinnedAppToPinEnabled())
     return false;
 
-  if (visible_views_indices_.empty()) {
+  if (!base::Contains(visible_views_indices_, dragged_view_index)) {
     DCHECK(model_->in_shelf_party());
     return false;
   }
@@ -1890,13 +1894,11 @@ bool ShelfView::CanDragAcrossSeparator(views::View* drag_view) const {
     return false;
 
   DCHECK(drag_view);
-  // The dragged item is not allowed to be unpinned if |drag_view| is pinned by
-  // policy, dragged from app list, or its item type is TYPE_BROWSER_SHORTCUT
-  // or TYPE_UNPINNED_BROWSER_SHORTCUT.
-  // Therefore, the |drag_view| can not be dragged across the separator.
-  bool can_change_pin_state =
-      ShelfItemForView(drag_view)->type == TYPE_PINNED_APP ||
-      ShelfItemForView(drag_view)->type == TYPE_APP;
+
+  // Only unpinned running apps on shelf can be dragged across the separator to
+  // pin.
+  bool can_change_pin_state = ShelfItemForView(drag_view)->type == TYPE_APP;
+
   // Note that |drag_and_drop_shelf_id_| is set only when the current drag view
   // is from app list, which can not be dragged to the unpinned app side.
   return !ShelfItemForView(drag_view)->pinned_by_policy &&
@@ -1983,6 +1985,15 @@ gfx::Rect ShelfView::GetDragIconBoundsInScreenForTest() const {
   if (!drag_icon_proxy_)
     return gfx::Rect();
   return drag_icon_proxy_->GetBoundsInScreen();
+}
+
+void ShelfView::AddAnimationObserver(views::BoundsAnimatorObserver* observer) {
+  bounds_animator_->AddObserver(observer);
+}
+
+void ShelfView::RemoveAnimationObserver(
+    views::BoundsAnimatorObserver* observer) {
+  bounds_animator_->RemoveObserver(observer);
 }
 
 void ShelfView::AnnounceShelfAutohideBehavior() {
@@ -2216,6 +2227,8 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
     AnnouncePinUnpinEvent(old_item, /*pinned=*/false);
     RecordPinUnpinUserAction(/*pinned=*/false);
   }
+
+  party_.erase(old_item.id);
 }
 
 void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
@@ -2650,6 +2663,9 @@ gfx::Rect ShelfView::GetChildViewTargetMirroredBounds(
 }
 
 void ShelfView::HandleShelfParty() {
+  if (!base::FeatureList::IsEnabled(features::kShelfParty))
+    return;
+
   UpdateShelfItemViewsVisibility();
   PreferredSizeChanged();
   AnimateToIdealBounds();
@@ -2670,6 +2686,8 @@ void ShelfView::HandleShelfParty() {
     }
     DCHECK(IsItemPinned(item));
     DCHECK(!IsItemVisible(item));
+    if (item.image.isNull() || item.id == drag_and_drop_shelf_id_)
+      continue;
     // Add the item if it is not already partying.
     const auto insertion_results = party_.try_emplace(item.id);
     if (insertion_results.second) {

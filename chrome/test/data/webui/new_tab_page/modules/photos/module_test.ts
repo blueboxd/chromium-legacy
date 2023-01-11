@@ -12,7 +12,7 @@ import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_as
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
 
-import {fakeMetricsPrivate, MetricsTracker} from '../../metrics_test_support.js';
+import {fakeMetricsPrivate, MetricsTracker} from '../../../metrics_test_support.js';
 import {installMock} from '../../test_support.js';
 
 suite('NewTabPageModulesPhotosModuleTest', () => {
@@ -20,8 +20,7 @@ suite('NewTabPageModulesPhotosModuleTest', () => {
   let metrics: MetricsTracker;
 
   setup(() => {
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     handler = installMock(PhotosHandlerRemote, PhotosProxy.setHandler);
     metrics = fakeMetricsPrivate();
   });

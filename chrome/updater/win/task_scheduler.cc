@@ -345,20 +345,19 @@ class TaskSchedulerV2 final : public TaskScheduler {
       return false;
 
     VLOG(1) << "Delete Task '" << task_name << "'.";
-
     HRESULT hr =
         task_folder_->DeleteTask(base::win::ScopedBstr(task_name).Get(), 0);
+    VLOG(1) << "Task deleted.";
+
     // This can happen, e.g., while running tests, when the file system stresses
     // quite a lot. Give it a few more chances to succeed.
     size_t num_retries_left = kNumDeleteTaskRetry;
-
     if (FAILED(hr)) {
       while ((hr == HRESULT_FROM_WIN32(ERROR_TRANSACTION_NOT_ACTIVE) ||
               hr == HRESULT_FROM_WIN32(ERROR_TRANSACTION_ALREADY_ABORTED)) &&
              --num_retries_left && IsTaskRegistered(task_name)) {
         LOG(WARNING) << "Retrying delete task because transaction not active, "
                      << std::hex << hr << ".";
-
         hr =
             task_folder_->DeleteTask(base::win::ScopedBstr(task_name).Get(), 0);
         ::Sleep(kDeleteRetryDelayInMs);
@@ -374,7 +373,7 @@ class TaskSchedulerV2 final : public TaskScheduler {
 
     DCHECK(!IsTaskRegistered(task_name));
 
-    // Try to delete \\Company\Product first and \\Company second
+    // Try to delete \\Company\Product first and \\Company second.
     if (DeleteFolderIfEmpty(GetTaskSubfolderName(GetUpdaterScope())))
       DeleteFolderIfEmpty(GetTaskCompanyFolder(GetUpdaterScope()));
 
@@ -478,6 +477,19 @@ class TaskSchedulerV2 final : public TaskScheduler {
         PLOG(ERROR) << "Can't put 'Hidden' to true. " << std::hex << hr;
         return false;
       }
+    }
+
+    Microsoft::WRL::ComPtr<IIdleSettings> idle_settings;
+    hr = task_settings->get_IdleSettings(&idle_settings);
+    if (FAILED(hr)) {
+      PLOG(ERROR) << "Can't get 'IdleSettings'. " << std::hex << hr;
+      return false;
+    }
+
+    hr = idle_settings->put_StopOnIdleEnd(VARIANT_FALSE);
+    if (FAILED(hr)) {
+      PLOG(ERROR) << "Can't put 'StopOnIdleEnd' to false. " << std::hex << hr;
+      return false;
     }
 
     Microsoft::WRL::ComPtr<ITriggerCollection> trigger_collection;

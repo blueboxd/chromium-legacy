@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+
+/** @type {?LensInternalsBrowserProxy} */
+let instance = null;
 
 /** @interface */
 export class LensInternalsBrowserProxy {
@@ -44,6 +47,9 @@ export class LensInternalsBrowserProxyImpl {
   stopDebugMode() {
     return sendWithPromise('stopDebugMode');
   }
-}
 
-addSingletonGetter(LensInternalsBrowserProxyImpl);
+  /** @return {!LensInternalsBrowserProxy} */
+  static getInstance() {
+    return instance || (instance = new LensInternalsBrowserProxyImpl());
+  }
+}

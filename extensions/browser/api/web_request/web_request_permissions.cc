@@ -271,6 +271,17 @@ bool WebRequestPermissions::HideRequest(
     return true;
   }
 
+  // Hide requests initiated by the new Webstore domain, including requests that
+  // may be on subframes which have an opaque origin.
+  if (request.initiator) {
+    const auto& request_tuple_or_precursor_tuple =
+        request.initiator->GetTupleOrPrecursorTupleIfOpaque();
+    if (request_tuple_or_precursor_tuple ==
+        url::SchemeHostPort(extension_urls::GetNewWebstoreLaunchURL())) {
+      return true;
+    }
+  }
+
   const GURL& url = request.url;
 
   bool is_request_from_webui_renderer =
@@ -316,13 +327,19 @@ bool WebRequestPermissions::HideRequest(
 
   // Safebrowsing and Chrome Webstore URLs are always protected, i.e. also
   // for requests from common renderers.
+  // TODO(crbug.com/1355623): it would be nice to be able to just use
+  // extension_urls::IsWebstoreDomain for the last two checks here, but the old
+  // webstore check specifically requires the path to be checked, not just the
+  // domain. However once the old webstore is turned down we can change it over
+  // during that cleanup.
   if (extension_urls::IsWebstoreUpdateUrl(url) ||
       extension_urls::IsBlocklistUpdateUrl(url) ||
       extension_urls::IsSafeBrowsingUrl(url::Origin::Create(url),
                                         url.path_piece()) ||
       (url.DomainIs("chrome.google.com") &&
        base::StartsWith(url.path_piece(), "/webstore",
-                        base::CompareCase::SENSITIVE))) {
+                        base::CompareCase::SENSITIVE)) ||
+      url.DomainIs(extension_urls::GetNewWebstoreLaunchURL().host())) {
     return true;
   }
 

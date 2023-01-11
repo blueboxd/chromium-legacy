@@ -20,12 +20,14 @@
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_restore_util.h"
 #include "ash/wm/desks/desks_textfield.h"
+#include "ash/wm/float/float_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "base/bind.h"
 #include "base/cxx17_backports.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string_util.h"
+#include "chromeos/ui/wm/features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
@@ -56,7 +58,6 @@ gfx::Rect ConvertScreenRect(views::View* view, const gfx::Rect& screen_rect) {
 bool ContainsAppWindows(Desk* desk) {
   if (!desk)
     return false;
-
   return desk->ContainsAppWindows() ||
          !DesksController::Get()->visible_on_all_desks_windows().empty();
 }
@@ -505,7 +506,6 @@ void DeskMiniView::OnViewFocused(views::View* observed_view) {
   // Assume we should commit the name change unless HandleKeyEvent detects the
   // user pressed the escape key.
   should_commit_name_changes_ = true;
-  desk_name_view_->UpdateViewAppearance();
 
   // Set the Overview highlight to move focus with the DeskNameView.
   UpdateOverviewHighlightForFocus(desk_name_view_);
@@ -517,7 +517,6 @@ void DeskMiniView::OnViewFocused(views::View* observed_view) {
 void DeskMiniView::OnViewBlurred(views::View* observed_view) {
   DCHECK_EQ(observed_view, desk_name_view_);
   defer_select_all_ = false;
-  desk_name_view_->UpdateViewAppearance();
 
   // If `should_commit_name_changes_` is true, then the view was blurred from
   // the user pressing a key other than escape. In that case we should set the

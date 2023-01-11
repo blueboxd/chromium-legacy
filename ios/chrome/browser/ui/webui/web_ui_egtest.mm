@@ -6,7 +6,6 @@
 
 #import "base/mac/foundation_util.h"
 #import "base/metrics/field_trial.h"
-#import "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "components/strings/grit/components_strings.h"
@@ -43,7 +42,8 @@ using chrome_test_util::ForwardButton;
 
   NSString* userAgent = [ChromeEarlGrey mobileUserAgentString];
   // Verify that JavaScript navigator.userAgent returns the mobile User Agent.
-  auto result = [ChromeEarlGrey evaluateJavaScript:@"navigator.userAgent"];
+  base::Value result =
+      [ChromeEarlGrey evaluateJavaScript:@"navigator.userAgent"];
   GREYAssertTrue(result.is_string(), @"Result is not a string.");
   NSString* navigatorUserAgent = base::SysUTF8ToNSString(result.GetString());
   GREYAssertEqualObjects(userAgent, navigatorUserAgent,

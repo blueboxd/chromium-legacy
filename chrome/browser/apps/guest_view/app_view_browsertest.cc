@@ -104,7 +104,8 @@ class AppViewTest : public extensions::PlatformAppBrowserTest {
   }
 
   TestGuestViewManagerFactory factory_;
-  raw_ptr<guest_view::TestGuestViewManager> test_guest_view_manager_;
+  raw_ptr<guest_view::TestGuestViewManager, DanglingUntriaged>
+      test_guest_view_manager_;
 };
 
 // Tests that <appview> is able to navigate to another installed app.
@@ -196,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, KillGuestWithInvalidInstanceID) {
 }
 
 // TODO(https://crbug.com/1179298): this is flaky on wayland-ozone.
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 #define MAYBE_KillGuestCommunicatingWithWrongAppView \
   DISABLED_KillGuestCommunicatingWithWrongAppView
 #else

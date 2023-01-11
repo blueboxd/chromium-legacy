@@ -11,7 +11,10 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/first_party_sets/first_party_sets_policy_service.h"
+#include "chrome/browser/first_party_sets/first_party_sets_policy_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -142,18 +145,19 @@ void StorageAccessGrantPermissionContext::DecidePermission(
     return;
   }
 
-  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
-      id.render_process_id(), id.render_frame_id());
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(id.global_render_frame_host_id());
   DCHECK(rfh);
   StorageAccessRequestType request_type =
       GetStorageAccessRequestType(requesting_origin, embedding_origin, rfh);
 
-  return browser_context()
-      ->GetDefaultStoragePartition()
-      ->GetNetworkContext()
+  net::SchemefulSite embedding_site(embedding_origin);
+
+  first_party_sets::FirstPartySetsPolicyServiceFactory::GetForBrowserContext(
+      browser_context())
       ->ComputeFirstPartySetMetadata(
-          net::SchemefulSite(requesting_origin),
-          net::SchemefulSite(embedding_origin), /*party_context=*/{},
+          net::SchemefulSite(requesting_origin), &embedding_site,
+          /*party_context=*/{},
           base::BindOnce(&StorageAccessGrantPermissionContext::
                              CheckForAutoGrantOrAutoDenial,
                          weak_factory_.GetWeakPtr(), id, requesting_origin,
@@ -231,11 +235,10 @@ void StorageAccessGrantPermissionContext::UseImplicitGrantOrPrompt(
       ContentSettingsType::STORAGE_ACCESS, &implicit_grants,
       content_settings::SessionModel::UserSession);
 
-  const int existing_implicit_grants =
-      std::count_if(implicit_grants.begin(), implicit_grants.end(),
-                    [requesting_origin](const auto& entry) {
-                      return entry.primary_pattern.Matches(requesting_origin);
-                    });
+  const int existing_implicit_grants = base::ranges::count_if(
+      implicit_grants, [requesting_origin](const auto& entry) {
+        return entry.primary_pattern.Matches(requesting_origin);
+      });
 
   // If we have fewer grants than our limit, we can just set an implicit grant
   // now and skip prompting the user.
@@ -330,8 +333,19 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSetInternal(
   // This permission was allowed so store it either ephemerally or more
   // permanently depending on if the allow came from a prompt or automatic
   // grant.
-  settings_map->SetContentSettingDefaultScope(
-      requesting_origin, embedding_origin, ContentSettingsType::STORAGE_ACCESS,
+  const net::SchemefulSite embedding_site(embedding_origin);
+  const GURL embedding_site_as_url = embedding_site.GetURL();
+  ContentSettingsPattern secondary_site_pattern =
+      ContentSettingsPattern::CreateBuilder()
+          ->WithScheme(embedding_site_as_url.scheme())
+          ->WithDomainWildcard()
+          ->WithHost(embedding_site_as_url.host())
+          ->WithPathWildcard()
+          ->WithPortWildcard()
+          ->Build();
+  settings_map->SetContentSettingCustomScope(
+      ContentSettingsPattern::FromURLNoWildcard(requesting_origin),
+      secondary_site_pattern, ContentSettingsType::STORAGE_ACCESS,
       content_setting, implicit_result ? ephemeral_grant : durable_grant);
 
   ContentSettingsForOneType grants;

@@ -35,6 +35,7 @@
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 #include "third_party/blink/public/mojom/buckets/bucket_manager_host.mojom-forward.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-forward.h"
+#include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom-forward.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-forward.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
@@ -123,6 +124,13 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   enum class CrashReportMode {
     NO_CRASH_DUMP,
     GENERATE_CRASH_DUMP,
+  };
+
+  enum class NotificationServiceCreatorType {
+    kDocument,
+    kDedicatedWorker,
+    kSharedWorker,
+    kServiceWorker
   };
 
   // General functions ---------------------------------------------------------
@@ -608,10 +616,13 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void CreatePaymentManagerForOrigin(
       const url::Origin& origin,
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) = 0;
-  // |render_frame_id| is the frame associated with |receiver|, or
-  // MSG_ROUTING_NONE if |receiver| is associated with a worker.
+  // `rfh_id` is the id for RenderFrameHost for the `receiver` if
+  // the notification service is created by a document, or the id for the
+  // ancestor RenderFrameHost of the worker if the notification service is
+  // created by a dedicated worker, or empty value otherwise.
   virtual void CreateNotificationService(
-      int render_frame_id,
+      GlobalRenderFrameHostId rfh_id,
+      NotificationServiceCreatorType creator_type,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::NotificationService> receiver) = 0;
   virtual void CreateWebSocketConnector(
@@ -661,6 +672,12 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void ReinitializeLogging(uint32_t logging_dest,
                                    base::ScopedFD log_file_descriptor) = 0;
 #endif
+
+  // Sets whether OS-level support is enabled for Attribution Reporting API.
+  // See
+  // https://github.com/WICG/attribution-reporting-api/blob/main/app_to_web.md.
+  virtual void SetOsSupportForAttributionReporting(
+      blink::mojom::AttributionOsSupport os_support) = 0;
 
   // Static management functions -----------------------------------------------
 

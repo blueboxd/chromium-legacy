@@ -16,6 +16,7 @@
 #include "ash/public/cpp/keyboard/arc/arc_input_method_bounds_tracker.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
@@ -165,8 +166,7 @@ class TestInputMethodManager : public im::MockInputMethodManager {
     }
 
     void AddEnabledInputMethodId(const std::string& ime_id) {
-      if (!std::count(enabled_input_method_ids_.begin(),
-                      enabled_input_method_ids_.end(), ime_id)) {
+      if (!base::Contains(enabled_input_method_ids_, ime_id)) {
         enabled_input_method_ids_.push_back(ime_id);
       }
     }
@@ -943,7 +943,8 @@ TEST_F(ArcInputMethodManagerServiceTest, FocusAndBlur) {
   // Set up mock input context.
   const ui::TextInputMethod::InputContext test_context{
       ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT, 0 /* flags */,
-      ui::TextInputClient::FOCUS_REASON_MOUSE, true /* should_do_learning */};
+      ui::TextInputClient::FOCUS_REASON_MOUSE,
+      ui::PersonalizationMode::kEnabled};
   ui::MockInputMethod mock_input_method(nullptr);
   TestIMEInputContextHandler test_context_handler(&mock_input_method);
   ui::DummyTextInputClient dummy_text_input_client(ui::TEXT_INPUT_TYPE_TEXT);
@@ -959,21 +960,21 @@ TEST_F(ArcInputMethodManagerServiceTest, FocusAndBlur) {
 
   ASSERT_EQ(0, bridge()->focus_calls_count_);
 
-  engine_handler->FocusIn(test_context);
+  engine_handler->Focus(test_context);
   EXPECT_EQ(1, bridge()->focus_calls_count_);
 
-  engine_handler->FocusOut();
+  engine_handler->Blur();
   EXPECT_EQ(1, bridge()->focus_calls_count_);
 
-  // If an ARC window is focused, FocusIn doesn't call the bridge's Focus().
+  // If an ARC window is focused, Focus doesn't call the bridge's Focus().
   auto window = base::WrapUnique(CreateTestArcWindow());
   window_delegate()->SetFocusedWindow(window.get());
   window_delegate()->SetActiveWindow(window.get());
 
-  engine_handler->FocusIn(test_context);
+  engine_handler->Focus(test_context);
   EXPECT_EQ(1, bridge()->focus_calls_count_);
 
-  engine_handler->FocusOut();
+  engine_handler->Blur();
   EXPECT_EQ(1, bridge()->focus_calls_count_);
 }
 
@@ -1039,7 +1040,8 @@ TEST_F(ArcInputMethodManagerServiceTest, ShowVirtualKeyboard) {
   // Set up mock input context.
   const ui::TextInputMethod::InputContext test_context{
       ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT, 0 /* flags */,
-      ui::TextInputClient::FOCUS_REASON_MOUSE, true /* should_do_learning */};
+      ui::TextInputClient::FOCUS_REASON_MOUSE,
+      ui::PersonalizationMode::kEnabled};
   ui::MockInputMethod mock_input_method(nullptr);
   TestIMEInputContextHandler test_context_handler(&mock_input_method);
   ui::DummyTextInputClient dummy_text_input_client(ui::TEXT_INPUT_TYPE_TEXT);
@@ -1104,7 +1106,8 @@ TEST_F(ArcInputMethodManagerServiceTest, VisibilityObserver) {
   // Set up mock input context.
   const ui::TextInputMethod::InputContext test_context{
       ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT, 0 /* flags */,
-      ui::TextInputClient::FOCUS_REASON_MOUSE, true /* should_do_learning */};
+      ui::TextInputClient::FOCUS_REASON_MOUSE,
+      ui::PersonalizationMode::kEnabled};
   ui::MockInputMethod mock_input_method(nullptr);
   TestIMEInputContextHandler test_context_handler(&mock_input_method);
   ui::DummyTextInputClient dummy_text_input_client(ui::TEXT_INPUT_TYPE_TEXT);

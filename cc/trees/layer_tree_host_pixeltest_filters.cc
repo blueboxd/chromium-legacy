@@ -91,6 +91,12 @@ INSTANTIATE_TEST_SUITE_P(All,
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(LayerTreeHostFiltersPixelTestGPU);
 
 TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurRect) {
+  if (renderer_type() == viz::RendererType::kSkiaVk) {
+    // TODO(crbug.com/1354678): The vulkan expected image requires rebasing
+    // after Skia roll, so skip this test until then.
+    return;
+  }
+
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -637,6 +643,11 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
 }
 
 TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterRotated) {
+  if (renderer_type() == viz::RendererType::kSkiaVk) {
+    // TODO(crbug.com/1354678): The vulkan expected image requires rebasing
+    // after Skia roll, so skip this test until then.
+    return;
+  }
   // Add a white background with a rotated red rect in the center.
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
@@ -904,7 +915,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedDropShadowFilter) {
   background->AddChild(child);
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS) || \
-    defined(ARCH_CPU_ARM64) || defined(USE_OZONE)
+    defined(ARCH_CPU_ARM64) || BUILDFLAG(IS_OZONE)
 #if defined(ARCH_CPU_ARM64) && \
     (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_MAC))
   // Windows, macOS, and Fuchsia on ARM64 has some pixels difference.
@@ -912,7 +923,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedDropShadowFilter) {
   float percentage_pixels_large_error = 0.89f;
   float average_error_allowed_in_bad_pixels = 5.f;
   int large_error_allowed = 17;
-#elif BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS) || defined(USE_OZONE)
+#elif BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_OZONE)
   // There's a 1 pixel error on MacOS and ChromeOS
   float percentage_pixels_large_error = 0.00111112f;  // 1px / (300*300)
   float average_error_allowed_in_bad_pixels = 1.f;

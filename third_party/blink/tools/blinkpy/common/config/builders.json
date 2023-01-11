@@ -70,14 +70,16 @@
         "specifiers": ["Trusty", "Release"],
         "steps": {
             "wpt_tests_suite (experimental)": {}
-        }
+        },
+	"is_try_builder": true
     },
     "linux-wpt-content-shell-fyi-rel": {
         "main": "chromium.fyi",
         "port_name": "linux-trusty",
         "specifiers": ["Trusty", "Release"],
         "steps": {
-            "wpt_tests_suite (experimental)": {}
+            "wpt_tests_suite (with patch, experimental)": {},
+            "wpt_tests_suite_highdpi (with patch, experimental)": {}
         },
         "is_try_builder": true
     },
@@ -245,20 +247,5 @@
         },
         "is_try_builder": true,
         "is_cq_builder":true
-    },
-    "android-webview-pie-x86-wpt-fyi-rel": {
-        "port_name": "android-android-pie",
-        "main": "chromium.android.fyi",
-        "specifiers": ["Android", "android_webview", "Release"]
-    },
-    "android-weblayer-pie-x86-wpt-fyi-rel": {
-        "port_name": "android-android-pie",
-        "main": "chromium.android.fyi",
-        "specifiers": ["Android", "android_weblayer", "Release"]
-    },
-    "android-chrome-pie-x86-wpt-fyi-rel": {
-        "port_name": "android-android-pie",
-        "main": "chromium.android.fyi",
-        "specifiers": ["Android", "chrome_android", "Release"]
     }
 }

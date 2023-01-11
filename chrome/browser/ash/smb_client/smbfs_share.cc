@@ -15,7 +15,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/smb_client/smb_service_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chromeos/smb_shares/smb_credentials_dialog.h"
+#include "chrome/browser/ui/webui/ash/smb_shares/smb_credentials_dialog.h"
 #include "crypto/sha2.h"
 #include "storage/browser/file_system/external_mount_points.h"
 
@@ -146,7 +146,7 @@ void SmbFsShare::OnDeleteRecursivelyDone(base::File::Error error) {
 void SmbFsShare::Unmount(SmbFsShare::UnmountCallback callback) {
   if (unmount_pending_) {
     LOG(WARNING) << "Cannot unmount a shared that is being unmounted";
-    std::move(callback).Run(MountError::kInternal);
+    std::move(callback).Run(MountError::kInternalError);
     return;
   }
 

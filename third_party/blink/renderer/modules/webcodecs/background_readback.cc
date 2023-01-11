@@ -142,11 +142,12 @@ void BackgroundReadback::ReadbackRGBTextureBackedFrameToMemory(
                     ? kTopLeft_GrSurfaceOrigin
                     : kBottomLeft_GrSurfaceOrigin;
 
+  gfx::Point src_point;
   gpu::MailboxHolder mailbox_holder = txt_frame->mailbox_holder(0);
   ri->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
   ri->ReadbackARGBPixelsAsync(
-      mailbox_holder.mailbox, mailbox_holder.texture_target, origin, info,
-      base::saturated_cast<GLuint>(rgba_stide), dst_pixels,
+      mailbox_holder.mailbox, mailbox_holder.texture_target, origin, src_point,
+      info, base::saturated_cast<GLuint>(rgba_stide), dst_pixels,
       WTF::BindOnce(&BackgroundReadback::OnARGBPixelsReadCompleted,
                     MakeUnwrappingCrossThreadHandle(this), std::move(result_cb),
                     std::move(txt_frame), std::move(result)));
@@ -187,7 +188,7 @@ bool SyncReadbackThread::LazyInitialize() {
   attributes.prefer_low_power_gpu = true;
 
   Platform::GraphicsInfo info;
-  context_provider_ = CreateContextProviderOnWorkerThread(
+  context_provider_ = CreateOffscreenGraphicsContext3DProvider(
       attributes, &info, KURL("chrome://BackgroundReadback"));
 
   if (!context_provider_) {
@@ -195,7 +196,7 @@ bool SyncReadbackThread::LazyInitialize() {
     return false;
   }
 
-  if (!context_provider_->BindToCurrentThread()) {
+  if (!context_provider_->BindToCurrentSequence()) {
     DLOG(ERROR) << "Can't bind context provider.";
     context_provider_ = nullptr;
     return false;

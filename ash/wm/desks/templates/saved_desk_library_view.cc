@@ -4,18 +4,14 @@
 
 #include "ash/wm/desks/templates/saved_desk_library_view.h"
 
-#include "ash/constants/ash_features.h"
 #include "ash/controls/rounded_scroll_bar.h"
 #include "ash/controls/scroll_view_gradient_helper.h"
 #include "ash/public/cpp/desk_template.h"
-#include "ash/public/cpp/desks_templates_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/pill_button.h"
 #include "ash/style/rounded_label.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_preview_view.h"
@@ -26,8 +22,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_grid_event_handler.h"
-#include "base/notreached.h"
-#include "ui/aura/window.h"
+#include "base/functional/callback_helpers.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -37,7 +32,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/animation/animation_builder.h"
-#include "ui/views/highlight_border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -110,8 +104,8 @@ SavedDesks Group(const std::vector<const DeskTemplate*>& saved_desks) {
       case DeskTemplateType::kSaveAndRecall:
         grouped.save_and_recall.push_back(saved_desk);
         break;
+      // Do nothing in the case of an unknown template.
       case DeskTemplateType::kUnknown:
-        NOTREACHED();
         break;
     }
   }
@@ -416,8 +410,7 @@ void SavedDeskLibraryView::AnimateDeskLaunch(const base::GUID& uuid,
                       source_screen_bounds.height());
 
   views::AnimationBuilder()
-      .OnEnded(base::BindOnce([](std::unique_ptr<ui::LayerTreeOwner>) {},
-                              std::move(item_layer_tree)))
+      .OnEnded(base::DoNothingWithBoundArgs(std::move(item_layer_tree)))
       .Once()
       // Animating the desk item up to the desk bar.
       .SetDuration(kSaveAndRecallLaunchMoveDuration)
@@ -528,17 +521,14 @@ void SavedDeskLibraryView::OnLocatedEvent(ui::LocatedEvent* event,
 
 absl::optional<gfx::Rect> SavedDeskLibraryView::GetDeskPreviewBoundsForLaunch(
     const DeskMiniView* mini_view) {
-  gfx::Transform transform = mini_view->layer()->transform();
-  gfx::Transform inversed;
-  if (!transform.GetInverse(&inversed))
-    return absl::nullopt;
-
   gfx::Rect desk_preview_bounds =
       mini_view->desk_preview()->GetBoundsInScreen();
-  gfx::Point desk_preview_origin =
-      inversed.MapPoint(desk_preview_bounds.origin());
-
-  return gfx::Rect(desk_preview_origin, desk_preview_bounds.size());
+  if (absl::optional<gfx::Point> desk_preview_origin =
+          mini_view->layer()->transform().InverseMapPoint(
+              desk_preview_bounds.origin())) {
+    return gfx::Rect(*desk_preview_origin, desk_preview_bounds.size());
+  }
+  return absl::nullopt;
 }
 
 void SavedDeskLibraryView::AddedToWidget() {

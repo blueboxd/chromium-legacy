@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert.js';
-import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
+import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
 
-import {AsyncUtil} from '../../common/js/async_util.js';
+import {Aggregator, AsyncQueue} from '../../common/js/async_util.js';
 import {GuestOsPlaceholder} from '../../common/js/files_app_entry_types.js';
 import {metrics} from '../../common/js/metrics.js';
 import {util} from '../../common/js/util.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {isNative, VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {FileOperationManager} from '../../externs/background/file_operation_manager.js';
 import {EntriesChangedEvent} from '../../externs/entries_changed_event.js';
 import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
@@ -73,7 +73,7 @@ export class DirectoryModel extends EventTarget {
      */
     this.ignoreCurrentDirectoryDeletion_ = false;
 
-    this.directoryChangeQueue_ = new AsyncUtil.Queue();
+    this.directoryChangeQueue_ = new AsyncQueue();
 
     /**
      * Number of running directory change trackers.
@@ -82,7 +82,7 @@ export class DirectoryModel extends EventTarget {
     this.numChangeTrackerRunning_ = 0;
 
     this.rescanAggregator_ =
-        new AsyncUtil.Aggregator(this.rescanSoon.bind(this, true), 500);
+        new Aggregator(this.rescanSoon.bind(this, true), 500);
 
     this.fileFilter_ = fileFilter;
     this.fileFilter_.addEventListener(
@@ -122,9 +122,6 @@ export class DirectoryModel extends EventTarget {
       chrome.fileManagerPrivate.onIOTaskProgressStatus.addListener(
           this.updateFileListAfterIOTask_.bind(this));
     }
-    util.addEventListenerToBackgroundComponent(
-        fileOperationManager, 'entries-changed',
-        this.onEntriesChanged_.bind(this));
 
     /** @private {string} */
     this.lastSearchQuery_ = '';
@@ -311,8 +308,7 @@ export class DirectoryModel extends EventTarget {
   isOnNative() {
     const rootType = this.getCurrentRootType();
     return rootType != null && !util.isRecentRootType(rootType) &&
-        VolumeManagerCommon.VolumeType.isNative(
-            VolumeManagerCommon.getVolumeTypeFromRootType(rootType));
+        isNative(VolumeManagerCommon.getVolumeTypeFromRootType(rootType));
   }
 
   /**
@@ -980,66 +976,6 @@ export class DirectoryModel extends EventTarget {
   }
 
   /**
-   * Callback when an entry is changed.
-   * @param {EntriesChangedEvent} event Entry change event.
-   * @private
-   */
-  async onEntriesChanged_(event) {
-    const kind = event.kind;
-    const entries = event.entries;
-    // TODO(hidehiko): We should update directory model even the search result
-    // is shown.
-    const rootType = this.getCurrentRootType();
-    if ((rootType === VolumeManagerCommon.RootType.DRIVE ||
-         rootType === VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME ||
-         rootType === VolumeManagerCommon.RootType.DRIVE_RECENT ||
-         rootType === VolumeManagerCommon.RootType.DRIVE_OFFLINE) &&
-        this.isSearching()) {
-      return;
-    }
-
-    switch (kind) {
-      case util.EntryChangedKind.CREATED:
-        try {
-          const parentPromises =
-              entries.map(entry => new Promise((resolve, reject) => {
-                            entry.getParent(resolve, reject);
-                          }));
-          const parents = await Promise.all(parentPromises);
-          const entriesToAdd = [];
-
-          for (let i = 0; i < parents.length; i++) {
-            if (!util.isSameEntry(parents[i], this.getCurrentDirEntry())) {
-              continue;
-            }
-
-            const index = this.findIndexByEntry_(entries[i]);
-            if (index >= 0) {
-              this.getFileList().replaceItem(
-                  this.getFileList().item(index), entries[i]);
-            } else {
-              entriesToAdd.push(entries[i]);
-            }
-          }
-
-          this.partialUpdate_(entriesToAdd, []);
-        } catch (error) {
-          console.warn(error.stack || error);
-        }
-        break;
-
-      case util.EntryChangedKind.DELETED:
-        // This is the delete event.
-        this.partialUpdate_([], util.entriesToURLs(entries));
-        break;
-
-      default:
-        console.error('Invalid EntryChangedKind: ' + kind);
-        break;
-    }
-  }
-
-  /**
    * @param {Entry} entry The entry to be searched.
    * @return {number} The index in the fileList, or -1 if not found.
    * @private
@@ -1279,7 +1215,7 @@ export class DirectoryModel extends EventTarget {
    * Creates an object which could say whether directory has changed while it
    * has been active or not. Designed for long operations that should be
    * cancelled if the used change current directory.
-   * @return {Object} Created object.
+   * @return {!DirectoryChangeTracker} Created object.
    */
   createDirectoryChangeTracker() {
     const tracker = {
@@ -1739,3 +1675,23 @@ export class DirectoryModel extends EventTarget {
     }
   }
 }
+
+/**
+ * Used to track asynchronous directory change use like:
+ * const tracker = directoryModel.createDirectoryChangeTracker();
+ * tracker.start();
+ * try {
+ *    ... async code here ...
+ *    if (tracker.hasChanged) {
+ *      // This code shouldn't continue anymore.
+ *    }
+ * } finally {
+ *     tracker.stop();
+ * }
+ * @typedef {{
+ *   start: function(),
+ *   stop: function(),
+ *   hasChanged: boolean,
+ * }}
+ */
+export let DirectoryChangeTracker;

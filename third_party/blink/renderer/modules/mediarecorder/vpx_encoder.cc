@@ -9,6 +9,8 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/task/thread_pool.h"
+#include "base/threading/thread_restrictions.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -44,7 +46,9 @@ static int GetNumberOfThreadsForEncoding() {
 void VpxEncoder::ShutdownEncoder(std::unique_ptr<NonMainThread> encoding_thread,
                                  ScopedVpxCodecCtxPtr encoder) {
   DCHECK(encoding_thread);
-  // Both |encoding_thread| and |encoder| will be destroyed at end-of-scope.
+  base::ScopedAllowBaseSyncPrimitives allow;
+  encoding_thread = nullptr;
+  encoder = nullptr;
 }
 
 VpxEncoder::VpxEncoder(
@@ -62,10 +66,11 @@ VpxEncoder::VpxEncoder(
 }
 
 VpxEncoder::~VpxEncoder() {
-  PostCrossThreadTask(
-      *main_task_runner_.get(), FROM_HERE,
-      CrossThreadBindOnce(&VpxEncoder::ShutdownEncoder,
-                          std::move(encoding_thread_), std::move(encoder_)));
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock()},
+      ConvertToBaseOnceCallback(CrossThreadBindOnce(
+          &VpxEncoder::ShutdownEncoder, std::move(encoding_thread_),
+          std::move(encoder_))));
 }
 
 bool VpxEncoder::CanEncodeAlphaChannel() {
@@ -181,12 +186,8 @@ void VpxEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
   }
   frame = nullptr;
 
-  PostCrossThreadTask(
-      *origin_task_runner_.get(), FROM_HERE,
-      CrossThreadBindOnce(OnFrameEncodeCompleted,
-                          CrossThreadBindRepeating(on_encoded_video_cb_),
-                          video_params, std::move(data), std::move(alpha_data),
-                          capture_timestamp, keyframe));
+  on_encoded_video_cb_.Run(video_params, std::move(data), std::move(alpha_data),
+                           capture_timestamp, keyframe);
 }
 
 void VpxEncoder::DoEncode(vpx_codec_ctx_t* const encoder,

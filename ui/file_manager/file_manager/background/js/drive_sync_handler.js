@@ -5,7 +5,8 @@
 import {assert} from 'chrome://resources/js/assert.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
 
-import {AsyncUtil} from '../../common/js/async_util.js';
+import {getParentEntry} from '../../common/js/api.js';
+import {AsyncQueue, RateLimiter} from '../../common/js/async_util.js';
 import {ProgressCenterItem, ProgressItemState, ProgressItemType} from '../../common/js/progress_center_common.js';
 import {getFilesAppIconURL, toFilesAppURL} from '../../common/js/url_constants.js';
 import {str, strf, util} from '../../common/js/util.js';
@@ -102,11 +103,11 @@ export class DriveSyncHandlerImpl extends EventTarget {
 
     /**
      * Async queue.
-     * @type {AsyncUtil.Queue}
+     * @type {AsyncQueue}
      * @const
      * @private
      */
-    this.queue_ = new AsyncUtil.Queue();
+    this.queue_ = new AsyncQueue();
 
     /**
      * The length average window in calculating moving average speed of task.
@@ -145,9 +146,9 @@ export class DriveSyncHandlerImpl extends EventTarget {
     /**
      * Rate limiter which is used to avoid sending update request for progress
      * bar too frequently.
-     * @private {AsyncUtil.RateLimiter}
+     * @private {RateLimiter}
      */
-    this.progressRateLimiter_ = new AsyncUtil.RateLimiter(() => {
+    this.progressRateLimiter_ = new RateLimiter(() => {
       this.progressCenter_.updateItem(this.syncItem_);
       this.progressCenter_.updateItem(this.pinItem_);
     }, 2000);
@@ -257,20 +258,18 @@ export class DriveSyncHandlerImpl extends EventTarget {
       try {
         entry = await util.urlToEntry(status.fileUrl);
       } catch (error) {
-        console.warn('Resolving URL ' + status.fileUrl + ' is failed: ', error);
+        console.warn('Resolving URL ' + status.fileUrl + ' failed: ', error);
       }
     }
 
     if (util.isInlineSyncStatusEnabled()) {
-      if (entry) {
-        this.metadataModel_.notifyEntriesChanged([entry]);
-        this.metadataModel_.get([entry], ['syncStatus']);
-      }
+      this.updateEntrySyncStatusMetadata_(entry, status.transferState);
 
-      // If inline sync status is enabled, don't display visual signal for
+      // If inline sync status is enabled, don't display visual signals for
       // Drive syncing.
       return;
     }
+
     switch (status.transferState) {
       case 'in_progress':
         await this.updateItem_(item, status, entry);
@@ -285,6 +284,44 @@ export class DriveSyncHandlerImpl extends EventTarget {
       default:
         throw new Error(
             'Invalid transfer state: ' + status.transferState + '.');
+    }
+  }
+
+  /**
+   * Updates the sync status metadata of the given entry with the given
+   * transferState.
+   * @param {?Entry} entry Entry whose sync status metadata should be updated.
+   * @param {string} transferState The new sync status transferState.
+   *     status.
+   * @private
+   */
+  async updateEntrySyncStatusMetadata_(entry, transferState) {
+    if (!this.metadataModel_ || !entry) {
+      return;
+    }
+
+    try {
+      const cachedSyncStatusMetadata =
+          await this.metadataModel_.getCache([entry], ['syncStatus']);
+      if (cachedSyncStatusMetadata[0].syncStatus === transferState) {
+        // The sync status didn't change; no need to invalidate the cache.
+        return;
+      }
+    } catch (e) {
+      console.warn('Failed to retrieve sync status metadata cache for entry');
+    }
+
+    this.metadataModel_.notifyEntriesChanged([entry]);
+    this.metadataModel_.get([entry], ['syncStatus']);
+    try {
+      let parent = entry;
+      while (parent.fullPath !== parent.filesystem.root.fullPath) {
+        parent = await getParentEntry(parent);
+        this.metadataModel_.notifyEntriesChanged([parent]);
+        this.metadataModel_.get([parent], ['syncStatus']);
+      }
+    } catch (e) {
+      console.warn('Failed to update parent syncing status:', e);
     }
   }
 
@@ -341,6 +378,7 @@ export class DriveSyncHandlerImpl extends EventTarget {
       item.state = status.transferState === 'completed' ?
           ProgressItemState.COMPLETED :
           ProgressItemState.CANCELED;
+      this.speedometers_[item.id].reset();
       this.progressCenter_.updateItem(item);
       this.syncing_ = false;
       this.dispatchEvent(new Event(this.getCompletedEventName()));

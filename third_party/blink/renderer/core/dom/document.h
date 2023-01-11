@@ -124,6 +124,7 @@ namespace blink {
 class Agent;
 class AnchorElementInteractionTracker;
 class AnimationClock;
+class AriaNotificationOptions;
 class AXContext;
 class AXObjectCache;
 class Attr;
@@ -210,7 +211,6 @@ class Range;
 class RenderBlockingResourceManager;
 class ResizeObserver;
 class ResourceFetcher;
-class ResourceResponse;
 class RootScrollerController;
 class SVGDocumentExtensions;
 class SVGUseElement;
@@ -352,7 +352,7 @@ class CORE_EXPORT Document : public ContainerNode,
   ~Document() override;
 
   // Constructs a Document instance without a subclass for testing.
-  static Document* CreateForTest(ExecutionContext* execution_context = nullptr);
+  static Document* CreateForTest(ExecutionContext& execution_context);
 
   static Range* CreateRangeAdjustedToTreeScope(const TreeScope&,
                                                const Position&);
@@ -1224,6 +1224,8 @@ class CORE_EXPORT Document : public ContainerNode,
                                     const String& issuer,
                                     ExceptionState&);
 
+  void ariaNotify(const String announcement, const AriaNotificationOptions*);
+
   // The following implements the rule from HTML 4 for what valid names are.
   // To get this right for all the XML cases, we probably have to improve this
   // or move it and make it sensitive to the type of document.
@@ -1295,8 +1297,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // See `execution_context_` for details.
   ExecutionContext* GetExecutionContext() const final;
 
-  // Return the agent. Can only be null in unit tests.
-  Agent* GetAgent() const;
+  // Return the agent.
+  Agent& GetAgent() const;
 
   ScriptRunner* GetScriptRunner() { return script_runner_.Get(); }
   const base::ElapsedTimer& GetStartTime() const { return start_time_; }
@@ -1542,19 +1544,19 @@ class CORE_EXPORT Document : public ContainerNode,
 
   HTMLDialogElement* ActiveModalDialog() const;
 
-  Element* PopupHintShowing() const { return popup_hint_showing_; }
-  void SetPopupHintShowing(Element* element) { popup_hint_showing_ = element; }
-  HeapVector<Member<Element>>& PopupStack() { return popup_stack_; }
-  const HeapVector<Member<Element>>& PopupStack() const { return popup_stack_; }
-  bool PopupAutoShowing() const { return !popup_stack_.empty(); }
-  Element* TopmostPopupAutoOrHint() const;
-  HeapHashSet<Member<Element>>& PopupsWaitingToHide() {
-    return popups_waiting_to_hide_;
+  HeapVector<Member<HTMLElement>>& PopoverStack() { return popover_stack_; }
+  const HeapVector<Member<HTMLElement>>& PopoverStack() const {
+    return popover_stack_;
   }
-  const Element* PopUpMousedownTarget() const {
-    return pop_up_mousedown_target_;
+  bool PopoverAutoShowing() const { return !popover_stack_.empty(); }
+  HTMLElement* TopmostPopover() const;
+  HeapHashSet<Member<HTMLElement>>& PopoversWaitingToHide() {
+    return popovers_waiting_to_hide_;
   }
-  void SetPopUpMousedownTarget(const Element*);
+  const HTMLElement* PopoverPointerdownTarget() const {
+    return popover_pointerdown_target_;
+  }
+  void SetPopoverPointerdownTarget(const HTMLElement*);
 
   // Add an element to the set of elements that, because of CSS toggle
   // creation, need style recalc done later.
@@ -1763,7 +1765,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsAccessibilityEnabled() const { return !ax_contexts_.empty(); }
 
   void DispatchHandleLoadStart();
-  void DispatchHandleLoadOrLayoutComplete();
+  void DispatchHandleLoadComplete();
 
   bool HaveRenderBlockingStylesheetsLoaded() const;
   bool HaveRenderBlockingResourcesLoaded() const;
@@ -1922,15 +1924,14 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void WriteIntoTrace(perfetto::TracedValue ctx) const;
 
-  // TODO(https://crbug.com/1296161): Delete this function.
-  void CheckPartitionedCookiesOriginTrial(const ResourceResponse& response);
-
   void IncrementIgnoreDestructiveWriteModuleScriptCount() {
     ignore_destructive_write_module_script_count_++;
   }
   unsigned GetIgnoreDestructiveWriteModuleScriptCount() {
     return ignore_destructive_write_module_script_count_;
   }
+
+  void ResetAgent(Agent& agent);
 
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
@@ -1961,6 +1962,7 @@ class CORE_EXPORT Document : public ContainerNode,
   friend class CheckPseudoHasCacheScope;
   friend class CanvasRenderingAPIUkmMetricsTest;
   friend class OffscreenCanvasRenderingAPIUkmMetricsTest;
+  friend class TapFriendlinessCheckerTest;
   FRIEND_TEST_ALL_PREFIXES(LazyLoadAutomaticImagesTest,
                            LoadAllImagesIfPrinting);
   FRIEND_TEST_ALL_PREFIXES(FrameFetchContextSubresourceFilterTest,
@@ -2172,8 +2174,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // in unit tests).
   Member<ExecutionContext> execution_context_;
 
-  // Documents should always have an agent except those created with
-  // DocumentInit::ForTest.
+  // Documents should always have an agent.
   Member<Agent> agent_;
 
   Member<ResourceFetcher> fetcher_;
@@ -2391,16 +2392,14 @@ class CORE_EXPORT Document : public ContainerNode,
   // stack and is thus the one that will be visually on top.
   HeapVector<Member<Element>> top_layer_elements_;
 
-  // The stack of currently-displayed `popup=auto` elements. Elements in the
+  // The stack of currently-displayed `popover=auto` elements. Elements in the
   // stack go from earliest (bottom-most) to latest (top-most).
-  HeapVector<Member<Element>> popup_stack_;
-  // The `popup=hint` that is currently showing, if any.
-  Member<Element> popup_hint_showing_;
-  // The pop-up (if any) that received the most recent mousedown event.
-  Member<const Element> pop_up_mousedown_target_;
-  // A set of popups for which hidePopUp() has been called, but animations are
-  // still running.
-  HeapHashSet<Member<Element>> popups_waiting_to_hide_;
+  HeapVector<Member<HTMLElement>> popover_stack_;
+  // The popover (if any) that received the most recent pointerdown event.
+  Member<const HTMLElement> popover_pointerdown_target_;
+  // A set of popovers for which hidePopover() has been called, but animations
+  // are still running.
+  HeapHashSet<Member<HTMLElement>> popovers_waiting_to_hide_;
 
   // Elements that need to be restyled because a toggle was created on them,
   // or a prior sibling, during the previous restyle.

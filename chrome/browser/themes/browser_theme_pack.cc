@@ -739,7 +739,7 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Allow IO on UI thread due to deep-seated theme design issues.
   // (see http://crbug.com/80206)
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlocking scoped_allow_blocking;
 
   // For now data pack can only have extension type.
   scoped_refptr<BrowserThemePack> pack(
@@ -1253,7 +1253,7 @@ void BrowserThemePack::SetTintsFromJSON(
     if (!item.second.is_list())
       continue;
 
-    base::Value::ConstListView tint_list = item.second.GetListDeprecated();
+    const base::Value::List& tint_list = item.second.GetList();
     if (tint_list.size() != 3)
       continue;
 
@@ -1309,7 +1309,7 @@ void BrowserThemePack::ReadColorsFromJSON(const base::Value* colors_value,
   for (const auto iter : colors_value->DictItems()) {
     if (!iter.second.is_list())
       continue;
-    base::Value::ConstListView color_list = iter.second.GetListDeprecated();
+    const base::Value::List& color_list = iter.second.GetList();
     if (!(color_list.size() == 3 || color_list.size() == 4))
       continue;
 
@@ -1453,7 +1453,7 @@ bool BrowserThemePack::LoadRawBitmapsTo(
     ImageCache* image_cache) {
   // Themes should be loaded on the file thread, not the UI thread.
   // http://crbug.com/61838
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlocking scoped_allow_blocking;
 
   for (const auto& entry : file_paths) {
     PersistentID prs_id = entry.first;

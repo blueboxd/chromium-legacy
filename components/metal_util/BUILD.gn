@@ -6,6 +6,10 @@ assert(is_mac)
 
 import("//testing/test.gni")
 
+source_set("metal_util_types") {
+  sources = [ "types.h" ]
+}
+
 component("metal_util") {
   output_name = "metal"
 
@@ -19,10 +23,9 @@ component("metal_util") {
     "hdr_copier_layer.h",
     "hdr_copier_layer.mm",
     "metal_util_export.h",
-    "test_shader.h",
-    "test_shader.mm",
-    "types.h",
   ]
+
+  public_deps = [ ":metal_util_types" ]
 
   deps = [
     "//base",
@@ -40,15 +43,5 @@ component("metal_util") {
   weak_frameworks = [
     "Metal.framework",
     "MetalKit.framework",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [ "test_shader_unittest.cc" ]
-  deps = [
-    ":metal_util",
-    "//base",
-    "//testing/gtest",
   ]
 }

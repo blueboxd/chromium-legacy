@@ -41,6 +41,7 @@ class StatusAreaWidgetDelegate;
 class StopRecordingButtonTray;
 class TrayBackgroundView;
 class UnifiedSystemTray;
+class VideoConferenceTray;
 class VirtualKeyboardTray;
 class WmModeButtonTray;
 
@@ -143,6 +144,9 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   }
   OverviewButtonTray* overview_button_tray() { return overview_button_tray_; }
   PaletteTray* palette_tray() { return palette_tray_; }
+  VideoConferenceTray* video_conference_tray() {
+    return video_conference_tray_;
+  }
   StopRecordingButtonTray* stop_recording_button_tray() {
     return stop_recording_button_tray_;
   }
@@ -279,6 +283,7 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   PaletteTray* palette_tray_ = nullptr;
   PhoneHubTray* phone_hub_tray_ = nullptr;
   EcheTray* eche_tray_ = nullptr;
+  VideoConferenceTray* video_conference_tray_ = nullptr;
   StopRecordingButtonTray* stop_recording_button_tray_ = nullptr;
   ProjectorAnnotationTray* projector_annotation_tray_ = nullptr;
   VirtualKeyboardTray* virtual_keyboard_tray_ = nullptr;

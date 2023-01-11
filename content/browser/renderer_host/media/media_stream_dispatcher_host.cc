@@ -30,6 +30,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "url/origin.h"
 
@@ -348,7 +349,6 @@ MediaStreamDispatcherHost::GenerateStreamsChecksOnUIThread(
         generate_salt_and_origin_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // TODO(crbug.com/1342071): Add tests for |request_all_screens| being true.
   if (request_all_screens &&
       !CheckRequestAllScreensAllowed(render_process_id, render_frame_id)) {
     return {.request_allowed = false,
@@ -408,13 +408,14 @@ void MediaStreamDispatcherHost::GenerateStreams(
     GenerateStreamsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!AllowedStreamTypeCombination(controls.audio.stream_type,
-                                    controls.video.stream_type)) {
-    ReceivedBadMessage(render_process_id_,
-                       bad_message::MSDH_INVALID_STREAM_TYPE_COMBINATION);
+  const absl::optional<bad_message::BadMessageReason> bad_message =
+      ValidateControlsForGenerateStreams(controls);
+  if (bad_message.has_value()) {
+    ReceivedBadMessage(render_process_id_, bad_message.value());
     return;
   }
 
+  // TODO(crbug/1379794): Move into ValidateControlsForGenerateStreams().
   if (controls.video.stream_type ==
           blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET &&
       (!base::FeatureList::IsEnabled(features::kGetDisplayMediaSet) ||
@@ -456,11 +457,12 @@ void MediaStreamDispatcherHost::DoGenerateStreams(
     GenerateStreamsUIThreadCheckResult ui_check_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // TODO(crbug.com/1337580): Cover this block by a browser test.
   if (!ui_check_result.request_allowed) {
-    ReceivedBadMessage(
-        render_process_id_,
-        bad_message::MSDH_REQUEST_ALL_SCREENS_NOT_ALLOWED_FOR_ORIGIN);
+    std::move(callback).Run(
+        blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
+        /*label=*/std::string(),
+        /*stream_devices_set=*/nullptr,
+        /*pan_tilt_zoom_allowed=*/false);
     return;
   }
 
@@ -730,6 +732,34 @@ void MediaStreamDispatcherHost::DoGetOpenDevice(
       base::BindRepeating(
           &MediaStreamDispatcherHost::OnDeviceCaptureHandleChange,
           weak_factory_.GetWeakPtr()));
+}
+
+absl::optional<bad_message::BadMessageReason>
+MediaStreamDispatcherHost::ValidateControlsForGenerateStreams(
+    const blink::StreamControls& controls) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!AllowedStreamTypeCombination(controls.audio.stream_type,
+                                    controls.video.stream_type)) {
+    return bad_message::MSDH_INVALID_STREAM_TYPE_COMBINATION;
+  }
+
+  if (!controls.audio.requested()) {
+    if (controls.suppress_local_audio_playback) {
+      return bad_message::
+          MSDH_SUPPRESS_LOCAL_AUDIO_PLAYBACK_BUT_AUDIO_NOT_REQUESTED;
+    }
+
+    if (controls.hotword_enabled) {
+      return bad_message::MSDH_HOTWORD_ENABLED_BUT_AUDIO_NOT_REQUESTED;
+    }
+
+    if (controls.disable_local_echo) {
+      return bad_message::MSDH_DISABLE_LOCAL_ECHO_BUT_AUDIO_NOT_REQUESTED;
+    }
+  }
+
+  return absl::nullopt;
 }
 
 void MediaStreamDispatcherHost::ReceivedBadMessage(

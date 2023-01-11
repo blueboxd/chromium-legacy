@@ -21,20 +21,17 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
  */
 public class CustomTabHeightStrategy implements FindToolbarObserver {
     public static CustomTabHeightStrategy createStrategy(Activity activity, @Px int initialHeight,
-            Integer navigationBarColor, Integer navigationBarDividerColor,
             boolean isPartialCustomTabFixedHeight, CustomTabsConnection connection,
             @Nullable CustomTabsSessionToken session,
             ActivityLifecycleDispatcher lifecycleDispatcher, FullscreenManager fullscreenManager,
-            boolean isTablet) {
+            boolean isTablet, boolean interactWithBackground) {
         if (initialHeight <= 0) {
             return new CustomTabHeightStrategy();
         }
 
-        return new PartialCustomTabHeightStrategy(activity, initialHeight, navigationBarColor,
-                navigationBarDividerColor, isPartialCustomTabFixedHeight,
-                size
-                -> connection.onResized(session, size),
-                lifecycleDispatcher, fullscreenManager, isTablet);
+        return new PartialCustomTabHeightStrategy(activity, initialHeight,
+                isPartialCustomTabFixedHeight, size -> connection.onResized(session, size),
+                lifecycleDispatcher, fullscreenManager, isTablet, interactWithBackground);
     }
 
     /**
@@ -73,13 +70,6 @@ public class CustomTabHeightStrategy implements FindToolbarObserver {
      * @param scrimFraction Scrim fraction.
      */
     public void setScrimFraction(float scrimFraction) {}
-
-    /**
-     * {@see org.chromium.chrome.browser.ui.RootUiCoordinator#canDrawOutsideScreen()}
-     */
-    public boolean canDrawOutsideScreen() {
-        return false;
-    }
 
     // FindToolbarObserver implementation.
 

@@ -7,6 +7,7 @@
     "vulkan/client.shard.cml",
     "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml",
     "//build/config/fuchsia/test/chromium_test_facet.shard.test-cml",
+    "//build/config/fuchsia/test/test_fonts.shard.test-cml",
   ],
   program: {
     binary: "content_shell",
@@ -17,7 +18,6 @@
         "fuchsia.accessibility.semantics.SemanticsManager",
         "fuchsia.buildinfo.Provider",
         "fuchsia.device.NameProvider",
-        "fuchsia.fonts.Provider",
         "fuchsia.hwinfo.Product",
         "fuchsia.input.virtualkeyboard.ControllerCreator",
         "fuchsia.intl.PropertyProvider",
@@ -26,6 +26,8 @@
         "fuchsia.media.AudioDeviceEnumerator",
         "fuchsia.media.ProfileProvider",
         "fuchsia.media.SessionAudioConsumerFactory",
+        // Only needed in enable_widevine=true builds.
+        // TODO(crbug.com/1379411): Move to a shard.
         "fuchsia.media.drm.Widevine",
         "fuchsia.mediacodec.CodecFactory",
         "fuchsia.memorypressure.Provider",
@@ -37,7 +39,6 @@
         "fuchsia.ui.composition.Allocator",
         "fuchsia.ui.composition.Flatland",
         "fuchsia.ui.input3.Keyboard",
-        "fuchsia.ui.policy.Presenter",
         "fuchsia.ui.scenic.Scenic",
       ],
     },

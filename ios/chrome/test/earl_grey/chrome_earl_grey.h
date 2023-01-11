@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
+#include "base/time/time.h"
 #import "components/content_settings/core/common/content_settings.h"
 #include "components/sync/base/model_type.h"
 #import "ios/testing/earl_grey/app_launch_configuration.h"
@@ -17,8 +17,9 @@
 #include "third_party/metrics_proto/user_demographics.pb.h"
 #include "url/gurl.h"
 
-@class FakeChromeIdentity;
+@class FakeSystemIdentity;
 @class ElementSelector;
+@protocol GREYAction;
 @protocol GREYMatcher;
 
 namespace chrome_test_util {
@@ -28,6 +29,9 @@ namespace chrome_test_util {
 UIWindow* GetAnyKeyWindow();
 
 }  // namespace chrome_test_util
+
+// Overload of grey_longPressWithDuration() taking a base::TimeDelta.
+id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 
 #define ChromeEarlGrey \
   [ChromeEarlGreyImpl invokedFromFile:@"" __FILE__ lineNumber:__LINE__]
@@ -135,7 +139,7 @@ UIWindow* GetAnyKeyWindow();
 // Waits for the matcher to return an element. If the condition is not met
 // within the given `timeout` a GREYAssert is induced.
 - (void)waitForUIElementToAppearWithMatcher:(id<GREYMatcher>)matcher
-                                    timeout:(NSTimeInterval)timeout;
+                                    timeout:(base::TimeDelta)timeout;
 
 // Waits for the matcher to not return any elements.
 - (void)waitForUIElementToDisappearWithMatcher:(id<GREYMatcher>)matcher;
@@ -143,7 +147,7 @@ UIWindow* GetAnyKeyWindow();
 // Waits for the matcher to not return any elements. If the condition is not met
 // within the given `timeout` a GREYAssert is induced.
 - (void)waitForUIElementToDisappearWithMatcher:(id<GREYMatcher>)matcher
-                                       timeout:(NSTimeInterval)timeout;
+                                       timeout:(base::TimeDelta)timeout;
 
 // Waits for there to be `count` number of non-incognito tabs within a timeout,
 // or a GREYAssert is induced.
@@ -165,7 +169,7 @@ UIWindow* GetAnyKeyWindow();
 - (void)clearSyncServerData;
 
 // Signs in with `identity` without sync consent.
-- (void)signInWithoutSyncWithIdentity:(FakeChromeIdentity*)identity;
+- (void)signInWithoutSyncWithIdentity:(FakeSystemIdentity*)identity;
 
 // Starts the sync server. The server should not be running when calling this.
 - (void)startSync;
@@ -251,13 +255,13 @@ UIWindow* GetAnyKeyWindow();
 - (void)waitForSyncServerEntitiesWithType:(syncer::ModelType)type
                                      name:(const std::string&)UTF8Name
                                     count:(size_t)count
-                                  timeout:(NSTimeInterval)timeout;
+                                  timeout:(base::TimeDelta)timeout;
 
 // Induces a GREYAssert if `expected_present` is YES and the provided `url` is
 // not present, or vice versa.
 - (void)waitForTypedURL:(const GURL&)URL
           expectPresent:(BOOL)expectPresent
-                timeout:(NSTimeInterval)timeout;
+                timeout:(base::TimeDelta)timeout;
 
 // Waits for sync invalidation field presence in the DeviceInfo data type on the
 // server.
@@ -325,9 +329,6 @@ UIWindow* GetAnyKeyWindow();
 // Simulates a backgrounding and raises an EarlGrey exception if simulation not
 // succeeded.
 - (void)simulateTabsBackgrounding;
-
-// Persists the current list of tabs to disk immediately.
-- (void)saveSessionImmediately;
 
 // Returns the number of main (non-incognito) tabs currently evicted.
 - (NSUInteger)evictedMainTabCount [[nodiscard]];
@@ -437,7 +438,7 @@ UIWindow* GetAnyKeyWindow();
 // `UTF8Text`. If the condition is not met within the given `timeout` a
 // GREYAssert is induced.
 - (void)waitForWebStateContainingText:(const std::string&)UTF8Text
-                              timeout:(NSTimeInterval)timeout
+                              timeout:(base::TimeDelta)timeout
                    inWindowWithNumber:(int)windowNumber;
 
 // Waits for there to be `count` number of non-incognito tabs within a timeout,
@@ -469,7 +470,7 @@ UIWindow* GetAnyKeyWindow();
 // SyncService::IsEngineInitialized() for details. If not succeeded a GREYAssert
 // is induced.
 - (void)waitForSyncInitialized:(BOOL)isInitialized
-                   syncTimeout:(NSTimeInterval)timeout;
+                   syncTimeout:(base::TimeDelta)timeout;
 
 // Returns the current sync cache GUID. The sync server must be running when
 // calling this.
@@ -515,7 +516,7 @@ UIWindow* GetAnyKeyWindow();
 // Waits for the current web state to contain `UTF8Text`. If the condition is
 // not met within the given `timeout` a GREYAssert is induced.
 - (void)waitForWebStateContainingText:(const std::string&)UTF8Text
-                              timeout:(NSTimeInterval)timeout;
+                              timeout:(base::TimeDelta)timeout;
 
 // Waits for there to be no web state containing `UTF8Text`.
 // If the condition is not met within a timeout a GREYAssert is induced.
@@ -563,12 +564,6 @@ UIWindow* GetAnyKeyWindow();
 
 // Stops any pending navigations in all WebStates which are loading.
 - (void)stopAllWebStatesLoading;
-
-// Clears all web state browsing data. A GREYAssert is induced if the data
-// cannot be cleared.
-// TODO:(crbug.com/1362915): Remove after all tests are updated to use
-// `clearAllWebStateBrowsingData:` below.
-- (void)clearAllWebStateBrowsingData;
 
 // Clears all web state browsing data then relaunches the application. (A
 // GREYAssert is induced if the data cannot be cleared.)
@@ -789,7 +784,7 @@ UIWindow* GetAnyKeyWindow();
 // replaced with this set. Note that timeout is best effort and can be a bit
 // longer than specified. This method returns immediately.
 - (void)watchForButtonsWithLabels:(NSArray<NSString*>*)labels
-                          timeout:(NSTimeInterval)timeout;
+                          timeout:(base::TimeDelta)timeout;
 
 // Returns YES if the button with given (accessibility) `label` was observed at
 // some point since `watchForButtonsWithLabels:timeout:` was called.
@@ -798,14 +793,6 @@ UIWindow* GetAnyKeyWindow();
 // Clear the watcher list, stopping monitoring.
 - (void)stopWatcher;
 
-#pragma mark - Url Param Classification utilities
-// Sets the `raw_classifications` on the
-// url_param_filter::ClassificationsLoader.
-- (void)setUrlParamClassifications:(const std::string&)raw_classifications;
-
-// Resets the stored classifications on the
-// url_param_filter::ClassificationsLoader.
-- (void)resetUrlParamClassifications;
 @end
 
 // Helpers that only compile under EarlGrey 1 are included in this "EG1"

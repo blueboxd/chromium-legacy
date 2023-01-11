@@ -155,10 +155,11 @@ void CSSDefaultStyleSheets::PrepareForLeakDetection() {
   text_track_style_sheet_.Clear();
   forced_colors_style_sheet_.Clear();
   fullscreen_style_sheet_.Clear();
-  popup_style_sheet_.Clear();
+  popover_style_sheet_.Clear();
   selectmenu_style_sheet_.Clear();
   webxr_overlay_style_sheet_.Clear();
   marker_style_sheet_.Clear();
+  form_controls_not_vertical_style_sheet_.Clear();
   // Recreate the default style sheet to clean up possible SVG resources.
   String default_rules = UncompressResourceAsASCIIString(IDR_UASTYLE_HTML_CSS) +
                          OverflowForReplacedElementRules() +
@@ -297,13 +298,14 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
     }
   }
 
-  if (!popup_style_sheet_ && element.HasPopupAttribute()) {
-    // TODO: We should assert that this sheet only contains rules for popups.
-    DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled(
+  if (!popover_style_sheet_ && IsA<HTMLElement>(element) &&
+      To<HTMLElement>(element).HasPopoverAttribute()) {
+    // TODO: We should assert that this sheet only contains rules for popovers.
+    DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
         element.GetDocument().GetExecutionContext()));
-    popup_style_sheet_ =
-        ParseUASheet(UncompressResourceAsASCIIString(IDR_UASTYLE_POPUP_CSS));
-    AddRulesToDefaultStyleSheets(popup_style_sheet_, NamespaceType::kHTML);
+    popover_style_sheet_ =
+        ParseUASheet(UncompressResourceAsASCIIString(IDR_UASTYLE_POPOVER_CSS));
+    AddRulesToDefaultStyleSheets(popover_style_sheet_, NamespaceType::kHTML);
     changed_default_style = true;
   }
 
@@ -314,6 +316,21 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
     selectmenu_style_sheet_ = ParseUASheet(
         UncompressResourceAsASCIIString(IDR_UASTYLE_SELECTMENU_CSS));
     AddRulesToDefaultStyleSheets(selectmenu_style_sheet_, NamespaceType::kHTML);
+    changed_default_style = true;
+  }
+
+  // TODO(crbug.com/681917): The FormControlsVerticalWritingModeSupport
+  // flag enables vertical writing mode to be used on form controls. When
+  // it is *disabled*, we need to force horizontal writing mode.
+  if (!RuntimeEnabledFeatures::
+          FormControlsVerticalWritingModeSupportEnabled() &&
+      !form_controls_not_vertical_style_sheet_ &&
+      IsA<HTMLProgressElement>(element)) {
+    form_controls_not_vertical_style_sheet_ =
+        ParseUASheet(UncompressResourceAsASCIIString(
+            IDR_UASTYLE_FORM_CONTROLS_NOT_VERTICAL_CSS));
+    AddRulesToDefaultStyleSheets(form_controls_not_vertical_style_sheet_,
+                                 NamespaceType::kHTML);
     changed_default_style = true;
   }
 
@@ -429,10 +446,11 @@ void CSSDefaultStyleSheets::Trace(Visitor* visitor) const {
   visitor->Trace(text_track_style_sheet_);
   visitor->Trace(forced_colors_style_sheet_);
   visitor->Trace(fullscreen_style_sheet_);
-  visitor->Trace(popup_style_sheet_);
+  visitor->Trace(popover_style_sheet_);
   visitor->Trace(selectmenu_style_sheet_);
   visitor->Trace(webxr_overlay_style_sheet_);
   visitor->Trace(marker_style_sheet_);
+  visitor->Trace(form_controls_not_vertical_style_sheet_);
 }
 
 }  // namespace blink

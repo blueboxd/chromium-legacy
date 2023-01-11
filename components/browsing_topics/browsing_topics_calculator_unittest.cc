@@ -59,7 +59,7 @@ class BrowsingTopicsCalculatorTest : public testing::Test {
 
     host_content_settings_map_ = base::MakeRefCounted<HostContentSettingsMap>(
         &prefs_, /*is_off_the_record=*/false, /*store_last_modified=*/false,
-        /*restore_session=*/false);
+        /*restore_session=*/false, /*should_record_metrics=*/false);
     cookie_settings_ = base::MakeRefCounted<content_settings::CookieSettings>(
         host_content_settings_map_.get(), &prefs_, false, "chrome-extension");
     auto privacy_sandbox_delegate = std::make_unique<
@@ -124,7 +124,7 @@ class BrowsingTopicsCalculatorTest : public testing::Test {
                          base::Time time) {
     history::HistoryAddPageArgs add_page_args;
     add_page_args.time = time;
-    add_page_args.context_id = reinterpret_cast<history::ContextID>(1);
+    add_page_args.context_id = 1;
 
     for (const std::string& host : hosts) {
       static int nav_entry_id = 0;

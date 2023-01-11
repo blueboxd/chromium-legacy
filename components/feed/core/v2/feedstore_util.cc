@@ -4,7 +4,7 @@
 
 #include "components/feed/core/v2/feedstore_util.h"
 
-#include "base/base64.h"
+#include "base/base64url.h"
 #include "base/hash/hash.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/proto/v2/wire/consistency_token.pb.h"
@@ -21,20 +21,36 @@ std::string StreamKey(const StreamType& stream_type) {
     return kForYouStreamKey;
   if (stream_type.IsWebFeed())
     return kFollowStreamKey;
-  DCHECK(stream_type.IsChannelFeed());
+  DCHECK(stream_type.IsSingleWebFeed());
   std::string encoding;
-  base::Base64Encode(stream_type.GetWebFeedId(), &encoding);
-  return encoding;
+  base::Base64UrlEncode(stream_type.GetWebFeedId(),
+                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        &encoding);
+  return std::string(kSingleWebFeedStreamKeyPrefix) + encoding;
 }
 
-StreamType StreamTypeFromKey(std::string key) {
-  if (key == kForYouStreamKey)
+base::StringPiece StreamPrefix(feed::StreamKind stream_kind) {
+  if (stream_kind == feed::StreamKind::kForYou)
+    return kForYouStreamKey;
+  if (stream_kind == feed::StreamKind::kFollowing)
+    return kFollowStreamKey;
+  DCHECK(stream_kind == feed::StreamKind::kSingleWebFeed);
+  return kSingleWebFeedStreamKeyPrefix;
+}
+StreamType StreamTypeFromId(base::StringPiece id) {
+  if (id == kForYouStreamKey)
     return StreamType(feed::StreamKind::kForYou);
-  if (key == kFollowStreamKey)
+  if (id == kFollowStreamKey)
     return StreamType(feed::StreamKind::kFollowing);
-  std::string channel_key;
-  if (base::Base64Decode(key, &channel_key))
-    return StreamType(feed::StreamKind::kChannel, channel_key);
+  if (base::StartsWith(id, kSingleWebFeedStreamKeyPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    std::string single_web_feed_key;
+    if (base::Base64UrlDecode(id.substr(kSingleWebFeedStreamKeyPrefix.size()),
+                              base::Base64UrlDecodePolicy::IGNORE_PADDING,
+                              &single_web_feed_key)) {
+      return StreamType(feed::StreamKind::kSingleWebFeed, single_web_feed_key);
+    }
+  }
   return {};
 }
 
@@ -145,7 +161,8 @@ void SetStreamViewContentHashes(Metadata& metadata,
       MetadataForStream(metadata, stream_type);
   stream_metadata.clear_view_content_hashes();
   stream_metadata.mutable_view_content_hashes()->Add(
-      content_hashes.values().begin(), content_hashes.values().end());
+      content_hashes.original_hashes().begin(),
+      content_hashes.original_hashes().end());
 }
 
 bool IsKnownStale(const Metadata& metadata, const StreamType& stream_type) {
@@ -215,6 +232,18 @@ void SetLastServerResponseTime(Metadata& metadata,
 int32_t ContentHashFromPrefetchMetadata(
     const feedwire::PrefetchMetadata& prefetch_metadata) {
   return base::PersistentHash(prefetch_metadata.uri());
+}
+
+base::flat_set<uint32_t> GetViewedContentHashes(const Metadata& metadata,
+                                                const StreamType& stream_type) {
+  const Metadata::StreamMetadata* stream_metadata =
+      FindMetadataForStream(metadata, stream_type);
+  if (stream_metadata) {
+    return base::flat_set<uint32_t>(
+        stream_metadata->viewed_content_hashes().begin(),
+        stream_metadata->viewed_content_hashes().end());
+  }
+  return {};
 }
 
 }  // namespace feedstore

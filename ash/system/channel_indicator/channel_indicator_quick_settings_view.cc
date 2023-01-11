@@ -4,8 +4,6 @@
 
 #include "ash/system/channel_indicator/channel_indicator_quick_settings_view.h"
 
-#include <algorithm>
-
 #include "ash/constants/ash_features.h"
 #include "ash/constants/quick_settings_catalogs.h"
 #include "ash/public/cpp/ash_view_ids.h"
@@ -20,7 +18,9 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/quick_settings_metrics_util.h"
+#include "base/check.h"
 #include "base/i18n/rtl.h"
+#include "base/ranges/algorithm.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "ui/gfx/canvas.h"
@@ -35,6 +35,7 @@
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
+#include "ui/views/view_utils.h"
 
 namespace ash {
 
@@ -101,7 +102,7 @@ constexpr int kSubmitFeedbackButtonIconSize = 16;
 
 constexpr int kSubmitFeedbackButtonRevampHeight = 32;
 constexpr int kSubmitFeedbackButtonRevampWidth = 40;
-constexpr int kSubmitFeedbackButtonRevampIconSize = 18;
+constexpr int kSubmitFeedbackButtonRevampIconSize = 20;
 
 // Corners for the `SubmitFeedbackButton` contents.
 constexpr SkScalar kSubmitFeedbackButtonCorners[] = {
@@ -210,20 +211,14 @@ class VersionButton : public views::LabelButton {
                   ->ShowChannelInfoAdditionalDetails();
             }),
             channel_indicator_utils::GetFullReleaseTrackString(channel)),
-        channel_(channel) {
+        channel_(channel),
+        allow_user_feedback_(allow_user_feedback) {
     SetID(VIEW_ID_QS_VERSION_BUTTON);
     SetFlipCanvasOnPaintForRTLUI(true);
     const auto& content_corners =
         GetVersionButtonContentCorners(allow_user_feedback);
-    std::copy(content_corners, content_corners + kNumVersionButtonCornerRadii,
-              content_corners_);
+    base::ranges::copy(content_corners, content_corners_);
     if (features::IsQsRevampEnabled()) {
-      if (allow_user_feedback) {
-        // Visually center the label by adding an empty border on the left side
-        // that is the same width as the feedback button.
-        SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
-            0, kButtonSpacingRevamp + kSubmitFeedbackButtonRevampWidth, 0, 0)));
-      }
       SetHorizontalAlignment(gfx::ALIGN_CENTER);
       SetMinSize(gfx::Size(0, kVersionButtonRevampHeight));
     } else {
@@ -233,13 +228,25 @@ class VersionButton : public views::LabelButton {
       SetMinSize(gfx::Size(0, kVersionButtonHeight));
     }
     views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
-    views::InkDrop::Get(this)->SetBaseColor(GetInkDropBaseColor(channel_));
     InstallRoundedCornerHighlightPathGenerator(
         this, GetVersionButtonInkDropCorners(allow_user_feedback));
   }
   VersionButton(const VersionButton&) = delete;
   VersionButton& operator=(const VersionButton&) = delete;
   ~VersionButton() override = default;
+
+  void SetNarrowLayout(bool narrow) {
+    DCHECK(features::IsQsRevampEnabled());
+    if (allow_user_feedback_ && !narrow) {
+      // Visually center the label by adding an empty border on the left side
+      // that is the same width as the feedback button on the right.
+      SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
+          0, kButtonSpacingRevamp + kSubmitFeedbackButtonRevampWidth, 0, 0)));
+    } else {
+      // No special centering.
+      SetBorder(nullptr);
+    }
+  }
 
   // views::LabelButton:
   void PaintButtonContents(gfx::Canvas* canvas) override {
@@ -261,6 +268,7 @@ class VersionButton : public views::LabelButton {
 
   void OnThemeChanged() override {
     views::LabelButton::OnThemeChanged();
+    views::InkDrop::Get(this)->SetBaseColor(GetInkDropBaseColor(channel_));
     SetBackgroundAndFont();
   }
 
@@ -280,6 +288,9 @@ class VersionButton : public views::LabelButton {
 
   // The channel itself, BETA, DEV, or CANARY.
   const version_info::Channel channel_;
+
+  // Whether the user is allowed to send feedback.
+  const bool allow_user_feedback_;
 
   // Array of values that represents the content rounded rect corners.
   SkScalar content_corners_[kNumVersionButtonCornerRadii];
@@ -312,8 +323,7 @@ class SubmitFeedbackButton : public IconButton {
                    IDS_ASH_STATUS_TRAY_REPORT_FEEDBACK),
         channel_(channel) {
     SetID(VIEW_ID_QS_FEEDBACK_BUTTON);
-    std::copy(content_corners, content_corners + kNumVersionButtonCornerRadii,
-              content_corners_);
+    base::ranges::copy(content_corners, content_corners_);
     SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
         kSubmitFeedbackButtonMarginTop, kSubmitFeedbackButtonMarginLeft,
         kSubmitFeedbackButtonMarginBottom, kSubmitFeedbackButtonMarginRight)));
@@ -413,6 +423,11 @@ ChannelIndicatorQuickSettingsView::ChannelIndicatorQuickSettingsView(
         channel, kSubmitFeedbackButtonCorners,
         GetSubmitFeedbackButtonInkDropCorners()));
   }
+}
+
+void ChannelIndicatorQuickSettingsView::SetNarrowLayout(bool narrow) {
+  DCHECK(views::IsViewClass<VersionButton>(version_button_));
+  views::AsViewClass<VersionButton>(version_button_)->SetNarrowLayout(narrow);
 }
 
 }  // namespace ash

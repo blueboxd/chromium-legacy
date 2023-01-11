@@ -615,10 +615,11 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
     return settings_.create_low_res_tiling && !use_gpu_rasterization_;
   }
   ResourcePool* resource_pool() { return resource_pool_.get(); }
-  ImageDecodeCache* image_decode_cache() { return image_decode_cache_.get(); }
   ImageAnimationController* image_animation_controller() {
     return &image_animation_controller_;
   }
+
+  ImageDecodeCache* GetImageDecodeCache() const;
 
   uint32_t next_frame_token() const { return *next_frame_token_; }
 
@@ -628,15 +629,23 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   // equal to `frame_token`.
   void RegisterMainThreadPresentationTimeCallbackForTesting(
       uint32_t frame_token,
-      PresentationTimeCallbackBuffer::MainCallback callback);
+      PresentationTimeCallbackBuffer::Callback callback);
+
+  // Buffers `callback` until a relevant successful presentation occurs, at
+  // which point the callback will be posted to run on the main thread. A
+  // successful presentation is considered relevant if the presented frame's
+  // token is greater than or equal to `frame_token`.
+  void RegisterMainThreadSuccessfulPresentationTimeCallbackForTesting(
+      uint32_t frame_token,
+      PresentationTimeCallbackBuffer::SuccessfulCallback callback);
 
   // Buffers `callback` until a relevant successful presentation occurs, at
   // which point the callback will be run on the compositor thread. A successful
   // presentation is considered relevant if the presented frame's token is
   // greater than or equal to `frame_token`.
-  void RegisterCompositorPresentationTimeCallback(
+  void RegisterCompositorThreadSuccessfulPresentationTimeCallbackForTesting(
       uint32_t frame_token,
-      PresentationTimeCallbackBuffer::CompositorCallback callback);
+      PresentationTimeCallbackBuffer::SuccessfulCallback callback);
 
   virtual bool WillBeginImplFrame(const viz::BeginFrameArgs& args);
   virtual void DidFinishImplFrame(const viz::BeginFrameArgs& args);
@@ -862,7 +871,7 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   // was presented.
   void NotifyDidPresentCompositorFrameOnImplThread(
       uint32_t frame_token,
-      std::vector<PresentationTimeCallbackBuffer::CompositorCallback> callbacks,
+      std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback> callbacks,
       const viz::FrameTimingDetails& details);
 
   CompositorFrameReportingController* compositor_frame_reporting_controller()
@@ -1013,6 +1022,10 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   void NotifyLatencyInfoSwapPromiseMonitors();
 
  private:
+  // Holds image decode cache instance. It can either be a shared cache or
+  // a cache create by this instance. Which is used depends on the settings.
+  class ImageDecodeCacheHolder;
+
   void SetMemoryPolicyImpl(const ManagedMemoryPolicy& policy);
   void SetContextVisibility(bool is_visible);
 
@@ -1043,6 +1056,10 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
 
   // Wrapper for checking and updating |contains_srgb_cache_|.
   bool CheckColorSpaceContainsSrgb(const gfx::ColorSpace& color_space) const;
+
+  // Registers callbacks, as needed, to track First Scroll Latency.
+  void ApplyFirstScrollTracking(const ui::LatencyInfo& latency,
+                                uint32_t frame_token);
 
   // Once bound, this instance owns the InputHandler. However, an InputHandler
   // need not be bound so this should be null-checked before dereferencing.
@@ -1098,7 +1115,7 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;
   std::unique_ptr<ResourcePool> resource_pool_;
   std::unique_ptr<RasterQueryQueue> pending_raster_queries_;
-  std::unique_ptr<ImageDecodeCache> image_decode_cache_;
+  std::unique_ptr<ImageDecodeCacheHolder> image_decode_cache_holder_;
 
   GlobalStateThatImpactsTilePriority global_tile_state_;
 

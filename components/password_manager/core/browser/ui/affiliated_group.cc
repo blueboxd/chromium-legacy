@@ -4,30 +4,31 @@
 
 #include "components/password_manager/core/browser/ui/affiliated_group.h"
 
+#include <algorithm>
+
 namespace password_manager {
 
 AffiliatedGroup::AffiliatedGroup() = default;
-
-AffiliatedGroup::AffiliatedGroup(
-    const std::vector<CredentialUIEntry> credential_groups)
-    : credential_groups(std::move(credential_groups)) {}
-
 AffiliatedGroup::AffiliatedGroup(const AffiliatedGroup& other) = default;
 AffiliatedGroup::AffiliatedGroup(AffiliatedGroup&& other) = default;
 
 AffiliatedGroup::~AffiliatedGroup() = default;
 
+AffiliatedGroup& AffiliatedGroup::operator=(const AffiliatedGroup& other) =
+    default;
+
+AffiliatedGroup& AffiliatedGroup::operator=(AffiliatedGroup&& other) = default;
+
+void AffiliatedGroup::AddCredential(const CredentialUIEntry& credential) {
+  credential_groups_.insert(credential);
+}
+
 bool operator==(const AffiliatedGroup& lhs, const AffiliatedGroup& rhs) {
-  if (lhs.credential_groups.size() != rhs.credential_groups.size()) {
+  if (!base::ranges::equal(lhs.GetCredentials(), rhs.GetCredentials())) {
     return false;
   }
-  for (const CredentialUIEntry& credential : lhs.credential_groups) {
-    if (std::find(rhs.credential_groups.begin(), rhs.credential_groups.end(),
-                  credential) == rhs.credential_groups.end()) {
-      return false;
-    }
-  }
-  return true;
+  return lhs.GetDisplayName() == rhs.GetDisplayName() &&
+         lhs.GetIconURL() == rhs.GetIconURL();
 }
 
 }  // namespace password_manager

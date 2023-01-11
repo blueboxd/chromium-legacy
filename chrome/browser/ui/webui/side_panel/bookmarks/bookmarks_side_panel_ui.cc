@@ -55,6 +55,16 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
        IDS_PRICE_TRACKING_TRACK_PRODUCT_ACCESSIBILITY},
       {"shoppingListUntrackPriceButtonDescription",
        IDS_PRICE_TRACKING_UNTRACK_PRODUCT_ACCESSIBILITY},
+      {"folderSort", IDS_BOOKMARKS_FOLDER_SORT},
+      {"sortByType", IDS_BOOKMARKS_SORT_BY_TYPE},
+      {"allBookmarks", IDS_BOOKMARKS_ALL_BOOKMARKS},
+      {"priceTrackingLabel", IDS_BOOKMARKS_LABEL_TRACKED_PRODUCTS},
+      {"sortNewest", IDS_BOOKMARKS_SORT_NEWEST},
+      {"sortOldest", IDS_BOOKMARKS_SORT_OLDEST},
+      {"sortAlphabetically", IDS_BOOKMARKS_SORT_ALPHABETICALLY},
+      {"sortReverseAlphabetically", IDS_BOOKMARKS_SORT_REVERSE_ALPHABETICALLY},
+      {"sortMenuA11yLabel", IDS_BOOKMARKS_SORT_MENU_A11Y_LABEL},
+      {"addCurrentTab", IDS_READ_LATER_ADD_CURRENT_TAB},
   };
   for (const auto& str : kLocalizedStrings)
     webui::AddLocalizedString(source, str.name, str.id);

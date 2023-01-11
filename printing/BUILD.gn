@@ -16,7 +16,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-assert(enable_basic_printing)
+assert(enable_printing)
 
 if (is_win || enable_print_preview) {
   # Windows basic printing or print preview requires pdf enabled.
@@ -194,22 +194,19 @@ component("printing") {
     ]
   }
 
-  if (is_chromeos) {
+  if (!enable_basic_print_dialog) {
     sources += [
       "printing_context_no_system_dialog.cc",
       "printing_context_no_system_dialog.h",
     ]
   }
 
-  # TODO(crbug.com/1272828): Determine need for Fuchsia-specific implementation.
-  if (is_linux || is_fuchsia) {
+  if (is_linux) {
     sources += [
       "printing_context_linux.cc",
       "printing_context_linux.h",
     ]
-  }
 
-  if (is_linux) {
     deps += [ "//ui/linux:linux_ui" ]
   }
 

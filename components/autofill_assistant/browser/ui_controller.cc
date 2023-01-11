@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -46,6 +47,7 @@ bool ShouldShowFeedbackChipForReason(Metrics::DropOutReason reason) {
     case Metrics::DropOutReason::NAVIGATION:
     case Metrics::DropOutReason::NAVIGATION_WHILE_RUNNING:
     case Metrics::DropOutReason::DOMAIN_CHANGE_DURING_BROWSE_MODE:
+    case Metrics::DropOutReason::CERTIFICATE_ERROR:
       return true;
     // These are possible error reasons for which we don't want to show the
     // feedback chip.
@@ -371,6 +373,10 @@ bool UiController::GetTtsButtonVisible() const {
   return tts_enabled_;
 }
 
+bool UiController::GetDisableScrollbarFading() const {
+  return disable_scrollbar_fading_;
+}
+
 TtsButtonState UiController::GetTtsButtonState() const {
   return tts_button_state_;
 }
@@ -416,6 +422,20 @@ void UiController::SetUserActions(
   }
   user_actions_ = std::move(user_actions);
   SetVisibilityAndUpdateUserActions();
+}
+
+void UiController::SetLegalDisclaimer(
+    std::unique_ptr<LegalDisclaimerProto> legal_disclaimer,
+    base::OnceCallback<void(int)> legal_disclaimer_link_callback) {
+  legal_disclaimer_link_callback_.Reset();
+  if (legal_disclaimer) {
+    legal_disclaimer_link_callback_ = std::move(legal_disclaimer_link_callback);
+  }
+  legal_disclaimer_ = std::move(legal_disclaimer);
+
+  for (UiControllerObserver& observer : observers_) {
+    observer.OnLegalDisclaimerChanged(legal_disclaimer_.get());
+  }
 }
 
 bool UiController::ShouldChipsBeVisible() {
@@ -541,7 +561,18 @@ bool UiController::PerformUserAction(int index) {
   }
 
   UserAction user_action = std::move((*user_actions_)[index]);
+
+  if (base::FeatureList::IsEnabled(features::kAutofillAssistantFastShutdown) &&
+      user_action.has_chip() &&
+      (user_action.chip().type == DONE_ACTION ||
+       user_action.chip().type == CLOSE_ACTION)) {
+    // Special case: we assume that tapping the DONE or CLOSE chip signals
+    // script shutdown, and we handle it specially to streamline how this looks.
+    // See also b/233063571 for details.
+    EnterBrowseModeForShutdown();
+  }
   SetUserActions(nullptr);
+
   user_action.RunCallback();
   event_handler_.DispatchEvent(
       {EventProto::kOnUserActionCalled, user_action.identifier()});
@@ -574,6 +605,10 @@ void UiController::CollapseBottomSheet() {
     // least be renamed to something like On*Requested.
     observer.OnCollapseBottomSheet();
   }
+}
+
+const LegalDisclaimerProto* UiController::GetLegalDisclaimer() const {
+  return legal_disclaimer_.get();
 }
 
 const FormProto* UiController::GetForm() const {
@@ -800,6 +835,12 @@ void UiController::OnFormActionLinkClicked(int link) {
     form_result_->set_link(link);
     form_changed_callback_.Run(form_result_.get());
     std::move(form_cancel_callback_).Run(ClientStatus(ACTION_APPLIED));
+  }
+}
+
+void UiController::OnLegalDisclaimerLinkClicked(int link) {
+  if (legal_disclaimer_link_callback_) {
+    std::move(legal_disclaimer_link_callback_).Run(link);
   }
 }
 
@@ -1135,9 +1176,20 @@ void UiController::InitFromParameters(const TriggerContext& trigger_context) {
       observer.OnTtsButtonVisibilityChanged(/* visible= */ true);
     }
   }
+
+  disable_scrollbar_fading_ =
+      trigger_context.GetScriptParameters().GetDisableScrollbarFading();
+  for (UiControllerObserver& observer : observers_) {
+    observer.OnDisableScrollbarFadingChanged(disable_scrollbar_fading_);
+  }
 }
 
 void UiController::OnStart(const TriggerContext& trigger_context) {
+  // Clean up from previous shutdown state, if set. The main use case for this
+  // are consecutive direct actions.
+  is_shutting_down_ = false;
+  SetUserActions(nullptr);
+
   InitFromParameters(trigger_context);
 
   // |status_message_| may be non-empty due to a trigger script that was run.
@@ -1216,7 +1268,24 @@ void UiController::ExecuteExternalAction(
   NOTREACHED() << "Flows using default UI don't support external actions.";
 }
 
+bool UiController::IsUiShuttingDown() const {
+  return is_shutting_down_;
+}
+
 void UiController::OnInterruptStarted() {}
 void UiController::OnInterruptFinished() {}
+
+void UiController::EnterBrowseModeForShutdown() {
+  DCHECK(!is_shutting_down_) << "should only be called once per flow";
+
+  // This state is necessary to prevent follow-up actions from clearing or
+  // resetting the user actions during shutdown, which would lead to visual
+  // noise.
+  is_shutting_down_ = true;
+
+  // Hide the UI, but don't directly shut down to allow the last actions to
+  // complete.
+  execution_delegate_->EnterBrowseModeForShutdown();
+}
 
 }  // namespace autofill_assistant

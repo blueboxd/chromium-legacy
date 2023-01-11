@@ -112,6 +112,8 @@ source_set("platform") {
       "automation/automation_v8_bindings.cc",
       "automation/automation_v8_bindings.h",
       "automation/automation_v8_router.h",
+      "automation/v8_handler_function_wrapper.cc",
+      "automation/v8_handler_function_wrapper.h",
     ]
 
     deps = [
@@ -133,6 +135,8 @@ source_set("platform") {
       "fuchsia/semantic_provider.h",
       "fuchsia/semantic_provider_impl.cc",
       "fuchsia/semantic_provider_impl.h",
+      "inspect/ax_event_recorder_fuchsia.cc",
+      "inspect/ax_event_recorder_fuchsia.h",
     ]
 
     public_deps += [
@@ -173,12 +177,19 @@ source_set("platform") {
         "ax_platform_relation_win.h",
         "ax_system_caret_win.cc",
         "ax_system_caret_win.h",
+        "inspect/ax_call_statement_invoker_win.cc",
+        "inspect/ax_call_statement_invoker_win.h",
         "inspect/ax_event_recorder_win.cc",
         "inspect/ax_event_recorder_win.h",
         "inspect/ax_event_recorder_win_uia.cc",
         "inspect/ax_event_recorder_win_uia.h",
         "inspect/ax_inspect_utils_win.cc",
         "inspect/ax_inspect_utils_win.h",
+        "inspect/ax_tree_formatter_uia_win.cc",
+        "inspect/ax_tree_formatter_uia_win.h",
+        "inspect/ax_tree_formatter_win.cc",
+        "inspect/ax_tree_formatter_win.h",
+        "inspect/ax_tree_indexer_win.h",
         "uia_registrar_win.cc",
         "uia_registrar_win.h",
       ]
@@ -241,8 +252,12 @@ source_set("platform") {
         "ax_platform_node_auralinux.h",
         "inspect/ax_call_statement_invoker_auralinux.cc",
         "inspect/ax_call_statement_invoker_auralinux.h",
+        "inspect/ax_event_recorder_auralinux.cc",
+        "inspect/ax_event_recorder_auralinux.h",
         "inspect/ax_inspect_utils_auralinux.cc",
         "inspect/ax_inspect_utils_auralinux.h",
+        "inspect/ax_tree_formatter_auralinux.cc",
+        "inspect/ax_tree_formatter_auralinux.h",
         "inspect/ax_tree_indexer.h",
         "inspect/ax_tree_indexer_auralinux.h",
       ]

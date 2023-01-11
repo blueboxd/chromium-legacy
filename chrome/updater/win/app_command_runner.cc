@@ -17,7 +17,9 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/process/launch.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/win/registry.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/updater_scope.h"
@@ -238,33 +240,35 @@ HRESULT AppCommandRunner::Run(const std::vector<std::wstring>& substitutions,
 }
 
 HRESULT AppCommandRunner::StartProcess(const base::FilePath& executable,
-                                       const std::wstring& command_line,
+                                       const std::wstring& parameters,
                                        base::Process& process) {
+  VLOG(2) << __func__ << ": " << executable << ": " << parameters;
+
   if (executable.empty() || process.IsValid()) {
     return E_UNEXPECTED;
   }
 
-  if (!executable.IsAbsolute())
+  // `executable` needs to be a full path to prevent `::CreateProcess` (which
+  // `base::LaunchProcess` uses internally) from using the search path for path
+  // resolution.
+  if (!executable.IsAbsolute()) {
+    LOG(ERROR) << __func__ << "!executable.IsAbsolute(): " << executable;
     return E_INVALIDARG;
-
-  STARTUPINFOW si = {sizeof(si)};
-  PROCESS_INFORMATION pi = {0};
-  std::wstring parameters = command_line;
-
-  // In contrast to the following call to `::CreateProcess`,
-  // `base::Process::LaunchProcess` passes the `executable` in the
-  // `lpCommandLine` parameter to `::CreateProcess`, which uses the search path
-  // for path resolution of `executable`.
-  if (!::CreateProcess(executable.value().c_str(), &parameters[0], nullptr,
-                       nullptr, FALSE, CREATE_NO_WINDOW, nullptr, nullptr, &si,
-                       &pi)) {
-    return HRESULTFromLastError();
   }
 
-  ::CloseHandle(pi.hThread);
+  base::LaunchOptions options = {};
+  options.feedback_cursor_off = true;
+  options.start_hidden = true;
 
-  process = base::Process(pi.hProcess);
-  CHECK(process.IsValid());
+  process = base::LaunchProcess(
+      base::StrCat({L"\"", executable.value(), L"\" ", parameters}), options);
+  if (!process.IsValid()) {
+    const HRESULT hr = HRESULTFromLastError();
+    LOG(ERROR) << __func__ << "base::LaunchProcess failed: " << hr;
+    return hr;
+  }
+
+  VLOG(2) << __func__ << "Started process with PID: " << process.Pid();
   return S_OK;
 }
 
@@ -273,15 +277,21 @@ HRESULT AppCommandRunner::GetAppCommandFormatComponents(
     std::wstring command_format,
     base::FilePath& executable,
     std::vector<std::wstring>& parameters) {
+  VLOG(2) << __func__ << ": " << scope << ": " << command_format;
+
   int num_args = 0;
   ScopedLocalAlloc args(::CommandLineToArgvW(&command_format[0], &num_args));
-  if (!args.is_valid() || num_args < 1)
+  if (!args.is_valid() || num_args < 1) {
+    LOG(ERROR) << __func__ << "!args.is_valid() || num_args < 1: " << num_args;
     return E_INVALIDARG;
+  }
 
   const wchar_t** argv = reinterpret_cast<const wchar_t**>(args.get());
   const base::FilePath exe = base::FilePath(argv[0]);
-  if (!IsSecureAppCommandExePath(scope, exe))
+  if (!IsSecureAppCommandExePath(scope, exe)) {
+    LOG(ERROR) << __func__ << "!IsSecureAppCommandExePath(scope, exe): " << exe;
     return E_INVALIDARG;
+  }
 
   executable = exe;
   parameters.clear();
@@ -299,8 +309,8 @@ absl::optional<std::wstring> AppCommandRunner::FormatAppCommandLine(
     absl::optional<std::wstring> formatted_parameter =
         FormatParameter(substitutions, parameters[i]);
     if (!formatted_parameter) {
-      LOG(ERROR) << __func__ << " FormatParameter failed: " << parameters[i]
-                 << ": " << substitutions.size();
+      VLOG(1) << __func__ << " FormatParameter failed: " << parameters[i]
+              << ": " << substitutions.size();
       return absl::nullopt;
     }
 
@@ -319,12 +329,18 @@ HRESULT AppCommandRunner::ExecuteAppCommand(
     const std::vector<std::wstring>& parameters,
     const std::vector<std::wstring>& substitutions,
     base::Process& process) {
-  const absl::optional<std::wstring> command_line =
-      FormatAppCommandLine(parameters, substitutions);
-  if (!command_line)
-    return E_INVALIDARG;
+  VLOG(2) << __func__ << ": " << executable << ": "
+          << base::JoinString(parameters, L",")
+          << base::JoinString(substitutions, L",");
 
-  return StartProcess(executable, command_line.value(), process);
+  const absl::optional<std::wstring> command_line_parameters =
+      FormatAppCommandLine(parameters, substitutions);
+  if (!command_line_parameters) {
+    LOG(ERROR) << __func__ << "!command_line_parameters";
+    return E_INVALIDARG;
+  }
+
+  return StartProcess(executable, command_line_parameters.value(), process);
 }
 
 }  // namespace updater

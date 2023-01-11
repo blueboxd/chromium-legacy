@@ -336,12 +336,13 @@ Status ParseProxy(bool w3c_compliant,
       }
       std::string value = option_value->GetString();
       if (proxy_servers_option[0] == kSocksProxy) {
-        int socksVersion = proxy_dict->FindInt("socksVersion").value_or(-1);
-        if (socksVersion < 0 || socksVersion > 255)
+        int socks_version = proxy_dict->FindInt("socksVersion").value_or(-1);
+        if (socks_version < 0 || socks_version > 255)
           return Status(
               kInvalidArgument,
               "'socksVersion' must be between 0 and 255");
-        value = base::StringPrintf("socks%d://%s", socksVersion, value.c_str());
+        value =
+            base::StringPrintf("socks%d://%s", socks_version, value.c_str());
       }
       // Converts into Chrome proxy scheme.
       // Example: "http=localhost:9000;ftp=localhost:8000".
@@ -653,14 +654,6 @@ Status ParseSeleniumOptions(
 }
 }  // namespace
 
-bool GetChromeOptionsDictionaryDeprecated(const base::DictionaryValue& params,
-                                          const base::DictionaryValue** out) {
-  if (params.GetDictionary(kChromeDriverOptionsKeyPrefixed, out)) {
-    return true;
-  }
-  return params.GetDictionary(kChromeDriverOptionsKey, out);
-}
-
 bool GetChromeOptionsDictionary(const base::Value::Dict& params,
                                 const base::Value::Dict** out) {
   const base::Value::Dict* result =
@@ -827,7 +820,7 @@ bool Capabilities::IsRemoteBrowser() const {
   return debugger_address.IsValid();
 }
 
-Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
+Status Capabilities::Parse(const base::Value::Dict& desired_caps,
                            bool w3c_compliant) {
   std::map<std::string, Parser> parser_map;
 
@@ -866,8 +859,7 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
   // ChromeDriver specific capabilities.
   // Vendor-prefixed is the current spec conformance, but unprefixed is
   // still supported in legacy mode.
-  if (w3c_compliant ||
-      desired_caps.GetDictionary(kChromeDriverOptionsKeyPrefixed, nullptr)) {
+  if (w3c_compliant || desired_caps.FindDict(kChromeDriverOptionsKeyPrefixed)) {
     parser_map[kChromeDriverOptionsKeyPrefixed] =
         base::BindRepeating(&ParseChromeOptions);
   } else {
@@ -876,13 +868,13 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
   }
   // se:options.loggingPrefs and goog:loggingPrefs is spec-compliant name,
   // but loggingPrefs is still supported in legacy mode.
-  const std::string prefixedLoggingPrefsKey =
+  const std::string prefixed_logging_prefs_key =
       base::StringPrintf("%s:loggingPrefs", kChromeDriverCompanyPrefix);
-  if (desired_caps.GetDictionary("se:options.loggingPrefs", nullptr)) {
+  if (desired_caps.FindDictByDottedPath("se:options.loggingPrefs")) {
     parser_map["se:options"] = base::BindRepeating(&ParseSeleniumOptions);
   } else if (w3c_compliant ||
-             desired_caps.GetDictionary(prefixedLoggingPrefsKey, nullptr)) {
-    parser_map[prefixedLoggingPrefsKey] =
+             desired_caps.FindDictByDottedPath(prefixed_logging_prefs_key)) {
+    parser_map[prefixed_logging_prefs_key] =
         base::BindRepeating(&ParseLoggingPrefs);
   } else {
     parser_map["loggingPrefs"] = base::BindRepeating(&ParseLoggingPrefs);
@@ -890,14 +882,14 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
   // Network emulation requires device mode, which is only enabled when
   // mobile emulation is on.
 
-  const base::DictionaryValue* chrome_options = nullptr;
-  if (GetChromeOptionsDictionaryDeprecated(desired_caps, &chrome_options) &&
-      chrome_options->GetDictionary("mobileEmulation", nullptr)) {
+  const base::Value::Dict* chrome_options = nullptr;
+  if (GetChromeOptionsDictionary(desired_caps, &chrome_options) &&
+      chrome_options->FindDict("mobileEmulation")) {
     parser_map["networkConnectionEnabled"] =
         base::BindRepeating(&ParseBoolean, &network_emulation_enabled);
   }
 
-  for (const auto item : desired_caps.GetDict()) {
+  for (const auto item : desired_caps) {
     if (item.second.is_none())
       continue;
     if (parser_map.find(item.first) == parser_map.end()) {
@@ -921,8 +913,8 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
   LoggingPrefs::const_iterator iter = logging_prefs.find(
       WebDriverLog::kPerformanceType);
   if (iter == logging_prefs.end() || iter->second == Log::kOff) {
-    if (GetChromeOptionsDictionaryDeprecated(desired_caps, &chrome_options) &&
-        chrome_options->FindKey("perfLoggingPrefs")) {
+    if (GetChromeOptionsDictionary(desired_caps, &chrome_options) &&
+        chrome_options->Find("perfLoggingPrefs")) {
       return Status(kInvalidArgument,
                     "perfLoggingPrefs specified, "
                     "but performance logging was not enabled");
@@ -932,8 +924,8 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
       WebDriverLog::kDevToolsType);
   if (dt_events_logging_iter == logging_prefs.end()
       || dt_events_logging_iter->second == Log::kOff) {
-    if (GetChromeOptionsDictionaryDeprecated(desired_caps, &chrome_options) &&
-        chrome_options->FindKey("devToolsEventsToLog")) {
+    if (GetChromeOptionsDictionary(desired_caps, &chrome_options) &&
+        chrome_options->Find("devToolsEventsToLog")) {
       return Status(kInvalidArgument,
                     "devToolsEventsToLog specified, "
                     "but devtools events logging was not enabled");

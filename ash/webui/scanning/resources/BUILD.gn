@@ -102,6 +102,7 @@ js_library("scan_preview") {
     "//ash/webui/scanning/mojom:mojom_js_library_for_compile",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
+  externs_list = [ "$externs_path/pending.js" ]
 }
 
 js_library("scan_to_select") {
@@ -183,7 +184,11 @@ js_library("source_select") {
 }
 
 js_library("scanning_browser_proxy") {
-  deps = [ "//ui/webui/resources/js:cr.m" ]
+  deps = [
+    "//ash/webui/common/resources:cr_deprecated",
+    "//ui/webui/resources/js:cr.m",
+  ]
+  externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
 js_library("mojo_interface_provider") {

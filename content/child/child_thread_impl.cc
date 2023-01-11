@@ -13,6 +13,7 @@
 
 #include "base/base_switches.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/clang_profiling_buildflags.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
@@ -206,6 +207,8 @@ class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
 mojo::IncomingInvitation InitializeMojoIPCChannel() {
   TRACE_EVENT0("startup", "InitializeMojoIPCChannel");
   mojo::PlatformChannelEndpoint endpoint;
+  MojoAcceptInvitationFlags flags =
+      MOJO_ACCEPT_INVITATION_FLAG_LEAK_TRANSPORT_ENDPOINT;
 #if BUILDFLAG(IS_WIN)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           mojo::PlatformChannel::kHandleSwitch)) {
@@ -216,6 +219,7 @@ mojo::IncomingInvitation InitializeMojoIPCChannel() {
     // command line.
     endpoint = mojo::NamedPlatformChannel::ConnectToServer(
         *base::CommandLine::ForCurrentProcess());
+    flags |= MOJO_ACCEPT_INVITATION_FLAG_ELEVATED;
   }
 #elif BUILDFLAG(IS_FUCHSIA)
   endpoint = mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
@@ -238,8 +242,7 @@ mojo::IncomingInvitation InitializeMojoIPCChannel() {
       base::GlobalDescriptors::GetInstance()->Get(kMojoIPCChannel))));
 #endif
 
-  return mojo::IncomingInvitation::Accept(
-      std::move(endpoint), MOJO_ACCEPT_INVITATION_FLAG_LEAK_TRANSPORT_ENDPOINT);
+  return mojo::IncomingInvitation::Accept(std::move(endpoint), flags);
 }
 
 // Callback passed to variations::ChildProcessFieldTrialSyncer. Notifies the
@@ -340,8 +343,7 @@ class ChildThreadImpl::IOThreadState
   // the function body unique by adding a log line, so it doesn't get merged
   // with other functions by link time optimizations (ICF).
   NOINLINE void CrashHungProcess() override {
-    LOG(ERROR) << "Crashing because hung";
-    IMMEDIATE_CRASH();
+    LOG(FATAL) << "Crashing because hung";
   }
 
   void RunServiceDeprecated(
@@ -780,8 +782,7 @@ ChildThreadImpl::~ChildThreadImpl() {
 void ChildThreadImpl::Shutdown() {
   // Ensure that our IOThreadState's last ref goes away on the IO thread.
   ChildThreadImpl::GetIOTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce([](scoped_refptr<IOThreadState>) {},
-                                std::move(io_thread_state_)));
+      FROM_HERE, base::DoNothingWithBoundArgs(std::move(io_thread_state_)));
 }
 
 bool ChildThreadImpl::ShouldBeDestroyed() {

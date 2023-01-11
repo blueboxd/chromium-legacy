@@ -18,8 +18,9 @@
  *
  */
 
-import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
-import {define as crUiDefine} from 'chrome://resources/js/cr/ui.js';
+import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.js';
+
+import {define as crUiDefine} from '../../../common/js/ui.js';
 
 /**
  * Creates a new splitter element.

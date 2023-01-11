@@ -6,7 +6,6 @@
 <translation id="103269572468856066">សម្អាតទិន្នន័យពីគេហទំព័រ និងកម្មវិធីទាំងនេះផងដែរឬ?</translation>
 <translation id="1034259925032978114">វិនដូត្រូវបានបើក</translation>
 <translation id="1036348656032585052">បិទ</translation>
-<translation id="1036727731225946849">កំពុងបញ្ចូល <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1045899828449635435">សម្អាតទិន្នន័យពីគេហទំព័រទាំងនេះផងដែរឬ?</translation>
 <translation id="1049743911850919806">អនាមិក</translation>
 <translation id="10614374240317010">មិនដែលបានរក្សាទុក</translation>
@@ -152,6 +151,7 @@
 <translation id="1750259112639922169">ក្រុមផ្ទាំង - <ph name="TAB_COUNT" /> ផ្ទាំង</translation>
 <translation id="17513872634828108">បើកផ្ទាំង</translation>
 <translation id="1754404134430936718">បានចម្លង​អត្ថបទ</translation>
+<translation id="1778457539567749232">សម្គាល់​ថា​មិន​ទាន់​​​អាន</translation>
 <translation id="1779766957982586368">បិទផ្ទាំង</translation>
 <translation id="1791662854739702043">បាន​ដំឡើង</translation>
 <translation id="1792959175193046959">ប្ដូរ​ទីតាំង​ទាញយក​លំនាំដើម​បាន​គ្រប់ពេល</translation>
@@ -236,7 +236,6 @@
 <translation id="2276231040576210443">អ្នកអាចជ្រើសរើស​អ្វីដែលត្រូវធ្វើសមកាលកម្ម​នៅក្នុង<ph name="BEGIN_LINK1" />ការកំណត់<ph name="END_LINK1" />បានជានិច្ច។ Google អាច​កំណត់​ឱ្យ​ម៉ាស៊ីន​​ស្វែងរក និង​សេវាកម្ម​ផ្សេង​ទៀតមាន​លក្ខណៈ​ផ្ទាល់​ខ្លួន​ ផ្អែក​តាម​ប្រវត្តិ​របស់​អ្នក។</translation>
 <translation id="2276696007612801991">ចូលគណនី Google របស់អ្នក ដើម្បីពិនិត្យ​ពាក្យសម្ងាត់​របស់អ្នក</translation>
 <translation id="2278052315791335171">ការលុបពាក្យសម្ងាត់នេះ​នឹងមិន​លុបគណនីរបស់អ្នក​នៅលើ <ph name="SITE" />​ ទេ</translation>
-<translation id="2279146068164892489">បើកកម្មវិធីសម្រាប់ <ph name="APPNAME" /> ឬ?</translation>
 <translation id="2286841657746966508">អាសយដ្ឋានទូទាត់​វិក្កយបត្រ</translation>
 <translation id="228704530595896923">បញ្ជីជម្រើសចែករំលែក។</translation>
 <translation id="230115972905494466">រកមិន​ឃើញ​ឧបករណ៍​ដែល​ត្រូវគ្នាទេ</translation>
@@ -271,6 +270,7 @@
 <translation id="2496180316473517155">ប្រវត្តិរុករក</translation>
 <translation id="2497852260688568942">សមកាលកម្មបានបិទដោយអ្នកគ្រប់គ្រងរបស់អ្នក</translation>
 <translation id="250020030759455918">អ្នក​នឹងមើលឃើញ​ស្ថានភាព​ចូល <ph name="SITE_NAME" />, ទិន្នន័យ​រុករក និង​ទិន្នន័យគេហទំព័រ​របស់អ្នក​នៅក្នុង Chrome</translation>
+<translation id="2510106555128151389">កំពុង​ដំឡើង <ph name="WEBAPK_NAME" />...</translation>
 <translation id="2513403576141822879">សម្រាប់​ការកំណត់​ច្រើនទៀតពាក់ព័ន្ធនឹង​ឯកជន​ភាព សុវត្ថិភាព និង​ការ​ប្រមូល​ទិន្នន័យ សូមមើល<ph name="BEGIN_LINK" />សមកាលកម្ម​ និង​សេវាកម្ម Google<ph name="END_LINK" /></translation>
 <translation id="2517472476991765520">ស្កេន</translation>
 <translation id="2523184218357549926">ផ្ញើ​ URL នៃ​ទំព័រ​ដែលអ្នក​ចូល​មើលទៅ Google</translation>
@@ -511,7 +511,6 @@
 <translation id="3771694256347217732">លក្ខខណ្ឌប្រើប្រាស់ Google</translation>
 <translation id="3773856050682458546">ទិន្នន័យមូលដ្ឋាន​រួមជាមួយព័ត៌មាន​អំពីគេហទំព័រ​ដែលអ្នកចូលមើល និងកម្មវិធីដែល​អ្នកប្រើ</translation>
 <translation id="3775705724665058594">ផ្ញើ​ទៅ​ឧបករណ៍​របស់អ្នក</translation>
-<translation id="3778956594442850293">បាន​បញ្ចូលទៅ​អេក្រង់ដើម</translation>
 <translation id="3791957072666773229">{TAB_COUNT,plural, =1{ផ្ទាំង 1}other{ផ្ទាំង #}}</translation>
 <translation id="3803784507854318295">គ្រប់គ្រងការចាក់ស្វ័យប្រវត្តិ</translation>
 <translation id="3810838688059735925">វីដេអូ</translation>
@@ -662,6 +661,7 @@
 <translation id="4668347365065281350">ទិន្នន័យ​ទាំងអស់​ដែលគេហទំព័រ​រក្សាទុក រួមទាំង​ខូគី និង​ទិន្នន័យ​ផ្សេងទៀត​ក្នុងឧបករណ៍</translation>
 <translation id="4678082183394354975">​រចនាប័ទ្ម​ងងឹតសម្រាប់គេហទំព័រត្រូវបានបើកនៅក្នុង Chrome</translation>
 <translation id="4684427112815847243">ធ្វើសមកម្មគ្រប់យ៉ាង</translation>
+<translation id="4685741273709472646">ជ្រើសរើស​ពី​បញ្ជី​ធ្លាក់ចុះ</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 និង <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ទៀត}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 និង <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ទៀត}}</translation>
 <translation id="4699172675775169585">រូបភាព និងឯកសារដែលផ្ទុកក្នុងឃ្លាំងសម្ងាត់</translation>
 <translation id="4719927025381752090">ផ្តល់ជូន​ការ​បកប្រែ</translation>
@@ -948,7 +948,6 @@
 <translation id="6192907950379606605">យកការពណ៌នា​អំពីរូបភាព</translation>
 <translation id="6193448654517602979">ជ្រើសរើសផ្ទាំង</translation>
 <translation id="6196315980958524839">ពាក្យសម្ងាត់ត្រូវបានរក្សាទុកទៅក្នុងកម្មវិធីគ្រប់គ្រង​ពាក្យសម្ងាត់ Google នៅលើឧបករណ៍នេះ</translation>
-<translation id="620197886010707372">បើកកម្មវិធីសម្រាប់ <ph name="APPNAME" /> ដោយប្រើ Google Play ឬ?</translation>
 <translation id="6202812185118613467">ចូល​គណនី​វិញ ដើម្បី​ចាប់ផ្ដើម​ធ្វើសមកាលកម្ម</translation>
 <translation id="6210748933810148297">មិនមែន <ph name="EMAIL" /> ទេ?</translation>
 <translation id="6211386937064921208">កំពុងមើល​ទំព័រនេះ​សាកល្បង</translation>
@@ -1282,6 +1281,7 @@
 <translation id="7887334752153342268">ចម្លង</translation>
 <translation id="789763218334337857">របៀបប្រើ Chrome</translation>
 <translation id="7903184275147100332">អាចចំណាយពេលមួយនាទី</translation>
+<translation id="7914399737746719723">បាន​ដំឡើង​កម្មវិធី</translation>
 <translation id="7919123827536834358">បកប្រែភាសាទាំងនេះដោយស្វ័យប្រវត្តិ</translation>
 <translation id="7926975587469166629">ឈ្មោះហៅក្រៅរបស់កាត</translation>
 <translation id="7929962904089429003">បើកម៉ឺនុយ</translation>
@@ -1378,7 +1378,6 @@
 <translation id="8393700583063109961">ផ្ញើ​សារ</translation>
 <translation id="8394720698884623075">ពិនិត្យ URL ធៀបនឹងបញ្ជីគេហទំព័រគ្មានសុវត្ថិភាព ដែលរក្សាទុកនៅក្នុង Chrome</translation>
 <translation id="8402673309244746971">ចូល​ទៅ​កាន់ "កំពុងតាមដាន"</translation>
-<translation id="8410695015584479363">តាមដាន​តម្លៃ</translation>
 <translation id="8413126021676339697">បង្ហាញប្រវត្តិពេញលេញ</translation>
 <translation id="8414396119627470038">ចូល <ph name="SITE_ETLD_PLUS_ONE" /> តាមរយៈ <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>
 <translation id="8416347857511542594">ស្វែងយល់បន្ថែមអំពីការកំណត់ការផ្សាយពាណិជ្ជកម្មឱ្យស្របតាមបុគ្គលនៅក្នុង Chrome</translation>

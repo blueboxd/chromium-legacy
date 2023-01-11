@@ -369,6 +369,32 @@
         "test_id_prefix": "ninja://ui/compositor:compositor_unittests/"
       },
       {
+        "args": [
+          "--test-arg=--disable-gpu",
+          "--test-arg=--headless",
+          "--test-arg=--ozone-platform=headless"
+        ],
+        "ci_only": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "inside_docker": "1",
+              "os": "Ubuntu-20.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 14
+        },
+        "test": "content_browsertests",
+        "test_id_prefix": "ninja://content/test:content_browsertests/"
+      },
+      {
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -716,8 +742,7 @@
       },
       {
         "args": [
-          "--",
-          "--ozone-platform=headless"
+          "--test-arg=--ozone-platform=headless"
         ],
         "merge": {
           "args": [],
@@ -992,8 +1017,7 @@
       },
       {
         "args": [
-          "--",
-          "--vmodule=test_navigation_listener=1"
+          "--test-arg=--vmodule=test_navigation_listener=1"
         ],
         "merge": {
           "args": [],
@@ -1015,8 +1039,7 @@
       },
       {
         "args": [
-          "--",
-          "--vmodule=test_navigation_listener=1"
+          "--test-arg=--vmodule=test_navigation_listener=1"
         ],
         "merge": {
           "args": [],
@@ -1550,6 +1573,32 @@
         "test_id_prefix": "ninja://ui/compositor:compositor_unittests/"
       },
       {
+        "args": [
+          "--test-arg=--disable-gpu",
+          "--test-arg=--headless",
+          "--test-arg=--ozone-platform=headless"
+        ],
+        "ci_only": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "inside_docker": "1",
+              "os": "Ubuntu-20.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 14
+        },
+        "test": "content_browsertests",
+        "test_id_prefix": "ninja://content/test:content_browsertests/"
+      },
+      {
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1897,8 +1946,7 @@
       },
       {
         "args": [
-          "--",
-          "--ozone-platform=headless"
+          "--test-arg=--ozone-platform=headless"
         ],
         "merge": {
           "args": [],
@@ -2173,8 +2221,7 @@
       },
       {
         "args": [
-          "--",
-          "--vmodule=test_navigation_listener=1"
+          "--test-arg=--vmodule=test_navigation_listener=1"
         ],
         "merge": {
           "args": [],
@@ -2196,8 +2243,7 @@
       },
       {
         "args": [
-          "--",
-          "--vmodule=test_navigation_listener=1"
+          "--test-arg=--vmodule=test_navigation_listener=1"
         ],
         "merge": {
           "args": [],
@@ -2731,6 +2777,31 @@
         "test_id_prefix": "ninja://ui/compositor:compositor_unittests/"
       },
       {
+        "args": [
+          "--test-arg=--disable-gpu",
+          "--test-arg=--headless",
+          "--test-arg=--ozone-platform=headless"
+        ],
+        "ci_only": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 41
+        },
+        "test": "content_browsertests",
+        "test_id_prefix": "ninja://content/test:content_browsertests/"
+      },
+      {
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -3168,8 +3239,7 @@
       },
       {
         "args": [
-          "--",
-          "--ozone-platform=headless"
+          "--test-arg=--ozone-platform=headless"
         ],
         "merge": {
           "args": [],
@@ -3493,8 +3563,7 @@
       },
       {
         "args": [
-          "--",
-          "--vmodule=test_navigation_listener=1"
+          "--test-arg=--vmodule=test_navigation_listener=1"
         ],
         "merge": {
           "args": [],
@@ -3515,8 +3584,7 @@
       },
       {
         "args": [
-          "--",
-          "--vmodule=test_navigation_listener=1"
+          "--test-arg=--vmodule=test_navigation_listener=1"
         ],
         "merge": {
           "args": [],
@@ -4246,6 +4314,30 @@
         "test_id_prefix": "ninja://ui/compositor:compositor_unittests/"
       },
       {
+        "args": [
+          "--test-arg=--disable-gpu",
+          "--test-arg=--headless",
+          "--test-arg=--ozone-platform=headless"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 41
+        },
+        "test": "content_browsertests",
+        "test_id_prefix": "ninja://content/test:content_browsertests/"
+      },
+      {
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -4683,8 +4775,7 @@
       },
       {
         "args": [
-          "--",
-          "--ozone-platform=headless"
+          "--test-arg=--ozone-platform=headless"
         ],
         "merge": {
           "args": [],
@@ -5008,8 +5099,7 @@
       },
       {
         "args": [
-          "--",
-          "--vmodule=test_navigation_listener=1"
+          "--test-arg=--vmodule=test_navigation_listener=1"
         ],
         "merge": {
           "args": [],
@@ -5030,8 +5120,7 @@
       },
       {
         "args": [
-          "--",
-          "--vmodule=test_navigation_listener=1"
+          "--test-arg=--vmodule=test_navigation_listener=1"
         ],
         "merge": {
           "args": [],

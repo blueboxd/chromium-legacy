@@ -7,8 +7,10 @@
 
 #include <vector>
 
-#include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
+#include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload.mojom.h"
+#include "chrome/browser/ui/webui/ash/system_web_dialog_delegate.h"
 #include "storage/browser/file_system/file_system_url.h"
+#include "ui/gfx/geometry/size.h"
 
 class Profile;
 
@@ -27,7 +29,7 @@ const char kUserActionUpload[] = "upload";
 // Initiates the upload workflow.
 bool UploadAndOpen(Profile* profile,
                    const std::vector<storage::FileSystemURL>& file_urls,
-                   const UploadType upload_type,
+                   const mojom::CloudProvider cloud_provider,
                    bool show_dialog);
 
 // Defines the web dialog used to help users upload Office files to the cloud.
@@ -43,21 +45,19 @@ class CloudUploadDialog : public SystemWebDialogDelegate {
   // if a new dialog has been effectively created.
   static bool Show(Profile* profile,
                    const std::vector<storage::FileSystemURL>& file_urls,
-                   const UploadType upload_type);
+                   const mojom::CloudProvider cloud_provider);
 
+  void OnDialogShown(content::WebUI* webui) override;
   void OnDialogClosed(const std::string& json_retval) override;
 
  protected:
-  CloudUploadDialog(const storage::FileSystemURL& file_url,
-                    const UploadType upload_type,
-                    UploadRequestCallback callback);
-  std::string GetDialogArgs() const override;
+  CloudUploadDialog(mojom::DialogArgsPtr args, UploadRequestCallback callback);
   ~CloudUploadDialog() override;
   bool ShouldShowCloseButton() const override;
+  void GetDialogSize(gfx::Size* size) const override;
 
  private:
-  const storage::FileSystemURL file_url_;
-  const UploadType upload_type_;
+  mojom::DialogArgsPtr dialog_args_;
   UploadRequestCallback callback_;
 };
 

@@ -9,11 +9,13 @@
 #include <utility>
 
 #include "base/functional/bind.h"
-#include "base/memory/safe_ref.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "base/types/expected.h"
 #include "chrome/browser/supervised_user/kids_chrome_management/kids_access_token_fetcher.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
@@ -31,6 +33,13 @@ namespace {
 const int kNumFamilyInfoFetcherRetries = 1;
 
 using ::base::BindOnce;
+using ::base::JoinString;
+using ::base::StrCat;
+using ::base::StringPiece;
+using ::base::Time;
+using ::base::TimeDelta;
+using ::base::UmaHistogramEnumeration;
+using ::base::UmaHistogramTimes;
 using ::base::Unretained;
 using ::kids_chrome_management::ListFamilyMembersRequest;
 using ::kids_chrome_management::ListFamilyMembersResponse;
@@ -53,14 +62,14 @@ bool HasHttpOkResponse(const network::SimpleURLLoader& loader) {
 }
 
 std::unique_ptr<network::SimpleURLLoader> InitializeSimpleUrlLoader(
-    base::StringPiece payload,
-    base::StringPiece access_token,
+    StringPiece payload,
+    StringPiece access_token,
     const GURL& url,
     net::NetworkTrafficAnnotationTag traffic_annotation) {
   std::unique_ptr<ResourceRequest> resource_request =
       std::make_unique<ResourceRequest>();
   resource_request->url = url;
-  resource_request->method = "POST";
+  resource_request->method = "GET";
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->headers.SetHeader(
       net::HttpRequestHeaders::kAuthorization,
@@ -72,17 +81,66 @@ std::unique_ptr<network::SimpleURLLoader> InitializeSimpleUrlLoader(
   simple_url_loader->SetRetryOptions(
       kNumFamilyInfoFetcherRetries,
       network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
-  simple_url_loader->AttachStringForUpload(std::string(payload),
-                                           "application/x-protobuf");
   return simple_url_loader;
+}
+
+template <typename Request>
+std::string ConvertRequestTypeToMetricLabel();
+template <>
+std::string ConvertRequestTypeToMetricLabel<ListFamilyMembersRequest>() {
+  return "ListFamilyMembersRequest";
+}
+
+// Metric key
+template <typename Request>
+std::string CreateMetricKey(StringPiece metric_id) {
+  return JoinString(
+      {"Signin", ConvertRequestTypeToMetricLabel<Request>(), metric_id}, ".");
+}
+template <typename Request>
+std::string CreateMetricKey(StringPiece metric_id, StringPiece metric_suffix) {
+  return JoinString({"Signin", ConvertRequestTypeToMetricLabel<Request>(),
+                     metric_id, metric_suffix},
+                    ".");
+}
+
+std::string ConvertStateToMetricLabel(KidsExternalFetcherStatus::State state) {
+  switch (state) {
+    case KidsExternalFetcherStatus::NO_ERROR:
+      return "NoError";
+    case KidsExternalFetcherStatus::GOOGLE_SERVICE_AUTH_ERROR:
+      return "AuthError";
+    case KidsExternalFetcherStatus::HTTP_ERROR:
+      return "HttpError";
+    case KidsExternalFetcherStatus::INVALID_RESPONSE:
+      return "InvalidResponse";
+  }
+}
+
+// Determines the response type. See go/system-parameters to verity list of
+// possible One Platform system params.
+const std::string& GetSystemParameters() {
+  static const base::NoDestructor<std::string> nonce("alt=proto");
+  return *nonce;
+}
+
+// Controls what endpoint to call for given Request.
+template <typename Request>
+const std::string& GetPathForRequest(const Request& request);
+
+template <>
+const std::string& GetPathForRequest(const ListFamilyMembersRequest& request) {
+  static const base::NoDestructor<std::string> nonce(
+      StrCat({"families/mine/members?", GetSystemParameters()}));
+  return *nonce;
 }
 
 template <typename Request>
 net::NetworkTrafficAnnotationTag GetDefaultNetworkTrafficAnnotationTag();
 
 template <>
-net::NetworkTrafficAnnotationTag GetDefaultNetworkTrafficAnnotationTag<
-    kids_chrome_management::ListFamilyMembersRequest>() {
+net::NetworkTrafficAnnotationTag
+GetDefaultNetworkTrafficAnnotationTag<ListFamilyMembersRequest>() {
   return net::DefineNetworkTrafficAnnotation(
       "kids_chrome_management_list_family_members", R"(
         semantics {
@@ -123,14 +181,14 @@ class FetcherImpl final : public KidsExternalFetcher<Request, Response> {
   explicit FetcherImpl(
       IdentityManager& identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      base::StringPiece url,
+      StringPiece url,
       Request request,
       Callback callback) {
     access_token_fetcher_ = std::make_unique<KidsAccessTokenFetcher>(
         identity_manager,
         BindOnce(&FetcherImpl::StartRequest, Unretained(this),
                  url_loader_factory, GURL(url), request,
-                 std::move(callback)));  // Unretained() is safe because `this`
+                 std::move(callback)));  // Unretained(.) is safe because `this`
                                          // owns `access_token_fetcher_`.
   }
 
@@ -139,9 +197,25 @@ class FetcherImpl final : public KidsExternalFetcher<Request, Response> {
   FetcherImpl& operator=(const FetcherImpl&) = delete;
 
  private:
+  static void WrapCallbackWithMetrics(Callback callback,
+                                      Time start_time,
+                                      KidsExternalFetcherStatus status,
+                                      std::unique_ptr<Response> response) {
+    TimeDelta latency = Time::Now() - start_time;
+    UmaHistogramEnumeration(CreateMetricKey<Request>("Status"), status.state());
+    UmaHistogramTimes(CreateMetricKey<Request>("Latency"), latency);
+    UmaHistogramTimes(CreateMetricKey<Request>(
+                          "Latency", ConvertStateToMetricLabel(status.state())),
+                      latency);
+
+    DCHECK(
+        callback);  // https://chromium.googlesource.com/chromium/src/+/main/docs/callback.md#creating-a-callback-that-does-nothing
+    std::move(callback).Run(status, std::move(response));
+  }
+
   void StartRequest(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      GURL gurl,
+      GURL endpoint,
       Request request,
       Callback callback,
       base::expected<signin::AccessTokenInfo, GoogleServiceAuthError>
@@ -149,34 +223,38 @@ class FetcherImpl final : public KidsExternalFetcher<Request, Response> {
     DCHECK(
         callback);  // https://chromium.googlesource.com/chromium/src/+/main/docs/callback.md#creating-a-callback-that-does-nothing
 
+    Callback callback_with_metrics =
+        BindOnce(WrapCallbackWithMetrics, std::move(callback), Time::Now());
+
     if (!access_token.has_value()) {
-      std::move(callback).Run(KidsExternalFetcherStatus::GoogleServiceAuthError(
-                                  access_token.error()),
-                              std::make_unique<Response>());
+      std::move(callback_with_metrics)
+          .Run(KidsExternalFetcherStatus::GoogleServiceAuthError(
+                   access_token.error()),
+               std::make_unique<Response>());
       return;
     }
-    base::StringPiece token_value = access_token.value().token;
+
+    StringPiece token_value = access_token.value().token;
     net::NetworkTrafficAnnotationTag traffic_annotation =
         GetDefaultNetworkTrafficAnnotationTag<Request>();
-    std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
-        InitializeSimpleUrlLoader(request.SerializeAsString(), token_value,
-                                  gurl, traffic_annotation);
 
-    DCHECK(simple_url_loader);
-    auto* simple_url_loader_ptr = simple_url_loader.get();
-    simple_url_loader_ptr->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+    simple_url_loader_ = InitializeSimpleUrlLoader(
+        request.SerializeAsString(), token_value,
+        endpoint.Resolve(GetPathForRequest(request)), traffic_annotation);
+
+    simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
         url_loader_factory.get(),
-        base::BindOnce(&FetcherImpl::OnSimpleUrlLoaderComplete,
-                       weak_ptr_factory_.GetSafeRef(), std::move(callback),
-                       std::move(simple_url_loader)));
+        BindOnce(
+            &FetcherImpl::OnSimpleUrlLoaderComplete, Unretained(this),
+            std::move(
+                callback_with_metrics)));  // Unretained(.) is safe because
+                                           // `this` owns `simple_url_loader_`.
   }
 
-  void OnSimpleUrlLoaderComplete(
-      Callback callback,
-      std::unique_ptr<network::SimpleURLLoader> simple_url_loader,
-      std::unique_ptr<std::string> response_body) {
-    if (!IsLoadingSuccessful(*simple_url_loader) ||
-        !HasHttpOkResponse(*simple_url_loader)) {
+  void OnSimpleUrlLoaderComplete(Callback callback,
+                                 std::unique_ptr<std::string> response_body) {
+    if (!IsLoadingSuccessful(*simple_url_loader_) ||
+        !HasHttpOkResponse(*simple_url_loader_)) {
       std::move(callback).Run(KidsExternalFetcherStatus::HttpError(),
                               std::make_unique<Response>());
       return;
@@ -194,7 +272,7 @@ class FetcherImpl final : public KidsExternalFetcher<Request, Response> {
   }
 
   std::unique_ptr<KidsAccessTokenFetcher> access_token_fetcher_;
-  base::WeakPtrFactory<FetcherImpl> weak_ptr_factory_{this};
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
 };
 
 template class FetcherImpl<ListFamilyMembersRequest, ListFamilyMembersResponse>;
@@ -245,6 +323,25 @@ KidsExternalFetcherStatus KidsExternalFetcherStatus::InvalidResponse() {
 bool KidsExternalFetcherStatus::IsOk() const {
   return state_ == State::NO_ERROR;
 }
+bool KidsExternalFetcherStatus::IsTransientError() const {
+  if (state_ == State::HTTP_ERROR) {
+    return true;
+  }
+  if (state_ == State::GOOGLE_SERVICE_AUTH_ERROR) {
+    return google_service_auth_error_.IsTransientError();
+  }
+  return false;
+}
+bool KidsExternalFetcherStatus::IsPersistentError() const {
+  if (state_ == State::INVALID_RESPONSE) {
+    return true;
+  }
+  if (state_ == State::GOOGLE_SERVICE_AUTH_ERROR) {
+    return google_service_auth_error_.IsPersistentError();
+  }
+  return false;
+}
+
 KidsExternalFetcherStatus::State KidsExternalFetcherStatus::state() const {
   return state_;
 }
@@ -258,7 +355,7 @@ std::unique_ptr<
 FetchListFamilyMembers(
     IdentityManager& identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    base::StringPiece url,
+    StringPiece url,
     KidsExternalFetcher<ListFamilyMembersRequest,
                         ListFamilyMembersResponse>::Callback callback) {
   return std::make_unique<

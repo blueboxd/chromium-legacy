@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/latency/latency_info.h"
@@ -52,6 +52,10 @@ class VIZ_SERVICE_EXPORT OutputSurfaceClient {
   // SkiaRenderer.
   virtual void DidReceiveReleasedOverlays(
       const std::vector<gpu::Mailbox>& released_overlays) = 0;
+
+  // Sends the created child window to the browser process so that it can be
+  // parented to the browser process window.
+  virtual void AddChildWindowToBrowser(gpu::SurfaceHandle child_window) = 0;
 
  protected:
   virtual ~OutputSurfaceClient() {}

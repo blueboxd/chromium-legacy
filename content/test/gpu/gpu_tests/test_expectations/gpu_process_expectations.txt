@@ -8,7 +8,7 @@
 #         mac highsierra mojave catalina bigsur monterey
 #         win win8 win10 ]
 # Devices
-# tags: [ android-nexus-5 android-nexus-5x android-pixel-2 android-pixel-4
+# tags: [ android-nexus-5x android-pixel-2 android-pixel-4
 #             android-pixel-6 android-shield-android-tv android-sm-a135m
 #             android-sm-a235m
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
@@ -115,27 +115,10 @@ crbug.com/1294065 [ android android-shield-android-tv ] GpuProcess_visibility [ 
 crbug.com/1170840 [ mac amd renderer-skia-gl ] GpuProcess_mac_webgl_terminated_high_performance [ Failure ]
 
 # Fuchsia flakes.
-crbug.com/1207726 [ fuchsia ] GpuProcess_canvas2d [ RetryOnFailure ]
 
 # Started crashing with passthrough field trial.
 crbug.com/1099576 [ mac amd ] GpuProcess_mac_webgl_backgrounded_high_performance [ Failure ]
 crbug.com/1099576 [ mac intel ] GpuProcess_mac_webgl_backgrounded_high_performance [ Failure ]
-
-# Flakey/slow tests using clang_rt.
-crbug.com/1261260 [ android android-nexus-5x ] GpuProcess_webgpu_iframe_removed [ Failure ]
-crbug.com/1261260 [ android android-shield-android-tv ] GpuProcess_webgpu_iframe_removed [ Failure ]
-
-# Flaky Vulkan Loader Timeout
-crbug.com/1275738 [ linux angle-swiftshader ] GpuProcess_disable_gpu [ RetryOnFailure ]
-
-# Flakey on Lacros FYI bot
-crbug.com/1311719 [ linux display-server-wayland ] GpuProcess_disabling_workarounds_works [ RetryOnFailure ]
-
-crbug.com/1321145 [ fuchsia fuchsia-board-qemu-x64 ] * [ Failure ]
-
-# Flaking on Linux FYI Release
-crbug.com/1340081 [ linux release intel-0x5912 ] GpuProcess_canvas2d [ RetryOnFailure ]
-
 
 
 #######################################################################

@@ -22,18 +22,17 @@
 
 namespace blink {
 
-// We have two functions to paint text decoations, because we should paint
+// We have two functions to paint text decorations, because we should paint
 // text and decorations in following order:
-//   1. Paint text decorations except line through
+//   1. Paint underline or overline text decorations
 //   2. Paint text
-//   3. Paint line throguh
-void NGTextPainterBase::PaintDecorationsExceptLineThrough(
+//   3. Paint line through
+void NGTextPainterBase::PaintUnderOrOverLineDecorations(
     const NGTextFragmentPaintInfo& fragment_paint_info,
     const TextDecorationOffsetBase& decoration_offset,
     TextDecorationInfo& decoration_info,
     TextDecorationLine lines_to_paint,
     const PaintInfo& paint_info,
-    const Vector<AppliedTextDecoration>& decorations,
     const TextPaintStyle& text_style,
     const cc::PaintFlags* flags) {
   // Updating the graphics context and looping through applied decorations is
@@ -45,12 +44,74 @@ void NGTextPainterBase::PaintDecorationsExceptLineThrough(
 
   GraphicsContext& context = paint_info.context;
   GraphicsContextStateSaver state_saver(context);
-  UpdateGraphicsContext(context, text_style, state_saver);
 
-  for (wtf_size_t applied_decoration_index = 0;
-       applied_decoration_index < decorations.size();
-       ++applied_decoration_index) {
-    decoration_info.SetDecorationIndex(applied_decoration_index);
+  // Updating Graphics Context for text only (kTextProperOnly),
+  // instead of the default text and shadows (kBothShadowsAndTextProper),
+  // because shadows will be painted by
+  // NGTextPainterBase::PaintUnderOrOverLineDecorationShadows.
+  UpdateGraphicsContext(context, text_style, state_saver,
+                        ShadowMode::kTextProperOnly);
+
+  PaintUnderOrOverLineDecorationShadows(fragment_paint_info, decoration_offset,
+                                        decoration_info, lines_to_paint, flags,
+                                        text_style, context);
+
+  PaintUnderOrOverLineDecorations(fragment_paint_info, decoration_offset,
+                                  decoration_info, lines_to_paint, flags,
+                                  context);
+}
+
+void NGTextPainterBase::PaintUnderOrOverLineDecorationShadows(
+    const NGTextFragmentPaintInfo& fragment_paint_info,
+    const TextDecorationOffsetBase& decoration_offset,
+    TextDecorationInfo& decoration_info,
+    TextDecorationLine lines_to_paint,
+    const cc::PaintFlags* flags,
+    const TextPaintStyle& text_style,
+    GraphicsContext& context) {
+  if (text_style.shadow == nullptr)
+    return;
+
+  const ShadowList* shadow_list = text_style.shadow.get();
+  if (shadow_list == nullptr)
+    return;
+
+  for (const auto& shadow : shadow_list->Shadows()) {
+    const Color& color = shadow.GetColor().Resolve(text_style.current_color,
+                                                   text_style.color_scheme);
+    // Detect when there's no effective shadow.
+    if (color.IsTransparent())
+      continue;
+
+    const gfx::Vector2dF& offset = shadow.Location().OffsetFromOrigin();
+
+    float blur = shadow.Blur();
+    DCHECK_GE(blur, 0);
+    const auto sigma = BlurRadiusToStdDev(blur);
+
+    context.BeginLayer(
+        1.0f, SkBlendMode::kSrcOver, nullptr, kColorFilterNone,
+        sk_make_sp<DropShadowPaintFilter>(
+            offset.x(), offset.y(), sigma, sigma, color.toSkColor4f(),
+            DropShadowPaintFilter::ShadowMode::kDrawShadowOnly, nullptr));
+
+    PaintUnderOrOverLineDecorations(fragment_paint_info, decoration_offset,
+                                    decoration_info, lines_to_paint, flags,
+                                    context);
+
+    context.EndLayer();
+  }
+}
+
+void NGTextPainterBase::PaintUnderOrOverLineDecorations(
+    const NGTextFragmentPaintInfo& fragment_paint_info,
+    const TextDecorationOffsetBase& decoration_offset,
+    TextDecorationInfo& decoration_info,
+    TextDecorationLine lines_to_paint,
+    const cc::PaintFlags* flags,
+    GraphicsContext& context) {
+  for (wtf_size_t i = 0; i < decoration_info.AppliedDecorationCount(); i++) {
+    decoration_info.SetDecorationIndex(i);
     context.SetStrokeThickness(decoration_info.ResolvedThickness());
 
     if (decoration_info.HasSpellingOrGrammerError() &&

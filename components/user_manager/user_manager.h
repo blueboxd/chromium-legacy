@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/scoped_observation_traits.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager_export.h"
 #include "components/user_manager/user_type.h"
@@ -273,6 +274,17 @@ class USER_MANAGER_EXPORT UserManager {
   // Saves user's type for |user| into local state preferences.
   virtual void SaveUserType(const User* user) = 0;
 
+  // Returns the email of the owner user stored in local state. Can return
+  // nullopt if no user attempted to take ownership so far (e.g. there were
+  // only guest sessions or it's a managed device). This is a secondary / backup
+  // mechanism to determine the owner user, prefer relying on device policies or
+  // possession of the private key when possible.
+  virtual absl::optional<std::string> GetOwnerEmail() = 0;
+
+  // Records the identity of the owner user. In the current implementation
+  // always stores the email.
+  virtual void RecordOwner(const AccountId& owner) = 0;
+
   // Returns true if current user is an owner.
   virtual bool IsCurrentUserOwner() const = 0;
 
@@ -371,9 +383,9 @@ class USER_MANAGER_EXPORT UserManager {
   // Returns "Local State" PrefService instance.
   virtual PrefService* GetLocalState() const = 0;
 
-  // Checks for platform-specific known users matching given |user_email| and
-  // |gaia_id|. If data matches a known account, fills |out_account_id| with
-  // account id and returns true.
+  // Checks for platform-specific known users matching given |user_email|. If
+  // data matches a known account, fills |out_account_id| with account id and
+  // returns true.
   virtual bool GetPlatformKnownUserId(const std::string& user_email,
                                       AccountId* out_account_id) const = 0;
 
@@ -448,5 +460,25 @@ class USER_MANAGER_EXPORT UserManager {
 };
 
 }  // namespace user_manager
+
+namespace base {
+
+template <>
+struct ScopedObservationTraits<
+    user_manager::UserManager,
+    user_manager::UserManager::UserSessionStateObserver> {
+  static void AddObserver(
+      user_manager::UserManager* source,
+      user_manager::UserManager::UserSessionStateObserver* observer) {
+    source->AddSessionStateObserver(observer);
+  }
+  static void RemoveObserver(
+      user_manager::UserManager* source,
+      user_manager::UserManager::UserSessionStateObserver* observer) {
+    source->RemoveSessionStateObserver(observer);
+  }
+};
+
+}  // namespace base
 
 #endif  // COMPONENTS_USER_MANAGER_USER_MANAGER_H_

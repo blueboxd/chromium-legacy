@@ -5,13 +5,13 @@
 #ifndef CHROME_TEST_BASE_IN_PROCESS_BROWSER_TEST_H_
 #define CHROME_TEST_BASE_IN_PROCESS_BROWSER_TEST_H_
 
+#include <map>
 #include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -179,6 +179,13 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // PreRunTestOnMainThread().
   void SelectFirstBrowser();
 
+  // This function is used to record a set of properties for a test case in
+  // gtest result and that will be used by resultDB. The map's key value pair
+  // are defined by each test case. For use case check this bug:
+  // https://crbug.com/1365899
+  // The final value of the result is the format of key1=value1;key2=value2.
+  void RecordPropertyFromMap(const std::map<std::string, std::string>& tags);
+
  protected:
   // Closes the given browser and waits for it to release all its resources.
   void CloseBrowserSynchronously(Browser* browser);
@@ -337,7 +344,7 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   //
   // TODO(crbug.com/1298696): browser_tests breaks with MTECheckedPtr
   // enabled. Triage.
-  raw_ptr<Browser, DegradeToNoOpWhenMTE> browser_ = nullptr;
+  raw_ptr<Browser, DanglingUntriagedDegradeToNoOpWhenMTE> browser_ = nullptr;
 
   // Used to run the process until the BrowserProcess signals the test to quit.
   std::unique_ptr<base::RunLoop> run_loop_;

@@ -63,6 +63,7 @@ class ScriptParameters {
   absl::optional<std::string> GetIntent() const;
   absl::optional<std::string> GetCallerEmail() const;
   bool GetEnableTts() const;
+  bool GetDisableScrollbarFading() const;
   bool GetEnableObserverWaitForDom() const;
   absl::optional<int> GetCaller() const;
   absl::optional<int> GetSource() const;
@@ -70,7 +71,6 @@ class ScriptParameters {
   bool GetDisableRpcSigning() const;
   bool GetSendAnnotateDomModelVersion() const;
   bool GetRunHeadless() const;
-  bool GetUseAssistantUi() const;
   absl::optional<std::string> GetFieldTrialGroup(
       const int field_trial_slot) const;
   absl::optional<bool> GetIsNoRoundtrip() const;

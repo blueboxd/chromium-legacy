@@ -13,7 +13,6 @@
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -170,6 +169,12 @@ void SetExistenceCheckerPath(UpdaterScope scope,
                              const base::FilePath& path);
 
 void SetServerStarts(UpdaterScope scope, int value);
+
+// Writes lots of data into the log file.
+void FillLog(UpdaterScope scope);
+
+// Confirms that an old log file exists and that the current log file is small.
+void ExpectLogRotated(UpdaterScope scope);
 
 void ExpectRegistered(UpdaterScope scope, const std::string& app_id);
 

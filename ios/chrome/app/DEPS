@@ -29,6 +29,7 @@ include_rules = [
   "+components/ukm/ios",
   "+components/unified_consent",
   "+components/url_formatter",
+  "+components/variations",
   "+components/version_info",
   "+components/web_resource",
   "+ios/chrome/browser",
@@ -40,6 +41,7 @@ include_rules = [
   "+ios/public/provider/chrome",
   "+mojo/core/embedder/embedder.h",
   "+third_party/breakpad/breakpad/src/client/ios",
+  "+third_party/crashpad/crashpad/client",
 
   # Strings and resources.
   "+components/grit",

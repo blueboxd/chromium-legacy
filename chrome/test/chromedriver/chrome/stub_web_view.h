@@ -28,6 +28,7 @@ class StubWebView : public WebView {
   Status Reload(const Timeout* timeout) override;
   Status Freeze(const Timeout* timeout) override;
   Status Resume(const Timeout* timeout) override;
+  Status StartBidiServer(std::string bidi_mapper_script) override;
   Status PostBidiCommand(base::Value::Dict command) override;
   Status SendCommand(const std::string& cmd,
                      const base::Value::Dict& params) override;
@@ -40,7 +41,7 @@ class StubWebView : public WebView {
   Status TraverseHistory(int delta, const Timeout* timeout) override;
   Status EvaluateScript(const std::string& frame,
                         const std::string& function,
-                        const bool awaitPromise,
+                        const bool await_promise,
                         std::unique_ptr<base::Value>* result) override;
   Status CallFunction(const std::string& frame,
                       const std::string& function,
@@ -88,9 +89,9 @@ class StubWebView : public WebView {
                    const std::string& value,
                    const std::string& domain,
                    const std::string& path,
-                   const std::string& sameSite,
+                   const std::string& same_site,
                    bool secure,
-                   bool httpOnly,
+                   bool http_only,
                    double expiry) override;
   Status WaitForPendingNavigations(const std::string& frame_id,
                                    const Timeout& timeout,

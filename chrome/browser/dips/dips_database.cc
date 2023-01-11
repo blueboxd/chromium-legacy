@@ -103,7 +103,11 @@ bool DIPSDatabase::InitTables() {
           "first_site_storage_time INTEGER NOT NULL,"
           "last_site_storage_time INTEGER NOT NULL,"
           "first_user_interaction_time INTEGER NOT NULL,"
-          "last_user_interaction_time INTEGER NOT NULL)";
+          "last_user_interaction_time INTEGER NOT NULL,"
+          "first_stateful_bounce_time INTEGER NOT NULL,"
+          "last_stateful_bounce_time INTEGER NOT NULL,"
+          "first_stateless_bounce_time INTEGER NOT NULL,"
+          "last_stateless_bounce_time INTEGER NOT NULL)";
   // clang-format on
 
   DCHECK(db_->IsSQLValid(kBounceSql));
@@ -154,10 +158,10 @@ sql::InitStatus DIPSDatabase::Init() {
 }
 
 bool DIPSDatabase::Write(const std::string& site,
-                         absl::optional<base::Time> first_storage_time,
-                         absl::optional<base::Time> last_storage_time,
-                         absl::optional<base::Time> first_interaction_time,
-                         absl::optional<base::Time> last_interaction_time) {
+                         const TimestampRange& storage_times,
+                         const TimestampRange& interaction_times,
+                         const TimestampRange& stateful_bounce_times,
+                         const TimestampRange& stateless_bounce_times) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   static constexpr char kWriteSql[] =  // clang-format off
       "INSERT OR REPLACE INTO bounces("
@@ -165,18 +169,25 @@ bool DIPSDatabase::Write(const std::string& site,
           "first_site_storage_time,"
           "last_site_storage_time,"
           "first_user_interaction_time,"
-          "last_user_interaction_time) "
-          "VALUES (?,?,?,?,?)";
+          "last_user_interaction_time,"
+          "first_stateful_bounce_time,"
+          "last_stateful_bounce_time,"
+          "first_stateless_bounce_time,"
+          "last_stateless_bounce_time) "
+          "VALUES (?,?,?,?,?,?,?,?,?)";
   // clang-format on
   DCHECK(db_->IsSQLValid(kWriteSql));
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kWriteSql));
   statement.BindString(0, site);
-  statement.BindTime(1, first_storage_time.value_or(base::Time()));
-  statement.BindTime(2, last_storage_time.value_or(base::Time()));
-  statement.BindTime(3, first_interaction_time.value_or(base::Time()));
-  statement.BindTime(4, last_interaction_time.value_or(base::Time()));
-
+  statement.BindTime(1, storage_times.first.value_or(base::Time()));
+  statement.BindTime(2, storage_times.last.value_or(base::Time()));
+  statement.BindTime(3, interaction_times.first.value_or(base::Time()));
+  statement.BindTime(4, interaction_times.last.value_or(base::Time()));
+  statement.BindTime(5, stateful_bounce_times.first.value_or(base::Time()));
+  statement.BindTime(6, stateful_bounce_times.last.value_or(base::Time()));
+  statement.BindTime(7, stateless_bounce_times.first.value_or(base::Time()));
+  statement.BindTime(8, stateless_bounce_times.last.value_or(base::Time()));
   return statement.Run();
 }
 
@@ -187,7 +198,11 @@ absl::optional<StateValue> DIPSDatabase::Read(const std::string& site) {
           "first_site_storage_time,"
           "last_site_storage_time,"
           "first_user_interaction_time,"
-          "last_user_interaction_time "
+          "last_user_interaction_time,"
+          "first_stateful_bounce_time,"
+          "last_stateful_bounce_time,"
+          "first_stateless_bounce_time,"
+          "last_stateless_bounce_time "
           "FROM bounces WHERE site=?";
   // clang-format on
   DCHECK(db_->IsSQLValid(kReadSql));
@@ -199,10 +214,93 @@ absl::optional<StateValue> DIPSDatabase::Read(const std::string& site) {
     return absl::nullopt;
   }
 
-  return StateValue{ToOptionalTime(statement.ColumnTime(1)),
-                    ToOptionalTime(statement.ColumnTime(2)),
-                    ToOptionalTime(statement.ColumnTime(3)),
-                    ToOptionalTime(statement.ColumnTime(4))};
+  return StateValue{TimestampRange{ToOptionalTime(statement.ColumnTime(1)),
+                                   ToOptionalTime(statement.ColumnTime(2))},
+                    TimestampRange{ToOptionalTime(statement.ColumnTime(3)),
+                                   ToOptionalTime(statement.ColumnTime(4))},
+                    TimestampRange{ToOptionalTime(statement.ColumnTime(5)),
+                                   ToOptionalTime(statement.ColumnTime(6))},
+                    TimestampRange{ToOptionalTime(statement.ColumnTime(7)),
+                                   ToOptionalTime(statement.ColumnTime(8))}};
+}
+
+std::vector<std::string> DIPSDatabase::GetSitesThatBounced(
+    base::Time range_start,
+    base::Time last_interaction) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(last_interaction < range_start);
+  static constexpr char kReadSql[] =  // clang-format off
+      "SELECT site FROM bounces "
+        "WHERE (last_stateful_bounce_time > ? "
+        "OR last_stateless_bounce_time > ?) AND "
+        "last_user_interaction_time < ? "
+        "ORDER BY site";
+  // clang-format on
+
+  DCHECK(db_->IsSQLValid(kReadSql));
+
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kReadSql));
+  statement.BindTime(0, range_start);
+  statement.BindTime(1, range_start);
+  statement.BindTime(2, last_interaction);
+
+  std::vector<std::string> sites;
+  while (statement.Step()) {
+    sites.push_back(statement.ColumnString(0));
+  }
+  return sites;
+}
+
+std::vector<std::string> DIPSDatabase::GetSitesThatBouncedWithState(
+    base::Time range_start,
+    base::Time last_interaction) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(last_interaction < range_start);
+  static constexpr char kReadSql[] =  // clang-format off
+      "SELECT site FROM bounces "
+        "WHERE last_stateful_bounce_time > ? AND "
+        "last_site_storage_time > ? AND "
+        "last_user_interaction_time < ? "
+        "ORDER BY site";
+  // clang-format on
+  DCHECK(db_->IsSQLValid(kReadSql));
+
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kReadSql));
+  statement.BindTime(0, range_start);
+  statement.BindTime(1, range_start);
+  statement.BindTime(2, last_interaction);
+
+  std::vector<std::string> sites;
+  while (statement.Step()) {
+    sites.push_back(statement.ColumnString(0));
+  }
+  return sites;
+}
+
+std::vector<std::string> DIPSDatabase::GetSitesThatUsedStorage(
+    base::Time range_start,
+    base::Time last_interaction) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(last_interaction < range_start);
+  static constexpr char kReadSql[] =  // clang-format off
+      "SELECT site FROM bounces "
+        "WHERE (last_site_storage_time > ? OR "
+        "last_stateful_bounce_time > ?) AND "
+        "last_user_interaction_time < ? "
+        "ORDER BY site";
+  // clang-format on
+  DCHECK(db_->IsSQLValid(kReadSql));
+
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kReadSql));
+  statement.BindTime(0, range_start);
+  statement.BindTime(1, range_start);
+  statement.BindTime(2, last_interaction);
+
+  std::vector<std::string> sites;
+  while (statement.Step()) {
+    sites.push_back(statement.ColumnString(0));
+  }
+  return sites;
 }
 
 bool DIPSDatabase::RemoveRow(const std::string& site) {
@@ -214,4 +312,325 @@ bool DIPSDatabase::RemoveRow(const std::string& site) {
   statement.BindString(0, site);
 
   return statement.Run();
+}
+
+bool DIPSDatabase::RemoveEventsByTime(const base::Time& delete_begin,
+                                      const base::Time& delete_end,
+                                      const DIPSEventRemovalType type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(db_->is_open());
+
+  sql::Transaction transaction(db_.get());
+
+  if (!transaction.Begin() ||
+      !ClearTimestamps(delete_begin, delete_end, type) ||
+      !AdjustFirstTimestamps(delete_begin, delete_end, type) ||
+      !AdjustLastTimestamps(delete_begin, delete_end, type))
+    return false;
+
+  transaction.Commit();
+  return true;
+}
+
+bool DIPSDatabase::ClearTimestamps(const base::Time& delete_begin,
+                                   const base::Time& delete_end,
+                                   const DIPSEventRemovalType type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (type == DIPSEventRemovalType::kAll) {
+    static constexpr char kAllTypesSql[] =  // clang-format off
+        "DELETE FROM bounces "
+            "WHERE (first_site_storage_time>=?1 AND "
+                   "last_site_storage_time<=?2 AND "
+                   "first_user_interaction_time>=?1 AND "
+                   "last_user_interaction_time<=?2 AND "
+                   "first_stateful_bounce_time>=?1 AND "
+                   "last_stateful_bounce_time<=?2 AND "
+                   "first_stateless_bounce_time>=?1 AND "
+                   "last_stateless_bounce_time<=?2) OR "
+
+                   "(first_site_storage_time>=?1 AND "
+                   "last_site_storage_time<=?2 AND "
+                   "first_user_interaction_time=0 AND "
+                   "last_user_interaction_time=0 AND "
+                   "first_stateful_bounce_time=0 AND "
+                   "last_stateful_bounce_time=0 AND "
+                   "first_stateless_bounce_time=0 AND "
+                   "last_stateless_bounce_time=0) OR "
+
+                   "(first_site_storage_time=0 AND "
+                   "last_site_storage_time=0 AND "
+                   "first_user_interaction_time>=?1 AND "
+                   "last_user_interaction_time<=?2 AND "
+                   "first_stateful_bounce_time=0 AND "
+                   "last_stateful_bounce_time=0 AND "
+                   "first_stateless_bounce_time=0 AND "
+                   "last_stateless_bounce_time=0) OR "
+
+                   "(first_site_storage_time=0 AND "
+                   "last_site_storage_time=0 AND "
+                   "first_user_interaction_time=0 AND "
+                   "last_user_interaction_time=0 AND "
+                   "first_stateful_bounce_time>=?1 AND "
+                   "last_stateful_bounce_time<=?2 AND "
+                   "first_stateless_bounce_time=0 AND "
+                   "last_stateless_bounce_time=0) OR "
+
+                   "(first_site_storage_time=0 AND "
+                   "last_site_storage_time=0 AND "
+                   "first_user_interaction_time=0 AND "
+                   "last_user_interaction_time=0 AND "
+                   "first_stateful_bounce_time=0 AND "
+                   "last_stateful_bounce_time=0 AND "
+                   "first_stateless_bounce_time>=?1 AND "
+                   "last_stateless_bounce_time<=?2)";
+    // clang-format on
+    DCHECK(db_->IsSQLValid(kAllTypesSql));
+
+    sql::Statement s_all(db_->GetCachedStatement(SQL_FROM_HERE, kAllTypesSql));
+    s_all.BindTime(0, delete_begin);
+    s_all.BindTime(1, delete_end);
+
+    if (!s_all.Run())
+      return false;
+  }
+
+  if ((type & DIPSEventRemovalType::kHistory) ==
+      DIPSEventRemovalType::kHistory) {
+    static constexpr char kClearInteractionSql[] =  // clang-format off
+        "UPDATE bounces SET "
+            "first_user_interaction_time=0,"
+            "last_user_interaction_time=0 "
+            "WHERE first_user_interaction_time>=? AND "
+                  "last_user_interaction_time<=?";
+    // clang-format on
+    DCHECK(db_->IsSQLValid(kClearInteractionSql));
+
+    sql::Statement s_clear_interaction(
+        db_->GetCachedStatement(SQL_FROM_HERE, kClearInteractionSql));
+    s_clear_interaction.BindTime(0, delete_begin);
+    s_clear_interaction.BindTime(1, delete_end);
+
+    if (!s_clear_interaction.Run())
+      return false;
+
+    static constexpr char kClearStatelessSql[] =  // clang-format off
+        "UPDATE bounces SET "
+            "first_stateless_bounce_time=0,"
+            "last_stateless_bounce_time=0 "
+            "WHERE first_stateless_bounce_time>=? AND "
+                  "last_stateless_bounce_time<=?";
+    // clang-format on
+    DCHECK(db_->IsSQLValid(kClearStatelessSql));
+
+    sql::Statement s_clear_stateless(
+        db_->GetCachedStatement(SQL_FROM_HERE, kClearStatelessSql));
+    s_clear_stateless.BindTime(0, delete_begin);
+    s_clear_stateless.BindTime(1, delete_end);
+
+    if (!s_clear_stateless.Run())
+      return false;
+  }
+
+  if ((type & DIPSEventRemovalType::kStorage) ==
+      DIPSEventRemovalType::kStorage) {
+    static constexpr char kClearStorageSql[] =  // clang-format off
+        "UPDATE bounces SET "
+            "first_site_storage_time=0,"
+            "last_site_storage_time=0 "
+            "WHERE first_site_storage_time>=? AND "
+                  "last_site_storage_time<=?";
+    // clang-format on
+    DCHECK(db_->IsSQLValid(kClearStorageSql));
+
+    sql::Statement s_clear_storage(
+        db_->GetCachedStatement(SQL_FROM_HERE, kClearStorageSql));
+    s_clear_storage.BindTime(0, delete_begin);
+    s_clear_storage.BindTime(1, delete_end);
+
+    if (!s_clear_storage.Run())
+      return false;
+
+    static constexpr char kClearStatefulSql[] =  // clang-format off
+        "UPDATE bounces SET "
+            "first_stateful_bounce_time=0,"
+            "last_stateful_bounce_time=0 "
+            "WHERE first_stateful_bounce_time>=? AND "
+                  "last_stateful_bounce_time<=?";
+    // clang-format on
+    DCHECK(db_->IsSQLValid(kClearStatefulSql));
+
+    sql::Statement s_clear_stateful(
+        db_->GetCachedStatement(SQL_FROM_HERE, kClearStatefulSql));
+    s_clear_stateful.BindTime(0, delete_begin);
+    s_clear_stateful.BindTime(1, delete_end);
+
+    if (!s_clear_stateful.Run())
+      return false;
+  }
+
+  static constexpr char kCleanUpSql[] =  // clang-format off
+      "DELETE FROM bounces "
+          "WHERE first_site_storage_time=0 AND "
+                "last_site_storage_time=0 AND "
+                "first_user_interaction_time=0 AND "
+                "last_user_interaction_time=0 AND "
+                "first_stateful_bounce_time=0 AND "
+                "last_stateful_bounce_time=0 AND "
+                "first_stateless_bounce_time=0 AND "
+                "last_stateless_bounce_time=0";
+  // clang-format on
+  DCHECK(db_->IsSQLValid(kCleanUpSql));
+
+  sql::Statement s_clean(db_->GetCachedStatement(SQL_FROM_HERE, kCleanUpSql));
+
+  return s_clean.Run();
+}
+
+bool DIPSDatabase::AdjustFirstTimestamps(const base::Time& delete_begin,
+                                         const base::Time& delete_end,
+                                         const DIPSEventRemovalType type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if ((type & DIPSEventRemovalType::kHistory) ==
+      DIPSEventRemovalType::kHistory) {
+    static constexpr char kUpdateFirstInteractionSql[] =  // clang-format off
+        "UPDATE bounces SET first_user_interaction_time=?1 "
+            "WHERE first_user_interaction_time>=?2 AND "
+                  "first_user_interaction_time<?1";
+    // clang-format on
+    DCHECK(db_->IsSQLValid(kUpdateFirstInteractionSql));
+
+    sql::Statement s_first_interaction(
+        db_->GetCachedStatement(SQL_FROM_HERE, kUpdateFirstInteractionSql));
+    s_first_interaction.BindTime(0, delete_end);
+    s_first_interaction.BindTime(1, delete_begin);
+
+    if (!s_first_interaction.Run())
+      return false;
+
+    static constexpr char kUpdateFirstStatelessSql[] =  // clang-format off
+        "UPDATE bounces SET first_stateless_bounce_time=?1 "
+            "WHERE first_stateless_bounce_time>=?2 AND "
+                  "first_stateless_bounce_time<?1";
+    // clang-format on
+    DCHECK(db_->IsSQLValid(kUpdateFirstStatelessSql));
+
+    sql::Statement s_first_stateless(
+        db_->GetCachedStatement(SQL_FROM_HERE, kUpdateFirstStatelessSql));
+    s_first_stateless.BindTime(0, delete_end);
+    s_first_stateless.BindTime(1, delete_begin);
+
+    if (!s_first_stateless.Run())
+      return false;
+  }
+
+  if ((type & DIPSEventRemovalType::kStorage) ==
+      DIPSEventRemovalType::kStorage) {
+    static constexpr char kUpdateFirstStorageSql[] =  // clang-format off
+        "UPDATE bounces SET first_site_storage_time=?1 "
+            "WHERE first_site_storage_time>=?2 AND "
+                  "first_site_storage_time<?1";
+    // clang-format on
+    DCHECK(db_->IsSQLValid(kUpdateFirstStorageSql));
+
+    sql::Statement s_first_storage(
+        db_->GetCachedStatement(SQL_FROM_HERE, kUpdateFirstStorageSql));
+    s_first_storage.BindTime(0, delete_end);
+    s_first_storage.BindTime(1, delete_begin);
+
+    if (!s_first_storage.Run())
+      return false;
+
+    static constexpr char kUpdateFirstStatefulSql[] =  // clang-format off
+        "UPDATE bounces SET first_stateful_bounce_time=?1 "
+            "WHERE first_stateful_bounce_time>=?2 AND "
+                  "first_stateful_bounce_time<?1";
+    // clang-format on
+    DCHECK(db_->IsSQLValid(kUpdateFirstStatefulSql));
+
+    sql::Statement s_first_stateful(
+        db_->GetCachedStatement(SQL_FROM_HERE, kUpdateFirstStatefulSql));
+    s_first_stateful.BindTime(0, delete_end);
+    s_first_stateful.BindTime(1, delete_begin);
+
+    if (!s_first_stateful.Run())
+      return false;
+  }
+
+  return true;
+}
+
+bool DIPSDatabase::AdjustLastTimestamps(const base::Time& delete_begin,
+                                        const base::Time& delete_end,
+                                        const DIPSEventRemovalType type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if ((type & DIPSEventRemovalType::kHistory) ==
+      DIPSEventRemovalType::kHistory) {
+    static constexpr char kUpdateLastInteractionSql[] =  // clang-format off
+        "UPDATE bounces SET last_user_interaction_time=?1 "
+            "WHERE last_user_interaction_time>?1 AND "
+                  "last_user_interaction_time<=?2";
+    // clang-format on
+    DCHECK(db_->IsSQLValid(kUpdateLastInteractionSql));
+
+    sql::Statement s_last_interaction(
+        db_->GetCachedStatement(SQL_FROM_HERE, kUpdateLastInteractionSql));
+    s_last_interaction.BindTime(0, delete_begin);
+    s_last_interaction.BindTime(1, delete_end);
+
+    if (!s_last_interaction.Run())
+      return false;
+
+    static constexpr char kUpdateLastStatelessSql[] =  // clang-format off
+        "UPDATE bounces SET last_stateless_bounce_time=?1 "
+            "WHERE last_stateless_bounce_time>?1 AND "
+                  "last_stateless_bounce_time<=?2";
+    // clang-format on
+    DCHECK(db_->IsSQLValid(kUpdateLastStatelessSql));
+
+    sql::Statement s_last_stateless(
+        db_->GetCachedStatement(SQL_FROM_HERE, kUpdateLastStatelessSql));
+    s_last_stateless.BindTime(0, delete_begin);
+    s_last_stateless.BindTime(1, delete_end);
+
+    if (!s_last_stateless.Run())
+      return false;
+  }
+
+  if ((type & DIPSEventRemovalType::kStorage) ==
+      DIPSEventRemovalType::kStorage) {
+    static constexpr char kUpdateLastStorageSql[] =  // clang-format off
+        "UPDATE bounces SET last_site_storage_time=?1 "
+            "WHERE last_site_storage_time>?1 AND "
+                  "last_site_storage_time<=?2";
+    // clang-format on
+    DCHECK(db_->IsSQLValid(kUpdateLastStorageSql));
+
+    sql::Statement s_last_storage(
+        db_->GetCachedStatement(SQL_FROM_HERE, kUpdateLastStorageSql));
+    s_last_storage.BindTime(0, delete_begin);
+    s_last_storage.BindTime(1, delete_end);
+
+    if (!s_last_storage.Run())
+      return false;
+
+    static constexpr char kUpdateLastStatefulSql[] =  // clang-format off
+        "UPDATE bounces SET last_stateful_bounce_time=?1 "
+            "WHERE last_stateful_bounce_time>?1 AND "
+                  "last_stateful_bounce_time<=?2";
+    // clang-format on
+    DCHECK(db_->IsSQLValid(kUpdateLastStatefulSql));
+
+    sql::Statement s_last_stateful(
+        db_->GetCachedStatement(SQL_FROM_HERE, kUpdateLastStatefulSql));
+    s_last_stateful.BindTime(0, delete_begin);
+    s_last_stateful.BindTime(1, delete_end);
+
+    if (!s_last_stateful.Run())
+      return false;
+  }
+
+  return true;
 }

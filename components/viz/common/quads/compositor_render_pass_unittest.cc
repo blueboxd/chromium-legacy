@@ -61,7 +61,7 @@ TEST(CompositorRenderPassTest,
   AggregatedRenderPassId render_pass_id{3u};
   gfx::Rect output_rect(45, 22, 120, 13);
   gfx::Transform transform_to_root =
-      gfx::Transform::AffineForTesting(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
+      gfx::Transform::Affine(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   gfx::Rect damage_rect(56, 123, 19, 43);
   cc::FilterOperations filters;
   filters.Append(cc::FilterOperation::CreateOpacityFilter(0.5));
@@ -123,7 +123,7 @@ TEST(CompositorRenderPassTest, CopyAllShouldBeIdentical) {
   CompositorRenderPassId id{3};
   gfx::Rect output_rect(45, 22, 120, 13);
   gfx::Transform transform_to_root =
-      gfx::Transform::AffineForTesting(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
+      gfx::Transform::Affine(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   gfx::Rect damage_rect(56, 123, 19, 43);
   cc::FilterOperations filters;
   filters.Append(cc::FilterOperation::CreateOpacityFilter(0.5));
@@ -140,7 +140,7 @@ TEST(CompositorRenderPassTest, CopyAllShouldBeIdentical) {
   auto pass = CompositorRenderPass::Create();
   pass->SetAll(id, output_rect, damage_rect, transform_to_root, filters,
                backdrop_filters, backdrop_filter_bounds, SubtreeCaptureId{1u},
-               output_rect.size(), SharedElementResourceId(),
+               output_rect.size(), ViewTransitionElementResourceId(),
                has_transparent_background, cache_render_pass,
                has_damage_from_contributing_content, generate_mipmap,
                has_per_quad_damage);
@@ -181,7 +181,7 @@ TEST(CompositorRenderPassTest, CopyAllShouldBeIdentical) {
   CompositorRenderPassId contrib_id{4};
   gfx::Rect contrib_output_rect(10, 15, 12, 17);
   gfx::Transform contrib_transform_to_root =
-      gfx::Transform::AffineForTesting(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
+      gfx::Transform::Affine(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   gfx::Rect contrib_damage_rect(11, 16, 10, 15);
   cc::FilterOperations contrib_filters;
   contrib_filters.Append(cc::FilterOperation::CreateSepiaFilter(0.5));
@@ -200,8 +200,8 @@ TEST(CompositorRenderPassTest, CopyAllShouldBeIdentical) {
                   contrib_transform_to_root, contrib_filters,
                   contrib_backdrop_filters, contrib_backdrop_filter_bounds,
                   SubtreeCaptureId{2u}, contrib_output_rect.size(),
-                  SharedElementResourceId(), contrib_has_transparent_background,
-                  contrib_cache_render_pass,
+                  ViewTransitionElementResourceId(),
+                  contrib_has_transparent_background, contrib_cache_render_pass,
                   contrib_has_damage_from_contributing_content,
                   contrib_generate_mipmap, contrib_has_per_quad_damage);
 
@@ -239,7 +239,7 @@ TEST(CompositorRenderPassTest, CopyAllWithCulledQuads) {
   CompositorRenderPassId id{3};
   gfx::Rect output_rect(45, 22, 120, 13);
   gfx::Transform transform_to_root =
-      gfx::Transform::AffineForTesting(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
+      gfx::Transform::Affine(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   gfx::Rect damage_rect(56, 123, 19, 43);
   cc::FilterOperations filters;
   filters.Append(cc::FilterOperation::CreateOpacityFilter(0.5));
@@ -255,7 +255,7 @@ TEST(CompositorRenderPassTest, CopyAllWithCulledQuads) {
   auto pass = CompositorRenderPass::Create();
   pass->SetAll(id, output_rect, damage_rect, transform_to_root, filters,
                backdrop_filters, backdrop_filter_bounds, SubtreeCaptureId(),
-               output_rect.size(), SharedElementResourceId(),
+               output_rect.size(), ViewTransitionElementResourceId(),
                has_transparent_background, cache_render_pass,
                has_damage_from_contributing_content, generate_mipmap,
                has_per_quad_damage);

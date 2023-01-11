@@ -11,13 +11,12 @@
 #import "base/strings/sys_string_conversions.h"
 #import "components/consent_auditor/consent_auditor.h"
 #import "components/unified_consent/unified_consent_service.h"
-#import "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/system_identity.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -83,7 +82,7 @@
   DCHECK(!self.delegate);
 }
 
-- (void)authenticateWithIdentity:(ChromeIdentity*)identity
+- (void)authenticateWithIdentity:(id<SystemIdentity>)identity
               authenticationFlow:(AuthenticationFlow*)authenticationFlow {
   DCHECK(!self.authenticationFlow);
 
@@ -91,7 +90,7 @@
   __weak UserSigninMediator* weakSelf = self;
   BOOL settingsLinkWasTapped =
       [self.delegate userSigninMediatorGetSettingsLinkWasTapped];
-  ProceduralBlockWithBool completion = ^(BOOL success) {
+  auto completion = ^(BOOL success) {
     if (settingsLinkWasTapped) {
       [weakSelf
           onAccountSigninCompletionForAdvancedSettingsWithSuccess:success];
@@ -164,19 +163,7 @@
         self.authenticationService->SignOut(
             signin_metrics::ABORT_SIGNIN,
             /*force_clear_browsing_data=*/false, ^() {
-              AuthenticationService* authenticationService =
-                  weakSelf.authenticationService;
-              ChromeIdentity* identity =
-                  weakSelf.delegate.signinIdentityOnStart;
-              ChromeAccountManagerService* accountManagerService =
-                  weakSelf.accountManagerService;
-              if (authenticationService && identity &&
-                  accountManagerService->IsValidIdentity(identity)) {
-                // Make sure the mediator is still alive, and the identity is
-                // stil valid (for example the identity can be removed by
-                // another app.
-                authenticationService->SignIn(identity);
-              }
+              [weakSelf signinWithIdentityOnStartAfterSignout];
               if (completion)
                 completion();
             });
@@ -189,6 +176,26 @@
       break;
     }
   }
+}
+
+- (void)signinWithIdentityOnStartAfterSignout {
+  ChromeAccountManagerService* accountManagerService =
+      self.accountManagerService;
+  if (!accountManagerService)
+    return;
+
+  // Make sure the mediator is still alive and the identity is
+  // still valid (for example, the identity can be removed by
+  // another application).
+  id<SystemIdentity> identity = self.delegate.signinIdentityOnStart;
+  if (!accountManagerService->IsValidIdentity(identity))
+    return;
+
+  AuthenticationService* authenticationService = self.authenticationService;
+  if (!authenticationService)
+    return;
+
+  authenticationService->SignIn(identity);
 }
 
 - (void)disconnect {
@@ -209,7 +216,7 @@
 
 // Called when signin is complete, after tapping "Yes, I'm in".
 - (void)onAccountSigninCompletion:(BOOL)success
-                         identity:(ChromeIdentity*)identity {
+                         identity:(id<SystemIdentity>)identity {
   self.authenticationFlow = nil;
   if (!success) {
     [self.delegate userSigninMediatorSigninFailed];
@@ -219,7 +226,7 @@
 }
 
 // Grants and records Sync consent, and finishes the Sync setup flow.
-- (void)signinCompletedWithIdentity:(ChromeIdentity*)identity {
+- (void)signinCompletedWithIdentity:(id<SystemIdentity>)identity {
   self.unifiedConsentService->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
 
   sync_pb::UserConsentTypes::SyncConsent syncConsent;
@@ -239,8 +246,8 @@
   }
 
   CoreAccountId coreAccountId = self.identityManager->PickAccountIdForAccount(
-      base::SysNSStringToUTF8([identity gaiaID]),
-      base::SysNSStringToUTF8([identity userEmail]));
+      base::SysNSStringToUTF8(identity.gaiaID),
+      base::SysNSStringToUTF8(identity.userEmail));
   self.consentAuditor->RecordSyncConsent(coreAccountId, syncConsent);
   self.authenticationService->GrantSyncConsent(identity);
 

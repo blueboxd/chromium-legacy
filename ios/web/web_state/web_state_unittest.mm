@@ -32,6 +32,7 @@
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state_observer.h"
 #import "ios/web/test/test_url_constants.h"
+#import "ios/web/web_state/web_state_impl.h"
 #import "net/test/embedded_test_server/default_handlers.h"
 #import "net/test/embedded_test_server/embedded_test_server.h"
 #import "ui/gfx/geometry/rect_f.h"
@@ -75,30 +76,6 @@ class WebStateTest : public FakeWebClient, public WebTestWithWebState {
  protected:
   base::HistogramTester histogram_tester_;
 };
-
-// Tests script execution with and without callback.
-TEST_F(WebStateTest, ScriptExecution) {
-  ASSERT_TRUE(LoadHtml("<html></html>"));
-
-  // Execute script without callback.
-  web_state()->ExecuteJavaScript(u"window.foo = 'bar'");
-
-  // Execute script with callback.
-  __block std::unique_ptr<base::Value> execution_result;
-  __block bool execution_complete = false;
-  web_state()->ExecuteJavaScript(
-      u"window.foo", base::BindOnce(^(const base::Value* value) {
-        execution_result = std::make_unique<base::Value>(value->Clone());
-        execution_complete = true;
-      }));
-  WaitForCondition(^{
-    return execution_complete;
-  });
-
-  ASSERT_TRUE(execution_result);
-  ASSERT_TRUE(execution_result->is_string());
-  EXPECT_EQ("bar", execution_result->GetString());
-}
 
 // Tests that executing user JavaScript registers user interaction.
 TEST_F(WebStateTest, UserScriptExecution) {
@@ -584,9 +561,10 @@ TEST_F(WebStateTest, RestoreLargeSession) {
   // Queue some javascript to wait for every handler to complete.
   // TODO(crbug.com/1244067): Remove this workaround.
   __block BOOL called = false;
-  web_state->ExecuteJavaScript(u"0;", base::BindOnce(^(const base::Value* res) {
-                                 called = true;
-                               }));
+  static_cast<WebStateImpl*>(web_state.get())
+      ->ExecuteJavaScript(u"0;", base::BindOnce(^(const base::Value* res) {
+                            called = true;
+                          }));
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return called;
   }));

@@ -294,9 +294,10 @@ VISIT_PROTO_FIELDS(const sync_pb::ChromiumExtensionsActivity& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::ContactInfoSpecifics& proto) {
   VISIT(guid);
-  VISIT(source);
   VISIT(use_count);
   VISIT(use_date_windows_epoch_micros);
+  VISIT(date_modified_windows_epoch_micros);
+  VISIT(language_code);
   VISIT(profile_label);
   VISIT(name_honorific);
   VISIT(name_first);
@@ -316,7 +317,6 @@ VISIT_PROTO_FIELDS(const sync_pb::ContactInfoSpecifics& proto) {
   VISIT(address_street_address);
   VISIT(address_sorting_code);
   VISIT(address_dependent_locality);
-  VISIT(address_language_code);
   VISIT(address_thoroughfare_name);
   VISIT(address_thoroughfare_number);
   VISIT(address_dependent_thoroughfare_name);
@@ -534,7 +534,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
-  static_assert(42 == GetNumModelTypes(),
+  static_assert(44 == GetNumModelTypes(),
                 "When adding a new protocol type, you will likely need to add "
                 "it here as well.");
   VISIT(encrypted);
@@ -565,6 +565,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(printers_authorization_server);
   VISIT(priority_preference);
   VISIT(reading_list);
+  VISIT(saved_tab_group);
   VISIT(search_engine);
   VISIT(security_event);
   VISIT(segmentation);
@@ -940,13 +941,14 @@ VISIT_PROTO_FIELDS(const sync_pb::SavedTabGroupSpecifics& proto) {
 VISIT_PROTO_FIELDS(const sync_pb::SavedTabGroup& proto) {
   VISIT(position);
   VISIT(title);
-  VISIT(color);
+  VISIT_ENUM(color);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::SavedTabGroupTab& proto) {
   VISIT(position);
   VISIT(group_guid);
   VISIT(url);
+  VISIT(title);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::SearchEngineSpecifics& proto) {
@@ -1322,6 +1324,7 @@ VISIT_PROTO_FIELDS(const sync_pb::CloudTokenData& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::CardIssuer& proto) {
   VISIT_ENUM(issuer);
+  VISIT(issuer_id);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::WalletMaskedCreditCard& proto) {

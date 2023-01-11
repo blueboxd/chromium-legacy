@@ -115,6 +115,16 @@ eAVEncVP9VProfile GetVP9VProfile(VideoCodecProfile profile) {
   }
 }
 
+// Only eAVEncH265Vprofile_Main_420_8 is supported.
+eAVEncH265VProfile GetHEVCProfile(VideoCodecProfile profile) {
+  switch (profile) {
+    case HEVCPROFILE_MAIN:
+      return eAVEncH265VProfile_Main_420_8;
+    default:
+      return eAVEncH265VProfile_unknown;
+  }
+}
+
 bool IsSvcSupported(IMFActivate* activate) {
 #if defined(ARCH_CPU_X86)
   // x86 systems sometimes crash in video drivers here.
@@ -203,7 +213,11 @@ uint32_t EnumerateHardwareEncoders(VideoCodec codec,
   }
 
   if (codec != VideoCodec::kH264 && codec != VideoCodec::kVP9 &&
-      codec != VideoCodec::kAV1) {
+      codec != VideoCodec::kAV1
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+      && codec != VideoCodec::kHEVC
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
+  ) {
     DVLOG(ERROR) << "Enumerating unsupported hardware encoders.";
     return 0;
   }
@@ -346,7 +360,8 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfiles() {
 
   SupportedProfiles profiles;
 
-  for (auto codec : {VideoCodec::kH264, VideoCodec::kVP9, VideoCodec::kAV1}) {
+  for (auto codec : {VideoCodec::kH264, VideoCodec::kVP9, VideoCodec::kAV1,
+                     VideoCodec::kHEVC}) {
     auto codec_profiles = GetSupportedProfilesForCodec(codec);
     profiles.insert(profiles.end(), codec_profiles.begin(),
                     codec_profiles.end());
@@ -360,10 +375,19 @@ VideoEncodeAccelerator::SupportedProfiles
 MediaFoundationVideoEncodeAccelerator::GetSupportedProfilesForCodec(
     VideoCodec codec) {
   SupportedProfiles profiles;
-  if ((codec == VideoCodec::kVP9 &&
-       !base::FeatureList::IsEnabled(kMediaFoundationVP9Encoding)) ||
-      (codec == VideoCodec::kAV1 &&
-       !base::FeatureList::IsEnabled(kMediaFoundationAV1Encoding))) {
+
+  if (codec == VideoCodec::kHEVC) {
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+    if (!base::FeatureList::IsEnabled(kPlatformHEVCEncoderSupport)) {
+      return profiles;
+    }
+#else
+    return profiles;
+#endif  // BULIDFLAG(ENABLE_PLATFORM_HEVC)
+  } else if ((codec == VideoCodec::kVP9 &&
+              !base::FeatureList::IsEnabled(kMediaFoundationVP9Encoding)) ||
+             (codec == VideoCodec::kAV1 &&
+              !base::FeatureList::IsEnabled(kMediaFoundationAV1Encoding))) {
     return profiles;
   }
 
@@ -380,7 +404,14 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfilesForCodec(
   if (pp_activate) {
     for (UINT32 i = 0; i < encoder_count; i++) {
       if (pp_activate[i]) {
-        if (!svc_supported && IsSvcSupported(pp_activate[i]))
+        // crbug.com/1373780: Nvidia HEVC encoder reports supporting 3 temporal
+        // layers, but will fail initialization if configured to encoded with
+        // more than one temporal layers, thus we block Nvidia HEVC encoder for
+        // temporal SVC encoding.
+        bool flawy_svc =
+            (codec == VideoCodec::kHEVC) &&
+            (GetDriverVendor(pp_activate[i]) == DriverVendor::kNvidia);
+        if (!svc_supported && !flawy_svc && IsSvcSupported(pp_activate[i]))
           svc_supported = true;
 
         // Release the enumerated instances if any.
@@ -421,6 +452,9 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfilesForCodec(
   } else if (codec == VideoCodec::kAV1) {
     profile.profile = AV1PROFILE_PROFILE_MAIN;
     profiles.push_back(profile);
+  } else if (codec == VideoCodec::kHEVC) {
+    profile.profile = HEVCPROFILE_MAIN;
+    profiles.push_back(profile);
   }
   return profiles;
 }
@@ -459,6 +493,8 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(
     codec_ = VideoCodec::kVP9;
   } else if (config.output_profile == AV1PROFILE_PROFILE_MAIN) {
     codec_ = VideoCodec::kAV1;
+  } else if (config.output_profile == HEVCPROFILE_MAIN) {
+    codec_ = VideoCodec::kHEVC;
   }
 
   if (codec_ == VideoCodec::kUnknown) {
@@ -545,8 +581,12 @@ void MediaFoundationVideoEncodeAccelerator::EncoderInitializeTask(
     hr = encoder_->ProcessMessage(
         MFT_MESSAGE_SET_D3D_MANAGER,
         reinterpret_cast<ULONG_PTR>(mf_dxgi_device_manager.Get()));
-    NOTIFY_RETURN_ON_HR_FAILURE(
-        hr, "Couldn't set ProcessMessage MFT_MESSAGE_SET_D3D_MANAGER", );
+    // If HMFT rejects setting D3D manager, fallback to non-D3D11 encoding.
+    if (FAILED(hr)) {
+      dxgi_resource_mapping_required_ = true;
+      MEDIA_LOG(INFO, media_log.get())
+          << "Couldn't set DXGIDeviceManager, fallback to non-D3D11 encoding";
+    }
   }
 
   // Start the asynchronous processing model
@@ -838,6 +878,9 @@ bool MediaFoundationVideoEncodeAccelerator::InitializeInputOutputParameters(
   } else if (codec_ == VideoCodec::kVP9) {
     hr = imf_output_media_type_->SetUINT32(MF_MT_MPEG2_PROFILE,
                                            GetVP9VProfile(output_profile));
+  } else if (codec_ == VideoCodec::kHEVC) {
+    hr = imf_output_media_type_->SetUINT32(MF_MT_MPEG2_PROFILE,
+                                           GetHEVCProfile(output_profile));
   }
   RETURN_ON_HR_FAILURE(hr, "Couldn't set codec profile", false);
   hr = encoder_->SetOutputType(output_stream_id_, imf_output_media_type_.Get(),
@@ -893,11 +936,12 @@ bool MediaFoundationVideoEncodeAccelerator::SetEncoderModes() {
     RETURN_ON_HR_FAILURE(hr, "Couldn't set CommonRateControlMode", false);
   }
 
-  // Intel drivers want the layer count to be set explicitly for H.264, even if
-  // it's one.
+  // Intel drivers want the layer count to be set explicitly for H.264/HEVC,
+  // even if it's one.
   const bool set_svc_layer_count =
       (num_temporal_layers_ > 1) ||
-      (vendor_ == DriverVendor::kIntel && codec_ == VideoCodec::kH264);
+      (vendor_ == DriverVendor::kIntel &&
+       (codec_ == VideoCodec::kH264 || codec_ == VideoCodec::kHEVC));
   if (set_svc_layer_count) {
     var.ulVal = num_temporal_layers_;
     hr = codec_api_->SetValue(&CODECAPI_AVEncVideoTemporalLayerCount, &var);
@@ -1073,7 +1117,11 @@ HRESULT MediaFoundationVideoEncodeAccelerator::PopulateInputSampleBuffer(
 
     if (gmb->GetType() == gfx::GpuMemoryBufferType::DXGI_SHARED_HANDLE &&
         dxgi_device_manager_ != nullptr) {
-      return PopulateInputSampleBufferGpu(std::move(frame));
+      if (!dxgi_resource_mapping_required_) {
+        return PopulateInputSampleBufferGpu(std::move(frame));
+      } else {
+        return CopyInputSampleBufferFromGpu(*(frame.get()));
+      }
     }
 
     // ConvertToMemoryMappedFrame() doesn't copy pixel data,
@@ -1136,6 +1184,86 @@ HRESULT MediaFoundationVideoEncodeAccelerator::PopulateInputSampleBuffer(
                 << static_cast<uint32_t>(status.code());
     return E_FAIL;
   }
+  return S_OK;
+}
+
+// Handle case where video frame is backed by a GPU texture, but needs to be
+// copied to CPU memory, if HMFT does not accept texture from adapter different
+// from that is currently used for encoding.
+HRESULT MediaFoundationVideoEncodeAccelerator::CopyInputSampleBufferFromGpu(
+    const VideoFrame& frame) {
+  DCHECK_EQ(frame.storage_type(),
+            VideoFrame::StorageType::STORAGE_GPU_MEMORY_BUFFER);
+  DCHECK(frame.HasGpuMemoryBuffer());
+  DCHECK_EQ(frame.GetGpuMemoryBuffer()->GetType(),
+            gfx::GpuMemoryBufferType::DXGI_SHARED_HANDLE);
+  DCHECK(dxgi_device_manager_);
+
+  gfx::GpuMemoryBufferHandle buffer_handle =
+      frame.GetGpuMemoryBuffer()->CloneHandle();
+
+  auto d3d_device = dxgi_device_manager_->GetDevice();
+  if (!d3d_device) {
+    DLOG(ERROR) << "Failed to get device from MF DXGI device manager";
+    return E_HANDLE;
+  }
+  Microsoft::WRL::ComPtr<ID3D11Device1> device1;
+  HRESULT hr = d3d_device.As(&device1);
+
+  RETURN_ON_HR_FAILURE(hr, "Failed to query ID3D11Device1", hr);
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> input_texture;
+  hr = device1->OpenSharedResource1(buffer_handle.dxgi_handle.Get(),
+                                    IID_PPV_ARGS(&input_texture));
+  RETURN_ON_HR_FAILURE(hr, "Failed to open shared GMB D3D texture", hr);
+
+  // Check if we need to scale the input texture
+  D3D11_TEXTURE2D_DESC input_desc = {};
+  input_texture->GetDesc(&input_desc);
+
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> sample_texture;
+  if (input_desc.Width != static_cast<uint32_t>(input_visible_size_.width()) ||
+      input_desc.Height !=
+          static_cast<uint32_t>(input_visible_size_.height())) {
+    hr = PerformD3DScaling(input_texture.Get());
+    RETURN_ON_HR_FAILURE(hr, "Failed to perform D3D video processing", hr);
+    sample_texture = scaled_d3d11_texture_;
+  } else {
+    sample_texture = input_texture;
+  }
+
+  const auto kTargetPixelFormat = PIXEL_FORMAT_NV12;
+  Microsoft::WRL::ComPtr<IMFMediaBuffer> input_buffer;
+
+  // Allocate a new buffer.
+  MFT_INPUT_STREAM_INFO input_stream_info;
+  hr = encoder_->GetInputStreamInfo(input_stream_id_, &input_stream_info);
+  RETURN_ON_HR_FAILURE(hr, "Couldn't get input stream info", hr);
+  hr = MFCreateAlignedMemoryBuffer(
+      input_stream_info.cbSize
+          ? input_stream_info.cbSize
+          : VideoFrame::AllocationSize(kTargetPixelFormat, input_visible_size_),
+      input_stream_info.cbAlignment == 0 ? input_stream_info.cbAlignment
+                                         : input_stream_info.cbAlignment - 1,
+      &input_buffer);
+  RETURN_ON_HR_FAILURE(hr, "Failed to create memory buffer for input sample",
+                       hr);
+
+  MediaBufferScopedPointer scoped_buffer(input_buffer.Get());
+  bool copy_succeeded = gpu::CopyD3D11TexToMem(
+      sample_texture.Get(), scoped_buffer.get(), scoped_buffer.max_length(),
+      d3d_device.Get(), &staging_texture_);
+  if (!copy_succeeded) {
+    DLOG(ERROR) << "Failed to copy sample to memory.";
+    return E_FAIL;
+  }
+  size_t copied_bytes =
+      input_visible_size_.width() * input_visible_size_.height() * 3 / 2;
+  hr = input_buffer->SetCurrentLength(copied_bytes);
+  RETURN_ON_HR_FAILURE(hr, "Failed to set current buffer length", hr);
+  hr = input_sample_->RemoveAllBuffers();
+  RETURN_ON_HR_FAILURE(hr, "Failed to remove buffers from sample", hr);
+  hr = input_sample_->AddBuffer(input_buffer.Get());
+  RETURN_ON_HR_FAILURE(hr, "Failed to add buffer to sample", hr);
   return S_OK;
 }
 
@@ -1236,11 +1364,11 @@ bool MediaFoundationVideoEncodeAccelerator::AssignTemporalId(
     bool keyframe) {
   *temporal_id = 0;
 
-  // H264, VP9 and AV1 have hardware SVC support on windows. H264 can parse the
-  // information from Nalu(7.3.1 NAL unit syntax); AV1 can parse the OBU(5.3.3.
-  // OBU extension header syntax), it's future work. Unfortunately, VP9 spec
-  // doesn't provide the temporal information, we can only assign it based on
-  // spec.
+  // H264, HEVC, VP9 and AV1 have hardware SVC support on windows. H264 can
+  // parse the information from Nalu(7.3.1 NAL unit syntax); AV1 can parse the
+  // OBU(5.3.3. OBU extension header syntax), it's future work. Unfortunately,
+  // VP9 spec doesn't provide the temporal information, we can only assign it
+  // based on spec.
   if (codec_ == VideoCodec::kH264) {
     // See the 7.3.1 NAL unit syntax in H264 spec.
     // https://www.itu.int/rec/T-REC-H.264
@@ -1260,6 +1388,29 @@ bool MediaFoundationVideoEncodeAccelerator::AssignTemporalId(
       }
     }
   }
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+  else if (codec_ == VideoCodec::kHEVC) {
+    // See section 7.3.1.1, NAL unit syntax in H265 spec.
+    // https://www.itu.int/rec/T-REC-H.265
+    // Unlike AVC, HEVC stores the temporal ID information in VCL NAL unit
+    // header instead of using prefix NAL unit.
+    MediaBufferScopedPointer scoped_buffer(output_buffer.Get());
+    h265_nalu_parser_.SetStream(scoped_buffer.get(), size);
+    H265NALU nalu;
+    H265NaluParser::Result result;
+    while ((result = h265_nalu_parser_.AdvanceToNextNALU(&nalu)) !=
+           H265NaluParser::kEOStream) {
+      if (result == H265NaluParser::Result::kInvalidStream) {
+        return false;
+      }
+      // We only check VCL NAL units
+      if (nalu.nal_unit_type <= H265NALU::RSV_VCL31) {
+        *temporal_id = nalu.nuh_temporal_id_plus1 - 1;
+        return true;
+      }
+    }
+  }
+#endif
 
   // If we run to this point, it means that we have not assigned temporalId
   // through parsing stream, we always return true once we parse out temporalId.
@@ -1359,8 +1510,13 @@ void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
   output_data_buffer.pSample = nullptr;
 
   BitstreamBufferMetadata md(size, keyframe, timestamp);
-  if (codec_ == VideoCodec::kH264 && temporalScalableCoding())
-    md.h264.emplace().temporal_idx = temporal_id;
+  if (temporalScalableCoding()) {
+    if (codec_ == VideoCodec::kH264) {
+      md.h264.emplace().temporal_idx = temporal_id;
+    } else if (codec_ == VideoCodec::kHEVC) {
+      md.h265.emplace().temporal_idx = temporal_id;
+    }
+  }
   main_client_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Client::BitstreamBufferReady, main_client_,
                                 buffer_ref->id, md));

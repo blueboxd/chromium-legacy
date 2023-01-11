@@ -690,7 +690,7 @@ TEST_P(PaintPropertyTreeUpdateTest, PerspectiveOriginUpdatesOnSizeChanges) {
   )HTML");
 
   auto* perspective = GetLayoutObjectByElementId("perspective");
-  TransformationMatrix matrix;
+  gfx::Transform matrix;
   matrix.ApplyPerspectiveDepth(100);
   EXPECT_EQ(
       matrix,
@@ -852,7 +852,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ViewportAddRemoveDeviceEmulationNode) {
   }
 
   // These emulate WebViewImpl::SetDeviceEmulationTransform().
-  GetChromeClient().SetDeviceEmulationTransform(TransformationMatrix());
+  GetChromeClient().SetDeviceEmulationTransform(gfx::Transform());
   visual_viewport.SetNeedsPaintPropertyUpdate();
 
   UpdateAllLifecyclePhasesForTest();
@@ -1643,12 +1643,12 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
   )HTML");
 
   auto* target = GetLayoutObjectByElementId("target");
-  auto style = ComputedStyle::Clone(target->StyleRef());
+  ComputedStyleBuilder builder(target->StyleRef());
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
   // Simulates starting a composite animation.
-  style->SetHasCurrentTransformAnimation(true);
-  style->SetIsRunningTransformAnimationOnCompositor(true);
-  target->SetStyle(std::move(style));
+  builder.SetHasCurrentTransformAnimation(true);
+  builder.SetIsRunningTransformAnimationOnCompositor(true);
+  target->SetStyle(builder.TakeStyle());
   EXPECT_TRUE(target->NeedsPaintPropertyUpdate());
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
   UpdateAllLifecyclePhasesExceptPaint();
@@ -1657,7 +1657,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
       target->FirstFragment().PaintProperties()->Transform();
   ASSERT_TRUE(transform_node);
   EXPECT_TRUE(transform_node->HasActiveTransformAnimation());
-  EXPECT_EQ(TransformationMatrix(), transform_node->Matrix());
+  EXPECT_EQ(gfx::Transform(), transform_node->Matrix());
   EXPECT_EQ(gfx::Point3F(50, 50, 0), transform_node->Origin());
   // Change of animation status should update PaintArtifactCompositor.
   auto* paint_artifact_compositor =
@@ -1668,14 +1668,14 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
 
   // Simulates changing transform and transform-origin during an animation.
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  style = ComputedStyle::Clone(target->StyleRef());
+  builder = ComputedStyleBuilder(target->StyleRef());
   TransformOperations transform;
   transform.Operations().push_back(
       RotateTransformOperation::Create(10, TransformOperation::kRotate));
-  style->SetTransform(transform);
-  style->SetTransformOrigin(TransformOrigin(Length(70, Length::kFixed),
-                                            Length(30, Length::kFixed), 0));
-  target->SetStyle(std::move(style));
+  builder.SetTransform(transform);
+  builder.SetTransformOrigin(
+      TransformOrigin(Length::Fixed(70), Length::Fixed(30), 0));
+  target->SetStyle(builder.TakeStyle());
   EXPECT_TRUE(target->NeedsPaintPropertyUpdate());
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
   {
@@ -1699,9 +1699,9 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
 
   // Simulates changing backface visibility during animation.
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  style = ComputedStyle::Clone(target->StyleRef());
-  style->SetBackfaceVisibility(EBackfaceVisibility::kHidden);
-  target->SetStyle(std::move(style));
+  builder = ComputedStyleBuilder(target->StyleRef());
+  builder.SetBackfaceVisibility(EBackfaceVisibility::kHidden);
+  target->SetStyle(builder.TakeStyle());
   EXPECT_TRUE(target->NeedsPaintPropertyUpdate());
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
   UpdateAllLifecyclePhasesExceptPaint();
@@ -1998,6 +1998,51 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeMaskOutputClip) {
   EXPECT_EQ(masked_properties, PaintPropertiesForElement("masked"));
   EXPECT_EQ(DocContentClip(), masked_properties->Mask()->OutputClip());
   EXPECT_TRUE(GetPaintLayerByElementId("masked")->SelfNeedsRepaint());
+}
+
+TEST_P(PaintPropertyTreeUpdateTest,
+       DirectOpacityUpdateSkipsPropertyTreeBuilder) {
+  SetBodyInnerHTML(R"HTML(
+      <div id='div' style="opacity:0.5"></div>
+  )HTML");
+
+  auto* div_properties = PaintPropertiesForElement("div");
+  ASSERT_TRUE(div_properties);
+  EXPECT_EQ(0.5, div_properties->Effect()->Opacity());
+  auto* div = GetDocument().getElementById("div");
+  EXPECT_FALSE(div->GetLayoutObject()->NeedsPaintPropertyUpdate());
+
+  div->setAttribute(html_names::kStyleAttr, "opacity:0.8");
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
+  EXPECT_FALSE(div->GetLayoutObject()->NeedsPaintPropertyUpdate());
+
+  UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_NEAR(0.8, div_properties->Effect()->Opacity(), 0.001);
+}
+
+TEST_P(PaintPropertyTreeUpdateTest,
+       DirectOpacityAndTransformUpdatesBothExecuted) {
+  SetBodyInnerHTML(R"HTML(
+      <div id='div' style="opacity:0.5; transform:translateX(100px)"></div>
+  )HTML");
+
+  auto* div_properties = PaintPropertiesForElement("div");
+  ASSERT_TRUE(div_properties);
+  EXPECT_EQ(0.5, div_properties->Effect()->Opacity());
+  EXPECT_EQ(100, div_properties->Transform()->Translation2D().x());
+  auto* div = GetDocument().getElementById("div");
+  EXPECT_FALSE(div->GetLayoutObject()->NeedsPaintPropertyUpdate());
+
+  div->setAttribute(html_names::kStyleAttr,
+                    "opacity:0.8; transform: translateX(200px)");
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
+  EXPECT_FALSE(div->GetLayoutObject()->NeedsPaintPropertyUpdate());
+
+  UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_NEAR(0.8, div_properties->Effect()->Opacity(), 0.001);
+  EXPECT_EQ(200, div_properties->Transform()->Translation2D().x());
 }
 
 }  // namespace blink

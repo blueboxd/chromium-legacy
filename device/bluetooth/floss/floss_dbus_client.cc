@@ -21,11 +21,15 @@ const char kAdapterService[] = "org.chromium.bluetooth";
 const char kManagerService[] = "org.chromium.bluetooth.Manager";
 const char kAdapterInterface[] = "org.chromium.bluetooth.Bluetooth";
 const char kGattInterface[] = "org.chromium.bluetooth.BluetoothGatt";
+const char kBatteryManagerInterface[] = "org.chromium.bluetooth.BatteryManager";
 const char kManagerInterface[] = "org.chromium.bluetooth.Manager";
 const char kExperimentalInterface[] = "org.chromium.bluetooth.Experimental";
 const char kManagerObject[] = "/org/chromium/bluetooth/Manager";
 const char kAdapterObjectFormat[] = "/org/chromium/bluetooth/hci%d/adapter";
 const char kGattObjectFormat[] = "/org/chromium/bluetooth/hci%d/gatt";
+const char kMediaObjectFormat[] = "/org/chromium/bluetooth/hci%d/media";
+const char kBatteryManagerObjectFormat[] =
+    "/org/chromium/bluetooth/hci%d/battery_manager";
 
 const char kSocketManagerInterface[] = "org.chromium.bluetooth.SocketManager";
 
@@ -42,6 +46,7 @@ const char kCancelBondProcess[] = "CancelBondProcess";
 const char kRemoveBond[] = "RemoveBond";
 const char kGetRemoteType[] = "GetRemoteType";
 const char kGetRemoteClass[] = "GetRemoteClass";
+const char kGetRemoteAppearance[] = "GetRemoteAppearance";
 const char kGetConnectionState[] = "GetConnectionState";
 const char kGetRemoteUuids[] = "GetRemoteUuids";
 const char kGetBondState[] = "GetBondState";
@@ -90,10 +95,13 @@ const char kGetFlossEnabled[] = "GetFlossEnabled";
 const char kSetFlossEnabled[] = "SetFlossEnabled";
 const char kGetState[] = "GetState";
 const char kGetAvailableAdapters[] = "GetAvailableAdapters";
+const char kGetDefaultAdapter[] = "GetDefaultAdapter";
+const char kSetDesiredDefaultAdapter[] = "SetDesiredDefaultAdapter";
 const char kRegisterCallback[] = "RegisterCallback";
 const char kCallbackInterface[] = "org.chromium.bluetooth.ManagerCallback";
 const char kOnHciDeviceChanged[] = "OnHciDeviceChanged";
 const char kOnHciEnabledChanged[] = "OnHciEnabledChanged";
+const char kOnDefaultAdapterChanged[] = "OnDefaultAdapterChanged";
 }  // namespace manager
 
 namespace socket_manager {
@@ -142,7 +150,7 @@ const char kReadRemoteRssi[] = "ReadRemoteRssi";
 const char kConfigureMtu[] = "ConfigureMtu";
 const char kConnectionParameterUpdate[] = "ConnectionParameterUpdate";
 const char kCallbackInterface[] =
-    "org.chromium.bluetooth.BluetoothGattClientCallback";
+    "org.chromium.bluetooth.BluetoothGattCallback";
 
 const char kOnClientRegistered[] = "OnClientRegistered";
 const char kOnClientConnectionState[] = "OnClientConnectionState";
@@ -153,6 +161,7 @@ const char kOnCharacteristicRead[] = "OnCharacteristicRead";
 const char kOnCharacteristicWrite[] = "OnCharacteristicWrite";
 const char kOnExecuteWrite[] = "OnExecuteWrite";
 const char kOnDescriptorRead[] = "OnDescriptorRead";
+const char kOnDescriptorWrite[] = "OnDescriptorWrite";
 const char kOnNotify[] = "OnNotify";
 const char kOnReadRemoteRssi[] = "OnReadRemoteRssi";
 const char kOnConfigureMtu[] = "OnConfigureMtu";
@@ -188,6 +197,15 @@ const char kOnPeriodicAdvertisingParametersUpdated[] =
 const char kOnPeriodicAdvertisingDataSet[] = "OnPeriodicAdvertisingDataSet";
 const char kOnPeriodicAdvertisingEnabled[] = "OnPeriodicAdvertisingEnabled";
 }  // namespace advertiser
+
+namespace battery_manager {
+const char kCallbackInterface[] =
+    "org.chromium.bluetooth.BatteryManagerCallback";
+const char kRegisterBatteryCallback[] = "RegisterBatteryCallback";
+const char kGetBatteryInformation[] = "GetBatteryInformation";
+
+const char kOnBatteryInfoUpdated[] = "OnBatteryInfoUpdated";
+}  // namespace battery_manager
 
 namespace experimental {
 const char kSetLLPrivacy[] = "SetLLPrivacy";
@@ -335,6 +353,13 @@ dbus::ObjectPath FlossDBusClient::GenerateAdapterPath(int adapter_index) {
 // static
 dbus::ObjectPath FlossDBusClient::GenerateGattPath(int adapter_index) {
   return dbus::ObjectPath(base::StringPrintf(kGattObjectFormat, adapter_index));
+}
+
+// static
+dbus::ObjectPath FlossDBusClient::GenerateBatteryManagerPath(
+    int adapter_index) {
+  return dbus::ObjectPath(
+      base::StringPrintf(kBatteryManagerObjectFormat, adapter_index));
 }
 
 // Default error handler for dbus clients is to just print the error right now.

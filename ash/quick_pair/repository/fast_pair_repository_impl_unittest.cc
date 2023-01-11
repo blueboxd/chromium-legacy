@@ -485,8 +485,7 @@ TEST_F(FastPairRepositoryImplTest, AssociateAccountKeyLocally_ValidAccountKey) {
   auto device = base::MakeRefCounted<Device>(kInvalidModelId, kTestBLEAddress,
                                              Protocol::kFastPairInitial);
   device->set_classic_address(kTestClassicAddress1);
-  device->SetAdditionalData(Device::AdditionalDataType::kAccountKey,
-                            kAccountKey1);
+  device->set_account_key(kAccountKey1);
   ASSERT_TRUE(fast_pair_repository_->AssociateAccountKeyLocally(device));
   base::RunLoop().RunUntilIdle();
 
@@ -1159,7 +1158,7 @@ TEST_F(FastPairRepositoryImplTest, IsHashCorrect) {
 }
 
 TEST_F(FastPairRepositoryImplTest,
-       AddDeviceToFootprints_RemoveDeviceFromPendingWriteStore) {
+       WriteDeviceToFootprints_RemoveDeviceFromPendingWriteStore) {
   auto device = base::MakeRefCounted<Device>(kValidModelId, kTestBLEAddress,
                                              Protocol::kFastPairInitial);
   device->set_classic_address(kTestClassicAddress1);
@@ -1169,8 +1168,8 @@ TEST_F(FastPairRepositoryImplTest,
   ASSERT_TRUE(
       saved_device_registry_->IsAccountKeySavedToRegistry(kAccountKey1));
 
-  // After a successful Footprints add, pending adds list should be empty
-  ASSERT_EQ(0u, pending_write_store_->GetPendingAdds().size());
+  // After a successful Footprints write, pending writes list should be empty
+  ASSERT_EQ(0u, pending_write_store_->GetPendingWrites().size());
 }
 
 }  // namespace quick_pair

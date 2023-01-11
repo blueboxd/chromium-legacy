@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/shared_image/gl_image_backing_factory.h"
+#include "gpu/command_buffer/service/shared_image/iosurface_image_backing_factory.h"
 
 #include <memory>
 #include <utility>
@@ -54,6 +54,7 @@ class IOSurfaceImageBackingFactoryTest : public testing::Test {
     ASSERT_TRUE(result);
 
     GpuPreferences preferences;
+    preferences.use_passthrough_cmd_decoder = true;
     preferences.texture_target_exception_list.push_back(
         gfx::BufferUsageAndFormat(gfx::BufferUsage::SCANOUT,
                                   gfx::BufferFormat::RGBA_8888));
@@ -68,7 +69,7 @@ class IOSurfaceImageBackingFactoryTest : public testing::Test {
         base::MakeRefCounted<gles2::FeatureInfo>(workarounds, GpuFeatureInfo());
     context_state_->InitializeGL(preferences, std::move(feature_info));
 
-    backing_factory_ = std::make_unique<GLImageBackingFactory>(
+    backing_factory_ = std::make_unique<IOSurfaceImageBackingFactory>(
         preferences, workarounds, context_state_->feature_info(),
         &image_factory_,
         /*progress_reporter=*/nullptr);
@@ -85,7 +86,7 @@ class IOSurfaceImageBackingFactoryTest : public testing::Test {
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<SharedContextState> context_state_;
-  std::unique_ptr<GLImageBackingFactory> backing_factory_;
+  std::unique_ptr<IOSurfaceImageBackingFactory> backing_factory_;
   SharedImageManager shared_image_manager_;
   std::unique_ptr<MemoryTypeTracker> memory_type_tracker_;
   std::unique_ptr<SharedImageRepresentationFactory>
@@ -141,14 +142,6 @@ class IOSurfaceImageBackingFactoryTest : public testing::Test {
 
 // Basic test to check creation and deletion of IOSurface backed shared image.
 TEST_F(IOSurfaceImageBackingFactoryTest, Basic) {
-  // TODO(jonahr): Test crashes on Mac with ANGLE/passthrough
-  // (crbug.com/1100980)
-  gpu::GPUTestBotConfig bot_config;
-  if (bot_config.LoadCurrentConfig(nullptr) &&
-      bot_config.Matches("mac passthrough")) {
-    return;
-  }
-
   Mailbox mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::SharedImageFormat::kRGBA_8888;
   gfx::Size size(256, 256);
@@ -174,11 +167,13 @@ TEST_F(IOSurfaceImageBackingFactoryTest, Basic) {
       shared_image_manager_.Register(std::move(backing),
                                      memory_type_tracker_.get());
   auto gl_representation =
-      shared_image_representation_factory_->ProduceGLTexture(mailbox);
+      shared_image_representation_factory_->ProduceGLTexturePassthrough(
+          mailbox);
   GLenum expected_target = GL_TEXTURE_RECTANGLE;
   EXPECT_TRUE(gl_representation);
-  EXPECT_TRUE(gl_representation->GetTexture()->service_id());
-  EXPECT_EQ(expected_target, gl_representation->GetTexture()->target());
+  EXPECT_TRUE(gl_representation->GetTexturePassthrough()->service_id());
+  EXPECT_EQ(expected_target,
+            gl_representation->GetTexturePassthrough()->target());
   EXPECT_EQ(size, gl_representation->size());
   EXPECT_EQ(format, gl_representation->format());
   EXPECT_EQ(color_space, gl_representation->color_space());
@@ -224,14 +219,6 @@ TEST_F(IOSurfaceImageBackingFactoryTest, Basic) {
 // We write to a GL texture using gl representation and then read from skia
 // representation.
 TEST_F(IOSurfaceImageBackingFactoryTest, GL_SkiaGL) {
-  // TODO(jonahr): Test crashes on Mac with ANGLE/passthrough
-  // (crbug.com/1100980)
-  gpu::GPUTestBotConfig bot_config;
-  if (bot_config.LoadCurrentConfig(nullptr) &&
-      bot_config.Matches("mac passthrough")) {
-    return;
-  }
-
   // Create a backing using mailbox.
   auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::SharedImageFormat::kRGBA_8888;
@@ -245,6 +232,7 @@ TEST_F(IOSurfaceImageBackingFactoryTest, GL_SkiaGL) {
       mailbox, format, surface_handle, size, color_space, surface_origin,
       alpha_type, usage, false /* is_thread_safe */);
   EXPECT_TRUE(backing);
+  backing->SetCleared();
 
   GLenum expected_target = GL_TEXTURE_RECTANGLE;
   std::unique_ptr<SharedImageRepresentationFactoryRef> factory_ref =
@@ -254,9 +242,11 @@ TEST_F(IOSurfaceImageBackingFactoryTest, GL_SkiaGL) {
   // Create a GLTextureImageRepresentation.
   {
     auto gl_representation =
-        shared_image_representation_factory_->ProduceGLTexture(mailbox);
+        shared_image_representation_factory_->ProduceGLTexturePassthrough(
+            mailbox);
     EXPECT_TRUE(gl_representation);
-    EXPECT_EQ(expected_target, gl_representation->GetTexture()->target());
+    EXPECT_EQ(expected_target,
+              gl_representation->GetTexturePassthrough()->target());
 
     // Access the SharedImageRepresentationGLTexutre
     auto scoped_write_access = gl_representation->BeginScopedAccess(
@@ -272,15 +262,12 @@ TEST_F(IOSurfaceImageBackingFactoryTest, GL_SkiaGL) {
     // Attach the texture to FBO.
     api->glFramebufferTexture2DEXTFn(
         GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-        gl_representation->GetTexture()->target(),
-        gl_representation->GetTexture()->service_id(), 0);
+        gl_representation->GetTexturePassthrough()->target(),
+        gl_representation->GetTexturePassthrough()->service_id(), 0);
 
     // Set the clear color to green.
     api->glClearColorFn(0.0f, 1.0f, 0.0f, 1.0f);
     api->glClearFn(GL_COLOR_BUFFER_BIT);
-
-    gl_representation->GetTexture()->SetLevelCleared(
-        gl_representation->GetTexture()->target(), 0, true);
   }
 
   CheckSkiaPixels(mailbox, size, {0, 255, 0, 255});
@@ -349,7 +336,7 @@ TEST_F(IOSurfaceImageBackingFactoryTest, Dawn_SkiaGL) {
     color_desc.resolveTarget = nullptr;
     color_desc.loadOp = wgpu::LoadOp::Clear;
     color_desc.storeOp = wgpu::StoreOp::Store;
-    color_desc.clearColor = {0, 255, 0, 255};
+    color_desc.clearValue = {0, 255, 0, 255};
 
     wgpu::RenderPassDescriptor renderPassDesc = {};
     renderPassDesc.colorAttachmentCount = 1;
@@ -379,14 +366,6 @@ TEST_F(IOSurfaceImageBackingFactoryTest, Dawn_SkiaGL) {
 // 3. Begin render pass in Dawn, but do not do anything
 // 4. Verify through CheckSkiaPixel that GL drawn color not seen
 TEST_F(IOSurfaceImageBackingFactoryTest, GL_Dawn_Skia_UnclearTexture) {
-  // TODO(jonahr): Test crashes on Mac with ANGLE/passthrough
-  // (crbug.com/1100980)
-  gpu::GPUTestBotConfig bot_config;
-  if (bot_config.LoadCurrentConfig(nullptr) &&
-      bot_config.Matches("mac passthrough")) {
-    return;
-  }
-
   // Create a backing using mailbox.
   auto mailbox = Mailbox::GenerateForSharedImage();
   const auto format = viz::SharedImageFormat::kRGBA_8888;
@@ -410,9 +389,11 @@ TEST_F(IOSurfaceImageBackingFactoryTest, GL_Dawn_Skia_UnclearTexture) {
   {
     // Create a GLTextureImageRepresentation.
     auto gl_representation =
-        shared_image_representation_factory_->ProduceGLTexture(mailbox);
+        shared_image_representation_factory_->ProduceGLTexturePassthrough(
+            mailbox);
     EXPECT_TRUE(gl_representation);
-    EXPECT_EQ(expected_target, gl_representation->GetTexture()->target());
+    EXPECT_EQ(expected_target,
+              gl_representation->GetTexturePassthrough()->target());
 
     std::unique_ptr<GLTexturePassthroughImageRepresentation::ScopedAccess>
         gl_scoped_access = gl_representation->BeginScopedAccess(
@@ -429,8 +410,8 @@ TEST_F(IOSurfaceImageBackingFactoryTest, GL_Dawn_Skia_UnclearTexture) {
     // Attach the texture to FBO.
     api->glFramebufferTexture2DEXTFn(
         GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-        gl_representation->GetTexture()->target(),
-        gl_representation->GetTexture()->service_id(), 0);
+        gl_representation->GetTexturePassthrough()->target(),
+        gl_representation->GetTexturePassthrough()->service_id(), 0);
 
     // Set the clear color to green.
     api->glClearColorFn(0.0f, 1.0f, 0.0f, 1.0f);
@@ -569,7 +550,7 @@ TEST_F(IOSurfaceImageBackingFactoryTest, UnclearDawn_SkiaFails) {
     color_desc.resolveTarget = nullptr;
     color_desc.loadOp = wgpu::LoadOp::Clear;
     color_desc.storeOp = wgpu::StoreOp::Discard;
-    color_desc.clearColor = {0, 255, 0, 255};
+    color_desc.clearValue = {0, 255, 0, 255};
 
     wgpu::RenderPassDescriptor renderPassDesc = {};
     renderPassDesc.colorAttachmentCount = 1;

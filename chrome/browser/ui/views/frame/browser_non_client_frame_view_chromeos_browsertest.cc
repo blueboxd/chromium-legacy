@@ -607,8 +607,11 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTest,
       ->InstallSystemAppsForTesting();
 
   // Open a settings window.
+  ui_test_utils::BrowserChangeObserver observer(
+      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
   auto* settings_manager = chrome::SettingsWindowManager::GetInstance();
   settings_manager->ShowOSSettings(browser()->profile());
+  observer.Wait();
 
   Browser* settings_browser =
       settings_manager->FindBrowserForProfile(browser()->profile());
@@ -771,8 +774,7 @@ class WebAppNonClientFrameViewAshTest
                                           ->GetActiveWebContents()
                                           ->GetPrimaryMainFrame();
     content_settings::PageSpecificContentSettings* content_settings =
-        content_settings::PageSpecificContentSettings::GetForFrame(
-            frame->GetProcess()->GetID(), frame->GetRoutingID());
+        content_settings::PageSpecificContentSettings::GetForFrame(frame);
     content_settings->OnContentAllowed(ContentSettingsType::GEOLOCATION);
 
     return *base::ranges::find(*content_setting_views_,

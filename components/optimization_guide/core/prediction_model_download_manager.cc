@@ -13,7 +13,6 @@
 #include "base/observer_list.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
@@ -77,11 +76,6 @@ const net::NetworkTrafficAnnotationTag
           }
         })");
 
-const base::FilePath::CharType kModelInfoFileName[] =
-    FILE_PATH_LITERAL("model-info.pb");
-const base::FilePath::CharType kModelFileName[] =
-    FILE_PATH_LITERAL("model.tflite");
-
 void RecordPredictionModelDownloadStatus(PredictionModelDownloadStatus status) {
   base::UmaHistogramEnumeration(
       "OptimizationGuide.PredictionModelDownloadManager."
@@ -105,11 +99,6 @@ PredictionModelDownloadManager::PredictionModelDownloadManager(
       background_task_runner_(background_task_runner) {}
 
 PredictionModelDownloadManager::~PredictionModelDownloadManager() = default;
-
-// static
-base::FilePath::StringType PredictionModelDownloadManager::ModelInfoFileName() {
-  return kModelInfoFileName;
-}
 
 void PredictionModelDownloadManager::StartDownload(
     const GURL& download_url,
@@ -369,7 +358,8 @@ PredictionModelDownloadManager::ProcessUnzippedContents(
       FROM_HERE, base::GetDeletePathRecursivelyCallback(unzipped_dir_path));
 
   // Unpack and verify model info file.
-  base::FilePath model_info_path = unzipped_dir_path.Append(kModelInfoFileName);
+  base::FilePath model_info_path =
+      unzipped_dir_path.Append(GetBaseFileNameForModelInfo());
   std::string binary_model_info_pb;
   if (!base::ReadFileToString(model_info_path, &binary_model_info_pb)) {
     RecordPredictionModelDownloadStatus(
@@ -404,11 +394,12 @@ PredictionModelDownloadManager::ProcessUnzippedContents(
     return absl::nullopt;
   }
 
-  base::FilePath temp_model_path = unzipped_dir_path.Append(kModelFileName);
+  base::FilePath temp_model_path =
+      unzipped_dir_path.Append(GetBaseFileNameForModels());
   // Note that the base file name is used for backwards compatibility checking
   // in |OptimizationGuideStore::OnLoadModelsToBeUpdated|.
   base::FilePath store_model_path =
-      store_dir.Append(optimization_guide::GetBaseFileNameForModels());
+      store_dir.Append(GetBaseFileNameForModels());
 
   proto::PredictionModel model;
   *model.mutable_model_info() = model_info;

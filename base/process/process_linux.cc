@@ -5,7 +5,9 @@
 #include "base/process/process.h"
 
 #include <errno.h>
+#include <linux/magic.h>
 #include <sys/resource.h>
+#include <sys/vfs.h>
 
 #include <cstring>
 
@@ -77,6 +79,13 @@ const char kCgroupPrefix[] = "l-";
 const char kCgroupPrefix[] = "a-";
 #endif
 
+bool PathIsCGroupFileSystem(const FilePath& path) {
+  struct statfs statfs_buf;
+  if (statfs(path.value().c_str(), &statfs_buf) < 0)
+    return false;
+  return statfs_buf.f_type == CGROUP_SUPER_MAGIC;
+}
+
 struct CGroups {
   // Check for cgroups files. ChromeOS supports these by default. It creates
   // a cgroup mount in /sys/fs/cgroup and then configures two cpu task groups,
@@ -97,12 +106,8 @@ struct CGroups {
   CGroups() {
     foreground_file = FilePath(StringPrintf(kControlPath, kForeground));
     background_file = FilePath(StringPrintf(kControlPath, kBackground));
-    FileSystemType foreground_type;
-    FileSystemType background_type;
-    enabled = GetFileSystemType(foreground_file, &foreground_type) &&
-              GetFileSystemType(background_file, &background_type) &&
-              foreground_type == FILE_SYSTEM_CGROUP &&
-              background_type == FILE_SYSTEM_CGROUP;
+    enabled = PathIsCGroupFileSystem(foreground_file) &&
+              PathIsCGroupFileSystem(background_file);
 
     if (!enabled || !FeatureList::IsEnabled(kOneGroupPerRenderer)) {
       return;
@@ -193,7 +198,7 @@ bool Process::IsProcessBackgrounded() const {
 #if BUILDFLAG(IS_CHROMEOS)
   if (CGroups::Get().enabled) {
     // Used to allow reading the process priority from proc on thread launch.
-    ThreadRestrictions::ScopedAllowIO allow_io;
+    ScopedAllowBlocking scoped_allow_blocking;
     std::string proc;
     if (ReadFileToString(FilePath(StringPrintf(kProcPath, process_)), &proc)) {
       return IsProcessBackgroundedCGroup(proc);
@@ -258,7 +263,7 @@ ProcessId Process::GetPidInNamespace() const {
   std::string status;
   {
     // Synchronously reading files in /proc does not hit the disk.
-    ThreadRestrictions::ScopedAllowIO allow_io;
+    ScopedAllowBlocking scoped_allow_blocking;
     FilePath status_file =
         FilePath("/proc").Append(NumberToString(process_)).Append("status");
     if (!ReadFileToString(status_file, &status)) {

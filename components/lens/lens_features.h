@@ -23,9 +23,6 @@ BASE_DECLARE_FEATURE(kLensImageCompression);
 // Lens features.
 BASE_DECLARE_FEATURE(kLensSearchOptimizations);
 
-// Enables a fix to properly handle transparent images in Lens Image Search
-BASE_DECLARE_FEATURE(kLensTransparentImagesFix);
-
 // Enables Lens integration into the Chrome screenshot sharing feature by adding
 // a "Search Image" button.
 BASE_DECLARE_FEATURE(kLensSearchImageInScreenshotSharing);
@@ -43,6 +40,12 @@ BASE_DECLARE_FEATURE(kLensInstructionChipImprovements);
 // Enables the image search side panel experience for third party default search
 // engines
 BASE_DECLARE_FEATURE(kEnableImageSearchSidePanelFor3PDse);
+
+// Enables launching the region search experience in a new tab with WebUI.
+BASE_DECLARE_FEATURE(kLensRegionSearchStaticPage);
+
+// Enables using more optimized image formats for Lens requests.
+BASE_DECLARE_FEATURE(kLensImageFormatOptimizations);
 
 // Enables using `Google` as the visual search provider instead of `Google
 // Lens`.
@@ -72,9 +75,6 @@ extern const base::FeatureParam<std::string> kHomepageURLForLens;
 // Enable Lens HTML redirect fix.
 extern const base::FeatureParam<bool> kEnableLensHtmlRedirectFix;
 
-// Enables footer for the unified side panel
-BASE_DECLARE_FEATURE(kLensUnifiedSidePanelFooter);
-
 // Enables Lens fullscreen search on Desktop platforms.
 extern const base::FeatureParam<bool> kEnableFullscreenSearch;
 
@@ -93,6 +93,25 @@ extern const base::FeatureParam<bool> kUseSelectionIconWithImage;
 // Enables the use of an alternative string for the instruction chip.
 extern const base::FeatureParam<bool> kUseAltChipString;
 
+// Enables encoding to WebP for image search queries.
+extern const base::FeatureParam<bool> kUseWebpInImageSearch;
+
+// Value in range 0-100 that dictates the encoding quality for image search
+// lossy formats, with 100 being the best quality.
+extern const base::FeatureParam<int> kEncodingQualityImageSearch;
+
+// Enables encoding to WebP for region search queries. This param takes
+// precedence over kUseJpegInRegionSearch.
+extern const base::FeatureParam<bool> kUseWebpInRegionSearch;
+
+// Enables encoding to JPEG for region search queries. This param does
+// nothing if kUseWebpInRegionSearch is enabled.
+extern const base::FeatureParam<bool> kUseJpegInRegionSearch;
+
+// Value in range 0-100 that dictates the encoding quality for region search
+// lossy formats, with 100 being the best quality.
+extern const base::FeatureParam<int> kEncodingQualityRegionSearch;
+
 // Enables Latency logging for the LensStandalone feature.
 extern bool GetEnableLatencyLogging();
 
@@ -105,9 +124,6 @@ extern bool GetEnableUKMLoggingForRegionSearch();
 
 // Returns whether to enable UKM logging for LensStandalone feature.
 extern bool GetEnableUKMLoggingForImageSearch();
-
-// Returns whether to enable footer for lens in the unified side panel
-extern bool GetEnableLensSidePanelFooter();
 
 // Returns the max pixel width/height for the image to be sent to Lens via
 // region search. The images are sent at 1x as PNGs.
@@ -150,9 +166,6 @@ extern bool IsLensSidePanelEnabled();
 // Returns whether the Lens side panel is enabled for region search.
 extern bool IsLensSidePanelEnabledForRegionSearch();
 
-// Returns whether to send images to Lens Standalone as PNG
-extern bool GetSendImagesAsPng();
-
 // Returns whether the Search Image button in the Chrome Screenshot Sharing
 // feature is enabled
 extern bool IsLensInScreenshotSharingEnabled();
@@ -174,6 +187,24 @@ extern bool UseSelectionIconWithImage();
 
 // Returns whether we should use an alternative instruction chip string.
 extern bool UseAltChipString();
+
+// Returns whether we should use a WebUI static page for region search.
+extern bool IsLensRegionSearchStaticPageEnabled();
+
+// Returns whether to use WebP encoding for image search queries.
+extern bool IsWebpForImageSearchEnabled();
+
+// Get the encoding quality for image search queries.
+extern int GetImageSearchEncodingQuality();
+
+// Returns whether to use WebP encoding for region search queries.
+extern bool IsWebpForRegionSearchEnabled();
+
+// Returns whether to use JPEG encoding for region search queries.
+extern bool IsJpegForRegionSearchEnabled();
+
+// Get the encoding quality for region search queries.
+extern int GetRegionSearchEncodingQuality();
 }  // namespace features
 }  // namespace lens
 

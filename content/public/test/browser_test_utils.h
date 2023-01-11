@@ -16,7 +16,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
@@ -117,6 +116,10 @@ class StorageKey;
 struct FrameVisualProperties;
 }  // namespace blink
 
+namespace storage {
+class BlobUrlRegistry;
+}
+
 namespace content {
 
 class BoundingBoxUpdateWaiterImpl;
@@ -133,6 +136,23 @@ class RenderWidgetHostView;
 class ScopedAllowRendererCrashes;
 class ToRenderFrameHost;
 class WebContents;
+
+// This encapsulates the pattern of waiting for an event and returning whether
+// that event was received from `Wait`. This makes it easy to do the right thing
+// in Wait, i.e. return with `[[nodiscard]]`.
+class WaiterHelper {
+ public:
+  // Wait until OnEvent is called. Will return true if ended by OnEvent or false
+  // if ended for some other reason (e.g. timeout).
+  [[nodiscard]] bool Wait();
+  // Steps the waiting.
+  void OnEvent();
+
+ private:
+  [[nodiscard]] bool WaitInternal();
+  base::RunLoop run_loop_;
+  bool event_received_ = false;
+};
 
 // Navigates |web_contents| to |url|, blocking until the navigation finishes.
 // Returns true if the page was loaded successfully and the last committed URL
@@ -607,13 +627,7 @@ struct JsLiteralHelper {
     return base::Value(std::forward<U>(arg));
   }
 
-  static base::Value Convert(const base::Value& value) {
-    return value.Clone();
-  }
-
-  static base::Value Convert(const base::ListValue& value) {
-    return value.Clone();
-  }
+  static base::Value Convert(const base::Value& value) { return value.Clone(); }
 };
 
 // Specialization allowing GURL to be passed to StringifyJsLiteral.
@@ -632,24 +646,6 @@ struct JsLiteralHelper<url::Origin> {
   }
 };
 
-// Helper for variadic ListValueOf() -- zero-argument base case.
-inline void ConvertToBaseValueList(base::Value::List& list) {}
-
-// Helper for variadic ValueListOf() -- case with at least one argument.
-//
-// |first| can be any type explicitly convertible to base::Value
-// (including int/string/StringPiece/char*/double/bool), or any type that
-// JsLiteralHelper is specialized for -- like URL and url::Origin, which emit
-// string literals.
-template <typename T, typename... Args>
-void ConvertToBaseValueList(base::Value::List& list,
-                            T&& first,
-                            Args&&... rest) {
-  using ValueType = base::remove_cvref_t<T>;
-  list.Append(JsLiteralHelper<ValueType>::Convert(std::forward<T>(first)));
-  ConvertToBaseValueList(list, std::forward<Args>(rest)...);
-}
-
 // Construct a list-type base::Value from a mix of arguments.
 //
 // Each |arg| can be any type explicitly convertible to base::Value
@@ -659,7 +655,9 @@ void ConvertToBaseValueList(base::Value::List& list,
 template <typename... Args>
 base::Value ListValueOf(Args&&... args) {
   base::Value::List values;
-  ConvertToBaseValueList(values, std::forward<Args>(args)...);
+  (values.Append(JsLiteralHelper<base::remove_cvref_t<Args>>::Convert(
+       std::forward<Args>(args))),
+   ...);
   return base::Value(std::move(values));
 }
 
@@ -693,8 +691,8 @@ base::Value ListValueOf(Args&&... args) {
 // supported by base::Value. Numbers, lists, and dicts also work.
 template <typename... Args>
 std::string JsReplace(base::StringPiece script_template, Args&&... args) {
-  base::Value::List values;
-  ConvertToBaseValueList(values, std::forward<Args>(args)...);
+  base::Value::List values =
+      ListValueOf(std::forward<Args>(args)...).TakeList();
   std::vector<std::string> replacements(values.size());
   for (size_t i = 0; i < values.size(); ++i) {
     CHECK(base::JSONWriter::Write(values[i], &replacements[i]));
@@ -958,11 +956,13 @@ std::vector<RenderFrameHost*> CollectAllRenderFrameHosts(Page& page);
 std::vector<RenderFrameHost*> CollectAllRenderFrameHosts(
     WebContents* web_contents);
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Executes the WebUI resource tests. Injects the test runner script prior to
 // executing the tests.
 //
 // Returns true if tests ran successfully, false otherwise.
 bool ExecuteWebUIResourceTest(WebContents* web_contents);
+#endif
 
 // Returns the serialized cookie string for the given url. Uses an inclusive
 // SameSiteCookieContext by default, which gets cookies regardless of their
@@ -1366,7 +1366,7 @@ class WebContentsAddedObserver {
 
   base::CallbackListSubscription creation_subscription_;
 
-  raw_ptr<WebContents> web_contents_ = nullptr;
+  raw_ptr<WebContents, DanglingUntriaged> web_contents_ = nullptr;
   base::OnceClosure quit_closure_;
 };
 
@@ -1909,7 +1909,7 @@ class WebContentsConsoleObserver : public WebContentsObserver {
 
   // Waits for a message to come in that matches the set filter, if any. If no
   // filter is set, waits for the first message that comes in.
-  void Wait();
+  [[nodiscard]] bool Wait();
 
   // Sets a custom filter to be used while waiting for a message, allowing
   // more custom filtering (e.g. based on source).
@@ -1937,7 +1937,7 @@ class WebContentsConsoleObserver : public WebContentsObserver {
 
   Filter filter_;
   std::string pattern_;
-  base::RunLoop run_loop_;
+  WaiterHelper waiter_helper_;
   std::vector<Message> messages_;
 };
 
@@ -2053,10 +2053,14 @@ class UpdateUserActivationStateInterceptor
 class BlobURLStoreInterceptor
     : public blink::mojom::BlobURLStoreInterceptorForTesting {
  public:
-  static void Intercept(
+  static void InterceptDeprecated(
       GURL target_url,
       mojo::SelfOwnedAssociatedReceiverRef<blink::mojom::BlobURLStore>
           receiver);
+
+  static void Intercept(GURL target_url,
+                        storage::BlobUrlRegistry* registry,
+                        mojo::ReceiverId receiver_id);
 
   ~BlobURLStoreInterceptor() override;
 
@@ -2132,9 +2136,6 @@ class SynchronizeVisualPropertiesInterceptor
   // Waits for the next viz::LocalSurfaceId be received and returns it.
   viz::LocalSurfaceId WaitForSurfaceId();
 
-  bool pinch_gesture_active_set() { return pinch_gesture_active_set_; }
-  bool pinch_gesture_active_cleared() { return pinch_gesture_active_cleared_; }
-
   void WaitForPinchGestureEnd();
 
  private:
@@ -2154,10 +2155,8 @@ class SynchronizeVisualPropertiesInterceptor
   viz::LocalSurfaceId last_surface_id_;
   std::unique_ptr<base::RunLoop> surface_id_run_loop_;
 
-  bool pinch_gesture_active_set_ = false;
-  bool pinch_gesture_active_cleared_ = false;
   bool last_pinch_gesture_active_ = false;
-  std::unique_ptr<base::RunLoop> pinch_end_run_loop_;
+  base::RunLoop pinch_end_run_loop_;
 
   mojo::test::ScopedSwapImplForTesting<
       mojo::AssociatedReceiver<blink::mojom::RemoteFrameHost>>
@@ -2327,15 +2326,16 @@ class DidFinishNavigationObserver : public WebContentsObserver {
 // CreateAndLoadWebContentsObserver observer;
 // ...Do something that creates one WebContents and causes it to navigate...
 // observer.Wait();
-//
-// This is not intended to be used if multiple WebContents might be created
-// before Wait() completes.  The behavior is undefined in this case, but it will
-// fail the test if it happens to notice.
 class CreateAndLoadWebContentsObserver {
  public:
-  CreateAndLoadWebContentsObserver();
+  // Used to wait for the given number of WebContents to be created. The load of
+  // the last expected WebContents is awaited.
+  explicit CreateAndLoadWebContentsObserver(int num_expected_contents = 1);
   ~CreateAndLoadWebContentsObserver();
 
+  // Wait for the last expected WebContents to finish loading. The test will
+  // fail if an additional WebContents creation is observed before `Wait()`
+  // completes.
   WebContents* Wait();
 
  private:
@@ -2348,9 +2348,11 @@ class CreateAndLoadWebContentsObserver {
   absl::optional<LoadStopObserver> load_stop_observer_;
   base::CallbackListSubscription creation_subscription_;
 
-  raw_ptr<WebContents> web_contents_ = nullptr;
-  base::OnceClosure quit_closure_;
-  bool failed_ = false;
+  raw_ptr<WebContents, DanglingUntriaged> web_contents_ = nullptr;
+  base::OnceClosure contents_creation_quit_closure_;
+
+  const int num_expected_contents_;
+  int num_new_contents_seen_ = 0;
 };
 
 [[nodiscard]] base::CallbackListSubscription

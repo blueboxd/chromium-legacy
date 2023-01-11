@@ -37,6 +37,7 @@
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_restore_test_helper.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -73,9 +74,11 @@
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -252,9 +255,10 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
   }
 
   std::unique_ptr<PageLoadMetricsTestWaiter> CreatePageLoadMetricsTestWaiter(
-      const char* observer_name) {
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
+      const char* observer_name,
+      content::WebContents* web_contents = nullptr) {
+    if (!web_contents)
+      web_contents = browser()->tab_strip_model()->GetActiveWebContents();
     return std::make_unique<PageLoadMetricsTestWaiter>(web_contents,
                                                        observer_name);
   }
@@ -427,6 +431,106 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 };
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PageLCPImagePriority) {
+  // Waiter to ensure main content is loaded.
+  auto waiter = CreatePageLoadMetricsTestWaiter("waiter");
+  waiter->AddPageExpectation(TimingField::kLoadEvent);
+  waiter->AddPageExpectation(TimingField::kFirstContentfulPaint);
+  waiter->AddPageExpectation(TimingField::kLargestContentfulPaint);
+
+  const char kHtmlHttpResponseHeader[] =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n";
+  const char kImgHttpResponseHeader[] =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: image/png\r\n"
+      "\r\n";
+  auto main_html_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/mock_page.html",
+          false /*relative_url_is_prefix*/);
+  auto img_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/images/lcp.jpg",
+          false /*relative_url_is_prefix*/);
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // File is under content/test/data/
+  std::string file_contents;
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    base::FilePath test_dir;
+    ASSERT_TRUE(base::PathService::Get(content::DIR_TEST_DATA, &test_dir));
+    base::FilePath file_name = test_dir.AppendASCII("single_face.jpg");
+    ASSERT_TRUE(base::ReadFileToString(file_name, &file_contents));
+  }
+
+  browser()->OpenURL(content::OpenURLParams(
+      embedded_test_server()->GetURL("/mock_page.html"), content::Referrer(),
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+
+  main_html_response->WaitForRequest();
+  main_html_response->Send(kHtmlHttpResponseHeader);
+  main_html_response->Send(
+      "<html><body><img src=\"/images/lcp.jpg\"></body></html>");
+  main_html_response->Done();
+
+  img_response->WaitForRequest();
+
+  // Force layout and thus the visibility-based priority to be set, before the
+  // loading is finished.
+  content::EvalJsResult result =
+      EvalJs(browser()->tab_strip_model()->GetActiveWebContents(), R"(
+      new Promise(resolve => {
+        const forceLayout = () => {
+          document.querySelector('img').offsetTop;
+          resolve();
+        };
+        if (document.querySelector('img')) {
+          forceLayout();
+        } else {
+          // Wait for DOMContentLoaded to ensure <img> is inserted.
+          document.addEventListener('DOMContentLoaded', forceLayout);
+        }
+      })
+  )");
+  EXPECT_EQ("", result.error);
+
+  img_response->Send(kImgHttpResponseHeader);
+  img_response->Send(file_contents);
+  img_response->Done();
+
+  // Wait on an LCP entry to make sure we have one to report when navigating
+  // away.
+  content::EvalJsResult result2 =
+      EvalJs(browser()->tab_strip_model()->GetActiveWebContents(), R"(
+ (async () => {
+   await new Promise(resolve => {
+     (new PerformanceObserver(list => {
+       const entries = list.getEntries();
+       for (let entry of entries) {
+         if (entry.url.includes('images')) {resolve()}
+       }
+     }))
+     .observe({type: 'largest-contentful-paint', buffered: true});
+ })})())");
+  EXPECT_EQ("", result2.error);
+  waiter->Wait();
+
+  // LCP is collected only at the end of the page lifecycle. Navigate to
+  // flush.
+  NavigateToUntrackedUrl();
+
+  // Image should be loaded with `net::MEDIUM` priority because the image is
+  // visible.
+  int64_t value = GetUKMPageLoadMetric(
+      PageLoad::PageLoad::
+          kPaintTiming_LargestContentfulPaintRequestPriorityName);
+  ASSERT_EQ(value, static_cast<int>(net::MEDIUM));
+}
 
 class PageLoadMetricsBrowserTestAnimatedLCP
     : public PageLoadMetricsBrowserTest {
@@ -3503,6 +3607,141 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PageLCPStopsUponInput) {
   ASSERT_EQ(all_frames_value, main_frame_value);
 }
 
+class PageLoadMetricsBrowserTestDiscardedPage
+    : public PageLoadMetricsBrowserTest {
+ protected:
+  void SetUpOnMainThread() override {
+    PageLoadMetricsBrowserTest::SetUpOnMainThread();
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+ public:
+  content::WebContents* OpenTabAndNavigate() {
+    content::OpenURLParams page(embedded_test_server()->GetURL("/title1.html"),
+                                content::Referrer(),
+                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                ui::PAGE_TRANSITION_TYPED, false);
+
+    content::WindowedNotificationObserver load(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::NotificationService::AllSources());
+
+    content::WebContents* contents = browser()->OpenURL(page);
+
+    std::unique_ptr<PageLoadMetricsTestWaiter> waiter =
+        CreatePageLoadMetricsTestWaiter("lcp_waiter", contents);
+
+    waiter->AddPageExpectation(page_load_metrics::PageLoadMetricsTestWaiter::
+                                   TimingField::kLargestContentfulPaint);
+
+    // This is to wait for the navigation entry to be committed.
+    load.Wait();
+
+    // This is to wait for LCP to be observed on browser side.
+    waiter->Wait();
+
+    return contents;
+  }
+
+  double GetLCPTimeFromEmittedLCPEntry(content::WebContents* contents) {
+    content::EvalJsResult lcp_time =
+        EvalJs(contents, ScriptForGettingLCPTimeFromEmittedLCPEntry());
+    return lcp_time.ExtractDouble();
+  }
+
+  void AddNewTab() {
+    std::unique_ptr<content::WebContents> web_contents_to_add =
+        content::WebContents::Create(
+            content::WebContents::CreateParams(browser()->profile()));
+
+    web_contents_to_add->GetController().LoadURL(
+        embedded_test_server()->GetURL("/title1.html"), content::Referrer(),
+        ::ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
+
+    auto* tab_strip_model = browser()->tab_strip_model();
+    tab_strip_model->AddWebContents(std::move(web_contents_to_add), -1,
+                                    ::ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                    AddTabTypes::ADD_ACTIVE);
+  }
+
+  void DiscardTab(content::WebContents* contents) {
+    resource_coordinator::TabLifecycleUnitExternal::FromWebContents(contents)
+        ->DiscardTab(mojom::LifecycleUnitDiscardReason::URGENT);
+  }
+
+  std::string ScriptForGettingLCPTimeFromEmittedLCPEntry() {
+    return R"(
+   (async () => {
+        return await new Promise(resolve => {
+          (new PerformanceObserver(list => {
+              const entries = list.getEntries();
+              for (let entry of entries) {
+                  if (entry) {
+                      resolve(entry.startTime);
+                  }
+              }
+          }))
+          .observe({
+              type: 'largest-contentful-paint',
+              buffered: true
+          });
+      })
+  })())";
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestDiscardedPage,
+                       UkmIsRecordedForDiscardedForegroundTabPage) {
+  // Open a new foreground tab and navigate. The new tab would be of index 1
+  // which would be used below in verifying the tab is discarded.
+  content::WebContents* contents = OpenTabAndNavigate();
+
+  // Wait for LCP emission and observation. This is to ensure there is an LCP
+  // entry to report at the time of discardin the page.
+  double lcp_time = GetLCPTimeFromEmittedLCPEntry(contents);
+
+  // Discard tab.
+  DiscardTab(contents);
+
+  // Verify tab is discarded.
+  EXPECT_TRUE(
+      browser()->tab_strip_model()->GetWebContentsAt(1)->WasDiscarded());
+
+  // Verify page load metric is recorded.
+  EXPECT_NEAR(
+      GetUKMPageLoadMetric(
+          PageLoad::kPaintTiming_NavigationToLargestContentfulPaint2Name),
+      lcp_time, 10);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestDiscardedPage,
+                       UkmIsRecordedForDiscardedBackgroundTabPage) {
+  // Open a new foreground tab and navigate.
+  content::WebContents* contents = OpenTabAndNavigate();
+
+  // Wait for LCP emission and observation.
+  double lcp_time = GetLCPTimeFromEmittedLCPEntry(contents);
+
+  // Add a new tab.
+  AddNewTab();
+
+  // Verify the first tab is backgrounded.
+  EXPECT_NE(contents, browser()->tab_strip_model()->GetActiveWebContents());
+
+  // Discard tab.
+  DiscardTab(contents);
+
+  // Verify tab is discarded.
+  EXPECT_TRUE(
+      browser()->tab_strip_model()->GetWebContentsAt(1)->WasDiscarded());
+
+  // Verify page load metric is recorded.
+  EXPECT_NEAR(
+      GetUKMPageLoadMetric(
+          PageLoad::kPaintTiming_NavigationToLargestContentfulPaint2Name),
+      lcp_time, 10);
+}
+
 // Test is flaky. https://crbug.com/1260953
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_WIN)
@@ -3515,21 +3754,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PageLCPStopsUponInput) {
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAnimatedLCPFlag,
                        MAYBE_PageLCPAnimatedImage) {
   test_animated_image_lcp(/*smaller=*/true, /*animated=*/true);
-}
-
-// Tests that an animated image's reported LCP values are larger than its load
-// times, when only the feature flag for animated image web exposure is enabled.
-// TODO(crbug.com/1306758): Flaky on Mac/Linux/Lacros.
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-#define MAYBE_PageLCPAnimatedImageOnlyRuntimeFlag \
-  DISABLED_PageLCPAnimatedImageOnlyRuntimeFlag
-#else
-#define MAYBE_PageLCPAnimatedImageOnlyRuntimeFlag \
-  PageLCPAnimatedImageOnlyRuntimeFlag
-#endif
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithRuntimeAnimatedLCPFlag,
-                       MAYBE_PageLCPAnimatedImageOnlyRuntimeFlag) {
-  test_animated_image_lcp(/*smaller=*/false, /*animated=*/true);
 }
 
 // Tests that a non-animated image's reported LCP values are larger than its

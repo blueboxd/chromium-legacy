@@ -25,7 +25,7 @@ WaylandOutputManager::~WaylandOutputManager() = default;
 // instantiate a valid WaylandScreen when requested by the upper layer.
 bool WaylandOutputManager::IsOutputReady() const {
   for (const auto& it : output_list_) {
-    if (it.second->is_ready())
+    if (it.second->IsReady())
       return true;
   }
   return false;
@@ -54,7 +54,7 @@ void WaylandOutputManager::AddWaylandOutput(WaylandOutput::Id output_id,
     wayland_output->InitializeColorManagementOutput(
         connection_->zcr_color_manager());
   }
-  DCHECK(!wayland_output->is_ready());
+  DCHECK(!wayland_output->IsReady());
 
   output_list_[output_id] = std::move(wayland_output);
 }
@@ -74,6 +74,7 @@ void WaylandOutputManager::RemoveWaylandOutput(WaylandOutput::Id output_id) {
 
   if (wayland_screen_)
     wayland_screen_->OnOutputRemoved(output_id);
+  DCHECK(output_list_.find(output_id) != output_list_.end());
   output_list_.erase(output_id);
 }
 
@@ -115,13 +116,8 @@ void WaylandOutputManager::InitWaylandScreen(WaylandScreen* screen) {
   // automatically, and the |wayland_screen_| is notified immediately about the
   // changes.
   for (const auto& output : output_list_) {
-    if (output.second->is_ready()) {
-      screen->OnOutputAddedOrUpdated(
-          output.second->output_id(), output.second->origin(),
-          output.second->logical_size(), output.second->physical_size(),
-          output.second->insets(), output.second->scale_factor(),
-          output.second->panel_transform(), output.second->logical_transform(),
-          output.second->description());
+    if (output.second->IsReady()) {
+      screen->OnOutputAddedOrUpdated(output.second->GetMetrics());
     }
   }
 }
@@ -135,8 +131,11 @@ WaylandOutput* WaylandOutputManager::GetOutput(WaylandOutput::Id id) const {
 }
 
 WaylandOutput* WaylandOutputManager::GetPrimaryOutput() const {
-  if (wayland_screen_)
-    return GetOutput(wayland_screen_->GetPrimaryDisplay().id());
+  if (wayland_screen_) {
+    auto output_id = wayland_screen_->GetOutputIdForDisplayId(
+        wayland_screen_->GetPrimaryDisplay().id());
+    return GetOutput(output_id);
+  }
   return nullptr;
 }
 
@@ -146,19 +145,9 @@ const WaylandOutputManager::OutputList& WaylandOutputManager::GetAllOutputs()
 }
 
 void WaylandOutputManager::OnOutputHandleMetrics(
-    WaylandOutput::Id output_id,
-    const gfx::Point& origin,
-    const gfx::Size& logical_size,
-    const gfx::Size& physical_size,
-    const gfx::Insets& insets,
-    float scale_factor,
-    int32_t panel_transform,
-    int32_t logical_transform,
-    const std::string& description) {
+    const WaylandOutput::Metrics& metrics) {
   if (wayland_screen_) {
-    wayland_screen_->OnOutputAddedOrUpdated(
-        output_id, origin, logical_size, physical_size, insets, scale_factor,
-        panel_transform, logical_transform, description);
+    wayland_screen_->OnOutputAddedOrUpdated(metrics);
   }
 
   // Update scale of the windows currently associated with |output_id|. i.e:
@@ -166,10 +155,11 @@ void WaylandOutputManager::OnOutputHandleMetrics(
   // which have not yet entered any output (i.e: no wl_surface.enter event
   // received for their root surface) and |output_id| is the primary output.
   const bool is_primary =
-      wayland_screen_ && output_id == wayland_screen_->GetPrimaryDisplay().id();
+      wayland_screen_ &&
+      metrics.output_id == wayland_screen_->GetPrimaryDisplay().id();
   for (auto* window : connection_->wayland_window_manager()->GetAllWindows()) {
     auto entered_output = window->GetPreferredEnteredOutputId();
-    if (entered_output == output_id || (!entered_output && is_primary))
+    if (entered_output == metrics.output_id || (!entered_output && is_primary))
       window->UpdateWindowScale(true);
   }
 }

@@ -27,13 +27,6 @@ namespace {
 // window has been dragged.
 constexpr int kDistanceFromEdge = 8;
 
-// A window has to be dragged toward the direction of the edge of the screen for
-// a minimum of `kMinDragDistance` to a point within `kScreenEdgeInsetForSnap`
-// of the edge of the screen, or dragged inside `kDistanceEdge` from edge to be
-// snapped.
-constexpr int kMinDragDistance = 96;
-constexpr int kScreenEdgeInsetForSnap = 48;
-
 // The minimum distance that will be considered as a drag event.
 constexpr float kMinimumDragDistance = 5.f;
 
@@ -53,6 +46,11 @@ TabletModeFloatWindowResizer::TabletModeFloatWindowResizer(
 }
 
 TabletModeFloatWindowResizer::~TabletModeFloatWindowResizer() {
+  // `SplitViewDragIndicators` has a default delayed animation. Setting the
+  // state to no drag instantly hides the indicators so we don't see this
+  // delayed hide.
+  split_view_drag_indicators_->SetWindowDraggingState(
+      SplitViewDragIndicators::WindowDraggingState::kNoDrag);
   window_state_->DeleteDragDetails();
 }
 
@@ -87,6 +85,12 @@ void TabletModeFloatWindowResizer::Drag(const gfx::PointF& location_in_parent,
 }
 
 void TabletModeFloatWindowResizer::CompleteDrag() {
+  // We can reach this state if the user hits a state changing accelerator
+  // mid-drag.
+  aura::Window* float_window = GetTarget();
+  if (!WindowState::Get(float_window)->IsFloated())
+    return;
+
   // Revert the drag if the window hasn't moved enough. This will prevent
   // accidental magnetisms.
   const gfx::Vector2dF distance =
@@ -96,7 +100,6 @@ void TabletModeFloatWindowResizer::CompleteDrag() {
     return;
   }
 
-  aura::Window* float_window = GetTarget();
   if (snap_position_ != SplitViewController::SnapPosition::kNone) {
     // Let `SplitViewController` handle windows that should be snapped.
     auto* split_view_controller =
@@ -113,8 +116,6 @@ void TabletModeFloatWindowResizer::CompleteDrag() {
   // `FloatController` will magnetize windows to one of the corners if it
   // remains in float state and not tucked.
   auto* float_controller = Shell::Get()->float_controller();
-  DCHECK(WindowState::Get(float_window)->IsFloated());
-
   float_controller->OnDragCompletedForTablet(float_window,
                                              last_location_in_parent_);
 }

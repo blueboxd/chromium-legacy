@@ -17,7 +17,6 @@
 #include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
-#include "device/fido/public_key_credential_user_entity.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -31,6 +30,8 @@
 namespace device {
 class FidoAuthenticator;
 class FidoDiscoveryFactory;
+class PublicKeyCredentialDescriptor;
+class PublicKeyCredentialUserEntity;
 }  // namespace device
 
 namespace url {
@@ -76,6 +77,11 @@ class CONTENT_EXPORT WebAuthenticationDelegate {
   virtual bool OriginMayUseRemoteDesktopClientOverride(
       BrowserContext* browser_context,
       const url::Origin& caller_origin);
+
+  // Returns true if the tab security level is acceptable to allow WebAuthn
+  // requests, false otherwise.
+  virtual bool IsSecurityLevelAcceptableForWebAuthn(
+      content::RenderFrameHost* rfh);
 
 #if !BUILDFLAG(IS_ANDROID)
   // Permits the embedder to override the Relying Party ID for a WebAuthn call,
@@ -296,8 +302,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
       base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
           callback);
 
-  // Disables the UI (needed in cases when called by other components, like
-  // cryptotoken).
+  // Disables the WebAuthn request modal dialog UI.
   virtual void DisableUI();
 
   virtual bool IsWebAuthnUIEnabled();
@@ -309,9 +314,15 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
 
   bool IsVirtualEnvironmentEnabled();
 
-  // Set to true to enable a mode where a prominent UI is only show for
-  // discoverable platform credentials.
+  // Set to true to enable a mode where a priori discovered credentials are
+  // shown alongside autofilled passwords, instead of the modal flow.
   virtual void SetConditionalRequest(bool is_conditional);
+
+  // Sets a credential filter for conditional mediation requests, which will
+  // only allow passkeys with matching credential IDs to be displayed to the
+  // user.
+  virtual void SetCredentialIdFilter(
+      std::vector<device::PublicKeyCredentialDescriptor> credential_list);
 
   // Optionally configures the user entity passed for a makeCredential request.
   virtual void SetUserEntityForMakeCredentialRequest(

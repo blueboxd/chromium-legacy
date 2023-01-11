@@ -98,11 +98,14 @@ class PasswordReuseManagerImpl : public PasswordReuseManager,
 
   scoped_refptr<PasswordStoreInterface> account_store_;
 
+  // Return value of PasswordStoreInterface::AddSyncEnabledOrDisabledCallback().
+  base::CallbackListSubscription account_store_cb_list_subscription_;
+
   // The 'reuse_detector_', owned by this PasswordReuseManager instance, but
   // living on the background thread. It will be deleted asynchronously during
   // shutdown on the background thread, so it will outlive |this| along with all
   // its in-flight tasks.
-  raw_ptr<PasswordReuseDetector> reuse_detector_ = nullptr;
+  raw_ptr<PasswordReuseDetector, DanglingUntriaged> reuse_detector_ = nullptr;
 
   // Notifies PasswordReuseManager about sign-in events.
   std::unique_ptr<PasswordStoreSigninNotifier> notifier_;

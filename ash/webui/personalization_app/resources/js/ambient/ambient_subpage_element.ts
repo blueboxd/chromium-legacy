@@ -43,12 +43,6 @@ export class AmbientSubpage extends WithPersonalizationStore {
     return {
       path: Paths,
       queryParams: Object,
-      isAmbientModeAnimationEnabled_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('isAmbientModeAnimationEnabled');
-        },
-      },
       albums_: {
         type: Array,
         value: null,
@@ -70,7 +64,6 @@ export class AmbientSubpage extends WithPersonalizationStore {
 
   path: Paths;
   queryParams: Record<string, string>;
-  private isAmbientModeAnimationEnabled_: boolean;
   private albums_: AmbientModeAlbum[]|null = null;
   private ambientModeEnabled_: boolean|null = null;
   private animationTheme_: AnimationTheme|null = null;
@@ -197,6 +190,14 @@ export class AmbientSubpage extends WithPersonalizationStore {
 
   private getClassContainer_(x: number): string {
     return `ambient-text-placeholder-${x}`;
+  }
+
+  /**
+   * Determines whether ambient subpage UI restructure is enabled. Value can be
+   * mocked in tests.
+   */
+  private isAmbientSubpageUIChangeEnabled_(): boolean {
+    return loadTimeData.getBoolean('isAmbientSubpageUIChangeEnabled');
   }
 }
 

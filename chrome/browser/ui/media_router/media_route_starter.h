@@ -95,6 +95,10 @@ class MediaRouteStarter : public content::PresentationObserver {
   // provide.
   static bool GetScreenCapturePermission(MediaCastMode cast_mode);
 
+  QueryResultManager* GetQueryResultManagerForTesting() const {
+    return query_result_manager_.get();
+  }
+
  private:
   friend class MediaRouteStarterTest;
   friend class MediaRouterViewsUITest;
@@ -141,7 +145,7 @@ class MediaRouteStarter : public content::PresentationObserver {
 
   // If set, this is the tab for which this casting request was initiated. May
   // be null in the case of desktop tab casting.
-  const raw_ptr<content::WebContents> web_contents_;
+  const raw_ptr<content::WebContents, DanglingUntriaged> web_contents_;
 
   // If set, then the result of the next presentation route request will
   // be handled by this object instead of |presentation_manager_|

@@ -63,9 +63,9 @@
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
-#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "ui/gfx/geometry/quad_f.h"
+#include "ui/gfx/geometry/transform.h"
 
 namespace ui {
 class Cursor;
@@ -466,8 +466,9 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   LayoutBlockFlow* FragmentItemsContainer() const;
 
   // Return the containing NG block, if the containing block is an NG block,
-  // nullptr otherwise.
-  LayoutBlock* ContainingNGBlock() const;
+  // or the LayoutMedia parent.
+  // Nullptr otherwise.
+  LayoutBox* ContainingNGBox() const;
 
   // Return the nearest fragmentation context root, if any.
   LayoutBlock* ContainingFragmentationContextRoot() const;
@@ -1095,7 +1096,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     return false;
   }
 
-  virtual bool IsDocumentTransitionContent() const {
+  virtual bool IsViewTransitionContent() const {
     NOT_DESTROYED();
     return false;
   }
@@ -1507,6 +1508,11 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   bool IsFloatingWithNonContainingBlockParent() const {
     NOT_DESTROYED();
     return IsFloating() && Parent() && !Parent()->IsLayoutBlockFlow();
+  }
+
+  virtual bool IsInitialLetterBox() const {
+    NOT_DESTROYED();
+    return false;
   }
 
   // absolute or fixed positioning
@@ -2081,7 +2087,9 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // This value gets cached by bitfields_.can_contain_fixed_position_objects_.
   bool ComputeIsFixedContainer(const ComputedStyle* style) const;
 
-  Element* OffsetParent(const Element* = nullptr) const;
+  // If |base| is provided, then this function will not return an Element which
+  // is closed shadow hidden from |base|.
+  Element* OffsetParent(const Element* base = nullptr) const;
 
   // Mark this object needing to re-run |CollectInlines()|. Ancestors may be
   // marked too if needed.
@@ -2099,7 +2107,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   void MarkContainerChainForLayout(bool schedule_relayout = true,
                                    SubtreeLayoutScope* = nullptr);
-  void MarkParentForOutOfFlowPositionedChange();
+  void MarkParentForSpannerOrOutOfFlowPositionedChange();
   void SetNeedsLayout(LayoutInvalidationReasonForTracing,
                       MarkingBehavior = kMarkContainerChain,
                       SubtreeLayoutScope* = nullptr);
@@ -2582,11 +2590,9 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // system of a container, taking transforms into account (kIgnoreTransforms is
   // not allowed).
   // Passing null for |ancestor| behaves the same as LocalToAncestorRect.
-  TransformationMatrix LocalToAncestorTransform(
-      const LayoutBoxModelObject* ancestor,
-      MapCoordinatesFlags = 0) const;
-  TransformationMatrix LocalToAbsoluteTransform(
-      MapCoordinatesFlags mode = 0) const {
+  gfx::Transform LocalToAncestorTransform(const LayoutBoxModelObject* ancestor,
+                                          MapCoordinatesFlags = 0) const;
+  gfx::Transform LocalToAbsoluteTransform(MapCoordinatesFlags mode = 0) const {
     NOT_DESTROYED();
     return LocalToAncestorTransform(nullptr, mode);
   }
@@ -3036,7 +3042,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // correct yet.
   void GetTransformFromContainer(const LayoutObject* container,
                                  const PhysicalOffset& offset_in_container,
-                                 TransformationMatrix&,
+                                 gfx::Transform&,
                                  const PhysicalSize* size = nullptr) const;
 
   bool CreatesGroup() const {
@@ -3061,12 +3067,20 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
       return {style.OutlineWidth().ToInt(), style.OutlineOffset().ToInt()};
     }
 
+    static float getUnzoomedWidth(const ComputedStyle& style) {
+      float unzoomedWidth = style.OutlineWidth() / style.EffectiveZoom();
+
+      if (unzoomedWidth > 0.0f && unzoomedWidth <= 1.0f)
+        return 1.0f;
+
+      return std::floor(unzoomedWidth);
+    }
+
     // Unzoomed values modifies the style values by effective zoom. This is
     // used when the outline rects are specified in a space that does not
     // include EffectiveZoom, such as SVG.
     static OutlineInfo GetUnzoomedFromStyle(const ComputedStyle& style) {
-      return {static_cast<int>(
-                  std::floor(style.OutlineWidth() / style.EffectiveZoom())),
+      return {static_cast<int>(getUnzoomedWidth(style)),
               static_cast<int>(
                   std::floor(style.OutlineOffset() / style.EffectiveZoom()))};
     }
@@ -3229,7 +3243,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // Called before setting style for existing/new anonymous child. Override to
   // set custom styles for the child. For new anonymous child, |child| is null.
   virtual void UpdateAnonymousChildStyle(const LayoutObject* child,
-                                         ComputedStyle& style) const {
+                                         ComputedStyleBuilder&) const {
     NOT_DESTROYED();
   }
 
@@ -3262,7 +3276,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     if (InsideBlockingTouchEventHandler())
       return TouchAction::kNone;
-    return StyleRef().GetEffectiveTouchAction();
+    return StyleRef().EffectiveTouchAction();
   }
   bool HasEffectiveAllowedTouchAction() const {
     NOT_DESTROYED();
@@ -3951,6 +3965,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   const ComputedStyle* SlowStyleForContinuationOutline() const;
 
+  // It's unclear why Clang doesn't inline this.
+  ALWAYS_INLINE
   StyleDifference AdjustStyleDifference(StyleDifference) const;
 
 #if DCHECK_IS_ON()

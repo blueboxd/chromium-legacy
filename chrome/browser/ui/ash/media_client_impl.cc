@@ -22,15 +22,16 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/current_thread.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/camera_mic/vm_camera_mic_manager.h"
+#include "chrome/browser/ash/extensions/media_player_api.h"
+#include "chrome/browser/ash/extensions/media_player_event_router.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/extensions/media_player_api.h"
-#include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
@@ -51,12 +52,14 @@
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/video_capture_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "media/capture/video/chromeos/public/cros_features.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "services/video_capture/public/mojom/video_capture_service.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using ash::MediaCaptureState;
@@ -92,10 +95,10 @@ constexpr int kMaxRecordedTimeInSeconds = 60;
 // reporting`kCameraPrivacySwitchToTurnOffHistogramName`.
 constexpr int kRecordedTimeGranularityInSeconds = 5;
 
-// The ID for a notification shown when the user tries to use a camera while the
-// camera privacy switch is on.
+// The ID template for a notification shown when the user tries to use a camera
+// while the camera privacy switch is on.
 constexpr char kCameraPrivacySwitchOnNotificationId[] =
-    "ash.media.camera.activity_with_privacy_switch_on";
+    "ash.media.camera.activity_with_privacy_switch_on.%s";
 
 // The notifier ID for a notification shown when the user tries to use a camera
 // while the camera privacy switch is on.
@@ -222,6 +225,17 @@ std::u16string GetNameOfAppAccessingCameraInternal() {
   return MediaClientImpl::GetNameOfAppAccessingCamera(cap_cache, reg_cache);
 }
 
+std::string GetDeviceName(
+    const std::string& device_id,
+    const std::vector<media::VideoCaptureDeviceInfo>& devices) {
+  for (const auto& device : devices) {
+    if (device.descriptor.device_id == device_id) {
+      return device.descriptor.display_name();
+    }
+  }
+  return std::string();
+}
+
 }  // namespace
 
 MediaClientImpl::MediaClientImpl() {
@@ -236,10 +250,13 @@ MediaClientImpl::MediaClientImpl() {
       base::FeatureList::IsEnabled(
           chromeos::features::kCameraPrivacySwitchNotifications) &&
       media::ShouldUseCrosCameraService()) {
-    camera_privacy_switch_state_ = media::CameraHalDispatcherImpl::GetInstance()
-                                       ->AddCameraPrivacySwitchObserver(this);
+    device_id_to_camera_privacy_switch_state_ =
+        media::CameraHalDispatcherImpl::GetInstance()
+            ->AddCameraPrivacySwitchObserver(this);
     media::CameraHalDispatcherImpl::GetInstance()->AddActiveClientObserver(
         this);
+    content::GetVideoCaptureService().ConnectToVideoSourceProvider(
+        video_source_provider_remote_.BindNewPipeAndPassReceiver());
   }
 
   DCHECK(!g_media_client);
@@ -247,6 +264,7 @@ MediaClientImpl::MediaClientImpl() {
 }
 
 MediaClientImpl::~MediaClientImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   g_media_client = nullptr;
 
   if (media_controller_ && ash::MediaController::Get() == media_controller_)
@@ -375,96 +393,29 @@ void MediaClientImpl::OnVmCameraMicActiveChanged(
           ash::VmCameraMicManager::kCameraAndMicNotification));
 }
 
-void MediaClientImpl::OnCameraHWPrivacySwitchStatusChanged(
-    int32_t camera_id,
+void MediaClientImpl::OnCameraHWPrivacySwitchStateChanged(
+    const std::string& device_id,
     cros::mojom::CameraPrivacySwitchState state) {
-  // Show camera privacy switch toast.
-  switch (state) {
-    case cros::mojom::CameraPrivacySwitchState::UNKNOWN:
-      break;
-    case cros::mojom::CameraPrivacySwitchState::ON: {
-      if (camera_privacy_switch_state_ !=
-          cros::mojom::CameraPrivacySwitchState::UNKNOWN) {
-        base::UmaHistogramEnumeration(kCameraPrivacySwitchEventsHistogramName,
-                                      CameraPrivacySwitchEvent::kSwitchOn);
-      }
-      // On some devices, the camera privacy switch state can only be detected
-      // while the camera is active. In that case the privacy switch state will
-      // become known as the camera becomes active, in which case showing a
-      // notification is preferred to showing a toast.
-      if (is_camera_active_ &&
-          camera_privacy_switch_state_ ==
-              cros::mojom::CameraPrivacySwitchState::UNKNOWN) {
-        ShowCameraOffNotification();
-        break;
-      }
-
-      ash::ToastManager::Get()->Cancel(kCameraPrivacySwitchOffToastId);
-      ash::ToastData toast(
-          kCameraPrivacySwitchOnToastId,
-          ash::ToastCatalogName::kCameraPrivacySwitchOn,
-          l10n_util::GetStringUTF16(IDS_CAMERA_PRIVACY_SWITCH_ON_TOAST),
-          ash::ToastData::kDefaultToastDuration,
-          /*visible_on_lock_screen=*/true);
-      ash::ToastManager::Get()->Show(toast);
-      break;
-    }
-    case cros::mojom::CameraPrivacySwitchState::OFF: {
-      if (camera_privacy_switch_state_ !=
-          cros::mojom::CameraPrivacySwitchState::UNKNOWN) {
-        base::UmaHistogramEnumeration(kCameraPrivacySwitchEventsHistogramName,
-                                      CameraPrivacySwitchEvent::kSwitchOff);
-      }
-
-      // Record the time since the time notification that the privacy switch was
-      // on was shown.
-      if (!camera_switch_notification_shown_timestamp_.is_null()) {
-        base::TimeDelta time_from_notification =
-            base::TimeTicks::Now() -
-            camera_switch_notification_shown_timestamp_;
-        int64_t seconds_from_notification = time_from_notification.InSeconds();
-        base::UmaHistogramExactLinear(
-            kCameraPrivacySwitchTimeToTurnOffHistogramName,
-            seconds_from_notification / kRecordedTimeGranularityInSeconds,
-            kMaxRecordedTimeInSeconds / kRecordedTimeGranularityInSeconds);
-        camera_switch_notification_shown_timestamp_ = base::TimeTicks();
-      }
-      // Only show the "Camera is on" toast if the privacy switch state changed
-      // from ON (avoiding the toast when the state changes from UNKNOWN).
-      if (camera_privacy_switch_state_ !=
-          cros::mojom::CameraPrivacySwitchState::ON) {
-        break;
-      }
-      ash::ToastManager::Get()->Cancel(kCameraPrivacySwitchOnToastId);
-      ash::ToastData toast(
-          kCameraPrivacySwitchOffToastId,
-          ash::ToastCatalogName::kCameraPrivacySwitchOff,
-          l10n_util::GetStringUTF16(IDS_CAMERA_PRIVACY_SWITCH_OFF_TOAST),
-          ash::ToastData::kDefaultToastDuration,
-          /*visible_on_lock_screen=*/true);
-      ash::ToastManager::Get()->Show(toast);
-      break;
-    }
-  }
-
-  if (state == cros::mojom::CameraPrivacySwitchState::OFF) {
-    SystemNotificationHelper::GetInstance()->Close(
-        kCameraPrivacySwitchOnNotificationId);
-  }
-
-  camera_privacy_switch_state_ = state;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  video_source_provider_remote_->GetSourceInfos(base::BindOnce(
+      &MediaClientImpl::OnGetSourceInfosByPrivacySwitchStateChanged,
+      weak_ptr_factory_.GetWeakPtr(), device_id, state));
 }
 
-void MediaClientImpl::OnActiveClientChange(cros::mojom::CameraClientType type,
-                                           bool is_active) {
-  is_camera_active_ = is_active;
-
-  if (is_active) {
-    if (camera_privacy_switch_state_ ==
-        cros::mojom::CameraPrivacySwitchState::ON) {
-      ShowCameraOffNotification();
-    }
+void MediaClientImpl::OnActiveClientChange(
+    cros::mojom::CameraClientType type,
+    bool is_new_active_client,
+    const base::flat_set<std::string>& active_device_ids) {
+  if (is_new_active_client) {
+    active_camera_client_count_++;
+  } else if (active_device_ids.empty()) {
+    DCHECK(active_camera_client_count_ > 0);
+    active_camera_client_count_--;
   }
+
+  video_source_provider_remote_->GetSourceInfos(
+      base::BindOnce(&MediaClientImpl::OnGetSourceInfosByActiveClientChanged,
+                     weak_ptr_factory_.GetWeakPtr(), active_device_ids));
 }
 
 void MediaClientImpl::EnableCustomMediaKeyHandler(
@@ -572,7 +523,8 @@ std::u16string MediaClientImpl::GetNameOfAppAccessingCamera(
   return std::u16string();
 }
 
-void MediaClientImpl::ShowCameraOffNotification() {
+void MediaClientImpl::ShowCameraOffNotification(
+    const std::string& device_name) {
   base::UmaHistogramEnumeration(
       kCameraPrivacySwitchEventsHistogramName,
       CameraPrivacySwitchEvent::kSwitchOnNotificationShown);
@@ -580,23 +532,26 @@ void MediaClientImpl::ShowCameraOffNotification() {
   camera_switch_notification_shown_timestamp_ = base::TimeTicks::Now();
 
   std::u16string app_name = GetNameOfAppAccessingCameraInternal();
+  std::u16string device_name_u16 = base::UTF8ToUTF16(device_name);
   std::u16string message =
       app_name.empty()
-          ? l10n_util::GetStringUTF16(
-                IDS_CAMERA_PRIVACY_SWITCH_ON_NOTIFICATION_MESSAGE)
+          ? l10n_util::GetStringFUTF16(
+                IDS_CAMERA_PRIVACY_SWITCH_ON_NOTIFICATION_MESSAGE,
+                device_name_u16)
           : l10n_util::GetStringFUTF16(
                 IDS_CAMERA_PRIVACY_SWITCH_ON_NOTIFICATION_MESSAGE_WITH_APP_NAME,
-                app_name);
+                app_name, device_name_u16);
 
-  SystemNotificationHelper::GetInstance()->Close(
-      kCameraPrivacySwitchOnNotificationId);
+  const std::string notification_id = base::StringPrintf(
+      kCameraPrivacySwitchOnNotificationId, device_name.c_str());
+
+  SystemNotificationHelper::GetInstance()->Close(notification_id);
 
   std::unique_ptr<message_center::Notification> notification =
       ash::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE,
-          kCameraPrivacySwitchOnNotificationId,
-          l10n_util::GetStringUTF16(
-              IDS_CAMERA_PRIVACY_SWITCH_ON_NOTIFICATION_TITLE),
+          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
+          l10n_util::GetStringFUTF16(
+              IDS_CAMERA_PRIVACY_SWITCH_ON_NOTIFICATION_TITLE, device_name_u16),
           message, std::u16string(), GURL(),
           message_center::NotifierId(
               message_center::NotifierType::SYSTEM_COMPONENT,
@@ -608,4 +563,122 @@ void MediaClientImpl::ShowCameraOffNotification() {
           vector_icons::kVideocamOffIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   SystemNotificationHelper::GetInstance()->Display(*notification);
+}
+
+void MediaClientImpl::OnGetSourceInfosByPrivacySwitchStateChanged(
+    const std::string& device_id,
+    cros::mojom::CameraPrivacySwitchState state,
+    const std::vector<media::VideoCaptureDeviceInfo>& devices) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  std::string device_name = GetDeviceName(device_id, devices);
+  std::u16string device_name_u16 = base::UTF8ToUTF16(device_name);
+  if (device_name.empty()) {
+    LOG(ERROR) << "Could not find VideoCaptureDeviceDescriptor with device_id: "
+               << device_id;
+    return;
+  }
+
+  cros::mojom::CameraPrivacySwitchState old_state =
+      device_id_to_camera_privacy_switch_state_.contains(device_id)
+          ? device_id_to_camera_privacy_switch_state_[device_id]
+          : cros::mojom::CameraPrivacySwitchState::UNKNOWN;
+  device_id_to_camera_privacy_switch_state_[device_id] = state;
+
+  // Show camera privacy switch toast.
+  switch (state) {
+    case cros::mojom::CameraPrivacySwitchState::UNKNOWN:
+      break;
+    case cros::mojom::CameraPrivacySwitchState::ON: {
+      if (old_state != cros::mojom::CameraPrivacySwitchState::UNKNOWN) {
+        base::UmaHistogramEnumeration(kCameraPrivacySwitchEventsHistogramName,
+                                      CameraPrivacySwitchEvent::kSwitchOn);
+      }
+      // On some devices, the camera privacy switch state can only be detected
+      // while the camera is active. In that case the privacy switch state will
+      // become known as the camera becomes active, in which case showing a
+      // notification is preferred to showing a toast.
+      if (active_camera_client_count_ > 0 &&
+          old_state == cros::mojom::CameraPrivacySwitchState::UNKNOWN) {
+        ShowCameraOffNotification(device_name);
+        break;
+      }
+
+      ash::ToastManager::Get()->Cancel(kCameraPrivacySwitchOffToastId);
+      ash::ToastData toast(
+          kCameraPrivacySwitchOnToastId,
+          ash::ToastCatalogName::kCameraPrivacySwitchOn,
+          l10n_util::GetStringFUTF16(IDS_CAMERA_PRIVACY_SWITCH_ON_TOAST,
+                                     device_name_u16),
+          ash::ToastData::kDefaultToastDuration,
+          /*visible_on_lock_screen=*/true);
+      ash::ToastManager::Get()->Show(toast);
+      break;
+    }
+    case cros::mojom::CameraPrivacySwitchState::OFF: {
+      if (old_state != cros::mojom::CameraPrivacySwitchState::UNKNOWN) {
+        base::UmaHistogramEnumeration(kCameraPrivacySwitchEventsHistogramName,
+                                      CameraPrivacySwitchEvent::kSwitchOff);
+      }
+
+      // Record the time since the time notification that the privacy switch was
+      // on was shown.
+      if (!camera_switch_notification_shown_timestamp_.is_null()) {
+        base::TimeDelta time_from_notification =
+            base::TimeTicks::Now() -
+            camera_switch_notification_shown_timestamp_;
+        int64_t seconds_from_notification = time_from_notification.InSeconds();
+        base::UmaHistogramExactLinear(
+            kCameraPrivacySwitchTimeToTurnOffHistogramName,
+            seconds_from_notification / kRecordedTimeGranularityInSeconds,
+            kMaxRecordedTimeInSeconds / kRecordedTimeGranularityInSeconds);
+        camera_switch_notification_shown_timestamp_ = base::TimeTicks();
+      }
+      // Only show the "Camera is on" toast if the privacy switch state changed
+      // from ON (avoiding the toast when the state changes from UNKNOWN).
+      if (old_state != cros::mojom::CameraPrivacySwitchState::ON) {
+        break;
+      }
+      ash::ToastManager::Get()->Cancel(kCameraPrivacySwitchOnToastId);
+      ash::ToastData toast(
+          kCameraPrivacySwitchOffToastId,
+          ash::ToastCatalogName::kCameraPrivacySwitchOff,
+          l10n_util::GetStringFUTF16(IDS_CAMERA_PRIVACY_SWITCH_OFF_TOAST,
+                                     device_name_u16),
+          ash::ToastData::kDefaultToastDuration,
+          /*visible_on_lock_screen=*/true);
+      ash::ToastManager::Get()->Show(toast);
+      break;
+    }
+  }
+
+  if (state == cros::mojom::CameraPrivacySwitchState::OFF) {
+    SystemNotificationHelper::GetInstance()->Close(base::StringPrintf(
+        kCameraPrivacySwitchOnNotificationId, device_name.c_str()));
+  }
+}
+
+void MediaClientImpl::OnGetSourceInfosByActiveClientChanged(
+    const base::flat_set<std::string>& active_device_ids,
+    const std::vector<media::VideoCaptureDeviceInfo>& devices) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (const auto& device : devices) {
+    const std::string& device_id = device.descriptor.device_id;
+    const std::string& device_name = device.descriptor.display_name();
+
+    auto it = device_id_to_camera_privacy_switch_state_.find(device_id);
+    if (it != device_id_to_camera_privacy_switch_state_.end() &&
+        it->second == cros::mojom::CameraPrivacySwitchState::ON) {
+      if (active_device_ids.find(device_id) != active_device_ids.end()) {
+        // As the device is being actively used by the client, display a
+        // notification.
+        ShowCameraOffNotification(device_name);
+      } else if (active_camera_client_count_ == 0) {
+        // Clear the notification for this device as no client is trying to use
+        // this camera anymore.
+        const std::string notification_id = base::StringPrintf(
+            kCameraPrivacySwitchOnNotificationId, device_name.c_str());
+        SystemNotificationHelper::GetInstance()->Close(notification_id);
+      }
+    }
+  }
 }

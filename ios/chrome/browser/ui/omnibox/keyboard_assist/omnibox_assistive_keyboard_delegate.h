@@ -10,6 +10,7 @@
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class LayoutGuideCenter;
+@protocol LensCommands;
 @class OmniboxTextFieldIOS;
 @protocol QRScannerCommands;
 
@@ -25,6 +26,9 @@
 // Notifies the delegate that the Camera Search button was tapped.
 - (void)keyboardAccessoryCameraSearchTapped;
 
+// Notifies the delegate that the Lens button was tapped.
+- (void)keyboardAccessoryLensTapped;
+
 // Notifies the delegate that a key with the title `title` was pressed.
 - (void)keyPressed:(NSString*)title;
 
@@ -37,6 +41,7 @@
 
 @property(nonatomic, weak) id<ApplicationCommands> applicationCommandsHandler;
 @property(nonatomic, weak) id<BrowserCommands> browserCommandsHandler;
+@property(nonatomic, weak) id<LensCommands> lensCommandsHandler;
 @property(nonatomic, weak) id<QRScannerCommands> qrScannerCommandsHandler;
 @property(nonatomic, weak) OmniboxTextFieldIOS* omniboxTextField;
 

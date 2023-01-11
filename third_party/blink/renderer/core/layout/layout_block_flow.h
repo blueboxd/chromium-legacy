@@ -100,7 +100,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   void Trace(Visitor*) const override;
 
   static LayoutBlockFlow* CreateAnonymous(Document*,
-                                          scoped_refptr<ComputedStyle>,
+                                          scoped_refptr<const ComputedStyle>,
                                           LegacyLayout);
 
   bool IsLayoutBlockFlow() const final {
@@ -367,6 +367,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
     NOT_DESTROYED();
     return MultiColumnFlowThread();
   }
+
+  bool IsInitialLetterBox() const override;
 
   void AddVisualOverflowFromInlineChildren();
 

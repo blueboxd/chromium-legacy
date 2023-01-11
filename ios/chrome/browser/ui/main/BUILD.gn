@@ -6,7 +6,6 @@ import("//ios/build/chrome_build.gni")
 
 source_set("scene_testing") {
   sources = [ "scene_controller_testing.h" ]
-  deps = [ "//ios/chrome/browser:utils" ]
   frameworks = [ "UIKit.framework" ]
 }
 
@@ -148,7 +147,6 @@ source_set("scene") {
     "//components/signin/public/identity_manager",
     "//components/signin/public/identity_manager/objc",
     "//components/url_formatter",
-    "//components/url_param_filter/core",
     "//components/version_info",
     "//components/web_resource",
     "//ios/chrome/app:app",
@@ -159,7 +157,7 @@ source_set("scene") {
     "//ios/chrome/app/application_delegate:tab_opening",
     "//ios/chrome/app/application_delegate:url_opener_params",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser",
+    "//ios/chrome/browser/application_context",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browsing_data",
@@ -176,6 +174,7 @@ source_set("scene") {
     "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/policy",
     "//ios/chrome/browser/policy:policy_util",
+    "//ios/chrome/browser/prefs:pref_names",
     "//ios/chrome/browser/promos_manager:features",
     "//ios/chrome/browser/screenshot",
     "//ios/chrome/browser/sessions:scene_util",
@@ -199,6 +198,7 @@ source_set("scene") {
     "//ios/chrome/browser/ui/history",
     "//ios/chrome/browser/ui/incognito_interstitial:incognito_interstitial",
     "//ios/chrome/browser/ui/incognito_reauth:incognito_reauth_scene_agent",
+    "//ios/chrome/browser/ui/lens:lens_entrypoint",
     "//ios/chrome/browser/ui/main:browser_interface_provider",
     "//ios/chrome/browser/ui/ntp:feature_flags",
     "//ios/chrome/browser/ui/policy:user_policy_scene_agent",
@@ -268,8 +268,8 @@ source_set("main") {
     "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/app/resources:base_scene_storyboard",
     "//ios/chrome/app/resources:launchscreen_xib",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/app_launcher",
+    "//ios/chrome/browser/application_context",
     "//ios/chrome/browser/autofill:autofill_internal",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browsing_data",

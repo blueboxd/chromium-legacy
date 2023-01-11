@@ -97,12 +97,12 @@ class ExtensionServiceInterface
   // Gets the object managing reinstalls of the corrupted extensions.
   virtual CorruptedExtensionReinstaller* corrupted_extension_reinstaller() = 0;
 
-  // Installs an update with the contents from |extension_path|. Returns true if
-  // the install can be started. Sets |out_crx_installer| to the installer if
-  // one was started.
-  virtual bool UpdateExtension(const CRXFileInfo& file,
-                               bool file_ownership_passed,
-                               CrxInstaller** out_crx_installer) = 0;
+  // Creates an CrxInstaller to update an extension.
+  // Returns null if an update is not possible. Eg: system shutdown or extension
+  // doesn't exist.
+  virtual scoped_refptr<CrxInstaller> CreateUpdateInstaller(
+      const CRXFileInfo& file,
+      bool file_ownership_passed) = 0;
 
   // Returns an update for an extension with the specified id, if installation
   // of that update was previously delayed because the extension was in use. If
@@ -196,9 +196,9 @@ class ExtensionService : public ExtensionServiceInterface,
   //
   PendingExtensionManager* pending_extension_manager() override;
   CorruptedExtensionReinstaller* corrupted_extension_reinstaller() override;
-  bool UpdateExtension(const CRXFileInfo& file,
-                       bool file_ownership_passed,
-                       CrxInstaller** out_crx_installer) override;
+  scoped_refptr<CrxInstaller> CreateUpdateInstaller(
+      const CRXFileInfo& file,
+      bool file_ownership_passed) override;
   bool IsExtensionEnabled(const std::string& extension_id) const override;
   void UnloadExtension(const std::string& extension_id,
                        UnloadedExtensionReason reason) override;
@@ -633,19 +633,19 @@ class ExtensionService : public ExtensionServiceInterface,
       const std::string& extension_id,
       const absl::optional<CrxInstallError>& error);
 
-  raw_ptr<const base::CommandLine> command_line_ = nullptr;
+  raw_ptr<const base::CommandLine, DanglingUntriaged> command_line_ = nullptr;
 
   // The normal profile associated with this ExtensionService.
   raw_ptr<Profile> profile_ = nullptr;
 
   // The ExtensionSystem for the profile above.
-  raw_ptr<ExtensionSystem> system_ = nullptr;
+  raw_ptr<ExtensionSystem, DanglingUntriaged> system_ = nullptr;
 
   // Preferences for the owning profile.
-  raw_ptr<ExtensionPrefs> extension_prefs_ = nullptr;
+  raw_ptr<ExtensionPrefs, DanglingUntriaged> extension_prefs_ = nullptr;
 
   // Blocklist for the owning profile.
-  raw_ptr<Blocklist> blocklist_ = nullptr;
+  raw_ptr<Blocklist, DanglingUntriaged> blocklist_ = nullptr;
 
   ExtensionAllowlist allowlist_;
 
@@ -654,7 +654,7 @@ class ExtensionService : public ExtensionServiceInterface,
   OmahaAttributesHandler omaha_attributes_handler_;
 
   // Sets of enabled/disabled/terminated/blocklisted extensions. Not owned.
-  raw_ptr<ExtensionRegistry> registry_ = nullptr;
+  raw_ptr<ExtensionRegistry, DanglingUntriaged> registry_ = nullptr;
 
   // Set of allowlisted enabled extensions loaded from the
   // --disable-extensions-except command line flag.

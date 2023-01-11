@@ -9,9 +9,9 @@
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
+#include "third_party/blink/renderer/core/style/scoped_css_name.h"
 #include "third_party/blink/renderer/platform/geometry/anchor_query_enums.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
@@ -21,13 +21,12 @@
 
 namespace blink {
 
-class LayoutBox;
 class LayoutObject;
 class NGLogicalAnchorQuery;
+class NGLogicalAnchorQueryMap;
 class NGPhysicalFragment;
+class ScopedCSSName;
 struct NGLogicalAnchorReference;
-struct NGLogicalLink;
-struct NGLogicalOOFNodeForFragmentation;
 
 struct CORE_EXPORT NGPhysicalAnchorReference
     : public GarbageCollected<NGPhysicalAnchorReference> {
@@ -48,12 +47,13 @@ class CORE_EXPORT NGPhysicalAnchorQuery {
   bool IsEmpty() const { return anchor_references_.empty(); }
 
   const NGPhysicalAnchorReference* AnchorReference(
-      const AtomicString& name) const;
-  const PhysicalRect* Rect(const AtomicString& name) const;
-  const NGPhysicalFragment* Fragment(const AtomicString& name) const;
+      const ScopedCSSName& name) const;
+  const PhysicalRect* Rect(const ScopedCSSName& name) const;
+  const NGPhysicalFragment* Fragment(const ScopedCSSName& name) const;
 
   using NGPhysicalAnchorReferenceMap =
-      HeapHashMap<AtomicString, Member<NGPhysicalAnchorReference>>;
+      HeapHashMap<Member<const ScopedCSSName>,
+                  Member<NGPhysicalAnchorReference>>;
   NGPhysicalAnchorReferenceMap::const_iterator begin() const {
     return anchor_references_.begin();
   }
@@ -100,9 +100,9 @@ class CORE_EXPORT NGLogicalAnchorQuery
   bool IsEmpty() const { return anchor_references_.empty(); }
 
   const NGLogicalAnchorReference* AnchorReference(
-      const AtomicString& name) const;
-  const LogicalRect* Rect(const AtomicString& name) const;
-  const NGPhysicalFragment* Fragment(const AtomicString& name) const;
+      const ScopedCSSName& name) const;
+  const LogicalRect* Rect(const ScopedCSSName& name) const;
+  const NGPhysicalFragment* Fragment(const ScopedCSSName& name) const;
 
   enum class SetOptions {
     // A valid entry. The call order is in the tree order.
@@ -112,11 +112,11 @@ class CORE_EXPORT NGLogicalAnchorQuery
     // An invalid entry.
     kInvalid,
   };
-  void Set(const AtomicString& name,
+  void Set(const ScopedCSSName& name,
            const NGPhysicalFragment& fragment,
            const LogicalRect& rect,
            SetOptions);
-  void Set(const AtomicString& name,
+  void Set(const ScopedCSSName& name,
            NGLogicalAnchorReference* reference,
            bool maybe_out_of_order = false);
   void SetFromPhysical(const NGPhysicalAnchorQuery& physical_query,
@@ -127,14 +127,14 @@ class CORE_EXPORT NGLogicalAnchorQuery
   // Evaluate the |anchor_name| for the |anchor_value|. Returns |nullopt| if
   // the query is invalid (e.g., no targets or wrong axis.)
   absl::optional<LayoutUnit> EvaluateAnchor(
-      const AtomicString& anchor_name,
+      const ScopedCSSName& anchor_name,
       AnchorValue anchor_value,
       LayoutUnit available_size,
       const WritingModeConverter& container_converter,
       const PhysicalOffset& offset_to_padding_box,
       bool is_y_axis,
       bool is_right_or_bottom) const;
-  absl::optional<LayoutUnit> EvaluateSize(const AtomicString& anchor_name,
+  absl::optional<LayoutUnit> EvaluateSize(const ScopedCSSName& anchor_name,
                                           AnchorSizeValue anchor_size_value,
                                           WritingMode container_writing_mode,
                                           WritingMode self_writing_mode) const;
@@ -144,40 +144,8 @@ class CORE_EXPORT NGLogicalAnchorQuery
  private:
   friend class NGPhysicalAnchorQuery;
 
-  HeapHashMap<AtomicString, Member<NGLogicalAnchorReference>>
+  HeapHashMap<Member<const ScopedCSSName>, Member<NGLogicalAnchorReference>>
       anchor_references_;
-};
-
-// This computes anchor queries for each containing block for when
-// block-fragmented. When block-fragmented, all OOFs are added to their
-// fragmentainers instead of their containing blocks, but anchor queries can be
-// different for each containing block.
-class CORE_EXPORT NGLogicalAnchorQueryForFragmentation {
-  STACK_ALLOCATED();
-
- public:
-  bool HasAnchorsOnOutOfFlowObjects() const { return has_anchors_on_oofs_; }
-  bool ShouldLayoutByContainingBlock() const {
-    return !queries_.empty() || has_anchors_on_oofs_;
-  }
-
-  // Get |NGLogicalAnchorQuery| in the stitched coordinate system for the given
-  // containing block. If there is no anchor query for the containing block,
-  // returns an empty instance.
-  const NGLogicalAnchorQuery& StitchedAnchorQuery(
-      const LayoutObject& containing_block) const;
-
-  // Update the internal map of anchor queries for containing blocks from the
-  // |children| of the fragmentation context.
-  void Update(
-      const base::span<const NGLogicalLink>& children,
-      const base::span<const NGLogicalOOFNodeForFragmentation>& oof_nodes,
-      const LayoutBox& root,
-      WritingDirectionMode writing_direction);
-
- private:
-  HeapHashMap<const LayoutObject*, Member<NGLogicalAnchorQuery>> queries_;
-  bool has_anchors_on_oofs_ = false;
 };
 
 class CORE_EXPORT NGAnchorEvaluatorImpl : public Length::AnchorEvaluator {
@@ -195,7 +163,25 @@ class CORE_EXPORT NGAnchorEvaluatorImpl : public Length::AnchorEvaluator {
       : anchor_query_(&anchor_query),
         container_converter_(container_converter),
         offset_to_padding_box_(offset_to_padding_box),
-        self_writing_mode_(self_writing_mode) {}
+        self_writing_mode_(self_writing_mode) {
+    DCHECK(anchor_query_);
+  }
+
+  // This constructor takes |NGLogicalAnchorQueryMap| and |containing_block|
+  // instead of |NGLogicalAnchorQuery|.
+  NGAnchorEvaluatorImpl(const NGLogicalAnchorQueryMap& anchor_queries,
+                        const LayoutObject& containing_block,
+                        const WritingModeConverter& container_converter,
+                        const PhysicalOffset& offset_to_padding_box,
+                        WritingMode self_writing_mode)
+      : anchor_queries_(&anchor_queries),
+        containing_block_(&containing_block),
+        container_converter_(container_converter),
+        offset_to_padding_box_(offset_to_padding_box),
+        self_writing_mode_(self_writing_mode) {
+    DCHECK(anchor_queries_);
+    DCHECK(containing_block_);
+  }
 
   // Returns true if this evaluator was invoked for `anchor()` or
   // `anchor-size()` functions.
@@ -210,15 +196,21 @@ class CORE_EXPORT NGAnchorEvaluatorImpl : public Length::AnchorEvaluator {
     is_right_or_bottom_ = is_right_or_bottom;
   }
 
-  absl::optional<LayoutUnit> EvaluateAnchor(
-      const AtomicString& anchor_name,
-      AnchorValue anchor_value) const override;
-  absl::optional<LayoutUnit> EvaluateAnchorSize(
-      const AtomicString& anchor_name,
-      AnchorSizeValue anchor_size_value) const override;
+  absl::optional<LayoutUnit> Evaluate(
+      const CalculationExpressionNode&) const override;
 
  private:
-  const NGLogicalAnchorQuery* anchor_query_ = nullptr;
+  const NGLogicalAnchorQuery* AnchorQuery() const;
+
+  absl::optional<LayoutUnit> EvaluateAnchor(const ScopedCSSName& anchor_name,
+                                            AnchorValue anchor_value) const;
+  absl::optional<LayoutUnit> EvaluateAnchorSize(
+      const ScopedCSSName& anchor_name,
+      AnchorSizeValue anchor_size_value) const;
+
+  mutable const NGLogicalAnchorQuery* anchor_query_ = nullptr;
+  const NGLogicalAnchorQueryMap* anchor_queries_ = nullptr;
+  const LayoutObject* containing_block_ = nullptr;
   const WritingModeConverter container_converter_{
       {WritingMode::kHorizontalTb, TextDirection::kLtr}};
   PhysicalOffset offset_to_padding_box_;

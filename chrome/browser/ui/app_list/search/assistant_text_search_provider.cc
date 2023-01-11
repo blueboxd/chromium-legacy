@@ -105,6 +105,10 @@ void AssistantTextSearchProvider::Start(const std::u16string& query) {
   UpdateResults();
 }
 
+void AssistantTextSearchProvider::StopQuery() {
+  query_.clear();
+}
+
 void AssistantTextSearchProvider::OnAssistantControllerDestroying() {
   DCHECK(assistant_state_observation_.IsObservingSource(
       ash::AssistantState::Get()));
@@ -132,10 +136,10 @@ void AssistantTextSearchProvider::UpdateResults() {
     SwapResults(&empty);
     return;
   }
-  if (query_.empty()) {
-    ClearResults();
+
+  if (query_.empty())
     return;
-  }
+
   SearchProvider::Results results;
   results.push_back(std::make_unique<AssistantTextSearchResult>(query_));
   SwapResults(&results);

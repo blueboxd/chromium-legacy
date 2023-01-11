@@ -25,7 +25,6 @@
 #import "ios/chrome/browser/passwords/ios_chrome_affiliation_service_factory.h"
 #import "ios/chrome/browser/passwords/ios_password_store_utils.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
-#import "ios/chrome/browser/webdata_services/web_data_service_factory.h"
 #import "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -61,8 +60,8 @@ IOSChromePasswordStoreFactory::IOSChromePasswordStoreFactory()
     : RefcountedBrowserStateKeyedServiceFactory(
           "PasswordStore",
           BrowserStateDependencyManager::GetInstance()) {
+  DependsOn(CredentialsCleanerRunnerFactory::GetInstance());
   DependsOn(IOSChromeAffiliationServiceFactory::GetInstance());
-  DependsOn(ios::WebDataServiceFactory::GetInstance());
 }
 
 IOSChromePasswordStoreFactory::~IOSChromePasswordStoreFactory() {}
@@ -84,13 +83,8 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
   std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper =
       std::make_unique<AffiliatedMatchHelper>(affiliation_service);
 
-  if (!store->Init(ChromeBrowserState::FromBrowserState(context)->GetPrefs(),
-                   std::move(affiliated_match_helper))) {
-    // TODO(crbug.com/479725): Remove the LOG once this error is visible in the
-    // UI.
-    LOG(WARNING) << "Could not initialize password store.";
-    return nullptr;
-  }
+  store->Init(ChromeBrowserState::FromBrowserState(context)->GetPrefs(),
+              std::move(affiliated_match_helper));
 
   password_manager_util::RemoveUselessCredentials(
       CredentialsCleanerRunnerFactory::GetForBrowserState(context), store,

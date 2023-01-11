@@ -5,22 +5,21 @@
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//extensions/buildflags/buildflags.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 assert(enable_extensions)
+
+# TODO(devlin): Document these build targets and the scope each.
 
 group("browser") {
   public_deps = [
     "//extensions/browser:browser_context_keyed_service_factories",
     "//extensions/browser:browser_sources",
-    "//extensions/browser/api:api_registration",
-  ]
 
-  # Includes all API implementations and the ExtensionsApiClient
-  # interface. Moving an API from src/chrome to src/extensions implies
-  # it can be cleanly disabled with enable_extensions=false.
-  public_deps += [
+    # Includes all API implementations and the ExtensionsApiClient
+    # interface. Moving an API from src/chrome to src/extensions implies
+    # it can be cleanly disabled with enable_extensions=false.
     "//extensions/browser/api",
-    "//extensions/browser/api:api_implementations",
   ]
 }
 
@@ -33,13 +32,24 @@ source_set("browser_context_keyed_service_factories") {
     "browser_context_keyed_service_factories.h",
   ]
 
+  deps = [
+    "//extensions/browser:core_keyed_service_factories",
+    "//extensions/browser/api:api_keyed_service_factories",
+  ]
+}
+
+source_set("core_keyed_service_factories") {
+  visibility = [ ":*" ]
+
+  sources = [
+    "core_browser_context_keyed_service_factories.cc",
+    "core_browser_context_keyed_service_factories.h",
+  ]
+
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
-    "//build:chromeos_buildflags",
     "//extensions/browser:browser_sources",
-    "//extensions/browser/api",
-    "//extensions/browser/api:api_implementations",
     "//extensions/browser/updater",
   ]
 }
@@ -332,6 +342,8 @@ source_set("browser_sources") {
     "extension_prefs_factory.h",
     "extension_prefs_helper.cc",
     "extension_prefs_helper.h",
+    "extension_prefs_helper_factory.cc",
+    "extension_prefs_helper_factory.h",
     "extension_prefs_observer.h",
     "extension_prefs_scope.h",
     "extension_protocols.cc",
@@ -557,6 +569,7 @@ source_set("browser_sources") {
     "//components/permissions:permissions_common",
     "//components/pref_registry",
     "//components/prefs",
+    "//components/safe_browsing/core/common",
     "//components/services/unzip/content",
     "//components/services/unzip/public/cpp",
     "//components/sessions",
@@ -1001,5 +1014,32 @@ source_set("unit_tests") {
     "//extensions/browser/extension_function_histogram_value.h",
     "//tools/metrics/histograms/enums.xml",
     "//extensions/browser/api/declarative_net_request/flat/extension_ruleset.fbs",
+  ]
+}
+
+fuzzer_test("extension_file_highlighter_fuzzer") {
+  sources = [ "file_highlighter_fuzzer.cc" ]
+  deps = [
+    ":browser",
+    "//base",
+  ]
+}
+
+fuzzer_test("extension_web_request_form_data_parser_fuzzer") {
+  sources = [ "api/web_request/form_data_parser_fuzzer.cc" ]
+  deps = [
+    ":browser",
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("extension_declarative_net_request_indexed_rule_fuzzer") {
+  sources = [ "api/declarative_net_request/indexed_rule_fuzzer.cc" ]
+  deps = [
+    ":browser",
+    "//base",
+    "//third_party/abseil-cpp:absl",
+    "//url",
   ]
 }

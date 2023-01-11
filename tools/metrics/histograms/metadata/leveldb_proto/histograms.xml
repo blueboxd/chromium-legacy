@@ -68,6 +68,8 @@ chromium-metrics-reviews@google.com.
       summary="Database for page entity metadata."/>
   <variant name="PersistedStateDatabase"
       summary="Database for NonCriticalPersistedTabData"/>
+  <variant name="PersistentOriginTrials"
+      summary="Database for Persistent Origin Trial tokens"/>
   <variant name="PreviewsHintCacheStore"
       summary="Databases for Previews Hints"/>
   <variant name="PrintJobDatabase" summary="Database for print job metadata."/>
@@ -184,7 +186,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ProtoDB.SharedDbInitStatus" enum="ProtoDatabaseInitState"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>ssid@chromium.org</owner>
   <owner>salg@chromium.org</owner>
   <summary>

@@ -76,11 +76,13 @@ group("absl_component_deps") {
     "//third_party/abseil-cpp/absl/functional:bind_front",
     "//third_party/abseil-cpp/absl/functional:function_ref",
     "//third_party/abseil-cpp/absl/hash",
+    "//third_party/abseil-cpp/absl/log:die_if_null",
     "//third_party/abseil-cpp/absl/memory",
     "//third_party/abseil-cpp/absl/meta:type_traits",
     "//third_party/abseil-cpp/absl/numeric:bits",
     "//third_party/abseil-cpp/absl/numeric:int128",
     "//third_party/abseil-cpp/absl/random",
+    "//third_party/abseil-cpp/absl/random:distributions",
     "//third_party/abseil-cpp/absl/status",
     "//third_party/abseil-cpp/absl/status:statusor",
     "//third_party/abseil-cpp/absl/strings",
@@ -143,7 +145,6 @@ config("absl_default_cflags_cc") {
       "-Wnon-literal-null-conversion",
       "-Wnull-conversion",
       "-Wobjc-literal-conversion",
-      "-Wno-sign-conversion",
       "-Wstring-conversion",
     ]
     if (!is_nacl) {
@@ -158,7 +159,6 @@ config("absl_test_cflags_cc") {
     cflags_cc += [
       "-Wno-conversion-null",
       "-Wno-missing-declarations",
-      "-Wno-sign-compare",
       "-Wno-unused-function",
       "-Wno-unused-parameter",
       "-Wno-unused-private-field",
@@ -166,7 +166,6 @@ config("absl_test_cflags_cc") {
   }
   if (is_win) {
     cflags_cc += [
-      "/wd4018",  # signed/unsigned mismatch
       "/wd4101",  # unreferenced local variable
     ]
   }
@@ -223,6 +222,7 @@ if (build_with_chromium) {
         "absl/strings:cordz_test",
         "absl/strings:cordz_update_scope_test",
         "absl/strings:cordz_update_tracker_test",
+        "absl/strings:damerau_levenshtein_distance_test",
         "absl/strings:match_test",
         "absl/strings:str_replace_test",
         "absl/strings:string_view_test",

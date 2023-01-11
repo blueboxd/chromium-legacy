@@ -262,8 +262,12 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
             self.wptreport = self.fs.join(self.fs.dirname(self.wpt_output),
                                           report)
         if self.options.isolated_script_test_launcher_retry_limit is None:
-            retries = 0 if self._has_explicit_tests else 3
-            self.options.isolated_script_test_launcher_retry_limit = retries
+            self.options.isolated_script_test_launcher_retry_limit = (
+                self._default_retry_limit)
+
+    @property
+    def _default_retry_limit(self) -> int:
+        return 0 if self._has_explicit_tests else 3
 
     @property
     def wpt_output(self):
@@ -295,9 +299,6 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
 
         rest_args = list(self._wpt_run_args)
         rest_args.extend([
-            # By default, wpt will treat unexpected passes as errors, so we
-            # disable that to be consistent with Chromium CI.
-            '--no-fail-on-unexpected-pass',
             '--no-pause-after-test',
             '--no-capture-stdio',
             '--no-manifest-download',
@@ -359,7 +360,8 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
         if self.options.verbose:
             command.append('--verbose')
         if self.wptreport:
-            command.extend(['--wpt-report', self.wptreport])
+            command.extend(['--wpt-report',
+                            self.wptreport])
         common.run_command(command)
 
     def clean_up_after_test_run(self):

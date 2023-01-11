@@ -4,19 +4,18 @@
 
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 
-import {decorate} from 'chrome://resources/js/cr/ui.js';
+import {decorate} from '../../common/js/ui.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 import {MockVolumeManager} from '../../background/js/mock_volume_manager.js';
 import {DialogType} from '../../common/js/dialog_type.js';
-import {installMockChrome} from '../../common/js/mock_chrome.js';
+import {queryRequiredElement} from '../../common/js/dom_utils.js';
 import {MockDirectoryEntry, MockFileEntry, MockFileSystem} from '../../common/js/mock_entry.js';
 import {util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {FileOperationManager} from '../../externs/background/file_operation_manager.js';
 import {ProgressCenter} from '../../externs/background/progress_center.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
-import {FilesToast} from '../elements/files_toast.js';
 
 import {FakeFileSelectionHandler} from './fake_file_selection_handler.js';
 import {FileListModel} from './file_list_model.js';
@@ -88,25 +87,6 @@ export function setUp() {
     '</div>',
   ].join('');
 
-  // Mock LoadTimeData strings.
-  window.loadTimeData.getString = id => id;
-  window.loadTimeData.getBoolean = id => false;
-  window.loadTimeData.resetForTesting({});
-
-  // Mock chome APIs.
-  mockChrome = {
-    fileManagerPrivate: {
-      enableExternalFileScheme: () => {},
-      getProfiles: (callback) => {
-        setTimeout(callback, 0, [], '', '');
-      },
-      grantAccess: (entryURLs, callback) => {
-        setTimeout(callback, 0);
-      },
-    },
-  };
-  installMockChrome(mockChrome);
-
   // Initialize Command with the <command>s.
   decorate('command', Command);
 
@@ -144,7 +124,7 @@ export function setUp() {
 
   // Setup FileTable.
   const table =
-      /** @type {!FileTable} */ (util.queryRequiredElement('#detail-table'));
+      /** @type {!FileTable} */ (queryRequiredElement('#detail-table'));
   FileTable.decorate(
       table, metadataModel, volumeManager, a11y, true /* fullPage */);
   const dataModel = new FileListModel(metadataModel);
@@ -152,12 +132,12 @@ export function setUp() {
 
   // Setup FileGrid.
   const grid =
-      /** @type {!FileGrid} */ (util.queryRequiredElement('#file-grid'));
+      /** @type {!FileGrid} */ (queryRequiredElement('#file-grid'));
   FileGrid.decorate(grid, metadataModel, volumeManager, a11y);
 
   // Setup the ListContainer and its dependencies
   listContainer = new ListContainer(
-      util.queryRequiredElement('#list-container'), table, grid,
+      queryRequiredElement('#list-container'), table, grid,
       DialogType.FULL_PAGE);
   listContainer.dataModel = dataModel;
   listContainer.selectionModel = new ListSelectionModel();
@@ -165,8 +145,7 @@ export function setUp() {
 
   // Setup DirectoryTree elements.
   directoryTree =
-      /** @type {!DirectoryTree} */ (
-          util.queryRequiredElement('#directory-tree'));
+      /** @type {!DirectoryTree} */ (queryRequiredElement('#directory-tree'));
 
   const filesToast =
       /** @type {!FilesToast} */ (document.querySelector('files-toast'));

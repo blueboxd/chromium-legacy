@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.components.browser_ui.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 import org.chromium.components.browser_ui.widget.displaystyle.ViewResizer;
 
@@ -70,21 +71,61 @@ public class FeedStreamViewResizer extends ViewResizer {
      */
     @Override
     protected int computePadding() {
+        if (FeedFeatures.isMultiColumnFeedEnabled(mUiConfig.getContext())
+                && isCurrentDisplayWide()) {
+            return computePaddingWide();
+        } else {
+            return computePaddingNarrow();
+        }
+    }
+
+    private int computePaddingNarrow() {
         int padding = super.computePadding();
         if (mUiConfig.getContext().getResources().getConfiguration().orientation
                         != Configuration.ORIENTATION_LANDSCAPE
                 || ApiCompatibilityUtils.isInMultiWindowMode(mActivity)) {
             return padding;
         }
-
         Resources resources = mUiConfig.getContext().getResources();
         float dpToPx = resources.getDisplayMetrics().density;
-        float screenWidth = resources.getConfiguration().screenWidthDp * dpToPx;
+        float screenWidth = getScreenWidth();
         float screenHeight = resources.getConfiguration().screenHeightDp * dpToPx;
         float useableHeight = screenHeight - statusBarHeight() - toolbarHeight();
         int customPadding =
                 (int) ((screenWidth - useableHeight * FEED_IMAGE_OR_VIDEO_ASPECT_RATIO) / 2);
         return Math.max(customPadding, padding);
+    }
+
+    private int computePaddingWide() {
+        float screenWidth = getScreenWidth();
+        // (a) Once the width of the body reaches breakpoint,
+        // adjust margin sizes while keeping the body width constant.
+        int customPadding = (int) ((screenWidth
+                                           - mActivity.getResources().getDimensionPixelSize(
+                                                   org.chromium.chrome.browser.feed.R.dimen
+                                                           .ntp_wide_card_width_breakpoint))
+                / 2);
+        // (b) Once the margins reach max, adjust the body size while keeping margins constant.
+        customPadding = Math.min(customPadding,
+                mActivity.getResources().getDimensionPixelSize(
+                        org.chromium.chrome.browser.feed.R.dimen
+                                .ntp_wide_card_lateral_margins_max));
+        // (c) Once the body reaches max width, adjust the margin widths while keeping the body
+        // constant.
+        customPadding = Math.max(customPadding,
+                (int) (screenWidth
+                        - mActivity.getResources().getDimensionPixelSize(
+                                org.chromium.chrome.browser.feed.R.dimen.ntp_wide_card_width_max))
+                        / 2);
+        // (d) Return max of computed padding and min allowed margin.
+        return Math.max(customPadding, getMinWidePaddingPixels());
+    }
+
+    private float getScreenWidth() {
+        Resources resources = mUiConfig.getContext().getResources();
+        float dpToPx = resources.getDisplayMetrics().density;
+        float screenWidth = resources.getConfiguration().screenWidthDp * dpToPx;
+        return screenWidth;
     }
 
     private int toolbarHeight() {

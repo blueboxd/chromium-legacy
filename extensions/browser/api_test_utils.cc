@@ -17,17 +17,17 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using extensions::ExtensionFunctionDispatcher;
 
 namespace {
 
-std::unique_ptr<base::Value> ParseJSON(const std::string& data) {
-  return base::JSONReader::ReadDeprecated(data);
-}
-
-std::unique_ptr<base::ListValue> ParseList(const std::string& data) {
-  return base::ListValue::From(ParseJSON(data));
+absl::optional<base::Value::List> ParseList(const std::string& data) {
+  absl::optional<base::Value> result = base::JSONReader::Read(data);
+  if (!result || !result->is_list())
+    return absl::nullopt;
+  return std::move(*result).TakeList();
 }
 
 }  // namespace
@@ -64,7 +64,7 @@ void SendResponseHelper::WaitForResponse() {
 
 std::unique_ptr<base::DictionaryValue> ParseDictionary(
     const std::string& data) {
-  return base::DictionaryValue::From(ParseJSON(data));
+  return base::DictionaryValue::From(base::JSONReader::ReadDeprecated(data));
 }
 
 bool GetBoolean(const base::Value::Dict& dict, const std::string& key) {
@@ -114,42 +114,41 @@ base::Value::Dict GetDict(const base::Value::Dict& dict,
   return value->Clone();
 }
 
-std::unique_ptr<base::Value> RunFunctionWithDelegateAndReturnSingleResult(
+absl::optional<base::Value> RunFunctionWithDelegateAndReturnSingleResult(
     scoped_refptr<ExtensionFunction> function,
     const std::string& args,
     std::unique_ptr<extensions::ExtensionFunctionDispatcher> dispatcher,
     RunFunctionFlags flags) {
-  std::unique_ptr<base::ListValue> parsed_args = ParseList(args);
-  EXPECT_TRUE(parsed_args.get())
-      << "Could not parse extension function arguments: " << args;
+  absl::optional<base::Value::List> parsed_args = ParseList(args);
+  CHECK(parsed_args) << "Could not parse extension function arguments: "
+                     << args;
 
   return RunFunctionWithDelegateAndReturnSingleResult(
-      function, std::move(parsed_args), std::move(dispatcher), flags);
+      function, std::move(*parsed_args), std::move(dispatcher), flags);
 }
 
-std::unique_ptr<base::Value> RunFunctionWithDelegateAndReturnSingleResult(
+absl::optional<base::Value> RunFunctionWithDelegateAndReturnSingleResult(
     scoped_refptr<ExtensionFunction> function,
-    std::unique_ptr<base::ListValue> args,
-    std::unique_ptr<extensions::ExtensionFunctionDispatcher> dispatcher,
+    base::Value::List args,
+    std::unique_ptr<ExtensionFunctionDispatcher> dispatcher,
     RunFunctionFlags flags) {
   RunFunction(function.get(), std::move(args), std::move(dispatcher), flags);
-  EXPECT_TRUE(function->GetError().empty()) << "Unexpected error: "
-                                            << function->GetError();
-  if (function->GetResultList() && !function->GetResultList()->empty()) {
-    const base::Value& single_result = (*function->GetResultList())[0];
-    return std::make_unique<base::Value>(single_result.Clone());
-  }
-  return nullptr;
+  EXPECT_TRUE(function->GetError().empty())
+      << "Unexpected error: " << function->GetError();
+  const base::Value::List* results = function->GetResultList();
+  if (!results || results->empty())
+    return absl::nullopt;
+  return (*results)[0].Clone();
 }
 
-std::unique_ptr<base::Value> RunFunctionAndReturnSingleResult(
+absl::optional<base::Value> RunFunctionAndReturnSingleResult(
     ExtensionFunction* function,
     const std::string& args,
     content::BrowserContext* context) {
   return RunFunctionAndReturnSingleResult(function, args, context, NONE);
 }
 
-std::unique_ptr<base::Value> RunFunctionAndReturnSingleResult(
+absl::optional<base::Value> RunFunctionAndReturnSingleResult(
     ExtensionFunction* function,
     const std::string& args,
     content::BrowserContext* context,
@@ -199,20 +198,19 @@ bool RunFunction(
     const std::string& args,
     std::unique_ptr<extensions::ExtensionFunctionDispatcher> dispatcher,
     RunFunctionFlags flags) {
-  std::unique_ptr<base::ListValue> parsed_args = ParseList(args);
-  EXPECT_TRUE(parsed_args.get())
-      << "Could not parse extension function arguments: " << args;
-  return RunFunction(function, std::move(parsed_args), std::move(dispatcher),
+  absl::optional<base::Value::List> parsed_args = ParseList(args);
+  CHECK(parsed_args) << "Could not parse extension function arguments: "
+                     << args;
+  return RunFunction(function, std::move(*parsed_args), std::move(dispatcher),
                      flags);
 }
 
-bool RunFunction(
-    ExtensionFunction* function,
-    std::unique_ptr<base::ListValue> args,
-    std::unique_ptr<extensions::ExtensionFunctionDispatcher> dispatcher,
-    RunFunctionFlags flags) {
+bool RunFunction(ExtensionFunction* function,
+                 base::Value::List args,
+                 std::unique_ptr<ExtensionFunctionDispatcher> dispatcher,
+                 RunFunctionFlags flags) {
   SendResponseHelper response_helper(function);
-  function->SetArgs(base::Value::FromUniquePtrValue(std::move(args)));
+  function->SetArgs(base::Value(std::move(args)));
 
   CHECK(dispatcher);
   function->SetDispatcher(dispatcher->AsWeakPtr());

@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/profile_picker.h"
 
-#include <algorithm>
 #include <string>
 
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -89,35 +89,49 @@ ProfilePicker::Params ProfilePicker::Params::ForLacrosSelectAvailableAccount(
   return params;
 }
 
-// static
-ProfilePicker::Params ProfilePicker::Params::ForLacrosPrimaryProfileFirstRun(
-    FirstRunExitedCallback first_run_finished_callback) {
-  Params params(EntryPoint::kLacrosPrimaryProfileFirstRun,
-                ProfileManager::GetPrimaryUserProfilePath());
-  params.first_run_exited_callback_ = std::move(first_run_finished_callback);
-  return params;
-}
-
 void ProfilePicker::Params::NotifyAccountSelected(const std::string& gaia_id) {
   if (account_selected_callback_)
     std::move(account_selected_callback_).Run(gaia_id);
 }
+#endif
+
+// static
+ProfilePicker::Params ProfilePicker::Params::ForFirstRun(
+    const base::FilePath& profile_path,
+    FirstRunExitedCallback first_run_exited_callback) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  DCHECK_EQ(profile_path, ProfileManager::GetPrimaryUserProfilePath());
+#endif
+
+  Params params(
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+      EntryPoint::kFirstRun,
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+      EntryPoint::kLacrosPrimaryProfileFirstRun,
+#endif
+      profile_path);
+  params.first_run_exited_callback_ = std::move(first_run_exited_callback);
+  return params;
+}
 
 void ProfilePicker::Params::NotifyFirstRunExited(
     FirstRunExitStatus exit_status,
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
     FirstRunExitSource exit_source,
+#endif
     base::OnceClosure maybe_callback) {
   if (!first_run_exited_callback_)
     return;
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   LOG(ERROR) << "Notifying FirstRun exit with status="
              << static_cast<int>(exit_status)
              << " from source=" << static_cast<int>(exit_source);
+#endif
 
   std::move(first_run_exited_callback_)
       .Run(exit_status, std::move(maybe_callback));
 }
-#endif
 
 bool ProfilePicker::Params::CanReusePickerWindow(const Params& other) const {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -129,7 +143,7 @@ bool ProfilePicker::Params::CanReusePickerWindow(const Params& other) const {
   // points.
   base::flat_set<EntryPoint> exclusive_entry_points = {
       EntryPoint::kLacrosPrimaryProfileFirstRun,
-      EntryPoint::kLacrosSelectAvailableAccount};
+      EntryPoint::kLacrosSelectAvailableAccount, EntryPoint::kFirstRun};
   if (entry_point_ != other.entry_point_ &&
       (exclusive_entry_points.contains(entry_point_) ||
        exclusive_entry_points.contains(other.entry_point_))) {
@@ -185,12 +199,11 @@ bool ProfilePicker::ShouldShowAtLaunch() {
 
   std::vector<ProfileAttributesEntry*> profile_attributes =
       profile_manager->GetProfileAttributesStorage().GetAllProfilesAttributes();
-  int number_of_active_profiles =
-      std::count_if(profile_attributes.begin(), profile_attributes.end(),
-                    [](ProfileAttributesEntry* entry) {
-                      return (base::Time::Now() - entry->GetActiveTime() <
-                              kActiveTimeThreshold);
-                    });
+  int number_of_active_profiles = base::ranges::count_if(
+      profile_attributes, [](ProfileAttributesEntry* entry) {
+        return (base::Time::Now() - entry->GetActiveTime() <
+                kActiveTimeThreshold);
+      });
   // Don't show the profile picker at launch if the user has less than two
   // active profiles. However, if the user has already seen the profile picker
   // before, respect user's preference.

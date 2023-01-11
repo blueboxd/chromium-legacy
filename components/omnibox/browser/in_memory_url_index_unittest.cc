@@ -7,42 +7,34 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <algorithm>
 #include <fstream>
 #include <memory>
 #include <numeric>
 #include <string>
 #include <utility>
 
-#include "base/auto_reset.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/case_conversion.h"
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
-#include "base/run_loop.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/history_service_test_util.h"
-#include "components/omnibox/browser/history_index_restore_observer.h"
-#include "components/omnibox/browser/in_memory_url_index_test_util.h"
 #include "components/omnibox/browser/in_memory_url_index_types.h"
 #include "components/omnibox/browser/url_index_private_data.h"
-#include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/template_url_service.h"
-#include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using base::ASCIIToUTF16;
 
 // The test version of the history url database table ('url') is contained in
 // a database file created from a text file('in_memory_url_index_test.db.txt').
@@ -80,7 +72,7 @@ void StringToTerms(const char* search_string,
                    size_t cursor_position,
                    std::u16string* lower_string,
                    String16Vector* lower_terms) {
-  *lower_string = base::i18n::ToLower(ASCIIToUTF16(search_string));
+  *lower_string = base::i18n::ToLower(base::ASCIIToUTF16(search_string));
   if ((cursor_position != kInvalid) &&
       (cursor_position < lower_string->length()) && (cursor_position > 0)) {
     lower_string->insert(cursor_position, u" ");
@@ -190,48 +182,55 @@ void InMemoryURLIndexTest::SetUp() {
   history_service_ =
       history::CreateHistoryService(history_dir_.GetPath(), true);
   ASSERT_TRUE(history_service_);
-  BlockUntilInMemoryURLIndexIsRefreshed(url_index_.get());
 
   history::HistoryBackend* backend = history_service_->history_backend_.get();
   history_database_ = backend->db();
 
-  // TODO(shess): If/when this code gets refactored, consider including the
-  // schema in the golden file (as sqlite3 .dump would generate) and using
-  // sql::test::CreateDatabaseFromSQL() to load it.  The code above which
-  // creates the database can change in ways which may not reliably represent
-  // user databases on disks in the fleet.
+  // Mutating the History database should only happen on the backend sequence.
+  history_service_->ScheduleTask(
+      history::HistoryService::PRIORITY_NORMAL, base::BindLambdaForTesting([&] {
+        // TODO(shess): If/when this code gets refactored, consider including
+        // the schema in the golden file (as sqlite3 .dump would generate) and
+        // using sql::test::CreateDatabaseFromSQL() to load it.  The code above
+        // which creates the database can change in ways which may not reliably
+        // represent user databases on disks in the fleet.
 
-  // Execute the contents of a golden file to populate the [urls] and [visits]
-  // tables.
-  base::FilePath golden_path;
-  base::PathService::Get(base::DIR_SOURCE_ROOT, &golden_path);
-  golden_path = golden_path.AppendASCII("components/test/data/omnibox");
-  golden_path = golden_path.Append(TestDBName());
-  ASSERT_TRUE(base::PathExists(golden_path));
-  std::string sql;
-  ASSERT_TRUE(base::ReadFileToString(golden_path, &sql));
-  sql::Database& db(GetDB());
-  ASSERT_TRUE(db.is_open());
-  ASSERT_TRUE(db.Execute(sql.c_str()));
+        // Execute the contents of a golden file to populate the [urls] and
+        // [visits] tables.
+        base::FilePath golden_path;
+        base::PathService::Get(base::DIR_SOURCE_ROOT, &golden_path);
+        golden_path = golden_path.AppendASCII("components/test/data/omnibox");
+        golden_path = golden_path.Append(TestDBName());
+        ASSERT_TRUE(base::PathExists(golden_path));
+        std::string sql;
+        ASSERT_TRUE(base::ReadFileToString(golden_path, &sql));
+        sql::Database& db(GetDB());
+        ASSERT_TRUE(db.is_open());
+        ASSERT_TRUE(db.Execute(sql.c_str()));
 
-  // Update [urls.last_visit_time] and [visits.visit_time] to represent a time
-  // relative to 'now'.
-  base::Time time_right_now = base::Time::NowFromSystemTime();
-  base::TimeDelta day_delta = base::Days(1);
-  {
-    sql::Statement s(db.GetUniqueStatement(
-        "UPDATE urls SET last_visit_time = ? - ? * last_visit_time"));
-    s.BindInt64(0, time_right_now.ToInternalValue());
-    s.BindInt64(1, day_delta.ToInternalValue());
-    ASSERT_TRUE(s.Run());
-  }
-  {
-    sql::Statement s(db.GetUniqueStatement(
-        "UPDATE visits SET visit_time = ? - ? * visit_time"));
-    s.BindInt64(0, time_right_now.ToInternalValue());
-    s.BindInt64(1, day_delta.ToInternalValue());
-    ASSERT_TRUE(s.Run());
-  }
+        // Update [urls.last_visit_time] and [visits.visit_time] to represent a
+        // time relative to 'now'.
+        base::Time time_right_now = base::Time::NowFromSystemTime();
+        base::TimeDelta day_delta = base::Days(1);
+        {
+          sql::Statement s(db.GetUniqueStatement(
+              "UPDATE urls SET last_visit_time = ? - ? * last_visit_time"));
+          s.BindTime(0, time_right_now);
+          s.BindInt64(1, day_delta.ToInternalValue());
+          ASSERT_TRUE(s.Run());
+        }
+        {
+          sql::Statement s(db.GetUniqueStatement(
+              "UPDATE visits SET visit_time = ? - ? * visit_time"));
+          s.BindTime(0, time_right_now);
+          s.BindInt64(1, day_delta.ToInternalValue());
+          ASSERT_TRUE(s.Run());
+        }
+      }));
+  // Block for the above lambda to run, otherwise the captured variables will
+  // go out of scope. And moreover, subsequent parts of this function need to
+  // have the test data already pre-populated.
+  BlockUntilHistoryProcessesPendingRequests(history_service_.get());
 
   // Set up a simple template URL service with a default search engine.
   template_url_service_ = std::make_unique<TemplateURLService>(
@@ -269,7 +268,9 @@ void InMemoryURLIndexTest::InitializeInMemoryURLIndex() {
       nullptr, history_service_.get(), template_url_service_.get(),
       base::FilePath(), client_schemes_to_allowlist);
   url_index_->Init();
-  BlockUntilInMemoryURLIndexIsRefreshed(url_index_.get());
+
+  BlockUntilHistoryProcessesPendingRequests(history_service_.get());
+  ASSERT_TRUE(url_index_->restored());
 }
 
 void InMemoryURLIndexTest::CheckTerm(
@@ -381,16 +382,10 @@ void InMemoryURLIndexTest::ExpectPrivateDataEqual(
     ASSERT_TRUE(actual_starts != actual.word_starts_map_.end());
     const RowWordStarts& expected_word_starts(expected_starts.second);
     const RowWordStarts& actual_word_starts(actual_starts->second);
-    EXPECT_EQ(expected_word_starts.url_word_starts_.size(),
-              actual_word_starts.url_word_starts_.size());
-    EXPECT_TRUE(std::equal(expected_word_starts.url_word_starts_.begin(),
-                           expected_word_starts.url_word_starts_.end(),
-                           actual_word_starts.url_word_starts_.begin()));
-    EXPECT_EQ(expected_word_starts.title_word_starts_.size(),
-              actual_word_starts.title_word_starts_.size());
-    EXPECT_TRUE(std::equal(expected_word_starts.title_word_starts_.begin(),
-                           expected_word_starts.title_word_starts_.end(),
-                           actual_word_starts.title_word_starts_.begin()));
+    EXPECT_TRUE(base::ranges::equal(expected_word_starts.url_word_starts_,
+                                    actual_word_starts.url_word_starts_));
+    EXPECT_TRUE(base::ranges::equal(expected_word_starts.title_word_starts_,
+                                    actual_word_starts.title_word_starts_));
   }
 }
 
@@ -678,7 +673,7 @@ TEST_F(InMemoryURLIndexTest, TrimHistoryIds) {
 
   auto CountGroupElementsInIds = [](const ItemGroup& group,
                                     const HistoryIDVector& ids) {
-    return std::count_if(ids.begin(), ids.end(), [&](history::URLID id) {
+    return base::ranges::count_if(ids, [&](history::URLID id) {
       return group.min_id <= id && id < group.max_id;
     });
   };
@@ -723,9 +718,8 @@ TEST_F(InMemoryURLIndexTest, TrimHistoryIds) {
 
   // Each next group should fill almost everything, while the previous group
   // should occupy what's left.
-  auto* error_position = std::adjacent_find(
-      std::begin(item_groups), std::end(item_groups),
-      [&](const ItemGroup& previous, const ItemGroup& current) {
+  auto* error_position = base::ranges::adjacent_find(
+      item_groups, [&](const ItemGroup& previous, const ItemGroup& current) {
         auto ids = GetHistoryIdsUpTo(current.max_id);
         EXPECT_TRUE(GetPrivateData()->TrimHistoryIdsPool(&ids));
 

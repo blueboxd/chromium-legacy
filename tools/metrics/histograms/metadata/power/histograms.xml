@@ -147,7 +147,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="PerformanceMonitor.AverageCPU8.Total{UsageScenario}"
-    units="1/100 %" expires_after="2022-11-30">
+    units="1/100 %" expires_after="2023-03-31">
   <owner>fdoray@chromium.org</owner>
   <owner>pmonette@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
@@ -159,7 +159,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PerformanceMonitor.AverageCPU8.{ProcessName}" units="1/100 %"
-    expires_after="2022-11-30">
+    expires_after="2023-03-31">
   <owner>fdoray@chromium.org</owner>
   <owner>pmonette@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
@@ -291,7 +291,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PerformanceMonitor.ResourceCoalition.Availability"
-    enum="CoalitionIDAvailability" expires_after="2023-02-12">
+    enum="CoalitionIDAvailability" expires_after="2023-04-16">
   <owner>fdoray@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -550,6 +550,46 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="Power.AdaptiveChargingDelayDelta{AdaptiveChargingState}.{OnTimeStatus}"
+    units="minutes" expires_after="2023-10-26">
+  <owner>dbasehore@chromium.org</owner>
+  <owner>chromeos-platform-power@google.com</owner>
+  <summary>
+    The difference between the correct delay time and the actual delay time for
+    Adaptive Charging, as computed by (correct delay - actual delay) in minutes.
+    Adaptive Charging delays charging from a hold charge percentage, 80%, to
+    full if it predicts the charger will be unplugged more than 2 hours in the
+    future. The correct delay time ends exactly 2 hours before the user unplugs
+    the charger. This metric is recorded upon unplug of an AC charger, if the
+    hold percent was reached.
+
+    We record this under several variants, which split this result by whether
+    Adaptive Charging is enabled and active, a heuristic disabled the feature,
+    the user canceled the feature for this use, the user disabled the feature,
+    or the feature is not supported on the hardware class. We still record the
+    metric if the feature is not supported, since we may backport support to
+    older systems, and we'd like to know how well the ML model does before
+    enabling support.
+
+    Since metrics don't work with negative values, this is additionally split
+    across Late and Early variants. The absolute values of negatives are
+    reported under the Late variant. Positive and 0 values are reported under
+    the Early variant.
+  </summary>
+  <token key="AdaptiveChargingState">
+    <variant name="Active"/>
+    <variant name="HeuristicDisabled"/>
+    <variant name="NotSupported"/>
+    <variant name="UserCanceled"/>
+    <variant name="UserDisabled"/>
+  </token>
+  <token key="OnTimeStatus">
+    <variant name="Early"/>
+    <variant name="Late"/>
+  </token>
+</histogram>
+
 <histogram name="Power.AdaptiveChargingMinutes.{ReportType}" units="minutes"
     expires_after="2023-03-19">
   <owner>dbasehore@chromium.org</owner>
@@ -606,6 +646,30 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Power.AdaptiveChargingMinutesFullOnAC{AdaptiveChargingState}"
+    units="minutes" expires_after="2023-10-26">
+  <owner>dbasehore@chromium.org</owner>
+  <owner>chromeos-platform-power@google.com</owner>
+  <summary>
+    This shows the time spent fully charged while on AC in minutes.
+
+    We record this under several variants, which split this result by whether
+    Adaptive Charging is enabled and active, a heuristic disabled the feature,
+    the user canceled the feature for this use, the user disabled the feature,
+    or the feature is not supported on the hardware class. We still record the
+    metric if the feature is not supported, since we may backport support to
+    older systems, and we'd like to know how well the ML model does before
+    enabling support.
+  </summary>
+  <token key="AdaptiveChargingState">
+    <variant name="Active"/>
+    <variant name="HeuristicDisabled"/>
+    <variant name="NotSupported"/>
+    <variant name="UserCanceled"/>
+    <variant name="UserDisabled"/>
+  </token>
+</histogram>
+
 <histogram name="Power.AdaptiveChargingMinutesToFull" units="minutes"
     expires_after="2023-03-19">
   <owner>dbasehore@chromium.org</owner>
@@ -619,7 +683,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.AmbientLightOnResume" units="lux"
-    expires_after="2023-02-01">
+    expires_after="2023-04-23">
   <owner>bkersten@chromium.org</owner>
   <owner>slangley@chromium.org</owner>
   <summary>
@@ -712,7 +776,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatteryDischargeMode2{UsageScenario}"
-    enum="BatteryDischargeMode" expires_after="2022-11-30">
+    enum="BatteryDischargeMode" expires_after="2023-03-31">
   <owner>etiennep@chromium.org</owner>
   <owner>olivierli@chromium.org</owner>
   <summary>
@@ -724,7 +788,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatteryDischargeMode5{UsageScenario}{IntervalType}"
-    enum="BatteryDischargeMode" expires_after="2022-11-30">
+    enum="BatteryDischargeMode" expires_after="2023-03-31">
   <owner>etiennep@chromium.org</owner>
   <owner>olivierli@chromium.org</owner>
   <summary>
@@ -884,7 +948,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Power.BatteryPercentDrop" units="%" expires_after="2023-02-19">
+<histogram name="Power.BatteryPercentDrop" units="%" expires_after="2023-04-23">
   <owner>ryansturm@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -948,7 +1012,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatterySamplingDelay" units="microseconds"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>etiennep@chromium.org</owner>
   <owner>fdoray@chromium.org</owner>
   <summary>
@@ -1050,6 +1114,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Power.CpuTimeSecondsPerPowerMode.{ProcessType}"
     enum="PowerMode" expires_after="2023-03-31">
+  <obsolete>
+    Deprecated in 11/2022 without replacement.
+  </obsolete>
   <owner>eseckler@chromium.org</owner>
   <owner>oksamyt@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -1600,6 +1667,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Power.IdleCpuLoad.{ProcessType}" units="%"
     expires_after="2023-07-31">
+  <obsolete>
+    Deprecated in 11/2022 without replacement.
+  </obsolete>
   <owner>eseckler@chromium.org</owner>
   <owner>khokhlov@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -1842,7 +1912,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.Mac.IsOnBattery2" enum="BooleanOnBattery"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>avi@chromium.org</owner>
   <owner>lgrey@chromium.org</owner>
   <summary>
@@ -1853,7 +1923,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.Mac.ThermalState" enum="MacThermalState"
-    expires_after="2022-11-30">
+    expires_after="2023-11-30">
   <owner>lgrey@chromium.org</owner>
   <owner>olivierli@chromium.org</owner>
   <summary>
@@ -1924,7 +1994,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.PowerButtonPressed" units="units"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>emaamari@google.com</owner>
   <owner>chromeos-commercial-identity@google.com</owner>
   <summary>
@@ -1958,6 +2028,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Power.PowerScheduler.ProcessPowerModeChange.{ProcessType}"
     enum="PowerMode" expires_after="2023-03-31">
+  <obsolete>
+    Deprecated in 11/2022 without replacement.
+  </obsolete>
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -2051,7 +2124,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.SmartCharging.Messages" enum="SmartChargingMessages"
-    expires_after="2022-12-01">
+    expires_after="2023-06-01">
   <owner>thanhdng@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>Type of messages that are reported by smart charging.</summary>
@@ -2259,7 +2332,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.SmartDimModel.RequestCanceledDuration" units="ms"
-    expires_after="2023-03-05">
+    expires_after="2023-05-07">
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <owner>napper@chromium.org</owner>
@@ -2271,7 +2344,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.SmartDimModel.RequestCompleteDuration" units="ms"
-    expires_after="2023-03-05">
+    expires_after="2023-05-07">
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <owner>napper@chromium.org</owner>

@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
-#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -85,6 +84,7 @@
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_dlist_element.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_map_element.h"
@@ -1325,6 +1325,10 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
 }
 
 ax::mojom::blink::Role AXNodeObject::DetermineAccessibilityRole() {
+#if DCHECK_IS_ON()
+  base::AutoReset<bool> reentrancy_protector(&is_computing_role_, true);
+#endif
+
   if (IsDetached()) {
     NOTREACHED();
     return ax::mojom::blink::Role::kUnknown;
@@ -1864,13 +1868,13 @@ AccessibilityExpanded AXNodeObject::IsExpanded() const {
                : kExpandedCollapsed;
   }
 
-  // For form controls that act as triggering elements for popups of type
-  // kPopup, then set aria-expanded=false when the popup is hidden, and
+  // For form controls that act as triggering elements for popovers of type
+  // kAuto, then set aria-expanded=false when the popover is hidden, and
   // aria-expanded=true when it is showing.
   if (auto* form_control = DynamicTo<HTMLFormControlElement>(element)) {
-    if (auto popup = form_control->popupTargetElement().element;
-        popup && popup->PopupType() == PopupValueType::kAuto) {
-      return popup->popupOpen() ? kExpandedExpanded : kExpandedCollapsed;
+    if (auto popover = form_control->popoverTargetElement().element;
+        popover && popover->PopoverType() == PopoverValueType::kAuto) {
+      return popover->popoverOpen() ? kExpandedExpanded : kExpandedCollapsed;
     }
   }
 
@@ -5634,39 +5638,6 @@ String AXNodeObject::Description(
         description_sources->back().text = description;
       } else {
         return description;
-      }
-    }
-  }
-
-  // For form controls that act as triggering elements for popups of type kHint,
-  // then set aria-describedby to the hint popup.
-  if (auto* form_control = DynamicTo<HTMLFormControlElement>(element)) {
-    auto popup = form_control->popupTargetElement();
-    if (popup.element && popup.element->PopupType() == PopupValueType::kHint) {
-      description_from = ax::mojom::blink::DescriptionFrom::kPopupElement;
-      if (description_sources) {
-        description_sources->push_back(
-            DescriptionSource(found_description, popup.attribute_name));
-        description_sources->back().type = description_from;
-      }
-      AXObject* popup_ax_object = AXObjectCache().GetOrCreate(popup.element);
-      if (popup_ax_object) {
-        AXObjectSet visited;
-        description = RecursiveTextAlternative(*popup_ax_object,
-                                               popup_ax_object, visited);
-        if (related_objects) {
-          related_objects->push_back(
-              MakeGarbageCollected<NameSourceRelatedObject>(popup_ax_object,
-                                                            description));
-        }
-        if (description_sources) {
-          DescriptionSource& source = description_sources->back();
-          source.related_objects = *related_objects;
-          source.text = description;
-          found_description = true;
-        } else {
-          return description;
-        }
       }
     }
   }

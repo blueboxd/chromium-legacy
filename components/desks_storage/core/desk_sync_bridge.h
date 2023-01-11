@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DESKS_STORAGE_CORE_DESK_SYNC_BRIDGE_H_
 #define COMPONENTS_DESKS_STORAGE_CORE_DESK_SYNC_BRIDGE_H_
 
+#include <stddef.h>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -24,10 +26,6 @@ namespace syncer {
 class ModelTypeChangeProcessor;
 }  // namespace syncer
 
-namespace sync_pb {
-class WorkspaceDeskSpecifics;
-}  // namespace sync_pb
-
 namespace ash {
 class DeskTemplate;
 enum class DeskTemplateType;
@@ -45,10 +43,6 @@ class DeskSyncBridge : public syncer::ModelTypeSyncBridge, public DeskModel {
   DeskSyncBridge(const DeskSyncBridge&) = delete;
   DeskSyncBridge& operator=(const DeskSyncBridge&) = delete;
   ~DeskSyncBridge() override;
-
-  // Converts a WorkspaceDesk proto to its corresponding ash::DeskTemplate.
-  static std::unique_ptr<ash::DeskTemplate> FromSyncProto(
-      const sync_pb::WorkspaceDeskSpecifics& pb_entry);
 
   // syncer::ModelTypeSyncBridge overrides.
   std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()
@@ -74,12 +68,12 @@ class DeskSyncBridge : public syncer::ModelTypeSyncBridge, public DeskModel {
   void DeleteEntry(const base::GUID& uuid,
                    DeleteEntryCallback callback) override;
   void DeleteAllEntries(DeleteEntryCallback callback) override;
-  std::size_t GetEntryCount() const override;
-  std::size_t GetMaxEntryCount() const override;
-  std::size_t GetSaveAndRecallDeskEntryCount() const override;
-  std::size_t GetDeskTemplateEntryCount() const override;
-  std::size_t GetMaxSaveAndRecallDeskEntryCount() const override;
-  std::size_t GetMaxDeskTemplateEntryCount() const override;
+  size_t GetEntryCount() const override;
+  size_t GetMaxEntryCount() const override;
+  size_t GetSaveAndRecallDeskEntryCount() const override;
+  size_t GetDeskTemplateEntryCount() const override;
+  size_t GetMaxSaveAndRecallDeskEntryCount() const override;
+  size_t GetMaxDeskTemplateEntryCount() const override;
   std::vector<base::GUID> GetAllEntryUuids() const override;
   bool IsReady() const override;
   // Whether this sync bridge is syncing local data to sync. This sync bridge
@@ -93,11 +87,6 @@ class DeskSyncBridge : public syncer::ModelTypeSyncBridge, public DeskModel {
       const base::GUID& uuid) const override;
 
   // Other helper methods.
-
-  // Converts an ash::DeskTemplate to its corresponding WorkspaceDesk proto.
-  sync_pb::WorkspaceDeskSpecifics ToSyncProto(
-      const ash::DeskTemplate* desk_template);
-
   bool HasUuid(const base::GUID& uuid) const;
 
   const ash::DeskTemplate* GetUserEntryByUUID(const base::GUID& uuid) const;

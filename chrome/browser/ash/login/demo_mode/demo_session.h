@@ -37,7 +37,7 @@ struct CountryCodeAndFullNamePair {
   std::u16string country_name;
 };
 
-class DemoResources;
+class DemoComponents;
 
 // Tracks global demo session state, such as whether the demo session has
 // started and the state of demo mode resources.
@@ -185,15 +185,13 @@ class DemoSession : public session_manager::SessionManagerObserver,
   // custom location, make sure the permissions are set to 555.
   base::FilePath GetDemoAppComponentPath();
 
-  const DemoResources* resources() const { return demo_resources_.get(); }
+  const DemoComponents* components() const { return components_.get(); }
 
  private:
   DemoSession();
   ~DemoSession() override;
 
-  void OnDemoAppComponentLoaded(
-      component_updater::CrOSComponentManager::Error error,
-      const base::FilePath& path);
+  void OnDemoAppComponentLoaded();
 
   // Get country code and full name in current language pair sorted by their
   // full name in currently selected language.
@@ -242,7 +240,7 @@ class DemoSession : public session_manager::SessionManagerObserver,
   // device is offline.
   std::vector<std::string> ignore_pin_policy_offline_apps_;
 
-  std::unique_ptr<DemoResources> demo_resources_;
+  std::unique_ptr<DemoComponents> components_;
 
   base::ScopedObservation<session_manager::SessionManager,
                           session_manager::SessionManagerObserver>
@@ -264,8 +262,6 @@ class DemoSession : public session_manager::SessionManagerObserver,
 
   bool splash_screen_removed_ = false;
   bool screensaver_activated_ = false;
-
-  base::FilePath default_demo_app_component_path_;
 
   base::WeakPtrFactory<DemoSession> weak_ptr_factory_{this};
 };

@@ -20,6 +20,8 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "content/browser/interest_group/auction_process_manager.h"
+#include "content/browser/interest_group/subresource_url_authorizations.h"
+#include "content/browser/interest_group/subresource_url_builder.h"
 #include "content/public/browser/site_instance.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
@@ -38,11 +40,17 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/interest_group/auction_config.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace content {
 namespace {
+
+using BundleSubresourceInfo = SubresourceUrlBuilder::BundleSubresourceInfo;
+
+constexpr char kBuyer1OriginStr[] = "https://origin.test";
+constexpr char kBuyer2OriginStr[] = "https://origin2.test";
 
 base::OnceClosure NeverInvokedWorkletAvailableCallback() {
   return base::BindOnce([]() { ADD_FAILURE() << "This should not be called"; });
@@ -54,6 +62,38 @@ AuctionWorkletManager::FatalErrorCallback NeverInvokedFatalErrorCallback() {
          const std::vector<std::string>& errors) {
         ADD_FAILURE() << "This should not be called";
       });
+}
+
+blink::DirectFromSellerSignalsSubresource CreateSubresource(
+    const GURL& bundle_url) {
+  blink::DirectFromSellerSignalsSubresource subresource;
+  subresource.bundle_url = bundle_url;
+  return subresource;
+}
+
+blink::DirectFromSellerSignals PopulateSubresources() {
+  blink::DirectFromSellerSignals result;
+
+  const url::Origin kBuyer1Origin = url::Origin::Create(GURL(kBuyer1OriginStr));
+  const url::Origin kBuyer2Origin = url::Origin::Create(GURL(kBuyer2OriginStr));
+
+  const GURL bundle_url1 = GURL("https://seller.test/bundle1");
+  const GURL bundle_url2 = GURL("https://seller.test/bundle2");
+
+  result.prefix = GURL("https://seller.test/signals");
+
+  result.per_buyer_signals[kBuyer1Origin] = CreateSubresource(bundle_url1);
+  result.per_buyer_signals[kBuyer2Origin] = CreateSubresource(bundle_url2);
+
+  blink::DirectFromSellerSignalsSubresource seller_signals =
+      CreateSubresource(bundle_url1);
+  result.seller_signals = seller_signals;
+
+  blink::DirectFromSellerSignalsSubresource auction_signals =
+      CreateSubresource(bundle_url2);
+  result.auction_signals = auction_signals;
+
+  return result;
 }
 
 // Single-use helper for waiting for a load error and inspecting its data.
@@ -559,6 +599,9 @@ class AuctionWorkletManagerTest : public testing::Test,
   network::mojom::URLLoaderFactory* GetTrustedURLLoaderFactory() override {
     return &url_loader_factory_;
   }
+  void PreconnectSocket(
+      const GURL& url,
+      const net::NetworkAnonymizationKey& network_anonymization_key) override {}
   RenderFrameHostImpl* GetFrame() override { return nullptr; }
   scoped_refptr<SiteInstance> GetFrameSiteInstance() override {
     return scoped_refptr<SiteInstance>();
@@ -593,6 +636,9 @@ class AuctionWorkletManagerTest : public testing::Test,
   const GURL kDecisionLogicUrl = GURL("https://origin.test/script");
   const GURL kWasmUrl = GURL("https://origin.test/wasm");
   const GURL kTrustedSignalsUrl = GURL("https://origin.test/trusted_signals");
+  const SubresourceUrlBuilder kEmptySubresourceBuilder{absl::nullopt};
+  const SubresourceUrlBuilder kPopulatedSubresourceBuilder{
+      PopulateSubresources()};
 
   base::test::TaskEnvironment task_environment_;
 
@@ -607,6 +653,7 @@ TEST_F(AuctionWorkletManagerTest, SingleBidderWorklet) {
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
       kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl,
+      kPopulatedSubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle));
@@ -622,12 +669,35 @@ TEST_F(AuctionWorkletManagerTest, SingleBidderWorklet) {
   EXPECT_EQ(0, bidder_worklet->num_send_pending_signals_requests_calls());
   handle->GetBidderWorklet()->SendPendingSignalsRequests();
   bidder_worklet->WaitForSendPendingSignalsRequests(1);
+
+  const url::Origin kBuyer1Origin = url::Origin::Create(GURL(kBuyer1OriginStr));
+  const url::Origin kBuyer2Origin = url::Origin::Create(GURL(kBuyer2OriginStr));
+  const SubresourceUrlBuilder::BundleSubresourceInfo expected_buyer1_full_info =
+      kPopulatedSubresourceBuilder.per_buyer_signals().at(kBuyer1Origin);
+  const SubresourceUrlBuilder::BundleSubresourceInfo expected_buyer2_full_info =
+      kPopulatedSubresourceBuilder.per_buyer_signals().at(kBuyer2Origin);
+  EXPECT_EQ(
+      nullptr,
+      handle->GetSubresourceUrlAuthorizationsForTesting().GetAuthorizationInfo(
+          kPopulatedSubresourceBuilder.seller_signals()->subresource_url));
+  EXPECT_EQ(
+      kPopulatedSubresourceBuilder.auction_signals(),
+      *handle->GetSubresourceUrlAuthorizationsForTesting().GetAuthorizationInfo(
+          kPopulatedSubresourceBuilder.auction_signals()->subresource_url));
+  EXPECT_EQ(
+      expected_buyer1_full_info,
+      *handle->GetSubresourceUrlAuthorizationsForTesting().GetAuthorizationInfo(
+          expected_buyer1_full_info.subresource_url));
+  EXPECT_EQ(
+      nullptr,
+      handle->GetSubresourceUrlAuthorizationsForTesting().GetAuthorizationInfo(
+          expected_buyer2_full_info.subresource_url));
 }
 
 TEST_F(AuctionWorkletManagerTest, SingleSellerWorklet) {
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
-      kDecisionLogicUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kTrustedSignalsUrl, kPopulatedSubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle));
@@ -642,6 +712,63 @@ TEST_F(AuctionWorkletManagerTest, SingleSellerWorklet) {
   EXPECT_EQ(0, seller_worklet->num_send_pending_signals_requests_calls());
   handle->GetSellerWorklet()->SendPendingSignalsRequests();
   seller_worklet->WaitForSendPendingSignalsRequests(1);
+
+  const url::Origin kBuyer1Origin = url::Origin::Create(GURL(kBuyer1OriginStr));
+  const url::Origin kBuyer2Origin = url::Origin::Create(GURL(kBuyer2OriginStr));
+  const SubresourceUrlBuilder::BundleSubresourceInfo expected_buyer1_full_info =
+      kPopulatedSubresourceBuilder.per_buyer_signals().at(kBuyer1Origin);
+  const SubresourceUrlBuilder::BundleSubresourceInfo expected_buyer2_full_info =
+      kPopulatedSubresourceBuilder.per_buyer_signals().at(kBuyer2Origin);
+  EXPECT_EQ(
+      kPopulatedSubresourceBuilder.seller_signals(),
+      *handle->GetSubresourceUrlAuthorizationsForTesting().GetAuthorizationInfo(
+          kPopulatedSubresourceBuilder.seller_signals()->subresource_url));
+  EXPECT_EQ(
+      kPopulatedSubresourceBuilder.auction_signals(),
+      *handle->GetSubresourceUrlAuthorizationsForTesting().GetAuthorizationInfo(
+          kPopulatedSubresourceBuilder.auction_signals()->subresource_url));
+  EXPECT_EQ(
+      nullptr,
+      handle->GetSubresourceUrlAuthorizationsForTesting().GetAuthorizationInfo(
+          expected_buyer1_full_info.subresource_url));
+  EXPECT_EQ(
+      nullptr,
+      handle->GetSubresourceUrlAuthorizationsForTesting().GetAuthorizationInfo(
+          expected_buyer2_full_info.subresource_url));
+}
+
+TEST_F(AuctionWorkletManagerTest,
+       SingleBidderWorkletEmptyDirectFromSellerSignals) {
+  std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle;
+  ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
+      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
+      /*experiment_group_id=*/absl::nullopt,
+      NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
+      handle));
+  EXPECT_TRUE(handle->GetBidderWorklet());
+
+  std::unique_ptr<MockBidderWorklet> bidder_worklet =
+      auction_process_manager_.WaitForBidderWorklet();
+
+  EXPECT_TRUE(
+      handle->GetSubresourceUrlAuthorizationsForTesting().IsEmptyForTesting());
+}
+
+TEST_F(AuctionWorkletManagerTest,
+       SingleSellerWorkletEmptyDirectFromSellerSignals) {
+  std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle;
+  ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
+      kDecisionLogicUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
+      /*experiment_group_id=*/absl::nullopt,
+      NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
+      handle));
+  EXPECT_TRUE(handle->GetSellerWorklet());
+
+  std::unique_ptr<MockSellerWorklet> seller_worklet =
+      auction_process_manager_.WaitForSellerWorklet();
+
+  EXPECT_TRUE(
+      handle->GetSubresourceUrlAuthorizationsForTesting().IsEmptyForTesting());
 }
 
 // Test the case where a bidder worklet request completes asynchronously. This
@@ -664,7 +791,7 @@ TEST_F(AuctionWorkletManagerTest, BidderWorkletAsync) {
     std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle;
     ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
         decision_logic_url, /*wasm_url=*/absl::nullopt,
-        /*trusted_bidding_signals_url=*/absl::nullopt,
+        /*trusted_bidding_signals_url=*/absl::nullopt, kEmptySubresourceBuilder,
         /*experiment_group_id=*/absl::nullopt,
         NeverInvokedWorkletAvailableCallback(),
         NeverInvokedFatalErrorCallback(), handle));
@@ -696,7 +823,7 @@ TEST_F(AuctionWorkletManagerTest, BidderWorkletAsync) {
   base::RunLoop worklet_available_loop;
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle;
   ASSERT_FALSE(auction_worklet_manager_.RequestBidderWorklet(
-      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       worklet_available_loop.QuitClosure(), NeverInvokedFatalErrorCallback(),
       handle));
@@ -747,6 +874,7 @@ TEST_F(AuctionWorkletManagerTest, SellerWorkletAsync) {
     std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle;
     ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
         decision_logic_url, /*trusted_scoring_signals_url=*/absl::nullopt,
+        kEmptySubresourceBuilder,
         /*experiment_group_id=*/absl::nullopt,
         NeverInvokedWorkletAvailableCallback(),
         NeverInvokedFatalErrorCallback(), handle));
@@ -777,7 +905,7 @@ TEST_F(AuctionWorkletManagerTest, SellerWorkletAsync) {
   base::RunLoop worklet_available_loop;
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle;
   ASSERT_FALSE(auction_worklet_manager_.RequestSellerWorklet(
-      kDecisionLogicUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       worklet_available_loop.QuitClosure(), NeverInvokedFatalErrorCallback(),
       handle));
@@ -812,7 +940,7 @@ TEST_F(AuctionWorkletManagerTest, ReuseBidderWorklet) {
   // Load a bidder worklet.
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle1;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
-      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle1));
@@ -832,7 +960,7 @@ TEST_F(AuctionWorkletManagerTest, ReuseBidderWorklet) {
   // reused.
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle2;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
-      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle2));
@@ -852,7 +980,7 @@ TEST_F(AuctionWorkletManagerTest, ReuseBidderWorklet) {
   // reused again.
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle3;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
-      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle3));
@@ -874,7 +1002,7 @@ TEST_F(AuctionWorkletManagerTest, ReuseBidderWorklet) {
   // be created.
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle4;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
-      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle4));
@@ -895,7 +1023,7 @@ TEST_F(AuctionWorkletManagerTest, ReuseSellerWorklet) {
   // Load a seller worklet.
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle1;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
-      kDecisionLogicUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle1));
@@ -914,7 +1042,7 @@ TEST_F(AuctionWorkletManagerTest, ReuseSellerWorklet) {
   // reused.
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle2;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
-      kDecisionLogicUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle2));
@@ -934,7 +1062,7 @@ TEST_F(AuctionWorkletManagerTest, ReuseSellerWorklet) {
   // reused again.
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle3;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
-      kDecisionLogicUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle3));
@@ -956,7 +1084,7 @@ TEST_F(AuctionWorkletManagerTest, ReuseSellerWorklet) {
   // be created.
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle4;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
-      kDecisionLogicUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle4));
@@ -977,7 +1105,7 @@ TEST_F(AuctionWorkletManagerTest, DifferentBidderWorklets) {
   // Load a bidder worklet.
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle1;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
-      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle1));
@@ -998,6 +1126,7 @@ TEST_F(AuctionWorkletManagerTest, DifferentBidderWorklets) {
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle2;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
       kDifferentDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl,
+      kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle2));
@@ -1017,7 +1146,7 @@ TEST_F(AuctionWorkletManagerTest, DifferentBidderWorklets) {
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle3;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
       kDecisionLogicUrl, kWasmUrl,
-      /*trusted_bidding_signals_url=*/absl::nullopt,
+      /*trusted_bidding_signals_url=*/absl::nullopt, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle3));
@@ -1038,6 +1167,7 @@ TEST_F(AuctionWorkletManagerTest, DifferentBidderWorklets) {
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle4;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
       kDecisionLogicUrl, /*wasm_url=*/absl::nullopt, kTrustedSignalsUrl,
+      kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle4));
@@ -1062,9 +1192,9 @@ TEST_F(AuctionWorkletManagerTest, BidderWorkletExperimentIDs) {
 
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle1;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
-      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl, kExperiment1,
-      NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
-      handle1));
+      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
+      kExperiment1, NeverInvokedWorkletAvailableCallback(),
+      NeverInvokedFatalErrorCallback(), handle1));
   EXPECT_TRUE(handle1->GetBidderWorklet());
   std::unique_ptr<MockBidderWorklet> bidder_worklet1 =
       auction_process_manager_.WaitForBidderWorklet();
@@ -1073,9 +1203,9 @@ TEST_F(AuctionWorkletManagerTest, BidderWorkletExperimentIDs) {
   // worklet.
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle2;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
-      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl, kExperiment2,
-      NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
-      handle2));
+      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
+      kExperiment2, NeverInvokedWorkletAvailableCallback(),
+      NeverInvokedFatalErrorCallback(), handle2));
   EXPECT_TRUE(handle2->GetBidderWorklet());
   std::unique_ptr<MockBidderWorklet> bidder_worklet2 =
       auction_process_manager_.WaitForBidderWorklet();
@@ -1084,9 +1214,9 @@ TEST_F(AuctionWorkletManagerTest, BidderWorkletExperimentIDs) {
   // Now try with different trusted signals URL (using WASM url instead).
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle3;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
-      kDecisionLogicUrl, kWasmUrl, kWasmUrl, kExperiment1,
-      NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
-      handle3));
+      kDecisionLogicUrl, kWasmUrl, kWasmUrl, kEmptySubresourceBuilder,
+      kExperiment1, NeverInvokedWorkletAvailableCallback(),
+      NeverInvokedFatalErrorCallback(), handle3));
   EXPECT_TRUE(handle3->GetBidderWorklet());
   std::unique_ptr<MockBidderWorklet> bidder_worklet3 =
       auction_process_manager_.WaitForBidderWorklet();
@@ -1098,9 +1228,9 @@ TEST_F(AuctionWorkletManagerTest, BidderWorkletExperimentIDs) {
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle4;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
       kDecisionLogicUrl, kWasmUrl,
-      /*trusted_bidding_signals_url=*/absl::nullopt, kExperiment1,
-      NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
-      handle4));
+      /*trusted_bidding_signals_url=*/absl::nullopt, kEmptySubresourceBuilder,
+      kExperiment1, NeverInvokedWorkletAvailableCallback(),
+      NeverInvokedFatalErrorCallback(), handle4));
   EXPECT_TRUE(handle4->GetBidderWorklet());
   std::unique_ptr<MockBidderWorklet> bidder_worklet4 =
       auction_process_manager_.WaitForBidderWorklet();
@@ -1111,7 +1241,7 @@ TEST_F(AuctionWorkletManagerTest, BidderWorkletExperimentIDs) {
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle5;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
       kDecisionLogicUrl, kWasmUrl,
-      /*trusted_bidding_signals_url=*/absl::nullopt,
+      /*trusted_bidding_signals_url=*/absl::nullopt, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle5));
@@ -1124,7 +1254,7 @@ TEST_F(AuctionWorkletManagerTest, DifferentSellerWorklets) {
   // Load a seller worklet.
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle1;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
-      kDecisionLogicUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle1));
@@ -1143,7 +1273,7 @@ TEST_F(AuctionWorkletManagerTest, DifferentSellerWorklets) {
       GURL("https://origin.test/different_script");
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle2;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
-      kDifferentDecisionLogicUrl, kTrustedSignalsUrl,
+      kDifferentDecisionLogicUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle2));
@@ -1162,6 +1292,7 @@ TEST_F(AuctionWorkletManagerTest, DifferentSellerWorklets) {
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle3;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
       kDecisionLogicUrl, /*trusted_scoring_signals_url=*/absl::nullopt,
+      kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle3));
@@ -1184,9 +1315,9 @@ TEST_F(AuctionWorkletManagerTest, SellerWorkletExperimentIDs) {
 
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle1;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
-      kDecisionLogicUrl, kTrustedSignalsUrl, kExperiment1,
-      NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
-      handle1));
+      kDecisionLogicUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
+      kExperiment1, NeverInvokedWorkletAvailableCallback(),
+      NeverInvokedFatalErrorCallback(), handle1));
   EXPECT_TRUE(handle1->GetSellerWorklet());
   std::unique_ptr<MockSellerWorklet> seller_worklet1 =
       auction_process_manager_.WaitForSellerWorklet();
@@ -1195,9 +1326,9 @@ TEST_F(AuctionWorkletManagerTest, SellerWorkletExperimentIDs) {
   // worklet.
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle2;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
-      kDecisionLogicUrl, kTrustedSignalsUrl, kExperiment2,
-      NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
-      handle2));
+      kDecisionLogicUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
+      kExperiment2, NeverInvokedWorkletAvailableCallback(),
+      NeverInvokedFatalErrorCallback(), handle2));
   EXPECT_TRUE(handle2->GetSellerWorklet());
   std::unique_ptr<MockSellerWorklet> seller_worklet2 =
       auction_process_manager_.WaitForSellerWorklet();
@@ -1206,7 +1337,7 @@ TEST_F(AuctionWorkletManagerTest, SellerWorkletExperimentIDs) {
   // Now try with different trusted signals URL (using WASM url instead).
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle3;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
-      kDecisionLogicUrl, kWasmUrl, kExperiment1,
+      kDecisionLogicUrl, kWasmUrl, kEmptySubresourceBuilder, kExperiment1,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle3));
   EXPECT_TRUE(handle3->GetSellerWorklet());
@@ -1221,8 +1352,9 @@ TEST_F(AuctionWorkletManagerTest, SellerWorkletExperimentIDs) {
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle4;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
       kDecisionLogicUrl, /*trusted_scoring_signals_url=*/absl::nullopt,
-      kExperiment1, NeverInvokedWorkletAvailableCallback(),
-      NeverInvokedFatalErrorCallback(), handle4));
+      kEmptySubresourceBuilder, kExperiment1,
+      NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
+      handle4));
   EXPECT_TRUE(handle4->GetSellerWorklet());
   std::unique_ptr<MockSellerWorklet> seller_worklet4 =
       auction_process_manager_.WaitForSellerWorklet();
@@ -1233,6 +1365,7 @@ TEST_F(AuctionWorkletManagerTest, SellerWorkletExperimentIDs) {
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle5;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
       kDecisionLogicUrl, /*trusted_scoring_signals_url=*/absl::nullopt,
+      kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle5));
@@ -1252,7 +1385,7 @@ TEST_F(AuctionWorkletManagerTest, BidderWorkletLoadError) {
   FatalLoadErrorHelper load_error_helper;
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
-      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), load_error_helper.Callback(),
       handle));
@@ -1279,7 +1412,7 @@ TEST_F(AuctionWorkletManagerTest, BidderWorkletLoadError) {
   // yet.
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle2;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
-      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), load_error_helper.Callback(),
       handle2));
@@ -1296,7 +1429,7 @@ TEST_F(AuctionWorkletManagerTest, SellerWorkletLoadError) {
   FatalLoadErrorHelper load_error_helper;
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
-      kDecisionLogicUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), load_error_helper.Callback(),
       handle));
@@ -1323,7 +1456,7 @@ TEST_F(AuctionWorkletManagerTest, SellerWorkletLoadError) {
   // yet.
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle2;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
-      kDecisionLogicUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), load_error_helper.Callback(),
       handle2));
@@ -1338,7 +1471,7 @@ TEST_F(AuctionWorkletManagerTest, BidderWorkletCrash) {
   FatalLoadErrorHelper load_error_helper;
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
-      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), load_error_helper.Callback(),
       handle));
@@ -1367,7 +1500,7 @@ TEST_F(AuctionWorkletManagerTest, BidderWorkletCrash) {
   // yet.
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle2;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
-      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), load_error_helper.Callback(),
       handle2));
@@ -1382,7 +1515,7 @@ TEST_F(AuctionWorkletManagerTest, SellerWorkletCrash) {
   FatalLoadErrorHelper load_error_helper;
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
-      kDecisionLogicUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), load_error_helper.Callback(),
       handle));
@@ -1411,7 +1544,7 @@ TEST_F(AuctionWorkletManagerTest, SellerWorkletCrash) {
   // yet.
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle2;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
-      kDecisionLogicUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), load_error_helper.Callback(),
       handle2));
@@ -1429,7 +1562,7 @@ TEST_F(AuctionWorkletManagerTest, BidderWorkletDeleteOnError) {
   base::RunLoop run_loop;
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
-      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(),
       base::BindLambdaForTesting(
@@ -1459,7 +1592,7 @@ TEST_F(AuctionWorkletManagerTest, SellerWorkletDeleteOnError) {
   base::RunLoop run_loop;
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
-      kDecisionLogicUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(),
       base::BindLambdaForTesting(
@@ -1486,7 +1619,7 @@ TEST_F(AuctionWorkletManagerTest, SellerWorkletDeleteOnError) {
 TEST_F(AuctionWorkletManagerTest, BidderWorkletUrlRequestProtection) {
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle;
   ASSERT_TRUE(auction_worklet_manager_.RequestBidderWorklet(
-      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kWasmUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle));
@@ -1548,7 +1681,7 @@ TEST_F(AuctionWorkletManagerTest, BidderWorkletUrlRequestProtection) {
 TEST_F(AuctionWorkletManagerTest, SellerWorkletUrlRequestProtection) {
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> handle;
   ASSERT_TRUE(auction_worklet_manager_.RequestSellerWorklet(
-      kDecisionLogicUrl, kTrustedSignalsUrl,
+      kDecisionLogicUrl, kTrustedSignalsUrl, kEmptySubresourceBuilder,
       /*experiment_group_id=*/absl::nullopt,
       NeverInvokedWorkletAvailableCallback(), NeverInvokedFatalErrorCallback(),
       handle));

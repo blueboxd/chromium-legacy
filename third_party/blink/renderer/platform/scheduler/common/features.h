@@ -81,7 +81,7 @@ BASE_FEATURE(kPrioritizeCompositingAndLoadingDuringEarlyLoading,
 // Prioritizes one BeginMainFrame after input.
 BASE_FEATURE(kPrioritizeCompositingAfterInput,
              "PrioritizeCompositingAfterInput",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable setting high priority database task type from field trial parameters.
 BASE_FEATURE(kHighPriorityDatabaseTaskType,
@@ -121,8 +121,8 @@ PLATFORM_EXPORT bool IsIntensiveWakeUpThrottlingEnabled();
 PLATFORM_EXPORT base::TimeDelta GetIntensiveWakeUpThrottlingGracePeriod(
     bool loading);
 
-// If enabled, base::ThreadTaskRunnerHandle::Get() and
-// base::SequencedTaskRunnerHandle::Get() returns the current active
+// If enabled, base::SingleThreadTaskRunner::GetCurrentDefault() and
+// base::SequencedTaskRunner::GetCurrentDefault() returns the current active
 // per-ASG task runner instead of the per-thread task runner.
 BASE_FEATURE(kMbiOverrideTaskRunnerHandle,
              "MbiOverrideTaskRunnerHandle",
@@ -133,6 +133,10 @@ BASE_FEATURE(kMbiOverrideTaskRunnerHandle,
 BASE_FEATURE(kMbiCompositorTaskRunnerPerAgentSchedulingGroup,
              "MbiCompositorTaskRunnerPerAgentSchedulingGroup",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Feature to experiment with different values for: "prioritize main thread
+// compositing tasks if we haven't done a main frame in this many milliseconds."
+PLATFORM_EXPORT BASE_DECLARE_FEATURE(kPrioritizeCompositingAfterDelayTrials);
 
 // Interval between Javascript timer wake ups when the "ThrottleForegroundTimers"
 // feature is enabled.
@@ -177,14 +181,18 @@ BASE_FEATURE(kMicrotaskQueuePerWindowAgent,
 
 BASE_FEATURE(kMicrotaskQueuePerPaintWorklet,
              "BlinkSchedulerMicroTaskQueuePerPaintWorklet",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kMicrotaskQueuePerAnimationWorklet,
              "BlinkSchedulerMicroTaskQueuePerAnimationWorklet",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kMicrotaskQueuePerAudioWorklet,
              "BlinkSchedulerMicroTaskQueuePerAudioWorklet",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kMicrotaskQueuePerWorkerAgent,
+             "BlinkSchedulerMicroTaskQueuePerWorkerAgent",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace scheduler

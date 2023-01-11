@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(ContentSecurityPolicyBrowserTest,
       "following Content Security Policy directive: \"script-src "
       "'unsafe-inline'\".\n");
   EXPECT_TRUE(NavigateToURL(shell(), url));
-  console_observer.Wait();
+  ASSERT_TRUE(console_observer.Wait());
 }
 
 // Test that creating a duplicate Trusted Types policy will yield a console
@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(ContentSecurityPolicyBrowserTest,
   WebContentsConsoleObserver console_observer(web_contents());
   console_observer.SetPattern("*already exists*");
   EXPECT_TRUE(NavigateToURL(shell(), url));
-  console_observer.Wait();
+  ASSERT_TRUE(console_observer.Wait());
 }
 
 // Test that creating a Trusted Types policy with a disallowed name will yield
@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(ContentSecurityPolicyBrowserTest,
   WebContentsConsoleObserver console_observer(web_contents());
   console_observer.SetPattern("*violates*the following*directive*");
   EXPECT_TRUE(NavigateToURL(shell(), url));
-  console_observer.Wait();
+  ASSERT_TRUE(console_observer.Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(ContentSecurityPolicyBrowserTest,
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(ContentSecurityPolicyBrowserTest,
       "matches `self`'s scheme. The scheme 'mailto:' must be added "
       "explicitly.\n");
   EXPECT_TRUE(NavigateToURL(shell(), url));
-  console_observer.Wait();
+  ASSERT_TRUE(console_observer.Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(ContentSecurityPolicyBrowserTest,
@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(ContentSecurityPolicyBrowserTest,
       "scheme matches `self`'s scheme. The scheme 'mailto:' must be added "
       "explicitly.\n");
   EXPECT_TRUE(NavigateToURL(shell(), url));
-  console_observer.Wait();
+  ASSERT_TRUE(console_observer.Wait());
 }
 
 namespace {
@@ -284,17 +284,19 @@ IN_PROC_BROWSER_TEST_F(ContentSecurityPolicyBrowserTest, CSPAttributeTooLong) {
   WebContentsConsoleObserver console_observer(web_contents());
   console_observer.SetPattern("'csp' attribute too long*");
   EXPECT_TRUE(NavigateToURL(shell(), url));
-  console_observer.Wait();
+  ASSERT_TRUE(console_observer.Wait());
 
   EXPECT_EQ(current_frame_host()->child_count(), 1u);
   EXPECT_FALSE(current_frame_host()->child_at(0)->csp_attribute());
 }
 
-class IsolatedAppContentBrowserClient : public ContentBrowserClient {
+class IsolatedWebAppContentBrowserClient : public ContentBrowserClient {
  public:
-  bool ShouldUrlUseApplicationIsolationLevel(BrowserContext* browser_context,
-                                             const GURL& url) override {
-    return true;
+  bool ShouldUrlUseApplicationIsolationLevel(
+      BrowserContext* browser_context,
+      const GURL& url,
+      bool origin_matches_flag) override {
+    return origin_matches_flag;
   }
 };
 
@@ -343,7 +345,7 @@ class ContentSecurityPolicyIsolatedAppBrowserTest
   net::EmbeddedTestServer https_server_;
   ContentMockCertVerifier mock_cert_verifier_;
 
-  IsolatedAppContentBrowserClient client_;
+  IsolatedWebAppContentBrowserClient client_;
   raw_ptr<ContentBrowserClient> old_client_;
 };
 

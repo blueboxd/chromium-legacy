@@ -7,7 +7,7 @@
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
-#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/ntp/discover_feed_constants.h"
 #import "ios/chrome/browser/ui/ntp/feed_control_delegate.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
@@ -66,10 +66,6 @@ const CGFloat kSegmentAnimationDuration = 0.3;
 
 // TODO(crbug.com/1277974): Remove this when Web Channels is launched.
 NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
-
-// Specific symbols used in the feed header.
-NSString* kSortArrowFeedSymbol = @"arrow.up.arrow.down";
-NSString* kEllipsisFeedSymbol = @"ellipsis";
 
 // The size of feed symbol images.
 NSInteger kFeedSymbolPointSize = 17;
@@ -369,7 +365,7 @@ NSInteger kFeedSymbolPointSize = 17;
       l10n_util::GetNSString(IDS_IOS_DISCOVER_FEED_MENU_ACCESSIBILITY_LABEL);
   if ([self.feedControlDelegate isFollowingFeedAvailable]) {
     [menuButton setImage:DefaultSymbolTemplateWithPointSize(
-                             kEllipsisFeedSymbol, kFeedSymbolPointSize)
+                             kMenuSymbol, kFeedSymbolPointSize)
                 forState:UIControlStateNormal];
     menuButton.backgroundColor =
         [[UIColor colorNamed:kGrey200Color] colorWithAlphaComponent:0.8];
@@ -400,7 +396,7 @@ NSInteger kFeedSymbolPointSize = 17;
   sortButton.accessibilityIdentifier = kNTPFeedHeaderSortButtonIdentifier;
   sortButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_FEED_SORT_ACCESSIBILITY_LABEL);
-  [sortButton setImage:DefaultSymbolTemplateWithPointSize(kSortArrowFeedSymbol,
+  [sortButton setImage:DefaultSymbolTemplateWithPointSize(kSortSymbol,
                                                           kFeedSymbolPointSize)
               forState:UIControlStateNormal];
   sortButton.showsMenuAsPrimaryAction = YES;
@@ -410,6 +406,10 @@ NSInteger kFeedSymbolPointSize = 17;
   // is hidden.
   sortButton.alpha =
       [self.feedControlDelegate selectedFeed] == FeedTypeFollowing ? 1 : 0;
+
+  if (@available(iOS 15.0, *)) {
+    sortButton.configuration = [UIButtonConfiguration plainButtonConfiguration];
+  }
 
   return sortButton;
 }

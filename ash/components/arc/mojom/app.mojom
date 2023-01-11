@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 55
+// Next MinVersion: 56
 
 module arc.mojom;
 
@@ -25,6 +25,9 @@ struct AppStorage {
 };
 
 // Describes ARC app.
+// The list of AppInfo sent by AppInstance contains Android apps which can work
+// as ChromeOS apps (e.g. can handle CATEGORY_LAUNCHER ACTION_MAIN intents).
+// This is different from ArcPackageInfo.
 struct AppInfo {
   string name;
   string package_name;
@@ -85,13 +88,18 @@ struct WindowLayout {
 };
 
 // Describes ARC package.
+// The list of ArcPackageInfo sent by AppInstance contains all the installed
+// Android packages including ones other than launchable apps (e.g. Google Play
+// Services). This is different from AppInfo.
 struct ArcPackageInfo {
   string package_name;
   int32 package_version;
   int64 last_backup_android_id;
   int64 last_backup_time;
   bool sync;  // true if package installation should be synced
-  [MinVersion=11] bool system;  // true if package is system package.
+  // true if package is signed with the system certificate.
+  // TODO(b/255671011): This is unused. Remove this.
+  [MinVersion=11] bool system;
   // true if package registers VPNService intent.
   [MinVersion=25] bool vpn_provider;
 
@@ -108,6 +116,10 @@ struct ArcPackageInfo {
   // however there is no guarantee and it could be any string value,
   // see https://developer.android.com/studio/publish/versioning.
   [MinVersion=51] string? version_name;
+
+  // If the package is pre-installed in the system image. This is true even
+  // after the package is updated.
+  [MinVersion=55] bool preinstalled;
 };
 
 // Describes ARC app shortcut.
@@ -219,42 +231,6 @@ enum AppShortcutItemType {
   // ShortcutManagerAPI. Dynamic shortcuts are links to specific,
   // context-sensitive actions within the app.
   kDynamic = 1,
-};
-
-[Extensible]
-enum AppReinstallState {
-    // Request and response successful.
-    REQUEST_SUCCESS = 0,
-    // Request Timeout
-    REQUEST_TIMEOUT = 1,
-    // No Account.
-    REQUEST_NO_ACCOUNT = 2,
-    // Null data from aidl.
-    REQUEST_NULL_DATA = 3,
-    // Data that can't be converted from aidl bundle to mojom struct.
-    REQUEST_BUNDLE_ERROR = 4,
-    // Request failure other reason.
-    REQUEST_UNKNOWN_FAILURE = 5,
-};
-
-// Describes app reinstall candidates that are shown to users as suggestions.
-struct AppReinstallCandidate {
-  // The package name of this in the Play Store.
-  string package_name;
-
-  // The title of this package in the Play Store.
-  string title;
-
-  // The url of an icon for this package. Optional, a default icon is used if
-  // unset.
-  string? icon_url;
-
-  // Ratings Count from Play Store for this package. e.g. "17103" .
-  // Default of 0 if not set.
-  int64 rating_count;
-
-  // Mean star rating for this package, [1, 5]. 0 indicates missing.
-  float star_rating;
 };
 
 // Describes app shortcut that is published by Android's ShortcutManager.
@@ -410,7 +386,7 @@ interface AppHost {
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
 // Next method ID: 42
-// Deprecated method IDs: 0, 1, 2, 3, 4, 9, 12, 13, 15, 17, 18, 19, 22
+// Deprecated method IDs: 0, 1, 2, 3, 4, 9, 12, 13, 15, 17, 18, 19, 22, 31
 interface AppInstance {
   // Establishes full-duplex communication with the host.
   [MinVersion=26] Init@21(pending_remote<AppHost> host_remote) => ();
@@ -520,12 +496,6 @@ interface AppInstance {
 
   // Sends a request to ARC to start FastAppReinstall flow.
   [MinVersion=33] StartFastAppReinstallFlow@25(array<string> arc_package_names);
-
-  // Sends a request to ARC to retrieve an array of app reinstall
-  // candidates for this user on this device. Order of results is in an
-  // unspecified order of relevance from Play Store.
-  [MinVersion=39] GetAppReinstallCandidates@31() =>
-      (AppReinstallState state, array<AppReinstallCandidate> candidates);
 
   // Sends a request to ARC to uninstall the given package.  Error (if ever
   // happens) is ignored, and uninstall option should appear in the UI.

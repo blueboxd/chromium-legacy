@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/numerics/checked_math.h"
 #include "base/task/bind_post_task.h"
 #include "base/trace_event/trace_event.h"
@@ -50,8 +51,11 @@
 
 #if BUILDFLAG(IS_WIN)
 #include <dawn/native/D3D12Backend.h>
-#include <dawn/native/VulkanBackend.h>
 #include "ui/gl/gl_angle_util_win.h"
+#endif
+
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_VULKAN)
+#include <dawn/native/VulkanBackend.h>
 #endif
 
 namespace gpu {
@@ -529,9 +533,9 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
         }
       }
 
-      procs_.textureDestroy(texture_);
-      procs_.textureRelease(texture_);
-      procs_.deviceRelease(device_);
+      procs_->textureDestroy(texture_);
+      procs_->textureRelease(texture_);
+      procs_->deviceRelease(device_);
     }
 
     WGPUTexture texture() const override { return texture_; }
@@ -575,8 +579,8 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
           .sampleCount = 1,
       };
 
-      procs_.deviceReference(device_);
-      texture_ = procs_.deviceCreateTexture(device, &texture_desc);
+      procs_->deviceReference(device_);
+      texture_ = procs_->deviceCreateTexture(device, &texture_desc);
       DCHECK(texture_);
     }
 
@@ -682,16 +686,16 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
           .size = buffer_size,
           .mappedAtCreation = true,
       };
-      WGPUBuffer buffer = procs_.deviceCreateBuffer(device_, &buffer_desc);
+      WGPUBuffer buffer = procs_->deviceCreateBuffer(device_, &buffer_desc);
       void* dst_pointer =
-          procs_.bufferGetMappedRange(buffer, 0, WGPU_WHOLE_MAP_SIZE);
+          procs_->bufferGetMappedRange(buffer, 0, WGPU_WHOLE_MAP_SIZE);
 
       if (!ReadPixelsIntoBuffer(dst_pointer, bytes_per_row)) {
-        procs_.bufferRelease(buffer);
+        procs_->bufferRelease(buffer);
         return false;
       }
       // Unmap the buffer.
-      procs_.bufferUnmap(buffer);
+      procs_->bufferUnmap(buffer);
 
       // Copy from the staging WGPUBuffer into the WGPUTexture.
       WGPUDawnEncoderInternalUsageDescriptor internal_usage_desc = {
@@ -702,7 +706,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
           .nextInChain = &internal_usage_desc.chain,
       };
       WGPUCommandEncoder encoder =
-          procs_.deviceCreateCommandEncoder(device_, &command_encoder_desc);
+          procs_->deviceCreateCommandEncoder(device_, &command_encoder_desc);
       WGPUImageCopyBuffer buffer_copy = {
           .layout =
               {
@@ -717,17 +721,17 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       WGPUExtent3D extent = {
           static_cast<uint32_t>(representation_->size().width()),
           static_cast<uint32_t>(representation_->size().height()), 1};
-      procs_.commandEncoderCopyBufferToTexture(encoder, &buffer_copy,
-                                               &texture_copy, &extent);
+      procs_->commandEncoderCopyBufferToTexture(encoder, &buffer_copy,
+                                                &texture_copy, &extent);
       WGPUCommandBuffer commandBuffer =
-          procs_.commandEncoderFinish(encoder, nullptr);
-      procs_.commandEncoderRelease(encoder);
+          procs_->commandEncoderFinish(encoder, nullptr);
+      procs_->commandEncoderRelease(encoder);
 
-      WGPUQueue queue = procs_.deviceGetQueue(device_);
-      procs_.queueSubmit(queue, 1, &commandBuffer);
-      procs_.commandBufferRelease(commandBuffer);
-      procs_.queueRelease(queue);
-      procs_.bufferRelease(buffer);
+      WGPUQueue queue = procs_->deviceGetQueue(device_);
+      procs_->queueSubmit(queue, 1, &commandBuffer);
+      procs_->commandBufferRelease(commandBuffer);
+      procs_->queueRelease(queue);
+      procs_->bufferRelease(buffer);
 
       return true;
     }
@@ -746,7 +750,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
           .usage = WGPUBufferUsage_CopyDst | WGPUBufferUsage_MapRead,
           .size = buffer_size,
       };
-      WGPUBuffer buffer = procs_.deviceCreateBuffer(device_, &buffer_desc);
+      WGPUBuffer buffer = procs_->deviceCreateBuffer(device_, &buffer_desc);
 
       WGPUImageCopyTexture texture_copy = {
           .texture = texture_,
@@ -772,17 +776,17 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
           .nextInChain = &internal_usage_desc.chain,
       };
       WGPUCommandEncoder encoder =
-          procs_.deviceCreateCommandEncoder(device_, &command_encoder_desc);
-      procs_.commandEncoderCopyTextureToBuffer(encoder, &texture_copy,
-                                               &buffer_copy, &extent);
+          procs_->deviceCreateCommandEncoder(device_, &command_encoder_desc);
+      procs_->commandEncoderCopyTextureToBuffer(encoder, &texture_copy,
+                                                &buffer_copy, &extent);
       WGPUCommandBuffer commandBuffer =
-          procs_.commandEncoderFinish(encoder, nullptr);
-      procs_.commandEncoderRelease(encoder);
+          procs_->commandEncoderFinish(encoder, nullptr);
+      procs_->commandEncoderRelease(encoder);
 
-      WGPUQueue queue = procs_.deviceGetQueue(device_);
-      procs_.queueSubmit(queue, 1, &commandBuffer);
-      procs_.commandBufferRelease(commandBuffer);
-      procs_.queueRelease(queue);
+      WGPUQueue queue = procs_->deviceGetQueue(device_);
+      procs_->queueSubmit(queue, 1, &commandBuffer);
+      procs_->commandBufferRelease(commandBuffer);
+      procs_->queueRelease(queue);
 
       struct Userdata {
         bool map_complete = false;
@@ -790,7 +794,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       } userdata;
 
       // Map the staging buffer for read.
-      procs_.bufferMapAsync(
+      procs_->bufferMapAsync(
           buffer, WGPUMapMode_Read, 0, WGPU_WHOLE_MAP_SIZE,
           [](WGPUBufferMapAsyncStatus status, void* void_userdata) {
             Userdata* userdata = static_cast<Userdata*>(void_userdata);
@@ -802,15 +806,15 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       // Poll for the map to complete.
       while (!userdata.map_complete) {
         base::PlatformThread::Sleep(base::Milliseconds(1));
-        procs_.deviceTick(device_);
+        procs_->deviceTick(device_);
       }
 
       if (userdata.status != WGPUBufferMapAsyncStatus_Success) {
-        procs_.bufferRelease(buffer);
+        procs_->bufferRelease(buffer);
         return false;
       }
       const void* data =
-          procs_.bufferGetConstMappedRange(buffer, 0, WGPU_WHOLE_MAP_SIZE);
+          procs_->bufferGetConstMappedRange(buffer, 0, WGPU_WHOLE_MAP_SIZE);
       DCHECK(data);
 
       std::vector<GrBackendSemaphore> begin_semaphores;
@@ -821,7 +825,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       if (!scoped_write_access) {
         DLOG(ERROR)
             << "UploadContentsToSkia: Couldn't begin shared image access";
-        procs_.bufferRelease(buffer);
+        procs_->bufferRelease(buffer);
         return false;
       }
 
@@ -831,7 +835,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       surface->writePixels(SkPixmap(surface->imageInfo(), data, bytes_per_row),
                            /*x*/ 0, /*y*/ 0);
 
-      procs_.bufferRelease(buffer);
+      procs_->bufferRelease(buffer);
 
       // Transition the image back to the desired end state. This is used for
       // transitioning the image to the external queue for Vulkan/GL interop.
@@ -875,7 +879,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
 
     scoped_refptr<SharedContextState> shared_context_state_;
     std::unique_ptr<SkiaImageRepresentation> representation_;
-    const DawnProcTable& procs_;
+    const raw_ref<const DawnProcTable> procs_;
     WGPUDevice device_;
     WGPUTexture texture_;
     WGPUTextureUsage usage_;
@@ -901,17 +905,17 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
           .mipLevelCount = 1,
           .sampleCount = 1,
       };
-      texture_ = procs_.deviceCreateErrorTexture(device, &texture_desc);
+      texture_ = procs_->deviceCreateErrorTexture(device, &texture_desc);
     }
 
     ~ErrorSharedImageRepresentationAndAccess() override {
-      procs_.textureRelease(texture_);
+      procs_->textureRelease(texture_);
     }
 
     WGPUTexture texture() const override { return texture_; }
 
    private:
-    const DawnProcTable& procs_;
+    const raw_ref<const DawnProcTable> procs_;
     WGPUTexture texture_;
   };
 
@@ -1173,6 +1177,7 @@ ContextResult WebGPUDecoderImpl::Initialize(
 bool WebGPUDecoderImpl::IsFeatureExposed(WGPUFeatureName feature) const {
   switch (feature) {
     case WGPUFeatureName_TimestampQuery:
+    case WGPUFeatureName_TimestampQueryInsidePasses:
     case WGPUFeatureName_PipelineStatisticsQuery:
     case WGPUFeatureName_ChromiumExperimentalDp4a:
     case WGPUFeatureName_DawnMultiPlanarFormats:
@@ -1514,14 +1519,16 @@ void WebGPUDecoderImpl::DiscoverAdapters() {
   dawn::native::d3d12::AdapterDiscoveryOptions options(std::move(dxgi_adapter));
   dawn_instance_->DiscoverAdapters(&options);
 
+#if BUILDFLAG(ENABLE_VULKAN)
   // Also discover the SwiftShader adapter. It will be discovered by default
   // for other OSes in DiscoverDefaultAdapters.
   dawn::native::vulkan::AdapterDiscoveryOptions swiftShaderOptions;
   swiftShaderOptions.forceSwiftShader = true;
   dawn_instance_->DiscoverAdapters(&swiftShaderOptions);
+#endif  // BUILDFLAG(ENABLE_VULKAN)
 #else
   dawn_instance_->DiscoverDefaultAdapters();
-#endif
+#endif  // BUILDFLAG(IS_WIN)
 
   std::vector<dawn::native::Adapter> adapters = dawn_instance_->GetAdapters();
   for (dawn::native::Adapter& adapter : adapters) {
@@ -1985,21 +1992,20 @@ error::Error WebGPUDecoderImpl::HandleSetWebGPUExecutionContextToken(
     const volatile void* cmd_data) {
   const volatile webgpu::cmds::SetWebGPUExecutionContextToken& c = *static_cast<
       const volatile webgpu::cmds::SetWebGPUExecutionContextToken*>(cmd_data);
-  uint32_t type(c.type);
+  blink::WebGPUExecutionContextToken::Tag type{c.type};
   uint64_t high = uint64_t(c.high_high) << 32 | uint64_t(c.high_low);
   uint64_t low = uint64_t(c.low_high) << 32 | uint64_t(c.low_low);
   base::UnguessableToken unguessable_token =
       base::UnguessableToken::Deserialize(high, low);
   blink::WebGPUExecutionContextToken execution_context_token;
   switch (type) {
-    case blink::WebGPUExecutionContextToken::Base::template TypeIndex<
-        blink::DocumentToken>::kValue: {
+    case blink::WebGPUExecutionContextToken::IndexOf<blink::DocumentToken>(): {
       execution_context_token = blink::WebGPUExecutionContextToken(
           blink::DocumentToken(unguessable_token));
       break;
     }
-    case blink::WebGPUExecutionContextToken::Base::template TypeIndex<
-        blink::DedicatedWorkerToken>::kValue: {
+    case blink::WebGPUExecutionContextToken::IndexOf<
+        blink::DedicatedWorkerToken>(): {
       execution_context_token = blink::WebGPUExecutionContextToken(
           blink::DedicatedWorkerToken(unguessable_token));
       break;

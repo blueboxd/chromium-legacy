@@ -34,6 +34,7 @@ FeaturePromoDialogIntentChipTest.InvokeUi_*
 FeaturePromoDialogTest.InvokeUi_*
 FileSystemAccessUsageBubbleViewTest.*
 FirstRunDialogTest.*
+FirstRunIntroPixelTest.*
 GlobalErrorBubbleTest.*
 HatsBubbleTest.*
 HomeButtonUiTest.*
@@ -42,8 +43,8 @@ ImportLockDialogViewBrowserTest.*
 InlineLoginHelperBrowserTest.InvokeUi_*
 IntentPickerDialogTest.*
 IntentPickerDialogGridViewTest.*
-WebUIInteractionTestUtilInteractiveUiTest.CompareScreenshot_*
-WebUIInteractionTestUtilTest.CompareScreenshot_*
+InteractionTestUtilBrowserTest.CompareScreenshot_*
+InteractionTestUtilBrowserUiTest.CompareScreenshot_*
 LocalCardMigrationBrowserUiTest.*
 NewTabPageTest.*
 OneTimePermissionPromptBubbleViewBrowserTest.*

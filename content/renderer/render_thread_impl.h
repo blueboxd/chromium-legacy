@@ -24,6 +24,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/observer_list.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/types/pass_key.h"
 #include "build/build_config.h"
@@ -54,6 +55,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom.h"
 #include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/url_loader_throttle_provider.h"
@@ -191,6 +193,8 @@ class CONTENT_EXPORT RenderThreadImpl
   void WriteIntoTrace(
       perfetto::TracedProto<perfetto::protos::pbzero::RenderProcessHost> proto)
       override;
+  blink::mojom::AttributionOsSupport GetOsSupportForAttributionReporting()
+      override;
 
   // IPC::Listener implementation via ChildThreadImpl:
   void OnAssociatedInterfaceRequest(
@@ -282,10 +286,9 @@ class CONTENT_EXPORT RenderThreadImpl
   // has been lost.
   gpu::GpuChannelHost* GetGpuChannel();
 
-  // Returns a SingleThreadTaskRunner instance corresponding to the message loop
-  // of the thread on which media operations should be run. Must be called
-  // on the renderer's main thread.
-  scoped_refptr<base::SingleThreadTaskRunner> GetMediaThreadTaskRunner();
+  // Returns the sequence on which media operations should be run. Must be
+  // called on the renderer's main thread.
+  scoped_refptr<base::SequencedTaskRunner> GetMediaSequencedTaskRunner();
 
   // Creates a ContextProvider if yet created, and returns it to be used for
   // video frame compositing. The ContextProvider given as an argument is
@@ -425,7 +428,8 @@ class CONTENT_EXPORT RenderThreadImpl
       const std::string& full_user_agent,
       const std::string& reduced_user_agent,
       const blink::UserAgentMetadata& user_agent_metadata,
-      const std::vector<std::string>& cors_exempt_header_list) override;
+      const std::vector<std::string>& cors_exempt_header_list,
+      blink::mojom::AttributionOsSupport attribution_os_support) override;
   void UpdateScrollbarTheme(
       mojom::UpdateScrollbarThemeParamsPtr params) override;
   void OnSystemColorsChanged(int32_t aqua_color_variant,
@@ -442,7 +446,9 @@ class CONTENT_EXPORT RenderThreadImpl
       WriteClangProfilingProfileCallback callback) override;
 #endif
   void SetIsCrossOriginIsolated(bool value) override;
-  void SetIsIsolatedApplication(bool value) override;
+  void SetIsIsolatedContext(bool value) override;
+  void SetOsSupportForAttributionReporting(
+      blink::mojom::AttributionOsSupport os_support) override;
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
@@ -487,6 +493,8 @@ class CONTENT_EXPORT RenderThreadImpl
   blink::WebString reduced_user_agent_;
   blink::UserAgentMetadata user_agent_metadata_;
 
+  blink::mojom::AttributionOsSupport attribution_os_support_;
+
   // Sticky once true, indicates that compositing is done without Gpu, so
   // resources given to the compositor or to the viz service should be
   // software-based.
@@ -498,16 +506,19 @@ class CONTENT_EXPORT RenderThreadImpl
   // NOTE(dcastagna): At worst this accumulates a few bytes per context lost.
   std::vector<std::unique_ptr<GpuVideoAcceleratorFactoriesImpl>> gpu_factories_;
 
-  // Thread for running multimedia operations (e.g., video decoding).
+  // Thread or sequenced task runner (depending on
+  // kBlinkMediaIsPooledSequencedTaskRunner) for running multimedia operations
+  // (e.g., video decoding). Exactly one of these is in use after
+  // GetMediaSequencedTaskRunner has been called.
   std::unique_ptr<base::Thread> media_thread_;
+  scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
 
   // Will point to appropriate task runner after initialization,
   // regardless of whether |compositor_thread_| is overriden.
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
 
-  // Task to run the VideoFrameCompositor on.
-  scoped_refptr<base::SingleThreadTaskRunner>
-      video_frame_compositor_task_runner_;
+  // Thread to run the VideoFrameCompositor on.
+  std::unique_ptr<base::Thread> video_frame_compositor_thread_;
 
 #if BUILDFLAG(IS_ANDROID)
   scoped_refptr<StreamTextureFactory> stream_texture_factory_;

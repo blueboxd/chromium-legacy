@@ -31,6 +31,8 @@
 <translation id="1862930711583847113"><ph name="FILE" /> をエクスポートできません</translation>
 <translation id="1899697626337024495">写真の解像度</translation>
 <translation id="1925845977604399247">ギャラリーに移動</translation>
+<translation id="199526504800285197">録画が停止しました</translation>
+<translation id="1995951722691075581">デバイスの空き容量が不足しているため、録画が停止しました。録画を続行するには、デバイスの空き容量を増やしてください。</translation>
 <translation id="2022953316617983419">QR コード</translation>
 <translation id="2036868001356139588">タイマーの時間</translation>
 <translation id="2050339315714019657">縦</translation>
@@ -47,6 +49,7 @@
 <translation id="2501953888035679275">カメラを使って写真や動画を撮影できます。</translation>
 <translation id="2517472476991765520">スキャン</translation>
 <translation id="2549985041256363841">撮影を開始</translation>
+<translation id="2577915835281444458">まもなく録画が停止します。デバイスのストレージ設定で空き容量を増やしてください。</translation>
 <translation id="2599796128805996109">背面カメラ</translation>
 <translation id="2759905922487820242"><ph name="CURRENT" /> / <ph name="MAXIMAL" /> 秒</translation>
 <translation id="2761536921376153655">スキャンの種類</translation>
@@ -77,6 +80,7 @@
 <translation id="3810838688059735925">動画</translation>
 <translation id="3838931309141338733">バーコード スキャン</translation>
 <translation id="3892148308691398805">テキストをコピー</translation>
+<translation id="4060608699153044055">デバイスの空き容量が不足しているため、録画できません。録画を開始するには、デバイスの空き容量を増やしてください。</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> MP</translation>
 <translation id="4118525110028899586">録画を一時停止</translation>
 <translation id="4121305183798804752">ドキュメントを検出しました</translation>
@@ -90,6 +94,7 @@
 <translation id="4445542136948522167">写真の撮影をキャンセル</translation>
 <translation id="4497569853498380347">（<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" />）<ph name="MEGAPIXEL" /> メガピクセル</translation>
 <translation id="4570032796877367747">前面カメラ</translation>
+<translation id="4598556348158889687">ストレージ管理</translation>
 <translation id="4620818268515773682">マイクのミュートを切り替えます。ミュートはオフです</translation>
 <translation id="4628948037717959914">写真</translation>
 <translation id="4649291346448517080">ファイルを保存できません</translation>
@@ -159,6 +164,7 @@
 <translation id="7748344063862150053">ドキュメントの右上の角</translation>
 <translation id="7933675232020478311">右下に移動しています</translation>
 <translation id="7983668134180549431">テキストが検出されました。</translation>
+<translation id="8079255378695216066">録画を開始できません</translation>
 <translation id="8120146556401698679">パン、チルト、ズーム</translation>
 <translation id="8131740175452115882">確認</translation>
 <translation id="8145038249676204903">写真の撮影に切り替え</translation>

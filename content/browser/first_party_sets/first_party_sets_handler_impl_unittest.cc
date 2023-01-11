@@ -10,8 +10,10 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -25,6 +27,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "net/base/schemeful_site.h"
 #include "net/first_party_sets/first_party_set_entry.h"
+#include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/first_party_sets/first_party_sets_cache_filter.h"
 #include "net/first_party_sets/first_party_sets_context_config.h"
 #include "net/first_party_sets/global_first_party_sets.h"
@@ -34,8 +37,10 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
+using ::testing::_;
 using ::testing::Eq;
 using ::testing::IsEmpty;
+using ::testing::Not;
 using ::testing::Optional;
 using ::testing::Pair;
 using ::testing::SizeIs;
@@ -56,29 +61,6 @@ const char* kCctldsField = "ccTLDs";
 
 const char* kFirstPartySetsClearSiteDataOutcomeHistogram =
     "FirstPartySets.Initialization.ClearSiteDataOutcomeType";
-
-net::GlobalFirstPartySets GetSetsAndWait() {
-  base::test::TestFuture<net::GlobalFirstPartySets> future;
-  absl::optional<net::GlobalFirstPartySets> result =
-      FirstPartySetsHandlerImpl::GetInstance()->GetSets(future.GetCallback());
-  return result.has_value() ? std::move(result).value() : future.Take();
-}
-
-absl::optional<net::GlobalFirstPartySets> GetPersistedGlobalSetsAndWait(
-    const std::string& browser_context_id) {
-  base::test::TestFuture<absl::optional<net::GlobalFirstPartySets>> future;
-  FirstPartySetsHandlerImpl::GetInstance()->GetPersistedGlobalSetsForTesting(
-      browser_context_id, future.GetCallback());
-  return future.Take();
-}
-
-absl::optional<bool> HasEntryInBrowserContextsClearedAndWait(
-    const std::string& browser_context_id) {
-  base::test::TestFuture<absl::optional<bool>> future;
-  FirstPartySetsHandlerImpl::GetInstance()->HasBrowserContextClearedForTesting(
-      browser_context_id, future.GetCallback());
-  return future.Take();
-}
 
 }  // namespace
 
@@ -175,11 +157,12 @@ TEST(FirstPartySetsHandlerImpl, ValidateEnterprisePolicy_InvalidPolicy) {
                                         {kAdditionsField, 0, kPrimaryField}));
 }
 
-class FirstPartySetsHandlerImplTest : public ::testing::Test {
+class FirstPartySetsHandlerImplEnabledTest : public ::testing::Test {
  public:
-  explicit FirstPartySetsHandlerImplTest(bool enabled) {
-    FirstPartySetsHandlerImpl::GetInstance()->SetEnabledForTesting(enabled);
-
+  explicit FirstPartySetsHandlerImplEnabledTest()
+      : handler_(FirstPartySetsHandlerImpl::CreateForTesting(
+            /*enabled=*/true,
+            /*embedder_will_provide_public_sets=*/true)) {
     CHECK(scoped_dir_.CreateUniqueTempDir());
     CHECK(PathExists(scoped_dir_.GetPath()));
   }
@@ -192,32 +175,92 @@ class FirstPartySetsHandlerImplTest : public ::testing::Test {
     return base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   }
 
-  void TearDown() override {
-    FirstPartySetsHandlerImpl::GetInstance()->ResetForTesting();
+  net::GlobalFirstPartySets GetSetsAndWait(FirstPartySetsHandlerImpl& handler) {
+    base::test::TestFuture<net::GlobalFirstPartySets> future;
+    absl::optional<net::GlobalFirstPartySets> result =
+        handler.GetSets(future.GetCallback());
+    return result.has_value() ? std::move(result).value() : future.Take();
   }
+
+  void ClearSiteDataOnChangedSetsForContextAndWait(
+      FirstPartySetsHandlerImpl& handler,
+      BrowserContext* context,
+      const std::string& browser_context_id,
+      net::FirstPartySetsContextConfig context_config) {
+    base::RunLoop run_loop;
+    handler.ClearSiteDataOnChangedSetsForContext(
+        base::BindLambdaForTesting([&]() { return context; }),
+        browser_context_id, std::move(context_config),
+        base::BindLambdaForTesting(
+            [&](net::FirstPartySetsContextConfig,
+                net::FirstPartySetsCacheFilter) { run_loop.Quit(); }));
+    run_loop.Run();
+  }
+
+  absl::optional<net::GlobalFirstPartySets> GetPersistedGlobalSetsAndWait(
+      FirstPartySetsHandlerImpl& handler,
+      const std::string& browser_context_id) {
+    base::test::TestFuture<absl::optional<net::GlobalFirstPartySets>> future;
+    handler.GetPersistedGlobalSetsForTesting(browser_context_id,
+                                             future.GetCallback());
+    return future.Take();
+  }
+
+  absl::optional<bool> HasEntryInBrowserContextsClearedAndWait(
+      FirstPartySetsHandlerImpl& handler,
+      const std::string& browser_context_id) {
+    base::test::TestFuture<absl::optional<bool>> future;
+    handler.HasBrowserContextClearedForTesting(browser_context_id,
+                                               future.GetCallback());
+    return future.Take();
+  }
+
+  net::GlobalFirstPartySets GetSetsAndWait() {
+    return GetSetsAndWait(handler());
+  }
+
+  void ClearSiteDataOnChangedSetsForContextAndWait(
+      BrowserContext* context,
+      const std::string& browser_context_id,
+      net::FirstPartySetsContextConfig context_config) {
+    ClearSiteDataOnChangedSetsForContextAndWait(
+        handler(), context, browser_context_id, std::move(context_config));
+  }
+
+  absl::optional<net::GlobalFirstPartySets> GetPersistedGlobalSetsAndWait(
+      const std::string& browser_context_id) {
+    return GetPersistedGlobalSetsAndWait(handler(), browser_context_id);
+  }
+
+  absl::optional<bool> HasEntryInBrowserContextsClearedAndWait(
+      const std::string& browser_context_id) {
+    return HasEntryInBrowserContextsClearedAndWait(handler(),
+                                                   browser_context_id);
+  }
+
+  FirstPartySetsHandlerImpl& handler() { return handler_; }
 
   BrowserContext* context() { return &context_; }
 
  protected:
   base::ScopedTempDir scoped_dir_;
+
+ private:
   BrowserTaskEnvironment env_;
   TestBrowserContext context_;
-};
-
-class FirstPartySetsHandlerImplEnabledTest
-    : public FirstPartySetsHandlerImplTest {
- public:
-  FirstPartySetsHandlerImplEnabledTest()
-      : FirstPartySetsHandlerImplTest(true) {}
+  FirstPartySetsHandlerImpl handler_;
 };
 
 TEST_F(FirstPartySetsHandlerImplEnabledTest, EmptyDBPath) {
   net::SchemefulSite example(GURL("https://example.test"));
   net::SchemefulSite associated(GURL("https://associatedsite1.test"));
 
+  handler().SetPublicFirstPartySets(base::Version("0.0.1"),
+                                    WritePublicSetsFile(""));
+
   // Empty `user_data_dir` will fail to load persisted sets, but that will not
   // prevent `on_sets_ready` from being invoked.
-  FirstPartySetsHandlerImpl::GetInstance()->Init(
+  handler().Init(
       /*user_data_dir=*/{},
       LocalSetDeclaration(
           R"({"primary": "https://example.test",)"
@@ -235,22 +278,23 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest, EmptyDBPath) {
 
 TEST_F(FirstPartySetsHandlerImplEnabledTest,
        ClearSiteDataOnChangedSetsForContext_FeatureNotEnabled) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeatureWithParameters(
+      features::kFirstPartySets,
+      {{features::kFirstPartySetsClearSiteDataOnChangedSets.name, "false"}});
   base::HistogramTester histogram;
   net::SchemefulSite foo(GURL("https://foo.test"));
   net::SchemefulSite associated(GURL("https://associatedsite.test"));
 
-  FirstPartySetsHandlerImpl::GetInstance()
-      ->SetEmbedderWillProvidePublicSetsForTesting(true);
   const std::string browser_context_id = "profile";
   const std::string input =
       R"({"primary": "https://foo.test", )"
       R"("associatedSites": ["https://associatedsite.test"]})";
   ASSERT_TRUE(base::JSONReader::Read(input));
-  FirstPartySetsHandlerImpl::GetInstance()->SetPublicFirstPartySets(
-      base::Version("0.0.1"), WritePublicSetsFile(input));
+  handler().SetPublicFirstPartySets(base::Version("0.0.1"),
+                                    WritePublicSetsFile(input));
 
-  FirstPartySetsHandlerImpl::GetInstance()->Init(scoped_dir_.GetPath(),
-                                                 LocalSetDeclaration());
+  handler().Init(scoped_dir_.GetPath(), LocalSetDeclaration());
   ASSERT_THAT(GetSetsAndWait().FindEntries({foo, associated},
                                            net::FirstPartySetsContextConfig()),
               UnorderedElementsAre(
@@ -259,15 +303,8 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
                   Pair(associated, net::FirstPartySetEntry(
                                        foo, net::SiteType::kAssociated, 0))));
 
-  base::RunLoop run_loop;
-  FirstPartySetsHandlerImpl::GetInstance()
-      ->ClearSiteDataOnChangedSetsForContext(
-          base::BindLambdaForTesting([&]() { return context(); }),
-          browser_context_id, net::FirstPartySetsContextConfig(),
-          base::BindLambdaForTesting(
-              [&](net::FirstPartySetsContextConfig,
-                  net::FirstPartySetsCacheFilter) { run_loop.Quit(); }));
-  run_loop.Run();
+  ClearSiteDataOnChangedSetsForContextAndWait(
+      context(), browser_context_id, net::FirstPartySetsContextConfig());
 
   EXPECT_THAT(
       GetPersistedGlobalSetsAndWait(browser_context_id)
@@ -284,61 +321,95 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
       features::kFirstPartySets,
       {{features::kFirstPartySetsClearSiteDataOnChangedSets.name, "true"}});
 
-  base::HistogramTester histogram;
   net::SchemefulSite foo(GURL("https://foo.test"));
   net::SchemefulSite associated(GURL("https://associatedsite.test"));
+  net::SchemefulSite associated2(GURL("https://associatedsite2.test"));
 
-  FirstPartySetsHandlerImpl::GetInstance()
-      ->SetEmbedderWillProvidePublicSetsForTesting(true);
   const std::string browser_context_id = "profile";
-  const std::string input =
-      R"({"primary": "https://foo.test", )"
-      R"("associatedSites": ["https://associatedsite.test"]})";
-  ASSERT_TRUE(base::JSONReader::Read(input));
-  FirstPartySetsHandlerImpl::GetInstance()->SetPublicFirstPartySets(
-      base::Version("0.0.1"), WritePublicSetsFile(input));
 
-  FirstPartySetsHandlerImpl::GetInstance()->Init(scoped_dir_.GetPath(),
-                                                 LocalSetDeclaration());
+  {
+    base::HistogramTester histogram;
+    FirstPartySetsHandlerImpl handler =
+        FirstPartySetsHandlerImpl::CreateForTesting(true, true);
+    const std::string input =
+        R"({"primary": "https://foo.test", )"
+        R"("associatedSites": ["https://associatedsite.test"]})";
+    ASSERT_TRUE(base::JSONReader::Read(input));
+    handler.SetPublicFirstPartySets(base::Version("0.0.1"),
+                                    WritePublicSetsFile(input));
 
-  EXPECT_THAT(HasEntryInBrowserContextsClearedAndWait(browser_context_id),
-              Optional(false));
+    handler.Init(scoped_dir_.GetPath(), LocalSetDeclaration());
 
-  ASSERT_THAT(GetSetsAndWait().FindEntries({foo, associated},
-                                           net::FirstPartySetsContextConfig()),
-              UnorderedElementsAre(
-                  Pair(foo, net::FirstPartySetEntry(
-                                foo, net::SiteType::kPrimary, absl::nullopt)),
-                  Pair(associated, net::FirstPartySetEntry(
-                                       foo, net::SiteType::kAssociated, 0))));
+    EXPECT_THAT(
+        HasEntryInBrowserContextsClearedAndWait(handler, browser_context_id),
+        Optional(false));
 
-  // Should not yet be recorded.
-  histogram.ExpectTotalCount(kFirstPartySetsClearSiteDataOutcomeHistogram, 0);
-  base::RunLoop run_loop;
-  FirstPartySetsHandlerImpl::GetInstance()
-      ->ClearSiteDataOnChangedSetsForContext(
-          base::BindLambdaForTesting([&]() { return context(); }),
-          browser_context_id, net::FirstPartySetsContextConfig(),
-          base::BindLambdaForTesting(
-              [&](net::FirstPartySetsContextConfig,
-                  net::FirstPartySetsCacheFilter) { run_loop.Quit(); }));
-  run_loop.Run();
+    // Should not yet be recorded.
+    histogram.ExpectTotalCount(kFirstPartySetsClearSiteDataOutcomeHistogram, 0);
+    ClearSiteDataOnChangedSetsForContextAndWait(
+        handler, context(), browser_context_id,
+        net::FirstPartySetsContextConfig());
 
-  EXPECT_THAT(
-      GetPersistedGlobalSetsAndWait(browser_context_id)
-          ->FindEntries({foo, associated}, net::FirstPartySetsContextConfig()),
-      UnorderedElementsAre(
-          Pair(foo, net::FirstPartySetEntry(foo, net::SiteType::kPrimary,
-                                            absl::nullopt)),
-          Pair(associated,
-               net::FirstPartySetEntry(foo, net::SiteType::kAssociated,
-                                       absl::nullopt))));
-  EXPECT_THAT(HasEntryInBrowserContextsClearedAndWait(browser_context_id),
-              Optional(true));
+    EXPECT_THAT(GetPersistedGlobalSetsAndWait(handler, browser_context_id)
+                    ->FindEntries({foo, associated},
+                                  net::FirstPartySetsContextConfig()),
+                UnorderedElementsAre(
+                    Pair(foo, net::FirstPartySetEntry(
+                                  foo, net::SiteType::kPrimary, absl::nullopt)),
+                    Pair(associated,
+                         net::FirstPartySetEntry(
+                             foo, net::SiteType::kAssociated, absl::nullopt))));
+    EXPECT_THAT(
+        HasEntryInBrowserContextsClearedAndWait(handler, browser_context_id),
+        Optional(true));
 
-  histogram.ExpectUniqueSample(
-      kFirstPartySetsClearSiteDataOutcomeHistogram,
-      FirstPartySetsHandlerImpl::ClearSiteDataOutcomeType::kSuccess, 1);
+    histogram.ExpectUniqueSample(
+        kFirstPartySetsClearSiteDataOutcomeHistogram,
+        FirstPartySetsHandlerImpl::ClearSiteDataOutcomeType::kSuccess, 1);
+
+    // Make sure the database is closed properly before being opened again.
+    handler.SynchronouslyResetDBHelperForTesting();
+  }
+
+  // Verify FPS transition clearing is working for non-empty sites-to-clear
+  // list.
+  {
+    base::HistogramTester histogram;
+    FirstPartySetsHandlerImpl handler =
+        FirstPartySetsHandlerImpl::CreateForTesting(true, true);
+    const std::string input =
+        R"({"primary": "https://foo.test", )"
+        R"("associatedSites": ["https://associatedsite2.test"]})";
+    ASSERT_TRUE(base::JSONReader::Read(input));
+    // The new public sets need to be associated with a different version.
+    handler.SetPublicFirstPartySets(base::Version("0.0.2"),
+                                    WritePublicSetsFile(input));
+
+    handler.Init(scoped_dir_.GetPath(), LocalSetDeclaration());
+
+    // Should not yet be recorded.
+    histogram.ExpectTotalCount(kFirstPartySetsClearSiteDataOutcomeHistogram, 0);
+    ClearSiteDataOnChangedSetsForContextAndWait(
+        handler, context(), browser_context_id,
+        net::FirstPartySetsContextConfig());
+
+    EXPECT_THAT(GetPersistedGlobalSetsAndWait(handler, browser_context_id)
+                    ->FindEntries({foo, associated2},
+                                  net::FirstPartySetsContextConfig()),
+                UnorderedElementsAre(
+                    Pair(foo, net::FirstPartySetEntry(
+                                  foo, net::SiteType::kPrimary, absl::nullopt)),
+                    Pair(associated2,
+                         net::FirstPartySetEntry(
+                             foo, net::SiteType::kAssociated, absl::nullopt))));
+    EXPECT_THAT(
+        HasEntryInBrowserContextsClearedAndWait(handler, browser_context_id),
+        Optional(true));
+
+    histogram.ExpectUniqueSample(
+        kFirstPartySetsClearSiteDataOutcomeHistogram,
+        FirstPartySetsHandlerImpl::ClearSiteDataOutcomeType::kSuccess, 1);
+  }
 }
 
 TEST_F(FirstPartySetsHandlerImplEnabledTest,
@@ -352,17 +423,15 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
   net::SchemefulSite foo(GURL("https://foo.test"));
   net::SchemefulSite associated(GURL("https://associatedsite.test"));
 
-  FirstPartySetsHandlerImpl::GetInstance()
-      ->SetEmbedderWillProvidePublicSetsForTesting(true);
   const std::string browser_context_id = "profile";
   const std::string input =
       R"({"primary": "https://foo.test", )"
       R"("associatedSites": ["https://associatedsite.test"]})";
   ASSERT_TRUE(base::JSONReader::Read(input));
-  FirstPartySetsHandlerImpl::GetInstance()->SetPublicFirstPartySets(
-      base::Version("0.0.1"), WritePublicSetsFile(input));
+  handler().SetPublicFirstPartySets(base::Version("0.0.1"),
+                                    WritePublicSetsFile(input));
 
-  FirstPartySetsHandlerImpl::GetInstance()->Init(
+  handler().Init(
       /*user_data_dir=*/{}, LocalSetDeclaration());
   ASSERT_THAT(GetSetsAndWait().FindEntries({foo, associated},
                                            net::FirstPartySetsContextConfig()),
@@ -373,14 +442,8 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
                                        foo, net::SiteType::kAssociated, 0))));
 
   base::RunLoop run_loop;
-  FirstPartySetsHandlerImpl::GetInstance()
-      ->ClearSiteDataOnChangedSetsForContext(
-          base::BindLambdaForTesting([&]() { return context(); }),
-          browser_context_id, net::FirstPartySetsContextConfig(),
-          base::BindLambdaForTesting(
-              [&](net::FirstPartySetsContextConfig,
-                  net::FirstPartySetsCacheFilter) { run_loop.Quit(); }));
-  run_loop.Run();
+  ClearSiteDataOnChangedSetsForContextAndWait(
+      context(), browser_context_id, net::FirstPartySetsContextConfig());
 
   EXPECT_EQ(GetPersistedGlobalSetsAndWait(browser_context_id), absl::nullopt);
   // Should not be recorded.
@@ -395,23 +458,19 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
       {{features::kFirstPartySetsClearSiteDataOnChangedSets.name, "true"}});
 
   base::HistogramTester histogram;
-  FirstPartySetsHandlerImpl::GetInstance()
-      ->SetEmbedderWillProvidePublicSetsForTesting(true);
 
-  FirstPartySetsHandlerImpl::GetInstance()->Init(scoped_dir_.GetPath(),
-                                                 LocalSetDeclaration());
+  handler().Init(scoped_dir_.GetPath(), LocalSetDeclaration());
 
   const std::string browser_context_id = "profile";
   base::test::TestFuture<net::FirstPartySetsContextConfig,
                          net::FirstPartySetsCacheFilter>
       future;
-  FirstPartySetsHandlerImpl::GetInstance()
-      ->ClearSiteDataOnChangedSetsForContext(
-          base::BindLambdaForTesting([&]() { return context(); }),
-          browser_context_id, net::FirstPartySetsContextConfig(),
-          future.GetCallback());
+  handler().ClearSiteDataOnChangedSetsForContext(
+      base::BindLambdaForTesting([&]() { return context(); }),
+      browser_context_id, net::FirstPartySetsContextConfig(),
+      future.GetCallback());
 
-  FirstPartySetsHandlerImpl::GetInstance()->SetPublicFirstPartySets(
+  handler().SetPublicFirstPartySets(
       base::Version("0.0.1"),
       WritePublicSetsFile(
           R"({"primary": "https://foo.test", )"
@@ -440,25 +499,21 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
   net::SchemefulSite example(GURL("https://example.test"));
   net::SchemefulSite associated(GURL("https://associatedsite.test"));
 
-  FirstPartySetsHandlerImpl::GetInstance()
-      ->SetEmbedderWillProvidePublicSetsForTesting(true);
-
   const std::string input =
       R"({"primary": "https://example.test", )"
       R"("associatedSites": ["https://associatedsite.test"]})";
   ASSERT_TRUE(base::JSONReader::Read(input));
-  FirstPartySetsHandlerImpl::GetInstance()->SetPublicFirstPartySets(
-      base::Version(), WritePublicSetsFile(input));
+  handler().SetPublicFirstPartySets(base::Version(),
+                                    WritePublicSetsFile(input));
 
-  FirstPartySetsHandlerImpl::GetInstance()->Init(scoped_dir_.GetPath(),
-                                                 LocalSetDeclaration());
+  handler().Init(scoped_dir_.GetPath(), LocalSetDeclaration());
 
   // Wait until initialization is complete.
   GetSetsAndWait();
 
   EXPECT_THAT(
-      FirstPartySetsHandlerImpl::GetInstance()
-          ->GetSets(base::NullCallback())
+      handler()
+          .GetSets(base::NullCallback())
           .value()
           .FindEntries({example, associated},
                        net::FirstPartySetsContextConfig()),
@@ -474,24 +529,18 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
   net::SchemefulSite example(GURL("https://example.test"));
   net::SchemefulSite associated(GURL("https://associatedsite.test"));
 
-  FirstPartySetsHandlerImpl::GetInstance()
-      ->SetEmbedderWillProvidePublicSetsForTesting(true);
-
   // Call GetSets before the sets are ready, and before Init has been called.
   base::test::TestFuture<net::GlobalFirstPartySets> future;
-  EXPECT_EQ(
-      FirstPartySetsHandlerImpl::GetInstance()->GetSets(future.GetCallback()),
-      absl::nullopt);
+  EXPECT_EQ(handler().GetSets(future.GetCallback()), absl::nullopt);
 
-  FirstPartySetsHandlerImpl::GetInstance()->Init(scoped_dir_.GetPath(),
-                                                 LocalSetDeclaration());
+  handler().Init(scoped_dir_.GetPath(), LocalSetDeclaration());
 
   const std::string input =
       R"({"primary": "https://example.test", )"
       R"("associatedSites": ["https://associatedsite.test"]})";
   ASSERT_TRUE(base::JSONReader::Read(input));
-  FirstPartySetsHandlerImpl::GetInstance()->SetPublicFirstPartySets(
-      base::Version(), WritePublicSetsFile(input));
+  handler().SetPublicFirstPartySets(base::Version(),
+                                    WritePublicSetsFile(input));
 
   EXPECT_THAT(
       future.Get().FindEntries({example, associated},
@@ -503,8 +552,8 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
                                example, net::SiteType::kAssociated, 0))));
 
   EXPECT_THAT(
-      FirstPartySetsHandlerImpl::GetInstance()
-          ->GetSets(base::NullCallback())
+      handler()
+          .GetSets(base::NullCallback())
           .value()
           .FindEntries({example, associated},
                        net::FirstPartySetsContextConfig()),
@@ -515,14 +564,58 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
                                example, net::SiteType::kAssociated, 0))));
 }
 
+TEST_F(FirstPartySetsHandlerImplEnabledTest,
+       ComputeFirstPartySetMetadata_SynchronousResult) {
+  handler().Init(scoped_dir_.GetPath(), LocalSetDeclaration());
+
+  handler().SetPublicFirstPartySets(
+      base::Version(),
+      WritePublicSetsFile(
+          R"({"primary": "https://example.test", )"
+          R"("associatedSites": ["https://associatedsite.test"]})"));
+
+  // Exploit another helper to wait until the public sets file has been read.
+  GetSetsAndWait();
+
+  net::SchemefulSite example(GURL("https://example.test"));
+  net::SchemefulSite associated(GURL("https://associatedsite.test"));
+
+  base::test::TestFuture<net::FirstPartySetMetadata> future;
+  handler().ComputeFirstPartySetMetadata(example, &associated,
+                                         /*party_context=*/{},
+                                         net::FirstPartySetsContextConfig(),
+                                         future.GetCallback());
+  EXPECT_TRUE(future.IsReady());
+  EXPECT_NE(future.Take(), net::FirstPartySetMetadata());
+}
+
+TEST_F(FirstPartySetsHandlerImplEnabledTest,
+       ComputeFirstPartySetMetadata_AsynchronousResult) {
+  // Send query before the sets are ready.
+  base::test::TestFuture<net::FirstPartySetMetadata> future;
+  net::SchemefulSite example(GURL("https://example.test"));
+  net::SchemefulSite associated(GURL("https://associatedsite.test"));
+  handler().ComputeFirstPartySetMetadata(
+      example, &associated, /*party_context=*/{},
+      net::FirstPartySetsContextConfig(), future.GetCallback());
+  EXPECT_FALSE(future.IsReady());
+
+  handler().Init(scoped_dir_.GetPath(), LocalSetDeclaration());
+
+  handler().SetPublicFirstPartySets(
+      base::Version(),
+      WritePublicSetsFile(
+          R"({"primary": "https://example.test", )"
+          R"("associatedSites": ["https://associatedsite.test"]})"));
+
+  EXPECT_NE(future.Get(), net::FirstPartySetMetadata());
+}
+
 class FirstPartySetsHandlerGetContextConfigForPolicyTest
     : public FirstPartySetsHandlerImplEnabledTest {
  public:
   FirstPartySetsHandlerGetContextConfigForPolicyTest() {
-    FirstPartySetsHandlerImpl::GetInstance()
-        ->SetEmbedderWillProvidePublicSetsForTesting(true);
-    FirstPartySetsHandlerImpl::GetInstance()->Init(scoped_dir_.GetPath(),
-                                                   LocalSetDeclaration());
+    handler().Init(scoped_dir_.GetPath(), LocalSetDeclaration());
   }
 
   // Writes the public list of First-Party Sets which GetContextConfigForPolicy
@@ -546,8 +639,8 @@ class FirstPartySetsHandlerGetContextConfigForPolicyTest
         R"({"primary": "https://primary1.test", )"
         R"("associatedSites": ["https://associatedsite1.test", "https://associatedsite2.test"]})";
     ASSERT_TRUE(base::JSONReader::Read(input));
-    FirstPartySetsHandlerImpl::GetInstance()->SetPublicFirstPartySets(
-        base::Version(), WritePublicSetsFile(input));
+    handler().SetPublicFirstPartySets(base::Version(),
+                                      WritePublicSetsFile(input));
 
     ASSERT_THAT(
         GetSetsAndWait().FindEntries({primary1, associated1, associated2},
@@ -570,8 +663,7 @@ class FirstPartySetsHandlerGetContextConfigForPolicyTest
 TEST_F(FirstPartySetsHandlerGetContextConfigForPolicyTest,
        DefaultOverridesPolicy_DefaultContextConfigs) {
   base::Value policy = base::JSONReader::Read(R"({})").value();
-  FirstPartySetsHandlerImpl::GetInstance()->GetContextConfigForPolicy(
-      &policy.GetDict(), GetConfigCallback());
+  handler().GetContextConfigForPolicy(&policy.GetDict(), GetConfigCallback());
 
   InitPublicFirstPartySets();
   EXPECT_EQ(GetConfig(), net::FirstPartySetsContextConfig());
@@ -584,8 +676,7 @@ TEST_F(FirstPartySetsHandlerGetContextConfigForPolicyTest,
     "additions": true
   })")
                            .value();
-  FirstPartySetsHandlerImpl::GetInstance()->GetContextConfigForPolicy(
-      &policy.GetDict(), GetConfigCallback());
+  handler().GetContextConfigForPolicy(&policy.GetDict(), GetConfigCallback());
 
   InitPublicFirstPartySets();
   EXPECT_EQ(GetConfig(), net::FirstPartySetsContextConfig());
@@ -610,8 +701,7 @@ TEST_F(FirstPartySetsHandlerGetContextConfigForPolicyTest,
               }
             )")
                            .value();
-  FirstPartySetsHandlerImpl::GetInstance()->GetContextConfigForPolicy(
-      &policy.GetDict(), GetConfigCallback());
+  handler().GetContextConfigForPolicy(&policy.GetDict(), GetConfigCallback());
 
   InitPublicFirstPartySets();
   // We don't care what the customizations are, here; we only care that they're

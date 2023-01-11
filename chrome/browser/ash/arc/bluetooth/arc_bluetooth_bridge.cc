@@ -29,12 +29,13 @@
 #include "base/memory/singleton.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/ranges/algorithm.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
+#include "chrome/browser/ui/webui/ash/bluetooth_pairing_dialog.h"
 #include "components/arc/common/intent_helper/arc_intent_helper_package.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/device_event_log/device_event_log.h"
@@ -1381,7 +1382,7 @@ void ArcBluetoothBridge::CreateBond(mojom::BluetoothAddressPtr addr,
 
   // BluetoothPairingDialog will automatically pair the device and handle all
   // the incoming pairing requests.
-  chromeos::BluetoothPairingDialog::ShowDialog(device->GetAddress());
+  ash::BluetoothPairingDialog::ShowDialog(device->GetAddress());
 }
 
 void ArcBluetoothBridge::RemoveBond(mojom::BluetoothAddressPtr addr) {
@@ -3282,7 +3283,7 @@ ArcBluetoothBridge::CreateBluetoothConnectSocket(
     // BluetoothSocketConnect() is a blocking mojo call on the ARC side, so the
     // callback needs to be triggered asynchronously and thus we use a PostTask
     // here.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&ArcBluetoothBridge::OnBluetoothConnectingSocketReady,
                        weak_factory_.GetWeakPtr(), sock_wrapper.get()));

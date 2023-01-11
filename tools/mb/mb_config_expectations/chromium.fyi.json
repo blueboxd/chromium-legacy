@@ -167,6 +167,7 @@
     "goma": {
       "args_file": "//build/args/chromeos/amd64-generic-vm.gni",
       "gn_args": {
+        "also_build_lacros_chrome_for_architecture": "amd64",
         "dcheck_always_on": false,
         "is_chromeos_device": true,
         "ozone_platform_headless": true,
@@ -177,6 +178,7 @@
     "reclient": {
       "args_file": "//build/args/chromeos/amd64-generic-vm.gni",
       "gn_args": {
+        "also_build_lacros_chrome_for_architecture": "amd64",
         "dcheck_always_on": false,
         "is_chromeos_device": true,
         "ozone_platform_headless": true,
@@ -431,7 +433,7 @@
       "is_msan": true,
       "msan_track_origins": 2,
       "target_os": "chromeos",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "Linux MSan Focal": {
@@ -601,8 +603,7 @@
       "symbol_level": 1,
       "target_cpu": "arm",
       "target_os": "android",
-      "use_allocator": "partition",
-      "use_backup_ref_ptr": true,
+      "use_partition_alloc_as_malloc": true,
       "use_remoteexec": true
     }
   },
@@ -621,8 +622,7 @@
       "symbol_level": 1,
       "target_cpu": "arm64",
       "target_os": "android",
-      "use_allocator": "partition",
-      "use_backup_ref_ptr": true,
+      "use_partition_alloc_as_malloc": true,
       "use_remoteexec": true
     }
   },
@@ -745,19 +745,10 @@
       "use_remoteexec": true
     }
   },
-  "chromeos-amd64-generic-rel (goma cache silo)": {
-    "args_file": "//build/args/chromeos/amd64-generic.gni",
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_chromeos_device": true,
-      "ozone_platform_headless": true,
-      "use_goma": true,
-      "use_real_dbus_clients": false
-    }
-  },
   "chromeos-amd64-generic-rel (reclient compare)": {
     "args_file": "//build/args/chromeos/amd64-generic-vm.gni",
     "gn_args": {
+      "also_build_lacros_chrome_for_architecture": "amd64",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "ozone_platform_headless": true,
@@ -768,6 +759,7 @@
   "chromeos-amd64-generic-rel (reclient)": {
     "args_file": "//build/args/chromeos/amd64-generic-vm.gni",
     "gn_args": {
+      "also_build_lacros_chrome_for_architecture": "amd64",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "ozone_platform_headless": true,
@@ -785,7 +777,7 @@
       "symbol_level": 0,
       "target_os": "fuchsia",
       "use_clang_coverage": true,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "fuchsia-fyi-arm64-cfv2-script": {
@@ -797,7 +789,7 @@
       "target_os": "fuchsia",
       "test_host_cpu": "arm64",
       "use_cfv2_script": true,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "fuchsia-fyi-cfv2-script": {
@@ -807,7 +799,7 @@
       "is_debug": false,
       "target_os": "fuchsia",
       "use_cfv2_script": true,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "ios-fieldtrial-rel": {
@@ -820,7 +812,7 @@
       "target_cpu": "arm64",
       "target_environment": "simulator",
       "target_os": "ios",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "ios-m1-simulator": {
@@ -833,7 +825,7 @@
       "target_cpu": "arm64",
       "target_environment": "simulator",
       "target_os": "ios",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "ios-m1-simulator-cronet": {
@@ -856,21 +848,8 @@
       "target_os": "ios",
       "use_allocator_shim": false,
       "use_crash_key_stubs": true,
-      "use_goma": true,
       "use_partition_alloc": false,
-      "use_platform_icu_alternatives": true
-    }
-  },
-  "ios-reclient": {
-    "gn_args": {
-      "enable_run_ios_unittests_with_xctest": true,
-      "ios_set_attributes_for_xcode_project_generation": false,
-      "is_component_build": false,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_cpu": "x64",
-      "target_environment": "simulator",
-      "target_os": "ios",
+      "use_platform_icu_alternatives": true,
       "use_remoteexec": true
     }
   },
@@ -935,7 +914,7 @@
       "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "ios-webkit-tot": {
@@ -961,7 +940,7 @@
       "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "ios15-beta-simulator": {
@@ -1000,7 +979,7 @@
       "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "ios16-sdk-device": {
@@ -1027,19 +1006,7 @@
       "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
-      "use_goma": true
-    }
-  },
-  "lacros-amd64-generic-rel (goma cache silo)": {
-    "args_file": "//build/args/chromeos/amd64-generic-crostoolchain.gni",
-    "gn_args": {
-      "chromeos_is_browser_only": true,
-      "dcheck_always_on": false,
-      "is_chromeos_device": true,
-      "is_debug": false,
-      "ozone_platform_headless": true,
-      "target_os": "chromeos",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "lacros-amd64-generic-rel (reclient)": {
@@ -1075,7 +1042,7 @@
       "is_skylab": true,
       "ozone_platform_headless": true,
       "target_os": "chromeos",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "lacros-arm64-generic-rel-skylab-fyi": {
@@ -1088,7 +1055,7 @@
       "is_skylab": true,
       "ozone_platform_headless": true,
       "target_os": "chromeos",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-annotator-rel": {
@@ -1107,7 +1074,7 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "target_os": "chromeos",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-backuprefptr-x64-fyi-rel": {
@@ -1121,8 +1088,7 @@
       "put_ref_count_in_previous_slot": true,
       "symbol_level": 1,
       "target_cpu": "x64",
-      "use_allocator": "partition",
-      "use_backup_ref_ptr": true,
+      "use_partition_alloc_as_malloc": true,
       "use_remoteexec": true
     }
   },
@@ -1132,7 +1098,7 @@
       "is_component_build": true,
       "is_debug": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-blink-heap-concurrent-marking-tsan-rel": {
@@ -1209,7 +1175,7 @@
       "is_debug": false,
       "symbol_level": 0,
       "use_clang_coverage": true,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-example-builder": {
@@ -1226,7 +1192,7 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-headless-shell-rel": {
@@ -1265,17 +1231,6 @@
       "is_debug": false,
       "target_os": "chromeos",
       "use_remoteexec": true
-    }
-  },
-  "linux-lacros-builder-rel (goma cache silo)": {
-    "gn_args": {
-      "also_build_ash_chrome": true,
-      "chromeos_is_browser_only": true,
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "target_os": "chromeos",
-      "use_goma": true
     }
   },
   "linux-lacros-builder-rel (reclient)": {
@@ -1344,7 +1299,7 @@
       "is_component_build": false,
       "is_debug": false,
       "target_os": "chromeos",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-lacros-version-skew-fyi": {
@@ -1442,8 +1397,7 @@
       "put_ref_count_in_previous_slot": true,
       "symbol_level": 1,
       "target_cpu": "x64",
-      "use_allocator": "partition",
-      "use_backup_ref_ptr": true,
+      "use_partition_alloc_as_malloc": true,
       "use_remoteexec": true
     }
   },
@@ -1468,7 +1422,7 @@
       "proprietary_codecs": true,
       "symbol_level": 1,
       "target_cpu": "arm64",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "mac-hermetic-upgrade-rel": {
@@ -1516,8 +1470,7 @@
       "put_ref_count_in_previous_slot": true,
       "symbol_level": 1,
       "target_cpu": "x64",
-      "use_allocator": "partition",
-      "use_backup_ref_ptr": true,
+      "use_partition_alloc_as_malloc": true,
       "use_remoteexec": true
     }
   },
@@ -1532,8 +1485,7 @@
       "put_ref_count_in_previous_slot": true,
       "symbol_level": 1,
       "target_cpu": "x86",
-      "use_allocator": "partition",
-      "use_backup_ref_ptr": true,
+      "use_partition_alloc_as_malloc": true,
       "use_remoteexec": true
     }
   },

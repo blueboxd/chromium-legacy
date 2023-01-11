@@ -2860,6 +2860,12 @@
   <message name="IDS_ENTERPRISE_ENROLLMENT_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE" desc="Error message to show when the user tries to enroll a device with a packaged license using a consumer account.">
     Your device includes a Chrome Enterprise Upgrade, but your username is not associated with an enterprise account. Please create an enterprise account by visiting g.co/ChromeEnterpriseAccount on a secondary device.
   </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_CONSUMER_ACCOUNT_WITH_EDU_PACKAGED_LICENSE" desc="Error message to show when the user tries to enroll a device with a education packaged license using a consumer account.">
+    Your device includes a Chrome Education Upgrade, but your username is not associated with a Google for Education account. Please create a Google for Education account by visiting g.co/workspace/edusignup on a secondary device.
+  </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_CONSUMER_ACCOUNT_WITH_EDU_PACKAGED_LICENSE_ACCOUNT_CHECK" desc="Error message to show after account check when the user tries to enroll a device with a education packaged license using a consumer account.">
+    <ph name="USER_EMAIL">$1<ex>john.doe@example.com</ex></ph> isn't a valid Google for Education account. Contact your administrator. If you are an administrator, you can set up your organization by visiting: g.co/workspace/edusignup
+  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE_ACCOUNT_CHECK" desc="Error message to show after account check when the user tries to enroll a device with a packaged license using a consumer account.">
     <ph name="USER_EMAIL">$1<ex>john.doe@example.com</ex></ph> does not belong to a valid organization. Contact your administrator. If you are an administrator, you can set up your organization by visiting: g.co/ChromeEnterpriseAccount
   </message>
@@ -2899,6 +2905,9 @@
   <message name="IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE" desc="The title on the enterprise enrollment dialog.">
     Enterprise enrollment
   </message>
+  <message name="IDS_EDUCATION_ENROLLMENT_SCREEN_TITLE" desc="The title on the education enrollment dialog.">
+    School enrollment
+  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_SCREEN_PROGRESS_LABEL" desc="The a11y label for enrollment in progress dialog with spinner.">
     Enterprise enrollment in progress
   </message>
@@ -2910,6 +2919,9 @@
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ERROR_TITLE" desc="Title of the screen to be shown upon an error during enterprise enrollment.">
     Enrollment Error
+  </message>
+  <message name="IDS_EDUCATION_ENROLLMENT_ERROR_TITLE" desc="Title of the screen to be shown upon an error during enterprise enrollment.">
+    Couldn't complete school enrollment
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_RETRY" desc="Label for the retry button on the error step in the enterprise enrollment dialog.">
     Try again
@@ -2931,6 +2943,9 @@
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS_TITLE" desc="Title of the screen to be shown once enterprise enrollment completes.">
     Enterprise enrollment complete
+  </message>
+  <message name="IDS_EDUCATION_ENROLLMENT_SUCCESS_TITLE" desc="Title of the screen to be shown once education enrollment completes.">
+    School enrollment complete
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS_ENTERPRISE_ICON_EXPLANATION" desc="Title of the screen to be shown once enterprise enrollment completes.">
     You will see this Managed icon when a setting or feature is managed by your administrator.
@@ -2980,8 +2995,14 @@
   <message name="IDS_SKIP_ENROLLMENT_DIALOG_TITLE" desc="The title for the modal dialog shown when skipping enrollment. Only displayed if the device is License Packaged device.">
     Skip enterprise enrollment?
   </message>
+  <message name="IDS_SKIP_ENROLLMENT_DIALOG_EDUCATION_TITLE" desc="The title for the modal dialog shown when skipping enrollment. Only displayed if the device is License Packaged device.">
+    Skip school enrollment?
+  </message>
   <message name="IDS_SKIP_ENROLLMENT_DIALOG_TEXT" desc="The message for the modal dialog shown when skipping enrollment. Only displayed if the device is License Packaged device.">
     You will have to factory reset this device to use enterprise features.
+  </message>
+  <message name="IDS_SKIP_ENROLLMENT_DIALOG_EDUCATION_TEXT" desc="The message for the modal dialog shown when skipping enrollment. Only displayed if the device is License Packaged device.">
+    You will have to factory reset this device to use Chrome Education Upgrade features.
   </message>
    <message name="IDS_SKIP_ENROLLMENT_DIALOG_GO_BACK_BUTTON" desc="Cancel button for skipping enrollment">
     Go back
@@ -4436,6 +4457,9 @@
   <message name="IDS_CROSTINI_TERMINAL_STATUS_START_CONTAINER" desc="Text shown in the crostini terminal when it is starting the Linux container">
     Starting the Linux container
   </message>
+  <message name="IDS_CROSTINI_TERMINAL_STATUS_CONFIGURE_CONTAINER" desc="Text shown in the crostini terminal when it is configuring the Linux container">
+    Configuring the Linux container
+  </message>
   <message name="IDS_CROSTINI_TERMINAL_STATUS_CONNECT_CONTAINER" desc="Text shown in the crostini terminal when it is connecting to the container">
     Connecting to the container
   </message>
@@ -5565,19 +5589,19 @@
 
   <!-- Strings for camera privacy switch toast and notification -->
   <message name="IDS_CAMERA_PRIVACY_SWITCH_ON_TOAST" desc="Toast message shown to the user when the camera privacy switch, which disables camera feed, gets turned on.">
-    Camera is turned off
+    <ph name="DEVICE_NAME">$1<ex>Camera</ex></ph> is turned off
   </message>
   <message name="IDS_CAMERA_PRIVACY_SWITCH_OFF_TOAST" desc="Toast message shown to the user when the camera privacy switch gets turned off. The privacy switch disables the camera feed while it's on.">
-    Camera is turned on
+    <ph name="DEVICE_NAME">$1<ex>Camera</ex></ph> is turned on
   </message>
   <message name="IDS_CAMERA_PRIVACY_SWITCH_ON_NOTIFICATION_TITLE" desc="Title for a notification shown to the users when an app tries to use a camera while the camera privacy switch, which disables camera feed, is turned on">
-    Camera is off
+    <ph name="DEVICE_NAME">$1<ex>Camera</ex></ph> is off
   </message>
   <message name="IDS_CAMERA_PRIVACY_SWITCH_ON_NOTIFICATION_MESSAGE" desc="Message for a notification shown to the users when an app tries to use a camera while the camera privacy switch, which disables camera feed, is turned on">
-    An app is trying to access the camera. Turn off the camera privacy switch to allow access.
+    An app is trying to access <ph name="DEVICE_NAME">$1<ex>Camera</ex></ph>. Turn off <ph name="DEVICE_NAME">$1<ex>Camera</ex></ph> privacy switch to allow access.
   </message>
   <message name="IDS_CAMERA_PRIVACY_SWITCH_ON_NOTIFICATION_MESSAGE_WITH_APP_NAME" desc="Message for a notification shown to the users when an app tries to use a camera while the camera privacy switch, which disables camera feed, is turned on">
-    <ph name="APP_NAME">$1<ex>Parallels Desktop</ex></ph> is trying to access the camera. Turn off the camera privacy switch to allow access.
+    <ph name="APP_NAME">$1<ex>Parallels Desktop</ex></ph> is trying to access <ph name="DEVICE_NAME">$2<ex>Camera</ex></ph>. Turn off <ph name="DEVICE_NAME">$2<ex>Camera</ex></ph> privacy switch to allow access.
   </message>
 
   <!-- Strings for Account Manager error screen -->
@@ -5949,6 +5973,9 @@ You can manage this account’s settings by installing the Family Link app on yo
   </message>
   <message name="IDS_PARENT_ACCESS_AFTER_DENY_BUTTON" desc="Deny button on the local web approvals dialog.">
     Deny
+  </message>
+  <message name="IDS_PARENT_ACCESS_WEBVIEW_LOADING_MESSAGE" desc="Message shown while the parent access screen is loading.">
+    Please wait...
   </message>
 
   <!-- Strings for gnubby U2FD authentication UI -->

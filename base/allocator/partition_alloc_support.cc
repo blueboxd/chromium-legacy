@@ -367,6 +367,12 @@ std::map<std::string, std::string> ProposeSyntheticFinchTrials() {
   trials.emplace("PCScan_Effective_Fallback", pcscan_group_name_fallback);
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
+#if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS)
+  trials.emplace("DanglingPointerDetector", "Enabled");
+#else
+  trials.emplace("DanglingPointerDetector", "Disabled");
+#endif
+
   return trials;
 }
 
@@ -503,7 +509,7 @@ void DanglingRawPtrReleasedCrash(uintptr_t id) {
                << "The dangling raw_ptr was released at:\n"
                << stack_trace_release << task_trace_release;
   }
-  IMMEDIATE_CRASH();
+  ImmediateCrash();
 }
 
 void ClearDanglingRawPtrBuffer() {
@@ -557,7 +563,7 @@ void UnretainedDanglingRawPtrDetectedCrash(uintptr_t id) {
   LOG(ERROR) << "Detected dangling raw_ptr in unretained with id="
              << StringPrintf("0x%016" PRIxPTR, id) << ":\n\n"
              << task_trace << stack_trace;
-  IMMEDIATE_CRASH();
+  ImmediateCrash();
 }
 
 void InstallUnretainedDanglingRawPtrChecks() {

@@ -34,6 +34,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Chrome.KAnonymityService.JoinSetLatency" units="ms"
+    expires_after="M110">
+  <owner>behamilton@google.com</owner>
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Records the length of time the K-Anonymity service spends processing a
+    JoinSet request. This includes time taking waiting in the JoinSet queue,
+    getting a trust token (if necessary), performing the request, and waiting
+    for the response. This metric is only measured for successful requests.
+  </summary>
+</histogram>
+
 <histogram name="Chrome.KAnonymityService.QuerySet.Action"
     enum="KAnonymityServiceQuerySetAction" expires_after="2023-03-26">
   <owner>behamilton@google.com</owner>
@@ -55,8 +67,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Chrome.KAnonymityService.QuerySetsLatency" units="ms"
+    expires_after="M110">
+  <owner>behamilton@google.com</owner>
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Records the length of time the K-Anonymity service spends processing a
+    QuerySet request. This includes time taking waiting in the QuerySet queue,
+    formatting the request, performing the request, waiting for the response,
+    and parsing the response. This metric is only measured for successful
+    requests.
+  </summary>
+</histogram>
+
 <histogram name="Chrome.KAnonymityService.TrustTokenGetter.Action"
-    enum="KAnonymityTrustTokenGetterAction" expires_after="M108">
+    enum="KAnonymityTrustTokenGetterAction" expires_after="M110">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -224,7 +249,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.SystemNetworkContextManager.NetworkSandboxState"
-    enum="NetworkSandboxState" expires_after="2023-03-05">
+    enum="NetworkSandboxState" expires_after="2023-05-07">
   <owner>wfh@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>
@@ -246,7 +271,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.Tabs.AnimationSmoothness.HoverCard.FadeOut" units="%"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>yichenz@chromium.org</owner>
   <owner>chromeos-wmp@google.com</owner>
   <summary>
@@ -267,7 +292,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ChromeColors.ColorOnLoad" enum="ChromeColorsInfo"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>gayane@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <summary>

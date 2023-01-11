@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_STATS_H_
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -29,6 +30,8 @@ namespace blink {
 
 class RTCStats;
 class RTCStatsMember;
+
+PLATFORM_EXPORT BASE_DECLARE_FEATURE(WebRtcUnshipDeprecatedStats);
 
 // Wrapper around a webrtc::RTCStatsReport. Filters out any stats objects that
 // aren't listed in the allow list. |filter| controls whether to include only
@@ -58,6 +61,7 @@ class PLATFORM_EXPORT RTCStatsReportPlatform {
   size_t Size() const;
 
  private:
+  const bool unship_deprecated_stats_;
   const scoped_refptr<const webrtc::RTCStatsReport> stats_report_;
   webrtc::RTCStatsReport::ConstIterator it_;
   const webrtc::RTCStatsReport::ConstIterator end_;
@@ -70,7 +74,8 @@ class PLATFORM_EXPORT RTCStats {
  public:
   RTCStats(const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
            const webrtc::RTCStats* stats,
-           const Vector<webrtc::NonStandardGroupId>& exposed_group_ids);
+           const Vector<webrtc::NonStandardGroupId>& exposed_group_ids,
+           bool unship_deprecated_stats);
   virtual ~RTCStats();
 
   String Id() const;
@@ -116,6 +121,9 @@ class PLATFORM_EXPORT RTCStatsMember {
   HashMap<String, uint64_t> ValueMapStringUint64() const;
   HashMap<String, double> ValueMapStringDouble() const;
 
+  enum class ExposureRestriction { kNone, kHardwareCapability };
+  ExposureRestriction Restriction() const;
+
  private:
   // Reference to keep the report that owns |member_|'s stats object alive.
   const scoped_refptr<const webrtc::RTCStatsReport> stats_owner_;
@@ -157,8 +165,6 @@ class PLATFORM_EXPORT RTCStatsCollectorCallbackImpl
   RTCStatsReportCallback callback_;
   Vector<webrtc::NonStandardGroupId> exposed_group_ids_;
 };
-
-PLATFORM_EXPORT void AllowStatsForTesting(const char* type);
 
 }  // namespace blink
 

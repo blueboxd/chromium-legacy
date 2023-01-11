@@ -401,14 +401,14 @@ void ContentAutofillRouter::AskForValuesToFill(
     const FormFieldData& field,
     const gfx::RectF& bounding_box,
     int32_t query_id,
-    bool autoselect_first_suggestion,
+    AutoselectFirstSuggestion autoselect_first_suggestion,
     FormElementWasClicked form_element_was_clicked,
     void (*callback)(ContentAutofillDriver* target,
                      const FormData& form,
                      const FormFieldData& field,
                      const gfx::RectF& bounding_box,
                      int32_t query_id,
-                     bool autoselect_first_suggestion,
+                     AutoselectFirstSuggestion autoselect_first_suggestion,
                      FormElementWasClicked form_element_was_clicked)) {
   if (!base::FeatureList::IsEnabled(features::kAutofillAcrossIframes)) {
     callback(source, form, field, bounding_box, query_id,
@@ -657,6 +657,27 @@ void ContentAutofillRouter::FillFormForAssistant(
   SetLastQueriedSource(source);
   SetLastQueriedTarget(target);
   callback(target, fill_data, form, field, intent);
+}
+
+void ContentAutofillRouter::OnContextMenuShownInField(
+    ContentAutofillDriver* source,
+    const FormGlobalId& form_global_id,
+    const FieldGlobalId& field_global_id,
+    void (*callback)(ContentAutofillDriver* target,
+                     const FormGlobalId& form_global_id,
+                     const FieldGlobalId& field_global_id)) {
+  if (!base::FeatureList::IsEnabled(features::kAutofillAcrossIframes)) {
+    callback(source, form_global_id, field_global_id);
+    return;
+  }
+
+  some_rfh_for_debugging_ = source->render_frame_host()->GetGlobalId();
+
+  TriggerReparseExcept(source);
+
+  ForEachFrame(form_forest_, [&](ContentAutofillDriver* some_driver) {
+    callback(some_driver, form_global_id, field_global_id);
+  });
 }
 
 // Routing of events triggered by the browser.

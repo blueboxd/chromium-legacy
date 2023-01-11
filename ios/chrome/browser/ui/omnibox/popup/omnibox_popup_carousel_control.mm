@@ -34,26 +34,27 @@ const NSInteger kLabelNumLines = 2;
 
 // Corner radius of the context menu preview.
 const CGFloat kPreviewCornerRadius = 13.0f;
+// Corner radius of the icon's `backgroundView`.
+const CGFloat kBackgroundCornerRadius = 13.0f;
 
 // UILabel displaying text at the bottom of carousel item.
 UILabel* CarouselItemLabel() {
   UILabel* label = [[UILabel alloc] init];
   label.translatesAutoresizingMaskIntoConstraints = NO;
-  label.textColor = [UIColor colorNamed:kTextPrimaryColor];
+  label.textColor = [UIColor colorNamed:kTextSecondaryColor];
   label.numberOfLines = kLabelNumLines;
   label.textAlignment = NSTextAlignmentCenter;
   label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
-  // TODO(crbug.com/1365374): Check color with UX.
   return label;
 }
 
-// UIView for the background of carousel item.
+// UIView for the squircle background of carousel item.
 UIView* CarouselItemBackgroundView() {
   UIImageView* imageView = [[UIImageView alloc] init];
   UIImage* backgroundImage = [[UIImage imageNamed:@"ntp_most_visited_tile"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   imageView.image = backgroundImage;
-  imageView.tintColor = [UIColor colorNamed:kGrey200Color];
+  imageView.tintColor = [UIColor colorNamed:kGrey100Color];
   imageView.translatesAutoresizingMaskIntoConstraints = NO;
   [NSLayoutConstraint activateConstraints:@[
     [imageView.widthAnchor constraintEqualToConstant:kBackgroundViewSize],
@@ -75,7 +76,27 @@ FaviconView* CarouselItemFaviconView() {
   return faviconView;
 }
 
+// CAGradientLayer for `backgroundView` when selected.
+CAGradientLayer* CarouselBackgroundGradientLayer() {
+  CAGradientLayer* gradientLayer = [[CAGradientLayer alloc] init];
+  gradientLayer.startPoint = CGPointMake(0, 0.5);
+  gradientLayer.endPoint = CGPointMake(1, 0.5);
+  UIColor* gradientStartColor =
+      [[UIColor colorNamed:@"omnibox_suggestion_row_highlight_color"]
+          colorWithAlphaComponent:0.85];
+  UIColor* gradientEndColor =
+      [UIColor colorNamed:@"omnibox_suggestion_row_highlight_color"];
+  gradientLayer.colors =
+      @[ (id)[gradientStartColor CGColor], (id)[gradientEndColor CGColor] ];
+  gradientLayer.cornerRadius = kBackgroundCornerRadius;
+  gradientLayer.cornerCurve = kCACornerCurveContinuous;
+  return gradientLayer;
+}
+
 }  // namespace
+
+const CGFloat kOmniboxPopupCarouselControlWidth =
+    kBackgroundViewSize + 2 * kBackgroundViewMargin;
 
 @interface OmniboxPopupCarouselControl ()
 
@@ -85,7 +106,8 @@ FaviconView* CarouselItemFaviconView() {
 @property(nonatomic, strong) FaviconView* faviconView;
 // UILabel containing the text.
 @property(nonatomic, strong) UILabel* label;
-@property(nonatomic, strong) CarouselItem* carouselItem;
+// Gradient layer for `backgroundView` when selected.
+@property(nonatomic, strong) CAGradientLayer* gradientLayer;
 
 @end
 
@@ -98,6 +120,7 @@ FaviconView* CarouselItemFaviconView() {
     _backgroundView = CarouselItemBackgroundView();
     _faviconView = CarouselItemFaviconView();
     _carouselItem = nil;
+    _gradientLayer = CarouselBackgroundGradientLayer();
   }
   return self;
 }
@@ -105,18 +128,22 @@ FaviconView* CarouselItemFaviconView() {
 - (void)setSelected:(BOOL)selected {
   [super setSelected:selected];
   if (selected) {
-    self.backgroundColor =
-        [UIColor colorNamed:@"omnibox_suggestion_row_highlight_color"];
+    [self.delegate carouselControlDidBecomeFocused:self];
+    [self.backgroundView.layer addSublayer:self.gradientLayer];
   } else {
-    self.backgroundColor = UIColor.clearColor;
+    [self.gradientLayer removeFromSuperlayer];
   }
+}
+
+- (void)layoutSubviews {
+  self.gradientLayer.frame = self.backgroundView.bounds;
+  [super layoutSubviews];
 }
 
 - (void)addSubviews {
   // Rounds corners in a Squircle.
   self.layer.cornerCurve = kCACornerCurveContinuous;
   self.layer.cornerRadius = kPreviewCornerRadius;
-  // TODO(crbug.com/1365374): Add context Menu.
   [self
       addInteraction:[[UIContextMenuInteraction alloc] initWithDelegate:self]];
   self.translatesAutoresizingMaskIntoConstraints = NO;
@@ -143,15 +170,17 @@ FaviconView* CarouselItemFaviconView() {
     [self.bottomAnchor constraintEqualToAnchor:_label.bottomAnchor
                                       constant:kBackgroundViewMargin]
   ]];
+  [self setNeedsLayout];
+  [self layoutIfNeeded];
 }
 
 #pragma mark - Public methods
 
-- (void)setupWithCarouselItem:(CarouselItem*)carouselItem {
+- (void)setCarouselItem:(CarouselItem*)carouselItem {
   if (self.subviews.count == 0) {
     [self addSubviews];
   }
-  self.carouselItem = carouselItem;
+  _carouselItem = carouselItem;
   [self.faviconView configureWithAttributes:carouselItem.faviconAttributes];
   self.label.text = carouselItem.title;
   self.accessibilityLabel = carouselItem.title;
@@ -167,6 +196,35 @@ FaviconView* CarouselItemFaviconView() {
                                      fromView:self];
 }
 
+- (void)contextMenuInteraction:(UIContextMenuInteraction*)interaction
+    willDisplayMenuForConfiguration:(UIContextMenuConfiguration*)configuration
+                           animator:
+                               (id<UIContextMenuInteractionAnimating>)animator {
+  if (self.isSelected) {
+    __weak CAGradientLayer* weakHighlightLayer = self.gradientLayer;
+    [animator addAnimations:^{
+      [weakHighlightLayer removeFromSuperlayer];
+    }];
+  }
+  [super contextMenuInteraction:interaction
+      willDisplayMenuForConfiguration:configuration
+                             animator:animator];
+}
+
+- (void)contextMenuInteraction:(UIContextMenuInteraction*)interaction
+       willEndForConfiguration:(UIContextMenuConfiguration*)configuration
+                      animator:(id<UIContextMenuInteractionAnimating>)animator {
+  if (self.isSelected) {
+    __weak __typeof(self) weakSelf = self;
+    [animator addAnimations:^{
+      [weakSelf.backgroundView.layer addSublayer:weakSelf.gradientLayer];
+    }];
+  }
+  [super contextMenuInteraction:interaction
+        willEndForConfiguration:configuration
+                       animator:animator];
+}
+
 - (UITargetedPreview*)contextMenuInteraction:
                           (UIContextMenuInteraction*)interaction
                                configuration:
@@ -180,6 +238,18 @@ FaviconView* CarouselItemFaviconView() {
                                  cornerRadius:kPreviewCornerRadius];
   return [[UITargetedPreview alloc] initWithView:self
                                       parameters:previewParameters];
+}
+
+#pragma mark - UIAccessibility
+
+- (void)accessibilityElementDidBecomeFocused {
+  // Element is focused by VoiceOver, informs its delegate so it can make it
+  // visible, in case it's hidden in the scroll view.
+  [self.delegate carouselControlDidBecomeFocused:self];
+}
+
+- (UIAccessibilityTraits)accessibilityTraits {
+  return UIAccessibilityTraitButton | [super accessibilityTraits];
 }
 
 @end

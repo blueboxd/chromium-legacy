@@ -13,9 +13,10 @@ namespace metal {
 void RegisterGracefulExitOnDeviceRemoval() {
   if (@available(macOS 10.13, *)) {
     id<NSObject> deviceObserver = nil;
-    MTLCopyAllDevicesWithObserver(
-        &deviceObserver,
-        ^(id<MTLDevice> device, MTLDeviceNotificationName name) {
+    // Immediately release the returned devices since we just care about setting
+    // the handler.
+    [MTLCopyAllDevicesWithObserver(
+        &deviceObserver, ^(id<MTLDevice> device, MTLDeviceNotificationName name) {
           if (name == MTLDeviceRemovalRequestedNotification ||
               name == MTLDeviceWasRemovedNotification) {
             // Exit the GPU process without error. The browser process sees
@@ -26,7 +27,7 @@ void RegisterGracefulExitOnDeviceRemoval() {
             // exit the browser), but we don't support that on macOS anyway.
             base::Process::TerminateCurrentProcessImmediately(0);
           }
-        });
+        }) release];
   }
 }
 

@@ -13,12 +13,13 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/app_list/search/burnin_controller.h"
 #include "chrome/browser/ui/app_list/search/ranking/launch_data.h"
-#include "chrome/browser/ui/app_list/search/ranking/ranker_delegate.h"
+#include "chrome/browser/ui/app_list/search/ranking/ranker_manager.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -57,14 +58,17 @@ class SearchControllerImplNew : public SearchController {
 
   // SearchController:
   void StartSearch(const std::u16string& query) override;
+  void ClearSearch() override;
   void StartZeroState(base::OnceClosure on_done,
                       base::TimeDelta timeout) override;
   void OpenResult(ChromeSearchResult* result, int event_flags) override;
   void InvokeResultAction(ChromeSearchResult* result,
                           ash::SearchResultActionType action) override;
-  size_t AddGroup(size_t max_results) override;
-  void AddProvider(size_t group_id,
-                   std::unique_ptr<SearchProvider> provider) override;
+  AppSearchDataSource* GetAppSearchDataSource() override;
+  void AddProvider(std::unique_ptr<SearchProvider> provider) override;
+  size_t ReplaceProvidersForResultTypeForTest(
+      ash::AppListSearchResultType result_type,
+      std::unique_ptr<SearchProvider> provider) override;
   void SetResults(const SearchProvider* provider, Results results) override;
   void Publish() override;
   ChromeSearchResult* FindSearchResult(const std::string& result_id) override;
@@ -79,10 +83,11 @@ class SearchControllerImplNew : public SearchController {
   std::u16string get_query() override;
   base::Time session_start() override;
   void disable_ranking_for_test() override;
+  void WaitForZeroStateCompletionForTest(base::OnceClosure callback) override;
 
-  void set_ranker_delegate_for_test(
-      std::unique_ptr<RankerDelegate> ranker_delegate) {
-    ranker_ = std::move(ranker_delegate);
+  void set_ranker_manager_for_test(
+      std::unique_ptr<RankerManager> ranker_manager) {
+    ranker_manager_ = std::move(ranker_manager);
   }
 
  private:
@@ -118,10 +123,10 @@ class SearchControllerImplNew : public SearchController {
   // StartZeroState.
   base::OneShotTimer zero_state_timeout_;
 
-  // The callback to indicate zero-state should be published. It is reset after
-  // calling, and has_value is used as a flag for whether zero-state has
-  // published.
-  absl::optional<base::OnceClosure> on_zero_state_done_;
+  // Callbacks to run when initial set of zero state results is published.
+  // Non empty list indicates that results should be published when zero state
+  // times out.
+  base::OnceClosureList on_zero_state_done_;
 
   // The time when StartSearch was most recently called.
   base::Time session_start_;
@@ -131,7 +136,7 @@ class SearchControllerImplNew : public SearchController {
   std::string last_launched_app_id_;
 
   // Top-level result ranker.
-  std::unique_ptr<RankerDelegate> ranker_;
+  std::unique_ptr<RankerManager> ranker_manager_;
 
   bool disable_ranking_for_test_ = false;
 
@@ -141,10 +146,11 @@ class SearchControllerImplNew : public SearchController {
   // Storage for category scores for the current query.
   CategoriesList categories_;
 
-  // If set, called when results set by a provider change.
-  ResultsChangedCallback results_changed_callback_;
+  // If set, called when results set by a provider change. Only set by tests.
+  ResultsChangedCallback results_changed_callback_for_test_;
 
   std::unique_ptr<SearchMetricsManager> metrics_manager_;
+  std::unique_ptr<AppSearchDataSource> app_search_data_source_;
   using Providers = std::vector<std::unique_ptr<SearchProvider>>;
   Providers providers_;
   AppListModelUpdater* const model_updater_;

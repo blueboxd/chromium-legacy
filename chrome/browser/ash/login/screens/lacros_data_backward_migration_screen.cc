@@ -11,7 +11,9 @@
 #include "base/path_service.h"
 #include "chrome/browser/ash/crosapi/browser_data_back_migrator.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/webui/ash/login/lacros_data_backward_migration_screen_handler.h"
 #include "chrome/common/chrome_paths.h"
 
 namespace ash {
@@ -56,15 +58,22 @@ void LacrosDataBackwardMigrationScreen::ShowImpl() {
     const base::FilePath profile_data_dir =
         user_data_dir.Append(ProfileHelper::GetUserProfileDir(user_id_hash));
 
-    migrator_ = std::make_unique<BrowserDataBackMigrator>(profile_data_dir);
+    migrator_ = std::make_unique<BrowserDataBackMigrator>(
+        profile_data_dir, user_id_hash, g_browser_process->local_state());
   }
 
   migrator_->Migrate(
+      base::BindRepeating(&LacrosDataBackwardMigrationScreen::OnProgress,
+                          weak_factory_.GetWeakPtr()),
       base::BindOnce(&LacrosDataBackwardMigrationScreen::OnMigrated,
                      weak_factory_.GetWeakPtr()));
 
   // Show the screen.
   view_->Show();
+}
+
+void LacrosDataBackwardMigrationScreen::OnProgress(int percent) {
+  view_->SetProgressValue(percent);
 }
 
 void LacrosDataBackwardMigrationScreen::OnMigrated(
@@ -74,7 +83,7 @@ void LacrosDataBackwardMigrationScreen::OnMigrated(
       chrome::AttemptRestart();
       break;
     case BrowserDataBackMigrator::Result::kFailed:
-      // TODO
+      view_->SetFailureStatus();
       break;
   }
 }

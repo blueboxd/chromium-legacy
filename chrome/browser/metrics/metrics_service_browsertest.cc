@@ -426,7 +426,9 @@ class MetricsServiceBrowserNoUploadTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserNoUploadTest, FilesRemoved) {
+// TODO(crbug.com/1378228): Fix flakiness.
+IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserNoUploadTest,
+                       DISABLED_FilesRemoved) {
   // SetUp() has removed consent and made metrics "sampled-in" (enabled).
   EXPECT_FALSE(HasNonPMAFiles());
 }
@@ -453,7 +455,14 @@ class MetricsServiceBrowserSampledOutTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserSampledOutTest, FilesRemoved) {
+// TODO(crbug.com/1380375): Flaky on Mac, fix flakiness and re-enable the test.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_FilesRemoved DISABLED_FilesRemoved
+#else
+#define MAYBE_FilesRemoved FilesRemoved
+#endif
+IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserSampledOutTest,
+                       MAYBE_FilesRemoved) {
   // SetUp() has provided consent and made metrics "sampled-out" (disabled).
   EXPECT_FALSE(HasNonPMAFiles());
 }

@@ -760,12 +760,14 @@ TimeTicks StackSamplingProfiler::TestPeer::GetNextSampleTime(
 }
 
 // static
-// The profiler is currently supported for Windows x64, macOS, iOS 64-bit, and
-// Android ARM32.
+// The profiler is currently supported for Windows x64, macOS, iOS 64-bit,
+// Android ARM32, and ChromeOS x64.
 bool StackSamplingProfiler::IsSupportedForCurrentPlatform() {
-#if (BUILDFLAG(IS_WIN) && defined(ARCH_CPU_X86_64)) || BUILDFLAG(IS_MAC) ||  \
-    (BUILDFLAG(IS_IOS) && defined(ARCH_CPU_64_BITS)) ||                      \
-    (BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE))
+#if (BUILDFLAG(IS_WIN) && defined(ARCH_CPU_X86_64)) || BUILDFLAG(IS_MAC) || \
+    (BUILDFLAG(IS_IOS) && defined(ARCH_CPU_64_BITS)) ||                     \
+    (BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)) ||           \
+    (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_X86_64) &&                  \
+     BUILDFLAG(IS_CHROMEOS_DEVICE))
 #if BUILDFLAG(IS_WIN)
   // Do not start the profiler when Application Verifier is in use; running them
   // simultaneously can cause crashes and has no known use case.
@@ -790,25 +792,14 @@ StackSamplingProfiler::StackSamplingProfiler(
     UnwindersFactory core_unwinders_factory,
     RepeatingClosure record_sample_callback,
     StackSamplerTestDelegate* test_delegate)
-    : StackSamplingProfiler(thread_token,
-                            params,
-                            std::move(profile_builder),
-                            std::unique_ptr<StackSampler>()) {
-  sampler_ =
-      StackSampler::Create(thread_token, profile_builder_->GetModuleCache(),
-                           std::move(core_unwinders_factory),
-                           std::move(record_sample_callback), test_delegate);
-}
-
-StackSamplingProfiler::StackSamplingProfiler(
-    SamplingProfilerThreadToken thread_token,
-    const SamplingParams& params,
-    std::unique_ptr<ProfileBuilder> profile_builder,
-    std::unique_ptr<StackSampler> sampler)
     : thread_token_(thread_token),
       params_(params),
       profile_builder_(std::move(profile_builder)),
-      sampler_(std::move(sampler)),
+      sampler_(StackSampler::Create(thread_token,
+                                    profile_builder_->GetModuleCache(),
+                                    std::move(core_unwinders_factory),
+                                    std::move(record_sample_callback),
+                                    test_delegate)),
       // The event starts "signaled" so code knows it's safe to start thread
       // and "manual" so that it can be waited in multiple places.
       profiling_inactive_(kResetPolicy, WaitableEvent::InitialState::SIGNALED),

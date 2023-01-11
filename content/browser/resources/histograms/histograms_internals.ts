@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {sendWithPromise} from 'chrome://resources/js/cr.js';
 import {$} from 'chrome://resources/js/util.js';
 
 // Timer for automatic update in monitoring mode.
@@ -16,10 +16,44 @@ const expandedEntries: Set<string> = new Set();
 let inMonitoringMode: boolean = false;
 
 /**
+ * Returns a boolean that will be true when histogram from subprocesses should
+ * be included.
+ */
+function includeSubprocessMetrics(): boolean {
+  const checkbox = $('subprocess_checkbox') as HTMLInputElement;
+  return checkbox.checked;
+}
+
+/** Sends a request to the given handler. */
+function sendRequest(handlerName: string): Promise<any> {
+  return sendWithPromise(handlerName, getQuery(), includeSubprocessMetrics());
+}
+
+/**
  * Initiates the request for histograms.
  */
 function requestHistograms() {
-  sendWithPromise('requestHistograms', getQuery()).then(addHistograms);
+  sendRequest('requestHistograms').then(addHistograms);
+}
+
+/** Clears all loaded histograms on the webpage. */
+function clearHistograms(): void {
+  $('histograms').innerHTML = window.trustedTypes!.emptyHTML;
+}
+
+/** Makes the subprocess checkbox disabled, and sets a tooltip. */
+function disableSubprocessCheckbox(): void {
+  const subprocessCheckbox = $('subprocess_checkbox') as HTMLInputElement;
+  subprocessCheckbox.disabled = true;
+  subprocessCheckbox.title = 'Checkbox is disabled in Monitoring Mode. ' +
+      'To enable, switch to Histogram Mode first.';
+}
+
+/** Makes the subprocess checkbox enabled. */
+function enableSubprocessCheckbox(): void {
+  const subprocessCheckbox = $('subprocess_checkbox') as HTMLInputElement;
+  subprocessCheckbox.disabled = false;
+  subprocessCheckbox.removeAttribute('title');
 }
 
 /**
@@ -27,19 +61,22 @@ function requestHistograms() {
  * This will get a histogram snapshot as the base to be diffed against.
  */
 function startMonitoring() {
-  sendWithPromise('startMonitoring', getQuery()).then(fetchDiff);
+  const stopButton = $('stop') as HTMLButtonElement;
+  stopButton.disabled = false;
+  stopButton.textContent = 'Stop';
+  disableSubprocessCheckbox();
+  clearHistograms();
+  sendRequest('startMonitoring').then(fetchDiff);
 }
 
 /**
  * Schedules the fetching of histogram diff (after 1000ms) and rendering it.
- * This will also recursively call the next fetchDiff() to periodically updtate
+ * This will also recursively call the next fetchDiff() to periodically update
  * the page.
  */
 function fetchDiff() {
   fetchDiffScheduler = setTimeout(function() {
-    sendWithPromise('fetchDiff', getQuery())
-        .then(addHistograms)
-        .then(fetchDiff);
+    sendRequest('fetchDiff').then(addHistograms).then(fetchDiff);
   }, 1000);
 }
 
@@ -73,11 +110,7 @@ function enableMonitoring() {
   inMonitoringMode = true;
   $('accumulating_section').style.display = 'none';
   $('monitoring_section').style.display = 'block';
-  $('histograms').innerHTML =
-      window.trustedTypes!.emptyHTML as unknown as string;
   expandedEntries.clear();
-  ($('stop') as HTMLButtonElement).disabled = false;
-  $('stop').textContent = 'Stop';
   startMonitoring();
 }
 
@@ -92,8 +125,8 @@ function disableMonitoring() {
   }
   $('accumulating_section').style.display = 'block';
   $('monitoring_section').style.display = 'none';
-  $('histograms').innerHTML =
-      window.trustedTypes!.emptyHTML as unknown as string;
+  clearHistograms();
+  enableSubprocessCheckbox();
   expandedEntries.clear();
   requestHistograms();
 }
@@ -106,8 +139,9 @@ function stopMonitoring() {
     clearTimeout(fetchDiffScheduler);
     fetchDiffScheduler = null;
   }
-  ($('stop') as HTMLButtonElement).disabled = true;
-  $('stop').textContent = 'Stopped';
+  const stopButton = $('stop') as HTMLButtonElement;
+  stopButton.disabled = true;
+  stopButton.textContent = 'Stopped';
 }
 
 /**
@@ -158,8 +192,7 @@ interface Histogram {
  *     histograms.
  */
 function addHistograms(histograms: Histogram[]) {
-  $('histograms').innerHTML =
-      window.trustedTypes!.emptyHTML as unknown as string;
+  clearHistograms();
   // TBD(jar) Write a nice HTML bar chart, with divs an mouse-overs etc.
   for (const histogram of histograms) {
     const {name, header, body} = histogram;
@@ -222,6 +255,8 @@ document.addEventListener('DOMContentLoaded', function() {
   $('enable_monitoring').onclick = enableMonitoring;
   $('disable_monitoring').onclick = disableMonitoring;
   $('stop').onclick = stopMonitoring;
+  $('subprocess_checkbox').onclick = requestHistograms;
+
   // Enable calling generateHistogramsAsText() from
   // histograms_internals_ui_browsertest.js for testing purposes.
   (document as any).generateHistogramsForTest = generateHistogramsAsText;

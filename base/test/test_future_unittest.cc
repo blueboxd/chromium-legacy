@@ -6,15 +6,10 @@
 
 #include <tuple>
 
-#include "base/dcheck_is_on.h"
-#include "base/logging.h"
-#include "base/run_loop.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/task_environment.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,9 +25,7 @@ constexpr int kOtherValue = 10;
 struct MoveOnlyValue {
  public:
   MoveOnlyValue() = default;
-  MoveOnlyValue(int data) : data(data) {}
-  MoveOnlyValue(const MoveOnlyValue&) = delete;
-  auto& operator=(const MoveOnlyValue&) = delete;
+  explicit MoveOnlyValue(int data) : data(data) {}
   MoveOnlyValue(MoveOnlyValue&&) = default;
   MoveOnlyValue& operator=(MoveOnlyValue&&) = default;
   ~MoveOnlyValue() = default;
@@ -95,7 +88,7 @@ TEST_F(TestFutureTest, WaitShouldReturnTrueWhenValueArrives) {
 TEST_F(TestFutureTest, WaitShouldReturnFalseIfTimeoutHappens) {
   base::test::ScopedRunLoopTimeout timeout(FROM_HERE, base::Milliseconds(1));
 
-  // |ScopedRunLoopTimeout| will automatically fail the test when a timeout
+  // `ScopedRunLoopTimeout` will automatically fail the test when a timeout
   // happens, so we use EXPECT_FATAL_FAILURE to handle this failure.
   // EXPECT_FATAL_FAILURE only works on static objects.
   static bool success;
@@ -164,7 +157,7 @@ TEST_F(TestFutureTest, ShouldOnlyAllowSetValueToBeCalledOnce) {
                            "The value of a TestFuture can only be set once.");
 }
 
-TEST_F(TestFutureTest, ShouldUnblockWhenSetValueIsInvoked) {
+TEST_F(TestFutureTest, ShouldSignalWhenSetValueIsInvoked) {
   const int expected_value = 111;
   TestFuture<int> future;
 
@@ -214,7 +207,7 @@ TEST_F(TestFutureTest, ShouldReturnTupleValue) {
   EXPECT_EQ(expected_string_value, std::get<1>(actual));
 }
 
-TEST_F(TestFutureTest, ShouldAllowAccessingTupleValueThroughGetMethod) {
+TEST_F(TestFutureTest, ShouldAllowAccessingTupleValueUsingGetWithIndex) {
   const int expected_int_value = 5;
   const std::string expected_string_value = "value";
 
@@ -227,6 +220,21 @@ TEST_F(TestFutureTest, ShouldAllowAccessingTupleValueThroughGetMethod) {
 
   EXPECT_EQ(expected_int_value, future.Get<0>());
   EXPECT_EQ(expected_string_value, future.Get<1>());
+}
+
+TEST_F(TestFutureTest, ShouldAllowAccessingTupleValueUsingGetWithType) {
+  const int expected_int_value = 5;
+  const std::string expected_string_value = "value";
+
+  TestFuture<int, std::string> future;
+
+  RunLater(base::BindOnce(future.GetCallback(), expected_int_value,
+                          expected_string_value));
+
+  std::ignore = future.Get();
+
+  EXPECT_EQ(expected_int_value, future.Get<int>());
+  EXPECT_EQ(expected_string_value, future.Get<std::string>());
 }
 
 TEST_F(TestFutureTest, ShouldAllowReferenceArgumentsForMultiArgumentCallback) {
@@ -303,6 +311,48 @@ TEST_F(TestFutureTest, ShouldSupportMultipleCvRefTypes) {
   EXPECT_EQ(expected_first_value, std::get<0>(take_result));
   EXPECT_EQ(expected_second_value, std::get<1>(take_result));
   EXPECT_EQ(expected_third_value, std::get<2>(take_result));
+}
+
+using TestFutureWithoutValuesTest = TestFutureTest;
+
+TEST_F(TestFutureWithoutValuesTest, IsReadyShouldBeTrueWhenSetValueIsInvoked) {
+  TestFuture<void> future;
+
+  EXPECT_FALSE(future.IsReady());
+
+  future.SetValue();
+
+  EXPECT_TRUE(future.IsReady());
+}
+
+TEST_F(TestFutureWithoutValuesTest, WaitShouldUnblockWhenSetValueIsInvoked) {
+  TestFuture<void> future;
+
+  RunLater([&future]() { future.SetValue(); });
+
+  ASSERT_FALSE(future.IsReady());
+  std::ignore = future.Wait();
+  EXPECT_TRUE(future.IsReady());
+}
+
+TEST_F(TestFutureWithoutValuesTest, WaitShouldUnblockWhenCallbackIsInvoked) {
+  TestFuture<void> future;
+
+  RunLater(future.GetCallback());
+
+  ASSERT_FALSE(future.IsReady());
+  std::ignore = future.Wait();
+  EXPECT_TRUE(future.IsReady());
+}
+
+TEST_F(TestFutureWithoutValuesTest, GetShouldUnblockWhenCallbackIsInvoked) {
+  TestFuture<void> future;
+
+  RunLater(future.GetCallback());
+
+  ASSERT_FALSE(future.IsReady());
+  future.Get();
+  EXPECT_TRUE(future.IsReady());
 }
 
 }  // namespace base::test

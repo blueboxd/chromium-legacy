@@ -32,6 +32,7 @@ class TimeDelta;
 
 namespace app_list {
 
+class AppSearchDataSource;
 class SearchProvider;
 enum class RankingItemType;
 
@@ -67,9 +68,8 @@ class SearchController {
 
   virtual ~SearchController() {}
 
-  virtual void InitializeRankers() {}
-
   virtual void StartSearch(const std::u16string& query) = 0;
+  virtual void ClearSearch() = 0;
   virtual void StartZeroState(base::OnceClosure on_done,
                               base::TimeDelta timeout) = 0;
 
@@ -79,12 +79,21 @@ class SearchController {
   virtual void InvokeResultAction(ChromeSearchResult* result,
                                   ash::SearchResultActionType action) = 0;
 
-  // Adds a new mixer group. See Mixer::AddGroup.
-  virtual size_t AddGroup(size_t max_results) = 0;
+  // Returns AppSearchDataSource instance that should be used with app search
+  // providers.
+  virtual AppSearchDataSource* GetAppSearchDataSource() = 0;
 
-  // Takes ownership of |provider| and associates it with given mixer group.
-  virtual void AddProvider(size_t group_id,
-                           std::unique_ptr<SearchProvider> provider) = 0;
+  // Takes ownership of |provider|.
+  virtual void AddProvider(std::unique_ptr<SearchProvider> provider) = 0;
+
+  // Removes, and deletes registered search providers that provide results for
+  // `result_type` and adds a new "test" provider.
+  // No-op if no providers for `result_type` were previously registered.
+  // Expects that `provider` provides results for `result_type`.
+  // Returns number of providers removed from the provider list.
+  virtual size_t ReplaceProvidersForResultTypeForTest(
+      ash::AppListSearchResultType result_type,
+      std::unique_ptr<SearchProvider> provider) = 0;
 
   // Update the controller with the given results. Used only if the categorical
   // search feature flag is enabled.
@@ -111,6 +120,12 @@ class SearchController {
       ResultsChangedCallback callback) = 0;
 
   virtual void disable_ranking_for_test() = 0;
+
+  // Registers a callback to be run when zero state search returns (eiher due to
+  // all zero state providers returning results, or a timeout). The callback
+  // will run immediately if there is no pending zero state search callback.
+  virtual void WaitForZeroStateCompletionForTest(
+      base::OnceClosure callback) = 0;
 };
 
 }  // namespace app_list

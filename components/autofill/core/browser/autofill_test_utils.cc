@@ -777,6 +777,35 @@ AutofillWalletUsageData GetAutofillWalletUsageDataForVirtualCard() {
   return AutofillWalletUsageData::ForVirtualCard(virtual_card_usage_data);
 }
 
+std::vector<CardUnmaskChallengeOption> GetCardUnmaskChallengeOptions(
+    const std::vector<CardUnmaskChallengeOptionType>& types) {
+  std::vector<CardUnmaskChallengeOption> challenge_options;
+  for (CardUnmaskChallengeOptionType type : types) {
+    CardUnmaskChallengeOption card_unmask_challenge_option{.type = type};
+
+    switch (type) {
+      case CardUnmaskChallengeOptionType::kSmsOtp:
+        card_unmask_challenge_option.id = "123";
+        card_unmask_challenge_option.challenge_info = u"xxx-xxx-3547";
+        card_unmask_challenge_option.challenge_input_length = 6U;
+        break;
+      case CardUnmaskChallengeOptionType::kCvc:
+        card_unmask_challenge_option.id = "234";
+        card_unmask_challenge_option.challenge_info =
+            u"3 digit security code on the back of your card";
+        card_unmask_challenge_option.cvc_position = CvcPosition::kBackOfCard;
+        card_unmask_challenge_option.challenge_input_length = 3U;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+
+    challenge_options.push_back(card_unmask_challenge_option);
+  }
+  return challenge_options;
+}
+
 void SetProfileInfo(AutofillProfile* profile,
                     const char* first_name,
                     const char* middle_name,
@@ -1019,7 +1048,7 @@ void GenerateTestAutofillPopup(
   std::vector<Suggestion> suggestions;
   suggestions.push_back(Suggestion(u"Test suggestion"));
   autofill_external_delegate->OnSuggestionsReturned(
-      query_id, suggestions, /*autoselect_first_suggestion=*/false);
+      query_id, suggestions, AutoselectFirstSuggestion(false));
 }
 
 std::string ObfuscatedCardDigitsAsUTF8(const std::string& str,
@@ -1096,7 +1125,8 @@ void AddFieldPredictionsToForm(
     const FormFieldData& field_data,
     const std::vector<ServerFieldType>& field_types,
     AutofillQueryResponse_FormSuggestion* form_suggestion) {
-  std::vector<FieldPrediction> field_predictions(field_types.size());
+  std::vector<FieldPrediction> field_predictions;
+  field_predictions.reserve(field_types.size());
   base::ranges::transform(field_types, std::back_inserter(field_predictions),
                           static_cast<FieldPrediction (*)(ServerFieldType)>(
                               &CreateFieldPrediction));

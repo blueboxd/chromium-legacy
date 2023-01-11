@@ -70,7 +70,7 @@ const int k2GThroughput = 250 * 1024;
 
 Status EvaluateScriptAndIgnoreResult(Session* session,
                                      std::string expression,
-                                     const bool awaitPromise = false) {
+                                     const bool await_promise = false) {
   WebView* web_view = nullptr;
   Status status = session->GetTargetWindow(&web_view);
   if (status.IsError())
@@ -86,12 +86,12 @@ Status EvaluateScriptAndIgnoreResult(Session* session,
   }
   std::string frame_id = session->GetCurrentFrameId();
   std::unique_ptr<base::Value> result;
-  return web_view->EvaluateScript(frame_id, expression, awaitPromise, &result);
+  return web_view->EvaluateScript(frame_id, expression, await_promise, &result);
 }
 
 void InitSessionForWebSocketConnection(SessionConnectionMap* session_map,
                                        std::string session_id) {
-  session_map->insert({session_id, -1});
+  session_map->insert({session_id, std::vector<int>{}});
 }
 
 }  // namespace
@@ -167,13 +167,13 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(
   caps->SetStringKey("browserName", base::ToLowerASCII(kBrowserShortName));
   caps->SetStringKey(session->w3c_compliant ? "browserVersion" : "version",
                      session->chrome->GetBrowserInfo()->browser_version);
-  std::string operatingSystemName = session->chrome->GetOperatingSystemName();
-  if (operatingSystemName.find("Windows") != std::string::npos)
-    operatingSystemName = "Windows";
+  std::string os_name = session->chrome->GetOperatingSystemName();
+  if (os_name.find("Windows") != std::string::npos)
+    os_name = "Windows";
   if (session->w3c_compliant) {
-    caps->SetStringKey("platformName", base::ToLowerASCII(operatingSystemName));
+    caps->SetStringKey("platformName", base::ToLowerASCII(os_name));
   } else {
-    caps->SetStringKey("platform", operatingSystemName);
+    caps->SetStringKey("platform", os_name);
   }
   caps->SetStringKey("pageLoadStrategy", session->chrome->page_load_strategy());
   caps->SetBoolKey("acceptInsecureCerts", capabilities.accept_insecure_certs);
@@ -210,22 +210,22 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(
   caps->SetBoolKey("webauthn:extension:credBlob", !capabilities.IsAndroid());
 
   // Chrome-specific extensions.
-  const std::string chromedriverVersionKey = base::StringPrintf(
+  const std::string chrome_driver_version_key = base::StringPrintf(
       "%s.%sVersion", base::ToLowerASCII(kBrowserShortName).c_str(),
       base::ToLowerASCII(kChromeDriverProductShortName).c_str());
-  caps->SetStringPath(chromedriverVersionKey, kChromeDriverVersion);
-  const std::string debuggerAddressKey =
+  caps->SetStringPath(chrome_driver_version_key, kChromeDriverVersion);
+  const std::string debugger_address_key =
       base::StringPrintf("%s.debuggerAddress", kChromeDriverOptionsKeyPrefixed);
-  caps->SetStringPath(debuggerAddressKey, session->chrome->GetBrowserInfo()
-                                              ->debugger_endpoint.Address()
-                                              .ToString());
+  caps->SetStringPath(debugger_address_key, session->chrome->GetBrowserInfo()
+                                                ->debugger_endpoint.Address()
+                                                .ToString());
   ChromeDesktopImpl* desktop = nullptr;
   Status status = session->chrome->GetAsDesktop(&desktop);
   if (status.IsOk()) {
-    const std::string userDataDirKey = base::StringPrintf(
+    const std::string user_data_key = base::StringPrintf(
         "%s.userDataDir", base::ToLowerASCII(kBrowserShortName).c_str());
     caps->SetStringPath(
-        userDataDirKey,
+        user_data_key,
         desktop->command().GetSwitchValuePath("user-data-dir").AsUTF8Unsafe());
     caps->SetBoolKey("networkConnectionEnabled",
                      desktop->IsNetworkConnectionEnabled());
@@ -313,10 +313,17 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   session->command_listeners.swap(command_listeners);
 
   if (session->webSocketUrl) {
-    BidiTracker* bidi_tracker = new BidiTracker();
-    bidi_tracker->SetBidiCallback(base::BindRepeating(
-        &Session::OnBidiResponse, base::Unretained(session)));
-    devtools_event_listeners.emplace_back(bidi_tracker);
+    // Suffixes used with the client channels.
+    std::string client_suffixes[] = {Session::kChannelSuffix,
+                                     Session::kNoChannelSuffix,
+                                     Session::kBlockingChannelSuffix};
+    for (std::string suffix : client_suffixes) {
+      BidiTracker* bidi_tracker = new BidiTracker();
+      bidi_tracker->SetChannelSuffix(std::move(suffix));
+      bidi_tracker->SetBidiCallback(base::BindRepeating(
+          &Session::OnBidiResponse, base::Unretained(session)));
+      devtools_event_listeners.emplace_back(bidi_tracker);
+    }
   }
 
   status =
@@ -365,54 +372,11 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
     if (status.IsError())
       return status;
     session->bidi_mapper_web_view_id = session->window;
-    ChromeImpl* chrome = static_cast<ChromeImpl*>(session->chrome.get());
-    DevToolsClient* client = chrome->Client();
 
-    {
-      base::Value::Dict body;
-      body.Set("bindingName", "cdp");
-      body.Set("targetId", session->window);
-      client->SendCommandAndIgnoreResponse("Target.exposeDevToolsProtocol",
-                                           body);
-    }
-
-    {
-      std::unique_ptr<base::Value> result;
-      base::Value::Dict body;
-      body.Set("name", "sendBidiResponse");
-      web_view->SendCommandAndGetResult("Runtime.addBinding", body, &result);
-    }
-
-    status = EvaluateScriptAndIgnoreResult(session, kMapperScript);
-    if (status.IsError())
+    status = web_view->StartBidiServer(kMapperScript);
+    if (status.IsError()) {
       return status;
-
-    {
-      std::unique_ptr<base::Value> result;
-      base::Value::Dict body;
-      std::string window_id;
-      if (!base::JSONWriter::Write(session->window, &window_id)) {
-        return Status(kUnknownError,
-                      "cannot serialize be window id: " + session->window);
-      }
-      body.Set("expression", "window.setSelfTargetId(" + window_id + ")");
-      status =
-          web_view->SendCommandAndGetResult("Runtime.evaluate", body, &result);
-      if (status.IsError())
-        return status;
     }
-
-    base::RepeatingCallback<Status(bool*)> bidi_mapper_is_launched =
-        base::BindRepeating(
-            [](Session* session, bool* condition_is_met) {
-              *condition_is_met = session->BidiMapperIsLaunched();
-              return Status{kOk};
-            },
-            base::Unretained(session));
-    // Assume that BiDiMapper initialization requires the same time as a regular
-    // script
-    web_view->HandleEventsUntil(bidi_mapper_is_launched,
-                                Timeout(session->script_timeout));
 
     {
       // Create a new tab because the default one is occupied by the BiDiMapper
@@ -450,7 +414,7 @@ Status ConfigureSession(Session* session,
 
   session->w3c_compliant = GetW3CSetting(params);
   if (session->w3c_compliant) {
-    Status status = ProcessCapabilities(params, merged_caps);
+    Status status = ProcessCapabilities(params, merged_caps->GetDict());
     if (status.IsError())
       return status;
     *desired_caps = merged_caps;
@@ -462,7 +426,8 @@ Status ConfigureSession(Session* session,
     *desired_caps = static_cast<const base::DictionaryValue*>(caps);
   }
 
-  Status status = capabilities->Parse(**desired_caps, session->w3c_compliant);
+  Status status =
+      capabilities->Parse((*desired_caps)->GetDict(), session->w3c_compliant);
   if (status.IsError())
     return status;
 
@@ -516,24 +481,21 @@ Status ConfigureHeadlessSession(Session* session,
 
 }  // namespace internal
 
-bool MergeCapabilities(const base::DictionaryValue* always_match,
-                       const base::DictionaryValue* first_match,
-                       base::DictionaryValue* merged) {
-  CHECK(always_match);
-  CHECK(first_match);
-  CHECK(merged);
-  merged->DictClear();
+bool MergeCapabilities(const base::Value::Dict& always_match,
+                       const base::Value::Dict& first_match,
+                       base::Value::Dict& merged) {
+  merged.clear();
 
-  for (auto kv : first_match->DictItems()) {
-    if (always_match->FindKey(kv.first)) {
-      // firstMatch cannot have the same |keys| as alwaysMatch.
+  for (auto kv : first_match) {
+    if (always_match.Find(kv.first)) {
+      // `first_match` cannot have the same `keys` as `always_match`.
       return false;
     }
   }
 
-  // merge the capabilities together since guarenteed no key collisions
-  merged->MergeDictionary(always_match);
-  merged->MergeDictionary(first_match);
+  // merge the capabilities together since guaranteed no key collisions
+  merged = always_match.Clone();
+  merged.Merge(first_match.Clone());
   return true;
 }
 
@@ -542,58 +504,56 @@ bool MergeCapabilities(const base::DictionaryValue* always_match,
 // It checks some requested capabilities and make sure they are supported.
 // Currently, we only check "browserName", "platformName", and webauthn
 // capabilities but more can be added as necessary.
-bool MatchCapabilities(const base::DictionaryValue* capabilities) {
-  const base::Value* name = capabilities->FindKey("browserName");
+bool MatchCapabilities(const base::Value::Dict& capabilities) {
+  const base::Value* name = capabilities.Find("browserName");
   if (name && !name->is_none()) {
     if (!(name->is_string() && name->GetString() == kBrowserCapabilityName))
       return false;
   }
 
-  const base::DictionaryValue* chrome_options;
+  const base::Value::Dict* chrome_options;
   const bool has_chrome_options =
-      GetChromeOptionsDictionaryDeprecated(*capabilities, &chrome_options);
+      GetChromeOptionsDictionary(capabilities, &chrome_options);
 
   bool is_android = has_chrome_options &&
-                    chrome_options->FindStringKey("androidPackage") != nullptr;
+                    chrome_options->FindString("androidPackage") != nullptr;
 
-  const base::Value* platform_name_value =
-      capabilities->FindPath("platformName");
+  const base::Value* platform_name_value = capabilities.Find("platformName");
   if (platform_name_value && !platform_name_value->is_none()) {
-    if (platform_name_value->is_string()) {
-      std::string requested_platform_name = platform_name_value->GetString();
-      std::string requested_first_token =
+    if (!platform_name_value->is_string())
+      return false;
+
+    std::string requested_platform_name = platform_name_value->GetString();
+    std::string requested_first_token =
         requested_platform_name.substr(0, requested_platform_name.find(' '));
 
-      std::string actual_platform_name =
+    std::string actual_platform_name =
         base::ToLowerASCII(base::SysInfo::OperatingSystemName());
-      std::string actual_first_token =
+    std::string actual_first_token =
         actual_platform_name.substr(0, actual_platform_name.find(' '));
 
-      bool is_remote = has_chrome_options && chrome_options->FindStringKey(
-                                                 "debuggerAddress") != nullptr;
-      if (requested_platform_name == "any" || is_remote ||
-          (is_android && requested_platform_name == "android")) {
-        // "any" can be used as a wild card for platformName.
-        // if |is_remote| there is no easy way to know
-        // target platform. Android check also occurs here.
-        // If any of the above cases pass, we return true.
-      } else if (is_android && requested_platform_name != "android") {
+    bool is_remote = has_chrome_options &&
+                     chrome_options->FindString("debuggerAddress") != nullptr;
+    if (requested_platform_name == "any" || is_remote ||
+        (is_android && requested_platform_name == "android")) {
+      // "any" can be used as a wild card for platformName.
+      // if |is_remote| there is no easy way to know
+      // target platform. Android check also occurs here.
+      // If any of the above cases pass, we return true.
+    } else if (is_android && requested_platform_name != "android") {
+      return false;
+    } else if (requested_first_token == "mac" ||
+               requested_first_token == "windows" ||
+               requested_first_token == "linux") {
+      if (actual_first_token != requested_first_token)
         return false;
-      } else if (requested_first_token == "mac" ||
-                 requested_first_token == "windows" ||
-                 requested_first_token == "linux") {
-        if (actual_first_token != requested_first_token)
-          return false;
-      } else if (requested_platform_name != actual_platform_name) {
-        return false;
-      }
-    } else {
+    } else if (requested_platform_name != actual_platform_name) {
       return false;
     }
   }
 
   const base::Value* virtual_authenticators_value =
-      capabilities->FindPath("webauthn:virtualAuthenticators");
+      capabilities.Find("webauthn:virtualAuthenticators");
   if (virtual_authenticators_value) {
     if (!virtual_authenticators_value->is_bool() ||
         (virtual_authenticators_value->GetBool() && is_android)) {
@@ -602,7 +562,7 @@ bool MatchCapabilities(const base::DictionaryValue* capabilities) {
   }
 
   const base::Value* large_blob_value =
-      capabilities->FindPath("webauthn:extension:largeBlob");
+      capabilities.Find("webauthn:extension:largeBlob");
   if (large_blob_value) {
     if (!large_blob_value->is_bool() ||
         (large_blob_value->GetBool() && is_android)) {
@@ -617,7 +577,7 @@ bool MatchCapabilities(const base::DictionaryValue* capabilities) {
 // https://www.w3.org/TR/webdriver/#processing-capabilities. Step numbers in
 // the comments correspond to the step numbers in the spec.
 Status ProcessCapabilities(const base::Value::Dict& params,
-                           base::DictionaryValue* result_capabilities) {
+                           base::Value::Dict& result_capabilities) {
   // 1. Get the property "capabilities" from parameters.
   const base::Value::Dict* capabilities_request =
       params.FindDict("capabilities");
@@ -625,14 +585,14 @@ Status ProcessCapabilities(const base::Value::Dict& params,
     return Status(kInvalidArgument, "'capabilities' must be a JSON object");
 
   // 2. Get the property "alwaysMatch" from capabilities request.
-  const base::DictionaryValue empty_object;
-  const base::DictionaryValue* required_capabilities;
+  const base::Value::Dict empty_object;
+  const base::Value::Dict* required_capabilities;
   const base::Value* required_capabilities_value =
       capabilities_request->Find("alwaysMatch");
   if (required_capabilities_value == nullptr) {
     required_capabilities = &empty_object;
-  } else if (required_capabilities_value->GetAsDictionary(
-                 &required_capabilities)) {
+  } else if (required_capabilities_value->is_dict()) {
+    required_capabilities = &required_capabilities_value->GetDict();
     Capabilities cap;
     Status status = cap.Parse(*required_capabilities);
     if (status.IsError())
@@ -642,66 +602,68 @@ Status ProcessCapabilities(const base::Value::Dict& params,
   }
 
   // 3. Get the property "firstMatch" from capabilities request.
-  base::Value default_list(base::Value::Type::LIST);
-  const base::Value* all_first_match_capabilities =
+  base::Value::List default_list;
+  const base::Value::List* all_first_match_capabilities;
+  const base::Value* all_first_match_capabilities_value =
       capabilities_request->Find("firstMatch");
-  if (all_first_match_capabilities == nullptr) {
-    default_list.Append(base::Value(base::Value::Type::DICTIONARY));
+  if (all_first_match_capabilities_value == nullptr) {
+    default_list.Append(base::Value::Dict());
     all_first_match_capabilities = &default_list;
-  } else if (all_first_match_capabilities->is_list()) {
-    if (all_first_match_capabilities->GetList().size() < 1)
+  } else if (all_first_match_capabilities_value->is_list()) {
+    all_first_match_capabilities =
+        &all_first_match_capabilities_value->GetList();
+    if (all_first_match_capabilities->size() < 1) {
       return Status(kInvalidArgument,
                     "'firstMatch' must contain at least one entry");
+    }
   } else {
     return Status(kInvalidArgument, "'firstMatch' must be a JSON list");
   }
 
   // 4. Let validated first match capabilities be an empty JSON List.
-  std::vector<const base::DictionaryValue*> validated_first_match_capabilities;
+  std::vector<const base::Value::Dict*> validated_first_match_capabilities;
 
   // 5. Validate all first match capabilities.
-  for (size_t i = 0; i < all_first_match_capabilities->GetList().size(); ++i) {
-    const base::Value& first_match = all_first_match_capabilities->GetList()[i];
+  for (size_t i = 0; i < all_first_match_capabilities->size(); ++i) {
+    const base::Value& first_match = (*all_first_match_capabilities)[i];
     if (!first_match.is_dict()) {
       return Status(kInvalidArgument,
                     base::StringPrintf(
                         "entry %zu of 'firstMatch' must be a JSON object", i));
     }
     Capabilities cap;
-    Status status = cap.Parse(base::Value::AsDictionaryValue(first_match));
+    Status status = cap.Parse(first_match.GetDict());
     if (status.IsError())
       return Status(
           kInvalidArgument,
           base::StringPrintf("entry %zu of 'firstMatch' is invalid", i),
           status);
-    validated_first_match_capabilities.push_back(
-        &base::Value::AsDictionaryValue(first_match));
+    validated_first_match_capabilities.push_back(&first_match.GetDict());
   }
 
   // 6. Let merged capabilities be an empty List.
-  std::vector<base::DictionaryValue> merged_capabilities;
+  std::vector<base::Value::Dict> merged_capabilities;
 
   // 7. Merge capabilities.
   for (size_t i = 0; i < validated_first_match_capabilities.size(); ++i) {
-    const base::DictionaryValue* first_match_capabilities =
+    const base::Value::Dict* first_match_capabilities =
         validated_first_match_capabilities[i];
-    base::DictionaryValue merged;
-    if (!MergeCapabilities(required_capabilities, first_match_capabilities,
-                           &merged)) {
+    base::Value::Dict merged;
+    if (!MergeCapabilities(*required_capabilities, *first_match_capabilities,
+                           merged)) {
       return Status(
           kInvalidArgument,
           base::StringPrintf(
               "unable to merge 'alwaysMatch' with entry %zu of 'firstMatch'",
               i));
     }
-    merged_capabilities.emplace_back();
-    merged_capabilities.back().Swap(&merged);
+    merged_capabilities.emplace_back(std::move(merged));
   }
 
   // 8. Match capabilities.
   for (auto& capabilities : merged_capabilities) {
-    if (MatchCapabilities(&capabilities)) {
-      capabilities.Swap(result_capabilities);
+    if (MatchCapabilities(capabilities)) {
+      result_capabilities = std::move(capabilities);
       return Status(kOk);
     }
   }
@@ -737,8 +699,7 @@ Status ExecuteQuit(bool allow_detach,
   session->quit = true;
   if (allow_detach && session->detach)
     return Status(kOk);
-  else
-    return session->chrome->Quit();
+  return session->chrome->Quit();
 }
 
 Status ExecuteGetSessionCapabilities(Session* session,
@@ -1008,16 +969,15 @@ Status ExecuteSetTimeoutsW3C(Session* session,
     base::TimeDelta timeout;
     const std::string& type = setting.first;
     if (setting.second.is_none()) {
-      if (type == "script")
-        timeout = base::TimeDelta::Max();
-      else
+      if (type != "script")
         return Status(kInvalidArgument, "timeout can not be null");
+      timeout = base::TimeDelta::Max();
     } else {
       if (!GetOptionalSafeInt(params, setting.first, &timeout_ms_int64) ||
-          timeout_ms_int64 < 0)
+          timeout_ms_int64 < 0) {
         return Status(kInvalidArgument, "value must be a non-negative integer");
-      else
-        timeout = base::Milliseconds(timeout_ms_int64);
+      }
+      timeout = base::Milliseconds(timeout_ms_int64);
     }
     if (type == "script") {
       session->script_timeout = timeout;
@@ -1036,11 +996,9 @@ Status ExecuteSetTimeouts(Session* session,
   // TODO(crbug.com/chromedriver/2596): Remove legacy version support when we
   // stop supporting non-W3C protocol. At that time, we can delete the legacy
   // function and merge the W3C function into this function.
-  if (params.contains("ms")) {
+  if (params.contains("ms"))
     return ExecuteSetTimeoutLegacy(session, params, value);
-  } else {
-    return ExecuteSetTimeoutsW3C(session, params, value);
-  }
+  return ExecuteSetTimeoutsW3C(session, params, value);
 }
 
 Status ExecuteGetTimeouts(Session* session,
@@ -1234,15 +1192,15 @@ Status ExecuteSetNetworkConnection(Session* session,
 Status ExecuteGetWindowPosition(Session* session,
                                 const base::Value::Dict& params,
                                 std::unique_ptr<base::Value>* value) {
-  Chrome::WindowRect windowRect;
-  Status status = session->chrome->GetWindowRect(session->window, &windowRect);
+  Chrome::WindowRect window_rect;
+  Status status = session->chrome->GetWindowRect(session->window, &window_rect);
 
   if (status.IsError())
     return status;
 
   base::Value position(base::Value::Type::DICTIONARY);
-  position.SetIntKey("x", windowRect.x);
-  position.SetIntKey("y", windowRect.y);
+  position.SetIntKey("x", window_rect.x);
+  position.SetIntKey("y", window_rect.y);
   *value = base::Value::ToUniquePtrValue(position.Clone());
   return Status(kOk);
 }
@@ -1266,15 +1224,15 @@ Status ExecuteSetWindowPosition(Session* session,
 Status ExecuteGetWindowSize(Session* session,
                             const base::Value::Dict& params,
                             std::unique_ptr<base::Value>* value) {
-  Chrome::WindowRect windowRect;
-  Status status = session->chrome->GetWindowRect(session->window, &windowRect);
+  Chrome::WindowRect window_rect;
+  Status status = session->chrome->GetWindowRect(session->window, &window_rect);
 
   if (status.IsError())
     return status;
 
   base::Value size(base::Value::Type::DICTIONARY);
-  size.SetIntKey("width", windowRect.width);
-  size.SetIntKey("height", windowRect.height);
+  size.SetIntKey("width", window_rect.width);
+  size.SetIntKey("height", window_rect.height);
   *value = base::Value::ToUniquePtrValue(size.Clone());
   return Status(kOk);
 }
@@ -1442,8 +1400,15 @@ Status ExecuteBidiCommand(Session* session,
   if (session == nullptr) {
     return Status{kNoSuchFrame, "session not found"};
   }
-  std::string data;
-  GetOptionalString(params, "bidiCommand", &data);
+  const std::string* data = params.FindString("bidiCommand");
+  if (!data) {
+    return Status{kUnknownError, "bidiCommand is missing in params"};
+  }
+
+  absl::optional<int> connection_id = params.FindInt("connectionId");
+  if (!connection_id) {
+    return Status{kUnknownCommand, "connectionId is missing in params"};
+  }
 
   WebView* web_view = nullptr;
   Status status = session->chrome->GetWebViewById(
@@ -1453,40 +1418,48 @@ Status ExecuteBidiCommand(Session* session,
   }
 
   absl::optional<base::Value> data_parsed =
-      base::JSONReader::Read(data, base::JSON_PARSE_CHROMIUM_EXTENSIONS);
+      base::JSONReader::Read(*data, base::JSON_PARSE_CHROMIUM_EXTENSIONS);
 
   if (!data_parsed) {
-    return Status(kUnknownError, "cannot parse the BiDi command: " + data);
+    return Status(kUnknownError, "cannot parse the BiDi command: " + *data);
   }
 
   if (!data_parsed->is_dict()) {
     return Status(kUnknownError,
-                  "a JSON map is expected as a BiDi command: " + data);
+                  "a JSON map is expected as a BiDi command: " + *data);
   }
 
-  absl::optional<int> cmd_id = data_parsed->GetDict().FindInt("id");
-  if (!cmd_id) {
-    return Status(kUnknownError, "BiDi command is missing 'id' field: " + data);
-  }
+  base::Value::Dict& bidi_cmd = data_parsed->GetDict();
 
-  std::string* method = data_parsed->GetDict().FindString("method");
+  std::string* method = bidi_cmd.FindString("method");
   if (!method) {
     return Status(kUnknownError,
-                  "BiDi command is missing 'method' field: " + data);
+                  "BiDi command is missing 'method' field: " + *data);
+  }
+
+  std::string* user_channel = bidi_cmd.FindString("channel");
+  std::string channel;
+  if (user_channel) {
+    channel = *user_channel + "/" + base::NumberToString(*connection_id) +
+              Session::kChannelSuffix;
+  } else {
+    channel =
+        "/" + base::NumberToString(*connection_id) + Session::kNoChannelSuffix;
   }
 
   if (*method == "browsingContext.close") {
+    bidi_cmd.Set("channel", channel + Session::kBlockingChannelSuffix);
     // Closing of the context is handled in a blocking way.
     // This simplifies us closing the browser if the last tab was closed.
-    session->awaited_bidi_response_id = *cmd_id;
-    status = web_view->PostBidiCommand(std::move(data_parsed->GetDict()));
+    session->awaiting_bidi_response = true;
+    status = web_view->PostBidiCommand(std::move(bidi_cmd));
     base::RepeatingCallback<Status(bool*)> bidi_response_is_received =
         base::BindRepeating(
-            [](Session* session, int cmd_id, bool* condition_is_met) {
-              *condition_is_met = session->awaited_bidi_response_id != cmd_id;
+            [](Session* session, bool* condition_is_met) {
+              *condition_is_met = !session->awaiting_bidi_response;
               return Status{kOk};
             },
-            base::Unretained(session), *cmd_id);
+            base::Unretained(session));
     if (status.IsError()) {
       return status;
     }
@@ -1516,7 +1489,8 @@ Status ExecuteBidiCommand(Session* session,
       status = session->chrome->Quit();
     }
   } else {
-    status = web_view->PostBidiCommand(std::move(data_parsed->GetDict()));
+    bidi_cmd.Set("channel", std::move(channel));
+    status = web_view->PostBidiCommand(std::move(bidi_cmd));
   }
 
   return status;

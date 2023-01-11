@@ -49,7 +49,7 @@ PASS oldChildWindow.navigator.deviceMemory is newChildWindow.navigator.deviceMem
 PASS oldChildWindow.navigator.devicePosture.onchange is newChildWindow.navigator.devicePosture.onchange
 PASS oldChildWindow.navigator.devicePosture.type is newChildWindow.navigator.devicePosture.type
 PASS oldChildWindow.navigator.doNotTrack is newChildWindow.navigator.doNotTrack
-PASS oldChildWindow.navigator.documentPictureInPicture.session is newChildWindow.navigator.documentPictureInPicture.session
+PASS oldChildWindow.navigator.documentPictureInPicture.window is newChildWindow.navigator.documentPictureInPicture.window
 PASS oldChildWindow.navigator.hardwareConcurrency is newChildWindow.navigator.hardwareConcurrency
 PASS oldChildWindow.navigator.hid.onconnect is newChildWindow.navigator.hid.onconnect
 PASS oldChildWindow.navigator.hid.ondisconnect is newChildWindow.navigator.hid.ondisconnect
@@ -118,7 +118,7 @@ PASS oldChildWindow.oncanplaythrough is newChildWindow.oncanplaythrough
 PASS oldChildWindow.onchange is newChildWindow.onchange
 PASS oldChildWindow.onclick is newChildWindow.onclick
 PASS oldChildWindow.onclose is newChildWindow.onclose
-PASS oldChildWindow.oncontentvisibilityautostatechange is newChildWindow.oncontentvisibilityautostatechange
+PASS oldChildWindow.oncontentvisibilityautostatechanged is newChildWindow.oncontentvisibilityautostatechanged
 PASS oldChildWindow.oncontextlost is newChildWindow.oncontextlost
 PASS oldChildWindow.oncontextmenu is newChildWindow.oncontextmenu
 PASS oldChildWindow.oncontextrestored is newChildWindow.oncontextrestored
@@ -180,9 +180,9 @@ PASS oldChildWindow.onpointerout is newChildWindow.onpointerout
 PASS oldChildWindow.onpointerover is newChildWindow.onpointerover
 PASS oldChildWindow.onpointerrawupdate is newChildWindow.onpointerrawupdate
 PASS oldChildWindow.onpointerup is newChildWindow.onpointerup
+PASS oldChildWindow.onpopoverhide is newChildWindow.onpopoverhide
+PASS oldChildWindow.onpopovershow is newChildWindow.onpopovershow
 PASS oldChildWindow.onpopstate is newChildWindow.onpopstate
-PASS oldChildWindow.onpopuphide is newChildWindow.onpopuphide
-PASS oldChildWindow.onpopupshow is newChildWindow.onpopupshow
 PASS oldChildWindow.onprogress is newChildWindow.onprogress
 PASS oldChildWindow.onratechange is newChildWindow.onratechange
 PASS oldChildWindow.onrejectionhandled is newChildWindow.onrejectionhandled

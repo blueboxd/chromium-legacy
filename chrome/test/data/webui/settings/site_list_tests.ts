@@ -5,7 +5,7 @@
 /** @fileoverview Suite of tests for site-list. */
 
 // clang-format off
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {AddSiteDialogElement, ContentSetting, ContentSettingsTypes, SettingsEditExceptionDialogElement, SITE_EXCEPTION_WILDCARD, SiteException, SiteListElement, SiteSettingSource, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {CrSettingsPrefs, loadTimeData, Router} from 'chrome://settings/settings.js';
@@ -85,6 +85,11 @@ let prefsChromeExtension: SiteSettingsPref;
  * An example pref with 1 embargoed location item.
  */
 let prefsEmbargo: SiteSettingsPref;
+
+/**
+ * An example pref with Isolated Web App having notification.
+ */
+let prefsIsolatedWebApp: SiteSettingsPref;
 
 /**
  * Creates all the test |SiteSettingsPref|s that are needed for the tests in
@@ -262,6 +267,25 @@ function populateTestExceptions() {
           isEmbargoed: true,
         })]),
   ]);
+
+  const iwaOrigin = 'isolated-app://helloworldhelloworldhelloworldhe';
+  const nonIwaOrigin = 'https://bar.com';
+  prefsIsolatedWebApp = createSiteSettingsPrefs([], [
+    createContentSettingTypeToValuePair(
+        ContentSettingsTypes.NOTIFICATIONS,
+        [
+          createRawSiteException(iwaOrigin, {
+            embeddingOrigin: '',
+            setting: ContentSetting.ALLOW,
+            displayName: iwaOrigin,
+            isolatedWebAppName: 'IWA',
+          }),
+          createRawSiteException(nonIwaOrigin, {
+            embeddingOrigin: '',
+            displayName: nonIwaOrigin,
+          }),
+        ]),
+  ]);
 }
 
 suite('SiteListEmbargoedOrigin', function() {
@@ -289,8 +313,7 @@ suite('SiteListEmbargoedOrigin', function() {
 
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
     SiteSettingsPrefsBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     testElement = document.createElement('site-list');
     testElement.searchFilter = '';
     document.body.appendChild(testElement);
@@ -367,8 +390,7 @@ suite('SiteList', function() {
 
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
     SiteSettingsPrefsBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     testElement = document.createElement('site-list');
     testElement.searchFilter = '';
     document.body.appendChild(testElement);
@@ -895,6 +917,43 @@ suite('SiteList', function() {
     });
   });
 
+  test('Isolated Web Apps', async function() {
+    setUpCategory(
+        ContentSettingsTypes.NOTIFICATIONS, ContentSetting.ALLOW,
+        prefsIsolatedWebApp);
+    await browserProxy.whenCalled('getExceptionList');
+
+    // Required for firstItem to be found below.
+    flush();
+
+    // Validate that IWAs cannot be edited.
+    const entries = testElement.shadowRoot!.querySelectorAll('site-list-entry');
+    const firstItem = entries[0]!;
+    assertTrue(firstItem.$.actionMenuButton.hidden);
+    assertFalse(
+        firstItem.shadowRoot!.querySelector<HTMLElement>('#resetSite')!.hidden);
+
+    // Validate that IWA displays app name and not origin.
+    assertEquals(
+        firstItem.shadowRoot!.querySelector<HTMLElement>(
+                                 '.url-directionality')!.textContent!.trim(),
+        prefsIsolatedWebApp!.exceptions!.notifications[0]!.isolatedWebAppName);
+
+    // Validate that non-IWAs can be edited.
+    const secondItem = entries[1]!;
+    assertFalse(secondItem.$.actionMenuButton.hidden);
+    assertTrue(secondItem.shadowRoot!.querySelector<HTMLElement>(
+                                         '#resetSite')!.hidden);
+
+    // Validate that non-IWA displays the displayName (in most cases same as
+    // the origin).
+    assertEquals(
+        secondItem.shadowRoot!
+            .querySelector<HTMLElement>(
+                '.url-directionality')!.textContent!.trim(),
+        prefsIsolatedWebApp!.exceptions!.notifications[1]!.displayName);
+  });
+
   test('Mixed schemes (present and absent)', function() {
     // Prefs: One item with scheme and one without.
     setUpCategory(
@@ -1014,8 +1073,7 @@ suite('EditExceptionDialog', function() {
 
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
     SiteSettingsPrefsBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     dialog = document.createElement('settings-edit-exception-dialog');
     dialog.model = cookieException;
     document.body.appendChild(dialog);
@@ -1025,7 +1083,7 @@ suite('EditExceptionDialog', function() {
     dialog.remove();
   });
 
-  test('invalid input', function() {
+  test('invalid input', async function() {
     const input = dialog.shadowRoot!.querySelector('cr-input');
     assertTrue(!!input);
     assertFalse(input!.invalid);
@@ -1049,17 +1107,14 @@ suite('EditExceptionDialog', function() {
     input!.dispatchEvent(
         new CustomEvent('input', {bubbles: true, composed: true}));
 
-    return browserProxy.whenCalled('isPatternValidForType').then(function([
-      pattern,
-      _category,
-    ]) {
-      assertEquals(expectedPattern, pattern);
-      assertTrue(actionButton.disabled);
-      assertTrue(input!.invalid);
-    });
+    const [pattern, _category] =
+        await browserProxy.whenCalled('isPatternValidForType');
+    assertEquals(expectedPattern, pattern);
+    assertTrue(actionButton.disabled);
+    assertTrue(input!.invalid);
   });
 
-  test('action button calls proxy', function() {
+  test('action button calls proxy', async function() {
     const input = dialog.shadowRoot!.querySelector('cr-input');
     assertTrue(!!input);
     // Simulate user edit.
@@ -1071,24 +1126,22 @@ suite('EditExceptionDialog', function() {
     assertFalse(actionButton.disabled);
 
     actionButton.click();
-    return browserProxy.whenCalled('resetCategoryPermissionForPattern')
-        .then(function(args) {
-          assertEquals(cookieException.origin, args[0]);
-          assertEquals(cookieException.embeddingOrigin, args[1]);
-          assertEquals(ContentSettingsTypes.COOKIES, args[2]);
-          assertEquals(cookieException.incognito, args[3]);
+    const args1 =
+        await browserProxy.whenCalled('resetCategoryPermissionForPattern');
+    assertEquals(cookieException.origin, args1[0]);
+    assertEquals(cookieException.embeddingOrigin, args1[1]);
+    assertEquals(ContentSettingsTypes.COOKIES, args1[2]);
+    assertEquals(cookieException.incognito, args1[3]);
 
-          return browserProxy.whenCalled('setCategoryPermissionForPattern');
-        })
-        .then(function(args) {
-          assertEquals(newValue, args[0]);
-          assertEquals(SITE_EXCEPTION_WILDCARD, args[1]);
-          assertEquals(ContentSettingsTypes.COOKIES, args[2]);
-          assertEquals(cookieException.setting, args[3]);
-          assertEquals(cookieException.incognito, args[4]);
+    const args2 =
+        await browserProxy.whenCalled('setCategoryPermissionForPattern');
+    assertEquals(newValue, args2[0]);
+    assertEquals(SITE_EXCEPTION_WILDCARD, args2[1]);
+    assertEquals(ContentSettingsTypes.COOKIES, args2[2]);
+    assertEquals(cookieException.setting, args2[3]);
+    assertEquals(cookieException.incognito, args2[4]);
 
-          assertFalse(dialog.$.dialog.open);
-        });
+    assertFalse(dialog.$.dialog.open);
   });
 });
 
@@ -1101,8 +1154,7 @@ suite('AddExceptionDialog', function() {
 
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
     SiteSettingsPrefsBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     dialog = document.createElement('add-site-dialog');
     dialog.category = ContentSettingsTypes.GEOLOCATION;
     dialog.contentSetting = ContentSetting.ALLOW;
@@ -1125,7 +1177,7 @@ suite('AddExceptionDialog', function() {
     assertFalse(dialog.$.incognito.checked);
   });
 
-  test('invalid input', function() {
+  test('invalid input', async function() {
     // Initially the action button should be disabled, but the error warning
     // should not be shown for an empty input.
     const input = dialog.shadowRoot!.querySelector('cr-input');
@@ -1143,13 +1195,10 @@ suite('AddExceptionDialog', function() {
     input!.dispatchEvent(
         new CustomEvent('input', {bubbles: true, composed: true}));
 
-    return browserProxy.whenCalled('isPatternValidForType').then(function([
-      pattern,
-      _category,
-    ]) {
-      assertEquals(expectedPattern, pattern);
-      assertTrue(actionButton.disabled);
-      assertTrue(input!.invalid);
-    });
+    const [pattern, _category] =
+        await browserProxy.whenCalled('isPatternValidForType');
+    assertEquals(expectedPattern, pattern);
+    assertTrue(actionButton.disabled);
+    assertTrue(input!.invalid);
   });
 });

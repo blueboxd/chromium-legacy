@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://github.com/WICG/unload-beacon/blob/main/README.md
+// https://github.com/WICG/pending-beacon/blob/main/README.md
 
 [RuntimeEnabled = PendingBeaconAPI] enum BeaconMethod { "POST", "GET" };
 
@@ -15,6 +15,7 @@
 [
   RuntimeEnabled = PendingBeaconAPI,
   Exposed = Window,
+  SecureContext,
   ImmutablePrototype
 ] interface PendingBeacon {
   [Measure] readonly attribute USVString url;
@@ -30,21 +31,23 @@
 // Interface for the PendingGetBeacon API.
 [
   RuntimeEnabled = PendingBeaconAPI,
-  Exposed = Window
+  Exposed = Window,
+  SecureContext
 ] interface PendingGetBeacon : PendingBeacon {
-  [Measure, CallWith = ExecutionContext] constructor(
-      USVString url, optional PendingBeaconOptions options);
+  [Measure, RaisesException, CallWith = ExecutionContext] constructor(
+      USVString? url, optional PendingBeaconOptions options);
 
-  [Measure] void setURL(USVString url);
+  [Measure, RaisesException] void setURL(USVString? url);
 };
 
 // Interface for the PendingPostBeacon API.
 [
   RuntimeEnabled = PendingBeaconAPI,
-  Exposed = Window
+  Exposed = Window,
+  SecureContext
 ] interface PendingPostBeacon : PendingBeacon {
-  [Measure, CallWith = ExecutionContext] constructor(
-      USVString url, optional PendingBeaconOptions options);
+  [Measure, RaisesException, CallWith = ExecutionContext] constructor(
+      USVString? url, optional PendingBeaconOptions options);
 
   [Measure, RaisesException] void setData(
       (ReadableStream or XMLHttpRequestBodyInit) data);

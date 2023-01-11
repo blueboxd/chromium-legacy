@@ -3,12 +3,14 @@
 # results: [ Skip Pass ]
 
 # Most entries should have only [ Skip ] as the expected result. [ Pass ] is
-# used to override the inherited [ Skip ] for virtual tests or a subdirectory,
+# used to override the inherited [ Skip ] for a subdirectory,
 # e.g.:
 # # These tests only work under virtual/suite, except for those under foo/bar.
 # foo/* [ Skip ]
 # foo/bar/* [ Pass ]
-# virtual/suite/foo/* [ Pass ]
+#
+# To skip base tests for a virtual suite, please use "skip_base_tests" in
+# VirtualTestSuites.
 
 # This file should only include tests that we never want to run.
 # There should only be the following categories of tests here:
@@ -82,6 +84,26 @@
 [ Mac ] fast/events/menu-key-context-menu-reveal-focus.html [ Skip ]
 [ Mac ] fast/events/menu-key-context-menu.html [ Skip ]
 
+# The following touch gesture tests don't apply on Mac.
+crbug.com/613672 [ Mac ] fast/events/pointerevents/multi-pointer-event-in-slop-region.html [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/touch/gesture/gesture-scroll.html [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/touch/gesture/gesture-scroll-by-page.html [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/touch/gesture/gesture-scrollbar-touchpad-fling.html [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/touch/gesture/gesture-scrollbar-touchscreen-fling.html [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/touch/gesture/gesture-scrollbar-mainframe.html [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/touch/gesture/gesture-scrollbar.html [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-noscroll-body-xhidden.html [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-noscroll-body-yhidden.html [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-div-past-extent-diagonally.html [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-div-zoomed.html [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-div.html [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-iframe-editable.html [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-iframe.html [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-page-past-extent.html [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-page-zoomed.html [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-page.html [ Skip ]
+
 # Thumb snapping is not supported on Linux and Mac.
 [ Linux ] fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
 [ Mac ] fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
@@ -133,25 +155,6 @@ crbug.com/1004945 [ Win ] fast/text/mac-aat-morx-kern.html [ Skip ]
 # Segoe UI matching is only relevant on Windows
 [ Mac ] inspector-protocol/layout-fonts/font-weight-granularity-matching.js [ Skip ]
 [ Linux ] inspector-protocol/layout-fonts/font-weight-granularity-matching.js [ Skip ]
-
-# Tests in media/stable are only supposed to be run as virtual test (see virtual/stable/media).
-media/stable/* [ Skip ]
-virtual/stable/media/stable/* [ Pass ]
-
-# This test requires a compositor, so only the virtual/threaded/ version is run.
-external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
-[ Linux ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Pass ]
-external/wpt/permissions-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
-[ Linux ] virtual/threaded/external/wpt/permissions-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Pass ]
-
-# These tests require command line arguments so only virtual/attribution-reporting-debug-mode version is run.
-wpt_internal/attribution-reporting/* [ Skip ]
-virtual/attribution-reporting-debug-mode/wpt_internal/attribution-reporting/* [ Pass ]
-
-# This test requires a compositor to pass as root scrollbar scrolling is always
-# done on the compositor thread.
-fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar-thumb-scaled.html [ Skip ]
-virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar-thumb-scaled.html [ Pass ]
 
 # Missing Chrome Mac support, will start working when we move to harfbuzz on mac.
 [ Mac ] virtual/text-antialias/international/zerowidthjoiner.html [ Skip ]
@@ -252,6 +255,11 @@ crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/ove
 # GPU rasterization antialiases differently.
 crbug.com/665014 virtual/gpu-rasterization/images/cross-fade-svg-size-diff.html [ Skip ]
 crbug.com/665014 virtual/gpu-rasterization/images/cross-fade-svg-size.html [ Skip ]
+
+# WebGPU tests are only run on GPU bots, so they are skipped by default and run
+# separately from other Web Tests.
+external/wpt/webgpu/* [ Skip ]
+wpt_internal/webgpu/* [ Skip ]
 
 # Debug rendering difference only on Win Debug
 crbug.com/484370 [ Debug Win ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Skip ]
@@ -943,27 +951,16 @@ external/wpt/css/css-backgrounds/background-size/vector/wide--cover--omitted-wid
 external/wpt/css/css-backgrounds/background-size/vector/wide--cover--percent-width-nonpercent-height-viewbox.html [ Skip ]
 external/wpt/css/css-backgrounds/background-size/vector/wide--cover--percent-width-omitted-height-viewbox.html [ Skip ]
 external/wpt/css/css-backgrounds/background-size/vector/wide--cover--percent-width-percent-height-viewbox.html [ Skip ]
-external/wpt/css/css-backgrounds/border-image-6.html [ Skip ]
-external/wpt/css/css-backgrounds/border-image-repeat-round.html [ Skip ]
-external/wpt/css/css-backgrounds/border-image-round-and-stretch.html [ Skip ]
-external/wpt/css/css-backgrounds/border-image-slice-percentage.html [ Skip ]
-external/wpt/css/css-backgrounds/border-image-space-001.html [ Skip ]
-external/wpt/css/css-backgrounds/border-image-width-005.xht [ Skip ]
-external/wpt/css/css-backgrounds/border-image-width-006.xht [ Skip ]
-external/wpt/css/css-backgrounds/border-image-width-007.xht [ Skip ]
 external/wpt/css/css-backgrounds/css-border-radius-001.html [ Skip ]
 external/wpt/css/css-backgrounds/css-box-shadow-001.html [ Skip ]
 external/wpt/css/css-backgrounds/css3-background-origin-padding-box.html [ Skip ]
 external/wpt/css/css-backgrounds/css3-background-size-001.html [ Skip ]
-external/wpt/css/css-backgrounds/css3-border-image-repeat-repeat.html [ Skip ]
-external/wpt/css/css-backgrounds/css3-border-image-repeat-stretch.html [ Skip ]
 external/wpt/css/css-backgrounds/first-letter-space-not-selected.html [ Skip ]
 
 # Failures on the initial import of css-color. Test suite had many other bugs,
 # so these may also be incorrect tests, but probably some real issues too.
 external/wpt/css/css-color/t32-opacity-offscreen-multiple-boxes-1-c.xht [ Skip ]
 external/wpt/css/css-color/t32-opacity-offscreen-multiple-boxes-2-c.xht [ Skip ]
-external/wpt/css/css-color/t422-rgba-onscreen-b.xht [ Skip ]
 
 # https://github.com/web-platform-tests/wpt/issues/8547
 external/wpt/css/mediaqueries/device-aspect-ratio-001.html [ Skip ]
@@ -1004,10 +1001,6 @@ crbug.com/680331 external/wpt/css/cssom-view/scrollIntoView-sideways-rl-writing-
 # ability for horizontal scrollbars to be dependent upon vertical scrollbars.
 crbug.com/966283 external/wpt/css/css-overflow/clip-003.html [ Skip ]
 
-# Requires --use-fake-ui-for-media-stream to run.
-external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Skip ]
-virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Pass ]
-
 # These directories have manual tests that don't have to run with
 # run_web_tests.py; see https://crbug.com/359838.
 http/tests/ManualTests/* [ Skip ]
@@ -1020,10 +1013,6 @@ paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html 
 
 # Tests that use too much storage for automation.
 http/tests/cachestorage/large-put.html [ Skip ]
-
-# Not expected to pass in default configuration, only virtual test suite.
-crbug.com/830901 fast/webgl/video-metadata/texImage-video-last-uploaded-metadata.html [ Skip ]
-virtual/webgl-extra-video-texture-metadata/fast/webgl/video-metadata/texImage-video-last-uploaded-metadata.html [ Pass ]
 
 # Below are manual tests from web-platform-tests without automation.
 external/wpt/css/CSS2/tables/table-footer-group-004.xht [ Skip ]
@@ -1062,7 +1051,6 @@ external/wpt/battery-status/battery-discharging-manual.https.html [ Skip ]
 external/wpt/battery-status/battery-full-manual.https.html [ Skip ]
 external/wpt/battery-status/battery-plugging-in-manual.https.html [ Skip ]
 external/wpt/battery-status/battery-unplugging-manual.https.html [ Skip ]
-external/wpt/clipboard-apis/async-navigator-clipboard-basics.https.html [ Skip ]
 external/wpt/clipboard-apis/clipboard-file-manual.html [ Skip ]
 external/wpt/clipboard-apis/events/copy-event-manual.html [ Skip ]
 external/wpt/clipboard-apis/events/cut-event-manual.html [ Skip ]
@@ -1567,90 +1555,6 @@ external/wpt/css/css-writing-modes/writing-mode-vlr-001-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vlr-008-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vlr-table-002-manual.html [ Skip ]
 
-# ==== Tests incompatible with the default WPT Origin Isolation start here ==VV
-# The section below lists web tests that are incompatible with the WPT Origin
-# Isolation mode of Site Isolation (see
-# WebTestContentBrowserClient::GetOriginsRequiringDedicatedProcess) which
-# isolates WPT origins on top of the default site-per-process mode (see
-# ContentBrowserClient::ShouldEnableStrictSiteIsolation).
-#
-# Note that test coverage offered by the tests Skip-ed below is preserved by
-# the virtual/not-site-per-process test suite (see also
-# third_party/blink/web_tests/virtual/not-site-per-process/README.md). This
-# requires adding a Pass line below for that virtual test suite to override the
-# Skip behavior, so actually every test needs two lines here.
-#
-# When modifying the list of files that behave differently with and without
-# OOPIFs, please consider modifying all the locations below:
-# - web_tests/NeverFixTests (the section here)
-# - web_tests/VirtualTestSuites (virtual/not-site-per-process suite)
-# - web_tests/virtual/not-site-per-process/README.md
-#
-# --------------------------- document.domain -----------------------
-# To test OOPIF support in various web platform features, we isolate all WPT
-# *origins* (under assumptions that hopefully some WPT tests will exercise
-# cross-origin scenarios, but that cross-site test coverage is unlikely).
-# *Origin* isolation is incompatible with document.domain and this means that
-# tests exercising document.domain might fail - such tests are listed as
-# Skip below.  Note that by default Site Isolation isolates *sites* rather
-# than *origin* and therefore avoids problems related to document.domain
-# compatibility.
-external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction/* [ Skip ]
-external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Skip ]
-external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ Skip ]
-external/wpt/dom/events/EventListener-incumbent-global-2.sub.html [ Skip ]
-http/tests/dom/EventListener-incumbent-global-1.html [ Skip ]
-http/tests/dom/EventListener-incumbent-global-2.html [ Skip ]
-external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html [ Skip ]
-external/wpt/html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub.html [ Skip ]
-external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html [ Skip ]
-external/wpt/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html [ Skip ]
-external/wpt/html/browsers/windows/nested-browsing-contexts/frameElement-siblings.sub.html [ Skip ]
-external/wpt/wasm/serialization/module/window-domain-success.sub.html [ Skip ]
-external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ Skip ]
-external/wpt/wasm/serialization/module/share-module-cross-origin-fails.sub.html [ Skip ]
-external/wpt/navigation-api/navigate-event/cross-window/click-crossdocument-crossorigin-sameorigindomain.sub.html [ Skip ]
-external/wpt/navigation-api/navigate-event/cross-window/click-samedocument-crossorigin-sameorigindomain.sub.html [ Skip ]
-external/wpt/navigation-api/navigate-event/cross-window/location-crossdocument-crossorigin-sameorigindomain.sub.html [ Skip ]
-external/wpt/navigation-api/navigate-event/cross-window/location-samedocument-crossorigin-sameorigindomain.sub.html [ Skip ]
-external/wpt/navigation-api/navigate-event/cross-window/open-crossdocument-crossorigin-sameorigindomain.sub.html [ Skip ]
-external/wpt/navigation-api/navigate-event/cross-window/open-samedocument-crossorigin-sameorigindomain.sub.html [ Skip ]
-external/wpt/navigation-api/navigate-event/cross-window/submit-crossdocument-crossorigin-sameorigindomain.sub.html [ Skip ]
-external/wpt/navigation-api/navigate-event/cross-window/submit-samedocument-crossorigin-sameorigindomain.sub.html [ Skip ]
-virtual/not-site-per-process/external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction/* [ Pass ]
-virtual/not-site-per-process/external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/dom/events/EventListener-incumbent-global-2.sub.html [ Pass ]
-virtual/not-site-per-process/http/tests/dom/EventListener-incumbent-global-1.html [ Pass ]
-virtual/not-site-per-process/http/tests/dom/EventListener-incumbent-global-2.html [ Pass ]
-virtual/not-site-per-process/external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html [ Pass ]
-virtual/not-site-per-process/external/wpt/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/html/browsers/windows/nested-browsing-contexts/frameElement-siblings.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/wasm/serialization/module/window-domain-success.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/wasm/serialization/module/share-module-cross-origin-fails.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/navigation-api/navigate-event/cross-window/click-crossdocument-crossorigin-sameorigindomain.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/navigation-api/navigate-event/cross-window/click-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/navigation-api/navigate-event/cross-window/location-crossdocument-crossorigin-sameorigindomain.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/navigation-api/navigate-event/cross-window/location-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/navigation-api/navigate-event/cross-window/open-crossdocument-crossorigin-sameorigindomain.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/navigation-api/navigate-event/cross-window/open-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/navigation-api/navigate-event/cross-window/submit-crossdocument-crossorigin-sameorigindomain.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/navigation-api/navigate-event/cross-window/submit-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
-# ----------------------- origin-keyed agent clusters --------------------
-# Origin-keyed agent clusters web platform tests are for the feature at
-# https://html.spec.whatwg.org/#origin-keyed-agent-clusters. It doesn't make
-# sense to test that feature when web-platform.test domains are being forced
-# into origin-isolation mode. Note that since we also want coverage of this
-# feature with site isolation enabled, we use a different virtual test suite
-# than not-site-per-process, named no-auto-wpt-origin-isolation.
-external/wpt/html/browsers/origin/origin-keyed-agent-clusters/* [ Skip ]
-virtual/not-site-per-process/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/* [ Skip ]
-virtual/no-auto-wpt-origin-isolation/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/* [ Pass ]
-# ==== Tests incompatible with the default WPT Origin Isolation end here ==^^
-
 external/wpt/html/semantics/forms/the-input-element/event-select-manual.html [ Skip ]
 external/wpt/html/editing/dnd/the-datatransferitem-interface/getAsString-manual.html [ Skip ]
 external/wpt/payment-request/payment-response/payerdetailschange-updateWith-manual.https.html [ Skip ]
@@ -1670,26 +1574,8 @@ crbug.com/626703 [ Win ] external/wpt/payment-method-basic-card/billing-address-
 # Ctrl and mouse wheel scroll will not make page zoom on Mac
 crbug.com/1047176 [ Mac ] fast/events/wheel/wheelevent-ctrl.html [ Skip ]
 
-# These tests will pass once the --enable-features=TrustTokens flag is on by
-# default. A virtual test suite runs the same tests with the flag enabled.
-crbug.com/1061765 http/tests/inspector-protocol/trust-tokens/* [ Skip ]
-crbug.com/1061765 http/tests/loading/trust-tokens/* [ Skip ]
-crbug.com/1061765 external/wpt/trust-tokens/end-to-end/* [ Skip ]
-crbug.com/1061765 wpt_internal/trust-tokens/* [ Skip ]
-virtual/trust-tokens/http/tests/inspector-protocol/trust-tokens/* [ Pass ]
-virtual/trust-tokens/http/tests/loading/trust-tokens/* [ Pass ]
-virtual/trust-tokens/external/wpt/trust-tokens/end-to-end/* [ Pass ]
-virtual/trust-tokens/wpt_internal/trust-tokens/* [ Pass ]
-
-# Run these tests with under virtual/scalefactor... only.
-crbug.com/567837 fast/hidpi/static/* [ Skip ]
-[ Linux ] virtual/scalefactor150/fast/hidpi/static/* [ Pass ]
-[ Win ] virtual/scalefactor150/fast/hidpi/static/* [ Pass ]
-virtual/scalefactor200/fast/hidpi/static/* [ Pass ]
-
-# Memory measurement tests are run as virtual tests.
-external/wpt/measure-memory/* [ Skip ]
-virtual/force-eager/external/wpt/measure-memory/* [ Pass ]
+# The following tests are temporarily skipped. See the associated bugs.
+# Actually they should not be in this file because they are temporary.
 crbug.com/1150938 virtual/force-eager/external/wpt/measure-memory/detached.https.window.html [ Skip ]
 crbug.com/1150938 virtual/force-eager/external/wpt/measure-memory/window-open.mix.https.window.html [ Skip ]
 crbug.com/1085129 virtual/force-eager/external/wpt/measure-memory/main-frame-and-worker.https.window.html [ Skip ]
@@ -1697,33 +1583,7 @@ crbug.com/1085129 virtual/force-eager/external/wpt/measure-memory/idlharness.win
 crbug.com/1207146 virtual/force-eager/external/wpt/measure-memory/service-worker.https.any.serviceworker.html [ Skip ]
 crbug.com/1207146 virtual/force-eager/external/wpt/measure-memory/shared-worker.https.any.sharedworker.html [ Skip ]
 
-# The Wasm code cache test requires access to V8 internals, so only the
-# virtual test should be run.
-http/tests/wasm/caching/code-cache.html [ Skip ]
-virtual/wasm-code-caching/http/tests/wasm/caching/code-cache.html [ Pass ]
-
-# This test run under virtual suites only.
-crbug.com/981970 external/wpt/fetch/http-cache/split-cache.html [ Skip ]
-virtual/not-split-http-cache/external/wpt/fetch/http-cache/split-cache.html [ Pass ]
-virtual/split-http-cache/external/wpt/fetch/http-cache/split-cache.html [ Pass ]
-
-# Run the tests with the default MSE buffer sizes in the main test suite and the tests for 1MB buffers set via command line in a virtual test suite
-# with the --mse-audio-buffer-size-limit=1048576 and --mse-video-buffer-size-limit=1048576 command-line parameters.
 crbug.com/630342 virtual/mse-1mb-buffers/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Skip ]
-crbug.com/630342 http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-1mb-buffers.html [ Skip ]
-virtual/mse-1mb-buffers/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-1mb-buffers.html [ Pass ]
-
-# Remove from virtual tests when ReduceUserAgent is turned on by default.
-crbug.com/955620 http/tests/navigation/frozen-useragent.html [ Skip ]
-virtual/passive-fingerprinting/http/tests/navigation/frozen-useragent.html [ Pass ]
-
-# This test run under virtual suites only.
-crbug.com/1018640 external/wpt/web-bundle/wbn-from-network/* [ Skip ]
-virtual/wbn-from-network/external/wpt/web-bundle/wbn-from-network/* [ Pass ]
-crbug.com/1119600 external/wpt/direct-sockets/* [ Skip ]
-crbug.com/1119600 wpt_internal/direct-sockets/* [ Skip ]
-virtual/direct-sockets/external/wpt/direct-sockets/* [ Pass ]
-virtual/direct-sockets/wpt_internal/direct-sockets/* [ Pass ]
 
 # No good way to automate this test yet
 external/wpt/file-system-access/showSaveFilePicker-manual.https.html [ Skip ]
@@ -1765,44 +1625,6 @@ crbug.com/626703 [ Linux ] external/wpt/html/editing/dnd/events/historical-manua
 crbug.com/626703 [ Mac ] external/wpt/html/editing/dnd/events/historical-manual.html [ Skip ]
 crbug.com/626703 [ Win ] external/wpt/html/editing/dnd/events/historical-manual.html [ Skip ]
 
-# Remove from virtual tests when ComputePressure is turned on by default.
-crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_basic.tentative.https.window.html [ Skip ]
-crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_basic_async.tentative.https.window.html [ Skip ]
-crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_detached_iframe.tentative.https.html [ Skip ]
-crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_different_quantizations_across_iframes.tentative.https.window.html [ Skip ]
-crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_different_quantizations.tentative.https.window.html [ Skip ]
-crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_disconnect.tentative.https.window.html [ Skip ]
-crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_disconnect_idempotent.tentative.https.window.html [ Skip ]
-crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_disconnect_immediately.tentative.https.window.html [ Skip ]
-crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_duplicate_updates.tentative.https.window.html [ Skip ]
-crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_factors.tentative.https.window.html [ Skip ]
-crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_multiple_across_iframes.tentative.https.window.html [ Skip ]
-crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_multiple.tentative.https.window.html [ Skip ]
-crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_observe_idempotent.tentative.https.window.html [ Skip ]
-crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_observe_unobserve_failure.tentative.https.window.html [ Skip ]
-crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_options.tentative.https.window.html [ Skip ]
-crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_supported_sources.tentative.https.window.html [ Skip ]
-crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_take_records.tentative.https.window.html [ Skip ]
-crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_timestamp.tentative.https.window.html [ Skip ]
-crbug.com/1196419 virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_basic.tentative.https.window.html [ Pass ]
-crbug.com/1196419 virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_basic_async.tentative.https.window.html [ Pass ]
-crbug.com/1196419 virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_detached_iframe.tentative.https.html [ Pass ]
-crbug.com/1196419 virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_different_quantizations_across_iframes.tentative.https.window.html [ Pass ]
-crbug.com/1196419 virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_different_quantizations.tentative.https.window.html [ Pass ]
-crbug.com/1196419 virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_disconnect.tentative.https.window.html [ Pass ]
-crbug.com/1196419 virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_disconnect_idempotent.tentative.https.window.html [ Pass ]
-crbug.com/1196419 virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_disconnect_immediately.tentative.https.window.html [ Pass ]
-crbug.com/1196419 virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_duplicate_updates.tentative.https.window.html [ Pass ]
-crbug.com/1196419 virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_factors.tentative.https.window.html [ Pass ]
-crbug.com/1196419 virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_multiple_across_iframes.tentative.https.window.html [ Pass ]
-crbug.com/1196419 virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_multiple.tentative.https.window.html [ Pass ]
-crbug.com/1196419 virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_observe_idempotent.tentative.https.window.html [ Pass ]
-crbug.com/1196419 virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_observe_unobserve_failure.tentative.https.window.html [ Pass ]
-crbug.com/1196419 virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_options.tentative.https.window.html [ Pass ]
-crbug.com/1196419 virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_supported_sources.tentative.https.window.html [ Pass ]
-crbug.com/1196419 virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_take_records.tentative.https.window.html [ Pass ]
-crbug.com/1196419 virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_timestamp.tentative.https.window.html [ Pass ]
-
 # text-orientation:upright
 crbug.com/1005518 external/wpt/css/css-writing-modes/table-progression-vlr-003.html [ Skip ]
 crbug.com/1005518 external/wpt/css/css-writing-modes/table-progression-vlr-004.html [ Skip ]
@@ -1839,10 +1661,6 @@ external/wpt/css/css-counter-styles/upper-armenian/css3-counter-styles-109.html 
 
 # Missing Ethiopic font for these tests
 crbug.com/687225 external/wpt/css/css-counter-styles/ethiopic-numeric/* [ Skip ]
-
-# Document transition tests, which require a flag.
-wpt_internal/document-transition/* [ Skip ]
-virtual/document-transition/wpt_internal/document-transition/* [ Pass ]
 
 # Manual tests in wpt/touch-events
 crbug.com/1247306 external/wpt/touch-events/touch-retargeting-manual.html [ Skip ]
@@ -1918,43 +1736,15 @@ crbug.com/626703 [ Mac10.15 ] external/wpt/appmanifest/icons-member/icons-member
 crbug.com/626703 [ Mac10.15 ] external/wpt/appmanifest/start_url-member/start_url-member-pass-manual.html [ Skip ]
 crbug.com/626703 [ Mac11 ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemBaseHandle-postMessage-windows-manual.https.html [ Skip ]
 
-# The following tests never pass in the default Blink test runner due to forced
-# frame updates, but still pass in the full browser. They are only run in the
-# no-forced-frame-updates virtual test suite.
-external/wpt/css/css-transitions/render-blocking/* [ Skip ]
-external/wpt/html/dom/render-blocking/* [ Skip ]
-virtual/no-forced-frame-updates/external/wpt/css/css-transitions/render-blocking/* [ Pass ]
-virtual/no-forced-frame-updates/external/wpt/html/dom/render-blocking/* [ Pass ]
+# This test requires a special browser flag and seems not suitable for a wpt test, see bug.
+crbug.com/691944 external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 
-# Tests in the virtual/origin-agent-cluster-default suite. These tests
-# require isolation behaviour as in the actual browser and are therefore
-# incompatible with auto-wpt-origin-isolation. Thus they are only run in their
-# virtual test suite.
-wpt_internal/origin-agent-cluster-default/* [ Skip ]
-virtual/origin-agent-cluster-default/wpt_internal/origin-agent-cluster-default/* [ Pass ]
+# Cross-origin WebAssembly module sharing is getting deprecated.
+crbug.com/1224804 virtual/not-site-per-process/external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ Skip ]
+crbug.com/1224804 virtual/not-site-per-process/external/wpt/wasm/serialization/module/window-domain-success.sub.html [ Skip ]
 
-# These tests needs Sanitizer API namespace support.
-crbug.com/1225606 external/wpt/sanitizer-api/sanitizer-names.https.tentative.html [ Skip ]
-crbug.com/1225606 virtual/mathml-disabled/sanitizer-api-math-namespace-designator.html [ Skip ]
-# This is failing even with Sanitizer API namespace. We have an entry in TestExpectations.
-# crbug.com/1225606 virtual/sanitizer-api-namespaces/external/wpt/sanitizer-api/sanitizer-names.https.tentative.html [ Pass ]
-crbug.com/1225606 virtual/sanitizer-api-namespaces/virtual/mathml-disabled/sanitizer-api-math-namespace-designator.html [ Pass ]
+# Utility for manual testing, not intended to be run as part of layout tests.
+crbug.com/785955 http/tests/credentialmanagement/tools/virtual-authenticator-environment-manual.html [ Skip ]
 
-# Skip manual tests, see crbug/1114920
-external/wpt/html/semantics/forms/the-input-element/disabled-click-picker-manual.html [ Skip ]
-
-# This test passes only when the JXL feature is enabled.
-crbug.com/1161994 http/tests/inspector-protocol/emulation/emulation-set-disabled-image-types-jxl.js [ Skip ]
-crbug.com/1161994 virtual/jxl-enabled/http/tests/inspector-protocol/emulation/emulation-set-disabled-image-types-jxl.js [ Pass ]
-
-# These tests require the mparch based fenced frames.
-crbug.com/1260483 http/tests/inspector-protocol/fenced-frame/* [ Skip ]
-crbug.com/1260483 virtual/fenced-frame-mparch/http/tests/inspector-protocol/fenced-frame/* [ Pass ]
-
-# Feature is not yet launched, so skip the base.
-crbug.com/1293679 external/wpt/unload-beacon/* [ Skip ]
-crbug.com/1293679 virtual/pending-beacon/external/wpt/unload-beacon/* [ Pass ]
-
-# Experimental JS shared memory features
-crbug.com/1351118 wpt_internal/js/shared_memory/* [ Skip ]
-crbug.com/1351118 virtual/js-shared-memory/wpt_internal/js/shared_memory/* [ Pass ]
+# Feature can only be disabled via base feature flag, not by commandline switch.
+crbug.com/1293679 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/pending-beacon-origin-trial-interfaces.html [ Skip ]

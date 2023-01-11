@@ -948,17 +948,14 @@ Summary: Denotes an API that exposes data that folks on the internet find useful
 Attributes and methods marked as `[HighEntropy]` are known to be practically useful for [identifying particular clients](https://dev.chromium.org/Home/chromium-security/client-identification-mechanisms) on the web today.
 Both methods and attribute/constant getters annotated with this attribute are wired up to [`Dactyloscoper::Record`](https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/frame/dactyloscoper.h) for additional processing.
 
-This attribute must be accompanied by either `[Measure]` or `[MeasureAs]`.
-
 ```webidl
-[HighEntropy, Measure] attribute Node interestingAttribute;
-[HighEntropy, MeasureAs=InterestingNamedAttribute] attribute Node interestingNamedAttribute;
-[HighEntropy, Measure] Node getInterestingNode();
-[HighEntropy, Measure] const INTERESTING_CONSTANT = 1;
+[HighEntropy] attribute Node interestingAttribute;
+[HighEntropy] Node getInterestingNode();
+[HighEntropy] const INTERESTING_CONSTANT = 1;
 ```
 
 Attributes and methods labeled with `[HighEntropy=Direct]` are simple surfaces which can be expressed as a sequence of bytes without any need for additional parsing logic.
-For now, this label is only supported for attribute getters, although the `[HighEntropy]` label is supported more broadly.
+For now, this label is only supported for attribute getters, although the `[HighEntropy]` label is supported more broadly. Note that `[HighEntropy=Direct]` must be accompanied by either `[Measure]` or `[MeasureAs]`.
 
 ```webidl
 [HighEntropy=Direct, MeasureAs=SimpleNamedAttribute] attribute unsigned long simpleNamedAttribute;
@@ -1606,17 +1603,17 @@ In case of `func1(...)`, if JavaScript calls `func1(100, 200)`, then `HTMLFoo::f
 In case of `func2(...)` which adds `[DefaultValue=Undefined]`, if JavaScript calls `func2(100, 200)`, then it behaves as if JavaScript called `func2(100, 200, undefined)`. Consequently, `HTMLFoo::func2(int a, int b, int c)` is called in Blink. 100 is passed to `a`, 200 is passed to `b`, and 0 is passed to `c`. (A JavaScript `undefined` is converted to 0, following the value conversion rule in the Web IDL spec; if it were a DOMString parameter, it would end up as the string `"undefined"`.) In this way, Blink needs to just implement `func2(int a, int b, int c)` and needs not to implement both `func2(int a, int b)` and `func2(int a, int b, int c)`.
 
 
-### [IsolatedApplication] _(a, i, m)_
+### [IsolatedContext] _(a, i, m)_
 
-Summary: Interfaces and interface members with a `IsolatedApplication` extended attribute are exposed only inside contexts with isolated application isolation level. 
-See [explainer](https://github.com/reillyeon/isolated-web-apps) for more details.
+Summary: Interfaces and interface members with a `IsolatedContext` extended attribute are exposed only inside isolated contexts.
+This attribute is primarily intended for Isolated Apps (see [explainer](https://github.com/reillyeon/isolated-web-apps)) with an option for the embedder to include their own additional scenarios.
 
 Note that it's likely for these requirements to shift over time: <https://crbug.com/1206150>.
 
-Usage: The `[IsolatedApplication]` extended attribute may be specified on interfaces, attributes, and operations:
+Usage: The `[IsolatedContext]` extended attribute may be specified on interfaces, attributes, and operations:
 
 ```webidl
-[IsolatedApplication]
+[IsolatedContext]
 interface TCPSocket {
   ...
 };

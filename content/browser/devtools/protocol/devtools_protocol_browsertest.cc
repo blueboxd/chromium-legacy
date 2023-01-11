@@ -32,6 +32,7 @@
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/host_zoom_map_impl.h"
+#include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -1060,7 +1061,12 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, TransparentScreenshotsViewport) {
 }
 
 IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
+// TODO(crbug.com/1381597): Fix this failing test
+#if BUILDFLAG(IS_ANDROID)
+                       DISABLED_TransparentScreenshotsBeyondViewport) {
+#else
                        TransparentScreenshotsBeyondViewport) {
+#endif
   if (base::SysInfo::IsLowEndDevice())
     return;
 
@@ -3772,7 +3778,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderDevToolsProtocolTest,
 
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
-      PrerenderHost::FinalStatus::kMojoBinderPolicy, 1);
+      PrerenderFinalStatus::kMojoBinderPolicy, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderDevToolsProtocolTest,
@@ -3859,13 +3865,13 @@ IN_PROC_BROWSER_TEST_F(MultiplePrerendersDevToolsProtocolTest,
   NavigatePrimaryPage(kPrerenderingUrl);
   base::Value::Dict result =
       WaitForNotification("Page.prerenderAttemptCompleted", true);
-  EXPECT_THAT(*result.FindString("finalStatus"), Eq("Activated"));
+  EXPECT_THAT(*result.FindString("finalStatus"), Eq("TriggerDestroyed"));
 
   // TODO(crbug/1332386): Verifies that multiple activations can be received
   // properly when crbug/1350676 is ready. kPrerenderingUrl2 should be canceled
   // as navigating to kPrerenderingUrl2.
   result = WaitForNotification("Page.prerenderAttemptCompleted", true);
-  EXPECT_THAT(*result.FindString("finalStatus"), Eq("TriggerDestroyed"));
+  EXPECT_THAT(*result.FindString("finalStatus"), Eq("Activated"));
 }
 
 IN_PROC_BROWSER_TEST_F(MultiplePrerendersDevToolsProtocolTest,

@@ -33,6 +33,9 @@ content::WebUIDataSource* CreatePasswordsUIHTMLSource(Profile* profile) {
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"addPassword", IDS_PASSWORD_MANAGER_UI_ADD_PASSWORD_BUTTON},
+      {"addShortcut", IDS_PASSWORD_MANAGER_UI_ADD_SHORTCUT_TITLE},
+      {"addShortcutDescription",
+       IDS_PASSWORD_MANAGER_UI_ADD_SHORTCUT_DESCRIPTION},
       {"autosigninDescription", IDS_PASSWORD_MANAGER_UI_AUTOSIGNIN_TOGGLE_DESC},
       {"autosigninLabel", IDS_PASSWORD_MANAGER_UI_AUTOSIGNIN_TOGGLE_LABEL},
       {"checkup", IDS_PASSWORD_MANAGER_UI_CHECKUP},
@@ -64,6 +67,12 @@ content::WebUIDataSource* CreatePasswordsUIHTMLSource(Profile* profile) {
        IDS_PASSWORD_MANAGER_UI_RUSTED_VAULT_OPT_IN_DESCRIPTION},
       {"weakPasswordsEmpty", IDS_PASSWORD_MANAGER_UI_NO_WEAK_PASSWORDS},
       {"weakPasswordsTitle", IDS_PASSWORD_MANAGER_UI_HAS_WEAK_PASSWORDS},
+      {"blockedSitesTitle", IDS_PASSWORD_MANAGER_UI_BLOCKED_SITES_TITLE},
+      {"blockedSitesDescription",
+       IDS_PASSWORD_MANAGER_UI_BLOCKED_SITES_DESCRIPTION},
+      {"blockedSitesEmptyDescription",
+       IDS_PASSWORD_MANAGER_UI_NO_BLOCKED_SITES_DESCRIPTION},
+
   };
   source->AddLocalizedStrings(kStrings);
 

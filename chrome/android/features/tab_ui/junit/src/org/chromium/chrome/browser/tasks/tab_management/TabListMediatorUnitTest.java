@@ -35,10 +35,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static org.chromium.chrome.browser.flags.ChromeFeatureList.COMMERCE_COUPONS;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.START_SURFACE_ANDROID;
-import static org.chromium.chrome.browser.flags.ChromeFeatureList.STORE_HOURS;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUPS_ANDROID;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID;
 import static org.chromium.chrome.browser.tasks.tab_management.MessageCardViewProperties.MESSAGE_TYPE;
@@ -100,7 +98,6 @@ import org.chromium.chrome.browser.endpoint_fetcher.EndpointFetcher;
 import org.chromium.chrome.browser.endpoint_fetcher.EndpointFetcherJni;
 import org.chromium.chrome.browser.endpoint_fetcher.EndpointResponse;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridge;
@@ -1428,7 +1425,7 @@ public class TabListMediatorUnitTest {
      * Set flags and initialize for verifying coupon annotations behavior
      */
     private void prepareForCoupon() {
-        CachedFeatureFlags.setForTesting(COMMERCE_COUPONS, true);
+        ChromeFeatureList.sCommerceCoupons.setForTesting(true);
         PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(true);
         PersistedTabDataConfiguration.setUseTestConfig(true);
         initAndAssertAllProperties();
@@ -1493,7 +1490,7 @@ public class TabListMediatorUnitTest {
      * Set flags and initialize for verifying store hours behavior
      */
     private void prepareForStoreHours() {
-        CachedFeatureFlags.setForTesting(STORE_HOURS, true);
+        ChromeFeatureList.sStoreHoursAndroid.setForTesting(true);
         PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(true);
         PersistedTabDataConfiguration.setUseTestConfig(true);
         initAndAssertAllProperties();
@@ -1660,7 +1657,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
-    public void tabMovementWithinGroup_Forward() {
+    public void tabMovementWithinGroup_TabGridDialong_Forward() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_GRID_DIALOG, TabListMode.GRID);
 
         // Assume that moveTab in TabModel is finished.
@@ -1684,7 +1681,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
-    public void tabMovementWithinGroup_Backward() {
+    public void tabMovementWithinGroup_TabGridDialog_Backward() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_GRID_DIALOG, TabListMode.GRID);
 
         // Assume that moveTab in TabModel is finished.
@@ -1705,6 +1702,284 @@ public class TabListMediatorUnitTest {
         assertThat(mModel.size(), equalTo(2));
         assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB2_ID));
         assertThat(mModel.get(0).model.get(TabProperties.TITLE), equalTo(TAB2_TITLE));
+    }
+
+    @Test
+    public void tabMovementWithinGroup_TabSwitcher_Forward() {
+        setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER, TabListMode.GRID);
+        Tab tab3 = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
+
+        // Setup three tabs with groups (mTab1, mTab2) and tab3.
+        List<Tab> group = new ArrayList<>(Arrays.asList(mTab1, mTab2));
+        List<Integer> groupTabIds = new ArrayList<>(Arrays.asList(TAB1_ID, TAB2_ID));
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB1_ID);
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB2_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB1_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB2_ID);
+        doReturn(mTab1).when(mTabGroupModelFilter).getTabAt(POSITION1);
+        doReturn(tab3).when(mTabGroupModelFilter).getTabAt(POSITION2);
+        doReturn(POSITION1).when(mTabGroupModelFilter).indexOf(mTab1);
+        doReturn(POSITION1).when(mTabGroupModelFilter).indexOf(mTab2);
+        doReturn(POSITION2).when(mTabGroupModelFilter).indexOf(tab3);
+        doReturn(mTab1).when(mTabModel).getTabAt(POSITION1);
+        doReturn(mTab2).when(mTabModel).getTabAt(POSITION2);
+        doReturn(tab3).when(mTabModel).getTabAt(2);
+        doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
+        CriticalPersistedTabData criticalPersistedTabData1 = CriticalPersistedTabData.from(mTab1);
+        CriticalPersistedTabData criticalPersistedTabData2 = CriticalPersistedTabData.from(mTab2);
+        CriticalPersistedTabData criticalPersistedTabData3 = CriticalPersistedTabData.from(tab3);
+        doReturn(TAB1_ID).when(criticalPersistedTabData1).getRootId();
+        doReturn(TAB1_ID).when(criticalPersistedTabData2).getRootId();
+        doReturn(TAB3_ID).when(criticalPersistedTabData3).getRootId();
+
+        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, tab3));
+        mMediator.resetWithListOfTabs(PseudoTab.getListOfPseudoTab(tabs), false, false);
+        assertThat(mModel.size(), equalTo(2));
+
+        // Select tab3 so the group doesn't have the selected tab.
+        doReturn(2).when(mTabModel).index();
+        mTabModelObserverCaptor.getValue().didSelectTab(
+                tab3, TabLaunchType.FROM_CHROME_UI, TAB1_ID);
+
+        assertThat(mModel.size(), equalTo(2));
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(0).model.get(TabProperties.IS_SELECTED), equalTo(false));
+        assertThat(mModel.get(1).model.get(TabProperties.TAB_ID), equalTo(TAB3_ID));
+        assertThat(mModel.get(1).model.get(TabProperties.IS_SELECTED), equalTo(true));
+
+        // Assume that moveTab in TabModel is finished (swap mTab1 and mTab2).
+        group = new ArrayList<>(Arrays.asList(mTab2, mTab1));
+        groupTabIds = new ArrayList<>(Arrays.asList(TAB2_ID, TAB1_ID));
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB1_ID);
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB2_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB1_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB2_ID);
+        doReturn(mTab1).when(mTabModel).getTabAt(POSITION2);
+        doReturn(mTab2).when(mTabModel).getTabAt(POSITION1);
+
+        // mTab1 is first in group before the move.
+        assertThat(mModel.size(), equalTo(2));
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(0).model.get(TabProperties.IS_SELECTED), equalTo(false));
+        ThumbnailFetcher tab1Fetcher = mModel.get(0).model.get(TabProperties.THUMBNAIL_FETCHER);
+
+        mMediatorTabGroupModelFilterObserver.didMoveWithinGroup(mTab2, POSITION2, POSITION1);
+
+        // mTab1 is still first in group after the move (last selected), but the thumbnail updated.
+        assertThat(mModel.size(), equalTo(2));
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(0).model.get(TabProperties.IS_SELECTED), equalTo(false));
+        // TODO(crbug/1374361): Make this an assertion and don't update.
+        // Thumbnail order was: tab1, tab2, tab3. Now: tab1, tab2, tab3. Update is precautionary.
+        assertNotEquals(tab1Fetcher, mModel.get(0).model.get(TabProperties.THUMBNAIL_FETCHER));
+    }
+
+    @Test
+    public void tabMovementWithinGroup_TabSwitcher_Backward() {
+        setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER, TabListMode.GRID);
+        Tab tab3 = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
+
+        // Setup three tabs with groups (mTab1, mTab2) and tab3.
+        List<Tab> group = new ArrayList<>(Arrays.asList(mTab1, mTab2));
+        List<Integer> groupTabIds = new ArrayList<>(Arrays.asList(TAB1_ID, TAB2_ID));
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB1_ID);
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB2_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB1_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB2_ID);
+        doReturn(mTab1).when(mTabGroupModelFilter).getTabAt(POSITION1);
+        doReturn(tab3).when(mTabGroupModelFilter).getTabAt(POSITION2);
+        doReturn(POSITION1).when(mTabGroupModelFilter).indexOf(mTab1);
+        doReturn(POSITION1).when(mTabGroupModelFilter).indexOf(mTab2);
+        doReturn(POSITION2).when(mTabGroupModelFilter).indexOf(tab3);
+        doReturn(mTab1).when(mTabModel).getTabAt(POSITION1);
+        doReturn(mTab2).when(mTabModel).getTabAt(POSITION2);
+        doReturn(tab3).when(mTabModel).getTabAt(2);
+        doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
+        CriticalPersistedTabData criticalPersistedTabData1 = CriticalPersistedTabData.from(mTab1);
+        CriticalPersistedTabData criticalPersistedTabData2 = CriticalPersistedTabData.from(mTab2);
+        CriticalPersistedTabData criticalPersistedTabData3 = CriticalPersistedTabData.from(tab3);
+        doReturn(TAB1_ID).when(criticalPersistedTabData1).getRootId();
+        doReturn(TAB1_ID).when(criticalPersistedTabData2).getRootId();
+        doReturn(TAB3_ID).when(criticalPersistedTabData3).getRootId();
+
+        // Select tab3 so the group doesn't have the selected tab.
+        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, tab3));
+        mMediator.resetWithListOfTabs(PseudoTab.getListOfPseudoTab(tabs), false, false);
+        assertThat(mModel.size(), equalTo(2));
+
+        doReturn(2).when(mTabModel).index();
+        mTabModelObserverCaptor.getValue().didSelectTab(
+                tab3, TabLaunchType.FROM_CHROME_UI, TAB1_ID);
+
+        assertThat(mModel.size(), equalTo(2));
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(0).model.get(TabProperties.IS_SELECTED), equalTo(false));
+        assertThat(mModel.get(1).model.get(TabProperties.TAB_ID), equalTo(TAB3_ID));
+        assertThat(mModel.get(1).model.get(TabProperties.IS_SELECTED), equalTo(true));
+
+        // Assume that moveTab in TabModel is finished (swap mTab1 and mTab2).
+        group = new ArrayList<>(Arrays.asList(mTab2, mTab1));
+        groupTabIds = new ArrayList<>(Arrays.asList(TAB2_ID, TAB1_ID));
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB1_ID);
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB2_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB1_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB2_ID);
+        doReturn(mTab1).when(mTabModel).getTabAt(POSITION2);
+        doReturn(mTab2).when(mTabModel).getTabAt(POSITION1);
+
+        // mTab1 is first in group before the move.
+        assertThat(mModel.size(), equalTo(2));
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(0).model.get(TabProperties.IS_SELECTED), equalTo(false));
+        ThumbnailFetcher tab1Fetcher = mModel.get(0).model.get(TabProperties.THUMBNAIL_FETCHER);
+
+        mMediatorTabGroupModelFilterObserver.didMoveWithinGroup(mTab1, POSITION1, POSITION2);
+
+        // mTab1 is first in group after the move (last selected), but the thumbnail updated.
+        assertThat(mModel.size(), equalTo(2));
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(0).model.get(TabProperties.IS_SELECTED), equalTo(false));
+        // TODO(crbug/1374361): Make this an assertion and don't update.
+        // Thumbnail order was: tab1, tab2, tab3. Now: tab1, tab2, tab3. Update is precautionary.
+        assertNotEquals(tab1Fetcher, mModel.get(0).model.get(TabProperties.THUMBNAIL_FETCHER));
+    }
+
+    @Test
+    public void tabMovementWithinGroup_TabSwitcher_SelectedNotMoved() {
+        setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER, TabListMode.GRID);
+        Tab tab3 = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
+
+        // Setup three tabs grouped together.
+        List<Tab> group = new ArrayList<>(Arrays.asList(mTab1, mTab2, tab3));
+        List<Integer> groupTabIds = new ArrayList<>(Arrays.asList(TAB1_ID, TAB2_ID, TAB3_ID));
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB1_ID);
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB2_ID);
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB3_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB1_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB2_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB3_ID);
+        doReturn(mTab1).when(mTabGroupModelFilter).getTabAt(POSITION1);
+        doReturn(POSITION1).when(mTabGroupModelFilter).indexOf(mTab1);
+        doReturn(POSITION1).when(mTabGroupModelFilter).indexOf(mTab2);
+        doReturn(POSITION1).when(mTabGroupModelFilter).indexOf(tab3);
+        doReturn(mTab1).when(mTabModel).getTabAt(POSITION1);
+        doReturn(mTab2).when(mTabModel).getTabAt(POSITION2);
+        doReturn(tab3).when(mTabModel).getTabAt(2);
+        doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
+        CriticalPersistedTabData criticalPersistedTabData1 = CriticalPersistedTabData.from(mTab1);
+        CriticalPersistedTabData criticalPersistedTabData2 = CriticalPersistedTabData.from(mTab2);
+        CriticalPersistedTabData criticalPersistedTabData3 = CriticalPersistedTabData.from(tab3);
+        doReturn(TAB1_ID).when(criticalPersistedTabData1).getRootId();
+        doReturn(TAB1_ID).when(criticalPersistedTabData2).getRootId();
+        doReturn(TAB1_ID).when(criticalPersistedTabData3).getRootId();
+
+        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1));
+        mMediator.resetWithListOfTabs(PseudoTab.getListOfPseudoTab(tabs), false, false);
+        assertThat(mModel.size(), equalTo(1));
+
+        // Assume that moveTab in TabModel is finished.
+
+        // mTab1 selected.
+        doReturn(POSITION1).when(mTabModel).index();
+        mTabModelObserverCaptor.getValue().didSelectTab(
+                mTab1, TabLaunchType.FROM_CHROME_UI, TAB1_ID);
+
+        // Swap mTab2 and tab3.
+        doReturn(mTab2).when(mTabModel).getTabAt(2);
+        doReturn(tab3).when(mTabModel).getTabAt(POSITION2);
+        group = new ArrayList<>(Arrays.asList(mTab1, tab3, mTab2));
+        groupTabIds = new ArrayList<>(Arrays.asList(TAB1_ID, TAB3_ID, TAB2_ID));
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB1_ID);
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB2_ID);
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB3_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB1_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB2_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB3_ID);
+
+        // mTab1 selected before update.
+        assertThat(mModel.size(), equalTo(1));
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(0).model.get(TabProperties.IS_SELECTED), equalTo(true));
+        ThumbnailFetcher tab1Fetcher = mModel.get(0).model.get(TabProperties.THUMBNAIL_FETCHER);
+
+        mMediatorTabGroupModelFilterObserver.didMoveWithinGroup(mTab2, POSITION2, 2);
+
+        // mTab1 still selected after the move (last selected), but the thumbnail updated.
+        assertThat(mModel.size(), equalTo(1));
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(0).model.get(TabProperties.IS_SELECTED), equalTo(true));
+        // TODO(crbug/1374361): Make this an assertion.
+        // Thumbnail order was: tab1, tab2, tab3. Now: tab1, tab3, tab2.
+        assertNotEquals(tab1Fetcher, mModel.get(0).model.get(TabProperties.THUMBNAIL_FETCHER));
+    }
+
+    @Test
+    public void tabMovementWithinGroup_TabSwitcher_SelectedMoved() {
+        setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER, TabListMode.GRID);
+        Tab tab3 = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
+
+        // Setup three tabs grouped together.
+        List<Tab> group = new ArrayList<>(Arrays.asList(mTab1, mTab2, tab3));
+        List<Integer> groupTabIds = new ArrayList<>(Arrays.asList(TAB1_ID, TAB2_ID, TAB3_ID));
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB1_ID);
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB2_ID);
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB3_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB1_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB2_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB3_ID);
+        doReturn(mTab1).when(mTabGroupModelFilter).getTabAt(POSITION1);
+        doReturn(POSITION1).when(mTabGroupModelFilter).indexOf(mTab1);
+        doReturn(POSITION1).when(mTabGroupModelFilter).indexOf(mTab2);
+        doReturn(POSITION1).when(mTabGroupModelFilter).indexOf(tab3);
+        doReturn(mTab1).when(mTabModel).getTabAt(POSITION1);
+        doReturn(mTab2).when(mTabModel).getTabAt(POSITION2);
+        doReturn(tab3).when(mTabModel).getTabAt(2);
+        doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
+        CriticalPersistedTabData criticalPersistedTabData1 = CriticalPersistedTabData.from(mTab1);
+        CriticalPersistedTabData criticalPersistedTabData2 = CriticalPersistedTabData.from(mTab2);
+        CriticalPersistedTabData criticalPersistedTabData3 = CriticalPersistedTabData.from(tab3);
+        doReturn(TAB1_ID).when(criticalPersistedTabData1).getRootId();
+        doReturn(TAB1_ID).when(criticalPersistedTabData2).getRootId();
+        doReturn(TAB1_ID).when(criticalPersistedTabData3).getRootId();
+
+        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1));
+        mMediator.resetWithListOfTabs(PseudoTab.getListOfPseudoTab(tabs), false, false);
+        assertThat(mModel.size(), equalTo(1));
+
+        // Assume that moveTab in TabModel is finished.
+
+        // mTab1 selected (at new position).
+        doReturn(2).when(mTabModel).index();
+        mTabModelObserverCaptor.getValue().didSelectTab(
+                mTab1, TabLaunchType.FROM_CHROME_UI, TAB1_ID);
+
+        // Swap mTab1 and mTab3.
+        doReturn(mTab1).when(mTabModel).getTabAt(2);
+        doReturn(tab3).when(mTabModel).getTabAt(POSITION1);
+        group = new ArrayList<>(Arrays.asList(tab3, mTab2, mTab1));
+        groupTabIds = new ArrayList<>(Arrays.asList(TAB3_ID, TAB2_ID, TAB1_ID));
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB1_ID);
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB2_ID);
+        doReturn(group).when(mTabGroupModelFilter).getRelatedTabList(TAB3_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB1_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB2_ID);
+        doReturn(groupTabIds).when(mTabGroupModelFilter).getRelatedTabIds(TAB3_ID);
+
+        // mTab1 selected before update.
+        assertThat(mModel.size(), equalTo(1));
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(0).model.get(TabProperties.IS_SELECTED), equalTo(true));
+        ThumbnailFetcher tab1Fetcher = mModel.get(0).model.get(TabProperties.THUMBNAIL_FETCHER);
+
+        mMediatorTabGroupModelFilterObserver.didMoveWithinGroup(mTab1, 2, POSITION1);
+
+        // mTab1 still selected after the move (last selected), but the thumbnail updated.
+        assertThat(mModel.size(), equalTo(1));
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(0).model.get(TabProperties.IS_SELECTED), equalTo(true));
+        // TODO(crbug/1374361): Make this an assertion.
+        // Thumbnail order was: tab1, tab2, tab3. Now: tab1, tab3, tab2.
+        assertNotEquals(tab1Fetcher, mModel.get(0).model.get(TabProperties.THUMBNAIL_FETCHER));
     }
 
     @Test
@@ -3708,7 +3983,7 @@ public class TabListMediatorUnitTest {
             uiType = TabProperties.UiType.STRIP;
         }
         // TODO(crbug.com/1058196): avoid re-instanciate TabListMediator by using annotation.
-        CachedFeatureFlags.setForTesting(TAB_GROUPS_ANDROID, true);
+        ChromeFeatureList.sTabGroupsAndroid.setForTesting(true);
 
         mMediator = new TabListMediator(mActivity, mModel, mode, mTabModelSelector,
                 getTabThumbnailCallback(), mTitleProvider, mTabListFaviconProvider,

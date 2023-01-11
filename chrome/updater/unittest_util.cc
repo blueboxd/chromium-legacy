@@ -10,13 +10,15 @@
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
+#include "base/process/launch.h"
 #include "base/process/process_iterator.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/policy/manager.h"
 #include "chrome/updater/policy/service.h"
@@ -83,14 +85,41 @@ bool DeleteFileAndEmptyParentDirectories(
   return Local::DeleteDirsIfEmpty(file_path->DirName());
 }
 
-base::FilePath GetUpdaterTestPath() {
-  base::FilePath out_dir;
-  CHECK(base::PathService::Get(base::DIR_EXE, &out_dir));
 #if BUILDFLAG(IS_WIN)
-  return out_dir.Append(FILE_PATH_LITERAL("updater_test.exe"));
-#else
-  return out_dir.Append(FILE_PATH_LITERAL("updater_test"));
-#endif
+void MaybeExcludePathsFromWindowsDefender() {
+  constexpr char kTestLauncherExcludePathsFromWindowDefender[] =
+      "exclude-paths-from-win-defender";
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(kTestLauncherExcludePathsFromWindowDefender))
+    return;
+
+  base::FilePath program_files;
+  base::FilePath program_files_x86;
+  base::FilePath local_app_data;
+  if (!base::PathService::Get(base::DIR_PROGRAM_FILES, &program_files) ||
+      !base::PathService::Get(base::DIR_PROGRAM_FILESX86, &program_files_x86) ||
+      !base::PathService::Get(base::DIR_LOCAL_APP_DATA, &local_app_data)) {
+    return;
+  }
+
+  const auto quote_path_value = [](const base::FilePath& path) {
+    return base::StrCat({L"'", path.value(), L"'"});
+  };
+  const std::wstring cmdline =
+      base::StrCat({L"PowerShell.exe Add-MpPreference -ExclusionPath ",
+                    base::JoinString({quote_path_value(program_files),
+                                      quote_path_value(program_files_x86),
+                                      quote_path_value(local_app_data)},
+                                     L", ")});
+
+  base::LaunchOptions options;
+  options.start_hidden = true;
+  options.wait = true;
+  VLOG(1) << "Running: " << cmdline;
+  base::Process process = base::LaunchProcess(cmdline, options);
+  LOG_IF(ERROR, !process.IsValid())
+      << "Failed to disable Windows Defender: " << cmdline;
 }
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace updater::test

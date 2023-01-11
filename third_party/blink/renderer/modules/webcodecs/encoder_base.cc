@@ -236,8 +236,7 @@ void EncoderBase<Traits>::ResetInternal() {
   // NOTE: This task runner may be destroyed without running tasks, so don't
   // use DeleteSoon() which can leak the codec. See https://crbug.com/1376851.
   callback_runner_->PostTask(
-      FROM_HERE, base::BindOnce([](std::unique_ptr<MediaEncoderType>) {},
-                                std::move(media_encoder_)));
+      FROM_HERE, base::DoNothingWithBoundArgs(std::move(media_encoder_)));
 
   // This codec isn't holding on to any resources, and doesn't need to be
   // reclaimed.

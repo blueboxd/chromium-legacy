@@ -197,10 +197,7 @@ PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
   DCHECK(queue_);
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  printing_enabled_.Init(
-      prefs::kPrintingEnabled, profile->GetPrefs(),
-      base::BindRepeating(&PrintViewManagerBase::UpdatePrintingEnabled,
-                          weak_ptr_factory_.GetWeakPtr()));
+  printing_enabled_.Init(prefs::kPrintingEnabled, profile->GetPrefs());
 }
 
 PrintViewManagerBase::~PrintViewManagerBase() {
@@ -414,14 +411,6 @@ void PrintViewManagerBase::ScriptedPrintReply(
   std::move(callback).Run(std::move(params));
 }
 
-void PrintViewManagerBase::UpdatePrintingEnabled() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  web_contents()->GetPrimaryMainFrame()->ForEachRenderFrameHost(
-      [this](content::RenderFrameHost* rfh) {
-        SendPrintingEnabled(printing_enabled_.GetValue(), rfh);
-      });
-}
-
 void PrintViewManagerBase::NavigationStopped() {
   // Cancel the current job, wait for the worker to finish.
   TerminatePrintJob(true);
@@ -460,6 +449,31 @@ bool PrintViewManagerBase::PrintJobHasDocument(int cookie) {
   return document && document->cookie() == cookie;
 }
 
+bool PrintViewManagerBase::OnComposePdfDoneImpl(
+    const gfx::Size& page_size,
+    const gfx::Rect& content_area,
+    const gfx::Point& physical_offsets,
+    mojom::PrintCompositor::Status status,
+    base::ReadOnlySharedMemoryRegion region) {
+  if (status != mojom::PrintCompositor::Status::kSuccess) {
+    DLOG(ERROR) << "Compositing pdf failed with error " << status;
+    return false;
+  }
+
+  if (!print_job_->document())
+    return false;
+
+  DCHECK(region.IsValid());
+  DCHECK(LooksLikePdf(region.Map().GetMemoryAsSpan<char>()));
+  scoped_refptr<base::RefCountedSharedMemoryMapping> data =
+      base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(region);
+  if (!data)
+    return false;
+
+  PrintDocument(data, page_size, content_area, physical_offsets);
+  return true;
+}
+
 void PrintViewManagerBase::OnComposePdfDone(
     const gfx::Size& page_size,
     const gfx::Rect& content_area,
@@ -468,28 +482,13 @@ void PrintViewManagerBase::OnComposePdfDone(
     mojom::PrintCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (status != mojom::PrintCompositor::Status::kSuccess) {
-    DLOG(ERROR) << "Compositing pdf failed with error " << status;
-    std::move(callback).Run(false);
-    return;
-  }
 
-  if (!print_job_->document()) {
-    std::move(callback).Run(false);
-    return;
-  }
+  bool success = OnComposePdfDoneImpl(page_size, content_area, physical_offsets,
+                                      status, std::move(region));
+  std::move(callback).Run(success);
 
-  DCHECK(region.IsValid());
-  DCHECK(LooksLikePdf(region.Map().GetMemoryAsSpan<char>()));
-  scoped_refptr<base::RefCountedSharedMemoryMapping> data =
-      base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(region);
-  if (!data) {
-    std::move(callback).Run(false);
-    return;
-  }
-
-  PrintDocument(data, page_size, content_area, physical_offsets);
-  std::move(callback).Run(true);
+  for (auto& observer : observers_)
+    observer.OnCompositeCompletion();
 }
 
 void PrintViewManagerBase::DidPrintDocument(
@@ -562,13 +561,21 @@ void PrintViewManagerBase::GetDefaultPrintSettings(
         queue_->CreatePrinterQuery(render_frame_host->GetGlobalId());
   }
 
+  // Sometimes it is desired to get the PDF settings as opposed to the settings
+  // of the default system print driver.
+#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+  bool want_pdf_settings = snapshotting_for_content_analysis_;
+#else
+  bool want_pdf_settings = false;
+#endif
+
   // Loads default settings. This is asynchronous, only the mojo message sender
   // will hang until the settings are retrieved.
   auto* printer_query_ptr = printer_query.get();
   printer_query_ptr->GetDefaultSettings(
       base::BindOnce(&OnDidGetDefaultPrintSettings, queue_,
                      std::move(printer_query), std::move(callback_wrapper)),
-      !render_process_host->IsPdf());
+      !render_process_host->IsPdf(), want_pdf_settings);
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -615,6 +622,12 @@ void PrintViewManagerBase::UpdatePrintSettings(
                      weak_ptr_factory_.GetWeakPtr()));
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+
+void PrintViewManagerBase::IsPrintingEnabled(
+    IsPrintingEnabledCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  std::move(callback).Run(printing_enabled_.GetValue());
+}
 
 void PrintViewManagerBase::ScriptedPrint(mojom::ScriptedPrintParamsPtr params,
                                          ScriptedPrintCallback callback) {
@@ -701,13 +714,10 @@ void PrintViewManagerBase::RenderFrameHostStateChanged(
     content::RenderFrameHost::LifecycleState /*old_state*/,
     content::RenderFrameHost::LifecycleState new_state) {
   if (new_state == content::RenderFrameHost::LifecycleState::kActive &&
-      render_frame_host->GetProcess()->IsPdf()) {
-    SendPrintingEnabled(printing_enabled_.GetValue(), render_frame_host);
+      render_frame_host->GetProcess()->IsPdf() &&
+      !render_frame_host->GetMainFrame()->GetParentOrOuterDocument()) {
+    GetPrintRenderFrame(render_frame_host)->ConnectToPdfRenderer();
   }
-}
-
-void PrintViewManagerBase::DidStartLoading() {
-  UpdatePrintingEnabled();
 }
 
 void PrintViewManagerBase::RenderFrameDeleted(
@@ -764,6 +774,11 @@ void PrintViewManagerBase::OnJobDone() {
 }
 
 void PrintViewManagerBase::OnFailed() {
+#if !BUILDFLAG(IS_ANDROID)  // Android does not implement this function.
+  if (!canceling_job_)
+    ShowPrintErrorDialog();
+#endif
+
   TerminatePrintJob(true);
 }
 
@@ -871,6 +886,8 @@ void PrintViewManagerBase::TerminatePrintJob(bool cancel) {
     return;
 
   if (cancel) {
+    canceling_job_ = true;
+
     // We don't need the metafile data anymore because the printing is canceled.
     print_job_->Cancel();
     quit_inner_loop_.Reset();
@@ -1054,14 +1071,6 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
   if (!printer_query)
     return;
   printer_query->StopWorker();
-}
-
-void PrintViewManagerBase::SendPrintingEnabled(bool enabled,
-                                               content::RenderFrameHost* rfh) {
-  if (rfh->IsRenderFrameLive() &&
-      !rfh->GetMainFrame()->GetParentOrOuterDocument()) {
-    GetPrintRenderFrame(rfh)->SetPrintingEnabled(enabled);
-  }
 }
 
 void PrintViewManagerBase::CompletePrintNow(content::RenderFrameHost* rfh) {

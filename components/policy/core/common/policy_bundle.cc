@@ -5,15 +5,25 @@
 #include "components/policy/core/common/policy_bundle.h"
 
 #include "base/check.h"
+#include "base/no_destructor.h"
 #include "base/notreached.h"
 
 namespace policy {
 
-PolicyBundle::PolicyBundle() {}
-
-PolicyBundle::~PolicyBundle() {
-  Clear();
+namespace {
+// An empty PolicyMap that is returned by const Get() for namespaces that
+// do not exist in |policy_bundle_|.
+const PolicyMap& GetEmptyPolicyMap() {
+  static const base::NoDestructor<PolicyMap> kEmpty;
+  return *kEmpty;
 }
+}  // namespace
+
+PolicyBundle::PolicyBundle() = default;
+PolicyBundle::PolicyBundle(PolicyBundle&&) = default;
+PolicyBundle& PolicyBundle::operator=(PolicyBundle&&) = default;
+
+PolicyBundle::~PolicyBundle() = default;
 
 PolicyMap& PolicyBundle::Get(const PolicyNamespace& ns) {
   DCHECK(ns.domain != POLICY_DOMAIN_CHROME || ns.component_id.empty());
@@ -23,20 +33,15 @@ PolicyMap& PolicyBundle::Get(const PolicyNamespace& ns) {
 const PolicyMap& PolicyBundle::Get(const PolicyNamespace& ns) const {
   DCHECK(ns.domain != POLICY_DOMAIN_CHROME || ns.component_id.empty());
   const auto it = policy_bundle_.find(ns);
-  return it == end() ? kEmpty_ : it->second;
+  return it == end() ? GetEmptyPolicyMap() : it->second;
 }
 
-void PolicyBundle::Swap(PolicyBundle* other) {
-  policy_bundle_.swap(other->policy_bundle_);
-}
-
-void PolicyBundle::CopyFrom(const PolicyBundle& other) {
-  DCHECK_NE(this, &other);
-
-  Clear();
-  for (const auto& entry_other : other) {
-    policy_bundle_[entry_other.first] = entry_other.second.Clone();
+PolicyBundle PolicyBundle::Clone() const {
+  PolicyBundle clone;
+  for (const auto& entry : policy_bundle_) {
+    clone.policy_bundle_[entry.first] = entry.second.Clone();
   }
+  return clone;
 }
 
 void PolicyBundle::MergeFrom(const PolicyBundle& other) {

@@ -193,14 +193,12 @@ VolumeManagerCommon.VolumeError = {
   PATH_NOT_MOUNTED: 'error_path_not_mounted',
   DIRECTORY_CREATION_FAILED: 'error_directory_creation_failed',
   INVALID_MOUNT_OPTIONS: 'error_invalid_mount_options',
-  INVALID_UNMOUNT_OPTIONS: 'error_invalid_unmount_options',
   INSUFFICIENT_PERMISSIONS: 'error_insufficient_permissions',
   MOUNT_PROGRAM_NOT_FOUND: 'error_mount_program_not_found',
   MOUNT_PROGRAM_FAILED: 'error_mount_program_failed',
   INVALID_DEVICE_PATH: 'error_invalid_device_path',
   UNKNOWN_FILESYSTEM: 'error_unknown_filesystem',
   UNSUPPORTED_FILESYSTEM: 'error_unsupported_filesystem',
-  INVALID_ARCHIVE: 'error_invalid_archive',
   NEED_PASSWORD: 'error_need_password',
   BUSY: 'error_busy',
 };
@@ -247,7 +245,7 @@ VolumeManagerCommon.Source = {
  * @param {VolumeManagerCommon.VolumeType} type
  * @return {boolean}
  */
-VolumeManagerCommon.VolumeType.isNative = type => {
+export function isNative(type) {
   return type === VolumeManagerCommon.VolumeType.DOWNLOADS ||
       type === VolumeManagerCommon.VolumeType.DRIVE ||
       type === VolumeManagerCommon.VolumeType.ANDROID_FILES ||
@@ -256,7 +254,7 @@ VolumeManagerCommon.VolumeType.isNative = type => {
       type === VolumeManagerCommon.VolumeType.REMOVABLE ||
       type === VolumeManagerCommon.VolumeType.ARCHIVE ||
       type === VolumeManagerCommon.VolumeType.SMB;
-};
+}
 
 Object.freeze(VolumeManagerCommon.VolumeType);
 

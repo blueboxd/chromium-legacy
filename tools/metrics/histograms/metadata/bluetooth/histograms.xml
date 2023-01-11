@@ -164,7 +164,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.AccountKey.Write.GattErrorReason"
-    enum="BluetoothDeviceConnectErrorCode" expires_after="2023-02-26">
+    enum="BluetoothDeviceConnectErrorCode" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -194,8 +194,101 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram
+    name="Bluetooth.ChromeOS.FastPair.AccountKey.Write.Result.{FastPairPairingProtocol}.{FastPairTrackedModelID}"
+    enum="BooleanSuccess" expires_after="2023-02-26">
+  <owner>dclasson@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records success or failure of writing an account key to a device, split per
+    protocol and per Model ID. Emitted on the OnPairFailure event and the
+    OnDevicePaired event in the Fast Pair flow.
+  </summary>
+  <token key="FastPairPairingProtocol">
+    <variant name="InitialPairingProtocol" summary="initial pairing protocol"/>
+    <variant name="RetroactivePairingProtocol"
+        summary="retroactive pairing protocol"/>
+    <variant name="SubsequentPairingProtocol"
+        summary="subsequent pairing protocol"/>
+  </token>
+  <token key="FastPairTrackedModelID">
+    <variant name="JBLLIVE300TWS"/>
+    <variant name="JBLLIVE300TWS_1"/>
+    <variant name="JBLLIVE300TWS_2"/>
+    <variant name="JBLLIVE400BT"/>
+    <variant name="JBLLIVE400BT_1"/>
+    <variant name="JBLLIVE400BT_2"/>
+    <variant name="JBLLIVE400BT_3"/>
+    <variant name="JBLLIVE400BT_4"/>
+    <variant name="JBLLIVEPROTWS"/>
+    <variant name="JBLLIVEPROTWS_1"/>
+    <variant name="JBLLIVEPROTWS_2"/>
+    <variant name="JBLLIVEPROTWS_3"/>
+    <variant name="JBLLIVEPROTWS_4"/>
+    <variant name="JBLLIVEPROTWS_5"/>
+    <variant name="JBLLIVEPROTWS_6"/>
+    <variant name="JBLTUNE125TWS"/>
+    <variant name="JBLTUNE125TWS_1"/>
+    <variant name="JBLTUNE125TWS_2"/>
+    <variant name="JBLTUNE125TWS_3"/>
+    <variant name="JBLTUNE125TWS_4"/>
+    <variant name="JBLTUNE125TWS_5"/>
+    <variant name="JBLTUNE130NCTWS"/>
+    <variant name="JBLTUNE130NCTWS_1"/>
+    <variant name="JBLTUNE130NCTWS_2"/>
+    <variant name="JBLTUNE130NCTWS_3"/>
+    <variant name="JBLTUNE225TWS"/>
+    <variant name="JBLTUNE225TWS_1"/>
+    <variant name="JBLTUNE225TWS_2"/>
+    <variant name="JBLTUNE225TWS_3"/>
+    <variant name="JBLTUNE225TWS_4"/>
+    <variant name="JBLTUNE225TWS_5"/>
+    <variant name="NothingEar1"/>
+    <variant name="NothingEar1_2"/>
+    <variant name="OnePlusBudsZ"/>
+    <variant name="OnePlusBudsZ_1"/>
+    <variant name="OnePlusBudsZ_2"/>
+    <variant name="Other"/>
+    <variant name="PixelBuds"/>
+    <variant name="PixelBudsASeries"/>
+    <variant name="PixelBudsASeries_1"/>
+    <variant name="PixelBudsASeries_2"/>
+    <variant name="PixelBudsPro"/>
+    <variant name="PixelBudsPro_1"/>
+    <variant name="PixelBudsPro_2"/>
+    <variant name="PixelBudsPro_3"/>
+    <variant name="PixelBudsPro_4"/>
+    <variant name="RealMeBudsAir2"/>
+    <variant name="RealMeBudsAir2_1"/>
+    <variant name="RealMeBudsAir2Neo"/>
+    <variant name="RealMeBudsAirPro"/>
+    <variant name="RealMeBudsAirPro_1"/>
+    <variant name="RealMeBudsAirPro_2"/>
+    <variant name="SonyWF1000XM3"/>
+    <variant name="SonyWF1000XM3_1"/>
+    <variant name="SonyWF1000XM3_2"/>
+    <variant name="SonyWF1000XM3_3"/>
+    <variant name="SonyWF1000XM3_4"/>
+    <variant name="SonyWF1000XM3_5"/>
+    <variant name="SonyWF1000XM3_6"/>
+    <variant name="SonyWF1000XM3_7"/>
+    <variant name="SonyWH1000XM3"/>
+    <variant name="SonyWH1000XM3_1"/>
+    <variant name="SRSXB23"/>
+    <variant name="SRSXB23_1"/>
+    <variant name="SRSXB23_2"/>
+    <variant name="SRSXB23_3"/>
+    <variant name="SRSXB23_4"/>
+    <variant name="SRSXB33"/>
+    <variant name="SRSXB33_1"/>
+    <variant name="SRSXB33_2"/>
+    <variant name="SRSXB33_3"/>
+  </token>
+</histogram>
+
 <histogram name="Bluetooth.ChromeOS.FastPair.AccountKey.Write.TotalTime"
-    units="ms" expires_after="2023-02-26">
+    units="ms" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -210,7 +303,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.ConfirmPasskey.Latency" units="ms"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -222,7 +315,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.ConnectDevice.Result"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -236,7 +329,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.CreateScanFilter.Result"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -249,7 +342,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Bluetooth.ChromeOS.FastPair.DeviceMetadataFetcher.Get.HttpResponseError"
-    enum="HttpResponseCode" expires_after="2023-02-26">
+    enum="HttpResponseCode" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -272,7 +365,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.DeviceMetadataFetcher.Result"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -283,7 +376,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.Discovered.Version"
-    enum="FastPairVersion" expires_after="2023-02-26">
+    enum="FastPairVersion" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -313,8 +406,100 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="Bluetooth.ChromeOS.FastPair.EngagementFunnel.Steps.{FastPairPairingProtocol}.{FastPairTrackedModelID}"
+    enum="FastPairEngagementFlowEvent" expires_after="2023-02-26">
+  <owner>dclasson@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records each step in the Fast Pair flow, split per protocol and per Model
+    ID. Emitted when the discovery UI is shown, the discovery UI is dismissed,
+    pairing progress begins, pairing fails, pairing succeeded, the error UI is
+    dismissed, and/or when the setting button on the error UI is pressed.
+  </summary>
+  <token key="FastPairPairingProtocol">
+    <variant name="InitialPairingProtocol" summary="initial pairing protocol"/>
+    <variant name="SubsequentPairingProtocol"
+        summary="subsequent pairing protocol"/>
+  </token>
+  <token key="FastPairTrackedModelID">
+    <variant name="JBLLIVE300TWS"/>
+    <variant name="JBLLIVE300TWS_1"/>
+    <variant name="JBLLIVE300TWS_2"/>
+    <variant name="JBLLIVE400BT"/>
+    <variant name="JBLLIVE400BT_1"/>
+    <variant name="JBLLIVE400BT_2"/>
+    <variant name="JBLLIVE400BT_3"/>
+    <variant name="JBLLIVE400BT_4"/>
+    <variant name="JBLLIVEPROTWS"/>
+    <variant name="JBLLIVEPROTWS_1"/>
+    <variant name="JBLLIVEPROTWS_2"/>
+    <variant name="JBLLIVEPROTWS_3"/>
+    <variant name="JBLLIVEPROTWS_4"/>
+    <variant name="JBLLIVEPROTWS_5"/>
+    <variant name="JBLLIVEPROTWS_6"/>
+    <variant name="JBLTUNE125TWS"/>
+    <variant name="JBLTUNE125TWS_1"/>
+    <variant name="JBLTUNE125TWS_2"/>
+    <variant name="JBLTUNE125TWS_3"/>
+    <variant name="JBLTUNE125TWS_4"/>
+    <variant name="JBLTUNE125TWS_5"/>
+    <variant name="JBLTUNE130NCTWS"/>
+    <variant name="JBLTUNE130NCTWS_1"/>
+    <variant name="JBLTUNE130NCTWS_2"/>
+    <variant name="JBLTUNE130NCTWS_3"/>
+    <variant name="JBLTUNE225TWS"/>
+    <variant name="JBLTUNE225TWS_1"/>
+    <variant name="JBLTUNE225TWS_2"/>
+    <variant name="JBLTUNE225TWS_3"/>
+    <variant name="JBLTUNE225TWS_4"/>
+    <variant name="JBLTUNE225TWS_5"/>
+    <variant name="NothingEar1"/>
+    <variant name="NothingEar1_2"/>
+    <variant name="OnePlusBudsZ"/>
+    <variant name="OnePlusBudsZ_1"/>
+    <variant name="OnePlusBudsZ_2"/>
+    <variant name="Other"/>
+    <variant name="PixelBuds"/>
+    <variant name="PixelBudsASeries"/>
+    <variant name="PixelBudsASeries_1"/>
+    <variant name="PixelBudsASeries_2"/>
+    <variant name="PixelBudsPro"/>
+    <variant name="PixelBudsPro_1"/>
+    <variant name="PixelBudsPro_2"/>
+    <variant name="PixelBudsPro_3"/>
+    <variant name="PixelBudsPro_4"/>
+    <variant name="RealMeBudsAir2"/>
+    <variant name="RealMeBudsAir2_1"/>
+    <variant name="RealMeBudsAir2Neo"/>
+    <variant name="RealMeBudsAirPro"/>
+    <variant name="RealMeBudsAirPro_1"/>
+    <variant name="RealMeBudsAirPro_2"/>
+    <variant name="SonyWF1000XM3"/>
+    <variant name="SonyWF1000XM3_1"/>
+    <variant name="SonyWF1000XM3_2"/>
+    <variant name="SonyWF1000XM3_3"/>
+    <variant name="SonyWF1000XM3_4"/>
+    <variant name="SonyWF1000XM3_5"/>
+    <variant name="SonyWF1000XM3_6"/>
+    <variant name="SonyWF1000XM3_7"/>
+    <variant name="SonyWH1000XM3"/>
+    <variant name="SonyWH1000XM3_1"/>
+    <variant name="SRSXB23"/>
+    <variant name="SRSXB23_1"/>
+    <variant name="SRSXB23_2"/>
+    <variant name="SRSXB23_3"/>
+    <variant name="SRSXB23_4"/>
+    <variant name="SRSXB33"/>
+    <variant name="SRSXB33_1"/>
+    <variant name="SRSXB33_2"/>
+    <variant name="SRSXB33_3"/>
+  </token>
+</histogram>
+
+<histogram
     name="Bluetooth.ChromeOS.FastPair.FastPairDataEncryptor.CreateResult"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -349,7 +534,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.FastPairRepository.Cache.Result"
-    enum="Boolean" expires_after="2023-02-26">
+    enum="Boolean" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -362,7 +547,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.FootprintsFetcher.Delete.Result"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -375,7 +560,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.FootprintsFetcher.Get.Result"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -388,7 +573,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.FootprintsFetcher.Post.Result"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -449,7 +634,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.GattConnection.Result"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -461,7 +646,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.Handshake.FailureReason"
-    enum="FastPairHandshakeFailureReason" expires_after="2023-02-26">
+    enum="FastPairHandshakeFailureReason" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -473,7 +658,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.Handshake.Result"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -486,8 +671,32 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="Bluetooth.ChromeOS.FastPair.Handshake.Steps.{FastPairPairingProtocol}"
+    enum="FastPairHandshakeSteps" expires_after="2023-02-26">
+  <owner>jackshira@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records each step in the Fast Pair Handshake flow: emitted when we start the
+    Handshake procedure, when we have a successful GATT initialization, when we
+    receive bytes from the Key-based pairing characteristic, and when the
+    Handshake is completed successfully. Helps us identify drop-off points of
+    failures in our flow, and effective success metrics by comparing the
+    difference between starting the procedure and completing the procedure
+    successfully.
+  </summary>
+  <token key="FastPairPairingProtocol">
+    <variant name="InitialPairingProtocol" summary="initial pairing protocol"/>
+    <variant name="RetroactivePairingProtocol"
+        summary="retroactive pairing protocol"/>
+    <variant name="SubsequentPairingProtocol"
+        summary="subsequent pairing protocol"/>
+  </token>
+</histogram>
+
 <histogram name="Bluetooth.ChromeOS.FastPair.KeyBasedPairing.DecryptResult"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -552,7 +761,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.KeyBasedPairing.Write.Result"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -564,7 +773,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.KeyGenerationResult"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -577,7 +786,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Bluetooth.ChromeOS.FastPair.MessageStream.ConnectToService.ErrorReason"
-    enum="BluetoothSocketErrorReason" expires_after="2023-02-26">
+    enum="BluetoothSocketErrorReason" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -591,7 +800,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Bluetooth.ChromeOS.FastPair.MessageStream.ConnectToService.Result"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -604,7 +813,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Bluetooth.ChromeOS.FastPair.MessageStream.ConnectToService.TotalConnectTime"
-    units="ms" expires_after="2023-02-26">
+    units="ms" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -616,7 +825,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.MessageStream.Receive.ErrorReason"
-    enum="BluetoothConnectToServiceError" expires_after="2023-02-26">
+    enum="BluetoothConnectToServiceError" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -629,7 +838,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.MessageStream.Receive.Result"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -642,7 +851,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.NavigateToSettings.Result"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -654,7 +863,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.PairDevice.ErrorReason"
-    enum="BluetoothDeviceConnectErrorCode" expires_after="2023-02-26">
+    enum="BluetoothDeviceConnectErrorCode" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -722,7 +931,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.PairingMethod"
-    enum="FastPairPairingMethod" expires_after="2023-02-26">
+    enum="FastPairPairingMethod" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -737,7 +946,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.PairRetry.Count" units="count"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -750,7 +959,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.Passkey.Decrypt.Result"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -812,7 +1021,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.Passkey.Write.Result"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -839,7 +1048,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.RetroactiveEngagementFunnel.Steps"
-    enum="FastPairRetroactiveEngagementFlowEvent" expires_after="2023-02-26">
+    enum="FastPairRetroactiveEngagementFlowEvent" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -852,8 +1061,95 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="Bluetooth.ChromeOS.FastPair.RetroactiveEngagementFunnel.Steps.{FastPairTrackedModelID}"
+    enum="FastPairRetroactiveEngagementFlowEvent" expires_after="2023-02-26">
+  <owner>dclasson@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records each step in the Retroactive Pair flow, split per Model ID. Emitted
+    when the associate account UI is shown, the associate account UI is
+    dismissed, the save to account button is pressed on the associate account
+    UI, and when the learn more button is pressed on the associate account UI.
+  </summary>
+  <token key="FastPairTrackedModelID">
+    <variant name="JBLLIVE300TWS"/>
+    <variant name="JBLLIVE300TWS_1"/>
+    <variant name="JBLLIVE300TWS_2"/>
+    <variant name="JBLLIVE400BT"/>
+    <variant name="JBLLIVE400BT_1"/>
+    <variant name="JBLLIVE400BT_2"/>
+    <variant name="JBLLIVE400BT_3"/>
+    <variant name="JBLLIVE400BT_4"/>
+    <variant name="JBLLIVEPROTWS"/>
+    <variant name="JBLLIVEPROTWS_1"/>
+    <variant name="JBLLIVEPROTWS_2"/>
+    <variant name="JBLLIVEPROTWS_3"/>
+    <variant name="JBLLIVEPROTWS_4"/>
+    <variant name="JBLLIVEPROTWS_5"/>
+    <variant name="JBLLIVEPROTWS_6"/>
+    <variant name="JBLTUNE125TWS"/>
+    <variant name="JBLTUNE125TWS_1"/>
+    <variant name="JBLTUNE125TWS_2"/>
+    <variant name="JBLTUNE125TWS_3"/>
+    <variant name="JBLTUNE125TWS_4"/>
+    <variant name="JBLTUNE125TWS_5"/>
+    <variant name="JBLTUNE130NCTWS"/>
+    <variant name="JBLTUNE130NCTWS_1"/>
+    <variant name="JBLTUNE130NCTWS_2"/>
+    <variant name="JBLTUNE130NCTWS_3"/>
+    <variant name="JBLTUNE225TWS"/>
+    <variant name="JBLTUNE225TWS_1"/>
+    <variant name="JBLTUNE225TWS_2"/>
+    <variant name="JBLTUNE225TWS_3"/>
+    <variant name="JBLTUNE225TWS_4"/>
+    <variant name="JBLTUNE225TWS_5"/>
+    <variant name="NothingEar1"/>
+    <variant name="NothingEar1_2"/>
+    <variant name="OnePlusBudsZ"/>
+    <variant name="OnePlusBudsZ_1"/>
+    <variant name="OnePlusBudsZ_2"/>
+    <variant name="Other"/>
+    <variant name="PixelBuds"/>
+    <variant name="PixelBudsASeries"/>
+    <variant name="PixelBudsASeries_1"/>
+    <variant name="PixelBudsASeries_2"/>
+    <variant name="PixelBudsPro"/>
+    <variant name="PixelBudsPro_1"/>
+    <variant name="PixelBudsPro_2"/>
+    <variant name="PixelBudsPro_3"/>
+    <variant name="PixelBudsPro_4"/>
+    <variant name="RealMeBudsAir2"/>
+    <variant name="RealMeBudsAir2_1"/>
+    <variant name="RealMeBudsAir2Neo"/>
+    <variant name="RealMeBudsAirPro"/>
+    <variant name="RealMeBudsAirPro_1"/>
+    <variant name="RealMeBudsAirPro_2"/>
+    <variant name="SonyWF1000XM3"/>
+    <variant name="SonyWF1000XM3_1"/>
+    <variant name="SonyWF1000XM3_2"/>
+    <variant name="SonyWF1000XM3_3"/>
+    <variant name="SonyWF1000XM3_4"/>
+    <variant name="SonyWF1000XM3_5"/>
+    <variant name="SonyWF1000XM3_6"/>
+    <variant name="SonyWF1000XM3_7"/>
+    <variant name="SonyWH1000XM3"/>
+    <variant name="SonyWH1000XM3_1"/>
+    <variant name="SRSXB23"/>
+    <variant name="SRSXB23_1"/>
+    <variant name="SRSXB23_2"/>
+    <variant name="SRSXB23_3"/>
+    <variant name="SRSXB23_4"/>
+    <variant name="SRSXB33"/>
+    <variant name="SRSXB33_1"/>
+    <variant name="SRSXB33_2"/>
+    <variant name="SRSXB33_3"/>
+  </token>
+</histogram>
+
 <histogram name="Bluetooth.ChromeOS.FastPair.RetroactivePairing.Result"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -865,7 +1161,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.SavedDevices.DeviceCount"
-    units="devices" expires_after="2023-02-26">
+    units="devices" expires_after="2023-04-30">
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
   <summary>
@@ -877,7 +1173,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Bluetooth.ChromeOS.FastPair.SavedDevices.GetSavedDevices.Result"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
   <summary>
@@ -889,7 +1185,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.SavedDevices.Remove.Result"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
   <summary>
@@ -901,7 +1197,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.SavedDevices.TotalUxLoadTime"
-    units="ms" expires_after="2023-02-26">
+    units="ms" expires_after="2023-04-30">
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
   <summary>
@@ -919,7 +1215,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.SavedDevices.UiEvent"
-    enum="FastPairSavedDevicesUiEvent" expires_after="2023-02-26">
+    enum="FastPairSavedDevicesUiEvent" expires_after="2023-04-30">
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
   <summary>
@@ -958,7 +1254,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.Scanner.StartSession.Result"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -970,7 +1266,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.FastPair.TotalGattConnectionTime"
-    units="ms" expires_after="2023-02-26">
+    units="ms" expires_after="2023-04-30">
   <owner>shanefitz@google.com</owner>
   <owner>julietlevesque@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -1236,7 +1532,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bluetooth.ConnectedDeviceCount" units="devices"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>adlr@chromium.org</owner>
   <summary>
     Counts the number of simulataneously connected Bluetooth devices. Used to
@@ -1257,7 +1553,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Bluetooth.Linux.ConnectToService.Bonded.FailureReason"
     enum="BluetoothDeviceConnectToServiceFailureReason"
-    expires_after="2023-02-23">
+    expires_after="2023-04-30">
   <owner>hansenmichael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
@@ -1269,7 +1565,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Bluetooth.Linux.ConnectToService.FailureReason"
     enum="BluetoothDeviceConnectToServiceFailureReason"
-    expires_after="2023-02-23">
+    expires_after="2023-04-30">
   <owner>hansenmichael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
@@ -1280,7 +1576,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Bluetooth.Linux.ConnectToServiceInsecurelyResult"
     enum="BluetoothAdapterConnectToServiceInsecurelyResult"
-    expires_after="2023-02-23">
+    expires_after="2023-04-30">
   <owner>hansenmichael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>

@@ -19,7 +19,7 @@ TYPED_TEST_SUITE_P(GLImageZeroInitializeTest);
 
 TYPED_TEST_P(GLImageZeroInitializeTest, ZeroInitialize) {
   if (this->delegate_.SkipTest(this->display_))
-    return;
+    GTEST_SKIP() << "Skip ZeroInitialize because GL initialization failed";
 
 #if defined(OS_APPLE)
   // This functionality is disabled on Yosemite because it is suspected of

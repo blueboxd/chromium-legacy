@@ -14,10 +14,27 @@ from typing import List, Optional, Tuple
 _BUILD_ARGS = "buildargs.gn"
 
 _FILTER_DIR = 'testing/buildbot/filters'
+_SSH_KEYS = os.path.expanduser('~/.ssh/fuchsia_authorized_keys')
 
 
 class VersionNotFoundError(Exception):
     """Thrown when version info cannot be retrieved from device."""
+
+
+def get_ssh_keys() -> str:
+    """Returns path of Fuchsia ssh keys."""
+
+    return _SSH_KEYS
+
+
+def running_unattended() -> bool:
+    """Returns true if running non-interactively.
+
+    When running unattended, confirmation prompts and the like are suppressed.
+    """
+
+    # Chromium tests only for the presence of the variable, so match that here.
+    return 'CHROME_HEADLESS' in os.environ
 
 
 def pave(image_dir: str, target_id: Optional[str])\
@@ -26,7 +43,7 @@ def pave(image_dir: str, target_id: Optional[str])\
 
     pave_command = [
         os.path.join(image_dir, 'pave.sh'), '--authorized-keys',
-        os.path.expanduser('~/.ssh/fuchsia_authorized_keys'), '-1'
+        get_ssh_keys(), '-1'
     ]
     if target_id:
         pave_command.extend(['-n', target_id])

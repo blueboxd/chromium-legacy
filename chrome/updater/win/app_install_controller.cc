@@ -33,10 +33,8 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/win/atl.h"
@@ -67,6 +65,7 @@
 #include "chrome/updater/win/ui/ui_util.h"
 #pragma clang diagnostic pop
 
+#include "components/update_client/utils.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
@@ -557,6 +556,7 @@ class AppInstallControllerImpl : public AppInstallController,
   void DoInstallAppOffline(const base::FilePath& installer_path,
                            const std::string& install_args,
                            const std::string& install_data);
+  void HandleArchitectureNotCompatible();
   void InstallComplete(UpdateService::Result result);
 
   [[nodiscard]] static ObserverCompletionInfo HandleInstallResult(
@@ -611,7 +611,7 @@ class AppInstallControllerImpl : public AppInstallController,
 AppInstallControllerImpl::AppInstallControllerImpl(
     bool is_silent_install,
     scoped_refptr<UpdateService> update_service)
-    : main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
+    : main_task_runner_(base::SequencedTaskRunner::GetCurrentDefault()),
       ui_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
           {base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
@@ -625,7 +625,6 @@ void AppInstallControllerImpl::InstallApp(
     const std::string& app_name,
     base::OnceCallback<void(int)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 
   app_id_ = app_id;
   app_name_ = base::UTF8ToUTF16(app_name);
@@ -678,7 +677,6 @@ void AppInstallControllerImpl::InstallAppOffline(
     const std::string& app_name,
     base::OnceCallback<void(int)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 
   app_id_ = app_id;
   app_name_ = base::UTF8ToUTF16(app_name);
@@ -696,6 +694,7 @@ void AppInstallControllerImpl::InstallAppOffline(
                           GetCommandLineLegacyCompatible();
                       // Parse the offline manifest to get the install
                       // command and install data.
+                      update_client::ProtocolParser::Results results;
                       base::FilePath installer_path;
                       std::string install_args;
                       std::string install_data;
@@ -704,25 +703,34 @@ void AppInstallControllerImpl::InstallAppOffline(
                           app_id,
                           GetInstallDataIndexFromAppArgsForCommandLine(cmd_line,
                                                                        app_id),
-                          installer_path, install_args, install_data);
+                          results, installer_path, install_args, install_data);
 
                       const std::string client_install_data =
                           GetDecodedInstallDataFromAppArgsForCommandLine(
                               cmd_line, app_id);
-                      return std::make_tuple(installer_path, install_args,
-                                             client_install_data.empty()
-                                                 ? install_data
-                                                 : client_install_data);
+                      return std::make_tuple(
+                          results, installer_path, install_args,
+                          client_install_data.empty() ? install_data
+                                                      : client_install_data);
                     },
                     self->app_id_),
                 base::BindOnce(
                     [](scoped_refptr<AppInstallControllerImpl> self,
-                       const std::tuple<base::FilePath /*installer_path*/,
-                                        std::string /*arguments*/,
-                                        std::string /*install_data*/>& result) {
-                      self->DoInstallAppOffline(std::get<0>(result),
-                                                std::get<1>(result),
-                                                std::get<2>(result));
+                       const std::tuple<
+                           update_client::ProtocolParser::Results /*results*/,
+                           base::FilePath /*installer_path*/,
+                           std::string /*arguments*/,
+                           std::string /*install_data*/>& result) {
+                      if (!IsArchitectureCompatible(
+                              std::get<0>(result).system_requirements.arch,
+                              update_client::GetArchitecture())) {
+                        self->HandleArchitectureNotCompatible();
+                        return;
+                      }
+
+                      self->DoInstallAppOffline(std::get<1>(result),
+                                                std::get<2>(result),
+                                                std::get<3>(result));
                     },
                     self));
           },
@@ -802,6 +810,18 @@ void AppInstallControllerImpl::DoInstallAppOffline(
               },
               base::WrapRefCounted(this), installer_path, install_args,
               install_data, install_settings)));
+}
+
+void AppInstallControllerImpl::HandleArchitectureNotCompatible() {
+  UpdateService::UpdateState update_state;
+  update_state.app_id = app_id_;
+  update_state.state = UpdateService::UpdateState::State::kUpdateError;
+  update_state.error_category = UpdateService::ErrorCategory::kInstall;
+  update_state.error_code = UNSUPPORTED_WINDOWS_VERSION;
+  observer_completion_info_ = HandleInstallResult(update_state);
+  observer_completion_info_->completion_text =
+      GetLocalizedString(IDS_INSTALL_OS_NOT_SUPPORTED_BASE);
+  InstallComplete(UpdateService::Result::kInstallFailed);
 }
 
 // TODO(crbug.com/1218219) - propagate error code in case of errors.

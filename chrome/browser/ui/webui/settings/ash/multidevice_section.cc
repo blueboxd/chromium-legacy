@@ -10,9 +10,6 @@
 #include "ash/components/phonehub/url_constants.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
-#include "ash/services/multidevice_setup/public/cpp/prefs.h"
-#include "ash/services/multidevice_setup/public/cpp/url_provider.h"
-#include "ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,6 +28,9 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/ash/services/multidevice_setup/public/cpp/prefs.h"
+#include "chromeos/ash/services/multidevice_setup/public/cpp/url_provider.h"
+#include "chromeos/ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
@@ -39,24 +39,23 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 
-namespace chromeos {
-namespace settings {
+namespace ash::settings {
 
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
 namespace mojom {
-using ::ash::settings::mojom::SearchResultDefaultRank;
-using ::ash::settings::mojom::SearchResultIcon;
-using ::ash::settings::mojom::SearchResultType;
+using ::chromeos::settings::mojom::kMultiDeviceFeaturesSubpagePath;
+using ::chromeos::settings::mojom::kMultiDeviceSectionPath;
+using ::chromeos::settings::mojom::kNearbyShareSubpagePath;
+using ::chromeos::settings::mojom::kSmartLockSubpagePath;
+using ::chromeos::settings::mojom::Section;
+using ::chromeos::settings::mojom::Setting;
+using ::chromeos::settings::mojom::Subpage;
 }  // namespace mojom
 
 namespace {
 
-using Feature = ::ash::multidevice_setup::mojom::Feature;
-using FeatureState = ::ash::multidevice_setup::mojom::FeatureState;
-using HostStatus = ::ash::multidevice_setup::mojom::HostStatus;
-
-// TODO(https://crbug.com/1164001): remove after migrating to namespace ash.
-namespace phonehub = ::ash::phonehub;
+using Feature = multidevice_setup::mojom::Feature;
+using FeatureState = multidevice_setup::mojom::FeatureState;
+using HostStatus = multidevice_setup::mojom::HostStatus;
 
 const std::vector<SearchConcept>& GetMultiDeviceOptedInSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags(
@@ -324,7 +323,7 @@ MultiDeviceSection::MultiDeviceSection(
     phonehub::PhoneHubManager* phone_hub_manager,
     android_sms::AndroidSmsService* android_sms_service,
     PrefService* pref_service,
-    ash::eche_app::EcheAppManager* eche_app_manager)
+    eche_app::EcheAppManager* eche_app_manager)
     : OsSettingsSection(profile, search_tag_registry),
       multidevice_setup_client_(multidevice_setup_client),
       phone_hub_manager_(phone_hub_manager),
@@ -347,7 +346,7 @@ MultiDeviceSection::MultiDeviceSection(
   if (features::IsEcheSWAEnabled()) {
     pref_change_registrar_.Init(pref_service_);
     pref_change_registrar_.Add(
-        ash::prefs::kEnableAutoScreenLock,
+        prefs::kEnableAutoScreenLock,
         base::BindRepeating(&MultiDeviceSection::OnEnableScreenLockChanged,
                             base::Unretained(this)));
     pref_change_registrar_.Add(
@@ -379,6 +378,10 @@ void MultiDeviceSection::AddLoadTimeData(
       {"multidevicePageTitle", IDS_SETTINGS_MULTIDEVICE},
       {"multideviceSetupButton", IDS_SETTINGS_MULTIDEVICE_SETUP_BUTTON},
       {"multideviceVerifyButton", IDS_SETTINGS_MULTIDEVICE_VERIFY_BUTTON},
+      {"multideviceSetupButtonA11yLabel",
+       IDS_SETTINGS_MULTIDEVICE_SETUP_BUTTON_A11Y_LABEL},
+      {"multideviceVerifyButtonA11yLabel",
+       IDS_SETTINGS_MULTIDEVICE_VERIFY_BUTTON_A11Y_LABEL},
       {"multideviceSetupItemHeading",
        IDS_SETTINGS_MULTIDEVICE_SETUP_ITEM_HEADING},
       {"multideviceEnabled", IDS_SETTINGS_MULTIDEVICE_ENABLED},
@@ -511,10 +514,9 @@ void MultiDeviceSection::AddLoadTimeData(
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
-  html_source->AddBoolean(
-      "multideviceAllowedByPolicy",
-      chromeos::multidevice_setup::AreAnyMultiDeviceFeaturesAllowed(
-          profile()->GetPrefs()));
+  html_source->AddBoolean("multideviceAllowedByPolicy",
+                          multidevice_setup::AreAnyMultiDeviceFeaturesAllowed(
+                              profile()->GetPrefs()));
   html_source->AddString(
       "multideviceNotificationAccessSetupScreenLockTitle",
       ui::SubstituteChromeOSDeviceType(
@@ -817,6 +819,10 @@ bool MultiDeviceSection::IsFeatureSupported(Feature feature) {
 }
 
 void MultiDeviceSection::RefreshNearbyBackgroundScanningShareSearchConcepts() {
+  if (!NearbySharingServiceFactory::IsNearbyShareSupportedForBrowserContext(
+          profile())) {
+    return;
+  }
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
   NearbySharingService* nearby_sharing_service =
       NearbySharingServiceFactory::GetForBrowserContext(profile());
@@ -844,6 +850,10 @@ void MultiDeviceSection::RefreshNearbyBackgroundScanningShareSearchConcepts() {
 }
 
 void MultiDeviceSection::OnEnabledChanged(bool enabled) {
+  if (!NearbySharingServiceFactory::IsNearbyShareSupportedForBrowserContext(
+          profile())) {
+    return;
+  }
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
   if (enabled) {
     updater.RemoveSearchTags(GetNearbyShareOffSearchConcepts());
@@ -889,5 +899,4 @@ void MultiDeviceSection::OnScreenLockStatusChanged() {
   }
 }
 
-}  // namespace settings
-}  // namespace chromeos
+}  // namespace ash::settings

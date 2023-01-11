@@ -136,12 +136,12 @@ declare_args() {
   # If true, optimize for size.
   # Default to favoring speed over size for platforms not listed below.
   optimize_for_size =
-      !is_high_end_android && (is_android || is_ios || is_fuchsia || is_castos)
+      !is_high_end_android && (is_android || is_ios || is_castos)
 
   # Set to true to enable using the ML inliner in LLVM. This currently only
   # enables the ML inliner when targeting Android.
   # Currently the ML inliner is only supported on linux hosts
-  use_ml_inliner = false  # To enable: host_os == "linux" && is_android
+  use_ml_inliner = host_os == "linux" && is_android
 }
 
 assert(!is_cfi || use_thin_lto, "CFI requires ThinLTO")
@@ -322,3 +322,10 @@ if (forbid_non_component_debug_builds) {
           is_component_build || !is_debug || is_ios || use_debug_fission,
       "Can't do non-component debug builds at symbol_level=2 without use_debug_fission=true")
 }
+
+# TODO(crbug.com/1341436) For Windows, to assemble lzma_sdk's assembly files,
+# ml64.exe needs to be utilized as llvm-ml cannot yet assemble it. Once llvm-ml
+# is able to assemble lzma_sdk assembly files, remove this.
+# LzmaDecOpt.asm only works on x64 and not x86.
+# https://sourceforge.net/p/sevenzip/discussion/45797/thread/768932e9dd/?limit=25#0d6c
+disable_llvm_ml = host_os == "win" && target_cpu == "x64" && !is_msan

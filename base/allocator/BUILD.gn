@@ -3,40 +3,29 @@
 # found in the LICENSE file.
 
 import("//base/allocator/allocator.gni")
+import("//base/allocator/partition_allocator/partition_alloc.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/dcheck_always_on.gni")
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
-  _use_partition_alloc_as_malloc = use_allocator == "partition"
-  assert(use_allocator_shim || !_use_partition_alloc_as_malloc,
-         "Partition alloc requires the allocator shim")
-  assert(
-      !_use_partition_alloc_as_malloc ||
-          enable_partition_alloc_as_malloc_support,
-      "Partition alloc as malloc requires enable_partition_alloc_as_malloc_support=true")
 
-  # BackupRefPtr(BRP) build flags.
-  _use_backup_ref_ptr = use_backup_ref_ptr && use_partition_alloc && !is_nacl
-
-  _use_partition_alloc_as_gwp_asan_store = _use_backup_ref_ptr
-
-  # MTECheckedPtr is exclusive against BRP (asserted at declaration).
-  # MTECheckedPtr requires 64-bit pointers (not available in NaCl).
-  _use_mte_checked_ptr = use_mte_checked_ptr && !is_nacl
+  assert(use_allocator_shim || !use_partition_alloc_as_malloc,
+         "PartitionAlloc-Everywhere requires the allocator shim")
 
   flags = [
-    "USE_ALLOCATOR_SHIM=$use_allocator_shim",
     "USE_PARTITION_ALLOC=$use_partition_alloc",
-    "USE_PARTITION_ALLOC_AS_MALLOC=$_use_partition_alloc_as_malloc",
+    "USE_ALLOCATOR_SHIM=$use_allocator_shim",
+    "USE_PARTITION_ALLOC_AS_MALLOC=$use_partition_alloc_as_malloc",
 
-    "USE_BACKUP_REF_PTR=$_use_backup_ref_ptr",
+    "USE_BACKUP_REF_PTR=$use_backup_ref_ptr",
     "USE_ASAN_BACKUP_REF_PTR=$use_asan_backup_ref_ptr",
-    "USE_PARTITION_ALLOC_AS_GWP_ASAN_STORE=$_use_partition_alloc_as_gwp_asan_store",
+    "USE_PARTITION_ALLOC_AS_GWP_ASAN_STORE=$use_backup_ref_ptr",
 
-    # Not to be used directly - see `partition_alloc_config.h`.
-    "USE_MTE_CHECKED_PTR=$_use_mte_checked_ptr",
+    # Not to be used by itself - use in combination with
+    # defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
+    "USE_MTE_CHECKED_PTR=$use_mte_checked_ptr",
 
     "FORCE_ENABLE_RAW_PTR_EXCLUSION=$force_enable_raw_ptr_exclusion",
   ]

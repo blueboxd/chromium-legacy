@@ -7,7 +7,7 @@
   }
 </style>
 <div id="inputListContainer">
-  <div class="diagnostics-cards-container">
+  <div class="diagnostics-cards-container-nav">
     <div class="card-width">
       <template is="dom-if" if="[[keyboards_.length]]">
         <input-card device-type="keyboard" devices="[[keyboards_]]"
@@ -16,7 +16,8 @@
         </input-card>
       </template>
       <template is="dom-if" if="[[showTouchpads_]]">
-        <input-card device-type="touchpad" devices="[[touchpads_]]">
+        <input-card device-type="touchpad" devices="[[touchpads_]]"
+            on-test-button-click="handleTouchpadTestButtonClick_">
           <div slot="title">[[i18n('inputCategoryTouchpad')]]</div>
         </input-card>
       </template>
@@ -30,4 +31,7 @@
   </div>
 </div>
 <keyboard-tester></keyboard-tester>
-<touchscreen-tester></touchscreen-tester>
+<touchscreen-tester
+    touchscreen-id-under-testing="{{touchscreenIdUnderTesting}}">
+</touchscreen-tester>
+<touchpad-tester></touchpad-tester>

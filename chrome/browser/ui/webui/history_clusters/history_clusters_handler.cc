@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,6 +19,7 @@
 #include "base/time/time_to_iso8601.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history_clusters/entity_image_service.h"
 #include "chrome/browser/history_clusters/history_clusters_metrics_logger.h"
 #include "chrome/browser/history_clusters/history_clusters_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -387,9 +389,8 @@ void HistoryClustersHandler::LoadMoreClusters(const std::string& query) {
   if (query_clusters_state_) {
     DCHECK_EQ(query, query_clusters_state_->query());
     query_clusters_state_->LoadNextBatchOfClusters(
-        base::BindOnce(&QueryClustersResultToMojom, profile_)
-            .Then(base::BindOnce(&HistoryClustersHandler::OnClustersQueryResult,
-                                 weak_ptr_factory_.GetWeakPtr())));
+        base::BindOnce(&HistoryClustersHandler::OnGotClustersBatch,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -503,13 +504,47 @@ Profile* HistoryClustersHandler::GetProfile() {
   return profile_;
 }
 
-void HistoryClustersHandler::OnClustersQueryResult(
-    mojom::QueryResultPtr query_result) {
+void HistoryClustersHandler::OnGotClustersBatch(
+    const std::string& query,
+    const std::vector<history::Cluster> clusters_batch,
+    bool can_load_more,
+    bool is_continuation) {
+  auto* entity_image_service = EntityImageService::Get(GetProfile());
+  // Kick off a bunch of image fetch requests if this feature is enabled.
+  for (size_t i = 0; i < clusters_batch.size(); ++i) {
+    auto& cluster = clusters_batch[i];
+    if (cluster.label_source != history::Cluster::LabelSource::kSearch) {
+      continue;
+    }
+
+    if (!cluster.raw_label || cluster.raw_label->empty())
+      continue;
+
+    // TODO(tommycli): Populate this with the actual entity ID once available.
+    std::string entity_id;
+    size_t cluster_index =
+        query_clusters_state_->number_clusters_sent_to_page() + i;
+    entity_image_service->FetchImageFor(
+        *cluster.raw_label, entity_id,
+        base::BindOnce(&HistoryClustersHandler::OnImageFetchedForCluster,
+                       weak_ptr_factory_.GetWeakPtr(), cluster_index));
+  }
+
+  auto query_result =
+      QueryClustersResultToMojom(profile_, query, std::move(clusters_batch),
+                                 can_load_more, is_continuation);
   page_->OnClustersQueryResult(std::move(query_result));
 
   // The user loading their first set of clusters should start the timer for
   // launching the Journeys survey.
   LaunchJourneysSurvey();
+}
+
+void HistoryClustersHandler::OnImageFetchedForCluster(size_t cluster_index,
+                                                      const GURL& image_url) {
+  if (!image_url.is_valid())
+    return;
+  page_->OnClusterImageUpdated(cluster_index, image_url);
 }
 
 void HistoryClustersHandler::LaunchJourneysSurvey() {

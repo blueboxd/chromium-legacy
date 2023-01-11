@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">पहले जैसा करें</translation>
 <translation id="2084108471225856927">डिवाइस की सेटिंग</translation>
 <translation id="2084809735218147718">जेस्चर से धन्यवाद बोलता हुआ व्यक्ति</translation>
-<translation id="2085470240340828803">"<ph name="FILENAME" />" नाम की फ़ाइल पहले से मौजूद है. आप क्‍या करना चाहते हैं?</translation>
 <translation id="2088690981887365033">वीपीएन नेटवर्क</translation>
 <translation id="2122305276694332719">दिखाई न देने वाले नेटवर्क से अपने आप जुड़ने से दूसरे लोग आपके डिवाइस और कुछ नेटवर्क सेटिंग को देख सकते हैं. ऐसा करने का सुझाव नहीं दिया जाता.</translation>
 <translation id="2125607626296734455">खमेर</translation>
@@ -456,7 +455,6 @@
 <translation id="4900532980794411603">Parallels Desktop से शेयर करें</translation>
 <translation id="4902546322522096650"><ph name="NETWORK_COUNT" /> में से <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />%, कनेक्ट करें</translation>
 <translation id="4906580650526544301"><ph name="NETWORK_COUNT" /> में से नेटवर्क <ph name="NETWORK_INDEX" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />%, फ़ोन की बैटरी <ph name="BATTERY_STATUS" />%, जानकारी</translation>
-<translation id="4929673617759421391">एडमिन नीति के तहत, इस फ़ाइल को पेस्ट करने की अनुमति नहीं है</translation>
 <translation id="4935975195727477204">जीनिया का फूल</translation>
 <translation id="4943368462779413526">फ़ुटबॉल</translation>
 <translation id="4961158930123534723">Parallels Desktop से एक फ़ोल्डर शेयर किया गया</translation>
@@ -534,6 +532,7 @@
 <translation id="5428105026674456456">स्पैनिश</translation>
 <translation id="5438282218546237410"><ph name="SEARCH_TERM" /> खोज के लिए कोई नतीजा नहीं मिला.</translation>
 <translation id="5449551289610225147">गलत पासवर्ड</translation>
+<translation id="5459064203055649751">"<ph name="FILENAME" />" नाम की फ़ाइल पहले से मौजूद है. क्या आपको इसे उस फ़ाइल से बदलना है जिसे आपको दूसरी जगह ले जाना है?</translation>
 <translation id="5463231940765244860">डालें</translation>
 <translation id="5469868506864199649">इतालवी</translation>
 <translation id="5473333559083690127">नया पिन फिर से डालें</translation>
@@ -654,6 +653,7 @@
 <translation id="6495925982925244349"><ph name="NETWORK_COUNT" /> में से <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />%, आपका एडमिन प्रबंधित करता है, जानकारी</translation>
 <translation id="649877868557234318"><ph name="FILE_NAME" /> को <ph name="FOLDER_NAME" /> में एक्सट्रैक्ट किया जा रहा है</translation>
 <translation id="6499681088828539489">शेयर किए गए नेटवर्क के लिए प्रॉक्‍सी की अनुमति नहीं है</translation>
+<translation id="6503285896705205014">एडमिन नीति के तहत, <ph name="COUNT" /> फ़ाइलों को कॉपी करने की अनुमति नहीं है</translation>
 <translation id="6509122719576673235">नॉर्वेजियाई</translation>
 <translation id="6528513914570774834">इस डिवाइस के दूसरे उपयोगकर्ताओं को इस नेटवर्क का उपयोग करने दें</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" /> समन्वयित किया जा रहा है...</translation>
@@ -756,6 +756,7 @@
 <translation id="7357762654218998920">यह फ़ाइल टाइप, ChromeOS के साथ काम नहीं करता. ChromeOS पर फ़ाइलें खोलने के बारे में <ph name="BEGIN_LINK_HELP" />ज़्यादा जानें<ph name="END_LINK_HELP" />.</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> आइटम कॉपी किए जा रहे हैं...</translation>
 <translation id="7375951387215729722">फ़ाइल की सूची <ph name="COLUMN_NAME" /> के हिसाब से घटते क्रम में लगाई गई है.</translation>
+<translation id="7377161162143020057">एडमिन नीति के तहत, इस फ़ाइल को कॉपी करने की अनुमति नहीं है</translation>
 <translation id="7402503521691663770">ChromeOS Flex वाले डिवाइस</translation>
 <translation id="7408870451288633753">चेक</translation>
 <translation id="7417453074306512035">इथिओपियाई कीबोर्ड</translation>
@@ -977,7 +978,6 @@
 <translation id="9183302530794969518">Google Docs</translation>
 <translation id="9189836632794948435">कज़ाक़</translation>
 <translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> आइटम मिले.</translation>
-<translation id="9210751050717126865">एडमिन नीति के तहत, <ph name="COUNT" /> फ़ाइलों को पेस्ट करने की अनुमति नहीं है</translation>
 <translation id="9213073329713032541">ठीक से इंस्टॉल होना शुरू हो गया है.</translation>
 <translation id="9219103736887031265">इमेज</translation>
 <translation id="9219908252191632183">लूनर</translation>

@@ -55,6 +55,11 @@ class AutofillField : public FormFieldData {
   server_predictions() const {
     return server_predictions_;
   }
+  const std::vector<
+      AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction>&
+  experimental_server_predictions() const {
+    return experimental_server_predictions_;
+  }
   bool may_use_prefilled_placeholder() const {
     return may_use_prefilled_placeholder_;
   }
@@ -222,6 +227,11 @@ class AutofillField : public FormFieldData {
   // |possible_types_validities_| would also be empty.
   void NormalizePossibleTypesValidities();
 
+  bool was_context_menu_shown() const { return was_context_menu_shown_; }
+  void set_was_context_menu_shown(bool was_context_menu_shown) {
+    was_context_menu_shown_ = was_context_menu_shown;
+  }
+
  private:
   explicit AutofillField(FieldSignature field_signature);
 
@@ -234,6 +244,11 @@ class AutofillField : public FormFieldData {
   std::vector<
       AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction>
       server_predictions_;
+  // Predictions from the Autofill server which are not intended for general
+  // consumption. They are used for metrics and/or finch experiments.
+  std::vector<
+      AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction>
+      experimental_server_predictions_;
 
   // Whether the server-side classification believes that the field
   // may be pre-filled with a placeholder in the value attribute.
@@ -314,6 +329,9 @@ class AutofillField : public FormFieldData {
   // Stores the hash of the value which is supposed to be autofilled in the
   // field but was not due to a prefilled value.
   absl::optional<size_t> value_not_autofilled_over_existing_value_hash_;
+
+  // Set to true if the context menu was triggered and shown on the field.
+  bool was_context_menu_shown_ = false;
 };
 
 }  // namespace autofill

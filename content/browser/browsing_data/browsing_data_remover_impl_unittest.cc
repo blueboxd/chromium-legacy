@@ -21,6 +21,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/strcat.h"
@@ -245,15 +246,15 @@ class ProbablySameFilterMatcher
 
   bool MatchAndExplain(const base::RepeatingCallback<bool(const GURL&)>& filter,
                        MatchResultListener* listener) const override {
-    if (!filter && !to_match_)
+    if (!filter && !*to_match_)
       return true;
-    if (!filter || !to_match_)
+    if (!filter || !*to_match_)
       return false;
 
     const GURL urls_to_test_[] = {GURL("a.com"), GURL("b.com"), GURL("c.com"),
                                   GURL("invalid spec")};
     for (GURL url : urls_to_test_) {
-      if (filter.Run(url) != to_match_.Run(url)) {
+      if (filter.Run(url) != to_match_->Run(url)) {
         if (listener)
           *listener << "The filters differ on the URL " << url;
         return false;
@@ -263,15 +264,15 @@ class ProbablySameFilterMatcher
   }
 
   void DescribeTo(::std::ostream* os) const override {
-    *os << "is probably the same url filter as " << &to_match_;
+    *os << "is probably the same url filter as " << &*to_match_;
   }
 
   void DescribeNegationTo(::std::ostream* os) const override {
-    *os << "is definitely NOT the same url filter as " << &to_match_;
+    *os << "is definitely NOT the same url filter as " << &*to_match_;
   }
 
  private:
-  const base::RepeatingCallback<bool(const GURL&)>& to_match_;
+  const raw_ref<const base::RepeatingCallback<bool(const GURL&)>> to_match_;
 };
 
 inline Matcher<const base::RepeatingCallback<bool(const GURL&)>&>
@@ -528,10 +529,8 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveCookieLastHour) {
   EXPECT_EQ(removal_data.remove_mask,
             StoragePartition::REMOVE_DATA_MASK_COOKIES |
                 StoragePartition::REMOVE_DATA_MASK_INTEREST_GROUPS);
-  // Removing with time period other than all time should not clear
-  // persistent storage data.
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT);
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   EXPECT_EQ(removal_data.remove_begin, GetBeginTime());
 }
 
@@ -556,10 +555,8 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveCookiesDomainPreserveList) {
   EXPECT_EQ(removal_data.remove_mask,
             StoragePartition::REMOVE_DATA_MASK_COOKIES |
                 StoragePartition::REMOVE_DATA_MASK_INTEREST_GROUPS);
-  // Removing with time period other than all time should not clear
-  // persistent storage data.
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT);
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   EXPECT_EQ(removal_data.remove_begin, GetBeginTime());
   const url::Origin kTestOrigin1 = url::Origin::Create(kTestUrl1);
   const url::Origin kTestOrigin2 =
@@ -685,9 +682,8 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveLocalStorageForLastWeek) {
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
   EXPECT_EQ(removal_data.remove_mask,
             StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE);
-  // Persistent storage won't be deleted.
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT);
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   EXPECT_EQ(removal_data.remove_begin, GetBeginTime());
 
   ASSERT_TRUE(removal_data.filter_builder);
@@ -994,11 +990,8 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedDataForLastHour) {
                 StoragePartition::REMOVE_DATA_MASK_CACHE_STORAGE |
                 StoragePartition::REMOVE_DATA_MASK_INDEXEDDB);
 
-  // Persistent data would be left out since we are not removing from
-  // beginning of time.
-  uint32_t expected_quota_mask =
-      ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
-  EXPECT_EQ(removal_data.quota_storage_remove_mask, expected_quota_mask);
+  EXPECT_EQ(removal_data.quota_storage_remove_mask,
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   // Check removal begin time.
   EXPECT_EQ(removal_data.remove_begin, GetBeginTime());
 }
@@ -1032,11 +1025,8 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedDataForLastWeek) {
                 StoragePartition::REMOVE_DATA_MASK_CACHE_STORAGE |
                 StoragePartition::REMOVE_DATA_MASK_INDEXEDDB);
 
-  // Persistent data would be left out since we are not removing from
-  // beginning of time.
-  uint32_t expected_quota_mask =
-      ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
-  EXPECT_EQ(removal_data.quota_storage_remove_mask, expected_quota_mask);
+  EXPECT_EQ(removal_data.quota_storage_remove_mask,
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   // Check removal begin time.
   EXPECT_EQ(removal_data.remove_begin, GetBeginTime());
 }
@@ -1936,9 +1926,8 @@ TEST_F(BrowsingDataRemoverImplSharedStorageTest,
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
   EXPECT_EQ(removal_data.remove_mask,
             StoragePartition::REMOVE_DATA_MASK_SHARED_STORAGE);
-  // Persistent storage won't be deleted.
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT);
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   EXPECT_EQ(removal_data.remove_begin, GetBeginTime());
 
   ASSERT_TRUE(removal_data.filter_builder);

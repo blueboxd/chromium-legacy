@@ -21,6 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -33,6 +34,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_future.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -43,6 +45,7 @@
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_monster_store_test.h"  // For CookieStore mock
+#include "net/cookies/cookie_partition_key.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_store_change_unittest.h"
 #include "net/cookies/cookie_store_test_callbacks.h"
@@ -381,10 +384,6 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     return false;
   }
 
-  int CountInString(const std::string& str, char c) {
-    return std::count(str.begin(), str.end(), c);
-  }
-
   void TestHostGarbageCollectHelper() {
     const char kHistogramName[] = "Cookie.NumDomainPurgedKeys";
     int domain_max_cookies = CookieMonster::kDomainMaxCookies;
@@ -400,7 +399,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
         // Make sure we find it in the cookies.
         EXPECT_NE(cookies.find(cookie), std::string::npos);
         // Count the number of cookies.
-        EXPECT_LE(CountInString(cookies, '='), domain_max_cookies);
+        EXPECT_LE(base::ranges::count(cookies, '='), domain_max_cookies);
       }
       base::HistogramTester histogram_tester;
       EXPECT_TRUE(cm->DoRecordPeriodicStatsForTesting());
@@ -425,8 +424,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
         std::string cookies_specific =
             this->GetCookies(cm.get(), url_google_specific);
         EXPECT_NE(cookies_specific.find(cookie_specific), std::string::npos);
-        EXPECT_LE((CountInString(cookies_general, '=') +
-                   CountInString(cookies_specific, '=')),
+        EXPECT_LE((base::ranges::count(cookies_general, '=') +
+                   base::ranges::count(cookies_specific, '=')),
                   domain_max_cookies);
       }
       // After all this, there should be at least
@@ -435,8 +434,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
           this->GetCookies(cm.get(), http_www_foo_.url());
       std::string cookies_specific =
           this->GetCookies(cm.get(), url_google_specific);
-      int total_cookies = (CountInString(cookies_general, '=') +
-                           CountInString(cookies_specific, '='));
+      int total_cookies = (base::ranges::count(cookies_general, '=') +
+                           base::ranges::count(cookies_specific, '='));
       EXPECT_GE(total_cookies, domain_max_cookies - domain_purge_cookies);
       EXPECT_LE(total_cookies, domain_max_cookies);
 
@@ -460,7 +459,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
           // Make sure we find it in the cookies.
           EXPECT_NE(cookies.find(cookie), std::string::npos);
           // Count the number of cookies.
-          EXPECT_LE(CountInString(cookies, '='), domain_max_cookies);
+          EXPECT_LE(base::ranges::count(cookies, '='), domain_max_cookies);
         }
         base::HistogramTester histogram_tester;
         EXPECT_TRUE(cm->DoRecordPeriodicStatsForTesting());
@@ -478,7 +477,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
         // Make sure we find it in the cookies.
         EXPECT_NE(cookies.find(cookie), std::string::npos);
         // Count the number of cookies.
-        EXPECT_LE(CountInString(cookies, '='), domain_max_cookies);
+        EXPECT_LE(base::ranges::count(cookies, '='), domain_max_cookies);
       }
       base::HistogramTester histogram_tester;
       EXPECT_TRUE(cm->DoRecordPeriodicStatsForTesting());
@@ -921,29 +920,6 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     // Round 4 => none; round 5 => none; round 6 =>  7HS.
     TestPriorityCookieCase(cm.get(), "100HS 100LN 100MN", 30U, 76U, 70U, 106U,
                            70U);
-  }
-
-  // Test enforcement of the per-partition domain limit on partitioned cookies.
-  void TestPartitionedCookiesGarbageCollectionHelper() {
-    DCHECK_EQ(10u, CookieMonster::kPerPartitionDomainMaxCookies);
-    int max_cookies = CookieMonster::kPerPartitionDomainMaxCookies;
-    auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
-
-    auto cookie_partition_key =
-        CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite.com"));
-    for (int i = 0; i < max_cookies + 5; ++i) {
-      std::string cookie = base::StringPrintf("__Host-a%02d=b", i);
-      EXPECT_TRUE(SetCookie(cm.get(), https_www_foo_.url(),
-                            cookie + "; secure; path=/; partitioned",
-                            cookie_partition_key));
-      std::string cookies =
-          this->GetCookies(cm.get(), https_www_foo_.url(),
-                           CookiePartitionKeyCollection(cookie_partition_key));
-      EXPECT_NE(cookies.find(cookie), std::string::npos);
-      EXPECT_LE(CountInString(cookies, '='), max_cookies);
-    }
-    // TODO(crbug.com/1225444): Test recording stats for deleting partitioned
-    // cookies.
   }
 
   // Function for creating a CM with a number of cookies in it,
@@ -1780,8 +1756,64 @@ TEST_F(CookieMonsterTest, TestPriorityAwareGarbageCollectionMixed) {
   TestPriorityAwareGarbageCollectHelperMixed();
 }
 
-TEST_F(CookieMonsterTest, TestPartitionedCookiesGarbageCollection) {
-  TestPartitionedCookiesGarbageCollectionHelper();
+TEST_F(CookieMonsterTest, TestPartitionedCookiesGarbageCollection_Memory) {
+  // Limit should be 10 KB.
+  DCHECK_EQ(1024u * 10u, CookieMonster::kPerPartitionDomainMaxCookieBytes);
+
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cookie_partition_key =
+      CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite1.com"));
+
+  for (size_t i = 0; i < 41; ++i) {
+    std::string cookie_value((10240 / 40) - (i < 10 ? 1 : 2), '0');
+    std::string cookie =
+        base::StrCat({base::NumberToString(i), "=", cookie_value});
+    EXPECT_TRUE(SetCookie(cm.get(), https_www_foo_.url(),
+                          cookie + "; secure; path=/; partitioned",
+                          cookie_partition_key))
+        << "Failed to set cookie " << i;
+  }
+
+  std::string cookies =
+      this->GetCookies(cm.get(), https_www_foo_.url(),
+                       CookiePartitionKeyCollection(cookie_partition_key));
+
+  EXPECT_THAT(cookies, CookieStringIs(
+                           testing::Not(testing::Contains(testing::Key("0")))));
+  for (size_t i = 1; i < 41; ++i) {
+    EXPECT_THAT(cookies, CookieStringIs(testing::Contains(
+                             testing::Key(base::NumberToString(i)))))
+        << "Failed to find cookie " << i;
+  }
+}
+
+TEST_F(CookieMonsterTest, TestPartitionedCookiesGarbageCollection_MaxCookies) {
+  // Partitioned cookies also limit domains to 180 cookies per partition.
+  DCHECK_EQ(180u, CookieMonster::kPerPartitionDomainMaxCookies);
+
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cookie_partition_key =
+      CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite.com"));
+
+  for (size_t i = 0; i < 181; ++i) {
+    std::string cookie = base::StrCat({base::NumberToString(i), "=0"});
+    EXPECT_TRUE(SetCookie(cm.get(), https_www_foo_.url(),
+                          cookie + "; secure; path=/; partitioned",
+                          cookie_partition_key))
+        << "Failed to set cookie " << i;
+  }
+
+  std::string cookies =
+      this->GetCookies(cm.get(), https_www_foo_.url(),
+                       CookiePartitionKeyCollection(cookie_partition_key));
+  EXPECT_THAT(cookies, CookieStringIs(
+                           testing::Not(testing::Contains(testing::Key("0")))));
+  for (size_t i = 1; i < 181; ++i) {
+    std::string cookie = base::StrCat({base::NumberToString(i), "=0"});
+    EXPECT_THAT(cookies, CookieStringIs(testing::Contains(
+                             testing::Key(base::NumberToString(i)))))
+        << "Failed to find cookie " << i;
+  }
 }
 
 TEST_F(CookieMonsterTest, SetCookieableSchemes) {
@@ -1888,8 +1920,6 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
       cm.get(), https_www_bar_.url(), "__Host-O=P; secure; path=/; partitioned",
       options, absl::nullopt, absl::nullopt, cookie_partition_key3));
 
-  base::HistogramTester histogram_tester;
-
   const Time last_access_date(GetFirstCookieAccessDate(cm.get()));
 
   base::PlatformThread::Sleep(kAccessDelay);
@@ -1952,13 +1982,6 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
       GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
                           CookiePartitionKeyCollection()),
       ElementsAre(MatchesCookieNameDomain("G", https_www_bar_.Format(".%D"))));
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("Cookie.SamePartyReadIncluded.IsHTTP"),
-      testing::ElementsAre(base::Bucket(1 /* min */, 1 /* samples */)));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Cookie.SamePartyReadIncluded.PartyContextSize"),
-              testing::ElementsAre(base::Bucket(0 /* min */, 1 /* samples */)));
 
   // Reading after a short wait should not update the access date.
   EXPECT_EQ(last_access_date, GetFirstCookieAccessDate(cm.get()));
@@ -3967,8 +3990,6 @@ TEST_F(CookieMonsterTest, SetSamePartyCookies) {
   GURL https_foo_url("https://www.foo.com/foo");
   GURL http_foo_url("http://www.foo.com/foo");
 
-  base::HistogramTester histogram_tester;
-
   // A non-SameParty cookie can be created from either a URL with a secure or
   // insecure scheme.
   EXPECT_TRUE(
@@ -4004,12 +4025,6 @@ TEST_F(CookieMonsterTest, SetSamePartyCookies) {
   EXPECT_TRUE(CreateAndSetCookieReturnStatus(&cm, https_url,
                                              "A=C; Secure; path=/; SameParty")
                   .IsInclude());
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("Cookie.SamePartySetIncluded.IsHTTP"),
-      testing::ElementsAre(base::Bucket(0 /* min */, 3 /* samples */)));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Cookie.SamePartySetIncluded.PartyContextSize"),
-              testing::ElementsAre(base::Bucket(0 /* min */, 3 /* samples */)));
 }
 
 // Tests the behavior of "Leave Secure Cookies Alone" in
@@ -5394,195 +5409,61 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURLNonce) {
                   MatchesCookieNameValue("__Host-C", "0")));
 }
 
-// TODO(crbug.com/1296161): Delete this when the partitioned cookies Origin
-// Trial ends.
-TEST_F(CookieMonsterTest, ConvertPartitionedCookiesToUnpartitioned) {
+TEST_F(CookieMonsterTest, SiteHasCookieInOtherPartition) {
   auto store = base::MakeRefCounted<MockPersistentCookieStore>();
   auto cm = std::make_unique<CookieMonster>(store.get(), net::NetLog::Get());
   CookieOptions options = CookieOptions::MakeAllInclusive();
 
-  // Set unpartitioned cookie
-  EXPECT_TRUE(CreateAndSetCookie(cm.get(), https_www_foo_.url(),
-                                 "__Host-A=0; Secure; Path=/; SameSite=None",
-                                 options, absl::nullopt, absl::nullopt,
-                                 absl::nullopt));
+  GURL url("https://subdomain.example.com/");
+  net::SchemefulSite site(url);
+  auto partition_key =
+      CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite.com"));
 
-  // Set a partitioned cookie
+  // At first it should return nullopt...
+  EXPECT_FALSE(cm->SiteHasCookieInOtherPartition(site, partition_key));
+
+  // ...until we load cookies for that domain.
+  GetAllCookiesForURL(cm.get(), url,
+                      CookiePartitionKeyCollection::ContainsAll());
+  EXPECT_THAT(cm->SiteHasCookieInOtherPartition(site, partition_key),
+              testing::Optional(false));
+
+  // Set partitioned cookie.
   EXPECT_TRUE(CreateAndSetCookie(
-      cm.get(), https_www_foo_.url(),
-      "__Host-B=0; Secure; Path=/; SameSite=None; Partitioned", options,
-      absl::nullopt, absl::nullopt,
-      CookiePartitionKey::FromURLForTesting(GURL("https://example.com"))));
+      cm.get(), url, "foo=bar; Secure; SameSite=None; Partitioned", options,
+      absl::nullopt, absl::nullopt, partition_key));
 
-  cm->ConvertPartitionedCookiesToUnpartitioned(https_www_foo_.url());
+  // Should return false with that cookie's partition key.
+  EXPECT_THAT(cm->SiteHasCookieInOtherPartition(site, partition_key),
+              testing::Optional(false));
 
-  auto cookies =
-      GetAllCookiesForURL(cm.get(), https_www_foo_.url(),
-                          CookiePartitionKeyCollection::ContainsAll());
-  EXPECT_EQ(cookies.size(), 2u);
-  EXPECT_EQ(cookies[0].Name(), "__Host-A");
-  EXPECT_FALSE(cookies[0].IsPartitioned());
-  EXPECT_EQ(cookies[1].Name(), "__Host-B");
-  EXPECT_FALSE(cookies[1].IsPartitioned());
+  auto other_partition_key = CookiePartitionKey::FromURLForTesting(
+      GURL("https://nottoplevelsite.com"));
 
-  // Set a partitioned cookie with the same name/domain/path as an existing
-  // cookie. This cookie should be deleted in favor of the existing
-  // unpartitioned cookie.
+  // Should return true with another partition key.
+  EXPECT_THAT(cm->SiteHasCookieInOtherPartition(site, other_partition_key),
+              testing::Optional(true));
+
+  // Set a nonced partitioned cookie with a different partition key.
   EXPECT_TRUE(CreateAndSetCookie(
-      cm.get(), https_www_foo_.url(),
-      "__Host-A=1; Secure; Path=/; SameSite=None; Partitioned", options,
+      cm.get(), url, "foo=bar; Secure; SameSite=None; Partitioned", options,
       absl::nullopt, absl::nullopt,
-      CookiePartitionKey::FromURLForTesting(GURL("https://example.com"))));
-
-  cm->ConvertPartitionedCookiesToUnpartitioned(https_www_foo_.url());
-
-  cookies = GetAllCookiesForURL(cm.get(), https_www_foo_.url(),
-                                CookiePartitionKeyCollection::ContainsAll());
-  EXPECT_EQ(cookies.size(), 2u);
-  EXPECT_EQ(cookies[0].Name(), "__Host-A");
-  EXPECT_FALSE(cookies[0].IsPartitioned());
-  EXPECT_EQ(cookies[0].Value(), "0");
-
-  // Set two partitioned cookies, the second one should be left over as an
-  // unpartitioned cookie after the conversion since it should have a more
-  // recent last_access_time.
-  EXPECT_TRUE(CreateAndSetCookie(
-      cm.get(), https_www_foo_.url(),
-      "__Host-C=0; Secure; Path=/; SameSite=None; Partitioned", options,
-      absl::nullopt, absl::nullopt,
-      CookiePartitionKey::FromURLForTesting(GURL("https://1.com"))));
-  EXPECT_TRUE(CreateAndSetCookie(
-      cm.get(), https_www_foo_.url(),
-      "__Host-C=1; Secure; Path=/; SameSite=None; Partitioned", options,
-      absl::nullopt, absl::nullopt,
-      CookiePartitionKey::FromURLForTesting(GURL("https://2.com"))));
-
-  cm->ConvertPartitionedCookiesToUnpartitioned(https_www_foo_.url());
-
-  cookies = GetAllCookiesForURL(cm.get(), https_www_foo_.url(),
-                                CookiePartitionKeyCollection::ContainsAll());
-  EXPECT_EQ(cookies.size(), 3u);
-  EXPECT_EQ(cookies[2].Name(), "__Host-C");
-  EXPECT_FALSE(cookies[0].IsPartitioned());
-  EXPECT_EQ(cookies[2].Value(), "1");
-
-  // Should not convert cookies whose partition keys contain a nonce.
-  EXPECT_TRUE(CreateAndSetCookie(
-      cm.get(), https_www_foo_.url(),
-      "__Host-D=0; Secure; Path=/; SameSite=None; Partitioned", options,
-      absl::nullopt, absl::nullopt,
-      CookiePartitionKey::FromURLForTesting(GURL("https://example.com"),
+      CookiePartitionKey::FromURLForTesting(GURL("https://nottoplevelsite.com"),
                                             base::UnguessableToken::Create())));
-  // Unpartitioned cookie with the same name and value should be left alone.
-  EXPECT_TRUE(CreateAndSetCookie(cm.get(), https_www_foo_.url(),
-                                 "__Host-D=1; Secure; Path=/; SameSite=None",
-                                 options, absl::nullopt, absl::nullopt,
-                                 absl::nullopt));
 
-  cm->ConvertPartitionedCookiesToUnpartitioned(https_www_foo_.url());
+  // Should still return false with the original partition key.
+  EXPECT_THAT(cm->SiteHasCookieInOtherPartition(site, partition_key),
+              testing::Optional(false));
 
-  cookies = GetAllCookiesForURL(cm.get(), https_www_foo_.url(),
-                                CookiePartitionKeyCollection::ContainsAll());
-  EXPECT_EQ(cookies.size(), 5u);
-  EXPECT_EQ(cookies[3].Name(), "__Host-D");
-  EXPECT_EQ(cookies[3].Value(), "0");
-  EXPECT_TRUE(cookies[3].IsPartitioned());
-  EXPECT_EQ(cookies[4].Name(), "__Host-D");
-  EXPECT_EQ(cookies[4].Value(), "1");
-  EXPECT_FALSE(cookies[4].IsPartitioned());
+  // Set unpartitioned cookie.
+  EXPECT_TRUE(CreateAndSetCookie(cm.get(), url,
+                                 "bar=baz; Secure; SameSite=None;", options,
+                                 absl::nullopt, absl::nullopt));
 
-  // Should not convert or delete partitioned cookies from a different site.
-  EXPECT_TRUE(CreateAndSetCookie(
-      cm.get(), https_www_bar_.url(),
-      "__Host-E=0; Secure; Path=/; SameSite=None; Partitioned", options,
-      absl::nullopt, absl::nullopt,
-      CookiePartitionKey::FromURLForTesting(GURL("https://example.com"))));
-
-  cm->ConvertPartitionedCookiesToUnpartitioned(https_www_foo_.url());
-  cookies = GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
-                                CookiePartitionKeyCollection::ContainsAll());
-  EXPECT_EQ(cookies.size(), 1u);
-  EXPECT_EQ(cookies[0].Name(), "__Host-E");
-  EXPECT_TRUE(cookies[0].IsPartitioned());
-
-  // Same with subdomains.
-  // Following URL is a subdomain of `https_www_bar_`.
-  GURL subdomain("https://subdomain.bar.com");
-  EXPECT_TRUE(CreateAndSetCookie(
-      cm.get(), subdomain,
-      "__Host-F=0; Secure; Path=/; SameSite=None; Partitioned", options,
-      absl::nullopt, absl::nullopt,
-      CookiePartitionKey::FromURLForTesting(GURL("https://example.com"))));
-
-  cm->ConvertPartitionedCookiesToUnpartitioned(https_www_bar_.url());
-  cookies = GetAllCookiesForURL(cm.get(), subdomain,
-                                CookiePartitionKeyCollection::ContainsAll());
-  EXPECT_EQ(cookies.size(), 1u);
-  EXPECT_EQ(cookies[0].Name(), "__Host-F");
-  EXPECT_TRUE(cookies[0].IsPartitioned());
-
-  // Set three partitioned cookies:
-  // - The first has a partition key that is same-site with the cookie URL.
-  //
-  // - The second cookie has a partition key that is cross-site with the cookie
-  // URL because it has a different host.
-  //
-  // - The third cookie has a partition key that is cross-site with the cookie
-  // URL because it has a different scheme.
-  //
-  // The first cookie should be kept, even though it is not the most recently
-  // used. This is because we should cookies whose partition key is same-site
-  // with their URL.
-  EXPECT_TRUE(CreateAndSetCookie(
-      cm.get(), https_www_foo_.url(),
-      "__Host-G=0; Secure; Path=/; SameSite=None; Partitioned", options,
-      absl::nullopt, absl::nullopt,
-      CookiePartitionKey::FromURLForTesting(https_www_foo_.url())));
-  EXPECT_TRUE(CreateAndSetCookie(
-      cm.get(), https_www_foo_.url(),
-      "__Host-G=1; Secure; Path=/; SameSite=None; Partitioned", options,
-      absl::nullopt, absl::nullopt,
-      CookiePartitionKey::FromURLForTesting(GURL("https://2.com"))));
-  EXPECT_TRUE(CreateAndSetCookie(
-      cm.get(), https_www_foo_.url(),
-      "__Host-G=2; Secure; Path=/; SameSite=None; Partitioned", options,
-      absl::nullopt, absl::nullopt,
-      CookiePartitionKey::FromURLForTesting((http_www_foo_.url()))));
-
-  cm->ConvertPartitionedCookiesToUnpartitioned(https_www_foo_.url());
-
-  cookies = GetAllCookiesForURL(cm.get(), https_www_foo_.url(),
-                                CookiePartitionKeyCollection::ContainsAll());
-  EXPECT_EQ(cookies.size(), 6u);
-  EXPECT_EQ(cookies[5].Name(), "__Host-G");
-  EXPECT_EQ(cookies[5].Value(), "0");
-  EXPECT_FALSE(cookies[5].IsPartitioned());
-
-  // Test that a Domain cookie is converted if one of its subdomains converts
-  // their cookies.
-  EXPECT_TRUE(CreateAndSetCookie(
-      cm.get(), https_www_foo_.url(),
-      "H=0; Secure; Path=/; SameSite=None; Partitioned; Domain=foo.com",
-      options, absl::nullopt, absl::nullopt,
-      CookiePartitionKey::FromURLForTesting(GURL("https://example.com"))));
-  // Include a hostname bound cookie as well to test interaction.
-  EXPECT_TRUE(CreateAndSetCookie(
-      cm.get(), https_www_foo_.url(),
-      "H=1; Secure; Path=/; SameSite=None; Partitioned", options, absl::nullopt,
-      absl::nullopt,
-      CookiePartitionKey::FromURLForTesting(GURL("https://example.com"))));
-
-  cm->ConvertPartitionedCookiesToUnpartitioned(https_www_foo_.url());
-
-  cookies = GetAllCookiesForURL(cm.get(), https_www_foo_.url(),
-                                CookiePartitionKeyCollection::ContainsAll());
-  EXPECT_EQ(cookies.size(), 8u);
-  EXPECT_EQ(cookies[6].Name(), "H");
-  EXPECT_EQ(cookies[6].Value(), "0");
-  EXPECT_FALSE(cookies[6].IsPartitioned());
-  EXPECT_EQ(cookies[7].Name(), "H");
-  EXPECT_EQ(cookies[7].Value(), "1");
-  EXPECT_FALSE(cookies[7].IsPartitioned());
+  // Should still return false with the original cookie's partition key. This
+  // method only considers partitioned cookies.
+  EXPECT_THAT(cm->SiteHasCookieInOtherPartition(site, partition_key),
+              testing::Optional(false));
 }
 
 // Tests which use this class verify the expiry date clamping behavior when

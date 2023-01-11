@@ -6,8 +6,6 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
-#include "ash/services/ime/constants.h"
-#include "ash/services/ime/public/cpp/suggestions.h"
 #include "base/files/file_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/field_trial_params.h"
@@ -16,13 +14,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/ash/services/ime/constants.h"
+#include "chromeos/ash/services/ime/public/cpp/assistive_suggestions.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -34,9 +33,9 @@ namespace input_method {
 
 namespace {
 
-using TextSuggestion = ime::TextSuggestion;
-using TextSuggestionMode = ime::TextSuggestionMode;
-using TextSuggestionType = ime::TextSuggestionType;
+using AssistiveSuggestion = ime::AssistiveSuggestion;
+using AssistiveSuggestionMode = ime::AssistiveSuggestionMode;
+using AssistiveSuggestionType = ime::AssistiveSuggestionType;
 
 constexpr char kEmojiSuggesterShowSettingCount[] =
     "emoji_suggester.show_setting_count";
@@ -87,9 +86,9 @@ std::string GetLastWord(const std::string& str) {
       base::TrimString(last_word, kTrimLeadingChars, base::TRIM_LEADING));
 }
 
-TextSuggestion MapToTextSuggestion(std::u16string candidate_string) {
-  return {.mode = TextSuggestionMode::kPrediction,
-          .type = TextSuggestionType::kAssistiveEmoji,
+AssistiveSuggestion MapToAssistiveSuggestion(std::u16string candidate_string) {
+  return {.mode = AssistiveSuggestionMode::kPrediction,
+          .type = AssistiveSuggestionType::kAssistiveEmoji,
           .text = base::UTF16ToUTF8(candidate_string)};
 }
 
@@ -102,15 +101,15 @@ EmojiSuggester::EmojiSuggester(SuggestionHandlerInterface* suggestion_handler,
       highlighted_index_(kNoneHighlighted) {
   LoadEmojiMap();
 
-  properties_.type = ui::ime::AssistiveWindowType::kEmojiSuggestion;
+  properties_.type = ash::ime::AssistiveWindowType::kEmojiSuggestion;
   suggestion_button_.id = ui::ime::ButtonId::kSuggestion;
   suggestion_button_.window_type =
-      ui::ime::AssistiveWindowType::kEmojiSuggestion;
+      ash::ime::AssistiveWindowType::kEmojiSuggestion;
   learn_more_button_.id = ui::ime::ButtonId::kLearnMore;
   learn_more_button_.announce_string =
       l10n_util::GetStringUTF16(IDS_LEARN_MORE);
   learn_more_button_.window_type =
-      ui::ime::AssistiveWindowType::kEmojiSuggestion;
+      ash::ime::AssistiveWindowType::kEmojiSuggestion;
 }
 
 EmojiSuggester::~EmojiSuggester() = default;
@@ -164,7 +163,7 @@ void EmojiSuggester::OnBlur() {
 }
 
 void EmojiSuggester::OnExternalSuggestionsUpdated(
-    const std::vector<TextSuggestion>& suggestions) {
+    const std::vector<AssistiveSuggestion>& suggestions) {
   // EmojiSuggester doesn't utilize any suggestions produced externally, so
   // ignore this call.
 }
@@ -388,11 +387,11 @@ bool EmojiSuggester::HasSuggestions() {
   return suggestion_shown_;
 }
 
-std::vector<TextSuggestion> EmojiSuggester::GetSuggestions() {
-  std::vector<TextSuggestion> suggestions;
+std::vector<AssistiveSuggestion> EmojiSuggester::GetSuggestions() {
+  std::vector<AssistiveSuggestion> suggestions;
   if (HasSuggestions()) {
     for (const auto& candidate : candidates_) {
-      suggestions.emplace_back(MapToTextSuggestion(candidate));
+      suggestions.emplace_back(MapToAssistiveSuggestion(candidate));
     }
   }
   return suggestions;

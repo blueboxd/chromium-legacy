@@ -11,7 +11,6 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
@@ -104,7 +103,7 @@ class AffiliatedMatchHelper : public PasswordStoreInterface::Observer,
 
   raw_ptr<PasswordStoreInterface> password_store_ = nullptr;
 
-  raw_ptr<AffiliationService> affiliation_service_;
+  raw_ptr<AffiliationService, DanglingUntriaged> affiliation_service_;
 
   base::WeakPtrFactory<AffiliatedMatchHelper> weak_ptr_factory_{this};
 };

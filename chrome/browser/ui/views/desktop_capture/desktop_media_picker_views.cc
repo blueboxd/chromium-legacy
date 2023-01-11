@@ -9,11 +9,13 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/media/webrtc/desktop_capture_devices_util.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -21,6 +23,7 @@
 #include "chrome/browser/ui/extensions/extensions_container.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_source_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -192,15 +195,24 @@ void RecordUmaSelection(DialogType dialog_type,
 }
 
 std::u16string GetLabelForAudioCheckbox(DesktopMediaList::Type type,
-                                        bool local_audio_suppression) {
+                                        bool local_audio_suppression,
+                                        bool is_get_display_media_call) {
   switch (type) {
-    case DesktopMediaList::Type::kScreen:
+    case DesktopMediaList::Type::kScreen: {
+      bool show_warning = local_audio_suppression &&
+                          base::FeatureList::IsEnabled(
+                              kWarnUserOfSystemWideLocalAudioSuppression);
+      if (is_get_display_media_call &&
+          !base::FeatureList::IsEnabled(
+              ::kSuppressLocalAudioPlaybackForSystemAudio)) {
+        // Suppression blocked by killswitch, so no need to show a warning.
+        show_warning = false;
+      }
       return l10n_util::GetStringUTF16(
-          local_audio_suppression &&
-                  base::FeatureList::IsEnabled(
-                      kWarnUserOfSystemWideLocalAudioSuppression)
+          show_warning
               ? IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_SCREEN_WITH_MUTE_WARNING
               : IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_SCREEN);
+    }
     case DesktopMediaList::Type::kWindow:
       return l10n_util::GetStringUTF16(
           IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_WINDOW);
@@ -382,6 +394,12 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   dialog_type_ = current_tab_among_sources ? DialogType::kPreferCurrentTab
                                            : DialogType::kStandard;
 
+  // This command-line switch takes precedence over
+  // params.force_audio_checkboxes_to_default_checked.
+  const bool screen_capture_audio_default_unchecked =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kScreenCaptureAudioDefaultUnchecked);
+
   for (auto& source_list : source_lists) {
     switch (source_list->GetMediaListType()) {
       case DesktopMediaList::Type::kNone: {
@@ -423,7 +441,9 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
         categories_.emplace_back(
             DesktopMediaList::Type::kScreen, std::move(list_controller),
             audio_offered,
-            /*audio_checked=*/params.force_audio_checkboxes_to_default_checked,
+            /*audio_checked=*/
+            params.force_audio_checkboxes_to_default_checked &&
+                !screen_capture_audio_default_unchecked,
             supports_reselect_button);
 
         screen_scroll_view->ClipHeightTo(
@@ -459,7 +479,9 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
         categories_.emplace_back(
             DesktopMediaList::Type::kWindow, std::move(list_controller),
             /*audio_offered=*/AudioSupported(DesktopMediaList::Type::kWindow),
-            /*audio_checked=*/params.force_audio_checkboxes_to_default_checked,
+            /*audio_checked=*/
+            params.force_audio_checkboxes_to_default_checked &&
+                !screen_capture_audio_default_unchecked,
             supports_reselect_button);
 
         window_scroll_view->ClipHeightTo(kWindowStyle.item_size.height(),
@@ -488,7 +510,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
             DesktopMediaList::Type::kWebContents, std::move(list_controller),
             /*audio_offered=*/
             AudioSupported(DesktopMediaList::Type::kWebContents),
-            /*audio_checked=*/true, supports_reselect_button);
+            /*audio_checked=*/!screen_capture_audio_default_unchecked,
+            supports_reselect_button);
         break;
       }
       case DesktopMediaList::Type::kCurrentTab: {
@@ -514,7 +537,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
             DesktopMediaList::Type::kCurrentTab, std::move(list_controller),
             /*audio_offered=*/
             AudioSupported(DesktopMediaList::Type::kWebContents),
-            /*audio_checked=*/true, supports_reselect_button);
+            /*audio_checked=*/!screen_capture_audio_default_unchecked,
+            supports_reselect_button);
         window_scroll_view->ClipHeightTo(
             kCurrentTabStyle.item_size.height(),
             kCurrentTabStyle.item_size.height() * 2);
@@ -716,7 +740,8 @@ void DesktopMediaPickerDialogView::MaybeCreateAudioCheckboxForPane(
   // If we need the audio checkbox build and add it now.
   std::unique_ptr<views::Checkbox> audio_share_checkbox =
       std::make_unique<views::Checkbox>(GetLabelForAudioCheckbox(
-          category.type, suppress_local_audio_playback_));
+          category.type, suppress_local_audio_playback_,
+          is_get_display_media_call_));
   audio_share_checkbox->SetVisible(true);
   audio_share_checkbox->SetChecked(category.audio_checked);
   audio_share_checkbox->SetMultiLine(true);
@@ -819,10 +844,6 @@ bool DesktopMediaPickerDialogView::Accept() {
   source.audio_share = audio_share_checkbox_ &&
                        audio_share_checkbox_->GetVisible() &&
                        audio_share_checkbox_->GetChecked();
-  if (source.audio_share && dialog_type_ == DialogType::kPreferCurrentTab) {
-    source.web_contents_id.disable_local_echo = true;
-  }
-
   if (is_get_display_media_call_) {
     RecordUmaSelection(dialog_type_, capturer_global_id_, source,
                        GetSelectedSourceListType());

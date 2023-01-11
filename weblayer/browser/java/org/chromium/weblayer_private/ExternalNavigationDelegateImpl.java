@@ -9,8 +9,6 @@ import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.os.RemoteException;
 
-import androidx.annotation.Nullable;
-
 import org.chromium.base.Callback;
 import org.chromium.base.Function;
 import org.chromium.base.supplier.Supplier;
@@ -21,7 +19,6 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
-import org.chromium.url.Origin;
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.ExternalIntentInIncognitoUserDecision;
 
@@ -56,18 +53,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public boolean shouldDisableExternalIntentRequestsForUrl(GURL url) {
         return false;
-    }
-
-    @Override
-    public boolean handlesInstantAppLaunchingInternally() {
-        return false;
-    }
-
-    @Override
-    public void dispatchAuthenticatedIntent(Intent intent) {
-        // This method should never be invoked in WebLayer as this class always returns false for
-        // handlesInstantAppLaunchingInternally().
-        assert false;
     }
 
     @Override
@@ -134,13 +119,10 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public void maybeAdjustInstantAppExtras(Intent intent, boolean isIntentToInstantApp) {}
-
-    @Override
     // This is relevant only if the intent ends up being handled by this app, which does not happen
     // for WebLayer.
-    public void maybeSetRequestMetadata(Intent intent, boolean hasUserGesture,
-            boolean isRendererInitiated, @Nullable Origin initiatorOrigin) {}
+    public void maybeSetRequestMetadata(
+            Intent intent, boolean hasUserGesture, boolean isRendererInitiated) {}
 
     @Override
     // This is relevant only if the intent ends up being handled by this app, which does not happen
@@ -151,12 +133,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     // This is relevant only if the intent ends up being handled by this app, which does not happen
     // for WebLayer.
     public void maybeSetPendingIncognitoUrl(Intent intent) {}
-
-    @Override
-    public boolean maybeLaunchInstantApp(GURL url, GURL referrerUrl, boolean isIncomingRedirect,
-            boolean isSerpReferrer, Supplier<List<ResolveInfo>> resolveInfoSupplier) {
-        return false;
-    }
 
     @Override
     public WindowAndroid getWindowAndroid() {

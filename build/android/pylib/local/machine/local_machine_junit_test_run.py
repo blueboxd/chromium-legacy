@@ -65,8 +65,9 @@ class LocalMachineJunitTestRun(test_run.TestRun):
     ret = []
     if test_filter_override:
       ret += ['-gtest-filter', ':'.join(test_filter_override)]
-    elif self._test_instance.test_filter:
-      ret += ['-gtest-filter', self._test_instance.test_filter]
+    elif self._test_instance.test_filters:
+      for test_filter in self._test_instance.test_filters:
+        ret += ['-gtest-filter', test_filter]
 
     if self._test_instance.package_filter:
       ret += ['-package-filter', self._test_instance.package_filter]
@@ -98,6 +99,7 @@ class LocalMachineJunitTestRun(test_run.TestRun):
         '-Drobolectric.offline=true',
         '-Drobolectric.resourcesMode=binary',
         '-Drobolectric.logging=stdout',
+        '-Djava.library.path=%s' % self._test_instance.native_libs_dir,
     ]
     if self._test_instance.debug_socket:
       jvm_args += [
@@ -150,7 +152,7 @@ class LocalMachineJunitTestRun(test_run.TestRun):
     # which takes about 1-2 seconds.
     # Do not shard when a test filter is present since we do not know at this
     # point which tests will be filtered out.
-    if (self._test_instance.shards == 1 or self._test_instance.test_filter
+    if (self._test_instance.shards == 1 or self._test_instance.test_filters
         or self._test_instance.suite in _EXCLUDED_SUITES):
       test_classes = []
       shards = 1
@@ -225,9 +227,14 @@ def AddPropertiesJar(cmd_list, temp_dir, resource_apk):
   properties_jar_path = os.path.join(temp_dir, 'properties.jar')
   with zipfile.ZipFile(properties_jar_path, 'w') as z:
     z.writestr('com/android/tools/test_config.properties',
-               'android_resource_apk=%s' % resource_apk)
-    z.writestr('robolectric.properties',
-               'application = android.app.Application')
+               'android_resource_apk=%s\n' % resource_apk)
+    props = [
+        'application = android.app.Application',
+        'sdk = 28',
+        ('shadows = org.chromium.testing.local.'
+         'CustomShadowApplicationPackageManager'),
+    ]
+    z.writestr('robolectric.properties', '\n'.join(props))
 
   for cmd in cmd_list:
     cmd.extend(['--classpath', properties_jar_path])

@@ -294,18 +294,8 @@ class SiteSettingsHandlerTest : public testing::Test,
   void RecordNotification(permissions::NotificationsEngagementService* service,
                           GURL url,
                           int daily_avarage_count) {
-    base::Time date = base::Time::Now();
-    base::Time::Exploded date_exploded;
-    date.LocalExplode(&date_exploded);
-    // |day_of_week| returns 0 for Sunday, but NotificationEngagementService
-    // starts counting on Mondays. So here, setting Sunday as 7 to record
-    // notifications correctly and to prevent calculation errors.
-    int day_of_week =
-        !date_exploded.day_of_week ? 7 : date_exploded.day_of_week;
-
-    // Notification count holds in buckets for each monday. So to calculate
-    // necessary notification count, here the day_of_week is calculated.
-    int total_count = day_of_week * daily_avarage_count;
+    // This many notifications were recorded during the past week in total.
+    int total_count = daily_avarage_count * 7;
     service->RecordNotificationDisplayed(url, total_count);
   }
 
@@ -2879,21 +2869,20 @@ TEST_F(SiteSettingsHandlerTest, ClearReducedAcceptLanguage) {
   ContentSettingsForOneType accept_language_settings;
 
   std::string language = "en-us";
-  base::Value accept_language_dictionary(base::Value::Type::DICTIONARY);
-  accept_language_dictionary.SetKey("reduce-accept-language",
-                                    base::Value(language));
+  base::Value::Dict accept_language_dictionary;
+  accept_language_dictionary.Set("reduce-accept-language", language);
 
   // Add setting for the hosts.
   for (const auto& host : hosts) {
     host_content_settings_map->SetWebsiteSettingDefaultScope(
         host, GURL(), ContentSettingsType::REDUCED_ACCEPT_LANGUAGE,
-        accept_language_dictionary.Clone());
+        base::Value(accept_language_dictionary.Clone()));
   }
 
   // Clear at the eTLD+1 level and ensure affected origins are cleared.
-  base::Value args(base::Value::Type::LIST);
+  base::Value::List args;
   args.Append("example.com");
-  handler()->HandleClearEtldPlus1DataAndCookies(args.GetList());
+  handler()->HandleClearEtldPlus1DataAndCookies(args);
   host_content_settings_map->GetSettingsForOneType(
       ContentSettingsType::REDUCED_ACCEPT_LANGUAGE, &accept_language_settings);
   EXPECT_EQ(2U, accept_language_settings.size());
@@ -2914,9 +2903,9 @@ TEST_F(SiteSettingsHandlerTest, ClearReducedAcceptLanguage) {
 
   // Clear unpartitioned usage data, which should only affect the specific
   // origin.
-  args.ClearList();
+  args.clear();
   args.Append("https://google.com/");
-  handler()->HandleClearUnpartitionedUsage(args.GetList());
+  handler()->HandleClearUnpartitionedUsage(args);
 
   // Validate the reduce accept language has been cleared.
   host_content_settings_map->GetSettingsForOneType(
@@ -2934,9 +2923,9 @@ TEST_F(SiteSettingsHandlerTest, ClearReducedAcceptLanguage) {
   // Clear unpartitioned usage data through HTTPS scheme, make sure https site
   // reduced accept language have been cleared when the specific origin HTTPS
   // scheme exist.
-  args.ClearList();
+  args.clear();
   args.Append("http://www.google.com/");
-  handler()->HandleClearUnpartitionedUsage(args.GetList());
+  handler()->HandleClearUnpartitionedUsage(args);
 
   // Validate the reduced accept language has been cleared.
   host_content_settings_map->GetSettingsForOneType(
@@ -3356,8 +3345,7 @@ TEST_F(SiteSettingsHandlerTest, PopulateNotificationPermissionReviewData) {
   auto* notification_engagement_service =
       NotificationsEngagementServiceFactory::GetForProfile(profile());
   std::string displayedDate =
-      notification_engagement_service->GetBucketLabelForLastMonday(
-          base::Time::Now());
+      notification_engagement_service->GetBucketLabel(base::Time::Now());
 
   auto* site_engagement_service =
       site_engagement::SiteEngagementServiceFactory::GetForProfile(profile());

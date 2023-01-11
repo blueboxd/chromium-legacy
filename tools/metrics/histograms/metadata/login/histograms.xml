@@ -48,7 +48,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.ArcContinueBootImpulseStatus"
-    enum="ArcContinueBootImpulseStatus" expires_after="2023-02-12">
+    enum="ArcContinueBootImpulseStatus" expires_after="2023-04-16">
   <owner>vsomani@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -96,24 +96,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.BrowserShutdownTime" units="ms"
-    expires_after="2023-02-22">
+    expires_after="2023-04-23">
   <owner>xiyuan@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
     Tracks the browser process shutdown time from when SIGTERM is sent to the
     browser process to when the browser process group exits (or gets killed by
     SIGABRT).
-  </summary>
-</histogram>
-
-<histogram name="Login.ConsumerNewUsersAllowed" enum="LoginConsumerWhitelist"
-    expires_after="M77">
-  <owner>cmasone@chromium.org</owner>
-  <owner>sumit@chromium.org</owner>
-  <summary>
-    Chrome OS histogram tracking, per consumer sign-in, whether the device owner
-    is allowing arbitrary accounts to be used on the device, or only those on a
-    specific whitelist.
   </summary>
 </histogram>
 
@@ -199,7 +188,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.NumberOfUsersOnLoginScreen" units="units"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>mslus@chromium.org</owner>
   <owner>chromeos-commercial-identity@google.com</owner>
   <summary>
@@ -291,7 +280,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Login.PromptToLoginTime" units="ms" expires_after="2023-04-05">
   <owner>elijahtaylor@google.com</owner>
-  <owner>yusukes@chromium.org</owner>
+  <owner>khmel@chromium.org</owner>
   <owner>antrim@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>

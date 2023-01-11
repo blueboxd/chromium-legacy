@@ -16,7 +16,6 @@
 #include "ash/style/close_button.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/style_util.h"
-#include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_textfield.h"
 #include "ash/wm/desks/templates/saved_desk_dialog_controller.h"
 #include "ash/wm/desks/templates/saved_desk_grid_view.h"
@@ -34,7 +33,6 @@
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "base/i18n/time_formatting.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -53,7 +51,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/highlight_border.h"
-#include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/metadata/view_factory_internal.h"
 #include "ui/views/view.h"
@@ -459,7 +456,6 @@ void SavedDeskItemView::OnViewFocused(views::View* observed_view) {
   // Assume we should commit the name change unless `HandleKeyEvent` detects the
   // user pressed the escape key.
   should_commit_name_changes_ = true;
-  name_view_->UpdateViewAppearance();
 
   // Hide the hover container when we are modifying the template name.
   hover_container_->SetVisible(false);
@@ -506,7 +502,6 @@ void SavedDeskItemView::OnViewBlurred(views::View* observed_view) {
   DCHECK_EQ(observed_view, name_view_);
   is_template_name_being_modified_ = false;
   defer_select_all_ = false;
-  name_view_->UpdateViewAppearance();
 
   // Collapse the whitespace for the text first before comparing it or trying to
   // commit the name in order to prevent duplicate name issues.

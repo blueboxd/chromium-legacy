@@ -165,6 +165,7 @@ constexpr WebSchedulerTrackedFeatures kDisallowedFeatures(
     WebSchedulerTrackedFeature::kIdleManager,
     WebSchedulerTrackedFeature::kIndexedDBConnection,
     WebSchedulerTrackedFeature::kKeyboardLock,
+    WebSchedulerTrackedFeature::kKeepaliveRequest,
     WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction,
     WebSchedulerTrackedFeature::kPaymentManager,
     WebSchedulerTrackedFeature::kPictureInPicture,
@@ -174,7 +175,6 @@ constexpr WebSchedulerTrackedFeatures kDisallowedFeatures(
     WebSchedulerTrackedFeature::kRequestedBackForwardCacheBlockedSensors,
     WebSchedulerTrackedFeature::kRequestedBackgroundWorkPermission,
     WebSchedulerTrackedFeature::kRequestedMIDIPermission,
-    WebSchedulerTrackedFeature::kRequestedNotificationsPermission,
     WebSchedulerTrackedFeature::kRequestedVideoCapturePermission,
     WebSchedulerTrackedFeature::kSharedWorker,
     WebSchedulerTrackedFeature::kWebDatabase,
@@ -1024,10 +1024,10 @@ BackForwardCacheImpl::NotRestoredReasonBuilder::PopulateReasons(
     }
   } else {
     // Populate |result_for_rfh| by checking the bfcache eligibility of |rfh|.
-    bfcache_.PopulateReasonsForDocument(result_for_rfh, rfh,
-                                        include_non_sticky_);
+    bfcache_->PopulateReasonsForDocument(result_for_rfh, rfh,
+                                         include_non_sticky_);
   }
-  bfcache_.UpdateCanStoreToIncludeCacheControlNoStore(result_for_rfh, rfh);
+  bfcache_->UpdateCanStoreToIncludeCacheControlNoStore(result_for_rfh, rfh);
   flattened_result_.AddReasonsFrom(result_for_rfh);
 
   std::unique_ptr<BackForwardCacheCanStoreTreeResult> tree(
@@ -1208,15 +1208,6 @@ void BackForwardCache::DisableForRenderFrameHost(
     RenderFrameHost* render_frame_host,
     BackForwardCache::DisabledReason reason) {
   DisableForRenderFrameHost(render_frame_host->GetGlobalId(), reason);
-}
-
-// static
-void BackForwardCache::ClearDisableReasonForRenderFrameHost(
-    GlobalRenderFrameHostId id,
-    BackForwardCache::DisabledReason reason) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (auto* rfh = RenderFrameHostImpl::FromID(id))
-    rfh->ClearDisableBackForwardCache(reason);
 }
 
 // static
@@ -1433,6 +1424,15 @@ bool BackForwardCacheImpl::IsScreenReaderAllowed() {
       features::kEnableBackForwardCacheForScreenReader);
 }
 
+// static
+void BackForwardCacheImpl::VlogUnexpectedRendererToBrowserMessage(
+    const char* interface_name,
+    uint32_t message_name) {
+  VLOG(1) << "BackForwardCacheMessageFilter::WillDispatch bad_message "
+          << "interface_name " << interface_name << "message_name "
+          << message_name;
+}
+
 BackForwardCache::DisabledReason::DisabledReason(
     content::BackForwardCache::DisabledSource source,
     content::BackForwardCache::DisabledReasonType id,
@@ -1514,11 +1514,19 @@ BackForwardCacheCanStoreTreeResult::CreateEmptyTree(RenderFrameHostImpl* rfh) {
 std::unique_ptr<BackForwardCacheCanStoreTreeResult>
 BackForwardCacheCanStoreTreeResult::CreateEmptyTreeBeforeCommit(
     NavigationRequest* navigation) {
+  // This method should only be called when a RenderFrameHostImpl is in the
+  // process of committing a navigation.
+  DCHECK_GE(navigation->state(), NavigationRequest::WILL_PROCESS_RESPONSE);
+  RenderFrameHostImpl* frame = navigation->GetRenderFrameHost();
+  DCHECK(frame);
+  // Non-null `frame` indicates a non-`nullopt` `origin`.
+  absl::optional<url::Origin> origin = navigation->GetOriginToCommit();
+  DCHECK(origin.has_value());
+
   BackForwardCacheCanStoreDocumentResult empty_result;
   std::unique_ptr<BackForwardCacheCanStoreTreeResult> empty_tree(
       new BackForwardCacheCanStoreTreeResult(
-          navigation->GetRenderFrameHost(), navigation->GetOriginToCommit(),
-          navigation->GetURL(), empty_result));
+          frame, origin.value(), navigation->GetURL(), empty_result));
   return empty_tree;
 }
 

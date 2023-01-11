@@ -78,6 +78,12 @@ class AccessCodeCastIntegrationBrowserTest
   void PressSubmit(content::WebContents* dialog_contents);
   void PressSubmitAndWaitForClose(content::WebContents* dialog_contents);
 
+  void SetAccessCodeUsingKeyPress(const std::string& access_code);
+  void PressSubmitUsingKeyPress();
+  void PressSubmitAndWaitForCloseUsingKeyPress(
+      content::WebContents* dialog_contents);
+  void CloseDialogUsingKeyPress();
+
   // This function spins the run loop until an error code is surfaced.
   int WaitForAddSinkErrorCode(content::WebContents* dialog_contents);
 
@@ -157,7 +163,8 @@ class AccessCodeCastIntegrationBrowserTest
       network_connection_tracker_;
 
  protected:
-  raw_ptr<media_router::MockMediaRouter> media_router_ = nullptr;
+  raw_ptr<media_router::MockMediaRouter, DanglingUntriaged> media_router_ =
+      nullptr;
   std::vector<MediaSinksObserver*> media_sinks_observers_;
   std::vector<media_router::MediaRoutesObserver*> media_routes_observers_;
 

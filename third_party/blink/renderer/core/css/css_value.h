@@ -79,6 +79,7 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
     return class_type_ == kBorderImageSliceClass;
   }
   bool IsColorValue() const { return class_type_ == kColorClass; }
+  bool IsColorMixValue() const { return class_type_ == kColorMixClass; }
   bool IsCounterValue() const { return class_type_ == kCounterClass; }
   bool IsCursorImageValue() const { return class_type_ == kCursorImageClass; }
   bool IsCrossfadeValue() const { return class_type_ == kCrossfadeClass; }
@@ -201,6 +202,7 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
     kMathFunctionClass,
     kIdentifierClass,
     kColorClass,
+    kColorMixClass,
     kCounterClass,
     kQuadClass,
     kCustomIdentClass,
@@ -284,36 +286,27 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
 
   ClassType GetClassType() const { return static_cast<ClassType>(class_type_); }
 
-  explicit CSSValue(ClassType class_type)
-      : numeric_literal_unit_type_(0),
-        value_list_separator_(kSpaceSeparator),
-        allows_negative_percentage_reference_(false),
-        class_type_(class_type) {}
+  explicit CSSValue(ClassType class_type) : class_type_(class_type) {}
 
   // NOTE: This class is non-virtual for memory and performance reasons.
   // Don't go making it virtual again unless you know exactly what you're doing!
 
  protected:
-  // The bits in this section are only used by specific subclasses but kept here
-  // to maximize struct packing.
-  // The bits are ordered and split into groups to such that from the
-  // perspective of each subclass, each field is a separate memory location.
-  // Using NOLINT here allows to use uint8_t as bitfield type which reduces
-  // size of CSSValue from 4 bytes to 3 bytes.
+  // The value in this section are only used by specific subclasses but kept
+  // here to maximize struct packing. If we need space for more, we could use
+  // bitfields, but we don't currently (and Clang creates better code if we
+  // avoid it). (This class used to be 3 and not 4 bytes, but this doesn't
+  // actually save any memory, due to padding.)
 
   // CSSNumericLiteralValue bits:
-  // This field hold CSSPrimitiveValue::UnitType.
-  uint8_t numeric_literal_unit_type_ : 7;  // NOLINT
-
-  // Force a new memory location. This will make TSAN treat the 2 fields above
-  // this line as a separate memory location than the 2 fields below it.
-  char : 0;
+  // This field holds CSSPrimitiveValue::UnitType.
+  uint8_t numeric_literal_unit_type_ = 0;
 
   // CSSNumericLiteralValue bits:
-  uint8_t value_list_separator_ : kValueListSeparatorBits;  // NOLINT
+  uint8_t value_list_separator_ = kSpaceSeparator;
 
   // CSSMathFunctionValue:
-  uint8_t allows_negative_percentage_reference_ : 1;  // NOLINT
+  bool allows_negative_percentage_reference_ = false;
 
  private:
   const uint8_t class_type_;  // ClassType

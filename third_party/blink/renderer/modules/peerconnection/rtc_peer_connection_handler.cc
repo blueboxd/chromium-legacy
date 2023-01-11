@@ -25,6 +25,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
+#include "build/chromecast_buildflags.h"
 #include "media/base/media_switches.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -208,7 +209,8 @@ void CopyConstraintsIntoRtcConfiguration(
           context, WebFeature::kRTCConstraintEnableDtlsSrtpFalse);
     }
   }
-#if BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA) && BUILDFLAG(ENABLE_CAST_RECEIVER)
+  // TODO(crbug.com/804275): Delete when Fuchsia no longer needs it.
   configuration->enable_dtls_srtp = dtls_srtp_key_agreement;
 #endif
 }
@@ -1979,20 +1981,23 @@ scoped_refptr<DataChannelInterface> RTCPeerConnectionHandler::CreateDataChannel(
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createDataChannel");
   DVLOG(1) << "createDataChannel label " << label.Utf8();
 
-  rtc::scoped_refptr<DataChannelInterface> webrtc_channel(
-      native_peer_connection_->CreateDataChannel(label.Utf8(), &init));
-  if (!webrtc_channel) {
-    DLOG(ERROR) << "Could not create native data channel.";
+  webrtc::RTCErrorOr<rtc::scoped_refptr<DataChannelInterface>> webrtc_channel =
+      native_peer_connection_->CreateDataChannelOrError(label.Utf8(), &init);
+  if (!webrtc_channel.ok()) {
+    DLOG(ERROR) << "Could not create native data channel: "
+                << webrtc_channel.error().message();
     return nullptr;
   }
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackCreateDataChannel(
-        this, webrtc_channel.get(), PeerConnectionTracker::kSourceLocal);
+        this, webrtc_channel.value().get(),
+        PeerConnectionTracker::kSourceLocal);
   }
 
   ++num_data_channels_created_;
 
-  return base::WrapRefCounted<DataChannelInterface>(webrtc_channel.get());
+  return base::WrapRefCounted<DataChannelInterface>(
+      webrtc_channel.value().get());
 }
 
 void RTCPeerConnectionHandler::Close() {

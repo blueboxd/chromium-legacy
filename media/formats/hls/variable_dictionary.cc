@@ -46,7 +46,7 @@ GetNextVariableResult GetNextVariable(const SourceString input) {
     auto var_name_result =
         types::VariableName::Parse(remaining_input.Consume(ref_end));
     remaining_input.Consume(1);
-    if (var_name_result.has_error()) {
+    if (!var_name_result.has_value()) {
       continue;
     }
     auto var_name = std::move(var_name_result).value();
@@ -99,7 +99,7 @@ ParseStatus::Or<ResolvedSourceString> VariableDictionary::Resolve(
   if (!next_var.tail) {
     return ResolvedSourceString::Create(
         {}, input.Line(), input.Column(), input.Str(),
-        ResolvedSourceStringState{.contains_substitutions = false});
+        ResolvedSourceString::SubstitutionState::kNoSubstitutions);
   }
 
   // If there was a variable reference, but it consisted of the entire input
@@ -113,7 +113,7 @@ ParseStatus::Or<ResolvedSourceString> VariableDictionary::Resolve(
 
     return ResolvedSourceString::Create(
         {}, input.Line(), input.Column(), *value,
-        ResolvedSourceStringState{.contains_substitutions = true});
+        ResolvedSourceString::SubstitutionState::kContainsSubstitutions);
   }
 
   auto& string_buf = buffer.strings_.emplace_back();
@@ -139,7 +139,7 @@ ParseStatus::Or<ResolvedSourceString> VariableDictionary::Resolve(
 
   return ResolvedSourceString::Create(
       {}, input.Line(), input.Column(), string_buf,
-      ResolvedSourceStringState{.contains_substitutions = true});
+      ResolvedSourceString::SubstitutionState::kContainsSubstitutions);
 }
 
 }  // namespace media::hls

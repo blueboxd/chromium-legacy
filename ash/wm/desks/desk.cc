@@ -10,6 +10,7 @@
 #include "ash/public/cpp/desks_templates_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_restore_util.h"
@@ -363,10 +364,7 @@ base::AutoReset<bool> Desk::GetScopedNotifyContentChangedDisabler() {
 }
 
 bool Desk::ContainsAppWindows() const {
-  return base::ranges::any_of(windows_, [](aura::Window* window) {
-    return window->GetProperty(aura::client::kAppType) !=
-           static_cast<int>(AppType::NON_APP);
-  });
+  return !GetAllAppWindows().empty();
 }
 
 void Desk::SetName(std::u16string new_name, bool set_by_user) {
@@ -392,6 +390,18 @@ void Desk::SetName(std::u16string new_name, bool set_by_user) {
 
 void Desk::PrepareForActivationAnimation() {
   DCHECK(!is_active_);
+
+  // Floated window doesn't belong to desk container and needed to be handled
+  // separately.
+  aura::Window* floated_window = nullptr;
+  if (chromeos::wm::features::IsFloatWindowEnabled() &&
+      (floated_window =
+           Shell::Get()->float_controller()->FindFloatedWindowOfDesk(this))) {
+    // Ensure the floated window remain hidden during activation animation.
+    // The floated window will be shown when desk is activated.
+    ScopedAnimationDisabler disabler(floated_window);
+    floated_window->Hide();
+  }
 
   for (aura::Window* root : Shell::GetAllRootWindows()) {
     auto* container = root->GetChildById(container_id_);
@@ -672,7 +682,7 @@ void Desk::RecordAndResetConsecutiveDailyVisits(bool being_removed) {
   first_day_visited_ = -1;
 }
 
-std::vector<aura::Window*> Desk::GetAllAppWindows() {
+std::vector<aura::Window*> Desk::GetAllAppWindows() const {
   // We need to copy the app windows from `windows_` into `app_windows` so
   // that we do not modify `windows_` in place. This also gives us a filtered
   // list with all of the app windows that we need to remove.
@@ -682,8 +692,32 @@ std::vector<aura::Window*> Desk::GetAllAppWindows() {
                           return window->GetProperty(aura::client::kAppType) !=
                                  static_cast<int>(AppType::NON_APP);
                         });
+  // Note that floated window is also app window but needs to be handled
+  // separately since it doesn't store in desk container.
+  aura::Window* floated_window = nullptr;
+  if (chromeos::wm::features::IsFloatWindowEnabled() &&
+      (floated_window =
+           Shell::Get()->float_controller()->FindFloatedWindowOfDesk(this))) {
+    app_windows.push_back(floated_window);
+  }
 
   return app_windows;
+}
+
+std::vector<aura::Window*> Desk::GetAllAssociatedWindows() const {
+  // Note that floated window needs to be handled separately since it doesn't
+  // store in desk container.
+  if (auto* floated_window =
+          !chromeos::wm::features::IsFloatWindowEnabled()
+              ? nullptr
+              : Shell::Get()->float_controller()->FindFloatedWindowOfDesk(
+                    this)) {
+    std::vector<aura::Window*> all_windows;
+    base::ranges::copy(windows_, std::back_inserter(all_windows));
+    all_windows.push_back(floated_window);
+    return all_windows;
+  }
+  return windows_;
 }
 
 void Desk::MoveWindowToDeskInternal(aura::Window* window,

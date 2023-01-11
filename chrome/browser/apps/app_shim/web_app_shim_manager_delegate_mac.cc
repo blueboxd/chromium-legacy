@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/functional/callback_helpers.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/web_applications/os_integration/web_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut_mac.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -55,7 +57,7 @@ void LaunchAppWithParams(
       } else {
         apps::AppServiceProxyFactory::GetForProfile(profile)
             ->BrowserAppLauncher()
-            ->LaunchAppWithParams(std::move(params_copy));
+            ->LaunchAppWithParams(std::move(params_copy), base::DoNothing());
       }
     }
     return;
@@ -66,7 +68,7 @@ void LaunchAppWithParams(
   } else {
     apps::AppServiceProxyFactory::GetForProfile(profile)
         ->BrowserAppLauncher()
-        ->LaunchAppWithParams(std::move(params));
+        ->LaunchAppWithParams(std::move(params), base::DoNothing());
   }
 }
 
@@ -112,8 +114,10 @@ void UserChoiceDialogCompleted(
                                         std::move(persist_done));
     } else {
       DCHECK(is_file_launch);
-      PersistFileHandlersUserChoice(profile, app_id, allowed,
-                                    std::move(persist_done));
+      WebAppProvider::GetForWebApps(profile)
+          ->scheduler()
+          .PersistFileHandlersUserChoice(app_id, allowed,
+                                         std::move(persist_done));
     }
   } else {
     std::move(persist_done).Run();

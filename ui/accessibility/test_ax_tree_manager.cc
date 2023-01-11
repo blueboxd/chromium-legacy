@@ -114,6 +114,26 @@ AXTree* TestAXTreeManager::Init(
   return Init(update);
 }
 
+AXNodePosition::AXPositionInstance TestAXTreeManager::CreateTreePosition(
+    const AXNode& anchor,
+    int child_index) const {
+  return AXNodePosition::CreateTreePosition(anchor, child_index);
+}
+
+AXNodePosition::AXPositionInstance TestAXTreeManager::CreateTreePosition(
+    const AXTree* tree,
+    const AXNodeData& anchor_data,
+    int child_index) const {
+  const AXNode* anchor = tree->GetFromId(anchor_data.id);
+  return CreateTreePosition(*anchor, child_index);
+}
+
+AXNodePosition::AXPositionInstance TestAXTreeManager::CreateTreePosition(
+    const AXNodeData& anchor_data,
+    int child_index) const {
+  return CreateTreePosition(ax_tree(), anchor_data, child_index);
+}
+
 AXNodePosition::AXPositionInstance TestAXTreeManager::CreateTextPosition(
     const AXNode& anchor,
     int text_offset,
@@ -122,20 +142,30 @@ AXNodePosition::AXPositionInstance TestAXTreeManager::CreateTextPosition(
 }
 
 AXNodePosition::AXPositionInstance TestAXTreeManager::CreateTextPosition(
+    const AXTree* tree,
+    const AXNodeData& anchor_data,
+    int text_offset,
+    ax::mojom::TextAffinity affinity) const {
+  const AXNode* anchor = tree->GetFromId(anchor_data.id);
+  return CreateTextPosition(*anchor, text_offset, affinity);
+}
+
+AXNodePosition::AXPositionInstance TestAXTreeManager::CreateTextPosition(
+    const AXNodeData& anchor_data,
+    int text_offset,
+    ax::mojom::TextAffinity affinity) const {
+  return CreateTextPosition(ax_tree(), anchor_data, text_offset, affinity);
+}
+
+AXNodePosition::AXPositionInstance TestAXTreeManager::CreateTextPosition(
     const AXNodeID& anchor_id,
     int text_offset,
     ax::mojom::TextAffinity affinity) const {
-  const AXNode& anchor = *ax_tree_->GetFromId(anchor_id);
-  return AXNodePosition::CreateTextPosition(anchor, text_offset, affinity);
+  const AXNode* anchor = ax_tree()->GetFromId(anchor_id);
+  return CreateTextPosition(*anchor, text_offset, affinity);
 }
 
-AXNode* TestAXTreeManager::GetNodeFromTree(const AXTreeID& tree_id,
-                                           const AXNodeID node_id) const {
-  return (ax_tree_ && GetTreeID() == tree_id) ? ax_tree_->GetFromId(node_id)
-                                              : nullptr;
-}
-
-AXNode* TestAXTreeManager::GetParentNodeFromParentTreeAsAXNode() const {
+AXNode* TestAXTreeManager::GetParentNodeFromParentTree() const {
   AXTreeID parent_tree_id = GetParentTreeID();
   TestAXTreeManager* parent_manager =
       static_cast<TestAXTreeManager*>(AXTreeManager::FromID(parent_tree_id));

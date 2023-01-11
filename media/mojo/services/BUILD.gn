@@ -9,6 +9,9 @@ import("//media/media_options.gni")
 import("//mojo/public/tools/fuzzers/mojolpm.gni")
 import("//testing/test.gni")
 
+enable_playback_events_recorder =
+    enable_cast_receiver && (is_fuchsia || is_android)
+
 component("services") {
   output_name = "media_mojo_services"
   sources = [
@@ -32,10 +35,6 @@ component("services") {
     "mojo_audio_encoder_service.h",
     "mojo_audio_input_stream.cc",
     "mojo_audio_input_stream.h",
-    "mojo_audio_output_stream.cc",
-    "mojo_audio_output_stream.h",
-    "mojo_audio_output_stream_provider.cc",
-    "mojo_audio_output_stream_provider.h",
     "mojo_cdm_promise.cc",
     "mojo_cdm_promise.h",
     "mojo_cdm_service.cc",
@@ -60,8 +59,6 @@ component("services") {
     "mojo_video_encode_accelerator_provider.h",
     "mojo_video_encode_accelerator_service.cc",
     "mojo_video_encode_accelerator_service.h",
-    "playback_events_recorder.cc",
-    "playback_events_recorder.h",
     "test_mojo_media_client.cc",
     "test_mojo_media_client.h",
     "video_decode_perf_history.cc",
@@ -75,6 +72,13 @@ component("services") {
     "webrtc_video_perf_recorder.cc",
     "webrtc_video_perf_recorder.h",
   ]
+
+  if (enable_playback_events_recorder) {
+    sources += [
+      "playback_events_recorder.cc",
+      "playback_events_recorder.h",
+    ]
+  }
 
   defines = [ "IS_MEDIA_MOJO_IMPL" ]
 
@@ -197,8 +201,8 @@ component("services") {
     public_deps += [ "//media/mojo/mojom/stable:stable_video_decoder" ]
 
     deps += [
+      "//components/viz/common",
       "//media/gpu/chromeos",
-      "//ui/ozone:ozone_switches",
     ]
   }
 }
@@ -211,10 +215,8 @@ source_set("unit_tests") {
     "media_metrics_provider_unittest.cc",
     "media_service_unittest.cc",
     "mojo_audio_input_stream_unittest.cc",
-    "mojo_audio_output_stream_provider_unittest.cc",
-    "mojo_audio_output_stream_unittest.cc",
+    "mojo_demuxer_stream_adapter_unittest.cc",
     "mojo_video_encode_accelerator_service_unittest.cc",
-    "playback_events_recorder_test.cc",
     "test_helpers.cc",
     "test_helpers.h",
     "video_decode_perf_history_unittest.cc",
@@ -223,6 +225,10 @@ source_set("unit_tests") {
     "webrtc_video_perf_history_unittest.cc",
     "webrtc_video_perf_recorder_unittest.cc",
   ]
+
+  if (enable_playback_events_recorder) {
+    sources += [ "playback_events_recorder_test.cc" ]
+  }
 
   deps = [
     ":services",

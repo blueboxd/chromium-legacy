@@ -116,8 +116,9 @@ SubAppInstallCommand::SubAppInstallCommand(
     WebAppInstallFinalizer* install_finalizer,
     std::unique_ptr<WebAppUrlLoader> url_loader,
     std::unique_ptr<WebAppDataRetriever> data_retriever)
-    : lock_(std::make_unique<SharedWebContentsWithAppLock>(
-          CreateAppIdsForLock(parent_app_id, sub_apps))),
+    : lock_description_(
+          std::make_unique<SharedWebContentsWithAppLockDescription>(
+              CreateAppIdsForLock(parent_app_id, sub_apps))),
       parent_app_id_{parent_app_id},
       requested_installs_{std::move(sub_apps)},
       install_callback_{std::move(install_callback)},
@@ -131,8 +132,8 @@ SubAppInstallCommand::SubAppInstallCommand(
 
 SubAppInstallCommand::~SubAppInstallCommand() = default;
 
-Lock& SubAppInstallCommand::lock() const {
-  return *lock_;
+LockDescription& SubAppInstallCommand::lock_description() const {
+  return *lock_description_;
 }
 
 base::Value SubAppInstallCommand::ToDebugValue() const {
@@ -364,18 +365,18 @@ void SubAppInstallCommand::OnDialogCompleted(
     return;
   }
 
-  WebAppInstallInfo web_app_info_copy = *web_app_info;
-  web_app_info_copy.user_display_mode = UserDisplayMode::kStandalone;
+  web_app_info->user_display_mode = UserDisplayMode::kStandalone;
+
   install_finalizer_->FinalizeInstall(
-      web_app_info_copy, GetFinalizerOptionsForSubApps(parent_app_id_),
+      *web_app_info, GetFinalizerOptionsForSubApps(parent_app_id_),
       base::BindOnce(&SubAppInstallCommand::OnInstallFinalized,
                      weak_ptr_factory_.GetWeakPtr(), unhashed_app_id,
-                     std::move(web_app_info)));
+                     web_app_info->start_url));
 }
 
 void SubAppInstallCommand::OnInstallFinalized(
     const UnhashedAppId& unhashed_app_id,
-    std::unique_ptr<WebAppInstallInfo> web_app_info,
+    const GURL& start_url,
     const AppId& app_id,
     webapps::InstallResultCode code,
     OsHooksErrors os_hooks_errors) {
@@ -386,7 +387,7 @@ void SubAppInstallCommand::OnInstallFinalized(
 
   RecordWebAppInstallationTimestamp(profile_->GetPrefs(), app_id,
                                     webapps::WebappInstallSource::SUB_APP);
-  RecordAppBanner(shared_web_contents(), web_app_info->start_url);
+  RecordAppBanner(shared_web_contents(), start_url);
   MaybeFinishInstall(unhashed_app_id,
                      webapps::InstallResultCode::kSuccessNewInstall);
 }

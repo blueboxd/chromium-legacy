@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="Windows.CetAvailable" enum="BooleanAvailable"
-    expires_after="2022-12-01">
+    expires_after="2023-12-01">
   <owner>ajgo@chromium.org</owner>
   <owner>wfh@chromium.org</owner>
   <summary>
@@ -34,7 +34,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.CetEnabled" enum="BooleanEnabled"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>ajgo@chromium.org</owner>
   <owner>wfh@chromium.org</owner>
   <summary>
@@ -42,18 +42,6 @@ chromium-metrics-reviews@google.com.
     Shadow Stack) is enabled or if it has been disabled by IFEO. Reported only
     if CetAvailable is true, once per browser session, on startup. Note: This
     was recorded incorrectly in M91.
-  </summary>
-</histogram>
-
-<histogram name="Windows.CreateOrUpdateShortcuts.Result"
-    enum="CreateOrUpdateShortcutsResult" expires_after="2022-11-26">
-  <owner>davidbienvenu@chromium.org</owner>
-  <owner>jessemckenna@google.com</owner>
-  <summary>
-    The result of creating or updating a Windows shortcut out of process.
-    Recorded when Chrome creates or updates a Windows shortcut using
-    shell_integration::win::CreateOrUpdateShortcuts, e.g., when a profile is
-    added.
   </summary>
 </histogram>
 
@@ -88,7 +76,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.HighResolutionTimerUsage" units="%"
-    expires_after="2023-03-05">
+    expires_after="2023-05-07">
   <owner>olivierli@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -159,7 +147,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.MakeChromeDefaultDirectly.Result"
-    enum="DefaultDirectAttemptResult" expires_after="M109">
+    enum="DefaultDirectAttemptResult" expires_after="M112">
   <owner>robliao@chromium.org</owner>
   <owner>davidbienvenu@chromium.org</owner>
   <summary>
@@ -180,7 +168,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.OnCurrentWorkspaceCached" enum="BooleanCacheHit"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>davidbienvenu@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>

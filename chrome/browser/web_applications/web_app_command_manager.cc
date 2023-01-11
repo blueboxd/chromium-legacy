@@ -11,14 +11,18 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/contains.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
+#include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/locks/lock.h"
+#include "chrome/browser/web_applications/locks/shared_web_contents_with_app_lock.h"
 #include "chrome/browser/web_applications/locks/web_app_lock_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_task.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_url_loader.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -51,19 +55,35 @@ base::Value CreateLogValue(const WebAppCommand& command,
 
 }  // namespace
 
-WebAppCommandManager::WebAppCommandManager(Profile* profile)
+WebAppCommandManager::WebAppCommandManager(Profile* profile,
+                                           WebAppProvider* provider)
     : profile_(profile),
+      provider_(provider),
       url_loader_(std::make_unique<WebAppUrlLoader>()),
-      lock_manager_(std::make_unique<WebAppLockManager>()) {}
+      lock_manager_(std::make_unique<WebAppLockManager>(*provider_)) {}
 WebAppCommandManager::~WebAppCommandManager() {
   // Make sure that unittests & browsertests correctly shut down the manager.
   // This ensures that all tests also cover shutdown.
   DCHECK(is_in_shutdown_);
 }
 
+void WebAppCommandManager::Start() {
+  started_ = true;
+  std::vector<std::unique_ptr<WebAppCommand>> to_schedule;
+  std::swap(commands_waiting_for_start_, to_schedule);
+
+  for (auto& command : to_schedule) {
+    ScheduleCommand(std::move(command));
+  }
+}
+
 void WebAppCommandManager::ScheduleCommand(
     std::unique_ptr<WebAppCommand> command) {
   DCHECK(command);
+  if (!started_) {
+    commands_waiting_for_start_.push_back(std::move(command));
+    return;
+  }
   if (is_in_shutdown_) {
     AddValueToLog(CreateLogValue(*command, CommandResult::kShutdown));
     return;
@@ -71,13 +91,14 @@ void WebAppCommandManager::ScheduleCommand(
   DCHECK(!base::Contains(commands_, command->id()));
   auto command_id = command->id();
   auto command_it = commands_.try_emplace(command_id, std::move(command)).first;
-  lock_manager_->AcquireLock(
-      command_it->second->lock(),
+  command_it->second->RequestLock(
+      this, lock_manager_.get(),
       base::BindOnce(&WebAppCommandManager::OnLockAcquired,
                      weak_ptr_factory_.GetWeakPtr(), command_id));
 }
 
-void WebAppCommandManager::OnLockAcquired(WebAppCommand::Id command_id) {
+void WebAppCommandManager::OnLockAcquired(WebAppCommand::Id command_id,
+                                          base::OnceClosure start_command) {
   if (is_in_shutdown_)
     return;
   auto command_it = commands_.find(command_id);
@@ -86,40 +107,43 @@ void WebAppCommandManager::OnLockAcquired(WebAppCommand::Id command_id) {
   // calling back into Enqueue/Destroy. This can especially be an issue if
   // this task is being run in response to a call to
   // NotifySyncSourceRemoved.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&WebAppCommandManager::StartCommandOrPrepareForLoad,
-                     weak_ptr_factory_.GetWeakPtr(), command_it->second.get()));
+                     weak_ptr_factory_.GetWeakPtr(), command_it->second.get(),
+                     std::move(start_command)));
 }
 
 void WebAppCommandManager::StartCommandOrPrepareForLoad(
-    WebAppCommand* command) {
+    WebAppCommand* command,
+    base::OnceClosure start_command) {
   if (is_in_shutdown_)
     return;
 #if DCHECK_IS_ON()
   DCHECK(command);
   auto command_it = commands_.find(command->id());
   DCHECK(command_it != commands_.end());
-  DCHECK(!command->IsStarted());
 #endif
-  if (command->lock().IncludesSharedWebContents()) {
+  if (command->lock_description().IncludesSharedWebContents()) {
     command->shared_web_contents_ = EnsureWebContentsCreated();
     url_loader_->PrepareForLoad(
         command->shared_web_contents(),
         base::BindOnce(&WebAppCommandManager::OnAboutBlankLoadedForCommandStart,
-                       weak_ptr_factory_.GetWeakPtr(), command));
+                       weak_ptr_factory_.GetWeakPtr(), command,
+                       std::move(start_command)));
     return;
   }
-  command->Start(this);
+  std::move(start_command).Run();
 }
 
 void WebAppCommandManager::OnAboutBlankLoadedForCommandStart(
     WebAppCommand* command,
+    base::OnceClosure start_command,
     WebAppUrlLoader::Result result) {
-  if (!shared_web_contents_) {
-    DCHECK(is_in_shutdown_);
+  if (is_in_shutdown_) {
     return;
   }
+  DCHECK(shared_web_contents_);
 
   // about:blank must always be loaded.
   DCHECK_EQ(WebAppUrlLoader::Result::kUrlLoaded, result);
@@ -127,16 +151,17 @@ void WebAppCommandManager::OnAboutBlankLoadedForCommandStart(
     base::Value url_loader_error(base::Value::Type::DICTIONARY);
     url_loader_error.SetStringKey("WebAppUrlLoader::Result",
                                   ConvertUrlLoaderResultToString(result));
-    if (command->lock().app_ids().size() == 1) {
-      url_loader_error.SetStringKey("task.app_id_to_expect",
-                                    *command->lock().app_ids().begin());
+    if (command->lock_description().app_ids().size() == 1) {
+      url_loader_error.SetStringKey(
+          "task.app_id_to_expect",
+          *command->lock_description().app_ids().begin());
     }
     url_loader_error.SetStringKey("!stage", "OnWebContentsReady");
-    install_manager_->TakeCommandErrorLog(PassKey(),
-                                          std::move(url_loader_error));
+    provider_->install_manager().TakeCommandErrorLog(
+        PassKey(), std::move(url_loader_error));
   }
 
-  command->Start(this);
+  std::move(start_command).Run();
 }
 
 void WebAppCommandManager::Shutdown() {
@@ -144,7 +169,6 @@ void WebAppCommandManager::Shutdown() {
   if (is_in_shutdown_)
     return;
   is_in_shutdown_ = true;
-  shared_web_contents_.reset();
   AddValueToLog(base::Value("Shutdown has begun"));
 
   // Create a copy of commands to call `OnShutdown` because commands can call
@@ -163,6 +187,8 @@ void WebAppCommandManager::Shutdown() {
     command_ptr->OnShutdown();
   }
   commands_.clear();
+
+  shared_web_contents_.reset();
 }
 
 void WebAppCommandManager::NotifySyncSourceRemoved(
@@ -180,7 +206,7 @@ void WebAppCommandManager::NotifySyncSourceRemoved(
   std::vector<base::WeakPtr<WebAppCommand>> commands_to_notify;
   for (const AppId& app_id : app_ids) {
     for (const auto& [id, command] : commands_) {
-      if (base::Contains(command->lock().app_ids(), app_id)) {
+      if (base::Contains(command->lock_description().app_ids(), app_id)) {
         if (command->IsStarted()) {
           commands_to_notify.push_back(command->AsWeakPtr());
         }
@@ -211,13 +237,8 @@ base::Value WebAppCommandManager::ToDebugValue() {
   return base::Value(std::move(state));
 }
 
-void WebAppCommandManager::SetSubsystems(
-    WebAppInstallManager* install_manager) {
-  install_manager_ = install_manager;
-}
-
 void WebAppCommandManager::LogToInstallManager(base::Value log) {
-  install_manager_->TakeCommandErrorLog(PassKey(), std::move(log));
+  provider_->install_manager().TakeCommandErrorLog(PassKey(), std::move(log));
 }
 
 bool WebAppCommandManager::IsInstallingForWebContents(
@@ -275,6 +296,11 @@ void WebAppCommandManager::AddValueToLog(base::Value value) {
   command_debug_log_.push_front(std::move(value));
   if (command_debug_log_.size() > kMaxLogLength)
     command_debug_log_.resize(kMaxLogLength);
+}
+
+content::WebContents* WebAppCommandManager::EnsureWebContentsCreated(
+    base::PassKey<WebAppLockManager>) {
+  return EnsureWebContentsCreated();
 }
 
 content::WebContents* WebAppCommandManager::EnsureWebContentsCreated() {

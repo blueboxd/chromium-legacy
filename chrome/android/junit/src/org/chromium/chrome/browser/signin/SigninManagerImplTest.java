@@ -13,6 +13,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -25,6 +26,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -61,7 +63,6 @@ import org.chromium.components.signin.identitymanager.IdentityMutator;
 import org.chromium.components.signin.identitymanager.PrimaryAccountChangeEvent;
 import org.chromium.components.signin.identitymanager.PrimaryAccountError;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
-import org.chromium.components.signin.metrics.SignoutDelete;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
 import org.chromium.components.sync.UserSelectableType;
@@ -73,7 +74,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 /** Tests for {@link SigninManagerImpl}. */
 @RunWith(BaseRobolectricTestRunner.class)
 @LooperMode(LooperMode.Mode.LEGACY)
-@DisableFeatures({ChromeFeatureList.ENABLE_CBD_SIGN_OUT})
 public class SigninManagerImplTest {
     private static final long NATIVE_SIGNIN_MANAGER = 10001L;
     private static final long NATIVE_IDENTITY_MANAGER = 10002L;
@@ -232,17 +232,14 @@ public class SigninManagerImplTest {
         // Trigger the sign out flow!
         mSigninManager.signOut(SignoutReason.SIGNOUT_TEST);
 
-        // PrimaryAccountChanged should be called *before* clearing any account data.
+        // The primary account should be cleared *before* clearing any account data.
         // For more information see crbug.com/589028.
-        verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
-        verify(mNativeMock, never()).wipeGoogleServiceWorkerCaches(anyLong(), any());
-
-        // Simulate native callback to trigger clearing of account data.
-        mIdentityManager.onPrimaryAccountChanged(new PrimaryAccountChangeEvent(
-                PrimaryAccountChangeEvent.Type.CLEARED, PrimaryAccountChangeEvent.Type.NONE));
+        InOrder inOrder = inOrder(mNativeMock, mIdentityMutator);
+        inOrder.verify(mIdentityMutator)
+                .clearPrimaryAccount(eq(SignoutReason.SIGNOUT_TEST), anyInt());
 
         // Sign-out should only clear the profile when the user is managed.
-        verify(mNativeMock).wipeProfileData(eq(NATIVE_SIGNIN_MANAGER), any());
+        inOrder.verify(mNativeMock).wipeProfileData(eq(NATIVE_SIGNIN_MANAGER), any());
         verify(mNativeMock, never()).wipeGoogleServiceWorkerCaches(anyLong(), any());
     }
 
@@ -253,17 +250,14 @@ public class SigninManagerImplTest {
         // Trigger the sign out flow!
         mSigninManager.signOut(SignoutReason.SIGNOUT_TEST);
 
-        // PrimaryAccountChanged should be called *before* clearing any account data.
+        // The primary account should be cleared *before* clearing any account data.
         // For more information see crbug.com/589028.
-        verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
-        verify(mNativeMock, never()).wipeGoogleServiceWorkerCaches(anyLong(), any());
-
-        // Simulate native callback to trigger clearing of account data.
-        mIdentityManager.onPrimaryAccountChanged(new PrimaryAccountChangeEvent(
-                PrimaryAccountChangeEvent.Type.CLEARED, PrimaryAccountChangeEvent.Type.CLEARED));
+        InOrder inOrder = inOrder(mNativeMock, mIdentityMutator);
+        inOrder.verify(mIdentityMutator)
+                .clearPrimaryAccount(eq(SignoutReason.SIGNOUT_TEST), anyInt());
 
         // Sign-out should only clear the profile when the user is managed.
-        verify(mNativeMock).wipeProfileData(eq(NATIVE_SIGNIN_MANAGER), any());
+        inOrder.verify(mNativeMock).wipeProfileData(eq(NATIVE_SIGNIN_MANAGER), any());
         verify(mNativeMock, never()).wipeGoogleServiceWorkerCaches(anyLong(), any());
     }
 
@@ -271,19 +265,16 @@ public class SigninManagerImplTest {
     public void signOutNonSyncingAccountFromJavaWithNullDomain() {
         mSigninManager.signOut(SignoutReason.SIGNOUT_TEST);
 
-        // PrimaryAccountChanged should be called *before* clearing any account data.
+        // The primary account should be cleared *before* clearing any account data.
         // For more information see crbug.com/589028.
-        verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
-        verify(mNativeMock, never()).wipeGoogleServiceWorkerCaches(anyLong(), any());
-
-        // Simulate native callback to trigger clearing of account data.
-        mIdentityManager.onPrimaryAccountChanged(new PrimaryAccountChangeEvent(
-                PrimaryAccountChangeEvent.Type.CLEARED, PrimaryAccountChangeEvent.Type.NONE));
+        InOrder inOrder = inOrder(mNativeMock, mIdentityMutator);
+        inOrder.verify(mIdentityMutator)
+                .clearPrimaryAccount(eq(SignoutReason.SIGNOUT_TEST), anyInt());
 
         // Sign-out should only clear the service worker cache when the user is neither managed or
         // syncing.
         verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
-        verify(mNativeMock).wipeGoogleServiceWorkerCaches(eq(NATIVE_SIGNIN_MANAGER), any());
+        inOrder.verify(mNativeMock).wipeGoogleServiceWorkerCaches(eq(NATIVE_SIGNIN_MANAGER), any());
     }
 
     @Test
@@ -295,19 +286,16 @@ public class SigninManagerImplTest {
 
         mSigninManager.signOut(SignoutReason.SIGNOUT_TEST);
 
-        // PrimaryAccountCleared should be called *before* clearing any account data.
+        // The primary account should be cleared *before* clearing any account data.
         // For more information see crbug.com/589028.
-        verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
-        verify(mNativeMock, never()).wipeGoogleServiceWorkerCaches(anyLong(), any());
-
-        // Simulate native callback to trigger clearing of account data.
-        mIdentityManager.onPrimaryAccountChanged(new PrimaryAccountChangeEvent(
-                PrimaryAccountChangeEvent.Type.CLEARED, PrimaryAccountChangeEvent.Type.CLEARED));
+        InOrder inOrder = inOrder(mNativeMock, mIdentityMutator);
+        inOrder.verify(mIdentityMutator)
+                .clearPrimaryAccount(eq(SignoutReason.SIGNOUT_TEST), anyInt());
 
         // Sign-out should only clear the service worker cache when the user has decided not to
         // wipe data.
         verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
-        verify(mNativeMock).wipeGoogleServiceWorkerCaches(eq(NATIVE_SIGNIN_MANAGER), any());
+        inOrder.verify(mNativeMock).wipeGoogleServiceWorkerCaches(eq(NATIVE_SIGNIN_MANAGER), any());
     }
 
     @Test
@@ -324,10 +312,6 @@ public class SigninManagerImplTest {
                 .thenReturn(ACCOUNT_INFO);
 
         mSigninManager.signOut(SignoutReason.SIGNOUT_TEST);
-
-        // Simulate native callback to trigger clearing of account data.
-        mIdentityManager.onPrimaryAccountChanged(new PrimaryAccountChangeEvent(
-                PrimaryAccountChangeEvent.Type.CLEARED, PrimaryAccountChangeEvent.Type.CLEARED));
 
         ArgumentCaptor<Runnable> callback = ArgumentCaptor.forClass(Runnable.class);
         verify(mNativeMock)
@@ -349,55 +333,16 @@ public class SigninManagerImplTest {
 
         mSigninManager.signOut(SignoutReason.SIGNOUT_TEST, null, true);
 
-        // PrimaryAccountCleared should be called *before* clearing any account data.
+        // The primary account should be cleared *before* clearing any account data.
         // For more information see crbug.com/589028.
-        verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
-        verify(mNativeMock, never()).wipeGoogleServiceWorkerCaches(anyLong(), any());
-
-        // Simulate native callback to trigger clearing of account data.
-        // Not possible to wipe data if sync account is not cleared.
-        mIdentityManager.onPrimaryAccountChanged(new PrimaryAccountChangeEvent(
-                PrimaryAccountChangeEvent.Type.CLEARED, PrimaryAccountChangeEvent.Type.CLEARED));
+        InOrder inOrder = inOrder(mNativeMock, mIdentityMutator);
+        inOrder.verify(mIdentityMutator)
+                .clearPrimaryAccount(eq(SignoutReason.SIGNOUT_TEST), anyInt());
 
         // Sign-out should only clear the profile when the user is syncing and has decided to
         // wipe data.
-        verify(mNativeMock).wipeProfileData(eq(NATIVE_SIGNIN_MANAGER), any());
+        inOrder.verify(mNativeMock).wipeProfileData(eq(NATIVE_SIGNIN_MANAGER), any());
         verify(mNativeMock, never()).wipeGoogleServiceWorkerCaches(anyLong(), any());
-    }
-
-    @Test
-    public void signOutNonSyncingAccountFromNative() {
-        // Simulate native initiating the sign-out.
-        mIdentityManager.onPrimaryAccountChanged(new PrimaryAccountChangeEvent(
-                PrimaryAccountChangeEvent.Type.CLEARED, PrimaryAccountChangeEvent.Type.NONE));
-
-        // Sign-out should only clear the service worker cache when the user is not syncing.
-        verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
-        verify(mNativeMock).wipeGoogleServiceWorkerCaches(eq(NATIVE_SIGNIN_MANAGER), any());
-    }
-
-    @Test
-    public void signOutSyncingAccountFromNativeWithManagedDomain() {
-        when(mNativeMock.getManagementDomain(NATIVE_SIGNIN_MANAGER)).thenReturn("TestDomain");
-
-        // Simulate native initiating the sign-out.
-        mIdentityManager.onPrimaryAccountChanged(new PrimaryAccountChangeEvent(
-                PrimaryAccountChangeEvent.Type.CLEARED, PrimaryAccountChangeEvent.Type.CLEARED));
-
-        // Turning off sync should only clear the profile data when the account is managed.
-        verify(mNativeMock).wipeProfileData(eq(NATIVE_SIGNIN_MANAGER), any());
-        verify(mNativeMock, never()).wipeGoogleServiceWorkerCaches(anyLong(), any());
-    }
-
-    @Test
-    public void signOutSyncingAccountFromNativeWithNullDomain() {
-        // Simulate native initiating the sign-out.
-        mIdentityManager.onPrimaryAccountChanged(new PrimaryAccountChangeEvent(
-                PrimaryAccountChangeEvent.Type.CLEARED, PrimaryAccountChangeEvent.Type.CLEARED));
-
-        // Turning off sync should only clear service worker caches when the account is not managed.
-        verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
-        verify(mNativeMock).wipeGoogleServiceWorkerCaches(eq(NATIVE_SIGNIN_MANAGER), any());
     }
 
     // TODO(crbug.com/1294761): add test for revokeSyncConsentFromJavaWithManagedDomain() and
@@ -413,23 +358,19 @@ public class SigninManagerImplTest {
 
         mSigninManager.revokeSyncConsent(SignoutReason.SIGNOUT_TEST, callback, false);
 
-        // PrimaryAccountChanged should be called *before* clearing any account data.
+        // The primary account should be cleared *before* clearing any account data.
         // For more information see crbug.com/589028.
-        verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
-        verify(mNativeMock, never()).wipeGoogleServiceWorkerCaches(anyLong(), any());
-
-        // Simulate native callback to trigger clearing of account data.
-        mIdentityManager.onPrimaryAccountChanged(new PrimaryAccountChangeEvent(
-                PrimaryAccountChangeEvent.Type.CLEARED, PrimaryAccountChangeEvent.Type.NONE));
+        InOrder inOrder = inOrder(mNativeMock, mIdentityMutator);
+        inOrder.verify(mIdentityMutator)
+                .revokeSyncConsent(eq(SignoutReason.SIGNOUT_TEST), anyInt());
 
         // Disabling sync should only clear the service worker cache when the user is neither
         // managed or syncing.
         verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
-        verify(mNativeMock).wipeGoogleServiceWorkerCaches(anyLong(), any());
+        inOrder.verify(mNativeMock).wipeGoogleServiceWorkerCaches(anyLong(), any());
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS})
     public void clearingAccountCookieDoesNotTriggerSignoutWhenUserIsSignedOut() {
         mFakeAccountManagerFacade.addAccount(
                 AccountUtils.createAccountFromName(ACCOUNT_INFO.getEmail()));
@@ -442,7 +383,6 @@ public class SigninManagerImplTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS})
     public void clearingAccountCookieDoesNotTriggerSignoutWhenUserIsSignedInAndSync() {
         when(mIdentityManagerNativeMock.getPrimaryAccountInfo(
                      eq(NATIVE_IDENTITY_MANAGER), anyInt()))
@@ -458,68 +398,12 @@ public class SigninManagerImplTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS})
-    public void clearingAccountCookieTriggersSignoutWhenNormalUserIsSignedInWithoutSync() {
+    public void clearingAccountCookieDoesNotTriggerSignoutWhenUserIsSignedInWithoutSync() {
         when(mIdentityManagerNativeMock.getPrimaryAccountInfo(
                      NATIVE_IDENTITY_MANAGER, ConsentLevel.SIGNIN))
                 .thenReturn(ACCOUNT_INFO);
         mFakeAccountManagerFacade.addAccount(
                 AccountUtils.createAccountFromName(ACCOUNT_INFO.getEmail()));
-
-        mIdentityManager.onAccountsCookieDeletedByUserAction();
-
-        verify(mIdentityMutator)
-                .clearPrimaryAccount(
-                        SignoutReason.USER_DELETED_ACCOUNT_COOKIES, SignoutDelete.IGNORE_METRIC);
-        // Sign-out triggered by wiping account cookies shouldn't wipe data.
-        verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
-        verify(mNativeMock, never()).wipeGoogleServiceWorkerCaches(anyLong(), any());
-    }
-
-    @Test
-    @EnableFeatures({ChromeFeatureList.ENABLE_CBD_SIGN_OUT})
-    public void clearingAccountCookieDoesNotTriggerSignoutWhenNormalUserIsSignedInWithoutSync() {
-        when(mIdentityManagerNativeMock.getPrimaryAccountInfo(
-                     NATIVE_IDENTITY_MANAGER, ConsentLevel.SIGNIN))
-                .thenReturn(ACCOUNT_INFO);
-        mFakeAccountManagerFacade.addAccount(
-                AccountUtils.createAccountFromName(ACCOUNT_INFO.getEmail()));
-
-        mIdentityManager.onAccountsCookieDeletedByUserAction();
-
-        verify(mIdentityMutator, never()).clearPrimaryAccount(anyInt(), anyInt());
-        verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
-        verify(mNativeMock, never()).wipeGoogleServiceWorkerCaches(anyLong(), any());
-    }
-
-    @Test
-    @DisableFeatures({ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS})
-    public void clearingAccountCookieTriggersSignoutWhenSupervisedUserIsSignedInWithoutSync() {
-        when(mIdentityManagerNativeMock.getPrimaryAccountInfo(
-                     NATIVE_IDENTITY_MANAGER, ConsentLevel.SIGNIN))
-                .thenReturn(CHILD_CORE_ACCOUNT_INFO);
-        mFakeAccountManagerFacade.addAccount(
-                AccountUtils.createAccountFromName(CHILD_CORE_ACCOUNT_INFO.getEmail()));
-
-        mIdentityManager.onAccountsCookieDeletedByUserAction();
-
-        verify(mIdentityMutator)
-                .clearPrimaryAccount(
-                        SignoutReason.USER_DELETED_ACCOUNT_COOKIES, SignoutDelete.IGNORE_METRIC);
-        // Sign-out triggered by wiping account cookies shouldn't wipe data.
-        verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
-        verify(mNativeMock, never()).wipeGoogleServiceWorkerCaches(anyLong(), any());
-    }
-
-    @Test
-    @EnableFeatures({ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS})
-    public void
-    clearingAccountCookieDoesNotTriggerSignoutWhenSupervisedUserIsSignedInWithoutSync() {
-        when(mIdentityManagerNativeMock.getPrimaryAccountInfo(
-                     NATIVE_IDENTITY_MANAGER, ConsentLevel.SIGNIN))
-                .thenReturn(CHILD_CORE_ACCOUNT_INFO);
-        mFakeAccountManagerFacade.addAccount(
-                AccountUtils.createAccountFromName(CHILD_CORE_ACCOUNT_INFO.getEmail()));
 
         mIdentityManager.onAccountsCookieDeletedByUserAction();
 

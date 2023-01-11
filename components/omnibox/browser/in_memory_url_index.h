@@ -74,18 +74,6 @@ class InMemoryURLIndex : public KeyedService,
                          public base::SupportsWeakPtr<InMemoryURLIndex>,
                          public base::trace_event::MemoryDumpProvider {
  public:
-  // Defines an abstract class which is notified upon completion of restoring
-  // the index's private data by rebuilding from the history database.
-  class RestoreCacheObserver {
-   public:
-    virtual ~RestoreCacheObserver();
-
-    // Callback that lets the observer know that the restore operation has
-    // completed. |succeeded| indicates if the restore was successful. This is
-    // called on the UI thread.
-    virtual void OnCacheRestoreFinished(bool succeeded) = 0;
-  };
-
   // `history_service` may be null during unit testing.
   InMemoryURLIndex(bookmarks::BookmarkModel* bookmark_model,
                    history::HistoryService* history_service,
@@ -118,13 +106,6 @@ class InMemoryURLIndex : public KeyedService,
   // Deletes the index entry, if any, for the given |url|.
   void DeleteURL(const GURL& url);
 
-  // Sets the optional observers for completion of restoral and saving of the
-  // index's private data.
-  void set_restore_cache_observer(
-      RestoreCacheObserver* restore_cache_observer) {
-    restore_cache_observer_ = restore_cache_observer;
-  }
-
   // Indicates that the index restoration is complete.
   bool restored() const {
     return restored_;
@@ -148,14 +129,13 @@ class InMemoryURLIndex : public KeyedService,
         const RebuildPrivateDataFromHistoryDBTask&) = delete;
     RebuildPrivateDataFromHistoryDBTask& operator=(
         const RebuildPrivateDataFromHistoryDBTask&) = delete;
+    ~RebuildPrivateDataFromHistoryDBTask() override;
 
     bool RunOnDBThread(history::HistoryBackend* backend,
                        history::HistoryDatabase* db) override;
     void DoneRunOnMainThread() override;
 
    private:
-    ~RebuildPrivateDataFromHistoryDBTask() override;
-
     raw_ptr<InMemoryURLIndex> index_;  // Call back to this index at completion.
     SchemeSet scheme_allowlist_;  // Schemes to be indexed.
     bool succeeded_;  // Indicates if the rebuild was successful.
@@ -192,8 +172,6 @@ class InMemoryURLIndex : public KeyedService,
                       const history::URLRows& changed_urls) override;
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override;
-  void OnHistoryServiceLoaded(
-      history::HistoryService* history_service) override;
 
   // MemoryDumpProvider:
   bool OnMemoryDump(
@@ -228,9 +206,6 @@ class InMemoryURLIndex : public KeyedService,
   // The index's durable private data.
   scoped_refptr<URLIndexPrivateData> private_data_;
 
-  // Observers to notify upon restoring the in-memory cache.
-  raw_ptr<RestoreCacheObserver> restore_cache_observer_{nullptr};
-
   // Task runner used for operations which require disk access.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
@@ -241,10 +216,6 @@ class InMemoryURLIndex : public KeyedService,
 
   // Set to true once the index restoration is complete.
   bool restored_ = false;
-
-  // This flag is set to true if we want to listen to the
-  // HistoryServiceLoaded Notification.
-  bool listen_to_history_service_loaded_ = false;
 
   base::ScopedObservation<history::HistoryService,
                           history::HistoryServiceObserver>

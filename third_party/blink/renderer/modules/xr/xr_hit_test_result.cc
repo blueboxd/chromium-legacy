@@ -38,7 +38,7 @@ XRPose* XRHitTestResult::getPose(XRSpace* other,
     return nullptr;
   }
 
-  auto mojo_from_this = TransformationMatrix(mojo_from_this_.ToTransform());
+  auto mojo_from_this = mojo_from_this_.ToTransform();
 
   auto other_native_from_mojo = *maybe_other_space_native_from_mojo;
   auto other_offset_from_other_native = other->OffsetFromNativeMatrix();
@@ -80,14 +80,9 @@ ScriptPromise XRHitTestResult::createAnchor(ScriptState* script_state,
     return {};
   }
 
-  const TransformationMatrix& mojo_from_space =
-      reference_space_information->mojo_from_space;
-
-  DCHECK(mojo_from_space.IsInvertible());
-
-  auto space_from_mojo = mojo_from_space.Inverse();
-  auto space_from_anchor =
-      space_from_mojo * TransformationMatrix(mojo_from_this_.ToTransform());
+  auto space_from_mojo =
+      reference_space_information->mojo_from_space.GetCheckedInverse();
+  auto space_from_anchor = space_from_mojo * mojo_from_this_.ToTransform();
 
   return session_->CreateAnchorHelper(
       script_state, space_from_anchor,

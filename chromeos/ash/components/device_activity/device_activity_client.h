@@ -6,18 +6,18 @@
 #define CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY_DEVICE_ACTIVITY_CLIENT_H_
 
 #include <memory>
+#include <queue>
 
 #include "base/component_export.h"
-#include "base/containers/queue.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
-#include "chromeos/ash/components/network/network_state.h"
-#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/dbus/private_computing/private_computing_client.h"
+#include "chromeos/ash/components/dbus/private_computing/private_computing_service.pb.h"
+#include "chromeos/ash/components/device_activity/fresnel_service.pb.h"
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
-#include "services/network/public/cpp/resource_request.h"
 #include "third_party/private_membership/src/private_membership_rlwe_client.h"
 #include "url/gurl.h"
 
@@ -28,6 +28,8 @@ class SharedURLLoaderFactory;
 
 namespace ash {
 
+class NetworkState;
+class NetworkStateHandler;
 class SystemClockSyncObservation;
 
 namespace device_activity {
@@ -129,11 +131,34 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
 
   // NetworkStateHandlerObserver overridden method.
   void DefaultNetworkChanged(const NetworkState* network) override;
+  void OnShuttingDown() override;
 
   State GetState() const;
 
   // Used for testing.
   std::vector<DeviceActiveUseCase*> GetUseCases() const;
+
+  DeviceActiveUseCase* GetUseCasePtr(
+      private_membership::rlwe::RlweUseCase psm_use_case) const;
+
+  // Generate the proto with the latest last ping date values.
+  private_computing::SaveStatusRequest GetSaveStatusRequest();
+
+  // Write the last ping dates for all use cases to preserved files via
+  // the private_computingd dbus daemon.
+  void SaveLastPingDatesStatus();
+
+  // After the dbus call is complete, return response via this method.
+  void OnSaveLastPingDatesStatusComplete(
+      private_computing::SaveStatusResponse response);
+
+  // Read the last ping dates status for all use cases from preserved files
+  // via the private_comutingd dbus daemon.
+  void GetLastPingDatesStatus();
+
+  // After the dbus call is complete, return response via this method.
+  void OnGetLastPingDatesStatusFetched(
+      private_computing::GetStatusResponse response);
 
  private:
   // |report_timer_| triggers method to retry reporting device actives if
@@ -264,6 +289,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
 
   // Used to wait until the system clock to be synchronized.
   std::unique_ptr<SystemClockSyncObservation> system_clock_sync_observation_;
+
+  NetworkStateHandlerScopedObservation network_state_handler_observer_{this};
 
   // Automatically cancels callbacks when the referent of weakptr gets
   // destroyed.

@@ -10,7 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/task/bind_post_task.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -83,14 +83,14 @@ bool UserNetworkConfigurationUpdaterAsh::
   if (!policy_value)
     return false;
 
-  base::ListValue certificates_value;
+  base::Value::List certificates_value;
   chromeos::onc::ParseAndValidateOncForImport(
       policy_value->GetString(), onc::ONC_SOURCE_USER_POLICY,
       /*passphrase=*/std::string(),
       /*network_configs=*/nullptr, /*global_network_config=*/nullptr,
       &certificates_value);
   chromeos::onc::OncParsedCertificates onc_parsed_certificates(
-      certificates_value);
+      base::Value(std::move(certificates_value)));
   for (const auto& server_or_authority_cert :
        onc_parsed_certificates.server_or_authority_certificates()) {
     if (server_or_authority_cert.type() ==
@@ -148,22 +148,23 @@ void UserNetworkConfigurationUpdaterAsh::ImportClientCertificates() {
 }
 
 void UserNetworkConfigurationUpdaterAsh::ApplyNetworkPolicy(
-    base::ListValue* network_configs_onc,
-    base::DictionaryValue* global_network_config) {
+    base::Value::List network_configs_onc,
+    base::Value::Dict global_network_config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(user_);
 
   // Call on UserSessionManager to send the user's password to session manager
   // if the password substitution variable exists in the ONC.
+  base::Value network_configs_onc_value(std::move(network_configs_onc));
   bool save_password =
-      ash::onc::HasUserPasswordSubsitutionVariable(network_configs_onc);
+      ash::onc::HasUserPasswordSubsitutionVariable(&network_configs_onc_value);
   ash::UserSessionManager::GetInstance()->VoteForSavingLoginPassword(
       ash::UserSessionManager::PasswordConsumingService::kNetwork,
       save_password);
 
-  network_config_handler_->SetPolicy(onc_source_, user_->username_hash(),
-                                     *network_configs_onc,
-                                     *global_network_config);
+  network_config_handler_->SetPolicy(
+      onc_source_, user_->username_hash(), network_configs_onc_value,
+      base::Value(std::move(global_network_config)));
 }
 
 void UserNetworkConfigurationUpdaterAsh::Observe(
@@ -184,7 +185,7 @@ void UserNetworkConfigurationUpdaterAsh::Observe(
           NssServiceFactory::GetForContext(profile)
               ->CreateNSSCertDatabaseGetterForIOThread(),
           base::BindPostTask(
-              base::SequencedTaskRunnerHandle::Get(),
+              base::SequencedTaskRunner::GetCurrentDefault(),
               base::BindOnce(&UserNetworkConfigurationUpdaterAsh::
                                  CreateAndSetClientCertificateImporter,
                              weak_factory_.GetWeakPtr()))));

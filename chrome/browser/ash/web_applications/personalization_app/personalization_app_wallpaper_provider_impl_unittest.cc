@@ -19,6 +19,9 @@
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
@@ -55,6 +58,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace ash::personalization_app {
 
@@ -413,7 +418,6 @@ TEST_P(PersonalizationAppWallpaperProviderImplTest, PreviewWallpaper) {
 
 TEST_P(PersonalizationAppWallpaperProviderImplTest,
        ObserveWallpaperFiresWhenBound) {
-  // This will create the data url referenced below in expectation.
   test_wallpaper_controller()->ShowWallpaperImage(
       CreateSolidImageSkia(/*width=*/1, /*height=*/1, SK_ColorBLACK));
 
@@ -443,10 +447,6 @@ TEST_P(PersonalizationAppWallpaperProviderImplTest,
   EXPECT_EQ(ash::WallpaperType::kOnline, current->type);
   EXPECT_EQ(ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
             current->layout);
-  // Data url of a solid black image scaled up to 512x512.
-  EXPECT_EQ(webui::GetBitmapDataUrl(
-                *CreateSolidImageSkia(512, 512, SK_ColorBLACK).bitmap()),
-            current->url);
 }
 
 TEST_P(PersonalizationAppWallpaperProviderImplTest, SetCurrentWallpaperLayout) {
@@ -485,6 +485,46 @@ TEST_P(PersonalizationAppWallpaperProviderImplTest,
   ResetWallpaperProvider();
 }
 
+TEST_P(PersonalizationAppWallpaperProviderImplTest, GetWallpaperAsJpegBytes) {
+  test_wallpaper_controller()->ShowWallpaperImage(
+      CreateSolidImageSkia(/*width=*/1, /*height=*/1, SK_ColorRED));
+
+  scoped_refptr<base::RefCountedMemory> jpeg_bytes;
+
+  base::RunLoop loop;
+  delegate()->GetWallpaperAsJpegBytes(base::BindLambdaForTesting(
+      [quit = loop.QuitClosure(),
+       &jpeg_bytes](scoped_refptr<base::RefCountedMemory> bytes) {
+        bytes.swap(jpeg_bytes);
+        std::move(quit).Run();
+      }));
+  loop.Run();
+
+  // Jpeg bytes of a solid black image scaled up to 1024x1024.
+  scoped_refptr<base::RefCountedBytes> expected_jpeg_bytes =
+      base::MakeRefCounted<base::RefCountedBytes>();
+  gfx::JPEGCodec::Encode(CreateSolidImageSkia(1024, 1024, SK_ColorRED)
+                             .GetRepresentation(/*scale=*/1)
+                             .GetBitmap(),
+                         /*quality=*/90, &expected_jpeg_bytes->data());
+
+  EXPECT_TRUE(expected_jpeg_bytes->Equals(jpeg_bytes));
+}
+
+TEST_P(PersonalizationAppWallpaperProviderImplTest,
+       SetDailyRefreshCollectionId) {
+  const std::string collection_id = "collection_id";
+
+  // Test setting a daily refresh collection id.
+  wallpaper_provider_remote()->get()->SetDailyRefreshCollectionId(
+      collection_id, base::BindLambdaForTesting(
+                         [](mojom::SetDailyRefreshResponsePtr response) {
+                           EXPECT_TRUE(response->success);
+                           EXPECT_TRUE(response->force_refresh);
+                         }));
+  wallpaper_provider_remote()->FlushForTesting();
+}
+
 class PersonalizationAppWallpaperProviderImplGooglePhotosTest
     : public PersonalizationAppWallpaperProviderImplTest {
  protected:
@@ -515,6 +555,13 @@ class PersonalizationAppWallpaperProviderImplGooglePhotosTest
           }));
     }
     wallpaper_provider_remote()->FlushForTesting();
+  }
+
+  void AddToAlbumIdMap(const std::string& album_id,
+                       const std::string& dedup_key) {
+    std::set<std::string> dedup_keys;
+    dedup_keys.insert(dedup_key);
+    delegate()->album_id_dedup_key_map_.insert({album_id, dedup_keys});
   }
 
   // The number of times to start each idempotent API query.
@@ -974,6 +1021,71 @@ TEST_P(PersonalizationAppWallpaperProviderImplGooglePhotosTest,
                  /*preview_mode=*/false, "dedup_key"}) ==
                 test_wallpaper_controller()->wallpaper_info().value_or(
                     ash::WallpaperInfo()));
+}
+
+TEST_P(PersonalizationAppWallpaperProviderImplGooglePhotosTest,
+       SelectGooglePhotosAlbum) {
+  test_wallpaper_controller()->ClearCounts();
+  const std::string album_id = "OmnisVirLupus";
+  bool feature_enabled = GooglePhotosEnabled();
+
+  // Test selecting an album before fetching the enterprise setting.
+  wallpaper_provider_remote()->get()->SelectGooglePhotosAlbum(
+      album_id, base::BindLambdaForTesting(
+                    [](mojom::SetDailyRefreshResponsePtr response) {
+                      EXPECT_FALSE(response->success);
+                    }));
+  wallpaper_provider_remote()->FlushForTesting();
+
+  // Test selecting an album after fetching the enterprise setting.
+  FetchGooglePhotosEnabled();
+  wallpaper_provider_remote()->get()->SelectGooglePhotosAlbum(
+      album_id,
+      base::BindLambdaForTesting(
+          [feature_enabled](mojom::SetDailyRefreshResponsePtr response) {
+            EXPECT_EQ(response->success, feature_enabled);
+            EXPECT_EQ(response->force_refresh, feature_enabled);
+          }));
+  wallpaper_provider_remote()->FlushForTesting();
+}
+
+TEST_P(PersonalizationAppWallpaperProviderImplGooglePhotosTest,
+       SelectGooglePhotosAlbum_WithoutForcingRefresh) {
+  test_wallpaper_controller()->ClearCounts();
+  const std::string album_id = "OmnisVirLupus";
+  const std::string photo_id = "DummyPhotoId";
+  bool feature_enabled = GooglePhotosEnabled();
+
+  // Test selecting an album before fetching the enterprise setting.
+  wallpaper_provider_remote()->get()->SelectGooglePhotosAlbum(
+      album_id, base::BindLambdaForTesting(
+                    [](mojom::SetDailyRefreshResponsePtr response) {
+                      EXPECT_FALSE(response->success);
+                    }));
+  wallpaper_provider_remote()->FlushForTesting();
+
+  // Test selecting an album after fetching the enterprise setting.
+  FetchGooglePhotosEnabled();
+
+  wallpaper_provider_remote()->get()->SelectGooglePhotosPhoto(
+      photo_id, ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
+      /*preview_mode=*/false,
+      base::BindLambdaForTesting([feature_enabled](bool success) {
+        EXPECT_EQ(success, feature_enabled);
+      }));
+  wallpaper_provider_remote()->FlushForTesting();
+
+  AddToAlbumIdMap(album_id, photo_id);
+  test_wallpaper_controller()->add_dedup_key_to_wallpaper_info(photo_id);
+  wallpaper_provider_remote()->get()->SelectGooglePhotosAlbum(
+      album_id,
+      base::BindLambdaForTesting(
+          [feature_enabled](mojom::SetDailyRefreshResponsePtr response) {
+            EXPECT_EQ(response->success, feature_enabled);
+            if (feature_enabled)
+              EXPECT_FALSE(response->force_refresh);
+          }));
+  wallpaper_provider_remote()->FlushForTesting();
 }
 
 }  // namespace ash::personalization_app

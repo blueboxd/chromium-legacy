@@ -548,14 +548,17 @@ TEST_F(CrosHealthdServiceConnectionTest, RunNvmeWearLevelRoutine) {
   // Test that we can run the NVMe wear-level routine.
   auto response = MakeRunRoutineResponse();
   FakeCrosHealthd::Get()->SetRunRoutineResponseForTesting(response);
-  base::RunLoop run_loop;
-  ServiceConnection::GetInstance()->RunNvmeWearLevelRoutine(
-      /*wear_level_threshold=*/50,
-      base::BindLambdaForTesting([&](mojom::RunRoutineResponsePtr response) {
-        EXPECT_EQ(response, MakeRunRoutineResponse());
-        run_loop.Quit();
-      }));
-  run_loop.Run();
+  const std::vector<absl::optional<uint32_t>> test_cases = {50, absl::nullopt};
+  for (const auto wear_level_threshold : test_cases) {
+    base::RunLoop run_loop;
+    ServiceConnection::GetInstance()->RunNvmeWearLevelRoutine(
+        wear_level_threshold,
+        base::BindLambdaForTesting([&](mojom::RunRoutineResponsePtr response) {
+          EXPECT_EQ(response, MakeRunRoutineResponse());
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
 }
 
 TEST_F(CrosHealthdServiceConnectionTest, RunNvmeSelfTestRoutine) {
@@ -1032,6 +1035,36 @@ TEST_F(CrosHealthdServiceConnectionTest, ProbeProcessInfo) {
         run_loop.Quit();
       }));
   run_loop.Run();
+}
+
+// Test that we can get diagnostics service.
+TEST_F(CrosHealthdServiceConnectionTest, GetDiagnosticsService) {
+  auto* service = ServiceConnection::GetInstance()->GetDiagnosticsService();
+  EXPECT_TRUE(service);
+}
+
+// Test that we can get probe service.
+TEST_F(CrosHealthdServiceConnectionTest, GetProbeService) {
+  auto* service = ServiceConnection::GetInstance()->GetProbeService();
+  EXPECT_TRUE(service);
+}
+
+// Test that we can bind diagnostics service.
+TEST_F(CrosHealthdServiceConnectionTest, BindDiagnosticsService) {
+  mojo::Remote<mojom::CrosHealthdDiagnosticsService> remote;
+  ServiceConnection::GetInstance()->BindDiagnosticsService(
+      remote.BindNewPipeAndPassReceiver());
+  remote.FlushForTesting();
+  EXPECT_TRUE(remote.is_connected());
+}
+
+// Test that we can bind probe service.
+TEST_F(CrosHealthdServiceConnectionTest, BindProbeService) {
+  mojo::Remote<mojom::CrosHealthdProbeService> remote;
+  ServiceConnection::GetInstance()->BindProbeService(
+      remote.BindNewPipeAndPassReceiver());
+  remote.FlushForTesting();
+  EXPECT_TRUE(remote.is_connected());
 }
 
 }  // namespace

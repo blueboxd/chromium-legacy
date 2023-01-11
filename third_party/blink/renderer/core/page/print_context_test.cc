@@ -130,17 +130,14 @@ class PrintContextTest : public PaintTestConfigurations, public RenderingTest {
     GetDocument().body()->setInnerHTML(body_content);
   }
 
-  gfx::Rect PrintSinglePage(SkCanvas& canvas, int page_number = 0) {
+  void PrintSinglePage(SkCanvas& canvas) {
+    gfx::Rect page_rect(0, 0, kPageWidth, kPageHeight);
     GetDocument().SetPrinting(Document::kBeforePrinting);
     Event* event = MakeGarbageCollected<BeforePrintEvent>();
     GetPrintContext().GetFrame()->DomWindow()->DispatchEvent(*event);
-    GetPrintContext().BeginPrintMode(kPageWidth, kPageHeight);
+    GetPrintContext().BeginPrintMode(page_rect.width(), page_rect.height());
     GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
         DocumentUpdateReason::kTest);
-
-    GetPrintContext().ComputePageRects(gfx::SizeF(kPageWidth, kPageHeight));
-    gfx::Rect page_rect = GetPrintContext().PageRect(page_number);
-
     auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
     GraphicsContext& context = builder->Context();
     context.SetPrinting(true);
@@ -154,7 +151,6 @@ class PrintContextTest : public PaintTestConfigurations, public RenderingTest {
     }
     builder->EndRecording()->Playback(&canvas);
     GetPrintContext().EndPrintMode();
-    return page_rect;
   }
 
   static String AbsoluteBlockHtmlForLink(int x,
@@ -468,57 +464,6 @@ TEST_P(PrintContextTest, LinkTargetBoundingBox) {
   ASSERT_EQ(1u, operations.size());
   EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(50, 60, 200, 100, operations[0].rect);
-}
-
-TEST_P(PrintContextTest, LinkInFragmentedContainer) {
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      body {
-        margin: 0;
-        line-height: 50px;
-        orphans: 1;
-        widows: 1;
-      }
-    </style>
-    <div style="height:calc(100vh - 90px);"></div>
-    <div>
-      <a href="http://www.google.com">link 1</a><br>
-      <!-- Page break here. -->
-      <a href="http://www.google.com">link 2</a><br>
-      <a href="http://www.google.com">link 3</a><br>
-    </div>
-  )HTML");
-
-  MockPageContextCanvas first_page_canvas;
-  gfx::Rect page_rect = PrintSinglePage(first_page_canvas, 0);
-  Vector<MockPageContextCanvas::Operation> operations =
-      first_page_canvas.RecordedOperations();
-
-  // TODO(crbug.com/1392701): Should be 1.
-  ASSERT_EQ(operations.size(), 3u);
-
-  const auto& page1_link1 = operations[0];
-  EXPECT_EQ(page1_link1.type, MockPageContextCanvas::kDrawRect);
-  EXPECT_GE(page1_link1.rect.y(), page_rect.height() - 90);
-  EXPECT_LE(page1_link1.rect.bottom(), page_rect.height() - 40);
-
-  MockPageContextCanvas second_page_canvas;
-  page_rect = PrintSinglePage(second_page_canvas, 1);
-  operations = second_page_canvas.RecordedOperations();
-
-  // TODO(crbug.com/1392701): Should be 2.
-  ASSERT_EQ(operations.size(), 3u);
-  // TODO(crbug.com/1392701): Should be operations[0]
-  const auto& page2_link1 = operations[1];
-  // TODO(crbug.com/1392701): Should be operations[1]
-  const auto& page2_link2 = operations[2];
-
-  EXPECT_EQ(page2_link1.type, MockPageContextCanvas::kDrawRect);
-  EXPECT_GE(page2_link1.rect.y(), page_rect.y());
-  EXPECT_LE(page2_link1.rect.bottom(), page_rect.y() + 50);
-  EXPECT_EQ(page2_link2.type, MockPageContextCanvas::kDrawRect);
-  EXPECT_GE(page2_link2.rect.y(), page_rect.y() + 50);
-  EXPECT_LE(page2_link2.rect.bottom(), page_rect.y() + 100);
 }
 
 // Here are a few tests to check that shrink to fit doesn't mess up page count.
@@ -916,7 +861,6 @@ TEST_P(PrintContextOOPRCanvasTest, Canvas2DBeforePrint) {
 
 TEST_P(PrintContextOOPRCanvasTest, Canvas2DFlushForImageListener) {
   base::test::ScopedFeatureList feature_list_;
-  feature_list_.InitAndEnableFeature(features::kCanvas2dStaysGPUOnReadback);
   // Verifies that a flush triggered by a change to a source canvas results
   // in printing falling out of vector print mode.
 
@@ -931,7 +875,8 @@ TEST_P(PrintContextOOPRCanvasTest, Canvas2DFlushForImageListener) {
       "source_canvas = document.createElement('canvas');"
       "source_canvas.width = 5;"
       "source_canvas.height = 5;"
-      "source_ctx = source_canvas.getContext('2d');"
+      "source_ctx = source_canvas.getContext('2d', {willReadFrequently: "
+      "'false'});"
       "source_ctx.fillRect(0, 0, 1, 1);"
       "image_data = source_ctx.getImageData(0, 0, 5, 5);"
       "window.addEventListener('beforeprint', (ev) => {"

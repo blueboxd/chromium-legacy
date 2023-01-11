@@ -52,6 +52,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.AppStoreRating.UserIsEligible" enum="Boolean"
+    expires_after="2023-11-01">
+  <owner>hiramahmood@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <summary>
+    Logged once per app foreground. Logs whether the user has met the trigger
+    requirements for the App Store Rating promo.
+  </summary>
+</histogram>
+
 <histogram name="IOS.BackgroundTimeBeforeColdStart" units="minutes"
     expires_after="2023-04-27">
   <owner>thegreenfrog@chromium.org</owner>
@@ -245,7 +255,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.DisplayCount" units="count"
-    expires_after="2022-12-11">
+    expires_after="2023-04-16">
   <owner>rkgibson@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -321,7 +331,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.PasswordUseCount" units="count"
-    expires_after="2022-12-11">
+    expires_after="2023-04-16">
   <owner>rkgibson@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -332,7 +342,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.QuickPasswordUseCount" units="count"
-    expires_after="2022-12-11">
+    expires_after="2023-04-16">
   <owner>rkgibson@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -343,7 +353,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.ReauthCount" units="count"
-    expires_after="2022-12-11">
+    expires_after="2023-04-16">
   <owner>rkgibson@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -388,7 +398,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.ShowPasswordCount" units="count"
-    expires_after="2022-12-11">
+    expires_after="2023-04-23">
   <owner>rkgibson@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -410,7 +420,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.CRWWKNavigationStatesRemoveOldPending" enum="Boolean"
-    expires_after="2022-12-11">
+    expires_after="2023-04-30">
   <owner>justincohen@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -726,7 +736,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.Frame.FirstInputDelay.MainFrame" units="ms"
-    expires_after="2022-11-30">
+    expires_after="2023-10-18">
   <owner>danieltwhite@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -744,7 +754,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="IOS.Frame.FirstInputDelay.MainFrame.AfterBackForwardCacheRestore"
-    units="ms" expires_after="2022-11-30">
+    units="ms" expires_after="2023-10-18">
   <owner>danieltwhite@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -761,7 +771,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.Frame.FirstInputDelay.SubFrame" units="ms"
-    expires_after="2022-11-30">
+    expires_after="2023-10-18">
   <owner>danieltwhite@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -779,7 +789,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="IOS.Frame.FirstInputDelay.SubFrame.AfterBackForwardCacheRestore"
-    units="ms" expires_after="2022-11-30">
+    units="ms" expires_after="2023-10-18">
   <owner>danieltwhite@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -828,17 +838,16 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="IOS.Incognito.TimeSpent" units="ms" expires_after="2023-10-16">
   <owner>olivierrobin@chromium.org</owner>
-  <owner>qpubert@google.com</owner>
+  <owner>thegreenfrog@chromium.org</owner>
   <summary>
     The time incognito profile is displayed to the user. Incognito sessions
     during less than 10 seconds are not reported. Incognito session paused for
-    less than 10 seconds is resumed. (Incorrectly reported between M92 and
-    M107).
+    less than 10 seconds is resumed.
   </summary>
 </histogram>
 
 <histogram name="IOS.IncognitoInterstitial"
-    enum="IncognitoInterstitialActionType" expires_after="2022-11-08">
+    enum="IncognitoInterstitialActionType" expires_after="2023-10-17">
   <owner>qpubert@google.com</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -848,7 +857,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.IncognitoInterstitial.Settings"
-    enum="IncognitoInterstitialSettingsActionType" expires_after="2022-11-08">
+    enum="IncognitoInterstitialSettingsActionType" expires_after="2023-10-17">
   <owner>qpubert@google.com</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -926,7 +935,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.LinkToText.ShouldOfferResult"
-    enum="LinkToTextShouldOfferResult" expires_after="2022-12-18">
+    enum="LinkToTextShouldOfferResult" expires_after="2023-04-16">
   <owner>tmartino@chromium.org</owner>
   <owner>seblalancette@chromium.org</owner>
   <summary>
@@ -1195,7 +1204,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.NTP.Impression" enum="IOSNTPImpression"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>gambard@chromium.org</owner>
   <summary>
     The type of NTP impressions on iOS, split by type of suggestions shown
@@ -1204,7 +1213,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.OpenIn.DownloadResult" enum="IOSOpenInDownloadResult"
-    expires_after="2022-10-10">
+    expires_after="2023-04-20">
   <owner>ewannpv@chromium.org</owner>
   <owner>mrefaat@chromium.org</owner>
   <owner>bling-team@google.com</owner>
@@ -1240,7 +1249,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.PageLoad.DefaultModeMobile" enum="Boolean"
-    expires_after="2023-01-30">
+    expires_after="2023-04-16">
   <owner>gambard@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -1317,7 +1326,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.PasswordsInOtherApps.AutoFillStatusChange"
-    enum="PasswordAutoFillEnrollmentStatus" expires_after="2022-12-11">
+    enum="PasswordAutoFillEnrollmentStatus" expires_after="2023-03-11">
   <owner>ginnyhuang@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -1328,7 +1337,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.PasswordsInOtherApps.Dismiss"
-    enum="PasswordAutoFillEnrollmentStatus" expires_after="2022-12-11">
+    enum="PasswordAutoFillEnrollmentStatus" expires_after="2023-03-11">
   <owner>ginnyhuang@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -1338,7 +1347,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.PasswordsInOtherApps.GoToIOSSetting"
-    enum="PasswordAutoFillEnrollmentStatus" expires_after="2022-12-11">
+    enum="PasswordAutoFillEnrollmentStatus" expires_after="2023-04-23">
   <owner>ginnyhuang@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -1349,7 +1358,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.PasswordsInOtherApps.Open"
-    enum="PasswordAutoFillEnrollmentStatus" expires_after="2022-12-11">
+    enum="PasswordAutoFillEnrollmentStatus" expires_after="2023-04-23">
   <owner>ginnyhuang@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -1421,6 +1430,41 @@ chromium-metrics-reviews@google.com.
     that Chromium has a reduced 'Duet' score in the system, which merits
     investigation. See the UIKit documentation &quot;Prepare Your App for
     Prewarming&quot; for more details.
+  </summary>
+</histogram>
+
+<histogram name="IOS.PromosManager.Promo" enum="IOSPromosManagerPromo"
+    expires_after="2023-10-20">
+  <owner>bwwilliams@google.com</owner>
+  <owner>rkgibson@google.com</owner>
+  <owner>rohitrao@google.com</owner>
+  <summary>
+    Logs which promo is displayed when the Promos Manager decides to display a
+    promo.
+  </summary>
+</histogram>
+
+<histogram name="IOS.PromosManager.Promo.ImpressionLimitEvaluation"
+    enum="IOSPromosManagerPromoImpressionLimitEvaluationType"
+    expires_after="2023-10-20">
+  <owner>bwwilliams@google.com</owner>
+  <owner>rkgibson@google.com</owner>
+  <owner>rohitrao@google.com</owner>
+  <summary>
+    Promo impression limit evaluations made by the Promos Manager. This
+    histograms logs the Promos Manager's assessment of each promos impression
+    limits when presented with the opportunity to display a given promo.
+  </summary>
+</histogram>
+
+<histogram name="IOS.PromosManager.Promo.Type" enum="IOSPromosManagerPromoType"
+    expires_after="2023-10-20">
+  <owner>bwwilliams@google.com</owner>
+  <owner>rkgibson@google.com</owner>
+  <owner>rohitrao@google.com</owner>
+  <summary>
+    Logs which type of promo is displayed when the Promos Manager decides to
+    display a promo.
   </summary>
 </histogram>
 
@@ -1659,7 +1703,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.SiriShortcuts.Count" units="shortcuts"
-    expires_after="2023-02-06">
+    expires_after="2023-04-16">
   <owner>gujen@google.com</owner>
   <owner>ios-google-eng-ios@google.com</owner>
   <summary>
@@ -1765,7 +1809,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.TabGrid.Selection.AddToBookmarks" units="Tabs"
-    expires_after="2022-11-01">
+    expires_after="2023-11-01">
   <owner>mrefaat@chromium.org</owner>
   <owner>michaeldo@chromium.org</owner>
   <owner>bling-team@google.com</owner>
@@ -1776,7 +1820,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.TabGrid.Selection.AddToReadingList" units="Tabs"
-    expires_after="2022-11-01">
+    expires_after="2023-11-01">
   <owner>mrefaat@chromium.org</owner>
   <owner>michaeldo@chromium.org</owner>
   <owner>bling-team@google.com</owner>
@@ -1787,7 +1831,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.TabGrid.Selection.CloseTabs" units="Tabs"
-    expires_after="2022-10-16">
+    expires_after="2023-11-01">
   <owner>mrefaat@chromium.org</owner>
   <owner>michaeldo@chromium.org</owner>
   <owner>bling-team@google.com</owner>
@@ -1798,7 +1842,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.TabGrid.Selection.ShareTabs" units="Tabs"
-    expires_after="2022-11-01">
+    expires_after="2023-11-01">
   <owner>mrefaat@chromium.org</owner>
   <owner>michaeldo@chromium.org</owner>
   <owner>bling-team@google.com</owner>

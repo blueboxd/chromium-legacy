@@ -6,6 +6,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/media/webrtc/desktop_media_list_layout_config.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/grit/generated_resources.h"
@@ -73,7 +74,7 @@ class TabListModel : public ui::TableModel,
   TabListModel(const TabListModel&) = delete;
   TabListModel operator=(const TabListModel&) = delete;
 
-  raw_ptr<DesktopMediaListController> controller_;
+  raw_ptr<DesktopMediaListController, DanglingUntriaged> controller_;
   raw_ptr<ui::TableModelObserver> observer_ = nullptr;
   base::RepeatingCallback<void(size_t)> preview_updated_callback_;
 };
@@ -159,7 +160,7 @@ class TabListViewObserver : public views::TableViewObserver {
   TabListViewObserver(const TabListViewObserver&) = delete;
   TabListViewObserver operator=(const TabListViewObserver&) = delete;
 
-  const raw_ptr<DesktopMediaListController> controller_;
+  const raw_ptr<DesktopMediaListController, DanglingUntriaged> controller_;
   base::RepeatingClosure selection_changed_callback_;
 };
 
@@ -387,7 +388,7 @@ void DesktopMediaTabList::OnPreviewUpdated(size_t index) {
     ++preview_set_count_;
   } else {
     // Clear the preview after a short time.
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&DesktopMediaTabList::ClearPreviewImageIfUnchanged,
                        weak_factory_.GetWeakPtr(), preview_set_count_),

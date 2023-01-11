@@ -82,10 +82,13 @@ void CastFeaturePodController::OnDevicesUpdated(
 
 void CastFeaturePodController::Update() {
   auto* cast_config = CastConfigController::Get();
-  button_->SetVisible(cast_config &&
-                      (cast_config->HasSinksAndRoutes() ||
-                       cast_config->AccessCodeCastingEnabled()) &&
-                      !cast_config->HasActiveRoute());
+  // The cast feature tile will always be shown on the QS bubble if the revamped
+  // view is enabled.
+  button_->SetVisible(features::IsQsRevampEnabled() ||
+                      (cast_config &&
+                       (cast_config->HasSinksAndRoutes() ||
+                        cast_config->AccessCodeCastingEnabled()) &&
+                       !cast_config->HasActiveRoute()));
 }
 
 }  // namespace ash

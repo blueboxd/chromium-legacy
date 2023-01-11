@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_multi_source_observation.h"
 #include "cc/metrics/events_metrics_manager.h"
@@ -223,7 +222,10 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // Overridden from ui::EventProcessor:
   ui::EventTarget* GetRootForEvent(ui::Event* event) override;
   void OnEventProcessingStarted(ui::Event* event) override;
-  void OnEventProcessingFinished(ui::Event* event) override;
+  void OnEventProcessingFinished(
+      ui::Event* event,
+      ui::EventTarget* target,
+      const ui::EventDispatchDetails& details) override;
 
   // Overridden from ui::EventDispatcherDelegate.
   bool CanDispatchToTarget(ui::EventTarget* target) override;
@@ -280,6 +282,10 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // the mouse cursor.
   void SynthesizeMouseMoveAfterChangeToWindow(Window* window);
 
+  // Determines whether to report event latency.
+  bool ShouldReportEventLatency(ui::EventTarget* target,
+                                const ui::EventDispatchDetails& details);
+
   ui::EventDispatchDetails PreDispatchLocatedEvent(Window* target,
                                                    ui::LocatedEvent* event);
   ui::EventDispatchDetails PreDispatchMouseEvent(Window* target,
@@ -318,7 +324,8 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   std::unique_ptr<ui::LocatedEvent> held_repostable_event_;
 
   // Set when dispatching a held event.
-  raw_ptr<ui::LocatedEvent> dispatching_held_event_ = nullptr;
+  raw_ptr<ui::LocatedEvent, DanglingUntriaged> dispatching_held_event_ =
+      nullptr;
 
   base::ScopedMultiSourceObservation<aura::Window, aura::WindowObserver>
       observation_manager_{this};

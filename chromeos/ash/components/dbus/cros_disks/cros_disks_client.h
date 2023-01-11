@@ -18,6 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "chromeos/dbus/common/dbus_client.h"
 #include "chromeos/dbus/common/dbus_method_call_status.h"
+#include "third_party/cros_system_api/dbus/cros-disks/dbus-constants.h"
 
 namespace base {
 class FilePath;
@@ -27,10 +28,13 @@ namespace dbus {
 class Response;
 }
 
-// TODO(crbug.com/1368408): Most of these are partially or completely duplicated
-// in third_party/dbus/service_constants.h. We should probably use enums from
-// service_contstants directly.
 namespace ash {
+
+using cros_disks::DeviceType;
+using cros_disks::FormatError;
+using cros_disks::MountError;
+using cros_disks::PartitionError;
+using cros_disks::RenameError;
 
 // Enum describing types of mount used by cros-disks.
 enum class MountType {
@@ -43,112 +47,6 @@ enum class MountType {
 // Output operator for logging.
 COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS)
 std::ostream& operator<<(std::ostream& out, MountType type);
-
-// Type of device.
-enum class DeviceType {
-  kUnknown,
-  kUSB,          // USB stick.
-  kSD,           // SD card.
-  kOpticalDisc,  // e.g. Optical disc excluding DVD.
-  kMobile,       // Storage on a mobile device (e.g. Android).
-  kDVD,          // DVD.
-};
-
-// Output operator for logging.
-COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS)
-std::ostream& operator<<(std::ostream& out, DeviceType type);
-
-// Mount error code used by cros-disks.
-// These values are NOT the same as cros_disks::MountErrorType.
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class MountError {
-  kNone = 0,
-  kUnknown = 1,
-  kInternal = 2,
-  kInvalidArgument = 3,
-  kInvalidPath = 4,
-  kPathAlreadyMounted = 5,
-  kPathNotMounted = 6,
-  kDirectoryCreationFailed = 7,
-  kInvalidMountOptions = 8,
-  kInvalidUnmountOptions = 9,
-  kInsufficientPermissions = 10,
-  kMountProgramNotFound = 11,
-  kMountProgramFailed = 12,
-  kInvalidDevicePath = 13,
-  kUnknownFilesystem = 14,
-  kUnsupportedFilesystem = 15,
-  kInvalidArchive = 16,
-  kNeedPassword = 17,
-  kInProgress = 18,
-  kCancelled = 19,
-  kBusy = 20,
-  kMaxValue = 20,
-};
-
-// Output operator for logging.
-COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS)
-std::ostream& operator<<(std::ostream& out, MountError error);
-
-// Rename error reported by cros-disks.
-enum class RenameError {
-  kNone,
-  kUnknown,
-  kInternal,
-  kInvalidDevicePath,
-  kDeviceBeingRenamed,
-  kUnsupportedFilesystem,
-  kRenameProgramNotFound,
-  kRenameProgramFailed,
-  kDeviceNotAllowed,
-  kLongName,
-  kInvalidCharacter,
-};
-
-// Output operator for logging.
-COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS)
-std::ostream& operator<<(std::ostream& out, RenameError error);
-
-// Format error reported by cros-disks.
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-// See enum CrosDisksClientFormatError in tools/metrics/histograms/enums.xml.
-enum class FormatError {
-  kNone = 0,
-  kUnknown = 1,
-  kInternal = 2,
-  kInvalidDevicePath = 3,
-  kDeviceBeingFormatted = 4,
-  kUnsupportedFilesystem = 5,
-  kFormatProgramNotFound = 6,
-  kFormatProgramFailed = 7,
-  kDeviceNotAllowed = 8,
-  kInvalidOptions = 9,
-  kLongName = 10,
-  kInvalidCharacter = 11,
-  kMaxValue = 11,
-};
-
-// Output operator for logging.
-COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS)
-std::ostream& operator<<(std::ostream& out, FormatError error);
-
-// Partition error reported by cros-disks.
-enum class PartitionError {
-  kNone = 0,
-  kUnknown = 1,
-  kInternal = 2,
-  kInvalidDevicePath = 3,
-  kDeviceBeingPartitioned = 4,
-  kProgramNotFound = 5,
-  kProgramFailed = 6,
-  kDeviceNotAllowed = 7,
-};
-
-// Output operator for logging.
-COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS)
-std::ostream& operator<<(std::ostream& out, PartitionError error);
 
 // Event type each corresponding to a signal sent from cros-disks.
 enum class MountEventType {
@@ -303,7 +201,7 @@ struct COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS) MountPoint {
   // Type of mount.
   MountType mount_type = MountType::kInvalid;
   // Condition of mount.
-  MountError mount_error = MountError::kNone;
+  MountError mount_error = MountError::kSuccess;
   // Progress percent between 0 and 100 when mount_error is kInProgress.
   int progress_percent = 0;
   // Read-only file system?
@@ -319,7 +217,7 @@ struct COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS) MountPoint {
   MountPoint(base::StringPiece source_path,
              base::StringPiece mount_path,
              MountType mount_type = MountType::kInvalid,
-             MountError mount_error = MountError::kNone,
+             MountError mount_error = MountError::kSuccess,
              int progress_percent = 0,
              bool read_only = false);
 };

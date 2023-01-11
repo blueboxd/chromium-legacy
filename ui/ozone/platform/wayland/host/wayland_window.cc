@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -241,6 +242,13 @@ bool WaylandWindow::StartDrag(
   if (!alive)
     return false;
   return true;
+}
+
+void WaylandWindow::UpdateDragImage(const gfx::ImageSkia& image,
+                                    const gfx::Vector2d& offset) {
+  if (connection_->data_drag_controller()->state() !=
+      WaylandDataDragController::State::kIdle)
+    connection_->data_drag_controller()->UpdateDragImage(image, offset);
 }
 
 void WaylandWindow::CancelDrag() {
@@ -1037,10 +1045,6 @@ gfx::Rect WaylandWindow::AdjustBoundsToConstraintsDIP(
 }
 
 bool WaylandWindow::ProcessVisualSizeUpdate(const gfx::Size& size_px) {
-  // TODO(crbug.com/1307501): Optimize this to be less expensive. Maybe
-  // precompute in pixels for configure events. pending_configures_ can have 10s
-  // of elements in it for several frames under some conditions.
-  // The `pending_configures_` should store px size instead of dip.
   auto result =
       base::ranges::find_if(pending_configures_, [&size_px](auto& configure) {
         // Should we adjust?

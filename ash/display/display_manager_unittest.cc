@@ -30,6 +30,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
 #include "base/format_macros.h"
 #include "base/numerics/math_constants.h"
 #include "base/run_loop.h"
@@ -106,7 +107,16 @@ class DisplayManagerTest : public AshTestBase,
 
   const vector<display::Display>& changed() const { return changed_; }
   const vector<display::Display>& added() const { return added_; }
-  uint32_t changed_metrics() const { return changed_metrics_; }
+  uint32_t changed_metrics() const {
+    uint32_t changed_metrics = 0;
+    for (const auto& display_metrics : changed_metrics_) {
+      changed_metrics |= display_metrics.second;
+    }
+    return changed_metrics;
+  }
+  uint32_t changed_metrics(int64_t display_id) const {
+    return changed_metrics_.at(display_id);
+  }
 
   string GetCountSummary() const {
     return StringPrintf("%" PRIuS " %" PRIuS " %" PRIuS " %" PRIuS " %" PRIuS,
@@ -118,7 +128,7 @@ class DisplayManagerTest : public AshTestBase,
     changed_.clear();
     added_.clear();
     removed_count_ = will_process_count_ = did_process_count_ = 0U;
-    changed_metrics_ = 0U;
+    changed_metrics_.clear();
     root_window_destroyed_ = false;
   }
 
@@ -147,7 +157,8 @@ class DisplayManagerTest : public AshTestBase,
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override {
     changed_.push_back(display);
-    changed_metrics_ |= changed_metrics;
+    if (!changed_metrics_.try_emplace(display.id(), changed_metrics).second)
+      changed_metrics_[display.id()] |= changed_metrics;
   }
   void OnDisplayAdded(const display::Display& new_display) override {
     added_.push_back(new_display);
@@ -197,7 +208,7 @@ class DisplayManagerTest : public AshTestBase,
   size_t will_process_count_ = 0u;
   size_t did_process_count_ = 0u;
   bool root_window_destroyed_ = false;
-  uint32_t changed_metrics_ = 0u;
+  base::flat_map<int64_t, uint32_t> changed_metrics_;
   bool check_root_window_on_destruction_ = true;
 
   absl::optional<display::ScopedDisplayObserver> display_observer_;
@@ -2362,7 +2373,30 @@ TEST_F(DisplayManagerTest, InvertLayout) {
                 .ToString());
 }
 
-TEST_F(DisplayManagerTest, NotifyPrimaryChange) {
+TEST_F(DisplayManagerTest, NotifyPrimaryChangeSwapped) {
+  UpdateDisplay("500x400,500x400");
+  int64_t old_primary_id = GetPrimaryDisplay().id();
+  int64_t new_primary_id = GetSecondaryDisplay().id();
+  SwapPrimaryDisplay();
+
+  // Old primary display.
+  EXPECT_TRUE(changed_metrics(old_primary_id) &
+              display::DisplayObserver::DISPLAY_METRIC_BOUNDS);
+  EXPECT_TRUE(changed_metrics(old_primary_id) &
+              display::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
+  EXPECT_FALSE(changed_metrics(old_primary_id) &
+               display::DisplayObserver::DISPLAY_METRIC_PRIMARY);
+
+  // New primary display.
+  EXPECT_TRUE(changed_metrics(new_primary_id) &
+              display::DisplayObserver::DISPLAY_METRIC_BOUNDS);
+  EXPECT_TRUE(changed_metrics(new_primary_id) &
+              display::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
+  EXPECT_TRUE(changed_metrics(new_primary_id) &
+              display::DisplayObserver::DISPLAY_METRIC_PRIMARY);
+}
+
+TEST_F(DisplayManagerTest, NotifyPrimaryChangeDock) {
   UpdateDisplay("500x400,500x400");
   SwapPrimaryDisplay();
   reset();
@@ -3602,7 +3636,8 @@ std::unique_ptr<display::DisplayMode> MakeDisplayMode() {
 
 }  // namespace
 
-TEST_F(DisplayManagerTest, DisconnectedInternalDisplayShouldUpdateDisplayInfo) {
+TEST_F(DisplayManagerTest,
+       InternalDisplayUpdatesDisplayInfoProperlyUponWakeup) {
   constexpr int64_t external_id = 123;
   const int64_t internal_id =
       display::test::DisplayManagerTestApi(display_manager())
@@ -3620,18 +3655,18 @@ TEST_F(DisplayManagerTest, DisconnectedInternalDisplayShouldUpdateDisplayInfo) {
           .SetNativeMode(MakeDisplayMode())
           .Build();
   EXPECT_FALSE(internal_snapshot->current_mode());
-
   outputs.push_back(internal_snapshot.get());
+
   std::unique_ptr<display::DisplaySnapshot> external_snapshot =
       display::FakeDisplaySnapshot::Builder()
           .SetId(external_id)
+          .SetType(display::DISPLAY_CONNECTION_TYPE_DISPLAYPORT)
           .SetNativeMode(MakeDisplayMode())
+          // "Connected display" has the current mode.
+          .SetCurrentMode(MakeDisplayMode())
           .AddMode(MakeDisplayMode())
           .SetOrigin({0, 1000})
           .Build();
-  // "Connectd display" has the current mode.
-  external_snapshot->set_current_mode(external_snapshot->native_mode());
-
   outputs.push_back(external_snapshot.get());
 
   // Update the display manager through DisplayChangeObserver.
@@ -3639,14 +3674,132 @@ TEST_F(DisplayManagerTest, DisconnectedInternalDisplayShouldUpdateDisplayInfo) {
   observer.OnDisplayModeChanged(outputs);
 
   EXPECT_EQ(1u, display_manager()->GetNumDisplays());
-  EXPECT_TRUE(display_manager()->IsActiveDisplayId(external_id));
   EXPECT_FALSE(display_manager()->IsActiveDisplayId(internal_id));
+  EXPECT_TRUE(display_manager()->IsActiveDisplayId(external_id));
 
-  const display::ManagedDisplayInfo& display_info =
-      display_manager()->GetDisplayInfo(internal_id);
-  EXPECT_EQ(1.6f, display_info.device_scale_factor());
-  ASSERT_EQ(1u, display_info.display_modes().size());
-  EXPECT_EQ(1.6f, display_info.display_modes()[0].device_scale_factor());
+  {
+    const display::ManagedDisplayInfo& display_info =
+        display_manager()->GetDisplayInfo(internal_id);
+    EXPECT_EQ(1.0f, display_info.device_scale_factor());
+    ASSERT_EQ(1u, display_info.display_modes().size());
+    EXPECT_EQ(1.0f, display_info.display_modes()[0].device_scale_factor());
+  }
+
+  // Turn the internal display on.
+  outputs.front()->set_current_mode(outputs.front()->native_mode());
+  observer.GetStateForDisplayIds(outputs);
+  observer.OnDisplayModeChanged(outputs);
+
+  EXPECT_EQ(2u, display_manager()->GetNumDisplays());
+  EXPECT_TRUE(display_manager()->IsActiveDisplayId(internal_id));
+  EXPECT_TRUE(display_manager()->IsActiveDisplayId(external_id));
+
+  {
+    const display::ManagedDisplayInfo& display_info =
+        display_manager()->GetDisplayInfo(internal_id);
+    EXPECT_EQ(1.6f, display_info.device_scale_factor());
+    ASSERT_EQ(1u, display_info.display_modes().size());
+    EXPECT_EQ(1.6f, display_info.display_modes()[0].device_scale_factor());
+  }
+}
+
+TEST_F(DisplayManagerTest, InternalDisplayUpdatesBoundsUponWakeup) {
+  // DP connector is positioned first in DRM, so external display is detected
+  // first.
+  constexpr int64_t external_id = 123;
+  constexpr int64_t internal_id = 456;
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetInternalDisplayId(internal_id);
+
+  display::Screen* screen = display::Screen::GetScreen();
+  DCHECK(screen);
+  Shell* shell = Shell::Get();
+  display::DisplayChangeObserver observer(shell->display_manager());
+  display::DisplayConfigurator::DisplayStateList outputs;
+  std::unique_ptr<display::DisplaySnapshot> external_snapshot =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(external_id)
+          .SetType(display::DISPLAY_CONNECTION_TYPE_DISPLAYPORT)
+          .SetNativeMode(MakeDisplayMode())
+          .SetCurrentMode(MakeDisplayMode())
+          .AddMode(MakeDisplayMode())
+          .Build();
+  outputs.push_back(external_snapshot.get());
+
+  std::unique_ptr<display::DisplaySnapshot> internal_snapshot =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(internal_id)
+          .SetType(display::DISPLAY_CONNECTION_TYPE_INTERNAL)
+          .SetNativeMode(MakeDisplayMode())
+          .SetCurrentMode(MakeDisplayMode())
+          .SetOrigin({0, 1000})
+          .Build();
+  outputs.push_back(internal_snapshot.get());
+
+  // Update the display manager through DisplayChangeObserver.
+  observer.GetStateForDisplayIds(outputs);
+  observer.OnDisplayModeChanged(outputs);
+
+  {
+    // Verify the bounds are set such that the external display is at 0, 0.
+    const display::ManagedDisplayInfo& external_display_info =
+        display_manager()->GetDisplayInfo(external_id);
+    EXPECT_EQ(gfx::Rect(0, 0, 1366, 768),
+              external_display_info.bounds_in_native());
+
+    const display::ManagedDisplayInfo& internal_display_info =
+        display_manager()->GetDisplayInfo(internal_id);
+    EXPECT_EQ(gfx::Rect(0, 1000, 1366, 768),
+              internal_display_info.bounds_in_native());
+  }
+
+  // Turn the displays off.
+  outputs[0]->set_current_mode(nullptr);
+  outputs[1]->set_current_mode(nullptr);
+  observer.GetStateForDisplayIds(outputs);
+  observer.OnDisplayModeChanged(outputs);
+
+  {
+    // Nothing should change.
+    const display::ManagedDisplayInfo& external_display_info =
+        display_manager()->GetDisplayInfo(external_id);
+    EXPECT_EQ(gfx::Rect(0, 0, 1366, 768),
+              external_display_info.bounds_in_native());
+
+    const display::ManagedDisplayInfo& internal_display_info =
+        display_manager()->GetDisplayInfo(internal_id);
+    EXPECT_EQ(gfx::Rect(0, 1000, 1366, 768),
+              internal_display_info.bounds_in_native());
+  }
+
+  // Disconnect the external display.
+  outputs.erase(outputs.begin());
+  outputs[0]->set_origin({0, 0});
+  observer.GetStateForDisplayIds(outputs);
+  observer.OnDisplayModeChanged(outputs);
+
+  {
+    // Verify that the internal display's native bounds have not changed yet,
+    // since we do not configure while it's disabled.
+    const display::ManagedDisplayInfo& internal_display_info =
+        display_manager()->GetDisplayInfo(internal_id);
+    EXPECT_EQ(gfx::Rect(0, 1000, 1366, 768),
+              internal_display_info.bounds_in_native());
+  }
+
+  // Turn the display back on.
+  outputs[0]->set_current_mode(outputs[0]->native_mode());
+  observer.GetStateForDisplayIds(outputs);
+  observer.OnDisplayModeChanged(outputs);
+
+  {
+    // Verify that the internal display updated its origins properly after it
+    // was enabled.
+    const display::ManagedDisplayInfo& internal_display_info =
+        display_manager()->GetDisplayInfo(internal_id);
+    EXPECT_EQ(gfx::Rect(0, 0, 1366, 768),
+              internal_display_info.bounds_in_native());
+  }
 }
 
 // TODO(crbug/1262970): Delete when we can read radius from command line.

@@ -19,8 +19,8 @@
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/ash/login/welcome_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -72,7 +72,7 @@ class LanguageListWaiter : public WelcomeScreen::Observer {
 
  private:
   bool LanguageListReady() const {
-    return !welcome_screen_->language_list().empty();
+    return welcome_screen_->language_list_updated_for_testing();
   }
 
   void CheckLanguageList() {
@@ -334,8 +334,6 @@ std::string TranslateXKB2Extension(const std::string& src) {
 }
 
 void OobeLocalizationTest::RunLocalizationTest() {
-  const std::string initial_locale(GetParam()->initial_locale);
-  const std::string keyboard_layout(GetParam()->keyboard_layout);
   const std::string expected_locale(GetParam()->expected_locale);
   const std::string expected_keyboard_layout(
       GetParam()->expected_keyboard_layout);

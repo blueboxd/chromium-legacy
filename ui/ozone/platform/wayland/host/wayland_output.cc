@@ -12,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "ui/display/display.h"
 #include "ui/gfx/color_space.h"
-#include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_zaura_output.h"
@@ -24,11 +23,7 @@ namespace ui {
 
 namespace {
 constexpr uint32_t kMinVersion = 2;
-#if CHROME_WAYLAND_CHECK_VERSION(1, 20, 0)
 constexpr uint32_t kMaxVersion = 4;
-#else
-constexpr uint32_t kMaxVersion = 2;
-#endif
 }  // namespace
 
 // static
@@ -47,8 +42,10 @@ void WaylandOutput::Instantiate(WaylandConnection* connection,
     return;
   }
 
-  auto output =
-      wl::Bind<wl_output>(registry, name, std::min(version, kMaxVersion));
+  auto output = wl::Bind<wl_output>(
+      registry, name,
+      wl::CalculateBindVersion(version, kMaxVersion,
+                               wl_output_interface.version));
   if (!output) {
     LOG(ERROR) << "Failed to bind to wl_output global";
     return;
@@ -60,6 +57,30 @@ void WaylandOutput::Instantiate(WaylandConnection* connection,
   }
   connection->wayland_output_manager_->AddWaylandOutput(name, output.release());
 }
+
+WaylandOutput::Metrics::Metrics() = default;
+WaylandOutput::Metrics::Metrics(Id output_id,
+                                int64_t display_id,
+                                gfx::Point origin,
+                                gfx::Size logical_size,
+                                gfx::Size physical_size,
+                                gfx::Insets insets,
+                                float scale_factor,
+                                int32_t panel_transform,
+                                int32_t logical_transform,
+                                const std::string& description)
+    : output_id(output_id),
+      display_id(display_id),
+      origin(origin),
+      logical_size(logical_size),
+      physical_size(physical_size),
+      insets(insets),
+      scale_factor(scale_factor),
+      panel_transform(panel_transform),
+      logical_transform(logical_transform),
+      description(description) {}
+WaylandOutput::Metrics::Metrics(const Metrics& copy) = default;
+WaylandOutput::Metrics::~Metrics() = default;
 
 WaylandOutput::WaylandOutput(Id output_id,
                              wl_output* output,
@@ -89,6 +110,7 @@ void WaylandOutput::InitializeColorManagementOutput(
     WaylandZcrColorManager* zcr_color_manager) {
   DCHECK(!color_management_output_);
   color_management_output_ = std::make_unique<WaylandZcrColorManagementOutput>(
+      this,
       zcr_color_manager->CreateColorManagementOutput(output_.get()).release());
 }
 
@@ -96,15 +118,15 @@ void WaylandOutput::Initialize(Delegate* delegate) {
   DCHECK(!delegate_);
   delegate_ = delegate;
   static constexpr wl_output_listener output_listener = {
-    &OutputHandleGeometry,
-    &OutputHandleMode,
-    &OutputHandleDone,
-    &OutputHandleScale,
-#if CHROME_WAYLAND_CHECK_VERSION(1, 20, 0)
-    // since protocol version 4 and Wayland version 1.20
-    &OutputHandleName,
-    &OutputHandleDescription,
+      &OutputHandleGeometry,    &OutputHandleMode,
+      &OutputHandleDone,        &OutputHandleScale,
+#ifdef WL_OUTPUT_NAME_SINCE_VERSION
+      &OutputHandleName,
 #endif
+#ifdef WL_OUTPUT_DESCRIPTION_SINCE_VERSION
+      &OutputHandleDescription,
+#endif
+
   };
   wl_output_add_listener(output_.get(), &output_listener, this);
 }
@@ -113,6 +135,13 @@ float WaylandOutput::GetUIScaleFactor() const {
   return display::Display::HasForceDeviceScaleFactor()
              ? display::Display::GetForcedDeviceScaleFactor()
              : scale_factor();
+}
+
+WaylandOutput::Metrics WaylandOutput::GetMetrics() const {
+  // TODO(aluh): Change to designated initializers once C++20 is supported.
+  return {output_id(),         display_id(), origin(),       logical_size(),
+          physical_size(),     insets(),     scale_factor(), panel_transform(),
+          logical_transform(), description()};
 }
 
 int32_t WaylandOutput::logical_transform() const {
@@ -141,8 +170,19 @@ const std::string& WaylandOutput::description() const {
   return xdg_output_ ? xdg_output_->description() : description_;
 }
 
+int64_t WaylandOutput::display_id() const {
+  return aura_output_ && aura_output_->display_id().has_value()
+             ? aura_output_->display_id().value()
+             : output_id_;
+}
+
 const std::string& WaylandOutput::name() const {
   return xdg_output_ ? xdg_output_->name() : name_;
+}
+
+bool WaylandOutput::IsReady() const {
+  return !physical_size_.IsEmpty() &&
+         (!aura_output_ || aura_output_->IsReady());
 }
 
 zaura_output* WaylandOutput::get_zaura_output() {
@@ -167,9 +207,11 @@ void WaylandOutput::TriggerDelegateNotifications() {
       scale_factor_ = max_physical_side / max_logical_side;
     }
   }
-  delegate_->OnOutputHandleMetrics(
-      output_id_, origin(), logical_size(), physical_size_, insets(),
-      scale_factor_, panel_transform_, logical_transform(), description());
+  // Wait until the aura output receives the display id.
+  if (aura_output_ && !aura_output_->IsReady())
+    return;
+
+  delegate_->OnOutputHandleMetrics(GetMetrics());
 }
 
 // static
@@ -224,8 +266,7 @@ void WaylandOutput::OutputHandleScale(void* data,
     wayland_output->scale_factor_ = factor;
 }
 
-#if CHROME_WAYLAND_CHECK_VERSION(1, 20, 0)
-
+#ifdef WL_OUTPUT_NAME_SINCE_VERSION
 // static
 void WaylandOutput::OutputHandleName(void* data,
                                      struct wl_output* wl_output,
@@ -233,7 +274,9 @@ void WaylandOutput::OutputHandleName(void* data,
   if (WaylandOutput* wayland_output = static_cast<WaylandOutput*>(data))
     wayland_output->name_ = name ? std::string(name) : std::string{};
 }
+#endif
 
+#ifdef WL_OUTPUT_DESCRIPTION_SINCE_VERSION
 // static
 void WaylandOutput::OutputHandleDescription(void* data,
                                             struct wl_output* wl_output,
@@ -243,7 +286,6 @@ void WaylandOutput::OutputHandleDescription(void* data,
         description ? std::string(description) : std::string{};
   }
 }
-
 #endif
 
 }  // namespace ui

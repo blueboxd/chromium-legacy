@@ -151,7 +151,8 @@ ArCoreGl::~ArCoreGl() {
   // If anyone is still waiting for our initialization to finish, let them know
   // that it failed.
   if (initialized_callback_)
-    std::move(initialized_callback_).Run(absl::nullopt);
+    std::move(initialized_callback_)
+        .Run(base::unexpected(ArCoreGlInitializeError::kFailure));
 
   // Make sure mojo bindings are closed before proceeding with member
   // destruction. Specifically, destroying pending_getframedata_
@@ -214,7 +215,8 @@ void ArCoreGl::Initialize(
     drawing_widget = gfx::kNullAcceleratedWidget;
   }
   if (!InitializeGl(drawing_widget)) {
-    std::move(callback).Run(absl::nullopt);
+    std::move(callback).Run(
+        base::unexpected(ArCoreGlInitializeError::kFailure));
     return;
   }
 
@@ -223,7 +225,8 @@ void ArCoreGl::Initialize(
       session_utils->GetApplicationContext();
   if (!application_context.obj()) {
     DLOG(ERROR) << "Unable to retrieve the Java context/activity!";
-    std::move(callback).Run(absl::nullopt);
+    std::move(callback).Run(
+        base::unexpected(ArCoreGlInitializeError::kFailure));
     return;
   }
 
@@ -252,7 +255,8 @@ void ArCoreGl::Initialize(
                           std::move(depth_sensing_config));
   if (!maybe_initialize_result) {
     DLOG(ERROR) << "ARCore failed to initialize";
-    std::move(callback).Run(absl::nullopt);
+    std::move(callback).Run(
+        base::unexpected(ArCoreGlInitializeError::kFailure));
     return;
   }
 
@@ -331,8 +335,13 @@ void ArCoreGl::InitializeArCompositor(gpu::SurfaceHandle surface_handle,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ArCoreGl::OnArImageTransportReady() {
-  DVLOG(1) << __func__;
+void ArCoreGl::OnArImageTransportReady(bool success) {
+  DVLOG(1) << __func__ << ": success=" << success;
+  if (!success) {
+    std::move(initialized_callback_)
+        .Run(base::unexpected(ArCoreGlInitializeError::kRetryableFailure));
+    return;
+  }
   is_image_transport_ready_ = true;
   OnInitialized();
 }
@@ -340,7 +349,8 @@ void ArCoreGl::OnArImageTransportReady() {
 void ArCoreGl::OnArCompositorInitialized(bool initialized) {
   DVLOG(1) << __func__ << " intialized=" << initialized;
   if (!initialized) {
-    std::move(initialized_callback_).Run(absl::nullopt);
+    std::move(initialized_callback_)
+        .Run(base::unexpected(ArCoreGlInitializeError::kFailure));
     return;
   }
 
@@ -577,8 +587,7 @@ void ArCoreGl::RecalculateUvsAndProjection() {
 
   // Also calculate the inverse projection which is needed for converting
   // screen touches to world rays.
-  bool has_inverse = projection_.GetInverse(&inverse_projection_);
-  DCHECK(has_inverse);
+  inverse_projection_ = projection_.GetCheckedInverse();
 
   // VRFieldOfView wants positive angles.
   mojom::VRFieldOfViewPtr field_of_view = mojom::VRFieldOfView::New();
@@ -1069,9 +1078,13 @@ void ArCoreGl::GetRenderedFrameStats(WebXrFrame* frame) {
   base::TimeTicks now = base::TimeTicks::Now();
 
   // Get the time when rendering completed from the render completion fence.
-  // TODO(klausw): This is an overestimate in AR compositor mode, the fence
+  //
+  // This is an overestimate in AR compositor mode because the fence
   // completes one frame late. The average_render_time_ calculation should use
-  // the WritesDone time reported via OnBeginFrame's timing_data instead.
+  // the WritesDone time reported via OnBeginFrame's timing_data instead, but
+  // those aren't guaranteed to be available. See also the GPU load
+  // estimate in rendering_time_ratio_ which uses a different calculation.
+  // TODO(https://crbug.com/1382589): revisit this calculation?
   base::TimeTicks completion_time = now;
   DCHECK(frame->render_completion_fence);
   completion_time = static_cast<gl::GLFenceAndroidNativeFenceSync*>(

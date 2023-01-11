@@ -6,10 +6,12 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_SINGLE_FIELD_FORM_FILLER_H_
 
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/common/aliases.h"
 #include "components/autofill/core/common/form_data.h"
 
 namespace autofill {
 
+class AutofillClient;
 struct SuggestionsContext;
 
 // Interface for form-filling implementations that fill a single field at a
@@ -28,7 +30,7 @@ class SingleFieldFormFiller {
     // |suggestions| is the list of fetched suggestions.
     virtual void OnSuggestionsReturned(
         int query_id,
-        bool autoselect_first_suggestion,
+        AutoselectFirstSuggestion autoselect_first_suggestion,
         const std::vector<Suggestion>& suggestions) = 0;
   };
 
@@ -39,26 +41,26 @@ class SingleFieldFormFiller {
 
   // Gets suggestions for a given field. In the case of Autocomplete, this is
   // through a DB query, though it could be different for other fill types.
-  // |query_id| is given by the client as context.
-  // |is_autocomplete_enabled| is to determine if the feature is enable for the
-  // requestor's context (e.g. Android WebViews have different contexts).
-  // |field| is the given field. |handler| is weak pointer to the requestor,
-  // which we will call back once we receive the response. There can only be one
-  // pending query per |handler|, hence this function will cancel the previous
-  // pending query if it hadn't already been resolved, at which point no method
-  // of the handler will be called.
-  // The boolean return value denotes whether a SingleFieldFormFiller claims the
-  // opportunity to fill this field. By returning true, the
-  // SingleFieldFormFiller does not promise at this point to have a value
-  // available for filling. It just promises to call back the handler and voids
-  // the opportunity for other SingleFieldFormFillers to offer filling the
-  // field. The callback can happen synchronously even before
-  // OnGetSingleFieldSuggestions returns true.
+  // `query_id` is given by the client as context.
+  // `client` is used for functionality such as checking if autocomplete is
+  // enabled, or checking if the URL we navigated to is blocklisted for the
+  // specific single field form filler that we are trying to retrieve
+  // suggestions from. `field` is the given field. `handler` is weak pointer to
+  // the requestor, which we will call back once we receive the response. There
+  // can only be one pending query per `handler`, hence this function will
+  // cancel the previous pending query if it hadn't already been resolved, at
+  // which point no method of the handler will be called. The boolean return
+  // value denotes whether a SingleFieldFormFiller claims the opportunity to
+  // fill this field. By returning true, the SingleFieldFormFiller does not
+  // promise at this point to have a value available for filling. It just
+  // promises to call back the handler and voids the opportunity for other
+  // SingleFieldFormFillers to offer filling the field. The callback can happen
+  // synchronously even before OnGetSingleFieldSuggestions returns true.
   [[nodiscard]] virtual bool OnGetSingleFieldSuggestions(
       int query_id,
-      bool is_autocomplete_enabled,
-      bool autoselect_first_suggestion,
+      AutoselectFirstSuggestion autoselect_first_suggestion,
       const FormFieldData& field,
+      const AutofillClient& client,
       base::WeakPtr<SuggestionsHandler> handler,
       const SuggestionsContext& context) = 0;
 
@@ -94,7 +96,7 @@ class SingleFieldFormFiller {
   // with the appropriate response.
   struct QueryHandler {
     QueryHandler(int client_query_id,
-                 bool autoselect_first_suggestion,
+                 AutoselectFirstSuggestion autoselect_first_suggestion,
                  std::u16string prefix,
                  base::WeakPtr<SuggestionsHandler> handler);
     QueryHandler(const QueryHandler& original);
@@ -107,7 +109,7 @@ class SingleFieldFormFiller {
     // Determines whether we should auto-select the first suggestion when
     // returning. This value was given by the handler when requesting
     // suggestions.
-    bool autoselect_first_suggestion_;
+    AutoselectFirstSuggestion autoselect_first_suggestion_;
 
     // Prefix used to search suggestions, submitted by the handler.
     std::u16string prefix_;

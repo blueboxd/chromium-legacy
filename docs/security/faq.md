@@ -465,6 +465,11 @@ capabilities outside of the guidance provided here. In cases of clear violation
 of user expectations, we will attempt to remedy these policies and we will apply
 the guidance laid out in this document to any newly added policies.
 
+See the [Web Platform Security
+guidelines](https://chromium.googlesource.com/chromium/src/+/master/docs/security/web-platfom-security-guidelines.md#enterprise-policies)
+for more information on how enterprise policies should interact with Web
+Platform APIs.
+
 <a name="TOC-Can-I-use-EMET-to-help-protect-Chrome-against-attack-on-Microsoft-Windows-"></a>
 ### Can I use EMET to help protect Chrome against attack on Microsoft Windows?
 
@@ -639,6 +644,10 @@ provide some kind of security guarantee (e.g. encrypted instant messages or
 email). However, unless the JavaScript was itself transported to the client
 securely, it cannot actually provide any guarantee. (After all, a MITM attacker
 could have modified the code, if it was not transported securely.)
+
+See the [Web Platform Security
+guidelines](https://chromium.googlesource.com/chromium/src/+/master/docs/security/web-platform-security-guidelines.md#encryption)
+for more information on security guidelines applicable to web platform APIs.
 
 <a name="TOC-Which-origins-are-secure-"></a>
 ### Which origins are "secure"?
@@ -838,3 +847,40 @@ FAQ](https://chromium.googlesource.com/chromium/src/+/main/docs/security/service
 ### What is the security story for Extensions?
 
 See our dedicated [Extensions Security FAQ](https://chromium.googlesource.com/chromium/src/+/main/extensions/docs/security_faq.md).
+
+<a name="TOC-Im-making-a-Chromium-based-browser-how-should-I-secure-it-"></a>
+### I'm making a Chromium-based browser. How should I secure it?
+
+If you want to make a browser based on Chromium, you should stay up to date
+with Chromium's security fixes. There are adversaries who weaponize fixed
+Chromium bugs ("n-day vulnerabilities") to target browsers which haven’t yet
+absorbed those fixes.
+
+Decide whether your approach is to stay constantly up to date with Chromium
+releases, or to backport security fixes onto some older version, upgrading
+Chromium versions less frequently.
+
+Backporting security fixes sounds easier than forward-porting features, but in
+our experience, this is false. Chromium releases 400+ security bug fixes per
+year ([example
+query](https://bugs.chromium.org/p/chromium/issues/list?q=type%3DBug-Security%20has%3Arelease%20closed%3Etoday-730%20closed%3Ctoday-365%20allpublic&can=1)).
+Some downstream browsers take risks by backporting only Medium+ severity fixes,
+but that's still over 300 ([example
+query](https://bugs.chromium.org/p/chromium/issues/list?q=type%3DBug-Security%20has%3Arelease%20closed%3Etoday-730%20closed%3Ctoday-365%20allpublic%20Security_Severity%3DMedium%2CHigh%2CCritical&can=1)).
+Most are trivial cherry-picks; but others require rework and require versatile
+engineers who can make good decisions about any part of a large codebase.
+
+Our recommendation is to stay up-to-date with Chrome's released versions. You
+should aim to release a version of your browser within just a few days of each
+Chrome [stable
+release](https://chromereleases.googleblog.com/search/label/Stable%20updates).
+If your browser is sufficiently widely-used, you can [apply for advance notice
+of fixed vulnerabilities](https://www.chromium.org/Home/chromium-security/) to
+make this a little easier.
+
+Finally, if you choose the backporting approach, please explain the security
+properties to your users. Some fraction of security improvements cannot be
+backported. This can happen for several reasons, for example: because they
+depend upon architectural changes (e.g. breaking API changes); because the
+security improvement is a significant new feature; or because the security
+improvement is the removal of a broken feature.

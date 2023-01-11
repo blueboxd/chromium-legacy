@@ -94,6 +94,10 @@ const char kAudioInputDevicesUserPriority[] =
 const char kAudioOutputDevicesUserPriority[] =
     "settings.audio.output_user_priority";
 
+// A dictionary pref that maps device id string to the timestamp of the last
+// time the audio device was connected, in `base::Time::ToDoubleT()`'s format.
+const char kAudioDevicesLastSeen[] = "settings.audio.last_seen";
+
 // A string pref storing an identifier that is getting sent with parental
 // consent in EDU account addition flow.
 const char kEduCoexistenceId[] = "account_manager.edu_coexistence_id";
@@ -319,7 +323,7 @@ const char kAccessibilityFloatingMenuPosition[] =
 // A boolean pref which determines whether focus highlighting is enabled.
 const char kAccessibilityFocusHighlightEnabled[] =
     "settings.a11y.focus_highlight";
-// A boolean pref which determines whether select-to-speak is enabled.
+// A boolean pref which determines whether Select-to-speak is enabled.
 const char kAccessibilitySelectToSpeakEnabled[] =
     "settings.a11y.select_to_speak";
 // A boolean pref which determines whether Switch Access is enabled.
@@ -375,9 +379,56 @@ const char kAccessibilityDictationLocale[] = "settings.a11y.dictation_locale";
 const char kAccessibilityDictationLocaleOfflineNudge[] =
     "settings.a11y.dictation_locale_offline_nudge";
 // A boolean pref which determines whether the enhanced network voices feature
-// in select-to-speak is allowed. This pref can only be set by policy.
+// in Select-to-speak is allowed. This pref can only be set by policy.
 const char kAccessibilityEnhancedNetworkVoicesInSelectToSpeakAllowed[] =
     "settings.a11y.enhanced_network_voices_in_select_to_speak_allowed";
+
+// A boolean pref which determines whether Select-to-speak shades the background
+// contents that aren't being read.
+const char kAccessibilitySelectToSpeakBackgroundShading[] =
+    "settings.a11y.select_to_speak_background_shading";
+
+// A boolean pref which determines whether enhanced network TTS voices are
+// enabled for Select-to-speak.
+const char kAccessibilitySelectToSpeakEnhancedNetworkVoices[] =
+    "settings.a11y.select_to_speak_enhanced_network_voices";
+
+// A string pref which determines the user's preferred enhanced voice for
+// Select-to-speak.
+const char kAccessibilitySelectToSpeakEnhancedVoiceName[] =
+    "settings.a11y.select_to_speak_enhanced_voice_name";
+
+// A boolean pref which determines whether the initial popup authorizing
+// enhanced network voices for Select-to-speak has been shown to the user.
+const char kAccessibilitySelectToSpeakEnhancedVoicesDialogShown[] =
+    "settings.a11y.select_to_speak_enhanced_voices_dialog_shown";
+
+// A string pref which determines the user's word highlighting color preference
+// for Select-to-speak, stored as a hex color string. (e.g. "#ae003f")
+const char kAccessibilitySelectToSpeakHighlightColor[] =
+    "settings.a11y.select_to_speak_highlight_color";
+
+// A boolean pref which determines whether Select-to-speak shows navigation
+// controls that allow the user to navigate to next/previous sentences,
+// paragraphs, and more.
+const char kAccessibilitySelectToSpeakNavigationControls[] =
+    "settings.a11y.select_to_speak_navigation_controls";
+
+// A string pref which determines the user's preferred voice for
+// Select-to-speak.
+const char kAccessibilitySelectToSpeakVoiceName[] =
+    "settings.a11y.select_to_speak_voice_name";
+
+// A boolean pref which determines whether Select-to-speak enables automatic
+// voice switching between different languages.
+const char kAccessibilitySelectToSpeakVoiceSwitching[] =
+    "settings.a11y.select_to_speak_voice_switching";
+
+// A boolean pref which determines whether Select-to-speak highlights each word
+// as it is read.
+const char kAccessibilitySelectToSpeakWordHighlight[] =
+    "settings.a11y.select_to_speak_word_highlight";
+
 // A boolean pref which determines whether the accessibility menu shows
 // regardless of the state of a11y features.
 const char kShouldAlwaysShowAccessibilityMenu[] = "settings.a11y.enable_menu";
@@ -549,7 +600,8 @@ const char kDarkModeEnabled[] = "ash.dark_mode.enabled";
 // entry points of dark/light mode ("Dark theme" inside quick settings or
 // personalization hub), which means the user already knows how to change the
 // color mode of the system.
-const char kDarkLightModeNudge[] = "ash.dark_light_mode.educational_nudge";
+const char kDarkLightModeNudgeLeftToShowCount[] =
+    "ash.dark_light_mode.educational_nudge";
 
 // An integer pref storing the type of automatic scheduling of turning on and
 // off the dark mode feature similar to `kNightLightScheduleType`, but
@@ -704,6 +756,10 @@ const char kPowerAlsLoggingEnabled[] = "power.als_logging_enabled";
 
 // Boolean controlling whether quick dim is enabled.
 const char kPowerQuickDimEnabled[] = "power.quick_dim_enabled";
+
+// Quick lock delay is used inside powerd to control the delay time for a screen
+// lock to happen if the user is detected to be absent.
+const char kPowerQuickLockDelay[] = "power.quick_lock_delay.ms";
 
 // Boolean controlling whether the settings is enabled. This pref is intended to
 // be set only by policy not by user.
@@ -910,14 +966,6 @@ const char kUsbPowerShareEnabled[] = "ash.power.usb_power_share_enabled";
 const char kUsbPeripheralCableSpeedNotificationShown[] =
     "ash.usb_peripheral_cable_speed_notification_shown";
 
-// An integer pref that specifies how many times the Suggested Content privacy
-// info has been shown in Launcher. This value will increment by one every time
-// when Launcher changes state from Peeking to Half or FullscreenSearch up to a
-// predefined threshold, e.g. six times. If the info has been shown for more
-// than the threshold, do not show the privacy info any more.
-const char kSuggestedContentInfoShownInLauncher[] =
-    "ash.launcher.suggested_content_info_shown";
-
 // A dictionary value that determines whether the reorder nudge in app list
 // should show to the users.
 const char kAppListReorderNudge[] = "ash.launcher.app_list_reorder_nudge";
@@ -926,14 +974,6 @@ const char kAppListReorderNudge[] = "ash.launcher.app_list_reorder_nudge";
 // the continue files section for the launcher.
 const char kLauncherFilesPrivacyNotice[] =
     "ash.launcher.continue_section_privacy_notice";
-
-// A boolean pref that indicates whether the Suggested Content privacy info may
-// be displayed to user. A false value indicates that the info can be displayed
-// if the value of |kSuggestedContentInfoShownInLauncher| is smaller than the
-// predefined threshold. A true value implies that the user has dismissed the
-// info view, and do not show the privacy info any more.
-const char kSuggestedContentInfoDismissedInLauncher[] =
-    "ash.launcher.suggested_content_info_dismissed";
 
 // A boolean pref that indicates whether lock screen media controls are enabled.
 // Controlled by user policy.
@@ -1081,8 +1121,17 @@ const char kFloatingWorkspaceEnabled[] = "ash.floating_workspace_enabled";
 // user.
 const char kShowPostRebootNotification[] = "ash.show_post_reboot_notification";
 
-// Integer pref indicating which color for the backlight keyboard is currently
-// selected for a user profile.
+// This integer pref indicates which color for the backlight keyboard is
+// currently selected. A pref with this name is registered in two different
+// contexts:
+// - User profile:
+//   Indicates the color selected by the user for their profile.
+//   Can be "recommended" through device policy DeviceKeyboardBacklightColor.
+// - Local state:
+//   Indicates the color used on the sign-in screen.
+//   Can be "recommended" through device policy DeviceKeyboardBacklightColor
+//   (but as there is no UI to change the color on the sign-in screen,
+//   it's effectively policy-mandated then).
 const char kPersonalizationKeyboardBacklightColor[] =
     "ash.personalization.keyboard_backlight_color";
 

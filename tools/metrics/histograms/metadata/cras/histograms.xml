@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="Cras.A2dp100msFailureOverStream" units="units"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>hychao@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -152,7 +152,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.DeviceNoiseCancellationStatus"
-    enum="CrasNoiseCancellationStatus" expires_after="2023-02-12">
+    enum="CrasNoiseCancellationStatus" expires_after="2023-04-16">
 <!-- Name completed by histogram_suffixes
      name="Cras.DeviceType" -->
 
@@ -290,6 +290,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Cras.HfpMicSuperResolutionStatus.{Device}"
+    enum="CrasHfpMicSuperResolutionStatus" expires_after="2023-09-30">
+  <owner>cranelw@google.com</owner>
+  <owner>chromeos-audio@google.com</owner>
+  <summary>
+    Record the status of Super Resolution for the bluetooth microphone audio. It
+    is recorded when the device is opened.
+  </summary>
+  <token key="Device">
+    <variant name="BluetoothNarrowBandMic"/>
+    <variant name="BluetoothWideBandMic"/>
+  </token>
+</histogram>
+
 <histogram name="Cras.HfpScoConnectionError" enum="CrasHfpScoError"
     expires_after="2022-12-01">
   <owner>enshuo@chromium.org</owner>
@@ -322,7 +336,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.HighestDeviceDelayInput" units="units"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -335,7 +349,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.HighestDeviceDelayOutput" units="units"
-    expires_after="2023-02-12">
+    expires_after="2023-04-23">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -359,7 +373,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.HighestOutputHardwareLevel" units="frames"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -380,7 +394,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.MissedCallbackFirstTimeInput" units="seconds"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -571,7 +585,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.StreamCallbackThreshold" units="frames"
-    expires_after="2023-01-22">
+    expires_after="2023-04-23">
 <!-- Name completed by histogram_suffixes
      name="Cras.Direction" and
      name="Cras.ClientType" -->
@@ -692,7 +706,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.UnderrunsPerDevice" units="count"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>

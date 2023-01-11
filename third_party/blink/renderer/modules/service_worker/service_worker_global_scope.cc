@@ -803,7 +803,7 @@ bool ServiceWorkerGlobalScope::CrossOriginIsolatedCapability() const {
   return Agent::IsCrossOriginIsolated();
 }
 
-bool ServiceWorkerGlobalScope::IsolatedApplicationCapability() const {
+bool ServiceWorkerGlobalScope::IsIsolatedContext() const {
   // TODO(mkwst): Make a decision here, and spec it.
   return false;
 }
@@ -2297,7 +2297,7 @@ void ServiceWorkerGlobalScope::StartCanMakePaymentEvent(
           this, event_id, wait_until_observer);
 
   Event* event = CanMakePaymentEvent::Create(
-      ScriptController()->GetScriptState(), event_type_names::kCanmakepayment,
+      event_type_names::kCanmakepayment,
       PaymentEventDataConversion::ToCanMakePaymentEventInit(
           ScriptController()->GetScriptState(), std::move(event_data)),
       respond_with_observer, wait_until_observer);
@@ -2602,7 +2602,7 @@ ServiceWorkerGlobalScope::FetchHandlerType() {
   if (!elv) {
     return mojom::blink::ServiceWorkerFetchHandlerType::kNoHandler;
   }
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::Isolate* isolate = GetIsolate();
   v8::HandleScope handle_scope(isolate);
   // TODO(crbug.com/1349613): revisit the way to implement this.
   // The following code returns kEmptyFetchHandler if all handlers are nop.

@@ -20,14 +20,15 @@ const OFFLINE_TITLE = 'You\'re offline. Feedback will be sent later.';
 
 /** @type {string} */
 const ONLINE_MESSAGE =
-    'Your feedback helps improve Chrome OS and will be reviewed by ' +
-    'our team. Because of the large number of reports, we won\’t be able ' +
-    'to send a reply.';
+    'Your feedback helps us improve the Chromebook experience and will be ' +
+    'reviewed by our team. Because of the large number of reports, ' +
+    'we won’t be able to send a reply.';
+
 /** @type {string} */
 const OFFLINE_MESSAGE =
-    'Thanks for the feedback. Your feedback helps improve Chrome OS ' +
-    'and will be reviewed by the Chrome OS team. Because of the number ' +
-    'of reports submitted, you won’t receive a direct reply.';
+    'Thanks for your feedback. Your feedback helps us improve the Chromebook ' +
+    'experience and will be reviewed by our team. Because of the large ' +
+    'number of reports, we won’t be able to send a reply.';
 
 export function confirmationPageTest() {
   /** @type {?ConfirmationPageElement} */
@@ -264,6 +265,15 @@ export function confirmationPageTest() {
     assertEquals(1, feedbackServiceProvider.getOpenDiagnosticsAppCallCount());
     verifyRecordPostSubmitActionCalled(
         true, FeedbackAppPostSubmitAction.kOpenDiagnosticsApp);
+
+    // Make sure that the label and the sub-label are clickable too.
+    const label = link.querySelector('.label');
+    label.click();
+    assertEquals(2, feedbackServiceProvider.getOpenDiagnosticsAppCallCount());
+
+    const subLabel = link.querySelector('.sub-label');
+    subLabel.click();
+    assertEquals(3, feedbackServiceProvider.getOpenDiagnosticsAppCallCount());
   });
 
   // Test clicking explore app link.
@@ -280,6 +290,15 @@ export function confirmationPageTest() {
     assertEquals(1, feedbackServiceProvider.getOpenExploreAppCallCount());
     verifyRecordPostSubmitActionCalled(
         true, FeedbackAppPostSubmitAction.kOpenExploreApp);
+
+    // Make sure that the label and the sub-label are clickable too.
+    const label = link.querySelector('.label');
+    label.click();
+    assertEquals(2, feedbackServiceProvider.getOpenExploreAppCallCount());
+
+    const subLabel = link.querySelector('.sub-label');
+    subLabel.click();
+    assertEquals(3, feedbackServiceProvider.getOpenExploreAppCallCount());
   });
 
   // Test clicking openChromebookHelp link.
@@ -312,6 +331,15 @@ export function confirmationPageTest() {
         url, 'https://support.google.com/chromebook/?hl=en#topic=3399709');
     verifyRecordPostSubmitActionCalled(
         true, FeedbackAppPostSubmitAction.kOpenChromebookCommunity);
+
+    // Make sure that the label and the sub-label are clickable too.
+    const label = link.querySelector('.label');
+    label.click();
+    assertEquals(2, windowOpenCalled);
+
+    const subLabel = link.querySelector('.sub-label');
+    subLabel.click();
+    assertEquals(3, windowOpenCalled);
   });
 
   // Test that we only record the user's first action on confirmation page.

@@ -9,6 +9,10 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
+namespace views {
+class FlexLayoutView;
+}
+
 namespace ash {
 
 class FeatureTilesContainerView;
@@ -17,25 +21,6 @@ class QuickSettingsFooter;
 class QuickSettingsHeader;
 class UnifiedMediaControlsContainer;
 class UnifiedSystemTrayController;
-
-// Container view of slider views.
-class SlidersContainerView : public views::View {
- public:
-  METADATA_HEADER(SlidersContainerView);
-
-  SlidersContainerView();
-
-  SlidersContainerView(const SlidersContainerView&) = delete;
-  SlidersContainerView& operator=(const SlidersContainerView&) = delete;
-
-  ~SlidersContainerView() override;
-
-  // Gets height of the view.
-  int GetHeight() const;
-
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-};
 
 // View class of the bubble in status area tray.
 //
@@ -91,17 +76,14 @@ class ASH_EXPORT QuickSettingsView : public views::View {
   void ShowMediaControls();
 
   // views::View:
-  gfx::Size CalculatePreferredSize() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  void Layout() override;
-  void ChildPreferredSizeChanged(views::View* child) override;
 
   FeatureTilesContainerView* feature_tiles_container() {
     return feature_tiles_container_;
   }
 
-  View* detailed_view() { return detailed_view_container_; }
-  View* detailed_view_for_testing() { return detailed_view_container_; }
+  views::View* detailed_view() { return detailed_view_container_; }
+  views::View* detailed_view_for_testing() { return detailed_view_container_; }
   PageIndicatorView* page_indicator_view_for_test() {
     return page_indicator_view_;
   }
@@ -112,15 +94,20 @@ class ASH_EXPORT QuickSettingsView : public views::View {
  private:
   class SystemTrayContainer;
 
+  // Adds buttons that load some of the tray detailed pages.
+  // TODO(b/255993869): Delete this when feature tiles are working.
+  void AddTemporaryDetailedViewButtons();
+
   // Owned by UnifiedSystemTrayBubble.
   UnifiedSystemTrayController* const controller_;
 
   // Owned by views hierarchy.
-  SystemTrayContainer* system_tray_container_ = nullptr;
+  views::View* temporary_buttons_container_ = nullptr;
+  views::FlexLayoutView* system_tray_container_ = nullptr;
   QuickSettingsHeader* header_ = nullptr;
   FeatureTilesContainerView* feature_tiles_container_ = nullptr;
   PageIndicatorView* page_indicator_view_ = nullptr;
-  SlidersContainerView* sliders_container_ = nullptr;
+  views::FlexLayoutView* sliders_container_ = nullptr;
   QuickSettingsFooter* footer_ = nullptr;
   views::View* detailed_view_container_ = nullptr;
 

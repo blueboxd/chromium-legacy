@@ -36,7 +36,9 @@
 #include "components/password_manager/content/browser/password_change_success_tracker_factory.h"
 #include "components/password_manager/core/browser/password_change_success_tracker.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/security_state/core/security_state.h"
 #include "components/version_info/android/channel_getter.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tts_controller.h"
@@ -588,13 +590,18 @@ DeviceContext ClientAndroid::GetDeviceContext() const {
   return context;
 }
 
+security_state::SecurityLevel ClientAndroid::GetSecurityLevel() const {
+  return dependencies_->GetCommonDependencies()->GetSecurityLevel(
+      GetWebContents());
+}
+
 bool ClientAndroid::IsAccessibilityEnabled() const {
   return dependencies_->IsAccessibilityEnabled();
 }
 
 bool ClientAndroid::IsSpokenFeedbackAccessibilityServiceEnabled() const {
-  return Java_AutofillAssistantClient_isSpokenFeedbackAccessibilityServiceEnabled(
-      AttachCurrentThread(), java_object_);
+  return content::BrowserAccessibilityState::GetInstance()
+      ->HasSpokenFeedbackServicePresent();
 }
 
 content::WebContents* ClientAndroid::GetWebContents() const {

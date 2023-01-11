@@ -10,7 +10,7 @@
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_ash.h"
-#include "chrome/browser/ui/webui/chromeos/login/packaged_license_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/packaged_license_screen_handler.h"
 
 namespace ash {
 namespace {
@@ -52,6 +52,12 @@ bool PackagedLicenseScreen::MaybeSkip(WizardContext& context) {
     // Skip to enroll since GAIA form has welcoming text for enterprise license.
     if (features::IsLicensePackagedOobeFlowEnabled() &&
         config.license_type == policy::LicenseType::kEnterprise) {
+      exit_callback_.Run(Result::NOT_APPLICABLE_SKIP_TO_ENROLL);
+      return true;
+    }
+    // Skip to enroll since GAIA form has welcoming text for education license.
+    if (features::IsEducationEnrollmentOobeFlowEnabled() &&
+        config.license_type == policy::LicenseType::kEducation) {
       exit_callback_.Run(Result::NOT_APPLICABLE_SKIP_TO_ENROLL);
       return true;
     }

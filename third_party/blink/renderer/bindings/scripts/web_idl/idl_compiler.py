@@ -11,6 +11,7 @@ from blinkbuild.name_style_converter import NameStyleConverter
 
 from .callback_function import CallbackFunction
 from .callback_interface import CallbackInterface
+from .composition_parts import DebugInfo
 from .composition_parts import Identifier
 from .constructor import Constructor
 from .constructor import ConstructorGroup
@@ -24,10 +25,12 @@ from .extended_attribute import ExtendedAttributesMutable
 from .idl_type import IdlTypeFactory
 from .interface import Interface
 from .interface import LegacyWindowAlias
+from .interface import SyncIterator
 from .ir_map import IRMap
 from .make_copy import make_copy
 from .namespace import Namespace
 from .observable_array import ObservableArray
+from .operation import Operation
 from .operation import OperationGroup
 from .reference import RefByIdFactory
 from .typedef import Typedef
@@ -103,6 +106,8 @@ class IdlCompiler(object):
         self._supplement_missing_html_constructor_operation()
 
         self._copy_named_constructor_extattrs()
+
+        self._create_sync_iterators()
 
         # Make groups of overloaded functions including inherited ones.
         self._group_overloaded_functions()
@@ -227,8 +232,7 @@ class IdlCompiler(object):
             propagate(('ContextEnabled', 'add_context_enabled_feature'))
             propagate(('CrossOriginIsolated', 'set_only_in_coi_contexts'),
                       default_value=True)
-            propagate(('IsolatedApplication',
-                       'set_only_in_isolated_application_contexts'),
+            propagate(('IsolatedContext', 'set_only_in_isolated_contexts'),
                       default_value=True)
             propagate(('SecureContext', 'set_only_in_secure_contexts'),
                       default_value=True)
@@ -486,6 +490,44 @@ class IdlCompiler(object):
             for named_constructor_ir in new_ir.named_constructors:
                 copy_extattrs(new_ir.extended_attributes, named_constructor_ir)
 
+    def _create_sync_iterators(self):
+        old_irs = self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_ir in old_irs:
+            new_ir = self._maybe_make_copy(old_ir)
+            self._ir_map.add(new_ir)
+
+            if not ((new_ir.iterable and new_ir.iterable.key_type)
+                    or new_ir.maplike or new_ir.setlike):
+                continue
+
+            assert not new_ir.sync_iterator
+            sync_iterable = (new_ir.iterable or new_ir.maplike
+                             or new_ir.setlike)
+            component = new_ir.components[0]
+            debug_info = DebugInfo()
+            debug_info.add_locations(sync_iterable.debug_info.all_locations)
+            # 'next' property is defined at:
+            # https://webidl.spec.whatwg.org/#es-iterator-prototype-object
+            next_op = Operation.IR(
+                identifier=Identifier('next'),
+                arguments=[],
+                return_type=self._idl_type_factory.simple_type('object'),
+                extended_attributes=ExtendedAttributesMutable([
+                    ExtendedAttribute(key="CallWith", values="ScriptState"),
+                    ExtendedAttribute(key="RaisesException"),
+                ]),
+                component=component)
+            new_ir.sync_iterator = SyncIterator.IR(
+                interface_ir=new_ir,
+                component=component,
+                debug_info=debug_info,
+                key_type=sync_iterable.key_type,
+                value_type=sync_iterable.value_type,
+                operations=[next_op])
+
     def _group_overloaded_functions(self):
         old_irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.CALLBACK_INTERFACE,
                                             IRMap.IR.Kind.INTERFACE,
@@ -525,11 +567,17 @@ class IdlCompiler(object):
                     item.operation_groups = make_groups(
                         OperationGroup.IR, item.operations)
 
+            for item in (new_ir.sync_iterator, ):
+                if item:
+                    assert not item.operation_groups
+                    item.operation_groups = make_groups(
+                        OperationGroup.IR, item.operations)
+
     def _propagate_extattrs_to_overload_group(self):
         ANY_OF = ('CrossOrigin', 'CrossOriginIsolated', 'Custom',
-                  'IsolatedApplication', 'LegacyLenientThis',
-                  'LegacyUnforgeable', 'NoAllocDirectCall', 'NotEnumerable',
-                  'PerWorldBindings', 'SecureContext', 'Unscopable')
+                  'IsolatedContext', 'LegacyLenientThis', 'LegacyUnforgeable',
+                  'NoAllocDirectCall', 'NotEnumerable', 'PerWorldBindings',
+                  'SecureContext', 'Unscopable')
 
         old_irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.INTERFACE,
                                             IRMap.IR.Kind.NAMESPACE)
@@ -610,13 +658,12 @@ class IdlCompiler(object):
                 else:
                     group.exposure.set_only_in_coi_contexts(True)
 
-                # [IsolatedApplication]
-                if any(not exposure.only_in_isolated_application_contexts
+                # [IsolatedContext]
+                if any(not exposure.only_in_isolated_contexts
                        for exposure in exposures):
                     pass  # Exposed by default.
                 else:
-                    group.exposure.set_only_in_isolated_application_contexts(
-                        True)
+                    group.exposure.set_only_in_isolated_contexts(True)
 
                 # [SecureContext]
                 if any(exposure.only_in_secure_contexts is False

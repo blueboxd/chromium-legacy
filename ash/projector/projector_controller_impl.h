@@ -73,7 +73,6 @@ class ASH_EXPORT ProjectorControllerImpl
   void OnTranscription(const media::SpeechRecognitionResult& result) override;
   void OnTranscriptionError() override;
   void OnSpeechRecognitionStopped() override;
-  bool IsEligible() const override;
   NewScreencastPrecondition GetNewScreencastPrecondition() const override;
   void OnUndoRedoAvailabilityChanged(bool undo_available,
                                      bool redo_available) override;
@@ -198,7 +197,7 @@ class ASH_EXPORT ProjectorControllerImpl
   std::unique_ptr<ProjectorMetadataController> metadata_controller_;
 
   // Whether SODA is available on the device.
-  SpeechRecognitionAvailability speech_recognition_availability_ =
+  SpeechRecognitionAvailability on_device_speech_recognition_availability_ =
       SpeechRecognitionAvailability::kOnDeviceSpeechRecognitionNotSupported;
 
   // Whether speech recognition is taking place or not.

@@ -15,7 +15,7 @@ import {assertDeepEquals, assertEquals} from 'chrome://webui-test/chai_assert.js
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
-import {fakeMetricsPrivate, MetricsTracker} from './metrics_test_support.js';
+import {fakeMetricsPrivate, MetricsTracker} from './../metrics_test_support.js';
 import {installMock} from './test_support.js';
 
 suite('NewTabPageMiddleSlotPromoTest', () => {
@@ -25,8 +25,7 @@ suite('NewTabPageMiddleSlotPromoTest', () => {
   let metrics: MetricsTracker;
 
   setup(() => {
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     newTabPageHandler = installMock(
         PageHandlerRemote,
         mock => NewTabPageProxy.setInstance(mock, new PageCallbackRouter()));

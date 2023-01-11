@@ -92,7 +92,7 @@ class MODULES_EXPORT InspectorAccessibilityAgent
   // the a11y tree and fetch object properties.
   void AXReadyCallback(Document& document);
 
-  void ScheduleVisualUpdateIfNeeded(TimerBase*, Document*);
+  void ScheduleAXUpdateIfNeeded(TimerBase*, Document*);
 
  private:
   // Used to store the queries received by queryAXTree. The queries are
@@ -187,8 +187,6 @@ class MODULES_EXPORT InspectorAccessibilityAgent
                    AXObjectCacheImpl&) const;
   LocalFrame* FrameFromIdOrRoot(const protocol::Maybe<String>& frame_id);
   void ScheduleAXChangeNotification(Document* document);
-  void RetainAXContextForDocument(Document* document);
-  AXObjectCacheImpl& GetAXObjectCacheImplForDocument(Document*);
   AXObjectCacheImpl& AttachToAXObjectCache(Document*);
   void ProcessPendingQueries(Document&);
   void ProcessPendingDirtyNodes(Document&);

@@ -54,7 +54,7 @@ class Receiver final
   Receiver(int rpc_handle,
            int remote_handle,
            ReceiverController* receiver_controller,
-           const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+           const scoped_refptr<base::SequencedTaskRunner>& media_task_runner,
            std::unique_ptr<Renderer> renderer,
            base::OnceCallback<void(int)> acquire_renderer_done_cb);
   ~Receiver() override;
@@ -70,6 +70,7 @@ class Receiver final
   void SetPlaybackRate(double playback_rate) override;
   void SetVolume(float volume) override;
   base::TimeDelta GetMediaTime() override;
+  RendererType GetRendererType() override;
 
   // RendererClient implementation.
   void OnError(PipelineStatus status) override;
@@ -140,7 +141,7 @@ class Receiver final
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   // Media tasks should run on media thread.
-  const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
 
   // |renderer_| is the real renderer to render media.
   std::unique_ptr<Renderer> renderer_;

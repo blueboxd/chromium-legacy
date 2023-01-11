@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/power_monitor/power_observer.h"
+#include "base/scoped_observation_traits.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -65,7 +66,7 @@ class LayerTreeDebugState;
 class LayerTreeFrameSink;
 class LayerTreeSettings;
 class TaskGraphRunner;
-}
+}  // namespace cc
 
 namespace gfx {
 namespace mojom {
@@ -74,7 +75,7 @@ class DelegatedInkPointRenderer;
 struct PresentationFeedback;
 class Rect;
 class Size;
-}
+}  // namespace gfx
 
 namespace gpu {
 class GpuMemoryBufferManager;
@@ -325,14 +326,25 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
                                            host_->DeferMainFrameUpdate());
   }
 
-  // Registers a callback that is run when the next frame successfully makes it
-  // to the screen (it's entirely possible some frames may be dropped between
-  // the time this is called and the callback is run).
+  // Registers a callback that is run when the presentation feedback for the
+  // next submitted frame is received (it's entirely possible some frames may be
+  // dropped between the time this is called and the callback is run).
   // See ui/gfx/presentation_feedback.h for details on the args (TimeTicks is
   // always non-zero).
+  // Note that since this might be called on failed presentations, it is
+  // deprecated in favor of `RequestSuccessfulPresentationTimeForNextFrame()`
+  // which will be called only after a successful presentation.
   using PresentationTimeCallback =
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
   void RequestPresentationTimeForNextFrame(PresentationTimeCallback callback);
+
+  // Registers a callback that is run when the next frame successfully makes it
+  // to the screen (it's entirely possible some frames may be dropped between
+  // the time this is called and the callback is run).
+  using SuccessfulPresentationTimeCallback =
+      base::OnceCallback<void(base::TimeTicks)>;
+  void RequestSuccessfulPresentationTimeForNextFrame(
+      SuccessfulPresentationTimeCallback callback);
 
   void IssueExternalBeginFrame(
       const viz::BeginFrameArgs& args,
@@ -581,5 +593,22 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
 };
 
 }  // namespace ui
+
+namespace base {
+
+template <>
+struct ScopedObservationTraits<ui::Compositor,
+                               ui::CompositorAnimationObserver> {
+  static void AddObserver(ui::Compositor* source,
+                          ui::CompositorAnimationObserver* observer) {
+    source->AddAnimationObserver(observer);
+  }
+  static void RemoveObserver(ui::Compositor* source,
+                             ui::CompositorAnimationObserver* observer) {
+    source->RemoveAnimationObserver(observer);
+  }
+};
+
+}  // namespace base
 
 #endif  // UI_COMPOSITOR_COMPOSITOR_H_

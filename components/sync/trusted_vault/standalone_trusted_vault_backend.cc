@@ -483,7 +483,9 @@ void StandaloneTrustedVaultBackend::SetPrimaryAccount(
       // |kSyncTrustedVaultPeriodicDegradedRecoverabilityPolling| is set.
       if (degraded_recoverability_handler_) {
         // TODO(crbug.com/1247990): Add Integration test.
-        degraded_recoverability_handler_->HintDegradedRecoverabilityChanged();
+        degraded_recoverability_handler_->HintDegradedRecoverabilityChanged(
+            TrustedVaultHintDegradedRecoverabilityChangedReasonForUMA::
+                kPersistentAuthErrorResolved);
       }
     }
 
@@ -513,6 +515,11 @@ void StandaloneTrustedVaultBackend::SetPrimaryAccount(
         std::make_unique<TrustedVaultDegradedRecoverabilityHandler>(
             connection_.get(), /*delegate=*/this, primary_account_.value(),
             per_user_vault->degraded_recoverability_state());
+    // The `degraded_recoverability_handler_` should start if
+    // `GetIsRecoverabilityDegraded(primary_account_)` is already called.
+    if (primary_account_ == last_recoverability_degraded_queried_account_) {
+      degraded_recoverability_handler_->Start();
+    }
   }
 
   const absl::optional<TrustedVaultDeviceRegistrationStateForUMA>
@@ -602,18 +609,21 @@ void StandaloneTrustedVaultBackend::GetIsRecoverabilityDegraded(
     base::OnceCallback<void(bool)> cb) {
   if (base::FeatureList::IsEnabled(
           kSyncTrustedVaultPeriodicDegradedRecoverabilityPolling)) {
+    last_recoverability_degraded_queried_account_ = account_info;
+    if (account_info == primary_account_) {
+      degraded_recoverability_handler_->Start();
+    }
     sync_pb::LocalTrustedVaultPerUser* per_user_vault =
         FindUserVault(account_info.gaia);
     if (!per_user_vault) {
       // If the account does not exist, then the recoverability state is
-      // unknown.
-      // TODO(crbug.com/1247990): Pass optional value with nullopt indicating
-      // that value is not yet known.
+      // unknown, false will be passed in this case.
       std::move(cb).Run(false);
       return;
     }
     std::move(cb).Run(per_user_vault->degraded_recoverability_state()
-                          .is_recoverability_degraded());
+                          .degraded_recoverability_value() ==
+                      sync_pb::DegradedRecoverabilityValue::kDegraded);
     return;
   }
   ongoing_get_recoverability_request_ =
@@ -1055,7 +1065,9 @@ void StandaloneTrustedVaultBackend::OnTrustedRecoveryMethodAdded(
   std::move(cb).Run();
   if (base::FeatureList::IsEnabled(
           kSyncTrustedVaultPeriodicDegradedRecoverabilityPolling)) {
-    degraded_recoverability_handler_->HintDegradedRecoverabilityChanged();
+    degraded_recoverability_handler_->HintDegradedRecoverabilityChanged(
+        TrustedVaultHintDegradedRecoverabilityChangedReasonForUMA::
+            kRecoveryMethodAdded);
   } else {
     delegate_->NotifyRecoverabilityDegradedChanged();
   }

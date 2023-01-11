@@ -33,6 +33,10 @@ BASE_FEATURE(kJourneysLabels,
              "JourneysLabel",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kJourneysImages,
+             "JourneysImages",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kPersistedClusters,
              "HistoryClustersPersistedClusters",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -67,6 +71,14 @@ BASE_FEATURE(kHistoryClustersUseContinueOnShutdown,
 
 BASE_FEATURE(kHistoryClustersKeywordFiltering,
              "HistoryClustersKeywordFiltering",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kHistoryClustersVisitDeduping,
+             "HistoryClustersVisitDeduping",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kJourneysIncludeSyncedVisits,
+             "JourneysIncludeSyncedVisits",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace internal

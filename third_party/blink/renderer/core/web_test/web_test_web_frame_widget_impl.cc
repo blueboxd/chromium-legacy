@@ -13,9 +13,9 @@
 #include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
-#include "third_party/blink/renderer/core/document_transition/document_transition_supplement.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_supplement.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 namespace blink {
@@ -121,12 +121,6 @@ void WebTestWebFrameWidgetImpl::UpdateAllLifecyclePhasesAndComposite(
       std::move(callback)));
   LayerTreeHost()->SetNeedsCommitWithForcedRedraw();
   ScheduleAnimationForWebTests();
-}
-
-void WebTestWebFrameWidgetImpl::DisableEndDocumentTransition() {
-  DocumentTransitionSupplement::EnsureDocumentTransition(
-      *LocalRootImpl()->GetFrame()->GetDocument())
-      ->DisableEndTransition();
 }
 
 void WebTestWebFrameWidgetImpl::ScheduleAnimationInternal(bool do_raster) {

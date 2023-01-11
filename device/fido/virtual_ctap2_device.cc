@@ -1304,7 +1304,8 @@ absl::optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
   }
 
   AuthenticatorData authenticator_data(
-      rp_id_hash, /*user_present=*/true, user_verified, 01ul,
+      rp_id_hash, !mutable_state()->unset_up_bit,
+      mutable_state()->unset_uv_bit ? false : user_verified, 01ul,
       ConstructAttestedCredentialData(key_handle, std::move(public_key)),
       std::move(extensions));
 
@@ -1698,7 +1699,9 @@ absl::optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
     }
 
     AuthenticatorData authenticator_data(
-        rp_id_hash, request.user_presence_required, user_verified,
+        rp_id_hash,
+        mutable_state()->unset_up_bit ? false : request.user_presence_required,
+        mutable_state()->unset_uv_bit ? false : user_verified,
         registration.second->counter, std::move(opt_attested_cred_data),
         std::move(extensions));
 
@@ -2130,10 +2133,9 @@ CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
         return pin_status;
       }
 
-      const size_t num_resident =
-          std::count_if(mutable_state()->registrations.begin(),
-                        mutable_state()->registrations.end(),
-                        [](const auto& it) { return it.second.is_resident; });
+      const size_t num_resident = base::ranges::count_if(
+          mutable_state()->registrations,
+          [](const auto& it) { return it.second.is_resident; });
       response_map.emplace(
           static_cast<int>(CredentialManagementResponseKey::
                                kExistingResidentCredentialsCount),
@@ -2770,8 +2772,8 @@ void VirtualCtap2Device::InitPendingRegistrations(
   request_state_.Reset();
   for (const auto& registration : mutable_state()->registrations) {
     if (!registration.second.is_resident ||
-        !std::equal(rp_id_hash.begin(), rp_id_hash.end(),
-                    registration.second.application_parameter.begin())) {
+        !base::ranges::equal(rp_id_hash,
+                             registration.second.application_parameter)) {
       continue;
     }
     DCHECK(!registration.second.is_u2f && registration.second.user &&

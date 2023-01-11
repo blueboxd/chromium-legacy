@@ -52,7 +52,7 @@ BASE_DECLARE_FEATURE(kTranslate);
 // language values from the obsolete pref without conflicting with any values in
 // the new pref that may have been added.
 //
-// TODO(crbug/1291356): This base::Feature only exists to allow a less risky
+// TODO(crbug/1303963): This base::Feature only exists to allow a less risky
 // merge into iOS M98. This base::Feature should be removed once it's no longer
 // relevant and the enabled behavior should become the only behavior.
 BASE_DECLARE_FEATURE(kMigrateAlwaysTranslateLanguagesFix);
@@ -356,10 +356,6 @@ class TranslatePrefs {
   static void RegisterProfilePrefsForMigration(
       user_prefs::PrefRegistrySyncable* registry);
 
-  static void MigrateObsoleteProfilePrefs(PrefService* pref_service);
-
-  static void ClearObsoleteProfilePrefs(PrefService* pref_service);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest,
                            UpdateLanguageListFeatureEnabled);
@@ -378,6 +374,7 @@ class TranslatePrefs {
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, MoveLanguageDown);
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, ResetBlockedLanguagesToDefault);
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, MigrateNeverPromptSites);
+  FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, SiteNeverPromptList);
   friend class TranslatePrefsTest;
 
   void ClearNeverPromptSiteList();
@@ -387,6 +384,8 @@ class TranslatePrefs {
   bool IsValueOnNeverPromptList(const char* pref_id,
                                 base::StringPiece value) const;
   void AddValueToNeverPromptList(const char* pref_id, base::StringPiece value);
+  // Used for testing. The public version passes in base::Time::Now()
+  void AddSiteToNeverPromptList(base::StringPiece site, base::Time time);
   void RemoveValueFromNeverPromptList(const char* pref_id,
                                       base::StringPiece value);
   size_t GetListSize(const char* pref_id) const;

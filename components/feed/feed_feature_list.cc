@@ -73,6 +73,9 @@ BASE_FEATURE(kXsurfaceMetricsReporting,
 BASE_FEATURE(kReliabilityLogging,
              "FeedReliabilityLogging",
              base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kFeedHeaderStickToTop,
+             "FeedHeaderStickToTop",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kFeedInteractiveRefresh,
              "FeedInteractiveRefresh",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -196,4 +199,15 @@ BASE_FEATURE(kFeedExperimentIDTagging,
              "FeedExperimentIDTagging",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kFeedShowSignInCommand,
+             "FeedShowSignInCommand",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kFeedPerformanceStudy,
+             "FeedPerformanceStudy",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSyntheticCapabilities,
+             "FeedSyntheticCapabilities",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 }  // namespace feed

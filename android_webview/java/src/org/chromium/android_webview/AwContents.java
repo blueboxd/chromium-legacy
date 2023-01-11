@@ -48,6 +48,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.android_webview.autofill.AndroidAutofillSafeModeAction;
 import org.chromium.android_webview.common.AwFeatures;
 import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.gfx.AwDrawFnImpl;
@@ -120,6 +121,7 @@ import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.IntentRequestTracker;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.ViewAndroidDelegate;
+import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
 import org.chromium.url.GURL;
@@ -709,7 +711,8 @@ public class AwContents implements SmartClipProvider {
     private class AwLayoutSizerDelegate implements AwLayoutSizer.Delegate {
         @Override
         public void requestLayout() {
-            mContainerView.requestLayout();
+            ViewUtils.requestLayout(
+                    mContainerView, "AwContents.AwLayoutSizerDelegate.requestLayout");
         }
 
         @Override
@@ -1128,7 +1131,8 @@ public class AwContents implements SmartClipProvider {
             mAwDarkMode = new AwDarkMode(context);
             mStylusWritingController = new StylusWritingController(context);
 
-            setNewAwContents(AwContentsJni.get().init(mBrowserContext.getNativePointer()));
+            setNewAwContents(
+                    AwContentsJni.get().init(mBrowserContext.getNativeBrowserContextPointer()));
 
             onContainerViewChanged();
         }
@@ -1160,6 +1164,11 @@ public class AwContents implements SmartClipProvider {
     private void initializeAutofillProviderIfNecessary() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
 
+        if (AndroidAutofillSafeModeAction.isAndroidAutofillDisabled()) {
+            Log.i(TAG, "Android autofill is disabled by SafeMode");
+            return;
+        }
+
         if (mAutofillProvider == null) {
             mAutofillProvider =
                     new AutofillProvider(mContext, mContainerView, mWebContents, "Android WebView");
@@ -1180,7 +1189,7 @@ public class AwContents implements SmartClipProvider {
                 || "com.samsung.android.email.composer".equals(currentPackageName);
     }
 
-    boolean isFullScreen() {
+    public boolean isFullScreen() {
         return mFullScreenTransitionsState.isFullScreen();
     }
 
@@ -1221,7 +1230,7 @@ public class AwContents implements SmartClipProvider {
     /**
      * Called when the app has requested to exit fullscreen.
      */
-    void requestExitFullscreen() {
+    public void requestExitFullscreen() {
         if (!isDestroyed(NO_WARN)) mWebContents.exitFullscreen();
     }
 
@@ -1324,7 +1333,7 @@ public class AwContents implements SmartClipProvider {
         }
         awViewMethodsImpl.onWindowFocusChanged(mContainerView.hasWindowFocus());
         awViewMethodsImpl.onFocusChanged(mContainerView.hasFocus(), 0, null);
-        mContainerView.requestLayout();
+        ViewUtils.requestLayout(mContainerView, "AwContents.onContainerViewChanged");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (mAutofillProvider != null) mAutofillProvider.onContainerViewChanged(mContainerView);
         }
@@ -3746,6 +3755,11 @@ public class AwContents implements SmartClipProvider {
     private void setAwAutofillClient(AwAutofillClient client) {
         mAwAutofillClient = client;
         client.init(mContext);
+    }
+
+    @VisibleForTesting
+    public AwAutofillClient getAutofillClient() {
+        return mAwAutofillClient;
     }
 
     @CalledByNative

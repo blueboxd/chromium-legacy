@@ -19,12 +19,13 @@
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/device_management/dm_cached_policy_info.h"
 #include "chrome/updater/device_management/dm_response_validator.h"
 #include "chrome/updater/device_management/dm_storage.h"
+#include "chrome/updater/net/network.h"
 #include "chrome/updater/policy/service.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_version.h"
@@ -32,14 +33,6 @@
 #include "components/update_client/network.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(IS_WIN)
-#include "chrome/updater/win/net/network.h"
-#elif BUILDFLAG(IS_MAC)
-#include "chrome/updater/mac/net/network.h"
-#elif BUILDFLAG(IS_LINUX)
-#include "chrome/updater/linux/net/network.h"
-#endif
 
 namespace updater {
 namespace {
@@ -241,7 +234,7 @@ void DMFetch::PostRequest(const std::string& request_type,
   }
 
   if (result != DMClient::RequestResult::kSuccess) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback_), result,
                                   std::make_unique<std::string>()));
     return;
@@ -296,7 +289,7 @@ void DMFetch::OnRequestComplete(std::unique_ptr<std::string> response_body,
     result = DMClient::RequestResult::kHttpError;
   }
 
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback_), result, std::move(response_body)));
 }
@@ -318,7 +311,7 @@ void OnDMRegisterRequestComplete(scoped_refptr<DMFetch> dm_fetch,
     }
   }
 
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
@@ -345,7 +338,7 @@ void OnDMPolicyFetchRequestComplete(
     }
   }
 
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), result, validation_results));
 }
@@ -355,7 +348,7 @@ void OnDMPolicyValidationReportRequestComplete(
     DMClient::PolicyValidationReportCallback callback,
     DMClient::RequestResult result,
     std::unique_ptr<std::string> response_body) {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
@@ -376,7 +369,7 @@ void DMClient::FetchPolicy(std::unique_ptr<Configurator> config,
                            scoped_refptr<DMStorage> storage,
                            PolicyFetchCallback callback) {
   if (!storage->CanPersistPolicies()) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
                                   DMClient::RequestResult::kSerializationError,
                                   std::vector<PolicyValidationResult>()));

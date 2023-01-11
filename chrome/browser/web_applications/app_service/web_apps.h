@@ -137,24 +137,9 @@ class WebApps : public apps::PublisherBase,
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
               apps::mojom::WindowInfoPtr window_info) override;
-  void LaunchAppWithFiles(const std::string& app_id,
-                          int32_t event_flags,
-                          apps::mojom::LaunchSource launch_source,
-                          apps::mojom::FilePathsPtr file_paths) override;
-  void LaunchAppWithIntent(const std::string& app_id,
-                           int32_t event_flags,
-                           apps::mojom::IntentPtr intent,
-                           apps::mojom::LaunchSource launch_source,
-                           apps::mojom::WindowInfoPtr window_info,
-                           LaunchAppWithIntentCallback callback) override;
-  void SetPermission(const std::string& app_id,
-                     apps::mojom::PermissionPtr permission) override;
   void OpenNativeSettings(const std::string& app_id) override;
   void SetWindowMode(const std::string& app_id,
                      apps::mojom::WindowMode window_mode) override;
-  void SetRunOnOsLoginMode(
-      const std::string& app_id,
-      apps::mojom::RunOnOsLoginMode run_on_os_login_mode) override;
 
   // WebAppPublisherHelper::Delegate overrides.
   void PublishWebApps(std::vector<apps::AppPtr> apps) override;
@@ -172,10 +157,6 @@ class WebApps : public apps::PublisherBase,
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // apps::mojom::Publisher overrides.
-  void Uninstall(const std::string& app_id,
-                 apps::mojom::UninstallSource uninstall_source,
-                 bool clear_site_data,
-                 bool report_abuse) override;
   void PauseApp(const std::string& app_id) override;
   void UnpauseApp(const std::string& app_id) override;
   void StopApp(const std::string& app_id) override;

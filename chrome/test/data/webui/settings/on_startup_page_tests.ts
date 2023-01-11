@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {NtpExtension, OnStartupBrowserProxy, OnStartupBrowserProxyImpl, SettingsOnStartupPageElement} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
@@ -51,8 +51,7 @@ suite('OnStartupPage', function() {
 
   async function initPage(): Promise<void> {
     onStartupBrowserProxy.reset();
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     testElement = document.createElement('settings-on-startup-page');
     testElement.prefs = {
       session: {

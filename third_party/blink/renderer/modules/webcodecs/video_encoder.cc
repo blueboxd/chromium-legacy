@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "media/base/async_destroy_video_encoder.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/limits.h"
 #include "media/base/mime_util.h"
 #include "media/base/offloading_video_encoder.h"
 #include "media/base/svc_scalability_mode.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_avc_encoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_chunk_metadata.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_hevc_encoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_svc_output_metadata.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_color_space_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_config.h"
@@ -158,22 +160,31 @@ bool IsAcceleratedConfigurationSupported(
 VideoEncoderTraits::ParsedConfig* ParseConfigStatic(
     const VideoEncoderConfig* config,
     ExceptionState& exception_state) {
-  constexpr int kMaxSupportedFrameSize = 8192;
   auto* result = MakeGarbageCollected<VideoEncoderTraits::ParsedConfig>();
 
   result->options.frame_size.set_height(config->height());
-  if (config->height() == 0 || config->height() > kMaxSupportedFrameSize) {
+  if (config->height() == 0 ||
+      config->height() > media::limits::kMaxDimension) {
     exception_state.ThrowTypeError(String::Format(
         "Invalid height; expected range from %d to %d, received %d.", 1,
-        kMaxSupportedFrameSize, config->height()));
+        media::limits::kMaxDimension, config->height()));
     return nullptr;
   }
 
   result->options.frame_size.set_width(config->width());
-  if (config->width() == 0 || config->width() > kMaxSupportedFrameSize) {
+  if (config->width() == 0 || config->width() > media::limits::kMaxDimension) {
     exception_state.ThrowTypeError(String::Format(
         "Invalid width; expected range from %d to %d, received %d.", 1,
-        kMaxSupportedFrameSize, config->width()));
+        media::limits::kMaxDimension, config->width()));
+    return nullptr;
+  }
+
+  if (config->width() * config->height() > media::limits::kMaxCanvas) {
+    exception_state.ThrowTypeError(String::Format(
+        "Invalid resolution; expected range from %d to %d, received %d (%d * "
+        "%d).",
+        1, media::limits::kMaxCanvas, config->width() * config->height(),
+        config->width(), config->height()));
     return nullptr;
   }
 
@@ -269,23 +280,35 @@ VideoEncoderTraits::ParsedConfig* ParseConfigStatic(
   }
 
   // We are done with the parsing.
-  if (!config->hasAvc())
+  if (!config->hasAvc() && !config->hasHevc())
     return result;
 
-  // We should only get here with H264 codecs.
-  if (result->codec != media::VideoCodec::kH264) {
-    exception_state.ThrowTypeError(
-        "'avc' field can only be used with AVC codecs");
-    return nullptr;
-  }
-
-  std::string avc_format = IDLEnumAsString(config->avc()->format()).Utf8();
-  if (avc_format == "avc") {
-    result->options.avc.produce_annexb = false;
-  } else if (avc_format == "annexb") {
-    result->options.avc.produce_annexb = true;
-  } else {
-    NOTREACHED();
+  switch (result->codec) {
+    case media::VideoCodec::kH264: {
+      std::string avc_format = IDLEnumAsString(config->avc()->format()).Utf8();
+      if (avc_format == "avc") {
+        result->options.avc.produce_annexb = false;
+      } else if (avc_format == "annexb") {
+        result->options.avc.produce_annexb = true;
+      } else {
+        NOTREACHED();
+      }
+      break;
+    }
+    case media::VideoCodec::kHEVC: {
+      std::string hevc_format =
+          IDLEnumAsString(config->hevc()->format()).Utf8();
+      if (hevc_format == "hevc") {
+        result->options.hevc.produce_annexb = false;
+      } else if (hevc_format == "annexb") {
+        result->options.hevc.produce_annexb = true;
+      } else {
+        NOTREACHED();
+      }
+      break;
+    }
+    default:
+      break;
   }
 
   return result;
@@ -318,6 +341,18 @@ bool VerifyCodecSupportStatic(VideoEncoderTraits::ParsedConfig* config,
         return false;
       }
       break;
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+    case media::VideoCodec::kHEVC:
+      if (config->profile != media::VideoCodecProfile::HEVCPROFILE_MAIN) {
+        if (exception_state) {
+          exception_state->ThrowDOMException(
+              DOMExceptionCode::kNotSupportedError,
+              "Unsupported hevc profile.");
+        }
+        return false;
+      }
+      break;
+#endif
 
     case media::VideoCodec::kH264: {
       if (config->options.frame_size.width() % 2 != 0 ||
@@ -369,7 +404,9 @@ bool VerifyCodecSupportStatic(VideoEncoderTraits::ParsedConfig* config,
   return true;
 }
 
-VideoEncoderConfig* CopyConfig(const VideoEncoderConfig& config) {
+VideoEncoderConfig* CopyConfig(
+    const VideoEncoderConfig& config,
+    const VideoEncoderTraits::ParsedConfig& parsed_config) {
   auto* result = VideoEncoderConfig::Create();
   result->setCodec(config.codec());
   result->setWidth(config.width());
@@ -402,10 +439,20 @@ VideoEncoderConfig* CopyConfig(const VideoEncoderConfig& config) {
   if (config.hasLatencyMode())
     result->setLatencyMode(config.latencyMode());
 
-  if (config.hasAvc() && config.avc()->hasFormat()) {
-    auto* avc = AvcEncoderConfig::Create();
-    avc->setFormat(config.avc()->format());
-    result->setAvc(avc);
+  if (parsed_config.codec == media::VideoCodec::kH264) {
+    if (config.hasAvc() && config.avc()->hasFormat()) {
+      auto* avc = AvcEncoderConfig::Create();
+      avc->setFormat(config.avc()->format());
+      result->setAvc(avc);
+    }
+  }
+
+  if (parsed_config.codec == media::VideoCodec::kHEVC) {
+    if (config.hasHevc() && config.hevc()->hasFormat()) {
+      auto* hevc = HevcEncoderConfig::Create();
+      hevc->setFormat(config.hevc()->format());
+      result->setHevc(hevc);
+    }
   }
 
   return result;
@@ -773,6 +820,11 @@ void VideoEncoder::ProcessEncode(Request* request) {
       &VideoEncoder::OnEncodeDone, MakeUnwrappingCrossThreadWeakHandle(this),
       MakeUnwrappingCrossThreadHandle(request)));
 
+  if (frame->metadata().frame_duration) {
+    frame_metadata_.Put(frame->timestamp(),
+                        FrameMetadata{*frame->metadata().frame_duration});
+  }
+
   // Currently underlying encoders can't handle frame backed by textures,
   // so let's readback pixel data to CPU memory.
   // TODO(crbug.com/1229845): We shouldn't be reading back frames here.
@@ -801,11 +853,6 @@ void VideoEncoder::ProcessEncode(Request* request) {
   if (frame->storage_type() == media::VideoFrame::STORAGE_OWNED_MEMORY &&
       frame->format() == media::PIXEL_FORMAT_I420A) {
     frame = media::WrapAsI420VideoFrame(std::move(frame));
-  }
-
-  if (frame->metadata().frame_duration) {
-    frame_metadata_.Put(frame->timestamp(),
-                        FrameMetadata{*frame->metadata().frame_duration});
   }
 
   --requested_encodes_;
@@ -1084,8 +1131,7 @@ static void isConfigSupportedWithSoftwareOnly(
     // This task runner may be destroyed without running tasks, so don't use
     // DeleteSoon() which can leak the codec. See https://crbug.com/1376851.
     runner->PostTask(FROM_HERE,
-                     base::BindOnce([](std::unique_ptr<media::VideoEncoder>) {},
-                                    std::move(encoder)));
+                     base::DoNothingWithBoundArgs(std::move(encoder)));
   };
 
   auto* context = ExecutionContext::From(script_state);
@@ -1145,7 +1191,7 @@ ScriptPromise VideoEncoder::isConfigSupported(ScriptState* script_state,
     DCHECK(exception_state.HadException());
     return ScriptPromise();
   }
-  auto* config_copy = CopyConfig(*config);
+  auto* config_copy = CopyConfig(*config, *parsed_config);
 
   // Run very basic coarse synchronous validation
   if (!VerifyCodecSupportStatic(parsed_config, nullptr)) {

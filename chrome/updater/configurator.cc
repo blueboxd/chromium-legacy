@@ -12,6 +12,7 @@
 #include "base/containers/flat_map.h"
 #include "base/cxx17_backports.h"
 #include "base/enterprise_util.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
@@ -21,11 +22,14 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/crx_downloader_factory.h"
 #include "chrome/updater/external_constants.h"
+#include "chrome/updater/net/network.h"
 #include "chrome/updater/policy/service.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/updater_scope.h"
+#include "chrome/updater/util.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/prefs/pref_service.h"
+#include "components/update_client/buildflags.h"
 #include "components/update_client/network.h"
 #include "components/update_client/patch/in_process_patcher.h"
 #include "components/update_client/patcher.h"
@@ -38,11 +42,6 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "base/win/win_util.h"
-#include "chrome/updater/win/net/network.h"
-#elif BUILDFLAG(IS_MAC)
-#include "chrome/updater/mac/net/network.h"
-#elif BUILDFLAG(IS_LINUX)
-#include "chrome/updater/linux/net/network.h"
 #endif
 
 namespace updater {
@@ -219,5 +218,16 @@ update_client::UpdaterStateProvider Configurator::GetUpdaterStateProvider()
     return update_client::UpdaterStateAttributes();
   });
 }
+
+#if BUILDFLAG(ENABLE_PUFFIN_PATCHES)
+absl::optional<base::FilePath> Configurator::GetCrxCachePath() const {
+  absl::optional<base::FilePath> optional_result =
+      updater::GetBaseDataDirectory(GetUpdaterScope());
+  return optional_result.has_value()
+             ? absl::optional<base::FilePath>(
+                   optional_result.value().AppendASCII(kCrxCachePath))
+             : absl::nullopt;
+}
+#endif
 
 }  // namespace updater

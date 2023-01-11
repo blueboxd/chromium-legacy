@@ -6,7 +6,6 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> urutan, <ph name="CPU_MAX_CLOCK_SPEED" />GHz)</translation>
 <translation id="1047773237499189053">Ciri baharu tersedia, gunakan kekunci Anak panah ke atas untuk mengetahui lebih lanjut.</translation>
 <translation id="1059913517121127803">Tidak dapat memulakan pengimbasan</translation>
-<translation id="1062407476771304334">Gantikan</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Tembok api dikesan</translation>
 <translation id="1075811647922107217">Saiz halaman</translation>
@@ -72,6 +71,7 @@
 <translation id="1567064801249837505">Album</translation>
 <translation id="1572585716423026576">Tetapkan sebagai kertas dinding</translation>
 <translation id="1578784163189013834">Pilih latar penyelamat skrin</translation>
+<translation id="160633243685262989">Pratonton Imej</translation>
 <translation id="1615335640928990664">Penggunaan data sejak <ph name="FRIENDLY_DATE" /></translation>
 <translation id="1621067168122174824">Jalankan Ujian cas</translation>
 <translation id="1639239467298939599">Memuatkan</translation>
@@ -139,7 +139,6 @@
 <translation id="2161394479394250669">Batalkan tugas cetak</translation>
 <translation id="2163937499206714165">Hidupkan mod gelap</translation>
 <translation id="2180197493692062006">Kesilapan telah berlaku. Cuba buka semula apl.</translation>
-<translation id="2182088270354640012">Terima kasih atas maklum balas anda. Maklum balas anda bantu meningkatkan Chrome OS dan akan disemak oleh pasukan Chrome OS. Disebabkan jumlah laporan yang diserahkan, anda tidak akan menerima balasan langsung.</translation>
 <translation id="2209788852729124853">Tetapkan Semula Pembilang Trafik</translation>
 <translation id="2212733584906323460">Namakan Peleraian</translation>
 <translation id="2217935453350629363">Kelajuan semasa</translation>
@@ -221,6 +220,7 @@
 <translation id="315116470104423982">Data mudah alih</translation>
 <translation id="3156846309055100599">Mengimbas halaman <ph name="PAGE_NUMBER" />...</translation>
 <translation id="315738237743207937">Portal terbolot dikesan</translation>
+<translation id="3160172848211257835">Hantar <ph name="BEGIN_LINK1" />maklumat sistem &amp; apl<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />metrik<ph name="END_LINK2" /></translation>
 <translation id="3170673040743561620">Letakkan dokumen anda di atas pengimbas</translation>
 <translation id="3188257591659621405">Fail saya</translation>
 <translation id="319101249942218879">Imej avatar ditukar</translation>
@@ -333,6 +333,7 @@
 <translation id="4297501883039923494">Dihentikan - Ralat tidak diketahui</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> Imej</translation>
 <translation id="4333390807948134856">Kekunci <ph name="KEY_NAME" /> ditekan</translation>
+<translation id="435692326371619097">Urus tetapan APN rangkaian. APN mewujudkan sambungan antara rangkaian selular dan Internet. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="4378373042927530923">Tidak Berjalan</translation>
 <translation id="4378551569595875038">Menyambung...</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -482,7 +483,6 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="5669267381087807207">Mengaktifkan</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Keluarga</translation>
-<translation id="5695599963893094957">Taip mana-mana kekunci pada papan kekunci anda. Anda boleh menekan sehingga 4 kekunci secara serentak.</translation>
 <translation id="5701381305118179107">Tengah</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> daripada <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Kemas kini <ph name="DEVICE_NAME" /></translation>
@@ -584,6 +584,7 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="6575134580692778371">Tidak dikonfigurasi</translation>
 <translation id="6579509898032828423">Guna foto ini</translation>
 <translation id="6596816719288285829">Alamat IP</translation>
+<translation id="6599673642868607614">Terima kasih atas maklum balas anda. Maklum balas anda membantu kami meningkatkan pengalaman Chromebook dan akan disemak oleh pasukan kami. Oleh sebab kami menerima jumlah laporan yang banyak, kami tidak akan dapat menghantar balasan.</translation>
 <translation id="6618744767048954150">Berjalan</translation>
 <translation id="6620487321149975369">Tugas cetak akan dipaparkan dalam sejarah melainkan dialih keluar secara manual</translation>
 <translation id="6624819909909965616">Tidak dapat memuat naik fail yang lebih besar daripada 10 MB</translation>
@@ -628,6 +629,7 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">Gagal - Pemberian Keizinan Gagal</translation>
 <translation id="7103252855940681301">Peranti <ph name="INDEX" /> daripada <ph name="COUNT" /> bernama <ph name="NAME" />.</translation>
+<translation id="7130438335435247835">Nama Titik Capaian (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{Pelayan nama}other{Pelayan nama}}</translation>
 <translation id="7143207342074048698">Menyambung</translation>
 <translation id="7144878232160441200">Cuba semula</translation>
@@ -672,6 +674,7 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="7535791657097741517">Hidupkan tema cerah</translation>
 <translation id="7550715992156305117">Rutin Diagnostik</translation>
 <translation id="7551123448725492271">Peranti ialah peranti audio.</translation>
+<translation id="7559239713112547082">Pratonton Tangkapan Skrin</translation>
 <translation id="7561454561030345039">Tindakan ini diurus oleh pentadbir anda</translation>
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7570674786725311828">Skrin sentuh USB</translation>
@@ -688,9 +691,9 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="773153675489693198">Kiraan kitaran</translation>
 <translation id="7747039790905080783">Kunci prakongsi</translation>
 <translation id="7762130827864645708">Penukaran kata laluan anda berjaya. Sila gunakan kata laluan baharu mulai sekarang.</translation>
-<translation id="7762839321248874531">Hantar <ph name="BEGIN_LINK1" />maklumat sistem dan apl<ph name="END_LINK1" /> serta <ph name="BEGIN_LINK2" />metrik<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Padanan akhiran domain</translation>
 <translation id="7769672763586021400">ID Model</translation>
+<translation id="7778717409420828014">Maklum balas anda membantu kami meningkatkan pengalaman Chromebook dan akan disemak oleh pasukan kami. Oleh sebab kami menerima jumlah laporan yang banyak, kami tidak akan dapat menghantar balasan.</translation>
 <translation id="7784116172884276937">Tiada pelayan DNS disediakan</translation>
 <translation id="779591286616261875">Hantar laporan baharu</translation>
 <translation id="7799817062559422778">Mod cerah</translation>
@@ -825,7 +828,6 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="9082718469794970195">Gunakan video ini</translation>
 <translation id="9087578468327036362">Laporkan pertanyaan ini</translation>
 <translation id="9088306295921699330">Penggunaan semasa</translation>
-<translation id="9092255287806472980">Maklum balas anda membantu kami meningkatkan Chrome OS dan akan disemak oleh pasukan kami. Oleh sebab kami menerima jumlah laporan yang banyak, kami tidak akan dapat menghantar balasan.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="910415269708673980">Muat semula tiket untuk <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Mengimbas halaman <ph name="PAGE_NUMBER" /></translation>

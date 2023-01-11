@@ -425,7 +425,6 @@ interface Event
     getter currentTarget
     getter defaultPrevented
     getter eventPhase
-    getter path
     getter returnValue
     getter srcElement
     getter target
@@ -779,7 +778,6 @@ interface ImageData
     getter storageFormat
     getter width
     method constructor
-    method getSettings
 interface InstallEvent : ExtendableEvent
     attribute @@toStringTag
     method constructor
@@ -1165,6 +1163,7 @@ interface PerformanceResourceTiming : PerformanceEntry
     attribute @@toStringTag
     getter connectEnd
     getter connectStart
+    getter contentType
     getter decodedBodySize
     getter deliveryType
     getter domainLookupEnd
@@ -1534,16 +1533,19 @@ interface TransformStreamDefaultController
     method error
     method terminate
 interface TrustedHTML
+    static method fromLiteral
     attribute @@toStringTag
     method constructor
     method toJSON
     method toString
 interface TrustedScript
+    static method fromLiteral
     attribute @@toStringTag
     method constructor
     method toJSON
     method toString
 interface TrustedScriptURL
+    static method fromLiteral
     attribute @@toStringTag
     method constructor
     method toJSON

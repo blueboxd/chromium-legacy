@@ -16,17 +16,19 @@ class ExceptionState;
 class ExecutionContext;
 
 // Implementation of the PendingPostBeacon API.
-// https://github.com/WICG/unload-beacon/blob/main/README.md
+// https://github.com/WICG/pending-beacon/blob/main/README.md
 class CORE_EXPORT PendingPostBeacon : public PendingBeacon {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static PendingPostBeacon* Create(ExecutionContext* context,
-                                   const String& target_url);
+                                   const String& target_url,
+                                   ExceptionState& exception_state);
 
   static PendingPostBeacon* Create(ExecutionContext* context,
                                    const String& target_url,
-                                   PendingBeaconOptions* options);
+                                   PendingBeaconOptions* options,
+                                   ExceptionState& exception_state);
 
   explicit PendingPostBeacon(ExecutionContext* context,
                              const String& url,

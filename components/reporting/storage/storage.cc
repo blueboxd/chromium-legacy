@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_list.h"
@@ -19,16 +20,18 @@
 #include "base/files/file_util.h"
 #include "base/files/platform_file.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/thread_annotations.h"
 #include "components/reporting/compression/compression_module.h"
 #include "components/reporting/encryption/encryption_module_interface.h"
 #include "components/reporting/encryption/primitives.h"
 #include "components/reporting/encryption/verification.h"
-#include "components/reporting/proto/synced/pipeline_id.pb.h"
 #include "components/reporting/proto/synced/record.pb.h"
 #include "components/reporting/resources/resource_interface.h"
 #include "components/reporting/storage/storage_configuration.h"
@@ -39,7 +42,6 @@
 #include "components/reporting/util/status_macros.h"
 #include "components/reporting/util/statusor.h"
 #include "components/reporting/util/task_runner_context.h"
-#include "crypto/sha2.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl.h"
 
 namespace reporting {
@@ -47,10 +49,7 @@ namespace reporting {
 namespace {
 constexpr base::FilePath::CharType kEncryptionKeyFilePrefix[] =
     FILE_PATH_LITERAL("EncryptionKey.");
-constexpr base::FilePath::CharType kPipelineIdFileName[] =
-    FILE_PATH_LITERAL("PipelineId");
 constexpr int32_t kEncryptionKeyMaxFileSize = 256;
-constexpr int32_t kPipelineIdMaxFileSize = 256;
 }  // namespace
 
 // Uploader interface adaptor for individual queue.
@@ -63,12 +62,13 @@ class Storage::QueueUploaderInterface : public UploaderInterface {
   // Factory method.
   static void AsyncProvideUploader(
       Priority priority,
-      Storage* storage,
+      UploaderInterface::AsyncStartUploaderCb async_start_upload_cb,
+      scoped_refptr<EncryptionModuleInterface> encryption_module,
       UploaderInterface::UploadReason reason,
       UploaderInterfaceResultCb start_uploader_cb) {
-    storage->async_start_upload_cb_.Run(
+    async_start_upload_cb.Run(
         (/*need_encryption_key=*/EncryptionModuleInterface::is_enabled() &&
-         storage->encryption_module_->need_encryption_key())
+         encryption_module->need_encryption_key())
             ? UploaderInterface::UploadReason::KEY_DELIVERY
             : reason,
         base::BindOnce(&QueueUploaderInterface::WrapInstantiatedUploader,
@@ -198,152 +198,13 @@ class Storage::KeyDelivery {
   const UploaderInterface::AsyncStartUploaderCb async_start_upload_cb_;
 
   // List of all request callbacks (protected by |sequenced_task_runner_|).
-  base::OnceCallbackList<void(Status)> callbacks_;
-  std::vector<base::CallbackListSubscription> callback_subscriptions_;
+  base::OnceCallbackList<void(Status)> callbacks_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+  std::vector<base::CallbackListSubscription> callback_subscriptions_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   const scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
-  SEQUENCE_CHECKER(sequence_checker_);
-};
-
-class Storage::PipelineIdInStorage {
- public:
-  explicit PipelineIdInStorage(const base::FilePath& directory)
-      : directory_(directory) {}
-  ~PipelineIdInStorage() = default;
-  Status StorePipelineId(base::StringPiece pipeline_id) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    PipelineIdStorageInfo info;
-    std::string pipeline_id_str(pipeline_id);
-    info.set_pipeline_id(pipeline_id_str);
-    info.set_pipeline_id_signature(GetSignature(pipeline_id_str));
-    Status write_status = WriteToFile(info);
-    if (write_status.ok()) {
-      // Invalidate cached |pipeline_id_| value so that we read from the file
-      // next time.
-      pipeline_id_.reset();
-    }
-    return write_status;
-  }
-  StatusOr<std::string> GetPipelineId() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    // Read cached value instead of performing a file read.
-    if (pipeline_id_.has_value()) {
-      return pipeline_id_.value();
-    }
-    const auto pipeline_id_result = ReadFromFile();
-    if (!pipeline_id_result.ok()) {
-      return pipeline_id_result.status();
-    }
-    // Cache |pipeline_id_| for next read
-    pipeline_id_ = pipeline_id_result.ValueOrDie().pipeline_id();
-    DCHECK(pipeline_id_.has_value());
-    base::StringPiece signature =
-        pipeline_id_result.ValueOrDie().pipeline_id_signature();
-    if (!VerifySignature(pipeline_id_.value(), signature)) {
-      return Status(error::DATA_LOSS, "Pipeline id corrupted in storage.");
-    }
-    return pipeline_id_.value();
-  }
-
- private:
-  static bool VerifySignature(base::StringPiece id,
-                              base::StringPiece signature) {
-    return signature == GetSignature(id);
-  }
-  static std::string GetSignature(base::StringPiece pipeline_id) {
-    return crypto::SHA256HashString(pipeline_id);
-  }
-  // Writes the pipeline ID and its signature to a file in a serialized
-  // PipelineIdStorageInfo format. Overwrites any data written during previous
-  // calls.
-  Status WriteToFile(const PipelineIdStorageInfo info) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    base::FilePath pipeline_id_file_path =
-        directory_.Append(kPipelineIdFileName);
-    // Create or overwrite the existing file and open for writing.
-    base::File pipeline_id_file(
-        pipeline_id_file_path,
-        base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-    if (!pipeline_id_file.IsValid()) {
-      return Status(
-          error::NOT_FOUND,
-          base::StrCat({"Cannot open pipeline id file='",
-                        pipeline_id_file_path.MaybeAsASCII(), "' for append"}));
-    }
-    std::string serialized_info;
-    if (!info.SerializeToString(&serialized_info)) {
-      return Status(error::DATA_LOSS,
-                    base::StrCat({"Failed to serialize pipeline id into file='",
-                                  pipeline_id_file_path.MaybeAsASCII(), "'"}));
-    }
-    const int32_t write_result = pipeline_id_file.Write(
-        /*offset=*/0, serialized_info.data(), serialized_info.size());
-    if (write_result < 0) {
-      return Status(
-          error::DATA_LOSS,
-          base::StrCat({"File write error=",
-                        pipeline_id_file.ErrorToString(
-                            pipeline_id_file.GetLastFileError()),
-                        " file=", pipeline_id_file_path.MaybeAsASCII()}));
-    }
-    if (static_cast<size_t>(write_result) != serialized_info.size()) {
-      return Status(error::DATA_LOSS,
-                    base::StrCat({"Failed to serialize pipeline id into file='",
-                                  pipeline_id_file_path.MaybeAsASCII(), "'"}));
-    }
-    return Status::StatusOK();
-  }
-  StatusOr<PipelineIdStorageInfo> ReadFromFile() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    // Make sure the assigned directory exists.
-    if (base::File::Error error;
-        !base::CreateDirectoryAndGetError(directory_, &error)) {
-      return Status(
-          error::UNAVAILABLE,
-          base::StrCat(
-              {"Storage directory '", directory_.MaybeAsASCII(),
-               "' does not exist, error=", base::File::ErrorToString(error)}));
-    }
-    base::FilePath pipeline_id_file_path =
-        directory_.Append(kPipelineIdFileName);
-    base::File pipeline_id_file(pipeline_id_file_path,
-                                base::File::FLAG_OPEN | base::File::FLAG_READ);
-    if (!pipeline_id_file.IsValid()) {
-      return Status(error::NOT_FOUND,
-                    base::StrCat({"Could not open pipeline file, full_name= ",
-                                  pipeline_id_file_path.MaybeAsASCII()}));
-    }
-    PipelineIdStorageInfo pipeline_id_storage_info;
-
-    char file_buffer[kPipelineIdMaxFileSize];
-    const int32_t read_result = pipeline_id_file.Read(
-        /*offset=*/0, file_buffer, kPipelineIdMaxFileSize);
-    if (read_result < 0) {
-      return Status(error::DATA_LOSS,
-                    base::StrCat({"File read error, full_name= ",
-                                  pipeline_id_file.ErrorToString(
-                                      pipeline_id_file.GetLastFileError()),
-                                  " ", pipeline_id_file_path.MaybeAsASCII()}));
-    }
-    if (read_result == 0 || read_result >= kPipelineIdMaxFileSize) {
-      return Status(
-          error::DATA_LOSS,
-          base::StrCat({"Unexpected pipeline id file size, full_name= ",
-                        pipeline_id_file_path.MaybeAsASCII()}));
-    }
-    google::protobuf::io::ArrayInputStream stream(  // Zero-copy stream.
-        file_buffer, read_result);
-    if (!pipeline_id_storage_info.ParseFromZeroCopyStream(&stream)) {
-      return Status(
-          error::DATA_LOSS,
-          base::StrCat({"Failed to parse pipeline ID file, full_name= ",
-                        pipeline_id_file_path.MaybeAsASCII()}));
-    }
-    return pipeline_id_storage_info;
-  }
-  absl::optional<std::string> pipeline_id_;
-  const base::FilePath directory_;
   SEQUENCE_CHECKER(sequence_checker_);
 };
 
@@ -480,19 +341,14 @@ class Storage::KeyInStorage {
         dir_enum,
         base::BindRepeating(
             [](uint64_t new_file_index, const base::FilePath& full_name) {
-              const auto extension = full_name.Extension();
-              if (extension.empty()) {
-                // Should not happen, will remove this file.
-                return true;
-              }
-              uint64_t file_index = 0;
-              if (!base::StringToUint64(extension.substr(1), &file_index)) {
-                // Bad extension - not a number. Should not happen, will remove
-                // this file.
-                return true;
-              }
-              if (file_index < new_file_index) {
-                // Lower index file, will remove it.
+              const auto file_index =
+                  StorageQueue::GetFileSequenceIdFromPath(full_name);
+              if (!file_index.ok() ||  // Should not happen, will remove file.
+                  file_index.ValueOrDie() <
+                      static_cast<int64_t>(
+                          new_file_index)) {  // Lower index file, will remove
+                                              // it.
+
                 return true;
               }
               return false;
@@ -516,25 +372,24 @@ class Storage::KeyInStorage {
         // Duplicate file name. Should not happen.
         continue;
       }
-      const auto extension = full_name.Extension();
-      if (extension.empty()) {
-        // Should not happen.
+      const auto file_index =
+          StorageQueue::GetFileSequenceIdFromPath(full_name);
+      if (!file_index.ok()) {  // Shouldn't happen, something went wrong.
         continue;
       }
-      uint64_t file_index = 0;
-      bool success = base::StringToUint64(extension.substr(1), &file_index);
-      if (!success) {
-        // Bad extension - not a number. Should not happen (file is corrupt).
-        continue;
-      }
-      if (!found_key_files->emplace(file_index, full_name).second) {
+      if (!found_key_files
+               ->emplace(static_cast<uint64_t>(file_index.ValueOrDie()),
+                         full_name)
+               .second) {
         // Duplicate extension (e.g., 01 and 001). Should not happen (file is
         // corrupt).
         continue;
       }
       // Set 'next_key_file_index_' to a number which is definitely not used.
-      if (next_key_file_index_.load() <= file_index) {
-        next_key_file_index_.store(file_index + 1);
+      if (static_cast<int64_t>(next_key_file_index_.load()) <=
+          file_index.ValueOrDie()) {
+        next_key_file_index_.store(
+            static_cast<uint64_t>(file_index.ValueOrDie() + 1));
       }
     }
   }
@@ -622,14 +477,16 @@ void Storage::Create(
         base::OnceCallback<void(StatusOr<scoped_refptr<Storage>>)> callback)
         : TaskRunnerContext<StatusOr<scoped_refptr<Storage>>>(
               std::move(callback),
-              base::ThreadPool::CreateSequencedTaskRunner(
-                  {base::TaskPriority::BEST_EFFORT, base::MayBlock()})),
+              storage->sequenced_task_runner_),  // Same runner as the Storage!
           queues_options_(queues_options),
           storage_(std::move(storage)) {}
 
    private:
     // Context can only be deleted by calling Response method.
-    ~StorageInitContext() override { DCHECK_EQ(count_, 0); }
+    ~StorageInitContext() override {
+      DCHECK_CALLED_ON_VALID_SEQUENCE(storage_->sequence_checker_);
+      DCHECK_EQ(count_, 0u);
+    }
 
     void OnStart() override {
       CheckOnValidSequence();
@@ -683,15 +540,17 @@ void Storage::Create(
       CheckOnValidSequence();
 
       // Construct all queues.
+      DCHECK_CALLED_ON_VALID_SEQUENCE(storage_->sequence_checker_);
       count_ = queues_options_.size();
       for (const auto& queue_options : queues_options_) {
         StorageQueue::Create(
             /*options=*/queue_options.second,
             // Note: the callback below belongs to the Queue and does not
-            // outlive Storage.
+            // outlive Storage, so it cannot refer to `storage_` itself!
             base::BindRepeating(&QueueUploaderInterface::AsyncProvideUploader,
                                 /*priority=*/queue_options.first,
-                                base::Unretained(storage_.get())),
+                                storage_->async_start_upload_cb_,
+                                storage_->encryption_module_),
             storage_->encryption_module_, storage_->compression_module_,
             base::BindOnce(&StorageInitContext::ScheduleAddQueue,
                            base::Unretained(this),
@@ -709,6 +568,7 @@ void Storage::Create(
     void AddQueue(Priority priority,
                   StatusOr<scoped_refptr<StorageQueue>> storage_queue_result) {
       CheckOnValidSequence();
+      DCHECK_CALLED_ON_VALID_SEQUENCE(storage_->sequence_checker_);
       if (storage_queue_result.ok()) {
         auto add_result = storage_->queues_.emplace(
             priority, storage_queue_result.ValueOrDie());
@@ -720,20 +580,34 @@ void Storage::Create(
           final_status_ = storage_queue_result.status();
         }
       }
-      DCHECK_GT(count_, 0);
-      if (--count_ > 0) {
+      DCHECK_GT(count_, 0u);
+      if (--count_ > 0u) {
         return;
       }
       if (!final_status_.ok()) {
         Response(final_status_);
         return;
       }
+      // Now all queues are ready, assign degradation vectors to them
+      // in an ascending priorities order. The lowest priority queue has
+      // an empty vector.
+      std::vector<scoped_refptr<StorageQueue>> degradation_queues;
+      DCHECK_EQ(storage_->queues_.size(), queues_options_.size());
+      for (const auto& queue_options : queues_options_) {
+        const auto queue_or_error = storage_->GetQueue(queue_options.first);
+        DCHECK(queue_or_error.ok()) << queue_or_error.status();
+        queue_or_error.ValueOrDie()->AssignDegradationQueues(
+            degradation_queues);
+        // Add newly created queue to the list to be used by all the later ones.
+        degradation_queues.emplace_back(queue_or_error.ValueOrDie());
+      }
+
       Response(std::move(storage_));
     }
 
     const StorageOptions::QueuesOptionsList queues_options_;
     const scoped_refptr<Storage> storage_;
-    int32_t count_ = 0;
+    size_t count_ GUARDED_BY_CONTEXT(storage_->sequence_checker_) = 0;
     Status final_status_;
   };
 
@@ -760,61 +634,76 @@ Storage::Storage(const StorageOptions& options,
           options.signature_verification_public_key(),
           options.directory())),
       async_start_upload_cb_(async_start_upload_cb),
-      pipeline_id_in_storage_(
-          std::make_unique<PipelineIdInStorage>(options.directory())) {}
+      sequenced_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::BEST_EFFORT, base::MayBlock()})) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
 Storage::~Storage() = default;
 
 void Storage::Write(Priority priority,
                     Record record,
                     base::OnceCallback<void(Status)> completion_cb) {
-  // Note: queues_ never change after initialization is finished, so there is
-  // no need to protect or serialize access to it.
-  ASSIGN_OR_ONCE_CALLBACK_AND_RETURN(scoped_refptr<StorageQueue> queue,
-                                     completion_cb, GetQueue(priority));
-
-  if (EncryptionModuleInterface::is_enabled() &&
-      !encryption_module_->has_encryption_key()) {
-    // Key was not found at startup time. Note that if the key is outdated,
-    // we still can't use it, and won't load it now. So this processing can
-    // only happen after Storage is initialized (until the first successful
-    // delivery of a key). After that we will resume the write into the queue.
-    KeyDelivery::RequestCallback action = base::BindOnce(
-        [](scoped_refptr<StorageQueue> queue, Record record,
-           base::OnceCallback<void(Status)> completion_cb, Status status) {
-          if (!status.ok()) {
-            std::move(completion_cb).Run(status);
-            return;
-          }
-          queue->Write(std::move(record), std::move(completion_cb));
-        },
-        queue, std::move(record), std::move(completion_cb));
-    key_delivery_->Request(std::move(action));
-    return;
-  }
-
-  // Otherwise we can write into the queue right away.
-  queue->Write(std::move(record), std::move(completion_cb));
+  AsyncGetQueueAndProceed(
+      priority,
+      base::BindOnce(
+          [](scoped_refptr<Storage> self, Priority priority, Record record,
+             scoped_refptr<StorageQueue> queue,
+             base::OnceCallback<void(Status)> completion_cb) {
+            if (EncryptionModuleInterface::is_enabled() &&
+                !self->encryption_module_->has_encryption_key()) {
+              // Key was not found at startup time. Note that if the key is
+              // outdated, we still can't use it, and won't load it now. So
+              // this processing can only happen after Storage is initialized
+              // (until the first successful delivery of a key). After that we
+              // will resume the write into the queue.
+              KeyDelivery::RequestCallback action = base::BindOnce(
+                  [](scoped_refptr<StorageQueue> queue, Record record,
+                     base::OnceCallback<void(Status)> completion_cb,
+                     Status status) {
+                    if (!status.ok()) {
+                      std::move(completion_cb).Run(status);
+                      return;
+                    }
+                    queue->Write(std::move(record), std::move(completion_cb));
+                  },
+                  queue, std::move(record), std::move(completion_cb));
+              self->key_delivery_->Request(std::move(action));
+              return;
+            }
+            // Otherwise we can write into the queue right away.
+            queue->Write(std::move(record), std::move(completion_cb));
+          },
+          base::WrapRefCounted(this), priority, std::move(record)),
+      std::move(completion_cb));
 }
 
 void Storage::Confirm(SequenceInformation sequence_information,
                       bool force,
                       base::OnceCallback<void(Status)> completion_cb) {
-  // Note: queues_ never change after initialization is finished, so there is
-  // no need to protect or serialize access to it.
-  ASSIGN_OR_ONCE_CALLBACK_AND_RETURN(scoped_refptr<StorageQueue> queue,
-                                     completion_cb,
-                                     GetQueue(sequence_information.priority()));
-  queue->Confirm(std::move(sequence_information), force,
-                 std::move(completion_cb));
+  const Priority priority = sequence_information.priority();
+  AsyncGetQueueAndProceed(
+      priority,
+      base::BindOnce(
+          [](SequenceInformation sequence_information, bool force,
+             scoped_refptr<StorageQueue> queue,
+             base::OnceCallback<void(Status)> completion_cb) {
+            queue->Confirm(std::move(sequence_information), force,
+                           std::move(completion_cb));
+          },
+          std::move(sequence_information), force),
+      std::move(completion_cb));
 }
 
-Status Storage::Flush(Priority priority) {
-  // Note: queues_ never change after initialization is finished, so there is
-  // no need to protect or serialize access to it.
-  ASSIGN_OR_RETURN(scoped_refptr<StorageQueue> queue, GetQueue(priority));
-  queue->Flush();
-  return Status::StatusOK();
+void Storage::Flush(Priority priority,
+                    base::OnceCallback<void(Status)> completion_cb) {
+  AsyncGetQueueAndProceed(
+      priority,
+      base::BindOnce([](scoped_refptr<StorageQueue> queue,
+                        base::OnceCallback<void(Status)> completion_cb) {
+        queue->Flush(std::move(completion_cb));
+      }),
+      std::move(completion_cb));
 }
 
 void Storage::UpdateEncryptionKey(SignedEncryptionInfo signed_encryption_key) {
@@ -859,8 +748,38 @@ void Storage::UpdateEncryptionKey(SignedEncryptionInfo signed_encryption_key) {
           std::move(signed_encryption_key), base::WrapRefCounted(this)));
 }
 
+void Storage::AsyncGetQueueAndProceed(
+    Priority priority,
+    base::OnceCallback<void(scoped_refptr<StorageQueue>,
+                            base::OnceCallback<void(Status)>)> queue_action,
+    base::OnceCallback<void(Status)> completion_cb) {
+  sequenced_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<Storage> self, Priority priority,
+             base::OnceCallback<void(scoped_refptr<StorageQueue>,
+                                     base::OnceCallback<void(Status)>)>
+                 queue_action,
+             base::OnceCallback<void(Status)> completion_cb) {
+            // Attempt to get queue by priority on the Storage task runner.
+            auto queue_result = self->GetQueue(priority);
+            if (!queue_result.ok()) {
+              // Queue not found, abort.
+              std::move(completion_cb).Run(queue_result.status());
+              return;
+            }
+            // Queue found, execute the action (it should relocate on
+            // queue thread soon, to not block Storage task runner).
+            std::move(queue_action)
+                .Run(queue_result.ValueOrDie(), std::move(completion_cb));
+          },
+          base::WrapRefCounted(this), priority, std::move(queue_action),
+          std::move(completion_cb)));
+}
+
 StatusOr<scoped_refptr<StorageQueue>> Storage::GetQueue(
     Priority priority) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = queues_.find(priority);
   if (it == queues_.end()) {
     return Status(
@@ -870,11 +789,24 @@ StatusOr<scoped_refptr<StorageQueue>> Storage::GetQueue(
   return it->second;
 }
 
-Status Storage::StorePipelineId(base::StringPiece pipeline_id) {
-  return pipeline_id_in_storage_->StorePipelineId(pipeline_id);
-}
-
-StatusOr<std::string> Storage::GetPipelineId() {
-  return pipeline_id_in_storage_->GetPipelineId();
+void Storage::RegisterCompletionCallback(base::OnceClosure callback) {
+  // Although this is an asynchronous action, note that Storage cannot be
+  // destructed until the callback is registered - StorageQueue is held by added
+  // reference here. Thus, the callback being registered is guaranteed
+  // to be called when the Storage is being destructed.
+  DCHECK(callback);
+  sequenced_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](base::OnceClosure callback, scoped_refptr<Storage> self) {
+            DCHECK_CALLED_ON_VALID_SEQUENCE(self->sequence_checker_);
+            const base::RepeatingClosure queue_callback =
+                base::BarrierClosure(self->queues_.size(), std::move(callback));
+            for (auto& queue : self->queues_) {
+              // Copy the callback as base::OnceClosure.
+              queue.second->RegisterCompletionCallback(queue_callback);
+            }
+          },
+          std::move(callback), base::WrapRefCounted(this)));
 }
 }  // namespace reporting

@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {isChromeOS, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {isChromeOS} from 'chrome://resources/js/platform.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {listenOnce} from 'chrome://resources/js/util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {ChooserType, ContentSetting, ContentSettingsTypes, SiteDetailsElement, SiteSettingSource, SiteSettingsPrefsBrowserProxyImpl, WebsiteUsageBrowserProxy, WebsiteUsageBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
@@ -179,8 +180,7 @@ suite('SiteDetails', function() {
     websiteUsageProxy = new TestWebsiteUsageBrowserProxy();
     WebsiteUsageBrowserProxyImpl.setInstance(websiteUsageProxy);
 
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
   });
 
   function createSiteDetails(origin: string) {

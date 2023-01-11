@@ -8,12 +8,13 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+#include "base/time/time.h"
 #import "components/content_settings/core/common/content_settings.h"
 #import "components/sync/base/model_type.h"
 #include "third_party/metrics_proto/user_demographics.pb.h"
 
 @class ElementSelector;
-@class FakeChromeIdentity;
+@class FakeSystemIdentity;
 @class NamedGuide;
 
 @interface JavaScriptExecutionResult : NSObject
@@ -111,9 +112,6 @@
 // If not succeed returns an NSError indicating  why the
 // operation failed, otherwise nil.
 + (NSError*)simulateTabsBackgrounding;
-
-// Persists the current list of tabs to disk immediately.
-+ (void)saveSessionImmediately;
 
 // Returns the number of main (non-incognito) tabs currently evicted.
 + (NSUInteger)evictedMainTabCount [[nodiscard]];
@@ -352,7 +350,7 @@
 + (void)clearSyncServerData;
 
 // Signs in with `identity` without sync consent.
-+ (void)signInWithoutSyncWithIdentity:(FakeChromeIdentity*)identity;
++ (void)signInWithoutSyncWithIdentity:(FakeSystemIdentity*)identity;
 
 // Starts the sync server. The server should not be running when calling this.
 + (void)startSync;
@@ -364,7 +362,7 @@
 // Returns nil on success, or else an NSError indicating why the
 // operation failed.
 + (NSError*)waitForSyncInitialized:(BOOL)isInitialized
-                       syncTimeout:(NSTimeInterval)timeout;
+                       syncTimeout:(base::TimeDelta)timeout;
 
 // Returns the current sync cache GUID. The sync server must be running when
 // calling this.
@@ -638,7 +636,7 @@
 // replaced with this set. Note that timeout is best effort and can be a bit
 // longer than specified. This method returns immediately.
 + (void)watchForButtonsWithLabels:(NSArray<NSString*>*)labels
-                          timeout:(NSTimeInterval)timeout;
+                          timeout:(base::TimeDelta)timeout;
 
 // Returns YES if the button with given (accessibility) `label` was observed at
 // some point since `watchForButtonsWithLabels:timeout:` was called.
@@ -660,13 +658,6 @@
 // message.
 + (void)disableDefaultBrowserPromo;
 
-#pragma mark - Url Param Classification utilities
-// Sets `contents` to be used by the url_param_filter::ClassificationsLoader.
-+ (void)setUrlParamClassifications:(NSString*)contents;
-
-// Resets the stored classifications on the
-// url_param_filter::ClassificationsLoader.
-+ (void)resetUrlParamClassifications;
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_APP_INTERFACE_H_

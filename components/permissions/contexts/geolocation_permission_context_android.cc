@@ -12,6 +12,7 @@
 #include "components/location/android/location_settings.h"
 #include "components/location/android/location_settings_impl.h"
 #include "components/permissions/android/android_permission_util.h"
+#include "components/permissions/android/permissions_reprompt_controller_android.h"
 #include "components/permissions/permission_request_id.h"
 #include "components/permissions/permissions_client.h"
 #include "components/permissions/pref_names.h"
@@ -76,8 +77,7 @@ GeolocationPermissionContextAndroid::GeolocationPermissionContextAndroid(
     : GeolocationPermissionContext(browser_context, std::move(delegate)),
       location_settings_(std::make_unique<LocationSettingsImpl>()),
       location_settings_dialog_request_id_(
-          0,
-          0,
+          content::GlobalRenderFrameHostId(0, 0),
           PermissionRequestID::RequestLocalId()) {}
 
 GeolocationPermissionContextAndroid::~GeolocationPermissionContextAndroid() =
@@ -94,8 +94,7 @@ void GeolocationPermissionContextAndroid::RequestPermission(
     bool user_gesture,
     BrowserPermissionCallback callback) {
   content::RenderFrameHost* const render_frame_host =
-      content::RenderFrameHost::FromID(id.render_process_id(),
-                                       id.render_frame_id());
+      content::RenderFrameHost::FromID(id.global_render_frame_host_id());
 
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
@@ -120,12 +119,17 @@ void GeolocationPermissionContextAndroid::RequestPermission(
       ShouldRepromptUserForPermissions(web_contents,
                                        {ContentSettingsType::GEOLOCATION}) ==
           PermissionRepromptState::kShow) {
-    PermissionsClient::Get()->RepromptForAndroidPermissions(
-        web_contents, {ContentSettingsType::GEOLOCATION},
-        base::BindOnce(&GeolocationPermissionContextAndroid::
-                           HandleUpdateAndroidPermissions,
-                       weak_factory_.GetWeakPtr(), id, requesting_frame_origin,
-                       embedding_origin, std::move(callback)));
+    permissions::PermissionsRepromptControllerAndroid::CreateForWebContents(
+        web_contents);
+    permissions::PermissionsRepromptControllerAndroid::FromWebContents(
+        web_contents)
+        ->RepromptPermissionRequest(
+            {ContentSettingsType::GEOLOCATION}, content_settings_type(),
+            base::BindOnce(&GeolocationPermissionContextAndroid::
+                               HandleUpdateAndroidPermissions,
+                           weak_factory_.GetWeakPtr(), id,
+                           requesting_frame_origin, embedding_origin,
+                           std::move(callback)));
     return;
   }
 
@@ -177,8 +181,7 @@ void GeolocationPermissionContextAndroid::NotifyPermissionSet(
                               LocationSettingsBackOffLevel(is_default_search));
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(
-            content::RenderFrameHost::FromID(id.render_process_id(),
-                                             id.render_frame_id()));
+            content::RenderFrameHost::FromID(id.global_render_frame_host_id()));
     if (!web_contents)
       return;
 
@@ -405,7 +408,8 @@ void GeolocationPermissionContextAndroid::OnLocationSettingsDialogShown(
       std::move(location_settings_dialog_callback_), persist, content_setting);
 
   location_settings_dialog_request_id_ =
-      PermissionRequestID(0, 0, PermissionRequestID::RequestLocalId());
+      PermissionRequestID(content::GlobalRenderFrameHostId(0, 0),
+                          PermissionRequestID::RequestLocalId());
 }
 
 void GeolocationPermissionContextAndroid::FinishNotifyPermissionSet(

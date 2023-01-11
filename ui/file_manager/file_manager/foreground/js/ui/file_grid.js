@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 import {assert, assertInstanceof} from 'chrome://resources/js/assert.js';
-import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
+import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.js';
 import {isRTL} from 'chrome://resources/js/util.js';
 
-import {AsyncUtil} from '../../../common/js/async_util.js';
+import {RateLimiter} from '../../../common/js/async_util.js';
+import {maybeShowTooltip} from '../../../common/js/dom_utils.js';
 import {FileType} from '../../../common/js/file_type.js';
 import {util} from '../../../common/js/util.js';
 import {FilesAppEntry} from '../../../externs/files_app_entry_interfaces.js';
@@ -73,7 +74,7 @@ export class FileGrid extends Grid {
     /** @private {?VolumeManager} */
     this.volumeManager_ = null;
 
-    /** @private {?AsyncUtil.RateLimiter} */
+    /** @private {?RateLimiter} */
     this.relayoutRateLimiter_ = null;
 
     /** @private {?function(!Event)} */
@@ -152,12 +153,38 @@ export class FileGrid extends Grid {
     };
 
     self.relayoutRateLimiter_ =
-        new AsyncUtil.RateLimiter(self.relayoutImmediately_.bind(self));
+        new RateLimiter(self.relayoutImmediately_.bind(self));
 
     const style = window.getComputedStyle(self);
     self.paddingStart_ =
         parseFloat(isRTL() ? style.paddingRight : style.paddingLeft);
     self.paddingTop_ = parseFloat(style.paddingTop);
+
+    self.addEventListener(
+        'mouseover', self.onMouseOver_.bind(self), {passive: true});
+  }
+
+  onMouseOver_(event) {
+    this.maybeShowToolTip(event);
+  }
+
+  maybeShowToolTip(event) {
+    let target = null;
+    for (const el of event.composedPath()) {
+      if (el.classList?.contains('thumbnail-item')) {
+        target = el;
+        break;
+      }
+    }
+    if (!target) {
+      return;
+    }
+    const labelElement = target.querySelector('.filename-label');
+    if (!labelElement) {
+      return;
+    }
+
+    maybeShowTooltip(labelElement, labelElement.innerText);
   }
 
   /**
@@ -864,7 +891,7 @@ export class FileGrid extends Grid {
         this.metadataModel_.getCache([entry], ['syncStatus'])[0].syncStatus;
     if (frame && syncStatus) {
       frame.setAttribute('data-sync-status', syncStatus);
-      // TODO(msalomao): set sync status aria-label.
+      // TODO(b/255474670): set sync status aria-label.
     }
   }
 

@@ -63,6 +63,7 @@ class MediaNotificationService
   RegisterIsAudioOutputDeviceSwitchingSupportedCallback(
       const std::string& id,
       base::RepeatingCallback<void(bool)> callback) override;
+  bool OnMediaRemotingRequested(const std::string& item_id) override;
 
   // global_media_controls::MediaSessionItemProducerObserver:
   void OnMediaSessionActionButtonPressed(
@@ -104,18 +105,6 @@ class MediaNotificationService
   friend class MediaNotificationServiceCastTest;
   friend class MediaToolbarButtonControllerTest;
   friend class PresentationRequestNotificationProducerTest;
-
-  FRIEND_TEST_ALL_PREFIXES(MediaNotificationServiceTest,
-                           HideAfterTimeoutAndActiveAgainOnPlay);
-  FRIEND_TEST_ALL_PREFIXES(MediaNotificationServiceTest,
-                           SessionIsRemovedImmediatelyWhenATabCloses);
-  FRIEND_TEST_ALL_PREFIXES(MediaNotificationServiceTest, DismissesMediaSession);
-  FRIEND_TEST_ALL_PREFIXES(MediaNotificationServiceTest,
-                           HidesInactiveNotifications);
-  FRIEND_TEST_ALL_PREFIXES(MediaNotificationServiceTest,
-                           HidingNotification_FeatureDisabled);
-  FRIEND_TEST_ALL_PREFIXES(MediaNotificationServiceCastTest,
-                           ShowSupplementalNotifications);
 
   // True if there are cast notifications associated with |web_contents|.
   bool HasCastNotificationsForWebContents(

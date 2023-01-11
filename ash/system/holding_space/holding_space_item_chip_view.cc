@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "ash/bubble/bubble_utils.h"
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/holding_space/holding_space_client.h"
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
@@ -25,7 +24,6 @@
 #include "ash/system/progress_indicator/progress_indicator.h"
 #include "ash/system/progress_indicator/progress_ring_animation.h"
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_styles.h"
@@ -66,12 +64,6 @@ constexpr base::TimeDelta kInProgressImageScaleDuration =
 constexpr float kInProgressImageScaleFactor = 0.7f;
 
 // Helpers ---------------------------------------------------------------------
-
-template <typename... T>
-base::RepeatingCallback<void(T...)> IgnoreArgs(
-    base::RepeatingCallback<void()> callback) {
-  return base::BindRepeating([](T...) {}).Then(std::move(callback));
-}
 
 void ToCenteredSize(gfx::Rect* rect, const gfx::Size& size) {
   rect->Outset(gfx::Outsets::VH(size.height(), size.width()));
@@ -126,7 +118,7 @@ class PaintCallbackLabel : public views::Label {
     layer()->SetFillsBoundsOpaquely(fills_bounds_opaquely);
   }
 
-  void SetStyle(bubble_utils::LabelStyle style) {
+  void SetStyle(bubble_utils::TypographyStyle style) {
     bubble_utils::ApplyStyle(this, style);
   }
 
@@ -147,7 +139,7 @@ class PaintCallbackLabel : public views::Label {
 
 BEGIN_VIEW_BUILDER(/*no export*/, PaintCallbackLabel, views::Label)
 VIEW_BUILDER_PROPERTY(PaintCallbackLabel::Callback, Callback)
-VIEW_BUILDER_PROPERTY(bubble_utils::LabelStyle, Style)
+VIEW_BUILDER_PROPERTY(bubble_utils::TypographyStyle, Style)
 VIEW_BUILDER_PROPERTY(bool, PaintToLayer)
 VIEW_BUILDER_PROPERTY(bool, ViewAccessibilityIsIgnored)
 END_VIEW_BUILDER
@@ -323,14 +315,14 @@ HoldingSpaceItemChipView::HoldingSpaceItemChipView(
                           CreateLabelBuilder()
                               .CopyAddressTo(&primary_label_)
                               .SetID(kHoldingSpaceItemPrimaryChipLabelId)
-                              .SetStyle(bubble_utils::LabelStyle::kChipTitle)
+                              .SetStyle(bubble_utils::TypographyStyle::kBody2)
                               .SetElideBehavior(gfx::ELIDE_MIDDLE)
                               .SetCallback(paint_label_mask_callback))
                       .AddChild(
                           CreateLabelBuilder()
                               .CopyAddressTo(&secondary_label_)
                               .SetID(kHoldingSpaceItemSecondaryChipLabelId)
-                              .SetStyle(bubble_utils::LabelStyle::kChipBody)
+                              .SetStyle(bubble_utils::TypographyStyle::kLabel1)
                               .SetElideBehavior(gfx::FADE_TAIL)
                               .SetCallback(paint_label_mask_callback)))
               .AddChild(views::Builder<views::BoxLayoutView>()
@@ -350,9 +342,10 @@ HoldingSpaceItemChipView::HoldingSpaceItemChipView(
   progress_ring_animation_changed_subscription_ =
       HoldingSpaceAnimationRegistry::GetInstance()
           ->AddProgressRingAnimationChangedCallbackForKey(
-              item, IgnoreArgs<ProgressRingAnimation*>(base::BindRepeating(
-                        &HoldingSpaceItemChipView::UpdateImageTransform,
-                        base::Unretained(this))));
+              item,
+              base::IgnoreArgs<ProgressRingAnimation*>(base::BindRepeating(
+                  &HoldingSpaceItemChipView::UpdateImageTransform,
+                  base::Unretained(this))));
 
   UpdateImage();
   UpdateImageAndProgressIndicatorVisibility();
@@ -618,9 +611,7 @@ void HoldingSpaceItemChipView::UpdateLabels() {
       : item()->secondary_text_color()
           ? cros_styles::ResolveColor(
                 item()->secondary_text_color().value(),
-                DarkLightModeControllerImpl::Get()->IsDarkModeEnabled(),
-                base::FeatureList::IsEnabled(
-                    features::kSemanticColorsDebugOverride))
+                DarkLightModeControllerImpl::Get()->IsDarkModeEnabled())
           : AshColorProvider::Get()->GetContentLayerColor(
                 AshColorProvider::ContentLayerType::kTextColorSecondary));
   secondary_label_->SetVisible(!secondary_label_->GetText().empty());

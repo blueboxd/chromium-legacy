@@ -5,10 +5,15 @@
 
 import '../../mojo_webui_test_support.js';
 import 'chrome://parent-access/parent_access_ui.js';
+import 'chrome://parent-access/strings.m.js';
 
-import {assert} from 'chrome://resources/js/assert.js';
+import {setParentAccessUIHandlerForTest} from 'chrome://parent-access/parent_access_ui_handler.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {assertFalse, assertTrue} from '../../chai_assert.js';
+
+import {TestParentAccessUIHandler} from './test_parent_access_ui_handler.js';
 
 window.parent_access_ui_tests = {};
 parent_access_ui_tests.suiteName = 'ParentAccessUITest';
@@ -22,14 +27,12 @@ parent_access_ui_tests.TestNames = {
 
 suite(parent_access_ui_tests.suiteName, function() {
   let parentAccessUI;
-
-  suiteSetup(function() {
-    loadTimeData.overrideValues(
-        {webviewUrl: 'chrome://about', eventOriginFilter: 'chrome://about'});
-  });
+  let handler;
 
   setup(function() {
     PolymerTest.clearBody();
+    handler = new TestParentAccessUIHandler();
+    setParentAccessUIHandlerForTest(handler);
     parentAccessUI = document.createElement('parent-access-ui');
     document.body.appendChild(parentAccessUI);
     flush();
@@ -57,16 +60,15 @@ suite(parent_access_ui_tests.suiteName, function() {
     assertFalse(parentAccessUI.isAllowedRequest('http://www.example.com'));
 
     // Exception to HTTPS for localhost for local server development.
-    assertTrue(
-        parentAccessUI.isAllowedRequest(loadTimeData.getString('webviewUrl')));
+    assertTrue(parentAccessUI.isAllowedRequest('http://localhost:9879'));
   });
 
   test(
       parent_access_ui_tests.TestNames.TestShouldReceiveAuthHeader,
       async function() {
         // Auth header should be sent to webview URL.
-        assertTrue(parentAccessUI.shouldReceiveAuthHeader(
-            loadTimeData.getString('webviewUrl')));
+        const webviewUrl = (await handler.getParentAccessURL()).url;
+        assertTrue(parentAccessUI.shouldReceiveAuthHeader(webviewUrl));
 
         // Nothing else should receive the auth header.
         assertFalse(

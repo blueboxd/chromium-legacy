@@ -157,6 +157,15 @@ BASE_FEATURE(kPostQuantumCECPQ2SomeDomains,
 const base::FeatureParam<std::string>
     kPostQuantumCECPQ2Prefix(&kPostQuantumCECPQ2SomeDomains, "prefix", "a");
 
+// This is feature-gated, but enabled, to act as a kill switch, in case there
+// are unforeseen consequences to fully removing TLS 1.0/1.1.
+//
+// TODO(https://crbug.com/1376584): Remove this feature and all TLS 1.0/1.1
+// support code.
+BASE_FEATURE(kSSLMinVersionAtLeastTLS12,
+             "SSLMinVersionAtLeastTLS12",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kNetUnusedIdleSocketTimeout,
              "NetUnusedIdleSocketTimeout",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -186,7 +195,12 @@ const base::FeatureParam<int> kCertDualVerificationTrialCacheSize{
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
 BASE_FEATURE(kChromeRootStoreUsed,
              "ChromeRootStoreUsed",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 #if BUILDFLAG(IS_MAC)
 const base::FeatureParam<int> kChromeRootStoreSysImpl{&kChromeRootStoreUsed,
                                                       "sysimpl", 0};
@@ -261,9 +275,6 @@ BASE_FEATURE(kSamePartyAttributeEnabled,
 
 BASE_FEATURE(kPartitionedCookies,
              "PartitionedCookies",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kPartitionedCookiesBypassOriginTrial,
-             "PartitionedCookiesBypassOriginTrial",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kNoncedPartitionedCookies,
@@ -355,6 +366,12 @@ const base::FeatureParam<bool> kStorageAccessAPIAutoDenyOutsideFPS{
 BASE_FEATURE(kThirdPartyStoragePartitioning,
              "ThirdPartyStoragePartitioning",
              base::FEATURE_DISABLED_BY_DEFAULT);
+// Whether to use the new code paths needed to support partitioning Blob URLs.
+// This exists as a kill-switch in case an issue is identified with the Blob
+// URL implementation that causes breakage.
+BASE_FEATURE(kSupportPartitionedBlobUrl,
+             "SupportPartitionedBlobUrl",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAlpsParsing, "AlpsParsing", base::FEATURE_ENABLED_BY_DEFAULT);
 
@@ -376,6 +393,10 @@ BASE_FEATURE(kEnableWebsocketsOverHttp3,
 
 BASE_FEATURE(kUseNAT64ForIPv4Literal,
              "UseNAT64ForIPv4Literal",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kBlockNewForbiddenHeaders,
+             "BlockNewForbiddenHeaders",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace net::features

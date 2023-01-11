@@ -6,14 +6,18 @@ package org.chromium.components.messages;
 
 import android.os.SystemClock;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 
 /**
  * Static utility methods for recording messages related metrics.
+ * TODO(https://crbug.com/1382967): remove logs.
  */
 public class MessagesMetrics {
+    private static final String TAG = "MessagesMetrics";
     private static final String ENQUEUED_HISTOGRAM_NAME = "Android.Messages.Enqueued";
     private static final String ENQUEUED_VISIBLE_HISTOGRAM_NAME =
             "Android.Messages.Enqueued.Visible";
@@ -23,6 +27,48 @@ public class MessagesMetrics {
     private static final String TIME_TO_ACTION_HISTOGRAM_PREFIX = "Android.Messages.TimeToAction.";
     private static final String TIME_TO_ACTION_DISMISS_HISTOGRAM_PREFIX =
             "Android.Messages.TimeToAction.Dismiss.";
+    static final String STACKING_HISTOGRAM_NAME = "Android.Messages.Stacking";
+    static final String STACKING_ACTION_HISTOGRAM_PREFIX = "Android.Messages.Stacking.";
+    static final String THREE_STACKED_HISTOGRAM_NAME = "Android.Messages.Stacking.ThreeStacked";
+
+    @IntDef({StackingAnimationType.SHOW_ALL, StackingAnimationType.SHOW_FRONT_ONLY,
+            StackingAnimationType.REMOVE_FRONT_AND_SHOW_BACK, StackingAnimationType.REMOVE_ALL,
+            StackingAnimationType.REMOVE_FRONT_ONLY, StackingAnimationType.REMOVE_BACK_ONLY,
+            StackingAnimationType.SHOW_BACK_ONLY, StackingAnimationType.INSERT_AT_FRONT,
+            StackingAnimationType.MAX_VALUE})
+    public @interface StackingAnimationType {
+        int SHOW_ALL = 0;
+        int SHOW_FRONT_ONLY = 1;
+        int REMOVE_FRONT_AND_SHOW_BACK = 2;
+        int REMOVE_ALL = 3;
+        int REMOVE_FRONT_ONLY = 4;
+        int REMOVE_BACK_ONLY = 5;
+        int SHOW_BACK_ONLY = 6;
+        int INSERT_AT_FRONT = 7;
+        int MAX_VALUE = 8;
+    }
+
+    @IntDef({StackingAnimationAction.INSERT_AT_FRONT, StackingAnimationAction.INSERT_AT_BACK,
+            StackingAnimationAction.PUSH_TO_FRONT, StackingAnimationAction.PUSH_TO_BACK,
+            StackingAnimationAction.REMOVE_FRONT, StackingAnimationAction.REMOVE_BACK,
+            StackingAnimationAction.MAX_VALUE})
+    public @interface StackingAnimationAction {
+        int INSERT_AT_FRONT = 0;
+        int INSERT_AT_BACK = 1;
+        int PUSH_TO_FRONT = 2;
+        int PUSH_TO_BACK = 3;
+        int REMOVE_FRONT = 4;
+        int REMOVE_BACK = 5;
+        int MAX_VALUE = 6;
+    }
+
+    @IntDef({ThreeStackedScenario.HIGH_PRIORITY, ThreeStackedScenario.IN_SEQUENCE,
+            ThreeStackedScenario.MAX_VALUE})
+    public @interface ThreeStackedScenario {
+        int HIGH_PRIORITY = 0;
+        int IN_SEQUENCE = 1;
+        int MAX_VALUE = 2;
+    }
 
     /** Records metrics when a message is enqueued. */
     static void recordMessageEnqueuedVisible(@MessageIdentifier int messageIdentifier) {
@@ -67,12 +113,46 @@ public class MessagesMetrics {
         }
     }
 
+    static void recordStackingAnimationType(@StackingAnimationType int type) {
+        Log.i(TAG, "Triggered message stacking animation type %s.", type);
+        RecordHistogram.recordEnumeratedHistogram(
+                STACKING_HISTOGRAM_NAME, type, StackingAnimationType.MAX_VALUE);
+    }
+
+    static void recordStackingAnimationAction(
+            @StackingAnimationAction int action, @MessageIdentifier int messageIdentifier) {
+        String suffix = stackingAnimationActionToHistogramSuffix(action);
+        RecordHistogram.recordEnumeratedHistogram(STACKING_ACTION_HISTOGRAM_PREFIX + suffix,
+                messageIdentifier, StackingAnimationType.MAX_VALUE);
+    }
+
+    static void recordThreeStackedScenario(@ThreeStackedScenario int scenario) {
+        RecordHistogram.recordEnumeratedHistogram(
+                THREE_STACKED_HISTOGRAM_NAME, scenario, ThreeStackedScenario.MAX_VALUE);
+    }
+
     /**
      * Returns current timestamp in milliseconds to be used when recording message's visible
      * duration.
      */
     static long now() {
         return SystemClock.uptimeMillis();
+    }
+
+    static String stackingAnimationActionToHistogramSuffix(@StackingAnimationAction int action) {
+        if (action == StackingAnimationAction.INSERT_AT_FRONT) {
+            return "InsertAtFront";
+        } else if (action == StackingAnimationAction.INSERT_AT_BACK) {
+            return "InsertAtBack";
+        } else if (action == StackingAnimationAction.PUSH_TO_FRONT) {
+            return "PushToFront";
+        } else if (action == StackingAnimationAction.PUSH_TO_BACK) {
+            return "PushToBack";
+        } else if (action == StackingAnimationAction.REMOVE_FRONT) {
+            return "RemoveFront";
+        } else {
+            return "RemoveBack";
+        }
     }
 
     /**
@@ -135,8 +215,6 @@ public class MessagesMetrics {
                 return "VrServicesUpgrade";
             case MessageIdentifier.AR_CORE_UPGRADE:
                 return "ArCoreUpgrade";
-            case MessageIdentifier.INSTANT_APPS:
-                return "InstantApps";
             case MessageIdentifier.ABOUT_THIS_SITE:
                 return "AboutThisSite";
             case MessageIdentifier.TRANSLATE:

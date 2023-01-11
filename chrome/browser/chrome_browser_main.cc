@@ -62,9 +62,6 @@
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/chrome_browser_field_trials.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
-#include "chrome/browser/chrome_for_testing/buildflags.h"
-#include "chrome/browser/component_updater/first_party_sets_component_installer.h"
-#include "chrome/browser/component_updater/registration.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -125,7 +122,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/device_event_log/device_event_log.h"
-#include "components/embedder_support/origin_trials/pref_names.h"
+#include "components/embedder_support/origin_trials/component_updater_utils.h"
 #include "components/embedder_support/switches.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/google/core/common/google_util.h"
@@ -195,6 +192,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if BUILDFLAG(ENABLE_COMPONENT_UPDATER)
+#include "chrome/browser/component_updater/registration.h"
+#endif  // BUILDFLAG(ENABLE_COMPONENT_UPDATER)
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/flags/android/chrome_feature_list.h"
@@ -356,7 +357,7 @@ std::unique_ptr<base::RunLoop>& GetMainRunLoopInstance() {
 void HandleTestParameters(const base::CommandLine& command_line) {
   // This parameter causes a null pointer crash (crash reporter trigger).
   if (command_line.HasSwitch(switches::kBrowserCrashTest)) {
-    IMMEDIATE_CRASH();
+    base::ImmediateCrash();
   }
 }
 
@@ -494,7 +495,11 @@ bool ShouldInstallSodaDuringPostProfileInit(
   return base::FeatureList::IsEnabled(
       ash::features::kOnDeviceSpeechRecognition);
 #else
+#if BUILDFLAG(ENABLE_COMPONENT_UPDATER)
   return !command_line.HasSwitch(switches::kDisableComponentUpdate);
+#else
+  return false;
+#endif  // BUILDFLAG(ENABLE_COMPONENT_UPDATER)
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
@@ -563,7 +568,7 @@ void ChromeBrowserMainParts::ProfileInitManager::OnProfileAdded(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Ignore ChromeOS helper profiles (sign-in, lockscreen, etc).
-  if (!chromeos::ProfileHelper::IsRegularProfile(profile)) {
+  if (!chromeos::ProfileHelper::IsUserProfile(profile)) {
     // Notify of new profile initialization only for regular profiles. The
     // startup profile initialization is triggered by another code path.
     return;
@@ -662,73 +667,6 @@ void ChromeBrowserMainParts::RecordBrowserStartupTime() {
   // Record collected startup metrics.
   startup_metric_utils::RecordBrowserMainMessageLoopStart(
       base::TimeTicks::Now(), is_first_run);
-}
-
-void ChromeBrowserMainParts::SetupOriginTrialsCommandLine(
-    PrefService* local_state) {
-  // TODO(crbug.com/1211739): Temporary workaround to prevent an overly large
-  // config from crashing by exceeding command-line length limits. Set the limit
-  // to 1KB, which is far less than the known limits:
-  //  - Linux: kZygoteMaxMessageLength = 12288;
-  // This will still allow for critical updates to the public key or disabled
-  // features, but the disabled token list will be ignored.
-  const size_t kMaxAppendLength = 1024;
-  size_t appended_length = 0;
-
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(embedder_support::kOriginTrialPublicKey)) {
-    std::string new_public_key =
-        local_state->GetString(embedder_support::prefs::kOriginTrialPublicKey);
-    if (!new_public_key.empty()) {
-      command_line->AppendSwitchASCII(
-          embedder_support::kOriginTrialPublicKey,
-          local_state->GetString(
-              embedder_support::prefs::kOriginTrialPublicKey));
-
-      // Public key is 32 bytes
-      appended_length += 32;
-    }
-  }
-  if (!command_line->HasSwitch(
-          embedder_support::kOriginTrialDisabledFeatures)) {
-    const base::Value::List& override_disabled_feature_list =
-        local_state->GetList(
-            embedder_support::prefs::kOriginTrialDisabledFeatures);
-    std::vector<base::StringPiece> disabled_features;
-    for (const auto& item : override_disabled_feature_list) {
-      if (item.is_string())
-        disabled_features.push_back(item.GetString());
-    }
-    if (!disabled_features.empty()) {
-      const std::string override_disabled_features =
-          base::JoinString(disabled_features, "|");
-      command_line->AppendSwitchASCII(
-          embedder_support::kOriginTrialDisabledFeatures,
-          override_disabled_features);
-      appended_length += override_disabled_features.length();
-    }
-  }
-  if (!command_line->HasSwitch(embedder_support::kOriginTrialDisabledTokens)) {
-    const base::Value::List& disabled_token_list = local_state->GetList(
-        embedder_support::prefs::kOriginTrialDisabledTokens);
-    std::vector<base::StringPiece> disabled_tokens;
-    for (const auto& item : disabled_token_list) {
-      if (item.is_string())
-        disabled_tokens.push_back(item.GetString());
-    }
-    if (!disabled_tokens.empty()) {
-      const std::string disabled_token_switch =
-          base::JoinString(disabled_tokens, "|");
-      // Do not append the disabled token list if will exceed a reasonable
-      // length. See above.
-      if (appended_length + disabled_token_switch.length() <=
-          kMaxAppendLength) {
-        command_line->AppendSwitchASCII(
-            embedder_support::kOriginTrialDisabledTokens,
-            disabled_token_switch);
-      }
-    }
-  }
 }
 
 // -----------------------------------------------------------------------------
@@ -923,7 +861,8 @@ int ChromeBrowserMainParts::OnLocalStateLoaded(
   if (apply_first_run_result != content::RESULT_CODE_NORMAL_EXIT)
     return apply_first_run_result;
 
-  SetupOriginTrialsCommandLine(browser_process_->local_state());
+  embedder_support::SetupOriginTrialsCommandLine(
+      browser_process_->local_state());
 
   metrics::EnableExpiryChecker(chrome_metrics::kExpiredHistogramsHashes,
                                chrome_metrics::kNumExpiredHistograms);
@@ -1298,8 +1237,6 @@ void ChromeBrowserMainParts::PostProfileInit(Profile* profile,
 
   language::LanguageUsageMetrics::RecordAcceptLanguages(
       profile->GetPrefs()->GetString(language::prefs::kAcceptLanguages));
-  language::LanguageUsageMetrics::RecordApplicationLanguage(
-      browser_process_->GetApplicationLocale());
   translate::TranslateMetricsLoggerImpl::LogApplicationStartMetrics(
       ChromeTranslateClient::CreateTranslatePrefs(profile->GetPrefs()));
 // On ChromeOS results in a crash. https://crbug.com/1151558
@@ -1634,12 +1571,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // Needs to be done before PostProfileInit, since the SODA Installer setup is
   // called inside PostProfileInit and depends on it.
-#if !BUILDFLAG(GOOGLE_CHROME_FOR_TESTING_BRANDING)
+#if BUILDFLAG(ENABLE_COMPONENT_UPDATER)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableComponentUpdate)) {
     component_updater::RegisterComponentsForUpdate();
   }
-#endif  // !BUILDFLAG(GOOGLE_CHROME_FOR_TESTING_BRANDING)
+#endif  // BUILDFLAG(ENABLE_COMPONENT_UPDATER)
 
   // `profile` may be nullptr if the profile picker is shown.
   Profile* profile = profile_info.profile;

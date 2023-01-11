@@ -31,12 +31,11 @@ class ArcAppShortcutsSearchProvider : public SearchProvider {
 
   // SearchProvider:
   void Start(const std::u16string& query) override;
+  void StopQuery() override;
   ash::AppListSearchResultType ResultType() const override;
 
  private:
   void OnGetAppShortcutGlobalQueryItems(
-      std::vector<arc::mojom::AppShortcutItemPtr> shortcut_items);
-  void UpdateRecommendedResults(
       std::vector<arc::mojom::AppShortcutItemPtr> shortcut_items);
 
   std::u16string last_query_;

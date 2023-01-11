@@ -93,6 +93,8 @@ class TestReliabilityLoggingBridge : public ReliabilityLoggingBridge {
                                     base::TimeTicks timestamp) override;
   void LogWebFeedRequestStart(NetworkRequestId id,
                               base::TimeTicks timestamp) override;
+  void LogSingleWebFeedRequestStart(NetworkRequestId id,
+                                    base::TimeTicks timestamp) override;
   void LogRequestSent(NetworkRequestId id, base::TimeTicks timestamp) override;
   void LogResponseReceived(NetworkRequestId id,
                            int64_t server_receive_timestamp_ns,
@@ -179,9 +181,10 @@ class TestWebFeedSurface : public TestSurfaceBase {
  public:
   explicit TestWebFeedSurface(FeedStream* stream = nullptr);
 };
-class TestChannelSurface : public TestSurfaceBase {
+class TestSingleWebFeedSurface : public TestSurfaceBase {
  public:
-  explicit TestChannelSurface(FeedStream* stream = nullptr, std::string = "");
+  explicit TestSingleWebFeedSurface(FeedStream* stream = nullptr,
+                                    std::string = "");
 };
 
 class TestImageFetcher : public ImageFetcher {
@@ -414,14 +417,9 @@ class TestMetricsReporter : public MetricsReporter {
                           int index_in_stream,
                           int stream_slice_count) override;
   void OnLoadStream(const StreamType& stream_type,
-                    LoadStreamStatus load_from_store_status,
-                    LoadStreamStatus final_status,
-                    bool is_initial_load,
-                    bool loaded_new_content_from_network,
-                    base::TimeDelta stored_content_age,
+                    const LoadStreamResultSummary& result_summary,
                     const ContentStats& content_stats,
-                    ContentOrder content_order,
-                    std::unique_ptr<LoadLatencyTimes> latencies) override;
+                    std::unique_ptr<LoadLatencyTimes> load_latencies) override;
   void OnLoadMoreBegin(const StreamType& stream_type,
                        SurfaceId surface_id) override;
   void OnLoadMore(const StreamType& stream_type,

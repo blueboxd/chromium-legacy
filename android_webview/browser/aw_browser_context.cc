@@ -42,6 +42,9 @@
 #include "components/crash/core/common/crash_key.h"
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "components/keyed_service/core/simple_key_map.h"
+#include "components/origin_trials/browser/leveldb_persistence_provider.h"
+#include "components/origin_trials/browser/origin_trials.h"
+#include "components/origin_trials/common/features.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/browser/url_blocklist_manager.h"
@@ -71,6 +74,7 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 
 using base::FilePath;
 using content::BrowserThread;
@@ -280,6 +284,10 @@ void AwBrowserContext::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(autofill::prefs::kAutofillCreditCardEnabled,
                                 false);
 
+  // This contains a map from a given origin to the client hint headers
+  // requested to be sent next time that origin is loaded.
+  registry->RegisterDictionaryPref(prefs::kClientHintsCachedPerOriginMap);
+
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   cdm::MediaDrmStorageImpl::RegisterProfilePrefs(registry);
 #endif
@@ -297,6 +305,8 @@ void AwBrowserContext::CreateUserPrefService() {
   // Persisted to avoid having to provision MediaDrm every time the
   // application tries to play protected content after restart.
   persistent_prefs.insert(cdm::prefs::kMediaDrmStorage);
+  // Persisted to ensure client hints can be sent on next page load.
+  persistent_prefs.insert(prefs::kClientHintsCachedPerOriginMap);
 
   pref_service_factory.set_user_prefs(base::MakeRefCounted<SegregatedPrefStore>(
       base::MakeRefCounted<InMemoryPrefStore>(),
@@ -452,7 +462,7 @@ AwBrowserContext::GetClientHintsControllerDelegate() {
   }
   if (!client_hints_controller_delegate_.get()) {
     client_hints_controller_delegate_ =
-        std::make_unique<AwClientHintsControllerDelegate>();
+        std::make_unique<AwClientHintsControllerDelegate>(GetPrefService());
   }
   return client_hints_controller_delegate_.get();
 }
@@ -484,6 +494,22 @@ AwBrowserContext::RetriveInProgressDownloadManager() {
       base::BindRepeating(&IgnoreOriginSecurityCheck),
       base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe),
       /*wake_lock_provider_binder*/ base::NullCallback());
+}
+
+content::OriginTrialsControllerDelegate*
+AwBrowserContext::GetOriginTrialsControllerDelegate() {
+  if (!origin_trials::features::IsPersistentOriginTrialsEnabled())
+    return nullptr;
+
+  if (!origin_trials_controller_delegate_) {
+    origin_trials_controller_delegate_ =
+        std::make_unique<origin_trials::OriginTrials>(
+            std::make_unique<origin_trials::LevelDbPersistenceProvider>(
+                GetPath(),
+                GetDefaultStoragePartition()->GetProtoDatabaseProvider()),
+            std::make_unique<blink::TrialTokenValidator>());
+  }
+  return origin_trials_controller_delegate_.get();
 }
 
 std::unique_ptr<content::ZoomLevelDelegate>
@@ -553,12 +579,6 @@ void AwBrowserContext::ConfigureNetworkContextParams(
   // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html,
   // defer to the Android system.
   context_params->initial_ssl_config->symantec_enforcement_disabled = true;
-  // Do not enforce Legacy TLS removal if support is still enabled.
-  if (base::FeatureList::IsEnabled(
-          android_webview::features::kWebViewLegacyTlsSupport)) {
-    context_params->initial_ssl_config->version_min =
-        network::mojom::SSLVersion::kTLS1;
-  }
 
   // WebView does not currently support Certificate Transparency
   // (http://crbug.com/921750).
@@ -578,6 +598,14 @@ void AwBrowserContext::ConfigureNetworkContextParams(
 base::android::ScopedJavaLocalRef<jobject> JNI_AwBrowserContext_GetDefaultJava(
     JNIEnv* env) {
   return g_browser_context->GetJavaBrowserContext();
+}
+
+void AwBrowserContext::ClearPersistentOriginTrialStorageForTesting(
+    JNIEnv* env) {
+  content::OriginTrialsControllerDelegate* delegate =
+      GetOriginTrialsControllerDelegate();
+  if (delegate)
+    delegate->ClearPersistedTokens();
 }
 
 base::android::ScopedJavaLocalRef<jobject>

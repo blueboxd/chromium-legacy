@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+
+/** @type {?BrowserBridge} */
+let instance = null;
 
 /**
  * This class provides a "bridge" for communicating between the javascript and
@@ -65,6 +68,8 @@ export class BrowserBridge {
   setNetworkDebugMode(subsystem) {
     chrome.send('setNetworkDebugMode', [subsystem]);
   }
-}
 
-addSingletonGetter(BrowserBridge);
+  static getInstance() {
+    return instance || (instance = new BrowserBridge());
+  }
+}

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/accessibility/a11y_feature_type.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/autoclick/autoclick_controller.h"
 #include "ash/capture_mode/capture_mode_bar_view.h"
-#include "ash/capture_mode/capture_mode_button.h"
 #include "ash/capture_mode/capture_mode_camera_controller.h"
 #include "ash/capture_mode/capture_mode_camera_preview_view.h"
 #include "ash/capture_mode/capture_mode_constants.h"
@@ -13,12 +13,12 @@
 #include "ash/capture_mode/capture_mode_menu_group.h"
 #include "ash/capture_mode/capture_mode_metrics.h"
 #include "ash/capture_mode/capture_mode_session.h"
+#include "ash/capture_mode/capture_mode_session_focus_cycler.h"
 #include "ash/capture_mode/capture_mode_session_test_api.h"
 #include "ash/capture_mode/capture_mode_settings_test_api.h"
 #include "ash/capture_mode/capture_mode_settings_view.h"
 #include "ash/capture_mode/capture_mode_test_util.h"
 #include "ash/capture_mode/capture_mode_toast_controller.h"
-#include "ash/capture_mode/capture_mode_toggle_button.h"
 #include "ash/capture_mode/capture_mode_types.h"
 #include "ash/capture_mode/capture_mode_util.h"
 #include "ash/capture_mode/fake_camera_device.h"
@@ -59,7 +59,6 @@
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/view.h"
-#include "ui/views/view_observer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
@@ -142,28 +141,6 @@ class CameraDevicesChangeWaiter : public CaptureModeCameraController::Observer {
 
   // Tracks the number of times `OnSelectedCameraChanged()` was triggered.
   int selected_camera_change_event_count_ = 0;
-};
-
-// Defines a waiter to observe the visibility change of the view.
-class ViewVisibilityChangeWaiter : public views::ViewObserver {
- public:
-  explicit ViewVisibilityChangeWaiter(views::View* view) : view_(view) {
-    view_->AddObserver(this);
-  }
-
-  ~ViewVisibilityChangeWaiter() override { view_->RemoveObserver(this); }
-
-  void Wait() { wait_loop_.Run(); }
-
-  // views::ViewObserver:
-  void OnViewVisibilityChanged(views::View* observed_view,
-                               views::View* starting_view) override {
-    wait_loop_.Quit();
-  }
-
- private:
-  views::View* const view_;
-  base::RunLoop wait_loop_;
 };
 
 gfx::Rect GetTooSmallToFitCameraRegion() {
@@ -283,7 +260,7 @@ class CaptureModeCameraTest : public AshTestBase {
     }
   }
 
-  CaptureModeButton* GetPreviewResizeButton() const {
+  CameraPreviewResizeButton* GetPreviewResizeButton() const {
     return GetCameraController()->camera_preview_view()->resize_button();
   }
 
@@ -336,7 +313,8 @@ class CaptureModeCameraTest : public AshTestBase {
 
   // Verifies that the icon image and the tooltip of the resize button gets
   // updated correctly when pressed.
-  void VerifyResizeButton(bool is_collapsed, CaptureModeButton* resize_button) {
+  void VerifyResizeButton(bool is_collapsed,
+                          CameraPreviewResizeButton* resize_button) {
     SkColor color =
         resize_button->GetColorProvider()->GetColor(kColorAshIconColorPrimary);
     const gfx::ImageSkia collapse_icon_image =
@@ -2090,9 +2068,10 @@ TEST_F(CaptureModeCameraTest,
   SendKey(ui::VKEY_TAB, event_generator);
   EXPECT_FALSE(camera_preview_view->has_focus());
   EXPECT_FALSE(resize_button->has_focus());
-  EXPECT_TRUE(CaptureModeSessionTestApi(controller->capture_mode_session())
-                  .GetCaptureModeBarView()
-                  ->settings_button()
+
+  CaptureModeSessionTestApi test_api(controller->capture_mode_session());
+  EXPECT_TRUE(CaptureModeSessionFocusCycler::HighlightHelper::Get(
+                  test_api.GetCaptureModeBarView()->settings_button())
                   ->has_focus());
 }
 
@@ -3612,7 +3591,7 @@ TEST_P(CaptureModeCameraPreviewTest, ResizeButtonVisibilityOnMouseEvents) {
   const gfx::Rect default_preview_bounds =
       preview_widget->GetWindowBoundsInScreen();
 
-  CaptureModeButton* resize_button = GetPreviewResizeButton();
+  CameraPreviewResizeButton* resize_button = GetPreviewResizeButton();
   auto* event_generator = GetEventGenerator();
 
   // Tests that the resize button is hidden by default.
@@ -3660,7 +3639,7 @@ TEST_P(CaptureModeCameraPreviewTest, ResizeButtonVisibilityOnTapEvents) {
   const gfx::Rect default_preview_bounds =
       preview_widget->GetWindowBoundsInScreen();
 
-  CaptureModeButton* resize_button = GetPreviewResizeButton();
+  CameraPreviewResizeButton* resize_button = GetPreviewResizeButton();
   auto* event_generator = GetEventGenerator();
 
   // Tests that the resize button is hidden by default.
@@ -3694,7 +3673,7 @@ TEST_P(CaptureModeCameraPreviewTest,
   views::Widget* preview_widget = camera_controller->camera_preview_widget();
   const gfx::Rect preview_bounds = preview_widget->GetWindowBoundsInScreen();
 
-  CaptureModeButton* resize_button = GetPreviewResizeButton();
+  CameraPreviewResizeButton* resize_button = GetPreviewResizeButton();
   auto* event_generator = GetEventGenerator();
 
   // Tests that the resize button is hidden by default.
@@ -3882,7 +3861,7 @@ TEST_P(CaptureModeCameraPreviewTest,
   autoclick_controller->SetEnabled(true, /*show_confirmation_dialog=*/false);
   Shell::Get()
       ->accessibility_controller()
-      ->GetFeature(AccessibilityControllerImpl::FeatureType::kAutoclick)
+      ->GetFeature(A11yFeatureType::kAutoclick)
       .SetEnabled(true);
 
   views::Widget* autoclick_bubble_widget =
@@ -4034,7 +4013,7 @@ TEST_P(CaptureModeCameraPreviewTest,
     views::Widget* preview_widget = camera_controller->camera_preview_widget();
     DCHECK(preview_widget);
     gfx::Rect preview_bounds = preview_widget->GetWindowBoundsInScreen();
-    CaptureModeButton* resize_button = GetPreviewResizeButton();
+    CameraPreviewResizeButton* resize_button = GetPreviewResizeButton();
 
     // Tests the default visibility of the resize button based on whether switch
     // access is enabled or not.
@@ -4098,7 +4077,7 @@ TEST_P(CaptureModeCameraPreviewTest,
     views::Widget* preview_widget = camera_controller->camera_preview_widget();
     DCHECK(preview_widget);
     gfx::Rect preview_bounds = preview_widget->GetWindowBoundsInScreen();
-    CaptureModeButton* resize_button = GetPreviewResizeButton();
+    CameraPreviewResizeButton* resize_button = GetPreviewResizeButton();
 
     // Tests the default visibility of the resize button based on whether switch
     // access is enabled or not.

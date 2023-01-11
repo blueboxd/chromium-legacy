@@ -237,9 +237,41 @@ class SimpleMacroFactory {
         messageId: 'dictation_command_nav_prev_sent',
         build: NavPrevSentMacro,
       },
+      [MacroName.DELETE_ALL_TEXT]: {
+        messageId: 'dictation_command_delete_all_text',
+        build: RepeatableKeyPress.DeleteAllText,
+      },
+      [MacroName.NAV_START_TEXT]: {
+        messageId: 'dictation_command_nav_start_text',
+        build: RepeatableKeyPress.NavStartText,
+      },
+      [MacroName.NAV_END_TEXT]: {
+        messageId: 'dictation_command_nav_end_text',
+        build: RepeatableKeyPress.NavEndText,
+      },
+      [MacroName.SELECT_PREV_WORD]: {
+        messageId: 'dictation_command_select_prev_word',
+        build: RepeatableKeyPress.SelectPrevWord,
+      },
+      [MacroName.SELECT_NEXT_WORD]: {
+        messageId: 'dictation_command_select_next_word',
+        build: RepeatableKeyPress.SelectNextWord,
+      },
+      [MacroName.SELECT_NEXT_CHAR]: {
+        messageId: 'dictation_command_select_next_char',
+        build: RepeatableKeyPress.SelectNextChar,
+      },
+      [MacroName.SELECT_PREV_CHAR]: {
+        messageId: 'dictation_command_select_prev_char',
+        build: RepeatableKeyPress.SelectPrevChar,
+      },
     };
   }
 }
+// TODO(crbug.com/1362842) Do not release any Macros
+// hidden under the DictationMoreCommands Flag
+// using the simple_parse_strategy, rather
+// move them over to the pumpkin_parse_strategy
 
 /** A parsing strategy that utilizes SimpleMacroFactory. */
 export class SimpleParseStrategy extends ParseStrategy {
@@ -252,6 +284,21 @@ export class SimpleParseStrategy extends ParseStrategy {
      * @private {!Map<MacroName, !SimpleMacroFactory>}
      */
     this.macroFactoryMap_ = new Map();
+
+    /** @private {boolean} */
+    this.isMoreCommandsFeatureEnabled_ = false;
+
+    /** @private {!Array<!MacroName>}*/
+    this.moreCommandsSet_ = [
+      MacroName.DELETE_ALL_TEXT,
+      MacroName.NAV_START_TEXT,
+      MacroName.NAV_END_TEXT,
+      MacroName.SELECT_PREV_WORD,
+      MacroName.SELECT_NEXT_WORD,
+      MacroName.SELECT_NEXT_CHAR,
+      MacroName.SELECT_PREV_CHAR,
+    ];
+
     this.initialize_();
   }
 
@@ -267,6 +314,13 @@ export class SimpleParseStrategy extends ParseStrategy {
       this.macroFactoryMap_.set(
           name, new SimpleMacroFactory(name, this.getInputController()));
     }
+
+    const moreCommandsFeature = chrome.accessibilityPrivate.AccessibilityFeature
+                                    .DICTATION_MORE_COMMANDS;
+    chrome.accessibilityPrivate.isFeatureEnabled(
+        moreCommandsFeature, enabled => {
+          this.isMoreCommandsFeatureEnabled_ = enabled;
+        });
   }
 
   /** @override */
@@ -280,12 +334,30 @@ export class SimpleParseStrategy extends ParseStrategy {
     this.initialize_();
   }
 
+  /**
+   * @param {Macro} macro
+   * @return {boolean}
+   * @private
+   */
+  shouldAddMacro_(macro) {
+    if (!macro) {
+      return false;
+    }
+
+    const isNewCommand = this.moreCommandsSet_.includes(macro.getMacroName());
+    if (!isNewCommand) {
+      return true;
+    }
+
+    return this.isMoreCommandsFeatureEnabled_;
+  }
+
   /** @override */
   async parse(text) {
     const macros = [];
     for (const [name, factory] of this.macroFactoryMap_) {
       const macro = factory.createMacro(text);
-      if (macro) {
+      if (this.shouldAddMacro_(macro)) {
         macros.push(macro);
       }
     }

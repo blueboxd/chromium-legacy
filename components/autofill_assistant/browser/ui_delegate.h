@@ -53,6 +53,9 @@ class UiDelegate {
   // Returns whether the TTS button is visible.
   virtual bool GetTtsButtonVisible() const = 0;
 
+  // Returns the disable_scrollbar_fading value.
+  virtual bool GetDisableScrollbarFading() const = 0;
+
   // Returns the current TTS button state.
   virtual TtsButtonState GetTtsButtonState() const = 0;
 
@@ -117,6 +120,9 @@ class UiDelegate {
   // Called when the user clicks a link in the form action.
   virtual void OnFormActionLinkClicked(int link) = 0;
 
+  // Called when the user clicks a link in the legal disclaimer message.
+  virtual void OnLegalDisclaimerLinkClicked(int link) = 0;
+
   // Called when the user clicks the TTS button.
   virtual void OnTtsButtonClicked() = 0;
 
@@ -137,6 +143,9 @@ class UiDelegate {
 
   // Sets the state of the bottom sheet.
   virtual void SetBottomSheetState(BottomSheetState state) = 0;
+
+  // Returns the current legal disclaimer or nullptr if there is none.
+  virtual const LegalDisclaimerProto* GetLegalDisclaimer() const = 0;
 
   // Returns the current form. May be null if there is no form to show.
   virtual const FormProto* GetForm() const = 0;
@@ -189,6 +198,11 @@ class UiDelegate {
   // Called when the user starts or finishes to focus an input text field in the
   // bottom sheet.
   virtual void OnInputTextFocusChanged(bool is_text_focused) = 0;
+
+  // Returns true during UI shutdown. Should not be used to check whether a
+  // script has ended or not. Generally, this will only return true during
+  // user-initiated shutdown events, such as tapping the last chip in a flow.
+  virtual bool IsUiShuttingDown() const = 0;
 
  protected:
   UiDelegate() = default;

@@ -42,15 +42,15 @@ declare_args() {
   enable_background_contents = !is_android
   enable_background_mode = !is_android && !is_chromeos
 
-  # Enable the printing system dialog for platforms that support printing
-  # and have a system dialog.
-  enable_basic_print_dialog = enable_basic_printing && !is_chromeos
-
   # Enables usage of notifications via Chrome's MessageCenter.
   enable_chrome_notifications = is_mac || is_win || is_linux || is_fuchsia
 
   # Disable Click to Call on Fuchsia.
   enable_click_to_call = !is_fuchsia
+
+  # Whether to enable the component updater. Code is in
+  # //components/component_updater.
+  enable_component_updater = true
 
   # Hangout services is an extension that adds extra features to Hangouts.
   # It is enableable separately to facilitate testing.
@@ -95,7 +95,7 @@ chrome_grit_defines = [
   "enable_arcore=$enable_arcore",
   "enable_background_mode=$enable_background_mode",
   "enable_background_contents=$enable_background_contents",
-  "enable_basic_printing=$enable_basic_printing",
+  "enable_printing=$enable_printing",
   "enable_extensions=$enable_extensions",
   "enable_hangout_services_extension=$enable_hangout_services_extension",
   "enable_nacl=$enable_nacl",

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/realbox/realbox_handler.h"
 
+#include "base/base64.h"
+#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
@@ -30,6 +32,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_pedal_implementations.h"
 #include "chrome/browser/ui/search/omnibox_utils.h"
 #include "chrome/browser/ui/webui/realbox/realbox.mojom.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/new_tab_page_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -52,9 +55,11 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/variations/variations_client.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "net/cookies/cookie_util.h"
+#include "realbox_handler.h"
 #include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/resource_path.h"
@@ -79,6 +84,8 @@ constexpr char kAnswerWhenIsIconResourceName[] = "realbox/icons/when_is.svg";
 constexpr char kBookmarkIconResourceName[] =
     "chrome://resources/images/icon_bookmark.svg";
 constexpr char kCalculatorIconResourceName[] = "realbox/icons/calculator.svg";
+constexpr char kChromeProductIconResourceName[] =
+    "realbox/icons/chrome_product.svg";
 constexpr char kClockIconResourceName[] =
     "chrome://resources/images/icon_clock.svg";
 constexpr char kDinoIconResourceName[] = "realbox/icons/dino.svg";
@@ -283,10 +290,35 @@ realbox::mojom::AutocompleteResultPtr CreateAutocompleteResult(
       CreateAutocompleteMatches(result, bookmark_model));
 }
 
+std::string GetBase64UrlVariations(Profile* profile) {
+  variations::VariationsClient* provider = profile->GetVariationsClient();
+
+  variations::mojom::VariationsHeadersPtr headers =
+      provider->GetVariationsHeaders();
+  if (headers.is_null()) {
+    return std::string();
+  }
+  const std::string variations_base64 = headers->headers_map.at(
+      variations::mojom::GoogleWebVisibility::FIRST_PARTY);
+
+  // Variations headers are base64 encoded, however, we're attaching the value
+  // to a URL query parameter so they need to be base64url encoded.
+  std::string variations_decoded;
+  base::Base64Decode(variations_base64, &variations_decoded);
+
+  std::string variations_base64url;
+  base::Base64UrlEncode(variations_decoded,
+                        base::Base64UrlEncodePolicy::OMIT_PADDING,
+                        &variations_base64url);
+
+  return variations_base64url;
+}
+
 }  // namespace
 
 // static
-void RealboxHandler::SetupWebUIDataSource(content::WebUIDataSource* source) {
+void RealboxHandler::SetupWebUIDataSource(content::WebUIDataSource* source,
+                                          Profile* profile) {
   static constexpr webui::ResourcePath kImages[] = {
       {kSearchIconResourceName, IDR_WEBUI_IMAGES_ICON_SEARCH_SVG}};
   source->AddResourcePaths(kImages);
@@ -319,7 +351,9 @@ void RealboxHandler::SetupWebUIDataSource(content::WebUIDataSource* source) {
                                        IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD));
   source->AddBoolean(
       "realboxLensSearch",
-      base::FeatureList::IsEnabled(ntp_features::kNtpRealboxLensSearch));
+      base::FeatureList::IsEnabled(ntp_features::kNtpRealboxLensSearch) &&
+          profile->GetPrefs()->GetBoolean(prefs::kLensDesktopNTPSearchEnabled));
+  source->AddString("realboxLensVariations", GetBase64UrlVariations(profile));
 }
 
 // static
@@ -379,6 +413,8 @@ std::string RealboxHandler::AutocompleteMatchVectorIconToResourceName(
     return kPageIconResourceName;
   } else if (icon.name == omnibox::kPedalIcon.name) {
     return kPedalsIconResourceName;
+  } else if (icon.name == omnibox::kProductIcon.name) {
+    return kChromeProductIconResourceName;
   } else if (icon.name == vector_icons::kSearchIcon.name) {
     return kSearchIconResourceName;
   } else if (icon.name == omnibox::kTrendingUpIcon.name) {
@@ -784,21 +820,6 @@ void RealboxHandler::OnResultChanged(AutocompleteController* controller,
                          weak_ptr_factory_.GetWeakPtr(), match_index,
                          match.ImageUrl())));
     }
-
-    // Request favicons for navigational matches.
-    // TODO(crbug.com/1075848): Investigate using chrome://favicon2.
-    if (!AutocompleteMatch::IsSearchType(match.type) &&
-        match.type != AutocompleteMatchType::DOCUMENT_SUGGESTION &&
-        match.type != AutocompleteMatchType::HISTORY_CLUSTER) {
-      gfx::Image favicon = favicon_cache_.GetLargestFaviconForPageUrl(
-          match.destination_url,
-          base::BindOnce(&RealboxHandler::OnRealboxFaviconFetched,
-                         weak_ptr_factory_.GetWeakPtr(), match_index,
-                         match.destination_url));
-      if (!favicon.IsEmpty()) {
-        OnRealboxFaviconFetched(match_index, match.destination_url, favicon);
-      }
-    }
   }
 }
 
@@ -810,15 +831,4 @@ void RealboxHandler::OnRealboxBitmapFetched(int match_index,
       webui::GetPngDataUrl(data->front_as<unsigned char>(), data->size());
 
   page_->AutocompleteMatchImageAvailable(match_index, image_url, data_url);
-}
-
-void RealboxHandler::OnRealboxFaviconFetched(int match_index,
-                                             const GURL& page_url,
-                                             const gfx::Image& favicon) {
-  DCHECK(!favicon.IsEmpty());
-  auto data = favicon.As1xPNGBytes();
-  std::string data_url =
-      webui::GetPngDataUrl(data->front_as<unsigned char>(), data->size());
-
-  page_->AutocompleteMatchImageAvailable(match_index, page_url, data_url);
 }

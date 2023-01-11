@@ -38,8 +38,20 @@ constexpr base::FeatureParam<std::string> kLocalWebApprovalsPreferredButton{
 
 // Enables child accounts (i.e. Unicorn accounts) to clear their browsing
 // history data from Settings.
+#if BUILDFLAG(IS_CHROMEOS)
+// TODO(b/251192695): launch on Chrome OS
 BASE_FEATURE(kAllowHistoryDeletionForChildAccounts,
              "AllowHistoryDeletionForChildAccounts",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#else
+BASE_FEATURE(kAllowHistoryDeletionForChildAccounts,
+             "AllowHistoryDeletionForChildAccounts",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
+// Enables the new Kids Management Api.
+BASE_FEATURE(kEnableKidsManagementService,
+             "EnableKidsManagementService",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsWebFilterInterstitialRefreshEnabled() {
@@ -60,6 +72,10 @@ bool IsLocalWebApprovalThePreferredButton() {
   DCHECK((preferred_button == kLocalWebApprovalsPreferredButtonLocal) ||
          (preferred_button == kLocalWebApprovalsPreferredButtonRemote));
   return (preferred_button == kLocalWebApprovalsPreferredButtonLocal);
+}
+
+bool IsKidsManagementServiceEnabled() {
+  return base::FeatureList::IsEnabled(kEnableKidsManagementService);
 }
 
 }  // namespace supervised_users

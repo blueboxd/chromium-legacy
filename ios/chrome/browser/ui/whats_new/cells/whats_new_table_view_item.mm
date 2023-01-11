@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/whats_new/cells/whats_new_table_view_item.h"
 
 #import "base/check.h"
-#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -94,8 +94,7 @@ const CGFloat kTableViewCellVerticalSpacing = 25.5;
     UIImage* backgroundImage = [[UIImage imageNamed:@"whats_new_icon_tile"]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     mainBackgroundImageView.image = backgroundImage;
-    mainBackgroundImageView.tintColor =
-        [UIColor colorNamed:kSecondaryBackgroundColor];
+    mainBackgroundImageView.tintColor = [UIColor colorNamed:kGrey100Color];
     [contentView addSubview:mainBackgroundImageView];
 
     // Icon's background view with rounded corners.
@@ -126,17 +125,20 @@ const CGFloat kTableViewCellVerticalSpacing = 25.5;
     _textLabel.adjustsFontForContentSizeCategory = YES;
     _textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
     _textLabel.backgroundColor = UIColor.clearColor;
-    _textLabel.numberOfLines = 1;
+    _textLabel.numberOfLines = 2;
 
     // Detail text Label.
     _detailTextLabel = [[UILabel alloc] init];
     _detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    _detailTextLabel.font = [[UIFont
-        preferredFontForTextStyle:UIFontTextStyleFootnote] fontWithSize:13];
+    UIFont* detailFont = [UIFont systemFontOfSize:13
+                                           weight:UIFontWeightRegular];
+    UIFontMetrics* detailFontMetrics =
+        [UIFontMetrics metricsForTextStyle:UIFontTextStyleFootnote];
+    _detailTextLabel.font = [detailFontMetrics scaledFontForFont:detailFont];
     _detailTextLabel.adjustsFontForContentSizeCategory = YES;
     _detailTextLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
     _detailTextLabel.backgroundColor = UIColor.clearColor;
-    _detailTextLabel.numberOfLines = 2;
+    _detailTextLabel.numberOfLines = 3;
 
     // Stack View containing two UILabels.
     _textStackView = [[UIStackView alloc]

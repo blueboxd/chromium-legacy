@@ -9,8 +9,7 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner_impl.h"
 
-namespace views {
-namespace internal {
+namespace views::internal {
 
 MenuRunnerImplAdapter::MenuRunnerImplAdapter(
     ui::MenuModel* menu_model,
@@ -34,7 +33,8 @@ void MenuRunnerImplAdapter::RunMenuAt(
     const gfx::Rect& bounds,
     MenuAnchorPosition anchor,
     int32_t types,
-    gfx::NativeView native_view_for_gestures) {
+    gfx::NativeView native_view_for_gestures,
+    absl::optional<gfx::RoundedCornersF> corners) {
   impl_->RunMenuAt(parent, button_controller, bounds, anchor, types,
                    native_view_for_gestures);
 }
@@ -49,5 +49,4 @@ base::TimeTicks MenuRunnerImplAdapter::GetClosingEventTime() const {
 
 MenuRunnerImplAdapter::~MenuRunnerImplAdapter() = default;
 
-}  // namespace internal
-}  // namespace views
+}  // namespace views::internal

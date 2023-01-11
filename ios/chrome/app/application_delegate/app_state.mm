@@ -29,7 +29,6 @@
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/browsing_data/sessions_storage_util.h"
-#import "ios/chrome/browser/chrome_constants.h"
 #import "ios/chrome/browser/crash_report/crash_helper.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/crash_report/crash_loop_detection_util.h"
@@ -70,9 +69,6 @@ void PostTaskOnUIThread(base::OnceClosure closure) {
   web::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(closure));
 }
 NSString* const kStartupAttemptReset = @"StartupAttemptReset";
-
-// Time interval used for startRecordingMemoryFootprintWithInterval:
-const NSTimeInterval kMemoryFootprintRecordingTimeInterval = 5;
 
 }  // namespace
 
@@ -376,12 +372,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
   base::RecordAction(base::UserMetricsAction("MobileWillEnterForeground"));
 
-  if (EnableSyntheticCrashReportsForUte()) {
-    [[PreviousSessionInfo sharedInstance]
-        startRecordingMemoryFootprintWithInterval:
-            base::Seconds(kMemoryFootprintRecordingTimeInterval)];
-  }
-
   // This will be a no-op if upload already started.
   crash_helper::UploadCrashReports();
 }
@@ -617,14 +607,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
 - (void)completeUIInitialization {
   DCHECK([self.startupInformation isColdStart]);
-
-  if (EnableSyntheticCrashReportsForUte()) {
-    // Must be called after sequenced context creation, which happens in
-    // startUpBrowserToStage: method called above.
-    [[PreviousSessionInfo sharedInstance]
-        startRecordingMemoryFootprintWithInterval:
-            base::Seconds(kMemoryFootprintRecordingTimeInterval)];
-  }
 }
 
 #pragma mark - Internal methods.

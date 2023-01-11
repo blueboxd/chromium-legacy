@@ -150,7 +150,7 @@ void LoadAndCheckInterstitialAt(Browser* browser, const GURL& url) {
             GetInterstitialType(web_contents));
   EXPECT_FALSE(IsUrlShowing(browser));
 
-  console_observer.Wait();
+  ASSERT_TRUE(console_observer.Wait());
   EXPECT_TRUE(
       base::MatchPattern(console_observer.GetMessageAt(0u), kConsoleMessage));
 }
@@ -234,8 +234,7 @@ class LookalikeUrlNavigationThrottleBrowserTest
       public testing::WithParamInterface<bool> {
  protected:
   void SetUp() override {
-    std::vector<base::test::ScopedFeatureList::FeatureAndParams>
-        enabled_features;
+    std::vector<base::test::FeatureRefAndParams> enabled_features;
     std::vector<base::test::FeatureRef> disabled_features;
 
     enabled_features.emplace_back(features::kSignedHTTPExchange,

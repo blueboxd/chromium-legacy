@@ -16,6 +16,12 @@ AccountCapabilitiesTestMutator::GetSupportedAccountCapabilityNames() {
   return AccountCapabilities::GetSupportedAccountCapabilityNames();
 }
 
+void AccountCapabilitiesTestMutator::set_can_have_email_address_displayed(
+    bool value) {
+  capabilities_
+      ->capabilities_map_[kCanHaveEmailAddressDisplayedCapabilityName] = value;
+}
+
 void AccountCapabilitiesTestMutator::set_can_offer_extended_chrome_sync_promos(
     bool value) {
   capabilities_
@@ -36,10 +42,8 @@ void AccountCapabilitiesTestMutator::set_can_stop_parental_supervision(
       value;
 }
 
-void AccountCapabilitiesTestMutator::set_is_subject_to_parental_controls(
-    bool value) {
-  capabilities_->capabilities_map_[kIsSubjectToParentalControlsCapabilityName] =
-      value;
+void AccountCapabilitiesTestMutator::set_can_toggle_auto_updates(bool value) {
+  capabilities_->capabilities_map_[kCanToggleAutoUpdatesName] = value;
 }
 
 void AccountCapabilitiesTestMutator::set_is_allowed_for_machine_learning(
@@ -48,8 +52,10 @@ void AccountCapabilitiesTestMutator::set_is_allowed_for_machine_learning(
       value;
 }
 
-void AccountCapabilitiesTestMutator::set_can_toggle_auto_updates(bool value) {
-  capabilities_->capabilities_map_[kCanToggleAutoUpdatesName] = value;
+void AccountCapabilitiesTestMutator::set_is_subject_to_parental_controls(
+    bool value) {
+  capabilities_->capabilities_map_[kIsSubjectToParentalControlsCapabilityName] =
+      value;
 }
 
 void AccountCapabilitiesTestMutator::SetAllSupportedCapabilities(bool value) {

@@ -51,6 +51,9 @@
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
 #include "chrome/browser/printing/print_backend_service_manager.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
+#endif
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(ENABLE_OOP_PRINTING)
 #include "printing/printing_features.h"
 #endif
 
@@ -140,6 +143,14 @@ PrintJobWorker::~PrintJobWorker() {
 void PrintJobWorker::SetPrintJob(PrintJob* print_job) {
   DCHECK_EQ(page_number_, PageNumber::npos());
   print_job_ = print_job;
+}
+
+std::unique_ptr<PrintSettings> PrintJobWorker::GetPdfSettings() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(page_number_, PageNumber::npos());
+
+  printing_context_->UsePdfSettings();
+  return printing_context_->TakeAndResetSettings();
 }
 
 void PrintJobWorker::GetDefaultSettings(SettingsCallback callback) {

@@ -25,6 +25,12 @@
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/common/mojom/event_dispatcher.mojom.h"
 #include "extensions/common/mojom/frame.mojom.h"
+#include "extensions/renderer/api/declarative_content_hooks_delegate.h"
+#include "extensions/renderer/api/dom_hooks_delegate.h"
+#include "extensions/renderer/api/feedback_private_hooks_delegate.h"
+#include "extensions/renderer/api/i18n_hooks_delegate.h"
+#include "extensions/renderer/api/runtime_hooks_delegate.h"
+#include "extensions/renderer/api/web_request_hooks.h"
 #include "extensions/renderer/api_activity_logger.h"
 #include "extensions/renderer/bindings/api_binding_bridge.h"
 #include "extensions/renderer/bindings/api_binding_hooks.h"
@@ -33,21 +39,16 @@
 #include "extensions/renderer/chrome_setting.h"
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/content_setting.h"
-#include "extensions/renderer/declarative_content_hooks_delegate.h"
-#include "extensions/renderer/dom_hooks_delegate.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extension_interaction_provider.h"
 #include "extensions/renderer/extension_js_runner.h"
 #include "extensions/renderer/get_script_context.h"
-#include "extensions/renderer/i18n_hooks_delegate.h"
 #include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/renderer_extension_registry.h"
-#include "extensions/renderer/runtime_hooks_delegate.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set_iterable.h"
 #include "extensions/renderer/storage_area.h"
-#include "extensions/renderer/web_request_hooks.h"
 #include "extensions/renderer/worker_thread_util.h"
 #include "gin/converter.h"
 #include "gin/data_object_builder.h"
@@ -433,6 +434,8 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
       std::make_unique<I18nHooksDelegate>());
   api_system_.GetHooksForAPI("runtime")->SetDelegate(
       std::make_unique<RuntimeHooksDelegate>(&messaging_service_));
+  api_system_.GetHooksForAPI("feedbackPrivate")
+      ->SetDelegate(std::make_unique<FeedbackPrivateHooksDelegate>());
 }
 
 NativeExtensionBindingsSystem::~NativeExtensionBindingsSystem() {}

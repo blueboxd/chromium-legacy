@@ -800,6 +800,22 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
   NudgeForCommitIfNeeded();
 }
 
+void ClientTagBasedModelTypeProcessor::StorePendingInvalidations(
+    std::vector<sync_pb::ModelTypeState::Invalidation> invalidations_to_store) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!model_error_);
+  DCHECK(IsConnected());
+  std::unique_ptr<MetadataChangeList> metadata_changes =
+      bridge_->CreateMetadataChangeList();
+  sync_pb::ModelTypeState model_type_state =
+      entity_tracker_->model_type_state();
+  model_type_state.mutable_invalidations()->Assign(
+      invalidations_to_store.begin(), invalidations_to_store.end());
+  metadata_changes->UpdateModelTypeState(model_type_state);
+  entity_tracker_->set_model_type_state(model_type_state);
+  bridge_->ApplySyncChanges(std::move(metadata_changes), EntityChangeList());
+}
+
 bool ClientTagBasedModelTypeProcessor::ValidateUpdate(
     const sync_pb::ModelTypeState& model_type_state,
     const UpdateResponseDataList& updates,
@@ -1158,8 +1174,7 @@ void ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging(
     node.Set("modelType", type_string);
     // Copy the whole metadata message into the dictionary (if existing).
     if (entity != nullptr) {
-      node.Set("metadata", base::Value::FromUniquePtrValue(
-                               EntityMetadataToValue(entity->metadata())));
+      node.Set("metadata", EntityMetadataToValue(entity->metadata()));
     }
     all_nodes.Append(std::move(node));
   }

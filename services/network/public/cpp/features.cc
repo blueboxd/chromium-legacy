@@ -306,6 +306,15 @@ BASE_FEATURE(kReduceAcceptLanguage,
              "ReduceAcceptLanguage",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Gate access to ReduceAcceptLanguage origin trial major code. Currently, All
+// ReduceAcceptLanguage feature codes are guarded by the feature flag
+// kReduceAcceptLanguage. This feature flag is useful on control major code
+// which required to do origin trial. It allows Chrome developers to mitigate
+// issues when exposed codes cause impacts.
+BASE_FEATURE(kReduceAcceptLanguageOriginTrial,
+             "ReduceAcceptLanguageOriginTrial",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Disable ResourceScheduler.
 BASE_FEATURE(kDisableResourceScheduler,
              "DisableResourceScheduler",
@@ -327,5 +336,16 @@ BASE_FEATURE(kPreconnectInNetworkService,
 BASE_FEATURE(kPreconnectOnRedirect,
              "PreconnectOnRedirect",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables out-of-process system DNS resolution so getaddrinfo() never runs in
+// the network service sandbox. System DNS resolution will instead be brokered
+// out over Mojo, likely to run in the browser process.
+BASE_FEATURE(kOutOfProcessSystemDnsResolution,
+             "OutOfProcessSystemDnsResolution",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAccessControlAllowMethodsInCORSPreflightSpecConformant,
+             "AccessControlAllowMethodsInCORSPreflightSpecConformant",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace network::features

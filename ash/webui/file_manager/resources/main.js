@@ -26,17 +26,7 @@ class FileManagerApp {
       console.warn('Failed to get the app ID', e);
     }
 
-    // Temporarily remove window.cr.webUI* while the foreground script loads.
-    const origWebUIResponse = window.webUIResponse;
-    const origWebUIListenerCallback = window.webUIListenerCallback;
-    delete window.cr.webUIResponse;
-    delete window.cr.webUIListenerCallback;
-
     await new ScriptLoader('foreground/js/main.js', {type: 'module'}).load();
-
-    // Restore the window.cr.webUI* objects.
-    window.cr.webUIResponse = origWebUIResponse;
-    window.cr.webUIListenerCallback = origWebUIListenerCallback;
 
     console.warn(
         '%cYou are running Files System Web App',

@@ -62,22 +62,36 @@ class ToolbarActionViewController {
     kMaxValue = kRequestAccessButton,
   };
 
-  // Hover card states for a toolbar action view.
-  enum class HoverCardState {
-    // All extensions are allowed on the current site by the user.
-    kAllExtensionsAllowed,
+  // State for the toolbar action view's hover card.
+  struct HoverCardState {
+    enum class SiteAccess {
+      // All extensions are allowed on the current site by the user.
+      kAllExtensionsAllowed,
 
-    // All extensions are blocked on the current site by the user.
-    kAllExtensionsBlocked,
+      // All extensions are blocked on the current site by the user.
+      kAllExtensionsBlocked,
 
-    // The extension has access to the current site.
-    kExtensionHasAccess,
+      // The extension has access to the current site.
+      kExtensionHasAccess,
 
-    // The extension requests access to the current site.
-    kExtensionRequestsAccess,
+      // The extension requests access to the current site.
+      kExtensionRequestsAccess,
 
-    // The extension does not want access to the current site.
-    kExtensionDoesNotWantAccess,
+      // The extension does not want access to the current site.
+      kExtensionDoesNotWantAccess,
+    };
+
+    enum class AdminPolicy {
+      kNone,
+      // Extension is force pinned by administrator.
+      kPinnedByAdmin,
+
+      // Extension if force installed by administrator.
+      kInstalledByAdmin,
+    };
+
+    SiteAccess site_access;
+    AdminPolicy policy;
   };
 
   virtual ~ToolbarActionViewController() = default;

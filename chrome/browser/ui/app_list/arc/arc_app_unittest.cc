@@ -647,6 +647,9 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
                 package_info->last_backup_android_id);
       EXPECT_EQ(package->last_backup_time, package_info->last_backup_time);
       EXPECT_EQ(package->sync, package_info->should_sync);
+      EXPECT_EQ(package->system, package_info->system);
+      EXPECT_EQ(package->vpn_provider, package_info->vpn_provider);
+      EXPECT_EQ(package->preinstalled, package_info->preinstalled);
       EXPECT_EQ(package->permission_states, package_info->permissions);
       EXPECT_EQ(package->web_app_info.is_null(),
                 package_info->web_app_info.is_null());
@@ -1430,6 +1433,7 @@ TEST_P(ArcAppModelBuilderTest, ArcPackagePref) {
       CreatePackageWithVersion(kTestPackageName, 2 /* package_version */);
   package->last_backup_android_id = 2;
   package->last_backup_time = 2;
+  package->preinstalled = true;
   AddPackage(package);
   ValidateHavePackages(fake_packages());
 
@@ -2101,14 +2105,20 @@ TEST_P(ArcAppModelBuilderTest, AppLifeCycleEventsOnOptOut) {
   const ArcAppListPrefs::AppInfo expected_app_info_registered =
       GetAppInfoExpectation(*apps[0], true /* launchable */);
 
-  ArcAppListPrefs::AppInfo expected_app_info_disabled(
-      expected_app_info_registered);
+  ArcAppListPrefs::AppInfo expected_app_info_disabled =
+      GetAppInfoExpectation(*apps[0], true /* launchable */);
   expected_app_info_disabled.ready = false;
 
-  EXPECT_CALL(observer, OnAppRegistered(app_id, expected_app_info_registered))
-      .Times(1);
-  EXPECT_CALL(observer, OnAppStatesChanged(app_id, expected_app_info_disabled))
-      .Times(1);
+  EXPECT_CALL(observer, OnAppRegistered(app_id, testing::_))
+      .WillOnce([&](const std::string& app_id,
+                    const ArcAppListPrefs::AppInfo& app_info) {
+        EXPECT_EQ(app_info, expected_app_info_registered);
+      });
+  EXPECT_CALL(observer, OnAppStatesChanged(app_id, testing::_))
+      .WillOnce(
+          [&](const std::string& id, const ArcAppListPrefs::AppInfo& app_info) {
+            EXPECT_EQ(app_info, expected_app_info_disabled);
+          });
   EXPECT_CALL(observer, OnAppRemoved(app_id))
       .Times(arc::ShouldArcAlwaysStart() ? 0 : 1);
   EXPECT_CALL(observer, OnAppIconUpdated(testing::_, testing::_)).Times(0);
@@ -2228,10 +2238,7 @@ TEST_P(ArcAppModelBuilderRecreate,
 
   arc::MockArcAppListPrefsObserver observer;
   prefs->AddObserver(&observer);
-  EXPECT_CALL(observer,
-              OnAppRegistered(app_id, GetAppInfoExpectation(
-                                          *apps[0], true /* launchable */)))
-      .Times(0);
+  EXPECT_CALL(observer, OnAppRegistered(app_id, testing::_)).Times(0);
   EXPECT_CALL(observer, OnAppRemoved(app_id)).Times(0);
 
   arc_test()->WaitForDefaultApps();
@@ -3247,14 +3254,18 @@ TEST_P(ArcAppModelBuilderTest, DontRemoveRuntimeAppOnPackageChange) {
 
   EXPECT_CALL(observer, OnPackageInstalled(ArcPackageInfoIs(package.get())))
       .Times(1);
-  EXPECT_CALL(observer,
-              OnAppRegistered(app_id1, GetAppInfoExpectation(
-                                           *apps[0], true /* launchable */)))
-      .Times(1);
-  EXPECT_CALL(observer,
-              OnAppRegistered(app_id2, GetAppInfoExpectation(
-                                           *apps[1], true /* launchable */)))
-      .Times(1);
+  EXPECT_CALL(observer, OnAppRegistered(app_id1, testing::_))
+      .WillOnce([&](const std::string& app_id,
+                    const ArcAppListPrefs::AppInfo& app_info) {
+        EXPECT_EQ(app_info,
+                  GetAppInfoExpectation(*apps[0], true /* launchable */));
+      });
+  EXPECT_CALL(observer, OnAppRegistered(app_id2, testing::_))
+      .WillOnce([&](const std::string& app_id,
+                    const ArcAppListPrefs::AppInfo& app_info) {
+        EXPECT_EQ(app_info,
+                  GetAppInfoExpectation(*apps[1], true /* launchable */));
+      });
 
   AddPackage(package);
 
@@ -3269,10 +3280,12 @@ TEST_P(ArcAppModelBuilderTest, DontRemoveRuntimeAppOnPackageChange) {
   app_runtime->sticky = false;
   const std::string app_id3 = ArcAppTest::GetAppId(*app_runtime);
 
-  EXPECT_CALL(observer, OnAppRegistered(
-                            app_id3, GetAppInfoExpectation(
-                                         *app_runtime, false /* launchable */)))
-      .Times(1);
+  EXPECT_CALL(observer, OnAppRegistered(app_id3, testing::_))
+      .WillOnce([&](const std::string& app_id,
+                    const ArcAppListPrefs::AppInfo& app_info) {
+        EXPECT_EQ(app_info,
+                  GetAppInfoExpectation(*app_runtime, false /* launchable */));
+      });
   EXPECT_CALL(observer,
               OnTaskCreated(1 /* task_id */, app_runtime->package_name,
                             app_runtime->activity, std::string() /* name */,

@@ -9,6 +9,7 @@
 
 #include "ash/shell.h"
 #include "ash/style/style_viewer/system_ui_components_grid_view.h"
+#include "ash/style/style_viewer/system_ui_components_grid_view_factories.h"
 #include "ash/wm/desks/desks_util.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
@@ -43,7 +44,7 @@ constexpr ui::ColorId kActiveButtonBackgroundColorId =
 constexpr ui::ColorId kActiveButtonTextColorId = cros_tokens::kCrosSysOnPrimary;
 // The background color id of inactive component button.
 constexpr ui::ColorId kInactiveButtonBackgroundColorId =
-    cros_tokens::kCrosSysSysOnBase;
+    cros_tokens::kCrosSysSystemOnBase;
 // The text color id of inactive component button.
 constexpr ui::ColorId kInactiveButtonTextColorId =
     cros_tokens::kCrosSysOnSurface;
@@ -148,7 +149,25 @@ void SystemUIComponentsStyleViewerView::CreateAndShowWidget() {
       new SystemUIComponentsStyleViewerView();
   viewer_view->SetOwnedByWidget(true);
 
-  // TODO(zxdan): Add components in the viewer.
+  viewer_view->AddComponent(
+      u"PillButton", base::BindRepeating(&CreatePillButtonInstancesGirdView));
+  viewer_view->AddComponent(
+      u"IconButton", base::BindRepeating(&CreateIconButtonInstancesGridView));
+  viewer_view->AddComponent(
+      u"IconSwitch", base::BindRepeating(&CreateIconSwitchInstancesGridView));
+  viewer_view->AddComponent(
+      u"Checkbox", base::BindRepeating(&CreateCheckboxInstancesGridView));
+  viewer_view->AddComponent(
+      u"CheckboxGroup",
+      base::BindRepeating(&CreateCheckboxGroupInstancesGridView));
+  viewer_view->AddComponent(
+      u"RadioButton", base::BindRepeating(&CreateRadioButtonInstancesGridView));
+  viewer_view->AddComponent(
+      u"RadioButtonGroup",
+      base::BindRepeating(&CreateRadioButtonGroupInstancesGridView));
+
+  // Show PillButton on start.
+  viewer_view->ShowComponentInstances(u"PillButton");
 
   views::Widget::InitParams params;
   params.parent =
@@ -166,6 +185,8 @@ void SystemUIComponentsStyleViewerView::AddComponent(
     const std::u16string& name,
     SystemUIComponentsStyleViewerView::ComponentsGridViewFactory
         grid_view_factory) {
+  DCHECK(!base::Contains(components_grid_view_factories_, name));
+
   // Add a new component button and components grid view factory.
   auto* button =
       menu_contents_view_->AddChildView(std::make_unique<ComponentButton>(

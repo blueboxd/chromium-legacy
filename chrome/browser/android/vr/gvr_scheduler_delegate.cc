@@ -24,11 +24,12 @@
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
+#include "gpu/command_buffer/service/ahardwarebuffer_utils.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gl/gl_fence_android_native_fence_sync.h"
-#include "ui/gl/gl_image_ahardwarebuffer.h"
 
 namespace {
 
@@ -263,26 +264,23 @@ void GvrSchedulerDelegate::ConnectPresentingService(
 device::mojom::XRPresentationTransportOptionsPtr
 GvrSchedulerDelegate::GetWebXrFrameTransportOptions(
     const device::mojom::XRRuntimeSessionOptionsPtr& options) {
-  DVLOG(1) << __func__;
-
-  MetricsUtilAndroid::XRRenderPath render_path =
-      MetricsUtilAndroid::XRRenderPath::kClientWait;
   webxr_use_shared_buffer_draw_ = false;
   webxr_use_gpu_fence_ = false;
 
-  // Use SharedBuffer if supported, otherwise fall back to GpuFence or
-  // ClientWait.
+  // Use SharedBuffer if supported, otherwise fall back to GpuFence, or
+  // ClientWait if that also isn't available.
   if (gl::GLFence::IsGpuFenceSupported()) {
     webxr_use_gpu_fence_ = true;
     if (base::AndroidHardwareBufferCompat::IsSupportAvailable()) {
       webxr_use_shared_buffer_draw_ = true;
-      render_path = MetricsUtilAndroid::XRRenderPath::kSharedBuffer;
-    } else {
-      render_path = MetricsUtilAndroid::XRRenderPath::kGpuFence;
     }
   }
 
-  DVLOG(1) << __func__ << ": render_path=" << static_cast<int>(render_path);
+  // Identify the synchronization method used for debugging purposes.
+  // (This corresponds to the retired XRRenderPath metric.)
+  DVLOG(1) << __func__
+           << ": use_shared_buffer_draw=" << webxr_use_shared_buffer_draw_
+           << " use_gpu_fence=" << webxr_use_gpu_fence_;
 
   device::mojom::XRPresentationTransportOptionsPtr transport_options =
       device::mojom::XRPresentationTransportOptions::New();
@@ -1047,7 +1045,7 @@ void GvrSchedulerDelegate::WebXrCreateOrResizeSharedBufferImage(
   DVLOG(2) << __func__ << ": width=" << size.width()
            << " height=" << size.height();
   // Remove reference to previous image (if any).
-  buffer->local_glimage = nullptr;
+  buffer->local_eglimage.reset();
 
   const gfx::BufferFormat format = gfx::BufferFormat::RGBA_8888;
   const gfx::BufferUsage usage = gfx::BufferUsage::SCANOUT;
@@ -1065,13 +1063,10 @@ void GvrSchedulerDelegate::WebXrCreateOrResizeSharedBufferImage(
   DVLOG(2) << ": CreateSharedImage, mailbox="
            << buffer->mailbox_holder.mailbox.ToDebugString();
 
-  scoped_refptr<gl::GLImageAHardwareBuffer> img(
-      new gl::GLImageAHardwareBuffer(graphics_->webxr_surface_size()));
-
   base::android::ScopedHardwareBufferHandle ahb =
       buffer->gmb->CloneHandle().android_hardware_buffer;
-  bool ret = img->Initialize(ahb.get(), false /* preserved */);
-  if (!ret) {
+  auto egl_image = gpu::CreateEGLImageFromAHardwareBuffer(ahb.get());
+  if (!egl_image.is_valid()) {
     DLOG(WARNING) << __func__ << ": ERROR: failed to initialize image!";
     // Exiting VR is a bit drastic, but this error shouldn't occur under normal
     // operation. If it's an issue in practice, look into other recovery
@@ -1080,8 +1075,8 @@ void GvrSchedulerDelegate::WebXrCreateOrResizeSharedBufferImage(
     return;
   }
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, buffer->local_texture);
-  img->BindTexImage(GL_TEXTURE_EXTERNAL_OES);
-  buffer->local_glimage = std::move(img);
+  glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, egl_image.get());
+  buffer->local_eglimage = std::move(egl_image);
 }
 
 base::TimeDelta GvrSchedulerDelegate::GetPredictedFrameTime() {

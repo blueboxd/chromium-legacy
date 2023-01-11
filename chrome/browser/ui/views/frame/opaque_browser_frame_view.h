@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout_delegate.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "ui/base/metadata/metadata_header_macros.h"
-#include "ui/linux/linux_ui.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/caption_button_types.h"
 #include "ui/views/window/non_client_view.h"
@@ -38,7 +37,7 @@ namespace views {
 class Button;
 class FrameBackground;
 class Label;
-}
+}  // namespace views
 
 class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
                                public TabIconViewModel,
@@ -236,7 +235,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // PlaceholderContainer beneath the controls button for PWAs with window
   // controls overlay display override.
-  raw_ptr<CaptionButtonPlaceholderContainer>
+  raw_ptr<CaptionButtonPlaceholderContainer, DanglingUntriaged>
       caption_button_placeholder_container_ = nullptr;
 };
 

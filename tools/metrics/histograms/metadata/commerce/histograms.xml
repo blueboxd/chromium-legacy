@@ -41,6 +41,18 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
       summary="Tabs between 1 and 90 days since last usage."/>
 </variants>
 
+<histogram name="Commerce.Carts.AddToCartButtonDetection" units="ms"
+    expires_after="2023-06-30">
+  <owner>yuezhanggg@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Records how long it takes to decide if a focused element is an AddToCart
+    button. This is recorded everytime an element is focused on an eligible
+    website when the DOM-based heuristic is enabled.
+  </summary>
+</histogram>
+
 <histogram name="Commerce.Carts.ExtractionElapsedTime" units="ms"
     expires_after="2023-03-19">
   <owner>wychen@chromium.org</owner>
@@ -102,7 +114,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 </histogram>
 
 <histogram name="Commerce.Carts.FormSubmitIsTransaction"
-    enum="BooleanIsTransaction" expires_after="2023-02-12">
+    enum="BooleanIsTransaction" expires_after="2023-04-16">
   <owner>wychen@chromium.org</owner>
   <owner>yuezhanggg@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -113,7 +125,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 </histogram>
 
 <histogram name="Commerce.Carts.XHRIsAddToCart" enum="BooleanIsAddToCart"
-    expires_after="2023-02-12">
+    expires_after="2023-04-16">
   <owner>wychen@chromium.org</owner>
   <owner>yuezhanggg@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -124,7 +136,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 </histogram>
 
 <histogram name="Commerce.Heuristics.CartExtractionScriptSource"
-    enum="CommerceHeuristicsDataSource" expires_after="2023-02-19">
+    enum="CommerceHeuristicsDataSource" expires_after="2023-04-23">
   <owner>yuezhanggg@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -137,7 +149,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 </histogram>
 
 <histogram name="Commerce.Heuristics.CheckoutURLGeneralPatternSource"
-    enum="CommerceHeuristicsDataSource" expires_after="2023-02-19">
+    enum="CommerceHeuristicsDataSource" expires_after="2023-04-23">
   <owner>yuezhanggg@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -151,7 +163,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 </histogram>
 
 <histogram name="Commerce.Heuristics.MerchantNameSource"
-    enum="CommerceHeuristicsDataSource" expires_after="2023-02-12">
+    enum="CommerceHeuristicsDataSource" expires_after="2023-04-16">
   <owner>yuezhanggg@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -165,7 +177,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 </histogram>
 
 <histogram name="Commerce.Heuristics.PartnerMerchantPatternSource"
-    enum="CommerceHeuristicsDataSource" expires_after="2023-02-19">
+    enum="CommerceHeuristicsDataSource" expires_after="2023-04-23">
   <owner>yuezhanggg@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -195,7 +207,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 </histogram>
 
 <histogram name="Commerce.Heuristics.SkipProductPatternSource"
-    enum="CommerceHeuristicsDataSource" expires_after="2023-02-19">
+    enum="CommerceHeuristicsDataSource" expires_after="2023-04-23">
   <owner>yuezhanggg@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>

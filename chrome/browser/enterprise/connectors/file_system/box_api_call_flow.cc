@@ -21,6 +21,7 @@
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #define PRINT_ERROR(net_error, head)                                \
   (net_error ? base::StringPrintf("net error = %d", net_error)      \
@@ -89,10 +90,6 @@ std::string ExtractParentId(const base::Value& value) {
   return id;
 }
 
-base::Value CreateEmptyDict() {
-  return base::Value(base::Value::Type::DICTIONARY);
-}
-
 base::Value CreateSingleFieldDict(const std::string& key,
                                   const std::string& value) {
   base::Value dict(base::Value::Type::DICTIONARY);
@@ -100,10 +97,9 @@ base::Value CreateSingleFieldDict(const std::string& key,
   return dict;
 }
 
-bool VerifyChunkedUploadParts(const base::Value& parts) {
-  DCHECK(parts.is_dict()) << parts;
-  DCHECK(parts.FindPath("parts")->is_list()) << parts;
-  auto parts_list = parts.FindPath("parts")->GetListDeprecated();
+bool VerifyChunkedUploadParts(const base::Value::Dict& parts) {
+  DCHECK(parts.Find("parts")->is_list()) << parts;
+  const auto& parts_list = parts.Find("parts")->GetList();
   DCHECK(!parts_list.empty());
   for (auto p = parts_list.begin(); p != parts_list.end(); ++p) {
     DCHECK(p->is_dict()) << parts;
@@ -117,27 +113,24 @@ bool VerifyChunkedUploadParts(const base::Value& parts) {
 
 using Box = enterprise_connectors::BoxApiCallFlow;
 
-bool ExtractEntriesList(const Box::ParseResult& result,
-                        base::Value::ConstListView* list) {
+const base::Value::List* ExtractEntriesList(const Box::ParseResult& result) {
   if (!result.has_value()) {
-    return false;
+    return nullptr;
   }
 
   const base::Value* entries = result->GetDict().Find("entries");
   if (!entries || !entries->is_list()) {
-    return false;
+    return nullptr;
   }
 
-  CHECK(list);
-  *list = entries->GetListDeprecated();
-  return true;
+  return &entries->GetList();
 }
 
 std::string ExtractUploadedFileId(const Box::ParseResult& result) {
-  base::Value::ConstListView list;
+  const base::Value::List* list = ExtractEntriesList(result);
   std::string file_id;
-  if (ExtractEntriesList(result, &list) && !list.empty()) {
-    file_id = ExtractId(list.front());
+  if (list && !list->empty()) {
+    file_id = ExtractId(list->front());
   }
   LOG_PARSE_FAIL_IF(file_id.empty(), ERROR, "ExtractUploadedFileId", result);
   return file_id;
@@ -361,13 +354,13 @@ void BoxFindUpstreamFolderApiCallFlow::ProcessFailure(Response response) {
 }
 
 void BoxFindUpstreamFolderApiCallFlow::OnSuccessJsonParsed(ParseResult result) {
-  base::Value::ConstListView list;
+  const base::Value::List* list = ExtractEntriesList(result);
   std::string folder_id;
-  bool extracted = ExtractEntriesList(result, &list);
-  LOG_PARSE_FAIL_IF(!extracted, ERROR, "FindUpstreamFolder", result);
+  LOG_PARSE_FAIL_IF(!list, ERROR, "FindUpstreamFolder", result);
 
-  if (extracted && !list.empty()) {
-    folder_id = ExtractId(list.front());
+  bool extracted = list != nullptr;
+  if (list && !list->empty()) {
+    folder_id = ExtractId(list->front());
     extracted = !folder_id.empty();
   }
   std::move(callback_).Run(Response{extracted, net::HTTP_OK}, folder_id);
@@ -439,10 +432,8 @@ void BoxCreateUpstreamFolderApiCallFlow::OnSuccessJsonParsed(
     base::Value* conflict_folders_list =
         result->FindListPath("context_info.conflicts");
     if (box_error_code && *box_error_code == "item_name_in_use" &&
-        conflict_folders_list &&
-        conflict_folders_list->GetListDeprecated().size() > 0) {
-      folder_info_dict = absl::make_optional<base::Value>(
-          conflict_folders_list->GetListDeprecated()[0].Clone());
+        conflict_folders_list && conflict_folders_list->GetList().size() > 0) {
+      folder_info_dict = conflict_folders_list->GetList()[0].Clone();
     }
   }
 
@@ -463,7 +454,7 @@ void BoxCreateUpstreamFolderApiCallFlow::OnSuccessJsonParsed(
 // API reference:
 // https://developer.box.com/reference/get-users-me/
 BoxGetCurrentUserApiCallFlow::BoxGetCurrentUserApiCallFlow(
-    base::OnceCallback<void(Response, base::Value)> callback)
+    base::OnceCallback<void(Response, base::Value::Dict)> callback)
     : callback_(std::move(callback)) {}
 BoxGetCurrentUserApiCallFlow::~BoxGetCurrentUserApiCallFlow() = default;
 
@@ -487,28 +478,31 @@ void BoxGetCurrentUserApiCallFlow::ProcessApiCallSuccess(
 }
 
 void BoxGetCurrentUserApiCallFlow::OnJsonParsed(ParseResult result) {
-  if (!result.has_value()) {
+  if (!result.has_value() || !result->is_dict()) {
     LOG_PARSE_FAIL(ERROR, "GetCurrentUser", result);
-    std::move(callback_).Run(Response{false, net::HTTP_OK}, CreateEmptyDict());
+    std::move(callback_).Run(Response{false, net::HTTP_OK},
+                             base::Value::Dict());
     return;
   }
-  if (!result->is_dict() ||
-      !result->FindStringPath(kBoxEnterpriseIdFieldName) ||
-      !result->FindStringPath(kBoxLoginFieldName) ||
-      !result->FindStringPath(kBoxNameFieldName)) {
+  base::Value::Dict& result_dict = result->GetDict();
+  if (!result_dict.FindStringByDottedPath(kBoxEnterpriseIdFieldName) ||
+      !result_dict.FindStringByDottedPath(kBoxLoginFieldName) ||
+      !result_dict.FindStringByDottedPath(kBoxNameFieldName)) {
     LOG(ERROR)
         << "[BoxApiCallFlow] GetCurrentUser succeeded but "
            "response does not include all of enterprise_id, login, and name: "
         << *result;
-    std::move(callback_).Run(Response{false, net::HTTP_OK}, CreateEmptyDict());
+    std::move(callback_).Run(Response{false, net::HTTP_OK},
+                             base::Value::Dict());
     return;
   }
-  std::move(callback_).Run(Response{true, net::HTTP_OK}, std::move(*result));
+  std::move(callback_).Run(Response{true, net::HTTP_OK},
+                           std::move(result->GetDict()));
 }
 
 void BoxGetCurrentUserApiCallFlow::ProcessFailure(Response response) {
   DCHECK(!response.success);
-  std::move(callback_).Run(response, CreateEmptyDict());
+  std::move(callback_).Run(response, base::Value::Dict());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -721,10 +715,11 @@ GURL BoxCreateUploadSessionApiCallFlow::CreateApiCallUrl() {
 }
 
 std::string BoxCreateUploadSessionApiCallFlow::CreateApiCallBody() {
-  base::Value val(base::Value::Type::DICTIONARY);
-  val.SetStringKey("folder_id", folder_id_);
-  val.SetIntKey("file_size", file_size_);  // TODO(https://crbug.com/1187152)
-  val.SetStringKey("file_name", file_name_.MaybeAsASCII());
+  base::Value::Dict val;
+  val.Set("folder_id", folder_id_);
+  val.Set("file_size",
+          static_cast<int>(file_size_));  // TODO(https://crbug.com/1187152)
+  val.Set("file_name", file_name_.MaybeAsASCII());
 
   bool file_big_enough = file_size_ > kChunkFileUploadMinSize;
   CHECK(file_big_enough) << file_size_;
@@ -751,7 +746,7 @@ void BoxCreateUploadSessionApiCallFlow::ProcessApiCallSuccess(
 }
 
 void BoxCreateUploadSessionApiCallFlow::ProcessFailure(Response response) {
-  std::move(callback_).Run(response, CreateEmptyDict(), 0);
+  std::move(callback_).Run(response, base::Value::Dict(), 0);
 }
 
 void BoxCreateUploadSessionApiCallFlow::OnSuccessJsonParsed(
@@ -759,14 +754,18 @@ void BoxCreateUploadSessionApiCallFlow::OnSuccessJsonParsed(
   LOG_PARSE_FAIL_IF(!result.has_value(), ERROR, "CreateUploadSession", result);
 
   const auto http_code = net::HTTP_CREATED;
-  base::Value *endpoints = nullptr, *part_size = nullptr;
-  if (result.has_value() && (part_size = result->FindPath("part_size")) &&
-      (endpoints = result->FindPath("session_endpoints")) &&
-      endpoints->FindPath("upload_part") && endpoints->FindPath("commit") &&
-      endpoints->FindPath("abort")) {
-    std::move(callback_).Run(MakeSuccess(http_code), std::move(*endpoints),
-                             part_size->GetInt());
-    return;
+  if (result.has_value() && result->is_dict()) {
+    base::Value::Dict& result_dict = result->GetDict();
+    base::Value::Dict* endpoints = nullptr;
+    absl::optional<int> part_size;
+    if ((part_size = result_dict.FindInt("part_size")) &&
+        (endpoints = result_dict.FindDict("session_endpoints")) &&
+        endpoints->FindString("upload_part") &&
+        endpoints->FindString("commit") && endpoints->FindString("abort")) {
+      std::move(callback_).Run(MakeSuccess(http_code), std::move(*endpoints),
+                               *part_size);
+      return;
+    }
   }
   LOG_PARSE_FAIL_IF(!result.has_value(), ERROR, "CreateUploadSession", result);
   ProcessFailure(MakeApiFailure(http_code, "bad_response", "parse_fail"));
@@ -821,12 +820,12 @@ std::string BoxPartFileUploadApiCallFlow::CreateFileDigest(
 net::HttpRequestHeaders BoxPartFileUploadApiCallFlow::CreateApiCallHeaders() {
   net::HttpRequestHeaders headers;
   headers.SetHeader("content-range", content_range_);
-  headers.SetHeader("digest", CreateFileDigest(part_content_));
+  headers.SetHeader("digest", CreateFileDigest(*part_content_));
   return headers;
 }
 
 std::string BoxPartFileUploadApiCallFlow::CreateApiCallBody() {
-  return part_content_;
+  return *part_content_;
 }
 
 std::string BoxPartFileUploadApiCallFlow::CreateApiCallBodyContentType() {
@@ -916,7 +915,7 @@ void BoxAbortUploadSessionApiCallFlow::ProcessFailure(Response response) {
 BoxCommitUploadSessionApiCallFlow::BoxCommitUploadSessionApiCallFlow(
     TaskCallback callback,
     const std::string& session_endpoint,
-    const base::Value& parts,
+    const base::Value::List& parts,
     const std::string digest)
     : BoxChunkedUploadBaseApiCallFlow(GURL(session_endpoint)),
       callback_(std::move(callback)),
@@ -934,8 +933,8 @@ BoxCommitUploadSessionApiCallFlow::CreateApiCallHeaders() {
 }
 
 std::string BoxCommitUploadSessionApiCallFlow::CreateApiCallBody() {
-  base::Value parts(base::Value::Type::DICTIONARY);
-  parts.SetKey("parts", std::move(upload_session_parts_));
+  base::Value::Dict parts;
+  parts.Set("parts", std::move(upload_session_parts_));
   DCHECK(VerifyChunkedUploadParts(parts));
   std::string body;
   base::JSONWriter::Write(parts, &body);

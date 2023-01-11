@@ -6,7 +6,7 @@ import 'chrome://webui-test/mojo_webui_test_support.js';
 
 import {fakeAcceleratorConfig, fakeLayoutInfo} from 'chrome://shortcut-customization/js/fake_data.js';
 import {FakeShortcutProvider} from 'chrome://shortcut-customization/js/fake_shortcut_provider.js';
-import {AcceleratorConfigResult, AcceleratorSource, LayoutInfoList} from 'chrome://shortcut-customization/js/shortcut_types.js';
+import {AcceleratorConfigResult, AcceleratorSource, MojoLayoutInfo} from 'chrome://shortcut-customization/js/shortcut_types.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 suite('fakeShortcutProviderTest', function() {
@@ -24,48 +24,48 @@ suite('fakeShortcutProviderTest', function() {
     assertTrue(!!provider);
     return provider as FakeShortcutProvider;
   }
-  test('GetAllAcceleratorConfigEmpty', () => {
-    const expected = new Map();
+  test('GetAcceleratorsEmpty', () => {
+    const expected = {};
     getProvider().setFakeAcceleratorConfig(expected);
-    return getProvider().getAllAcceleratorConfig().then((result) => {
-      assertDeepEquals(expected, result);
+    return getProvider().getAccelerators().then((result) => {
+      assertDeepEquals(expected, result.config);
     });
   });
 
-  test('GetAllAcceleratorConfigDefaultFake', () => {
+  test('GetAcceleratorsDefaultFake', () => {
     // TODO(zentaro): Remove this test once real data is ready.
     getProvider().setFakeAcceleratorConfig(fakeAcceleratorConfig);
-    return getProvider().getAllAcceleratorConfig().then((result) => {
-      assertDeepEquals(fakeAcceleratorConfig, result);
+    return getProvider().getAccelerators().then((result) => {
+      assertDeepEquals(fakeAcceleratorConfig, result.config);
     });
   });
 
   test('GetLayoutInfoEmpty', () => {
-    const expected: LayoutInfoList = [];
-    getProvider().setFakeLayoutInfo(expected);
-    return getProvider().getLayoutInfo().then((result) => {
-      assertDeepEquals(expected, result);
+    const expected: MojoLayoutInfo[] = [];
+    getProvider().setFakeAcceleratorLayoutInfos(expected);
+    return getProvider().getAcceleratorLayoutInfos().then((result) => {
+      assertDeepEquals(expected, result.layoutInfos);
     });
   });
 
   test('GetLayoutInfoDefaultFake', () => {
     // TODO(zentaro): Remove this test once real data is ready.
-    getProvider().setFakeLayoutInfo(fakeLayoutInfo);
-    return getProvider().getLayoutInfo().then((result) => {
-      assertDeepEquals(fakeLayoutInfo, result);
+    getProvider().setFakeAcceleratorLayoutInfos(fakeLayoutInfo);
+    return getProvider().getAcceleratorLayoutInfos().then((result) => {
+      assertDeepEquals(fakeLayoutInfo, result.layoutInfos);
     });
   });
 
   test('IsMutableDefaultFake', () => {
     // TODO(jimmyxgong): Remove this test once real data is ready.
-    // AcceleratorSource.ASH is a mutable source.
-    return getProvider().isMutable(AcceleratorSource.ASH).then((result) => {
-      assertTrue(result);
-      // AcceleratorSource.BROWSER is not a mutable source
+    // AcceleratorSource.kAsh is a mutable source.
+    return getProvider().isMutable(AcceleratorSource.kAsh).then((result) => {
+      assertTrue(result.isMutable);
+      // AcceleratorSource.kBrowser is not a mutable source
       return getProvider()
-          .isMutable(AcceleratorSource.BROWSER)
+          .isMutable(AcceleratorSource.kBrowser)
           .then((result) => {
-            assertFalse(result);
+            assertFalse(result.isMutable);
           });
     });
   });

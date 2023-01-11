@@ -31,5 +31,9 @@ js_library("add_smb_share_dialog") {
 }
 
 js_library("smb_browser_proxy") {
-  deps = [ "//ui/webui/resources/js:cr.m" ]
+  deps = [
+    "//ash/webui/common/resources:cr_deprecated",
+    "//ui/webui/resources/js:cr.m",
+  ]
+  externs_list = [ "$externs_path/chrome_send.js" ]
 }

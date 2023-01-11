@@ -287,9 +287,9 @@
       "chrome://settings/*"
     ]
   }, {
-    "channel": "dev",
+    "channel": "stable",
     "contexts": ["web_page"],
-    "matches": ["https://webstore.google.com/*"],
+    "matches": ["https://chromewebstore.google.com/*"],
     "feature_flag": "NewWebstoreDomain"
   }],
   "management.getPermissionWarningsByManifest": {

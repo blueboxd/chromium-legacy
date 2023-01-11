@@ -1,8 +1,8 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {mountTestFileSystem, remoteProvider} from '/_test_resources/api_test/file_system_provider/service_worker/helpers.js';
+import {catchError, mountTestFileSystem, remoteProvider} from '/_test_resources/api_test/file_system_provider/service_worker/helpers.js';
 
 /**
  * @type {Object}
@@ -35,58 +35,37 @@ async function main() {
     },
   });
 
-  const {fileSystem} = await mountTestFileSystem();
-
-  /**
-   * @param {string} path
-   * @param {{create: boolean, exclusive: boolean}} options
-   * @returns {!Promise<!FileEntry>}
-   */
-  const getFileEntry = (path, options) => {
-    return new Promise(
-        (resolve, reject) =>
-            fileSystem.root.getFile(path, options, resolve, reject));
-  };
+  const fileSystem = await mountTestFileSystem();
 
   chrome.test.runTests([
     // Create a file which doesn't exist. Should succeed.
     async function createFileSuccessSimple() {
-      try {
-        const fileEntry = await getFileEntry(
-            TESTING_NEW_FILE.name, {create: true, exclusive: false});
+      const fileEntry = await fileSystem.getFileEntry(
+          TESTING_NEW_FILE.name, {create: true, exclusive: false});
 
-        chrome.test.assertEq(TESTING_NEW_FILE.name, fileEntry.name);
-        chrome.test.assertFalse(fileEntry.isDirectory);
-        chrome.test.succeed();
-      } catch (e) {
-        chrome.test.fail(e);
-      }
+      chrome.test.assertEq(TESTING_NEW_FILE.name, fileEntry.name);
+      chrome.test.assertFalse(fileEntry.isDirectory);
+      chrome.test.succeed();
     },
 
     // Create a file which exists, non-exclusively. Should succeed.
     async function createFileOrOpenSuccess() {
-      try {
-        const fileEntry = await getFileEntry(
-            TESTING_FILE.name, {create: true, exclusive: false});
+      const fileEntry = await fileSystem.getFileEntry(
+          TESTING_FILE.name, {create: true, exclusive: false});
 
-        chrome.test.assertEq(TESTING_FILE.name, fileEntry.name);
-        chrome.test.assertFalse(fileEntry.isDirectory);
-        chrome.test.succeed();
-      } catch (e) {
-        chrome.test.fail(e);
-      }
+      chrome.test.assertEq(TESTING_FILE.name, fileEntry.name);
+      chrome.test.assertFalse(fileEntry.isDirectory);
+      chrome.test.succeed();
     },
 
     // Create a file which exists, exclusively. Should fail.
     async function createFileExistsError() {
-      try {
-        await getFileEntry(TESTING_FILE.name, {create: true, exclusive: true});
+      const error = await catchError(fileSystem.getFileEntry(
+          TESTING_FILE.name, {create: true, exclusive: true}));
 
-        chrome.test.fail('Created a file, but should fail.');
-      } catch (e) {
-        chrome.test.assertEq('InvalidModificationError', e.name);
-        chrome.test.succeed();
-      }
+      chrome.test.assertTrue(!!error, 'Created a file, but should fail.');
+      chrome.test.assertEq('InvalidModificationError', error.name);
+      chrome.test.succeed();
     }
   ]);
 }

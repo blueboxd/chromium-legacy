@@ -31,6 +31,8 @@
 <translation id="1862930711583847113">Не удалось экспортировать файл <ph name="FILE" />.</translation>
 <translation id="1899697626337024495">Разрешение фото</translation>
 <translation id="1925845977604399247">Перейти в галерею</translation>
+<translation id="199526504800285197">Запись остановлена</translation>
+<translation id="1995951722691075581">Запись остановлена, так как в хранилище недостаточно свободного места. Удалите ненужные файлы, чтобы записать видео.</translation>
 <translation id="2022953316617983419">QR-код</translation>
 <translation id="2036868001356139588">Длительность таймера</translation>
 <translation id="2050339315714019657">Вертикальное расположение</translation>
@@ -47,6 +49,7 @@
 <translation id="2501953888035679275">Съемка фото и видео на камеру устройства.</translation>
 <translation id="2517472476991765520">Сканировать</translation>
 <translation id="2549985041256363841">Начать запись</translation>
+<translation id="2577915835281444458">Запись скоро остановится. Освободите место в хранилище устройства.</translation>
 <translation id="2599796128805996109">Основная камера</translation>
 <translation id="2759905922487820242"><ph name="CURRENT" />/<ph name="MAXIMAL" /> сек.</translation>
 <translation id="2761536921376153655">Тип сканирования</translation>
@@ -77,6 +80,7 @@
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3838931309141338733">Сканировать штрихкод</translation>
 <translation id="3892148308691398805">Копировать текст</translation>
+<translation id="4060608699153044055">В хранилище недостаточно свободного места. Удалите ненужные файлы, чтобы начать запись.</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> Mпкс</translation>
 <translation id="4118525110028899586">Приостановить запись</translation>
 <translation id="4121305183798804752">Обнаружен документ</translation>
@@ -90,6 +94,7 @@
 <translation id="4445542136948522167">Отменить съемку</translation>
 <translation id="4497569853498380347">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" />) <ph name="MEGAPIXEL" /> Мп</translation>
 <translation id="4570032796877367747">Фронтальная камера</translation>
+<translation id="4598556348158889687">Управление хранилищем</translation>
 <translation id="4620818268515773682">Микрофон включен.</translation>
 <translation id="4628948037717959914">Фото</translation>
 <translation id="4649291346448517080">Не удалось сохранить файл.</translation>
@@ -159,6 +164,7 @@
 <translation id="7748344063862150053">Правый верхний угол документа</translation>
 <translation id="7933675232020478311">Перемещение вниз и вправо</translation>
 <translation id="7983668134180549431">Обнаружен текст.</translation>
+<translation id="8079255378695216066">Не удалось начать запись</translation>
 <translation id="8120146556401698679">Панорамирование, изменение ракурса, масштабирование</translation>
 <translation id="8131740175452115882">Подтвердить</translation>
 <translation id="8145038249676204903">Переключиться на фотосъемку</translation>

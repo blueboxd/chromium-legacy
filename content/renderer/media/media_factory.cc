@@ -15,15 +15,12 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "build/chromecast_buildflags.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "components/cast_streaming/public/cast_streaming_url.h"
-#include "components/cast_streaming/public/features.h"
-#include "components/cast_streaming/renderer/public/resource_provider.h"
-#include "components/cast_streaming/renderer/public/wrapping_renderer_factory_selector.h"
 #include "components/viz/common/features.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -46,7 +43,7 @@
 #include "media/mojo/buildflags.h"
 #include "media/renderers/decrypting_renderer_factory.h"
 #include "media/renderers/default_decoder_factory.h"
-#include "media/renderers/default_renderer_factory.h"
+#include "media/renderers/renderer_impl_factory.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/connect.h"
@@ -77,6 +74,13 @@
 #include "media/base/android/media_codec_util.h"
 #include "media/base/media.h"
 #include "url/gurl.h"
+#endif
+
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
+#include "components/cast_streaming/public/cast_streaming_url.h"  // nogncheck
+#include "components/cast_streaming/public/features.h"            // nogncheck
+#include "components/cast_streaming/renderer/public/resource_provider.h"  // nogncheck
+#include "components/cast_streaming/renderer/public/wrapping_renderer_factory_selector.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
@@ -241,27 +245,27 @@ void LogRoughness(
   }
 }
 
-std::unique_ptr<media::DefaultRendererFactory> CreateDefaultRendererFactory(
+std::unique_ptr<media::RendererImplFactory> CreateRendererImplFactory(
     media::MediaPlayerLoggingID player_id,
     media::MediaLog* media_log,
     media::DecoderFactory* decoder_factory,
     content::RenderThreadImpl* render_thread,
     content::RenderFrameImpl* render_frame) {
 #if BUILDFLAG(IS_ANDROID)
-  auto default_factory = std::make_unique<media::DefaultRendererFactory>(
+  auto factory = std::make_unique<media::RendererImplFactory>(
       media_log, decoder_factory,
       base::BindRepeating(&content::RenderThreadImpl::GetGpuFactories,
                           base::Unretained(render_thread)),
       player_id);
 #else
-  auto default_factory = std::make_unique<media::DefaultRendererFactory>(
+  auto factory = std::make_unique<media::RendererImplFactory>(
       media_log, decoder_factory,
       base::BindRepeating(&content::RenderThreadImpl::GetGpuFactories,
                           base::Unretained(render_thread)),
       player_id,
       render_frame->CreateSpeechRecognitionClient(base::OnceClosure()));
 #endif
-  return default_factory;
+  return factory;
 }
 
 enum class MediaPlayerType {
@@ -332,7 +336,7 @@ MediaFactory::~MediaFactory() {
     // this time and subsequently a media thread. To fail, the media thread must
     // be dead/dying (which only happens at ~RenderThreadImpl), in which case
     // the process is about to die anyways.
-    RenderThreadImpl::current()->GetMediaThreadTaskRunner()->DeleteSoon(
+    RenderThreadImpl::current()->GetMediaSequencedTaskRunner()->DeleteSoon(
         FROM_HERE, std::move(decoder_factory_));
   }
 }
@@ -344,11 +348,9 @@ void MediaFactory::SetupMojo() {
   interface_broker_ = render_frame_->GetBrowserInterfaceBroker();
   DCHECK(interface_broker_);
 
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
   // Add callbacks for cast_streaming to the AssociatedInterfaceRegistry to be
   // populated upon browser-process binding.
-  // TODO(b/3607051): Protect this code block with
-  // #if BUILDFLAG(ENABLE_CAST_RECEIVER) once Fuchsia sets this flag in the
-  // cast_runner build.
   cast_streaming_resource_provider_ =
       GetContentClient()->renderer()->CreateCastStreamingResourceProvider();
   if (cast_streaming_resource_provider_) {
@@ -359,6 +361,7 @@ void MediaFactory::SetupMojo() {
         ->AddInterface<cast_streaming::mojom::DemuxerConnector>(
             cast_streaming_resource_provider_->GetDemuxerConnectorBinder());
   }
+#endif
 }
 
 blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
@@ -474,8 +477,8 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
                             media_log.get(), render_frame_)
           : nullptr;
 
-  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
-      render_thread->GetMediaThreadTaskRunner();
+  scoped_refptr<base::SequencedTaskRunner> media_task_runner =
+      render_thread->GetMediaSequencedTaskRunner();
 
   if (!media_task_runner) {
     // If the media thread failed to start, we will receive a null task runner.
@@ -493,11 +496,13 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
       GetContentClient()->renderer()->OverrideDemuxerForUrl(render_frame_, url,
                                                             media_task_runner);
 
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
   if (!demuxer_override && cast_streaming_resource_provider_) {
     demuxer_override =
         cast_streaming_resource_provider_->MaybeGetDemuxerOverride(
             url, media_task_runner);
   }
+#endif
 
   return blink::WebMediaPlayerBuilder::Build(
       web_frame, client, encrypted_client, delegate,
@@ -560,6 +565,7 @@ MediaFactory::CreateRendererFactorySelector(
   auto factory_selector = std::make_unique<media::RendererFactorySelector>();
   bool is_base_renderer_factory_set = false;
 
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
   if (cast_streaming::IsCastRemotingEnabled() &&
       cast_streaming::IsCastStreamingMediaSourceUrl(url) &&
       cast_streaming_resource_provider_) {
@@ -567,6 +573,7 @@ MediaFactory::CreateRendererFactorySelector(
         std::make_unique<cast_streaming::WrappingRendererFactorySelector>(
             cast_streaming_resource_provider_.get());
   }
+#endif
 
   auto factory = GetContentClient()->renderer()->GetBaseRendererFactory(
       render_frame_, media_log, decoder_factory,
@@ -626,8 +633,6 @@ MediaFactory::CreateRendererFactorySelector(
 #else
     // The "default" MojoRendererFactory can be wrapped by a
     // DecryptingRendererFactory without changing any behavior.
-    // TODO(tguilbert/xhwang): Add "RendererType::DECRYPTING" if ever we need to
-    // distinguish between a "pure" and "decrypting" MojoRenderer.
     factory_selector->AddBaseFactory(
         RendererType::kMojo, std::make_unique<media::DecryptingRendererFactory>(
                                  media_log, CreateMojoRendererFactory()));
@@ -680,7 +685,7 @@ MediaFactory::CreateRendererFactorySelector(
     auto dcomp_texture_creation_cb =
         base::BindRepeating(&DCOMPTextureWrapperImpl::Create,
                             render_thread->GetDCOMPTextureFactory(),
-                            render_thread->GetMediaThreadTaskRunner());
+                            render_thread->GetMediaSequencedTaskRunner());
 
     mojo::Remote<media::mojom::MediaFoundationRendererNotifier>
         media_foundation_renderer_notifier;
@@ -715,18 +720,18 @@ MediaFactory::CreateRendererFactorySelector(
 #if BUILDFLAG(IS_CASTOS) || BUILDFLAG(IS_CAST_ANDROID)
   if (renderer_media_playback_options.is_remoting_renderer_enabled()) {
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
-    auto default_factory_remoting = std::make_unique<CastRendererClientFactory>(
+    auto factory_remoting = std::make_unique<CastRendererClientFactory>(
         media_log, CreateMojoRendererFactory());
 #else   // BUILDFLAG(ENABLE_CAST_RENDERER)
-    auto default_factory_remoting = CreateDefaultRendererFactory(
+    auto factory_remoting = CreateRendererImplFactory(
         player_id, media_log, decoder_factory, render_thread, render_frame_);
 #endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
     mojo::PendingRemote<media::mojom::Remotee> remotee;
     interface_broker_->GetInterface(remotee.InitWithNewPipeAndPassReceiver());
     auto remoting_renderer_factory =
         std::make_unique<media::remoting::RemotingRendererFactory>(
-            std::move(remotee), std::move(default_factory_remoting),
-            render_thread->GetMediaThreadTaskRunner());
+            std::move(remotee), std::move(factory_remoting),
+            render_thread->GetMediaSequencedTaskRunner());
     auto is_remoting_media = base::BindRepeating(
         [](const GURL& url) -> bool {
           return url.SchemeIs(media::remoting::kRemotingScheme);
@@ -743,10 +748,10 @@ MediaFactory::CreateRendererFactorySelector(
     // this method were significantly refactored to split things up by
     // Android/non-Android/Cast/etc...
     is_base_renderer_factory_set = true;
-    auto default_factory = CreateDefaultRendererFactory(
+    auto renderer_impl_factory = CreateRendererImplFactory(
         player_id, media_log, decoder_factory, render_thread, render_frame_);
-    factory_selector->AddBaseFactory(RendererType::kDefault,
-                                     std::move(default_factory));
+    factory_selector->AddBaseFactory(RendererType::kRendererImpl,
+                                     std::move(renderer_impl_factory));
   }
 
   return factory_selector;
@@ -788,7 +793,7 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
       render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia),
       render_thread->GetIOTaskRunner(),
       GetOrCreateVideoFrameCompositorTaskRunner(render_frame_),
-      render_thread->GetMediaThreadTaskRunner(),
+      render_thread->GetMediaSequencedTaskRunner(),
       std::move(compositor_worker_task_runner),
       render_thread->GetGpuFactories(), sink_id,
       base::BindOnce(&blink::WebSurfaceLayerBridge::Create,

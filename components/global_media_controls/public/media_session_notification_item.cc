@@ -142,7 +142,7 @@ void MediaSessionNotificationItem::MediaControllerImageChanged(
 
   if (view_ && !frozen_)
     view_->UpdateWithMediaArtwork(*session_artwork_);
-  else if (waiting_for_artwork_)
+  else if (frozen_with_artwork_)
     MaybeUnfreeze();
 }
 
@@ -211,6 +211,11 @@ void MediaSessionNotificationItem::SetMute(bool mute) {
     media_controller_remote_->SetMute(mute);
 }
 
+void MediaSessionNotificationItem::RequestMediaRemoting() {
+  // TODO(muyaoxu@google.com): Implement this method to send commands to
+  // `media_controller_remote_`.
+}
+
 void MediaSessionNotificationItem::SetController(
     mojo::Remote<media_session::mojom::MediaController> controller,
     media_session::mojom::MediaSessionInfoPtr session_info) {
@@ -260,6 +265,15 @@ void MediaSessionNotificationItem::Freeze(base::OnceClosure unfrozen_callback) {
                      base::Unretained(this)));
 }
 
+media_session::mojom::RemotePlaybackMetadataPtr
+MediaSessionNotificationItem::GetRemotePlaybackMetadata() {
+  if (!session_info_ || !session_info_->remote_playback_metadata ||
+      session_info_->remote_playback_metadata->remote_playback_disabled) {
+    return nullptr;
+  }
+  return session_info_->remote_playback_metadata.Clone();
+}
+
 void MediaSessionNotificationItem::FlushForTesting() {
   media_controller_remote_.FlushForTesting();  // IN-TEST
 }
@@ -289,13 +303,10 @@ bool MediaSessionNotificationItem::ShouldShowNotification() const {
 }
 
 void MediaSessionNotificationItem::MaybeUnfreeze() {
-  if (!frozen_)
+  if (!frozen_ && !frozen_with_artwork_)
     return;
 
   if (waiting_for_actions_ && !HasActions())
-    return;
-
-  if (waiting_for_artwork_ && !HasArtwork())
     return;
 
   if (!ShouldShowNotification() || !is_bound_)
@@ -309,24 +320,25 @@ void MediaSessionNotificationItem::MaybeUnfreeze() {
     return;
   }
 
+  if (frozen_)
+    UnfreezeNonArtwork();
+
   // If the currently frozen view has artwork and the new session currently has
   // no artwork, then wait until either the freeze timer ends or the new artwork
   // is downloaded.
   if (frozen_with_artwork_ && !HasArtwork()) {
-    waiting_for_artwork_ = true;
     return;
   }
 
-  Unfreeze();
+  UnfreezeArtwork();
 }
 
-void MediaSessionNotificationItem::Unfreeze() {
+void MediaSessionNotificationItem::UnfreezeNonArtwork() {
   frozen_ = false;
   waiting_for_actions_ = false;
   frozen_with_actions_ = false;
-  waiting_for_artwork_ = false;
-  frozen_with_artwork_ = false;
-  freeze_timer_.Stop();
+  if (!frozen_with_artwork_)
+    freeze_timer_.Stop();
 
   // When we unfreeze, we want to fully update |view_| with any changes that
   // we've avoided sending during the freeze.
@@ -339,13 +351,25 @@ void MediaSessionNotificationItem::Unfreeze() {
 
     if (session_position_.has_value())
       view_->UpdateWithMediaPosition(*session_position_);
+  }
+
+  std::move(unfrozen_callback_).Run();
+}
+
+// The artwork is frozen separately so that the rest of the UI can unfreeze
+// while we await new artwork. If we didn't separate them and just didn't wait
+// for the new artwork, the UI would flash between having and not having
+// artwork. If we didn't separate them and did wait for new artwork, the UI
+// would be slow and unresponsive when trying to skip ahead multiple tracks.
+void MediaSessionNotificationItem::UnfreezeArtwork() {
+  frozen_with_artwork_ = false;
+  freeze_timer_.Stop();
+  if (view_) {
     if (session_artwork_.has_value())
       view_->UpdateWithMediaArtwork(*session_artwork_);
     if (session_favicon_.has_value())
       view_->UpdateWithFavicon(*session_favicon_);
   }
-
-  std::move(unfrozen_callback_).Run();
 }
 
 bool MediaSessionNotificationItem::HasActions() const {
@@ -357,13 +381,17 @@ bool MediaSessionNotificationItem::HasArtwork() const {
 }
 
 void MediaSessionNotificationItem::OnFreezeTimerFired() {
-  DCHECK(frozen_);
+  DCHECK(frozen_ || frozen_with_artwork_);
 
   // If we've just been waiting for actions or artwork, stop waiting and just
   // show what we have.
-  if ((waiting_for_actions_ || waiting_for_artwork_) &&
-      ShouldShowNotification() && is_bound_) {
-    Unfreeze();
+  if (ShouldShowNotification() && is_bound_) {
+    if (frozen_)
+      UnfreezeNonArtwork();
+
+    if (frozen_with_artwork_)
+      UnfreezeArtwork();
+
     return;
   }
 

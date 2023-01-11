@@ -15,10 +15,14 @@
 #include "components/segmentation_platform/internal/ukm_data_manager.h"
 #include "components/segmentation_platform/public/config.h"
 #include "components/segmentation_platform/public/field_trial_register.h"
+#include "components/sync_device_info/device_info_tracker.h"
+#include "components/sync_device_info/fake_device_info_tracker.h"
 
 namespace segmentation_platform {
 
 namespace {
+
+using syncer::DeviceInfoTracker;
 
 class MockFieldTrialRegister : public FieldTrialRegister {
  public:
@@ -57,6 +61,15 @@ std::vector<std::unique_ptr<Config>> CreateTestConfigs() {
     configs.push_back(std::move(config));
   }
   {
+    std::unique_ptr<Config> config = std::make_unique<Config>();
+    config->segmentation_key = kTestSegmentationKey4;
+    config->segment_selection_ttl = base::Days(14);
+    config->AddSegmentId(
+        SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHOPPING_USER);
+    config->on_demand_execution = true;
+    configs.push_back(std::move(config));
+  }
+  {
     // Empty config.
     std::unique_ptr<Config> config = std::make_unique<Config>();
     config->segmentation_key = "test_key";
@@ -71,9 +84,12 @@ std::vector<std::unique_ptr<Config>> CreateTestConfigs() {
 constexpr char kTestSegmentationKey1[] = "test_key1";
 constexpr char kTestSegmentationKey2[] = "test_key2";
 constexpr char kTestSegmentationKey3[] = "test_key3";
+constexpr char kTestSegmentationKey4[] = "test_key4";
 
-SegmentationPlatformServiceTestBase::SegmentationPlatformServiceTestBase() =
-    default;
+SegmentationPlatformServiceTestBase::SegmentationPlatformServiceTestBase() {
+  device_info_tracker_ = std::make_unique<syncer::FakeDeviceInfoTracker>();
+}
+
 SegmentationPlatformServiceTestBase::~SegmentationPlatformServiceTestBase() =
     default;
 
@@ -121,6 +137,7 @@ void SegmentationPlatformServiceTestBase::InitPlatform(
   params->clock = &test_clock_;
   params->configs = std::move(configs);
   params->field_trial_register = std::make_unique<MockFieldTrialRegister>();
+  params->device_info_tracker = device_info_tracker_.get();
   segmentation_platform_service_impl_ =
       std::make_unique<SegmentationPlatformServiceImpl>(std::move(params));
 }

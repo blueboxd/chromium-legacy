@@ -119,6 +119,7 @@
 #include "components/variations/variations_params_manager.h"
 #include "components/variations/variations_switches.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -1887,16 +1888,16 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithClientCert, DISABLED_TestWSSClientCert) {
   // cert selection.
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   DCHECK(profile);
-  std::unique_ptr<base::DictionaryValue> setting =
-      std::make_unique<base::DictionaryValue>();
-  base::Value* filters = setting->SetKey("filters", base::ListValue());
-  base::DictionaryValue filter = base::DictionaryValue();
-  filter.SetString("ISSUER.CN", "pywebsocket");
-  filters->Append(std::move(filter));
+  base::Value::Dict filter;
+  filter.SetByDottedPath("ISSUER.CN", "pywebsocket");
+  base::Value::List filters;
+  filters.Append(std::move(filter));
+  base::Value::Dict setting;
+  setting.Set("filters", std::move(filters));
   HostContentSettingsMapFactory::GetForProfile(profile)
       ->SetWebsiteSettingDefaultScope(
           url, GURL(), ContentSettingsType::AUTO_SELECT_CERTIFICATE,
-          base::Value::FromUniquePtrValue(std::move(setting)));
+          base::Value(std::move(setting)));
 
   // Visit a HTTPS page which requires client certs.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
@@ -1993,14 +1994,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrowserUseClientCertStore) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   DCHECK(profile);
-  std::unique_ptr<base::DictionaryValue> setting =
-      std::make_unique<base::DictionaryValue>();
-  base::Value* filters = setting->SetKey("filters", base::ListValue());
-  filters->Append(base::DictionaryValue());
+  base::Value::List filters;
+  filters.Append(base::Value::Dict());
+  base::Value::Dict setting;
+  setting.Set("filters", std::move(filters));
   HostContentSettingsMapFactory::GetForProfile(profile)
       ->SetWebsiteSettingDefaultScope(
           https_url, GURL(), ContentSettingsType::AUTO_SELECT_CERTIFICATE,
-          base::Value::FromUniquePtrValue(std::move(setting)));
+          base::Value(std::move(setting)));
 
   // Visit a HTTPS page which requires client certs.
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
@@ -2029,14 +2030,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestClientAuthSigningFails) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   DCHECK(profile);
-  std::unique_ptr<base::DictionaryValue> setting =
-      std::make_unique<base::DictionaryValue>();
-  base::Value* filters = setting->SetKey("filters", base::ListValue());
-  filters->Append(base::DictionaryValue());
+  base::Value::List filters;
+  filters.Append(base::Value::Dict());
+  base::Value::Dict setting;
+  setting.Set("filters", std::move(filters));
   HostContentSettingsMapFactory::GetForProfile(profile)
       ->SetWebsiteSettingDefaultScope(
           https_url, GURL(), ContentSettingsType::AUTO_SELECT_CERTIFICATE,
-          base::Value::FromUniquePtrValue(std::move(setting)));
+          base::Value(std::move(setting)));
 
   // Visit a HTTPS page which requires client certs.
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
@@ -2092,14 +2093,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestCertDBChangedFlushesClientAuthCache) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   DCHECK(profile);
-  std::unique_ptr<base::DictionaryValue> setting =
-      std::make_unique<base::DictionaryValue>();
-  base::Value* filters = setting->SetKey("filters", base::ListValue());
-  filters->Append(base::DictionaryValue());
+  base::Value::List filters;
+  filters.Append(base::Value::Dict());
+  base::Value::Dict setting;
+  setting.Set("filters", std::move(filters));
   HostContentSettingsMapFactory::GetForProfile(profile)
       ->SetWebsiteSettingDefaultScope(
           https_url, GURL(), ContentSettingsType::AUTO_SELECT_CERTIFICATE,
-          base::Value::FromUniquePtrValue(std::move(setting)));
+          base::Value(std::move(setting)));
 
   // Visit a HTTPS page which requires client certs.
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
@@ -4370,7 +4371,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, BadCertFollowedByBlobUrl) {
   ASSERT_EQ("success", content::EvalJs(tab, kScript));
 
   // Verify that the script from the blob has successfully run.
-  console_observer.Wait();
+  ASSERT_TRUE(console_observer.Wait());
 
   // Verify that the decision to accept the broken cert has not been revoked
   // (this is a regression test for https://crbug.com/1049625).
@@ -6274,6 +6275,13 @@ IN_PROC_BROWSER_TEST_F(
   helper =
       security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
           tab);
+  // Currently the interstitial is only displayed when back/forward cache is
+  // enabled, so return early when the feature is disabled.
+  // TODO(https://crbug.com/1375961): Fix this.
+  if (!content::BackForwardCache::IsBackForwardCacheFeatureEnabled()) {
+    EXPECT_FALSE(helper->IsDisplayingInterstitial());
+    return;
+  }
   EXPECT_TRUE(helper->IsDisplayingInterstitial());
   EXPECT_EQ(helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting()
                 ->GetTypeForTesting(),

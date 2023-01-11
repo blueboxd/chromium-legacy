@@ -16,10 +16,11 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
+#include "components/autofill/core/browser/ui/payments/card_unmask_prompt_options.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/device_reauth/mock_biometric_authenticator.h"
@@ -128,7 +129,7 @@ class MockAutofillClient : public autofill::AutofillClient {
   MOCK_METHOD(void,
               ShowUnmaskPrompt,
               (const autofill::CreditCard&,
-               UnmaskCardReason,
+               const autofill::CardUnmaskPromptOptions&,
                base::WeakPtr<autofill::CardUnmaskDelegate>),
               (override));
   MOCK_METHOD(void,
@@ -242,7 +243,8 @@ class MockAutofillClient : public autofill::AutofillClient {
   MOCK_METHOD(bool, IsTouchToFillCreditCardSupported, (), (override));
   MOCK_METHOD(bool,
               ShowTouchToFillCreditCard,
-              (base::WeakPtr<autofill::TouchToFillDelegate>),
+              (base::WeakPtr<autofill::TouchToFillDelegate>,
+               base::span<const autofill::CreditCard* const>),
               (override));
   MOCK_METHOD(void, HideTouchToFillCreditCard, (), (override));
   MOCK_METHOD(void,
@@ -269,7 +271,7 @@ class MockAutofillClient : public autofill::AutofillClient {
               HideAutofillPopup,
               (autofill::PopupHidingReason),
               (override));
-  MOCK_METHOD(bool, IsAutocompleteEnabled, (), (override));
+  MOCK_METHOD(bool, IsAutocompleteEnabled, (), (const, override));
   MOCK_METHOD(bool, IsPasswordManagerEnabled, (), (override));
   MOCK_METHOD(void,
               PropagateAutofillPredictions,
@@ -299,6 +301,10 @@ class MockAutofillClient : public autofill::AutofillClient {
   MOCK_METHOD(void,
               OpenPromoCodeOfferDetailsURL,
               (const GURL& url),
+              (override));
+  MOCK_METHOD(autofill::FormInteractionsFlowId,
+              GetCurrentFormInteractionsFlowId,
+              (),
               (override));
 };
 
@@ -882,19 +888,6 @@ TEST(PasswordManagerUtil, GetSignonRealm) {
   for (const auto& test_case : test_cases) {
     EXPECT_EQ(test_case.second, GetSignonRealm(test_case.first));
   }
-}
-
-TEST(PasswordManagerUtil, CheckGpmBrandedNamingSyncing) {
-  EXPECT_TRUE(UsesPasswordManagerGoogleBranding(true));
-}
-
-TEST(PasswordManagerUtil, CheckGpmBrandedNamingNotSyncing) {
-  bool use_branding = UsesPasswordManagerGoogleBranding(false);
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  EXPECT_TRUE(use_branding);
-#else
-  EXPECT_FALSE(use_branding);
-#endif
 }
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)

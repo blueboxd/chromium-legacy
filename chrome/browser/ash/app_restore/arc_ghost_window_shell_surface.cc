@@ -9,6 +9,7 @@
 #include "chrome/browser/ash/app_restore/arc_ghost_window_view.h"
 #include "chrome/browser/ash/app_restore/arc_window_utils.h"
 #include "chrome/browser/ash/arc/window_predictor/window_predictor_utils.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/app_restore/app_restore_data.h"
 #include "components/app_restore/full_restore_utils.h"
@@ -20,7 +21,6 @@
 #include "ui/views/window/caption_button_types.h"
 
 namespace {
-constexpr int kDiameter = 24;
 
 bool IsMaximizedState(
     const absl::optional<chromeos::WindowStateType>& window_state) {
@@ -46,13 +46,11 @@ ArcGhostWindowShellSurface::ArcGhostWindowShellSurface(
     std::unique_ptr<exo::Surface> surface,
     int container,
     double scale_factor,
-    const std::string& application_id,
-    arc::GhostWindowType type)
+    const std::string& application_id)
     : ClientControlledShellSurface(surface.get(),
                                    /*can_minimize=*/true,
                                    container,
-                                   /*default_scale_cancellation=*/true),
-      type_(type) {
+                                   /*default_scale_cancellation=*/true) {
   controller_surface_ = std::move(surface);
   buffer_ = std::make_unique<exo::Buffer>(
       aura::Env::GetInstance()
@@ -115,9 +113,9 @@ std::unique_ptr<ArcGhostWindowShellSurface> ArcGhostWindowShellSurface::Create(
 
   auto surface = std::make_unique<exo::Surface>();
   std::unique_ptr<ArcGhostWindowShellSurface> shell_surface(
-      new ArcGhostWindowShellSurface(
-          std::move(surface), container, scale_factor.value(),
-          WrapSessionAppIdFromWindowId(window_id), type));
+      new ArcGhostWindowShellSurface(std::move(surface), container,
+                                     scale_factor.value(),
+                                     WrapSessionAppIdFromWindowId(window_id)));
 
   // TODO(sstan): Add set_surface_destroyed_callback.
   shell_surface->set_delegate(std::make_unique<ArcGhostWindowDelegate>(
@@ -148,7 +146,8 @@ std::unique_ptr<ArcGhostWindowShellSurface> ArcGhostWindowShellSurface::Create(
   shell_surface->OnSetFrameColors(theme_color, theme_color);
 
   shell_surface->controller_surface()->Commit();
-  shell_surface->InitContentOverlay(app_id, theme_color);
+
+  shell_surface->InitContentOverlay(app_id, theme_color, type);
 
   // Relayout overlay.
   shell_surface->GetWidget()->LayoutRootViewIfNecessary();
@@ -183,11 +182,24 @@ exo::Surface* ArcGhostWindowShellSurface::controller_surface() {
 }
 
 void ArcGhostWindowShellSurface::InitContentOverlay(const std::string& app_id,
-                                                    uint32_t theme_color) {
-  auto view =
-      std::make_unique<ArcGhostWindowView>(type_, kDiameter, theme_color);
+                                                    uint32_t theme_color,
+                                                    arc::GhostWindowType type) {
+  std::string app_name;
+  // TODO(sstan): Move this part out of shell surface.
+  // In test env, ArcAppListPrefs or App maybe null.
+  auto* pref = ArcAppListPrefs::Get(ProfileManager::GetPrimaryUserProfile());
+  if (pref) {
+    auto app_info = pref->GetApp(app_id);
+    if (app_info)
+      app_name = app_info->name;
+  }
+  auto view = std::make_unique<ArcGhostWindowView>(this, app_name);
   view_observer_ = view.get();
   view->LoadIcon(app_id);
+
+  view->SetThemeColor(theme_color);
+  view->SetGhostWindowViewType(type);
+
   exo::ShellSurfaceBase::OverlayParams overlay_params(std::move(view));
   overlay_params.translucent = true;
   overlay_params.overlaps_frame = false;
@@ -214,7 +226,7 @@ void ArcGhostWindowShellSurface::SetShellAppId(
 void ArcGhostWindowShellSurface::SetWindowType(
     arc::GhostWindowType window_type) {
   DCHECK(view_observer_);
-  view_observer_->SetType(window_type);
+  view_observer_->SetGhostWindowViewType(window_type);
 }
 
 }  // namespace ash::full_restore

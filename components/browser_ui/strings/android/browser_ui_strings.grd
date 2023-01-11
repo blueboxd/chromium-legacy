@@ -350,6 +350,9 @@
       <message name="IDS_ACCESSIBILITY_EXPAND_BUTTON" desc="Content description for the expand button in the expand_arrow_with_separator layout.">
         Expand
       </message>
+      <message name="IDS_ACCESSIBILITY_EXPAND_BUTTON_WITH_TARGET_DESCRIPTION" desc="Content description for the expand button in the RadioButtonWithDescriptionAndAuxButton.">
+        Expand <ph name="TARGET_DESCRIPTION">%1$s<ex>Block third-party cookies</ex></ph>
+      </message>
 
       <message name="IDS_SELECTED_ITEMS" desc="Content description for a number indicating how many items are selected. [ICU Syntax]">
         {NUM_SELECTED, plural,
@@ -546,9 +549,6 @@
         {PERMISSIONS_SUMMARY_BLOCKED, plural,
         =1 {<ph name="PERMISSION_1">%1$s<ex>Location</ex></ph>, <ph name="PERMISSION_2">%2$s<ex>Sound</ex></ph>, and <ph name="NUM_MORE">%3$s<ex>1</ex></ph> more blocked}
         other {<ph name="PERMISSION_1">%1$s<ex>Location</ex></ph>, <ph name="PERMISSION_2">%2$s<ex>Sound</ex></ph>, and <ph name="NUM_MORE">%3$s<ex>2</ex></ph> more blocked}}
-      </message>
-      <message name="IDS_PAGE_INFO_INSTANT_APP_BUTTON" desc="Text in the button that opens an Android Instant app that is associated with the website's URL.">
-        Open Instant App
       </message>
       <message name="IDS_PAGE_INFO_LITE_MODE_HTTPS_IMAGE_COMPRESSION" desc="This text is displayed in the page info bubble when the currently viewed page has https images that were optimized by Google">
         To save you data, this page's images have been optimized by Google.

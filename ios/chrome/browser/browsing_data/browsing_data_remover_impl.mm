@@ -40,6 +40,7 @@
 #import "ios/chrome/browser/autofill/strike_database_factory.h"
 #import "ios/chrome/browser/bookmarks/bookmark_remover_helper.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/browser_state/ios_chrome_io_thread.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #import "ios/chrome/browser/crash_report/crash_helper.h"
@@ -48,7 +49,6 @@
 #import "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/history/web_history_service_factory.h"
 #import "ios/chrome/browser/https_upgrades/https_upgrade_service_factory.h"
-#import "ios/chrome/browser/ios_chrome_io_thread.h"
 #import "ios/chrome/browser/language/url_language_histogram_factory.h"
 #import "ios/chrome/browser/optimization_guide/optimization_guide_service.h"
 #import "ios/chrome/browser/optimization_guide/optimization_guide_service_factory.h"
@@ -531,7 +531,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
     // The user just changed the account and chose to clear the previously
     // existing data. As browsing data is being cleared, it is fine to clear the
     // last username, as there will be no data to be merged.
-    browser_state_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastAccountId);
+    browser_state_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastGaiaId);
     browser_state_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
   }
 

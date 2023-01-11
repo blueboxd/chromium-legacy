@@ -96,18 +96,19 @@ class SkiaGLCommonRepresentation : public SkiaImageRepresentation {
 
  private:
   // SkiaImageRepresentation:
-  sk_sp<SkSurface> BeginWriteAccess(
+  std::vector<sk_sp<SkSurface>> BeginWriteAccess(
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
+      const gfx::Rect& update_rect,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override;
-  sk_sp<SkPromiseImageTexture> BeginWriteAccess(
+  std::vector<sk_sp<SkPromiseImageTexture>> BeginWriteAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphore,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override;
-  void EndWriteAccess(sk_sp<SkSurface> surface) override;
-  sk_sp<SkPromiseImageTexture> BeginReadAccess(
+  void EndWriteAccess() override;
+  std::vector<sk_sp<SkPromiseImageTexture>> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override;
@@ -119,8 +120,7 @@ class SkiaGLCommonRepresentation : public SkiaImageRepresentation {
   const raw_ptr<GLTextureImageRepresentationClient> client_ = nullptr;
   scoped_refptr<SharedContextState> context_state_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
-
-  raw_ptr<SkSurface> write_surface_ = nullptr;
+  sk_sp<SkSurface> write_surface_;
 #if DCHECK_IS_ON()
   raw_ptr<gl::GLContext> context_ = nullptr;
 #endif
@@ -138,7 +138,10 @@ class OverlayGLImageRepresentation : public OverlayImageRepresentation {
  private:
   bool BeginReadAccess(gfx::GpuFenceHandle& acquire_fence) override;
   void EndReadAccess(gfx::GpuFenceHandle release_fence) override;
+
+#if BUILDFLAG(IS_WIN)
   gl::GLImage* GetGLImage() override;
+#endif
 
   scoped_refptr<gl::GLImage> gl_image_;
 };
@@ -248,17 +251,6 @@ class GPU_GLES2_EXPORT GLImageBacking
   // to the GL texture, and un-set |image_bind_or_copy_needed_|.
   bool BindOrCopyImageIfNeeded();
   bool image_bind_or_copy_needed_ = true;
-
-  // TODO(blundell): Eliminate all usage of BUILDFLAG(IS_MAC) in this file (as
-  // well as the .cc file) once GLImageBacking is used only on Mac.
-#if BUILDFLAG(IS_MAC)
-  // Used to determine whether to release the texture in EndAccess() in use
-  // cases that need to ensure IOSurface synchronization.
-  uint num_ongoing_read_accesses_ = 0;
-  // Used with the above variable to catch cases where clients are performing
-  // disallowed concurrent read/write accesses.
-  bool ongoing_write_access_ = false;
-#endif
 
   void RetainGLTexture();
   void ReleaseGLTexture(bool have_context);

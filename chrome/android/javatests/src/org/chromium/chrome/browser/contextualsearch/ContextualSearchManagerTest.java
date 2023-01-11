@@ -149,7 +149,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/765403")
+    @DisabledTest(message = "crbug.com/1373276")
     public void testSwipeExpand() throws Exception {
         // TODO(donnd): enable for all features.
         FeatureList.setTestFeatures(ENABLE_NONE);
@@ -184,9 +184,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     public void testNonResolveSwipeExpand(@EnabledFeature int enabledFeature) throws Exception {
-        // Skip when this experimental feature is enabled since it's not yet planned past Beta.
-        if (enabledFeature == EnabledFeature.CONTEXTUAL_TRIGGERS) return;
-
         simulateNonResolveSearch("search");
         assertNoWebContents();
         assertLoadedNoUrl();
@@ -536,9 +533,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     // Previously flaky on phones: https://crbug.com/765796
     public void testPanelDismissedOnToggleFullscreen(@EnabledFeature int enabledFeature)
             throws Exception {
-        // Skip when this experimental feature is enabled since it's not yet planned past Beta.
-        if (enabledFeature == EnabledFeature.CONTEXTUAL_TRIGGERS) return;
-
         // Simulate a resolving search and assert that the panel peeks.
         simulateResolveSearch("search");
 
@@ -604,9 +598,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     public void testQuickActionCaptionAndImage(@EnabledFeature int enabledFeature)
             throws Exception {
-        // Skip when this experimental feature is enabled since it's not yet planned past Beta.
-        if (enabledFeature == EnabledFeature.CONTEXTUAL_TRIGGERS) return;
-
         CompositorAnimationHandler.setTestingMode(true);
 
         // Simulate a resolving search to show the Bar, then set the quick action data.
@@ -615,9 +606,8 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
                 ()
                         -> mPanel.onSearchTermResolved("search", null, "tel:555-555-5555",
                                 QuickActionCategory.PHONE, CardTag.CT_CONTACT,
-                                null /* relatedSearchesInBar */, false /* showDefaultSearchInBar */,
-                                null /* relatedSearchesInContent */,
-                                false /* showDefaultSearchInContent */));
+                                null /* relatedSearchesInBar */,
+                                false /* showDefaultSearchInBar */));
 
         ContextualSearchBarControl barControl = mPanel.getSearchBarControl();
         ContextualSearchQuickActionControl quickActionControl = barControl.getQuickActionControl();
@@ -682,9 +672,8 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
                 ()
                         -> mPanel.onSearchTermResolved("search", null, "tel:555-555-5555",
                                 QuickActionCategory.PHONE, CardTag.CT_CONTACT,
-                                null /* relatedSearchesInBar */, false /* showDefaultSearchInBar */,
-                                null /* relatedSearchesInContent */,
-                                false /* showDefaultSearchInContent */));
+                                null /* relatedSearchesInBar */,
+                                false /* showDefaultSearchInBar */));
 
         sActivityTestRule.getActivity().onUserInteraction();
         retryPanelBarInteractions(() -> {
@@ -717,9 +706,8 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
                 ()
                         -> mPanel.onSearchTermResolved("search", null, testUrl,
                                 QuickActionCategory.WEBSITE, CardTag.CT_URL,
-                                null /* relatedSearchesInBar */, false /* showDefaultSearchInBar */,
-                                null /* relatedSearchesInContent */,
-                                false /* showDefaultSearchInContent */));
+                                null /* relatedSearchesInBar */,
+                                false /* showDefaultSearchInBar */));
         retryPanelBarInteractions(() -> {
             // Tap on the portion of the bar that should trigger the quick action.
             clickPanelBar();
@@ -737,9 +725,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
                 ()
                         -> mPanel.onSearchTermResolved("obscure · əbˈskyo͝or", null, null,
                                 QuickActionCategory.NONE, cardTag, null /* relatedSearchesInBar */,
-                                false /* showDefaultSearchInBar */,
-                                null /* relatedSearchesInContent */,
-                                false /* showDefaultSearchInContent */));
+                                false /* showDefaultSearchInBar */));
 
         expandPanelAndAssert();
     }
@@ -767,9 +753,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     public void testContextualDictionaryDefinitions(@EnabledFeature int enabledFeature)
             throws Exception {
-        // Skip when this experimental feature is enabled since it's not yet planned past Beta.
-        if (enabledFeature == EnabledFeature.CONTEXTUAL_TRIGGERS) return;
-
         runDictionaryCardTest(CardTag.CT_CONTEXTUAL_DEFINITION);
     }
 

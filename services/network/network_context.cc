@@ -22,6 +22,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
@@ -97,6 +98,7 @@
 #include "services/network/network_service_memory_cache.h"
 #include "services/network/network_service_network_delegate.h"
 #include "services/network/network_service_proxy_delegate.h"
+#include "services/network/oblivious_http_request_handler.h"
 #include "services/network/proxy_config_service_mojo.h"
 #include "services/network/proxy_lookup_request.h"
 #include "services/network/proxy_resolving_socket_factory_mojo.h"
@@ -483,6 +485,7 @@ NetworkContext::NetworkContext(
           std::move(params_->first_party_sets_access_delegate_params),
           network_service_->first_party_sets_manager()),
       cors_preflight_controller_(network_service),
+      ohttp_handler_(this),
       cors_non_wildcard_request_headers_support_(base::FeatureList::IsEnabled(
           features::kCorsNonWildcardRequestHeadersSupport)) {
 #if BUILDFLAG(IS_WIN) && DCHECK_IS_ON()
@@ -611,7 +614,8 @@ NetworkContext::NetworkContext(
       socket_factory_(
           std::make_unique<SocketFactory>(url_request_context_->net_log(),
                                           url_request_context)),
-      cors_preflight_controller_(network_service) {
+      cors_preflight_controller_(network_service),
+      ohttp_handler_(this) {
   // May be nullptr in tests.
   if (network_service_)
     network_service_->RegisterNetworkContext(this);
@@ -619,6 +623,10 @@ NetworkContext::NetworkContext(
 
   for (const auto& key : cors_exempt_header_list)
     cors_exempt_header_list_.insert(key);
+
+  acam_preflight_spec_conformant_ = base::FeatureList::IsEnabled(
+      network::features::
+          kAccessControlAllowMethodsInCORSPreflightSpecConformant);
 }
 
 NetworkContext::~NetworkContext() {
@@ -767,6 +775,12 @@ void NetworkContext::ResetURLLoaderFactories() {
     factories.push_back(factory.get());
   for (auto* factory : factories)
     factory->ClearBindings();
+}
+
+void NetworkContext::GetViaObliviousHttp(
+    mojom::ObliviousHttpRequestPtr request,
+    mojo::PendingRemote<mojom::ObliviousHttpClient> client) {
+  ohttp_handler_.StartRequest(std::move(request), std::move(client));
 }
 
 void NetworkContext::GetCookieManager(
@@ -2190,9 +2204,9 @@ void NetworkContext::LookupProxyAuthCredentials(
 
   //  Unlike server credentials, proxy credentials are not keyed on
   //  NetworkAnonymizationKey.
-  net::HttpAuthCache::Entry* entry =
-      http_auth_cache->Lookup(scheme_host_port, net::HttpAuth::AUTH_PROXY,
-                              realm, net_scheme, net::NetworkAnonymizationKey());
+  net::HttpAuthCache::Entry* entry = http_auth_cache->Lookup(
+      scheme_host_port, net::HttpAuth::AUTH_PROXY, realm, net_scheme,
+      net::NetworkAnonymizationKey());
   if (entry)
     std::move(callback).Run(entry->credentials());
   else
@@ -2209,10 +2223,7 @@ NetworkServiceMemoryCache* NetworkContext::GetMemoryCache() {
 }
 
 size_t NetworkContext::NumOpenWebTransports() const {
-  return std::count_if(web_transports_.begin(), web_transports_.end(),
-                       [](const std::unique_ptr<WebTransport>& transport) {
-                         return !transport->torn_down();
-                       });
+  return base::ranges::count(web_transports_, false, &WebTransport::torn_down);
 }
 
 void NetworkContext::OnHttpAuthDynamicParamsChanged(
@@ -2904,6 +2915,12 @@ void NetworkContext::InitializeCorsParams() {
   }
   for (const auto& key : params_->cors_exempt_header_list)
     cors_exempt_header_list_.insert(key);
+
+  acam_preflight_spec_conformant_ =
+      base::FeatureList::IsEnabled(
+          network::features::
+              kAccessControlAllowMethodsInCORSPreflightSpecConformant) &&
+      params_->acam_preflight_spec_conformant;
 }
 
 void NetworkContext::FinishConstructingTrustTokenStore(
@@ -2918,24 +2935,6 @@ bool NetworkContext::IsAllowedToUseAllHttpAuthSchemes(
     const url::SchemeHostPort& scheme_host_port) {
   DCHECK(url_matcher_);
   return !url_matcher_->MatchURL(scheme_host_port.GetURL()).empty();
-}
-
-void NetworkContext::ComputeFirstPartySetMetadata(
-    const net::SchemefulSite& site,
-    const absl::optional<net::SchemefulSite>& top_frame_site,
-    const std::vector<net::SchemefulSite>& party_context,
-    ComputeFirstPartySetMetadataCallback callback) {
-  auto callbacks = base::SplitOnceCallback(std::move(callback));
-
-  if (absl::optional<net::FirstPartySetMetadata> sync_metadata =
-          first_party_sets_access_delegate_.ComputeMetadata(
-              site, base::OptionalToPtr(top_frame_site),
-              std::set<net::SchemefulSite>(party_context.begin(),
-                                           party_context.end()),
-              std::move(callbacks.first));
-      sync_metadata.has_value()) {
-    std::move(callbacks.second).Run(std::move(sync_metadata).value());
-  }
 }
 
 void NetworkContext::CreateTrustedUrlLoaderFactoryForNetworkService(

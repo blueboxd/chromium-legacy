@@ -55,7 +55,6 @@ class OverscrollSceneLayer : public SceneLayer,
   void SetNeedsAnimate();
 
   // ui::WindowAndroidObserver implementation.
-  void OnCompositingDidCommit() override {}
   void OnRootWindowVisibilityChanged(bool visible) override {}
   void OnAttachCompositor() override;
   void OnDetachCompositor() override;
@@ -67,7 +66,7 @@ class OverscrollSceneLayer : public SceneLayer,
   // OverscrollGlowClient implementation.
   std::unique_ptr<ui::EdgeEffect> CreateEdgeEffect() override;
 
-  const raw_ptr<ui::WindowAndroid> window_;
+  const raw_ptr<ui::WindowAndroid, DanglingUntriaged> window_;
   std::unique_ptr<ui::OverscrollGlow> glow_effect_;
   raw_ptr<ui::ResourceManager> resource_manager_ = nullptr;
 

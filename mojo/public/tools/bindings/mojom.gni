@@ -20,6 +20,7 @@ import("//build/config/nacl/config.gni")
 import("//build/toolchain/kythe.gni")
 import("//components/nacl/features.gni")
 import("//third_party/jinja2/jinja2.gni")
+import("//third_party/ply/ply.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 declare_args() {
   # Indicates whether typemapping should be supported in this build
@@ -79,6 +80,7 @@ mojom_parser_script = "$_mojom_tools_root/mojom/mojom_parser.py"
 mojom_parser_sources = [
   "$_mojom_library_root/__init__.py",
   "$_mojom_library_root/error.py",
+  "$_mojom_library_root/fileutil.py",
   "$_mojom_library_root/generate/__init__.py",
   "$_mojom_library_root/generate/check.py",
   "$_mojom_library_root/generate/generator.py",
@@ -88,8 +90,10 @@ mojom_parser_sources = [
   "$_mojom_library_root/generate/translate.py",
   "$_mojom_library_root/parse/__init__.py",
   "$_mojom_library_root/parse/ast.py",
+  "$_mojom_library_root/parse/conditional_features.py",
   "$_mojom_library_root/parse/lexer.py",
   "$_mojom_library_root/parse/parser.py",
+  "//tools/diagnosis/crbug_1001171.py",
 ]
 
 mojom_generator_root = "$_mojom_tools_root/bindings"
@@ -98,6 +102,7 @@ mojom_generator_sources =
     mojom_parser_sources + [
       "$mojom_generator_root/checks/__init__.py",
       "$mojom_generator_root/checks/mojom_attributes_check.py",
+      "$mojom_generator_root/checks/mojom_definitions_check.py",
       "$mojom_generator_root/checks/mojom_restrictions_check.py",
       "$mojom_generator_root/generators/__init__.py",
       "$mojom_generator_root/generators/cpp_util.py",
@@ -696,9 +701,9 @@ template("mojom") {
 
     action(parser_target_name) {
       script = mojom_parser_script
-      inputs = mojom_parser_sources + [ build_metadata_filename ]
+      inputs = mojom_parser_sources + ply_sources + [ build_metadata_filename ]
       sources = sources_list
-      deps = parser_deps
+      public_deps = parser_deps
       outputs = []
       foreach(base_path, output_file_base_paths) {
         filename = get_path_info(base_path, "file")
@@ -844,7 +849,7 @@ template("mojom") {
       args = common_generator_args
       filelist = []
       foreach(source, sources_list) {
-        filelist += [ rebase_path("$source", root_build_dir) ]
+        filelist += [ rebase_path(source, root_build_dir) ]
       }
       foreach(base_path, output_file_base_paths) {
         outputs += [ "$root_gen_dir/$base_path-shared-message-ids.h" ]
@@ -886,7 +891,7 @@ template("mojom") {
       args = common_generator_args
       filelist = []
       foreach(source, sources_list) {
-        filelist += [ rebase_path("$source", root_build_dir) ]
+        filelist += [ rebase_path(source, root_build_dir) ]
       }
       foreach(base_path, output_file_base_paths) {
         outputs += [
@@ -1001,9 +1006,26 @@ template("mojom") {
       outputs = []
       args = common_generator_args
       filelist = []
-      foreach(source, invoker.sources) {
-        filelist += [ rebase_path("$source", root_build_dir) ]
+
+      # Split the input into generated and non-generated source files. They
+      # need to be processed separately.
+      gen_dir_path_wildcard = get_path_info("//", "gen_dir") + "/*"
+      non_gen_sources =
+          filter_exclude(invoker.sources, [ gen_dir_path_wildcard ])
+      gen_sources = filter_include(invoker.sources, [ gen_dir_path_wildcard ])
+
+      foreach(source, non_gen_sources) {
+        filelist += [ rebase_path(source, root_build_dir) ]
         outputs += [ "$target_gen_dir/$source.mojolpm.proto" ]
+      }
+
+      foreach(source, gen_sources) {
+        filelist += [ rebase_path(source, root_build_dir) ]
+
+        # For generated files, we assume they're in the target_gen_dir or a
+        # sub-folder of it. Rebase the path so we can get the relative location.
+        source_file = rebase_path(source, target_gen_dir)
+        outputs += [ "$target_gen_dir/$source_file.mojolpm.proto" ]
       }
 
       response_file_contents = filelist
@@ -1021,9 +1043,20 @@ template("mojom") {
       proto_library(mojolpm_proto_target_name) {
         testonly = true
         generate_python = false
+
+        # Split the input into generated and non-generated source files. They
+        # need to be processed separately.
+        gen_dir_path_wildcard = get_path_info("//", "gen_dir") + "/*"
+        non_gen_sources =
+            filter_exclude(invoker.sources, [ gen_dir_path_wildcard ])
+        gen_sources = filter_include(invoker.sources, [ gen_dir_path_wildcard ])
         sources = process_file_template(
-                invoker.sources,
+                non_gen_sources,
                 [ "{{source_gen_dir}}/{{source_file_part}}.mojolpm.proto" ])
+        sources += process_file_template(
+                gen_sources,
+                [ "{{source_dir}}/{{source_file_part}}.mojolpm.proto" ])
+
         import_dirs = [ "//" ]
         proto_in_dir = "${root_gen_dir}"
         proto_out_dir = "."
@@ -1230,7 +1263,7 @@ template("mojom") {
         args = common_generator_args + export_args
         filelist = []
         foreach(source, sources_list) {
-          filelist += [ rebase_path("$source", root_build_dir) ]
+          filelist += [ rebase_path(source, root_build_dir) ]
         }
         foreach(base_path, output_file_base_paths) {
           outputs += [
@@ -1325,11 +1358,24 @@ template("mojom") {
         check_includes = false
         testonly = true
         if (defined(invoker.sources)) {
+          # Split the input into generated and non-generated source files. They
+          # need to be processed separately.
+          gen_dir_path_wildcard = get_path_info("//", "gen_dir") + "/*"
+          non_gen_sources =
+              filter_exclude(invoker.sources, [ gen_dir_path_wildcard ])
+          gen_sources =
+              filter_include(invoker.sources, [ gen_dir_path_wildcard ])
           sources = process_file_template(
-                  invoker.sources,
+                  non_gen_sources,
                   [
                     "{{source_gen_dir}}/{{source_file_part}}-mojolpm.cc",
                     "{{source_gen_dir}}/{{source_file_part}}-mojolpm.h",
+                  ])
+          sources += process_file_template(
+                  gen_sources,
+                  [
+                    "{{source_dir}}/{{source_file_part}}-mojolpm.cc",
+                    "{{source_dir}}/{{source_file_part}}-mojolpm.h",
                   ])
           deps = []
         } else {
@@ -1599,7 +1645,7 @@ template("mojom") {
           args = common_generator_args
           filelist = []
           foreach(source, sources_list) {
-            filelist += [ rebase_path("$source", root_build_dir) ]
+            filelist += [ rebase_path(source, root_build_dir) ]
           }
           foreach(base_path, output_file_base_paths) {
             outputs += [ "$root_gen_dir/$base_path.srcjar" ]
@@ -1701,7 +1747,7 @@ template("mojom") {
         args = common_generator_args
         filelist = []
         foreach(source, sources_list) {
-          filelist += [ rebase_path("$source", root_build_dir) ]
+          filelist += [ rebase_path(source, root_build_dir) ]
         }
         foreach(base_path, output_file_base_paths) {
           outputs += [
@@ -1911,7 +1957,7 @@ template("mojom") {
     generator_js_target_names = []
     source_filelist = []
     foreach(source, sources_list) {
-      source_filelist += [ rebase_path("$source", root_build_dir) ]
+      source_filelist += [ rebase_path(source, root_build_dir) ]
     }
 
     dependency_types = [

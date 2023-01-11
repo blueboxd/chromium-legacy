@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
-#include "components/cast_streaming/renderer/public/resource_provider.h"
+#include "build/chromecast_buildflags.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/demuxer.h"
 #include "media/base/renderer_factory.h"
@@ -74,7 +74,7 @@ bool ContentRendererClient::DeferMediaLoad(RenderFrame* render_frame,
 std::unique_ptr<media::Demuxer> ContentRendererClient::OverrideDemuxerForUrl(
     RenderFrame* render_frame,
     const GURL& url,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   return nullptr;
 }
 
@@ -265,9 +265,11 @@ ContentRendererClient::GetBaseRendererFactory(
   return nullptr;
 }
 
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
 std::unique_ptr<cast_streaming::ResourceProvider>
 ContentRendererClient::CreateCastStreamingResourceProvider() {
   return nullptr;
 }
+#endif
 
 }  // namespace content

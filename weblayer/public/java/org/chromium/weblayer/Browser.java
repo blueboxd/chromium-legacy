@@ -5,7 +5,6 @@
 package org.chromium.weblayer;
 
 import android.os.RemoteException;
-import android.view.SurfaceControlViewHost;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -47,7 +46,6 @@ class Browser {
     // Set to null once destroyed (or for tests).
     private IBrowser mImpl;
     private final ObserverList<TabListCallback> mTabListCallbacks;
-    private final UrlBarController mUrlBarController;
 
     private final ObserverList<BrowserControlsOffsetCallback> mBrowserControlsOffsetCallbacks;
     private final ObserverList<BrowserRestoreCallback> mBrowserRestoreCallbacks;
@@ -81,7 +79,6 @@ class Browser {
     protected Browser() {
         mImpl = null;
         mTabListCallbacks = null;
-        mUrlBarController = null;
         mBrowserControlsOffsetCallbacks = null;
         mBrowserRestoreCallbacks = null;
     }
@@ -98,7 +95,6 @@ class Browser {
 
         try {
             mImpl.setClient(new BrowserClientImpl());
-            mUrlBarController = new UrlBarController(mImpl.getUrlBarController());
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -468,33 +464,6 @@ class Browser {
     }
 
     /**
-     * Set the minimum surface size of this Browser instance.
-     * Setting this avoids expensive surface resize for a fragment view resize that is within the
-     * minimum size. The trade off is the additional memory and power needed for the larger
-     * surface. For example, for a browser use case, it's likely worthwhile to set the minimum
-     * surface size to the screen size to avoid surface resize when entering and exiting fullscreen.
-     * It is safe to call this before Views are initialized.
-     * Note Android does have a max size limit on Surfaces which applies here as well; this
-     * generally should not be larger than the device screen size.
-     * Note the surface size is increased to the layout size only if both the width and height are
-     * no larger than the minimum surface size. No adjustment is made if the surface size is larger
-     * than the minimum size in one dimension and smaller in the other dimension.
-     * @since 89
-     */
-    public void setMinimumSurfaceSize(int width, int height) {
-        ThreadCheck.ensureOnUiThread();
-        if (WebLayer.getSupportedMajorVersionInternal() < 89) {
-            throw new UnsupportedOperationException();
-        }
-        throwIfDestroyed();
-        try {
-            mImpl.setMinimumSurfaceSize(width, height);
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
-    }
-
-    /**
      * Controls how sites are themed when WebLayer is in dark mode. WebLayer considers itself to be
      * in dark mode if the UI_MODE_NIGHT_YES flag of its Resources' Configuration's uiMode field is
      * set, which is typically controlled with AppCompatDelegate#setDefaultNightMode. By default
@@ -535,16 +504,6 @@ class Browser {
     }
 
     /**
-     * Returns the UrlBarController.
-     */
-    @NonNull
-    public UrlBarController getUrlBarController() {
-        ThreadCheck.ensureOnUiThread();
-        throwIfDestroyed();
-        return mUrlBarController;
-    }
-
-    /**
      * Normally when the Browser is detached the visibility of the page is set to hidden. When the
      * visibility is hidden video may stop, or other side effects may result. At certain times,
      * such as fullscreen or rotation, it may be necessary to transiently detach the Browser.
@@ -564,33 +523,6 @@ class Browser {
         throwIfDestroyed();
         try {
             mImpl.setChangeVisibilityOnNextDetach(changeVisibility);
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
-    }
-
-    /**
-     * Attaches the top-level view to the SurfaceControlViewHost.
-     * @param host The SurfaceControlViewHost created from the host app's SurfaceView.
-     *
-     * @since 105
-     */
-    void setSurfaceControlViewHost(SurfaceControlViewHost host) {
-        ThreadCheck.ensureOnUiThread();
-
-        if (WebLayer.getSupportedMajorVersionInternal() < 105) {
-            throw new UnsupportedOperationException();
-        }
-        try {
-            mImpl.setSurfaceControlViewHost(ObjectWrapper.wrap(host));
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
-    }
-
-    View getContentViewRenderView() {
-        try {
-            return ObjectWrapper.unwrap(mImpl.getContentViewRenderView(), View.class);
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

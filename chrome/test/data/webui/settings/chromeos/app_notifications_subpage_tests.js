@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {createBoolPermission, getBoolPermissionValue, isBoolValue, setAppNotificationProviderForTesting} from 'chrome://os-settings/chromeos/os_settings.js';
+import {appNotificationHandlerMojomWebui, createBoolPermission, getBoolPermissionValue, isBoolValue, setAppNotificationProviderForTesting} from 'chrome://os-settings/chromeos/os_settings.js';
+import {Permission} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
-import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+
+const {App, AppNotificationsObserverRemote, Readiness} =
+    appNotificationHandlerMojomWebui;
 
 class FakeAppNotificationHandler {
   constructor() {
@@ -16,11 +20,9 @@ class FakeAppNotificationHandler {
     this.resolverMap_ = new Map();
 
     /**
-     * @private
-     *     {?ash.settings.appNotification.mojom.
-     *      AppNotificationObserverRemote}
+     * @private {?AppNotificationsObserverRemote}
      */
-    this.appNotificationObserverRemote_;
+    this.appNotificationsObserverRemote_;
 
     this.isQuietModeEnabled_ = false;
 
@@ -29,7 +31,7 @@ class FakeAppNotificationHandler {
     this.lastUpdatedAppPermission_ = {};
 
     /**
-     * @private {!Array<!ash.settings.appNotification.mojom.App>}
+     * @private {!Array<!App>}
      */
     this.apps_ = [];
 
@@ -37,8 +39,8 @@ class FakeAppNotificationHandler {
   }
 
   resetForTest() {
-    if (this.appNotificationObserverRemote_) {
-      this.appNotificationObserverRemote_ = null;
+    if (this.appNotificationsObserverRemote_) {
+      this.appNotificationsObserverRemote_ = null;
     }
 
     this.apps_ = [];
@@ -84,12 +86,10 @@ class FakeAppNotificationHandler {
   }
 
   /**
-   * @return
-   *      {ash.settings.appNotification.mojom.
-   *        AppNotificationObserverRemote}
+   * @return {AppNotificationsObserverRemote}
    */
   getObserverRemote() {
-    return this.appNotificationObserverRemote_;
+    return this.appNotificationsObserverRemote_;
   }
 
   /**
@@ -107,7 +107,7 @@ class FakeAppNotificationHandler {
   }
 
   /**
-   * @return {!appManagement.mojom.Permission}
+   * @return {!Permission}
    */
   getLastUpdatedPermission() {
     return this.lastUpdatedAppPermission_;
@@ -116,14 +116,12 @@ class FakeAppNotificationHandler {
   // appNotificationHandler methods
 
   /**
-   * @param {!ash.settings.appNotification.mojom.
-   *        AppNotificationObserverRemote}
-   *      remote
+   * @param {!AppNotificationsObserverRemote} remote
    * @return {!Promise}
    */
   addObserver(remote) {
     return new Promise(resolve => {
-      this.appNotificationObserverRemote_ = remote;
+      this.appNotificationsObserverRemote_ = remote;
       this.methodCalled('addObserver');
       resolve();
     });
@@ -148,7 +146,7 @@ class FakeAppNotificationHandler {
 
   /**
    * @param {string} id
-   * @param {!appManagement.mojom.Permission} permission
+   * @param {!Permission} permission
    */
   setNotificationPermission(id, permission) {
     return new Promise(resolve => {
@@ -160,7 +158,7 @@ class FakeAppNotificationHandler {
   }
 
   /**
-   * @return {!Promise<!Array<!ash.settings.appNotification.mojom.App>>}
+   * @return {!Promise<!Array<!App>>}
    */
   getApps() {
     return new Promise(resolve => {
@@ -170,19 +168,25 @@ class FakeAppNotificationHandler {
   }
 }
 
-
 suite('AppNotificationsSubpageTests', function() {
   /** @type {AppNotificationsSubpage} */
   let page;
 
   /**
    * @type {
-   *    ?ash.settings.appNotification.mojom.AppNotificationHandlerRemote
+   *    ?AppNotificationHandlerRemote
    *  }
    */
   let mojoApi_;
 
   let setQuietModeCounter = 0;
+
+  function createPage() {
+    page = document.createElement('settings-app-notifications-subpage');
+    document.body.appendChild(page);
+    assertTrue(!!page);
+    flush();
+  }
 
   suiteSetup(() => {
     mojoApi_ = new FakeAppNotificationHandler();
@@ -192,10 +196,6 @@ suite('AppNotificationsSubpageTests', function() {
   setup(function() {
     PolymerTest.clearBody;
     loadTimeData.overrideValues({showOsSettingsAppNotificationsRow: true});
-    page = document.createElement('settings-app-notifications-subpage');
-    document.body.appendChild(page);
-    assertTrue(!!page);
-    flush();
   });
 
   teardown(function() {
@@ -215,7 +215,7 @@ suite('AppNotificationsSubpageTests', function() {
     mojoApi_.getObserverRemote().onQuietModeChanged(enable);
   }
 
-  /** @param {!ash.settings.appNotification.mojom.App} */
+  /** @param {!App} */
   function simulateNotificationAppChanged(app) {
     mojoApi_.getObserverRemote().onNotificationAppChanged(app);
   }
@@ -223,13 +223,11 @@ suite('AppNotificationsSubpageTests', function() {
   /**
    * @param {string} id
    * @param {string} title
-   * @param {!appManagement.mojom.Permission} permission
-   * @param {?ash.settings.appNotification.mojom.Readiness} readiness
-   * @return {!ash.settings.appNotification.mojom.App}
+   * @param {!Permission} permission
+   * @param {?Readiness} readiness
+   * @return {!App}
    */
-  function createApp(
-      id, title, permission,
-      readiness = ash.settings.appNotification.mojom.Readiness.kReady) {
+  function createApp(id, title, permission, readiness = Readiness.kReady) {
     return {
       id: id,
       title: title,
@@ -239,6 +237,7 @@ suite('AppNotificationsSubpageTests', function() {
   }
 
   test('loadAppListAndClickToggle', async () => {
+    createPage();
     const permission1 = createBoolPermission(
         /**permissionType=*/ 1,
         /**value=*/ false, /**is_managed=*/ false);
@@ -283,6 +282,7 @@ suite('AppNotificationsSubpageTests', function() {
   });
 
   test('RemovedApp', async () => {
+    createPage();
     const permission1 = createBoolPermission(
         /**permissionType=*/ 1,
         /**value=*/ false, /**is_managed=*/ false);
@@ -302,9 +302,8 @@ suite('AppNotificationsSubpageTests', function() {
         page.$.appNotificationsList.querySelectorAll('app-notification-row');
     assertEquals(2, appRowList.length);
 
-    const app3 = createApp(
-        '1', 'App1', permission1,
-        ash.settings.appNotification.mojom.Readiness.kUninstalledByUser);
+    const app3 =
+        createApp('1', 'App1', permission1, Readiness.kUninstalledByUser);
     simulateNotificationAppChanged(app3);
 
     await flushTasks();
@@ -318,6 +317,7 @@ suite('AppNotificationsSubpageTests', function() {
   });
 
   test('Each app-notification-row displays correctly', async () => {
+    createPage();
     const appTitle1 = 'Files';
     const appTitle2 = 'Chrome';
     const permission1 = createBoolPermission(
@@ -356,32 +356,27 @@ suite('AppNotificationsSubpageTests', function() {
   });
 
   test('toggleDoNotDisturb', function() {
-    const div = page.$.enableDoNotDisturb;
-    const dndToggle = page.$.enableDndToggle;
+    createPage();
+    const dndToggle = page.$.doNotDisturbToggle;
+    assertTrue(!!dndToggle);
 
     flush();
     assertFalse(dndToggle.checked);
     assertFalse(mojoApi_.getCurrentQuietModeState());
 
-    // Test that tapping the single settings-box div enables DND.
-    assertTrue(!!div);
-    div.click();
+    dndToggle.click();
     assertTrue(dndToggle.checked);
     assertTrue(mojoApi_.getCurrentQuietModeState());
 
     // Click again will change the value.
-    div.click();
+    dndToggle.click();
     assertFalse(dndToggle.checked);
     assertFalse(mojoApi_.getCurrentQuietModeState());
-
-    // Test that tapping the toggle itself enables DND.
-    dndToggle.click();
-    assertTrue(dndToggle.checked);
-    assertTrue(mojoApi_.getCurrentQuietModeState());
   });
 
   test('SetQuietMode being called correctly', function() {
-    const dndToggle = page.$.enableDndToggle;
+    createPage();
+    const dndToggle = page.$.doNotDisturbToggle;
     // Click the toggle button a certain count.
     const testCount = 3;
 
@@ -407,7 +402,8 @@ suite('AppNotificationsSubpageTests', function() {
   });
 
   test('changing toggle with OnQuietModeChanged', function() {
-    const dndToggle = page.$.enableDndToggle;
+    createPage();
+    const dndToggle = page.$.doNotDisturbToggle;
 
     flush();
     assertFalse(dndToggle.checked);
@@ -424,5 +420,57 @@ suite('AppNotificationsSubpageTests', function() {
         .then(() => {
           assertTrue(dndToggle.checked);
         });
+  });
+
+  suite('App badging', () => {
+    function makeFakePrefs(appBadgingEnabled = false) {
+      return {
+        ash: {
+          app_notification_badging_enabled: {
+            key: 'ash.app_notification_badging_enabled',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: appBadgingEnabled,
+          },
+        },
+      };
+    }
+
+    setup(() => {
+      loadTimeData.overrideValues({showOsSettingsAppBadgingToggle: true});
+    });
+
+    test('App badging toggle is not visible if feature is disabled', () => {
+      loadTimeData.overrideValues({showOsSettingsAppBadgingToggle: false});
+      createPage();
+
+      const appBadgingToggle =
+          page.shadowRoot.querySelector('#appBadgingToggleButton');
+      assertEquals(null, appBadgingToggle);
+    });
+
+    test('App badging toggle is visible if the feature is enabled', () => {
+      createPage();
+      const appBadgingToggle =
+          page.shadowRoot.querySelector('#appBadgingToggleButton');
+      assertTrue(!!appBadgingToggle);
+    });
+
+    test('Clicking the app badging button toggles the pref value', () => {
+      createPage();
+      page.prefs = makeFakePrefs(true);
+
+      const appBadgingToggle =
+          page.shadowRoot.querySelector('#appBadgingToggleButton');
+      assertTrue(appBadgingToggle.checked);
+      assertTrue(page.prefs.ash.app_notification_badging_enabled.value);
+
+      appBadgingToggle.click();
+      assertFalse(appBadgingToggle.checked);
+      assertFalse(page.prefs.ash.app_notification_badging_enabled.value);
+
+      appBadgingToggle.click();
+      assertTrue(appBadgingToggle.checked);
+      assertTrue(page.prefs.ash.app_notification_badging_enabled.value);
+    });
   });
 });

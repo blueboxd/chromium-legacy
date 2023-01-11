@@ -30,8 +30,8 @@ class VisitIDRemapper;
 class HistorySyncBridge : public syncer::ModelTypeSyncBridge,
                           public HistoryBackendObserver {
  public:
-  // `sync_metadata_store` is owned by `history_backend`, and must outlive
-  // HistorySyncBridge.
+  // `history_backend` must not be null.
+  // `sync_metadata_store` may be null, but if non-null, must outlive this.
   HistorySyncBridge(
       HistoryBackendForSync* history_backend,
       HistorySyncMetadataDatabase* sync_metadata_store,
@@ -43,6 +43,8 @@ class HistorySyncBridge : public syncer::ModelTypeSyncBridge,
   ~HistorySyncBridge() override;
 
   // syncer::ModelTypeSyncBridge implementation.
+  void OnSyncStarting(
+      const syncer::DataTypeActivationRequest& request) override;
   std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()
       override;
   absl::optional<syncer::ModelError> MergeSyncData(
@@ -58,6 +60,8 @@ class HistorySyncBridge : public syncer::ModelTypeSyncBridge,
   syncer::ConflictResolution ResolveConflict(
       const std::string& storage_key,
       const syncer::EntityData& remote_data) const override;
+  void ApplyStopSyncChanges(std::unique_ptr<syncer::MetadataChangeList>
+                                delete_metadata_change_list) override;
 
   // HistoryBackendObserver:
   void OnURLVisited(HistoryBackend* history_backend,
@@ -83,6 +87,8 @@ class HistorySyncBridge : public syncer::ModelTypeSyncBridge,
   // passes it to the processor so that it can start tracking changes.
   void LoadMetadata();
 
+  bool ShouldCommitRightNow() const;
+
   // Queries the redirect chain ending in `final_visit` from the HistoryBackend,
   // and creates the corresponding EntityData(s). Typically returns a single
   // EntityData, but in some cases the redirect chain may have to be split up
@@ -105,6 +111,10 @@ class HistorySyncBridge : public syncer::ModelTypeSyncBridge,
                              const sync_pb::HistorySpecifics& specifics);
 
   // Untracks all entities from the processor, and clears their (persisted)
+  // metadata.
+  void UntrackAndClearMetadataForAllEntities();
+
+  // Untracks all entities from the processor, and clears their (persisted)
   // metadata, except for entities that are "unsynced", i.e. that are waiting to
   // be committed.
   void UntrackAndClearMetadataForSyncedEntities();
@@ -116,7 +126,12 @@ class HistorySyncBridge : public syncer::ModelTypeSyncBridge,
 
   // A non-owning pointer to the backend, which we're syncing local changes from
   // and sync changes to. Never null.
-  const raw_ptr<HistoryBackendForSync> history_backend_;
+  const raw_ptr<HistoryBackendForSync, DanglingUntriaged> history_backend_;
+
+  // Whether Sync (for this data type) has been started. True between
+  // OnSyncStarting() and ApplyStopSyncChanges(). While this is false, no local
+  // changes will be sent to Sync.
+  bool sync_started_ = false;
 
   // Whether we're currently processing changes from the syncer. While this is
   // true, we ignore any local url changes, since we triggered them.
@@ -124,7 +139,8 @@ class HistorySyncBridge : public syncer::ModelTypeSyncBridge,
 
   // A non-owning pointer to the database, which is for storing sync metadata
   // and state. Can be null in case of unrecoverable database errors.
-  raw_ptr<HistorySyncMetadataDatabase> sync_metadata_database_;
+  raw_ptr<HistorySyncMetadataDatabase, DanglingUntriaged>
+      sync_metadata_database_;
 
   // HistoryBackend uses SequencedTaskRunner, so this makes sure
   // HistorySyncBridge is used on the correct sequence.

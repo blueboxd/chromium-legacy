@@ -11,7 +11,7 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {waitAfterNextRender, waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
 
-import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 suite('KeyboardAndTextInputPageTests', function() {
   let page = null;
@@ -170,6 +170,39 @@ suite('KeyboardAndTextInputPageTests', function() {
     assertEquals(
         'French (France) speech is sent to Google for processing',
         page.computeDictationLocaleSubtitle_());
+  });
+
+  test('some parts are hidden in kiosk mode', function() {
+    loadTimeData.overrideValues({
+      isKioskModeActive: true,
+      showTabletModeShelfNavigationButtonsSettings: true,
+    });
+    initPage();
+    flush();
+
+    const subpageLinks = page.root.querySelectorAll('cr-link-row');
+    subpageLinks.forEach(subpageLink => assertFalse(isVisible(subpageLink)));
+  });
+
+  test('Deep link to switch access', async () => {
+    loadTimeData.overrideValues({
+      isKioskModeActive: false,
+    });
+    initPage();
+
+    const params = new URLSearchParams();
+    params.append('settingId', '1522');
+    Router.getInstance().navigateTo(
+        routes.A11Y_KEYBOARD_AND_TEXT_INPUT, params);
+
+    flush();
+
+    const deepLinkElement = page.shadowRoot.querySelector('#enableSwitchAccess')
+                                .shadowRoot.querySelector('cr-toggle');
+    await waitAfterNextRender(deepLinkElement);
+    assertEquals(
+        deepLinkElement, getDeepActiveElement(),
+        'Switch access toggle should be focused for settingId=1522.');
   });
 
   const selectorRouteList = [

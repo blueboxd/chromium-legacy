@@ -5,7 +5,7 @@
 // clang-format off
 import 'chrome://settings/lazy_load.js';
 
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {CrInputElement, SettingsSyncPageElement} from 'chrome://settings/lazy_load.js';
 import {Router, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
@@ -21,8 +21,7 @@ suite('sync-page-test', function() {
 
   setup(function() {
     setupRouterWithSyncRoutes();
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     SyncBrowserProxyImpl.setInstance(new TestSyncBrowserProxy());
     const router = Router.getInstance();
     router.navigateTo((router.getRoutes() as SyncRoutes).SYNC);

@@ -36,14 +36,20 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 
-namespace chromeos {
-namespace settings {
+namespace ash::settings {
 
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
 namespace mojom {
-using ::ash::settings::mojom::SearchResultDefaultRank;
-using ::ash::settings::mojom::SearchResultIcon;
-using ::ash::settings::mojom::SearchResultType;
+using ::chromeos::settings::mojom::kAppDetailsSubpagePath;
+using ::chromeos::settings::mojom::kAppManagementSubpagePath;
+using ::chromeos::settings::mojom::kAppNotificationsSubpagePath;
+using ::chromeos::settings::mojom::kAppsSectionPath;
+using ::chromeos::settings::mojom::kArcVmUsbPreferencesSubpagePath;
+using ::chromeos::settings::mojom::kGooglePlayStoreSubpagePath;
+using ::chromeos::settings::mojom::kPluginVmSharedPathsSubpagePath;
+using ::chromeos::settings::mojom::kPluginVmUsbPreferencesSubpagePath;
+using ::chromeos::settings::mojom::Section;
+using ::chromeos::settings::mojom::Setting;
+using ::chromeos::settings::mojom::Subpage;
 }  // namespace mojom
 
 namespace {
@@ -76,6 +82,17 @@ const std::vector<SearchConcept>& GetAppNotificationsSearchConcepts() {
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kAppNotifications}},
   });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetAppBadgingSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags(
+      {{IDS_OS_SETTINGS_TAG_APP_BADGING,
+        mojom::kAppNotificationsSubpagePath,
+        mojom::SearchResultIcon::kAppsGrid,
+        mojom::SearchResultDefaultRank::kLow,
+        mojom::SearchResultType::kSetting,
+        {.setting = mojom::Setting::kAppBadgingOnOff}}});
   return *tags;
 }
 
@@ -347,9 +364,9 @@ AppsSection::AppsSection(Profile* profile,
 
   // Note: The MessageCenterAsh check here is added for unit testing purposes
   // otherwise check statements are not needed in production.
-  if (ash::MessageCenterAsh::Get()) {
-    ash::MessageCenterAsh::Get()->AddObserver(this);
-    OnQuietModeChanged(ash::MessageCenterAsh::Get()->IsQuietMode());
+  if (MessageCenterAsh::Get()) {
+    MessageCenterAsh::Get()->AddObserver(this);
+    OnQuietModeChanged(MessageCenterAsh::Get()->IsQuietMode());
   }
 
   if (arc::IsArcAllowedForProfile(profile)) {
@@ -373,8 +390,8 @@ AppsSection::~AppsSection() {
   // TODO(crbug.com/1237465): observer is never removed because ash::Shell is
   // destroyed first.
   // Note: The MessageCenterAsh check is also added for unit testing purposes.
-  if (ash::MessageCenterAsh::Get()) {
-    ash::MessageCenterAsh::Get()->RemoveObserver(this);
+  if (MessageCenterAsh::Get()) {
+    MessageCenterAsh::Get()->RemoveObserver(this);
   }
 
   if (arc::IsArcAllowedForProfile(profile())) {
@@ -398,6 +415,7 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_APP_NOTIFICATIONS_SUBLABEL_TEXT},
       {"appNotificationsDoNotDisturbDescription",
        IDS_SETTINGS_APP_NOTIFICATIONS_DND_ENABLED_SUBLABEL_TEXT},
+      {"appBadgingToggleLabel", IDS_SETTINGS_APP_BADGING_TOGGLE_LABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -421,8 +439,10 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean(
       "showOsSettingsAppNotificationsRow",
-      base::FeatureList::IsEnabled(
-          chromeos::features::kOsSettingsAppNotificationsPage));
+      base::FeatureList::IsEnabled(features::kOsSettingsAppNotificationsPage));
+  html_source->AddBoolean(
+      "showOsSettingsAppBadgingToggle",
+      base::FeatureList::IsEnabled(features::kOsSettingsAppBadgingToggle));
   html_source->AddBoolean("showArcvmManageUsb", arc::IsArcVmEnabled());
 
   html_source->AddBoolean(
@@ -494,6 +514,9 @@ void AppsSection::RegisterHierarchy(HierarchyGenerator* generator) const {
 
   generator->RegisterNestedSetting(mojom::Setting::kDoNotDisturbOnOff,
                                    mojom::Subpage::kAppNotifications);
+  generator->RegisterNestedSetting(mojom::Setting::kAppBadgingOnOff,
+                                   mojom::Subpage::kAppNotifications);
+
   // Note: The subpage name in the UI is updated dynamically based on the app
   // being shown, but we use a generic "App details" string here.
   generator->RegisterNestedSubpage(
@@ -645,10 +668,14 @@ void AppsSection::OnQuietModeChanged(bool in_quiet_mode) {
   updater.RemoveSearchTags(GetTurnOnAppNotificationSearchConcepts());
   updater.RemoveSearchTags(GetTurnOffAppNotificationSearchConcepts());
   updater.RemoveSearchTags(GetAppNotificationsSearchConcepts());
+  updater.RemoveSearchTags(GetAppBadgingSearchConcepts());
 
   updater.AddSearchTags(GetAppNotificationsSearchConcepts());
+  if (features::IsOsSettingsAppBadgingToggleEnabled()) {
+    updater.AddSearchTags(GetAppBadgingSearchConcepts());
+  }
 
-  if (!ash::MessageCenterAsh::Get()->IsQuietMode()) {
+  if (!MessageCenterAsh::Get()->IsQuietMode()) {
     updater.AddSearchTags(GetTurnOnAppNotificationSearchConcepts());
     return;
   }
@@ -656,5 +683,4 @@ void AppsSection::OnQuietModeChanged(bool in_quiet_mode) {
   updater.AddSearchTags(GetTurnOffAppNotificationSearchConcepts());
 }
 
-}  // namespace settings
-}  // namespace chromeos
+}  // namespace ash::settings

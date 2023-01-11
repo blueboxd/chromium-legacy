@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/css/css_container_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
-#include "third_party/blink/renderer/core/document_transition/document_transition_utils.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/character_data.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
@@ -95,6 +94,7 @@
 #include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/core/xml/document_xpath_evaluator.h"
 #include "third_party/blink/renderer/core/xml/xpath_result.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -121,8 +121,7 @@ void ForEachSupportedPseudo(const Element* element, Functor& func) {
       func(pseudo_element);
   }
   if (element == element->GetDocument().documentElement()) {
-    DocumentTransitionUtils::ForEachTransitionPseudo(element->GetDocument(),
-                                                     func);
+    ViewTransitionUtils::ForEachTransitionPseudo(element->GetDocument(), func);
   }
 }
 
@@ -230,16 +229,16 @@ protocol::DOM::PseudoType InspectorDOMAgent::ProtocolPseudoElementType(
       return protocol::DOM::PseudoTypeEnum::Resizer;
     case kPseudoIdInputListButton:
       return protocol::DOM::PseudoTypeEnum::InputListButton;
-    case kPseudoIdPageTransition:
-      return protocol::DOM::PseudoTypeEnum::PageTransition;
-    case kPseudoIdPageTransitionContainer:
-      return protocol::DOM::PseudoTypeEnum::PageTransitionContainer;
-    case kPseudoIdPageTransitionImageWrapper:
-      return protocol::DOM::PseudoTypeEnum::PageTransitionImageWrapper;
-    case kPseudoIdPageTransitionIncomingImage:
-      return protocol::DOM::PseudoTypeEnum::PageTransitionIncomingImage;
-    case kPseudoIdPageTransitionOutgoingImage:
-      return protocol::DOM::PseudoTypeEnum::PageTransitionOutgoingImage;
+    case kPseudoIdViewTransition:
+      return protocol::DOM::PseudoTypeEnum::ViewTransition;
+    case kPseudoIdViewTransitionGroup:
+      return protocol::DOM::PseudoTypeEnum::ViewTransitionGroup;
+    case kPseudoIdViewTransitionImagePair:
+      return protocol::DOM::PseudoTypeEnum::ViewTransitionImagePair;
+    case kPseudoIdViewTransitionNew:
+      return protocol::DOM::PseudoTypeEnum::ViewTransitionNew;
+    case kPseudoIdViewTransitionOld:
+      return protocol::DOM::PseudoTypeEnum::ViewTransitionOld;
     case kAfterLastInternalPseudoId:
     case kPseudoIdNone:
       CHECK(false);
@@ -1109,7 +1108,7 @@ Response InspectorDOMAgent::setNodeValue(int node_id, const String& value) {
   if (node->getNodeType() != Node::kTextNode)
     return Response::ServerError("Can only set value of text nodes");
 
-  return dom_editor_->ReplaceWholeText(To<Text>(node), value);
+  return dom_editor_->SetNodeValue(node, value);
 }
 
 static Node* NextNodeWithShadowDOMInMind(const Node& current,
@@ -1621,18 +1620,50 @@ Response InspectorDOMAgent::requestNode(const String& object_id, int* node_id) {
 Response InspectorDOMAgent::getContainerForNode(
     int node_id,
     protocol::Maybe<String> container_name,
+    protocol::Maybe<protocol::DOM::PhysicalAxes> physical_axes,
+    protocol::Maybe<protocol::DOM::LogicalAxes> logical_axes,
     Maybe<int>* container_node_id) {
   Element* element = nullptr;
   Response response = AssertElement(node_id, element);
   if (!response.IsSuccess())
     return response;
 
+  PhysicalAxes physical = kPhysicalAxisNone;
+  // TODO(crbug.com/1378237): Need to keep the broken behavior of querying the
+  // inline-axis by default to avoid even worse behavior before devtools-
+  // frontend catches up. Change value here to kLogicalAxisNone.
+  LogicalAxes logical = kLogicalAxisInline;
+
+  if (physical_axes.isJust()) {
+    if (physical_axes.fromJust() ==
+        protocol::DOM::PhysicalAxesEnum::Horizontal) {
+      physical = kPhysicalAxisHorizontal;
+    } else if (physical_axes.fromJust() ==
+               protocol::DOM::PhysicalAxesEnum::Vertical) {
+      physical = kPhysicalAxisVertical;
+    } else if (physical_axes.fromJust() ==
+               protocol::DOM::PhysicalAxesEnum::Both) {
+      physical = kPhysicalAxisBoth;
+    }
+  }
+  if (logical_axes.isJust()) {
+    if (logical_axes.fromJust() == protocol::DOM::LogicalAxesEnum::Inline) {
+      logical = kLogicalAxisInline;
+    } else if (logical_axes.fromJust() ==
+               protocol::DOM::LogicalAxesEnum::Block) {
+      logical = kLogicalAxisBlock;
+    } else if (logical_axes.fromJust() ==
+               protocol::DOM::LogicalAxesEnum::Both) {
+      logical = kLogicalAxisBoth;
+    }
+  }
+
   element->GetDocument().UpdateStyleAndLayoutTreeForNode(element);
   StyleResolver& style_resolver = element->GetDocument().GetStyleResolver();
   Element* container = style_resolver.FindContainerForElement(
       element,
       ContainerSelector(AtomicString(container_name.fromMaybe(g_null_atom)),
-                        kLogicalAxisInline));
+                        physical, logical));
   if (container)
     *container_node_id = PushNodePathToFrontend(container);
   return Response::Success();
@@ -1827,7 +1858,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
 
     if (element->GetPseudoId()) {
       value->setPseudoType(ProtocolPseudoElementType(element->GetPseudoId()));
-      if (auto tag = To<PseudoElement>(element)->document_transition_tag())
+      if (auto tag = To<PseudoElement>(element)->view_transition_name())
         value->setPseudoIdentifier(tag);
     } else {
       if (!element->ownerDocument()->xmlVersion().empty())
@@ -2369,9 +2400,10 @@ void InspectorDOMAgent::PseudoElementDestroyed(PseudoElement* pseudo_element) {
   Element* parent = pseudo_element->ParentOrShadowHostElement();
   DCHECK(parent);
   int parent_id = BoundNodeId(parent);
-  // Since the pseudo element tree created for a document transition is destroyed with in-order
-  // traversal, the parent node (::page-transition) are destroyed before its children
-  // (::page-transition-container).
+  // Since the pseudo element tree created for a view transition is destroyed
+  // with in-order traversal, the parent node (::view-transition) are destroyed
+  // before its children
+  // (::view-transition-group).
   DCHECK(parent_id || IsTransitionPseudoElement(pseudo_element->GetPseudoId()));
 
   Unbind(pseudo_element);

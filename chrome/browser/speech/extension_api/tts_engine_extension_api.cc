@@ -36,6 +36,10 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_pref_names.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 using extensions::EventRouter;
 using extensions::Extension;
 using extensions::ExtensionSystem;
@@ -76,7 +80,7 @@ void WarnIfMissingPauseOrResumeListener(Profile* profile,
 
 std::unique_ptr<std::vector<extensions::TtsVoice>>
 ValidateAndConvertToTtsVoiceVector(const extensions::Extension* extension,
-                                   base::Value::ConstListView voices_data,
+                                   const base::Value::List& voices_data,
                                    bool return_after_first_error,
                                    const char** error) {
   auto tts_voices = std::make_unique<std::vector<extensions::TtsVoice>>();
@@ -153,7 +157,7 @@ std::unique_ptr<std::vector<extensions::TtsVoice>> GetVoicesInternal(
                                       &voices_data)) {
     const char* error = nullptr;
     return ValidateAndConvertToTtsVoiceVector(
-        extension, voices_data->GetListDeprecated(),
+        extension, voices_data->GetList(),
         /* return_after_first_error = */ false, &error);
   }
 
@@ -167,9 +171,21 @@ std::unique_ptr<std::vector<extensions::TtsVoice>> GetVoicesInternal(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
-bool CanUseEnhancedNetworkVoices(const GURL& source_url) {
+bool CanUseEnhancedNetworkVoices(const GURL& source_url, Profile* profile) {
   // Currently only Select-to-speak can use Enhanced Network voices.
-  return source_url.host() == extension_misc::kSelectToSpeakExtensionId;
+  if (source_url.host() != extension_misc::kSelectToSpeakExtensionId)
+    return false;
+
+  // Check if these voices are disallowed by policy.
+  if (!profile->GetPrefs()->GetBoolean(
+          ash::prefs::
+              kAccessibilityEnhancedNetworkVoicesInSelectToSpeakAllowed)) {
+    return false;
+  }
+
+  // Return true if they were enabled by the user.
+  return profile->GetPrefs()->GetBoolean(
+      ash::prefs::kAccessibilitySelectToSpeakEnhancedNetworkVoices);
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -222,7 +238,7 @@ void TtsExtensionEngine::GetVoices(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     // Only authorized sources can use Enhanced Network voices.
     if (extension->id() == extension_misc::kEnhancedNetworkTtsExtensionId &&
-        !CanUseEnhancedNetworkVoices(source_url))
+        !CanUseEnhancedNetworkVoices(source_url, profile))
       continue;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -383,7 +399,7 @@ ExtensionTtsEngineUpdateVoicesFunction::Run() {
   // Validate the voices and return an error if there's a problem.
   const char* error = nullptr;
   auto tts_voices = ValidateAndConvertToTtsVoiceVector(
-      extension(), voices_data.GetListDeprecated(),
+      extension(), voices_data.GetList(),
       /* return_after_first_error = */ true, &error);
   if (error)
     return RespondNow(Error(error));

@@ -69,6 +69,41 @@ export function createPasswordEntry(params?: PasswordEntryParams):
   };
 }
 
+export interface CredentialGroupParams {
+  name?: string;
+  icon?: string;
+  credentials?: chrome.passwordsPrivate.PasswordUiEntry[];
+}
+
+export function createCredentialGroup(params?: CredentialGroupParams):
+    chrome.passwordsPrivate.CredentialGroup {
+  params = params || {};
+  return {
+    name: params.name || '',
+    iconUrl: params.icon || '',
+    entries: params.credentials || [],
+  };
+}
+
+/**
+ * Creates a single item for the list of password blockedSites. If no |id| is
+ * passed, it is set to a default, value so this should probably not be done in
+ * tests with multiple entries (|id| is unique).
+ */
+export function createBlockedSiteEntry(
+    url?: string, id?: number): chrome.passwordsPrivate.ExceptionEntry {
+  url = url || 'www.foo.com';
+  id = id || 42;
+  return {
+    urls: {
+      signonRealm: 'http://' + url + '/login',
+      shown: url,
+      link: 'http://' + url + '/login',
+    },
+    id: id,
+  };
+}
+
 export function makePasswordManagerPrefs():
     chrome.settingsPrivate.PrefObject[] {
   return [
@@ -88,4 +123,48 @@ export function makePasswordManagerPrefs():
       value: true,
     },
   ];
+}
+
+export interface InsecureCredentialsParams {
+  url?: string;
+  username?: string;
+  types?: chrome.passwordsPrivate.CompromiseType[];
+  id?: number;
+  elapsedMinSinceCompromise?: number;
+  isMuted?: boolean;
+}
+
+/**
+ * Creates a new insecure credential.
+ */
+export function makeInsecureCredential(params: InsecureCredentialsParams):
+    chrome.passwordsPrivate.PasswordUiEntry {
+  // Generate fake data if param is undefined.
+  params = params || {};
+  const url = params.url !== undefined ? params.url : 'www.foo.com';
+  const username = params.username !== undefined ? params.username : 'user';
+  const id = params.id !== undefined ? params.id : 42;
+  const elapsedMinSinceCompromise = params.elapsedMinSinceCompromise || 0;
+  const types = params.types || [];
+  const compromisedInfo = {
+    compromiseTime: Date.now() - (elapsedMinSinceCompromise * 60000),
+    elapsedTimeSinceCompromise: `${elapsedMinSinceCompromise} minutes ago`,
+    compromiseTypes: types,
+    isMuted: params.isMuted ?? false,
+  };
+  return {
+    id: id || 0,
+    storedIn: chrome.passwordsPrivate.PasswordStoreSet.DEVICE,
+    changePasswordUrl: `http://${url}/`,
+    hasStartableScript: false,
+    urls: {
+      signonRealm: `http://${url}/`,
+      shown: url,
+      link: `http://${url}/`,
+    },
+    username: username,
+    note: '',
+    isAndroidCredential: false,
+    compromisedInfo: types.length ? compromisedInfo : undefined,
+  };
 }

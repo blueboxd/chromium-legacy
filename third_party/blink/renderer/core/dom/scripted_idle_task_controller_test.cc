@@ -37,6 +37,9 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override {
     return nullptr;
   }
+  scoped_refptr<base::SingleThreadTaskRunner> CleanupTaskRunner() override {
+    return nullptr;
+  }
   void Shutdown() override {}
   bool ShouldYieldForHighPriorityWork() override { return should_yield_; }
   void PostIdleTask(const base::Location&,
@@ -93,7 +96,7 @@ class IdleTaskControllerFrameScheduler : public FrameScheduler {
   PageScheduler* GetPageScheduler() const override {
     return page_scheduler_.get();
   }
-  scheduler::WebAgentGroupScheduler* GetAgentGroupScheduler() override {
+  AgentGroupScheduler* GetAgentGroupScheduler() override {
     return &page_scheduler_->GetAgentGroupScheduler();
   }
 
@@ -142,11 +145,18 @@ class IdleTaskControllerFrameScheduler : public FrameScheduler {
     return nullptr;
   }
   ukm::SourceId GetUkmSourceId() override { return ukm::kInvalidSourceId; }
-  void OnStartedUsingFeature(SchedulingPolicy::Feature feature,
-                             const SchedulingPolicy& policy) override {}
-  void OnStoppedUsingFeature(SchedulingPolicy::Feature feature,
-                             const SchedulingPolicy& policy) override {}
-  base::WeakPtr<FrameOrWorkerScheduler> GetSchedulingAffectingFeatureWeakPtr()
+  void OnStartedUsingNonStickyFeature(
+      SchedulingPolicy::Feature feature,
+      const SchedulingPolicy& policy,
+      std::unique_ptr<SourceLocation> source_location,
+      SchedulingAffectingFeatureHandle* handle) override {}
+  void OnStartedUsingStickyFeature(
+      SchedulingPolicy::Feature feature,
+      const SchedulingPolicy& policy,
+      std::unique_ptr<SourceLocation> source_location) override {}
+  void OnStoppedUsingNonStickyFeature(
+      SchedulingAffectingFeatureHandle* handle) override {}
+  base::WeakPtr<FrameOrWorkerScheduler> GetFrameOrWorkerSchedulerWeakPtr()
       override {
     return weak_ptr_factory_.GetWeakPtr();
   }
@@ -174,30 +184,14 @@ class MockIdleTask : public IdleTask {
 };
 }  // namespace
 
-class ScopedNullExecutionContext {
- public:
-  explicit ScopedNullExecutionContext(
-      MockScriptedIdleTaskControllerScheduler* scheduler)
-      : execution_context_(MakeGarbageCollected<NullExecutionContext>(
-            std::make_unique<IdleTaskControllerFrameScheduler>(scheduler))) {}
-
-  ~ScopedNullExecutionContext() {
-    execution_context_->NotifyContextDestroyed();
-  }
-
-  ExecutionContext* GetExecutionContext() { return execution_context_; }
-
- private:
-  Persistent<ExecutionContext> execution_context_;
-};
-
 TEST(ScriptedIdleTaskControllerTest, RunCallback) {
   MockScriptedIdleTaskControllerScheduler scheduler(ShouldYield(false));
   ScopedSchedulerOverrider scheduler_overrider(&scheduler,
                                                scheduler.TaskRunner());
-  ScopedNullExecutionContext execution_context(&scheduler);
+  ScopedNullExecutionContext execution_context(
+      std::make_unique<IdleTaskControllerFrameScheduler>(&scheduler));
   ScriptedIdleTaskController* controller = ScriptedIdleTaskController::Create(
-      execution_context.GetExecutionContext());
+      &execution_context.GetExecutionContext());
 
   Persistent<MockIdleTask> idle_task(MakeGarbageCollected<MockIdleTask>());
   IdleRequestOptions* options = IdleRequestOptions::Create();
@@ -216,9 +210,10 @@ TEST(ScriptedIdleTaskControllerTest, DontRunCallbackWhenAskedToYield) {
   MockScriptedIdleTaskControllerScheduler scheduler(ShouldYield(true));
   ScopedSchedulerOverrider scheduler_overrider(&scheduler,
                                                scheduler.TaskRunner());
-  ScopedNullExecutionContext execution_context(&scheduler);
+  ScopedNullExecutionContext execution_context(
+      std::make_unique<IdleTaskControllerFrameScheduler>(&scheduler));
   ScriptedIdleTaskController* controller = ScriptedIdleTaskController::Create(
-      execution_context.GetExecutionContext());
+      &execution_context.GetExecutionContext());
 
   Persistent<MockIdleTask> idle_task(MakeGarbageCollected<MockIdleTask>());
   IdleRequestOptions* options = IdleRequestOptions::Create();
@@ -237,9 +232,10 @@ TEST(ScriptedIdleTaskControllerTest, RunCallbacksAsyncWhenUnpaused) {
   MockScriptedIdleTaskControllerScheduler scheduler(ShouldYield(true));
   ScopedSchedulerOverrider scheduler_overrider(&scheduler,
                                                scheduler.TaskRunner());
-  ScopedNullExecutionContext execution_context(&scheduler);
+  ScopedNullExecutionContext execution_context(
+      std::make_unique<IdleTaskControllerFrameScheduler>(&scheduler));
   ScriptedIdleTaskController* controller = ScriptedIdleTaskController::Create(
-      execution_context.GetExecutionContext());
+      &execution_context.GetExecutionContext());
 
   // Register an idle task with a deadline.
   Persistent<MockIdleTask> idle_task(MakeGarbageCollected<MockIdleTask>());

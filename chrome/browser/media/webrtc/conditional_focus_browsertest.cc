@@ -110,10 +110,10 @@ class ConditionalFocusBrowserTest : public WebRtcTestBase {
   //    simulate either (a) an application which performs some non-trivial
   //    computation on that task, (b) intentional delay by the app or
   //    (c) random CPU delays.
-  // 3. Either avoids calling focus() or does so with the appropriate
+  // 3. Avoids calling setFocusBehavior() or does so with the appropriate
   //    value, depending on |focus_enum_value|.
-  // If !on_correct_microtask, calling focus() is done from a task that is
-  // scheduled to be executed later.
+  // If !on_correct_microtask, calling setFocusBehavior() is done
+  // from a task that is scheduled to be executed later.
   void Capture(int busy_wait_ms,
                FocusEnumValue focus_enum_value,
                bool on_correct_microtask = true,
@@ -122,7 +122,7 @@ class ConditionalFocusBrowserTest : public WebRtcTestBase {
     // TODO(crbug.com/1243764): Use EvalJs() instead.
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
         capturing_tab_->GetPrimaryMainFrame(),
-        base::StringPrintf("captureOtherTab(%d, \"%s\", %s);", busy_wait_ms,
+        base::StringPrintf("captureOtherTab(%d, '%s', %s);", busy_wait_ms,
                            ToString(focus_enum_value),
                            on_correct_microtask ? "true" : "false"),
         &script_result));
@@ -158,9 +158,24 @@ class ConditionalFocusBrowserTest : public WebRtcTestBase {
     EXPECT_EQ(script_result, expected_error);
   }
 
+  void CallSetFocusBehaviorBeforeCapture(
+      FocusEnumValue focus_enum_value_before_capture,
+      FocusEnumValue focus_enum_value_after_capture = FocusEnumValue::kNoValue,
+      const std::string& expected_result = "capture-success") {
+    std::string script_result;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        capturing_tab_->GetPrimaryMainFrame(),
+        base::StringPrintf("callSetFocusBehaviorBeforeCapture('%s', '%s');",
+                           ToString(focus_enum_value_before_capture),
+                           ToString(focus_enum_value_after_capture)),
+        &script_result));
+    // TODO(crbug.com/1243764): Use EvalJs() instead.
+    EXPECT_EQ(script_result, expected_result);
+  }
+
  protected:
-  raw_ptr<WebContents> captured_tab_ = nullptr;
-  raw_ptr<WebContents> capturing_tab_ = nullptr;
+  raw_ptr<WebContents, DanglingUntriaged> captured_tab_ = nullptr;
+  raw_ptr<WebContents, DanglingUntriaged> capturing_tab_ = nullptr;
 };
 
 // Flaky on Win bots and on linux release bots http://crbug.com/1264744
@@ -229,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(ConditionalFocusBrowserTest, FocusTriggeredByMicrotask) {
   Capture(0, FocusEnumValue::kNoValue);
   // Note that the Wait(), which is necessary in order to minimize flakiness,
   // has a duration less than |kConditionalFocusWindowMs|.
-  Wait(base::Milliseconds(4500));
+  Wait(base::Milliseconds(2000));
   // Focus-change already occurred before kConditionalFocusWindowMs.
   EXPECT_EQ(ActiveTab(), Tab::kCapturedTab);
 }
@@ -255,42 +270,6 @@ IN_PROC_BROWSER_TEST_F(ConditionalFocusBrowserTest,
             browser()->tab_strip_model()->GetWebContentsAt(0));
 }
 
-// TODO(crbug.com/1285418): Flaky on Win and Linux bots.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
-#define MAYBE_ExceptionRaisedIfFocusCalledMultipleTimes \
-  DISABLED_ExceptionRaisedIfFocusCalledMultipleTimes
-#else
-#define MAYBE_ExceptionRaisedIfFocusCalledMultipleTimes \
-  ExceptionRaisedIfFocusCalledMultipleTimes
-#endif
-IN_PROC_BROWSER_TEST_F(ConditionalFocusBrowserTest,
-                       MAYBE_ExceptionRaisedIfFocusCalledMultipleTimes) {
-  // Setup.
-  SetUpTestTabs();
-  Capture(0, FocusEnumValue::kFocusCapturedSurface);
-  ASSERT_TRUE(WaitForFocusSwitchToCapturedTab());  // Verified by earlier test.
-
-  // Test.
-  CallFocusAndExpectError(
-      "InvalidStateError: Failed to execute 'focus' on "
-      "'BrowserCaptureMediaStreamTrack': Method may only be called once.");
-}
-
-IN_PROC_BROWSER_TEST_F(ConditionalFocusBrowserTest,
-                       ExceptionRaisedIfFocusCalledOnClone) {
-  SetUpTestTabs();
-
-  // TODO(crbug.com/1243764): Use EvalJs() instead.
-  std::string script_result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      capturing_tab_->GetPrimaryMainFrame(), "captureCloneAndFocusClone();",
-      &script_result));
-  EXPECT_EQ(
-      script_result,
-      "InvalidStateError: Failed to execute 'focus' on "
-      "'BrowserCaptureMediaStreamTrack': Method may not be invoked on clones.");
-}
-
 IN_PROC_BROWSER_TEST_F(ConditionalFocusBrowserTest,
                        ExceptionRaisedIfFocusCalledAfterMicrotaskExecutes) {
   // Setup.
@@ -298,7 +277,47 @@ IN_PROC_BROWSER_TEST_F(ConditionalFocusBrowserTest,
   Capture(0, FocusEnumValue::kFocusCapturedSurface,
           /*on_correct_microtask=*/false,
           /*expected_result=*/
-          "InvalidStateError: Failed to execute 'focus' on "
-          "'BrowserCaptureMediaStreamTrack': The window of opportunity for "
-          "focus-decision is closed.");
+          "InvalidStateError: Failed to execute 'setFocusBehavior' on "
+          "'CaptureController': The window of opportunity for focus-decision "
+          "is closed.");
+}
+
+IN_PROC_BROWSER_TEST_F(ConditionalFocusBrowserTest, FocusBeforeCapture) {
+  // Setup.
+  SetUpTestTabs();
+  CallSetFocusBehaviorBeforeCapture(FocusEnumValue::kFocusCapturedSurface);
+  EXPECT_TRUE(WaitForFocusSwitchToCapturedTab());
+}
+
+IN_PROC_BROWSER_TEST_F(ConditionalFocusBrowserTest, NoFocusBeforeCapture) {
+  // Setup.
+  SetUpTestTabs();
+  CallSetFocusBehaviorBeforeCapture(FocusEnumValue::kNoFocusChange);
+  // Whereas calls to Wait() in previous tests served to minimize flakiness,
+  // this one is to prove no false-positives. Namely, we allow enough time
+  // for the focus-change, yet it does not occur.
+  Wait(base::Milliseconds(10000));
+  EXPECT_EQ(ActiveTab(), Tab::kCapturingTab);
+}
+
+IN_PROC_BROWSER_TEST_F(ConditionalFocusBrowserTest,
+                       NoFocusAfterCaptureOverrideFocusBeforeCapture) {
+  // Setup.
+  SetUpTestTabs();
+  CallSetFocusBehaviorBeforeCapture(FocusEnumValue::kFocusCapturedSurface,
+                                    FocusEnumValue::kNoFocusChange);
+  // Whereas calls to Wait() in previous tests served to minimize flakiness,
+  // this one is to prove no false-positives. Namely, we allow enough time
+  // for the focus-change, yet it does not occur.
+  Wait(base::Milliseconds(10000));
+  EXPECT_EQ(ActiveTab(), Tab::kCapturingTab);
+}
+
+IN_PROC_BROWSER_TEST_F(ConditionalFocusBrowserTest,
+                       FocusAfterCaptureOverrideNoFocusBeforeCapture) {
+  // Setup.
+  SetUpTestTabs();
+  CallSetFocusBehaviorBeforeCapture(FocusEnumValue::kNoFocusChange,
+                                    FocusEnumValue::kFocusCapturedSurface);
+  EXPECT_TRUE(WaitForFocusSwitchToCapturedTab());
 }

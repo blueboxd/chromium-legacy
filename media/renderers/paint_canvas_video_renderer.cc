@@ -9,10 +9,12 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/checked_math.h"
+#include "base/sequence_checker.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system/sys_info.h"
 #include "base/task/thread_pool.h"
@@ -175,6 +177,7 @@ const gpu::MailboxHolder& GetVideoFrameMailboxHolder(VideoFrame* video_frame) {
          PIXEL_FORMAT_XB30 == video_frame->format() ||
          PIXEL_FORMAT_XR30 == video_frame->format() ||
          PIXEL_FORMAT_NV12 == video_frame->format() ||
+         PIXEL_FORMAT_NV12A == video_frame->format() ||
          PIXEL_FORMAT_RGBAF16 == video_frame->format())
       << "Format: " << VideoPixelFormatToString(video_frame->format());
 
@@ -300,8 +303,7 @@ void SynchronizeVideoFrameRead(scoped_refptr<VideoFrame> video_frame,
   gl->EndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);
 
   // |on_query_done_cb| will keep |video_frame| alive.
-  auto on_query_done_cb =
-      base::BindOnce([](scoped_refptr<VideoFrame> video_frame) {}, video_frame);
+  auto on_query_done_cb = base::DoNothingWithBoundArgs(video_frame);
   context_support->SignalQuery(query_id, std::move(on_query_done_cb));
 
   // Delete the query immediately. This will cause |on_query_done_cb| to be
@@ -641,6 +643,7 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
 
     case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_NV21:
+    case PIXEL_FORMAT_NV12A:
     case PIXEL_FORMAT_YUY2:
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_BGRA:
@@ -964,7 +967,7 @@ void PaintCanvasVideoRenderer::Paint(
     cc::PaintFlags& flags,
     VideoTransformation video_transformation,
     viz::RasterContextProvider* raster_context_provider) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (flags.getAlpha() == 0) {
     return;
   }
@@ -1411,7 +1414,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
     int level,
     bool premultiply_alpha,
     bool flip_y) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(video_frame);
   DCHECK(video_frame->HasTextures());
 
@@ -1509,7 +1512,7 @@ bool PaintCanvasVideoRenderer::UploadVideoFrameToGLTexture(
     unsigned int format,
     unsigned int type,
     bool flip_y) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(video_frame);
   // Support uploading for NV12 and I420 video frame only.
   if (!VideoFrameYUVConverter::IsVideoFrameFormatSupported(*video_frame)) {
@@ -1838,12 +1841,13 @@ bool PaintCanvasVideoRenderer::TexSubImage2D(unsigned target,
 }
 
 void PaintCanvasVideoRenderer::ResetCache() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   cache_.reset();
   yuv_cache_.Reset();
 }
 
-PaintCanvasVideoRenderer::Cache::Cache(int frame_id) : frame_id(frame_id) {}
+PaintCanvasVideoRenderer::Cache::Cache(VideoFrame::ID frame_id)
+    : frame_id(frame_id) {}
 
 PaintCanvasVideoRenderer::Cache::~Cache() = default;
 

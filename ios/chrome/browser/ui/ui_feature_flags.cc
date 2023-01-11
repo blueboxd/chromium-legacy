@@ -18,10 +18,6 @@ BASE_FEATURE(kEnableFREDefaultBrowserPromoScreen,
              "EnableFREDefaultBrowserPromoScreen",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableFREUIModuleIOS,
-             "EnableFREUIModuleIOSV3",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // TODO(crbug.com/1128242): Remove this flag after the refactoring work is
 // finished.
 BASE_FEATURE(kModernTabStrip,
@@ -95,6 +91,10 @@ BASE_FEATURE(kEnableShortenedPasswordAutoFillInstruction,
 
 BASE_FEATURE(kUseSFSymbols, "UseSFSymbols", base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kUseSFSymbolsInOmnibox,
+             "UseSFSymbolsInOmnibox",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kCalendarExperienceKit,
              "CalendarExperienceKit",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -107,6 +107,9 @@ BASE_FEATURE(kEnablePhoneNumbers,
              "EnablePhoneNumbers",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+const char kExperienceKitMapsVariationName[] = "ExperienceKitMapsVariant";
+extern const char kEnableExperienceKitMapsVariationSrp[] = "with SRP";
+
 BASE_FEATURE(kMapsExperienceKit,
              "MapsExperienceKit",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -114,3 +117,11 @@ BASE_FEATURE(kMapsExperienceKit,
 BASE_FEATURE(kEnableMiniMap,
              "EnableMiniMap",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kTabGridRecencySort,
+             "TabGridRecencySort",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsTabGridSortedByRecency() {
+  return base::FeatureList::IsEnabled(kTabGridRecencySort);
+}

@@ -14,7 +14,7 @@ using WebAppIntegration = WebAppIntegrationTest;
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationTest,
-    WindowModeSettingsIsNotAvailableForIsolatedAppsOnAppSettingsPage) {
+    WindowModeSettingsIsNotAvailableForIsolatedWebAppsOnAppSettingsPage) {
   helper_.InstallMenuOption(InstallableSite::kIsolated);
   helper_.OpenAppSettingsFromChromeApps(Site::kIsolated);
   helper_.CheckBrowserNavigationIsAppSettings(Site::kIsolated);
@@ -61,44 +61,131 @@ IN_PROC_BROWSER_TEST_F(WebAppIntegration, CheckCreateShortcuts) {
   helper_.CheckPlatformShortcutAndIcon(Site::kStandalone);
 }
 
-// TODO(crbug.com/1357214): Flaky on MacOS 12 ARM
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_CheckSiteHandlesFile DISABLED_CheckSiteHandlesFile
-#else
-#define MAYBE_CheckSiteHandlesFile CheckSiteHandlesFile
-#endif
-IN_PROC_BROWSER_TEST_F(WebAppIntegration, MAYBE_CheckSiteHandlesFile) {
-  helper_.InstallMenuOption(InstallableSite::kMinimalUi);
-  helper_.CheckSiteHandlesFile(Site::kMinimalUi, "qux");
-  helper_.CheckSiteHandlesFile(Site::kMinimalUi, "quux");
+IN_PROC_BROWSER_TEST_F(WebAppIntegration, CheckSiteHandlesFile) {
+  helper_.InstallMenuOption(InstallableSite::kFileHandler);
+  helper_.CheckSiteHandlesFile(Site::kFileHandler, FileExtension::kFoo);
+  helper_.CheckSiteHandlesFile(Site::kFileHandler, FileExtension::kBar);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppIntegration, CheckSiteNotHandlesFile) {
   helper_.InstallMenuOption(InstallableSite::kStandalone);
-  helper_.CheckSiteNotHandlesFile(Site::kStandalone, "qux");
-  helper_.CheckSiteNotHandlesFile(Site::kStandalone, "quux");
+  helper_.CheckSiteNotHandlesFile(Site::kStandalone, FileExtension::kFoo);
+  helper_.CheckSiteNotHandlesFile(Site::kStandalone, FileExtension::kBar);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppIntegration, CheckLaunchFileExpectDialog) {
   helper_.InstallMenuOption(InstallableSite::kFileHandler);
   helper_.ClosePwa();
-  helper_.LaunchFileExpectDialog(Site::kFileHandler, FilesOptions::kOneTextFile,
+  helper_.LaunchFileExpectDialog(Site::kFileHandler, FilesOptions::kOneFooFile,
                                  AllowDenyOptions::kAllow,
                                  AskAgainOptions::kAskAgain);
   helper_.CheckWindowCreated();
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppIntegration, CheckLaunchFileExpectNoDialog) {
+IN_PROC_BROWSER_TEST_F(WebAppIntegration, CheckLaunchFileExpectNoDialog_Allow) {
   helper_.InstallOmniboxIcon(InstallableSite::kFileHandler);
   helper_.ClosePwa();
   // Open the file and set AskAgainOption to kRemember.
-  helper_.LaunchFileExpectDialog(Site::kFileHandler, FilesOptions::kOneTextFile,
+  helper_.LaunchFileExpectDialog(Site::kFileHandler, FilesOptions::kOneFooFile,
                                  AllowDenyOptions::kAllow,
                                  AskAgainOptions::kRemember);
   helper_.ClosePwa();
   // Open the file again.
   helper_.LaunchFileExpectNoDialog(Site::kFileHandler,
-                                   FilesOptions::kOneTextFile);
+                                   FilesOptions::kOneFooFile);
+  helper_.CheckWindowCreated();
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppIntegration, CheckLaunchFileExpectNoDialog_Deny) {
+  helper_.InstallOmniboxIcon(InstallableSite::kFileHandler);
+  helper_.ClosePwa();
+  // Open the file and set AskAgainOption to kRemember.
+  helper_.LaunchFileExpectDialog(Site::kFileHandler, FilesOptions::kOneFooFile,
+                                 AllowDenyOptions::kDeny,
+                                 AskAgainOptions::kRemember);
+
+  // Open the file again.
+  helper_.LaunchFileExpectNoDialog(Site::kFileHandler,
+                                   FilesOptions::kOneFooFile);
+  // Despite previous denial, a new window should still have been created. The
+  // only difference with the Allow case is that no files would have been passed
+  // to the launched app.
+  helper_.CheckWindowCreated();
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppIntegration, DisableEnableFileHandling) {
+  helper_.InstallMenuOption(InstallableSite::kMinimalUi);
+  helper_.CheckSiteHandlesFile(Site::kMinimalUi, FileExtension::kFoo);
+  helper_.CheckSiteHandlesFile(Site::kMinimalUi, FileExtension::kBar);
+
+  helper_.DisableFileHandling(Site::kMinimalUi);
+  helper_.CheckSiteNotHandlesFile(Site::kMinimalUi, FileExtension::kFoo);
+  helper_.CheckSiteNotHandlesFile(Site::kMinimalUi, FileExtension::kBar);
+
+  helper_.EnableFileHandling(Site::kMinimalUi);
+  helper_.CheckSiteHandlesFile(Site::kMinimalUi, FileExtension::kFoo);
+  helper_.CheckSiteHandlesFile(Site::kMinimalUi, FileExtension::kBar);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppIntegration, MultiProfileFileHandling) {
+  // Install file handling PWA in two profiles.
+  helper_.InstallMenuOption(InstallableSite::kMinimalUi);
+  helper_.CheckSiteHandlesFile(Site::kMinimalUi, FileExtension::kFoo);
+  helper_.CheckSiteHandlesFile(Site::kMinimalUi, FileExtension::kBar);
+
+  helper_.SwitchActiveProfile(ProfileName::kProfile2);
+  helper_.InstallMenuOption(InstallableSite::kMinimalUi);
+  helper_.CheckSiteHandlesFile(Site::kMinimalUi, FileExtension::kFoo);
+  helper_.CheckSiteHandlesFile(Site::kMinimalUi, FileExtension::kBar);
+
+  // Disabling file handling in one profile should not disable it in the other.
+  helper_.DisableFileHandling(Site::kMinimalUi);
+  helper_.SwitchActiveProfile(ProfileName::kDefault);
+  helper_.CheckSiteHandlesFile(Site::kMinimalUi, FileExtension::kFoo);
+  helper_.CheckSiteHandlesFile(Site::kMinimalUi, FileExtension::kBar);
+
+  // Disabling in both should disable file handling.
+  helper_.DisableFileHandling(Site::kMinimalUi);
+  helper_.CheckSiteNotHandlesFile(Site::kMinimalUi, FileExtension::kFoo);
+  helper_.CheckSiteNotHandlesFile(Site::kMinimalUi, FileExtension::kBar);
+}
+
+// TODO(https://crbug.com/1382214): Migrate this to a CUJ.
+IN_PROC_BROWSER_TEST_F(WebAppIntegration, MultiProfileFileLaunch) {
+  // Install file handling PWA in two profiles.
+  helper_.InstallMenuOption(InstallableSite::kFileHandler);
+  helper_.ClosePwa();
+
+  helper_.SwitchActiveProfile(ProfileName::kProfile2);
+  helper_.InstallMenuOption(InstallableSite::kFileHandler);
+  helper_.ClosePwa();
+  helper_.DisableFileHandling(Site::kFileHandler);
+
+  // File handling is disabled in second profile, launching should open
+  // in first profile.
+  helper_.SwitchActiveProfile(ProfileName::kDefault);
+  helper_.LaunchFileExpectDialog(Site::kFileHandler, FilesOptions::kOneFooFile,
+                                 AllowDenyOptions::kAllow,
+                                 AskAgainOptions::kAskAgain);
+  helper_.CheckWindowCreated();
+}
+
+// TODO(https://crbug.com/1382214): Migrate this to a CUJ.
+IN_PROC_BROWSER_TEST_F(WebAppIntegration, MultiProfileFileLaunchWhileOpen) {
+  // Install file handling PWA in two profiles.
+  helper_.InstallMenuOption(InstallableSite::kFileHandler);
+  helper_.ClosePwa();
+
+  helper_.SwitchActiveProfile(ProfileName::kProfile2);
+  helper_.InstallMenuOption(InstallableSite::kFileHandler);
+  helper_.DisableFileHandling(Site::kFileHandler);
+
+  // File handling is disabled in second profile, launching should open
+  // in first profile, even if it wasn't closed.
+  helper_.SwitchActiveProfile(ProfileName::kDefault);
+  helper_.LaunchFileExpectDialog(Site::kFileHandler, FilesOptions::kOneFooFile,
+                                 AllowDenyOptions::kAllow,
+                                 AskAgainOptions::kAskAgain);
   helper_.CheckWindowCreated();
 }
 
@@ -2181,6 +2268,82 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckAppInListIconCorrect(Site::kStandaloneNotStartUrl);
   helper_.LaunchFromPlatformShortcut(Site::kStandaloneNotStartUrl);
   helper_.CheckBrowserNavigation(Site::kStandaloneNotStartUrl);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegration,
+    WAI_29FileHandlerBrowser_118FileHandlerFoo_118FileHandlerBar) {
+  // Test contents are generated by script. Please do not modify!
+  // See `docs/webapps/why-is-this-test-failing.md` or
+  // `docs/webapps/integration-testing-framework` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.CreateShortcut(Site::kFileHandler, WindowOptions::kBrowser);
+  helper_.CheckSiteHandlesFile(Site::kFileHandler, FileExtension::kFoo);
+  helper_.CheckSiteHandlesFile(Site::kFileHandler, FileExtension::kBar);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegration,
+    WAI_32FileHandlerWithShortcutWindowedWebApp_118FileHandlerFoo_118FileHandlerBar) {
+  // Test contents are generated by script. Please do not modify!
+  // See `docs/webapps/why-is-this-test-failing.md` or
+  // `docs/webapps/integration-testing-framework` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyApp(Site::kFileHandler, ShortcutOptions::kWithShortcut,
+                           WindowOptions::kWindowed, InstallMode::kWebApp);
+  helper_.CheckSiteHandlesFile(Site::kFileHandler, FileExtension::kFoo);
+  helper_.CheckSiteHandlesFile(Site::kFileHandler, FileExtension::kBar);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegration,
+    WAI_32FileHandlerWithShortcutBrowserWebApp_118FileHandlerFoo_118FileHandlerBar) {
+  // Test contents are generated by script. Please do not modify!
+  // See `docs/webapps/why-is-this-test-failing.md` or
+  // `docs/webapps/integration-testing-framework` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyApp(Site::kFileHandler, ShortcutOptions::kWithShortcut,
+                           WindowOptions::kBrowser, InstallMode::kWebApp);
+  helper_.CheckSiteHandlesFile(Site::kFileHandler, FileExtension::kFoo);
+  helper_.CheckSiteHandlesFile(Site::kFileHandler, FileExtension::kBar);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegration,
+    WAI_32FileHandlerNoShortcutWindowedWebApp_118FileHandlerFoo_118FileHandlerBar) {
+  // Test contents are generated by script. Please do not modify!
+  // See `docs/webapps/why-is-this-test-failing.md` or
+  // `docs/webapps/integration-testing-framework` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyApp(Site::kFileHandler, ShortcutOptions::kNoShortcut,
+                           WindowOptions::kWindowed, InstallMode::kWebApp);
+  helper_.CheckSiteHandlesFile(Site::kFileHandler, FileExtension::kFoo);
+  helper_.CheckSiteHandlesFile(Site::kFileHandler, FileExtension::kBar);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegration,
+    WAI_32FileHandlerNoShortcutBrowserWebApp_118FileHandlerFoo_118FileHandlerBar) {
+  // Test contents are generated by script. Please do not modify!
+  // See `docs/webapps/why-is-this-test-failing.md` or
+  // `docs/webapps/integration-testing-framework` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyApp(Site::kFileHandler, ShortcutOptions::kNoShortcut,
+                           WindowOptions::kBrowser, InstallMode::kWebApp);
+  helper_.CheckSiteHandlesFile(Site::kFileHandler, FileExtension::kFoo);
+  helper_.CheckSiteHandlesFile(Site::kFileHandler, FileExtension::kBar);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegration,
+    WAI_29FileHandlerWindowed_118FileHandlerFoo_118FileHandlerBar) {
+  // Test contents are generated by script. Please do not modify!
+  // See `docs/webapps/why-is-this-test-failing.md` or
+  // `docs/webapps/integration-testing-framework` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.CreateShortcut(Site::kFileHandler, WindowOptions::kWindowed);
+  helper_.CheckSiteHandlesFile(Site::kFileHandler, FileExtension::kFoo);
+  helper_.CheckSiteHandlesFile(Site::kFileHandler, FileExtension::kBar);
 }
 
 }  // namespace

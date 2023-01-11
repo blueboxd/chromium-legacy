@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/system/time/calendar_event_list_view.h"
+#include <memory>
 
 #include "ash/bubble/bubble_constants.h"
 #include "ash/constants/ash_features.h"
@@ -10,25 +11,27 @@
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
 #include "ash/system/model/system_tray_model.h"
+#include "ash/system/time/calendar_event_list_item_view.h"
+#include "ash/system/time/calendar_event_list_item_view_jelly.h"
 #include "ash/system/time/calendar_utils.h"
 #include "ash/system/time/calendar_view_controller.h"
-#include "ash/system/tray/tray_popup_utils.h"
-#include "ash/system/tray/tri_view.h"
-#include "calendar_event_list_item_view.h"
 #include "google_apis/calendar/calendar_api_response_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/scroll_view.h"
-#include "ui/views/highlight_border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/view.h"
@@ -37,10 +40,12 @@ namespace ash {
 namespace {
 
 // The paddings in `close_button_container_`.
-constexpr gfx::Insets kCloseButtonContainerInsets{15};
+const auto kCloseButtonContainerInsets = gfx::Insets(15);
+const auto kCloseButtonContainerInsetsJelly = gfx::Insets::TLBR(8, 16, 8, 26);
 
 // The paddings in `CalendarEventListView`.
 constexpr auto kContentInsets = gfx::Insets::TLBR(0, 0, 20, 0);
+constexpr auto kContentInsetsJelly = gfx::Insets::TLBR(0, 16, 20, 16);
 
 // The insets for `CalendarEmptyEventListView` label.
 constexpr auto kOpenGoogleCalendarInsets = gfx::Insets::VH(6, 16);
@@ -50,6 +55,22 @@ constexpr auto kOpenGoogleCalendarContainerInsets = gfx::Insets::VH(20, 80);
 
 // Border thickness for `CalendarEmptyEventListView`.
 constexpr int kOpenGoogleCalendarBorderThickness = 1;
+
+constexpr auto kEventListViewCornerRadius =
+    gfx::RoundedCornersF(0, 0, kBubbleCornerRadius, kBubbleCornerRadius);
+constexpr auto kEventListViewCornerRadiusJelly = gfx::RoundedCornersF(12);
+
+constexpr int kScrollViewGradientSize = 16;
+
+// The spacing between the child lists. Only applicable to Jelly, where we
+// separate multi-day and non multi-day events into two separate child list
+// views.
+constexpr int kEventListViewBetweenChildSpacing = 0;
+constexpr int kEventListViewBetweenChildSpacingJelly = 4;
+
+// The between child spacing within the child event lists. Only applicable to
+// Jelly.
+constexpr int kChildEventListBetweenChildSpacing = 2;
 
 }  // namespace
 
@@ -110,25 +131,21 @@ CalendarEventListView::CalendarEventListView(
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
-  // Set up background color.
-  auto* color_provider = AshColorProvider::Get();
-  SkColor background_color = color_provider->GetBaseLayerColor(
-      AshColorProvider::BaseLayerType::kOpaque);
-  SetBackground(views::CreateSolidBackground(background_color));
   SetPaintToLayer();
-
   // Set the bottom corners to be rounded so that `CalendarEventListView` is
   // contained in `CalendarView`.
-  layer()->SetRoundedCornerRadius(
-      {0, 0, kBubbleCornerRadius, kBubbleCornerRadius});
+  layer()->SetRoundedCornerRadius(features::IsCalendarJellyEnabled()
+                                      ? kEventListViewCornerRadiusJelly
+                                      : kEventListViewCornerRadius);
 
   views::BoxLayout* button_layout = close_button_container_->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal));
   button_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kEnd);
-  close_button_container_->SetBorder(
-      views::CreateEmptyBorder(kCloseButtonContainerInsets));
+  close_button_container_->SetBorder(views::CreateEmptyBorder(
+      features::IsCalendarJellyEnabled() ? kCloseButtonContainerInsetsJelly
+                                         : kCloseButtonContainerInsets));
 
   auto* close_button =
       new IconButton(views::Button::PressedCallback(base::BindRepeating(
@@ -148,9 +165,21 @@ CalendarEventListView::CalendarEventListView(
   scroll_view_->SetVerticalScrollBarMode(
       views::ScrollView::ScrollBarMode::kHiddenButEnabled);
 
+  if (features::IsCalendarJellyEnabled()) {
+    // Set up fade in/fade out gradients at top/bottom of scroll view.
+    scroll_view_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
+    gradient_helper_ = std::make_unique<ScrollViewGradientHelper>(
+        scroll_view_, kScrollViewGradientSize);
+  }
+
   content_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical));
-  content_view_->SetBorder(views::CreateEmptyBorder(kContentInsets));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+      features::IsCalendarJellyEnabled()
+          ? kEventListViewBetweenChildSpacingJelly
+          : kEventListViewBetweenChildSpacing));
+  content_view_->SetBorder(views::CreateEmptyBorder(
+      features::IsCalendarJellyEnabled() ? kContentInsetsJelly
+                                         : kContentInsets));
 
   UpdateListItems();
 
@@ -160,6 +189,22 @@ CalendarEventListView::CalendarEventListView(
 }
 
 CalendarEventListView::~CalendarEventListView() = default;
+
+void CalendarEventListView::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  auto color =
+      features::IsCalendarJellyEnabled()
+          ? GetColorProvider()->GetColor((cros_tokens::kCrosSysSystemOnBase))
+          : GetColorProvider()->GetColor(kColorAshShieldAndBaseOpaque);
+  SetBackground(views::CreateSolidBackground(color));
+}
+
+void CalendarEventListView::Layout() {
+  views::View::Layout();
+
+  if (gradient_helper_)
+    gradient_helper_->UpdateGradientMask();
+}
 
 void CalendarEventListView::OnSelectedDateUpdated() {
   UpdateListItems();
@@ -176,29 +221,59 @@ void CalendarEventListView::OnEventsFetched(
   }
 }
 
+std::unique_ptr<views::View> CalendarEventListView::CreateChildEventListView(
+    std::list<google_apis::calendar::CalendarEvent> events) {
+  auto container = std::make_unique<views::View>();
+  container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+      kChildEventListBetweenChildSpacing));
+
+  for (SingleDayEventList::iterator it = events.begin(); it != events.end();
+       ++it) {
+    container->AddChildView(std::make_unique<CalendarEventListItemViewJelly>(
+        /*calendar_view_controller=*/calendar_view_controller_,
+        /*event=*/*it,
+        /*round_top_corners=*/it == events.begin(),
+        /*round_bottom_corners=*/it->id() == events.rbegin()->id()));
+  }
+
+  return container;
+}
+
 void CalendarEventListView::UpdateListItems() {
   content_view_->RemoveAllChildViews();
 
-  std::list<google_apis::calendar::CalendarEvent> events =
-      calendar_view_controller_->SelectedDateEvents();
+  if (features::IsCalendarJellyEnabled()) {
+    const auto [multi_day_events, all_other_events] =
+        calendar_view_controller_
+            ->SelectedDateEventsSplitByMultiDayAndSameDay();
 
-  if (events.size() > 0) {
-    // Sorts the event by start time.
-    events.sort([](google_apis::calendar::CalendarEvent& a,
-                   google_apis::calendar::CalendarEvent& b) {
-      return a.start_time().date_time() < b.start_time().date_time();
-    });
+    // If we have some events to display, then add them to the `content_view_`
+    // and early return (the following methods in `UpdateListItems` handle empty
+    // state etc).
+    if (!multi_day_events.empty())
+      content_view_->AddChildView(CreateChildEventListView(multi_day_events));
+    if (!all_other_events.empty())
+      content_view_->AddChildView(CreateChildEventListView(all_other_events));
 
-    for (const google_apis::calendar::CalendarEvent& event : events) {
-      auto* event_entry = content_view_->AddChildView(
-          std::make_unique<CalendarEventListItemView>(calendar_view_controller_,
-                                                      event));
+    if (!multi_day_events.empty() || !all_other_events.empty())
+      return;
+  } else {
+    std::list<google_apis::calendar::CalendarEvent> events =
+        calendar_view_controller_->SelectedDateEvents();
 
-      // Needs to repaint the `content_view_`'s children.
-      event_entry->InvalidateLayout();
+    if (events.size() > 0) {
+      for (auto& event : events) {
+        auto* event_entry = content_view_->AddChildView(
+            std::make_unique<CalendarEventListItemView>(
+                /*calendar_view_controller=*/calendar_view_controller_,
+                /*event=*/event));
+        // Needs to repaint the `content_view_`'s children.
+        event_entry->InvalidateLayout();
+      }
+
+      return;
     }
-
-    return;
   }
 
   // Show "Open in Google calendar"

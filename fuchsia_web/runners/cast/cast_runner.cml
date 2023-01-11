@@ -1,3 +1,6 @@
+// Copyright 2022 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 {
   include: [
     "inspect/client.shard.cml",
@@ -19,7 +22,24 @@
         "fuchsia.web.Debug",
         "fuchsia.web.FrameHost",
       ]
-    }
+    },
+    {
+      resolver: "cast-resolver",
+      path: "/svc/fuchsia.component.resolution.Resolver",
+    },
+    {
+      runner: "cast-runner",
+      path: "/svc/fuchsia.component.runner.ComponentRunner",
+    },
+
+    // Used to host services provided by CFv1 and Modular, to offer to Cast
+    // activities under the cast-runner.
+    {
+      directory: "svc_for_cfv2",
+      rights: [ "rw*" ],
+      path: "/svc_for_cfv2",
+    },
+
   ],
   expose: [
     {
@@ -30,7 +50,15 @@
         "fuchsia.web.FrameHost",
       ],
       from: "self",
-    }
+    },
+    {
+      resolver: "cast-resolver",
+      from: "self",
+    },
+    {
+      runner: "cast-runner",
+      from: "self",
+    },
   ],
   use: [
     {
@@ -39,13 +67,28 @@
       path: "/config/data",
     },
     {
+      // Capabilities used by the Runner itself.
       protocol: [
-        // Capabilities to be passed to WebEngine instances.
+        "chromium.cast.ApplicationConfigManager",
+        "chromium.cast.CorsExemptHeaderProvider",
+        // "fuchsia.feedback.CrashReportingProductRegister",
+      ]
+    },
+    {
+      // Capabilities used by the WebInstanceHost.
+      protocol: [
+        "fuchsia.feedback.ComponentDataRegister",
+        "fuchsia.feedback.CrashReportingProductRegister",
+        "fuchsia.sys.Environment",
+        "fuchsia.sys.Loader",
+      ]
+    },
+    {
+      // Capabilities to be passed to WebEngine instances.
+      protocol: [
         "fuchsia.accessibility.semantics.SemanticsManager",
         "fuchsia.buildinfo.Provider",
         "fuchsia.device.NameProvider",
-        "fuchsia.feedback.ComponentDataRegister",
-        "fuchsia.feedback.CrashReportingProductRegister",
         "fuchsia.fonts.Provider",
         "fuchsia.hwinfo.Product",
         "fuchsia.input.virtualkeyboard.ControllerCreator",
@@ -62,8 +105,6 @@
         "fuchsia.posix.socket.Provider",
         "fuchsia.process.Launcher",
         "fuchsia.settings.Display",
-        "fuchsia.sys.Environment",
-        "fuchsia.sys.Loader",
         "fuchsia.ui.composition.Allocator",
         "fuchsia.ui.composition.Flatland",
         "fuchsia.ui.input3.Keyboard",
@@ -78,12 +119,47 @@
         "fuchsia.media.drm.PlayReady",
         "fuchsia.media.drm.Widevine",
         "fuchsia.tracing.perfetto.ProducerConnector",
+        // "fuchsia.tracing.provider.Registry",
       ],
       availability: "optional"
+    },
+    {
+      protocol: "fuchsia.component.Realm",
+      from: "framework",
     },
     {
       storage: "cache",
       path: "/cache",
     },
-  ]
+  ],
+
+  // Sections used to host Cast activities for the fuchsia.sys.Runner.
+  collections: [
+    {
+      name: "v1-activities",
+      durability: "transient",
+      allowed_offers: "static_and_dynamic",
+      environment: "#cast-capable-env",
+    },
+  ],
+  environments: [
+    {
+      name: "cast-capable-env",
+      extends: "none",
+      __stop_timeout_ms: 10000,
+      resolvers: [
+        {
+          resolver: "cast-resolver",
+          from: "self",
+          scheme: "cast",
+	},
+      ],
+      runners: [
+        {
+          runner: "cast-runner",
+          from: "self",
+        },
+      ],
+   },
+  ],
 }

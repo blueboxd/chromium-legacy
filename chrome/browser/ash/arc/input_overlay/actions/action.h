@@ -118,6 +118,14 @@ class Action {
   // bounds change.
   void UpdateTouchDownPositions();
 
+  // Cancel event when the focus is lost or window is destroyed and the touch
+  // event is still not released.
+  absl::optional<ui::TouchEvent> GetTouchCanceledEvent();
+  absl::optional<ui::TouchEvent> GetTouchReleasedEvent();
+  int GetUIRadius();
+
+  bool IsDefaultAction() const;
+
   InputElement* current_input() const { return current_input_.get(); }
   InputElement* original_input() const { return original_input_.get(); }
   InputElement* pending_input() const { return pending_input_.get(); }
@@ -144,23 +152,28 @@ class Action {
   bool on_left_or_middle_side() const { return on_left_or_middle_side_; }
   bool support_modifier_key() const { return support_modifier_key_; }
   ActionView* action_view() const { return action_view_; }
+  void set_action_view(ActionView* action_view) { action_view_ = action_view; }
 
-  // Cancel event when the focus is leave or window is destroyed and the touch
-  // event is still not released.
-  absl::optional<ui::TouchEvent> GetTouchCanceledEvent();
-  absl::optional<ui::TouchEvent> GetTouchReleasedEvent();
-  int GetUIRadius();
+  bool deleted() const { return deleted_; }
+  void set_deleted(bool deleted) { deleted_ = deleted; }
 
  protected:
   // |touch_injector| must be non-NULL and own this Action.
   explicit Action(TouchInjector* touch_injector);
 
+  // Create a touch pressed/moved/released event with |time_stamp| and save it
+  // in |touch_events|.
+  bool CreateTouchPressedEvent(const base::TimeTicks& time_stamp,
+                               std::list<ui::TouchEvent>& touch_events);
+  void CreateTouchMovedEvent(const base::TimeTicks& time_stamp,
+                             std::list<ui::TouchEvent>& touch_events);
+  void CreateTouchReleasedEvent(const base::TimeTicks& time_stamp,
+                                std::list<ui::TouchEvent>& touch_events);
+
   bool IsRepeatedKeyEvent(const ui::KeyEvent& key_event);
   // Verify the key release event. If it is verified, it continues to simulate
   // the touch event. Otherwise, consider it as discard.
   bool VerifyOnKeyRelease(ui::DomCode code);
-  void OnTouchReleased();
-  void OnTouchCancelled();
   // Process after unbinding the input mapping.
   void PostUnbindInputProcess();
 
@@ -207,7 +220,20 @@ class Action {
   raw_ptr<ActionView> action_view_ = nullptr;
 
  private:
-  // TODO(cuicuiruan): This can be removed when removing the flag.
+  void OnTouchReleased();
+  void OnTouchCancelled();
+  // Create a touch event of |type| with |time_stamp| and save it
+  // in |touch_events|.
+  void CreateTouchEvent(ui::EventType type,
+                        const base::TimeTicks& time_stamp,
+                        std::list<ui::TouchEvent>& touch_events);
+
+  // Mainly for default action to mark if it is deleted.
+  bool deleted_ = false;
+
+  // TODO(cuicuiruan): This can be removed when removing the flag. If |beta_| is
+  // true, then we care about the position change and whether the default action
+  // is deleted.
   bool beta_;
 };
 

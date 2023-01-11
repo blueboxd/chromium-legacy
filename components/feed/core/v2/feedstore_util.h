@@ -6,6 +6,7 @@
 #define COMPONENTS_FEED_CORE_V2_FEEDSTORE_UTIL_H_
 
 #include <string>
+#include "base/containers/flat_set.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "components/feed/core/proto/v2/store.pb.h"
@@ -22,9 +23,12 @@ class Metadata;
 
 const char kForYouStreamKey[] = "i";
 const char kFollowStreamKey[] = "w";
+constexpr base::StringPiece kSingleWebFeedStreamKeyPrefix = "c";
 
 std::string StreamKey(const feed::StreamType& stream_type);
-feed::StreamType StreamTypeFromKey(std::string key);
+feed::StreamType StreamTypeFromId(base::StringPiece key);
+
+base::StringPiece StreamPrefix(feed::StreamKind stream_type);
 
 ///////////////////////////////////////////////////
 // Functions that operate on feedstore proto types.
@@ -82,6 +86,10 @@ feed::ContentHashSet GetViewContentIds(const Metadata& metadata,
                                        const feed::StreamType& stream_type);
 int32_t ContentHashFromPrefetchMetadata(
     const feedwire::PrefetchMetadata& prefetch_metadata);
+
+base::flat_set<uint32_t> GetViewedContentHashes(
+    const Metadata& metadata,
+    const feed::StreamType& stream_type);
 
 }  // namespace feedstore
 

@@ -7,7 +7,7 @@
 import 'chrome://resources/js/ios/web_ui.js';
 // </if>
 
-import {addSingletonGetter, addWebUIListener} from 'chrome://resources/js/cr.m.js';
+import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
 import {$} from 'chrome://resources/js/util.js';
 
 /**
@@ -301,6 +301,11 @@ class NetExportView {
   setFavicon_(dataUrl) {
     document.getElementById('fav-icon').href = dataUrl;
   }
+
+  static getInstance() {
+    return instance || (instance = new NetExportView());
+  }
 }
 
-addSingletonGetter(NetExportView);
+/** @type {?NetExportView} */
+let instance = null;

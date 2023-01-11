@@ -47,6 +47,10 @@ if (include_js_tests) {
       sources += [ "tab_strip/tab_strip_interactive_ui_tests.js" ]
     }
 
+    if (!is_android) {
+      sources += [ "support_tool/support_tool_interactive_ui_test.js" ]
+    }
+
     gen_include_files = [
       "polymer_browser_test_base.js",
       "polymer_interactive_ui_test.js",
@@ -154,8 +158,8 @@ if (include_js_tests) {
       sources += [
         "../../../browser/resources/chromeos/login/components/oobe_types.js",
         "../../../browser/resources/chromeos/login/security_token_pin_browsertest.js",
-        "../../../browser/ui/webui/chromeos/bluetooth_pairing_dialog_browsertest.js",
-        "../../../browser/ui/webui/chromeos/certificate_manager_dialog_browsertest.js",
+        "../../../browser/ui/webui/ash/bluetooth_pairing_dialog_browsertest.js",
+        "../../../browser/ui/webui/ash/certificate_manager_dialog_browsertest.js",
         "chromeos/account_manager/account_manager_browsertest.js",
         "chromeos/arc_account_picker/arc_account_picker_browsertest.js",
         "chromeos/ash_common/ash_common_resources_browsertest.js",
@@ -177,7 +181,7 @@ if (include_js_tests) {
 
     if (enable_dice_support) {
       sources += [
-        "intro/intro_browsertest.js",
+        "intro/sign_in_promo_browsertest.js",
         "welcome/a11y_tests.js",
         "welcome/welcome_browsertest.js",
       ]
@@ -199,10 +203,7 @@ if (include_js_tests) {
       sources += [ "tab_strip/tab_strip_browsertest.js" ]
     }
     if (!is_android) {
-      sources += [
-        "commander/commander_browsertest.js",
-        "support_tool/support_tool_browsertest.js",
-      ]
+      sources += [ "commander/commander_browsertest.js" ]
     }
     if (is_cfm) {
       sources += [
@@ -312,21 +313,9 @@ js_type_check("closure_compile_local") {
   is_polymer3 = true
   deps = [
     ":chai_assert",
-    ":fake_chrome_event",
-    ":mock_timer",
     ":test_browser_proxy",
     ":test_util",
   ]
-}
-
-js_library("fake_chrome_event") {
-  deps = [ ":chai_assert" ]
-}
-
-js_library("mock_controller") {
-}
-
-js_library("mock_timer") {
 }
 
 js_library("test_util") {
@@ -405,9 +394,6 @@ ts_definitions("generate_definitions") {
   root_dir = "./"
   out_dir = "$target_gen_dir/tsc"
   js_files = [
-    "fake_chrome_event.js",
-    "mock_controller.js",
-    "mock_timer.js",
     "mojo_webui_test_support.js",
     "test_util.js",
   ]
@@ -438,6 +424,11 @@ ts_library("build_ts") {
     "color_provider_css_colors_test.ts",
     "color_provider_css_colors_test_chromeos.ts",
     "cr_focus_row_mixin_test.ts",
+    "fake_chrome_event.ts",
+    "metrics_test_support.ts",
+    "mock_controller.ts",
+    "mock_timer.ts",
+    "mock_timer_test.ts",
     "polymer_test_util.ts",
     "text_defaults_test.ts",
     "test_plural_string_proxy.ts",
@@ -456,6 +447,7 @@ ts_library("build_ts") {
   definitions = [
     "//tools/typescript/definitions/chrome_send.d.ts",
     "//tools/typescript/definitions/chrome_timeticks.d.ts",
+    "//tools/typescript/definitions/metrics_private.d.ts",
   ]
 }
 
@@ -468,10 +460,7 @@ generate_grd("build_grd") {
   input_files_base_dir = rebase_path(".", "//")
   input_files = [
     "chai_assert.js",
-    "fake_chrome_event.js",
     "mocha_adapter.js",
-    "mock_controller.js",
-    "mock_timer.js",
     "mojo_webui_test_support.js",
     "test_browser_proxy.js",
     "test_util.js",
@@ -482,8 +471,10 @@ generate_grd("build_grd") {
 
   if (is_chromeos_ash) {
     input_files += [
+      "chromeos/mock_controller.js",
       "chromeos/arc_account_picker/test_util.js",
       "chromeos/ash_common/i18n_behavior_test.js",
+      "chromeos/fake_network_config_mojom.js",
     ]
   }
 
@@ -616,6 +607,8 @@ generate_grd("build_grd") {
       "chromeos/personalization_app:build_grdp",
       "chromeos/print_management:build_grdp",
       "chromeos/shortcut_customization:build_grdp",
+      "cr_components/chromeos:build_grdp",
+      "nearby_share:build_grdp",
       "settings/chromeos:build_grdp",
       "//ui/file_manager:build_tests_gen_grdp",
       "//ui/file_manager:build_tests_grdp",
@@ -627,6 +620,8 @@ generate_grd("build_grd") {
       "$target_gen_dir/chromeos/shortcut_customization/resources.grdp",
       "$target_gen_dir/chromeos/print_management/resources.grdp",
       "$target_gen_dir/chromeos/manage_mirrorsync/resources.grdp",
+      "$target_gen_dir/cr_components/chromeos/resources.grdp",
+      "$target_gen_dir/nearby_share/resources.grdp",
       "$target_gen_dir/settings/chromeos/resources.grdp",
       "$root_gen_dir/ui/file_manager/tests_resources.grdp",
       "$root_gen_dir/ui/file_manager/tests_gen_resources.grdp",

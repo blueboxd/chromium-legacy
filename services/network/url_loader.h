@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
@@ -367,6 +368,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       mojom::TrustTokenOperationType type,
       TrustTokenStatusOrRequestHelper status_or_helper);
   void OnDoneBeginningTrustTokenOperation(
+      absl::optional<net::HttpRequestHeaders> headers,
       mojom::TrustTokenOperationStatus status);
   void OnDoneFinalizingTrustTokenOperation(
       mojom::TrustTokenOperationStatus status);
@@ -479,7 +481,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   // URLLoaderFactory is guaranteed to outlive URLLoader, so it is safe to
   // store a raw pointer to mojom::URLLoaderFactoryParams.
-  const mojom::URLLoaderFactoryParams& factory_params_;
+  const raw_ref<const mojom::URLLoaderFactoryParams> factory_params_;
   // This also belongs to URLLoaderFactory and outlives this loader.
   const raw_ptr<mojom::CrossOriginEmbedderPolicyReporter> coep_reporter_;
 
@@ -521,7 +523,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   std::unique_ptr<corb::ResponseAnalyzer> corb_analyzer_;
   bool is_more_corb_sniffing_needed_ = false;
   bool is_more_mime_sniffing_needed_ = false;
-  corb::PerFactoryState& per_factory_corb_state_;
+  const raw_ref<corb::PerFactoryState> per_factory_corb_state_;
 
   std::unique_ptr<ResourceScheduler::ScheduledResourceRequest>
       resource_scheduler_request_handle_;
@@ -617,7 +619,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   absl::optional<mojom::TrustTokenOperationStatus> trust_token_status_;
 
   // Outlives `this`.
-  const cors::OriginAccessList& origin_access_list_;
+  const raw_ref<const cors::OriginAccessList> origin_access_list_;
 
   // Observers bound to this specific URLLoader. There may be observers bound to
   // an URLLoaderFactory as well so these `mojo::Remote`s should not be used

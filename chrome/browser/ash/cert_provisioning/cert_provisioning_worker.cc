@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_worker.h"
 
+#include <stdint.h>
+
+#include <vector>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -11,6 +15,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/syslog_logging.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/attestation/tpm_challenge_key_result.h"
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_common.h"
@@ -145,10 +150,12 @@ void MarkKeyAsCorporate(CertScope scope,
                         const std::string& public_key_spki_der) {
   CHECK(profile || scope == CertScope::kDevice);
 
+  std::vector<uint8_t> public_key_blob(public_key_spki_der.begin(),
+                                       public_key_spki_der.end());
   GetKeyPermissionsManager(scope, profile)
       ->AllowKeyForUsage(base::BindOnce(&OnAllowKeyForUsageDone),
                          platform_keys::KeyUsage::kCorporate,
-                         public_key_spki_der);
+                         std::move(public_key_blob));
 }
 
 base::TimeDelta GetTryLaterDelayForRequestType(
@@ -442,8 +449,8 @@ void CertProvisioningWorkerImpl::GenerateKeyForVa() {
       attestation::TpmChallengeKeySubtleFactory::Create();
   tpm_challenge_key_subtle_impl_->StartPrepareKeyStep(
       GetVaKeyType(cert_scope_),
-      /*will_register_key=*/true, GetKeyName(cert_profile_.profile_id),
-      profile_,
+      /*will_register_key=*/true, ::attestation::KEY_TYPE_RSA,
+      GetKeyName(cert_profile_.profile_id), profile_,
       base::BindOnce(&CertProvisioningWorkerImpl::OnGenerateKeyForVaDone,
                      weak_factory_.GetWeakPtr(), base::TimeTicks::Now()),
       /*signals=*/absl::nullopt);
@@ -843,7 +850,7 @@ void CertProvisioningWorkerImpl::ScheduleNextStep(base::TimeDelta delay) {
 
   delay = std::max(delay, kMinumumTryAgainLaterDelay);
 
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&CertProvisioningWorkerImpl::OnShouldContinue,
                      weak_factory_.GetWeakPtr(), ContinueReason::kTimeout),
@@ -995,8 +1002,8 @@ void CertProvisioningWorkerImpl::InitAfterDeserialization() {
   tpm_challenge_key_subtle_impl_ =
       attestation::TpmChallengeKeySubtleFactory::CreateForPreparedKey(
           GetVaKeyType(cert_scope_),
-          /*will_register_key=*/true, GetKeyName(cert_profile_.profile_id),
-          public_key_, profile_);
+          /*will_register_key=*/true, ::attestation::KEY_TYPE_RSA,
+          GetKeyName(cert_profile_.profile_id), public_key_, profile_);
 }
 
 void CertProvisioningWorkerImpl::RegisterForInvalidationTopic() {

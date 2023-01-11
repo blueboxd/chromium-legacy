@@ -376,12 +376,6 @@ FYI_BUILDERS = {
             'chromium_builder_perf', 'base_perftests'
         ],
     },
-    'fuchsia-builder-perf-fyi': {
-        'additional_compile_targets': [
-            'web_engine_shell_pkg', 'cast_runner_pkg', 'web_runner_pkg',
-            'chromium_builder_perf', 'base_perftests'
-        ],
-    },
     'fuchsia-builder-perf-x64': {
         'additional_compile_targets': ['chrome_pkg', 'base_perftests'],
     },
@@ -900,6 +894,21 @@ BUILDERS = {
             'device_os_flavor': 'google',
         },
     },
+    'android-go-wembley-perf': {
+        'tests': [{
+            'isolate':
+            'performance_test_suite_android_clank_trichrome_bundle',
+        }],
+        'platform':
+        'android-trichrome-bundle',
+        'dimension': {
+            'pool': 'chrome.tests.perf',
+            'os': 'Android',
+            'device_type': 'wembley',
+            'device_os': 'MASTER',
+            'device_os_flavor': 'google',
+        },
+    },
     'android-new-pixel-perf': {
         'tests': [{
             'isolate':
@@ -1393,6 +1402,8 @@ BUILDERS = {
                     # The magic hostname that resolves to a CrOS device in the test lab
                     '--remote=variable_chromeos_device_hostname',
                 ],
+                'timeout':
+                12 * 60 * 60,  # 12 hours, due to small number of devices
             },
         ],
         'platform':
@@ -1964,12 +1975,12 @@ def generate_performance_test(tester_config, test, builder_name):
       # (crbug.com/1036447), so we must timeout the shards within ~6 hours to
       # allow for other overhead. If the overall builder times out then we
       # don't get data even from the passing shards.
-      'hard_timeout': int(6 * 60 * 60),  # 6 hours timeout for full suite
-      # 5.5 hour timeout. Note that this is effectively the timeout for a
+      'hard_timeout': test.get('timeout', 6 * 60 * 60),  # default 6 hours
+      # This is effectively the timeout for a
       # benchmarking subprocess to run since we intentionally do not stream
       # subprocess output to the task stdout.
       # TODO(crbug.com/865538): Reduce this once we can reduce hard_timeout.
-      'io_timeout': int(6 * 60 * 60),
+      'io_timeout': test.get('timeout', 6 * 60 * 60),
       'dimension_sets': [tester_config['dimension']],
       'service_account': _TESTER_SERVICE_ACCOUNT,
   }

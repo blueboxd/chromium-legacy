@@ -425,8 +425,11 @@ ExtensionHost* ProcessManager::GetBackgroundHostForExtension(
   return nullptr;
 }
 
-ExtensionHost* ProcessManager::GetExtensionHostForRenderFrameHost(
+ExtensionHost* ProcessManager::GetBackgroundHostForRenderFrameHost(
     content::RenderFrameHost* render_frame_host) {
+  if (!render_frame_host->IsInPrimaryMainFrame())
+    return nullptr;
+
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   for (ExtensionHost* extension_host : background_hosts_) {
@@ -827,7 +830,14 @@ void ProcessManager::DecrementServiceWorkerKeepaliveCount(
   content::ServiceWorkerExternalRequestResult result =
       service_worker_context->FinishedExternalRequest(service_worker_version_id,
                                                       request_uuid);
-  DCHECK_EQ(result, content::ServiceWorkerExternalRequestResult::kOk);
+
+  // Example of when kWorkerNotRunning can happen is when the renderer process
+  // is killed while handling a service worker request (e.g. because of a bad
+  // IPC message).
+  DCHECK((result == content::ServiceWorkerExternalRequestResult::kOk) ||
+         (result ==
+          content::ServiceWorkerExternalRequestResult::kWorkerNotRunning))
+      << "; result = " << static_cast<int>(result);
 }
 
 void ProcessManager::OnLazyBackgroundPageIdle(const std::string& extension_id,

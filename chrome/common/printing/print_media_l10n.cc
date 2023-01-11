@@ -7,7 +7,14 @@
 #include <map>
 
 #include "base/no_destructor.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/device_event_log/device_event_log.h"
 #include "components/strings/grit/components_strings.h"
+#include "printing/backend/print_backend_utils.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace printing {
@@ -23,14 +30,33 @@ int VendorIdToTranslatedId(const std::string& vendor_id) {
       {"asme_f_28x40in", PRINT_PREVIEW_MEDIA_ASME_F_28X40IN},
       {"iso_2a0_1189x1682mm", PRINT_PREVIEW_MEDIA_ISO_2A0_1189X1682MM},
       {"iso_a0_841x1189mm", PRINT_PREVIEW_MEDIA_ISO_A0_841X1189MM},
+      {"iso_a0x3_1189x2523mm", PRINT_PREVIEW_MEDIA_ISO_A0X3_1189X2523MM},
       {"iso_a10_26x37mm", PRINT_PREVIEW_MEDIA_ISO_A10_26X37MM},
       {"iso_a1_594x841mm", PRINT_PREVIEW_MEDIA_ISO_A1_594X841MM},
+      {"iso_a1x3_841x1783mm", PRINT_PREVIEW_MEDIA_ISO_A1X3_841X1783MM},
+      {"iso_a1x4_841x2378mm", PRINT_PREVIEW_MEDIA_ISO_A1X4_841X2378MM},
       {"iso_a2_420x594mm", PRINT_PREVIEW_MEDIA_ISO_A2_420X594MM},
+      {"iso_a2x3_594x1261mm", PRINT_PREVIEW_MEDIA_ISO_A2X3_594X1261MM},
+      {"iso_a2x4_594x1682mm", PRINT_PREVIEW_MEDIA_ISO_A2X4_594X1682MM},
+      {"iso_a2x5_594x2102mm", PRINT_PREVIEW_MEDIA_ISO_A2X5_594X2102MM},
+      {"iso_a3-extra_322x445mm", PRINT_PREVIEW_MEDIA_ISO_A3_EXTRA_322X445MM},
       {"iso_a3_297x420mm", PRINT_PREVIEW_MEDIA_ISO_A3_297X420MM},
+      {"iso_a3x3_420x891mm", PRINT_PREVIEW_MEDIA_ISO_A3X3_420X891MM},
+      {"iso_a3x4_420x1189mm", PRINT_PREVIEW_MEDIA_ISO_A3X4_420X1189MM},
+      {"iso_a3x5_420x1486mm", PRINT_PREVIEW_MEDIA_ISO_A3X5_420X1486MM},
+      {"iso_a3x6_420x1783mm", PRINT_PREVIEW_MEDIA_ISO_A3X6_420X1783MM},
+      {"iso_a3x7_420x2080mm", PRINT_PREVIEW_MEDIA_ISO_A3X7_420X2080MM},
       {"iso_a4-extra_235.5x322.3mm",
        PRINT_PREVIEW_MEDIA_ISO_A4_EXTRA_235_5X322_3MM},
       {"iso_a4-tab_225x297mm", PRINT_PREVIEW_MEDIA_ISO_A4_TAB_225X297MM},
       {"iso_a4_210x297mm", PRINT_PREVIEW_MEDIA_ISO_A4_210X297MM},
+      {"iso_a4x3_297x630mm", PRINT_PREVIEW_MEDIA_ISO_A4X3_297X630MM},
+      {"iso_a4x4_297x841mm", PRINT_PREVIEW_MEDIA_ISO_A4X4_297X841MM},
+      {"iso_a4x5_297x1051mm", PRINT_PREVIEW_MEDIA_ISO_A4X5_297X1051MM},
+      {"iso_a4x6_297x1261mm", PRINT_PREVIEW_MEDIA_ISO_A4X6_297X1261MM},
+      {"iso_a4x7_297x1471mm", PRINT_PREVIEW_MEDIA_ISO_A4X7_297X1471MM},
+      {"iso_a4x8_297x1682mm", PRINT_PREVIEW_MEDIA_ISO_A4X8_297X1682MM},
+      {"iso_a4x9_297x1892mm", PRINT_PREVIEW_MEDIA_ISO_A4X9_297X1892MM},
       {"iso_a5-extra_174x235mm", PRINT_PREVIEW_MEDIA_ISO_A5_EXTRA_174X235MM},
       {"iso_a5_148x210mm", PRINT_PREVIEW_MEDIA_ISO_A5_148X210MM},
       {"iso_a6_105x148mm", PRINT_PREVIEW_MEDIA_ISO_A6_105X148MM},
@@ -64,6 +90,19 @@ int VendorIdToTranslatedId(const std::string& vendor_id) {
       {"iso_c8_57x81mm", PRINT_PREVIEW_MEDIA_ISO_C8_57X81MM},
       {"iso_c9_40x57mm", PRINT_PREVIEW_MEDIA_ISO_C9_40X57MM},
       {"iso_dl_110x220mm", PRINT_PREVIEW_MEDIA_ISO_DL_110X220MM},
+      {"iso_id-1_53.98x85.6mm", PRINT_PREVIEW_MEDIA_ISO_ID_1_53_98X85_6MM},
+      // Duplicate of iso_b7_88x125mm.
+      {"iso_id-3_88x125mm", PRINT_PREVIEW_MEDIA_ISO_B7_88X125MM},
+      {"iso_ra0_860x1220mm", PRINT_PREVIEW_MEDIA_ISO_RA0_860X1220MM},
+      {"iso_ra1_610x860mm", PRINT_PREVIEW_MEDIA_ISO_RA1_610X860MM},
+      {"iso_ra2_430x610mm", PRINT_PREVIEW_MEDIA_ISO_RA2_430X610MM},
+      {"iso_ra3_305x430mm", PRINT_PREVIEW_MEDIA_ISO_RA3_305X430MM},
+      {"iso_ra4_215x305mm", PRINT_PREVIEW_MEDIA_ISO_RA4_215X305MM},
+      {"iso_sra0_900x1280mm", PRINT_PREVIEW_MEDIA_ISO_SRA0_900X1280MM},
+      {"iso_sra1_640x900mm", PRINT_PREVIEW_MEDIA_ISO_SRA1_640X900MM},
+      {"iso_sra2_450x640mm", PRINT_PREVIEW_MEDIA_ISO_SRA2_450X640MM},
+      {"iso_sra3_320x450mm", PRINT_PREVIEW_MEDIA_ISO_SRA3_320X450MM},
+      {"iso_sra4_225x320mm", PRINT_PREVIEW_MEDIA_ISO_SRA4_225X320MM},
       {"jis_exec_216x330mm", PRINT_PREVIEW_MEDIA_JIS_EXEC_216X330MM},
       {"jpn_chou2_111.1x146mm", PRINT_PREVIEW_MEDIA_JPN_CHOU2_111_1X146MM},
       {"jpn_chou3_120x235mm", PRINT_PREVIEW_MEDIA_JPN_CHOU3_120X235MM},
@@ -98,6 +137,8 @@ int VendorIdToTranslatedId(const std::string& vendor_id) {
       {"na_arch-c_18x24in", PRINT_PREVIEW_MEDIA_NA_ARCH_C_18X24IN},
       {"na_arch-d_24x36in", PRINT_PREVIEW_MEDIA_NA_ARCH_D_24X36IN},
       {"na_arch-e_36x48in", PRINT_PREVIEW_MEDIA_NA_ARCH_E_36X48IN},
+      {"na_arch-e2_26x38in", PRINT_PREVIEW_MEDIA_NA_ARCH_E2_26X38IN},
+      {"na_arch-e3_27x39in", PRINT_PREVIEW_MEDIA_NA_ARCH_E3_27X39IN},
       {"na_b-plus_12x19.17in", PRINT_PREVIEW_MEDIA_NA_B_PLUS_12X19_17IN},
       {"na_c5_6.5x9.5in", PRINT_PREVIEW_MEDIA_NA_C5_6_5X9_5IN},
       {"na_c_17x22in", PRINT_PREVIEW_MEDIA_NA_C_17X22IN},
@@ -105,6 +146,8 @@ int VendorIdToTranslatedId(const std::string& vendor_id) {
       {"na_e_34x44in", PRINT_PREVIEW_MEDIA_NA_E_34X44IN},
       {"na_edp_11x14in", PRINT_PREVIEW_MEDIA_NA_EDP_11X14IN},
       {"na_eur-edp_12x14in", PRINT_PREVIEW_MEDIA_NA_EUR_EDP_12X14IN},
+      {"na_executive_7.25x10.5in",
+       PRINT_PREVIEW_MEDIA_NA_EXECUTIVE_7_25X10_5IN},
       {"na_f_44x68in", PRINT_PREVIEW_MEDIA_NA_F_44X68IN},
       {"na_fanfold-eur_8.5x12in", PRINT_PREVIEW_MEDIA_NA_FANFOLD_EUR_8_5X12IN},
       {"na_fanfold-us_11x14.875in",
@@ -134,30 +177,86 @@ int VendorIdToTranslatedId(const std::string& vendor_id) {
        PRINT_PREVIEW_MEDIA_NA_NUMBER_11_4_5X10_375IN},
       {"na_number-12_4.75x11in", PRINT_PREVIEW_MEDIA_NA_NUMBER_12_4_75X11IN},
       {"na_number-14_5x11.5in", PRINT_PREVIEW_MEDIA_NA_NUMBER_14_5X11_5IN},
+      {"na_oficio_8.5x13.4in", PRINT_PREVIEW_MEDIA_NA_OFICIO_8_5X13_4IN},
       {"na_personal_3.625x6.5in", PRINT_PREVIEW_MEDIA_NA_PERSONAL_3_625X6_5IN},
+      {"na_quarto_8.5x10.83in", PRINT_PREVIEW_MEDIA_NA_QUARTO_8_5X10_83IN},
       {"na_super-a_8.94x14in", PRINT_PREVIEW_MEDIA_NA_SUPER_A_8_94X14IN},
       {"na_super-b_13x19in", PRINT_PREVIEW_MEDIA_NA_SUPER_B_13X19IN},
       {"na_wide-format_30x42in", PRINT_PREVIEW_MEDIA_NA_WIDE_FORMAT_30X42IN},
+      {"oe_12x16_12x16in", PRINT_PREVIEW_MEDIA_OE_12X16_12X16IN},
+      {"oe_14x17_14x17in", PRINT_PREVIEW_MEDIA_OE_14X17_14X17IN},
+      {"oe_18x22_18x22in", PRINT_PREVIEW_MEDIA_OE_18X22_18X22IN},
+      {"oe_a2plus_17x24in", PRINT_PREVIEW_MEDIA_OE_A2PLUS_17X24IN},
+      {"oe_business-card_2x3.5in",
+       PRINT_PREVIEW_MEDIA_OE_BUSINESS_CARD_2X3_5IN},
+      {"oe_photo-10r_10x12in", PRINT_PREVIEW_MEDIA_OE_PHOTO_10R_10X12IN},
+      {"oe_photo-12r_12x15in", PRINT_PREVIEW_MEDIA_OE_PHOTO_12R_12X15IN},
+      {"oe_photo-14x18_14x18in", PRINT_PREVIEW_MEDIA_OE_PHOTO_14X18_14X18IN},
+      {"oe_photo-16r_16x20in", PRINT_PREVIEW_MEDIA_OE_PHOTO_16R_16X20IN},
+      {"oe_photo-20r_20x24in", PRINT_PREVIEW_MEDIA_OE_PHOTO_20R_20X24IN},
+      {"oe_photo-22r_22x29.5in", PRINT_PREVIEW_MEDIA_OE_PHOTO_22R_22X29_5IN},
+      {"oe_photo-22x28_22x28in", PRINT_PREVIEW_MEDIA_OE_PHOTO_22X28_22X28IN},
+      {"oe_photo-24r_24x31.5in", PRINT_PREVIEW_MEDIA_OE_PHOTO_24R_24X31_5IN},
+      {"oe_photo-24x30_24x30in", PRINT_PREVIEW_MEDIA_OE_PHOTO_24X30_24X30IN},
       {"oe_photo-l_3.5x5in", PRINT_PREVIEW_MEDIA_OE_PHOTO_L_3_5X5IN},
+      {"oe_photo-30r_30x40in", PRINT_PREVIEW_MEDIA_OE_PHOTO_30R_30X40IN},
+      {"oe_photo-s8r_8x12in", PRINT_PREVIEW_MEDIA_OE_PHOTO_S8R_8X12IN},
+      // Duplicate of na_10x15_10x15in.
+      {"oe_photo-s10r_10x15in", PRINT_PREVIEW_MEDIA_NA_10X15_10X15IN},
+      {"oe_square-photo_4x4in", PRINT_PREVIEW_MEDIA_OE_SQUARE_PHOTO_4X4IN},
+      {"oe_square-photo_5x5in", PRINT_PREVIEW_MEDIA_OE_SQUARE_PHOTO_5X5IN},
+      {"om_16k_184x260mm", PRINT_PREVIEW_MEDIA_OM_16K_184X260MM},
+      {"om_16k_195x270mm", PRINT_PREVIEW_MEDIA_OM_16K_195X270MM},
+      {"om_business-card_55x85mm",
+       PRINT_PREVIEW_MEDIA_OM_BUSINESS_CARD_55X85MM},
+      {"om_business-card_55x91mm",
+       PRINT_PREVIEW_MEDIA_OM_BUSINESS_CARD_55X91MM},
+      {"om_card_54x86mm", PRINT_PREVIEW_MEDIA_OM_CARD_54X86MM},
       {"om_dai-pa-kai_275x395mm", PRINT_PREVIEW_MEDIA_OM_DAI_PA_KAI_275X395MM},
+      {"om_dsc-photo_89x119mm", PRINT_PREVIEW_MEDIA_OM_DSC_PHOTO_89X119MM},
       {"om_folio-sp_215x315mm", PRINT_PREVIEW_MEDIA_OM_FOLIO_SP_215X315MM},
+      {"om_folio_210x330mm", PRINT_PREVIEW_MEDIA_OM_FOLIO_210X330MM},
       {"om_invite_220x220mm", PRINT_PREVIEW_MEDIA_OM_INVITE_220X220MM},
       {"om_italian_110x230mm", PRINT_PREVIEW_MEDIA_OM_ITALIAN_110X230MM},
       {"om_juuro-ku-kai_198x275mm",
        PRINT_PREVIEW_MEDIA_OM_JUURO_KU_KAI_198X275MM},
+      // Duplicate of the next because this was previously mapped wrong in cups.
       {"om_large-photo_200x300", PRINT_PREVIEW_MEDIA_OM_LARGE_PHOTO_200X300},
+      {"om_large-photo_200x300mm", PRINT_PREVIEW_MEDIA_OM_LARGE_PHOTO_200X300},
+      {"om_medium-photo_130x180mm",
+       PRINT_PREVIEW_MEDIA_OM_MEDIUM_PHOTO_130X180MM},
       {"om_pa-kai_267x389mm", PRINT_PREVIEW_MEDIA_OM_PA_KAI_267X389MM},
-      {"om_postfix_114x229mm", PRINT_PREVIEW_MEDIA_OM_POSTFIX_114X229MM},
+      {"om_photo-30x40_300x400mm",
+       PRINT_PREVIEW_MEDIA_OM_PHOTO_30X40_300X400MM},
+      {"om_photo-30x45_300x450mm",
+       PRINT_PREVIEW_MEDIA_OM_PHOTO_30X45_300X450MM},
+      {"om_photo-35x46_350x460mm",
+       PRINT_PREVIEW_MEDIA_OM_PHOTO_35X46_350X460MM},
+      {"om_photo-40x60_400x600mm",
+       PRINT_PREVIEW_MEDIA_OM_PHOTO_40X60_400X600MM},
+      {"om_photo-50x75_500x750mm",
+       PRINT_PREVIEW_MEDIA_OM_PHOTO_50X75_500X750MM},
+      {"om_photo-50x76_500x760mm",
+       PRINT_PREVIEW_MEDIA_OM_PHOTO_50X76_500X760MM},
+      {"om_photo-60x90_600x900mm",
+       PRINT_PREVIEW_MEDIA_OM_PHOTO_60X90_600X900MM},
+      // Duplicate of iso_c6c5_114x229mm.
+      {"om_postfix_114x229mm", PRINT_PREVIEW_MEDIA_ISO_C6C5_114X229MM},
       {"om_small-photo_100x150mm",
        PRINT_PREVIEW_MEDIA_OM_SMALL_PHOTO_100X150MM},
-      {"prc_10_324x458mm", PRINT_PREVIEW_MEDIA_PRC_10_324X458MM},
+      {"om_square-photo_89x89mm", PRINT_PREVIEW_MEDIA_OM_SQUARE_PHOTO_89X89MM},
+      {"om_wide-photo_100x200mm", PRINT_PREVIEW_MEDIA_OM_WIDE_PHOTO_100X200MM},
+      // Duplicate of iso_c3_324x458mm.
+      {"prc_10_324x458mm", PRINT_PREVIEW_MEDIA_ISO_C3_324X458MM},
       {"prc_16k_146x215mm", PRINT_PREVIEW_MEDIA_PRC_16K_146X215MM},
       {"prc_1_102x165mm", PRINT_PREVIEW_MEDIA_PRC_1_102X165MM},
       {"prc_2_102x176mm", PRINT_PREVIEW_MEDIA_PRC_2_102X176MM},
       {"prc_32k_97x151mm", PRINT_PREVIEW_MEDIA_PRC_32K_97X151MM},
-      {"prc_3_125x176mm", PRINT_PREVIEW_MEDIA_PRC_3_125X176MM},
+      // Duplicate of iso_b6_125x176mm.
+      {"prc_3_125x176mm", PRINT_PREVIEW_MEDIA_ISO_B6_125X176MM},
       {"prc_4_110x208mm", PRINT_PREVIEW_MEDIA_PRC_4_110X208MM},
-      {"prc_5_110x220mm", PRINT_PREVIEW_MEDIA_PRC_5_110X220MM},
+      // Duplicate of iso_dl_110x220mm.
+      {"prc_5_110x220mm", PRINT_PREVIEW_MEDIA_ISO_DL_110X220MM},
       {"prc_6_120x320mm", PRINT_PREVIEW_MEDIA_PRC_6_120X320MM},
       {"prc_7_160x230mm", PRINT_PREVIEW_MEDIA_PRC_7_160X230MM},
       {"prc_8_120x309mm", PRINT_PREVIEW_MEDIA_PRC_8_120X309MM},
@@ -185,6 +284,85 @@ int VendorIdToTranslatedId(const std::string& vendor_id) {
   return it != media_map->end() ? it->second : -1;
 }
 
+// Generate a human-readable name from a PWG self-describing name.  If
+// `pwg_name` is not a valid self-describing media size, return an empty string.
+std::string NameForSelfDescribingSize(const std::string& pwg_name) {
+  using printing::Unit::kInches;
+  using printing::Unit::kMillimeters;
+
+  // The expected format is area_description_dimensions, and dimensions are
+  // WxHmm or WxHin.  Both W and H can contain decimals.
+  static const base::NoDestructor<re2::RE2> media_name_pattern(
+      "[^_]+_([^_]+)_([\\d.]+)x([\\d.]+)(in|mm)");
+  std::string description;
+  std::string width;
+  std::string height;
+  std::string unit_str;
+  if (!RE2::FullMatch(pwg_name, *media_name_pattern, &description, &width,
+                      &height, &unit_str)) {
+    PRINTER_LOG(ERROR) << "Can't generate name for invalid IPP media size "
+                       << pwg_name;
+    return "";
+  }
+  printing::Unit units = unit_str == "in" ? kInches : kMillimeters;
+
+  // If the name appears to end with approximately the paper dimensions, just
+  // display the dimensions.  This avoids having things like "Card 4x6" and
+  // "4 X 7" mixed with "4 x 6 in".
+  static const base::NoDestructor<re2::RE2> description_dimensions_pattern(
+      ".*\\b([\\d.]+)-?x-?([\\d.]+)(in|mm)?$");
+  std::string name_width;
+  std::string name_height;
+  if (RE2::FullMatch(description, *description_dimensions_pattern, &name_width,
+                     &name_height) &&
+      base::StartsWith(width, name_width) &&
+      base::StartsWith(height, name_height)) {
+    switch (units) {
+      case kInches:
+        return l10n_util::GetStringFUTF8(PRINT_PREVIEW_MEDIA_DIMENSIONS_INCHES,
+                                         base::ASCIIToUTF16(width),
+                                         base::ASCIIToUTF16(height));
+
+      case kMillimeters:
+        return l10n_util::GetStringFUTF8(PRINT_PREVIEW_MEDIA_DIMENSIONS_MM,
+                                         base::ASCIIToUTF16(width),
+                                         base::ASCIIToUTF16(height));
+    }
+  }
+
+  // For other names, attempt to generate a readable name by splitting into
+  // words and title-casing each word.  Self-describing names are always ASCII,
+  // so it is safe to do case conversion without considering locales.  We don't
+  // have any way to know if the results unambiguously describe a paper size the
+  // user would recognize, so also append the dimensions.  The final output is
+  // dependent on the quality of the descriptions provided by the printer, but
+  // should in any case be better than simply displaying the raw region and
+  // description.
+  std::vector<std::string> words = base::SplitString(
+      description, "-", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  for (std::string& word : words) {
+    word[0] = base::ToUpperASCII(word[0]);  // Safe due to NONEMPTY split above.
+    for (size_t i = 1; i < word.size(); i++) {
+      word[i] = base::ToLowerASCII(word[i]);
+    }
+  }
+  std::string clean_name = base::JoinString(words, " ");
+
+  switch (units) {
+    case kInches:
+      return l10n_util::GetStringFUTF8(
+          PRINT_PREVIEW_MEDIA_NAME_WITH_DIMENSIONS_INCHES,
+          base::ASCIIToUTF16(clean_name), base::ASCIIToUTF16(width),
+          base::ASCIIToUTF16(height));
+
+    case kMillimeters:
+      return l10n_util::GetStringFUTF8(
+          PRINT_PREVIEW_MEDIA_NAME_WITH_DIMENSIONS_MM,
+          base::ASCIIToUTF16(clean_name), base::ASCIIToUTF16(width),
+          base::ASCIIToUTF16(height));
+  }
+}
+
 }  // namespace
 
 std::string LocalizePaperDisplayName(const std::string& vendor_id) {
@@ -194,7 +372,7 @@ std::string LocalizePaperDisplayName(const std::string& vendor_id) {
   }
 
   int translation_id = VendorIdToTranslatedId(vendor_id);
-  return translation_id < 0 ? std::string()
+  return translation_id < 0 ? NameForSelfDescribingSize(vendor_id)
                             : l10n_util::GetStringUTF8(translation_id);
 }
 

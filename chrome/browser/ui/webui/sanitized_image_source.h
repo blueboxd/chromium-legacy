@@ -51,6 +51,7 @@ class IdentityManager;
 //   chrome://image?url=<external image URL>&isGooglePhotos=true
 class SanitizedImageSource : public content::URLDataSource {
  public:
+  using DecodeImageCallback = data_decoder::DecodeImageCallback;
   using DecodeAnimationCallback =
       data_decoder::mojom::ImageDecoder::DecodeAnimationCallback;
 
@@ -59,6 +60,9 @@ class SanitizedImageSource : public content::URLDataSource {
    public:
     DataDecoderDelegate() = default;
     virtual ~DataDecoderDelegate() = default;
+
+    virtual void DecodeImage(const std::string& data,
+                             DecodeImageCallback callback);
 
     virtual void DecodeAnimation(const std::string& data,
                                  DecodeAnimationCallback callback);
@@ -112,7 +116,6 @@ class SanitizedImageSource : public content::URLDataSource {
                      content::URLDataSource::GotDataCallback callback,
                      std::unique_ptr<std::string> body);
   void OnAnimationDecoded(
-      RequestAttributes request_attributes,
       content::URLDataSource::GotDataCallback callback,
       std::vector<data_decoder::mojom::AnimationFramePtr> mojo_frames);
 
@@ -124,7 +127,7 @@ class SanitizedImageSource : public content::URLDataSource {
       std::vector<data_decoder::mojom::AnimationFramePtr> mojo_frames);
 
   // Owned by `IdentityManagerFactory` or `IdentityTestEnvironment`.
-  raw_ptr<signin::IdentityManager> identity_manager_;
+  raw_ptr<signin::IdentityManager, DanglingUntriaged> identity_manager_;
 
   const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 

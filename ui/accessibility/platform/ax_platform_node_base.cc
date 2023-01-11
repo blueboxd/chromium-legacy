@@ -4,7 +4,6 @@
 
 #include "ui/accessibility/platform/ax_platform_node_base.h"
 
-#include <algorithm>
 #include <iomanip>
 #include <limits>
 #include <set>
@@ -14,6 +13,7 @@
 
 #include "base/no_destructor.h"
 #include "base/numerics/checked_math.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1247,11 +1247,11 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
         from = "table-caption";
         break;
       case ax::mojom::DescriptionFrom::kTitle:
-      case ax::mojom::DescriptionFrom::kPopupElement:
+      case ax::mojom::DescriptionFrom::kPopoverAttribute:
         // The following types of markup are mapped to "tooltip":
         // * The title attribute.
-        // * A related popup=hint related via popuptoggletarget /
-        // popupshowtarget / popuphidetarget.
+        // * A related popover=something related via popovertoggletarget /
+        // popovershowtarget / popoverhidetarget.
         // * A tooltip related via aria-describedby (see kRelatedElement above).
         from = "tooltip";
         break;
@@ -1722,8 +1722,8 @@ int32_t AXPlatformNodeBase::GetHyperlinkIndexFromChild(
   if (hypertext_.hyperlinks.empty())
     return -1;
 
-  auto iterator = std::find(hypertext_.hyperlinks.begin(),
-                            hypertext_.hyperlinks.end(), child->GetUniqueId());
+  auto iterator =
+      base::ranges::find(hypertext_.hyperlinks, child->GetUniqueId());
   if (iterator == hypertext_.hyperlinks.end())
     return -1;
 
@@ -2294,7 +2294,8 @@ ui::TextAttributeList AXPlatformNodeBase::ComputeTextAttributes() const {
 
   // We include list markers for now, but there might be other objects that are
   // auto generated.
-  // TODO(nektar): Compute what objects are auto-generated in Blink.
+  // TODO(nektar): Compute what objects are auto-generated in Blink and
+  // TODO(1278249): add OCRed text from Screen AI Service too.
   if (GetRole() == ax::mojom::Role::kListMarker)
     attributes.push_back(std::make_pair("auto-generated", "true"));
 

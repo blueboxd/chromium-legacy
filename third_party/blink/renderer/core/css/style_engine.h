@@ -71,6 +71,7 @@ class TextPosition;
 
 namespace blink {
 
+class ComputedStyleBuilder;
 class CounterStyle;
 class CounterStyleMap;
 class CSSFontSelector;
@@ -476,6 +477,9 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // body element which changed between being the document.body element and not.
   void FirstBodyElementChanged(HTMLBodyElement*);
 
+  // Invalidate caches that depends on the base url.
+  void BaseURLChanged();
+
   unsigned StyleForElementCount() const { return style_for_element_count_; }
   void IncStyleForElementCount() { style_for_element_count_++; }
 
@@ -490,7 +494,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   void VisionDeficiencyChanged();
   void ApplyVisionDeficiencyStyle(
-      scoped_refptr<ComputedStyle> layout_view_style);
+      ComputedStyleBuilder& layout_view_style_builder);
 
   void CollectMatchingUserRules(ElementRuleCollector&) const;
 
@@ -594,11 +598,11 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   Color ForcedBackgroundColor() const { return forced_background_color_; }
   Color ColorAdjustBackgroundColor() const;
 
-  void SetDocumentTransitionTags(const Vector<AtomicString>& tags) {
-    document_transition_tags_ = tags;
+  void SetViewTransitionNames(const Vector<AtomicString>& names) {
+    view_transition_names_ = names;
   }
-  const Vector<AtomicString>& DocumentTransitionTags() const {
-    return document_transition_tags_;
+  const Vector<AtomicString>& ViewTransitionTags() const {
+    return view_transition_names_;
   }
 
   StyleFetchedImage* CacheStyleImage(FetchParameters& params,
@@ -608,11 +612,15 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
                                               origin_clean, is_ad_related);
   }
 
+  void AddCachedFillOrClipPathURIValue(const AtomicString& string,
+                                       const CSSValue& value);
+  const CSSValue* GetCachedFillOrClipPathURIValue(const AtomicString& string);
+
   void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override { return "StyleEngine"; }
 
-  RuleSet* DefaultDocumentTransitionStyle() const;
-  void InvalidateUADocumentTransitionStyle();
+  RuleSet* DefaultViewTransitionStyle() const;
+  void InvalidateUAViewTransitionStyle();
 
   const ActiveStyleSheetVector& ActiveUserStyleSheetsForDebug() const {
     return active_user_style_sheets_;
@@ -869,7 +877,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // elements. This is tracked by StyleEngine as opposed to
   // CSSDefaultStyleSheets since it is 1:1 with a Document and can be
   // dynamically updated.
-  Member<RuleSet> ua_document_transition_style_;
+  Member<RuleSet> ua_view_transition_style_;
 
   PendingInvalidations pending_invalidations_;
 
@@ -881,8 +889,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   HeapHashMap<AtomicString, WeakMember<StyleSheetContents>>
       text_to_sheet_cache_;
-  HeapHashMap<WeakMember<StyleSheetContents>, AtomicString>
-      sheet_to_text_cache_;
 
   std::unique_ptr<StyleResolverStats> style_resolver_stats_;
   unsigned style_for_element_count_{0};
@@ -962,13 +968,19 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // re-attachment after the removal.
   Member<LayoutObject> parent_for_detached_subtree_;
 
-  // The set of IDs for which ::page-transition-container pseudo elements are
-  // generated during a DocumentTransition.
-  Vector<AtomicString> document_transition_tags_;
+  // The set of IDs for which ::view-transition-group pseudo elements are
+  // generated during a ViewTransition.
+  Vector<AtomicString> view_transition_names_;
 
   // Cache for sharing StyleFetchedImage between CSSValues referencing the same
   // URL.
   StyleImageCache style_image_cache_;
+
+  // A cache for CSSURIValue objects for SVG element presentation attributes for
+  // fill and clip path. See SVGElement::CollectStyleForPresentationAttribute()
+  // for more info.
+  HeapHashMap<AtomicString, Member<const CSSValue>>
+      fill_or_clip_path_uri_value_cache_;
 };
 
 // Helper function for checking if we need to handle legacy fragmentation cases

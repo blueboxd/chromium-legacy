@@ -102,35 +102,6 @@ void PublisherBase::ModifyCapabilityAccess(
   }
 }
 
-void PublisherBase::LaunchAppWithFiles(const std::string& app_id,
-                                       int32_t event_flags,
-                                       apps::mojom::LaunchSource launch_source,
-                                       apps::mojom::FilePathsPtr file_paths) {
-  NOTIMPLEMENTED();
-}
-
-void PublisherBase::LaunchAppWithIntent(const std::string& app_id,
-                                        int32_t event_flags,
-                                        apps::mojom::IntentPtr intent,
-                                        apps::mojom::LaunchSource launch_source,
-                                        apps::mojom::WindowInfoPtr window_info,
-                                        LaunchAppWithIntentCallback callback) {
-  NOTIMPLEMENTED();
-  std::move(callback).Run(/*success=*/false);
-}
-
-void PublisherBase::SetPermission(const std::string& app_id,
-                                  apps::mojom::PermissionPtr permission) {
-  NOTIMPLEMENTED();
-}
-
-void PublisherBase::Uninstall(const std::string& app_id,
-                              apps::mojom::UninstallSource uninstall_source,
-                              bool clear_site_data,
-                              bool report_abuse) {
-  LOG(ERROR) << "Uninstall failed, could not remove the app with id " << app_id;
-}
-
 void PublisherBase::PauseApp(const std::string& app_id) {
   NOTIMPLEMENTED();
 }
@@ -168,12 +139,6 @@ void PublisherBase::SetResizeLocked(const std::string& app_id,
 
 void PublisherBase::SetWindowMode(const std::string& app_id,
                                   apps::mojom::WindowMode window_mode) {
-  NOTIMPLEMENTED();
-}
-
-void PublisherBase::SetRunOnOsLoginMode(
-    const std::string& app_id,
-    apps::mojom::RunOnOsLoginMode run_on_os_login_mode) {
   NOTIMPLEMENTED();
 }
 

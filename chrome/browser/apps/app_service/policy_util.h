@@ -6,11 +6,13 @@
 // to specify apps in policy definitions on ChromeOS.
 // ChromeOS assigns each app a unique 32-digit identifier that is usually not
 // known by admins. The utility functions below help to bridge this gap and
-// convert policy ids into internal apps ids and back at runtime. Supported app
-// types are:
+// convert policy ids into internal apps ids and back at runtime.
+// Supported app types are:
 //    * Web Apps
 //    * Arc Apps
 //    * Chrome Apps
+//    * System Web Apps
+//    * Preinstalled Web Apps
 
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_POLICY_UTIL_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_POLICY_UTIL_H_
@@ -18,20 +20,31 @@
 #include <string>
 #include <vector>
 
+#include "ash/webui/system_apps/public/system_web_app_type.h"
+#include "base/strings/string_piece_forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
 namespace apps_util {
 
+// Checks whether |policy_id| specifies an app of supported type.
+bool IsSupportedAppTypePolicyId(base::StringPiece policy_id);
+
 // Checks whether |policy_id| specifies a Chrome App.
-bool IsChromeAppPolicyId(const std::string& policy_id);
+bool IsChromeAppPolicyId(base::StringPiece policy_id);
 
 // Checks whether |policy_id| specifies an Arc App.
-bool IsArcAppPolicyId(const std::string& policy_id);
+bool IsArcAppPolicyId(base::StringPiece policy_id);
 
 // Checks whether |policy_id| specifies a Web App.
-bool IsWebAppPolicyId(const std::string& policy_id);
+bool IsWebAppPolicyId(base::StringPiece policy_id);
+
+// Checks whether |policy_id| specifies a System Web App.
+bool IsSystemWebAppPolicyId(base::StringPiece policy_id);
+
+// Checks whether |policy_id| specifies a Preinstalled Web App.
+bool IsPreinstalledWebAppPolicyId(base::StringPiece policy_id);
 
 // Transforms the provided |raw_policy_id| if necessary.
 // For Web Apps, converts it to GURL and returns the spec().
@@ -59,9 +72,20 @@ absl::optional<std::string> GetAppIdFromPolicyId(Profile*,
 // Chrome App Example:
 // Admin installs a Chrome App with "aaa111" as its app id. Calling
 // GetPolicyIdsFromAppId() with "aaa111" will return {"aaa111"}.
+//
+// System Web App Example:
+// Chrome generates apps ids for all System Web Apps -- let's say the id of the
+// Camera app is "hfhhnacclhffhdffklopdkcgdhifgngh". Calling
+// GetPolicyIdsFromAppId() with "hfhhnacclhffhdffklopdkcgdhifgngh" will return
+// {"camera"}.
 absl::optional<std::vector<std::string>> GetPolicyIdsFromAppId(
     Profile*,
     const std::string& app_id);
+
+// Maps SystemWebAppType to a policy id.
+// Returns absl::nullopt for apps not included in official builds.
+absl::optional<base::StringPiece> GetPolicyIdForSystemWebAppType(
+    ash::SystemWebAppType);
 
 }  // namespace apps_util
 

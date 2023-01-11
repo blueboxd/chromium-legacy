@@ -85,17 +85,15 @@ std::unique_ptr<unwindstack::Regs> CreateFromRegisterContext(
 LibunwindstackUnwinderAndroid::LibunwindstackUnwinderAndroid()
     : memory_regions_map_(NativeUnwinderAndroid::CreateMaps()),
       process_memory_(std::shared_ptr<unwindstack::Memory>(
-          NativeUnwinderAndroid::CreateProcessMemory().release())) {}
-
-LibunwindstackUnwinderAndroid::~LibunwindstackUnwinderAndroid() {
-  if (module_cache()) {
-    module_cache()->UnregisterAuxiliaryModuleProvider(this);
-  }
+          NativeUnwinderAndroid::CreateProcessMemory().release())) {
+  TRACE_EVENT_INSTANT(
+      TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+      "LibunwindstackUnwinderAndroid::LibunwindstackUnwinderAndroid");
 }
 
-void LibunwindstackUnwinderAndroid::InitializeModules() {
-  module_cache()->RegisterAuxiliaryModuleProvider(this);
-}
+LibunwindstackUnwinderAndroid::~LibunwindstackUnwinderAndroid() = default;
+
+void LibunwindstackUnwinderAndroid::InitializeModules() {}
 
 bool LibunwindstackUnwinderAndroid::CanUnwindFrom(
     const Frame& current_frame) const {
@@ -183,10 +181,28 @@ UnwindResult LibunwindstackUnwinderAndroid::TryUnwind(
   // Check the result of either the first or second unwind. If we were
   // successful transfer from libunwindstack format into base::Unwinder format.
   if (values.error_code == unwindstack::ERROR_NONE) {
+    // The list of frames provided by Libunwindstack's Unwind() contains the
+    // executing frame. The executing frame is also added by
+    // StackSamplerImpl::WalkStack(). Ignore the frame from the latter to avoid
+    // duplication. In case a java method was being interpreted libunwindstack
+    // adds a dummy frame for it and then writes the corresponding native frame.
+    // In such a scenario we want to prefer the frames produced by
+    // libunwindstack.
+    DCHECK_EQ(stack->size(), 1u);
+    // Since libunwindstack completed unwinding without errors, so the frames
+    // list shouldn't be empty.
+    DCHECK(!values.frames.empty());
+    stack->clear();
     for (const unwindstack::FrameData& frame : values.frames) {
-      stack->emplace_back(frame.pc,
-                          module_cache()->GetModuleForAddress(frame.pc),
-                          frame.function_name);
+      const ModuleCache::Module* module =
+          module_cache()->GetModuleForAddress(frame.pc);
+      if (module == nullptr && frame.map_info != nullptr) {
+        auto module_for_caching =
+            std::make_unique<NonElfModule>(frame.map_info.get());
+        module = module_for_caching.get();
+        module_cache()->AddCustomNativeModule(std::move(module_for_caching));
+      }
+      stack->emplace_back(frame.pc, module, frame.function_name);
     }
     return UnwindResult::kCompleted;
   }
@@ -195,15 +211,5 @@ UnwindResult LibunwindstackUnwinderAndroid::TryUnwind(
                       "warning", values.warnings, "num_frames",
                       values.frames.size());
   return UnwindResult::kAborted;
-}
-
-std::unique_ptr<const ModuleCache::Module>
-LibunwindstackUnwinderAndroid::TryCreateModuleForAddress(uintptr_t address) {
-  unwindstack::MapInfo* map_info = memory_regions_map_->Find(address).get();
-  if (map_info == nullptr || !(map_info->flags() & PROT_EXEC) ||
-      map_info->flags() & unwindstack::MAPS_FLAGS_DEVICE_MAP) {
-    return nullptr;
-  }
-  return std::make_unique<NonElfModule>(map_info);
 }
 }  // namespace base

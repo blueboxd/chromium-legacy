@@ -76,12 +76,9 @@ void NavigationHandleProxy::DidFinish() {
   if (is_primary_main_frame_fragment_navigation &&
       cpp_navigation_handle_->HasCommitted()) {
     // See http://crbug.com/251330 for why it's determined this way.
-    GURL::Replacements replacements;
-    replacements.ClearRef();
     bool urls_same_ignoring_fragment =
-        cpp_navigation_handle_->GetURL().ReplaceComponents(replacements) ==
-        cpp_navigation_handle_->GetPreviousPrimaryMainFrameURL()
-            .ReplaceComponents(replacements);
+        cpp_navigation_handle_->GetURL().EqualsIgnoringRef(
+            cpp_navigation_handle_->GetPreviousPrimaryMainFrameURL());
     is_primary_main_frame_fragment_navigation = urls_same_ignoring_fragment;
   }
 
@@ -109,22 +106,6 @@ void NavigationHandleProxy::DidFinish() {
 NavigationHandleProxy::~NavigationHandleProxy() {
   JNIEnv* env = AttachCurrentThread();
   Java_NavigationHandle_release(env, java_navigation_handle_);
-}
-
-// Called from Java.
-void NavigationHandleProxy::SetRequestHeader(
-    JNIEnv* env,
-    const JavaParamRef<jstring>& name,
-    const JavaParamRef<jstring>& value) {
-  cpp_navigation_handle_->SetRequestHeader(ConvertJavaStringToUTF8(name),
-                                           ConvertJavaStringToUTF8(value));
-}
-
-// Called from Java.
-void NavigationHandleProxy::RemoveRequestHeader(
-    JNIEnv* env,
-    const JavaParamRef<jstring>& name) {
-  cpp_navigation_handle_->RemoveRequestHeader(ConvertJavaStringToUTF8(name));
 }
 
 }  // namespace content

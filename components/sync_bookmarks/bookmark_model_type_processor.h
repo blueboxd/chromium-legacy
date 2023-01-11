@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/callback_forward.h"
@@ -57,6 +58,9 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
                         syncer::UpdateResponseDataList updates,
                         absl::optional<sync_pb::GarbageCollectionDirective>
                             gc_directive) override;
+  void StorePendingInvalidations(
+      std::vector<sync_pb::ModelTypeState::Invalidation> invalidations_to_store)
+      override;
 
   // ModelTypeControllerDelegate implementation.
   void OnSyncStarting(const syncer::DataTypeActivationRequest& request,
@@ -94,9 +98,14 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   const SyncedBookmarkTracker* GetTrackerForTest() const;
   bool IsConnectedForTest() const;
 
+  // Reset max bookmarks till which sync is enabled.
+  void SetMaxBookmarksTillSyncEnabledForTest(size_t limit);
+
   base::WeakPtr<syncer::ModelTypeControllerDelegate> GetWeakPtr();
 
  private:
+  static constexpr size_t kDefaultMaxBookmarksTillSyncEnabled = 100000;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   // If preconditions are met, inform sync that we are ready to connect.
@@ -120,6 +129,9 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   void StartTrackingMetadata();
   void StopTrackingMetadata();
 
+  // Resets bookmark tracker in addition to stopping metadata tracking.
+  void StopTrackingMetadataAndResetTracker();
+
   // Creates a DictionaryValue for local and remote debugging information about
   // |node| and appends it to |all_nodes|. It does the same for child nodes
   // recursively. |index| is the index of |node| within its parent. |index|
@@ -136,15 +148,17 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   // The bookmark model we are processing local changes from and forwarding
   // remote changes to. It is set during ModelReadyToSync(), which is called
   // during startup, as part of the bookmark-loading process.
-  raw_ptr<bookmarks::BookmarkModel> bookmark_model_ = nullptr;
+  raw_ptr<bookmarks::BookmarkModel, DanglingUntriaged> bookmark_model_ =
+      nullptr;
 
   // Used to when processing remote updates to apply favicon information. It's
   // not set at start up because it's only avialable after the bookmark model
   // has been loaded.
-  raw_ptr<favicon::FaviconService> favicon_service_ = nullptr;
+  raw_ptr<favicon::FaviconService, DanglingUntriaged> favicon_service_ =
+      nullptr;
 
   // Used to suspend bookmark undo when processing remote changes.
-  const raw_ptr<BookmarkUndoService> bookmark_undo_service_;
+  const raw_ptr<BookmarkUndoService, DanglingUntriaged> bookmark_undo_service_;
 
   // The callback used to schedule the persistence of bookmark model as well as
   // the metadata to a file during which latest metadata should also be pulled
@@ -174,6 +188,9 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   syncer::ModelErrorHandler error_handler_;
 
   std::unique_ptr<BookmarkModelObserverImpl> bookmark_model_observer_;
+
+  // This member variable exists only to allow tests to override the limit.
+  size_t max_bookmarks_till_sync_enabled_ = kDefaultMaxBookmarksTillSyncEnabled;
 
   // WeakPtrFactory for this processor for ModelTypeController.
   base::WeakPtrFactory<BookmarkModelTypeProcessor>

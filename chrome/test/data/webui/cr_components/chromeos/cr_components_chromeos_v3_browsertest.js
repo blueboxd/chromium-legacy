@@ -40,7 +40,8 @@ GEN('#include "content/public/test/browser_test.h"');
   ['SpinnerPage', 'bluetooth/bluetooth_spinner_page_test.js'],
  ].forEach(test => registerTest('Bluetooth', 'bluetooth-pairing', ...test));
 
-[['CrPolicyNetworkBehaviorMojo', 'network/cr_policy_network_behavior_mojo_tests.js'],
+[['ApnList', 'network/apn_list_test.js'],
+ ['CrPolicyNetworkBehaviorMojo', 'network/cr_policy_network_behavior_mojo_tests.js'],
  ['CrPolicyNetworkIndicatorMojo', 'network/cr_policy_network_indicator_mojo_tests.js'],
  ['NetworkApnlist', 'network/network_apnlist_test.js'],
  ['NetworkChooseMobile', 'network/network_choose_mobile_test.js'],
@@ -75,7 +76,7 @@ GEN('#include "content/public/test/browser_test.h"');
  ['Integration', 'multidevice_setup/integration_test.js'],
  ['SetupSucceededPage', 'multidevice_setup/setup_succeeded_page_test.js'],
  ['StartSetupPage', 'multidevice_setup/start_setup_page_test.js'],
-].forEach(test => registerTest('MultiDeviceSetup', 'multidevice-setup', ...test));
+].forEach(test => registerWebUiTest('MultiDeviceSetup', 'multidevice-setup', ...test));
 
 [
  ['ActivationCodePage', 'cellular_setup/activation_code_page_test.js'],
@@ -92,7 +93,9 @@ GEN('#include "content/public/test/browser_test.h"');
 ].forEach(test => registerTest('CellularSetup', 'os-settings', ...test));
 // clang-format on
 
-function registerTest(componentName, webuiHost, testName, module, caseName) {
+// Prefer registerWebUiTest, which uses the non-deprecated chrome://webui-test
+// data source, for new tests.
+function registerTest(componentName, webuiHost, testName, module) {
   const className = `${componentName}${testName}TestV3`;
   this[className] = class extends PolymerTest {
     /** @override */
@@ -102,6 +105,31 @@ function registerTest(componentName, webuiHost, testName, module, caseName) {
       return `chrome://${
           webuiHost}/test_loader.html?module=cr_components/chromeos/${
           module}&host=test`;
+    }
+
+    /** @override */
+    get featureList() {
+      return {
+        enabled: [
+          'chromeos::features::kSimLockPolicy',
+        ],
+      };
+    }
+  };
+
+  TEST_F(className, 'All', () => mocha.run());
+}
+
+function registerWebUiTest(componentName, webuiHost, testName, module) {
+  const className = `${componentName}${testName}TestV3`;
+  this[className] = class extends PolymerTest {
+    /** @override */
+    get browsePreload() {
+      // TODO(jhawkins): Set up test_loader.html for internet-config-dialog
+      // and use it here instead of os-settings.
+      return `chrome://${
+          webuiHost}/test_loader.html?module=cr_components/chromeos/${
+          module}`;
     }
 
     /** @override */

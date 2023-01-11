@@ -61,7 +61,6 @@ class ScriptExecutorTest : public testing::Test,
                            public ScriptExecutor::Listener {
  public:
   void SetUp() override {
-    delegate_.SetService(&mock_service_);
     delegate_.SetWebController(&mock_web_controller_);
     delegate_.SetCurrentURL(GURL("http://example.com/"));
 
@@ -77,7 +76,8 @@ class ScriptExecutorTest : public testing::Test,
         /* global_payload= */ "initial global payload",
         /* script_payload= */ "initial payload",
         /* listener= */ this, &ordered_interrupts_,
-        /* delegate= */ &delegate_, /* ui_delegate= */ &ui_delegate_,
+        /* delegate= */ &delegate_, /* service=*/&mock_service_,
+        /* ui_delegate= */ &ui_delegate_,
         /* is_interrupt_executor= */ false);
 
     test_util::MockFindAnyElement(mock_web_controller_);
@@ -1494,6 +1494,39 @@ TEST_F(ScriptExecutorTest, RunPromptInPromptMode) {
   EXPECT_EQ(AutofillAssistantState::PROMPT, delegate_.GetState());
 }
 
+TEST_F(ScriptExecutorTest, TestLegalDisclaimer) {
+  base::MockCallback<base::OnceCallback<void(int)>>
+      legal_disclaimer_link_callback;
+  ActionsResponseProto actions_response;
+  auto legal_disclaimer = std::make_unique<LegalDisclaimerProto>();
+  actions_response.add_actions()->mutable_show_form()->mutable_form();
+  legal_disclaimer->set_legal_disclaimer_message(
+      "Legal disclaimer message with <link1>Links</link1>");
+
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
+  executor_->Run(&user_data_, executor_callback_.Get());
+
+  executor_->Prompt(nullptr, false, base::DoNothing(), false, false,
+                    /* legal_disclaimer= */ nullptr,
+                    /* legal_disclaimer_link_callback= */ base::DoNothing());
+  EXPECT_EQ(nullptr, ui_delegate_.GetLegalDisclaimer());
+  EXPECT_TRUE(ui_delegate_.GetLegalDisclaimerLinkCallback().is_null());
+
+  executor_->Prompt(nullptr, false, base::DoNothing(), false, false,
+                    std::move(legal_disclaimer),
+                    legal_disclaimer_link_callback.Get());
+  EXPECT_NE(nullptr, ui_delegate_.GetLegalDisclaimer());
+  EXPECT_FALSE(ui_delegate_.GetLegalDisclaimerLinkCallback().is_null());
+  EXPECT_EQ(AutofillAssistantState::PROMPT, delegate_.GetState());
+
+  executor_->CleanUpAfterPrompt();
+  EXPECT_EQ(nullptr, ui_delegate_.GetLegalDisclaimer());
+  EXPECT_TRUE(ui_delegate_.GetLegalDisclaimerLinkCallback().is_null());
+  EXPECT_EQ(AutofillAssistantState::RUNNING, delegate_.GetState());
+}
+
 TEST_F(ScriptExecutorTest, RunInterruptMultipleTimesDuringPrompt) {
   SetupInterrupt("interrupt", "interrupt_trigger");
 
@@ -2544,6 +2577,25 @@ TEST_F(ScriptExecutorTest, ReportProgressApplied) {
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   executor_->Run(&user_data_, executor_callback_.Get());
+}
+
+TEST_F(ScriptExecutorTest, GetCurrentRootAction) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()
+      ->mutable_prompt()
+      ->add_choices()
+      ->mutable_chip()
+      ->set_text("done");
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
+  // Simple check that during an action, GetCurrentRootAction() will point to
+  // that same action.
+  EXPECT_EQ(executor_->GetCurrentRootAction(), nullptr);
+  executor_->Run(&user_data_, executor_callback_.Get());
+  ASSERT_NE(executor_->GetCurrentRootAction(), nullptr);
+  EXPECT_EQ(executor_->GetCurrentRootAction()->proto(),
+            actions_response.actions(0));
 }
 
 }  // namespace

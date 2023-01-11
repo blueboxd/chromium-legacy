@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_double.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
@@ -75,7 +76,8 @@ class BackgroundColorPaintDefinitionTest : public RenderingTest {
                        const CompositorPaintWorkletJob::AnimatedPropertyValues&
                            property_values) {
     BackgroundColorPaintDefinition definition;
-    definition.PaintForTest(animated_colors, offsets, property_values);
+    definition.PaintForTest(animated_colors, offsets, property_values,
+                            scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
  private:
@@ -478,8 +480,6 @@ TEST_F(BackgroundColorPaintDefinitionTest,
   // Previously no background-color animation, now it has. This should trigger
   // a repaint, see ComputedStyle::UpdatePropertySpecificDifferences().
   EXPECT_TRUE(style->HasCurrentBackgroundColorAnimation());
-  style->ResetHasCurrentBackgroundColorAnimation();
-  style->ResetCompositablePaintAnimationChanged();
 
   start_keyframe->SetCSSPropertyValue(
       property_id, "blue", SecureContextMode::kInsecureContext, nullptr);
@@ -553,8 +553,6 @@ TEST_F(BackgroundColorPaintDefinitionTest, TriggerRepaintChangedKeyframe) {
   // Previously no background-color animation, now it has. This should trigger
   // a repaint, see ComputedStyle::UpdatePropertySpecificDifferences().
   EXPECT_TRUE(style->HasCurrentBackgroundColorAnimation());
-  style->ResetHasCurrentBackgroundColorAnimation();
-  style->ResetCompositablePaintAnimationChanged();
 
   start_keyframe->SetCSSPropertyValue(
       property_id, "red", SecureContextMode::kInsecureContext, nullptr);

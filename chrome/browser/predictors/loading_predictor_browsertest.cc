@@ -23,6 +23,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_features.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_features.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_preconnect_client.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
@@ -67,6 +68,7 @@
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/cors.mojom.h"
@@ -534,7 +536,7 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
   net::EmbeddedTestServer preconnecting_test_server_;
 
  private:
-  raw_ptr<LoadingPredictor> loading_predictor_ = nullptr;
+  raw_ptr<LoadingPredictor, DanglingUntriaged> loading_predictor_ = nullptr;
   std::unique_ptr<net::test_server::ConnectionTracker> connection_tracker_;
   std::unique_ptr<net::test_server::ConnectionTracker>
       preconnecting_server_connection_tracker_;
@@ -1109,7 +1111,14 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
 
   // Learn the redirects from initial navigation.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), redirecting_url));
-  EXPECT_EQ(0u, connection_tracker()->GetAcceptedSocketCount());
+  // If kPreconnectOnRedirect is enabled then the redirect will cause a
+  // preconnect.
+  if (base::FeatureList::IsEnabled(network::features::kPreconnectOnRedirect) &&
+      ChromeContentBrowserClient::ShouldPreconnect(browser()->profile())) {
+    EXPECT_EQ(1u, connection_tracker()->GetAcceptedSocketCount());
+  } else {
+    EXPECT_EQ(0u, connection_tracker()->GetAcceptedSocketCount());
+  }
   EXPECT_EQ(0u, connection_tracker()->GetReadSocketCount());
 
   // The next navigation should preconnect. It won't use the preconnected
@@ -2217,7 +2226,7 @@ class MultiPageBrowserTest : public InProcessBrowserTest {
   content::WebContents* GetWebContents() { return web_contents_; }
 
   net::test_server::EmbeddedTestServerHandle test_server_handle_;
-  raw_ptr<content::WebContents> web_contents_;
+  raw_ptr<content::WebContents, DanglingUntriaged> web_contents_;
 };
 
 IN_PROC_BROWSER_TEST_F(MultiPageBrowserTest, LoadingPredictor) {

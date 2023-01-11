@@ -8,32 +8,25 @@
 #include <vector>
 
 #include "base/check.h"
+#include "components/attribution_reporting/aggregatable_trigger_data.h"
+#include "components/attribution_reporting/event_trigger_data.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 
 namespace content {
 
-AttributionTrigger::EventTriggerData::EventTriggerData(
-    uint64_t data,
-    int64_t priority,
-    absl::optional<uint64_t> dedup_key,
-    AttributionFilterData filters,
-    AttributionFilterData not_filters)
-    : data(data),
-      priority(priority),
-      dedup_key(dedup_key),
-      filters(std::move(filters)),
-      not_filters(std::move(not_filters)) {}
-
 AttributionTrigger::AttributionTrigger(
     url::Origin destination_origin,
     url::Origin reporting_origin,
-    AttributionFilterData filters,
-    AttributionFilterData not_filters,
+    attribution_reporting::Filters filters,
+    attribution_reporting::Filters not_filters,
     absl::optional<uint64_t> debug_key,
     absl::optional<uint64_t> aggregatable_dedup_key,
-    std::vector<EventTriggerData> event_triggers,
-    std::vector<AttributionAggregatableTriggerData> aggregatable_trigger_data,
-    AttributionAggregatableValues aggregatable_values)
+    std::vector<attribution_reporting::EventTriggerData> event_triggers,
+    std::vector<attribution_reporting::AggregatableTriggerData>
+        aggregatable_trigger_data,
+    attribution_reporting::AggregatableValues aggregatable_values,
+    bool is_within_fenced_frame,
+    bool debug_reporting)
     : destination_origin_(std::move(destination_origin)),
       reporting_origin_(std::move(reporting_origin)),
       filters_(std::move(filters)),
@@ -42,7 +35,9 @@ AttributionTrigger::AttributionTrigger(
       aggregatable_dedup_key_(aggregatable_dedup_key),
       event_triggers_(std::move(event_triggers)),
       aggregatable_trigger_data_(std::move(aggregatable_trigger_data)),
-      aggregatable_values_(std::move(aggregatable_values)) {
+      aggregatable_values_(std::move(aggregatable_values)),
+      is_within_fenced_frame_(is_within_fenced_frame),
+      debug_reporting_(debug_reporting) {
   DCHECK(network::IsOriginPotentiallyTrustworthy(reporting_origin_));
   DCHECK(network::IsOriginPotentiallyTrustworthy(destination_origin_));
 }

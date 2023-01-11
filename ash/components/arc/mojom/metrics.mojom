@@ -1,7 +1,7 @@
 // Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// Next MinVersion: 27
+// Next MinVersion: 28
 module arc.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
@@ -158,6 +158,9 @@ enum ArcNetworkEvent {
   [MinVersion=22] kAndroidVpnIpv6Provisioned = 37,
   [MinVersion=22] kAndroidVpnIpv4Provisioned = 38,
   [MinVersion=24] kAndroidDisconnectHostVpn = 39,
+  [MinVersion=27] kArcHostVpnStarting = 40,
+  [MinVersion=27] kArcHostVpnRouteReplaced = 41,
+  [MinVersion=27] kArcHostVpnDisconnected = 42,
 };
 
 // These enum values are persisted to metrics thus must be treated as
@@ -189,6 +192,9 @@ enum ArcNetworkError {
   kNetdSnatStartError = 22,
   kNetdSnatStopError = 23,
   [MinVersion=19] kPasspointInvalidConfigurationError = 24,
+  [MinVersion=27] kArcHostVpnConnectionError = 25,
+  [MinVersion=27] kArcHostVpnCrashedError = 26,
+  [MinVersion=27] kArcHostVpnInternalError = 27,
 };
 
 // Describes the type of app kill being reported.
@@ -366,7 +372,7 @@ enum WaylandTimingEvent {
 };
 
 // Deprecated method IDs: 25
-// Next method ID: 31
+// Next method ID: 32
 interface MetricsHost {
   // Reports boot progress events from ARC instance.
   ReportBootProgress@0(array<BootProgressEvent> events,
@@ -500,6 +506,9 @@ interface MetricsHost {
   [MinVersion=25] ReportTotalFileStatsOfAndroidDataSubdir@29(
       AndroidDataSubdirectory target, uint32 number_of_directories,
       uint32 number_of_non_directories, uint32 size_in_kilobytes);
+
+  // Reports first WebView started event to collect WebView usage in ARC.
+  [MinVersion=27] ReportWebViewProcessStarted@31();
 };
 
 // Deprecated method IDs: 0

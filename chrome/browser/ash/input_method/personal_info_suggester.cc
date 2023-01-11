@@ -6,20 +6,20 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
-#include "ash/services/ime/public/cpp/suggestions.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/extensions/input_method_api.h"
 #include "chrome/browser/ash/input_method/ui/suggestion_details.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chromeos/ash/services/ime/public/cpp/assistive_suggestions.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/label_formatter_utils.h"
@@ -33,9 +33,9 @@ namespace input_method {
 
 namespace {
 
-using ime::TextSuggestion;
-using ime::TextSuggestionMode;
-using ime::TextSuggestionType;
+using ime::AssistiveSuggestion;
+using ime::AssistiveSuggestionMode;
+using ime::AssistiveSuggestionType;
 
 const size_t kMaxConfirmedTextLength = 10;
 constexpr size_t kMaxTextBeforeCursorLength = 50;
@@ -92,9 +92,9 @@ void RecordAssistiveInsufficientData(AssistiveType type) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.InsufficientData", type);
 }
 
-TextSuggestion MapToTextSuggestion(std::u16string candidate_string) {
-  return {.mode = TextSuggestionMode::kPrediction,
-          .type = TextSuggestionType::kAssistivePersonalInfo,
+AssistiveSuggestion MapToAssistiveSuggestion(std::u16string candidate_string) {
+  return {.mode = AssistiveSuggestionMode::kPrediction,
+          .type = AssistiveSuggestionType::kAssistivePersonalInfo,
           .text = base::UTF16ToUTF8(candidate_string)};
 }
 
@@ -168,12 +168,12 @@ PersonalInfoSuggester::PersonalInfoSuggester(
       highlighted_index_(kNoneHighlighted) {
   suggestion_button_.id = ui::ime::ButtonId::kSuggestion;
   suggestion_button_.window_type =
-      ui::ime::AssistiveWindowType::kPersonalInfoSuggestion;
+      ash::ime::AssistiveWindowType::kPersonalInfoSuggestion;
   suggestion_button_.index = 0;
   settings_button_.id = ui::ime::ButtonId::kSmartInputsSettingLink;
   settings_button_.announce_string = kLearnMoreMessage;
   settings_button_.window_type =
-      ui::ime::AssistiveWindowType::kPersonalInfoSuggestion;
+      ash::ime::AssistiveWindowType::kPersonalInfoSuggestion;
 }
 
 PersonalInfoSuggester::~PersonalInfoSuggester() = default;
@@ -187,7 +187,7 @@ void PersonalInfoSuggester::OnBlur() {
 }
 
 void PersonalInfoSuggester::OnExternalSuggestionsUpdated(
-    const std::vector<TextSuggestion>& suggestions) {
+    const std::vector<AssistiveSuggestion>& suggestions) {
   // PersonalInfoSuggester doesn't utilize any suggestions produced externally,
   // so ignore this call.
 }
@@ -430,9 +430,9 @@ bool PersonalInfoSuggester::HasSuggestions() {
   return suggestion_shown_;
 }
 
-std::vector<TextSuggestion> PersonalInfoSuggester::GetSuggestions() {
+std::vector<AssistiveSuggestion> PersonalInfoSuggester::GetSuggestions() {
   if (HasSuggestions())
-    return {MapToTextSuggestion(suggestion_)};
+    return {MapToAssistiveSuggestion(suggestion_)};
   return {};
 }
 

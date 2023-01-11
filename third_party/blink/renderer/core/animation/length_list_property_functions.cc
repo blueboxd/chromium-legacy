@@ -26,14 +26,14 @@ const FillLayer* GetFillLayerForPosition(const CSSProperty& property,
 }
 
 FillLayer* AccessFillLayerForPosition(const CSSProperty& property,
-                                      ComputedStyle& style) {
+                                      ComputedStyleBuilder& builder) {
   switch (property.PropertyID()) {
     case CSSPropertyID::kBackgroundPositionX:
     case CSSPropertyID::kBackgroundPositionY:
-      return &style.AccessBackgroundLayers();
+      return &builder.AccessBackgroundLayers();
     case CSSPropertyID::kWebkitMaskPositionX:
     case CSSPropertyID::kWebkitMaskPositionY:
-      return &style.AccessMaskLayers();
+      return &builder.AccessMaskLayers();
     default:
       NOTREACHED();
       return nullptr;
@@ -202,51 +202,51 @@ static TransformOrigin TransformOriginFromVector(const Vector<Length>& list) {
 }
 
 void LengthListPropertyFunctions::SetLengthList(const CSSProperty& property,
-                                                ComputedStyle& style,
+                                                ComputedStyleBuilder& builder,
                                                 Vector<Length>&& length_list) {
   switch (property.PropertyID()) {
     case CSSPropertyID::kStrokeDasharray:
-      style.SetStrokeDashArray(
+      builder.SetStrokeDashArray(
           length_list.empty()
               ? nullptr
               : base::MakeRefCounted<SVGDashArray>(std::move(length_list)));
       return;
 
     case CSSPropertyID::kObjectPosition:
-      style.SetObjectPosition(PointFromVector(length_list));
+      builder.SetObjectPosition(PointFromVector(length_list));
       return;
     case CSSPropertyID::kOffsetAnchor:
-      style.SetOffsetAnchor(PointFromVector(length_list));
+      builder.SetOffsetAnchor(PointFromVector(length_list));
       return;
     case CSSPropertyID::kOffsetPosition:
-      style.SetOffsetPosition(PointFromVector(length_list));
+      builder.SetOffsetPosition(PointFromVector(length_list));
       return;
     case CSSPropertyID::kPerspectiveOrigin:
-      style.SetPerspectiveOrigin(PointFromVector(length_list));
+      builder.SetPerspectiveOrigin(PointFromVector(length_list));
       return;
 
     case CSSPropertyID::kBorderBottomLeftRadius:
-      style.SetBorderBottomLeftRadius(SizeFromVector(length_list));
+      builder.SetBorderBottomLeftRadius(SizeFromVector(length_list));
       return;
     case CSSPropertyID::kBorderBottomRightRadius:
-      style.SetBorderBottomRightRadius(SizeFromVector(length_list));
+      builder.SetBorderBottomRightRadius(SizeFromVector(length_list));
       return;
     case CSSPropertyID::kBorderTopLeftRadius:
-      style.SetBorderTopLeftRadius(SizeFromVector(length_list));
+      builder.SetBorderTopLeftRadius(SizeFromVector(length_list));
       return;
     case CSSPropertyID::kBorderTopRightRadius:
-      style.SetBorderTopRightRadius(SizeFromVector(length_list));
+      builder.SetBorderTopRightRadius(SizeFromVector(length_list));
       return;
 
     case CSSPropertyID::kTransformOrigin:
-      style.SetTransformOrigin(TransformOriginFromVector(length_list));
+      builder.SetTransformOrigin(TransformOriginFromVector(length_list));
       return;
 
     case CSSPropertyID::kBackgroundPositionX:
     case CSSPropertyID::kBackgroundPositionY:
     case CSSPropertyID::kWebkitMaskPositionX:
     case CSSPropertyID::kWebkitMaskPositionY: {
-      FillLayer* fill_layer = AccessFillLayerForPosition(property, style);
+      FillLayer* fill_layer = AccessFillLayerForPosition(property, builder);
       FillLayer* prev = nullptr;
       FillLayerMethods fill_layer_methods(property);
       for (wtf_size_t i = 0; i < length_list.size(); i++) {

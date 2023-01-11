@@ -836,7 +836,6 @@ component("platform") {
     "graphics/decoding_image_generator.h",
     "graphics/deferred_image_decoder.cc",
     "graphics/deferred_image_decoder.h",
-    "graphics/document_transition_shared_element_id.h",
     "graphics/dom_node_id.h",
     "graphics/draw_looper_builder.cc",
     "graphics/draw_looper_builder.h",
@@ -1116,6 +1115,7 @@ component("platform") {
     "graphics/video_frame_sink_bundle.h",
     "graphics/video_frame_submitter.cc",
     "graphics/video_frame_submitter.h",
+    "graphics/view_transition_shared_element_id.h",
     "graphics/viz_util.cc",
     "graphics/viz_util.h",
     "graphics/web_graphics_context_3d_provider_util.cc",
@@ -1129,6 +1129,8 @@ component("platform") {
     "image-decoders/bmp/bmp_image_decoder.h",
     "image-decoders/bmp/bmp_image_reader.cc",
     "image-decoders/bmp/bmp_image_reader.h",
+    "image-decoders/exif_reader.cc",
+    "image-decoders/exif_reader.h",
     "image-decoders/fast_shared_buffer_reader.cc",
     "image-decoders/fast_shared_buffer_reader.h",
     "image-decoders/gif/gif_image_decoder.cc",
@@ -1436,8 +1438,6 @@ component("platform") {
     "transforms/skew_transform_operation.h",
     "transforms/transform_operations.cc",
     "transforms/transform_operations.h",
-    "transforms/transformation_matrix.cc",
-    "transforms/transformation_matrix.h",
     "transforms/translate_transform_operation.cc",
     "transforms/translate_transform_operation.h",
     "video_capture/video_capture_impl.cc",
@@ -1884,7 +1884,6 @@ static_library("test_support") {
     "testing/testing_platform_support.h",
     "testing/testing_platform_support_with_mock_scheduler.cc",
     "testing/testing_platform_support_with_mock_scheduler.h",
-    "testing/transformation_matrix_test_helpers.h",
     "testing/unit_test_helpers.cc",
     "testing/unit_test_helpers.h",
     "testing/url_test_helpers.cc",
@@ -1922,6 +1921,7 @@ static_library("test_support") {
     "//testing/gmock",
     "//testing/gtest:gtest",
     "//testing/perf",
+    "//third_party/blink/public:test_headers",
     "//third_party/blink/renderer/platform/blob:test_support",
     "//third_party/blink/renderer/platform/heap:test_support",
     "//third_party/blink/renderer/platform/loader:test_support",
@@ -2043,6 +2043,7 @@ source_set("blink_platform_unittests_sources") {
     "geometry/length_test.cc",
     "graphics/accelerated_static_bitmap_image_test.cc",
     "graphics/bitmap_image_test.cc",
+    "graphics/color_test.cc",
     "graphics/compositing/chunk_to_layer_mapper_test.cc",
     "graphics/compositing/paint_artifact_compositor_test.cc",
     "graphics/compositing/paint_chunks_to_cc_layer_test.cc",
@@ -2175,7 +2176,6 @@ source_set("blink_platform_unittests_sources") {
     "transforms/affine_transform_test.cc",
     "transforms/rotation_test.cc",
     "transforms/transform_operations_test.cc",
-    "transforms/transformation_matrix_test.cc",
     "video_capture/gpu_memory_buffer_test_support.cc",
     "video_capture/gpu_memory_buffer_test_support.h",
     "video_capture/video_capture_impl_test.cc",
@@ -2255,6 +2255,7 @@ source_set("blink_platform_unittests_sources") {
     "//services/viz/public/mojom",
     "//skia",
     "//skia:skcms",
+    "//skia:test_fonts",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party:freetype_harfbuzz",
@@ -2290,12 +2291,6 @@ source_set("blink_platform_unittests_sources") {
   defines = [ "INSIDE_BLINK" ]
   if (use_minikin_hyphenation) {
     defines += [ "USE_MINIKIN_HYPHENATION" ]
-  }
-
-  if (is_fuchsia) {
-    deps += [ "//skia:test_fonts_cfv2" ]
-  } else {
-    deps += [ "//skia:test_fonts" ]
   }
 }
 
@@ -2412,6 +2407,7 @@ test("blink_fuzzer_unittests") {
     "//base/test:test_support",
     "//gin:gin",
     "//mojo/core/embedder:embedder",
+    "//skia:test_fonts",
     "//third_party/blink/public:test_support",
   ]
 
@@ -2424,14 +2420,11 @@ test("blink_fuzzer_unittests") {
   }
 
   if (is_fuchsia) {
-    deps += [ "//skia:test_fonts_cfv2" ]
     test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/test_fonts.shard.test-cml",
       "//build/config/fuchsia/test/mark_vmo_executable.shard.test-cml",
     ]
-  } else {
-    deps += [ "//skia:test_fonts" ]
   }
 }
 

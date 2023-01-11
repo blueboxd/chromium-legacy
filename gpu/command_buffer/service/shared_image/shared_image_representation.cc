@@ -16,6 +16,12 @@
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gl/gl_fence.h"
 
+#if BUILDFLAG(IS_WIN)
+#include <dcomp.h>
+#include <dxgi.h>
+#include <unknwn.h>
+#endif
+
 namespace gpu {
 
 SharedImageRepresentation::SharedImageRepresentation(
@@ -125,20 +131,24 @@ bool SkiaImageRepresentation::SupportsMultipleConcurrentReadAccess() {
 SkiaImageRepresentation::ScopedWriteAccess::ScopedWriteAccess(
     base::PassKey<SkiaImageRepresentation> /* pass_key */,
     SkiaImageRepresentation* representation,
-    sk_sp<SkSurface> surface,
+    std::vector<sk_sp<SkSurface>> surfaces,
     std::unique_ptr<GrBackendSurfaceMutableState> end_state)
     : ScopedAccessBase(representation),
-      surface_(std::move(surface)),
-      end_state_(std::move(end_state)) {}
+      surfaces_(std::move(surfaces)),
+      end_state_(std::move(end_state)) {
+  DCHECK(!surfaces_.empty());
+}
 
 SkiaImageRepresentation::ScopedWriteAccess::ScopedWriteAccess(
     base::PassKey<SkiaImageRepresentation> /* pass_key */,
     SkiaImageRepresentation* representation,
-    sk_sp<SkPromiseImageTexture> promise_image_texture,
+    std::vector<sk_sp<SkPromiseImageTexture>> promise_image_textures,
     std::unique_ptr<GrBackendSurfaceMutableState> end_state)
     : ScopedAccessBase(representation),
-      promise_image_texture_(std::move(promise_image_texture)),
-      end_state_(std::move(end_state)) {}
+      promise_image_textures_(std::move(promise_image_textures)),
+      end_state_(std::move(end_state)) {
+  DCHECK(!promise_image_textures_.empty());
+}
 
 SkiaImageRepresentation::ScopedWriteAccess::~ScopedWriteAccess() {
   if (end_state_) {
@@ -151,7 +161,10 @@ SkiaImageRepresentation::ScopedWriteAccess::~ScopedWriteAccess() {
       base::debug::DumpWithoutCrashing();
   }
 
-  representation()->EndWriteAccess(std::move(surface_));
+  // Ensure no one uses `surfaces_` by dropping the reference before calling
+  // EndWriteAccess.
+  surfaces_.clear();
+  representation()->EndWriteAccess();
 }
 
 std::unique_ptr<GrBackendSurfaceMutableState>
@@ -163,6 +176,7 @@ std::unique_ptr<SkiaImageRepresentation::ScopedWriteAccess>
 SkiaImageRepresentation::BeginScopedWriteAccess(
     int final_msaa_count,
     const SkSurfaceProps& surface_props,
+    const gfx::Rect& update_rect,
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
     AllowUnclearedAccess allow_uncleared,
@@ -174,10 +188,10 @@ SkiaImageRepresentation::BeginScopedWriteAccess(
 
   std::unique_ptr<GrBackendSurfaceMutableState> end_state;
   if (use_sk_surface) {
-    sk_sp<SkSurface> surface =
-        BeginWriteAccess(final_msaa_count, surface_props, begin_semaphores,
-                         end_semaphores, &end_state);
-    if (!surface) {
+    std::vector<sk_sp<SkSurface>> surfaces =
+        BeginWriteAccess(final_msaa_count, surface_props, update_rect,
+                         begin_semaphores, end_semaphores, &end_state);
+    if (surfaces.empty()) {
       LOG(ERROR) << "Unable to initialize SkSurface";
       return nullptr;
     }
@@ -185,12 +199,12 @@ SkiaImageRepresentation::BeginScopedWriteAccess(
     backing()->OnWriteSucceeded();
 
     return std::make_unique<ScopedWriteAccess>(
-        base::PassKey<SkiaImageRepresentation>(), this, std::move(surface),
+        base::PassKey<SkiaImageRepresentation>(), this, std::move(surfaces),
         std::move(end_state));
   }
-  sk_sp<SkPromiseImageTexture> promise_image_texture =
+  std::vector<sk_sp<SkPromiseImageTexture>> promise_image_textures =
       BeginWriteAccess(begin_semaphores, end_semaphores, &end_state);
-  if (!promise_image_texture) {
+  if (promise_image_textures.empty()) {
     LOG(ERROR) << "Unable to initialize SkPromiseImageTexture";
     return nullptr;
   }
@@ -199,7 +213,20 @@ SkiaImageRepresentation::BeginScopedWriteAccess(
 
   return std::make_unique<ScopedWriteAccess>(
       base::PassKey<SkiaImageRepresentation>(), this,
-      std::move(promise_image_texture), std::move(end_state));
+      std::move(promise_image_textures), std::move(end_state));
+}
+
+std::unique_ptr<SkiaImageRepresentation::ScopedWriteAccess>
+SkiaImageRepresentation::BeginScopedWriteAccess(
+    int final_msaa_count,
+    const SkSurfaceProps& surface_props,
+    std::vector<GrBackendSemaphore>* begin_semaphores,
+    std::vector<GrBackendSemaphore>* end_semaphores,
+    AllowUnclearedAccess allow_uncleared,
+    bool use_sk_surface) {
+  return BeginScopedWriteAccess(
+      final_msaa_count, surface_props, gfx::Rect(size()), begin_semaphores,
+      end_semaphores, allow_uncleared, use_sk_surface);
 }
 
 std::unique_ptr<SkiaImageRepresentation::ScopedWriteAccess>
@@ -217,11 +244,13 @@ SkiaImageRepresentation::BeginScopedWriteAccess(
 SkiaImageRepresentation::ScopedReadAccess::ScopedReadAccess(
     base::PassKey<SkiaImageRepresentation> /* pass_key */,
     SkiaImageRepresentation* representation,
-    sk_sp<SkPromiseImageTexture> promise_image_texture,
+    std::vector<sk_sp<SkPromiseImageTexture>> promise_image_textures,
     std::unique_ptr<GrBackendSurfaceMutableState> end_state)
     : ScopedAccessBase(representation),
-      promise_image_texture_(std::move(promise_image_texture)),
-      end_state_(std::move(end_state)) {}
+      promise_image_textures_(std::move(promise_image_textures)),
+      end_state_(std::move(end_state)) {
+  DCHECK(!promise_image_textures_.empty());
+}
 
 SkiaImageRepresentation::ScopedReadAccess::~ScopedReadAccess() {
   if (end_state_) {
@@ -247,7 +276,7 @@ sk_sp<SkImage> SkiaImageRepresentation::ScopedReadAccess::CreateSkImage(
   auto sk_color_space =
       representation()->color_space().GetAsFullRangeRGB().ToSkColorSpace();
   return SkImage::MakeFromTexture(
-      context, promise_image_texture_->backendTexture(), surface_origin,
+      context, promise_image_texture()->backendTexture(), surface_origin,
       color_type, alpha_type, sk_color_space, texture_release_proc,
       release_context);
 }
@@ -272,32 +301,16 @@ SkiaImageRepresentation::BeginScopedReadAccess(
   }
 
   std::unique_ptr<GrBackendSurfaceMutableState> end_state;
-  sk_sp<SkPromiseImageTexture> promise_image_texture =
+  std::vector<sk_sp<SkPromiseImageTexture>> promise_image_textures =
       BeginReadAccess(begin_semaphores, end_semaphores, &end_state);
-  if (!promise_image_texture)
+  if (promise_image_textures.empty())
     return nullptr;
 
   backing()->OnReadSucceeded();
 
   return std::make_unique<ScopedReadAccess>(
       base::PassKey<SkiaImageRepresentation>(), this,
-      std::move(promise_image_texture), std::move(end_state));
-}
-
-sk_sp<SkSurface> SkiaImageRepresentation::BeginWriteAccess(
-    int final_msaa_count,
-    const SkSurfaceProps& surface_props,
-    std::vector<GrBackendSemaphore>* begin_semaphores,
-    std::vector<GrBackendSemaphore>* end_semaphores,
-    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
-  return nullptr;
-}
-
-sk_sp<SkPromiseImageTexture> SkiaImageRepresentation::BeginReadAccess(
-    std::vector<GrBackendSemaphore>* begin_semaphores,
-    std::vector<GrBackendSemaphore>* end_semaphores,
-    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
-  return nullptr;
+      std::move(promise_image_textures), std::move(end_state));
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -305,7 +318,12 @@ AHardwareBuffer* OverlayImageRepresentation::GetAHardwareBuffer() {
   NOTREACHED();
   return nullptr;
 }
-#elif defined(USE_OZONE)
+std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+OverlayImageRepresentation::GetAHardwareBufferFenceSync() {
+  NOTREACHED();
+  return nullptr;
+}
+#elif BUILDFLAG(IS_OZONE)
 scoped_refptr<gfx::NativePixmap> OverlayImageRepresentation::GetNativePixmap() {
   return backing()->GetNativePixmap();
 }
@@ -314,15 +332,35 @@ scoped_refptr<gl::DCOMPSurfaceProxy>
 OverlayImageRepresentation::GetDCOMPSurfaceProxy() {
   return nullptr;
 }
+
+OverlayImageRepresentation::DCompLayerContent::DCompLayerContent(
+    Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain)
+    : content_(std::move(swap_chain)) {}
+OverlayImageRepresentation::DCompLayerContent::DCompLayerContent(
+    Microsoft::WRL::ComPtr<IDCompositionSurface> dcomp_surface,
+    uint64_t surface_serial)
+    : content_(std::move(dcomp_surface)), surface_serial_(surface_serial) {}
+OverlayImageRepresentation::DCompLayerContent::~DCompLayerContent() = default;
+
+OverlayImageRepresentation::DCompLayerContent
+OverlayImageRepresentation::GetDCompLayerContent() const {
+  NOTREACHED();
+  return DCompLayerContent(nullptr);
+}
+#elif BUILDFLAG(IS_MAC)
+gfx::ScopedIOSurface OverlayImageRepresentation::GetIOSurface() const {
+  return gfx::ScopedIOSurface();
+}
+bool OverlayImageRepresentation::IsInUseByWindowServer() const {
+  return false;
+}
 #endif
 
 OverlayImageRepresentation::ScopedReadAccess::ScopedReadAccess(
     base::PassKey<OverlayImageRepresentation> pass_key,
     OverlayImageRepresentation* representation,
-    gl::GLImage* gl_image,
     gfx::GpuFenceHandle acquire_fence)
     : ScopedAccessBase(representation),
-      gl_image_(gl_image),
       acquire_fence_(std::move(acquire_fence)) {}
 
 OverlayImageRepresentation::ScopedReadAccess::~ScopedReadAccess() {
@@ -330,7 +368,7 @@ OverlayImageRepresentation::ScopedReadAccess::~ScopedReadAccess() {
 }
 
 std::unique_ptr<OverlayImageRepresentation::ScopedReadAccess>
-OverlayImageRepresentation::BeginScopedReadAccess(bool needs_gl_image) {
+OverlayImageRepresentation::BeginScopedReadAccess() {
   if (!IsCleared()) {
     LOG(ERROR) << "Attempt to read from an uninitialized SharedImage";
     return nullptr;
@@ -344,7 +382,7 @@ OverlayImageRepresentation::BeginScopedReadAccess(bool needs_gl_image) {
 
   return std::make_unique<ScopedReadAccess>(
       base::PassKey<OverlayImageRepresentation>(), this,
-      needs_gl_image ? GetGLImage() : nullptr, std::move(acquire_fence));
+      std::move(acquire_fence));
 }
 
 DawnImageRepresentation::ScopedAccess::ScopedAccess(

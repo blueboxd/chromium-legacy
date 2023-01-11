@@ -8,7 +8,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -264,7 +263,7 @@ class WebAppFileHandlingBrowserTest : public WebAppFileHandlingTestBase {
   TestServerRedirectHandle redirect_handle_;
   base::test::ScopedFeatureList feature_list_{
       blink::features::kFileHandlingAPI};
-  raw_ptr<content::WebContents> web_contents_;
+  raw_ptr<content::WebContents, DanglingUntriaged> web_contents_;
   std::unique_ptr<content::WebContentsDestroyedWatcher> destroyed_watcher_;
 };
 

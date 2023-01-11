@@ -10,9 +10,8 @@ import android.webkit.URLUtil;
 
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
-import org.chromium.content_public.browser.ContentFeatureList;
-import org.chromium.content_public.common.ContentFeatures;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.dragdrop.DragAndDropDelegate;
 
 /**
  * Provides utility methods for generating context menus.
@@ -54,11 +53,6 @@ public final class ContextMenuUtils {
         return "Link";
     }
 
-    /** Whether to force using popup style for context menu. */
-    static boolean forcePopupStyleEnabled() {
-        return ContentFeatureList.isEnabled(ContentFeatures.TOUCH_DRAG_AND_CONTEXT_MENU);
-    }
-
     /**
      * Whether the context menu is a popup menu in the given context; otherwise, it is shown as a
      * popup window. Note that only contexts that are meaningfully associated with a display should
@@ -67,8 +61,11 @@ public final class ContextMenuUtils {
      * @see DeviceFormFactor#isNonMultiDisplayContextOnTablet(Context).
      */
     public static boolean usePopupContextMenuForContext(Context context) {
+        if (context == null) return false;
+
         return ChromeFeatureList.isEnabled(
                        ChromeFeatureList.CONTEXT_MENU_POPUP_FOR_ALL_SCREEN_SIZES)
-                || DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
+                || (DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
+                        && DragAndDropDelegate.isDragAndDropSupportedForOs());
     }
 }

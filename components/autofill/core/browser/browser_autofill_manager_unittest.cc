@@ -36,6 +36,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
+#include "components/autofill/core/browser/autofill_form_test_utils.h"
 #include "components/autofill/core/browser/autofill_suggestion_generator.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
@@ -550,8 +551,8 @@ class BrowserAutofillManagerTest : public testing::Test {
                               const FormData& form,
                               const FormFieldData& field) {
     browser_autofill_manager_->OnAskForValuesToFill(
-        form, field, gfx::RectF(), query_id,
-        /*autoselect_first_suggestion=*/false, FormElementWasClicked(false));
+        form, field, gfx::RectF(), query_id, AutoselectFirstSuggestion(false),
+        FormElementWasClicked(false));
   }
 
   void GetAutofillSuggestions(const FormData& form,
@@ -564,8 +565,8 @@ class BrowserAutofillManagerTest : public testing::Test {
                             const FormFieldData& field,
                             FormElementWasClicked form_element_was_clicked) {
     browser_autofill_manager_->OnAskForValuesToFill(
-        form, field, gfx::RectF(), query_id,
-        /*autoselect_first_suggestion=*/false, form_element_was_clicked);
+        form, field, gfx::RectF(), query_id, AutoselectFirstSuggestion(false),
+        form_element_was_clicked);
   }
 
   void AutocompleteSuggestionsReturned(
@@ -577,7 +578,7 @@ class BrowserAutofillManagerTest : public testing::Test {
                    [](auto result) { return Suggestion(result); });
 
     browser_autofill_manager_->OnSuggestionsReturned(
-        query_id, /*autoselect_first_suggestion=*/false, suggestions);
+        query_id, AutoselectFirstSuggestion(false), suggestions);
   }
 
   void FormsSeen(const std::vector<FormData>& forms) {
@@ -595,7 +596,7 @@ class BrowserAutofillManagerTest : public testing::Test {
                             const FormFieldData& field,
                             int unique_id) {
     browser_autofill_manager_->OnAskForValuesToFill(
-        form, field, {}, query_id, /*autoselect_first_suggestion=*/true,
+        form, field, {}, query_id, AutoselectFirstSuggestion(true),
         FormElementWasClicked(false));
     browser_autofill_manager_->FillOrPreviewForm(
         mojom::RendererFormDataAction::kFill, query_id, form, field, unique_id);
@@ -635,15 +636,21 @@ class BrowserAutofillManagerTest : public testing::Test {
         action, guid, input_query_id, input_form, input_field);
   }
 
-  int MakeFrontendId(const std::string& cc_sid,
-                     const std::string& profile_sid) const {
-    return browser_autofill_manager_->suggestion_generator()->MakeFrontendId(
-        Suggestion::BackendId(cc_sid), Suggestion::BackendId(profile_sid));
+  int MakeFrontendId(
+      const TestBrowserAutofillManager::MakeFrontendIdParams& params) {
+    return browser_autofill_manager_->MakeFrontendId(params);
   }
 
   bool WillFillCreditCardNumber(const FormData& form,
                                 const FormFieldData& field) {
-    return browser_autofill_manager_->WillFillCreditCardNumber(form, field);
+    return browser_autofill_manager_->WillFillCreditCardNumberForTest(form,
+                                                                      field);
+  }
+
+  FormData CreateTestCreditCardFormData(bool is_https, bool use_month_type) {
+    FormData form;
+    CreateTestCreditCardFormData(&form, is_https, use_month_type);
+    return form;
   }
 
   // Populates |form| with data corresponding to a simple credit card form.
@@ -695,7 +702,7 @@ class BrowserAutofillManagerTest : public testing::Test {
         "sync-url", "https://google.com");
 
     CreateTestCreditCardFormData(form, true, false);
-    FormsSeen(std::vector<FormData>(1, *form));
+    FormsSeen({*form});
     *card = CreditCard(CreditCard::MASKED_SERVER_CARD, "a123");
     test::SetCreditCardInfo(card, "John Dillinger", "1881" /* Visa */, "01",
                             "2017", "1");
@@ -703,7 +710,7 @@ class BrowserAutofillManagerTest : public testing::Test {
 
     EXPECT_CALL(*autofill_driver_, FillOrPreviewForm(_, _, _, _, _))
         .Times(AtLeast(1));
-    browser_autofill_manager_->FillOrPreviewCreditCardForm(
+    browser_autofill_manager_->FillOrPreviewCreditCardFormForTest(
         mojom::RendererFormDataAction::kFill, kDefaultPageID, *form,
         form->fields[0], card);
   }
@@ -989,16 +996,14 @@ TEST_F(BrowserAutofillManagerTest, OnFormsSeen_Empty) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
 
   base::HistogramTester histogram_tester;
-  FormsSeen(forms);
+  FormsSeen({form});
   histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
                                       0 /* FORMS_LOADED */, 1);
 
   // No more forms, metric is not logged.
-  forms.clear();
-  FormsSeen(forms);
+  FormsSeen({});
   histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
                                       0 /* FORMS_LOADED */, 1);
 }
@@ -1009,13 +1014,11 @@ TEST_F(BrowserAutofillManagerTest, OnFormsSeen_DifferentFormStructures) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-
   base::HistogramTester histogram_tester;
-  FormsSeen(forms);
+  FormsSeen({form});
   histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
                                       0 /* FORMS_LOADED */, 1);
-  download_manager_->VerifyLastQueriedForms(forms);
+  download_manager_->VerifyLastQueriedForms({form});
 
   // Different form structure.
   FormData form2;
@@ -1032,12 +1035,10 @@ TEST_F(BrowserAutofillManagerTest, OnFormsSeen_DifferentFormStructures) {
   test::CreateTestFormField("Email", "email", "", "text", &field);
   form2.fields.push_back(field);
 
-  forms.clear();
-  forms.push_back(form2);
-  FormsSeen(forms);
+  FormsSeen({form2});
   histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
                                       0 /* FORMS_LOADED */, 2);
-  download_manager_->VerifyLastQueriedForms(forms);
+  download_manager_->VerifyLastQueriedForms({form2});
 }
 
 // Test that when forms are seen, the renderer is updated with the predicted
@@ -1060,12 +1061,11 @@ TEST_F(BrowserAutofillManagerTest,
   form2.fields.push_back(field);
 
   // Package the forms for observation.
-  std::vector<FormData> forms{form1, form2};
 
   // Setup expectations.
   EXPECT_CALL(*autofill_driver_, SendAutofillTypePredictionsToRenderer(_))
       .Times(2);
-  FormsSeen(forms);
+  FormsSeen({form1, form2});
 }
 
 // Test that when forms are seen, the renderer is sent the fields that are
@@ -1073,8 +1073,7 @@ TEST_F(BrowserAutofillManagerTest,
 TEST_F(BrowserAutofillManagerTest,
        OnFormsSeen_SendFieldsEligibleForManualFillingToRenderer) {
   // Set up a queryable form.
-  FormData form1;
-  CreateTestCreditCardFormData(&form1, true, false);
+  FormData form1 = CreateTestCreditCardFormData(true, false);
 
   // Set up a non-queryable form.
   FormData form2;
@@ -1087,14 +1086,11 @@ TEST_F(BrowserAutofillManagerTest,
   form2.action = GURL("https://myform.com/submit.html");
   form2.fields.push_back(field);
 
-  // Package the forms for observation.
-  std::vector<FormData> forms{form1, form2};
-
   // Set up expectations.
   EXPECT_CALL(*autofill_driver_,
               SendFieldsEligibleForManualFillingToRenderer(_))
       .Times(2);
-  FormsSeen(forms);
+  FormsSeen({form1, form2});
 }
 
 // Test that no autofill suggestions are returned for a field with an
@@ -1118,8 +1114,7 @@ TEST_F(BrowserAutofillManagerTest,
   test::CreateTestFormField("Last Name", "lastname", "", "text", "unrecognized",
                             &field);
   form.fields.push_back(field);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Ensure that the SingleFieldFormFillRouter is not called for
   // suggestions either.
@@ -1154,8 +1149,7 @@ TEST_F(BrowserAutofillManagerTest,
   test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
   form.fields.push_back(field);
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Ensure that the SingleFieldFormFillRouter is called for both fields.
   EXPECT_CALL(*single_field_form_fill_router_, OnGetSingleFieldSuggestions)
@@ -1185,8 +1179,7 @@ TEST_F(BrowserAutofillManagerTest,
   test::CreateTestFormField("Last Name", "lastname", "", "text", "", &field);
   form.fields.push_back(field);
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Check that suggestions are made for the field that has the autocomplete
   // attribute.
@@ -1218,8 +1211,7 @@ TEST_F(BrowserAutofillManagerTest,
                             &field);
   form.fields.push_back(field);
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   GetAutofillSuggestions(form, form.fields[0]);
   CheckSuggestions(
@@ -1276,11 +1268,9 @@ TEST_P(SuggestionMatchingTest, GetProfileSuggestions_EmptyValue) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
-  const FormFieldData& field = form.fields[0];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[0]);
 
   std::string label1;
   std::string label2;
@@ -1320,8 +1310,7 @@ TEST_P(SuggestionMatchingTest, GetProfileSuggestions_MatchCharacter) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   FormFieldData field;
   test::CreateTestFormField("First Name", "firstname", "E", "text", &field);
@@ -1350,8 +1339,7 @@ TEST_P(SuggestionMatchingTest,
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // First name is already autofilled which will make the section appear as
   // "already autofilled".
@@ -1413,8 +1401,7 @@ TEST_P(SuggestionMatchingTest,
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // First name is already autofilled which will make the section appear as
   // "already autofilled".
@@ -1458,8 +1445,7 @@ TEST_F(BrowserAutofillManagerTest, GetProfileSuggestions_UnknownFields) {
   test::CreateTestFormField("Color", "color", "", "text", &field);
   form.fields.push_back(field);
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   GetAutofillSuggestions(form, field);
   EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
@@ -1470,16 +1456,14 @@ TEST_P(SuggestionMatchingTest, GetProfileSuggestions_WithDuplicates) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Add a duplicate profile.
   AutofillProfile duplicate_profile = *(personal_data().GetProfileWithGUID(
       "00000000-0000-0000-0000-000000000001"));
   personal_data().AddProfile(duplicate_profile);
 
-  const FormFieldData& field = form.fields[0];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[0]);
 
   std::string label1;
   std::string label2;
@@ -1519,15 +1503,13 @@ TEST_F(BrowserAutofillManagerTest,
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Disable Autofill.
   browser_autofill_manager_->SetAutofillProfileEnabled(false);
   browser_autofill_manager_->SetAutofillCreditCardEnabled(false);
 
-  const FormFieldData& field = form.fields[0];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[0]);
   EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
 }
 
@@ -1539,14 +1521,14 @@ TEST_F(BrowserAutofillManagerTest,
 
   {
     browser_autofill_manager_->OnSuggestionsReturned(
-        kDefaultPageID, /*autoselect_first_suggestion=*/false, suggestions);
+        kDefaultPageID, AutoselectFirstSuggestion(false), suggestions);
 
     EXPECT_FALSE(external_delegate_->autoselect_first_suggestion());
     CheckSuggestions(kDefaultPageID, suggestions[0], suggestions[1]);
   }
   {
     browser_autofill_manager_->OnSuggestionsReturned(
-        kDefaultPageID, /*autoselect_first_suggestion=*/true, suggestions);
+        kDefaultPageID, AutoselectFirstSuggestion(true), suggestions);
 
     EXPECT_TRUE(external_delegate_->autoselect_first_suggestion());
     CheckSuggestions(kDefaultPageID, suggestions[0], suggestions[1]);
@@ -1557,13 +1539,10 @@ TEST_F(BrowserAutofillManagerTest,
 // are empty.
 TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_EmptyValue) {
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
-  FormFieldData field = form.fields[1];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[1]);
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   const std::string visa_label = std::string("04/99");
@@ -1590,10 +1569,8 @@ TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_EmptyValue) {
 // field has whitespace in it.
 TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_Whitespace) {
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   FormFieldData field = form.fields[1];
   field.value = u"       ";
@@ -1624,10 +1601,8 @@ TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_Whitespace) {
 // field has stop characters in it, which should be removed.
 TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_StopCharsOnly) {
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   FormFieldData field = form.fields[1];
   field.value = u"____-____-____-____";
@@ -1659,10 +1634,8 @@ TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_StopCharsOnly) {
 TEST_F(BrowserAutofillManagerTest,
        GetCreditCardSuggestions_InvisibleUnicodeOnly) {
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   FormFieldData field = form.fields[1];
   field.value = std::u16string({0x200E, 0x200F});
@@ -1702,13 +1675,10 @@ TEST_F(BrowserAutofillManagerTest,
   personal_data().AddCreditCard(credit_card);
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   FormFieldData field = form.fields[1];
-
   field.value = u"5255-66__-____-____";
   GetAutofillSuggestions(form, field);
 
@@ -1731,10 +1701,8 @@ TEST_F(BrowserAutofillManagerTest,
 // selected form field has been partially filled out.
 TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_MatchCharacter) {
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   FormFieldData field;
   test::CreateTestFormField("Card Number", "cardnumber", "78", "text", &field);
@@ -1762,10 +1730,8 @@ TEST_P(CreditCardSuggestionTest, GetCreditCardSuggestions_CCNumber) {
   personal_data().SetNicknameForCardWithGUID(
       "00000000-0000-0000-0000-000000000005", kArbitraryNickname);
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   const FormFieldData& credit_card_number_field = form.fields[1];
   GetAutofillSuggestions(form, credit_card_number_field);
@@ -1806,10 +1772,8 @@ TEST_P(CreditCardSuggestionTest, GetCreditCardSuggestions_NonCCNumber) {
   personal_data().SetNicknameForCardWithGUID(
       "00000000-0000-0000-0000-000000000005", kArbitraryNickname);
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   const FormFieldData& cardholder_name_field = form.fields[0];
   GetAutofillSuggestions(form, cardholder_name_field);
@@ -1866,10 +1830,8 @@ TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_OnlySigninPromo) {
   personal_data().ClearCreditCards();
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
   FormFieldData field = form.fields[1];
 
   ON_CALL(autofill_client_, ShouldShowSigninPromo())
@@ -1897,15 +1859,12 @@ TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_OnlySigninPromo) {
 TEST_F(BrowserAutofillManagerTest,
        GetCreditCardSuggestions_SecureContext_FormActionNotHTTPS) {
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, /* is_https= */ true, false);
+  FormData form = CreateTestCreditCardFormData(/*is_https=*/true, false);
   // However we set the action (target URL) to be HTTP after all.
   form.action = GURL("http://myform.com/submit.html");
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
-  const FormFieldData& field = form.fields[0];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[0]);
 
   // Test that we sent the right values to the external delegate.
   CheckSuggestions(
@@ -1916,7 +1875,7 @@ TEST_F(BrowserAutofillManagerTest,
   // Clear the test credit cards and try again -- we should still show the
   // mixed form warning.
   personal_data().ClearCreditCards();
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[0]);
   CheckSuggestions(
       kDefaultPageID,
       Suggestion(l10n_util::GetStringUTF8(IDS_AUTOFILL_WARNING_MIXED_FORM), "",
@@ -1928,15 +1887,12 @@ TEST_F(BrowserAutofillManagerTest,
 TEST_F(BrowserAutofillManagerTest,
        GetCreditCardSuggestions_SecureContext_EmptyFormAction) {
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
+  FormData form = CreateTestCreditCardFormData(true, false);
   // Clear the form action.
   form.action = GURL();
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
-  FormFieldData field = form.fields[1];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[1]);
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   const std::string visa_label = std::string("04/99");
@@ -1964,15 +1920,12 @@ TEST_F(BrowserAutofillManagerTest,
 TEST_F(BrowserAutofillManagerTest,
        GetCreditCardSuggestions_SecureContext_JavascriptFormAction) {
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
+  FormData form = CreateTestCreditCardFormData(true, false);
   // Have the form action be a javascript function (which is a valid URL).
   form.action = GURL("javascript:alert('Hello');");
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
-  FormFieldData field = form.fields[1];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[1]);
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   const std::string visa_label = std::string("04/99");
@@ -2010,13 +1963,10 @@ TEST_F(BrowserAutofillManagerTest,
   personal_data().AddCreditCard(credit_card);
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
-  FormFieldData field = form.fields[1];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[1]);
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   const std::string visa_label = std::string("04/99");
@@ -2062,10 +2012,8 @@ TEST_F(BrowserAutofillManagerTest,
   EXPECT_EQ(1U, personal_data().GetCreditCards().size());
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   FormFieldData field = form.fields[1];
   field.value = u"12345678";
@@ -2112,12 +2060,9 @@ TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_ExpiredCards) {
   ASSERT_EQ(3U, personal_data().GetCreditCards().size());
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-  FormFieldData field = form.fields[1];
-  GetAutofillSuggestions(form, field);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
+  GetAutofillSuggestions(form, form.fields[1]);
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   const std::string visa_label = std::string("01/11");
@@ -2182,16 +2127,13 @@ TEST_F(BrowserAutofillManagerTest,
   ASSERT_EQ(3U, personal_data().GetCreditCards().size());
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   // Query with empty string only returns card0 and card1. Note expired
   // masked card2 is not suggested on empty fields.
   {
-    FormFieldData field = form.fields[0];
-    GetAutofillSuggestions(form, field);
+    GetAutofillSuggestions(form, form.fields[0]);
 
 #if BUILDFLAG(IS_ANDROID)
     const std::string mastercard_label =
@@ -2317,14 +2259,11 @@ TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_NumberMissing) {
   ASSERT_EQ(2U, personal_data().GetCreditCards().size());
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   // Query by card number field.
-  FormFieldData field = form.fields[1];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[1]);
 
 // Sublabel is expiration date when filling card number. The second card
 // doesn't have a number so it should not be included in the suggestions.
@@ -2342,8 +2281,7 @@ TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_NumberMissing) {
           browser_autofill_manager_->GetPackedCreditCardID(1)));
 
   // Query by cardholder name field.
-  field = form.fields[0];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[0]);
 
 #if BUILDFLAG(IS_ANDROID)
   const std::string amex_card_label =
@@ -2365,16 +2303,14 @@ TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_NumberMissing) {
 }
 
 TEST_F(BrowserAutofillManagerTest, OnCreditCardFetched_StoreInstrumentId) {
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
   CreditCard credit_card = test::GetMaskedServerCard();
-  browser_autofill_manager_->FillOrPreviewCreditCardForm(
+  browser_autofill_manager_->FillOrPreviewCreditCardFormForTest(
       mojom::RendererFormDataAction::kFill, kDefaultPageID, form,
       form.fields[0], &credit_card);
 
-  browser_autofill_manager_->OnCreditCardFetched(
+  browser_autofill_manager_->OnCreditCardFetchedForTest(
       CreditCardFetchResult::kSuccess, &credit_card,
       /*cvc=*/u"123");
 
@@ -2390,11 +2326,9 @@ TEST_P(SuggestionMatchingTest, GetAddressAndCreditCardSuggestions) {
   FormData form;
   test::CreateTestAddressFormData(&form);
   CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
-  FormFieldData field = form.fields[0];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[0]);
 
   std::string label1;
   std::string label2;
@@ -2428,6 +2362,7 @@ TEST_P(SuggestionMatchingTest, GetAddressAndCreditCardSuggestions) {
                    Suggestion("Elvis", label2, kAddressEntryIcon, 2));
 
   const int kPageID2 = 2;
+  FormFieldData field;
   test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
   GetAutofillSuggestions(kPageID2, form, field);
 
@@ -2461,15 +2396,14 @@ TEST_F(BrowserAutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   FormData form;
   test::CreateTestAddressFormData(&form);
   CreateTestCreditCardFormData(&form, false, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
-  FormFieldData field = form.fields[0];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[0]);
 
   // Verify that suggestions are returned.
   EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
 
+  FormFieldData field;
   test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
   const int kPageID2 = 2;
   GetAutofillSuggestions(kPageID2, form, field);
@@ -2495,11 +2429,9 @@ TEST_F(BrowserAutofillManagerTest,
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-  FormFieldData field = form.fields[0];
+  FormsSeen({form});
 
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[0]);
   // Verify that suggestions are returned.
   EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
 }
@@ -2511,13 +2443,10 @@ TEST_F(BrowserAutofillManagerTest,
                              /*for_credit_cards=*/false);
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-  FormFieldData field = form.fields[0];
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[0]);
   // Verify that suggestions are returned.
   EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
 }
@@ -2561,7 +2490,7 @@ TEST_F(BrowserAutofillManagerTest, FillTriggeredSection) {
   FormData response_data;
   FillAutofillFormDataAndSaveResults(
       kDefaultPageID, form, form.fields[index_of_trigger_field],
-      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId({.profile_id = guid}), &response_page_id, &response_data);
   // Extract the sections into individual forms to reduce boiler plate code.
   size_t mid = response_data.fields.size() / 2;
   FormData section1 = response_data;
@@ -2607,7 +2536,7 @@ TEST_F(BrowserAutofillManagerTest, DoNotFillIfFormFieldChanged) {
       .WillOnce((DoAll(testing::SaveArg<0>(&response_query_id),
                        testing::SaveArg<2>(&response_data),
                        testing::Return(std::vector<FieldGlobalId>{}))));
-  browser_autofill_manager_->FillOrPreviewDataModelForm(
+  browser_autofill_manager_->FillOrPreviewDataModelFormForTest(
       mojom::RendererFormDataAction::kFill, kDefaultPageID, form,
       form.fields.front(), profile, nullptr, form_structure, autofill_field);
   std::vector<FormFieldData> filled_fields(response_data.fields.begin(),
@@ -2652,14 +2581,18 @@ TEST_F(BrowserAutofillManagerTest,
   test::CreateTestAddressFormData(&form);
 
   browser_autofill_manager_->UpdatePendingForm(form);
-  ASSERT_TRUE(browser_autofill_manager_->pending_form_data()->SameFormAs(form));
+  ASSERT_TRUE(
+      browser_autofill_manager_->pending_form_data_for_test()->SameFormAs(
+          form));
 
   // Receiving a notification that focus is no longer on the form *without* the
   // renderer having a previously-interacted form should not result in
   // any changes to the pending form.
   browser_autofill_manager_->OnFocusNoLongerOnForm(
       /*had_interacted_form=*/false);
-  EXPECT_TRUE(browser_autofill_manager_->pending_form_data()->SameFormAs(form));
+  EXPECT_TRUE(
+      browser_autofill_manager_->pending_form_data_for_test()->SameFormAs(
+          form));
 }
 
 TEST_F(BrowserAutofillManagerTest,
@@ -2669,13 +2602,10 @@ TEST_F(BrowserAutofillManagerTest,
                              /*for_credit_cards=*/true);
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
-  FormFieldData field = form.fields[0];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[0]);
 
   // Check that credit card suggestions will not be available.
   external_delegate_->CheckNoSuggestions(kDefaultPageID);
@@ -2690,11 +2620,9 @@ TEST_F(BrowserAutofillManagerTest,
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
-  FormFieldData field = form.fields[0];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[0]);
 
   // Check that credit card suggestions will not be available.
   external_delegate_->CheckNoSuggestions(kDefaultPageID);
@@ -2790,8 +2718,7 @@ TEST_P(BrowserAutofillManagerLogAblationTest, TestLogging) {
       form_type == LogAblationFormType::kMixed) {
     CreateTestCreditCardFormData(&form, true, false);
   }
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Simulate retrieving autofill suggestions with the first field as a trigger
   // script. This should emit signals that lead to recorded metrics later on.
@@ -2980,7 +2907,6 @@ TEST_F(BrowserAutofillManagerTest,
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
 
   // Disable autofill and the password manager.
   browser_autofill_manager_->SetAutofillCreditCardEnabled(false);
@@ -2992,7 +2918,7 @@ TEST_F(BrowserAutofillManagerTest,
   // not be parsed.
   {
     base::HistogramTester histogram_tester;
-    FormsSeen(forms);
+    FormsSeen({form});
     EXPECT_EQ(0, histogram_tester.GetBucketCount("Autofill.UserHappiness",
                                                  0 /* FORMS_LOADED */));
   }
@@ -3003,10 +2929,10 @@ TEST_F(BrowserAutofillManagerTest,
   // If the password manager is enabled, that's enough to parse the form.
   {
     base::HistogramTester histogram_tester;
-    FormsSeen(forms);
+    FormsSeen({form});
     histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
                                         0 /* FORMS_LOADED */, 1);
-    download_manager_->VerifyLastQueriedForms(forms);
+    download_manager_->VerifyLastQueriedForms({form});
   }
 }
 
@@ -3016,13 +2942,11 @@ TEST_P(SuggestionMatchingTest, GetFieldSuggestionsWhenFormIsAutofilled) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Mark one of the fields as filled.
   form.fields[2].is_autofilled = true;
-  const FormFieldData& field = form.fields[0];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[0]);
 
   std::string label1;
   std::string label2;
@@ -3066,8 +2990,7 @@ TEST_F(BrowserAutofillManagerTest,
   FormFieldData field;
   test::CreateTestFormField("Some Field", "somefield", "", "text", &field);
   form.fields.push_back(field);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   GetAutofillSuggestions(form, field);
 
@@ -3089,8 +3012,7 @@ TEST_P(SuggestionMatchingTest, GetFieldSuggestionsWithDuplicateValues) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // |profile| will be owned by the mock PersonalDataManager.
   AutofillProfile profile;
@@ -3124,8 +3046,7 @@ TEST_P(SuggestionMatchingTest, GetProfileSuggestions_FancyPhone) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   AutofillProfile profile;
   profile.set_guid("00000000-0000-0000-0000-000000000103");
@@ -3133,8 +3054,7 @@ TEST_P(SuggestionMatchingTest, GetProfileSuggestions_FancyPhone) {
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"1800PRAIRIE");
   personal_data().AddProfile(profile);
 
-  const FormFieldData& field = form.fields[9];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[9]);
 
   std::string value1;
   std::string value2;
@@ -3215,8 +3135,7 @@ TEST_F(BrowserAutofillManagerTest,
     form.fields.push_back(field);
   }
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   personal_data().ClearProfiles();
   AutofillProfile profile;
@@ -3246,8 +3165,7 @@ TEST_F(BrowserAutofillManagerTest, GetProfileSuggestions_ForPhoneField) {
   FormData form;
   test::CreateTestAddressFormData(&form);
   form.fields[9].max_length = 10;
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   AutofillProfile profile;
   profile.set_guid("00000000-0000-0000-0000-000000000103");
@@ -3256,8 +3174,7 @@ TEST_F(BrowserAutofillManagerTest, GetProfileSuggestions_ForPhoneField) {
   personal_data().ClearProfiles();
   personal_data().AddProfile(profile);
 
-  const FormFieldData& field = form.fields[9];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[9]);
 
   CheckSuggestions(kDefaultPageID, Suggestion("123456789", "Natty Bumppo",
                                               kAddressEntryIcon, 1));
@@ -3293,8 +3210,7 @@ TEST_F(BrowserAutofillManagerTest,
     form.fields.push_back(field);
   }
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   personal_data().ClearProfiles();
   AutofillProfile profile;
@@ -3314,8 +3230,7 @@ TEST_F(BrowserAutofillManagerTest, FillAddressForm) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000001";
   AutofillProfile* profile = personal_data().GetProfileWithGUID(guid);
@@ -3326,7 +3241,7 @@ TEST_F(BrowserAutofillManagerTest, FillAddressForm) {
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
                                false);
@@ -3337,21 +3252,20 @@ TEST_F(BrowserAutofillManagerTest, FillAddressForm) {
 
 TEST_F(BrowserAutofillManagerTest, WillFillCreditCardNumber) {
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   FormFieldData* number_field = nullptr;
   FormFieldData* name_field = nullptr;
   FormFieldData* month_field = nullptr;
   for (auto& field : form.fields) {
-    if (field.name == u"cardnumber")
+    if (field.name == u"cardnumber") {
       number_field = &field;
-    else if (field.name == u"nameoncard")
+    } else if (field.name == u"nameoncard") {
       name_field = &field;
-    else if (field.name == u"ccmonth")
+    } else if (field.name == u"ccmonth") {
       month_field = &field;
+    }
   }
 
   // Empty form - whole form is Autofilled.
@@ -3391,15 +3305,14 @@ TEST_F(BrowserAutofillManagerTest, FillCreditCardForm_LogFieldWasAutofill) {
   // Construct a form with a 4 fields: cardholder name, card number,
   // expiration date and cvc.
   CreateTestCreditCardFormData(&form, true, true);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000004";
   int response_page_id = 0;
   FormData response_data;
   base::HistogramTester histogram_tester;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(guid, std::string()),
+                                     MakeFrontendId({.credit_card_id = guid}),
                                      &response_page_id, &response_data);
   // Cardholder name, card number, expiration data were autofilled but cvc was
   // not be autofilled.
@@ -3410,16 +3323,14 @@ TEST_F(BrowserAutofillManagerTest, FillCreditCardForm_LogFieldWasAutofill) {
 // Test that we correctly fill a credit card form.
 TEST_F(BrowserAutofillManagerTest, FillCreditCardForm_Simple) {
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000004";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(guid, std::string()),
+                                     MakeFrontendId({.credit_card_id = guid}),
                                      &response_page_id, &response_data);
   ExpectFilledCreditCardFormElvis(response_page_id, response_data,
                                   kDefaultPageID, false);
@@ -3438,16 +3349,14 @@ TEST_F(BrowserAutofillManagerTest,
   credit_card.set_guid("00000000-0000-0000-0000-000000000008");
   personal_data().AddCreditCard(credit_card);
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000008";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(guid, std::string()),
+                                     MakeFrontendId({.credit_card_id = guid}),
                                      &response_page_id, &response_data);
   ExpectFilledCreditCardFormElvis(response_page_id, response_data,
                                   kDefaultPageID, false);
@@ -3467,16 +3376,14 @@ TEST_F(BrowserAutofillManagerTest,
   credit_card.set_guid("00000000-0000-0000-0000-000000000009");
   personal_data().AddCreditCard(credit_card);
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000009";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(guid, std::string()),
+                                     MakeFrontendId({.credit_card_id = guid}),
                                      &response_page_id, &response_data);
   ExpectFilledCreditCardFormElvis(response_page_id, response_data,
                                   kDefaultPageID, false);
@@ -3493,16 +3400,14 @@ TEST_F(BrowserAutofillManagerTest, FillCreditCardForm_NoYearNoMonth) {
   credit_card.set_guid("00000000-0000-0000-0000-000000000007");
   personal_data().AddCreditCard(credit_card);
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, true);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, true);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000007";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(guid, std::string()),
+                                     MakeFrontendId({.credit_card_id = guid}),
                                      &response_page_id, &response_data);
   ExpectFilledCreditCardYearMonthWithYearMonth(response_page_id, response_data,
                                                kDefaultPageID, false, "", "");
@@ -3519,16 +3424,14 @@ TEST_F(BrowserAutofillManagerTest, FillCreditCardForm_NoYearMonth) {
   credit_card.set_guid("00000000-0000-0000-0000-000000000007");
   personal_data().AddCreditCard(credit_card);
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, true);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, true);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000007";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(guid, std::string()),
+                                     MakeFrontendId({.credit_card_id = guid}),
                                      &response_page_id, &response_data);
   ExpectFilledCreditCardYearMonthWithYearMonth(response_page_id, response_data,
                                                kDefaultPageID, false, "", "04");
@@ -3547,16 +3450,14 @@ TEST_F(BrowserAutofillManagerTest, FillCreditCardForm_YearNoMonth) {
   credit_card.set_guid("00000000-0000-0000-0000-000000000007");
   personal_data().AddCreditCard(credit_card);
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, true);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, true);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000007";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(guid, std::string()),
+                                     MakeFrontendId({.credit_card_id = guid}),
                                      &response_page_id, &response_data);
   ExpectFilledCreditCardYearMonthWithYearMonth(
       response_page_id, response_data, kDefaultPageID, false, "2999", "");
@@ -3573,16 +3474,14 @@ TEST_F(BrowserAutofillManagerTest, FillCreditCardForm_YearMonth) {
   credit_card.set_guid("00000000-0000-0000-0000-000000000007");
   personal_data().AddCreditCard(credit_card);
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, true);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, true);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000007";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(guid, std::string()),
+                                     MakeFrontendId({.credit_card_id = guid}),
                                      &response_page_id, &response_data);
   ExpectFilledCreditCardYearMonthWithYearMonth(
       response_page_id, response_data, kDefaultPageID, false, "2999", "04");
@@ -3614,14 +3513,13 @@ TEST_F(BrowserAutofillManagerTest,
   test::CreateTestFormField("CVC", "cvc", "", "text", &field);
   form.fields.push_back(field);
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000004";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(guid, std::string()),
+                                     MakeFrontendId({.credit_card_id = guid}),
                                      &response_page_id, &response_data);
   ExpectFilledField("Card Name", "cardname", "Elvis", "text",
                     response_data.fields[0]);
@@ -3666,14 +3564,13 @@ TEST_F(BrowserAutofillManagerTest,
   test::CreateTestFormField("CVC", "cvc", "", "text", &field);
   form.fields.push_back(field);
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000004";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(guid, std::string()),
+                                     MakeFrontendId({.credit_card_id = guid}),
                                      &response_page_id, &response_data);
   ExpectFilledField("Card Name", "cardname", "Elvis", "text",
                     response_data.fields[0]);
@@ -3717,14 +3614,13 @@ TEST_F(BrowserAutofillManagerTest, FillCreditCardNumberIntoSingleDigitFields) {
   test::CreateTestFormField("CVC", "cvc", "", "text", &field);
   form.fields.push_back(field);
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000004";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(guid, std::string()),
+                                     MakeFrontendId({.credit_card_id = guid}),
                                      &response_page_id, &response_data);
   ExpectFilledField("Card Name", "cardname", "Elvis", "text",
                     response_data.fields[0]);
@@ -3767,14 +3663,13 @@ TEST_F(BrowserAutofillManagerTest, FillCreditCardForm_SplitName) {
   test::CreateTestFormField("CVC", "cvc", "", "text", &field);
   form.fields.push_back(field);
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000004";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(guid, std::string()),
+                                     MakeFrontendId({.credit_card_id = guid}),
                                      &response_page_id, &response_data);
   ExpectFilledField("Card Name", "cardname", "Elvis", "text",
                     response_data.fields[0]);
@@ -3838,8 +3733,7 @@ TEST_F(BrowserAutofillManagerTest,
     form.fields.push_back(field);
   }
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   AutofillProfile profile;
   const char guid[] = "00000000-0000-0000-0000-000000000123";
@@ -3853,7 +3747,7 @@ TEST_F(BrowserAutofillManagerTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
 
   // Verify the correct filling of the name entries.
@@ -3895,8 +3789,7 @@ TEST_F(BrowserAutofillManagerTest, FillAddressAndCreditCardForm) {
   FormData form;
   test::CreateTestAddressFormData(&form);
   CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // First fill the address data.
   const char guid[] = "00000000-0000-0000-0000-000000000001";
@@ -3905,7 +3798,7 @@ TEST_F(BrowserAutofillManagerTest, FillAddressAndCreditCardForm) {
   {
     SCOPED_TRACE("Address");
     FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                       MakeFrontendId(std::string(), guid),
+                                       MakeFrontendId({.profile_id = guid}),
                                        &response_page_id, &response_data);
     ExpectFilledAddressFormElvis(response_page_id, response_data,
                                  kDefaultPageID, true);
@@ -3916,97 +3809,151 @@ TEST_F(BrowserAutofillManagerTest, FillAddressAndCreditCardForm) {
   const char guid2[] = "00000000-0000-0000-0000-000000000004";
   response_page_id = 0;
   {
-    FillAutofillFormDataAndSaveResults(kPageID2, form, form.fields.back(),
-                                       MakeFrontendId(guid2, std::string()),
-                                       &response_page_id, &response_data);
+    FillAutofillFormDataAndSaveResults(
+        kPageID2, form, form.fields.back(),
+        MakeFrontendId({.credit_card_id = guid2}), &response_page_id,
+        &response_data);
     SCOPED_TRACE("Credit card");
     ExpectFilledCreditCardFormElvis(response_page_id, response_data, kPageID2,
                                     true);
   }
 }
 
-// Test that a field with an unrecognized autocomplete attribute is not filled.
-TEST_F(BrowserAutofillManagerTest, FillAddressForm_UnrecognizedAttribute) {
-  FormData address_form;
-  address_form.name = u"MyForm";
-  address_form.url = GURL("https://myform.com/form.html");
-  address_form.action = GURL("https://myform.com/submit.html");
-  FormFieldData field;
-  // Set a valid autocomplete attribute for the first name.
-  test::CreateTestFormField("First name", "firstname", "", "text", "given-name",
-                            &field);
-  address_form.fields.push_back(field);
-  // Set no autocomplete attribute for the middle name.
-  test::CreateTestFormField("Middle name", "middle", "", "text", "", &field);
-  address_form.fields.push_back(field);
-  // Set an unrecognized autocomplete attribute for the last name.
-  test::CreateTestFormField("Last name", "lastname", "", "text", "unrecognized",
-                            &field);
-  address_form.fields.push_back(field);
-  std::vector<FormData> address_forms(1, address_form);
-  FormsSeen(address_forms);
+// Test parameter data for tests with a simple structure: Create a form,
+// autofill it, check that values have been correctly filled.
+struct AutofillSimpleFormCase {
+  struct FormFieldExpectedData {
+    const char* label;
+    const char* name;
+    const char* value = "";
+  };
 
-  // Fill the address form.
-  const char guid[] = "00000000-0000-0000-0000-000000000001";
+  const std::string test_name;
+  const std::string cc_guid = "";
+  const std::string profile_guid = "00000000-0000-0000-0000-000000000001";
+
+  const test::FormDescription form_description;
+  const std::vector<FormFieldExpectedData> expected_form_fields;
+};
+
+class AutofillSimpleFormTest
+    : public BrowserAutofillManagerTest,
+      public ::testing::WithParamInterface<AutofillSimpleFormCase> {};
+
+const AutofillSimpleFormCase kAutofillSimpleFormCases[] = {
+    // Test that a field with an unrecognized autocomplete attribute is not
+    // filled.
+    {.test_name = "FillAddressForm_UnrecognizedAttribute",
+     .form_description =
+         {.fields = {{.label = u"First name",
+                      .name = u"firstname",
+                      .autocomplete_attribute = "given-name"},
+                     {.label = u"Middle name", .name = u"middle"},
+                     {.label = u"Last name",
+                      .name = u"lastname",
+                      .autocomplete_attribute = "unrecognized"}}},
+     .expected_form_fields =
+         {{.label = "First name", .name = "firstname", .value = "Elvis"},
+          {.label = "Middle name", .name = "middle", .value = "Aaron"},
+          {.label = "Last name", .name = "lastname"}}},
+
+    // Test that non credit card related fields with the autocomplete attribute
+    // set to off are filled on all platforms when the feature to autofill all
+    // addresses is enabled (default).
+    {.test_name = "FillAddressForm_AutocompleteOffNotRespected",
+     .form_description =
+         {.fields = {{.label = u"First name", .name = u"firstname"},
+                     {.label = u"Middle name",
+                      .name = u"middle",
+                      .should_autocomplete = false},
+                     {.label = u"Last name", .name = u"lastname"},
+                     {.label = u"Address Line 1",
+                      .name = u"addr1",
+                      .should_autocomplete = false}}},
+     .expected_form_fields =
+         {{.label = "First name", .name = "firstname", .value = "Elvis"},
+          {.label = "Middle name", .name = "middle", .value = "Aaron"},
+          {.label = "Last name", .name = "lastname", .value = "Presley"},
+          {.label = "Address Line 1",
+           .name = "addr1",
+           .value = "3734 Elvis Presley Blvd."}}},
+
+    // Test that a field with a value equal to it's placeholder attribute is
+    // filled.
+    {.test_name = "FillAddressForm_PlaceholderEqualsValue",
+     .form_description = {.fields = {{.label = u"First name",
+                                      .name = u"firstname",
+                                      .value = u"First Name",
+                                      .placeholder = u"First Name"},
+                                     {.label = u"Middle name",
+                                      .name = u"middle",
+                                      .value = u"Middle Name",
+                                      .placeholder = u"Middle Name"},
+                                     {.label = u"Last name",
+                                      .name = u"lastname",
+                                      .value = u"Last Name",
+                                      .placeholder = u"Last Name"}}},
+     .expected_form_fields =
+         {{.label = "First name", .name = "firstname", .value = "Elvis"},
+          {.label = "Middle name", .name = "middle", .value = "Aaron"},
+          {.label = "Last name", .name = "lastname", .value = "Presley"}}},
+
+    // Test that a credit card field with an unrecognized autocomplete attribute
+    // gets filled.
+    {.test_name = "FillCreditCardForm_UnrecognizedAttribute",
+     .cc_guid = "00000000-0000-0000-0000-000000000004",
+     .profile_guid = "",
+     .form_description =
+         {.fields = {{.label = u"Name on Card",
+                      .name = u"nameoncard",
+                      .autocomplete_attribute = "cc-name"},
+                     {.label = u"Card Number", .name = u"cardnumber"},
+                     {.label = u"Expiration Date",
+                      .name = u"ccmonth",
+                      .autocomplete_attribute = "unrecognized"}}},
+     .expected_form_fields = {{.label = "Name on Card",
+                               .name = "nameoncard",
+                               .value = "Elvis Presley"},
+                              {.label = "Card Number",
+                               .name = "cardnumber",
+                               .value = "4234567890123456"},
+                              {.label = "Expiration Date",
+                               .name = "ccmonth",
+                               .value = "04/2999"}}},
+
+};
+
+TEST_P(AutofillSimpleFormTest, FillSimpleForm) {
+  const AutofillSimpleFormCase& params = GetParam();
+  FormData form = test::GetFormData(params.form_description);
+  form.name = u"MyForm";
+  form.url = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+
+  FormsSeen({form});
+
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(
-      kDefaultPageID, address_form, address_form.fields[0],
-      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
+      kDefaultPageID, form, form.fields[0],
+      MakeFrontendId({.credit_card_id = params.cc_guid,
+                      .profile_id = params.profile_guid}),
+      &response_page_id, &response_data);
 
-  // The fist and middle names should be filled.
-  ExpectFilledField("First name", "firstname", "Elvis", "text",
-                    response_data.fields[0]);
-  ExpectFilledField("Middle name", "middle", "Aaron", "text",
-                    response_data.fields[1]);
-
-  // The last name should not be filled.
-  ExpectFilledField("Last name", "lastname", "", "text",
-                    response_data.fields[2]);
+  ASSERT_EQ(response_data.fields.size(), params.expected_form_fields.size());
+  for (size_t i = 0; i < response_data.fields.size(); ++i) {
+    SCOPED_TRACE(params.test_name + ", fields expectations");
+    const auto& [label, name, value] = params.expected_form_fields[i];
+    ExpectFilledField(label, name, value, "text", response_data.fields[i]);
+  }
 }
 
-// Test that non credit card related fields with the autocomplete attribute set
-// to off are filled on all platforms when the feature to autofill all addresses
-// is enabled (default).
-TEST_F(BrowserAutofillManagerTest,
-       FillAddressForm_AutocompleteOffNotRespected) {
-  FormData address_form;
-  address_form.name = u"MyForm";
-  address_form.url = GURL("https://myform.com/form.html");
-  address_form.action = GURL("https://myform.com/submit.html");
-  FormFieldData field;
-  test::CreateTestFormField("First name", "firstname", "", "text", &field);
-  address_form.fields.push_back(field);
-  test::CreateTestFormField("Middle name", "middle", "", "text", &field);
-  field.should_autocomplete = false;
-  address_form.fields.push_back(field);
-  test::CreateTestFormField("Last name", "lastname", "", "text", &field);
-  field.should_autocomplete = true;
-  address_form.fields.push_back(field);
-  test::CreateTestFormField("Address Line 1", "addr1", "", "text", &field);
-  field.should_autocomplete = false;
-  address_form.fields.push_back(field);
-  std::vector<FormData> address_forms(1, address_form);
-  FormsSeen(address_forms);
-
-  // Fill the address form.
-  const char guid[] = "00000000-0000-0000-0000-000000000001";
-  int response_page_id = 0;
-  FormData response_data;
-  FillAutofillFormDataAndSaveResults(
-      kDefaultPageID, address_form, address_form.fields[0],
-      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
-
-  // All fields should be filled.
-  ExpectFilledField("First name", "firstname", "Elvis", "text",
-                    response_data.fields[0]);
-  ExpectFilledField("Middle name", "middle", "Aaron", "text",
-                    response_data.fields[1]);
-  ExpectFilledField("Last name", "lastname", "Presley", "text",
-                    response_data.fields[2]);
-  ExpectFilledField("Address Line 1", "addr1", "3734 Elvis Presley Blvd.",
-                    "text", response_data.fields[3]);
-}
+INSTANTIATE_TEST_SUITE_P(
+    BrowserAutofillManagerTest,
+    AutofillSimpleFormTest,
+    ::testing::ValuesIn(kAutofillSimpleFormCases),
+    [](const ::testing::TestParamInfo<AutofillSimpleFormTest::ParamType>&
+           info) { return info.param.test_name; });
 
 // Test that if a company is of a format of a birthyear and the relevant feature
 // is enabled, we would not fill it.
@@ -4027,8 +3974,7 @@ TEST_F(BrowserAutofillManagerTest, FillAddressForm_CompanyBirthyear) {
   test::CreateTestFormField("Company", "company", "", "text", &field);
   address_form.fields.push_back(field);
 
-  std::vector<FormData> address_forms(1, address_form);
-  FormsSeen(address_forms);
+  FormsSeen({address_form});
 
   AutofillProfile profile;
   const char guid[] = "00000000-0000-0000-0000-000000000123";
@@ -4043,7 +3989,7 @@ TEST_F(BrowserAutofillManagerTest, FillAddressForm_CompanyBirthyear) {
   FormData response_data;
   FillAutofillFormDataAndSaveResults(
       kDefaultPageID, address_form, *address_form.fields.begin(),
-      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId({.profile_id = guid}), &response_page_id, &response_data);
 
   // All the fields should be filled except the company.
   ExpectFilledField("First name", "firstname", "Elvis", "text",
@@ -4055,108 +4001,23 @@ TEST_F(BrowserAutofillManagerTest, FillAddressForm_CompanyBirthyear) {
   ExpectFilledField("Company", "company", "", "text", response_data.fields[3]);
 }
 
-// Test that a field with a value equal to it's placeholder attribute is filled.
-TEST_F(BrowserAutofillManagerTest, FillAddressForm_PlaceholderEqualsValue) {
-  FormData address_form;
-  address_form.name = u"MyForm";
-  address_form.url = GURL("https://myform.com/form.html");
-  address_form.action = GURL("https://myform.com/submit.html");
-  FormFieldData field;
-  // Set the same placeholder and value for each field.
-  test::CreateTestFormField("First name", "firstname", "", "text", &field);
-  field.placeholder = u"First Name";
-  field.value = u"First Name";
-  address_form.fields.push_back(field);
-  test::CreateTestFormField("Middle name", "middle", "", "text", &field);
-  field.placeholder = u"Middle Name";
-  field.value = u"Middle Name";
-  address_form.fields.push_back(field);
-  test::CreateTestFormField("Last name", "lastname", "", "text", &field);
-  field.placeholder = u"Last Name";
-  field.value = u"Last Name";
-  address_form.fields.push_back(field);
-  std::vector<FormData> address_forms(1, address_form);
-  FormsSeen(address_forms);
-
-  // Fill the address form.
-  const char guid[] = "00000000-0000-0000-0000-000000000001";
-  int response_page_id = 0;
-  FormData response_data;
-  FillAutofillFormDataAndSaveResults(
-      kDefaultPageID, address_form, address_form.fields[0],
-      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
-
-  // All the fields should be filled.
-  ExpectFilledField("First name", "firstname", "Elvis", "text",
-                    response_data.fields[0]);
-  ExpectFilledField("Middle name", "middle", "Aaron", "text",
-                    response_data.fields[1]);
-  ExpectFilledField("Last name", "lastname", "Presley", "text",
-                    response_data.fields[2]);
-}
-
-// Test that a credit card field with an unrecognized autocomplete attribute
-// gets filled.
-TEST_F(BrowserAutofillManagerTest, FillCreditCardForm_UnrecognizedAttribute) {
-  // Set up the form data.
-  FormData form;
-  form.name = u"MyForm";
-  form.url = GURL("https://myform.com/form.html");
-  form.action = GURL("https://myform.com/submit.html");
-
-  FormFieldData field;
-  // Set a valid autocomplete attribute on the card name.
-  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", "cc-name",
-                            &field);
-  form.fields.push_back(field);
-  // Set no autocomplete attribute on the card number.
-  test::CreateTestFormField("Card Number", "cardnumber", "", "text", "",
-                            &field);
-  form.fields.push_back(field);
-  // Set an unrecognized autocomplete attribute on the expiration month.
-  test::CreateTestFormField("Expiration Date", "ccmonth", "", "text",
-                            "unrecognized", &field);
-  form.fields.push_back(field);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-
-  const char guid[] = "00000000-0000-0000-0000-000000000004";
-  int response_page_id = 0;
-  FormData response_data;
-  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(guid, std::string()),
-                                     &response_page_id, &response_data);
-
-  // The credit card name and number should be filled.
-  ExpectFilledField("Name on Card", "nameoncard", "Elvis Presley", "text",
-                    response_data.fields[0]);
-  ExpectFilledField("Card Number", "cardnumber", "4234567890123456", "text",
-                    response_data.fields[1]);
-
-  // The expiration month should be filled.
-  ExpectFilledField("Expiration Date", "ccmonth", "04/2999", "text",
-                    response_data.fields[2]);
-}
-
 // Test that credit card fields are filled even if they have the autocomplete
 // attribute set to off.
 TEST_F(BrowserAutofillManagerTest, FillCreditCardForm_AutocompleteOff) {
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
+  FormData form = CreateTestCreditCardFormData(true, false);
 
   // Set the autocomplete=off on all fields.
   for (FormFieldData field : form.fields)
     field.should_autocomplete = false;
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000004";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(guid, std::string()),
+                                     MakeFrontendId({.credit_card_id = guid}),
                                      &response_page_id, &response_data);
 
   // All fields should be filled.
@@ -4200,14 +4061,13 @@ TEST_F(BrowserAutofillManagerTest, FillCreditCardForm_ExpiredCard) {
   test::CreateTestFormField("Expiration Year", "ccyear", "", "text",
                             "cc-exp-year", &field);
   form.fields.push_back(field);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000009";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(guid, std::string()),
+                                     MakeFrontendId({.credit_card_id = guid}),
                                      &response_page_id, &response_data);
 
   // The credit card name, type and number should be filled.
@@ -4230,10 +4090,8 @@ TEST_F(BrowserAutofillManagerTest, PreviewCreditCardForm_VirtualCard) {
   CreditCard virtual_card = test::GetVirtualCard();
   personal_data().AddServerCreditCard(virtual_card);
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   int response_page_id = 0;
   FormData response_data;
@@ -4290,15 +4148,14 @@ TEST_F(BrowserAutofillManagerTest, FillFormWithNonFocusableFields) {
   test::CreateTestFormField("Country", "country", "", "text", &field);
   form.fields.push_back(field);
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Fill the form
   const char guid[] = "00000000-0000-0000-0000-000000000001";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
 
   // All the visible fields should be filled as all the fields belong to the
@@ -4328,15 +4185,14 @@ TEST_F(BrowserAutofillManagerTest, FillFormWithMultipleSections) {
     // Make sure the fields have distinct names.
     form.fields[i].name = form.fields[i].name + u"_";
   }
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Fill the first section.
   const char guid[] = "00000000-0000-0000-0000-000000000001";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
   {
     SCOPED_TRACE("Address 1");
@@ -4360,7 +4216,7 @@ TEST_F(BrowserAutofillManagerTest, FillFormWithMultipleSections) {
   response_page_id = 0;
   FillAutofillFormDataAndSaveResults(
       kPageID2, form, form.fields[kAddressFormSize + 9],
-      MakeFrontendId(std::string(), guid2), &response_page_id, &response_data);
+      MakeFrontendId({.profile_id = guid2}), &response_page_id, &response_data);
   {
     SCOPED_TRACE("Address 2");
     ASSERT_EQ(response_data.fields.size(), form.fields.size());
@@ -4439,15 +4295,14 @@ TEST_F(BrowserAutofillManagerTest, FillFormWithAuthorSpecifiedSections) {
   test::CreateTestFormField("", "email", "", "text", "email", &field);
   form.fields.push_back(field);
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Fill the unnamed section.
   const char guid[] = "00000000-0000-0000-0000-000000000001";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[1],
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
   {
     SCOPED_TRACE("Unnamed section");
@@ -4478,7 +4333,7 @@ TEST_F(BrowserAutofillManagerTest, FillFormWithAuthorSpecifiedSections) {
   const char guid2[] = "00000000-0000-0000-0000-000000000001";
   response_page_id = 0;
   FillAutofillFormDataAndSaveResults(kPageID2, form, form.fields[0],
-                                     MakeFrontendId(std::string(), guid2),
+                                     MakeFrontendId({.profile_id = guid2}),
                                      &response_page_id, &response_data);
   {
     SCOPED_TRACE("Billing address");
@@ -4507,9 +4362,10 @@ TEST_F(BrowserAutofillManagerTest, FillFormWithAuthorSpecifiedSections) {
   const int kPageID3 = 3;
   const char guid3[] = "00000000-0000-0000-0000-000000000004";
   response_page_id = 0;
-  FillAutofillFormDataAndSaveResults(
-      kPageID3, form, form.fields[form.fields.size() - 2],
-      MakeFrontendId(guid3, std::string()), &response_page_id, &response_data);
+  FillAutofillFormDataAndSaveResults(kPageID3, form,
+                                     form.fields[form.fields.size() - 2],
+                                     MakeFrontendId({.credit_card_id = guid3}),
+                                     &response_page_id, &response_data);
   {
     SCOPED_TRACE("Credit card");
     EXPECT_EQ(kPageID3, response_page_id);
@@ -4544,15 +4400,14 @@ TEST_F(BrowserAutofillManagerTest, FillFormWithMultipleEmails) {
   test::CreateTestFormField("Confirm email", "email2", "", "text", &field);
   form.fields.push_back(field);
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Fill the form.
   const char guid[] = "00000000-0000-0000-0000-000000000001";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
 
   // The second email address should be filled.
@@ -4575,15 +4430,14 @@ TEST_F(BrowserAutofillManagerTest, FillAutofilledForm) {
   }
 
   CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // First fill the address data.
   const char guid[] = "00000000-0000-0000-0000-000000000001";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
   {
     SCOPED_TRACE("Address");
@@ -4597,7 +4451,7 @@ TEST_F(BrowserAutofillManagerTest, FillAutofilledForm) {
   const char guid2[] = "00000000-0000-0000-0000-000000000004";
   response_page_id = 0;
   FillAutofillFormDataAndSaveResults(kPageID2, form, form.fields.back(),
-                                     MakeFrontendId(guid2, std::string()),
+                                     MakeFrontendId({.credit_card_id = guid2}),
                                      &response_page_id, &response_data);
   {
     SCOPED_TRACE("Credit card 1");
@@ -4613,9 +4467,10 @@ TEST_F(BrowserAutofillManagerTest, FillAutofilledForm) {
 
   const int kPageID3 = 3;
   response_page_id = 0;
-  FillAutofillFormDataAndSaveResults(
-      kPageID3, form, form.fields[form.fields.size() - 2],
-      MakeFrontendId(guid2, std::string()), &response_page_id, &response_data);
+  FillAutofillFormDataAndSaveResults(kPageID3, form,
+                                     form.fields[form.fields.size() - 2],
+                                     MakeFrontendId({.credit_card_id = guid2}),
+                                     &response_page_id, &response_data);
   {
     SCOPED_TRACE("Credit card 2");
     ExpectFilledForm(response_page_id, response_data, kPageID3, "", "", "", "",
@@ -4637,15 +4492,14 @@ TEST_F(BrowserAutofillManagerTest, FillPartlyAutofilledForm) {
   form.fields[10].is_autofilled = true;
 
   CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // First fill the address data.
   const char guid[] = "00000000-0000-0000-0000-000000000001";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
   {
     SCOPED_TRACE("Address");
@@ -4660,7 +4514,7 @@ TEST_F(BrowserAutofillManagerTest, FillPartlyAutofilledForm) {
   const char guid2[] = "00000000-0000-0000-0000-000000000004";
   response_page_id = 0;
   FillAutofillFormDataAndSaveResults(kPageID2, form, form.fields.back(),
-                                     MakeFrontendId(guid2, std::string()),
+                                     MakeFrontendId({.credit_card_id = guid2}),
                                      &response_page_id, &response_data);
   {
     SCOPED_TRACE("Credit card 1");
@@ -4694,7 +4548,7 @@ TEST_F(BrowserAutofillManagerTest, FillPartlyManuallyFilledForm) {
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
   {
     SCOPED_TRACE("Address");
@@ -4710,7 +4564,7 @@ TEST_F(BrowserAutofillManagerTest, FillPartlyManuallyFilledForm) {
   const char guid2[] = "00000000-0000-0000-0000-000000000004";
   response_page_id = 0;
   FillAutofillFormDataAndSaveResults(kPageID2, form, form.fields.back(),
-                                     MakeFrontendId(guid2, std::string()),
+                                     MakeFrontendId({.credit_card_id = guid2}),
                                      &response_page_id, &response_data);
   {
     SCOPED_TRACE("Credit card 1");
@@ -4761,10 +4615,7 @@ TEST_F(BrowserAutofillManagerTest, FillPhoneNumber) {
     form_with_autocompletetype.fields.push_back(field);
   }
 
-  std::vector<FormData> forms;
-  forms.push_back(form_with_us_number_max_length);
-  forms.push_back(form_with_autocompletetype);
-  FormsSeen(forms);
+  FormsSeen({form_with_us_number_max_length, form_with_autocompletetype});
 
   // We should be able to fill prefix and suffix fields for US numbers.
   AutofillProfile* work_profile = personal_data().GetProfileWithGUID(
@@ -4779,7 +4630,7 @@ TEST_F(BrowserAutofillManagerTest, FillPhoneNumber) {
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_us_number_max_length,
       *form_with_us_number_max_length.fields.begin(),
-      MakeFrontendId(std::string(), guid), &response_page_id, &response_data1);
+      MakeFrontendId({.profile_id = guid}), &response_page_id, &response_data1);
   EXPECT_EQ(1, response_page_id);
 
   ASSERT_EQ(5U, response_data1.fields.size());
@@ -4794,7 +4645,7 @@ TEST_F(BrowserAutofillManagerTest, FillPhoneNumber) {
   FormData response_data2;
   FillAutofillFormDataAndSaveResults(page_id, form_with_autocompletetype,
                                      *form_with_autocompletetype.fields.begin(),
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data2);
   EXPECT_EQ(2, response_page_id);
 
@@ -4814,7 +4665,7 @@ TEST_F(BrowserAutofillManagerTest, FillPhoneNumber) {
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_us_number_max_length,
       *form_with_us_number_max_length.fields.begin(),
-      MakeFrontendId(std::string(), guid), &response_page_id, &response_data3);
+      MakeFrontendId({.profile_id = guid}), &response_page_id, &response_data3);
   EXPECT_EQ(3, response_page_id);
 
   ASSERT_EQ(5U, response_data3.fields.size());
@@ -4829,7 +4680,7 @@ TEST_F(BrowserAutofillManagerTest, FillPhoneNumber) {
   FormData response_data4;
   FillAutofillFormDataAndSaveResults(page_id, form_with_autocompletetype,
                                      *form_with_autocompletetype.fields.begin(),
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data4);
   EXPECT_EQ(4, response_page_id);
 
@@ -4881,21 +4732,15 @@ TEST_F(BrowserAutofillManagerTest, FillFirstPhoneNumber_ComponentizedNumbers) {
   test::CreateTestFormField("shipping number", "shipping_phone_number", "",
                             "text", &field);
   form_with_multiple_componentized_phone_fields.fields.push_back(field);
-  std::vector<FormData> forms;
-  forms.push_back(form_with_multiple_componentized_phone_fields);
 
-  FormData form_data_copy(form_with_multiple_componentized_phone_fields);
-  std::vector<FormData> forms_copy;
-  forms_copy.push_back(form_data_copy);
-
-  FormsSeen(forms);
+  FormsSeen({form_with_multiple_componentized_phone_fields});
   int page_id = 1;
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_multiple_componentized_phone_fields,
       *form_with_multiple_componentized_phone_fields.fields.begin(),
-      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId({.profile_id = guid}), &response_page_id, &response_data);
   EXPECT_EQ(1, response_page_id);
 
   // Verify only the first complete set of phone number fields are filled.
@@ -4936,21 +4781,15 @@ TEST_F(BrowserAutofillManagerTest, FillFirstPhoneNumber_WholeNumbers) {
   test::CreateTestFormField("shipping number", "shipping_phone_number", "",
                             "text", &field);
   form_with_multiple_whole_number_fields.fields.push_back(field);
-  std::vector<FormData> forms;
-  forms.push_back(form_with_multiple_whole_number_fields);
 
-  FormData form_data_copy(form_with_multiple_whole_number_fields);
-  std::vector<FormData> forms_copy;
-  forms_copy.push_back(form_data_copy);
-
-  FormsSeen(forms);
+  FormsSeen({form_with_multiple_whole_number_fields});
   int page_id = 1;
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_multiple_whole_number_fields,
       *form_with_multiple_whole_number_fields.fields.begin(),
-      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId({.profile_id = guid}), &response_page_id, &response_data);
   EXPECT_EQ(1, response_page_id);
 
   // Verify only the first complete set of phone number fields are filled.
@@ -5002,21 +4841,15 @@ TEST_F(BrowserAutofillManagerTest, FillFirstPhoneNumber_FillPartsOnceOnly) {
   test::CreateTestFormField("shipping number", "shipping_phone_number", "",
                             "text", &field);
   form_with_multiple_componentized_phone_fields.fields.push_back(field);
-  std::vector<FormData> forms;
-  forms.push_back(form_with_multiple_componentized_phone_fields);
 
-  FormData form_data_copy(form_with_multiple_componentized_phone_fields);
-  std::vector<FormData> forms_copy;
-  forms_copy.push_back(form_data_copy);
-
-  FormsSeen(forms);
+  FormsSeen({form_with_multiple_componentized_phone_fields});
   int page_id = 1;
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_multiple_componentized_phone_fields,
       *form_with_multiple_componentized_phone_fields.fields.begin(),
-      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId({.profile_id = guid}), &response_page_id, &response_data);
   EXPECT_EQ(1, response_page_id);
 
   // Verify only the first complete set of phone number fields are filled,
@@ -5069,21 +4902,14 @@ TEST_F(BrowserAutofillManagerTest,
                             &field);
   form_with_misclassified_extension.fields.push_back(field);
 
-  std::vector<FormData> forms;
-  forms.push_back(form_with_misclassified_extension);
-
-  FormData form_data_copy(form_with_misclassified_extension);
-  std::vector<FormData> forms_copy;
-  forms_copy.push_back(form_data_copy);
-
-  FormsSeen(forms);
+  FormsSeen({form_with_misclassified_extension});
   int page_id = 1;
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_misclassified_extension,
       *form_with_misclassified_extension.fields.begin(),
-      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId({.profile_id = guid}), &response_page_id, &response_data);
   EXPECT_EQ(1, response_page_id);
 
   // Verify the misclassified extension field is not filled.
@@ -5128,21 +4954,14 @@ TEST_F(BrowserAutofillManagerTest, FillFirstPhoneNumber_BestEfforFilling) {
                             &field);
   form_with_no_complete_number.fields.push_back(field);
 
-  std::vector<FormData> forms;
-  forms.push_back(form_with_no_complete_number);
-
-  FormData form_data_copy(form_with_no_complete_number);
-  std::vector<FormData> forms_copy;
-  forms_copy.push_back(form_data_copy);
-
-  FormsSeen(forms);
+  FormsSeen({form_with_no_complete_number});
   int page_id = 1;
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_no_complete_number,
       *form_with_no_complete_number.fields.begin(),
-      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId({.profile_id = guid}), &response_page_id, &response_data);
   EXPECT_EQ(1, response_page_id);
 
   // Verify when there is no complete phone number fields, we do best effort
@@ -5183,14 +5002,8 @@ TEST_F(BrowserAutofillManagerTest,
   test::CreateTestFormField("shipping number", "shipping_phone_number", "",
                             "text", &field);
   form_with_multiple_whole_number_fields.fields.push_back(field);
-  std::vector<FormData> forms;
-  forms.push_back(form_with_multiple_whole_number_fields);
 
-  FormData form_data_copy(form_with_multiple_whole_number_fields);
-  std::vector<FormData> forms_copy;
-  forms_copy.push_back(form_data_copy);
-
-  FormsSeen(forms);
+  FormsSeen({form_with_multiple_whole_number_fields});
   int page_id = 1;
   int response_page_id = 0;
   FormData response_data;
@@ -5199,7 +5012,7 @@ TEST_F(BrowserAutofillManagerTest,
   std::advance(it, 3);
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_multiple_whole_number_fields, *it,
-      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId({.profile_id = guid}), &response_page_id, &response_data);
   EXPECT_EQ(1, response_page_id);
 
   // Verify when the second phone number field is being focused, we fill
@@ -5240,21 +5053,15 @@ TEST_F(BrowserAutofillManagerTest,
   test::CreateTestFormField("shipping number", "shipping_phone_number", "",
                             "text", &field);
   form_with_multiple_whole_number_fields.fields.push_back(field);
-  std::vector<FormData> forms;
-  forms.push_back(form_with_multiple_whole_number_fields);
 
-  FormData form_data_copy(form_with_multiple_whole_number_fields);
-  std::vector<FormData> forms_copy;
-  forms_copy.push_back(form_data_copy);
-
-  FormsSeen(forms);
+  FormsSeen({form_with_multiple_whole_number_fields});
   int page_id = 1;
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_multiple_whole_number_fields,
       *form_with_multiple_whole_number_fields.fields.begin(),
-      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId({.profile_id = guid}), &response_page_id, &response_data);
   EXPECT_EQ(1, response_page_id);
 
   // Verify hidden/non-focusable phone field is set to only_fill_when_focused.
@@ -5310,8 +5117,7 @@ TEST_F(BrowserAutofillManagerTest, FormWithHiddenOrPresentationalSelects) {
   field.role = FormFieldData::RoleAttribute::kPresentation;
   form.fields.push_back(field);
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000001";
   int response_page_id = 0;
@@ -5319,7 +5125,7 @@ TEST_F(BrowserAutofillManagerTest, FormWithHiddenOrPresentationalSelects) {
   base::HistogramTester histogram_tester;
 
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
   histogram_tester.ExpectTotalCount(
       "Autofill.HiddenOrPresentationalSelectFieldsFilled", 2);
@@ -5377,14 +5183,7 @@ TEST_F(BrowserAutofillManagerTest,
                             "other_shipping_phone_number", "", "text", &field);
   form_with_multiple_sections.fields.push_back(field);
 
-  std::vector<FormData> forms;
-  forms.push_back(form_with_multiple_sections);
-
-  FormData form_data_copy(form_with_multiple_sections);
-  std::vector<FormData> forms_copy;
-  forms_copy.push_back(form_data_copy);
-
-  FormsSeen(forms);
+  FormsSeen({form_with_multiple_sections});
   int page_id = 1;
   int response_page_id = 0;
   FormData response_data;
@@ -5392,7 +5191,7 @@ TEST_F(BrowserAutofillManagerTest,
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_multiple_sections,
       *form_with_multiple_sections.fields.begin(),
-      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId({.profile_id = guid}), &response_page_id, &response_data);
   EXPECT_EQ(1, response_page_id);
 
   // Verify first section is filled with rationalization.
@@ -5412,7 +5211,7 @@ TEST_F(BrowserAutofillManagerTest,
   std::advance(it, 6);  // Pointing to second section.
 
   FillAutofillFormDataAndSaveResults(page_id, form_with_multiple_sections, *it,
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
   EXPECT_EQ(1, response_page_id);
 
@@ -5451,7 +5250,7 @@ TEST_F(BrowserAutofillManagerTest, FormChangesRemoveField) {
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
                                false);
@@ -5471,8 +5270,7 @@ TEST_F(BrowserAutofillManagerTest, FormChangesAddField) {
   FormFieldData field = *pos;
   pos = form.fields.erase(pos);
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Now, after the call to |FormsSeen|, we restore the field before filling.
   form.fields.insert(pos, field);
@@ -5483,7 +5281,7 @@ TEST_F(BrowserAutofillManagerTest, FormChangesAddField) {
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
                                false);
@@ -5517,8 +5315,7 @@ TEST_F(BrowserAutofillManagerTest, FormChangesVisibilityOfFields) {
   field.is_focusable = false;
   form.fields.push_back(field);
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Fill the form with the first profile. The hidden fields will not get
   // filled.
@@ -5526,7 +5323,7 @@ TEST_F(BrowserAutofillManagerTest, FormChangesVisibilityOfFields) {
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
 
   ASSERT_EQ(5U, response_data.fields.size());
@@ -5551,7 +5348,7 @@ TEST_F(BrowserAutofillManagerTest, FormChangesVisibilityOfFields) {
   const char guid2[] = "00000000-0000-0000-0000-000000000002";
   FillAutofillFormDataAndSaveResults(kDefaultPageID, response_data,
                                      response_data.fields[4],
-                                     MakeFrontendId(std::string(), guid2),
+                                     MakeFrontendId({.profile_id = guid2}),
                                      &response_page_id, &later_response_data);
   ASSERT_EQ(5U, later_response_data.fields.size());
   ExpectFilledField("First Name", "first_name", "Elvis", "text",
@@ -5571,15 +5368,14 @@ TEST_F(BrowserAutofillManagerTest, FormSubmitted) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Fill the form.
   const char guid[] = "00000000-0000-0000-0000-000000000001";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
                                false);
@@ -5595,15 +5391,14 @@ TEST_F(BrowserAutofillManagerTest, FormSubmittedSaveData) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Fill the form.
   const char guid[] = "00000000-0000-0000-0000-000000000001";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
                                false);
@@ -5646,8 +5441,7 @@ TEST_F(BrowserAutofillManagerTest, ValuePatternsMetric) {
     form.url = GURL("https://myform.com/form.html");
     form.action = GURL("https://myform.com/submit.html");
     form.fields.push_back(field);
-    std::vector<FormData> forms(1, form);
-    FormsSeen(forms);
+    FormsSeen({form});
 
     base::HistogramTester histogram_tester;
     FormSubmitted(form);
@@ -5672,14 +5466,12 @@ TEST_F(BrowserAutofillManagerTest,
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-  const FormFieldData& field = form.fields[0];
+  FormsSeen({form});
 
   // Expect the SingleFieldFormFillRouter to be called for suggestions.
   EXPECT_CALL(*single_field_form_fill_router_, OnGetSingleFieldSuggestions);
 
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[0]);
 
   // Single field form fill suggestions were returned, so we should not go
   // through the normal autofill flow.
@@ -5693,15 +5485,13 @@ TEST_F(BrowserAutofillManagerTest,
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-  const FormFieldData& field = form.fields[0];
+  FormsSeen({form});
 
   // SingleFieldFormFillRouter is not called for suggestions.
   EXPECT_CALL(*single_field_form_fill_router_, OnGetSingleFieldSuggestions)
       .Times(0);
 
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[0]);
   // Verify that suggestions are returned.
   EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
 }
@@ -5713,8 +5503,7 @@ TEST_F(BrowserAutofillManagerTest,
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // No suggestions matching "donkey".
   FormFieldData field;
@@ -5749,10 +5538,8 @@ TEST_F(BrowserAutofillManagerTest,
       std::move(external_delegate));
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, false, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(false, false);
+  FormsSeen({form});
   // The first field is "Name on card", which should autocomplete.
   FormFieldData field = form.fields[0];
   field.should_autocomplete = true;
@@ -5785,10 +5572,8 @@ TEST_F(BrowserAutofillManagerTest,
       std::move(external_delegate));
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, false, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(false, false);
+  FormsSeen({form});
   // The second field is "Card Number", which should not autocomplete.
   FormFieldData field = form.fields[1];
   field.should_autocomplete = true;
@@ -5810,8 +5595,7 @@ TEST_F(
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // No suggestions matching "donkey".
   FormFieldData field;
@@ -5849,8 +5633,7 @@ TEST_F(
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
   FormFieldData* field = &form.fields[0];
   field->should_autocomplete = false;
 
@@ -6129,7 +5912,7 @@ TEST_F(BrowserAutofillManagerTest, FormSubmittedServerTypes) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  FormsSeen(std::vector<FormData>(1, form));
+  FormsSeen({form});
 
   // Simulate having seen this form on page load.
   // |form_structure| will be owned by |browser_autofill_manager_|.
@@ -6151,7 +5934,7 @@ TEST_F(BrowserAutofillManagerTest, FormSubmittedServerTypes) {
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
                                false);
@@ -6168,8 +5951,7 @@ TEST_F(BrowserAutofillManagerTest, FormSubmittedWithDifferentFields) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Cache the expected form signature.
   std::string signature = FormStructure(form).FormSignatureAsStr();
@@ -6201,15 +5983,14 @@ TEST_F(BrowserAutofillManagerTest, FormSubmittedWithDefaultValues) {
   form.fields[6].form_control_type = "select-one";
   form.fields[6].value = u"Tennessee";
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Fill the form.
   const char guid[] = "00000000-0000-0000-0000-000000000001";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[3],
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
 
   // Simulate form submission.  We should call into the PDM to try to save the
@@ -6430,8 +6211,7 @@ TEST_F(BrowserAutofillManagerTest,
 
   // Make sure the form is in the cache so that it is processed for Autofill
   // upload.
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Once the form is cached, fill the values.
   EXPECT_EQ(form.fields.size(), expected_values.size());
@@ -6603,11 +6383,16 @@ TEST_F(BrowserAutofillManagerTest, DisambiguateUploadTypes) {
         // It is possible that a field as two out of three
         // possible classifications: NAME_FULL, NAME_LAST,
         // NAME_LAST_FIRST/SECOND. Note, all cases contain NAME_LAST.
+        // Alternatively, if the street address contains only one line, the
+        // street address and the address line1 are identical resulting in a
+        // vote for each.
         if (possible_types.size() == 2) {
-          EXPECT_TRUE(possible_types.contains(NAME_LAST) &&
-                      (possible_types.contains(NAME_LAST_SECOND) ||
-                       possible_types.contains(NAME_LAST_FIRST) ||
-                       possible_types.contains(NAME_FULL)));
+          EXPECT_TRUE((possible_types.contains(NAME_LAST) &&
+                       (possible_types.contains(NAME_LAST_SECOND) ||
+                        possible_types.contains(NAME_LAST_FIRST) ||
+                        possible_types.contains(NAME_FULL))) ||
+                      (possible_types.contains(ADDRESS_HOME_LINE1) &&
+                       possible_types.contains(ADDRESS_HOME_STREET_ADDRESS)));
         } else if (possible_types.size() == 3) {
           // Or even all three.
           EXPECT_TRUE(possible_types.contains(NAME_FULL) &&
@@ -6963,7 +6748,7 @@ TEST_F(BrowserAutofillManagerTest, RemoveProfile) {
   profile.set_guid(guid);
   personal_data().AddProfile(profile);
 
-  int id = MakeFrontendId(std::string(), guid);
+  int id = MakeFrontendId({.profile_id = guid});
 
   browser_autofill_manager_->RemoveAutofillProfileOrCreditCard(id);
 
@@ -6977,7 +6762,7 @@ TEST_F(BrowserAutofillManagerTest, RemoveCreditCard) {
   credit_card.set_guid(guid);
   personal_data().AddCreditCard(credit_card);
 
-  int id = MakeFrontendId(guid, std::string());
+  int id = MakeFrontendId({.credit_card_id = guid});
 
   browser_autofill_manager_->RemoveAutofillProfileOrCreditCard(id);
 
@@ -6988,10 +6773,9 @@ TEST_F(BrowserAutofillManagerTest, RemoveCreditCard) {
 TEST_F(BrowserAutofillManagerTest, TestExternalDelegate) {
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-  const FormFieldData& field = form.fields[0];
-  GetAutofillSuggestions(form, field);  // should call the delegate's OnQuery()
+  FormsSeen({form});
+  // Should call the delegate's OnQuery().
+  GetAutofillSuggestions(form, form.fields[0]);
 
   EXPECT_TRUE(external_delegate_->on_query_seen());
 }
@@ -7027,7 +6811,7 @@ TEST_F(BrowserAutofillManagerTest, OnTextFieldDidChangeAndUnfocus_Upload) {
   types.insert(EMAIL_ADDRESS);
   expected_types.push_back(types);
 
-  FormsSeen(std::vector<FormData>(1, form));
+  FormsSeen({form});
 
   // We will expect these types in the upload and no observed submission (the
   // callback initiated by WaitForAsyncUploadProcess checks these expectations.)
@@ -7078,7 +6862,7 @@ TEST_F(BrowserAutofillManagerTest, OnTextFieldDidChangeAndNavigation_Upload) {
   types.insert(EMAIL_ADDRESS);
   expected_types.push_back(types);
 
-  FormsSeen(std::vector<FormData>(1, form));
+  FormsSeen({form});
 
   // We will expect these types in the upload and no observed submission. (the
   // callback initiated by WaitForAsyncUploadProcess checks these expectations.)
@@ -7130,7 +6914,7 @@ TEST_F(BrowserAutofillManagerTest, OnDidFillAutofillFormDataAndUnfocus_Upload) {
   types.insert(EMAIL_ADDRESS);
   expected_types.push_back(types);
 
-  FormsSeen(std::vector<FormData>(1, form));
+  FormsSeen({form});
 
   // We will expect these types in the upload and no observed submission. (the
   // callback initiated by WaitForAsyncUploadProcess checks these expectations.)
@@ -7172,8 +6956,7 @@ TEST_F(BrowserAutofillManagerTest,
   test::CreateTestFormField("Expiration Date", "ccmonth", "", "text",
                             "unrecognized", &field);
   form.fields.push_back(field);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Suggestions should be returned for the first two fields
   GetAutofillSuggestions(form, form.fields[0]);
@@ -7226,8 +7009,7 @@ TEST_F(BrowserAutofillManagerTest,
   test::CreateTestFormField("", "ccyear", "", "text", &exp_field);
   form.fields.push_back(exp_field);
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Verify whether suggestions are populated correctly for one of the middle
   // credit card number fields when filled partially.
@@ -7283,8 +7065,7 @@ TEST_F(BrowserAutofillManagerTest, DontSaveCvcInAutocompleteHistory) {
     form.fields.push_back(field);
   }
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
   FormSubmitted(form);
 
   EXPECT_EQ(form.fields.size(), form_seen_by_ahm.fields.size());
@@ -7342,8 +7123,7 @@ TEST_F(BrowserAutofillManagerTest, ProfileDisabledDoesNotFillFormData) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000001";
 
@@ -7351,7 +7131,7 @@ TEST_F(BrowserAutofillManagerTest, ProfileDisabledDoesNotFillFormData) {
   EXPECT_CALL(*autofill_driver_, FillOrPreviewForm(_, _, _, _, _)).Times(0);
 
   FillAutofillFormData(kDefaultPageID, form, *form.fields.begin(),
-                       MakeFrontendId(std::string(), guid));
+                       MakeFrontendId({.profile_id = guid}));
 }
 
 TEST_F(BrowserAutofillManagerTest, ProfileDisabledDoesNotSuggest) {
@@ -7360,8 +7140,7 @@ TEST_F(BrowserAutofillManagerTest, ProfileDisabledDoesNotSuggest) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   FormFieldData field;
   test::CreateTestFormField("Email", "email", "", "email", &field);
@@ -7375,10 +7154,8 @@ TEST_F(BrowserAutofillManagerTest, CreditCardDisabledDoesNotFillFormData) {
   browser_autofill_manager_->SetAutofillCreditCardEnabled(false);
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000004";
 
@@ -7386,18 +7163,16 @@ TEST_F(BrowserAutofillManagerTest, CreditCardDisabledDoesNotFillFormData) {
   EXPECT_CALL(*autofill_driver_, FillOrPreviewForm(_, _, _, _, _)).Times(0);
 
   FillAutofillFormData(kDefaultPageID, form, *form.fields.begin(),
-                       MakeFrontendId(guid, std::string()));
+                       MakeFrontendId({.credit_card_id = guid}));
 }
 
 TEST_F(BrowserAutofillManagerTest, CreditCardDisabledDoesNotSuggest) {
   browser_autofill_manager_->SetAutofillCreditCardEnabled(false);
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
+  FormData form = CreateTestCreditCardFormData(true, false);
   EXPECT_CALL(autofill_client_, ShouldShowSigninPromo());
-  FormsSeen(forms);
+  FormsSeen({form});
 
   FormFieldData field;
   test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
@@ -7416,8 +7191,7 @@ TEST_P(SuggestionMatchingTest, DisplaySuggestionsWithMatchingTokens) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   FormFieldData field;
   test::CreateTestFormField("Email", "email", "gmail", "email", &field);
@@ -7469,8 +7243,7 @@ TEST_P(SuggestionMatchingTest,
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   FormFieldData field;
   test::CreateTestFormField("Address Line 2", "addr2", "apple", "text", &field);
@@ -7505,8 +7278,7 @@ TEST_F(BrowserAutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   FormFieldData field;
   test::CreateTestFormField("Email", "email", "mail", "email", &field);
@@ -7522,10 +7294,8 @@ TEST_P(CreditCardSuggestionTest,
   features.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   FormFieldData field;
   test::CreateTestFormField("Name on Card", "nameoncard", "dre", "text",
@@ -7565,7 +7335,7 @@ TEST_P(CreditCardSuggestionTest,
   GetAutofillSuggestions(form, field);
   CheckSuggestions(kDefaultPageID,
                    Suggestion("Nancy Drew", visa_label, kVisaCard,
-                              MakeFrontendId(guid, std::string())));
+                              MakeFrontendId({.credit_card_id = guid})));
 }
 
 // Verify that typing "lvis" will not match any of the credit card name when
@@ -7576,10 +7346,8 @@ TEST_F(BrowserAutofillManagerTest,
   features.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   FormFieldData field;
   test::CreateTestFormField("Name on Card", "nameoncard", "lvis", "text",
@@ -7591,10 +7359,8 @@ TEST_F(BrowserAutofillManagerTest,
 
 TEST_F(BrowserAutofillManagerTest, GetPopupType_CreditCardForm) {
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   for (const FormFieldData& field : form.fields) {
     EXPECT_EQ(PopupType::kCreditCards,
@@ -7606,8 +7372,7 @@ TEST_F(BrowserAutofillManagerTest, GetPopupType_AddressForm) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   for (const FormFieldData& field : form.fields) {
     EXPECT_EQ(PopupType::kAddresses,
@@ -7619,8 +7384,7 @@ TEST_F(BrowserAutofillManagerTest, GetPopupType_PersonalInformationForm) {
   // Set up our form data.
   FormData form;
   test::CreateTestPersonalInformationFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   for (const FormFieldData& field : form.fields) {
     EXPECT_EQ(PopupType::kPersonalInformation,
@@ -7637,10 +7401,8 @@ TEST_F(BrowserAutofillManagerTest,
                    prefs::kAutofillCreditCardSigninPromoImpressionCount));
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   FormFieldData field;
   test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
@@ -7671,10 +7433,8 @@ TEST_F(BrowserAutofillManagerTest,
 TEST_F(BrowserAutofillManagerTest,
        ShouldShowCreditCardSigninPromo_CreditCardField_WithAttainedLimit) {
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   FormFieldData field;
   test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
@@ -7707,13 +7467,11 @@ TEST_F(BrowserAutofillManagerTest,
 TEST_F(BrowserAutofillManagerTest,
        ShouldShowCreditCardSigninPromo_CreditCardField_NonSecureContext) {
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, false, false);
+  FormData form = CreateTestCreditCardFormData(false, false);
   form.url = GURL("http://myform.com/form.html");
   form.action = GURL("https://myform.com/submit.html");
   autofill_client_.set_form_origin(form.url);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   FormFieldData field;
   test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
@@ -7740,12 +7498,10 @@ TEST_F(BrowserAutofillManagerTest,
 TEST_F(BrowserAutofillManagerTest,
        ShouldShowCreditCardSigninPromo_CreditCardField_NonSecureAction) {
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, false, false);
+  FormData form = CreateTestCreditCardFormData(false, false);
   form.url = GURL("https://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   FormFieldData field;
   test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
@@ -7774,8 +7530,7 @@ TEST_F(BrowserAutofillManagerTest,
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   FormFieldData field;
   test::CreateTestFormField("First Name", "firstname", "", "text", &field);
@@ -7797,8 +7552,7 @@ TEST_P(SuggestionMatchingTest,
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   AutofillProfile profile1;
   profile1.set_guid("00000000-0000-0000-0000-000000000103");
@@ -7928,8 +7682,7 @@ TEST_F(BrowserAutofillManagerTest,
   test::CreateTestFormField("Address", "address", "", "text", &field);
   field.should_autocomplete = true;
   mixed_form.fields.push_back(field);
-  std::vector<FormData> mixed_forms(1, mixed_form);
-  FormsSeen(mixed_forms);
+  FormsSeen({mixed_form});
 
   // Suggestions should be displayed on desktop for this field in all
   // circumstances.
@@ -7964,8 +7717,7 @@ TEST_F(BrowserAutofillManagerTest,
   field.should_autocomplete = false;
   mixed_form.fields.push_back(field);
   mixed_form.fields.push_back(field);
-  std::vector<FormData> mixed_forms(1, mixed_form);
-  FormsSeen(mixed_forms);
+  FormsSeen({mixed_form});
 
   // Suggestions should always be displayed.
   for (const FormFieldData& mixed_form_field : mixed_form.fields) {
@@ -8084,13 +7836,10 @@ TEST_F(BrowserAutofillManagerTest,
   CreateTestServerCreditCards();
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
-  FormFieldData field = form.fields[1];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[1]);
 
   // Test that we sent the right values to the external delegate.
   ASSERT_TRUE(external_delegate_->is_all_server_suggestions());
@@ -8104,13 +7853,10 @@ TEST_F(BrowserAutofillManagerTest,
   CreateTestServerAndLocalCreditCards();
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
-  FormFieldData field = form.fields[1];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[1]);
 
   // Test that we sent the right values to the external delegate.
   ASSERT_FALSE(external_delegate_->is_all_server_suggestions());
@@ -8130,14 +7876,11 @@ TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_VirtualCard) {
   personal_data().AddServerCreditCard(masked_server_card);
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   // Card number field.
-  FormFieldData field = form.fields[1];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[1]);
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   std::string label = std::string("04/99");
@@ -8158,8 +7901,7 @@ TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_VirtualCard) {
           browser_autofill_manager_->GetPackedCreditCardID(7)));
 
   // Non card number field (cardholder name field).
-  field = form.fields[0];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[0]);
 
 #if BUILDFLAG(IS_ANDROID)
   label = std::string("nickname  ") + test::ObfuscatedCardDigitsAsUTF8("3456");
@@ -8180,9 +7922,7 @@ TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_VirtualCard) {
                  browser_autofill_manager_->GetPackedCreditCardID(7)));
 
   // Incomplete form.
-  field = form.fields[0];
-  form.fields.pop_back();
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[0]);
 
   CheckSuggestions(
       kDefaultPageID, virtual_card_suggestion,
@@ -8821,8 +8561,7 @@ TEST_F(BrowserAutofillManagerTest,
 
 TEST_F(BrowserAutofillManagerTest,
        DidShowSuggestions_LogAutofillCreditCardShownMetric) {
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
+  FormData form = CreateTestCreditCardFormData(true, false);
   FormsSeen({form});
 
   base::HistogramTester histogram_tester;
@@ -8869,8 +8608,7 @@ TEST_F(BrowserAutofillManagerTest,
 
 TEST_F(BrowserAutofillManagerTest,
        DidSuppressPopup_LogAutofillCreditCardPopupSuppressed) {
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
+  FormData form = CreateTestCreditCardFormData(true, false);
 
   browser_autofill_manager_->OnFormsSeen({form}, {});
   base::HistogramTester histogram_tester;
@@ -9046,8 +8784,7 @@ TEST_P(BrowserAutofillManagerProfileMetricsTest,
   FormData form;
   test::CreateTestAddressFormData(&form);
   FormsSeen({form});
-  FormFieldData field = form.fields[0];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[0]);
 
   base::HistogramTester histogram_tester;
 
@@ -9126,6 +8863,83 @@ TEST_F(BrowserAutofillManagerTest, AutocompleteMetrics) {
   histogram_tester.ExpectTotalCount(kTypeHistogram + "Heuristics", 4);
   histogram_tester.ExpectTotalCount(kTypeHistogram + "Server", 3);
   histogram_tester.ExpectTotalCount(kTypeHistogram + "ServerOrHeuristics", 4);
+}
+
+struct ContextMenuImpressionTestCase {
+  // Autocomplete attribute value.
+  const char* autocomplete_attribute_value;
+  // Heuristic type for the field in the test case.
+  ServerFieldType heuristic_type;
+  // Server type for the field in the test case.
+  ServerFieldType server_type;
+  // Expected autocomplete state that would be logged in the metrics.
+  AutofillMetrics::AutocompleteState expected_autocomplete_state;
+  // Expected autofill type that would be logged in the metrics.
+  ServerFieldType expected_autofill_type;
+};
+
+class BrowserAutofillManagerContextMenuImpressionsTest
+    : public testing::WithParamInterface<ContextMenuImpressionTestCase>,
+      public BrowserAutofillManagerTest {};
+
+INSTANTIATE_TEST_SUITE_P(
+    BrowserAutofillManagerContextMenuTests,
+    BrowserAutofillManagerContextMenuImpressionsTest,
+    testing::Values(
+        // Empty Autocomplete attribute
+        ContextMenuImpressionTestCase{"", UNKNOWN_TYPE, NO_SERVER_DATA,
+                                      AutofillMetrics::AutocompleteState::kNone,
+                                      UNKNOWN_TYPE},
+        // Valid Autocomplete attribute
+        ContextMenuImpressionTestCase{
+            "name", UNKNOWN_TYPE, EMAIL_ADDRESS,
+            AutofillMetrics::AutocompleteState::kValid, NAME_FULL},
+        // Garbage Autocomplete attribute
+        ContextMenuImpressionTestCase{
+            "asdf", ADDRESS_HOME_COUNTRY, UNKNOWN_TYPE,
+            AutofillMetrics::AutocompleteState::kGarbage, UNKNOWN_TYPE},
+        // Off Autocomplete attribute
+        ContextMenuImpressionTestCase{
+            "off", ADDRESS_HOME_COUNTRY, EMAIL_ADDRESS,
+            AutofillMetrics::AutocompleteState::kIgnored, EMAIL_ADDRESS}));
+
+// Tests that metrics are emitted correctly on form submission for the fields
+// from where the context menu was triggered.
+TEST_P(BrowserAutofillManagerContextMenuImpressionsTest,
+       ContextMenuImpressionMetrics) {
+  auto test_case = GetParam();
+
+  FormData form;
+  form.name = u"MyForm";
+  form.url = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  FormFieldData field;
+  test::CreateTestFormField("", "", "", "text",
+                            test_case.autocomplete_attribute_value, &field);
+  form.fields.push_back(field);
+
+  // Override the types and simulate seeing the form on page load.
+  auto form_structure = std::make_unique<FormStructure>(form);
+  FormStructureTestApi(form_structure.get())
+      .SetFieldTypes({test_case.heuristic_type}, {test_case.server_type});
+  browser_autofill_manager_->AddSeenFormStructure(std::move(form_structure));
+
+  // Simulate context menu trigger for all the fields.
+  browser_autofill_manager_->OnContextMenuShownInField(
+      form.global_id(), form.fields[0].global_id());
+
+  // Submit the form and verify that all metrics are collected correctly.
+  base::HistogramTester histogram_tester;
+  FormSubmitted(form);
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.FieldContextMenuImpressions.ByAutocomplete"),
+      BucketsAre(base::Bucket(test_case.expected_autocomplete_state, 1)));
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Autofill.FieldContextMenuImpressions.ByAutofillType"),
+              BucketsAre(base::Bucket(test_case.expected_autofill_type, 1)));
 }
 
 // Test that if a form is mixed content we show a warning instead of any
@@ -9257,14 +9071,13 @@ TEST_F(BrowserAutofillManagerTest, PreventOverridingOfPrefilledValues) {
   form.fields.push_back(field);
   test::CreateTestFormField("Zip Code", "zipcode", "_____", "text", &field);
   form.fields.push_back(field);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   const char guid[] = "00000000-0000-0000-0000-000000000001";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
   EXPECT_EQ(response_data.fields[0].value, u"Elvis Aaron Presley");
   EXPECT_EQ(response_data.fields[1].value, u"Test City");
@@ -9312,7 +9125,7 @@ TEST_F(BrowserAutofillManagerTest, PreventOverridingOfPrefilledValues) {
       autofill::features::kAutofillPreventOverridingPrefilledValues);
 
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
   EXPECT_EQ(response_data.fields[0].value, u"Elvis Aaron Presley");
   EXPECT_EQ(response_data.fields[1].value, u"Memphis");
@@ -9347,8 +9160,7 @@ TEST_F(BrowserAutofillManagerTest, AutofillOverridePrefilledValue) {
   test::CreateTestFormField("Country", "country", "Test Country", "text",
                             &field);
   form.fields.push_back(field);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // "Elv" is a substring of "Elvis Aaron Presley".
   form.fields[0].value = u"Elv";
@@ -9360,7 +9172,7 @@ TEST_F(BrowserAutofillManagerTest, AutofillOverridePrefilledValue) {
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendId(std::string(), guid),
+                                     MakeFrontendId({.profile_id = guid}),
                                      &response_page_id, &response_data);
   EXPECT_EQ(response_data.fields[0].value, u"Elvis Aaron Presley");
   EXPECT_EQ(response_data.fields[1].value, u"Test City");
@@ -9391,8 +9203,7 @@ TEST_F(BrowserAutofillManagerTest, AutofillSuggestionsOrTouchToFill) {
   FormData form;
   CreateTestCreditCardFormData(&form, /*is_https=*/true,
                                /*use_month_type=*/false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
   const FormFieldData& field = form.fields[1];
   int query_id = 1;
 
@@ -9471,10 +9282,8 @@ class BrowserAutofillManagerTestForVirtualCardOption
     FormData form;
     CreateTestCreditCardFormData(&form, /*is_https=*/true,
                                  /*use_month_type=*/false);
-    std::vector<FormData> forms(1, form);
-    FormsSeen(forms);
-    const FormFieldData& field = form.fields[1];  // card number field.
-    GetAutofillSuggestions(form, field);
+    FormsSeen({form});
+    GetAutofillSuggestions(form, form.fields[1]);  // Card number field.
   }
 
   // Adds a CreditCardCloudTokenData to PersonalDataManager. This needs to be
@@ -9557,10 +9366,8 @@ TEST_F(BrowserAutofillManagerTestForVirtualCardOption,
   test::CreateTestFormField("CVC", "cvc", "", "text", &field);
   form.fields.push_back(field);
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-  field = form.fields[0];  // cardholder name field.
-  GetAutofillSuggestions(form, field);
+  FormsSeen({form});
+  GetAutofillSuggestions(form, form.fields[0]);  // Cardholder name field.
 
   external_delegate_->CheckSuggestionCount(kDefaultPageID, 1);
   const std::string visa_label =
@@ -9614,10 +9421,8 @@ TEST_F(BrowserAutofillManagerTestForVirtualCardOption,
   test::CreateTestFormField("CVC", "cvc", "", "text", &field);
   form.fields.push_back(field);
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-  field = form.fields[1];  // card number field.
-  GetAutofillSuggestions(form, field);
+  FormsSeen({form});
+  GetAutofillSuggestions(form, form.fields[1]);  // Card number field.
 
   VerifyNoVirtualCardSuggestions();
 }
@@ -9643,10 +9448,8 @@ TEST_F(BrowserAutofillManagerTestForVirtualCardOption,
   test::CreateTestFormField("", "ccyear", "", "text", &field);
   form.fields.push_back(field);
 
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-  field = form.fields[1];  // card number field.
-  GetAutofillSuggestions(form, field);
+  FormsSeen({form});
+  GetAutofillSuggestions(form, form.fields[1]);  // Card number field.
 
   VerifyNoVirtualCardSuggestions();
 }
@@ -9771,8 +9574,7 @@ TEST_P(OnFocusOnFormFieldTest, AddressSuggestions) {
   test::CreateTestFormField("Last Name", "lastname", "", "text", "unrecognized",
                             &field);
   form.fields.push_back(field);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Suggestions should be returned for the first field.
   browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[0],
@@ -9800,8 +9602,7 @@ TEST_P(OnFocusOnFormFieldTest, AddressSuggestions_AutocompleteOffNotRespected) {
   test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
   field.should_autocomplete = false;
   form.fields.push_back(field);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1],
                                                     gfx::RectF());
@@ -9818,8 +9619,7 @@ TEST_P(OnFocusOnFormFieldTest, AddressSuggestions_Ablation) {
   test::CreateTestAddressFormData(&form);
   // Clear the form action.
   form.action = GURL();
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1],
                                                     gfx::RectF());
@@ -9828,12 +9628,10 @@ TEST_P(OnFocusOnFormFieldTest, AddressSuggestions_Ablation) {
 
 TEST_P(OnFocusOnFormFieldTest, CreditCardSuggestions_SecureContext) {
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
+  FormData form = CreateTestCreditCardFormData(true, false);
   // Clear the form action.
   form.action = GURL();
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1],
                                                     gfx::RectF());
@@ -9842,12 +9640,10 @@ TEST_P(OnFocusOnFormFieldTest, CreditCardSuggestions_SecureContext) {
 
 TEST_P(OnFocusOnFormFieldTest, CreditCardSuggestions_NonSecureContext) {
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, false, false);
+  FormData form = CreateTestCreditCardFormData(false, false);
   // Clear the form action.
   form.action = GURL();
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1],
                                                     gfx::RectF());
@@ -9862,12 +9658,10 @@ TEST_P(OnFocusOnFormFieldTest, CreditCardSuggestions_Ablation) {
                              /*for_credit_cards=*/true);
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
+  FormData form = CreateTestCreditCardFormData(true, false);
   // Clear the form action.
   form.action = GURL();
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1],
                                                     gfx::RectF());
@@ -9961,14 +9755,11 @@ TEST_P(BrowserAutofillManagerTestForSharingNickname,
   ASSERT_EQ(2U, personal_data().GetCreditCards().size());
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   // Query by card number field.
-  FormFieldData field = form.fields[1];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[1]);
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   const std::string exp_label = std::string("04/99");
@@ -10001,14 +9792,11 @@ TEST_P(BrowserAutofillManagerTestForSharingNickname,
   ASSERT_EQ(2U, personal_data().GetCreditCards().size());
 
   // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormData form = CreateTestCreditCardFormData(true, false);
+  FormsSeen({form});
 
   // Query by card number field.
-  FormFieldData field = form.fields[1];
-  GetAutofillSuggestions(form, field);
+  GetAutofillSuggestions(form, form.fields[1]);
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   const std::string exp_label = std::string("04/99");
@@ -10053,9 +9841,6 @@ class BrowserAutofillManagerRefillTest
 TEST_P(BrowserAutofillManagerRefillTest,
        RefillModifiedCreditCardExpirationDates) {
   RefillTestCase test_case = GetParam();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kAutofillRefillModifiedCreditCardExpirationDates);
 
   // Set up a CC form with name, cc number and expiration date.
   FormData form;
@@ -10070,15 +9855,14 @@ TEST_P(BrowserAutofillManagerRefillTest,
   form.fields.push_back(field);
 
   // Notify BrowserAutofillManager of the form.
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+  FormsSeen({form});
 
   // Simulate filling and store the data to be filled in |first_fill_data|.
   const char guid[] = "00000000-0000-0000-0000-000000000004";
   int response_page_id = 0;
   FormData first_fill_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendId(guid, std::string()),
+                                     MakeFrontendId({.credit_card_id = guid}),
                                      &response_page_id, &first_fill_data);
   ASSERT_EQ(3u, first_fill_data.fields.size());
   ExpectFilledField("Name on Card", "nameoncard", "Elvis Presley", "text",
@@ -10192,9 +9976,10 @@ class BrowserAutofillManagerClearFieldTest : public BrowserAutofillManagerTest {
     // Simulate filling and store the data to be filled in `fill_data_`.
     const char guid[] = "00000000-0000-0000-0000-000000000004";
     int response_page_id = 0;
-    FillAutofillFormDataAndSaveResults(
-        kDefaultPageID, form, *form.fields.begin(),
-        MakeFrontendId(guid, std::string()), &response_page_id, &fill_data_);
+    FillAutofillFormDataAndSaveResults(kDefaultPageID, form,
+                                       *form.fields.begin(),
+                                       MakeFrontendId({.credit_card_id = guid}),
+                                       &response_page_id, &fill_data_);
     ASSERT_EQ(3u, fill_data_.fields.size());
     ExpectFilledField("Name on Card", "nameoncard", "Elvis Presley", "text",
                       fill_data_.fields[0]);

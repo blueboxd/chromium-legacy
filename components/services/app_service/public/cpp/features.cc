@@ -10,14 +10,6 @@ BASE_FEATURE(kAppServiceLaunchWithoutMojom,
              "AppServiceLaunchWithoutMojom",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kAppServiceSetPermissionWithoutMojom,
-             "AppServiceSetPermissionWithoutMojom",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kAppServiceUninstallWithoutMojom,
-             "AppServiceUninstallWithoutMojom",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kAppServiceWithoutMojom,
              "AppServiceWithoutMojom",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -33,5 +25,9 @@ BASE_FEATURE(kAppServiceCapabilityAccessWithoutMojom,
 BASE_FEATURE(kStopMojomAppService,
              "StopMojomAppService",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kUnifiedAppServiceIconLoading,
+             "UnifiedAppServiceIconLoading",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace apps

@@ -32,7 +32,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
-#include "components/services/storage/indexed_db/locks/partitioned_lock_manager_impl.h"
+#include "components/services/storage/indexed_db/locks/partitioned_lock_manager.h"
 #include "components/services/storage/indexed_db/scopes/varint_coding.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/leveldb_write_batch.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
@@ -366,13 +366,11 @@ class IndexedDBBackingStoreTest : public testing::Test {
   std::vector<PartitionedLock> CreateDummyLock() {
     base::RunLoop loop;
     PartitionedLockHolder locks_receiver;
-    bool success = lock_manager_->AcquireLocks(
-        {{0, {"01", "11"}, PartitionedLockManager::LockType::kShared}},
+    lock_manager_->AcquireLocks(
+        {{{0, "01"}, PartitionedLockManager::LockType::kShared}},
         locks_receiver.AsWeakPtr(),
         base::BindLambdaForTesting([&loop]() { loop.Quit(); }));
-    EXPECT_TRUE(success);
-    if (success)
-      loop.Run();
+    loop.Run();
     return std::move(locks_receiver.locks);
   }
 
@@ -465,7 +463,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
   scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
   std::unique_ptr<TestIDBFactory> idb_factory_;
-  raw_ptr<PartitionedLockManagerImpl> lock_manager_;
+  raw_ptr<PartitionedLockManager> lock_manager_;
 
   IndexedDBBucketStateHandle bucket_state_handle_;
   raw_ptr<TestableIndexedDBBackingStore> backing_store_ = nullptr;

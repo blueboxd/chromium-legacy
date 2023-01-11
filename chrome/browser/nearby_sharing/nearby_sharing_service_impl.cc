@@ -20,8 +20,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -38,10 +38,11 @@
 #include "chrome/browser/nearby_sharing/fast_initiation/fast_initiation_scanner.h"
 #include "chrome/browser/nearby_sharing/local_device_data/nearby_share_local_device_data_manager_impl.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
-#include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_share_feature_status.h"
 #include "chrome/browser/nearby_sharing/nearby_share_metrics_logger.h"
 #include "chrome/browser/nearby_sharing/paired_key_verification_runner.h"
+#include "chrome/browser/nearby_sharing/public/cpp/nearby_connections_manager.h"
+#include "chrome/browser/nearby_sharing/share_target.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata_builder.h"
 #include "chrome/browser/nearby_sharing/wifi_network_configuration/wifi_network_configuration_handler.h"
@@ -222,7 +223,7 @@ absl::optional<std::string> ToFourDigitString(
   return base::StringPrintf("%04d", std::abs(hash));
 }
 
-bool IsOutOfStorage(base::FilePath file_path,
+bool IsOutOfStorage(const base::FilePath& file_path,
                     int64_t storage_required,
                     absl::optional<int64_t> free_disk_space_for_testing) {
   int64_t free_space = free_disk_space_for_testing.value_or(
@@ -822,7 +823,7 @@ void NearbySharingServiceImpl::Reject(
   }
   NearbyConnection* connection = info->connection();
 
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&NearbySharingServiceImpl::CloseConnection,
                      weak_ptr_factory_.GetWeakPtr(), share_target),
@@ -849,7 +850,7 @@ void NearbySharingServiceImpl::Reject(
 void NearbySharingServiceImpl::Cancel(
     const ShareTarget& share_target,
     StatusCodesCallback status_codes_callback) {
-  NS_LOG(INFO) << __func__ << ": User canceled transfer";
+  NS_LOG(INFO) << __func__ << ": User cancelled transfer";
   locally_cancelled_share_target_ids_.insert(share_target.id);
   DoCancel(share_target, std::move(status_codes_callback),
            /*is_initiator_of_cancellation=*/true);
@@ -912,7 +913,7 @@ void NearbySharingServiceImpl::DoCancel(
       info->connection()->SetDisconnectionListener(
           base::BindOnce(&NearbySharingServiceImpl::UnregisterShareTarget,
                          weak_ptr_factory_.GetWeakPtr(), share_target));
-      base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&NearbySharingServiceImpl::CloseConnection,
                          weak_ptr_factory_.GetWeakPtr(), share_target),
@@ -1424,7 +1425,7 @@ void NearbySharingServiceImpl::GetBluetoothAdapter() {
   // Because this will be called from the constructor, GetAdapter() may call
   // OnGetBluetoothAdapter() immediately which can cause problems during tests
   // since the class is not fully constructed yet.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &device::BluetoothAdapterFactory::GetAdapter,
@@ -1722,7 +1723,7 @@ void NearbySharingServiceImpl::InvalidateSurfaceState() {
           << __func__
           << ": Scheduling process shutdown if not needed in 15 seconds";
       // NOTE: Using base::Unretained is safe because if shutdown_pending_timer_
-      // goes out of scope the timer will be canceled.
+      // goes out of scope the timer will be cancelled.
       process_shutdown_pending_timer_.Start(
           FROM_HERE, kProcessShutdownPendingTimerDelay,
           base::BindOnce(&NearbySharingServiceImpl::OnProcessShutdownTimerFired,
@@ -2121,7 +2122,7 @@ NearbySharingService::StatusCodes NearbySharingServiceImpl::StopScanning() {
   // Note: We don't know if we stopped scanning in preparation to send a file,
   // or we stopped because the user left the page. We'll invalidate after a
   // short delay.
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&NearbySharingServiceImpl::InvalidateSurfaceState,
                      weak_ptr_factory_.GetWeakPtr()),
@@ -2366,7 +2367,7 @@ void NearbySharingServiceImpl::OnTransferComplete() {
   // Files transfer is done! Receivers can immediately cancel, but senders
   // should add a short delay to ensure the final in-flight packet(s) make
   // it to the remote device.
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&NearbySharingServiceImpl::InvalidateSurfaceState,
                      weak_ptr_factory_.GetWeakPtr()),
@@ -2725,7 +2726,7 @@ void NearbySharingServiceImpl::SendIntroduction(
       &NearbySharingServiceImpl::OnOutgoingMutualAcceptanceTimeout,
       weak_ptr_factory_.GetWeakPtr(), share_target));
 
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, base::BindOnce(mutual_acceptance_timeout_alarm_.callback()),
       kReadResponseFrameTimeout);
 
@@ -2817,7 +2818,11 @@ void NearbySharingServiceImpl::OnOpenFiles(
     base::OnceCallback<void(ShareTarget, bool)> callback,
     std::vector<NearbyFileHandler::FileInfo> files) {
   OutgoingShareTargetInfo* info = GetOutgoingShareTargetInfo(share_target);
-  if (!info || files.size() != share_target.file_attachments.size()) {
+  const bool files_open_success =
+      (files.size() == share_target.file_attachments.size());
+  RecordNearbySharePayloadFileOperationMetrics(
+      profile_, share_target, PayloadFileOperation::kOpen, files_open_success);
+  if (!info || !files_open_success) {
     std::move(callback).Run(std::move(share_target), /*success=*/false);
     return;
   }
@@ -2900,7 +2905,7 @@ void NearbySharingServiceImpl::Fail(const ShareTarget& share_target,
   }
   NearbyConnection* connection = info->connection();
 
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&NearbySharingServiceImpl::CloseConnection,
                      weak_ptr_factory_.GetWeakPtr(), share_target),
@@ -3600,7 +3605,7 @@ void NearbySharingServiceImpl::OnStorageCheckCompleted(
       &NearbySharingServiceImpl::OnIncomingMutualAcceptanceTimeout,
       weak_ptr_factory_.GetWeakPtr(), share_target));
 
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, base::BindOnce(mutual_acceptance_timeout_alarm_.callback()),
       kReadResponseFrameTimeout);
 
@@ -3847,6 +3852,17 @@ void NearbySharingServiceImpl::OnPayloadTransferUpdate(
   // cancellation.
   if (TransferMetadata::IsFinalStatus(metadata.status()) &&
       metadata.status() != TransferMetadata::Status::kCancelled) {
+    if (share_target.has_attachments() &&
+        share_target.file_attachments.size()) {
+      // For file payloads, the |PayloadTracker| callback for updates is
+      // |OnTransferUpdate| which will set status |kComplete| if payload reading
+      // is successful.
+      const bool files_read_success =
+          (metadata.status() == TransferMetadata::Status::kComplete);
+      RecordNearbySharePayloadFileOperationMetrics(profile_, share_target,
+                                                   PayloadFileOperation::kRead,
+                                                   files_read_success);
+    }
     Disconnect(share_target, metadata);
   }
 }
@@ -3956,18 +3972,18 @@ bool NearbySharingServiceImpl::OnIncomingPayloadsComplete(
     sharing::nearby::WifiCredentials credentials_proto;
     if (!credentials_proto.ParseFromArray(bytes.data(), bytes.size())) {
       NS_LOG(WARNING) << __func__
-                      << ": Failed to parse Wi-Fi credentials proto";
+                      << ": Failed to parse Wi-Fi credentials proto.";
       return false;
     }
 
     if (credentials_proto.password().empty()) {
-      NS_LOG(WARNING) << __func__ << ": No Wi-Fi password found";
+      NS_LOG(WARNING) << __func__ << ": No Wi-Fi password found.";
       return false;
     }
 
     if (credentials_proto.has_hidden_ssid() &&
         credentials_proto.hidden_ssid()) {
-      NS_LOG(WARNING) << __func__ << ": Network is hidden";
+      NS_LOG(WARNING) << __func__ << ": Network is hidden.";
       return false;
     }
 
@@ -3986,7 +4002,9 @@ void NearbySharingServiceImpl::RemoveIncomingPayloads(
   if (!share_target.is_incoming)
     return;
 
-  NS_LOG(INFO) << __func__ << ": Cleaning up payloads due to transfer failure";
+  NS_LOG(INFO)
+      << __func__
+      << ": Cleaning up payloads due to transfer cancelled or failure.";
 
   nearby_connections_manager_->ClearIncomingPayloads();
   std::vector<base::FilePath> files_for_deletion;
@@ -4046,7 +4064,7 @@ void NearbySharingServiceImpl::Disconnect(const ShareTarget& share_target,
   auto timer = std::make_unique<base::CancelableOnceClosure>(base::BindOnce(
       &NearbySharingServiceImpl::OnDisconnectingConnectionTimeout,
       weak_ptr_factory_.GetWeakPtr(), *endpoint_id));
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, timer->callback(), kOutgoingDisconnectionDelay);
   disconnection_timeout_alarms_[*endpoint_id] = std::move(timer);
 

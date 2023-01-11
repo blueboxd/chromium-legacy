@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_section.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_sections.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/constants_util.h"
@@ -31,12 +30,8 @@ constexpr double kDummyRelevanceScore = 0;
 class Hierarchy::PerSectionHierarchyGenerator
     : public OsSettingsSection::HierarchyGenerator {
  public:
-  PerSectionHierarchyGenerator(mojom::Section section,
-                               bool* only_contains_link_to_subpage,
-                               Hierarchy* hierarchy)
-      : section_(section),
-        only_contains_link_to_subpage_(only_contains_link_to_subpage),
-        hierarchy_(hierarchy) {}
+  PerSectionHierarchyGenerator(mojom::Section section, Hierarchy* hierarchy)
+      : section_(section), hierarchy_(hierarchy) {}
 
   void RegisterTopLevelSubpage(
       int name_message_id,
@@ -48,13 +43,6 @@ class Hierarchy::PerSectionHierarchyGenerator
         name_message_id, subpage, icon, default_rank, url_path_with_parameters);
     CHECK_EQ(section_, metadata.section)
         << "Subpage registered in multiple sections: " << subpage;
-
-    ++num_top_level_subpages_so_far_;
-
-    // If there are multiple top-level subpages, the section contains more than
-    // just a link to a subpage.
-    if (num_top_level_subpages_so_far_ > 1u)
-      *only_contains_link_to_subpage_ = false;
   }
 
   void RegisterNestedSubpage(
@@ -75,51 +63,43 @@ class Hierarchy::PerSectionHierarchyGenerator
 
   void RegisterTopLevelSetting(mojom::Setting setting) override {
     Hierarchy::SettingMetadata& metadata = GetSettingMetadata(setting);
-    CHECK_EQ(section_, metadata.primary.first)
+    CHECK_EQ(section_, metadata.primary.section)
         << "Setting registered in multiple primary sections: " << setting;
-    CHECK(!metadata.primary.second)
+    CHECK(!metadata.primary.subpage)
         << "Setting registered in multiple primary locations: " << setting;
-
-    // If a top-level setting exists, the section contains more than just a link
-    // to a subpage.
-    *only_contains_link_to_subpage_ = false;
   }
 
   void RegisterNestedSetting(mojom::Setting setting,
                              mojom::Subpage subpage) override {
     Hierarchy::SettingMetadata& metadata = GetSettingMetadata(setting);
-    CHECK_EQ(section_, metadata.primary.first)
+    CHECK_EQ(section_, metadata.primary.section)
         << "Setting registered in multiple primary sections: " << setting;
-    CHECK(!metadata.primary.second)
+    CHECK(!metadata.primary.subpage)
         << "Setting registered in multiple primary locations: " << setting;
-    metadata.primary.second = subpage;
+    metadata.primary.subpage = subpage;
   }
 
   void RegisterTopLevelAltSetting(mojom::Setting setting) override {
     Hierarchy::SettingMetadata& metadata = GetSettingMetadata(setting);
-    CHECK(metadata.primary.first != section_ || metadata.primary.second)
+    CHECK(metadata.primary.section != section_ || metadata.primary.subpage)
         << "Setting's primary and alternate locations are identical: "
         << setting;
     for (const auto& alternate : metadata.alternates) {
-      CHECK(alternate.first != section_ || alternate.second)
+      CHECK(alternate.section != section_ || alternate.subpage)
           << "Setting has multiple identical alternate locations: " << setting;
     }
     metadata.alternates.emplace_back(section_, /*subpage=*/absl::nullopt);
-
-    // If a top-level setting exists, the section contains more than just a link
-    // to a subpage.
-    *only_contains_link_to_subpage_ = false;
   }
 
   void RegisterNestedAltSetting(mojom::Setting setting,
                                 mojom::Subpage subpage) override {
     Hierarchy::SettingMetadata& metadata = GetSettingMetadata(setting);
-    CHECK(metadata.primary.first != section_ ||
-          metadata.primary.second != subpage)
+    CHECK(metadata.primary.section != section_ ||
+          metadata.primary.subpage != subpage)
         << "Setting's primary and alternate locations are identical: "
         << setting;
     for (const auto& alternate : metadata.alternates) {
-      CHECK(alternate.first != section_ || alternate.second != subpage)
+      CHECK(alternate.section != section_ || alternate.subpage != subpage)
           << "Setting has multiple identical alternate locations: " << setting;
     }
     metadata.alternates.emplace_back(section_, subpage);
@@ -165,19 +145,13 @@ class Hierarchy::PerSectionHierarchyGenerator
     return pair.first->second;
   }
 
-  size_t num_top_level_subpages_so_far_ = 0u;
   mojom::Section section_;
-  bool* only_contains_link_to_subpage_;
   Hierarchy* hierarchy_;
 };
 
-// Note: |only_contains_link_to_subpage| starts out as true and is set to false
-// if other content is added.
 Hierarchy::SectionMetadata::SectionMetadata(mojom::Section section,
                                             const Hierarchy* hierarchy)
-    : only_contains_link_to_subpage(true),
-      section_(section),
-      hierarchy_(hierarchy) {}
+    : section_(section), hierarchy_(hierarchy) {}
 
 Hierarchy::SectionMetadata::~SectionMetadata() = default;
 
@@ -227,13 +201,10 @@ Hierarchy::SettingMetadata::~SettingMetadata() = default;
 
 Hierarchy::Hierarchy(const OsSettingsSections* sections) : sections_(sections) {
   for (const auto& section : constants::AllSections()) {
-    auto pair = section_map_.emplace(std::piecewise_construct,
-                                     std::forward_as_tuple(section),
-                                     std::forward_as_tuple(section, this));
+    auto pair = section_map_.insert({section, SectionMetadata(section, this)});
     CHECK(pair.second);
 
-    PerSectionHierarchyGenerator generator(
-        section, &pair.first->second.only_contains_link_to_subpage, this);
+    PerSectionHierarchyGenerator generator(section, this);
     sections->GetSection(section)->RegisterHierarchy(&generator);
   }
 }
@@ -296,14 +267,14 @@ std::vector<std::u16string> Hierarchy::GenerateAncestorHierarchyStrings(
   const SettingMetadata& setting_metadata = GetSettingMetadata(setting);
 
   // Top-level setting; simply return section hierarchy.
-  if (!setting_metadata.primary.second)
-    return GenerateHierarchyStrings(setting_metadata.primary.first);
+  if (!setting_metadata.primary.subpage)
+    return GenerateHierarchyStrings(setting_metadata.primary.section);
 
   // Nested setting; use subpage ancestors, then append subpage name itself.
   std::vector<std::u16string> hierarchy_strings =
-      GenerateAncestorHierarchyStrings(*setting_metadata.primary.second);
+      GenerateAncestorHierarchyStrings(*setting_metadata.primary.subpage);
   hierarchy_strings.push_back(
-      GetSubpageMetadata(*setting_metadata.primary.second)
+      GetSubpageMetadata(*setting_metadata.primary.subpage)
           .ToSearchResult(kDummyRelevanceScore)
           ->text);
   return hierarchy_strings;

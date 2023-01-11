@@ -17,6 +17,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_auto_reset.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
@@ -41,6 +42,7 @@
 #include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout_helper.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_scroll_session.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
@@ -54,7 +56,9 @@
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/event_monitor.h"
 #include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/view_tracker.h"
@@ -78,13 +82,17 @@
 #include "components/remote_cocoa/browser/window.h"
 #endif
 
+#if BUILDFLAG(IS_LINUX)
+#include "ui/aura/client/drag_drop_client.h"
+#endif
+
 #if defined(USE_AURA)
 #include "ui/aura/env.h"                            // nogncheck
 #include "ui/aura/window.h"                         // nogncheck
 #include "ui/wm/core/window_modality_controller.h"  // nogncheck
 #endif
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -109,7 +117,7 @@ constexpr int kMaximizedWindowInset = 10;  // DIPs.
 // underlying platform supports it, unless indicated by the Ozone platform
 // properties.
 bool PlatformProvidesAbsoluteWindowPositions() {
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   return ui::OzonePlatform::GetInstance()
       ->GetPlatformProperties()
       .supports_global_screen_coordinates;
@@ -244,6 +252,18 @@ bool IsWindowDragUsingSystemDragDropAllowed() {
       features::kAllowWindowDragUsingSystemDragDrop);
 }
 
+void UpdateSystemDnDDragImage(TabDragContext* attached_context,
+                              const gfx::ImageSkia& image) {
+#if BUILDFLAG(IS_LINUX)
+  aura::Window* root_window =
+      attached_context->GetWidget()->GetNativeWindow()->GetRootWindow();
+  if (aura::client::GetDragDropClient(root_window)) {
+    aura::client::GetDragDropClient(root_window)
+        ->UpdateDragImage(image, {-image.height() / 2, -image.width() / 2});
+  }
+#endif  // BUILDFLAG(IS_LINUX)
+}
+
 }  // namespace
 
 // KeyEventTracker installs an event monitor and runs a callback to end the drag
@@ -294,8 +314,8 @@ class TabDragController::SourceTabStripEmptinessTracker
     parent_->OnSourceTabStripEmpty();
   }
 
-  const raw_ptr<TabStripModel> tab_strip_;
-  const raw_ptr<TabDragController> parent_;
+  const raw_ptr<TabStripModel, DanglingUntriaged> tab_strip_;
+  const raw_ptr<TabDragController, DanglingUntriaged> parent_;
 };
 
 class TabDragController::DraggedTabsClosedTracker
@@ -326,7 +346,7 @@ class TabDragController::DraggedTabsClosedTracker
   }
 
  private:
-  const raw_ptr<TabDragController> parent_;
+  const raw_ptr<TabDragController, DanglingUntriaged> parent_;
 };
 
 TabDragController::TabDragData::TabDragData()
@@ -433,7 +453,6 @@ TabDragController::TabDragController()
       can_release_capture_(true),
       offset_to_width_ratio_(0),
       old_focused_view_tracker_(std::make_unique<views::ViewTracker>()),
-      last_move_screen_loc_(0),
       source_view_index_(std::numeric_limits<size_t>::max()),
       initial_move_(true),
       detach_behavior_(DETACHABLE),
@@ -495,7 +514,6 @@ void TabDragController::Init(TabDragContext* source_context,
   event_source_ = event_source;
   mouse_offset_ = mouse_offset;
   last_point_in_screen_ = start_point_in_screen_;
-  last_move_screen_loc_ = start_point_in_screen_.x();
   // Detachable tabs are not supported on Mac if the window is an out-of-process
   // (remote_cocoa) window, i.e. a PWA window.
   // TODO(https://crbug.com/1076777): Make detachable tabs work in PWAs on Mac.
@@ -506,6 +524,12 @@ void TabDragController::Init(TabDragContext* source_context,
     detach_behavior_ = NOT_DETACHABLE;
   }
 #endif
+
+  gfx::Point start_point_in_source_context =
+      gfx::Point(start_point_in_screen_.x(), start_point_in_screen_.y());
+  views::View::ConvertPointFromScreen(source_context,
+                                      &start_point_in_source_context);
+  last_move_attached_context_loc_ = start_point_in_source_context.x();
 
   source_context_emptiness_tracker_ =
       std::make_unique<SourceTabStripEmptinessTracker>(
@@ -550,6 +574,33 @@ void TabDragController::Init(TabDragContext* source_context,
   }
 
   window_finder_ = std::make_unique<WindowFinder>();
+
+  if (base::FeatureList::IsEnabled(features::kScrollableTabStrip) &&
+      base::FeatureList::IsEnabled(features::kScrollableTabStripWithDragging)) {
+    const int drag_with_scroll_mode = base::GetFieldTrialParamByFeatureAsInt(
+        features::kScrollableTabStripWithDragging,
+        features::kTabScrollingWithDraggingModeName, 1);
+
+    switch (drag_with_scroll_mode) {
+      case static_cast<int>(ScrollWithDragStrategy::kConstantSpeed):
+        drag_with_scroll_mode_ = ScrollWithDragStrategy::kConstantSpeed;
+        tab_strip_scroll_session_ =
+            std::make_unique<TabStripScrollSessionWithTimer>(
+                *this, TabStripScrollSessionWithTimer::ScrollSessionTimerType::
+                           kConstantTimer);
+        break;
+      case static_cast<int>(ScrollWithDragStrategy::kVariableSpeed):
+        drag_with_scroll_mode_ = ScrollWithDragStrategy::kVariableSpeed;
+        tab_strip_scroll_session_ =
+            std::make_unique<TabStripScrollSessionWithTimer>(
+                *this, TabStripScrollSessionWithTimer::ScrollSessionTimerType::
+                           kVariableTimer);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
 }
 
 // static
@@ -711,6 +762,9 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
 
 void TabDragController::EndDrag(EndDragReason reason) {
   TRACE_EVENT0("views", "TabDragController::EndDrag");
+
+  if (tab_strip_scroll_session_)
+    tab_strip_scroll_session_->Stop();
 
   // Some drags need to react to the model being mutated before the model can
   // change its state.
@@ -970,6 +1024,9 @@ TabDragController::Liveness TabDragController::ContinueDragging(
       }
       current_state_ = DragState::kDraggingTabs;
       MoveAttached(point_in_screen, true);
+      // Hide the drag image while attached.
+      UpdateSystemDnDDragImage(attached_context_, {});
+
       // Set |tab_strip_changed| to true so that |attached_context_| is
       // activated later on.
       tab_strip_changed = true;
@@ -1099,24 +1156,7 @@ TabDragController::DragBrowserToNewTabStrip(TabDragContext* target_context,
   return DRAG_BROWSER_RESULT_CONTINUE;
 }
 
-TabDragController::Liveness
-TabDragController::StartSystemDragAndDropSessionIfNecessary(
-    const gfx::Point& point_in_screen) {
-  DCHECK(IsWindowDragUsingSystemDragDropAllowed());
-  DCHECK(ui::ResourceBundle::HasSharedInstance());
-  current_state_ = DragState::kDraggingUsingSystemDragAndDrop;
-
-  if (system_drag_and_drop_session_running_)
-    return Liveness::ALIVE;
-  system_drag_and_drop_session_running_ = true;
-
-  auto data_provider = ui::OSExchangeDataProviderFactory::CreateProvider();
-  // Set data in a format that is accepted by TabStrip so that a drop can
-  // happen.
-  base::Pickle pickle;
-  data_provider->SetPickledData(
-      ui::ClipboardFormatType::GetType(ui::kMimeTypeWindowDrag), pickle);
-
+gfx::ImageSkia TabDragController::GetDragImageForSystemDnD() {
   // The width has the same value, as the logo image is square-shaped.
   auto display = display::Screen::GetScreen()->GetDisplayNearestWindow(
       GetAttachedBrowserWidget()->GetNativeWindow());
@@ -1127,11 +1167,38 @@ TabDragController::StartSystemDragAndDropSessionIfNecessary(
   gfx::ImageSkia drag_image =
       *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_PRODUCT_LOGO_256);
-  drag_image = gfx::ImageSkiaOperations::CreateResizedImage(
+  return gfx::ImageSkiaOperations::CreateResizedImage(
       drag_image, skia::ImageOperations::RESIZE_BEST, drag_image_size);
+}
+
+TabDragController::Liveness
+TabDragController::StartSystemDragAndDropSessionIfNecessary(
+    const gfx::Point& point_in_screen) {
+  DCHECK(IsWindowDragUsingSystemDragDropAllowed());
+  DCHECK(ui::ResourceBundle::HasSharedInstance());
+  current_state_ = DragState::kDraggingUsingSystemDragAndDrop;
+
+  if (system_drag_and_drop_session_running_) {
+    // Show the drag image again.
+    gfx::ImageSkia drag_image = GetDragImageForSystemDnD();
+    UpdateSystemDnDDragImage(attached_context_, drag_image);
+
+    return Liveness::ALIVE;
+  }
+
+  system_drag_and_drop_session_running_ = true;
+
+  auto data_provider = ui::OSExchangeDataProviderFactory::CreateProvider();
+  // Set data in a format that is accepted by TabStrip so that a drop can
+  // happen.
+  base::Pickle pickle;
+  data_provider->SetPickledData(
+      ui::ClipboardFormatType::GetType(ui::kMimeTypeWindowDrag), pickle);
+
+  gfx::ImageSkia drag_image = GetDragImageForSystemDnD();
   data_provider->SetDragImage(
       drag_image,
-      gfx::Vector2d(-drag_image_height / 2, -drag_image_height / 2));
+      gfx::Vector2d(-drag_image.height() / 2, -drag_image.width() / 2));
 
   base::WeakPtr<TabDragController> ref(weak_factory_.GetWeakPtr());
   GetAttachedBrowserWidget()->RunShellDrag(
@@ -1139,6 +1206,7 @@ TabDragController::StartSystemDragAndDropSessionIfNecessary(
       std::make_unique<ui::OSExchangeData>(std::move(data_provider)),
       point_in_screen, static_cast<int>(ui::mojom::DragOperation::kMove),
       ui::mojom::DragEventSource::kMouse);
+
   // If we're still alive and |attached_context_hidden_| is true, this means the
   // drag session ended while we were dragging all of the only window's tabs. We
   // need to end the drag session ourselves.
@@ -1146,6 +1214,39 @@ TabDragController::StartSystemDragAndDropSessionIfNecessary(
     EndDrag(END_DRAG_COMPLETE);
 
   return ref ? Liveness::ALIVE : Liveness::DELETED;
+}
+
+gfx::Rect TabDragController::GetEnclosingRectForDraggedTabs() {
+  CHECK_GT(drag_data_.size(), 0UL);
+
+  const TabSlotView* const last_tab = drag_data_.back().attached_view;
+  const TabSlotView* const first_tab = drag_data_.front().attached_view;
+
+  DCHECK(attached_context_);
+  DCHECK(first_tab->parent() == attached_context_);
+
+  const gfx::Point right_point_of_last_tab = last_tab->bounds().bottom_right();
+  const gfx::Point left_point_of_first_tab = first_tab->bounds().origin();
+
+  return gfx::Rect(left_point_of_first_tab.x(), 0,
+                   right_point_of_last_tab.x() - left_point_of_first_tab.x(),
+                   0);
+}
+
+gfx::Point TabDragController::GetLastPointInScreen() {
+  return last_point_in_screen_;
+}
+
+bool TabDragController::IsDraggingTabState() {
+  return current_state_ == DragState::kDraggingTabs;
+}
+
+views::View* TabDragController::GetAttachedContext() {
+  return attached_context_;
+}
+
+views::ScrollView* TabDragController::GetScrollView() {
+  return attached_context_->GetScrollView();
 }
 
 void TabDragController::MoveAttached(const gfx::Point& point_in_screen,
@@ -1162,13 +1263,20 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen,
     views[i] = drag_data_[i].attached_view;
 
   bool did_layout = false;
+
+  gfx::Point point_in_attached_context =
+      gfx::Point(point_in_screen.x(), point_in_screen.y());
+  views::View::ConvertPointFromScreen(attached_context_,
+                                      &point_in_attached_context);
+
   // Update the model, moving the WebContents from one index to another. Do this
   // only if we have moved a minimum distance since the last reorder (to prevent
   // jitter), or if this the first move and the tabs are not consecutive, or if
   // we have just attached to a new tabstrip and need to move to the correct
   // initial position.
   if (just_attached ||
-      (abs(point_in_screen.x() - last_move_screen_loc_) > threshold) ||
+      (abs(point_in_attached_context.x() - last_move_attached_context_loc_) >
+       threshold) ||
       (initial_move_ && !AreTabsConsecutive())) {
     TabStripModel* attached_model = attached_context_->GetTabStripModel();
     int to_index = attached_context_->GetInsertionIndexForDraggedBounds(
@@ -1199,12 +1307,16 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen,
 
     // Move may do nothing in certain situations (such as when dragging pinned
     // tabs). Make sure the tabstrip actually changed before updating
-    // last_move_screen_loc_.
+    // `last_move_attached_context_loc_`.
     if (index_of_last_item !=
         attached_model->GetIndexOfWebContents(last_contents)) {
-      last_move_screen_loc_ = point_in_screen.x();
+      last_move_attached_context_loc_ = point_in_attached_context.x();
     }
   }
+
+  // Let stop be handled by the callback of `tab_strip_scroll_session_`
+  if (tab_strip_scroll_session_)
+    tab_strip_scroll_session_->MaybeStart();
 
   if (!did_layout) {
     attached_context_->LayoutDraggedViewsAt(
@@ -1762,9 +1874,7 @@ void TabDragController::AttachTabsToNewBrowserOnDrop() {
   // Attach() expects |attached_context_| to be nullptr;
   attached_context_ = nullptr;
   Attach(new_context, last_point_in_screen_, std::move(me));
-  // Run MoveAttached to ensure the insertion index and group membership make
-  // sense for this mouse position.
-  MoveAttached(last_point_in_screen_, true);
+
   browser->window()->Show();
 }
 
@@ -2626,14 +2736,10 @@ void TabDragController::NotifyEventIfTabAddedToGroup() {
     if (!group_id.has_value())
       continue;
 
-    ui::TrackedElement* element =
-        views::ElementTrackerViews::GetInstance()->GetElementForView(
-            drag_data_[i].attached_view);
-    if (!element)
-      continue;
-
-    ui::ElementTracker::GetFrameworkDelegate()->NotifyCustomEvent(
-        element, kTabGroupedCustomEventId);
-    break;
+    // Finish on the first successful event sent.
+    if (views::ElementTrackerViews::GetInstance()->NotifyCustomEvent(
+            kTabGroupedCustomEventId, drag_data_[i].attached_view)) {
+      break;
+    }
   }
 }

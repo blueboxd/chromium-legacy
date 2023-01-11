@@ -9,6 +9,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/types/strong_alias.h"
@@ -28,7 +29,7 @@ class Env;
 }
 #endif
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 #include "ui/ozone/buildflags.h"  // nogncheck
 #if BUILDFLAG(OZONE_PLATFORM_X11)
 #define USE_OZONE_PLATFORM_X11
@@ -290,7 +291,7 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   // Members initialized on construction ---------------------------------------
   MainFunctionParams parameters_;
-  const base::CommandLine& parsed_command_line_;
+  const raw_ref<const base::CommandLine> parsed_command_line_;
   int result_code_;
   bool created_threads_;  // True if the non-UI threads were created.
   // //content must be initialized single-threaded until

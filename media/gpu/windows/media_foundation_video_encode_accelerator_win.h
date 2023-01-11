@@ -26,6 +26,9 @@
 #include "media/base/win/dxgi_device_manager.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/h264_parser.h"
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+#include "media/video/h265_nalu_parser.h"
+#endif
 #include "media/video/video_encode_accelerator.h"
 
 namespace media {
@@ -108,6 +111,7 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // Populates input sample buffer with contents of a video frame
   HRESULT PopulateInputSampleBuffer(scoped_refptr<VideoFrame> frame);
   HRESULT PopulateInputSampleBufferGpu(scoped_refptr<VideoFrame> frame);
+  HRESULT CopyInputSampleBufferFromGpu(const VideoFrame& frame);
 
   // Assign TemporalID by bitstream or external state machine(based on SVC
   // Spec).
@@ -169,6 +173,9 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
 
   // This parser is used to assign temporalId.
   H264Parser h264_parser_;
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+  H265NaluParser h265_nalu_parser_;
+#endif
 
   gfx::Size input_visible_size_;
   size_t bitstream_buffer_size_;
@@ -228,6 +235,11 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
 
   // DXGI device manager for handling hardware input textures
   scoped_refptr<DXGIDeviceManager> dxgi_device_manager_;
+  // Mapping of dxgi resource needed when HMFT rejects setting D3D11 manager.
+  bool dxgi_resource_mapping_required_ = false;
+  // Staging texture for copying from GPU memory if HMFT does not operate in
+  // D3D11 mode.
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> staging_texture_;
 
   // Preferred adapter for DXGIDeviceManager.
   const CHROME_LUID luid_;

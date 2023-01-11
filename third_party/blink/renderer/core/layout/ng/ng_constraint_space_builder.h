@@ -79,6 +79,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     *inline_size = orthogonal_fallback_inline_size_;
   }
 
+  // |available_size| is logical for the writing-mode of the container.
   void SetAvailableSize(LogicalSize available_size) {
 #if DCHECK_IS_ON()
     is_available_size_set_ = true;
@@ -133,14 +134,24 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       space_.EnsureRareData()->fragmentainer_block_size = size;
   }
 
-  // Shrink the fragmentainer block-size, to reserve space at the end. This is
-  // needed for repeated table footers.
-  void ReserveSpaceAtFragmentainerEnd(LayoutUnit space) {
+  // Shrink the fragmentainer block-size, to reserve space for repeated table
+  // headers and footers. If there's a repeated header, the argument to
+  // SetFragmentainerOffset() also needs to be compensated for the block-size
+  // taken up by the repeated header, so that offset 0 is exactly where the
+  // non-repeated content starts / resumes after the repeated header.
+  void ReserveSpaceInFragmentainer(LayoutUnit space) {
+    if (!space_.HasBlockFragmentation()) {
+      // It is possible to end up with a monolithic table section, even if
+      // things like containment and overflow don't apply. -webkit-line-clamp
+      // is at least one example.
+      return;
+    }
 #if DCHECK_IS_ON()
     DCHECK(is_fragmentainer_block_size_set_);
 #endif
-    DCHECK_GE(space_.rare_data_->fragmentainer_block_size, space);
     space_.rare_data_->fragmentainer_block_size -= space;
+    space_.rare_data_->fragmentainer_block_size =
+        space_.rare_data_->fragmentainer_block_size.ClampNegativeToZero();
   }
 
   void SetFragmentainerOffset(LayoutUnit offset) {
@@ -250,8 +261,14 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     space_.EnsureRareData()->min_break_appeal = min_break_appeal;
   }
 
-  void SetShouldPropagateChildBreakValues() {
-    space_.EnsureRareData()->propagate_child_break_values = true;
+  void SetShouldPropagateChildBreakValues(
+      bool propagate_child_break_values = true) {
+    // Don't create rare data if `propagate_child_break_values` is already
+    // false.
+    if (!space_.HasRareData() && !propagate_child_break_values)
+      return;
+    space_.EnsureRareData()->propagate_child_break_values =
+        propagate_child_break_values;
   }
 
   void SetIsTableCell(bool is_table_cell) {

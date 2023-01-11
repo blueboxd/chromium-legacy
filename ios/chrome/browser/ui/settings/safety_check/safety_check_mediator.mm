@@ -30,8 +30,7 @@
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
-#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
-#import "ios/chrome/browser/ui/icons/settings_icon.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_constants.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_consumer.h"
@@ -1044,7 +1043,7 @@ constexpr double kSafeBrowsingRowMinDelay = 3.0;
       UIImage* safeIconImage =
           UseSymbols()
               ? DefaultSymbolTemplateWithPointSize(
-                    kCheckMarkCircleFillSymbol, kTrailingSymbolImagePointSize)
+                    kCheckmarkCircleFillSymbol, kTrailingSymbolImagePointSize)
               : [[UIImage imageNamed:@"settings_safe_state"]
                     imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       self.updateCheckItem.trailingImage = safeIconImage;
@@ -1141,7 +1140,7 @@ constexpr double kSafeBrowsingRowMinDelay = 3.0;
       UIImage* safeIconImage =
           UseSymbols()
               ? DefaultSymbolTemplateWithPointSize(
-                    kCheckMarkCircleFillSymbol, kTrailingSymbolImagePointSize)
+                    kCheckmarkCircleFillSymbol, kTrailingSymbolImagePointSize)
               : [[UIImage imageNamed:@"settings_safe_state"]
                     imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       self.passwordCheckItem.detailText =
@@ -1214,8 +1213,12 @@ constexpr double kSafeBrowsingRowMinDelay = 3.0;
       break;
     }
     case SafeBrowsingCheckRowStateSafe: {
-      UIImage* safeIconImage = [[UIImage imageNamed:@"settings_safe_state"]
-          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      UIImage* safeIconImage =
+          UseSymbols()
+              ? DefaultSymbolTemplateWithPointSize(
+                    kCheckmarkCircleFillSymbol, kTrailingSymbolImagePointSize)
+              : [[UIImage imageNamed:@"settings_safe_state"]
+                    imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       self.safeBrowsingCheckItem.trailingImage = safeIconImage;
       self.safeBrowsingCheckItem.trailingImageTintColor =
           [UIColor colorNamed:kGreenColor];
@@ -1240,8 +1243,12 @@ constexpr double kSafeBrowsingRowMinDelay = 3.0;
       if (base::FeatureList::IsEnabled(
               safe_browsing::kEnhancedProtectionPhase2IOS)) {
         UIImage* unSafeIconImage =
-            [[UIImage imageNamed:@"settings_unsafe_state"]
-                imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+            UseSymbols()
+                ? DefaultSymbolTemplateWithPointSize(
+                      kWarningFillSymbol, kTrailingSymbolImagePointSize)
+                : [[UIImage imageNamed:@"settings_unsafe_state"]
+                      imageWithRenderingMode:
+                          UIImageRenderingModeAlwaysTemplate];
         self.safeBrowsingCheckItem.trailingImage = unSafeIconImage;
         self.safeBrowsingCheckItem.trailingImageTintColor =
             [UIColor colorNamed:kRedColor];

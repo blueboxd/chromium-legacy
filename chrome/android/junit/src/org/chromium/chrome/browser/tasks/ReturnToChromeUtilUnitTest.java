@@ -36,7 +36,6 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ChromeInactivityTracker;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -108,7 +107,7 @@ public class ReturnToChromeUtilUnitTest {
                 .when(mUrlFormatterJniMock)
                 .fixupUrl(UrlConstants.NTP_NON_NATIVE_URL);
 
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, true);
+        ChromeFeatureList.sStartSurfaceAndroid.setForTesting(true);
 
         // HomepageManager:
         ShadowHomepageManager.sHomepageUrl = UrlConstants.NTP_NON_NATIVE_URL;
@@ -224,8 +223,7 @@ public class ReturnToChromeUtilUnitTest {
     public void testShouldShowTabSwitcherWithSegmentationReturnTime() {
         final SegmentId showStartId =
                 SegmentId.OPTIMIZATION_TARGET_SEGMENTATION_CHROME_START_ANDROID_V2;
-        Assert.assertTrue(
-                CachedFeatureFlags.isEnabled(ChromeFeatureList.START_SURFACE_RETURN_TIME));
+        Assert.assertTrue(ChromeFeatureList.sStartSurfaceReturnTime.isEnabled());
 
         // Verifies that when the preference key isn't stored, return
         // TAB_SWITCHER_ON_RETURN_MS.getDefaultValue() as default value, i.e., 8 hours.

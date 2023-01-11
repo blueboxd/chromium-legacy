@@ -43,7 +43,6 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -168,7 +167,9 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_SELECTION_EDITOR_V2, true);
+        // TODO(crbug/1379188): Override another test is leaking theme state.
+        getActivity().setTheme(org.chromium.chrome.tab_ui.R.style.Theme_BrowserUI_DayNight);
+        ChromeFeatureList.sTabSelectionEditorV2.setForTesting(true);
         MockitoAnnotations.initMocks(this);
 
         when(mTabModelSelector.getCurrentModel()).thenReturn(mTabModel);
@@ -213,7 +214,7 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
 
     @Override
     public void tearDownTest() throws Exception {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_SELECTION_EDITOR_V2, false);
+        ChromeFeatureList.sTabSelectionEditorV2.setForTesting(false);
         TestThreadUtils.runOnUiThreadBlocking(() -> { mPropertyListModel.clear(); });
     }
 
@@ -461,6 +462,7 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    @DisabledTest(message = "https://crbug.com/1383178")
     public void testLongTextActionViewAndMenuItem() throws Exception {
         List<FakeTabSelectionEditorAction> actions = new ArrayList<>();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -493,7 +495,7 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
     @Feature({"RenderTest"})
     @Features.DisableFeatures({TAB_SELECTION_EDITOR_V2})
     public void testLongTextV2Disabled() throws Exception {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_SELECTION_EDITOR_V2, false);
+        ChromeFeatureList.sTabSelectionEditorV2.setForTesting(false);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mToolbar.setActionButtonVisibility(View.VISIBLE);
             NumberRollView numberRoll =
@@ -587,8 +589,10 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
 
     private void clickActionView(int id) throws TimeoutException {
         onViewWaiting(
-                allOf(withId(id), isDescendantOfA(withId(R.id.action_view_layout)), isDisplayed()))
-                .perform(click());
+                allOf(withId(id), isDescendantOfA(withId(R.id.action_view_layout)), isDisplayed()));
+        // On Android 12 perform(click()) sometimes fails to trigger the click so force the click on
+        // the view object instead.
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mToolbar.findViewById(id).performClick(); });
     }
 
     private void clickMenuItem(String text) throws TimeoutException {

@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chromeos/dbus/dlp/dlp_service.pb.h"
+#include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom-forward.h"
@@ -23,6 +24,7 @@
 
 namespace storage {
 class FileSystemURL;
+class FileSystemContext;
 }  // namespace storage
 
 namespace views {
@@ -49,7 +51,9 @@ class DlpFilesController {
     kUpload = 3,
     kCopy = 4,
     kMove = 5,
-    kMaxValue = kMove
+    kOpen = 6,
+    kShare = 7,
+    kMaxValue = kShare
   };
 
   // DlpFileMetadata keeps metadata about a file, such as whether it's managed
@@ -162,10 +166,13 @@ class DlpFilesController {
 
   virtual ~DlpFilesController();
 
-  // Returns a list of files disallowed to be transferred in |result_callback|.
+  // Returns a sublist of |transferred_files| disallowed to be transferred to
+  // |destination| in |result_callback|. |is_move| is true if it's a move
+  // operation. Otherwise it's false.
   void GetDisallowedTransfers(
       const std::vector<storage::FileSystemURL>& transferred_files,
       storage::FileSystemURL destination,
+      bool is_move,
       GetDisallowedTransfersCallback result_callback);
 
   // Retrieves metadata for each entry in |files| and returns it as a list in
@@ -185,8 +192,8 @@ class DlpFilesController {
                               const base::FilePath& file_path,
                               CheckIfDownloadAllowedCallback result_callback);
 
-  // Checks whether launching `app_id` with `intent` is allowed.
-  void CheckIfLaunchAllowed(const std::string& app_id,
+  // Checks whether launching `app_update` with `intent` is allowed.
+  void CheckIfLaunchAllowed(const apps::AppUpdate& app_update,
                             apps::IntentPtr intent,
                             CheckIfLaunchAllowedCallback result_callback);
 
@@ -221,6 +228,9 @@ class DlpFilesController {
 
   DlpFilesEventStorage* GetEventStorageForTesting();
 
+  void SetFileSystemContextForTesting(
+      storage::FileSystemContext* file_system_context);
+
  private:
   // Called back from warning dialog. Passes blocked files sources along
   // to |callback|. In case |should_proceed| is true, passes only
@@ -249,6 +259,9 @@ class DlpFilesController {
                          GetDlpMetadataCallback result_callback,
                          const ::dlp::GetFilesSourcesResponse response);
 
+  void LaunchIfAllowed(CheckIfLaunchAllowedCallback result_callback,
+                       ::dlp::CheckFilesTransferResponse response);
+
   // Reports an event if a `DlpReportingManager` instance exists. When
   // `dst_pattern` is missing, we report `dst.component.value()` instead. When
   // `level` is missing, we report a warning proceeded event.
@@ -262,6 +275,13 @@ class DlpFilesController {
   // Closes warning dialog if `response` has error.
   ::dlp::CheckFilesTransferResponse MaybeCloseDialog(
       ::dlp::CheckFilesTransferResponse response);
+
+  // Called when `transferred_files` is ready. Constructs CheckFilesTransfer
+  // request and forwards it to the dlp daemon.
+  void OnGetFilesUrls(storage::FileSystemURL destination,
+                      bool is_move,
+                      GetDisallowedTransfersCallback result_callback,
+                      std::vector<storage::FileSystemURL> transferred_files);
 
   const DlpRulesManager& rules_manager_;
 

@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_PICKER_FORCE_SIGNIN_DIALOG_HOST_H_
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_PICKER_FORCE_SIGNIN_DIALOG_HOST_H_
 
-#include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -16,9 +15,7 @@ namespace views {
 class DialogDelegateView;
 }
 
-namespace content {
-class BrowserContext;
-}
+class Profile;
 
 // Class encapsulating logic for views willing to host
 // ProfilePickerForceSigninDialogDelegate.
@@ -34,10 +31,7 @@ class ProfilePickerForceSigninDialogHost {
   // Shows a dialog where the user can auth the profile or see the auth error
   // message. If a dialog is already shown, this destroys the current dialog and
   // creates a new one.
-  void ShowDialog(content::BrowserContext* browser_context,
-                  const GURL& url,
-                  const base::FilePath& profile_path,
-                  gfx::NativeView parent);
+  void ShowDialog(Profile* profile, const GURL& url, gfx::NativeView parent);
 
   // Hides the reauth dialog if it is showing.
   void HideDialog();
@@ -46,10 +40,6 @@ class ProfilePickerForceSigninDialogHost {
   // without browser window. If the dialog is not currently shown, this does
   // nothing.
   void DisplayErrorMessage();
-
-  // Getter of the path of profile which is selected in profile picker for force
-  // signin.
-  base::FilePath GetForceSigninProfilePath() const;
 
   views::DialogDelegateView* GetDialogDelegateViewForTesting() const;
 
@@ -61,9 +51,6 @@ class ProfilePickerForceSigninDialogHost {
 
   // Owned by the view hierarchy.
   raw_ptr<ProfilePickerForceSigninDialogDelegate> delegate_ = nullptr;
-
-  // The path of profile that is being force signed in.
-  base::FilePath force_signin_profile_path_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_PICKER_FORCE_SIGNIN_DIALOG_HOST_H_

@@ -9,7 +9,7 @@
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
-import 'chrome://resources/js/cr.m.js';
+import 'chrome://resources/js/cr.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import '../controls/controlled_radio_button.js';
 import '../controls/settings_radio_group.js';
@@ -21,7 +21,7 @@ import '../settings_shared.css.js';
 import '../settings_vars.css.js';
 
 import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
-import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -50,8 +50,8 @@ export interface SettingsSearchEnginesPageElement {
 }
 
 const SettingsSearchEnginesPageElementBase =
-    GlobalScrollTargetMixin(WebUIListenerMixin(PolymerElement)) as
-    {new (): PolymerElement & WebUIListenerMixinInterface};
+    GlobalScrollTargetMixin(WebUiListenerMixin(PolymerElement)) as
+    {new (): PolymerElement & WebUiListenerMixinInterface};
 
 export class SettingsSearchEnginesPageElement extends
     SettingsSearchEnginesPageElementBase {

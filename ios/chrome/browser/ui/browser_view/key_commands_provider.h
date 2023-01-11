@@ -12,33 +12,36 @@
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
+#import "ios/chrome/browser/ui/keyboard/key_command_actions.h"
 
 @protocol BookmarksCommands;
 class Browser;
 
 // Handles the keyboard commands registration and handling for the
 // BrowserViewController.
-@interface KeyCommandsProvider : NSObject
+@interface KeyCommandsProvider : UIResponder <KeyCommandActions>
 
-@property(nonatomic, weak) UIViewController* baseViewController;
+// Key command actions are converted to Chrome commands and sent to these
+// handlers.
 @property(nonatomic, weak)
     id<ApplicationCommands, BrowserCommands, FindInPageCommands>
         dispatcher;
-
 @property(nonatomic, weak) id<BookmarksCommands> bookmarksCommandsHandler;
 @property(nonatomic, weak) id<BrowserCoordinatorCommands>
     browserCoordinatorCommandsHandler;
 @property(nonatomic, weak) id<OmniboxCommands> omniboxHandler;
 
-// Set this flag to YES when the key shortcut bound to Escape key that dismisses
-// modals should be enabled.
+// Set this flag to YES when the keyboard command bound to the Escape key should
+// dismiss modals.
 @property(nonatomic, assign) BOOL canDismissModals;
 
 - (instancetype)initWithBrowser:(Browser*)browser NS_DESIGNATED_INITIALIZER;
-
 - (instancetype)init NS_UNAVAILABLE;
 
-- (NSArray*)keyCommandsWithEditingText:(BOOL)editingText;
+// Adds the receiver in the chain between the view controller and its original
+// next responder.
+- (void)respondBetweenViewController:(UIViewController*)viewController
+                        andResponder:(UIResponder*)nextResponder;
 
 @end
 

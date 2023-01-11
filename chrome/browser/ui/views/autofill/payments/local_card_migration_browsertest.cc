@@ -45,7 +45,6 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_loading_indicator_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -528,9 +527,10 @@ class LocalCardMigrationBrowserTest
 
   void WaitForCardDeletion() { WaitForPersonalDataChange(GetProfile(0)); }
 
-  raw_ptr<LocalCardMigrationManager> local_card_migration_manager_;
+  raw_ptr<LocalCardMigrationManager, DanglingUntriaged>
+      local_card_migration_manager_;
 
-  raw_ptr<PersonalDataManager> personal_data_;
+  raw_ptr<PersonalDataManager, DanglingUntriaged> personal_data_;
   PersonalDataLoadedObserverMock personal_data_observer_;
 
  private:

@@ -30,8 +30,11 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme_features.h"
-#include "ui/native_theme/native_theme_fluent.h"
 #include "ui/native_theme/overlay_scrollbar_constants_aura.h"
+
+#if BUILDFLAG(IS_WIN)
+#include "ui/native_theme/native_theme_fluent.h"
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace ui {
 
@@ -54,8 +57,10 @@ const SkScalar kScrollRadius =
 #if !BUILDFLAG(IS_APPLE)
 // static
 NativeTheme* NativeTheme::GetInstanceForWeb() {
+#if BUILDFLAG(IS_WIN)
   if (IsFluentScrollbarEnabled())
     return NativeThemeFluent::web_instance();
+#endif  // BUILDFLAG(IS_WIN)
   return NativeThemeAura::web_instance();
 }
 
@@ -160,30 +165,35 @@ void NativeThemeAura::PaintMenuItemBackground(
 
 void NativeThemeAura::PaintArrowButton(
     cc::PaintCanvas* canvas,
+    const ColorProvider* color_provider,
     const gfx::Rect& rect,
     Part direction,
     State state,
     ColorScheme color_scheme,
     const ScrollbarArrowExtraParams& arrow) const {
-  SkColor bg_color = GetControlColor(kScrollbarArrowBackground, color_scheme);
+  SkColor bg_color =
+      GetControlColor(kScrollbarArrowBackground, color_scheme, color_provider);
   // Aura-win uses slightly different arrow colors.
   SkColor arrow_color = gfx::kPlaceholderColor;
   switch (state) {
     case kDisabled:
-      arrow_color = GetArrowColor(state, color_scheme);
+      arrow_color = GetArrowColor(state, color_scheme, color_provider);
       break;
     case kHovered:
-      bg_color =
-          GetControlColor(kScrollbarArrowBackgroundHovered, color_scheme);
-      arrow_color = GetControlColor(kScrollbarArrowHovered, color_scheme);
+      bg_color = GetControlColor(kScrollbarArrowBackgroundHovered, color_scheme,
+                                 color_provider);
+      arrow_color =
+          GetControlColor(kScrollbarArrowHovered, color_scheme, color_provider);
       break;
     case kNormal:
-      arrow_color = GetControlColor(kScrollbarArrow, color_scheme);
+      arrow_color =
+          GetControlColor(kScrollbarArrow, color_scheme, color_provider);
       break;
     case kPressed:
-      bg_color =
-          GetControlColor(kScrollbarArrowBackgroundPressed, color_scheme);
-      arrow_color = GetControlColor(kScrollbarArrowPressed, color_scheme);
+      bg_color = GetControlColor(kScrollbarArrowBackgroundPressed, color_scheme,
+                                 color_provider);
+      arrow_color =
+          GetControlColor(kScrollbarArrowPressed, color_scheme, color_provider);
       break;
     case kNumStates:
       break;
@@ -219,6 +229,7 @@ void NativeThemeAura::PaintArrowButton(
 
 void NativeThemeAura::PaintScrollbarTrack(
     cc::PaintCanvas* canvas,
+    const ColorProvider* color_provider,
     Part part,
     State state,
     const ScrollbarTrackExtraParams& extra_params,
@@ -227,7 +238,8 @@ void NativeThemeAura::PaintScrollbarTrack(
   // Overlay Scrollbar should never paint a scrollbar track.
   DCHECK(!use_overlay_scrollbars_);
   cc::PaintFlags flags;
-  SkColor track_color = GetControlColor(kScrollbarTrack, color_scheme);
+  const SkColor track_color =
+      GetControlColor(kScrollbarTrack, color_scheme, color_provider);
   flags.setColor(track_color);
   canvas->drawIRect(gfx::RectToSkIRect(rect), flags);
 }
@@ -308,20 +320,15 @@ void NativeThemeAura::PaintScrollbarThumb(cc::PaintCanvas* canvas,
     thumb_rect.Inset(fill_insets + edge_adjust_insets);
   } else {
     ControlColorId color_id = kScrollbarThumb;
-    SkAlpha thumb_alpha = SK_AlphaTRANSPARENT;
     switch (state) {
       case NativeTheme::kDisabled:
+      case NativeTheme::kNormal:
         break;
       case NativeTheme::kHovered:
         color_id = kScrollbarThumbHovered;
-        thumb_alpha = 0x4D;
-        break;
-      case NativeTheme::kNormal:
-        thumb_alpha = 0x33;
         break;
       case NativeTheme::kPressed:
         color_id = kScrollbarThumbPressed;
-        thumb_alpha = 0x80;
         break;
       case NativeTheme::kNumStates:
         NOTREACHED();
@@ -337,11 +344,7 @@ void NativeThemeAura::PaintScrollbarThumb(cc::PaintCanvas* canvas,
     else
       thumb_rect.Inset(gfx::Insets::VH(kThumbPadding, extra_padding));
 
-    thumb_color =
-        (InForcedColorsMode() && features::IsForcedColorsEnabled())
-            ? GetControlColor(color_id, color_scheme)
-            : SkColorSetA(GetControlColor(kScrollbarThumb, color_scheme),
-                          thumb_alpha);
+    thumb_color = GetControlColor(color_id, color_scheme, color_provider);
   }
 
   cc::PaintFlags flags;
@@ -350,12 +353,15 @@ void NativeThemeAura::PaintScrollbarThumb(cc::PaintCanvas* canvas,
 }
 
 void NativeThemeAura::PaintScrollbarCorner(cc::PaintCanvas* canvas,
+                                           const ColorProvider* color_provider,
                                            State state,
                                            const gfx::Rect& rect,
                                            ColorScheme color_scheme) const {
   // Overlay Scrollbar should never paint a scrollbar corner.
   DCHECK(!use_overlay_scrollbars_);
   cc::PaintFlags flags;
+  // TODO(crbug.com/1374573): use the system color for the high contrast mode.
+  // Move the definition to the NativeThemeBase::GetControlColor().
   SkColor bg_color = color_scheme == ui::NativeTheme::ColorScheme::kDark
                          ? SkColorSetRGB(0x12, 0x12, 0x12)
                          : SkColorSetRGB(0xDC, 0xDC, 0xDC);

@@ -29,15 +29,14 @@ TODO(dmurph): Possibly this table up into markdown-header section.
 | set_app_badge | Site |  | 6 | Not Implemented | Set the app badge for the given site to a value. |  |
 | |
 | # Manifest Update |
-| accept_app_id_update_dialog |  |  | 91 | Implemented | Click Accept in the App Identity Update dialog | finnur@ |
+| handle_app_identity_update_dialog_response | UpdateDialogResponse |  | 91 | Implemented | Click Accept or Uninstall in the App Identity Update dialog | finnur@ |
 | manifest_update_scope_to | Site, Site |  | 8 | Implemented | Update the scope of the app at the first site to the second site. |  |
-| manifest_update_icon | Site |  | 68 | Implemented | Updates the launcher icon in the manifest of the website. | finnur@ |
-| manifest_update_title | Site, Title |  | 88 | Implemented | The website updates it's manifest.json to change the 'title' | finnur@ |
+| manifest_update_icon | Site, UpdateDialogResponse |  | 68 | Implemented | Updates the launcher icon in the manifest of the website. | finnur@ |
+| manifest_update_title | Site, Title, UpdateDialogResponse |  | 88 | Implemented | The website updates it's manifest.json to change the 'title' | finnur@ |
 | manifest_update_colors | Site |  | 80 | Not Implemented | The website updates it's manifest.json to change the 'theme' color | P3 |
 | manifest_update_display | Site, Display |  | 116 | Implemented |  |  |
 | await_manifest_update | Site |  | 117 | WIP | Does any actions necessary (like closing browser windows) and blocks the execution of the test until the manifest has been updated for the given site. |  |
 | check_update_dialog_not_shown |  |  | 92 | WIP |  | finnur@ |
-| deny_app_update_dialog |  |  | 93 | WIP |  | finnur@ |
 | |
 | # Run on OS Login |
 | apply_run_on_os_login_policy_allowed | Site |  | 100 | Implemented | Apply WebAppSettings policy for run_on_os_login to be allowed | phillis@ |
@@ -146,8 +145,8 @@ TODO(dmurph): Possibly this table up into markdown-header section.
 | sync_turn_on |  |  | 42 | Implemented | Turn chrome sync on for "Apps": chrome://settings/syncSetup/advanced |  |
 | switch_incognito_profile |  |  | 73 | Implemented | Switch to using incognito mode | P2 |
 | # File handling |
-| check_site_handles_file | Site, FileExtension |  | 118 | Not Implemented |  |  |
-| check_site_not_handles_file | Site, FileExtension |  | 122 | Not Implemented |  |  |
+| check_site_handles_file | Site, FileExtension |  | 118 | Implemented |  |  |
+| check_site_not_handles_file | Site, FileExtension |  | 122 | Implemented |  |  |
 | check_file_handling_dialog | IsShown |  | 119 | Not Implemented |  |  |
 | launch_file | FilesOptions |  | 120 | Not Implemented |  |  |
 | file_handling_dialog | AllowDenyOptions, AskAgainOptions |  | 121 | Not Implemented |  |  |

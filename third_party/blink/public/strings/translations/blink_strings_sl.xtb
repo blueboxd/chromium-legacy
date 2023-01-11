@@ -13,7 +13,6 @@
 <translation id="1637811476055996098">Izberi datoteke</translation>
 <translation id="1681022320378710418">trenutni čas</translation>
 <translation id="1727839386348365796">Kapalka</translation>
-<translation id="1727886345390570319">skrij meni s podnapisi</translation>
 <translation id="1729654308190250600">Vnesite e-poštni naslov (polje ne sme biti prazno).</translation>
 <translation id="1758486001363313524">Drugo ...</translation>
 <translation id="1787192514241997742">skupni čas: <ph name="REMAINING_TIME" /></translation>
@@ -61,7 +60,6 @@
 <translation id="4103419683916926126">Milisekunde</translation>
 <translation id="4201051445878709314">Prikaz prejšnjega meseca</translation>
 <translation id="4360991593054037559">Vnesite veljavno vrednost. Najbližji veljavni vrednosti sta <ph name="VALID_VALUE_LOW" /> in <ph name="VALID_VALUE_HIGHER" />.</translation>
-<translation id="4371899966896349864">skrivanje menija za hitrost predvajanja</translation>
 <translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="4664250907885839816">Del po »<ph name="ATSIGN" />« ne sme vsebovati znaka »<ph name="INVALIDCHARACTER" />«.</translation>
 <translation id="4718048029184481307">Predvajanje v načinu slike v sliki</translation>
@@ -81,6 +79,7 @@
 <translation id="5117590920725113268">Prikaz naslednjega meseca</translation>
 <translation id="5164977714490026579">Vrednost mora biti večja od <ph name="MINIMUM" /> ali enaka.</translation>
 <translation id="5196716972587102051">2</translation>
+<translation id="5199514351668672591">nazaj na možnosti</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5272594226096532950">Ni potrjeno. <ph name="INDEX" />. možnost od <ph name="COUNT" /> v skupini.</translation>
 <translation id="5307600278924710095">Vnesite nekaj in nato <ph name="ATSIGN" />. Naslov »<ph name="INVALIDADDRESS" />« je nepopoln.</translation>

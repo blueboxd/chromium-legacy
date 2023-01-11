@@ -26,7 +26,7 @@
 #import "ios/chrome/browser/download/download_manager_metric_names.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #import "ios/chrome/browser/download/external_app_util.h"
-#import "ios/chrome/browser/installation_notifier.h"
+#import "ios/chrome/browser/download/installation_notifier.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/overlays/public/common/confirmation/confirmation_overlay_response.h"
 #import "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
@@ -42,6 +42,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #import "ios/chrome/grit/ios_strings.h"
+#import "ios/web/common/features.h"
 #import "ios/web/public/download/download_task.h"
 #import "net/base/net_errors.h"
 #import "ui/base/l10n/l10n_util_mac.h"
@@ -251,6 +252,12 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
   BOOL replacingExistingDownload = _downloadTask ? YES : NO;
   _downloadTask = download;
 
+  if (web::features::IsFullscreenAPIEnabled()) {
+    // Exit fullscreen since download UI will be behind fullscreen mode.
+    web::WebState* webState = download->GetWebState();
+    webState->CloseMediaPresentations();
+  }
+
   if (replacingExistingDownload) {
     _mediator.SetDownloadTask(_downloadTask);
   } else {
@@ -279,6 +286,12 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
       }));
 
   web::WebState* webState = download->GetWebState();
+  if (web::features::IsFullscreenAPIEnabled()) {
+    // Close fullscreen mode in the event that a download is attempting to
+    // replace a pending download request.
+    webState->CloseMediaPresentations();
+  }
+
   OverlayRequestQueue::FromWebState(webState, OverlayModality::kWebContentArea)
       ->AddRequest(std::move(request));
 }

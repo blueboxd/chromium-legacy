@@ -8,6 +8,7 @@
 #include <d3d11_4.h>
 
 #include "base/debug/alias.h"
+#include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
@@ -21,6 +22,7 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gl/dc_layer_tree.h"
 #include "ui/gl/direct_composition_support.h"
+#include "ui/gl/gl_features.h"
 #include "ui/gl/gl_image_d3d.h"
 #include "ui/gl/gl_image_dxgi.h"
 #include "ui/gl/gl_image_memory.h"
@@ -250,6 +252,39 @@ void ToggleIntelVpSuperResolution(ID3D11VideoContext* video_context,
   }
 }
 
+void ToggleNvidiaVpSuperResolution(ID3D11VideoContext* video_context,
+                                   ID3D11VideoProcessor* video_processor,
+                                   bool is_on_battery_power) {
+  TRACE_EVENT1("gpu", "ToggleNvidiaVpSuperResolution", "on",
+               !is_on_battery_power);
+
+  constexpr GUID kNvidiaPPEInterfaceGUID = {
+      0xd43ce1b3,
+      0x1f4b,
+      0x48ac,
+      {0xba, 0xee, 0xc3, 0xc2, 0x53, 0x75, 0xe6, 0xf7}};
+  constexpr UINT kStreamExtensionVersionV1 = 0x1;
+  constexpr UINT kStreamExtensionMethodSuperResolution = 0x2;
+
+  struct {
+    UINT version;
+    UINT method;
+    UINT enable;
+  } stream_extension_info = {kStreamExtensionVersionV1,
+                             kStreamExtensionMethodSuperResolution,
+                             is_on_battery_power ? 0 : 1u};
+
+  HRESULT hr = video_context->VideoProcessorSetStreamExtension(
+      video_processor, 0, &kNvidiaPPEInterfaceGUID,
+      sizeof(stream_extension_info), &stream_extension_info);
+
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "VideoProcessorSetStreamExtension failed with error 0x"
+                << std::hex << hr;
+    return;
+  }
+}
+
 bool IsWithinMargin(int i, int j) {
   constexpr int kFullScreenMargin = 10;
   return (std::abs(i - j) < kFullScreenMargin);
@@ -309,8 +344,10 @@ DXGI_FORMAT SwapChainPresenter::GetSwapChainFormat(
     gfx::ProtectedVideoType protected_video_type,
     bool content_is_hdr) {
   // Prefer RGB10A2 swapchain when playing HDR content.
-  if (content_is_hdr)
+  // Only use rgb10a2 overlay when the hdr monitor is available.
+  if (content_is_hdr && DirectCompositionSystemHDREnabled()) {
     return DXGI_FORMAT_R10G10B10A2_UNORM;
+  }
 
   DXGI_FORMAT yuv_overlay_format = GetDirectCompositionSDROverlayFormat();
   // Always prefer YUV swap chain for hardware protected video for now.
@@ -484,7 +521,27 @@ gfx::Size SwapChainPresenter::GetMonitorSize() {
   }
 }
 
-bool SwapChainPresenter::AdjustSwapChainToFullScreenSizeIfNeeded(
+void SwapChainPresenter::AdjustTargetToOptimalSizeIfNeeded(
+    const ui::DCRendererLayerParams& params,
+    const gfx::Rect& overlay_onscreen_rect,
+    gfx::Size* swap_chain_size,
+    gfx::Transform* visual_transform,
+    gfx::Rect* visual_clip_rect) {
+  // First try to adjust the full screen overlay that can fit the whole
+  // screen. If it cannot fit the whole screen and we know it's in
+  // letterboxing mode, try to center the overlay and adjust only x or only y.
+  gfx::Size monitor_size = GetMonitorSize();
+  bool size_adjusted = AdjustTargetToFullScreenSizeIfNeeded(
+      monitor_size, params, overlay_onscreen_rect, swap_chain_size,
+      visual_transform, visual_clip_rect);
+  if (!size_adjusted && params.is_video_fullscreen_letterboxing) {
+    AdjustTargetForFullScreenLetterboxing(
+        monitor_size, params, overlay_onscreen_rect, swap_chain_size,
+        visual_transform, visual_clip_rect);
+  }
+}
+
+bool SwapChainPresenter::AdjustTargetToFullScreenSizeIfNeeded(
     const gfx::Size& monitor_size,
     const ui::DCRendererLayerParams& params,
     const gfx::Rect& overlay_onscreen_rect,
@@ -576,7 +633,7 @@ bool SwapChainPresenter::AdjustSwapChainToFullScreenSizeIfNeeded(
   return true;
 }
 
-void SwapChainPresenter::AdjustSwapChainForFullScreenLetterboxing(
+void SwapChainPresenter::AdjustTargetForFullScreenLetterboxing(
     const gfx::Size& monitor_size,
     const ui::DCRendererLayerParams& params,
     const gfx::Rect& overlay_onscreen_rect,
@@ -702,17 +759,40 @@ void SwapChainPresenter::AdjustSwapChainForFullScreenLetterboxing(
   visual_transform->set_rc(1, 1, scale_y);
 
 #if DCHECK_IS_ON()
-  // The new transform matrix should transform the swap chain correctly
-  gfx::Rect new_swap_chain_rect(params.quad_rect.origin(), *swap_chain_size);
-  gfx::Rect result_rect = visual_transform->MapRect(new_swap_chain_rect);
-  if (IsWithinMargin(clipped_onscreen_rect.x(), 0)) {
-    DCHECK_EQ(result_rect.x(), 0);
-    DCHECK_EQ(result_rect.width(), monitor_size.width());
-  }
+  {
+    // The new transform matrix should transform the swap chain correctly
+    gfx::Rect new_swap_chain_rect(params.quad_rect.origin(), *swap_chain_size);
+    gfx::Rect result_rect = visual_transform->MapRect(new_swap_chain_rect);
+    gfx::Rect new_clipped_onscreen_rect = clipped_onscreen_rect;
+    gfx::Transform new_visual_transform = *visual_transform;
+    base::debug::Alias(&new_swap_chain_rect);
+    base::debug::Alias(&result_rect);
+    base::debug::Alias(&new_clipped_onscreen_rect);
+    base::debug::Alias(&new_visual_transform);
+    // https://crbug.com/1366493: "DCHECK_EQ(result_rect.x(), 0);" sometimes
+    // failed in the field. But here we collect possible crashes in general.
+    static auto* new_swap_chain_rect_key = base::debug::AllocateCrashKeyString(
+        "new-swap-chain-rect", base::debug::CrashKeySize::Size256);
+    base::debug::ScopedCrashKeyString scoped_crash_key_1(
+        new_swap_chain_rect_key, new_swap_chain_rect.ToString());
+    static auto* visual_transform_key = base::debug::AllocateCrashKeyString(
+        "visual-transform", base::debug::CrashKeySize::Size256);
+    base::debug::ScopedCrashKeyString scoped_crash_key_2(
+        visual_transform_key, visual_transform->ToString());
+    static auto* result_rect_key = base::debug::AllocateCrashKeyString(
+        "result-rect", base::debug::CrashKeySize::Size256);
+    base::debug::ScopedCrashKeyString scoped_crash_key_3(
+        result_rect_key, result_rect.ToString());
 
-  if (IsWithinMargin(clipped_onscreen_rect.y(), 0)) {
-    DCHECK_EQ(result_rect.y(), 0);
-    DCHECK_EQ(result_rect.height(), monitor_size.height());
+    if (IsWithinMargin(clipped_onscreen_rect.x(), 0)) {
+      DCHECK_EQ(result_rect.x(), 0);
+      DCHECK_EQ(result_rect.width(), monitor_size.width());
+    }
+
+    if (IsWithinMargin(clipped_onscreen_rect.y(), 0)) {
+      DCHECK_EQ(result_rect.y(), 0);
+      DCHECK_EQ(result_rect.height(), monitor_size.height());
+    }
   }
 #endif
 }
@@ -765,18 +845,9 @@ gfx::Size SwapChainPresenter::CalculateSwapChainSize(
   // |overlay_onscreen_rect| will be placed in the center of the screen, and
   // either left/right edges or top/bottom edges will touch the monitor edges.
   if (visual_transform->IsScaleOrTranslation()) {
-    gfx::Size monitor_size = GetMonitorSize();
-    // First try to adjust the full screen overlay that can fit the whole
-    // screen. If it cannot fit the whole screen and we know it's in
-    // letterboxing mode, try to center the overlay and adjust only x or only y.
-    bool size_adjusted = AdjustSwapChainToFullScreenSizeIfNeeded(
-        monitor_size, params, overlay_onscreen_rect, &swap_chain_size,
-        visual_transform, visual_clip_rect);
-    if (!size_adjusted && params.is_video_fullscreen_letterboxing) {
-      AdjustSwapChainForFullScreenLetterboxing(
-          monitor_size, params, overlay_onscreen_rect, &swap_chain_size,
-          visual_transform, visual_clip_rect);
-    }
+    AdjustTargetToOptimalSizeIfNeeded(params, overlay_onscreen_rect,
+                                      &swap_chain_size, visual_transform,
+                                      visual_clip_rect);
   }
 
   return swap_chain_size;
@@ -1002,7 +1073,7 @@ bool SwapChainPresenter::PresentToSwapChain(
   *visual_clip_rect = params.clip_rect.value_or(gfx::Rect());
 
   if (params.dcomp_surface_proxy)
-    return PresentDCOMPSurface(params, visual_transform);
+    return PresentDCOMPSurface(params, visual_transform, visual_clip_rect);
 
   // SwapChainPresenter can be reused when switching between MediaFoundation
   // (MF) video content and non-MF content; in such cases, the DirectComposition
@@ -1113,8 +1184,10 @@ bool SwapChainPresenter::PresentToSwapChain(
 
   bool swap_chain_resized = swap_chain_size_ != swap_chain_size;
 
+  bool use_hdr_swap_chain = content_is_hdr && params.hdr_metadata.IsValid();
+
   DXGI_FORMAT swap_chain_format =
-      GetSwapChainFormat(params.protected_video_type, content_is_hdr);
+      GetSwapChainFormat(params.protected_video_type, use_hdr_swap_chain);
   bool swap_chain_format_changed = swap_chain_format != swap_chain_format_;
   bool toggle_protected_video =
       protected_video_type_ != params.protected_video_type;
@@ -1224,6 +1297,9 @@ bool SwapChainPresenter::PresentToSwapChain(
   if (DirectCompositionSwapChainTearingEnabled()) {
     flags |= DXGI_PRESENT_ALLOW_TEARING;
     interval = 0;
+  } else if (base::FeatureList::IsEnabled(
+                 features::kDXGISwapChainPresentInterval0)) {
+    interval = 0;
   }
   // Ignore DXGI_STATUS_OCCLUDED since that's not an error but only indicates
   // that the window is occluded and we can stop rendering.
@@ -1298,7 +1374,8 @@ void SwapChainPresenter::RecordPresentationStatistics() {
 
 bool SwapChainPresenter::PresentDCOMPSurface(
     const ui::DCRendererLayerParams& params,
-    gfx::Transform* visual_transform) {
+    gfx::Transform* visual_transform,
+    gfx::Rect* visual_clip_rect) {
   // TODO(crbug.com/999747): Include an early out path in case the same dcomp
   // surface is being presented.
 
@@ -1308,8 +1385,14 @@ bool SwapChainPresenter::PresentDCOMPSurface(
 
   dcomp_surface_proxy->SetParentWindow(layer_tree_->window());
 
-  // Apply transform to video and notify DCOMPTexture.
-  dcomp_surface_proxy->SetRect(params.transform.MapRect(params.quad_rect));
+  // Apply fullscreen rounding and transform to video and notify DCOMPTexture.
+  gfx::Rect overlay_onscreen_rect = params.quad_rect;
+  gfx::Size on_screen_size = overlay_onscreen_rect.size();
+  AdjustTargetToOptimalSizeIfNeeded(params, overlay_onscreen_rect,
+                                    &on_screen_size, visual_transform,
+                                    visual_clip_rect);
+  dcomp_surface_proxy->SetRect(visual_transform->MapRect(
+      gfx::Rect(params.quad_rect.origin(), on_screen_size)));
 
   // If |dcomp_surface_proxy| size is {1, 1}, the texture was initialized
   // without knowledge of output size; reset |content_| so it's not added to the
@@ -1387,8 +1470,9 @@ bool SwapChainPresenter::VideoProcessorBlt(
       (output_color_space == gfx::ColorSpace::CreateREC709())) {
     output_color_space = gfx::ColorSpace::CreateREC601();
   }
-  if (content_is_hdr)
+  if (content_is_hdr) {
     output_color_space = gfx::ColorSpace::CreateHDR10();
+  }
 
   VideoProcessorWrapper* video_processor_wrapper =
       layer_tree_->InitializeVideoProcessor(
@@ -1519,10 +1603,17 @@ bool SwapChainPresenter::VideoProcessorBlt(
       DCHECK(output_view_);
     }
 
-    if (!layer_tree_->disable_vp_super_resolution() &&
-        base::FeatureList::IsEnabled(features::kIntelVpSuperResolution)) {
-      ToggleIntelVpSuperResolution(video_context.Get(), video_processor.Get(),
-                                   is_on_battery_power_);
+    if (!layer_tree_->disable_vp_super_resolution()) {
+      if (gpu_vendor_id_ == 0x8086 &&
+          base::FeatureList::IsEnabled(features::kIntelVpSuperResolution)) {
+        ToggleIntelVpSuperResolution(video_context.Get(), video_processor.Get(),
+                                     is_on_battery_power_);
+      }
+      if (gpu_vendor_id_ == 0x10de &&
+          base::FeatureList::IsEnabled(features::kNvidiaVpSuperResolution)) {
+        ToggleNvidiaVpSuperResolution(
+            video_context.Get(), video_processor.Get(), is_on_battery_power_);
+      }
     }
 
     hr = video_context->VideoProcessorBlt(video_processor.Get(),
@@ -1559,6 +1650,7 @@ bool SwapChainPresenter::ReallocateSwapChain(
   DCHECK(!swap_chain_size.IsEmpty());
   swap_chain_size_ = swap_chain_size;
   protected_video_type_ = protected_video_type;
+  gpu_vendor_id_ = 0;
 
   ReleaseSwapChainResources();
 
@@ -1676,6 +1768,15 @@ bool SwapChainPresenter::ReallocateSwapChain(
 
   swap_chain_format_ = swap_chain_format;
   SetSwapChainPresentDuration();
+
+  DXGI_ADAPTER_DESC adapter_desc;
+  HRESULT hr = dxgi_adapter->GetDesc(&adapter_desc);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get adapter desc with error 0x" << std::hex << hr;
+  } else {
+    gpu_vendor_id_ = adapter_desc.VendorId;
+  }
+
   return true;
 }
 

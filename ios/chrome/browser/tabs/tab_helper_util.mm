@@ -54,7 +54,6 @@
 #import "ios/chrome/browser/infobars/overlays/permissions_overlay_tab_helper.h"
 #import "ios/chrome/browser/infobars/overlays/translate_overlay_tab_helper.h"
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
-#import "ios/chrome/browser/language/url_language_histogram_factory.h"
 #import "ios/chrome/browser/link_to_text/link_to_text_tab_helper.h"
 #import "ios/chrome/browser/metrics/pageload_foreground_duration_tab_helper.h"
 #import "ios/chrome/browser/ntp/features.h"
@@ -71,6 +70,8 @@
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_client_factory.h"
+#import "ios/chrome/browser/safe_browsing/tailored_security/tailored_security_service_factory.h"
+#import "ios/chrome/browser/safe_browsing/tailored_security/tailored_security_tab_helper.h"
 #import "ios/chrome/browser/search_engines/search_engine_tab_helper.h"
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -168,6 +169,13 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   SafeBrowsingUrlAllowList::CreateForWebState(web_state);
   SafeBrowsingUnsafeResourceContainer::CreateForWebState(web_state);
 
+  if (base::FeatureList::IsEnabled(
+          safe_browsing::kTailoredSecurityIntegration)) {
+    TailoredSecurityTabHelper::CreateForWebState(
+        web_state,
+        TailoredSecurityServiceFactory::GetForBrowserState(browser_state));
+  }
+
   PolicyUrlBlockingTabHelper::CreateForWebState(web_state);
 
   ImageFetchTabHelper::CreateForWebState(web_state);
@@ -243,9 +251,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
       web_state, ReadingListModelFactory::GetForBrowserState(browser_state));
   PermissionsOverlayTabHelper::CreateForWebState(web_state);
 
-  language::IOSLanguageDetectionTabHelper::CreateForWebState(
-      web_state,
-      UrlLanguageHistogramFactory::GetForBrowserState(browser_state));
   ChromeIOSTranslateClient::CreateForWebState(web_state);
 
   RepostFormTabHelper::CreateForWebState(web_state);

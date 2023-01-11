@@ -13,7 +13,6 @@
 <translation id="1637811476055996098">Wybierz pliki</translation>
 <translation id="1681022320378710418">bieżąca godzina</translation>
 <translation id="1727839386348365796">Zakraplacz</translation>
-<translation id="1727886345390570319">ukrywanie menu napisów</translation>
 <translation id="1729654308190250600">Podaj adres e-mail.</translation>
 <translation id="1758486001363313524">Inny...</translation>
 <translation id="1787192514241997742">łączny czas: <ph name="REMAINING_TIME" /></translation>
@@ -61,7 +60,6 @@
 <translation id="4103419683916926126">Milisekundy</translation>
 <translation id="4201051445878709314">Pokaż poprzedni miesiąc</translation>
 <translation id="4360991593054037559">Podaj prawidłową wartość. Dwie najbliższe prawidłowe wartości to <ph name="VALID_VALUE_LOW" /> i <ph name="VALID_VALUE_HIGHER" />.</translation>
-<translation id="4371899966896349864">ukryj menu szybkości odtwarzania</translation>
 <translation id="4522570452068850558">Szczegóły</translation>
 <translation id="4664250907885839816">Część po znaku „<ph name="ATSIGN" />” nie może zawierać symbolu „<ph name="INVALIDCHARACTER" />”.</translation>
 <translation id="4718048029184481307">Odtwarzam w trybie obrazu w obrazie</translation>
@@ -81,6 +79,7 @@
 <translation id="5117590920725113268">Pokaż przyszły miesiąc</translation>
 <translation id="5164977714490026579">Wartość nie może być mniejsza niż <ph name="MINIMUM" />.</translation>
 <translation id="5196716972587102051">2</translation>
+<translation id="5199514351668672591">wróć do opcji</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5272594226096532950">Nie zaznaczono. W grupie, opcja <ph name="INDEX" /> z <ph name="COUNT" /></translation>
 <translation id="5307600278924710095">Podaj część przed znakiem „<ph name="ATSIGN" />”. Adres „<ph name="INVALIDADDRESS" />” jest niepełny.</translation>

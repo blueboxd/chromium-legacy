@@ -54,6 +54,11 @@ namespace test {
 // randomly choose a child to return, so make sure your predicate matches
 // *only* the view you want!
 using ViewPredicate = base::RepeatingCallback<bool(const View*)>;
+View* AnyViewMatchingPredicate(View* root, const ViewPredicate& predicate);
+template <typename Pred>
+View* AnyViewMatchingPredicate(View* root, Pred predicate) {
+  return AnyViewMatchingPredicate(root, base::BindLambdaForTesting(predicate));
+}
 View* AnyViewMatchingPredicate(Widget* widget, const ViewPredicate& predicate);
 template <typename Pred>
 View* AnyViewMatchingPredicate(Widget* widget, Pred predicate) {
@@ -75,22 +80,30 @@ class WidgetTest : public ViewsTestBase {
   ~WidgetTest() override;
 
   // Create Widgets with |native_widget| in InitParams set to an instance of
-  // platform specific widget type that has stubbled capture calls.
+  // platform specific widget type that has stubbled capture calls. This will
+  // create a non-desktop widget.
   Widget* CreateTopLevelPlatformWidget();
   Widget* CreateTopLevelFramelessPlatformWidget();
   Widget* CreateChildPlatformWidget(gfx::NativeView parent_native_view);
 
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
+  // Create Widgets with |native_widget| in InitParams set to an instance of
+  // platform specific widget type that has stubbled capture calls. This will
+  // create a desktop widget.
+  Widget* CreateTopLevelPlatformDesktopWidget();
+#endif
+
   // Create Widgets initialized without a |native_widget| set in InitParams.
   // Depending on the test environment, ViewsDelegate::OnBeforeWidgetInit() may
-  // still provide one.
+  // provide a desktop or non-desktop NativeWidget.
   Widget* CreateTopLevelNativeWidget();
   Widget* CreateChildNativeWidgetWithParent(Widget* parent);
 
-  View* GetMousePressedHandler(internal::RootView* root_view);
+  View* GetMousePressedHandler(views::internal::RootView* root_view);
 
-  View* GetMouseMoveHandler(internal::RootView* root_view);
+  View* GetMouseMoveHandler(views::internal::RootView* root_view);
 
-  View* GetGestureHandler(internal::RootView* root_view);
+  View* GetGestureHandler(views::internal::RootView* root_view);
 
   // Simulate an activation of the native window held by |widget|, as if it was
   // clicked by the user. This is a synchronous method for use in
@@ -262,7 +275,7 @@ class WidgetActivationWaiter : public WidgetObserver {
   // views::WidgetObserver override:
   void OnWidgetActivationChanged(Widget* widget, bool active) override;
 
-  bool observed_;
+  bool observed_ = false;
   bool active_;
 
   base::RunLoop run_loop_;

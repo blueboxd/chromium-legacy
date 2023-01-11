@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/ash/borealis/borealis_context_manager.h"
 #include "chrome/browser/ash/borealis/borealis_features.h"
 #include "chrome/browser/ash/borealis/borealis_metrics.h"
@@ -87,12 +88,16 @@ class BorealisInstallerImpl::Installation
       return;
     }
     SetState(InstallingState::kInstallingDlc);
+    InstallDlc(/*attempt=*/0);
+  }
+
+  void InstallDlc(int attempt) {
     dlcservice::InstallRequest install_request;
     install_request.set_id(kBorealisDlcName);
     ash::DlcserviceClient::Get()->Install(
         install_request,
         base::BindOnce(&Installation::OnDlcInstallationCompleted,
-                       weak_factory_.GetWeakPtr()),
+                       weak_factory_.GetWeakPtr(), attempt),
         base::BindRepeating(&Installation::OnDlcInstallationProgressUpdated,
                             weak_factory_.GetWeakPtr()));
   }
@@ -103,6 +108,7 @@ class BorealisInstallerImpl::Installation
   }
 
   void OnDlcInstallationCompleted(
+      int attempts,
       const ash::DlcserviceClient::InstallResult& install_result) {
     DCHECK_EQ(installing_state_, InstallingState::kInstallingDlc);
 
@@ -111,13 +117,19 @@ class BorealisInstallerImpl::Installation
       // We are in the callback of DLC completion, and the first thing startup
       // will do is try to mount the DLC, so we need to use a PostTask to avoid
       // deadlocking ourselves.
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      RecordBorealisInstallRetries(attempts);
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(&Installation::StartupBorealis,
                                     weak_factory_.GetWeakPtr()));
+      return;
+    } else if (install_result.error == dlcservice::kErrorInternal &&
+               attempts < kMaxDlcRetries) {
+      InstallDlc(attempts + 1);
       return;
     }
 
     // At this point, the Borealis DLC installation has failed.
+    RecordBorealisInstallRetries(attempts);
     Fail(DescribeDlcFailure(install_result.error));
   }
 
@@ -182,7 +194,7 @@ class BorealisInstallerImpl::Installation
       MainAppFound(true);
       return;
     }
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&Installation::MainAppFound, weak_factory_.GetWeakPtr(),
                        false),

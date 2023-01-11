@@ -42,6 +42,8 @@ void SetUpWebUIDataSource(content::WebUIDataSource* source,
 void AddLocalizedStrings(content::WebUIDataSource* source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"backButtonLabel", IDS_FEEDBACK_TOOL_BACK_BUTTON_LABEL},
+      {"dialogBackButtonAriaLabel",
+       IDS_FEEDBACK_TOOL_DIALOG_BACK_BUTTON_ARIA_LABEL},
       {"continueButtonLabel", IDS_FEEDBACK_TOOL_CONTINUE_BUTTON_LABEL},
       {"descriptionHint", IDS_FEEDBACK_TOOL_DESCRIPTION_HINT},
       {"descriptionLabel", IDS_FEEDBACK_TOOL_DESCRIPTION_LABEL},
@@ -61,12 +63,14 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
       {"noMatchedResults", IDS_FEEDBACK_TOOL_NO_MATCHED_RESULTS},
       {"attachFilesLabel", IDS_FEEDBACK_TOOL_ATTACH_FILES_LABEL},
       {"attachScreenshotLabel", IDS_FEEDBACK_TOOL_SCREENSHOT_LABEL},
+      {"previewScreenshotDialogLabel",
+       IDS_FEEDBACK_TOOL_PREVIEW_SCREENSHOT_DIALOG_LABEL},
       {"attachScreenshotCheckboxAriaLabel",
        IDS_FEEDBACK_TOOL_ATTACH_SCREENSHOT_CHECKBOX_ARIA_LABEL},
       {"previewImageAriaLabel", IDS_FEEDBACK_TOOL_PREVIEW_IMAGE_ARIA_LABEL},
+      {"previewImageDialogLabel", IDS_FEEDBACK_TOOL_PREVIEW_IMAGE_DIALOG_LABEL},
       {"addFileLabel", IDS_FEEDBACK_TOOL_ADD_FILE_LABEL},
       {"replaceFileLabel", IDS_FEEDBACK_TOOL_REPLACE_FILE_LABEL},
-      {"replaceFileArialLabel", IDS_FEEDBACK_TOOL_REPLACE_FILE_ARIA_LABEL},
       {"attachFileLabelTooltip", IDS_FEEDBACK_TOOL_ATTACH_FILE_LABEL_TOOLTIP},
       {"attachFileCheckboxArialLabel",
        IDS_FEEDBACK_TOOL_ATTACH_FILE_CHECKBOX_ARIA_LABEL},
@@ -149,7 +153,8 @@ OSFeedbackUI::OSFeedbackUI(
       untrusted_origin, ContentSettingsType::JAVASCRIPT);
 
   help_content_provider_ = std::make_unique<feedback::HelpContentProvider>(
-      feedback_delegate->GetApplicationLocale(), browser_context);
+      feedback_delegate->GetApplicationLocale(),
+      feedback_delegate->IsChildAccount(), browser_context);
   feedback_service_provider_ =
       std::make_unique<feedback::FeedbackServiceProvider>(
           std::move(feedback_delegate));

@@ -61,6 +61,7 @@ class WebViewImpl : public WebView {
   Status Reload(const Timeout* timeout) override;
   Status Freeze(const Timeout* timeout) override;
   Status Resume(const Timeout* timeout) override;
+  Status StartBidiServer(std::string bidi_mapper_script) override;
   Status PostBidiCommand(base::Value::Dict command) override;
   Status SendCommand(const std::string& cmd,
                      const base::Value::Dict& params) override;
@@ -74,11 +75,11 @@ class WebViewImpl : public WebView {
   Status EvaluateScriptWithTimeout(const std::string& frame,
                                    const std::string& expression,
                                    const base::TimeDelta& timeout,
-                                   const bool awaitPromise,
+                                   const bool await_promise,
                                    std::unique_ptr<base::Value>* result);
   Status EvaluateScript(const std::string& frame,
                         const std::string& expression,
-                        const bool awaitPromise,
+                        const bool await_promise,
                         std::unique_ptr<base::Value>* result) override;
   Status CallFunctionWithTimeout(const std::string& frame,
                                  const std::string& function,
@@ -131,9 +132,9 @@ class WebViewImpl : public WebView {
                    const std::string& value,
                    const std::string& domain,
                    const std::string& path,
-                   const std::string& sameSite,
+                   const std::string& same_site,
                    bool secure,
-                   bool httpOnly,
+                   bool http_only,
                    double expiry) override;
   Status WaitForPendingNavigations(const std::string& frame_id,
                                    const Timeout& timeout,
@@ -183,7 +184,6 @@ class WebViewImpl : public WebView {
   bool IsDetached() const;
 
  private:
-  Status TraverseHistoryWithJavaScript(int delta);
   Status CallAsyncFunctionInternal(const std::string& frame,
                                    const std::string& function,
                                    const base::Value::List& args,
@@ -255,20 +255,20 @@ Status EvaluateScript(DevToolsClient* client,
                       const std::string& expression,
                       EvaluateScriptReturnType return_type,
                       const base::TimeDelta& timeout,
-                      const bool awaitPromise,
-                      std::unique_ptr<base::DictionaryValue>* result);
+                      const bool await_promise,
+                      base::Value::Dict& result);
 Status EvaluateScriptAndGetObject(DevToolsClient* client,
                                   const std::string& context_id,
                                   const std::string& expression,
                                   const base::TimeDelta& timeout,
-                                  const bool awaitPromise,
+                                  const bool await_promise,
                                   bool* got_object,
                                   std::string* object_id);
 Status EvaluateScriptAndGetValue(DevToolsClient* client,
                                  const std::string& context_id,
                                  const std::string& expression,
                                  const base::TimeDelta& timeout,
-                                 const bool awaitPromise,
+                                 const bool await_promise,
                                  std::unique_ptr<base::Value>* result);
 Status ParseCallFunctionResult(const base::Value& temp_result,
                                std::unique_ptr<base::Value>* result);

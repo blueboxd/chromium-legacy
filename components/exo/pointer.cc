@@ -6,6 +6,9 @@
 
 #include <utility>
 
+#include "ash/drag_drop/drag_drop_controller.h"
+#include "ash/public/cpp/shell_window_ids.h"
+#include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -47,13 +50,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/cursor_util.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-// #include "ash/constants/ash_features.h"
-#include "ash/drag_drop/drag_drop_controller.h"
-#include "ash/public/cpp/shell_window_ids.h"
-#include "ash/wm/window_util.h"
-#endif
-
 namespace exo {
 namespace {
 
@@ -67,13 +63,8 @@ const double kLocatedEventEpsilonSquared = 1.0 / (2000.0 * 2000.0);
 
 bool SameLocation(const gfx::PointF& location_in_target,
                   const gfx::PointF& location) {
-  // In general, it is good practice to compare floats using an epsilon.
-  // In particular, the mouse location_f() could differ between the
-  // MOUSE_PRESSED and MOUSE_RELEASED events. At MOUSE_RELEASED, it will have a
-  // targeter() already cached, while at MOUSE_PRESSED, it will have to
-  // calculate it passing through all the hierarchy of windows, and that could
-  // generate rounding error. std::numeric_limits<float>::epsilon() is not big
-  // enough to catch this rounding error.
+  // TODO(crbug.com/1354573): This is no longer necessary.  Switch to
+  // std::numeric_limits<float>::eplison().
   gfx::Vector2dF offset = location_in_target - location;
   return offset.LengthSquared() < (2 * kLocatedEventEpsilonSquared);
 }
@@ -97,12 +88,7 @@ display::ManagedDisplayInfo GetCaptureDisplayInfo() {
 }
 
 int GetContainerIdForMouseCursor() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   return ash::kShellWindowId_MouseCursorContainer;
-#else
-  NOTIMPLEMENTED();
-  return -1;
-#endif
 }
 
 }  // namespace
@@ -256,7 +242,6 @@ bool Pointer::ConstrainPointer(PointerConstraintDelegate* delegate) {
   // Pointer lock is a chromeos-only feature (i.e. the chromeos::features
   // namespace only exists in chromeos builds). So we do not compile pointer
   // lock support unless we are on chromeos.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   Surface* constrained_surface = delegate->GetConstrainedSurface();
   if (!constrained_surface) {
     delegate->OnDefunct();
@@ -299,10 +284,6 @@ bool Pointer::ConstrainPointer(PointerConstraintDelegate* delegate) {
     delegate->OnConstraintActivated();
   }
   return success;
-#else
-  NOTIMPLEMENTED();
-  return false;
-#endif
 }
 
 bool Pointer::UnconstrainPointerByUserAction() {
@@ -381,7 +362,8 @@ bool Pointer::EnablePointerCapture(Surface* capture_surface) {
   aura::Env::GetInstance()->AddPreTargetHandler(
       this, ui::EventTarget::Priority::kSystem);
 
-  location_when_pointer_capture_enabled_ = gfx::ToRoundedPoint(location_);
+  location_when_pointer_capture_enabled_ =
+      gfx::ToRoundedPoint(location_in_root_);
 
   if (ShouldMoveToCenter())
     MoveCursorToCenterOfActiveDisplay();
@@ -464,7 +446,7 @@ void Pointer::OnSurfaceDestroying(Surface* surface) {
   }
 
   if (surface == focus_surface_) {
-    SetFocus(nullptr, gfx::PointF(), 0);
+    SetFocus(nullptr, gfx::PointF(), gfx::PointF(), 0);
     was_correctly_subscribed = true;
   } else if (surface == root_surface()) {
     UpdatePointerSurface(nullptr);
@@ -488,23 +470,26 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
 
   gfx::PointF location_in_target;
   Surface* target = GetEffectiveTargetForEvent(event, &location_in_target);
+  gfx::PointF location_in_root = event->root_location_f();
 
   // Update focus if target is different than the current pointer focus.
-  if (target != focus_surface_)
-    SetFocus(target, location_in_target, event->button_flags());
-
-  gfx::PointF location_in_root = GetLocationInRoot(target, location_in_target);
+  if (target != focus_surface_) {
+    SetFocus(target, location_in_root, location_in_target,
+             event->button_flags());
+  }
 
   if (!focus_surface_)
     return;
 
   TRACE_EXO_INPUT_EVENT(event);
 
+  bool needs_frame = false;
+
   const auto& details = event->pointer_details();
   if (stylus_delegate_ && last_pointer_type_ != details.pointer_type) {
     last_pointer_type_ = details.pointer_type;
     stylus_delegate_->OnPointerToolChange(details.pointer_type);
-    delegate_->OnPointerFrame();
+    needs_frame |= true;
   }
 
   if (event->IsMouseEvent()) {
@@ -516,22 +501,17 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
     // so to avoid generating mouse event jitter we consider the location of
     // these events to be the same as |location| if floored values match.
     bool same_location = !event->IsSynthesized()
-                             ? SameLocation(location_in_root, location_)
+                             ? SameLocation(location_in_root, location_in_root_)
                              : gfx::ToFlooredPoint(location_in_root) ==
-                                   gfx::ToFlooredPoint(location_);
+                                   gfx::ToFlooredPoint(location_in_root_);
 
     // Ordinal motion is sent only on platforms that support it, which is
     // indicated by the presence of a flag.
-    //
-    // TODO(b/161755250): the ifdef is only necessary because of the feature
-    // flag. This code should work fine on non-cros.
     absl::optional<gfx::Vector2dF> ordinal_motion = absl::nullopt;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
     if (event->flags() & ui::EF_UNADJUSTED_MOUSE &&
         base::FeatureList::IsEnabled(chromeos::features::kExoOrdinalMotion)) {
       ordinal_motion = event->movement();
     }
-#endif
 
     if (!same_location) {
       bool ignore_motion = false;
@@ -548,20 +528,17 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
           ignore_motion = true;
         }
       }
-      bool needs_frame =
-          !ignore_motion &&
-          HandleRelativePointerMotion(event->time_stamp(), location_in_root,
-                                      ordinal_motion);
+      needs_frame |= !ignore_motion &&
+                     HandleRelativePointerMotion(
+                         event->time_stamp(), location_in_root, ordinal_motion);
       if (capture_window_) {
         if (ShouldMoveToCenter())
           MoveCursorToCenterOfActiveDisplay();
       } else if (event->type() != ui::ET_MOUSE_EXITED && !ignore_motion) {
         delegate_->OnPointerMotion(event->time_stamp(), location_in_target);
-        needs_frame = true;
+        needs_frame |= true;
       }
-      if (needs_frame)
-        delegate_->OnPointerFrame();
-      location_ = location_in_root;
+      location_in_root_ = location_in_root;
     }
   }
   switch (event->type()) {
@@ -581,7 +558,7 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       delegate_->OnPointerButton(event->time_stamp(),
                                  event->changed_button_flags(),
                                  event->type() == ui::ET_MOUSE_PRESSED);
-      delegate_->OnPointerFrame();
+      needs_frame |= true;
       break;
     }
     case ui::ET_SCROLL: {
@@ -595,21 +572,21 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
           event->time_stamp(),
           gfx::Vector2dF(scroll_event->x_offset(), scroll_event->y_offset()),
           false);
-      delegate_->OnPointerFrame();
+      needs_frame |= true;
       break;
     }
     case ui::ET_MOUSEWHEEL: {
       delegate_->OnPointerScroll(
           event->time_stamp(),
           static_cast<ui::MouseWheelEvent*>(event)->offset(), true);
-      delegate_->OnPointerFrame();
+      needs_frame |= true;
       break;
     }
     case ui::ET_SCROLL_FLING_START: {
       // Fling start in chrome signals the lifting of fingers after scrolling.
       // In wayland terms this signals the end of a scroll sequence.
       delegate_->OnPointerScrollStop(event->time_stamp());
-      delegate_->OnPointerFrame();
+      needs_frame |= true;
       break;
     }
     case ui::ET_SCROLL_FLING_CANCEL: {
@@ -639,7 +616,6 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
   }
 
   if (stylus_delegate_) {
-    bool needs_frame = false;
     // Report the force value when either:
     // - switching from a device that supports force to one that doesn't or
     //   vice-versa (since force is NaN if the device doesn't support it), OR
@@ -659,8 +635,6 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       stylus_delegate_->OnPointerTilt(event->time_stamp(), last_tilt_);
       needs_frame = true;
     }
-    if (needs_frame)
-      delegate_->OnPointerFrame();
   }
 
   last_event_type_ = event->type();
@@ -670,6 +644,9 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
     event->SetHandled();
     event->StopPropagation();
   }
+
+  if (needs_frame)
+    delegate_->OnPointerFrame();
 }
 
 void Pointer::OnScrollEvent(ui::ScrollEvent* event) {
@@ -717,7 +694,6 @@ void Pointer::OnGestureEvent(ui::GestureEvent* event) {
 ////////////////////////////////////////////////////////////////////////////////
 // aura::client::DragDropClientObserver overrides:
 void Pointer::OnDragStarted() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Drag 'n drop operations driven by sources different than pointer/mouse
   // should have not effect here.
   WMHelper* helper = WMHelper::GetInstance();
@@ -727,12 +703,10 @@ void Pointer::OnDragStarted() {
       return;
   }
 
-  SetFocus(nullptr, gfx::PointF(), 0);
-#endif
+  SetFocus(nullptr, gfx::PointF(), gfx::PointF(), 0);
 }
 
 void Pointer::OnDragCompleted(const ui::DropTargetEvent& event) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Drag 'n drop operations driven by sources different than pointer/mouse
   // should have not effect here.
   WMHelper* helper = WMHelper::GetInstance();
@@ -757,9 +731,10 @@ void Pointer::OnDragCompleted(const ui::DropTargetEvent& event) {
 
   gfx::PointF location_in_target;
   auto* target = GetEffectiveTargetForEvent(&event, &location_in_target);
-  if (target)
-    SetFocus(target, location_in_target, /*button_flags=*/0);
-#endif
+  if (target) {
+    SetFocus(target, event.root_location_f(), location_in_target,
+             /*button_flags=*/0);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -836,7 +811,8 @@ Surface* Pointer::GetEffectiveTargetForEvent(
 }
 
 void Pointer::SetFocus(Surface* surface,
-                       const gfx::PointF& location,
+                       const gfx::PointF& root_location,
+                       const gfx::PointF& surface_location,
                        int button_flags) {
   DCHECK(!surface || delegate_->CanAcceptPointerEventsForSurface(surface));
   // First generate a leave event if we currently have a target in focus.
@@ -852,9 +828,9 @@ void Pointer::SetFocus(Surface* surface,
   }
   // Second generate an enter event if focus moved to a new surface.
   if (surface) {
-    delegate_->OnPointerEnter(surface, location, button_flags);
+    delegate_->OnPointerEnter(surface, surface_location, button_flags);
     delegate_->OnPointerFrame();
-    location_ = GetLocationInRoot(surface, location);
+    location_in_root_ = root_location;
     focus_surface_ = surface;
     if (!focus_surface_->HasSurfaceObserver(this))
       focus_surface_->AddSurfaceObserver(this);
@@ -996,23 +972,13 @@ void Pointer::UpdateCursor() {
   }
 }
 
-gfx::PointF Pointer::GetLocationInRoot(Surface* target,
-                                       gfx::PointF location_in_target) {
-  if (!target || !target->window())
-    return location_in_target;
-  aura::Window* w = target->window();
-  gfx::PointF p(location_in_target.x(), location_in_target.y());
-  aura::Window::ConvertPointToTarget(w, w->GetRootWindow(), &p);
-  return gfx::PointF(p.x(), p.y());
-}
-
 bool Pointer::ShouldMoveToCenter() {
   if (!capture_window_)
     return false;
 
   gfx::Rect rect = capture_window_->GetRootWindow()->bounds();
   rect.Inset(gfx::Insets::VH(rect.height() / 6, rect.width() / 6));
-  return !rect.Contains(location_.x(), location_.y());
+  return !rect.Contains(location_in_root_.x(), location_in_root_.y());
 }
 
 void Pointer::MoveCursorToCenterOfActiveDisplay() {
@@ -1031,7 +997,7 @@ bool Pointer::HandleRelativePointerMotion(
   if (!relative_pointer_delegate_)
     return false;
 
-  gfx::Vector2dF delta = location_in_root - location_;
+  gfx::Vector2dF delta = location_in_root - location_in_root_;
   relative_pointer_delegate_->OnPointerRelativeMotion(
       time_stamp, delta,
       ordinal_motion.has_value() ? ordinal_motion.value() : delta);

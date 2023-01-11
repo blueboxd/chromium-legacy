@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -215,8 +215,7 @@ suite('SecurityKeysResetDialog', function() {
   setup(function() {
     browserProxy = new TestSecurityKeysResetBrowserProxy();
     SecurityKeysResetBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     dialog = document.createElement('settings-security-keys-reset-dialog');
     allDivs = Object.values(ResetDialogPage);
   });
@@ -331,8 +330,7 @@ suite('SecurityKeysSetPINDialog', function() {
   setup(function() {
     browserProxy = new TestSecurityKeysPinBrowserProxy();
     SecurityKeysPinBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     dialog = document.createElement('settings-security-keys-set-pin-dialog');
     allDivs = Object.values(SetPinDialogPage);
   });
@@ -597,8 +595,7 @@ suite('SecurityKeysCredentialManagement', function() {
   setup(function() {
     browserProxy = new TestSecurityKeysCredentialBrowserProxy();
     SecurityKeysCredentialBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     dialog = document.createElement(
         'settings-security-keys-credential-management-dialog');
     allDivs = Object.values(CredentialManagementDialogPage);
@@ -833,8 +830,7 @@ suite('SecurityKeysBioEnrollment', function() {
   setup(function() {
     browserProxy = new TestSecurityKeysBioEnrollProxy();
     SecurityKeysBioEnrollProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     dialog = document.createElement('settings-security-keys-bio-enroll-dialog');
     allDivs = Object.values(BioEnrollDialogPage);
   });

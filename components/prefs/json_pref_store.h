@@ -40,6 +40,7 @@ class WriteCallbacksObserver;
 class COMPONENTS_PREFS_EXPORT JsonPrefStore
     : public PersistentPrefStore,
       public base::ImportantFileWriter::DataSerializer,
+      public base::ImportantFileWriter::BackgroundDataSerializer,
       public base::SupportsWeakPtr<JsonPrefStore> {
  public:
   struct ReadResult;
@@ -120,8 +121,6 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   void RegisterOnNextSuccessfulWriteReply(
       base::OnceClosure on_next_successful_write_reply);
 
-  void ClearMutableValues() override;
-
   void OnStoreDeletionFromDisk() override;
 
 #if defined(UNIT_TEST)
@@ -134,6 +133,10 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   friend class base::WriteCallbacksObserver;
 
   ~JsonPrefStore() override;
+
+  // Perform pre-serialization bookkeeping common to either serialization flow
+  // (main thread or background thread).
+  void PerformPreserializationTasks();
 
   // If |write_success| is true, runs |on_next_successful_write_|.
   // Otherwise, re-registers |on_next_successful_write_|.
@@ -163,6 +166,9 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
 
   // ImportantFileWriter::DataSerializer overrides:
   bool SerializeData(std::string* output) override;
+  // ImportantFileWriter::BackgroundDataSerializer implementation.
+  base::ImportantFileWriter::BackgroundDataProducerCallback
+  GetSerializedDataProducerForBackgroundSequence() override;
 
   // This method is called after the JSON file has been read and the result has
   // potentially been intercepted and modified by |pref_filter_|.

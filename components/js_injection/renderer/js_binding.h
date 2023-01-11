@@ -45,7 +45,7 @@ class JsBinding final : public gin::Wrappable<JsBinding>,
       base::WeakPtr<JsCommunication> js_communication);
 
   // mojom::BrowserToJsMessaging implementation.
-  void OnPostMessage(const std::u16string& message) override;
+  void OnPostMessage(mojom::JsWebMessagePtr message) override;
 
   void ReleaseV8GlobalObjects();
 

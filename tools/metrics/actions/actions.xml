@@ -2475,7 +2475,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.BookmarkPage.ReadingList.MarkAsRead">
-  <owner>shaktisahu@chromium.org</owner>
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
   <description>
     User marked an item as read in the Reading List page from the Android
     bookmark page by clicking &quot;Mark As Read&quot; from the &quot;more&quot;
@@ -2483,8 +2484,19 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.BookmarkPage.ReadingList.MarkAsUnread">
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
+  <description>
+    User marked an item as unread in the Reading List page from the Android
+    bookmark page by clicking &quot;Mark As Unread&quot; from the
+    &quot;more&quot; menu.
+  </description>
+</action>
+
 <action name="Android.BookmarkPage.ReadingList.OpenReadingList">
-  <owner>shaktisahu@chromium.org</owner>
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
   <description>
     User navigated to the Reading List page from the Android bookmark page by
     clicking on reading list folder.
@@ -2492,7 +2504,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.BookmarkPage.ReadingList.RemoveItem">
-  <owner>shaktisahu@chromium.org</owner>
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
   <description>
     User removed an item from the Reading List page from the Android bookmarks
     page by clicking &quot;delete&quot; from the &quot;more&quot; menu.
@@ -2500,7 +2513,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.BookmarkPage.ReadingList.SelectFromMenu">
-  <owner>shaktisahu@chromium.org</owner>
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
   <description>
     User selected an item from the Reading List page from the Android bookmark
     page by clicking &quot;select&quot; from the &quot;more&quot; menu.
@@ -3151,90 +3165,6 @@ should be able to be added at any place in this file.
   <description>User navigated to the native Android history page.</description>
 </action>
 
-<action name="Android.InstantApps.BannerDismissed">
-  <owner>thildebr@chromium.org</owner>
-  <description>
-    Infobar banner for an instant app has been dismissed by the user.
-  </description>
-</action>
-
-<action name="Android.InstantApps.BannerDismissedAppIsDefault">
-  <owner>thildebr@chromium.org</owner>
-  <description>
-    Infobar banner shown when opening the instant app is default has been
-    dismissed. Infobar is shown for a default app when the user arrives on the
-    page via intra-site navigation.
-  </description>
-</action>
-
-<action name="Android.InstantApps.BannerOpen">
-  <owner>thildebr@chromium.org</owner>
-  <description>
-    User clicked &quot;Open App&quot; button on the instant apps infobar.
-  </description>
-</action>
-
-<action name="Android.InstantApps.BannerOpenAppIsDefault">
-  <owner>thildebr@chromium.org</owner>
-  <description>
-    User clicked &quot;Open App&quot; button on an instant apps banner that was
-    shown when opening the app was default, signaling that they were using the
-    mobile web first, and decided to switch over to the instant app.
-  </description>
-</action>
-
-<action name="Android.InstantApps.BannerShown" not_user_triggered="true">
-  <owner>thildebr@chromium.org</owner>
-  <description>
-    Infobar advertising an instant app has been displayed.
-  </description>
-</action>
-
-<action name="Android.InstantApps.BannerShownAppIsDefault"
-    not_user_triggered="true">
-  <owner>thildebr@chromium.org</owner>
-  <description>
-    Infobar for an instant app has been displayed when opening the app is
-    default. Infobar is shown for a default app when the user arrives on the
-    page via intra-site navigation.
-  </description>
-</action>
-
-<action name="Android.InstantApps.InstantAppsEligiblePageLoaded"
-    not_user_triggered="true">
-  <obsolete>Deleted as of June 8, 2018</obsolete>
-  <owner>mariakhomenko@chromium.org</owner>
-  <description>
-    A page finished loading in Chrome that could have been loaded in an Instant
-    App.
-  </description>
-</action>
-
-<action name="Android.InstantApps.LaunchedByDefault" not_user_triggered="true">
-  <owner>thildebr@chromium.org</owner>
-  <description>
-    An instant app was launched without any user prompting during a navigation
-    within Chrome. This happens when the user has previously chosen to use the
-    Instant App by opening it through the infobar UI.
-  </description>
-</action>
-
-<action name="Android.InstantApps.LaunchedFromWebsiteSettingsPopup">
-  <owner>tedchoc@chromium.org</owner>
-  <owner>thildebr@chromium.org</owner>
-  <description>
-    An instant app was launched from the page info popup.
-  </description>
-</action>
-
-<action name="Android.InstantApps.OpenInstantAppButtonShown">
-  <owner>thildebr@chromium.org</owner>
-  <description>
-    Recorded when the user opened PageInfo dialog and saw a button to launch an
-    Instant App there.
-  </description>
-</action>
-
 <action name="Android.LauncherShortcut.NewIncognitoTab">
   <owner>twellington@chromium.org</owner>
   <description>
@@ -3448,6 +3378,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ApplicationShortcut.LensPressedFromHomeScreenWidget">
+  <owner>schechter@google.com</owner>
+  <owner>hujasonx@google.com</owner>
+  <description>
+    User tapped the Lens icon in the quick actions home screen widget for Chrome
+    for iOS.
+  </description>
+</action>
+
 <action name="ApplicationShortcut.NewIncognitoSearchPressed">
   <owner>pschaffner@chromium.org</owner>
   <description>
@@ -3619,6 +3558,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="AppList_ShowPlayStoreQueryResults">
+  <obsolete>
+    Deprecated in M108. App List search no longer shows tile results.
+  </obsolete>
   <owner>jennyz@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <description>
@@ -3660,6 +3602,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="AppList_ZeroStateOpenInstalledApp">
+  <obsolete>Deprecated in M108. Launcher zero state has been removed.</obsolete>
   <owner>jennyz@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <description>User opens a suggested installed app in zero state.</description>
@@ -4756,6 +4699,28 @@ should be able to be added at any place in this file.
 <action name="BadMessageTerminate_WPH">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="BillingInterstitial.Advanced">
+  <owner>psarouthakis@chromium.org</owner>
+  <description>
+    User opened the &quot;Advanced&quot; tab on the Billing interstitial.
+  </description>
+</action>
+
+<action name="BillingInterstitial.Back">
+  <owner>psarouthakis@chromium.org</owner>
+  <description>User pressed back on a Billing interstitial.</description>
+</action>
+
+<action name="BillingInterstitial.Proceed">
+  <owner>psarouthakis@chromium.org</owner>
+  <description>User proceeded on a Billing interstitial.</description>
+</action>
+
+<action name="BillingInterstitial.Show">
+  <owner>psarouthakis@chromium.org</owner>
+  <description>User saw the Billing interstitial.</description>
 </action>
 
 <action name="BindingsMismatch_GetProcessHostPerSite">
@@ -6541,7 +6506,6 @@ should be able to be added at any place in this file.
 
 <action name="ContentSuggestions.Feed.CardAction.Open.StartSurface">
   <owner>hanxi@chromium.org</owner>
-  <owner>spdonghao@chromium.org</owner>
   <owner>clank-start@google.com</owner>
   <description>
     The user tapped on a card in the Feed on the start surface.
@@ -8191,10 +8155,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="DownloadNotification.Button_PlatformOpen">
-  <obsolete>It was discovered in June 2022 that this was dead code.</obsolete>
   <owner>yoshiki@chromium.org</owner>
   <description>
-    User pushes &quot;Open&quot; button on download notification.
+    User pushes a button to open a file on download notification. This is
+    currently used only for GalleryAppEditPdfNotification.
   </description>
 </action>
 
@@ -11633,6 +11597,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOSPrivacySafeBrowsingSettingsCloseWithSwipe">
+  <owner>joemerramos@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when Privacy Safe Browsing Settings UI was dismissed using swipe
+    down gesture. iOS only.
+  </description>
+</action>
+
 <action name="IOSReadingListCloseWithSwipe">
   <owner>rohitrao@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
@@ -11646,6 +11619,24 @@ should be able to be added at any place in this file.
   <owner>sczs@chromium.org</owner>
   <description>
     Recorded when a user closes Recent Tabs using swipe down gesture. iOS-only.
+  </description>
+</action>
+
+<action name="IOSSafeBrowsingEnhancedProtectionSettingsCloseWithSwipe">
+  <owner>joemerramos@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when Safe Browsing Enhanced Protection Settings UI was dismissed
+    using swipe down gesture. iOS only.
+  </description>
+</action>
+
+<action name="IOSSafeBrowsingStandardProtectionSettingsCloseWithSwipe">
+  <owner>joemerramos@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when Safe Browsing Standard Protection Settings UI was dismissed
+    using swipe down gesture. iOS only.
   </description>
 </action>
 
@@ -17240,6 +17231,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Mobile.Omnibox.iOS.PastedValidURL">
+  <owner>nicolasmacbeth@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    User tapped the 'paste' iOS/iPadOS button into the Omnibox and the resulting
+    text in the Omnibox is a valid URL. iOS and iPadOS only.
+  </description>
+</action>
+
 <action name="Mobile.OmniboxContextMenu.SearchCopiedImage">
   <owner>rkgibson@google.com</owner>
   <owner>stkhapugin@google.com</owner>
@@ -18093,6 +18093,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileCustomRowLensSearch">
+  <owner>hujasonx@google.com</owner>
+  <owner>schechter@google.com</owner>
+  <description>
+    Records when a user starts a Lens search from the omnibox' assistive view.
+  </description>
+</action>
+
 <action name="MobileCustomRowVoiceSearch">
   <owner>jif@chromium.org</owner>
   <description>
@@ -18397,6 +18405,318 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileKeyCommandAddToBookmarks">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to add the current page to Bookmarks.
+  </description>
+</action>
+
+<action name="MobileKeyCommandAddToReadingList">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to add the current page to Reading
+    List.
+  </description>
+</action>
+
+<action name="MobileKeyCommandBack">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>The user has performed the key command to go back.</description>
+</action>
+
+<action name="MobileKeyCommandClearBrowsingData">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to clear browsing data.
+  </description>
+</action>
+
+<action name="MobileKeyCommandClose">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to close a modal.
+  </description>
+</action>
+
+<action name="MobileKeyCommandCloseTab">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to close the current tab.
+  </description>
+</action>
+
+<action name="MobileKeyCommandFind">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to find a string in the page.
+  </description>
+</action>
+
+<action name="MobileKeyCommandFindNext">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to find the next string match.
+  </description>
+</action>
+
+<action name="MobileKeyCommandFindPrevious">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to find the previous string match.
+  </description>
+</action>
+
+<action name="MobileKeyCommandForward">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to go forward.
+  </description>
+</action>
+
+<action name="MobileKeyCommandGoToTabGrid">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to go to the tab grid.
+  </description>
+</action>
+
+<action name="MobileKeyCommandOpenLocation">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to open a location (aka focus the
+    omnibox).
+  </description>
+</action>
+
+<action name="MobileKeyCommandOpenNewIncognitoTab">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to open a new incognito tab.
+  </description>
+</action>
+
+<action name="MobileKeyCommandOpenNewIncognitoWindow">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to open a new incognito window.
+  </description>
+</action>
+
+<action name="MobileKeyCommandOpenNewRegularTab">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to open a new regular tab.
+  </description>
+</action>
+
+<action name="MobileKeyCommandOpenNewTab">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to open a new tab.
+  </description>
+</action>
+
+<action name="MobileKeyCommandOpenNewWindow">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to open a new window.
+  </description>
+</action>
+
+<action name="MobileKeyCommandReload">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to reload the page.
+  </description>
+</action>
+
+<action name="MobileKeyCommandReopenLastClosedTab">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to reopen the last closed tab.
+  </description>
+</action>
+
+<action name="MobileKeyCommandReportAnIssue">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to report an issue.
+  </description>
+</action>
+
+<action name="MobileKeyCommandShowBookmarks">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to show Bookmarks.
+  </description>
+</action>
+
+<action name="MobileKeyCommandShowDownloads">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to show Downloads.
+  </description>
+</action>
+
+<action name="MobileKeyCommandShowFirstTab">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to show the first tab.
+  </description>
+</action>
+
+<action name="MobileKeyCommandShowHelp">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to show Help.
+  </description>
+</action>
+
+<action name="MobileKeyCommandShowHistory">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to show History.
+  </description>
+</action>
+
+<action name="MobileKeyCommandShowLastTab">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to show the last tab.
+  </description>
+</action>
+
+<action name="MobileKeyCommandShowNextTab">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to show the next tab.
+  </description>
+</action>
+
+<action name="MobileKeyCommandShowPreviousTab">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to show the previous tab.
+  </description>
+</action>
+
+<action name="MobileKeyCommandShowReadingList">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to show Reading List.
+  </description>
+</action>
+
+<action name="MobileKeyCommandShowSettings">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to show Settings.
+  </description>
+</action>
+
+<action name="MobileKeyCommandShowTab2">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to show the second tab.
+  </description>
+</action>
+
+<action name="MobileKeyCommandShowTab3">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to show the third tab.
+  </description>
+</action>
+
+<action name="MobileKeyCommandShowTab4">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to show the fourth tab.
+  </description>
+</action>
+
+<action name="MobileKeyCommandShowTab5">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to show the fifth tab.
+  </description>
+</action>
+
+<action name="MobileKeyCommandShowTab6">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to show the sixth tab.
+  </description>
+</action>
+
+<action name="MobileKeyCommandShowTab7">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to show the seventh tab.
+  </description>
+</action>
+
+<action name="MobileKeyCommandShowTab8">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to show the eighth tab.
+  </description>
+</action>
+
+<action name="MobileKeyCommandStop">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to stop loading the page.
+  </description>
+</action>
+
+<action name="MobileKeyCommandVoiceSearch">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    The user has performed the key command to start a voice search.
+  </description>
+</action>
+
 <action name="MobileLocationBarTapped">
   <owner>stkhapugin@chromium.org</owner>
   <owner>rkgibson@google.com</owner>
@@ -18582,7 +18902,6 @@ should be able to be added at any place in this file.
 
 <action name="MobileMenuNewTab.StartSurfaceFinale">
   <owner>hanxi@chromium.org</owner>
-  <owner>spdonghao@chromium.org</owner>
   <owner>clank-start@google.com</owner>
   <description>
     User pressed 'New tab' in the app menu when start surface finale is enabled.
@@ -19268,7 +19587,6 @@ should be able to be added at any place in this file.
 
 <action name="MobileOmniboxUse.StartSurface">
   <owner>hanxi@chromium.org</owner>
-  <owner>spdonghao@chromium.org</owner>
   <owner>clank-start@google.com</owner>
   <description>
     User used the omnibox while it is showing on the start surface.
@@ -19366,6 +19684,23 @@ should be able to be added at any place in this file.
   <owner>ajuma@chromium.org</owner>
   <description>
     Reported when Price Notifications Settings UI was dismissed. iOS only.
+  </description>
+</action>
+
+<action name="MobilePrivacySafeBrowsingSettingsBack">
+  <owner>joemerramos@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when user goes back from Privacy Safe Browsing Settings UI to root
+    Settings screen. iOS only.
+  </description>
+</action>
+
+<action name="MobilePrivacySafeBrowsingSettingsClose">
+  <owner>joemerramos@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when Privacy Safe Browsing Settings UI was dismissed. iOS only.
   </description>
 </action>
 
@@ -19666,6 +20001,42 @@ should be able to be added at any place in this file.
   <description>
     The user pressed the Send Feedback button on a tab that is displaying the
     sad view.
+  </description>
+</action>
+
+<action name="MobileSafeBrowsingEnhancedProtectionSettingsBack">
+  <owner>joemerramos@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when user goes back from Safe Browsing Enhanced Protection Settings
+    UI to root Settings screen. iOS only.
+  </description>
+</action>
+
+<action name="MobileSafeBrowsingEnhancedProtectionSettingsClose">
+  <owner>joemerramos@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when Safe Browsing Enhanced Protection Settings UI was dismissed.
+    iOS only.
+  </description>
+</action>
+
+<action name="MobileSafeBrowsingStandardProtectionSettingsBack">
+  <owner>joemerramos@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when user goes back from Safe Browsing Standard Protection Settings
+    UI to root Settings screen. iOS only.
+  </description>
+</action>
+
+<action name="MobileSafeBrowsingStandardProtectionSettingsClose">
+  <owner>joemerramos@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when Safe Browsing Standard Protection Settings UI was dismissed.
+    iOS only.
   </description>
 </action>
 
@@ -20558,6 +20929,24 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileToolbarReorderTab.TabAddedToGroup">
+  <owner>clank-app-team@google.com</owner>
+  <owner>skavuluru@google.com</owner>
+  <description>
+    User long-pressed on a tab, dragged and dropped it within a tab group in the
+    tablet tab strip. Android Only.
+  </description>
+</action>
+
+<action name="MobileToolbarReorderTab.TabRemovedFromGroup">
+  <owner>clank-app-team@google.com</owner>
+  <owner>skavuluru@google.com</owner>
+  <description>
+    User long-pressed on a tab with in a group, dragged and dropped it outside
+    of the group in the tablet tab strip. Android Only.
+  </description>
+</action>
+
 <action name="MobileToolbarSearchButtonTapped">
   <obsolete>Deprecate as of 3/2020</obsolete>
   <owner>stkhapugin@chromium.org</owner>
@@ -21027,6 +21416,12 @@ should be able to be added at any place in this file.
   <owner>sfiera@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <description>An NTP tile was blacklisted. iOS only.</description>
+</action>
+
+<action name="MostVisited_UrlBlacklisted_Omnibox">
+  <owner>christianxu@chromium.org</owner>
+  <owner>stkhapugin@chromium.org</owner>
+  <description>An omnibox MV tile was blacklisted. iOS only.</description>
 </action>
 
 <action name="MostVisited_UrlPinned">
@@ -25452,6 +25847,28 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="PhishingInterstitial.Advanced">
+  <owner>psarouthakis@chromium.org</owner>
+  <description>
+    User opened the &quot;Advanced&quot; tab on the Phishing interstitial.
+  </description>
+</action>
+
+<action name="PhishingInterstitial.Back">
+  <owner>psarouthakis@chromium.org</owner>
+  <description>User pressed back on a Phishing interstitial.</description>
+</action>
+
+<action name="PhishingInterstitial.Proceed">
+  <owner>psarouthakis@chromium.org</owner>
+  <description>User proceeded on a Phishing interstitial.</description>
+</action>
+
+<action name="PhishingInterstitial.Show">
+  <owner>psarouthakis@chromium.org</owner>
+  <description>User saw the Phishing interstitial.</description>
+</action>
+
 <action name="PhysicalWeb.NotificationPressed">
   <obsolete>Replaced by the histogram PhysicalWeb.ActivityReferral</obsolete>
   <owner>cco3@chromium.org</owner>
@@ -26953,7 +27370,6 @@ should be able to be added at any place in this file.
 
 <action name="SearchResumptionModule.NTP.Click">
   <owner>hanxi@chromium.org</owner>
-  <owner>spdonghao@chromium.org</owner>
   <owner>xinyiji@chromium.org</owner>
   <description>
     The search suggestion on the search resumption module is clicked.
@@ -26962,7 +27378,6 @@ should be able to be added at any place in this file.
 
 <action name="SearchResumptionModule.NTP.Collapse">
   <owner>hanxi@chromium.org</owner>
-  <owner>spdonghao@chromium.org</owner>
   <owner>xinyiji@chromium.org</owner>
   <description>
     Users click the header of the search resumption module to collapse the
@@ -26972,7 +27387,6 @@ should be able to be added at any place in this file.
 
 <action name="SearchResumptionModule.NTP.Expand">
   <owner>hanxi@chromium.org</owner>
-  <owner>spdonghao@chromium.org</owner>
   <owner>xinyiji@chromium.org</owner>
   <description>
     Users click the header of the search resumption module to expand and show
@@ -31093,7 +31507,6 @@ should be able to be added at any place in this file.
 
 <action name="StartSurface.ShownFromBackNavigation">
   <owner>hanxi@chromium.org</owner>
-  <owner>spdonghao@chromium.org</owner>
   <owner>andrewheard@chromium.org</owner>
   <description>
     The Start surface is showing due to the user taps the back button.
@@ -31214,6 +31627,24 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="StatusArea_Audio_AutoInputSelectionOverridden">
+  <owner>aaronyu@google.com</owner>
+  <owner>judyhsiao@google.com</owner>
+  <owner>chromeos-audio-sw@google.com</owner>
+  <description>
+    The user overrode the automatically selected audio input device.
+  </description>
+</action>
+
+<action name="StatusArea_Audio_AutoOutputSelectionOverridden">
+  <owner>aaronyu@google.com</owner>
+  <owner>judyhsiao@google.com</owner>
+  <owner>chromeos-audio-sw@google.com</owner>
+  <description>
+    The user overrode the automatically selected audio output device.
+  </description>
+</action>
+
 <action name="StatusArea_Audio_CurrentInputDevice">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -31308,8 +31739,14 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_BrightnessChanged" not_user_triggered="true">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Replaced with Ash.QuickSettings.Slider.{SliderBehavior} on 10/2022.
+  </obsolete>
+  <owner>jamescook@chromium.org</owner>
+  <description>
+    Recorded when the screen brightness changes, for any reason (including both
+    UI actions and non-UI actions).
+  </description>
 </action>
 
 <action name="StatusArea_CapsLock_Detailed">
@@ -31388,6 +31825,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Display_Default_Selected">
+  <obsolete>Deprecated 10/2022. No longer needed.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user selects the display row in the system
@@ -31399,6 +31837,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Display_Default_ShowSettings">
+  <obsolete>Deprecated 10/2022. No longer needed.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the display settings are opened as a result of
@@ -31407,6 +31846,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Display_Notification_Created">
+  <obsolete>Deprecated 10/2022. No longer needed.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times a new display notification is added to the
@@ -31415,6 +31855,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Display_Notification_Selected">
+  <obsolete>Deprecated 10/2022. No longer needed.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user selects the display notification. This
@@ -31427,6 +31868,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Display_Notification_Show_Settings">
+  <obsolete>Deprecated 10/2022. No longer needed.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the display settings are opened as a result of
@@ -31724,6 +32166,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_ScreenCapture_Default_Stop">
+  <obsolete>Deprecated 10/2022. No longer needed.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user stops screen capturing via the screen
@@ -31732,6 +32175,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_ScreenCapture_Notification_Stop">
+  <obsolete>Deprecated 10/2022. No longer needed.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user stops screen capturing via the Screen
@@ -31760,6 +32204,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_SMS_Detailed">
+  <obsolete>
+    Not recorded as of 10/2022. It's unclear when the recording code was
+    deleted.
+  </obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user has opened the &quot;SMS messages &quot;
@@ -31768,6 +32216,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_SMS_Detailed_DismissMsg">
+  <obsolete>
+    Not recorded as of 10/2022. It's unclear when the recording code was
+    deleted.
+  </obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user has dismissed an SMS message from the
@@ -31776,6 +32228,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_SMS_Notification_DismissMsg">
+  <obsolete>
+    Not recorded as of 10/2022. It's unclear when the recording code was
+    deleted.
+  </obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user has dismissed an SMS message
@@ -31835,6 +32291,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Tracing_Default_Selected">
+  <obsolete>Deprecated 10/2022. No longer needed.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user selects the tracing row in the system
@@ -32164,7 +32621,6 @@ should be able to be added at any place in this file.
 
 <action name="Suggestions.Tile.Tapped.StartSurface">
   <owner>hanxi@chromium.org</owner>
-  <owner>spdonghao@chromium.org</owner>
   <owner>clank-start@google.com</owner>
   <description>
     User tapped on a suggestions tile while viewing the start surface.
@@ -32441,6 +32897,13 @@ should be able to be added at any place in this file.
 <action name="SystemBack">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="SystemBackBeforeUINativeInitialized">
+  <owner>lazzzis@google.com</owner>
+  <description>
+    The user triggered system back before UI with Native is initialized.
+  </description>
 </action>
 
 <action name="SystemBackForNavigation">

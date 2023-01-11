@@ -4,6 +4,7 @@
 
 #include "base/containers/contains.h"
 #include "base/memory/raw_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -402,11 +403,11 @@ class SearchPrefetchServiceEnabledBrowserTest
       public testing::WithParamInterface<std::tuple<BlockOnHeaders>> {
  public:
   SearchPrefetchServiceEnabledBrowserTest() {
-    std::vector<base::test::ScopedFeatureList::FeatureAndParams>
-        enabled_features = {{kSearchPrefetchServicePrefetching,
-                             {{"max_attempts_per_caching_duration", "3"},
-                              {"cache_size", "1"},
-                              {"device_memory_threshold_MB", "0"}}}};
+    std::vector<base::test::FeatureRefAndParams> enabled_features = {
+        {kSearchPrefetchServicePrefetching,
+         {{"max_attempts_per_caching_duration", "3"},
+          {"cache_size", "1"},
+          {"device_memory_threshold_MB", "0"}}}};
     std::vector<base::test::FeatureRef> disabled_features = {};
     if (BlockOnHeadersEnabled()) {
       enabled_features.push_back({kSearchPrefetchBlockBeforeHeaders, {}});
@@ -2806,24 +2807,20 @@ IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest,
 
   // 2 requests should be to the search terms directly, one for the prefetch and
   // one for the subframe (that can't be served from the prefetch cache).
-  EXPECT_EQ(2,
-            std::count_if(requests.begin(), requests.end(),
-                          [search_terms](const auto& request) {
-                            return request.relative_url.find(kLoadInSubframe) ==
-                                       std::string::npos &&
-                                   request.relative_url.find(search_terms) !=
-                                       std::string::npos;
-                          }));
+  EXPECT_EQ(
+      2, base::ranges::count_if(requests, [search_terms](const auto& request) {
+        return request.relative_url.find(kLoadInSubframe) ==
+                   std::string::npos &&
+               request.relative_url.find(search_terms) != std::string::npos;
+      }));
   // 1 request should specify to load content in a subframe but also contain the
   // search terms.
-  EXPECT_EQ(1,
-            std::count_if(requests.begin(), requests.end(),
-                          [search_terms](const auto& request) {
-                            return request.relative_url.find(kLoadInSubframe) !=
-                                       std::string::npos &&
-                                   request.relative_url.find(search_terms) !=
-                                       std::string::npos;
-                          }));
+  EXPECT_EQ(
+      1, base::ranges::count_if(requests, [search_terms](const auto& request) {
+        return request.relative_url.find(kLoadInSubframe) !=
+                   std::string::npos &&
+               request.relative_url.find(search_terms) != std::string::npos;
+      }));
 }
 
 void RunFirstParam(base::RepeatingClosure closure,
@@ -3378,12 +3375,12 @@ class SearchPrefetchServiceNavigationPrefetchBrowserTest
     : public SearchPrefetchBaseBrowserTest {
  public:
   SearchPrefetchServiceNavigationPrefetchBrowserTest() {
-    std::vector<base::test::ScopedFeatureList::FeatureAndParams>
-        enabled_features = {{kSearchPrefetchServicePrefetching,
-                             {{"max_attempts_per_caching_duration", "3"},
-                              {"cache_size", "1"},
-                              {"device_memory_threshold_MB", "0"}}},
-                            {kSearchNavigationPrefetch, {}}};
+    std::vector<base::test::FeatureRefAndParams> enabled_features = {
+        {kSearchPrefetchServicePrefetching,
+         {{"max_attempts_per_caching_duration", "3"},
+          {"cache_size", "1"},
+          {"device_memory_threshold_MB", "0"}}},
+        {kSearchNavigationPrefetch, {}}};
     std::vector<base::test::FeatureRef> disabled_features = {};
 
     feature_list_.InitWithFeaturesAndParameters(enabled_features,
@@ -3725,13 +3722,13 @@ class SearchNavigationPrefetchHoldbackBrowserTest
     : public SearchPrefetchBaseBrowserTest {
  public:
   SearchNavigationPrefetchHoldbackBrowserTest() {
-    std::vector<base::test::ScopedFeatureList::FeatureAndParams>
-        enabled_features = {{kSearchPrefetchServicePrefetching,
-                             {{"max_attempts_per_caching_duration", "3"},
-                              {"cache_size", "1"},
-                              {"device_memory_threshold_MB", "0"},
-                              {"prefetch_holdback", "true"}}},
-                            {kSearchNavigationPrefetch, {{}}}};
+    std::vector<base::test::FeatureRefAndParams> enabled_features = {
+        {kSearchPrefetchServicePrefetching,
+         {{"max_attempts_per_caching_duration", "3"},
+          {"cache_size", "1"},
+          {"device_memory_threshold_MB", "0"},
+          {"prefetch_holdback", "true"}}},
+        {kSearchNavigationPrefetch, {{}}}};
     std::vector<base::test::FeatureRef> disabled_features = {};
 
     feature_list_.InitWithFeaturesAndParameters(enabled_features,
@@ -3817,13 +3814,13 @@ class SearchNavigationPrefetchNoCancelBrowserTest
     : public SearchPrefetchBaseBrowserTest {
  public:
   SearchNavigationPrefetchNoCancelBrowserTest() {
-    std::vector<base::test::ScopedFeatureList::FeatureAndParams>
-        enabled_features = {{kSearchPrefetchServicePrefetching,
-                             {{"max_attempts_per_caching_duration", "3"},
-                              {"cache_size", "1"},
-                              {"device_memory_threshold_MB", "0"}}},
-                            {kSearchPrefetchSkipsCancel, {}},
-                            {kSearchNavigationPrefetch, {{}}}};
+    std::vector<base::test::FeatureRefAndParams> enabled_features = {
+        {kSearchPrefetchServicePrefetching,
+         {{"max_attempts_per_caching_duration", "3"},
+          {"cache_size", "1"},
+          {"device_memory_threshold_MB", "0"}}},
+        {kSearchPrefetchSkipsCancel, {}},
+        {kSearchNavigationPrefetch, {{}}}};
     std::vector<base::test::FeatureRef> disabled_features = {};
 
     feature_list_.InitWithFeaturesAndParameters(enabled_features,

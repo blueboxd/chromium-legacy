@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "content/browser/interest_group/auction_process_manager.h"
 #include "content/browser/interest_group/interest_group_k_anonymity_manager.h"
 #include "content/browser/interest_group/interest_group_permissions_checker.h"
@@ -149,12 +150,21 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   void UpdateInterestGroupsOfOwners(
       base::span<url::Origin> owners,
       network::mojom::ClientSecurityStatePtr client_security_state);
+
   // For testing *only*; changes the maximum amount of time that the update
   // process can run before it gets cancelled for taking too long.
-  void set_max_update_round_duration_for_testing(base::TimeDelta delta);
+  void set_max_update_round_duration_for_testing(base::TimeDelta delta) {
+    update_manager_.set_max_update_round_duration_for_testing(
+        delta);  // IN-TEST
+  }
+
   // For testing *only*; changes the maximum number of groups that can be
   // updated at the same time.
-  void set_max_parallel_updates_for_testing(int max_parallel_updates);
+  void set_max_parallel_updates_for_testing(int max_parallel_updates) {
+    update_manager_.set_max_parallel_updates_for_testing(  // IN-TEST
+        max_parallel_updates);
+  }
+
   // Adds an entry to the bidding history for this interest group.
   void RecordInterestGroupBids(const blink::InterestGroupSet& groups);
   // Adds an entry to the win history for this interest group. `ad_json` is a
@@ -243,19 +253,27 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   // For testing *only*; changes the maximum number of active report requests
   // at a time.
   void set_max_active_report_requests_for_testing(
-      int max_active_report_requests);
+      int max_active_report_requests) {
+    max_active_report_requests_ = max_active_report_requests;
+  }
 
   // For testing *only*; changes the maximum number of report requests that can
   // be stored in `report_requests_` queue.
-  void set_max_report_queue_length_for_testing(int max_queue_length);
+  void set_max_report_queue_length_for_testing(int max_queue_length) {
+    max_report_queue_length_ = max_queue_length;
+  }
 
   // For testing *only*; changes `max_reporting_round_duration_`.
   void set_max_reporting_round_duration_for_testing(
-      base::TimeDelta max_reporting_round_duration);
+      base::TimeDelta max_reporting_round_duration) {
+    max_reporting_round_duration_ = max_reporting_round_duration;
+  }
 
   // For testing *only*; changes the time interval to wait before sending the
   // next report after sending one.
-  void set_reporting_interval_for_testing(base::TimeDelta interval);
+  void set_reporting_interval_for_testing(base::TimeDelta interval) {
+    reporting_interval_ = interval;
+  }
 
   size_t report_queue_length_for_testing() const {
     return report_requests_.size();
@@ -297,8 +315,9 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
     std::unique_ptr<network::SimpleURLLoader> simple_url_loader;
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
 
-    // Used for Uma histograms.
-    std::string name;
+    // Used for Uma histograms. These are build-time constants contained within
+    // the binary, so no need for anything to own them.
+    const char* name;
     int request_url_size_bytes;
   };
 
@@ -358,23 +377,24 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
       const std::string& name);
 
   // Enqueues each of `report_urls` to the `report_requests_` queue.
-  void HandleReports(
+  void EnqueueReportsInternal(
       const std::vector<GURL>& report_urls,
       const url::Origin& frame_origin,
-      network::mojom::ClientSecurityStatePtr client_security_state,
-      const std::string& name,
+      const network::mojom::ClientSecurityStatePtr& client_security_state,
+      const char* name,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
-  // Calls TrySendingOneReport() when the queue is not empty and there are less
-  // active report requests than `max_active_report_requests_`.
-  void SendReports();
   // Dequeues and sends the first report request in `report_requests_` queue,
   // if the queue is not empty.
   void TrySendingOneReport();
+
   // Invoked when a report request completed.
   void OnOneReportSent(
       std::unique_ptr<network::SimpleURLLoader> simple_url_loader,
       scoped_refptr<net::HttpResponseHeaders> response_headers);
+
+  // Clears `report_requests_`.  Does not abort currently pending requests.
+  void TimeoutReports();
 
   // A version of QueueKAnonymityUpdateForInterestGroup() called from
   // JoinInterestGroup which passes the group in an optional (the group must
@@ -420,7 +440,9 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   // `max_report_queue_length` at the time of adding new entries.
   base::circular_deque<std::unique_ptr<ReportRequest>> report_requests_;
 
-  // Current number of active report requests.
+  // Current number of active report requests. Includes requests that completed
+  // within the last `kReportingInterval`, each of which should have a pending
+  // delayed task to invoke TrySendingOneReport().
   int num_active_ = 0;
 
   // The maximum number of active report requests at a time.
@@ -446,10 +468,13 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   // Should *only* be changed by tests.
   base::TimeDelta max_reporting_round_duration_;
 
-  // The last time we started sending reports from the `report_requests_` queue;
-  // used to clear pending report requests in the queue if reporting takes too
-  // long.
-  base::TimeTicks reporting_started_ = base::TimeTicks::Min();
+  // Used to clear all pending reports in the queue if reporting takes too long.
+  // Started when sending reports starts. Stopped once all reports are sent.
+  // When the timer triggers, all reports are aborted.
+  //
+  // The resulting behavior is that if reports are continuously being sent for
+  // too long, possibly from multiple auctions, all reports are timed out.
+  base::OneShotTimer timeout_timer_;
 
   base::WeakPtrFactory<InterestGroupManagerImpl> weak_factory_{this};
 };

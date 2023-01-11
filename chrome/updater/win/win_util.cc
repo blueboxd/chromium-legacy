@@ -21,6 +21,7 @@
 #include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
 #include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -38,6 +39,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "base/win/atl.h"
 #include "base/win/registry.h"
@@ -56,6 +58,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
+
 namespace {
 
 HResultOr<bool> IsUserRunningSplitToken() {
@@ -906,19 +909,17 @@ bool EnableProcessHeapMetadataProtection() {
 
 absl::optional<base::ScopedTempDir> CreateSecureTempDir() {
   base::FilePath temp_dir;
-  if (!base::PathService::Get(::IsUserAnAdmin() ? int{base::DIR_PROGRAM_FILES}
-                                                : int{base::DIR_TEMP},
-                              &temp_dir)) {
+  if (!base::CreateNewTempDirectory(FILE_PATH_LITERAL(COMPANY_SHORTNAME_STRING),
+                                    &temp_dir)) {
     return absl::nullopt;
   }
 
-  base::ScopedTempDir temp_path;
-  if (!temp_path.CreateUniqueTempDirUnderPath(
-          temp_dir.AppendASCII(COMPANY_SHORTNAME_STRING))) {
+  base::ScopedTempDir temp_dir_owner;
+  if (temp_dir_owner.Set(temp_dir)) {
+    return temp_dir_owner;
+  } else {
     return absl::nullopt;
   }
-
-  return temp_path;
 }
 
 base::ScopedClosureRunner SignalShutdownEvent(UpdaterScope scope) {

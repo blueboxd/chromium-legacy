@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -714,7 +715,8 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
       sk_image_info, transferable_resource.mailbox_holder.texture_target,
       /* is_origin_top_left = */ opengl_flip_y_extension_,
       context_provider_->GetWeakPtr(), base::PlatformThread::CurrentRef(),
-      Thread::Current()->GetDeprecatedTaskRunner(), std::move(release_callback),
+      ThreadScheduler::Current()->CleanupTaskRunner(),
+      std::move(release_callback),
       /*supports_display_compositing=*/true,
       transferable_resource.is_overlay_candidate);
 }
@@ -1637,7 +1639,7 @@ sk_sp<SkData> DrawingBuffer::PaintRenderingResultsToDataArray(
   // Readback in native GL byte order (RGBA).
   SkColorType color_type = kRGBA_8888_SkColorType;
   base::CheckedNumeric<size_t> row_bytes = 4;
-  if (RuntimeEnabledFeatures::CanvasColorManagementV2Enabled() &&
+  if (RuntimeEnabledFeatures::WebGLDrawingBufferStorageEnabled() &&
       back_color_buffer_->format == viz::RGBA_F16) {
     color_type = kRGBA_F16_SkColorType;
     row_bytes *= 2;
@@ -1708,7 +1710,7 @@ void DrawingBuffer::ReadBackFramebuffer(base::span<uint8_t> pixels,
   expected_data_size *= Size().width();
   expected_data_size *= Size().height();
 
-  if (RuntimeEnabledFeatures::CanvasColorManagementV2Enabled() &&
+  if (RuntimeEnabledFeatures::WebGLDrawingBufferStorageEnabled() &&
       color_type == kRGBA_F16_SkColorType) {
     data_type = (webgl_version_ > kWebGL1) ? GL_HALF_FLOAT : GL_HALF_FLOAT_OES;
     expected_data_size *= 2;

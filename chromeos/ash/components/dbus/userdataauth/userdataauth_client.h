@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
+#include "base/scoped_observation_traits.h"
 #include "chromeos/ash/components/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/ash/components/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/common/dbus_method_call_status.h"
@@ -34,6 +35,16 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
     // cryptohomed, as well as to notify the completion of migration.
     virtual void DircryptoMigrationProgress(
         const ::user_data_auth::DircryptoMigrationProgress& progress) {}
+  };
+
+  class FingerprintAuthObserver : public base::CheckedObserver {
+   public:
+    virtual void OnFingerprintScan(
+        const ::user_data_auth::FingerprintScanResult& result) {}
+    virtual void OnEnrollScanDone(
+        const ::user_data_auth::FingerprintScanResult& result,
+        bool is_complete,
+        int percent_complete) {}
   };
 
   using IsMountedCallback =
@@ -76,6 +87,10 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
       chromeos::DBusMethodCallback<::user_data_auth::AddCredentialsReply>;
   using UpdateCredentialCallback =
       chromeos::DBusMethodCallback<::user_data_auth::UpdateCredentialReply>;
+  using PrepareAuthFactorCallback =
+      chromeos::DBusMethodCallback<::user_data_auth::PrepareAuthFactorReply>;
+  using TerminateAuthFactorCallback =
+      chromeos::DBusMethodCallback<::user_data_auth::TerminateAuthFactorReply>;
 
   using PrepareGuestVaultCallback =
       chromeos::DBusMethodCallback<::user_data_auth::PrepareGuestVaultReply>;
@@ -116,6 +131,12 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
   // Creates and initializes a fake global instance if not already created.
   static void InitializeFake();
 
+  // Override the global instance for testing. Must only be called in unit
+  // tests, which bypass the normal browser startup and shutdown sequence. Use
+  // InitializeFake or OverrideGlobalInstance in FakeUserDataAuth for browser
+  // tests.
+  static void OverrideGlobalInstanceForTesting(UserDataAuthClient*);
+
   // Destroys the global instance.
   static void Shutdown();
 
@@ -131,6 +152,14 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
 
   // Removes an observer if added.
   virtual void RemoveObserver(Observer* observer) = 0;
+
+  // Removes a fingerprint auth observer if added.
+  virtual void AddFingerprintAuthObserver(
+      FingerprintAuthObserver* observer) = 0;
+
+  // Removes a fingerprint auth observer if added.
+  virtual void RemoveFingerprintAuthObserver(
+      FingerprintAuthObserver* observer) = 0;
 
   // Actual DBus Methods:
 
@@ -315,6 +344,19 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
       const ::user_data_auth::GetAuthSessionStatusRequest& request,
       GetAuthSessionStatusCallback callback) = 0;
 
+  // This is called to enable asynchronous auth factors (like Fingerprint).
+  // Note that called need to add FingerprintAuthObserver before this call.
+  virtual void PrepareAuthFactor(
+      const ::user_data_auth::PrepareAuthFactorRequest& request,
+      PrepareAuthFactorCallback callback) = 0;
+
+  // Counterpart for `PrepareAuthFactor`, method is called to disable particular
+  // asynchronous auth factor (like Fingerprint).
+  // Note that called need to remove FingerprintAuthObserver after this call.
+  virtual void TerminateAuthFactor(
+      const ::user_data_auth::TerminateAuthFactorRequest& request,
+      TerminateAuthFactorCallback callback) = 0;
+
  protected:
   // Initialize/Shutdown should be used instead.
   UserDataAuthClient();
@@ -327,5 +369,25 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
 namespace chromeos {
 using ::ash::UserDataAuthClient;
 }
+
+namespace base {
+
+template <>
+struct ScopedObservationTraits<
+    ash::UserDataAuthClient,
+    ash::UserDataAuthClient::FingerprintAuthObserver> {
+  static void AddObserver(
+      ash::UserDataAuthClient* source,
+      ash::UserDataAuthClient::FingerprintAuthObserver* observer) {
+    source->AddFingerprintAuthObserver(observer);
+  }
+  static void RemoveObserver(
+      ash::UserDataAuthClient* source,
+      ash::UserDataAuthClient::FingerprintAuthObserver* observer) {
+    source->RemoveFingerprintAuthObserver(observer);
+  }
+};
+
+}  // namespace base
 
 #endif  // CHROMEOS_ASH_COMPONENTS_DBUS_USERDATAAUTH_USERDATAAUTH_CLIENT_H_

@@ -6,7 +6,6 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
-#include "third_party/blink/renderer/core/document_transition/document_transition_supplement.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -24,6 +23,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 
 namespace blink {
 
@@ -107,7 +107,7 @@ CompositingReasons CompositingReasonsFor3DTransform(
     // In theory this should operate on fragment sizes, but using the box size
     // is probably good enough for a use counter.
     auto& box = To<LayoutBox>(layout_object);
-    TransformationMatrix matrix;
+    gfx::Transform matrix;
     style.ApplyTransform(matrix, box.Size(),
                          ComputedStyle::kIncludeTransformOperations,
                          ComputedStyle::kExcludeTransformOrigin,
@@ -116,7 +116,7 @@ CompositingReasons CompositingReasonsFor3DTransform(
 
     // We want to track whether (a) this element is in a preserve-3d scene and
     // (b) has a matrix that puts it into the third dimension in some way.
-    if (matrix.Creates3D()) {
+    if (matrix.Creates3d()) {
       LayoutObject* parent_for_element =
           layout_object.NearestAncestorForElement();
       if (parent_for_element && parent_for_element->Preserves3D()) {
@@ -248,7 +248,7 @@ CompositingReasons CompositingReasonsForScrollDependentPosition(
         reasons |= CompositingReason::kFixedPosition;
     }
 
-    if (box->AnchorScrollContainer())
+    if (box->HasAnchorScrollTranslation())
       reasons |= CompositingReason::kAnchorScroll;
   }
 
@@ -333,24 +333,24 @@ CompositingReasonFinder::DirectReasonsForPaintPropertiesExceptScrolling(
   reasons |= BackfaceInvisibility3DAncestorReason(*layer);
 
   switch (style.StyleType()) {
-    case kPseudoIdPageTransition:
-    case kPseudoIdPageTransitionContainer:
-    case kPseudoIdPageTransitionImageWrapper:
-    case kPseudoIdPageTransitionIncomingImage:
-    case kPseudoIdPageTransitionOutgoingImage:
-      reasons |= CompositingReason::kDocumentTransitionPseudoElement;
+    case kPseudoIdViewTransition:
+    case kPseudoIdViewTransitionGroup:
+    case kPseudoIdViewTransitionImagePair:
+    case kPseudoIdViewTransitionNew:
+    case kPseudoIdViewTransitionOld:
+      reasons |= CompositingReason::kViewTransitionPseudoElement;
       break;
     default:
       break;
   }
 
-  if (auto* supplement =
-          DocumentTransitionSupplement::FromIfExists(object.GetDocument())) {
+  if (auto* transition =
+          ViewTransitionUtils::GetActiveTransition(object.GetDocument())) {
     // Note that `NeedsSharedElementEffectNode` returns true for values that are
     // in the non-transition-pseudo tree DOM. That is, things like layout view
     // or the shared elements that we are transitioning.
-    if (supplement->GetTransition()->NeedsSharedElementEffectNode(object))
-      reasons |= CompositingReason::kDocumentTransitionSharedElement;
+    if (transition->NeedsSharedElementEffectNode(object))
+      reasons |= CompositingReason::kViewTransitionSharedElement;
   }
 
   return reasons;

@@ -21,6 +21,21 @@ Are you a Google employee? See
 Most development is done on Ubuntu (currently 18.04, Bionic Beaver). There are
 some instructions for other distros below, but they are mostly unsupported.
 
+### Docker requirements
+
+While it is not a common setup, Chromium compilation should work from within a
+Docker container. If you choose to compile from within a container for whatever
+reason, you will need to make sure that the following tools are available:
+
+* `curl`
+* `git`
+* `lsb_release`
+* `python3`
+* `sudo`
+
+There may be additional Docker-specific issues during compilation. See
+[this bug](https://crbug.com/1377520) for additional details on this.
+
 ## Install `depot_tools`
 
 Clone the `depot_tools` repository:
@@ -331,6 +346,12 @@ collect2: ld terminated with signal 6 Aborted terminate called after throwing an
 collect2: ld terminated with signal 11 [Segmentation fault], core dumped
 ```
 
+or:
+
+```
+LLVM ERROR: out of memory
+```
+
 you are probably running out of memory when linking. You *must* use a 64-bit
 system to build. Try the following build settings (see [GN build
 configuration](https://www.chromium.org/developers/gn-build-configuration) for
@@ -341,6 +362,11 @@ other settings):
 *   Turn off symbols: `symbol_level = 0`
 *   Build in component mode (this is for development only, it will be slower and
     may have broken functionality): `is_component_build = true`
+*   For official (ThinLTO) builds on Linux, increase the vm.max_map_count kernel
+    parameter: increase the `vm.max_map_count` value from default (like 65530)
+    to for example 262144. You can run the `sudo sysctl -w vm.max_map_count=262144`
+    command to set it in the current session from the shell, or add the
+    `vm.max_map_count=262144` to /etc/sysctl.conf to save it permanently.
 
 ### More links
 

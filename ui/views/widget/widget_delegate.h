@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/ui_base_types.h"
@@ -35,7 +36,8 @@ class NonClientFrameView;
 class View;
 
 // Handles events on Widgets in context-specific ways.
-class VIEWS_EXPORT WidgetDelegate {
+class VIEWS_EXPORT WidgetDelegate
+    : public base::SupportsWeakPtr<WidgetDelegate> {
  public:
   using ClientViewFactory =
       base::OnceCallback<std::unique_ptr<ClientView>(Widget*)>;
@@ -238,6 +240,8 @@ class VIEWS_EXPORT WidgetDelegate {
   // of these methods.
   virtual void WindowClosing();
 
+  // TODO (kylixrd): Rename this API once Widget ceases to "own" WidgetDelegate.
+  //                 Update the comment below to match the new state of things.
   // Called when removed from a Widget. This first runs callbacks registered
   // through RegisterDeleteDelegateCallback() and then either deletes `this` or
   // not depending on SetOwnedByWidget(). If `this` is owned by Widget then the
@@ -396,14 +400,14 @@ class VIEWS_EXPORT WidgetDelegate {
 
   // The Widget that was initialized with this instance as its WidgetDelegate,
   // if any.
-  raw_ptr<Widget> widget_ = nullptr;
+  raw_ptr<Widget, DanglingUntriaged> widget_ = nullptr;
   Params params_;
 
-  raw_ptr<View> default_contents_view_ = nullptr;
+  raw_ptr<View, DanglingUntriaged> default_contents_view_ = nullptr;
   bool contents_view_taken_ = false;
   bool can_activate_ = true;
 
-  raw_ptr<View> unowned_contents_view_ = nullptr;
+  raw_ptr<View, DanglingUntriaged> unowned_contents_view_ = nullptr;
   std::unique_ptr<View> owned_contents_view_;
 
   // Managed by Widget. Ensures |this| outlives its Widget.

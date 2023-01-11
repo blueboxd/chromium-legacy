@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -1768,9 +1769,9 @@ TEST_P(PaintLayerTest, PaintLayerTransformUpdatedOnStyleTransformAnimation) {
   EXPECT_EQ(nullptr, target_paint_layer->Transform());
 
   const ComputedStyle* old_style = target_object->Style();
-  scoped_refptr<ComputedStyle> new_style = ComputedStyle::Clone(*old_style);
-  new_style->SetHasCurrentTransformAnimation(true);
-  target_object->SetStyle(std::move(new_style));
+  ComputedStyleBuilder new_style_builder(*old_style);
+  new_style_builder.SetHasCurrentTransformAnimation(true);
+  target_object->SetStyle(new_style_builder.TakeStyle());
 
   EXPECT_NE(nullptr, target_paint_layer->Transform());
 }
@@ -2718,6 +2719,10 @@ TEST_P(PaintLayerTest, AnchorScrollConvertToLayerCoords) {
   auto* scrollable_area =
       GetPaintLayerByElementId("scroller")->GetScrollableArea();
   scrollable_area->ScrollToAbsolutePosition(gfx::PointF(400, 0));
+
+  // Similates a frame to update anchor-scroll snapshots.
+  GetPage().Animator().ServiceScriptedAnimations(
+      GetAnimationClock().CurrentTime() + base::Milliseconds(100));
   UpdateAllLifecyclePhasesForTest();
 
   {

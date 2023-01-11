@@ -9,12 +9,10 @@
 #include <string>
 
 #include "base/memory/raw_ptr.h"
+#include "base/sequence_checker.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "media/base/audio_renderer_sink.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace media {
 class AudioBus;
@@ -24,7 +22,7 @@ class FakeAudioWorker;
 class MEDIA_EXPORT NullAudioSink : public SwitchableAudioRendererSink {
  public:
   explicit NullAudioSink(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   NullAudioSink(const NullAudioSink&) = delete;
   NullAudioSink& operator=(const NullAudioSink&) = delete;
@@ -66,10 +64,12 @@ class MEDIA_EXPORT NullAudioSink : public SwitchableAudioRendererSink {
   // Controls whether or not a running hash is computed for audio frames.
   std::unique_ptr<AudioHash> audio_hash_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<FakeAudioWorker> fake_worker_;
   base::TimeDelta fixed_data_delay_;
   std::unique_ptr<AudioBus> audio_bus_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace media

@@ -18,7 +18,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_observer.h"
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "ui/aura/client/focus_change_observer.h"
@@ -98,13 +97,6 @@ class ASH_EXPORT AppListPresenterImpl
   // If app list has an opened folder, close it. Returns whether an opened
   // folder was closed.
   bool HandleCloseOpenFolder();
-
-  // Show the app list if it is visible, hide it if it is hidden. If
-  // |event_time_stamp| is not 0, it means |ToggleAppList()| was triggered by
-  // one of the AppListShowSources: kSearchKey or kShelfButton.
-  ShelfAction ToggleAppList(int64_t display_id,
-                            AppListShowSource show_source,
-                            base::TimeTicks event_time_stamp);
 
   // Handles `AppListController::UpdateAppListWithNewSortingOrder()` for the
   // app list presenter.
@@ -190,8 +182,6 @@ class ASH_EXPORT AppListPresenterImpl
 
   // ShelfObserver overrides:
   void OnShelfShuttingDown() override;
-  void OnBackgroundTypeChanged(ShelfBackgroundType background_type,
-                               AnimationChangeType change_type) override;
 
   // Registers a callback that is run when the next frame successfully makes it
   // to the screen.
@@ -204,6 +194,11 @@ class ASH_EXPORT AppListPresenterImpl
 
   // Called when the reorder animation completes.
   void OnAppListReorderAnimationDone();
+
+  // Called when the tablet <-> clamshell transition animation completes.
+  // Hides the `AppListView`'s window if `target_visibility == false`.
+  void OnTabletToClamshellTransitionAnimationDone(bool target_visibility,
+                                                  bool aborted);
 
   // Owns |this|.
   AppListControllerImpl* const controller_;
@@ -230,10 +225,6 @@ class ASH_EXPORT AppListPresenterImpl
 
   // Cached bounds of |view_| for snapping back animation after over-scroll.
   gfx::Rect view_bounds_;
-
-  // Data we need to store for metrics.
-  absl::optional<base::Time> last_open_time_;
-  absl::optional<AppListShowSource> last_open_source_;
 
   // Whether the presenter is currently changing app list view state to shown.
   // TODO(https://crbug.com/1307871): Remove this when the linked crash gets

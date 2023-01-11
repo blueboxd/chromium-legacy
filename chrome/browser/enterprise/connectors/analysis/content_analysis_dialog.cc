@@ -71,6 +71,7 @@ constexpr size_t kMaxBypassJustificationLength = 280;
 // complete faster.
 base::TimeDelta minimum_pending_dialog_time_ = base::Seconds(2);
 base::TimeDelta success_dialog_timeout_ = base::Seconds(1);
+base::TimeDelta show_dialog_delay_ = base::Seconds(1);
 
 // A simple background class to show a colored circle behind the side icon once
 // the scanning is done.
@@ -118,7 +119,7 @@ class DeepScanningBaseView {
   ContentAnalysisDialog* dialog() { return dialog_; }
 
  protected:
-  raw_ptr<ContentAnalysisDialog> dialog_;
+  raw_ptr<ContentAnalysisDialog, DanglingUntriaged> dialog_;
 };
 
 class DeepScanningTopImageView : public DeepScanningBaseView,
@@ -209,8 +210,14 @@ base::TimeDelta ContentAnalysisDialog::GetSuccessDialogTimeout() {
   return success_dialog_timeout_;
 }
 
+// static
+base::TimeDelta ContentAnalysisDialog::ShowDialogDelay() {
+  return show_dialog_delay_;
+}
+
 ContentAnalysisDialog::ContentAnalysisDialog(
     std::unique_ptr<ContentAnalysisDelegateBase> delegate,
+    bool is_cloud,
     content::WebContents* web_contents,
     safe_browsing::DeepScanAccessPoint access_point,
     int files_count,
@@ -222,7 +229,8 @@ ContentAnalysisDialog::ContentAnalysisDialog(
       final_result_(final_result),
       access_point_(std::move(access_point)),
       files_count_(files_count),
-      download_item_(download_item) {
+      download_item_(download_item),
+      is_cloud_(is_cloud) {
   DCHECK(delegate_);
   SetOwnedByWidget(true);
   set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
@@ -241,7 +249,23 @@ ContentAnalysisDialog::ContentAnalysisDialog(
   if (download_item_)
     download_item_->AddObserver(this);
 
-  constrained_window::ShowWebModalDialogViews(this, web_contents_);
+  // Because the display of the dialog is delayed, it won't block UI
+  // interaction with the tab until it is visible.  To block interaction as of
+  // now, ignore input events manually.
+  top_level_contents_ =
+      constrained_window::GetTopLevelWebContents(web_contents_)->GetWeakPtr();
+  top_level_contents_->ClearFocusedElement();
+  top_level_contents_->SetIgnoreInputEvents(true);
+
+  if (ShowDialogDelay().is_zero()) {
+    ShowDialogNow();
+  } else {
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&ContentAnalysisDialog::ShowDialogNow,
+                       weak_ptr_factory_.GetWeakPtr()),
+        ShowDialogDelay());
+  }
 
   if (is_warning() && bypass_requires_justification()) {
     bypass_justification_text_length_->SetEnabledColor(
@@ -251,6 +275,14 @@ ContentAnalysisDialog::ContentAnalysisDialog(
 
   if (observer_for_testing)
     observer_for_testing->ViewsFirstShown(this, first_shown_timestamp_);
+}
+
+void ContentAnalysisDialog::ShowDialogNow() {
+  // If the contents is valid and dialog is not already either accepted or
+  // cancelled, show it now.  The dialog could already be either if the
+  // verdict was returned before the delay timeout.
+  if (web_contents_ && !accepted_or_cancelled_)
+    constrained_window::ShowWebModalDialogViews(this, web_contents_);
 }
 
 std::u16string ContentAnalysisDialog::GetWindowTitle() const {
@@ -333,12 +365,19 @@ views::View* ContentAnalysisDialog::GetContentsView() {
     contents_view_->SetOrientation(views::BoxLayout::Orientation::kVertical);
     // Padding to distance the top image from the icon and message.
     contents_view_->SetBetweenChildSpacing(16);
-    // padding to distance the message from the button(s).
-    contents_view_->SetInsideBorderInsets(gfx::Insets::TLBR(0, 0, 10, 0));
 
-    // Add the top image.
-    image_ = contents_view_->AddChildView(
-        std::make_unique<DeepScanningTopImageView>(this));
+    // padding to distance the message from the button(s).  When doing a cloud
+    // based analysis, a top image is added to the view and the top padding
+    // looks fine.  When not doing a cloud-based analysis set the top padding
+    // to make things look nice.
+    contents_view_->SetInsideBorderInsets(
+        gfx::Insets::TLBR(is_cloud_ ? 0 : 24, 0, 10, 0));
+
+    // Add the top image for cloud-based analysis.
+    if (is_cloud_) {
+      image_ = contents_view_->AddChildView(
+          std::make_unique<DeepScanningTopImageView>(this));
+    }
 
     // Create message area layout.
     contents_layout_ = contents_view_->AddChildView(
@@ -395,6 +434,7 @@ void ContentAnalysisDialog::WebContentsDestroyed() {
   // If |web_contents_| is destroyed, then the scan results don't matter so the
   // delegate can be destroyed as well.
   CancelDialogWithoutCallback();
+  web_contents_ = nullptr;
 }
 
 void ContentAnalysisDialog::PrimaryPageChanged(content::Page& page) {
@@ -423,6 +463,8 @@ void ContentAnalysisDialog::ShowResult(FinalContentAnalysisResult result) {
 }
 
 ContentAnalysisDialog::~ContentAnalysisDialog() {
+  if (top_level_contents_)
+    top_level_contents_->SetIgnoreInputEvents(false);
   if (download_item_)
     download_item_->RemoveObserver(this);
   if (observer_for_testing)
@@ -451,8 +493,11 @@ void ContentAnalysisDialog::UpdateViews() {
   DCHECK(contents_view_);
 
   // Update the style of the dialog to reflect the new state.
-  image_->Update();
+  if (image_)
+    image_->Update();
+
   side_icon_image_->Update();
+
   // There isn't always a spinner, for instance when the dialog is started in a
   // state other than the "pending" state.
   if (side_icon_spinner_) {
@@ -488,13 +533,14 @@ void ContentAnalysisDialog::UpdateDialog() {
   DCHECK(contents_view_);
   DCHECK(is_result());
 
-  auto height_before = contents_view_->GetPreferredSize().height();
+  int height_before = contents_view_->GetPreferredSize().height();
 
   UpdateViews();
 
   // Resize the dialog's height. This is needed since the text might take more
   // lines after changing.
-  auto height_after = contents_view_->GetPreferredSize().height();
+  int height_after = contents_view_->GetHeightForWidth(contents_view_->width());
+
   int height_to_add = std::max(height_after - height_before, 0);
   if (height_to_add > 0 && GetWidget())
     Resize(height_to_add);
@@ -889,6 +935,16 @@ bool ContentAnalysisDialog::is_print_scan() const {
   return access_point_ == safe_browsing::DeepScanAccessPoint::PRINT;
 }
 
+bool ContentAnalysisDialog::CancelDialogAndDelete() {
+  if (contents_view_) {
+    CancelDialog();
+  } else {
+    content::GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE, this);
+  }
+
+  return true;
+}
+
 ui::ColorId ContentAnalysisDialog::GetSideImageLogoColor() const {
   DCHECK(contents_view_);
 
@@ -917,6 +973,12 @@ void ContentAnalysisDialog::SetMinimumPendingDialogTimeForTesting(
 void ContentAnalysisDialog::SetSuccessDialogTimeoutForTesting(
     base::TimeDelta delta) {
   success_dialog_timeout_ = delta;
+}
+
+// static
+void ContentAnalysisDialog::SetShowDialogDelayForTesting(
+    base::TimeDelta delta) {
+  show_dialog_delay_ = delta;
 }
 
 // static
@@ -981,7 +1043,11 @@ void ContentAnalysisDialog::OnDownloadDestroyed(
 void ContentAnalysisDialog::CancelDialogWithoutCallback() {
   // Reset `delegate` so no logic runs when the dialog is cancelled.
   delegate_.reset(nullptr);
-  CancelDialog();
+
+  // view may be null if the dialog was delayed and never shown before the
+  // verdict is known.
+  if (contents_view_)
+    CancelDialog();
 }
 
 }  // namespace enterprise_connectors

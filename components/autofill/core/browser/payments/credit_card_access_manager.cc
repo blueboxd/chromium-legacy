@@ -238,14 +238,14 @@ void CreditCardAccessManager::FetchCreditCard(
   // status.
   if (is_authentication_in_progress_) {
     accessor->OnCreditCardFetched(CreditCardFetchResult::kTransientError,
-                                  nullptr);
+                                  nullptr, u"");
     return;
   }
 
   // If card is nullptr we reset all states and return error.
   if (!card) {
     accessor->OnCreditCardFetched(CreditCardFetchResult::kTransientError,
-                                  nullptr);
+                                  nullptr, u"");
     Reset();
     return;
   }
@@ -285,7 +285,7 @@ void CreditCardAccessManager::FetchCreditCard(
   // Return immediately if local card and log that unmask details were ignored.
   if (card->record_type() != CreditCard::MASKED_SERVER_CARD &&
       card->record_type() != CreditCard::VIRTUAL_CARD) {
-    accessor->OnCreditCardFetched(CreditCardFetchResult::kSuccess, card);
+    accessor->OnCreditCardFetched(CreditCardFetchResult::kSuccess, card, u"");
 #if !BUILDFLAG(IS_IOS)
     // Latency metrics should only be logged if the user is verifiable.
     if (is_user_verifiable_.value_or(false)) {
@@ -376,9 +376,11 @@ void CreditCardAccessManager::GetAuthenticationTypeForVirtualCard(
 
   // Otherwise, we first check if other options are provided. If not, end the
   // session and return an error.
-  if (virtual_card_unmask_response_details_.card_unmask_challenge_options
-          .empty()) {
-    accessor_->OnCreditCardFetched(CreditCardFetchResult::kTransientError);
+  std::vector<CardUnmaskChallengeOption>& challenge_options =
+      virtual_card_unmask_response_details_.card_unmask_challenge_options;
+  if (challenge_options.empty()) {
+    accessor_->OnCreditCardFetched(CreditCardFetchResult::kTransientError,
+                                   nullptr, u"");
     client_->ShowVirtualCardErrorDialog(
         AutofillErrorDialogContext::WithPermanentOrTemporaryError(
             /*is_permanent_error=*/true));
@@ -391,8 +393,18 @@ void CreditCardAccessManager::GetAuthenticationTypeForVirtualCard(
     return;
   }
 
-  // Then we should let users confirm the OTP auth, trigger the selection
-  // dialog and wait for user's response.
+  // If we only have one challenge option, and it is a CVC challenge option, go
+  // directly to the CVC input dialog.
+  if (challenge_options.size() == 1 &&
+      challenge_options[0].type == CardUnmaskChallengeOptionType::kCvc) {
+    selected_challenge_option_ = &challenge_options[0];
+    OnDidGetAuthenticationType(UnmaskAuthFlowType::kCvc);
+    return;
+  }
+
+  // If we have multiple challenge options available, render the challenge
+  // option selection dialog. This dialog also handles the case where we only
+  // have an OTP challenge option.
   ShowUnmaskAuthenticatorSelectionDialog();
 }
 
@@ -501,37 +513,29 @@ void CreditCardAccessManager::Authenticate() {
       // authentication flow since the card unmask prompt will pop up.
       client_->CloseWebauthnDialog();
 #endif
-      client_->GetCVCAuthenticator()->Authenticate(
-          card_.get(), weak_ptr_factory_.GetWeakPtr(), personal_data_manager_);
+
+      // Delegate the task to CreditCardCvcAuthenticator.
+      // If we are in the virtual card CVC auth case, we must also pass in
+      // the vcn context token and the selected challenge option.
+      if (card_->record_type() == CreditCard::VIRTUAL_CARD) {
+        DCHECK(selected_challenge_option_);
+        client_->GetCVCAuthenticator()->Authenticate(
+            card_.get(), weak_ptr_factory_.GetWeakPtr(), personal_data_manager_,
+            virtual_card_unmask_response_details_.context_token,
+            *selected_challenge_option_);
+      } else {
+        client_->GetCVCAuthenticator()->Authenticate(
+            card_.get(), weak_ptr_factory_.GetWeakPtr(),
+            personal_data_manager_);
+      }
       break;
     }
     case UnmaskAuthFlowType::kOtp:
     case UnmaskAuthFlowType::kOtpFallbackFromFido: {
-      std::vector<CardUnmaskChallengeOption> options =
-          virtual_card_unmask_response_details_.card_unmask_challenge_options;
-      auto card_unmask_challenge_options_it =
-          base::ranges::find(options, selected_challenge_option_id_,
-                             &CardUnmaskChallengeOption::id);
-      if (card_unmask_challenge_options_it == options.end()) {
-        NOTREACHED();
-        accessor_->OnCreditCardFetched(CreditCardFetchResult::kTransientError);
-        client_->ShowVirtualCardErrorDialog(
-            AutofillErrorDialogContext::WithPermanentOrTemporaryError(
-                /*is_permanent_error=*/false));
-        if (card_->record_type() == CreditCard::VIRTUAL_CARD) {
-          AutofillMetrics::LogServerCardUnmaskResult(
-              AutofillMetrics::ServerCardUnmaskResult::kUnexpectedError,
-              AutofillClient::PaymentsRpcCardType::kVirtualCard,
-              AutofillMetrics::VirtualCardUnmaskFlowType::kOtpOnly);
-        }
-        Reset();
-        return;
-      }
       // Delegate the task to CreditCardOtpAuthenticator.
-      CardUnmaskChallengeOption selected_challenge_option =
-          *card_unmask_challenge_options_it;
+      DCHECK(selected_challenge_option_);
       client_->GetOtpAuthenticator()->OnChallengeOptionSelected(
-          card_.get(), selected_challenge_option,
+          card_.get(), *selected_challenge_option_,
           weak_ptr_factory_.GetWeakPtr(),
           virtual_card_unmask_response_details_.context_token,
           payments::GetBillingCustomerId(personal_data_manager_));
@@ -678,7 +682,7 @@ void CreditCardAccessManager::OnFIDOAuthenticationComplete(
             /*is_permanent_error=*/response.failure_type ==
             payments::FullCardRequest::
                 VIRTUAL_CARD_RETRIEVAL_PERMANENT_FAILURE));
-    accessor_->OnCreditCardFetched(result);
+    accessor_->OnCreditCardFetched(result, nullptr, u"");
 
     if (card_->record_type() == CreditCard::VIRTUAL_CARD) {
       AutofillMetrics::LogServerCardUnmaskResult(
@@ -689,8 +693,8 @@ void CreditCardAccessManager::OnFIDOAuthenticationComplete(
     Reset();
   } else {
     // If it is an authentication error, start the CVC authentication process
-    // for masked server cards or the OTP authentication process for virtual
-    // cards.
+    // for masked server cards or the virtual card authentication process for
+    // virtual cards.
     if (card_->record_type() == CreditCard::VIRTUAL_CARD) {
       GetAuthenticationTypeForVirtualCard(/*fido_auth_enabled=*/false);
     } else {
@@ -982,7 +986,8 @@ void CreditCardAccessManager::FetchVirtualCard() {
   absl::optional<GURL> last_committed_primary_main_frame_origin =
       client_->GetLastCommittedPrimaryMainFrameURL().DeprecatedGetOriginAsURL();
   if (!last_committed_primary_main_frame_origin.has_value()) {
-    accessor_->OnCreditCardFetched(CreditCardFetchResult::kTransientError);
+    accessor_->OnCreditCardFetched(CreditCardFetchResult::kTransientError,
+                                   nullptr, u"");
     AutofillMetrics::LogServerCardUnmaskResult(
         AutofillMetrics::ServerCardUnmaskResult::kUnexpectedError,
         AutofillClient::PaymentsRpcCardType::kVirtualCard,
@@ -1063,7 +1068,8 @@ void CreditCardAccessManager::OnVirtualCardUnmaskResponseReceived(
   // Close the progress dialog without showing the confirmation.
   client_->CloseAutofillProgressDialog(
       /*show_confirmation_before_closing=*/false);
-  accessor_->OnCreditCardFetched(CreditCardFetchResult::kTransientError);
+  accessor_->OnCreditCardFetched(CreditCardFetchResult::kTransientError,
+                                 nullptr, u"");
 
   AutofillMetrics::ServerCardUnmaskResult unmask_result;
   if (result ==
@@ -1121,16 +1127,49 @@ void CreditCardAccessManager::OnStopWaitingForUnmaskDetails(
 
 void CreditCardAccessManager::OnUserAcceptedAuthenticationSelectionDialog(
     const std::string& selected_challenge_option_id) {
-  selected_challenge_option_id_ = selected_challenge_option_id;
-  UnmaskAuthFlowType selected_authentication_type =
-      unmask_auth_flow_type_ == UnmaskAuthFlowType::kFido
-          ? UnmaskAuthFlowType::kOtpFallbackFromFido
-          : UnmaskAuthFlowType::kOtp;
+  selected_challenge_option_ =
+      GetCardUnmaskChallengeOptionForChallengeId(selected_challenge_option_id);
+
+  // This if-statement should never be entered. We will only be selecting
+  // challenge options that we passed into the controller from
+  // `virtual_card_unmask_response_details_.card_unmask_challenge_options`,
+  // which is also the vector that we search for challenge options in. For the
+  // context token, the server is guaranteed to always return a VCN context
+  // token for the virtual card authentication flow. This if-statement is just
+  // here as a safety.
+  if (!selected_challenge_option_ ||
+      virtual_card_unmask_response_details_.context_token.empty()) {
+    NOTREACHED();
+    accessor_->OnCreditCardFetched(CreditCardFetchResult::kTransientError,
+                                   nullptr, u"");
+    client_->ShowVirtualCardErrorDialog(
+        AutofillErrorDialogContext::WithPermanentOrTemporaryError(
+            /*is_permanent_error=*/false));
+    Reset();
+    return;
+  }
+
+  UnmaskAuthFlowType selected_authentication_type = UnmaskAuthFlowType::kNone;
+  switch (selected_challenge_option_->type) {
+    case CardUnmaskChallengeOptionType::kCvc:
+      selected_authentication_type = UnmaskAuthFlowType::kCvc;
+      break;
+    case CardUnmaskChallengeOptionType::kSmsOtp:
+      selected_authentication_type =
+          unmask_auth_flow_type_ == UnmaskAuthFlowType::kFido
+              ? UnmaskAuthFlowType::kOtpFallbackFromFido
+              : UnmaskAuthFlowType::kOtp;
+      break;
+    case CardUnmaskChallengeOptionType::kUnknownType:
+      NOTREACHED();
+      break;
+  }
   OnDidGetAuthenticationType(selected_authentication_type);
 }
 
 void CreditCardAccessManager::OnVirtualCardUnmaskCancelled() {
-  accessor_->OnCreditCardFetched(CreditCardFetchResult::kTransientError);
+  accessor_->OnCreditCardFetched(CreditCardFetchResult::kTransientError,
+                                 nullptr, u"");
 
   if (unmask_auth_flow_type_ == UnmaskAuthFlowType::kOtp ||
       unmask_auth_flow_type_ == UnmaskAuthFlowType::kOtpFallbackFromFido) {
@@ -1153,11 +1192,13 @@ void CreditCardAccessManager::OnVirtualCardUnmaskCancelled() {
     case UnmaskAuthFlowType::kNone:
       flow_type = AutofillMetrics::VirtualCardUnmaskFlowType::kUnspecified;
       break;
-    case UnmaskAuthFlowType::kCvc:
     case UnmaskAuthFlowType::kFido:
     case UnmaskAuthFlowType::kCvcThenFido:
     case UnmaskAuthFlowType::kCvcFallbackFromFido:
       NOTREACHED();
+      ABSL_FALLTHROUGH_INTENDED;
+    case UnmaskAuthFlowType::kCvc:
+      // TODO(crbug/1370329): Add a flow type for the CVC flow for metrics.
       Reset();
       return;
   }
@@ -1209,6 +1250,18 @@ void CreditCardAccessManager::ShowUnmaskAuthenticatorSelectionDialog() {
           weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&CreditCardAccessManager::OnVirtualCardUnmaskCancelled,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+CardUnmaskChallengeOption*
+CreditCardAccessManager::GetCardUnmaskChallengeOptionForChallengeId(
+    const std::string& challenge_id) {
+  std::vector<CardUnmaskChallengeOption>& challenge_options =
+      virtual_card_unmask_response_details_.card_unmask_challenge_options;
+  auto card_unmask_challenge_options_it = base::ranges::find(
+      challenge_options, challenge_id, &CardUnmaskChallengeOption::id);
+  return card_unmask_challenge_options_it != challenge_options.end()
+             ? &(*card_unmask_challenge_options_it)
+             : nullptr;
 }
 
 bool CreditCardAccessManager::ShouldLogServerCardUnmaskAttemptMetrics(

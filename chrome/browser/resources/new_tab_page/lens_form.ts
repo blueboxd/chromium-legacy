@@ -4,12 +4,28 @@
 
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {loadTimeData} from './i18n_setup.js';
 import {getTemplate} from './lens_form.html.js';
 
 /** Lens service endpoint for the Upload by File action. */
-const UPLOAD_FILE_ACTION = 'https://lens.google.com/upload';
+const UPLOAD_FILE_ACTION: string = 'https://lens.google.com/upload';
 
-const SUPPORTED_FILE_TYPES = [
+/** Entrypoint for the upload by file action. */
+const UPLOAD_FILE_ENTRYPOINT: string = 'cntpubb';
+
+/** Lens service endpoint for the Upload by URL action. */
+const UPLOAD_BY_URL_ACTION: string = 'https://lens.google.com/uploadbyurl';
+
+/** Entrypoint for the upload by url action. */
+const UPLOAD_URL_ENTRYPOINT: string = 'cntpubu';
+
+/** Rendering environment for the NTP searchbox entrypoint. */
+const RENDERING_ENVIRONMENT: string = 'df';
+
+/** Max length for encoded input URL. */
+const MAX_URL_LENGTH: number = 2000;
+
+const SUPPORTED_FILE_TYPES: string[] = [
   'image/bmp',
   'image/heic',
   'image/heif',
@@ -21,7 +37,7 @@ const SUPPORTED_FILE_TYPES = [
 ];
 
 /** Maximum file size support by Lens in bytes. */
-const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;  // 20MB
+const MAX_FILE_SIZE_BYTES: number = 20 * 1024 * 1024;  // 20MB
 
 export enum LensErrorType {
   // The user attempted to upload multiple files at the same time.
@@ -32,12 +48,24 @@ export enum LensErrorType {
   FILE_TYPE,
   // The user provided a file that is too large.
   FILE_SIZE,
+  // The user provided a url with an invalid or missing scheme.
+  INVALID_SCHEME,
+  // The user provided a string that does not parse to a valid url.
+  INVALID_URL,
+  // The user provided a string that was too long.
+  LENGTH_TOO_GREAT,
+}
+
+export enum LensSubmitType {
+  FILE,
+  URL,
 }
 
 export interface LensFormElement {
   $: {
     fileForm: HTMLFormElement,
     fileInput: HTMLInputElement,
+    urlForm: HTMLFormElement,
   };
 }
 
@@ -57,13 +85,41 @@ export class LensFormElement extends PolymerElement {
         readOnly: true,
         value: SUPPORTED_FILE_TYPES.join(','),
       },
-      uploadFileAction_: {
+      renderingEnvironment_: {
         type: String,
         readOnly: true,
-        value: UPLOAD_FILE_ACTION,
+        value: RENDERING_ENVIRONMENT,
+      },
+      uploadFileAction_: String,
+      uploadUrlAction_: {
+        type: String,
+        readOnly: true,
+        value: UPLOAD_BY_URL_ACTION,
+      },
+      uploadUrl_: String,
+      uploadUrlEntrypoint_: {
+        type: String,
+        readOnly: true,
+        value: UPLOAD_URL_ENTRYPOINT,
+      },
+      language_: {
+        type: String,
+        readOnly: true,
+        value: window.navigator.language,
+      },
+      clientData_: {
+        type: String,
+        readOnly: true,
+        value: loadTimeData.getString('realboxLensVariations'),
       },
     };
   }
+
+  private language_: string;
+  private uploadFileAction_: string = UPLOAD_FILE_ACTION;
+  private uploadUrl_: string = '';
+  private startTime_: string|null = null;
+  private clientData_: string;
 
   openSystemFilePicker() {
     this.$.fileInput.click();
@@ -72,11 +128,11 @@ export class LensFormElement extends PolymerElement {
   private handleFileInputChange_() {
     const fileList = this.$.fileInput.files;
     if (fileList) {
-      this.submitFileList_(fileList);
+      this.submitFileList(fileList);
     }
   }
 
-  private submitFileList_(files: FileList) {
+  submitFileList(files: FileList) {
     if (files.length > 1) {
       this.dispatchError_(LensErrorType.MULTIPLE_FILES);
       return;
@@ -105,8 +161,52 @@ export class LensFormElement extends PolymerElement {
     dataTransfer.items.add(file);
     this.$.fileInput.files = dataTransfer.files;
 
-    this.dispatchEvent(new Event('loading'));
+    this.startTime_ = Date.now().toString();
+
+    const action = new URL(UPLOAD_FILE_ACTION);
+    action.searchParams.set('ep', UPLOAD_FILE_ENTRYPOINT);
+    action.searchParams.set('hl', this.language_);
+    action.searchParams.set('st', this.startTime_.toString());
+    action.searchParams.set('cd', this.clientData_);
+    action.searchParams.set('re', RENDERING_ENVIRONMENT);
+    this.uploadFileAction_ = action.toString();
+
+    this.dispatchLoading_(LensSubmitType.FILE);
     this.$.fileForm.submit();
+  }
+
+  submitUrl(urlString: string) {
+    if (!urlString.startsWith('http://') && !urlString.startsWith('https://')) {
+      this.dispatchError_(LensErrorType.INVALID_SCHEME);
+      return;
+    }
+
+    let encodedUri: string;
+    try {
+      encodedUri = encodeURI(urlString);
+      new URL(urlString);  // Throws an error if fails to parse.
+    } catch (e) {
+      this.dispatchError_(LensErrorType.INVALID_URL);
+      return;
+    }
+
+    if (encodedUri.length > MAX_URL_LENGTH) {
+      this.dispatchError_(LensErrorType.LENGTH_TOO_GREAT);
+      return;
+    }
+
+    this.uploadUrl_ = encodedUri;
+    this.startTime_ = Date.now().toString();
+    this.dispatchLoading_(LensSubmitType.URL);
+    this.$.urlForm.submit();
+  }
+
+  private dispatchLoading_(submitType: LensSubmitType) {
+    this.dispatchEvent(new CustomEvent('loading', {
+      bubbles: false,
+      composed: false,
+      detail: submitType,
+    }));
   }
 
   private dispatchError_(errorType: LensErrorType) {

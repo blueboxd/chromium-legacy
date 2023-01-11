@@ -11,6 +11,7 @@ js_type_check("closure_compile_module") {
   closure_flags = default_closure_args + mojom_js_args
 
   deps = [
+    ":apn_list",
     ":cellular_utils",
     ":cr_policy_network_behavior_mojo",
     ":cr_policy_network_indicator_mojo",
@@ -43,8 +44,8 @@ js_type_check("closure_compile_module") {
 
 js_library("mojo_interface_provider") {
   deps = [
+    "//ash/webui/common/resources:cr_deprecated",
     "//chromeos/services/network_config/public/mojom:mojom_webui_js",
-    "//ui/webui/resources/js:cr.m",
   ]
 }
 
@@ -63,6 +64,15 @@ js_library("cr_policy_network_indicator_mojo") {
     "//ash/webui/common/resources:cr_policy_indicator_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
+}
+
+js_library("apn_list") {
+  deps = [
+    "//ash/webui/common/resources:i18n_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = []
 }
 
 js_library("network_apnlist") {
@@ -109,6 +119,7 @@ js_library("network_config") {
     "//ui/webui/resources/js:load_time_data.m",
   ]
   externs_list = [
+    "$externs_path/chrome_send.js",
     "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js",
     "//ui/webui/resources/cr_elements/cr_toggle/cr_toggle_externs.js",
     "//ui/webui/resources/cr_elements/policy/cr_policy_indicator_externs.js",

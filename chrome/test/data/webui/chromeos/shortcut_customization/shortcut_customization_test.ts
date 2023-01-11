@@ -15,13 +15,14 @@ import {AcceleratorRowElement} from 'chrome://shortcut-customization/js/accelera
 import {AcceleratorSubsectionElement} from 'chrome://shortcut-customization/js/accelerator_subsection.js';
 import {AcceleratorViewElement} from 'chrome://shortcut-customization/js/accelerator_view.js';
 import {fakeSubCategories} from 'chrome://shortcut-customization/js/fake_data.js';
+import {setShortcutProviderForTesting, setupFakeShortcutProvider} from 'chrome://shortcut-customization/js/mojo_interface_provider.js';
 import {ShortcutCustomizationAppElement} from 'chrome://shortcut-customization/js/shortcut_customization_app.js';
-import {AcceleratorInfo, AcceleratorKeys, LayoutInfoList, Modifier} from 'chrome://shortcut-customization/js/shortcut_types.js';
+import {LayoutInfo, Modifier, ShortcutProviderInterface} from 'chrome://shortcut-customization/js/shortcut_types.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {isVisible} from 'chrome://webui-test/test_util.js';
 
-import {createUserAccelerator} from './shortcut_customization_test_util.js';
+import {createUserAcceleratorInfo} from './shortcut_customization_test_util.js';
 
 function initShortcutCustomizationAppElement():
     ShortcutCustomizationAppElement {
@@ -36,8 +37,12 @@ suite('shortcutCustomizationAppTest', function() {
 
   let manager: AcceleratorLookupManager|null = null;
 
+  let provider: ShortcutProviderInterface;
+
   setup(() => {
     manager = AcceleratorLookupManager.getInstance();
+    provider = setupFakeShortcutProvider();
+    setShortcutProviderForTesting(provider);
   });
 
   teardown(() => {
@@ -106,7 +111,7 @@ suite('shortcutCustomizationAppTest', function() {
         subSections[0]!.title);
     // Asert 2 accelerators are loaded for Window Management.
     assertEquals(
-        (expectedLayouts!.get(windowManagementValue) as LayoutInfoList).length,
+        (expectedLayouts!.get(windowManagementValue) as LayoutInfo[]).length,
         subSections[0]!.acceleratorContainer!.length);
 
     // Assert subsection title (Virtual Desks) matches expected value from
@@ -116,7 +121,7 @@ suite('shortcutCustomizationAppTest', function() {
         fakeSubCategories.get(virtualDesksValue), subSections[1]!.title);
     // Asert 2 accelerators are loaded for Virtual Desks.
     assertEquals(
-        (expectedLayouts!.get(virtualDesksValue) as LayoutInfoList).length,
+        (expectedLayouts!.get(virtualDesksValue) as LayoutInfo[]).length,
         subSections[1]!.acceleratorContainer!.length);
   });
 
@@ -148,7 +153,7 @@ suite('shortcutCustomizationAppTest', function() {
         fakeSubCategories.get(keyIterator.value), subSections[0]!.title);
     // Assert only 1 accelerator is within Tabs.
     assertEquals(
-        (expectedLayouts!.get(keyIterator.value) as LayoutInfoList).length,
+        (expectedLayouts!.get(keyIterator.value) as LayoutInfo[]).length,
         subSections[0]!.acceleratorContainer.length);
   });
 
@@ -182,7 +187,7 @@ suite('shortcutCustomizationAppTest', function() {
 
     const nav = getPage().shadowRoot!.querySelector('navigation-view-panel');
 
-    const acceleratorInfo = createUserAccelerator(
+    const acceleratorInfo = createUserAcceleratorInfo(
         Modifier.SHIFT,
         /*key=*/ 67,
         /*keyDisplay=*/ 'c');
@@ -271,12 +276,11 @@ suite('shortcutCustomizationAppTest', function() {
 
     // Assert that the accelerator was updated with the new shortcut (Alt + ']')
     const acceleratorInfo =
-        (accelViewElement as AcceleratorViewElement).acceleratorInfo as
-        AcceleratorInfo;
-    const actualAccelerator = acceleratorInfo.accelerator as AcceleratorKeys;
+        (accelViewElement as AcceleratorViewElement).acceleratorInfo;
+    const actualAccelerator = acceleratorInfo.accelerator;
     assertEquals(Modifier.ALT, actualAccelerator!.modifiers);
-    assertEquals(221, actualAccelerator!.key);
-    assertEquals(']', actualAccelerator!.keyDisplay);
+    assertEquals(221, actualAccelerator.keyCode);
+    assertEquals(']', acceleratorInfo.keyDisplay);
   });
 
   test('AddAccelerator', async () => {
@@ -349,13 +353,13 @@ suite('shortcutCustomizationAppTest', function() {
     assertEquals(2, dialogAccels!.length);
     const newAccel = dialogAccels[1];
 
-    const actualAccelerator =
-        (newAccel!.shadowRoot!.querySelector('#acceleratorItem') as
-         AcceleratorViewElement)
-            .acceleratorInfo!.accelerator;
-    assertEquals(Modifier.ALT, actualAccelerator!.modifiers);
-    assertEquals(221, actualAccelerator!.key);
-    assertEquals(']', actualAccelerator!.keyDisplay);
+    const acceleratorInfo = (newAccel!.shadowRoot!.querySelector(
+                                 '#acceleratorItem') as AcceleratorViewElement)
+                                .acceleratorInfo;
+    const actualAccelerator = acceleratorInfo.accelerator;
+    assertEquals(Modifier.ALT, actualAccelerator.modifiers);
+    assertEquals(221, actualAccelerator.keyCode);
+    assertEquals(']', acceleratorInfo.keyDisplay);
   });
 
   test('RemoveAccelerator', async () => {

@@ -185,7 +185,10 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
       privacy_screen_toast_controller_(
           std::make_unique<PrivacyScreenToastController>(this)),
       notification_icons_controller_(
-          std::make_unique<NotificationIconsController>(this)),
+          features::IsQsRevampEnabled()
+              ? nullptr
+              : std::make_unique<NotificationIconsController>(shelf,
+                                                              model_.get())),
       snooping_protection_view_(features::IsSnoopingProtectionEnabled()
                                     ? new SnoopingProtectionView(shelf)
                                     : nullptr),
@@ -219,21 +222,28 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
     AddTrayItemToContainer(time_view_);
   }
 
-  notification_icons_controller_->AddNotificationTrayItems(tray_container());
-  for (TrayItemView* tray_item : notification_icons_controller_->tray_items()) {
-    tray_items_.push_back(tray_item);
-    AddObservedTrayItem(tray_item);
+  if (!features::IsQsRevampEnabled()) {
+    notification_icons_controller_->AddNotificationTrayItems(tray_container());
+    for (TrayItemView* tray_item :
+         notification_icons_controller_->tray_items()) {
+      tray_items_.push_back(tray_item);
+    }
   }
 
   AddTrayItemToContainer(screen_capture_view_);
 
-  tray_items_.push_back(
-      notification_icons_controller_->notification_counter_view());
-  AddObservedTrayItem(
-      notification_icons_controller_->notification_counter_view());
+  if (features::IsQsRevampEnabled()) {
+    quiet_mode_view_ =
+        tray_container()->AddChildView(std::make_unique<QuietModeView>(shelf));
+    tray_items_.push_back(quiet_mode_view_);
+  }
 
-  tray_items_.push_back(notification_icons_controller_->quiet_mode_view());
-  AddObservedTrayItem(notification_icons_controller_->quiet_mode_view());
+  if (!features::IsQsRevampEnabled()) {
+    tray_items_.push_back(
+        notification_icons_controller_->notification_counter_view());
+
+    tray_items_.push_back(notification_icons_controller_->quiet_mode_view());
+  }
 
   if (features::IsSnoopingProtectionEnabled())
     AddTrayItemToContainer(snooping_protection_view_);
@@ -267,12 +277,6 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
     AddTrayItemToContainer(channel_indicator_view_);
   }
 
-  auto vertical_clock_padding = std::make_unique<views::View>();
-  vertical_clock_padding->SetPreferredSize(gfx::Size(
-      0, features::IsCalendarViewEnabled() ? 0 : kTrayTimeIconTopPadding));
-  vertical_clock_padding_ =
-      tray_container()->AddChildView(std::move(vertical_clock_padding));
-
   if (!features::IsCalendarViewEnabled()) {
     AddTrayItemToContainer(time_view_);
   }
@@ -284,13 +288,11 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
   set_use_bounce_in_animation(false);
 
   ShelfConfig::Get()->AddObserver(this);
-  Shell::Get()->AddShellObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
 UnifiedSystemTray::~UnifiedSystemTray() {
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  Shell::Get()->RemoveShellObserver(this);
   ShelfConfig::Get()->RemoveObserver(this);
 
   DestroyBubbles();
@@ -308,38 +310,6 @@ void UnifiedSystemTray::AddObserver(Observer* observer) {
 void UnifiedSystemTray::RemoveObserver(Observer* observer) {
   if (observer)
     observers_.RemoveObserver(observer);
-}
-
-bool UnifiedSystemTray::MoreThanOneVisibleTrayItem() const {
-  bool one_visible_item = false;
-  for (TrayItemView* item : tray_items_) {
-    if (!item->GetVisible())
-      continue;
-    if (one_visible_item)
-      return true;
-    one_visible_item = true;
-  }
-  return false;
-}
-
-void UnifiedSystemTray::MaybeUpdateVerticalClockPadding() {
-  const bool padding_is_visible = vertical_clock_padding_->GetVisible();
-
-  if (shelf()->IsHorizontalAlignment()) {
-    if (padding_is_visible)
-      vertical_clock_padding_->SetVisible(false);
-    return;
-  }
-
-  // Padding is shown when an icon besides TimeView is visible.
-  const bool should_show_padding = MoreThanOneVisibleTrayItem();
-  if (padding_is_visible != should_show_padding)
-    vertical_clock_padding_->SetVisible(should_show_padding);
-}
-
-void UnifiedSystemTray::OnViewVisibilityChanged(views::View* observed_view,
-                                                views::View* starting_view) {
-  MaybeUpdateVerticalClockPadding();
 }
 
 bool UnifiedSystemTray::IsBubbleShown() const {
@@ -496,11 +466,6 @@ const char* UnifiedSystemTray::GetClassName() const {
 absl::optional<AcceleratorAction> UnifiedSystemTray::GetAcceleratorAction()
     const {
   return absl::make_optional(TOGGLE_SYSTEM_TRAY_BUBBLE);
-}
-
-void UnifiedSystemTray::OnShelfAlignmentChanged(aura::Window* root_window,
-                                                ShelfAlignment old_alignment) {
-  MaybeUpdateVerticalClockPadding();
 }
 
 void UnifiedSystemTray::OnShelfConfigUpdated() {
@@ -669,7 +634,13 @@ std::u16string UnifiedSystemTray::GetAccessibleNameForTray() {
   status.push_back(managed_device_view_->GetVisible()
                        ? managed_device_view_->image_view()->GetTooltipText()
                        : base::EmptyString16());
-  status.push_back(notification_icons_controller_->GetAccessibleNameString());
+
+  // `notification_icons_controller_` does not exist when QsRevamp is enabled.
+  status.push_back(
+      features::IsQsRevampEnabled()
+          ? base::EmptyString16()
+          : notification_icons_controller_->GetAccessibleNameString());
+
   status.push_back(ime_mode_view_->GetVisible()
                        ? ime_mode_view_->label()->GetAccessibleNameString()
                        : base::EmptyString16());
@@ -746,6 +717,9 @@ void UnifiedSystemTray::HideBubbleInternal() {
 }
 
 void UnifiedSystemTray::UpdateNotificationInternal() {
+  if (features::IsQsRevampEnabled())
+    quiet_mode_view_->Update();
+
   // Limit update frequency in order to avoid flashing when 2 updates are
   // incoming in a very short period of time. It happens when ARC++ apps
   // creating bundled notifications.
@@ -756,7 +730,10 @@ void UnifiedSystemTray::UpdateNotificationInternal() {
 }
 
 void UnifiedSystemTray::UpdateNotificationAfterDelay() {
-  notification_icons_controller_->UpdateNotificationIndicators();
+  // Notification icons will be removed from system tray with the QsRevamp
+  // feature.
+  if (!features::IsQsRevampEnabled())
+    notification_icons_controller_->UpdateNotificationIndicators();
 }
 
 message_center::MessagePopupView*
@@ -787,11 +764,6 @@ UnifiedSystemTray::GetNotificationGroupingController() {
 void UnifiedSystemTray::AddTrayItemToContainer(TrayItemView* tray_item) {
   tray_items_.push_back(tray_item);
   tray_container()->AddChildView(tray_item);
-  AddObservedTrayItem(tray_item);
-}
-
-void UnifiedSystemTray::AddObservedTrayItem(TrayItemView* tray_item) {
-  tray_items_observations_.AddObservation(tray_item);
 }
 
 void UnifiedSystemTray::DestroyBubbles() {

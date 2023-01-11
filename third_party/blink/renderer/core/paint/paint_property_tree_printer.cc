@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
 
-#include "third_party/blink/renderer/core/document_transition/document_transition_supplement.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
@@ -13,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 
 #include <iomanip>
 #include <sstream>
@@ -155,16 +155,14 @@ class PropertyTreePrinterTraits<EffectPaintPropertyNodeOrAlias> {
   static void AddSharedElementTransitionProperties(
       const LayoutObject& object,
       PropertyTreePrinter<EffectPaintPropertyNodeOrAlias>& printer) {
-    auto* supplement =
-        DocumentTransitionSupplement::FromIfExists(object.GetDocument());
+    auto* transition =
+        ViewTransitionUtils::GetActiveTransition(object.GetDocument());
     // `NeedsSharedElementEffectNode` is an indirect way to see if the object is
     // participating in the transition.
-    if (!supplement ||
-        !supplement->GetTransition()->NeedsSharedElementEffectNode(object)) {
+    if (!transition || !transition->NeedsSharedElementEffectNode(object))
       return;
-    }
 
-    printer.AddNode(supplement->GetTransition()->GetEffect(object));
+    printer.AddNode(transition->GetEffect(object));
   }
 
   static void AddOtherProperties(

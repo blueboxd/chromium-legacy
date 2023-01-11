@@ -72,9 +72,7 @@ class NudgeTracker {
 
   // Takes note of the receipt of an invalidation notice from the server.
   // Returns the nudge delay for a remote invalidation.
-  base::TimeDelta RecordRemoteInvalidation(
-      ModelType type,
-      std::unique_ptr<SyncInvalidation> invalidation);
+  base::TimeDelta GetRemoteInvalidationDelay(ModelType type) const;
 
   // Take note that an initial sync is pending for this type.
   void RecordInitialSyncRequired(ModelType type);
@@ -100,6 +98,9 @@ class NudgeTracker {
 
   // Removes any throttling and backoff that have expired.
   void UpdateTypeThrottlingAndBackoffState();
+
+  void SetHasPendingInvalidations(ModelType type,
+                                  bool has_pending_invalidations);
 
   // Returns the time of the next type unthrottling or unbackoff.
   base::TimeDelta GetTimeUntilNextUnblock() const;
@@ -138,9 +139,6 @@ class NudgeTracker {
 
   // Flips the flag if we're due for a retry.
   void SetSyncCycleStartTime(base::TimeTicks now);
-
-  // Adjusts the number of hints that can be stored locally.
-  void SetHintBufferSize(size_t size);
 
   // Schedules a retry GetUpdate request for some time in the future.
   //

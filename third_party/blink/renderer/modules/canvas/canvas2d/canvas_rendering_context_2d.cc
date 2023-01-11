@@ -43,6 +43,7 @@
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_canvas_will_read_frequently.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_canvasrenderingcontext2d_gpucanvascontext_imagebitmaprenderingcontext_webgl2renderingcontext_webglrenderingcontext.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
@@ -56,6 +57,7 @@
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_font_cache.h"
 #include "third_party/blink/renderer/core/html/canvas/text_metrics.h"
 #include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
@@ -132,6 +134,8 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(
     HTMLCanvasElement* canvas,
     const CanvasContextCreationAttributesCore& attrs)
     : CanvasRenderingContext(canvas, attrs, CanvasRenderingAPI::k2D),
+      BaseRenderingContext2D(
+          canvas->GetDocument().GetTaskRunner(TaskType::kInternalDefault)),
       should_prune_local_font_cache_(false),
       color_params_(attrs.color_space, attrs.pixel_format, attrs.alpha) {
   identifiability_study_helper_.SetExecutionContext(
@@ -503,7 +507,6 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
 
   // Map the <canvas> font into the text style. If the font uses keywords like
   // larger/smaller, these will work relative to the canvas.
-  scoped_refptr<ComputedStyle> font_style;
   const ComputedStyle* computed_style = canvas()->EnsureComputedStyle();
   if (computed_style) {
     auto i = fonts_resolved_using_current_style_.find(new_font);
@@ -516,8 +519,11 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
           canvas_font_cache->ParseFont(new_font);
       if (!parsed_style)
         return;
-      font_style =
-          canvas()->GetDocument().GetStyleResolver().CreateComputedStyle();
+      ComputedStyleBuilder font_style_builder =
+          canvas()
+              ->GetDocument()
+              .GetStyleResolver()
+              .CreateComputedStyleBuilder();
       FontDescription element_font_description(
           computed_style->GetFontDescription());
       // Reset the computed size to avoid inheriting the zoom factor from the
@@ -527,7 +533,8 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
       element_font_description.SetAdjustedSize(
           element_font_description.SpecifiedSize());
 
-      font_style->SetFontDescription(element_font_description);
+      font_style_builder.SetFontDescription(element_font_description);
+      scoped_refptr<ComputedStyle> font_style = font_style_builder.TakeStyle();
       canvas()->GetDocument().GetStyleEngine().ComputeFont(
           *canvas(), font_style.get(), *parsed_style);
 
@@ -655,8 +662,10 @@ ImageData* CanvasRenderingContext2D::getImageDataInternal(
     int sh,
     ImageDataSettings* image_data_settings,
     ExceptionState& exception_state) {
-  UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.GetImageData.WillReadFrequently",
-                        CreationAttributes().will_read_frequently);
+  UMA_HISTOGRAM_BOOLEAN(
+      "Blink.Canvas.GetImageData.WillReadFrequently",
+      CreationAttributes().will_read_frequently ==
+          CanvasContextCreationAttributesCore::WillReadFrequently::kTrue);
   return BaseRenderingContext2D::getImageDataInternal(
       sx, sy, sw, sh, image_data_settings, exception_state);
 }
@@ -1100,10 +1109,20 @@ CanvasRenderingContext2D::getContextAttributes() const {
       CanvasRenderingContext2DSettings::Create();
   settings->setAlpha(CreationAttributes().alpha);
   settings->setColorSpace(color_params_.GetColorSpaceAsString());
-  if (RuntimeEnabledFeatures::CanvasColorManagementV2Enabled())
+  if (RuntimeEnabledFeatures::CanvasFloatingPointEnabled())
     settings->setPixelFormat(color_params_.GetPixelFormatAsString());
   settings->setDesynchronized(Host()->LowLatencyEnabled());
-  settings->setWillReadFrequently(CreationAttributes().will_read_frequently);
+  switch (CreationAttributes().will_read_frequently) {
+    case CanvasContextCreationAttributesCore::WillReadFrequently::kTrue:
+      settings->setWillReadFrequently(V8CanvasWillReadFrequently::Enum::kTrue);
+      break;
+    case CanvasContextCreationAttributesCore::WillReadFrequently::kFalse:
+      settings->setWillReadFrequently(V8CanvasWillReadFrequently::Enum::kFalse);
+      break;
+    case CanvasContextCreationAttributesCore::WillReadFrequently::kUndefined:
+      settings->setWillReadFrequently(
+          V8CanvasWillReadFrequently::Enum::kUndefined);
+  }
   return settings;
 }
 

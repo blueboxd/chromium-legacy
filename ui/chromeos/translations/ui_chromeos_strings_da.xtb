@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="2084108471225856927">Enhedsindstillinger</translation>
 <translation id="2084809735218147718">Siger tak på tegnsprog</translation>
-<translation id="2085470240340828803">Der findes allerede en fil med navnet "<ph name="FILENAME" />". Hvad vil du foretage dig?</translation>
 <translation id="2088690981887365033">VPN-netværk</translation>
 <translation id="2122305276694332719">Vi anbefaler, at du ikke tillader automatisk forbindelse til skjulte netværk, da det gør det muligt for andre at se din enhed og visse netværksindstillinger.</translation>
 <translation id="2125607626296734455">Khmer</translation>
@@ -456,7 +455,6 @@
 <translation id="4900532980794411603">Del med Parallels Desktop</translation>
 <translation id="4902546322522096650">Netværk <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, signalstyrke <ph name="SIGNAL_STRENGTH" /> %, opret forbindelse</translation>
 <translation id="4906580650526544301">Netværk <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, signalstyrke <ph name="SIGNAL_STRENGTH" /> %, telefonbatteri <ph name="BATTERY_STATUS" />%, info</translation>
-<translation id="4929673617759421391">Administratorpolitikken tillader ikke, at du indsætter denne fil</translation>
 <translation id="4935975195727477204">Blomst</translation>
 <translation id="4943368462779413526">Amerikansk fodbold</translation>
 <translation id="4961158930123534723">1 mappe blev delt med Parallels Desktop</translation>
@@ -534,6 +532,7 @@
 <translation id="5428105026674456456">Spansk</translation>
 <translation id="5438282218546237410">Der er ingen resultater for <ph name="SEARCH_TERM" />.</translation>
 <translation id="5449551289610225147">Ugyldig adgangskode</translation>
+<translation id="5459064203055649751">Der findes allerede en fil med navnet "<ph name="FILENAME" />". Vil du erstatte den med den, du er ved at flytte?</translation>
 <translation id="5463231940765244860">Angiv</translation>
 <translation id="5469868506864199649">Italiensk</translation>
 <translation id="5473333559083690127">Angiv ny pinkode igen</translation>
@@ -654,6 +653,7 @@
 <translation id="6495925982925244349">Netværk <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signalstyrke <ph name="SIGNAL_STRENGTH" /> %, administreret af din administrator, info</translation>
 <translation id="649877868557234318">Pakker <ph name="FILE_NAME" /> ud i <ph name="FOLDER_NAME" /></translation>
 <translation id="6499681088828539489">Tillad ikke proxyer på delte netværk</translation>
+<translation id="6503285896705205014">Administratorpolitikken tillader ikke, at du kopierer <ph name="COUNT" /> filer</translation>
 <translation id="6509122719576673235">Norsk</translation>
 <translation id="6528513914570774834">Giv andre brugere af denne enhed tilladelse til at bruge dette netværk</translation>
 <translation id="653019979737152879">Synkroniserer <ph name="FILE_NAME" />...</translation>
@@ -756,6 +756,7 @@
 <translation id="7357762654218998920">Denne filtype understøttes ikke. <ph name="BEGIN_LINK_HELP" />Få flere oplysninger<ph name="END_LINK_HELP" /> om, hvordan du åbner filer i ChromeOS.</translation>
 <translation id="7359359531237882347">Kopierer <ph name="NUMBER_OF_ITEMS" /> elementer...</translation>
 <translation id="7375951387215729722">Listen med filer er sorteret efter <ph name="COLUMN_NAME" /> i faldende rækkefølge.</translation>
+<translation id="7377161162143020057">Administratorpolitikken tillader ikke, at du kopierer denne fil</translation>
 <translation id="7402503521691663770">ChromeOS Flex-enheder</translation>
 <translation id="7408870451288633753">Tjekkisk</translation>
 <translation id="7417453074306512035">Etiopisk tastatur</translation>
@@ -977,7 +978,6 @@
 <translation id="9183302530794969518">Google Docs</translation>
 <translation id="9189836632794948435">Kasakhisk</translation>
 <translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> elementer er pakket ud.</translation>
-<translation id="9210751050717126865">Administratorpolitikken tillader ikke, at du indsætter <ph name="COUNT" /> filer</translation>
 <translation id="9213073329713032541">Installationen er startet.</translation>
 <translation id="9219103736887031265">Billeder</translation>
 <translation id="9219908252191632183">Måne</translation>

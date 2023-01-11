@@ -96,6 +96,15 @@ bool UnpickleDebugStreamData(base::PickleIterator iterator,
          iterator.ReadString(&value.load_stream_status);
 }
 
+std::vector<uint32_t> GetExpandedHashes(
+    const std::vector<feedstore::StreamContentHashList>& hashes_list) {
+  std::vector<uint32_t> expanded_hashes;
+  for (const feedstore::StreamContentHashList& hash_list : hashes_list)
+    for (const auto& hash : hash_list.hashes())
+      expanded_hashes.push_back(hash);
+  return expanded_hashes;
+}
+
 }  // namespace
 
 RequestMetadata::RequestMetadata() = default;
@@ -161,6 +170,12 @@ base::Value::Dict PersistentMetricsDataToDict(
   dict.Set("day_start", base::TimeToValue(data.current_day_start));
   dict.Set("time_spent_in_feed",
            base::TimeDeltaToValue(data.accumulated_time_spent_in_feed));
+  dict.Set("visit_start", base::TimeToValue(data.visit_start));
+  dict.Set("visit_end", base::TimeToValue(data.visit_end));
+  dict.Set("did_report_good_visit", base::Value(data.did_report_good_visit));
+  dict.Set("time_in_feed_for_good_visit",
+           base::TimeDeltaToValue(data.time_in_feed_for_good_visit));
+  dict.Set("did_scroll_in_visit", base::Value(data.did_scroll_in_visit));
   return dict;
 }
 
@@ -178,6 +193,21 @@ PersistentMetricsData PersistentMetricsDataFromDict(
     result.accumulated_time_spent_in_feed = *time_spent_in_feed;
   }
 
+  result.visit_start =
+      base::ValueToTime(dict.Find("visit_start")).value_or(base::Time());
+  result.visit_end =
+      base::ValueToTime(dict.Find("visit_end")).value_or(base::Time());
+
+  if (const base::Value* value = dict.Find("did_report_good_visit"))
+    result.did_report_good_visit = value->GetIfBool().value_or(false);
+
+  result.time_in_feed_for_good_visit =
+      base::ValueToTimeDelta(dict.Find("time_in_feed_for_good_visit"))
+          .value_or(base::Seconds(0));
+
+  if (const base::Value* value = dict.Find("did_scroll_in_visit"))
+    result.did_scroll_in_visit = value->GetIfBool().value_or(false);
+
   return result;
 }
 
@@ -191,29 +221,42 @@ void LoadLatencyTimes::StepComplete(StepKind kind) {
 
 ContentHashSet::ContentHashSet() = default;
 ContentHashSet::~ContentHashSet() = default;
-ContentHashSet::ContentHashSet(base::flat_set<uint32_t> content_hashes)
-    : content_hashes_(std::move(content_hashes)) {}
+ContentHashSet::ContentHashSet(
+    std::vector<feedstore::StreamContentHashList> hashes)
+    : original_hashes_(std::move(hashes)),
+      sorted_hashes_(GetExpandedHashes(original_hashes_)) {}
 ContentHashSet::ContentHashSet(const ContentHashSet&) = default;
 ContentHashSet::ContentHashSet(ContentHashSet&&) = default;
 ContentHashSet& ContentHashSet::operator=(const ContentHashSet&) = default;
 ContentHashSet& ContentHashSet::operator=(ContentHashSet&&) = default;
 bool ContentHashSet::ContainsAllOf(const ContentHashSet& items) const {
-  for (uint32_t id : items.content_hashes_) {
-    if (!content_hashes_.contains(id))
+  for (uint32_t hash : items.sorted_hashes_) {
+    if (!sorted_hashes_.contains(hash))
       return false;
   }
   return true;
 }
+bool ContentHashSet::Contains(uint32_t hash) const {
+  return sorted_hashes_.contains(hash);
+}
 bool ContentHashSet::IsEmpty() const {
-  return content_hashes_.empty();
+  return sorted_hashes_.empty();
 }
 bool ContentHashSet::operator==(const ContentHashSet& rhs) const {
-  return content_hashes_ == rhs.content_hashes_;
+  return sorted_hashes_ == rhs.sorted_hashes_;
 }
-std::ostream& operator<<(std::ostream& s, const ContentHashSet& id_set) {
+std::ostream& operator<<(std::ostream& s, const ContentHashSet& hash_set) {
   s << "{";
-  for (uint32_t id : id_set.values()) {
-    s << id << ", ";
+  for (const auto& hash_list : hash_set.original_hashes()) {
+    s << "(";
+    for (const auto hash : hash_list.hashes()) {
+      s << hash << ", ";
+    }
+    s << ")";
+  }
+  s << "} {";
+  for (const auto& hash : hash_set.sorted_hashes()) {
+    s << hash << ", ";
   }
   s << "}";
   return s;

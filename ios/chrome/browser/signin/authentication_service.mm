@@ -30,9 +30,9 @@
 #import "ios/chrome/browser/signin/authentication_service_delegate.h"
 #import "ios/chrome/browser/signin/authentication_service_observer.h"
 #import "ios/chrome/browser/signin/signin_util.h"
+#import "ios/chrome/browser/signin/system_identity.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -302,7 +302,7 @@ bool AuthenticationService::HasPrimaryIdentityManaged(
       .IsManaged();
 }
 
-ChromeIdentity* AuthenticationService::GetPrimaryIdentity(
+id<SystemIdentity> AuthenticationService::GetPrimaryIdentity(
     signin::ConsentLevel consent_level) const {
   // There is no authenticated identity if there is no signed in user or if the
   // user signed in via the client login flow.

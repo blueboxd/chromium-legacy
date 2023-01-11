@@ -9,8 +9,6 @@
 #include <set>
 #include <string>
 
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -21,6 +19,8 @@
 #include "chrome/browser/ash/login/easy_unlock/smartlock_state_handler.h"
 #include "chromeos/ash/components/multidevice/remote_device_ref.h"
 #include "chromeos/ash/components/proximity_auth/smart_lock_metrics_recorder.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "chromeos/ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class AccountId;
@@ -280,21 +280,11 @@ class EasyUnlockService : public KeyedService,
       bool success,
       const EasyUnlockDeviceKeyDataList& key_data_list);
 
-  // Called inside PrepareForSuspend() and OnScreenOff() to handle shared Smart
-  // Lock state updates.
-  void OnSuspendOrScreenOff();
-
   // Updates the service to state for handling system suspend.
   void PrepareForSuspend();
 
   // Called when the system resumes from a suspended state.
   void OnSuspendDone();
-
-  // Update the service to state for handling when the screen turns off.
-  void OnScreenOff();
-
-  // Called when the system resumes after the screen turns back on.
-  void OnScreenOffDone();
 
   void EnsureTpmKeyPresentIfNeeded();
 

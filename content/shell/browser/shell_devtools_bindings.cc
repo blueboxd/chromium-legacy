@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/guid.h"
@@ -19,6 +20,7 @@
 #include "base/json/string_escape.h"
 #include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -38,6 +40,7 @@
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
+#include "content/shell/common/shell_switches.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -191,12 +194,12 @@ ShellDevToolsBindings::~ShellDevToolsBindings() {
 // static
 std::vector<ShellDevToolsBindings*>
 ShellDevToolsBindings::GetInstancesForWebContents(WebContents* web_contents) {
-  auto* bindings = GetShellDevtoolsBindingsInstances();
   std::vector<ShellDevToolsBindings*> result;
-  std::copy_if(bindings->begin(), bindings->end(), std::back_inserter(result),
-               [web_contents](ShellDevToolsBindings* binding) {
-                 return binding->inspected_contents() == web_contents;
-               });
+  base::ranges::copy_if(*GetShellDevtoolsBindingsInstances(),
+                        std::back_inserter(result),
+                        [web_contents](ShellDevToolsBindings* binding) {
+                          return binding->inspected_contents() == web_contents;
+                        });
   return result;
 }
 
@@ -225,7 +228,10 @@ void ShellDevToolsBindings::ReadyToCommitNavigation(
 void ShellDevToolsBindings::AttachInternal() {
   if (agent_host_)
     agent_host_->DetachClient(this);
-  agent_host_ = DevToolsAgentHost::GetOrCreateFor(inspected_contents_);
+  agent_host_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
+                    switches::kContentShellDevToolsTabTarget)
+                    ? DevToolsAgentHost::GetOrCreateForTab(inspected_contents_)
+                    : DevToolsAgentHost::GetOrCreateFor(inspected_contents_);
   agent_host_->AttachClient(this);
   if (inspect_element_at_x_ != -1) {
     agent_host_->InspectElement(inspected_contents_->GetFocusedFrame(),

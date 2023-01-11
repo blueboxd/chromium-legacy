@@ -2202,8 +2202,7 @@ TEST_F(DownloadProtectionServiceTest,
     redirects.push_back(tab_url);
     HistoryServiceFactory::GetForProfile(profile(),
                                          ServiceAccessType::EXPLICIT_ACCESS)
-        ->AddPage(tab_url, base::Time::Now(),
-                  reinterpret_cast<history::ContextID>(1), 0, GURL(), redirects,
+        ->AddPage(tab_url, base::Time::Now(), 1, 0, GURL(), redirects,
                   ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, false);
 
     PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
@@ -3111,8 +3110,7 @@ TEST_F(DownloadProtectionServiceTest, VerifyDangerousDownloadOpenedAPICall) {
   download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
   ASSERT_EQ(1, test_event_router_->GetEventCount(
                    OnDangerousDownloadOpened::kEventName));
-  auto captured_args =
-      event_observer.PassEventArgs().GetListDeprecated()[0].Clone();
+  auto captured_args = event_observer.PassEventArgs().GetList()[0].Clone();
   EXPECT_EQ("http://example.com/a.exe",
             captured_args.FindKey("url")->GetString());
   EXPECT_EQ(base::HexEncode(hash.data(), hash.size()),
@@ -3980,8 +3978,7 @@ TEST_F(DownloadProtectionServiceTest,
     redirects.push_back(tab_url);
     HistoryServiceFactory::GetForProfile(profile(),
                                          ServiceAccessType::EXPLICIT_ACCESS)
-        ->AddPage(tab_url, base::Time::Now(),
-                  reinterpret_cast<history::ContextID>(1), 0, GURL(), redirects,
+        ->AddPage(tab_url, base::Time::Now(), 1, 0, GURL(), redirects,
                   ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, false);
 
     PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);

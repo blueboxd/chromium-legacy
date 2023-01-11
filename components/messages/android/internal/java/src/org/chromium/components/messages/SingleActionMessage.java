@@ -117,7 +117,7 @@ public class SingleActionMessage implements MessageStateHandler, MessageContaine
         }
 
         mMessageShownTime = MessagesMetrics.now();
-        return mMessageBanner.show(fromIndex, toIndex);
+        return mMessageBanner.show(fromIndex, toIndex, () -> MessageDimens.from(mContainer, mView));
     }
 
     /**
@@ -130,7 +130,8 @@ public class SingleActionMessage implements MessageStateHandler, MessageContaine
     @Nullable
     @Override
     public Animator hide(int fromIndex, int toIndex, boolean animate) {
-        return mMessageBanner.hide(animate, () -> mContainer.removeMessage(mView));
+        return mMessageBanner.hide(
+                fromIndex, toIndex, animate, () -> mContainer.removeMessage(mView));
     }
 
     /**

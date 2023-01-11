@@ -19,8 +19,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/commands/run_on_os_login_command.h"
+#include "chrome/browser/web_applications/isolation_data.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_database_factory.h"
+#include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
@@ -87,7 +89,8 @@ class WebAppRegistrarTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    command_manager_ = std::make_unique<WebAppCommandManager>(profile());
+    command_manager_ = std::make_unique<WebAppCommandManager>(
+        profile(), FakeWebAppProvider::Get(profile()));
     registrar_mutable_ = std::make_unique<WebAppRegistrarMutable>(profile());
     sync_bridge_ = std::make_unique<WebAppSyncBridge>(
         registrar_mutable_.get(), mock_processor_.CreateForwardingProcessor());
@@ -945,7 +948,7 @@ TEST_F(WebAppRegistrarTest, NotLocallyInstalledAppGetsDisplayModeBrowser) {
 }
 
 TEST_F(WebAppRegistrarTest,
-       NotLocallyInstalledAppGetsDisplayModeBrowserEvenForIsolatedApps) {
+       NotLocallyInstalledAppGetsDisplayModeBrowserEvenForIsolatedWebApps) {
   InitSyncBridge();
 
   auto web_app = test::CreateWebApp();
@@ -965,7 +968,7 @@ TEST_F(WebAppRegistrarTest,
 }
 
 TEST_F(WebAppRegistrarTest,
-       IsolatedAppsGetDisplayModeStandaloneRegardlessOfUserSettings) {
+       IsolatedWebAppsGetDisplayModeStandaloneRegardlessOfUserSettings) {
   InitSyncBridge();
 
   std::unique_ptr<WebApp> web_app = test::CreateWebApp();
@@ -976,6 +979,8 @@ TEST_F(WebAppRegistrarTest,
   web_app->SetUserDisplayMode(UserDisplayMode::kBrowser);
   web_app->SetIsLocallyInstalled(true);
   web_app->SetStorageIsolated(true);
+  web_app->SetIsolationData(IsolationData(IsolationData::DevModeProxy{
+      .proxy_url = url::Origin::Create(GURL("http://127.0.0.1:8080"))}));
 
   RegisterApp(std::move(web_app));
 

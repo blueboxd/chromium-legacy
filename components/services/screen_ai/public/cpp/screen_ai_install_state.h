@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/observer_list_types.h"
 
 namespace component_updater {
@@ -36,15 +37,19 @@ class ScreenAIInstallState {
 
   bool is_component_ready() { return component_ready_; }
 
-  void SetComponentReadyForTesting(bool ready) { component_ready_ = ready; }
+  base::FilePath get_component_binary_path() { return component_binary_path_; }
+
+  void set_component_ready_for_testing() { component_ready_ = true; }
 
  private:
   friend class component_updater::ScreenAIComponentInstallerPolicy;
   friend class ScreenAIInstallStateTest;
 
-  void SetComponentReady();
+  // Marks component ready and informs observers.
+  void SetComponentReady(const base::FilePath& component_folder);
 
-  bool component_ready_ = false;
+  base::FilePath component_binary_path_;
+  bool component_ready_;
 
   std::vector<Observer*> observers_;
 };

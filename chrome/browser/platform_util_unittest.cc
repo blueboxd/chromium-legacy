@@ -24,9 +24,9 @@
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
+#include "chrome/browser/ash/fileapi/file_system_backend.h"
+#include "chrome/browser/ash/fileapi/file_system_backend_delegate.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/chromeos/fileapi/file_system_backend.h"
-#include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/services/app_service/public/cpp/app_types.h"
@@ -62,17 +62,16 @@ class PlatformUtilTestContentBrowserClient : public ChromeContentBrowserClient {
         browser_context->GetMountPoints();
 
     // New FileSystemBackend that uses our MockSpecialStoragePolicy.
-    additional_backends->push_back(
-        std::make_unique<chromeos::FileSystemBackend>(
-            nullptr,  // profile
-            nullptr,  // file_system_provider_delegate
-            nullptr,  // mtp_delegate
-            nullptr,  // arc_content_delegate
-            nullptr,  // arc_documents_provider_delegate
-            nullptr,  // drivefs_delegate
-            nullptr,  // smbfs_delegate
-            external_mount_points,
-            storage::ExternalMountPoints::GetSystemInstance()));
+    additional_backends->push_back(std::make_unique<ash::FileSystemBackend>(
+        nullptr,  // profile
+        nullptr,  // file_system_provider_delegate
+        nullptr,  // mtp_delegate
+        nullptr,  // arc_content_delegate
+        nullptr,  // arc_documents_provider_delegate
+        nullptr,  // drivefs_delegate
+        nullptr,  // smbfs_delegate
+        external_mount_points,
+        storage::ExternalMountPoints::GetSystemInstance()));
   }
 };
 

@@ -95,7 +95,7 @@ String PermissionNameToString(PermissionName name) {
       return "nfc";
     case PermissionName::STORAGE_ACCESS:
       return "storage_access";
-    case PermissionName::WINDOW_PLACEMENT:
+    case PermissionName::WINDOW_MANAGEMENT:
       return "window_placement";
     case PermissionName::LOCAL_FONTS:
       return "local_fonts";
@@ -275,12 +275,7 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
     return CreatePermissionDescriptor(PermissionName::STORAGE_ACCESS);
   }
   if (name == "window-placement") {
-    if (!RuntimeEnabledFeatures::WindowPlacementEnabled(
-            ExecutionContext::From(script_state))) {
-      exception_state.ThrowTypeError("Window Placement is not enabled.");
-      return nullptr;
-    }
-    return CreatePermissionDescriptor(PermissionName::WINDOW_PLACEMENT);
+    return CreatePermissionDescriptor(PermissionName::WINDOW_MANAGEMENT);
   }
   if (name == "local-fonts") {
     if (!RuntimeEnabledFeatures::FontAccessEnabled(

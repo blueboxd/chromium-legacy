@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/input/boundary_event_dispatcher.h"
 #include "third_party/blink/renderer/core/input/touch_event_manager.h"
 #include "third_party/blink/renderer/core/page/touch_adjustment.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 
@@ -248,12 +249,22 @@ class CORE_EXPORT PointerEventManager final
   // filtering on the given event.
   bool ShouldFilterEvent(PointerEvent* pointer_event);
 
+  // Returns true if the pointer event needs to be fired in order to support the
+  // popup HTML attribute.
+  bool ShouldFireEventForPopup(PointerEvent*);
+
   bool HandleScrollbarTouchDrag(const WebPointerEvent&, Scrollbar*);
+
+  bool HandleResizerDrag(const WebPointerEvent&,
+                         const event_handling_util::PointerEventTarget&);
 
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |PointerEventManager::clear()|.
 
   const Member<LocalFrame> frame_;
+
+  WeakMember<PaintLayerScrollableArea> resize_scrollable_area_;
+  LayoutSize offset_from_resize_corner_;
 
   // Prevents firing mousedown, mousemove & mouseup in-between a canceled
   // pointerdown and next pointerup/pointercancel.

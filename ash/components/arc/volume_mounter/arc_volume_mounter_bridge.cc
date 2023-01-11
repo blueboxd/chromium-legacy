@@ -154,8 +154,8 @@ void ArcVolumeMounterBridge::SendAllMountEvents() {
 
   for (const auto& mount_point :
        DiskMountManager::GetInstance()->mount_points()) {
-    OnMountEvent(DiskMountManager::MountEvent::MOUNTING, ash::MountError::kNone,
-                 mount_point);
+    OnMountEvent(DiskMountManager::MountEvent::MOUNTING,
+                 ash::MountError::kSuccess, mount_point);
   }
 }
 
@@ -176,9 +176,10 @@ void ArcVolumeMounterBridge::SendMountEventForMyFiles() {
 
   // Conditionally set MyFiles to be visible for P and invisible for R. In R, we
   // use IsVisibleRead so this is not needed.
+  const bool is_p = arc::GetArcAndroidSdkVersionAsInt() == arc::kArcVersionP;
   volume_mounter_instance->OnMountEvent(mojom::MountPointInfo::New(
       DiskMountManager::MOUNTING, kMyFilesPath, kMyFilesPath, kMyFilesUuid,
-      device_label, device_type, !IsArcVmEnabled()));
+      device_label, device_type, is_p));
 }
 
 bool ArcVolumeMounterBridge::IsVisibleToAndroidApps(
@@ -197,12 +198,12 @@ void ArcVolumeMounterBridge::OnVisibleStoragesChanged() {
   for (const auto& mount_point :
        DiskMountManager::GetInstance()->mount_points()) {
     OnMountEvent(DiskMountManager::MountEvent::UNMOUNTING,
-                 ash::MountError::kNone, mount_point);
+                 ash::MountError::kSuccess, mount_point);
   }
   for (const auto& mount_point :
        DiskMountManager::GetInstance()->mount_points()) {
-    OnMountEvent(DiskMountManager::MountEvent::MOUNTING, ash::MountError::kNone,
-                 mount_point);
+    OnMountEvent(DiskMountManager::MountEvent::MOUNTING,
+                 ash::MountError::kSuccess, mount_point);
   }
 }
 
@@ -220,7 +221,7 @@ void ArcVolumeMounterBridge::OnMountEvent(
              << mount_info.mount_path;
     return;
   }
-  if (error_code != ash::MountError::kNone) {
+  if (error_code != ash::MountError::kSuccess) {
     DVLOG(1) << "Error " << error_code << "occurs during MountEvent " << event;
     return;
   }

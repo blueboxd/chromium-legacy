@@ -21,18 +21,19 @@ class ExternalVkImageSkiaImageRepresentation : public SkiaImageRepresentation {
   ~ExternalVkImageSkiaImageRepresentation() override;
 
   // SkiaImageRepresentation implementation.
-  sk_sp<SkSurface> BeginWriteAccess(
+  std::vector<sk_sp<SkSurface>> BeginWriteAccess(
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
+      const gfx::Rect& update_rect,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override;
-  sk_sp<SkPromiseImageTexture> BeginWriteAccess(
+  std::vector<sk_sp<SkPromiseImageTexture>> BeginWriteAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override;
-  void EndWriteAccess(sk_sp<SkSurface> surface) override;
-  sk_sp<SkPromiseImageTexture> BeginReadAccess(
+  void EndWriteAccess() override;
+  std::vector<sk_sp<SkPromiseImageTexture>> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override;
@@ -62,6 +63,7 @@ class ExternalVkImageSkiaImageRepresentation : public SkiaImageRepresentation {
   int surface_msaa_count_ = 0;
   std::vector<ExternalSemaphore> begin_access_semaphores_;
   ExternalSemaphore end_access_semaphore_;
+  sk_sp<SkSurface> write_surface_;
 };
 
 }  // namespace gpu

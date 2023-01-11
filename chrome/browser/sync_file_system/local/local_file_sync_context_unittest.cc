@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/run_loop.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/test_future.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -431,10 +432,10 @@ TEST_F(LocalFileSyncContextTest, CreateDefaultSyncableBucket) {
   EXPECT_EQ(base::File::FILE_OK, file_system.OpenFileSystem());
 
   base::test::TestFuture<storage::QuotaErrorOr<storage::BucketInfo>> future;
-  file_system.quota_manager()->proxy()->GetBucket(
+  file_system.quota_manager()->proxy()->GetBucketForTesting(
       blink::StorageKey::CreateFromStringForTesting(kOrigin1),
       storage::kDefaultBucketName, blink::mojom::StorageType::kSyncable,
-      base::SequencedTaskRunnerHandle::Get(), future.GetCallback());
+      base::SequencedTaskRunner::GetCurrentDefault(), future.GetCallback());
 
   const auto result = future.Take();
   EXPECT_TRUE(result.ok());

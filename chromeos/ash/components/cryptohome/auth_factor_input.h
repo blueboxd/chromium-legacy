@@ -29,6 +29,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME) AuthFactorInput {
 
   struct RecoveryCreation {
     std::string pub_key;
+    std::string user_gaia_id;
+    std::string device_user_id;
   };
 
   struct RecoveryAuthentication {
@@ -49,12 +51,15 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME) AuthFactorInput {
 
   struct Kiosk {};
 
+  struct LegacyFingerprint {};
+
   using InputVariant = absl::variant<Password,
                                      Pin,
                                      RecoveryCreation,
                                      RecoveryAuthentication,
                                      SmartCard,
-                                     Kiosk>;
+                                     Kiosk,
+                                     LegacyFingerprint>;
 
   explicit AuthFactorInput(InputVariant input);
 

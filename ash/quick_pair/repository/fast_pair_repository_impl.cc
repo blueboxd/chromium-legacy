@@ -20,7 +20,6 @@
 #include "base/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/services/bluetooth_config/public/cpp/device_image_info.h"
@@ -238,7 +237,7 @@ void FastPairRepositoryImpl::CheckAccountKeysImpl(
       const std::string& string_key = info.device().account_key();
       const std::vector<uint8_t> binary_key(string_key.begin(),
                                             string_key.end());
-      if (account_key_filter.Test(binary_key)) {
+      if (account_key_filter.IsAccountKeyInFilter(binary_key)) {
         nearby::fastpair::StoredDiscoveryItem device;
         if (device.ParseFromString(info.device().discovery_item_bytes())) {
           QP_LOG(INFO) << "Account key matched with a paired device: "
@@ -328,7 +327,7 @@ void FastPairRepositoryImpl::AssociateAccountKey(
   DCHECK(device->classic_address());
   GetDeviceMetadata(
       device->metadata_id,
-      base::BindOnce(&FastPairRepositoryImpl::AddDeviceToFootprints,
+      base::BindOnce(&FastPairRepositoryImpl::WriteDeviceToFootprints,
                      weak_ptr_factory_.GetWeakPtr(), device->metadata_id,
                      device->classic_address().value(), account_key));
 }
@@ -337,8 +336,7 @@ bool FastPairRepositoryImpl::AssociateAccountKeyLocally(
     scoped_refptr<Device> device) {
   QP_LOG(VERBOSE) << __func__;
 
-  absl::optional<std::vector<uint8_t>> account_key =
-      device->GetAdditionalData(Device::AdditionalDataType::kAccountKey);
+  absl::optional<std::vector<uint8_t>> account_key = device->account_key();
   if (!account_key) {
     QP_LOG(WARNING) << __func__ << ": Account key not found for device.";
     return false;
@@ -351,7 +349,7 @@ bool FastPairRepositoryImpl::AssociateAccountKeyLocally(
   return true;
 }
 
-void FastPairRepositoryImpl::AddDeviceToFootprints(
+void FastPairRepositoryImpl::WriteDeviceToFootprints(
     const std::string& hex_model_id,
     const std::string& mac_address,
     const std::vector<uint8_t>& account_key,
@@ -362,27 +360,27 @@ void FastPairRepositoryImpl::AddDeviceToFootprints(
     return;
   }
 
-  pending_write_store_->AddPairedDevice(mac_address, hex_model_id);
+  pending_write_store_->WritePairedDevice(mac_address, hex_model_id);
   footprints_fetcher_->AddUserFastPairInfo(
       BuildFastPairInfo(hex_model_id, account_key, mac_address, metadata),
-      base::BindOnce(&FastPairRepositoryImpl::OnAddDeviceToFootprintsComplete,
+      base::BindOnce(&FastPairRepositoryImpl::OnWriteDeviceToFootprintsComplete,
                      weak_ptr_factory_.GetWeakPtr(), mac_address, account_key));
 }
 
-void FastPairRepositoryImpl::OnAddDeviceToFootprintsComplete(
+void FastPairRepositoryImpl::OnWriteDeviceToFootprintsComplete(
     const std::string& mac_address,
     const std::vector<uint8_t>& account_key,
     bool success) {
   if (!success) {
     QP_LOG(WARNING)
         << __func__
-        << ": Failed to add device to Footprints--"
+        << ": Failed to write device to Footprints--"
            "deferring addition to SavedDeviceRegistry until we succeed.";
     return;
   }
   QP_LOG(INFO) << __func__ << ": Successfully added device to Footprints.";
 
-  // Remove pending add on successful Footprints write
+  // Remove pending write on successful Footprints write
   pending_write_store_->OnPairedDeviceSaved(mac_address);
 
   // save/update account key in saved device registry
@@ -390,12 +388,12 @@ void FastPairRepositoryImpl::OnAddDeviceToFootprintsComplete(
 
   if (saved_device_registry_->IsAccountKeySavedToRegistry(account_key)) {
     QP_LOG(INFO) << __func__
-                 << ": Successfully added device to Saved Device Registry.";
+                 << ": Successfully wrote device to Saved Device Registry.";
     return;
   }
 
   QP_LOG(WARNING) << __func__
-                  << ": Failed to add device to Saved Device Registry.";
+                  << ": Failed to write device to Saved Device Registry.";
 }
 
 void FastPairRepositoryImpl::CheckOptInStatus(

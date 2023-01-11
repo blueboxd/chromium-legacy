@@ -21,11 +21,6 @@ bool ShouldIgnoreProvider(ProviderType provider) {
       // Deprecated types:
     case ProviderType::kLauncher:
     case ProviderType::kAnswerCard:
-      // Types not associated with a provider:
-    case ProviderType::kFileChip:
-    case ProviderType::kDriveChip:
-      // Types that only create suggestion chips:
-    case ProviderType::kAssistantChip:
       // Types that only ever create one result:
     case ProviderType::kPlayStoreReinstallApp:
       // Internal types:
@@ -60,8 +55,12 @@ void ScoreNormalizingRanker::UpdateResultRanks(ResultsMap& results,
 
   std::string provider_string = ProviderToString(provider);
   for (auto& result : it->second) {
+    normalizer_.Update(provider_string, result->relevance());
+  }
+
+  for (auto& result : it->second) {
     result->scoring().normalized_relevance =
-        normalizer_.UpdateAndNormalize(provider_string, result->relevance());
+        normalizer_.Normalize(provider_string, result->relevance());
   }
 }
 

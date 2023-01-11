@@ -59,6 +59,14 @@
   #mac-address-container {
     border-top: none;
   }
+
+  #hiddenToggle {
+    margin-inline-start: var(--cr-section-padding);
+  }
+
+  cr-link-row {
+    --cr-secondary-text-color: var(--cros-text-color-positive);
+  }
 </style>
 <!-- Title section: Icon + name + connection state. -->
 <div id="titleDiv" class="settings-box first">
@@ -217,9 +225,12 @@
     </template>
     <!-- Hidden. -->
     <template is="dom-if"
-        if="[[showHiddenNetwork_(managedProperties_, globalPolicy,
-            managedNetworkAvailable)]]">
-      <settings-toggle-button id="hiddenToggle" class="hr"
+        if="[[showHiddenNetworkToggleLegacy_(
+                enableHiddenNetworkMigration_,
+                globalPolicy,
+                managedNetworkAvailable,
+                managedProperties_)]]">
+      <settings-toggle-button id="hiddenToggleLegacy" class="hr"
           pref="{{hiddenPref_}}"
           label="$i18n{networkHidden}"
           sub-label="$i18n{networkHiddenSublabel}"
@@ -300,6 +311,20 @@
       </div>
     </template>
   </template>
+
+  <!-- APN row item -->
+  <template is="dom-if" if="[[shouldShowApnRow_(managedProperties_,
+      isApnRevampEnabled_)]]">
+    <cr-link-row
+        id="apnSubpageButton"
+        class="hr"
+        label="$i18n{internetApnPageTitle}"
+        sub-label="[[getApnRowSubLabel_(managedProperties_)]]"
+        on-click="onApnRowClicked_"
+        role-description="$i18n{subpageArrowRoleDescription}">
+    </cr-link-row>
+  </template>
+
   <template is="dom-if" if="[[hasAdvancedSection_(managedProperties_,
                               propertiesReceived_, showMeteredToggle_,
                               deviceState_)]]">
@@ -414,7 +439,8 @@
           </template>
 
           <!-- APN -->
-          <template is="dom-if" if="[[isCellular_(managedProperties_)]]">
+          <template is="dom-if" if="[[shouldShowApnList_(managedProperties_,
+              isApnRevampEnabled_)]]">
             <network-apnlist on-apn-change="onApnChange_"
                 managed-properties="[[managedProperties_]]"
                 disabled="[[disabled_]]">
@@ -442,6 +468,23 @@
           <div>$i18n{OncMacAddress}</div>
           <div class="secondary">[[getMacAddress_(deviceState_)]]</div>
         </div>
+
+        <!-- Hidden. -->
+        <template is="dom-if"
+            if="[[showHiddenNetworkToggleMoved_(
+                    enableHiddenNetworkMigration_,
+                    globalPolicy,
+                    managedNetworkAvailable,
+                    managedProperties_)]]">
+          <settings-toggle-button id="hiddenToggle"
+              pref="{{hiddenPref_}}"
+              label="$i18n{networkHidden}"
+              sub-label="$i18n{networkHiddenSublabel}"
+              sub-label-icon="cr20:warning"
+              learn-more-url="$i18n{wifiHiddenNetworkLearnMoreUrl}"
+              deep-link-focus-id$="[[Setting.kWifiHidden]]">
+          </settings-toggle-button>
+        </template>
       </iron-collapse>
     </template>
 

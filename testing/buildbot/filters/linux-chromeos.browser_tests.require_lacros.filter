@@ -10,6 +10,7 @@ ChromeVox*
 DemoAshRequiresLacrosTest*
 DesksTemplatesClientLacrosTest*
 Dictation*
+ExtensionKeeplistTest*
 SelectToSpeak*
 SwitchAccess*
 VpnExtensionObserverBrowserTest*
@@ -26,6 +27,8 @@ WebAppsCrosapiBrowserTest*
 -ChromeVoxPanelTest.LinkMenu
 -ChromeVoxPortalsTest.PortalName
 -ChromeVoxPortalsTest.ShouldFocusPortal
+# TODO(crbug.com/1378396) Remove once ash extension context menus are passed through to lacros
+-SelectToSpeakContextMenuTest.*
 -SelectToSpeakEnhancedNetworkTtsVoicesTest.*
 -SelectToSpeakNavigationControlTest.*
 -SwitchAccessItemScanManagerTest.*
@@ -38,6 +41,8 @@ WebAppsCrosapiBrowserTest*
 -ChromeVoxBackgroundTest.GestureOnPopUpButton
 -ChromeVoxBackgroundTest.HitTestOnExoSurface
 -ChromeVoxEditingTest.JumpCommandsSyncSelection
+# TODO(https://crbug.com/1378291) Ash and Lacros browser window sizes differ.
+-ChromeVoxEditingTest.SelectAcrossSoftLineWraps
 -ChromeVoxBackgroundTest.ListBoxItemsNavigation
 -ChromeVoxLiveRegionsTest.FocusThenLiveRegion
 -ChromeVoxLiveRegionsTest.LiveRegionAddElement
@@ -47,3 +52,7 @@ WebAppsCrosapiBrowserTest*
 -DesksTemplatesClientLacrosTest.SystemUILaunchBrowser
 # TODO(crbug.com/1356103) Disabled when switch to LacrosOnly.
 -SwitchAccessPointScanManagerTest.PointScanRightClick
+# TODO(crbug.com/1383146) Flaky
+-ChromeVoxBackgroundTest.CrossWindowNextPreviousFocus
+-ChromeVoxBackgroundTest.MultipleListBoxes
+-ChromeVoxBackgroundTest.SelectOptionSelected

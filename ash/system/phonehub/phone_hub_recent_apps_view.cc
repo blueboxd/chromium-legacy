@@ -16,6 +16,7 @@
 #include "ash/system/phonehub/ui_constants.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/cxx17_backports.h"
+#include "base/ranges/algorithm.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/label.h"
@@ -30,7 +31,6 @@ using RecentAppsUiState =
 
 // Appearance constants in DIPs.
 constexpr gfx::Insets kRecentAppButtonFocusPadding(4);
-constexpr auto kContentTextLabelInsetsDip = gfx::Insets::TLBR(0, 4, 0, 4);
 constexpr int kHeaderLabelLineHeight = 48;
 constexpr int kRecentAppButtonDefaultSpacing = 42;
 constexpr int kRecentAppButtonMinSpacing = 20;
@@ -38,6 +38,9 @@ constexpr int kRecentAppButtonSize = 36;
 constexpr int kRecentAppButtonsViewTopPadding = 4;
 constexpr int kRecentAppButtonsViewHorizontalPadding = 6;
 constexpr int kContentLabelLineHeightDip = 20;
+constexpr int kContentTextLabelExtraMargin = 6;
+constexpr auto kContentTextLabelInsetsDip =
+    gfx::Insets::TLBR(0, kContentTextLabelExtraMargin, 0, 4);
 
 // Typography.
 constexpr int kHeaderTextFontSizeDip = 15;
@@ -141,10 +144,10 @@ gfx::Size PhoneHubRecentAppsView::RecentAppButtonsView::CalculatePreferredSize()
 void PhoneHubRecentAppsView::RecentAppButtonsView::Layout() {
   const gfx::Rect child_area = GetContentsBounds();
   views::View::Views visible_children;
-  std::copy_if(children().cbegin(), children().cend(),
-               std::back_inserter(visible_children), [](const auto* v) {
-                 return v->GetVisible() && (v->GetPreferredSize().width() > 0);
-               });
+  base::ranges::copy_if(
+      children(), std::back_inserter(visible_children), [](const auto* v) {
+        return v->GetVisible() && (v->GetPreferredSize().width() > 0);
+      });
   if (visible_children.empty())
     return;
   const int visible_child_width =

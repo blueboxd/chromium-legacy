@@ -28,18 +28,19 @@ class GPU_GLES2_EXPORT SkiaGLImageRepresentation
 
   ~SkiaGLImageRepresentation() override;
 
-  sk_sp<SkSurface> BeginWriteAccess(
+  std::vector<sk_sp<SkSurface>> BeginWriteAccess(
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
+      const gfx::Rect& update_rect,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override;
-  sk_sp<SkPromiseImageTexture> BeginWriteAccess(
+  std::vector<sk_sp<SkPromiseImageTexture>> BeginWriteAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override;
-  void EndWriteAccess(sk_sp<SkSurface> surface) override;
-  sk_sp<SkPromiseImageTexture> BeginReadAccess(
+  void EndWriteAccess() override;
+  std::vector<sk_sp<SkPromiseImageTexture>> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override;
@@ -47,7 +48,7 @@ class GPU_GLES2_EXPORT SkiaGLImageRepresentation
 
   bool SupportsMultipleConcurrentReadAccess() override;
 
- private:
+ protected:
   SkiaGLImageRepresentation(
       std::unique_ptr<GLTextureImageRepresentationBase> gl_representation,
       sk_sp<SkPromiseImageTexture> promise_texture,
@@ -56,6 +57,7 @@ class GPU_GLES2_EXPORT SkiaGLImageRepresentation
       SharedImageBacking* backing,
       MemoryTypeTracker* tracker);
 
+ private:
   void CheckContext();
 
   std::unique_ptr<GLTextureImageRepresentationBase> gl_representation_;

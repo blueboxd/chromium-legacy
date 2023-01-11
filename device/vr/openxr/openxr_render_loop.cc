@@ -8,6 +8,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/ranges/algorithm.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "device/vr/openxr/openxr_api_wrapper.h"
 #include "device/vr/openxr/openxr_input_helper.h"
@@ -75,7 +76,7 @@ mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
   if (openxr_->HasFrameState()) {
     if (IsFeatureEnabled(device::mojom::XRSessionFeature::ANCHORS)) {
       OpenXrAnchorManager* anchor_manager =
-          openxr_->GetOrCreateAnchorManager(extension_helper_);
+          openxr_->GetOrCreateAnchorManager(*extension_helper_);
 
       if (anchor_manager) {
         frame_data->anchors_data = anchor_manager->ProcessAnchorsForFrame(
@@ -90,7 +91,7 @@ mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
       frame_data->mojo_from_viewer->position &&
       frame_data->mojo_from_viewer->orientation) {
     OpenXRSceneUnderstandingManager* scene_understanding_manager =
-        openxr_->GetOrCreateSceneUnderstandingManager(extension_helper_);
+        openxr_->GetOrCreateSceneUnderstandingManager(*extension_helper_);
     if (scene_understanding_manager) {
       device::Pose mojo_from_viewer(*frame_data->mojo_from_viewer->position,
                                     *frame_data->mojo_from_viewer->orientation);
@@ -133,15 +134,15 @@ void OpenXrRenderLoop::StartRuntime(
 
   texture_helper_.SetUseBGRA(true);
   LUID luid;
-  if (XR_FAILED(openxr_->GetLuid(extension_helper_, luid)) ||
+  if (XR_FAILED(openxr_->GetLuid(*extension_helper_, luid)) ||
       !texture_helper_.SetAdapterLUID(luid) ||
       !texture_helper_.EnsureInitialized() ||
       XR_FAILED(openxr_->InitSession(
-          enabled_features_, texture_helper_.GetDevice(), extension_helper_,
+          enabled_features_, texture_helper_.GetDevice(), *extension_helper_,
           std::move(on_session_started_callback),
           std::move(on_session_ended_callback),
           std::move(on_visibility_state_changed)))) {
-    ExitPresent();
+    ExitPresent(ExitXrPresentReason::kStartRuntimeFailed);
     std::move(start_runtime_split_callback.second).Run(false);
   }
 }
@@ -150,7 +151,7 @@ void OpenXrRenderLoop::OnOpenXrSessionStarted(
     StartRuntimeCallback start_runtime_callback,
     XrResult result) {
   if (XR_FAILED(result)) {
-    ExitPresent();
+    ExitPresent(ExitXrPresentReason::kOpenXrStartFailed);
     std::move(start_runtime_callback).Run(false);
     return;
   }
@@ -173,7 +174,7 @@ void OpenXrRenderLoop::EnableSupportedFeatures(
     const std::vector<device::mojom::XRSessionFeature>& required_features,
     const std::vector<device::mojom::XRSessionFeature>& optional_features) {
   const OpenXrExtensionEnumeration* extension_enumeration =
-      extension_helper_.ExtensionEnumeration();
+      extension_helper_->ExtensionEnumeration();
 
   // Filter out features that are requested but not supported
   auto openxr_extension_enabled_filter =
@@ -203,11 +204,13 @@ void OpenXrRenderLoop::EnableSupportedFeatures(
   // TODO(https://crbug.com/995377): revisit the approach when the bug is fixed.
   // If the session request has succeeded, we can assume that the required
   // features are supported.
-  std::copy(required_features.begin(), required_features.end(),
-            std::inserter(enabled_features_, enabled_features_.begin()));
-  std::copy_if(optional_features.begin(), optional_features.end(),
-               std::inserter(enabled_features_, enabled_features_.begin()),
-               openxr_extension_enabled_filter);
+  base::ranges::copy(
+      required_features,
+      std::inserter(enabled_features_, enabled_features_.begin()));
+  base::ranges::copy_if(
+      optional_features,
+      std::inserter(enabled_features_, enabled_features_.begin()),
+      openxr_extension_enabled_filter);
 }
 
 device::mojom::XREnvironmentBlendMode OpenXrRenderLoop::GetEnvironmentBlendMode(
@@ -247,7 +250,7 @@ void OpenXrRenderLoop::ClearPendingFrameInternal() {
   if (openxr_->HasPendingFrame() && XR_FAILED(openxr_->EndFrame())) {
     // The start of the next frame will detect that the session has ended via
     // HasSessionEnded and will exit presentation.
-    ExitPresent();
+    ExitPresent(ExitXrPresentReason::kXrEndFrameFailed);
     return;
   }
 }
@@ -370,7 +373,7 @@ void OpenXrRenderLoop::SubscribeToHitTest(
            << ", ray direction=" << ray->direction.ToString();
 
   OpenXRSceneUnderstandingManager* scene_understanding_manager =
-      openxr_->GetOrCreateSceneUnderstandingManager(extension_helper_);
+      openxr_->GetOrCreateSceneUnderstandingManager(*extension_helper_);
 
   if (!scene_understanding_manager) {
     std::move(callback).Run(
@@ -397,7 +400,7 @@ void OpenXrRenderLoop::SubscribeToHitTestForTransientInput(
            << ", ray direction=" << ray->direction.ToString();
 
   OpenXRSceneUnderstandingManager* scene_understanding_manager =
-      openxr_->GetOrCreateSceneUnderstandingManager(extension_helper_);
+      openxr_->GetOrCreateSceneUnderstandingManager(*extension_helper_);
 
   if (!scene_understanding_manager) {
     std::move(callback).Run(
@@ -417,7 +420,7 @@ void OpenXrRenderLoop::SubscribeToHitTestForTransientInput(
 void OpenXrRenderLoop::UnsubscribeFromHitTest(uint64_t subscription_id) {
   DVLOG(2) << __func__;
   OpenXRSceneUnderstandingManager* scene_understanding_manager =
-      openxr_->GetOrCreateSceneUnderstandingManager(extension_helper_);
+      openxr_->GetOrCreateSceneUnderstandingManager(*extension_helper_);
   if (scene_understanding_manager)
     scene_understanding_manager->UnsubscribeFromHitTest(
         HitTestSubscriptionId(subscription_id));
@@ -428,7 +431,7 @@ void OpenXrRenderLoop::CreateAnchor(
     const device::Pose& native_origin_from_anchor,
     CreateAnchorCallback callback) {
   OpenXrAnchorManager* anchor_manager =
-      openxr_->GetOrCreateAnchorManager(extension_helper_);
+      openxr_->GetOrCreateAnchorManager(*extension_helper_);
   if (!anchor_manager) {
     return;
   }
@@ -448,7 +451,7 @@ void OpenXrRenderLoop::CreatePlaneAnchor(
 
 void OpenXrRenderLoop::DetachAnchor(uint64_t anchor_id) {
   OpenXrAnchorManager* anchor_manager =
-      openxr_->GetOrCreateAnchorManager(extension_helper_);
+      openxr_->GetOrCreateAnchorManager(*extension_helper_);
   if (!anchor_manager) {
     return;
   }
@@ -526,7 +529,7 @@ void OpenXrRenderLoop::OnContextLostCallback(
 // StartContextProvider uses BindOnce to passthrough the start_runtime_callback
 // given to it from it's caller. OnContextProviderCreated must run the
 // start_runtime_callback, passing true on successful call to
-// BindToCurrentThread and false if not.
+// BindToCurrentSequence and false if not.
 void OpenXrRenderLoop::OnContextProviderCreated(
     StartRuntimeCallback start_runtime_callback,
     scoped_refptr<viz::ContextProvider> context_provider) {
@@ -534,7 +537,7 @@ void OpenXrRenderLoop::OnContextProviderCreated(
   DCHECK_EQ(context_provider_, nullptr);
 
   const gpu::ContextResult context_result =
-      context_provider->BindToCurrentThread();
+      context_provider->BindToCurrentSequence();
   if (context_result != gpu::ContextResult::kSuccess) {
     std::move(start_runtime_callback).Run(false);
     return;

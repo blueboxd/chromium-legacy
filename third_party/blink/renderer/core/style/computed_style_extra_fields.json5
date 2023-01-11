@@ -186,18 +186,21 @@
       field_size: 2,
       default_value: "0",
       type_name: "unsigned",
+      writable: true,
     },
     {
       name: "HasRemUnits",
       field_template: "monotonic_flag",
       default_value: "false",
       custom_compare: true,
+      writable: true,
     },
     {
       name: "HasEmUnits",
       field_template: "monotonic_flag",
       default_value: "false",
       custom_compare: true,
+      writable: true,
     },
     // Whether we used a length unit that must be resolved against the measure
     // of a certain glyph in some font.
@@ -206,12 +209,14 @@
       field_template: "monotonic_flag",
       default_value: "false",
       custom_compare: true,
+      writable: true,
     },
     {
       name: "HasContainerRelativeUnits",
       field_template: "monotonic_flag",
       default_value: "false",
       custom_compare: true,
+      writable: true,
     },
     {
       name: "HasLineHeightRelativeUnits",
@@ -219,6 +224,7 @@
       field_template: "monotonic_flag",
       default_value: "false",
       custom_compare: true,
+      writable: true,
     },
     // True if this ComputedStyle is the result of CustomStyleForLayoutObject()
     // that uses font metrics in its calculation.
@@ -234,10 +240,9 @@
       field_template: "primitive",
       field_size: 6,
       default_value: "PseudoId::kPseudoIdNone",
-      type_name: "unsigned",
+      type_name: "PseudoId",
       custom_copy: true,
       custom_compare: true,
-      computed_style_custom_functions: ["getter", "setter"],
     },
     {
       name: "PseudoBits",
@@ -248,12 +253,25 @@
       custom_copy: true,
       custom_compare: true,
       computed_style_custom_functions: ["getter", "setter"],
+      writable: true,
     },
     // Whether any non-universal highlight selectors were found when collecting
     // rules for the originating element. Stored in the *originating* style, and
     // needs to be restored *non-monotonically* in ApplyMatchedCache.
     {
       name: "HasNonUniversalHighlightPseudoStyles",
+      field_template: "primitive",
+      field_group: "*",
+      default_value: "false",
+      type_name: "bool",
+      custom_copy: true,
+      custom_compare: true,
+    },
+    // Whether any highlight pseudo selectors were found when collecting non-UA
+    // rules for the originating element. Stored in the *originating* style, and
+    // needs to be restored *non-monotonically* in ApplyMatchedCache.
+    {
+      name: "HasNonUaHighlightPseudoStyles",
       field_template: "primitive",
       field_group: "*",
       default_value: "false",
@@ -290,6 +308,7 @@
       type_name: "bool",
       inherited: true,
       computed_style_custom_functions: ["getter", "setter"],
+      writable: true,
     },
     // FIXME: vertical align is actually a CSS property, but since we don't support union fields
     // which can be either a keyword or Length, this is specified in this file for now. Remove this
@@ -360,7 +379,6 @@
       field_group: "inherited->font",
       inherited: true,
       default_value: "Font()",
-      computed_style_custom_functions: ["getter", "setter"],
     },
     {
       name: "TextAutosizingMultiplier",
@@ -408,7 +426,7 @@
       default_value: "none",
       keywords: ["none", "auto", "dot", "circle", "double-circle", "triangle", "sesame", "custom"],
       field_group: "*",
-      computed_style_custom_functions: ["getter", "setter"],
+      computed_style_custom_functions: ["getter"],
     },
     // Though will-change is not itself an inherited property, the intent
     // expressed by 'will-change: contents' includes descendants.
@@ -439,7 +457,6 @@
       field_size: 8,
       default_value: "TouchAction::kAuto",
       field_group: "*",
-      computed_style_custom_functions: ["getter", "setter"],
     },
     {
       name: "EffectiveAppearance",
@@ -468,6 +485,7 @@
       wrapper_pointer_name: "scoped_refptr",
       field_group: "*",
       computed_style_custom_functions: ["getter", "setter"],
+      writable: true,
     },
     {
       name: "InheritedVariables",
@@ -480,6 +498,7 @@
       wrapper_pointer_name: "scoped_refptr",
       field_group: "inherited",
       computed_style_custom_functions: ["getter", "setter"],
+      writable: true,
     },
     {
       name: "HighlightData",
@@ -490,7 +509,8 @@
       default_value: "nullptr",
       wrapper_pointer_name: "scoped_refptr",
       field_group: "*",
-      computed_style_custom_functions: ["setter"],
+      computed_style_custom_functions: [],
+      writable: true,
     },
     {
       name: "InitialData",
@@ -502,6 +522,7 @@
       wrapper_pointer_name: "scoped_refptr",
       field_group: "*",
       computed_style_custom_functions: ["setter"],
+      writable: true,
     },
     {
       name: "Mask",
@@ -595,6 +616,7 @@
       wrapper_pointer_name: "std::unique_ptr",
       include_paths: ["third_party/blink/renderer/core/style/style_non_inherited_variables.h"],
       computed_style_custom_functions: ["getter", "setter"],
+      writable: true,
     },
     {
       name: "PageSizeType",
@@ -757,6 +779,7 @@
       type_name: "bool",
       field_group: "*",
       default_value: "false",
+      writable: true,
     },
     // Plugins require accelerated compositing for reasons external to blink.
     // In which case, we need to update the ComputedStyle on the
@@ -873,7 +896,7 @@
       type_name: "NamedGridAreaMap",
       field_group: "*->grid",
       default_value: "NamedGridAreaMap()",
-      include_paths: ["third_party/blink/renderer/core/style/grid_area.h"]
+      include_paths: ["third_party/blink/renderer/core/style/grid_area.h"],
     },
     {
       name: "NamedGridAreaRowCount",
@@ -897,6 +920,7 @@
       field_template: "monotonic_flag",
       default_value: "false",
       custom_compare: true,
+      writable: true,
     },
     {
       name: "MayHaveMargin",
@@ -1079,6 +1103,7 @@
       type_name: "bool",
       field_group: "*",
       default_value: "false",
+      writable: true,
     },
     {
       name: "DependsOnStyleContainerQueries",
@@ -1086,6 +1111,7 @@
       type_name: "bool",
       field_group: "*",
       default_value: "false",
+      writable: true,
     },
     {
       // Set to true if this ComputedStyle is for an element whose ::first-line
@@ -1112,6 +1138,7 @@
       name: "SkipsContents",
       field_template: "monotonic_flag",
       default_value: "false",
+      writable: true,
     },
     {
       // https://html.spec.whatwg.org/multipage/interaction.html#inert
@@ -1144,19 +1171,17 @@
     },
     {
       name: "HasExplicitOverflowXVisible",
-      field_template: "primitive",
+      field_template: "monotonic_flag",
       type_name: "bool",
       field_group: "*",
       default_value: "false",
-      computed_style_custom_functions: ["setter"],
     },
     {
       name: "HasExplicitOverflowYVisible",
-      field_template: "primitive",
+      field_template: "monotonic_flag",
       type_name: "bool",
       field_group: "*",
       default_value: "false",
-      computed_style_custom_functions: ["setter"],
     }
   ],
 }

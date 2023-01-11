@@ -6,31 +6,10 @@ import {FakeEntry, FilesAppEntry} from '../files_app_entry_interfaces.js';
 import {VolumeManager} from '../volume_manager.js';
 
 /**
- * FileOperationManager: manager of file operations. Implementations of this
- * interface must @extends {cr.EventTarget} or implement the EventTarget API on
- * their own.
- *
+ * FileOperationManager: manager of file operations.
  * @interface
  */
-export class FileOperationManager extends EventTarget {
-  /**
-   * Store a reference to our owning File Manager.
-   * @param {Object} fileManager reference to the 'foreground' app.
-   */
-  setFileManager(fileManager) {}
-
-  /**
-   * Says if there are any tasks in the queue.
-   * @return {boolean} True, if there are any tasks.
-   */
-  hasQueuedTasks() {}
-
-  /**
-   * Requests the specified task to be canceled.
-   * @param {string} taskId ID of task to be canceled.
-   */
-  requestTaskCancel(taskId) {}
-
+export class FileOperationManager {
   /**
    * Filters the entry in the same directory
    *
@@ -54,30 +33,6 @@ export class FileOperationManager extends EventTarget {
   willUseTrash(volumeManager, entries) {}
 
   /**
-   * Schedules the files deletion.
-   *
-   * @param {!Array<!Entry>} entries The entries.
-   * @param {boolean=} permanentlyDelete if true, entries will be deleted rather
-   *     than moved to trash.
-   */
-  deleteEntries(entries, permanentlyDelete = false) {}
-
-  /**
-   * Notifies File Manager that an extraction operation has finished.
-   *
-   * @param {number} taskId The unique task id for the IO operation.
-   */
-  notifyExtractDone(taskId) {}
-
-  /**
-   * Called when an IOTask finished with a NEED_PASSWORD status.
-   * Delegate it to the task controller to deal with it.
-   *
-   * @param {number} taskId The unique task id for the IO operation.
-   */
-  handleMissingPassword(taskId) {}
-
-  /**
    * Writes file to destination dir.
    *
    * @param {!File} file The file entry to be written.
@@ -85,11 +40,4 @@ export class FileOperationManager extends EventTarget {
    * @return {!Promise<!FileEntry>}
    */
   async writeFile(file, destination) {}
-
-  /**
-   * Generates new task ID.
-   *
-   * @return {string} New task ID.
-   */
-  generateTaskId() {}
 }

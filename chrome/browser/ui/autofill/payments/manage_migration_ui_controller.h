@@ -100,8 +100,10 @@ class ManageMigrationUiController
 
   void ShowFeedbackDialog();
 
-  raw_ptr<LocalCardMigrationBubbleControllerImpl> bubble_controller_ = nullptr;
-  raw_ptr<LocalCardMigrationDialogControllerImpl> dialog_controller_ = nullptr;
+  raw_ptr<LocalCardMigrationBubbleControllerImpl, DanglingUntriaged>
+      bubble_controller_ = nullptr;
+  raw_ptr<LocalCardMigrationDialogControllerImpl, DanglingUntriaged>
+      dialog_controller_ = nullptr;
 
   // This indicates what step the migration flow is currently in and
   // what should be shown next.

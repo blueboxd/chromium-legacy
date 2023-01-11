@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/strings/string_piece_forward.h"
+#include "content/browser/interest_group/subresource_url_authorizations.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -17,8 +18,13 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+namespace net {
+class NetworkAnonymizationKey;
+}
 
 namespace content {
 
@@ -30,6 +36,11 @@ class CONTENT_EXPORT AuctionURLLoaderFactoryProxy
   using GetUrlLoaderFactoryCallback =
       base::RepeatingCallback<network::mojom::URLLoaderFactory*()>;
 
+  // Callback to preconnect a single socket with the given info.
+  using PreconnectSocketCallback = base::OnceCallback<void(
+      const GURL& url,
+      const net::NetworkAnonymizationKey& network_anonymization_key)>;
+
   // Passed in callbacks must be safe to call at any time during the lifetime of
   // the AuctionURLLoaderFactoryProxy.
   //
@@ -39,6 +50,12 @@ class CONTENT_EXPORT AuctionURLLoaderFactoryProxy
   //
   // `get_trusted_url_loader_factory` returns a trusted URLLoaderFactory. Used
   // for bidder worklet script and trusted selling signals fetches.
+  //
+  // `preconnect_socket_callback` is used to issue a preconnect if there's a
+  // non-empty trusted signals URL. No preconnect is made for the JS and web
+  // assembly, since they should be cacheable, and currently erring on the side
+  // of not making unnecessary connections. Invoked immediately, if it's going
+  // to be invoked at all.
   //
   // `frame_origin` is the origin of the frame running the auction. Used as the
   // initiator.
@@ -61,8 +78,10 @@ class CONTENT_EXPORT AuctionURLLoaderFactoryProxy
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> pending_receiver,
       GetUrlLoaderFactoryCallback get_frame_url_loader_factory,
       GetUrlLoaderFactoryCallback get_trusted_url_loader_factory,
+      PreconnectSocketCallback preconnect_socket_callback,
       const url::Origin& top_frame_origin,
       const url::Origin& frame_origin,
+      absl::optional<int> renderer_process_id,
       bool is_for_seller,
       network::mojom::ClientSecurityStatePtr client_security_state,
       const GURL& script_url,
@@ -72,6 +91,10 @@ class CONTENT_EXPORT AuctionURLLoaderFactoryProxy
   AuctionURLLoaderFactoryProxy& operator=(const AuctionURLLoaderFactoryProxy&) =
       delete;
   ~AuctionURLLoaderFactoryProxy() override;
+
+  SubresourceUrlAuthorizations& subresource_url_authorizations() {
+    return subresource_url_authorizations_;
+  }
 
   // mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(
@@ -98,14 +121,19 @@ class CONTENT_EXPORT AuctionURLLoaderFactoryProxy
   const GetUrlLoaderFactoryCallback get_frame_url_loader_factory_;
   const GetUrlLoaderFactoryCallback get_trusted_url_loader_factory_;
 
+  // Manages the bundle subresource URLs that may be accessed by the worklet.
+  SubresourceUrlAuthorizations subresource_url_authorizations_;
+
   const url::Origin top_frame_origin_;
   const url::Origin frame_origin_;
+  const absl::optional<int> renderer_process_id_;
   const bool is_for_seller_;
   const network::mojom::ClientSecurityStatePtr client_security_state_;
 
-  // Transient IsolationInfo used for all seller requests to trusted bidding
-  // signals URLs. Populated on first fetch it applies to.
-  net::IsolationInfo isolation_info_for_seller_signals_;
+  // IsolationInfo used for requests using the trusted URLLoaderFactory. A
+  // Transient IsolationInfo for sellers, the bidder's IsolationInfo for
+  // bidders.
+  const net::IsolationInfo isolation_info_;
 
   const GURL script_url_;
   const absl::optional<GURL> wasm_url_;

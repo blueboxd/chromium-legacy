@@ -26,7 +26,7 @@ void ProxyPolicyProvider::SetDelegate(ConfigurationPolicyProvider* delegate) {
     delegate_->AddObserver(this);
     OnUpdatePolicy(delegate_);
   } else {
-    UpdatePolicy(std::make_unique<PolicyBundle>());
+    UpdatePolicy(PolicyBundle());
   }
 }
 
@@ -48,9 +48,7 @@ void ProxyPolicyProvider::RefreshPolicies() {
     // Subtle: if a RefreshPolicies() call comes after Shutdown() then the
     // current bundle should be served instead. This also does the right thing
     // if SetDelegate() was never called before.
-    std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
-    bundle->CopyFrom(policies());
-    UpdatePolicy(std::move(bundle));
+    UpdatePolicy(policies().Clone());
   }
 }
 
@@ -64,9 +62,7 @@ void ProxyPolicyProvider::OnUpdatePolicy(
     return;
 
   DCHECK_EQ(delegate_, provider);
-  std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
-  bundle->CopyFrom(delegate_->policies());
-  UpdatePolicy(std::move(bundle));
+  UpdatePolicy(delegate_->policies().Clone());
 }
 
 }  // namespace policy

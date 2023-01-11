@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "chrome/browser/enterprise/connectors/file_system/account_info_utils.h"
@@ -581,8 +582,8 @@ BoxChunkedUploader::MakePartFileUploadApiCall() {
   return std::make_unique<BoxPartFileUploadApiCallFlow>(
       base::BindOnce(&BoxChunkedUploader::OnPartFileUploadResponse,
                      weak_factory_.GetWeakPtr()),
-      session_endpoints_.FindPath("upload_part")->GetString(),
-      curr_part_.content, curr_part_.byte_from, curr_part_.byte_to, file_size_);
+      *session_endpoints_.FindString("upload_part"), curr_part_.content,
+      curr_part_.byte_from, curr_part_.byte_to, file_size_);
 }
 
 std::unique_ptr<OAuth2ApiCallFlow>
@@ -590,8 +591,7 @@ BoxChunkedUploader::MakeCommitUploadSessionApiCall() {
   return std::make_unique<BoxCommitUploadSessionApiCallFlow>(
       base::BindOnce(&BoxChunkedUploader::OnCommitUploadSessionResponse,
                      weak_factory_.GetWeakPtr()),
-      session_endpoints_.FindPath("commit")->GetString(), uploaded_parts_,
-      sha1_digest_);
+      *session_endpoints_.FindString("commit"), uploaded_parts_, sha1_digest_);
 }
 
 std::unique_ptr<OAuth2ApiCallFlow>
@@ -599,12 +599,12 @@ BoxChunkedUploader::MakeAbortUploadSessionApiCall(InterruptReason reason) {
   return std::make_unique<BoxAbortUploadSessionApiCallFlow>(
       base::BindOnce(&BoxChunkedUploader::OnAbortUploadSessionResponse,
                      weak_factory_.GetWeakPtr(), reason),
-      session_endpoints_.FindPath("abort")->GetString());
+      *session_endpoints_.FindString("abort"));
 }
 
 void BoxChunkedUploader::OnCreateUploadSessionResponse(
     BoxApiCallResponse response,
-    base::Value session_endpoints,
+    base::Value::Dict session_endpoints,
     size_t part_size) {
   if (!EnsureSuccess(response)) {
     if (response.net_or_http_code == net::HTTP_NOT_FOUND) {
@@ -649,8 +649,7 @@ void BoxChunkedUploader::OnPartFileUploadResponse(BoxApiCallResponse response,
     return;
   }
   uploaded_parts_.Append(std::move(part_info));
-  chunks_handler_->ContinueToReadChunk(
-      uploaded_parts_.GetListDeprecated().size() + 1);
+  chunks_handler_->ContinueToReadChunk(uploaded_parts_.size() + 1);
 }
 
 void BoxChunkedUploader::OnFileCompletelyUploaded(
@@ -673,7 +672,7 @@ void BoxChunkedUploader::OnCommitUploadSessionResponse(
   }
 
   if (response.net_or_http_code == net::HTTP_ACCEPTED) {
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&BoxChunkedUploader::OnFileCompletelyUploaded,
                        weak_factory_.GetWeakPtr(), sha1_digest_),
@@ -686,7 +685,7 @@ void BoxChunkedUploader::OnCommitUploadSessionResponse(
 void BoxChunkedUploader::OnAbortUploadSessionResponse(
     InterruptReason reason,
     BoxApiCallResponse response) {
-  session_endpoints_.DictClear();  // Clear dict here to avoid infinite retry.
+  session_endpoints_.clear();  // Clear dict here to avoid infinite retry.
   if (EnsureSuccess(response)) {
     OnApiCallFlowFailure(reason);
   } else {
@@ -699,7 +698,7 @@ void BoxChunkedUploader::OnAbortUploadSessionResponse(
 
 void BoxChunkedUploader::OnApiCallFlowFailure(InterruptReason reason) {
   // Dict would've been cleared if aborted already; otherwise, try abort.
-  if (session_endpoints_.is_dict() && !session_endpoints_.DictEmpty()) {
+  if (!session_endpoints_.empty()) {
     chunks_handler_.reset();
     SetCurrentApiCall(MakeAbortUploadSessionApiCall(reason));
     TryCurrentApiCall();

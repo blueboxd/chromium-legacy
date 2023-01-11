@@ -29,12 +29,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.view.OneShotPreDrawListener;
+import androidx.core.view.ViewCompat;
 
 import com.google.android.material.color.MaterialColors;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.ButtonData.ButtonSpec;
@@ -70,7 +71,6 @@ class OptionalButtonView extends FrameLayout implements TransitionListener {
     private int mBackgroundColorFilter;
     private Runnable mOnBeforeHideTransitionCallback;
     private Callback<Transition> mFakeBeginTransitionForTesting;
-    private Handler mHandler;
     private Handler mHandlerForTesting;
 
     private @State int mState;
@@ -215,6 +215,17 @@ class OptionalButtonView extends FrameLayout implements TransitionListener {
         mContentDescription =
                 getContext().getResources().getString(buttonSpec.getContentDescriptionResId());
 
+        // If the button hasn't been laid out then try again before the next draw. This may happen
+        // if the view gets initialized while the activity is not visible (e.g. when a setting
+        // change forces an activity reset).
+        if (!ViewCompat.isLaidOut(this)) {
+            OneShotPreDrawListener.add(this, () -> startTransitionToNewButton(canAnimate));
+        } else {
+            startTransitionToNewButton(canAnimate);
+        }
+    }
+
+    private void startTransitionToNewButton(boolean canAnimate) {
         if (mState == State.HIDDEN && mActionChipLabelString == null) {
             showIcon(canAnimate);
         } else if (canAnimate && mActionChipLabelString != null) {
@@ -285,11 +296,7 @@ class OptionalButtonView extends FrameLayout implements TransitionListener {
             return mHandlerForTesting;
         }
 
-        if (mHandler == null) {
-            mHandler = new Handler(ThreadUtils.getUiThreadLooper());
-        }
-
-        return mHandler;
+        return super.getHandler();
     }
 
     @Override

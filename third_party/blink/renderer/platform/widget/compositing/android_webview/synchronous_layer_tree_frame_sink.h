@@ -13,7 +13,7 @@
 #include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/read_only_shared_memory_region.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -190,6 +190,8 @@ class SynchronousLayerTreeFrameSink
     void DisplayDidReceiveCALayerParams(
         const gfx::CALayerParams& ca_layer_params) override {}
     void DisplayDidCompleteSwapWithSize(const gfx::Size& pixel_size) override {}
+    void DisplayAddChildWindowToBrowser(
+        gpu::SurfaceHandle child_window) override {}
     void SetWideColorEnabled(bool enabled) override {}
     void SetPreferredFrameInterval(base::TimeDelta interval) override {}
     base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(

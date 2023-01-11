@@ -437,7 +437,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter currentTarget
 [Worker]     getter defaultPrevented
 [Worker]     getter eventPhase
-[Worker]     getter path
 [Worker]     getter returnValue
 [Worker]     getter srcElement
 [Worker]     getter target
@@ -789,7 +788,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter storageFormat
 [Worker]     getter width
 [Worker]     method constructor
-[Worker]     method getSettings
 [Worker] interface ImageDecoder
 [Worker]     static method isTypeSupported
 [Worker]     attribute @@toStringTag
@@ -1217,6 +1215,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter connectEnd
 [Worker]     getter connectStart
+[Worker]     getter contentType
 [Worker]     getter decodedBodySize
 [Worker]     getter deliveryType
 [Worker]     getter domainLookupEnd
@@ -1634,16 +1633,19 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method error
 [Worker]     method terminate
 [Worker] interface TrustedHTML
+[Worker]     static method fromLiteral
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker]     method toJSON
 [Worker]     method toString
 [Worker] interface TrustedScript
+[Worker]     static method fromLiteral
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker]     method toJSON
 [Worker]     method toString
 [Worker] interface TrustedScriptURL
+[Worker]     static method fromLiteral
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker]     method toJSON

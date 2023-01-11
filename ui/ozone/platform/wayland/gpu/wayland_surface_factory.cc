@@ -100,6 +100,14 @@ std::unique_ptr<NativePixmapGLBinding> GLOzoneEGLWayland::ImportNativePixmap(
 scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateViewGLSurface(
     gl::GLDisplay* display,
     gfx::AcceleratedWidget widget) {
+  // If we run with software GL implementation, use GLSurface which will read
+  // pixels back and present via shared memory.
+  if (gl::IsSoftwareGLImplementation(gl::GetGLImplementationParts())) {
+    return gl::InitializeGLSurface(
+        base::MakeRefCounted<GLSurfaceEglReadbackWayland>(
+            display->GetAs<gl::GLDisplayEGL>(), widget, buffer_manager_));
+  }
+
   // Only EGLGLES2 is supported with surfaceless view gl.
   if ((gl::GetGLImplementation() != gl::kGLImplementationEGLGLES2) ||
       !connection_)
@@ -123,9 +131,7 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateSurfacelessViewGLSurface(
     gl::GLDisplay* display,
     gfx::AcceleratedWidget window) {
   if (gl::IsSoftwareGLImplementation(gl::GetGLImplementationParts())) {
-    return gl::InitializeGLSurface(
-        base::MakeRefCounted<GLSurfaceEglReadbackWayland>(
-            display->GetAs<gl::GLDisplayEGL>(), window, buffer_manager_));
+    return nullptr;
   } else {
 #if defined(WAYLAND_GBM)
   // If there is a gbm device available, use surfaceless gl surface.
@@ -217,7 +223,7 @@ WaylandSurfaceFactory::CreateVulkanImplementation(bool use_swiftshader,
 
 scoped_refptr<gfx::NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
-    VkDevice vk_device,
+    gpu::VulkanDeviceQueue* device_queue,
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
@@ -240,7 +246,7 @@ scoped_refptr<gfx::NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(
 
 void WaylandSurfaceFactory::CreateNativePixmapAsync(
     gfx::AcceleratedWidget widget,
-    VkDevice vk_device,
+    gpu::VulkanDeviceQueue* device_queue,
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
@@ -248,7 +254,7 @@ void WaylandSurfaceFactory::CreateNativePixmapAsync(
   // CreateNativePixmap is non-blocking operation. Thus, it is safe to call it
   // and return the result with the provided callback.
   std::move(callback).Run(
-      CreateNativePixmap(widget, vk_device, size, format, usage));
+      CreateNativePixmap(widget, device_queue, size, format, usage));
 }
 
 scoped_refptr<gfx::NativePixmap>

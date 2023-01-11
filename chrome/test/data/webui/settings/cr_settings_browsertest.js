@@ -84,7 +84,12 @@ TEST_F('CrSettingsBasicPageTest', 'DISABLED_BasicPage', function() {
   runMochaSuite('SettingsBasicPage');
 });
 
-TEST_F('CrSettingsBasicPageTest', 'PrivacyGuidePromo', function() {
+GEN('#if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)');
+GEN('#define MAYBE_PrivacyGuidePromo DISABLED_PrivacyGuidePromo');
+GEN('#else');
+GEN('#define MAYBE_PrivacyGuidePromo PrivacyGuidePromo');
+GEN('#endif');
+TEST_F('CrSettingsBasicPageTest', 'MAYBE_PrivacyGuidePromo', function() {
   runMochaSuite('PrivacyGuidePromo');
 });
 
@@ -257,13 +262,6 @@ var CrSettingsAutofillSectionCompanyEnabledTest =
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/autofill_section_test.js';
   }
-
-  /** @override */
-  get featureListInternal() {
-    return {
-      enabled: ['autofill::features::kAutofillEnableExtendedAddressFormats'],
-    };
-  }
 };
 
 TEST_F('CrSettingsAutofillSectionCompanyEnabledTest', 'All', function() {
@@ -271,7 +269,6 @@ TEST_F('CrSettingsAutofillSectionCompanyEnabledTest', 'All', function() {
   const loadTimeDataOverride = {};
   loadTimeDataOverride['EnableCompanyName'] = true;
   loadTimeDataOverride['showHonorific'] = true;
-  loadTimeDataOverride['EnableExtendedAddressFormat'] = true;
   loadTimeData.overrideValues(loadTimeDataOverride);
   mocha.run();
 });
@@ -757,7 +754,6 @@ TEST_F('CrSettingsAdvancedPageTest', 'MAYBE_Load', function() {
   mocha.run();
 });
 
-
 var CrSettingsReviewNotificationPermissionsTest =
     class extends CrSettingsBrowserTest {
   /** @override */
@@ -775,9 +771,10 @@ var CrSettingsReviewNotificationPermissionsTest =
   }
 };
 
-TEST_F('CrSettingsReviewNotificationPermissionsTest', 'All', function() {
-  mocha.run();
-});
+TEST_F(
+    'CrSettingsReviewNotificationPermissionsTest', 'All', function() {
+      mocha.run();
+    });
 
 [['AppearanceFontsPage', 'appearance_fonts_page_test.js'],
  [

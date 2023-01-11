@@ -233,18 +233,23 @@ const base::FeatureParam<int> kVerifyDrawOffsetY{
 // that DWM power optimization can be turned on.
 BASE_FEATURE(kDirectCompositionLetterboxVideoOptimization,
              "DirectCompositionLetterboxVideoOptimization",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Allow dual GPU rendering through EGL where supported, i.e., allow a WebGL
 // or WebGPU context to be on the high performance GPU if preferred and Chrome
 // internal rendering to be on the low power GPU.
-BASE_FEATURE(kEGLDualGpuRendering,
-             "EGLDualGpuRendering",
+BASE_FEATURE(kEGLDualGPURendering,
+             "EGLDualGPURendering",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Allow overlay swapchain to use Intel video processor for super resolution.
 BASE_FEATURE(kIntelVpSuperResolution,
              "IntelVpSuperResolution",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Allow overlay swapchain to use NVIDIA video processor for super resolution.
+BASE_FEATURE(kNvidiaVpSuperResolution,
+             "NvidiaVpSuperResolution",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Default to using ANGLE's OpenGL backend
@@ -275,6 +280,9 @@ BASE_FEATURE(kVulkanFromANGLE,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsDefaultANGLEVulkan() {
+#if defined(MEMORY_SANITIZER)
+  return false;
+#else
 #if BUILDFLAG(IS_ANDROID)
   // No support for devices before Q -- exit before checking feature flags
   // so that devices are not counted in finch trials.
@@ -304,6 +312,7 @@ bool IsDefaultANGLEVulkan() {
     return false;
 #endif
   return base::FeatureList::IsEnabled(kDefaultANGLEVulkan);
+#endif  // defined(MEMORY_SANITIZER)
 }
 
 // Use waitable swap chain on Windows to reduce display latency.
@@ -315,18 +324,17 @@ BASE_FEATURE(kDXGIWaitableSwapChain,
 const base::FeatureParam<int> kDXGIWaitableSwapChainMaxQueuedFrames{
     &kDXGIWaitableSwapChain, "DXGIWaitableSwapChainMaxQueuedFrames", 2};
 
-bool SupportsEGLDualGpuRendering() {
+// Force a present interval of 0. This asks Windows to cancel the remaining time
+// on the previously presented frame instead of synchronizing with vblank(s).
+// Frames may be discarded if they are presented more frequently than one per
+// vblank.
+BASE_FEATURE(kDXGISwapChainPresentInterval0,
+             "DXGISwapChainPresentInterval0",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool SupportsEGLDualGPURendering() {
 #if defined(USE_EGL) && (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC))
-  gl::GLDisplayEGL* display_default =
-      gl::GLDisplayManagerEGL::GetInstance()->GetDisplay(
-          gl::GpuPreference::kDefault);
-  DCHECK(display_default);
-  gl::GLDisplayEGL* display_high_performance =
-      gl::GLDisplayManagerEGL::GetInstance()->GetDisplay(
-          gl::GpuPreference::kHighPerformance);
-  if (!display_high_performance || display_default == display_high_performance)
-    return false;
-  return base::FeatureList::IsEnabled(kEGLDualGpuRendering);
+  return base::FeatureList::IsEnabled(kEGLDualGPURendering);
 #else
   return false;
 #endif  // USE_EGL && (IS_WIN || IS_MAC)

@@ -66,15 +66,22 @@ class AndroidAutofillManager : public AutofillManager {
   void OnSelectFieldOptionsDidChangeImpl(const FormData& form) override {}
 
   void Reset() override;
+  void OnContextMenuShownInField(const FormGlobalId& form_global_id,
+                                 const FieldGlobalId& field_global_id) override;
 
   void ReportAutofillWebOTPMetrics(bool used_web_otp) override {}
 
   bool has_server_prediction() const { return has_server_prediction_; }
 
   // Send the |form| to the renderer for the specified |action|.
+  //
+  // |triggered_origin| is the origin of the field from which the autofill is
+  // triggered; this affects the security policy for cross-frame fills. See
+  // AutofillDriver::FillOrPreviewForm() for further details.
   void FillOrPreviewForm(int query_id,
                          mojom::RendererFormDataAction action,
-                         const FormData& form);
+                         const FormData& form,
+                         const url::Origin& triggered_origin);
 
   void SetProfileFillViaAutofillAssistantIntent(
       const autofill_assistant::AutofillAssistantIntent intent) override;
@@ -111,7 +118,7 @@ class AndroidAutofillManager : public AutofillManager {
       const FormFieldData& field,
       const gfx::RectF& bounding_box,
       int query_id,
-      bool autoselect_first_suggestion,
+      AutoselectFirstSuggestion autoselect_first_suggestion,
       FormElementWasClicked form_element_was_clicked) override;
 
   void OnFocusOnFormFieldImpl(const FormData& form,

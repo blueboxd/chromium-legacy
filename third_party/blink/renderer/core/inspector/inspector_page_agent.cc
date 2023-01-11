@@ -555,6 +555,7 @@ Response InspectorPageAgent::disable() {
       resource_content_loader_client_id_);
   requested_compilation_cache_.clear();
   compilation_cache_.clear();
+  ad_script_identifiers_.clear();
   stopScreencast();
 
   return Response::Success();
@@ -745,6 +746,23 @@ void InspectorPageAgent::getResourceContent(
       WTF::BindOnce(
           &InspectorPageAgent::GetResourceContentAfterResourcesContentLoaded,
           WrapPersistent(this), frame_id, url, std::move(callback)));
+}
+
+protocol::Response InspectorPageAgent::getAdScriptId(
+    const String& frame_id,
+    Maybe<protocol::Page::AdScriptId>* ad_script_id) {
+  if (ad_script_identifiers_.Contains(frame_id)) {
+    AdScriptIdentifier* ad_script_identifier =
+        ad_script_identifiers_.at(frame_id);
+    *ad_script_id =
+        protocol::Page::AdScriptId::create()
+            .setScriptId(String::Number(ad_script_identifier->id))
+            .setDebuggerId(ToCoreString(
+                ad_script_identifier->context_id.toString()->string()))
+            .build();
+  }
+
+  return Response::Success();
 }
 
 void InspectorPageAgent::SearchContentAfterResourcesContentLoaded(
@@ -1038,20 +1056,15 @@ void InspectorPageAgent::FrameAttachedToParent(
   Frame* parent_frame = frame->Tree().Parent();
   std::unique_ptr<SourceLocation> location =
       SourceLocation::CaptureWithFullStackTrace();
-  Maybe<protocol::Page::AdScriptId> ad_script_id;
   if (ad_script_on_stack.has_value()) {
-    ad_script_id =
-        protocol::Page::AdScriptId::create()
-            .setScriptId(String::Number(ad_script_on_stack.value().id))
-            .setDebuggerId(ToCoreString(
-                ad_script_on_stack.value().context_id.toString()->string()))
-            .build();
+    ad_script_identifiers_.Set(
+        IdentifiersFactory::FrameId(frame),
+        std::make_unique<AdScriptIdentifier>(ad_script_on_stack.value()));
   }
   GetFrontend()->frameAttached(
       IdentifiersFactory::FrameId(frame),
       IdentifiersFactory::FrameId(parent_frame),
-      location ? location->BuildInspectorObject() : nullptr,
-      std::move(ad_script_id));
+      location ? location->BuildInspectorObject() : nullptr);
   // Some network events referencing this frame will be reported from the
   // browser, so make sure to deliver FrameAttached without buffering,
   // so it gets to the front-end first.
@@ -1060,6 +1073,10 @@ void InspectorPageAgent::FrameAttachedToParent(
 
 void InspectorPageAgent::FrameDetachedFromParent(LocalFrame* frame,
                                                  FrameDetachType type) {
+  // If the frame is swapped, we still maintain the ad script id for it.
+  if (type == FrameDetachType::kRemove)
+    ad_script_identifiers_.erase(IdentifiersFactory::FrameId(frame));
+
   GetFrontend()->frameDetached(IdentifiersFactory::FrameId(frame),
                                FrameDetachTypeToProtocol(type));
 }

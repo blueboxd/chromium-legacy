@@ -4,7 +4,6 @@
 
 #include "fuchsia_web/runners/cast/cast_component.h"
 
-#include <fuchsia/legacymetrics/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <algorithm>
@@ -23,7 +22,6 @@
 #include "fuchsia_web/runners/cast/cast_runner.h"
 #include "fuchsia_web/runners/cast/cast_streaming.h"
 #include "fuchsia_web/runners/cast/fidl/fidl/chromium/cast/cpp/fidl.h"
-#include "fuchsia_web/runners/common/modular/agent_manager.h"
 #include "fuchsia_web/runners/common/web_component.h"
 
 namespace {
@@ -77,9 +75,8 @@ CastComponent::CastComponent(base::StringPiece debug_name,
     : WebComponent(debug_name,
                    runner,
                    std::move(params.startup_context),
-                   std::move(params.controller_request)),
+                   nullptr),
       is_headless_(is_headless),
-      agent_manager_(std::move(params.agent_manager)),
       application_config_(std::move(params.application_config)),
       url_rewrite_rules_provider_(std::move(params.url_rewrite_rules_provider)),
       initial_url_rewrite_rules_(
@@ -89,30 +86,10 @@ CastComponent::CastComponent(base::StringPiece debug_name,
       media_settings_(std::move(params.media_settings.value())),
       headless_disconnect_watch_(FROM_HERE) {
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
+  component_controller_.Bind(std::move(params.controller_request));
 }
 
 CastComponent::~CastComponent() = default;
-
-void CastComponent::SetOnDestroyedCallback(base::OnceClosure on_destroyed) {
-  on_destroyed_ = std::move(on_destroyed);
-}
-
-void CastComponent::ConnectMetricsRecorder(
-    fidl::InterfaceRequest<fuchsia::legacymetrics::MetricsRecorder> request) {
-  startup_context()->svc()->Connect(std::move(request));
-}
-
-void CastComponent::ConnectAudio(
-    fidl::InterfaceRequest<fuchsia::media::Audio> request) {
-  agent_manager_->ConnectToAgentService(application_config_.agent_url(),
-                                        std::move(request));
-}
-
-void CastComponent::ConnectDeviceWatcher(
-    fidl::InterfaceRequest<fuchsia::camera3::DeviceWatcher> request) {
-  agent_manager_->ConnectToAgentService(application_config_.agent_url(),
-                                        std::move(request));
-}
 
 bool CastComponent::HasWebPermission(
     fuchsia::web::PermissionType permission_type) const {
@@ -227,8 +204,6 @@ void CastComponent::DestroyComponent(int64_t exit_code,
                                      fuchsia::sys::TerminationReason reason) {
   DCHECK(!constructor_active_);
 
-  std::move(on_destroyed_).Run();
-
   // If the component EXITED then pass the |exit_code| to the Agent, to allow it
   // to distinguish graceful termination from crashes.
   if (reason == fuchsia::sys::TerminationReason::EXITED &&
@@ -311,6 +286,15 @@ void CastComponent::CreateView2(fuchsia::ui::app::CreateView2Args view_args) {
   }
 
   WebComponent::CreateView2(std::move(view_args));
+}
+
+void CastComponent::Kill() {
+  // Signal normal termination, since the caller requested it.
+  DestroyComponent(ZX_OK, fuchsia::sys::TerminationReason::EXITED);
+}
+
+void CastComponent::Stop() {
+  Kill();
 }
 
 void CastComponent::OnZxHandleSignalled(zx_handle_t handle,

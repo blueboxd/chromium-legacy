@@ -32,6 +32,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
     std::string access_token;
   };
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  // Enumeration of possible assistant manager service states.
   enum State {
     // Initial state, the service is created but not started yet.
     STOPPED = 0,
@@ -45,7 +48,15 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
     // is not ready yet to take requests.
     STARTED = 2,
     // The service is fully running and ready to take requests.
-    RUNNING = 3
+    RUNNING = 3,
+    // Stop has been called but `assistant_manager` has not been destroyed. It
+    // is possible that some functions will call back to the browser thread,
+    // e.g. the audio output.
+    STOPPING = 4,
+    // The libassistant mojom service is disconnected, e.g. process crashes.
+    DISCONNECTED = 5,
+
+    kMaxValue = DISCONNECTED
   };
 
   ~AssistantManagerService() override = default;
@@ -118,6 +129,7 @@ class AuthenticationStateObserver
 
   mojo::PendingRemote<libassistant::mojom::AuthenticationStateObserver>
   BindNewPipeAndPassRemote();
+  void ResetAuthenticationStateObserver();
 
  private:
   mojo::Receiver<libassistant::mojom::AuthenticationStateObserver> receiver_{

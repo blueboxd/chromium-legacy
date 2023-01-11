@@ -13,7 +13,7 @@ BASE_FEATURE(kAllowSilentTrustedVaultDeviceRegistration,
 
 BASE_FEATURE(kCacheBaseEntitySpecificsInMetadata,
              "CacheBaseEntitySpecificsInMetadata",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kIgnoreSyncEncryptionKeysLongMissing,
              "IgnoreSyncEncryptionKeysLongMissing",
@@ -55,6 +55,10 @@ BASE_FEATURE(kSyncExtensionTypesThrottling,
 
 BASE_FEATURE(kSyncResetPollIntervalOnStart,
              "SyncResetPollIntervalOnStart",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSyncSegmentationDataType,
+             "SyncSegmentationDataType",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSyncSendInterestedDataTypes,
@@ -115,6 +119,10 @@ BASE_FEATURE(kUseSyncInvalidations,
              "UseSyncInvalidations",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kSyncPersistInvalidations,
+             "SyncPersistInvalidations",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kUseSyncInvalidationsForWalletAndOffer,
              "UseSyncInvalidationsForWalletAndOffer",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -142,6 +150,10 @@ BASE_FEATURE(kSyncEnableContactInfoDataType,
 // this exclusively for web signouts.
 BASE_FEATURE(kSyncPauseUponAnyPersistentAuthError,
              "SyncPauseUponAnyPersistentAuthError",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSyncEnforceBookmarksCountLimit,
+             "SyncEnforceBookmarksCountLimit",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace syncer

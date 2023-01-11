@@ -14,6 +14,7 @@
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/base/ime/ash/text_input_method.h"
 #include "ui/base/ime/ash/text_input_target.h"
 #include "ui/base/ime/ash/typing_session_manager.h"
 #include "ui/base/ime/character_composer.h"
@@ -81,7 +82,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) InputMethodAsh
   void UpdateCompositionText(const CompositionText& text,
                              uint32_t cursor_pos,
                              bool visible) override;
-  void DeleteSurroundingText(int32_t offset, uint32_t length) override;
+  void DeleteSurroundingText(uint32_t num_char16s_before_cursor,
+                             uint32_t num_char16s_after_cursor) override;
   SurroundingTextInfo GetSurroundingTextInfo() override;
   void SendKeyEvent(KeyEvent* event) override;
   InputMethod* GetInputMethod() override;
@@ -174,26 +176,13 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) InputMethodAsh
   // Whether the focused text input client supports inline composition.
   bool CanComposeInline() const;
 
-  // Check whether text entered into the focused text input client should be
-  // used to improve typing suggestions for the user.
-  bool GetClientShouldDoLearning() const;
-
-  // Gets the text input flags of the focused text input client. Returns
-  // 0 if there is no focused client.
-  int GetTextInputFlags() const;
-
-  // Gets the text input mode of the focused text input client. Returns
-  // ui::TEXT_INPUT_MODE_DEFAULT if there is no focused client.
-  TextInputMode GetTextInputMode() const;
+  TextInputMethod::InputContext GetInputContext() const;
 
   // Called from the engine when it completes processing.
   void ProcessKeyEventDone(ui::KeyEvent* event,
                            ui::ime::KeyEventHandledState handled_state);
 
   bool IsPasswordOrNoneInputFieldFocused();
-
-  // Gets the reason how the focused text input client was focused.
-  TextInputClient::FocusReason GetClientFocusReason() const;
 
   // Gets the bounds of the composition text or cursor in |client|.
   std::vector<gfx::Rect> GetCompositionBounds(const TextInputClient* client);

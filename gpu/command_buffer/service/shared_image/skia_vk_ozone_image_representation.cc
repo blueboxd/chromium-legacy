@@ -60,9 +60,10 @@ SkiaVkOzoneImageRepresentation::~SkiaVkOzoneImageRepresentation() {
   }
 }
 
-sk_sp<SkSurface> SkiaVkOzoneImageRepresentation::BeginWriteAccess(
+std::vector<sk_sp<SkSurface>> SkiaVkOzoneImageRepresentation::BeginWriteAccess(
     int final_msaa_count,
     const SkSurfaceProps& surface_props,
+    const gfx::Rect& update_rect,
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
     std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
@@ -70,7 +71,7 @@ sk_sp<SkSurface> SkiaVkOzoneImageRepresentation::BeginWriteAccess(
   DCHECK(promise_texture_);
 
   if (!BeginAccess(/*readonly=*/false, begin_semaphores, end_semaphores))
-    return nullptr;
+    return {};
 
   auto* gr_context = context_state_->gr_context();
   if (gr_context->abandoned()) {
@@ -78,7 +79,7 @@ sk_sp<SkSurface> SkiaVkOzoneImageRepresentation::BeginWriteAccess(
     ozone_backing()->EndAccess(/*readonly=*/false,
                                OzoneImageBacking::AccessStream::kVulkan,
                                gfx::GpuFenceHandle());
-    return nullptr;
+    return {};
   }
 
   if (!surface_ || final_msaa_count != surface_msaa_count_ ||
@@ -94,16 +95,20 @@ sk_sp<SkSurface> SkiaVkOzoneImageRepresentation::BeginWriteAccess(
       ozone_backing()->EndAccess(/*readonly=*/false,
                                  OzoneImageBacking::AccessStream::kVulkan,
                                  gfx::GpuFenceHandle());
-      return nullptr;
+      return {};
     }
     surface_msaa_count_ = final_msaa_count;
   }
 
   *end_state = GetEndAccessState();
-  return surface_;
+
+  if (!surface_)
+    return {};
+  return {surface_};
 }
 
-sk_sp<SkPromiseImageTexture> SkiaVkOzoneImageRepresentation::BeginWriteAccess(
+std::vector<sk_sp<SkPromiseImageTexture>>
+SkiaVkOzoneImageRepresentation::BeginWriteAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
     std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
@@ -111,24 +116,24 @@ sk_sp<SkPromiseImageTexture> SkiaVkOzoneImageRepresentation::BeginWriteAccess(
   DCHECK(promise_texture_);
 
   if (!BeginAccess(false /* readonly */, begin_semaphores, end_semaphores))
-    return nullptr;
+    return {};
 
   *end_state = GetEndAccessState();
-  return promise_texture_;
+
+  if (!promise_texture_)
+    return {};
+  return {promise_texture_};
 }
 
-void SkiaVkOzoneImageRepresentation::EndWriteAccess(sk_sp<SkSurface> surface) {
+void SkiaVkOzoneImageRepresentation::EndWriteAccess() {
   DCHECK_EQ(mode_, RepresentationAccessMode::kWrite);
-  if (surface) {
-    DCHECK_EQ(surface.get(), surface_.get());
-
-    surface.reset();
+  if (surface_)
     DCHECK(surface_->unique());
-  }
   EndAccess(false /* readonly */);
 }
 
-sk_sp<SkPromiseImageTexture> SkiaVkOzoneImageRepresentation::BeginReadAccess(
+std::vector<sk_sp<SkPromiseImageTexture>>
+SkiaVkOzoneImageRepresentation::BeginReadAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
     std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
@@ -137,10 +142,13 @@ sk_sp<SkPromiseImageTexture> SkiaVkOzoneImageRepresentation::BeginReadAccess(
   DCHECK(promise_texture_);
 
   if (!BeginAccess(true /* readonly */, begin_semaphores, end_semaphores))
-    return nullptr;
+    return {};
 
   *end_state = GetEndAccessState();
-  return promise_texture_;
+
+  if (!promise_texture_)
+    return {};
+  return {promise_texture_};
 }
 
 void SkiaVkOzoneImageRepresentation::EndReadAccess() {

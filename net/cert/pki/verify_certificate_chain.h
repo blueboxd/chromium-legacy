@@ -8,7 +8,6 @@
 #include <set>
 
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 #include "net/cert/pki/cert_errors.h"
 #include "net/cert/pki/parsed_certificate.h"
@@ -28,6 +27,10 @@ enum class KeyPurpose {
   ANY_EKU,
   SERVER_AUTH,
   CLIENT_AUTH,
+  SERVER_AUTH_STRICT,  // Skip ANY_EKU when checking, require EKU present in
+                       // certificate.
+  CLIENT_AUTH_STRICT,  // Skip ANY_EKU when checking, require EKU present in
+                       // certificate.
 };
 
 enum class InitialExplicitPolicy {

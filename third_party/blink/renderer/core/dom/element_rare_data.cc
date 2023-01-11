@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/css/cssom/inline_style_property_map.h"
 #include "third_party/blink/renderer/core/editing/ime/edit_context.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
+#include "third_party/blink/renderer/core/layout/anchor_scroll_data.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -43,13 +44,13 @@
 
 namespace blink {
 
-struct SameSizeAsElementRareData : NodeRareData {
+struct SameSizeAsElementRareData : NodeRareData, ElementRareDataBase {
   gfx::Vector2dF scroll_offset;
   void* pointers_or_strings[4];
-  Member<void*> members[21];
+  Member<void*> members[22];
   FocusgroupFlags focusgroup_flags;
   HasInvalidationFlags has_invalidation_flags;
-  bool flags[1];
+  unsigned flags[1];
 };
 
 ElementRareData::ElementRareData(NodeRenderingData* node_layout_data)
@@ -98,13 +99,13 @@ ElementRareData::EnsureResizeObserverData() {
   return *resize_observer_data_;
 }
 
-PopupData& ElementRareData::EnsurePopupData() {
-  if (!popup_data_)
-    popup_data_ = MakeGarbageCollected<PopupData>();
-  return *popup_data_;
+PopoverData& ElementRareData::EnsurePopoverData() {
+  if (!popover_data_)
+    popover_data_ = MakeGarbageCollected<PopoverData>();
+  return *popover_data_;
 }
-void ElementRareData::RemovePopupData() {
-  popup_data_.Clear();
+void ElementRareData::RemovePopoverData() {
+  popover_data_.Clear();
 }
 
 CSSToggleMap& ElementRareData::EnsureToggleMap(Element* owner_element) {
@@ -121,7 +122,16 @@ ElementInternals& ElementRareData::EnsureElementInternals(HTMLElement& target) {
   return *element_internals_;
 }
 
-void ElementRareData::TraceAfterDispatch(blink::Visitor* visitor) const {
+AnchorScrollData& ElementRareData::EnsureAnchorScrollData(
+    Element* owner_element) {
+  DCHECK(!anchor_scroll_data_ ||
+         anchor_scroll_data_->OwnerElement() == owner_element);
+  if (!anchor_scroll_data_)
+    anchor_scroll_data_ = MakeGarbageCollected<AnchorScrollData>(owner_element);
+  return *anchor_scroll_data_;
+}
+
+void ElementRareData::Trace(blink::Visitor* visitor) const {
   visitor->Trace(dataset_);
   visitor->Trace(shadow_root_);
   visitor->Trace(class_list_);
@@ -141,9 +151,10 @@ void ElementRareData::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(resize_observer_data_);
   visitor->Trace(custom_element_definition_);
   visitor->Trace(last_intrinsic_size_);
-  visitor->Trace(popup_data_);
+  visitor->Trace(popover_data_);
   visitor->Trace(toggle_map_);
-  NodeRareData::TraceAfterDispatch(visitor);
+  visitor->Trace(anchor_scroll_data_);
+  NodeRareData::Trace(visitor);
 }
 
 ASSERT_SIZE(ElementRareData, SameSizeAsElementRareData);

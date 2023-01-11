@@ -426,9 +426,8 @@ void SearchBoxView::UpdatePlaceholderTextStyle() {
   search_box()->set_placeholder_text_color(
       is_search_box_active()
           ? AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
-                kZeroQuerySearchboxColor, GetWidget())
-          : AppListColorProvider::Get()->GetSearchBoxTextColor(
-                kDefaultSearchboxPlaceholderTextColor, GetWidget()));
+                GetWidget())
+          : AppListColorProvider::Get()->GetSearchBoxTextColor(GetWidget()));
 }
 
 void SearchBoxView::UpdateSearchBoxBorder() {
@@ -477,14 +476,14 @@ void SearchBoxView::OnThemeChanged() {
   const auto* app_list_widget = GetWidget();
   close_button()->SetImage(
       views::ImageButton::STATE_NORMAL,
-      gfx::CreateVectorIcon(views::kIcCloseIcon, GetSearchBoxIconSize(),
-                            AppListColorProvider::Get()->GetSearchBoxIconColor(
-                                gfx::kGoogleGrey700, app_list_widget)));
+      gfx::CreateVectorIcon(
+          views::kIcCloseIcon, GetSearchBoxIconSize(),
+          AppListColorProvider::Get()->GetSearchBoxIconColor(app_list_widget)));
   assistant_button()->SetImage(
       views::ImageButton::STATE_NORMAL,
-      gfx::CreateVectorIcon(chromeos::kAssistantIcon, GetSearchBoxIconSize(),
-                            AppListColorProvider::Get()->GetSearchBoxIconColor(
-                                gfx::kGoogleGrey700, app_list_widget)));
+      gfx::CreateVectorIcon(
+          chromeos::kAssistantIcon, GetSearchBoxIconSize(),
+          AppListColorProvider::Get()->GetSearchBoxIconColor(app_list_widget)));
   OnWallpaperColorsChanged();
 }
 
@@ -715,8 +714,8 @@ void SearchBoxView::ProcessAutocomplete(
   SearchResult* const first_visible_result = first_result_view->result();
 
   // Do not autocomplete on answer cards.
-  if (first_visible_result->display_type() ==
-      SearchResultDisplayType::kAnswerCard) {
+  if (!first_visible_result || first_visible_result->display_type() ==
+                                   SearchResultDisplayType::kAnswerCard) {
     return;
   }
 
@@ -867,8 +866,7 @@ void SearchBoxView::UpdateSearchIcon() {
       search_engine_is_google ? google_icon : kSearchEngineNotGoogleIcon;
   SetSearchIconImage(gfx::CreateVectorIcon(
       icon, GetSearchBoxIconSize(),
-      AppListColorProvider::Get()->GetSearchBoxIconColor(
-          SkColorSetARGB(0xDE, 0x00, 0x00, 0x00), GetWidget())));
+      AppListColorProvider::Get()->GetSearchBoxIconColor(GetWidget())));
 }
 
 bool SearchBoxView::IsValidAutocompleteText(
@@ -1226,6 +1224,9 @@ bool SearchBoxView::HandleGestureEvent(views::Textfield* sender,
 
 void SearchBoxView::UpdateSearchBoxForSelectedResult(
     SearchResult* selected_result) {
+  if (!selected_result)
+    return;
+
   if (selected_result->result_type() ==
           AppListSearchResultType::kInternalPrivacyInfo ||
       selected_result->display_type() == SearchResultDisplayType::kAnswerCard) {

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "base/scoped_observation_traits.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/events_export.h"
 #include "ui/gfx/geometry/point.h"
@@ -68,7 +69,10 @@ class EVENTS_EXPORT EventTarget {
   enum class Priority {
     // The Accessibility level is the highest, and gets events before
     // other priority levels. This allows accessibility features to
-    // modify events directly from the user.
+    // modify events directly from the user. Note that Ash accessibility
+    // features should not use this directly, but instead should go
+    // through ash::Shell::AddAccessibilityEventHandler to allow for
+    // fine-grained control of ordering amongst themselves.
     kAccessibility,
 
     // System priority EventHandlers get events before default level, and
@@ -135,5 +139,20 @@ class EVENTS_EXPORT EventTarget {
 };
 
 }  // namespace ui
+
+namespace base {
+
+template <>
+struct ScopedObservationTraits<ui::EventTarget, ui::EventHandler> {
+  static void AddObserver(ui::EventTarget* source, ui::EventHandler* observer) {
+    source->AddPreTargetHandler(observer);
+  }
+  static void RemoveObserver(ui::EventTarget* source,
+                             ui::EventHandler* observer) {
+    source->RemovePreTargetHandler(observer);
+  }
+};
+
+}  // namespace base
 
 #endif  // UI_EVENTS_EVENT_TARGET_H_

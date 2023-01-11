@@ -266,6 +266,15 @@
           other {Share <ph name="TABS_COUNT_MANY">%1$d<ex>8</ex></ph> selected tabs}
         }
       </message>
+      <message name="IDS_TAB_SELECTION_EDITOR_SHARE_SHEET_PREVIEW_MESSAGE" desc="When users click the menu item 'Share tab(s)' in the Tab Selection Editor Toolbar, a share sheet will pop up and this text is the preview message of the share sheet. [CHAR_LIMIT=27]">
+        {TABS_COUNT, plural,
+          =1 {<ph name="TABS_COUNT_ONE">%1$d<ex>1</ex></ph> link from Chrome}
+          other {<ph name="TABS_COUNT_MANY">%1$d<ex>8</ex></ph> links from Chrome}
+        }
+      </message>
+      <message name="IDS_TAB_SELECTION_EDITOR_SHARE_SHEET_PREVIEW_THUMBNAIL" desc="When users click the menu item 'Share tab(s)' in the Tab SelectionEditor Toolbar, a share sheet will pop up and this text is the name for the thumbnail of the share sheet preview. [CHAR_LIMIT=27]">
+        Thumbnail for share sheet preview.
+      </message>
       <message name="IDS_TAB_SELECTION_EDITOR_TABS_COUNT" desc="The text for the selection counter shown in the Tab Selection Editor Toolbar. This shows the number of selected tabs including those within selected groups.">
         {TABS_COUNT, plural,
           =1 {<ph name="TABS_COUNT_ONE">%1$d<ex>1</ex></ph> tab}
@@ -474,20 +483,11 @@
       </message>
 
       <!-- Price Tracking Settings Dialog strings -->
-      <message name="IDS_PRICE_TRACKING_SETTINGS" desc="When users click the menu item 'Track prices' in tab switcher, a dialog will pop up and this text is the title of the dialog.">
-        Price tracking settings
-      </message>
       <message name="IDS_TRACK_PRICES_ON_TABS" desc="This text shows in the price tracking settings dialog. It tells users the switch on the side can be used to turn on/off the 'Track prices on tabs' feature.">
         Track prices on tabs
       </message>
       <message name="IDS_TRACK_PRICES_ON_TABS_DESCRIPTION" desc="This text shows below 'Track prices on tabs'. It describes what will happen when turning on this feature.">
         See price drops on your tabs
-      </message>
-      <message name="IDS_PRICE_DROP_ALERTS" desc="This text shows in the price tracking settings dialog. It tells users the switch on the side can be used to turn on/off the 'Price drop alerts' feature.">
-        Price drop alerts
-      </message>
-      <message name="IDS_PRICE_DROP_ALERTS_DESCRIPTION" desc="This text shows below 'Price drop alerts'. It describes what will happen when turning on this feature.">
-        Get notified when prices drop
       </message>
 
       <!-- Price Drop Notification strings -->

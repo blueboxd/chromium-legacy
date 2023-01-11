@@ -10,8 +10,8 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/system_identity.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_identity_item.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -110,7 +110,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark Private
 
-// Creates an item and sets all the values based on a ChromeIdentity.
+// Creates an item and sets all the values based on `identity`.
 - (TableViewIdentityItem*)accountItem:(id<SystemIdentity>)identity {
   TableViewIdentityItem* item =
       [[TableViewIdentityItem alloc] initWithType:ItemTypeAccount];
@@ -119,7 +119,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return item;
 }
 
-// Updates an item based on a ChromeIdentity.
+// Updates an item based on `identity`.
 - (void)updateAccountItem:(TableViewIdentityItem*)item
              withIdentity:(id<SystemIdentity>)identity {
   item.gaiaID = identity.gaiaID;

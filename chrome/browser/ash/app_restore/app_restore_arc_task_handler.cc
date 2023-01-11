@@ -7,7 +7,8 @@
 #include "ash/components/arc/arc_features.h"
 #include "ash/constants/ash_features.h"
 #include "chrome/browser/ash/app_restore/app_restore_arc_task_handler_factory.h"
-#include "chrome/browser/ash/app_restore/arc_app_launch_handler.h"
+#include "chrome/browser/ash/app_restore/arc_app_queue_restore_handler.h"
+#include "chrome/browser/ash/app_restore/arc_app_single_restore_handler.h"
 #include "chrome/browser/ash/app_restore/arc_ghost_window_handler.h"
 #include "chrome/browser/ash/app_restore/arc_window_utils.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
@@ -46,7 +47,7 @@ AppRestoreArcTaskHandler::AppRestoreArcTaskHandler(Profile* profile) {
 #endif
 
   // Create full restore arc app launch handler.
-  GetFullRestoreArcAppLaunchHandler();
+  GetFullRestoreArcAppQueueRestoreHandler();
 
   arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
   // arc::ArcSessionManager might not be set in tests.
@@ -54,19 +55,20 @@ AppRestoreArcTaskHandler::AppRestoreArcTaskHandler(Profile* profile) {
     arc_session_manager->AddObserver(this);
 }
 
-ArcAppLaunchHandler*
-AppRestoreArcTaskHandler::GetDeskTemplateArcAppLaunchHandler(
+ArcAppQueueRestoreHandler*
+AppRestoreArcTaskHandler::GetDeskTemplateArcAppQueueRestoreHandler(
     int32_t launch_id) {
   DCHECK_GT(launch_id, 0);
 
-  return CreateOrGetArcAppLaunchHandler(
+  return CreateOrGetArcAppQueueRestoreHandler(
       {LauncherType::kDeskTemplate, launch_id}, /*call_init_callback=*/true);
 }
 
-void AppRestoreArcTaskHandler::ClearDeskTemplateArcAppLaunchHandler(
+void AppRestoreArcTaskHandler::ClearDeskTemplateArcAppQueueRestoreHandler(
     int32_t launch_id) {
   DCHECK_GT(launch_id, 0);
-  arc_app_launch_handlers_.erase({LauncherType::kDeskTemplate, launch_id});
+  arc_app_queue_restore_handlers_.erase(
+      {LauncherType::kDeskTemplate, launch_id});
 }
 
 AppRestoreArcTaskHandler::~AppRestoreArcTaskHandler() {
@@ -78,32 +80,35 @@ AppRestoreArcTaskHandler::~AppRestoreArcTaskHandler() {
 
 bool AppRestoreArcTaskHandler::IsAppPendingRestore(
     const std::string& arc_app_id) const {
-  for (auto& [unused, launcher] : arc_app_launch_handlers_) {
+  for (auto& [unused, launcher] : arc_app_queue_restore_handlers_) {
+    if (launcher->IsAppPendingRestore(arc_app_id))
+      return true;
+  }
+  for (auto& [unused, launcher] : arc_app_single_restore_handlers_) {
     if (launcher->IsAppPendingRestore(arc_app_id))
       return true;
   }
   return false;
 }
 
-ArcAppLaunchHandler*
-AppRestoreArcTaskHandler::GetFullRestoreArcAppLaunchHandler() {
-  return CreateOrGetArcAppLaunchHandler(kFullRestoreLaunchHandlerTag,
-                                        /*call_init_callback=*/false);
+ArcAppQueueRestoreHandler*
+AppRestoreArcTaskHandler::GetFullRestoreArcAppQueueRestoreHandler() {
+  return CreateOrGetArcAppQueueRestoreHandler(kFullRestoreLaunchHandlerTag,
+                                              /*call_init_callback=*/false);
 }
 
-ArcAppLaunchHandler*
-AppRestoreArcTaskHandler::GetWindowPredictorArcAppLaunchHandler(
+ArcAppSingleRestoreHandler*
+AppRestoreArcTaskHandler::GetWindowPredictorArcAppRestoreHandler(
     int32_t launch_id) {
-  return CreateOrGetArcAppLaunchHandler(
-      {LauncherType::kWindowPredictor, launch_id}, /*call_init_callback=*/true);
+  return CreateOrGetArcAppSingleRestoreHandler(
+      {LauncherType::kWindowPredictor, launch_id});
 }
 
 void AppRestoreArcTaskHandler::OnAppStatesChanged(
     const std::string& id,
     const ArcAppListPrefs::AppInfo& app_info) {
-  if (!window_handler_)
-    return;
-  window_handler_->OnAppStatesUpdate(id, app_info.ready, app_info.need_fixup);
+  if (window_handler_)
+    window_handler_->OnAppStatesUpdate(id, app_info.ready, app_info.need_fixup);
 }
 
 void AppRestoreArcTaskHandler::OnTaskCreated(int32_t task_id,
@@ -137,7 +142,7 @@ void AppRestoreArcTaskHandler::OnAppConnectionReady() {
     window_handler_->OnAppInstanceConnected();
 #endif
 
-  for (auto& [unused, launcher] : arc_app_launch_handlers_)
+  for (auto& [unused, launcher] : arc_app_queue_restore_handlers_)
     launcher->OnAppConnectionReady();
 
   GetAppRestoreArcInfo()->NotifyArcConnectionChanged(
@@ -157,7 +162,7 @@ void AppRestoreArcTaskHandler::OnArcAppListPrefsDestroyed() {
 void AppRestoreArcTaskHandler::OnArcPlayStoreEnabledChanged(bool enabled) {
   arc_play_store_enabled_ = enabled;
 
-  for (auto& [unused, launcher] : arc_app_launch_handlers_)
+  for (auto& [unused, launcher] : arc_app_queue_restore_handlers_)
     launcher->OnArcPlayStoreEnabledChanged(enabled);
 
   GetAppRestoreArcInfo()->NotifyPlayStoreEnabledChanged(enabled);
@@ -166,20 +171,24 @@ void AppRestoreArcTaskHandler::OnArcPlayStoreEnabledChanged(bool enabled) {
 void AppRestoreArcTaskHandler::OnShelfReady() {
   shelf_ready_ = true;
 
-  for (auto& [unused, launcher] : arc_app_launch_handlers_)
+  for (auto& [unused, launcher] : arc_app_queue_restore_handlers_)
+    launcher->OnShelfReady();
+
+  for (auto& [unused, launcher] : arc_app_single_restore_handlers_)
     launcher->OnShelfReady();
 }
 
 void AppRestoreArcTaskHandler::Shutdown() {
-  arc_app_launch_handlers_.clear();
+  arc_app_queue_restore_handlers_.clear();
   window_handler_.reset();
 }
 
-ArcAppLaunchHandler* AppRestoreArcTaskHandler::CreateOrGetArcAppLaunchHandler(
+ArcAppQueueRestoreHandler*
+AppRestoreArcTaskHandler::CreateOrGetArcAppQueueRestoreHandler(
     LauncherTag launcher_tag,
     bool call_init_callback) {
-  if (!arc_app_launch_handlers_.count(launcher_tag)) {
-    auto handler = std::make_unique<ArcAppLaunchHandler>();
+  if (!arc_app_queue_restore_handlers_.count(launcher_tag)) {
+    auto handler = std::make_unique<ArcAppQueueRestoreHandler>();
     if (call_init_callback) {
       handler->OnArcPlayStoreEnabledChanged(arc_play_store_enabled_);
       if (app_connection_ready_)
@@ -187,10 +196,25 @@ ArcAppLaunchHandler* AppRestoreArcTaskHandler::CreateOrGetArcAppLaunchHandler(
       if (shelf_ready_)
         handler->OnShelfReady();
     }
-    return arc_app_launch_handlers_.insert({launcher_tag, std::move(handler)})
+    return arc_app_queue_restore_handlers_
+        .insert({launcher_tag, std::move(handler)})
         .first->second.get();
   }
-  return arc_app_launch_handlers_[launcher_tag].get();
+  return arc_app_queue_restore_handlers_[launcher_tag].get();
+}
+
+ArcAppSingleRestoreHandler*
+AppRestoreArcTaskHandler::CreateOrGetArcAppSingleRestoreHandler(
+    LauncherTag launcher_tag) {
+  if (!arc_app_single_restore_handlers_.count(launcher_tag)) {
+    auto handler = std::make_unique<ArcAppSingleRestoreHandler>();
+    if (shelf_ready_)
+      handler->OnShelfReady();
+    return arc_app_single_restore_handlers_
+        .insert({launcher_tag, std::move(handler)})
+        .first->second.get();
+  }
+  return arc_app_single_restore_handlers_[launcher_tag].get();
 }
 
 }  // namespace ash::app_restore

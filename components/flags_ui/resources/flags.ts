@@ -10,9 +10,10 @@ import 'chrome://resources/js/jstemplate_compiled.js';
 import './strings.m.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {isIOS, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {sendWithPromise} from 'chrome://resources/js/cr.js';
 import {FocusOutlineManager} from 'chrome://resources/js/focus_outline_manager.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {isIOS} from 'chrome://resources/js/platform.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {$} from 'chrome://resources/js/util.js';
 
@@ -59,7 +60,7 @@ const tabs: Tab[] = [
 function selectTab(selectedTabEl: HTMLElement) {
   for (const tab of tabs) {
     const isSelectedTab = tab.tabEl === selectedTabEl;
-    tab.tabEl.parentElement!.classList.toggle('selected', isSelectedTab);
+    tab.tabEl.classList.toggle('selected', isSelectedTab);
     tab.tabEl.setAttribute('aria-selected', String(isSelectedTab));
     tab.panelEl.classList.toggle('selected', isSelectedTab);
   }

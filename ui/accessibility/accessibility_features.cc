@@ -147,6 +147,15 @@ bool IsExperimentalAccessibilityDictationMoreCommandsEnabled() {
       ::features::kExperimentalAccessibilityDictationMoreCommands);
 }
 
+BASE_FEATURE(kExperimentalAccessibilityDictationContextChecking,
+             "ExperimentalAccessibilityDictationContextChecking",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsExperimentalAccessibilityDictationContextCheckingEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kExperimentalAccessibilityDictationContextChecking);
+}
+
 BASE_FEATURE(kExperimentalAccessibilityGoogleTtsLanguagePacks,
              "ExperimentalAccessibilityGoogleTtsLanguagePacks",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -154,6 +163,15 @@ BASE_FEATURE(kExperimentalAccessibilityGoogleTtsLanguagePacks,
 bool IsExperimentalAccessibilityGoogleTtsLanguagePacksEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kExperimentalAccessibilityGoogleTtsLanguagePacks);
+}
+
+BASE_FEATURE(kExperimentalAccessibilitySelectToSpeakVoiceSwitching,
+             "ExperimentalAccessibilitySelectToSpeakVoiceSwitching",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsExperimentalAccessibilitySelectToSpeakVoiceSwitchingEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kExperimentalAccessibilitySelectToSpeakVoiceSwitching);
 }
 
 BASE_FEATURE(kEnhancedNetworkVoices,
@@ -206,6 +224,24 @@ BASE_FEATURE(kAccessibilitySelectToSpeakPrefsMigration,
 bool IsAccessibilitySelectToSpeakPrefsMigrationEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kAccessibilitySelectToSpeakPrefsMigration);
+}
+
+BASE_FEATURE(kAccessibilitySelectToSpeakContextMenuOption,
+             "AccessibilitySelectToSpeakContextMenuOption",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsAccessibilitySelectToSpeakContextMenuOptionEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kAccessibilitySelectToSpeakContextMenuOption);
+}
+
+BASE_FEATURE(kAccessibilitySelectToSpeakHoverTextImprovements,
+             "AccessibilitySelectToSpeakHoverTextImprovements",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsAccessibilitySelectToSpeakHoverTextImprovementsEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kAccessibilitySelectToSpeakHoverTextImprovements);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

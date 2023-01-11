@@ -191,6 +191,9 @@ bool UnittestingSystemAppDelegate::IsUrlInSystemAppScope(
 bool UnittestingSystemAppDelegate::PreferManifestBackgroundColor() const {
   return prefer_manifest_background_color_;
 }
+bool UnittestingSystemAppDelegate::UseSystemThemeColor() const {
+  return use_system_theme_color_;
+}
 #if BUILDFLAG(IS_CHROMEOS)
 bool UnittestingSystemAppDelegate::ShouldAnimateThemeChanges() const {
   return should_animate_theme_changes_;
@@ -272,6 +275,9 @@ void UnittestingSystemAppDelegate::SetUrlInSystemAppScope(const GURL& url) {
 void UnittestingSystemAppDelegate::SetPreferManifestBackgroundColor(
     bool value) {
   prefer_manifest_background_color_ = value;
+}
+void UnittestingSystemAppDelegate::SetUseSystemThemeColor(bool value) {
+  use_system_theme_color_ = value;
 }
 #if BUILDFLAG(IS_CHROMEOS)
 void UnittestingSystemAppDelegate::SetShouldAnimateThemeChanges(bool value) {
@@ -804,17 +810,12 @@ TestSystemWebAppInstallation::CreateSystemWebAppManager(
                          profile);
   }
 
-  web_app::WebAppProvider* provider =
-      web_app::WebAppProvider::GetForLocalAppsUnchecked(profile);
-  DCHECK(provider);
-
   auto system_web_app_manager = std::make_unique<SystemWebAppManager>(profile);
 
   system_web_app_manager->SetSystemAppsForTesting(
       std::move(system_app_delegates_));
   system_web_app_manager->SetUpdatePolicyForTesting(update_policy_);
 
-  system_web_app_manager->ConnectSubsystems(provider);
   system_web_app_manager->ScheduleStart();
 
   const url::Origin app_origin = url::Origin::Create(delegate->GetInstallUrl());
@@ -831,16 +832,11 @@ TestSystemWebAppInstallation::CreateSystemWebAppManagerWithNoSystemWebApps(
   // `CreateWebAppProvider` gets called first and assigns `profile_`.
   DCHECK_EQ(profile_, profile);
 
-  web_app::WebAppProvider* provider =
-      web_app::WebAppProvider::GetForLocalAppsUnchecked(profile);
-  DCHECK(provider);
-
   auto system_web_app_manager = std::make_unique<SystemWebAppManager>(profile);
 
   system_web_app_manager->SetSystemAppsForTesting({});
   system_web_app_manager->SetUpdatePolicyForTesting(update_policy_);
 
-  system_web_app_manager->ConnectSubsystems(provider);
   system_web_app_manager->ScheduleStart();
 
   return system_web_app_manager;

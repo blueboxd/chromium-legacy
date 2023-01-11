@@ -77,8 +77,20 @@ ExtensionFunction::ResponseAction OffscreenCreateDocumentFunction::Run() {
         Error("Only a single offscreen document may be created."));
   }
 
-  OffscreenDocumentHost* offscreen_document =
-      manager->CreateOffscreenDocument(*extension(), url);
+  const std::vector<api::offscreen::Reason>& reasons =
+      params->parameters.reasons;
+  std::set<api::offscreen::Reason> deduped_reasons(reasons.begin(),
+                                                   reasons.end());
+  if (deduped_reasons.empty()) {
+    return RespondNow(Error("A `reason` must be provided."));
+  }
+
+  if (deduped_reasons.size() > 1) {
+    return RespondNow(Error("Only a single `reason` is currently supported."));
+  }
+
+  OffscreenDocumentHost* offscreen_document = manager->CreateOffscreenDocument(
+      *extension(), url, *deduped_reasons.begin());
   DCHECK(offscreen_document);
 
   // We assume it's impossible for a document to entirely synchronously load. If

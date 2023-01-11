@@ -48,6 +48,7 @@ class UkmRecorder;
 }
 
 namespace autofill_assistant {
+class Action;
 class BatchElementChecker;
 class ClientSettingsProto;
 class ClientStatus;
@@ -59,8 +60,11 @@ class ElementStore;
 class GenericUserInterfaceProto;
 class FormProto;
 class FormProto_Result;
+class LegalDisclaimerProto;
 class InfoBox;
 class PromptQrCodeScanProto;
+struct Script;
+class Service;
 class UserAction;
 class UserData;
 class UserModel;
@@ -199,7 +203,10 @@ class ActionDelegate {
       bool disable_force_expand_sheet,
       base::OnceCallback<void()> end_on_navigation_callback = base::DoNothing(),
       bool browse_mode = false,
-      bool browse_mode_invisible = false) = 0;
+      bool browse_mode_invisible = false,
+      std::unique_ptr<LegalDisclaimerProto> legal_disclaimer = nullptr,
+      base::OnceCallback<void(int link)> legal_disclaimer_link_callback =
+          base::DoNothing()) = 0;
 
   // Have the UI leave the prompt state and go back to its previous state.
   virtual void CleanUpAfterPrompt(bool consume_touchable_area = true) = 0;
@@ -547,6 +554,24 @@ class ActionDelegate {
   // Make a fire-and-forget call to report progress.
   virtual void ReportProgress(const std::string& payload,
                               base::OnceCallback<void(bool)> callback) = 0;
+
+  // Appends a new interrupt script to the ordered list of interrupts. This must
+  // be called outside of WaitForDom. Optionally allows providing a different
+  // service that should be used to fetch actions for that script - if not
+  // provided, the parent's service will be used instead. This is specifically
+  // intended to allow adding self-contained interrupt scripts by injecting
+  // instances of NoRoundTripService.
+  //
+  // Note: this does not check for uniqueness of script paths - be sure to not
+  // register the same script more than once!
+  virtual void AddInterruptScript(
+      std::unique_ptr<Script> interrupt_script,
+      std::unique_ptr<Service> optional_service = nullptr) = 0;
+
+  // Returns a pointer to the currently running action, or nullptr if there is
+  // none. This is a way for nested actions to access their parent action.
+  // Pointers should not be retained in any fashion.
+  virtual const Action* GetCurrentRootAction() const = 0;
 
  protected:
   ActionDelegate() = default;

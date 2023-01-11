@@ -36,6 +36,17 @@ class PrefetchService;
 class PrefetchedMainframeResponseContainer;
 class ProxyLookupClientImpl;
 
+// Holds the relevant size information of the prefetched response. The struct is
+// installed onto `PrefetchContainer`, and gets passed into
+// `PrefetchFromStringURLLoader` to notify the associated `URLLoaderClient` of
+// the actual size of the response, as `PrefetchFromStringURLLoader` is not
+// aware of the prefetched request.
+struct PrefetchResponseSizes {
+  int64_t encoded_data_length;
+  int64_t encoded_body_length;
+  int64_t decoded_body_length;
+};
+
 // This class contains the state for a request to prefetch a specific URL.
 class CONTENT_EXPORT PrefetchContainer {
  public:
@@ -56,7 +67,7 @@ class CONTENT_EXPORT PrefetchContainer {
     return std::make_pair(referring_render_frame_host_id_, url_);
   }
 
-  // The ID of the render frame host that triggered the prefetch.
+  // The ID of the RenderFrameHost that triggered the prefetch.
   GlobalRenderFrameHostId GetReferringRenderFrameHostId() const {
     return referring_render_frame_host_id_;
   }
@@ -89,6 +100,7 @@ class CONTENT_EXPORT PrefetchContainer {
 
   // Whether or not the prefetch was determined to be eligibile
   void OnEligibilityCheckComplete(bool is_eligible);
+  bool IsEligible() const { return is_eligible_; }
 
   // Whether this prefetch is a decoy. Decoy prefetches will not store the
   // response, and not serve any prefetched resources.
@@ -111,6 +123,7 @@ class CONTENT_EXPORT PrefetchContainer {
   void OnIsolatedCookieCopyStart();
   void OnIsolatedCookiesReadCompleteAndWriteStart();
   void OnIsolatedCookieCopyComplete();
+  void OnInterceptorCheckCookieCopy();
   void SetOnCookieCopyCompleteCallback(base::OnceClosure callback);
 
   // The network context used to make network requests for this prefetch.
@@ -180,6 +193,11 @@ class CONTENT_EXPORT PrefetchContainer {
     return devtools_observer_;
   }
 
+  const absl::optional<PrefetchResponseSizes>& GetPrefetchResponseSizes()
+      const {
+    return prefetch_response_sizes_;
+  }
+
  protected:
   friend class PrefetchContainerTest;
 
@@ -190,7 +208,7 @@ class CONTENT_EXPORT PrefetchContainer {
       const network::mojom::URLResponseHead* head);
 
  private:
-  // The ID of the render frame host that triggered the prefetch.
+  // The ID of the RenderFrameHost that triggered the prefetch.
   GlobalRenderFrameHostId referring_render_frame_host_id_;
 
   // The URL that will potentially be prefetched
@@ -218,6 +236,10 @@ class CONTENT_EXPORT PrefetchContainer {
   // there is an existing proxy for |url_| then it is not eligible.
   std::unique_ptr<ProxyLookupClientImpl> proxy_lookup_client_;
 
+  // Whethere or not this prefetch was determined to be eligible to be
+  // prefetched.
+  bool is_eligible_ = false;
+
   // Whether this prefetch is a decoy or not. If the prefetch is a decoy then
   // any prefetched resources will not be served.
   bool is_decoy_ = false;
@@ -241,8 +263,8 @@ class CONTENT_EXPORT PrefetchContainer {
 
   ukm::SourceId ukm_source_id_;
 
-  // The size of the prefetched response.
-  absl::optional<int> data_length_;
+  // The sizes information of the prefetched response.
+  absl::optional<PrefetchResponseSizes> prefetch_response_sizes_;
 
   // The amount  of time it took for the prefetch to complete.
   absl::optional<base::TimeDelta> fetch_duration_;

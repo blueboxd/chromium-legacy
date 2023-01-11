@@ -115,6 +115,7 @@ bool GLTextureImageBacking::SupportsPixelUploadWithFormat(
     case viz::ResourceFormat::LUMINANCE_F16:
     case viz::ResourceFormat::YVU_420:
     case viz::ResourceFormat::YUV_420_BIPLANAR:
+    case viz::ResourceFormat::YUVA_420_TRIPLANAR:
     case viz::ResourceFormat::P010:
       return false;
   }
@@ -345,7 +346,7 @@ void GLTextureImageBacking::InitializeGLTexture(
 }
 
 void GLTextureImageBacking::CreateEGLImage() {
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || defined(USE_OZONE)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_OZONE)
   SharedContextState* shared_context_state = factory()->GetSharedContextState();
   ui::ScopedMakeCurrent smc(shared_context_state->context(),
                             shared_context_state->surface());

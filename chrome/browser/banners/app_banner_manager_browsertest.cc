@@ -769,8 +769,7 @@ class AppBannerManagerBrowserTestWithChromeBFCache
   }
 
   void SetupFeaturesAndParameters() {
-    std::vector<base::test::ScopedFeatureList::FeatureAndParams>
-        enabled_features;
+    std::vector<base::test::FeatureRefAndParams> enabled_features;
 
     for (const auto& [feature, params] : enabled_features_with_params_) {
       enabled_features.emplace_back(*feature, params);
@@ -853,7 +852,7 @@ IN_PROC_BROWSER_TEST_P(AppBannerManagerBrowserTestWithChromeBFCache,
   EXPECT_NE(manager->state(), AppBannerManager::State::INACTIVE);
 
   // Depending on whether kBackForwardCacheAppBanner is enabled or disabled, the
-  // corresponding render frame host will also be either stored in the
+  // corresponding RenderFrameHost will also be either stored in the
   // BackForwardCache or not.
   EXPECT_EQ(IsRenderHostStoredInBackForwardCache(rfh_b->GetLifecycleState()),
             IsBackForwardCacheAppBannerEnabled());
@@ -922,7 +921,8 @@ class AppBannerManagerBrowserTestWithFailableInstallableManager
   }
 
  protected:
-  raw_ptr<FailingInstallableManager> installable_manager_ = nullptr;
+  raw_ptr<FailingInstallableManager, DanglingUntriaged> installable_manager_ =
+      nullptr;
 };
 
 IN_PROC_BROWSER_TEST_F(
@@ -1080,7 +1080,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerFencedFrameBrowserTest,
   EXPECT_EQ(manager->state(), AppBannerManager::State::INACTIVE);
 
   // Cross check that  DidUpdateWebManifestURL is not called for fenced frame
-  // render frame host.
+  // RenderFrameHost.
   EXPECT_CALL(observer, DidUpdateWebManifestURL(fenced_frame_host, testing::_))
       .Times(0);
 

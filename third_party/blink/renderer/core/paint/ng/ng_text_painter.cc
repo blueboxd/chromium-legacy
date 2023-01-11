@@ -19,8 +19,8 @@
 #include "third_party/blink/renderer/core/paint/applied_decoration_painter.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/svg_object_painter.h"
+#include "third_party/blink/renderer/core/paint/timing/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
@@ -273,20 +273,21 @@ void NGTextPainter::PaintDecorationsExceptLineThrough(
   const NGTextDecorationOffset decoration_offset(decoration_info.TargetStyle(),
                                                  text_item.Style());
 
-  if (svg_text_paint_state_.has_value()) {
+  if (svg_text_paint_state_.has_value() &&
+      !decoration_info.HasDecorationOverride()) {
     GraphicsContextStateSaver state_saver(paint_info.context, false);
     if (paint_info.IsRenderingResourceSubtree()) {
       state_saver.SaveIfNeeded();
       paint_info.context.Scale(
           1, text_item.SvgScalingFactor() / decoration_info.ScalingFactor());
     }
-    PaintSvgDecorationsExceptLineThrough(
-        fragment_paint_info, decoration_offset, decoration_info, lines_to_paint,
-        paint_info, style.AppliedTextDecorations(), text_style);
+    PaintSvgDecorationsExceptLineThrough(fragment_paint_info, decoration_offset,
+                                         decoration_info, lines_to_paint,
+                                         paint_info, text_style);
   } else {
-    NGTextPainterBase::PaintDecorationsExceptLineThrough(
+    NGTextPainterBase::PaintUnderOrOverLineDecorations(
         fragment_paint_info, decoration_offset, decoration_info, lines_to_paint,
-        paint_info, style.AppliedTextDecorations(), text_style, nullptr);
+        paint_info, text_style, nullptr);
   }
 }
 
@@ -300,20 +301,18 @@ void NGTextPainter::PaintDecorationsOnlyLineThrough(
   if (!decoration_info.HasAnyLine(TextDecorationLine::kLineThrough))
     return;
 
-  if (svg_text_paint_state_.has_value()) {
+  if (svg_text_paint_state_.has_value() &&
+      !decoration_info.HasDecorationOverride()) {
     GraphicsContextStateSaver state_saver(paint_info.context, false);
     if (paint_info.IsRenderingResourceSubtree()) {
       state_saver.SaveIfNeeded();
       paint_info.context.Scale(
           1, text_item.SvgScalingFactor() / decoration_info.ScalingFactor());
     }
-    PaintSvgDecorationsOnlyLineThrough(decoration_info, paint_info,
-                                       style.AppliedTextDecorations(),
-                                       text_style);
+    PaintSvgDecorationsOnlyLineThrough(decoration_info, paint_info, text_style);
   } else {
-    TextPainterBase::PaintDecorationsOnlyLineThrough(
-        decoration_info, paint_info, style.AppliedTextDecorations(),
-        text_style);
+    TextPainterBase::PaintDecorationsOnlyLineThrough(decoration_info,
+                                                     paint_info, text_style);
   }
 }
 
@@ -475,7 +474,6 @@ void NGTextPainter::PaintSvgDecorationsExceptLineThrough(
     TextDecorationInfo& decoration_info,
     TextDecorationLine lines_to_paint,
     const PaintInfo& paint_info,
-    const Vector<AppliedTextDecoration>& decorations,
     const TextPaintStyle& text_style) {
   const NGTextPainter::SvgTextPaintState& state = svg_text_paint_state_.value();
   absl::optional<SelectionStyleScope> selection_style_scope;
@@ -510,9 +508,9 @@ void NGTextPainter::PaintSvgDecorationsExceptLineThrough(
       if (SetupPaintForSvgText(state, graphics_context_, style_to_paint,
                                SvgPaintMode::kTextDecoration, *resource_mode,
                                flags)) {
-        NGTextPainterBase::PaintDecorationsExceptLineThrough(
+        NGTextPainterBase::PaintUnderOrOverLineDecorations(
             fragment_paint_info, decoration_offset, decoration_info,
-            lines_to_paint, paint_info, decorations, text_style, &flags);
+            lines_to_paint, paint_info, text_style, &flags);
       }
     }
   }
@@ -521,7 +519,6 @@ void NGTextPainter::PaintSvgDecorationsExceptLineThrough(
 void NGTextPainter::PaintSvgDecorationsOnlyLineThrough(
     TextDecorationInfo& decoration_info,
     const PaintInfo& paint_info,
-    const Vector<AppliedTextDecoration>& decorations,
     const TextPaintStyle& text_style) {
   const NGTextPainter::SvgTextPaintState& state = svg_text_paint_state_.value();
   absl::optional<SelectionStyleScope> selection_style_scope;
@@ -557,7 +554,7 @@ void NGTextPainter::PaintSvgDecorationsOnlyLineThrough(
                                SvgPaintMode::kTextDecoration, *resource_mode,
                                flags)) {
         TextPainterBase::PaintDecorationsOnlyLineThrough(
-            decoration_info, paint_info, decorations, text_style, &flags);
+            decoration_info, paint_info, text_style, &flags);
       }
     }
   }

@@ -12,9 +12,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/ash/fusebox/fusebox.pb.h"
 #include "chrome/browser/ash/fusebox/fusebox_moniker.h"
 #include "chrome/browser/ash/fusebox/fusebox_staging.pb.h"
-#include "chromeos/ash/components/dbus/fusebox/fusebox.pb.h"
 #include "storage/browser/file_system/async_file_util.h"
 #include "storage/browser/file_system/file_system_context.h"
 
@@ -45,7 +45,8 @@ class Server {
   ~Server();
 
   // Manages monikers in the context of the Server's MonikerMap.
-  fusebox::Moniker CreateMoniker(storage::FileSystemURL target, bool read_only);
+  fusebox::Moniker CreateMoniker(const storage::FileSystemURL& target,
+                                 bool read_only);
   void DestroyMoniker(fusebox::Moniker moniker);
 
   void RegisterFSURLPrefix(const std::string& subdir,
@@ -86,34 +87,27 @@ class Server {
   //
   // TODO(crbug.com/1249754) implement MTP device writing.
   using CloseCallback = base::OnceCallback<void(int32_t posix_error_code)>;
-  void Close(std::string fs_url_as_string, CloseCallback callback);
+  void Close(const std::string& fs_url_as_string, CloseCallback callback);
+
+  // MkDir is analogous to "/usr/bin/mkdir".
+  using MkDirCallback = base::OnceCallback<void(
+      const fusebox_staging::MkDirResponseProto& response)>;
+  void MkDir(const fusebox_staging::MkDirRequestProto& request,
+             MkDirCallback callback);
 
   // Open is a placeholder and is not implemented yet.
   //
   // TODO(crbug.com/1249754) implement MTP device writing.
   using OpenCallback = base::OnceCallback<void(int32_t posix_error_code)>;
-  void Open(std::string fs_url_as_string, OpenCallback callback);
+  void Open(const std::string& fs_url_as_string, OpenCallback callback);
 
   // Read returns the file's byte contents at the given offset and length.
   using ReadCallback = base::OnceCallback<
       void(int32_t posix_error_code, const uint8_t* data_ptr, size_t data_len)>;
-  void Read(std::string fs_url_as_string,
+  void Read(const std::string& fs_url_as_string,
             int64_t offset,
             int32_t length,
             ReadCallback callback);
-
-  // Deprecated: use ReadDir2 instead.
-  //
-  // ReadDir lists the directory's children. The results may be sent back over
-  // multiple RPC messages, each with the same client-chosen cookie value.
-  using ReadDirCallback =
-      base::RepeatingCallback<void(uint64_t cookie,
-                                   int32_t posix_error_code,
-                                   fusebox::DirEntryListProto dir_entry_list,
-                                   bool has_more)>;
-  void ReadDir(std::string fs_url_as_string,
-               uint64_t cookie,
-               ReadDirCallback callback);
 
   // ReadDir2 lists the directory's children. The results will be sent back in
   // the responses of one or more request-response RPC pairs. The first request
@@ -126,14 +120,20 @@ class Server {
   //
   // TODO(crbug.com/1363861): document the D-Bus protocol separately.
   using ReadDir2Callback =
-      base::OnceCallback<void(ReadDir2ResponseProto response)>;
-  void ReadDir2(ReadDir2RequestProto request, ReadDir2Callback callback);
+      base::OnceCallback<void(const ReadDir2ResponseProto& response)>;
+  void ReadDir2(const ReadDir2RequestProto& request, ReadDir2Callback callback);
+
+  // RmDir is analogous to "/usr/bin/rmdir".
+  using RmDirCallback = base::OnceCallback<void(
+      const fusebox_staging::RmDirResponseProto& response)>;
+  void RmDir(const fusebox_staging::RmDirRequestProto& request,
+             RmDirCallback callback);
 
   // Stat returns the file or directory's metadata.
   using StatCallback = base::OnceCallback<void(int32_t posix_error_code,
                                                const base::File::Info& info,
                                                bool read_only)>;
-  void Stat(std::string fs_url_as_string, StatCallback callback);
+  void Stat(const std::string& fs_url_as_string, StatCallback callback);
 
   // File operation D-Bus methods above. Meta D-Bus methods below, which do not
   // map 1:1 to FUSE or C standard library file operations.
@@ -141,8 +141,8 @@ class Server {
   // ListStorages returns the active subdir names. Active means passed to
   // RegisterFSURLPrefix without a subsequent UnregisterFSURLPrefix.
   using ListStoragesCallback =
-      base::OnceCallback<void(ListStoragesResponseProto response)>;
-  void ListStorages(ListStoragesRequestProto request,
+      base::OnceCallback<void(const ListStoragesResponseProto& response)>;
+  void ListStorages(const ListStoragesRequestProto& request,
                     ListStoragesCallback callback);
 
   // MakeTempDir makes a temporary directory that has two file paths: an
@@ -171,11 +171,11 @@ class Server {
   // MakeTempDir is like "mkdir" (except the callee randomly generates the file
   // path). RemoveTempDir is like "rm -rf".
   using MakeTempDirCallback =
-      base::OnceCallback<void(std::string error_message,
-                              std::string fusebox_file_path,
-                              std::string underlying_file_path)>;
+      base::OnceCallback<void(const std::string& error_message,
+                              const std::string& fusebox_file_path,
+                              const std::string& underlying_file_path)>;
   void MakeTempDir(MakeTempDirCallback callback);
-  void RemoveTempDir(std::string fusebox_file_path);
+  void RemoveTempDir(const std::string& fusebox_file_path);
 
   struct PrefixMapEntry {
     PrefixMapEntry(std::string fs_url_prefix_arg, bool read_only_arg);

@@ -12,6 +12,8 @@
 #include <stddef.h>
 #include <sys/resource.h>
 
+#include <dlfcn.h>
+
 #include <algorithm>
 #include <atomic>
 
@@ -307,18 +309,21 @@ void SetCurrentThreadTypeImpl(ThreadType thread_type,
     return;
   }
 
+  typedef int (*pthread_set_qos_class_self_np_Ptr)(qos_class_t, int);
+  static const pthread_set_qos_class_self_np_Ptr pthread_set_qos_class_self_np_FuncPtr =
+          reinterpret_cast<pthread_set_qos_class_self_np_Ptr>(dlsym(((void *) -2), "pthread_set_qos_class_self_np"));
   ThreadPriorityForTest priority = ThreadPriorityForTest::kNormal;
   switch (thread_type) {
     case ThreadType::kBackground:
       priority = ThreadPriorityForTest::kBackground;
-      if (use_thread_qos)
-        pthread_set_qos_class_self_np(QOS_CLASS_BACKGROUND, 0);
+      if (use_thread_qos && pthread_set_qos_class_self_np_FuncPtr)
+        pthread_set_qos_class_self_np_FuncPtr(QOS_CLASS_BACKGROUND, 0);
       else
         [[NSThread currentThread] setThreadPriority:0];
       break;
     case ThreadType::kResourceEfficient:
-      if (use_thread_qos) {
-        pthread_set_qos_class_self_np(QOS_CLASS_UTILITY, 0);
+      if (use_thread_qos && pthread_set_qos_class_self_np_FuncPtr) {
+        pthread_set_qos_class_self_np_FuncPtr(QOS_CLASS_UTILITY, 0);
         break;
       }
       [[fallthrough]];
@@ -328,15 +333,15 @@ void SetCurrentThreadTypeImpl(ThreadType thread_type,
       [[fallthrough]];
     case ThreadType::kCompositing:
       priority = ThreadPriorityForTest::kNormal;
-      if (use_thread_qos)
-        pthread_set_qos_class_self_np(QOS_CLASS_USER_INITIATED, 0);
+      if (use_thread_qos && pthread_set_qos_class_self_np_FuncPtr)
+        pthread_set_qos_class_self_np_FuncPtr(QOS_CLASS_USER_INITIATED, 0);
       else
         [[NSThread currentThread] setThreadPriority:0.5];
       break;
     case ThreadType::kDisplayCritical: {
       priority = ThreadPriorityForTest::kDisplay;
-      if (use_thread_qos) {
-        pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
+      if (use_thread_qos && pthread_set_qos_class_self_np_FuncPtr) {
+        pthread_set_qos_class_self_np_FuncPtr(QOS_CLASS_USER_INTERACTIVE, 0);
       } else {
         // Apple has suggested that insufficient priority may be the reason for
         // Metal shader compilation hangs. A priority of 50 is higher than user

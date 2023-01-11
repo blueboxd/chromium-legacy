@@ -6,18 +6,21 @@
 
 #include <memory>
 
+#include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/tablet_mode/tablet_mode_multitask_menu.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
+#include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chromeos/ui/frame/multitask_menu/multitask_menu_view.h"
 #include "chromeos/ui/frame/multitask_menu/split_button_view.h"
 #include "chromeos/ui/wm/features.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/display/display_switches.h"
 #include "ui/events/event_handler.h"
 
 namespace ash {
@@ -84,6 +87,10 @@ class TabletModeMultitaskMenuEventHandlerTest : public AshTestBase {
          chromeos::wm::features::kPartialSplit},
         {});
 
+    // This allows us to snap to the bottom in portrait mode.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kUseFirstDisplayAsInternal);
+
     AshTestBase::SetUp();
 
     TabletModeControllerTestApi().EnterTabletMode();
@@ -109,7 +116,8 @@ class TabletModeMultitaskMenuEventHandlerTest : public AshTestBase {
 
   void ShowMultitaskMenu(const aura::Window& window) {
     GenerateScroll(/*x=*/window.bounds().CenterPoint().x(),
-                   /*start_y=*/1, /*end_y=*/50);
+                   /*start_y=*/window.bounds().y() + 8,
+                   /*end_y=*/window.bounds().y() + 50);
   }
 
   TabletModeMultitaskMenuEventHandler* GetMultitaskMenuEventHandler() {
@@ -127,13 +135,8 @@ class TabletModeMultitaskMenuEventHandlerTest : public AshTestBase {
 
   chromeos::MultitaskMenuView* GetMultitaskMenuView(
       TabletModeMultitaskMenu* multitask_menu) const {
-    // The contents view of the widget is a `TabletModeMultitaskMenuView`
-    // class, which has one child that is the `MultitaskMenuView`.
-    views::View* contents_view =
-        multitask_menu->multitask_menu_widget()->GetContentsView();
-    EXPECT_EQ(1u, contents_view->children().size());
-
-    views::View* multitask_menu_view = contents_view->children().front();
+    views::View* multitask_menu_view =
+        multitask_menu->GetMultitaskMenuViewForTesting();
     EXPECT_EQ(chromeos::MultitaskMenuView::kViewClassName,
               multitask_menu_view->GetClassName());
     return static_cast<chromeos::MultitaskMenuView*>(multitask_menu_view);
@@ -190,8 +193,7 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, ShowMultitaskMenu) {
 
   TabletModeMultitaskMenu* multitask_menu = GetMultitaskMenu();
   ASSERT_TRUE(multitask_menu);
-  ASSERT_TRUE(
-      multitask_menu->multitask_menu_widget()->GetContentsView()->GetVisible());
+  ASSERT_TRUE(multitask_menu->widget()->GetContentsView()->GetVisible());
 
   // Tests that a regular window that can be snapped and floated has all
   // buttons.
@@ -204,12 +206,81 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, ShowMultitaskMenu) {
   EXPECT_TRUE(multitask_menu_view->float_button_for_testing());
 
   // Verify that the menu is horizontally centered.
-  EXPECT_EQ(multitask_menu->multitask_menu_widget()
+  EXPECT_EQ(multitask_menu->widget()
                 ->GetContentsView()
                 ->GetBoundsInScreen()
                 .CenterPoint()
                 .x(),
             window->GetBoundsInScreen().CenterPoint().x());
+}
+
+// Tests that the bottom window can open the multitask menu in portrait mode. In
+// portrait primary view, the bottom window is on the right.
+// ----------------------------
+// |  PRIMARY   |  SECONDARY  |
+// ----------------------------
+TEST_F(TabletModeMultitaskMenuEventHandlerTest, ShowBottomMenuPortraitPrimary) {
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  test_api.SetDisplayRotation(display::Display::ROTATE_270,
+                              display::Display::RotationSource::ACTIVE);
+  ASSERT_EQ(chromeos::OrientationType::kPortraitPrimary,
+            test_api.GetCurrentOrientation());
+
+  auto* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+  split_view_controller->SnapWindow(
+      window1.get(), SplitViewController::SnapPosition::kPrimary);
+  split_view_controller->SnapWindow(
+      window2.get(), SplitViewController::SnapPosition::kSecondary);
+
+  // Event generation coordinates are relative to the natural origin, but
+  // `window` bounds are relative to the portrait origin. Scroll from the
+  // divider toward the right to open the menu.
+  const gfx::Rect bounds(window2->bounds());
+  const gfx::Point start(bounds.y() + 8, bounds.CenterPoint().x());
+  const gfx::Point end(bounds.y() + 50, bounds.CenterPoint().x());
+  GetEventGenerator()->GestureScrollSequence(start, end,
+                                             base::Milliseconds(100),
+                                             /*steps=*/3);
+  ASSERT_TRUE(GetMultitaskMenu());
+}
+
+// Tests that the bottom window can open the multitask menu in portrait mode. In
+// portrait secondary view, the bottom window is on the left.
+// ----------------------------
+// |  SECONDARY  |   PRIMARY  |
+// ----------------------------
+TEST_F(TabletModeMultitaskMenuEventHandlerTest,
+       ShowBottomMenuPortraitSecondary) {
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  test_api.SetDisplayRotation(display::Display::ROTATE_90,
+                              display::Display::RotationSource::ACTIVE);
+  ASSERT_EQ(chromeos::OrientationType::kPortraitSecondary,
+            test_api.GetCurrentOrientation());
+
+  auto* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+  split_view_controller->SnapWindow(
+      window1.get(), SplitViewController::SnapPosition::kPrimary);
+  split_view_controller->SnapWindow(
+      window2.get(), SplitViewController::SnapPosition::kSecondary);
+
+  // Event generation coordinates are relative to the natural origin, but
+  // `window` bounds are relative to the portrait origin. Scroll from the
+  // divider toward the left to open the menu.
+  const gfx::Rect bounds(window2->bounds());
+  const gfx::Point start(bounds.height(), bounds.CenterPoint().x());
+  const gfx::Point end(bounds.height() - 50, bounds.CenterPoint().x());
+  GetEventGenerator()->GestureScrollSequence(start, end,
+                                             base::Milliseconds(100),
+                                             /*steps=*/3);
+  EXPECT_TRUE(GetMultitaskMenu());
 }
 
 // Tests that the menu is closed when the window is closed or destroyed.
@@ -300,8 +371,7 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, HideMultitaskMenuInOverview) {
           ->tablet_mode_multitask_menu_event_handler_for_testing();
   auto* multitask_menu = event_handler->multitask_menu_for_testing();
   ASSERT_TRUE(multitask_menu);
-  ASSERT_TRUE(
-      multitask_menu->multitask_menu_widget()->GetContentsView()->GetVisible());
+  ASSERT_TRUE(multitask_menu->widget()->GetContentsView()->GetVisible());
 
   EnterOverview();
 
@@ -316,9 +386,8 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, ButtonFunctionality) {
   ShowMultitaskMenu(*window);
 
   // Press the primary half split button.
-  auto* half_button = GetMultitaskMenu()
-                          ->GetMultitaskMenuViewForTesting()
-                          ->half_button_for_testing();
+  auto* half_button =
+      GetMultitaskMenuView(GetMultitaskMenu())->half_button_for_testing();
   GetEventGenerator()->GestureTapAt(
       half_button->GetBoundsInScreen().left_center());
 
@@ -345,7 +414,7 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, ButtonFunctionality) {
   auto* multitask_menu = GetMultitaskMenu();
   ASSERT_TRUE(multitask_menu);
   EXPECT_EQ(window->GetBoundsInScreen().CenterPoint().x(),
-            multitask_menu->multitask_menu_widget()
+            multitask_menu->widget()
                 ->GetContentsView()
                 ->GetBoundsInScreen()
                 .CenterPoint()

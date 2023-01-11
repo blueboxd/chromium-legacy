@@ -4,6 +4,10 @@
     "args": ["--enable-features=BackForwardCache"]
   },
   {
+    "name": "dangling-pointer-detection",
+    "args": ["--enable-features=PartitionAllocDanglingPtr:mode/crash"]
+  },
+  {
     "name": "disable-layout-ng",
     "args": ["--disable-blink-features=LayoutNG,LayoutNGBlockFragmentation"]
   },
@@ -43,7 +47,8 @@
           "--enable-features=Vulkan",
           "--use-vulkan=swiftshader",
           "--disable-vulkan-fallback-to-gl-for-testing"
-    ]
+    ],
+    "smoke_file": "SmokeTests/skia-vulkan-swiftshader"
   },
   {
     "name": "webgpu",

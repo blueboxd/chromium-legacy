@@ -82,6 +82,12 @@ export class SearchPageElement extends SearchPageElementBase {
         readonly: true,
         observer: SearchPageElement.prototype.descriptionTemplateChanged_,
       },
+      descriptionPlaceholderText: {
+        type: String,
+        readonly: true,
+        observer:
+            SearchPageElement.prototype.descriptionPlaceholderTextChanged_,
+      },
       helpContentSearchResultCount: {
         type: Number,
         notify: true,
@@ -104,18 +110,14 @@ export class SearchPageElement extends SearchPageElementBase {
     /** @type {string} */
     this.descriptionTemplate = '';
 
+    /** @type {string} */
+    this.descriptionPlaceholderText = '';
+
     /** @private {number} */
     this.helpContentSearchResultCount = 0;
 
     /** @private {boolean} */
     this.noHelpContentDisplayed = false;
-
-    /**
-     * Record the most recent number of characters in the input for which a
-     * search has been attempted.
-     * @private {number}
-     */
-    this.lastCharCount_ = 0;
 
     /** @private {!HelpContentProviderInterface} */
     this.helpContentProvider_ = getHelpContentProvider();
@@ -153,6 +155,27 @@ export class SearchPageElement extends SearchPageElementBase {
      * @private {Array<string>}
      */
     this.appendedQuestions = [];
+
+    /**
+     * Whether the search result content is returned with popular content.
+     * @private {!boolean}
+     */
+    this.isPopularContentForTesting_;
+
+    /**
+     * Timer used to add a delay to fire a new search.
+     * @private {number}
+     */
+    this.searchTimerID_ = -1;
+
+    /**
+     * Delay in milliseconds before firing a new search.
+     *
+     * This variable needs to remain public because the unit tests need to
+     * set its value.
+     * @type {number}
+     */
+    this.searchTimoutInMs_ = 250;
   }
 
   ready() {
@@ -166,6 +189,14 @@ export class SearchPageElement extends SearchPageElementBase {
     this.shadowRoot.querySelector('#descriptionText')
         .addEventListener(
             'input', (event) => this.checkForShowQuestionnaire_(event));
+
+    window.addEventListener('message', (e) => {
+      const message = e.data;
+      if (message.iframeHeight) {
+        this.style.setProperty(
+            '--iframe-height', message.iframeHeight.toString() + 'px');
+      }
+    }, false);
   }
 
   /**
@@ -173,18 +204,15 @@ export class SearchPageElement extends SearchPageElementBase {
    * @private
    */
   handleInputChanged_(e) {
-    const newInput = e.target.value;
-    // Get the number of characters in the input.
-    const newCharCount = [...newInput].length;
+    clearTimeout(this.searchTimerID_);
 
-    if (newCharCount > 0) {
-      this.hideError_();
-    }
+    // As the user is typing, hide the error message.
+    this.hideError_();
 
-    if (Math.abs(newCharCount - this.lastCharCount_) >= MIN_CHARS_COUNT) {
-      this.lastCharCount_ = newCharCount;
-      this.fetchHelpContent_(newInput);
-    }
+    const query = e.target.value;
+    this.searchTimerID_ = setTimeout(() => {
+      this.fetchHelpContent_(query);
+    }, this.searchTimoutInMs_);
   }
 
   /**
@@ -218,13 +246,16 @@ export class SearchPageElement extends SearchPageElementBase {
         response = await this.helpContentProvider_.getHelpContents(request);
         this.popularHelpContentList_ = response.response.results;
       }
+      this.helpContentSearchResultCount = this.popularHelpContentList_.length;
       isPopularContent = true;
     } else {
       response = await this.helpContentProvider_.getHelpContents(request);
       isPopularContent = (response.response.totalResults === 0);
+      this.helpContentSearchResultCount = response.response.results.length;
     }
 
     /** @type {!SearchResult} */
+    this.isPopularContentForTesting_ = isPopularContent;
     const data = {
       contentList: /** @type {!HelpContentList} */ (
           isPopularContent ? this.popularHelpContentList_ :
@@ -234,8 +265,6 @@ export class SearchPageElement extends SearchPageElementBase {
     };
 
     this.noHelpContentDisplayed = (data.contentList.length === 0);
-
-    this.helpContentSearchResultCount = response.response.results.length;
 
     // Wait for the iframe to complete loading before postMessage.
     await this.iframeLoaded_;
@@ -359,10 +388,29 @@ export class SearchPageElement extends SearchPageElementBase {
   }
 
   /**
+   * @param {string} currentPlaceholder
+   * @protected
+   */
+  descriptionPlaceholderTextChanged_(currentPlaceholder) {
+    if (currentPlaceholder === '') {
+      this.getInputElement_().placeholder = this.i18n('descriptionHint');
+    } else {
+      this.getInputElement_().placeholder = currentPlaceholder;
+    }
+  }
+
+  /**
    * @return {!number}
    */
   getSearchResultCountForTesting() {
     return this.helpContentSearchResultCount;
+  }
+
+  /**
+   * @return {!boolean}
+   */
+  getIsPopularContentForTesting_() {
+    return this.isPopularContentForTesting_;
   }
 
   /**

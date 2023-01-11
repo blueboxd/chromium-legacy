@@ -21,6 +21,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
+#include "base/mac/scoped_aedesc.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/mac/scoped_nsobject.h"
@@ -160,26 +161,6 @@ CGColorSpaceRef GetSystemColorSpace() {
   return g_system_color_space;
 }
 
-bool CheckLoginItemStatus(bool* is_hidden) {
-  LoginItemsFileList login_items;
-  if (!login_items.Initialize())
-    return false;
-
-  base::ScopedCFTypeRef<LSSharedFileListItemRef> item(
-      login_items.GetLoginItemForMainApp());
-  if (!item.get())
-    return false;
-
-  if (is_hidden)
-    *is_hidden = IsHiddenLoginItem(item);
-
-  return true;
-}
-
-void AddToLoginItems(bool hide_on_startup) {
-  AddToLoginItems(base::mac::MainBundlePath(), hide_on_startup);
-}
-
 void AddToLoginItems(const FilePath& app_bundle_file_path,
                      bool hide_on_startup) {
   LoginItemsFileList login_items;
@@ -218,10 +199,6 @@ void AddToLoginItems(const FilePath& app_bundle_file_path,
   if (!new_item.get()) {
     DLOG(ERROR) << "Couldn't insert current app into Login Items list.";
   }
-}
-
-void RemoveFromLoginItems() {
-  RemoveFromLoginItems(base::mac::MainBundlePath());
 }
 
 void RemoveFromLoginItems(const FilePath& app_bundle_file_path) {
@@ -494,6 +471,107 @@ std::string GetPlatformSerialNumber() {
   }
 
   return base::SysCFStringRefToUTF8(serial_number_cfstring);
+}
+
+void OpenSystemSettingsPane(SystemSettingsPane pane) {
+  NSString* url = nil;
+  NSString* pane_file = nil;
+  NSData* subpane_data = nil;
+  switch (pane) {
+    case SystemSettingsPane::kAccessibility_Captions:
+      url = @"x-apple.systempreferences:com.apple.preference.universalaccess?"
+            @"Captioning";
+      break;
+    case SystemSettingsPane::kDateTime:
+      if (IsAtLeastOS13()) {
+        url = @"x-apple.systempreferences:com.apple.preference.datetime";
+      } else {
+        pane_file = @"/System/Library/PreferencePanes/DateAndTime.prefPane";
+      }
+      break;
+    case SystemSettingsPane::kNetwork_Proxies:
+      if (IsAtLeastOS13()) {
+        url = @"x-apple.systempreferences:com.apple.preference.network?"
+              @"Proxies";
+      } else {
+        pane_file = @"/System/Library/PreferencePanes/Network.prefPane";
+        subpane_data = [@"Proxies" dataUsingEncoding:NSASCIIStringEncoding];
+      }
+      break;
+    case SystemSettingsPane::kPrintersScanners:
+      if (IsAtLeastOS13()) {
+        url = @"x-apple.systempreferences:com.apple.preference.printfax";
+      } else {
+        pane_file = @"/System/Library/PreferencePanes/PrintAndFax.prefPane";
+      }
+      break;
+    case SystemSettingsPane::kPrivacySecurity_Accessibility:
+      url = @"x-apple.systempreferences:com.apple.preference.security?"
+            @"Privacy_Accessibility";
+      break;
+    case SystemSettingsPane::kPrivacySecurity_Bluetooth:
+      url = @"x-apple.systempreferences:com.apple.preference.security?"
+            @"Privacy_Bluetooth";
+      break;
+    case SystemSettingsPane::kPrivacySecurity_Camera:
+      url = @"x-apple.systempreferences:com.apple.preference.security?"
+            @"Privacy_Camera";
+      break;
+    case SystemSettingsPane::kPrivacySecurity_Extensions_Sharing:
+      if (IsAtLeastOS13()) {
+        // See ShareKit, -[SHKSharingServicePicker openAppExtensionsPrefpane].
+        url = @"x-apple.systempreferences:com.apple.ExtensionPreferences?"
+              @"Sharing";
+      } else {
+        // This is equivalent to the implementation of AppKit's
+        // +[NSSharingServicePicker openAppExtensionsPrefPane].
+        pane_file = @"/System/Library/PreferencePanes/Extensions.prefPane";
+        NSDictionary* subpane_dict = @{
+          @"action" : @"revealExtensionPoint",
+          @"protocol" : @"com.apple.share-services"
+        };
+        subpane_data = [NSPropertyListSerialization
+            dataWithPropertyList:subpane_dict
+                          format:NSPropertyListXMLFormat_v1_0
+                         options:0
+                           error:nil];
+      }
+      break;
+    case SystemSettingsPane::kPrivacySecurity_LocationServices:
+      url = @"x-apple.systempreferences:com.apple.preference.security?"
+            @"Privacy_LocationServices";
+      break;
+    case SystemSettingsPane::kPrivacySecurity_Microphone:
+      url = @"x-apple.systempreferences:com.apple.preference.security?"
+            @"Privacy_Microphone";
+      break;
+    case SystemSettingsPane::kPrivacySecurity_ScreenRecording:
+      url = @"x-apple.systempreferences:com.apple.preference.security?"
+            @"Privacy_ScreenCapture";
+      break;
+  }
+
+  DCHECK(url != nil ^ pane_file != nil);
+
+  if (url) {
+    [NSWorkspace.sharedWorkspace openURL:[NSURL URLWithString:url]];
+    return;
+  }
+
+  base::scoped_nsobject<NSAppleEventDescriptor> subpane_descriptor;
+  NSArray* pane_file_urls = @[ [NSURL fileURLWithPath:pane_file] ];
+
+  LSLaunchURLSpec launchSpec = {0};
+  launchSpec.itemURLs = NSToCFCast(pane_file_urls);
+  if (subpane_data) {
+    subpane_descriptor.reset([[NSAppleEventDescriptor alloc]
+        initWithDescriptorType:'ptru'
+                          data:subpane_data]);
+    launchSpec.passThruParams = subpane_descriptor.get().aeDesc;
+  }
+  launchSpec.launchFlags = kLSLaunchAsync | kLSLaunchDontAddToRecents;
+
+  LSOpenFromURLSpec(&launchSpec, nullptr);
 }
 
 }  // namespace base::mac

@@ -77,6 +77,8 @@ function setupEvents() {
   const blockedInterception = interstitialType === 'BLOCKED_INTERCEPTION';
   const insecureForm = interstitialType == 'INSECURE_FORM';
   const httpsOnly = interstitialType == 'HTTPS_ONLY';
+  const enterpriseBlock = interstitialType === 'ENTERPRISE_BLOCK';
+  const enterpriseWarn = interstitialType === 'ENTERPRISE_WARN';
   const hidePrimaryButton = loadTimeData.getBoolean('hide_primary_button');
   const showRecurrentErrorParagraph = loadTimeData.getBoolean(
     'show_recurrent_error_paragraph');
@@ -99,6 +101,10 @@ function setupEvents() {
     body.classList.add('insecure-form');
   } else if (httpsOnly) {
     body.classList.add('https-only');
+  } else if (enterpriseBlock) {
+    body.classList.add('enterprise-block');
+  } else if (enterpriseWarn) {
+    body.classList.add('enterprise-warn');
   } else {
     body.classList.add('safe-browsing');
     // Override the default theme color.
@@ -129,6 +135,8 @@ function setupEvents() {
           break;
 
         case 'SAFEBROWSING':
+        case 'ENTERPRISE_BLOCK':
+        case 'ENTERPRISE_WARN':
         case 'ORIGIN_POLICY':
           sendCommand(SecurityInterstitialCommandId.CMD_DONT_PROCEED);
           break;
@@ -144,7 +152,7 @@ function setupEvents() {
     });
   }
 
-  if (lookalike || insecureForm || httpsOnly) {
+  if (lookalike || insecureForm || httpsOnly || enterpriseWarn) {
     const proceedButton = document.querySelector('#proceed-button');
     proceedButton.classList.remove(HIDDEN_CLASS);
     proceedButton.textContent = loadTimeData.getString('proceedButtonText');
@@ -205,9 +213,11 @@ function setupEvents() {
   }
 
   const detailsButton = document.querySelector('#details-button');
-  if (captivePortal || billing || lookalike || insecureForm || httpsOnly) {
-    // Captive portal, billing, lookalike pages, insecure form, and
-    // HTTPS only mode interstitials don't have details buttons.
+  if (captivePortal || billing || lookalike || insecureForm || httpsOnly ||
+      enterpriseWarn || enterpriseBlock) {
+    // Captive portal, billing, lookalike pages, insecure form, enterprise warn,
+    // enterprise block, and HTTPS only mode interstitials don't
+    // have details buttons.
     detailsButton.classList.add('hidden');
   } else {
     detailsButton.setAttribute(

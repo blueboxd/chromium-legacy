@@ -194,7 +194,7 @@ const base::FeatureParam<int> kMacCAOverlayQuadMaxNum{
     &kMacCAOverlayQuad, "MacCAOverlayQuadMaxNum", -1};
 #endif
 
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
 BASE_FEATURE(kCanSkipRenderPassOverlay,
              "CanSkipRenderPassOverlay",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -229,6 +229,18 @@ BASE_FEATURE(kEagerSurfaceGarbageCollection,
 BASE_FEATURE(kOverrideThrottledFrameRateParams,
              "OverrideThrottledFrameRateParams",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// On platforms using SkiaOutputDeviceBufferQueue, when this is true
+// SkiaRenderer will allocate and maintain a buffer queue of images for the root
+// render pass, instead of SkiaOutputDeviceBufferQueue itself.
+BASE_FEATURE(kRendererAllocatesImages,
+             "RendererAllocatesImages",
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 bool IsAdpfEnabled() {
   // TODO(crbug.com/1157620): Limit this to correct android version.
@@ -397,6 +409,10 @@ bool ShouldVideoDetectorIgnoreNonVideoFrames() {
 
 bool ShouldOverrideThrottledFrameRateParams() {
   return base::FeatureList::IsEnabled(kOverrideThrottledFrameRateParams);
+}
+
+bool ShouldRendererAllocateImages() {
+  return base::FeatureList::IsEnabled(kRendererAllocatesImages);
 }
 
 }  // namespace features

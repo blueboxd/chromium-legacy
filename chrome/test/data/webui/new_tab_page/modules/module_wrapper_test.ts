@@ -11,7 +11,7 @@ import {assertDeepEquals, assertEquals, assertThrows} from 'chrome://webui-test/
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
-import {fakeMetricsPrivate, MetricsTracker} from '../metrics_test_support.js';
+import {fakeMetricsPrivate, MetricsTracker} from '../../metrics_test_support.js';
 import {createElement, initNullModule, installMock} from '../test_support.js';
 
 suite('NewTabPageModulesModuleWrapperTest', () => {
@@ -20,8 +20,7 @@ suite('NewTabPageModulesModuleWrapperTest', () => {
   let windowProxy: TestBrowserProxy;
 
   setup(() => {
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     loadTimeData.overrideValues({
       navigationStartTime: 0.0,
     });

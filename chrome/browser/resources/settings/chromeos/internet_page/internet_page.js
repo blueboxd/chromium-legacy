@@ -998,6 +998,13 @@ class SettingsInternetPageElement extends SettingsInternetPageElementBase {
       assertNotReached();
     });
   }
+
+  /**
+   * Handles UI requests to add new APN.
+   * TODO(b/162365553): Implement.
+   * @private
+   */
+  onCreateCustomApnClicked_() {}
 }
 
 customElements.define(

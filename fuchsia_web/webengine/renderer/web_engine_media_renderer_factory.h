@@ -23,7 +23,7 @@ class VideoRendererSink;
 }  // namespace media
 
 // RendererFactory implementation used on Fuchsia. It works the same as
-// DefaultRendererFactory, except that it uses WebEngineAudioRenderer for audio.
+// RendererImplFactory, except that it uses WebEngineAudioRenderer for audio.
 class WebEngineMediaRendererFactory final : public media::RendererFactory {
  public:
   using GetGpuFactoriesCB =
@@ -39,7 +39,7 @@ class WebEngineMediaRendererFactory final : public media::RendererFactory {
 
   // RendererFactory interface.
   std::unique_ptr<media::Renderer> CreateRenderer(
-      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       media::AudioRendererSink* audio_renderer_sink,
       media::VideoRendererSink* video_renderer_sink,
@@ -48,7 +48,7 @@ class WebEngineMediaRendererFactory final : public media::RendererFactory {
 
  private:
   std::vector<std::unique_ptr<media::VideoDecoder>> CreateVideoDecoders(
-      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& media_task_runner,
       media::RequestOverlayInfoCB request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space,
       media::GpuVideoAcceleratorFactories* gpu_factories);

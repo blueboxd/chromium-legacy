@@ -12,6 +12,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
+#include "base/scoped_observation_traits.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/account_manager_core/account.h"
@@ -196,18 +197,6 @@ class IdentityManager : public KeyedService,
       const ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode);
-
-  // Creates an AccessTokenFetcher given the passed-in information, allowing to
-  // specify custom |client_id| and |client_secret| to identify the OAuth client
-  // app.
-  [[nodiscard]] std::unique_ptr<AccessTokenFetcher>
-  CreateAccessTokenFetcherForClient(const CoreAccountId& account_id,
-                                    const std::string& client_id,
-                                    const std::string& client_secret,
-                                    const std::string& oauth_consumer_name,
-                                    const ScopeSet& scopes,
-                                    AccessTokenFetcher::TokenCallback callback,
-                                    AccessTokenFetcher::Mode mode);
 
   // If an entry exists in the cache of access tokens corresponding to the
   // given information, removes that entry; in this case, the next access token
@@ -718,5 +707,24 @@ class IdentityManager : public KeyedService,
 };
 
 }  // namespace signin
+
+namespace base {
+
+template <>
+struct ScopedObservationTraits<signin::IdentityManager,
+                               signin::IdentityManager::DiagnosticsObserver> {
+  static void AddObserver(
+      signin::IdentityManager* source,
+      signin::IdentityManager::DiagnosticsObserver* observer) {
+    source->AddDiagnosticsObserver(observer);
+  }
+  static void RemoveObserver(
+      signin::IdentityManager* source,
+      signin::IdentityManager::DiagnosticsObserver* observer) {
+    source->RemoveDiagnosticsObserver(observer);
+  }
+};
+
+}  // namespace base
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_IDENTITY_MANAGER_H_

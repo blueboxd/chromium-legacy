@@ -51,9 +51,12 @@ class BatterySaverHelpPromoTest : public InProcessBrowserTest {
   ~BatterySaverHelpPromoTest() override = default;
 
   void SetUp() override {
-    feature_list_.InitWithFeatures(
-        {feature_engagement::kIPHBatterySaverModeFeature,
-         performance_manager::features::kBatterySaverModeAvailable},
+    feature_list_.InitWithFeaturesAndParameters(
+        {{feature_engagement::kIPHDemoMode,
+          {{feature_engagement::kIPHDemoModeFeatureChoiceParam,
+            feature_engagement::kIPHBatterySaverModeFeature.name}}},
+         {feature_engagement::kIPHBatterySaverModeFeature, {}},
+         {performance_manager::features::kBatterySaverModeAvailable, {}}},
         {});
 
     SetUpFakeBatterySampler();
@@ -112,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(BatterySaverHelpPromoTest, ShowPromoOnModeActivation) {
   auto lock = BrowserFeaturePromoController::BlockActiveWindowCheckForTesting();
 
   bool initialized = WaitForFeatureTrackerInitialization();
-  EXPECT_TRUE(initialized);
+  ASSERT_TRUE(initialized);
 
   views::NamedWidgetShownWaiter waiter(
       views::test::AnyWidgetTestPasskey{},
@@ -139,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(BatterySaverHelpPromoTest, HidePromoOnModeDeactivation) {
   auto lock = BrowserFeaturePromoController::BlockActiveWindowCheckForTesting();
 
   bool initialized = WaitForFeatureTrackerInitialization();
-  EXPECT_TRUE(initialized);
+  ASSERT_TRUE(initialized);
 
   views::NamedWidgetShownWaiter waiter(
       views::test::AnyWidgetTestPasskey{},
@@ -163,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(BatterySaverHelpPromoTest, PromoCustomActionClicked) {
   auto* const promo_controller = GetFeaturePromoController();
 
   bool initialized = WaitForFeatureTrackerInitialization();
-  EXPECT_TRUE(initialized);
+  ASSERT_TRUE(initialized);
 
   views::NamedWidgetShownWaiter waiter(
       views::test::AnyWidgetTestPasskey{},
@@ -240,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(BatterySaverBubbleViewTest, DisableModeForSession) {
 
   views::BubbleDialogModelHost* const bubble_dialog_host =
       battery_saver_button->GetBubble();
-  EXPECT_TRUE(bubble_dialog_host);
+  ASSERT_NE(bubble_dialog_host, nullptr);
 
   views::test::WidgetDestroyedWaiter destroyed_waiter(widget);
   bubble_dialog_host->Cancel();

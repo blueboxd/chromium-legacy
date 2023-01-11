@@ -38,9 +38,9 @@ buildflag_header("buildflags") {
     "CHROME_ROOT_STORE_POLICY_SUPPORTED=$chrome_root_store_policy_supported",
     "ENABLE_BACKGROUND_MODE=$enable_background_mode",
     "ENABLE_BACKGROUND_CONTENTS=$enable_background_contents",
-    "ENABLE_BASIC_PRINT_DIALOG=$enable_basic_print_dialog",
     "ENABLE_CHROME_NOTIFICATIONS=$enable_chrome_notifications",
     "ENABLE_CLICK_TO_CALL=$enable_click_to_call",
+    "ENABLE_COMPONENT_UPDATER=$enable_component_updater",
     "ENABLE_DOWNGRADE_PROCESSING=$enable_downgrade_processing",
     "ENABLE_HANGOUT_SERVICES_EXTENSION=$enable_hangout_services_extension",
     "ENABLE_SERVICE_DISCOVERY=$enable_service_discovery",
@@ -385,7 +385,7 @@ static_library("common_lib") {
   }
 
   # Printing.
-  if (enable_basic_printing) {
+  if (enable_printing) {
     public_deps += [
       "//components/printing/common",
       "//printing",
@@ -573,6 +573,7 @@ static_library("constants") {
     ":buildflags",
     ":chrome_features",
     ":non_code_constants",
+    "//components/signin/public/base:signin_buildflags",
     "//content/public/common:result_codes",
     "//rlz/buildflags",
     "//third_party/widevine/cdm:buildflags",

@@ -34,7 +34,9 @@
 #include <tuple>
 
 #include "base/callback_helpers.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "cc/base/features.h"
@@ -187,6 +189,7 @@
 #include "third_party/blink/renderer/core/testing/scoped_fake_plugin_registry.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/core/testing/wait_for_event.h"
 #include "third_party/blink/renderer/platform/blob/testing/fake_blob.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
@@ -465,10 +468,9 @@ class WebFrameTest : public testing::Test {
     for (Node& node : range.Nodes()) {
       const DocumentMarkerVector& markers_in_node =
           document->Markers().MarkersFor(To<Text>(node), marker_types);
-      node_count += std::count_if(
-          markers_in_node.begin(), markers_in_node.end(),
-          [start_offset, end_offset, &node, &start_container,
-           &end_container](const DocumentMarker* marker) {
+      node_count += base::ranges::count_if(
+          markers_in_node, [start_offset, end_offset, &node, &start_container,
+                            &end_container](const DocumentMarker* marker) {
             if (node == start_container && marker->EndOffset() <= start_offset)
               return false;
             if (node == end_container && marker->StartOffset() >= end_offset)
@@ -1678,6 +1680,41 @@ TEST_F(WebFrameTest, PostMessageThenDetach) {
   RunPendingTasks();
 }
 
+TEST_F(WebFrameTest, PostMessageEvent_CannotDeserialize) {
+  frame_test_helpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad("about:blank");
+
+  auto* frame =
+      To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame());
+  LocalDOMWindow* window = frame->DomWindow();
+
+  base::RunLoop run_loop;
+  auto* wait = MakeGarbageCollected<WaitForEvent>();
+  wait->AddEventListener(window, event_type_names::kMessage);
+  wait->AddEventListener(window, event_type_names::kMessageerror);
+  wait->AddCompletionClosure(run_loop.QuitClosure());
+
+  scoped_refptr<SerializedScriptValue> message =
+      SerializeString("message", ToScriptStateForMainWorld(frame));
+  SerializedScriptValue::ScopedOverrideCanDeserializeInForTesting
+      override_can_deserialize_in(base::BindLambdaForTesting(
+          [&](const SerializedScriptValue& value,
+              ExecutionContext* execution_context, bool can_deserialize) {
+            EXPECT_EQ(&value, message.get());
+            EXPECT_EQ(execution_context, window);
+            EXPECT_TRUE(can_deserialize);
+            return false;
+          }));
+
+  NonThrowableExceptionState exception_state;
+  frame->DomWindow()->PostMessageForTesting(message, MessagePortArray(), "*",
+                                            window, exception_state);
+  EXPECT_FALSE(exception_state.HadException());
+
+  run_loop.Run();
+  EXPECT_EQ(wait->GetLastEvent()->type(), event_type_names::kMessageerror);
+}
+
 namespace {
 
 // Helper function to set autosizing multipliers on a document.
@@ -1686,11 +1723,9 @@ bool SetTextAutosizingMultiplier(Document* document, float multiplier) {
   for (LayoutObject* layout_object = document->GetLayoutView(); layout_object;
        layout_object = layout_object->NextInPreOrder()) {
     if (layout_object->Style()) {
-      scoped_refptr<ComputedStyle> modified_style =
-          ComputedStyle::Clone(layout_object->StyleRef());
-      modified_style->SetTextAutosizingMultiplier(multiplier);
-      EXPECT_EQ(multiplier, modified_style->TextAutosizingMultiplier());
-      layout_object->SetStyle(std::move(modified_style),
+      ComputedStyleBuilder builder(layout_object->StyleRef());
+      builder.SetTextAutosizingMultiplier(multiplier);
+      layout_object->SetStyle(builder.TakeStyle(),
                               LayoutObject::ApplyStyleChanges::kNo);
       multiplier_set = true;
     }
@@ -8547,7 +8582,7 @@ TEST_F(WebFrameTest, FullscreenNestedExit) {
   Fullscreen::RequestFullscreen(*iframe_body);
 
   web_view_impl->DidEnterFullscreen();
-  top_doc->GetAgent()->event_loop()->PerformMicrotaskCheckpoint();
+  top_doc->GetAgent().event_loop()->PerformMicrotaskCheckpoint();
   UpdateAllLifecyclePhases(web_view_impl);
 
   // We are now in nested fullscreen, with both documents having a non-empty

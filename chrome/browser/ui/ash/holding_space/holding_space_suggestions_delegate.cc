@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/holding_space/holding_space_suggestions_delegate.h"
 
 #include "ash/constants/ash_features.h"
+#include "base/containers/adapters.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ui/app_list/search/files/file_suggest_keyed_service_factory.h"
 
@@ -26,19 +27,14 @@ HoldingSpaceItem::Type GetItemTypeFromSuggestionType(
 // suggested file in `suggestions_by_type`.
 bool ItemIsPinnedSuggestion(
     const HoldingSpaceItem* item,
-    const std::map<app_list::FileSuggestionType,
-                   std::vector<app_list::FileSuggestData>>&
+    std::map<HoldingSpaceItem::Type, std::vector<base::FilePath>>&
         suggestions_by_type) {
   if (item->type() != HoldingSpaceItem::Type::kPinnedFile)
     return false;
 
-  for (const auto& [_, raw_suggestions] : suggestions_by_type) {
-    if (base::Contains(raw_suggestions, item->file_path(),
-                       [](const app_list::FileSuggestData& suggestion) {
-                         return suggestion.file_path;
-                       })) {
+  for (const auto& [_, suggested_file_paths] : suggestions_by_type) {
+    if (base::Contains(suggested_file_paths, item->file_path()))
       return true;
-    }
   }
 
   return false;
@@ -61,7 +57,9 @@ void HoldingSpaceSuggestionsDelegate::OnHoldingSpaceItemsAdded(
         return item->IsInitialized() &&
                ItemIsPinnedSuggestion(item, suggestions_by_type_);
       })) {
-    UpdateSuggestionsInModel();
+    // Update suggestions asynchronously to avoid updating suggestions along
+    // with other model updates.
+    MaybeScheduleUpdateSuggestionsInModel();
   }
 }
 
@@ -71,17 +69,32 @@ void HoldingSpaceSuggestionsDelegate::OnHoldingSpaceItemsRemoved(
         return item->IsInitialized() &&
                ItemIsPinnedSuggestion(item, suggestions_by_type_);
       })) {
-    UpdateSuggestionsInModel();
+    // Update suggestions asynchronously to avoid updating suggestions along
+    // with other model updates.
+    MaybeScheduleUpdateSuggestionsInModel();
   }
 }
 
 void HoldingSpaceSuggestionsDelegate::OnHoldingSpaceItemInitialized(
     const HoldingSpaceItem* item) {
-  if (ItemIsPinnedSuggestion(item, suggestions_by_type_))
-    UpdateSuggestionsInModel();
+  if (ItemIsPinnedSuggestion(item, suggestions_by_type_)) {
+    // Update suggestions asynchronously to avoid updating suggestions along
+    // with other model updates.
+    MaybeScheduleUpdateSuggestionsInModel();
+  }
 }
 
 void HoldingSpaceSuggestionsDelegate::OnPersistenceRestored() {
+  // Initialize `suggestions_by_type_` with the restored suggestions. The model
+  // items are iterated reversely so that the suggestions of the same category
+  // in `suggestions_by_type_` follow the relevance order.
+  DCHECK(suggestions_by_type_.empty());
+  for (const auto& item : base::Reversed(model()->items())) {
+    // Skip if `item` is not a suggestion.
+    if (HoldingSpaceItem::IsSuggestion(item->type()))
+      suggestions_by_type_[item->type()].push_back(item->file_path());
+  }
+
   file_suggest_service_observation_.Observe(
       app_list::FileSuggestKeyedServiceFactory::GetInstance()->GetService(
           profile()));
@@ -113,6 +126,17 @@ void HoldingSpaceSuggestionsDelegate::MaybeFetchSuggestions(
                          weak_factory_.GetWeakPtr(), type));
 }
 
+void HoldingSpaceSuggestionsDelegate::MaybeScheduleUpdateSuggestionsInModel() {
+  // Return early if the task of updating model suggestions has been scheduled.
+  if (suggestion_update_timer_.IsRunning())
+    return;
+
+  suggestion_update_timer_.Start(
+      FROM_HERE, /*delay=*/base::TimeDelta(),
+      base::BindOnce(&HoldingSpaceSuggestionsDelegate::UpdateSuggestionsInModel,
+                     weak_factory_.GetWeakPtr()));
+}
+
 void HoldingSpaceSuggestionsDelegate::OnSuggestionsFetched(
     app_list::FileSuggestionType type,
     const absl::optional<std::vector<app_list::FileSuggestData>>& suggestions) {
@@ -124,7 +148,14 @@ void HoldingSpaceSuggestionsDelegate::OnSuggestionsFetched(
     return;
 
   // Update `suggestions_by_type_`.
-  suggestions_by_type_[type] = *suggestions;
+  std::vector<base::FilePath> updated_suggestions(suggestions->size());
+  std::transform(suggestions->cbegin(), suggestions->cend(),
+                 updated_suggestions.begin(),
+                 [](const app_list::FileSuggestData& raw_suggestion_data) {
+                   return raw_suggestion_data.file_path;
+                 });
+  suggestions_by_type_[GetItemTypeFromSuggestionType(type)] =
+      std::move(updated_suggestions);
 
   UpdateSuggestionsInModel();
 }
@@ -134,13 +165,12 @@ void HoldingSpaceSuggestionsDelegate::UpdateSuggestionsInModel() {
       suggestion_items;
   base::FilePath downloads_folder =
       file_manager::util::GetDownloadsFolderForProfile(profile());
-  for (const auto& [type, raw_suggestions] : suggestions_by_type_) {
-    HoldingSpaceItem::Type item_type = GetItemTypeFromSuggestionType(type);
-    for (const auto& suggestion : raw_suggestions) {
-      if (suggestion.file_path != downloads_folder &&
+  for (const auto& [type, suggested_file_paths] : suggestions_by_type_) {
+    for (const auto& file_path : suggested_file_paths) {
+      if (file_path != downloads_folder &&
           !model()->ContainsItem(HoldingSpaceItem::Type::kPinnedFile,
-                                 suggestion.file_path)) {
-        suggestion_items.emplace_back(item_type, suggestion.file_path);
+                                 file_path)) {
+        suggestion_items.emplace_back(type, file_path);
       }
     }
   }

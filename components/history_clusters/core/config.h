@@ -14,6 +14,12 @@ class PrefService;
 
 namespace history_clusters {
 
+namespace switches {
+
+extern const char kShouldShowAllClustersOnProminentUiSurfaces[];
+
+}  // namespace switches
+
 class HistoryClustersService;
 
 // The default configuration. Always use |GetConfig()| to get the current
@@ -82,6 +88,10 @@ struct Config {
   // Whether to assign labels to clusters from the Entities of the cluster.
   // Does nothing if `should_label_clusters` is false.
   bool labels_from_entities = false;
+
+  // Whether to attempt to provide images for eligible Journeys (so far just
+  // a proof of concept implementation for Entities only).
+  bool images = false;
 
   // The `kPersistedClusters` feature and child params.
 
@@ -217,11 +227,7 @@ struct Config {
   bool keyword_filter_on_noisy_visits = false;
 
   // If enabled, adds the search terms of the visits that have them.
-  bool keyword_filter_on_search_terms = false;
-
-  // If enabled, adds the keywords of detected entities that may be for
-  // the visit's host.
-  bool keyword_filter_on_visit_hosts = true;
+  bool keyword_filter_on_search_terms = true;
 
   // Maximum number of keywords to keep per cluster.
   size_t max_num_keywords_per_cluster = 20;
@@ -255,22 +261,6 @@ struct Config {
   // to prevent the cluster from being filtered out (i.e., marked as not visible
   // on the zero state UI).
   size_t number_interesting_visits_filter_threshold = 1;
-
-  // Returns the weight to use for the visit duration when ranking visits within
-  // a cluster. Will always be greater than or equal to 0.
-  float visit_duration_ranking_weight = 1.0;
-
-  // Returns the weight to use for the foreground duration when ranking visits
-  // within a cluster. Will always be greater than or equal to 0.
-  float foreground_duration_ranking_weight = 1.5;
-
-  // Returns the weight to use for bookmarked visits when ranking visits within
-  // a cluster. Will always be greater than or equal to 0.
-  float bookmark_ranking_weight = 1.0;
-
-  // Returns the weight to use for visits that are search results pages ranking
-  // visits within a cluster. Will always be greater than or equal to 0.
-  float search_results_page_ranking_weight = 2.0;
 
   // Whether to determine whether to show/hide clusters on prominent UI surfaces
   // based on categories annotated for a visit.
@@ -329,6 +319,29 @@ struct Config {
   // The max time a host should be stored in the engagement score cache.
   base::TimeDelta engagement_score_cache_refresh_duration = base::Minutes(120);
 
+  // The `kHistoryClustersVisitDeduping` feature and child params.
+
+  // Use host instead of heavily-stripped URL as URL for deduping.
+  bool use_host_for_visit_deduping = false;
+
+  // The `kOnDeviceClusteringVisitRanking` feature and child params.
+
+  // Returns the weight to use for the visit duration when ranking visits within
+  // a cluster. Will always be greater than or equal to 0.
+  float visit_duration_ranking_weight = 1.0;
+
+  // Returns the weight to use for the foreground duration when ranking visits
+  // within a cluster. Will always be greater than or equal to 0.
+  float foreground_duration_ranking_weight = 1.5;
+
+  // Returns the weight to use for bookmarked visits when ranking visits within
+  // a cluster. Will always be greater than or equal to 0.
+  float bookmark_ranking_weight = 1.0;
+
+  // Returns the weight to use for visits that are search results pages ranking
+  // visits within a cluster. Will always be greater than or equal to 0.
+  float search_results_page_ranking_weight = 2.0;
+
   // Lonely features without child params.
 
   // Enables debug info in non-user-visible surfaces, like Chrome Inspector.
@@ -361,6 +374,9 @@ struct Config {
   // should only be set to true via command line.
   bool should_show_all_clusters_unconditionally_on_prominent_ui_surfaces =
       false;
+
+  // Whether to include synced visits in clusters.
+  bool include_synced_visits = false;
 
   // Order consistently with features.h.
 

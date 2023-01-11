@@ -27,9 +27,9 @@ using WebFeature = blink::mojom::WebFeature;
 
 // UKM-based UseCounter features (WebFeature) should be defined in
 // opt_in_features list.
-const UseCounterPageLoadMetricsObserver::UkmFeatureList&
-UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
-  static base::NoDestructor<UseCounterPageLoadMetricsObserver::UkmFeatureList>
+const UseCounterMetricsRecorder::UkmFeatureList&
+UseCounterMetricsRecorder::GetAllowedUkmFeatures() {
+  static base::NoDestructor<UseCounterMetricsRecorder::UkmFeatureList>
       // We explicitly use an std::initializer_list below to work around GCC
       // bug 84849, which causes having a base::NoDestructor<T<U>> and passing
       // an initializer list of Us does not work.
@@ -55,8 +55,8 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kCredentialManagerGetPublicKeyCredential,
           WebFeature::kCredentialManagerMakePublicKeyCredentialSuccess,
           WebFeature::kCredentialManagerGetPublicKeyCredentialSuccess,
-          WebFeature::kU2FCryptotokenRegister,
-          WebFeature::kU2FCryptotokenSign,
+          WebFeature::kOBSOLETE_U2FCryptotokenRegister,
+          WebFeature::kOBSOLETE_U2FCryptotokenSign,
           WebFeature::kTextToSpeech_Speak,
           WebFeature::kTextToSpeech_SpeakDisallowedByAutoplay,
           WebFeature::kCSSEnvironmentVariable_SafeAreaInsetTop,
@@ -85,6 +85,7 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kSignedExchangeInnerResponseInSubFrame,
           WebFeature::kWebShareShare,
           WebFeature::kDownloadInAdFrameWithoutUserGesture,
+          WebFeature::kStorageBucketsOpen,
           WebFeature::kOpenWebDatabase,
           WebFeature::kV8MediaCapabilities_DecodingInfo_Method,
           WebFeature::kOpenerNavigationDownloadCrossOrigin,

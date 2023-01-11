@@ -6,7 +6,6 @@
 
 #include <random>
 
-#include "ash/shell.h"
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/json/values_util.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics_utils.h"
 #include "chrome/browser/apps/app_service/web_contents_app_id_utils.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -66,6 +66,19 @@ aura::Window* GetWindowWithTabStripModel(TabStripModel* tab_strip_model) {
     }
   }
   return nullptr;
+}
+
+wm::ActivationClient* GetActivationClient(aura::Window* window) {
+  if (!window) {
+    return nullptr;
+  }
+
+  aura::Window* root_window = window->GetRootWindow();
+  if (!root_window) {
+    return nullptr;
+  }
+
+  return wm::GetActivationClient(root_window);
 }
 
 }  // namespace
@@ -150,11 +163,12 @@ base::Value WebsiteMetrics::UrlInfo::ConvertToValue() const {
   return usage_time_dict;
 }
 
-WebsiteMetrics::WebsiteMetrics(Profile* profile)
-    : profile_(profile), browser_tab_strip_tracker_(this, nullptr) {
+WebsiteMetrics::WebsiteMetrics(Profile* profile, int user_type_by_device_type)
+    : profile_(profile),
+      browser_tab_strip_tracker_(this, nullptr),
+      user_type_by_device_type_(user_type_by_device_type) {
   BrowserList::GetInstance()->AddObserver(this);
   browser_tab_strip_tracker_.Init();
-  user_type_by_device_type_ = GetUserTypeByDeviceTypeMetrics();
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfileWithoutCreating(profile);
   if (history_service) {
@@ -174,7 +188,6 @@ void WebsiteMetrics::OnBrowserAdded(Browser* browser) {
   auto* window = GetWindowWithBrowser(browser);
   if (window) {
     observed_windows_.AddObservation(window);
-    MaybeObserveWindowActivationClient();
     window_to_web_contents_[window] = nullptr;
   }
 }
@@ -192,7 +205,7 @@ void WebsiteMetrics::OnTabStripModelChanged(
 
   switch (change.type()) {
     case TabStripModelChange::kInserted:
-      OnTabStripModelChangeInsert(tab_strip_model, *change.GetInsert(),
+      OnTabStripModelChangeInsert(window, tab_strip_model, *change.GetInsert(),
                                   selection);
       break;
     case TabStripModelChange::kRemoved:
@@ -234,7 +247,6 @@ void WebsiteMetrics::OnWindowDestroying(aura::Window* window) {
     window_to_web_contents_.erase(window);
   }
   observed_windows_.RemoveObservation(window);
-  MaybeRemoveObserveWindowActivationClient();
 }
 
 void WebsiteMetrics::HistoryServiceBeingDeleted(
@@ -268,34 +280,54 @@ void WebsiteMetrics::OnTwoHours() {
   url_infos.swap(url_infos_);
 }
 
-void WebsiteMetrics::MaybeObserveWindowActivationClient() {
-  if (activation_client_observation_.IsObserving() ||
-      !ash::Shell::HasInstance()) {
+void WebsiteMetrics::MaybeObserveWindowActivationClient(aura::Window* window) {
+  auto* activation_client = GetActivationClient(window);
+  if (!activation_client) {
     return;
   }
 
-  aura::Window* root_window = ash::Shell::Get()->GetPrimaryRootWindow();
-  if (root_window) {
-    auto* activation_client = wm::GetActivationClient(root_window);
-    if (activation_client) {
-      activation_client_observation_.Observe(activation_client);
-    }
+  activation_client_to_windows_[activation_client].insert(window);
+
+  if (!activation_client_observations_.IsObservingSource(activation_client)) {
+    activation_client_observations_.AddObservation(activation_client);
   }
 }
 
-void WebsiteMetrics::MaybeRemoveObserveWindowActivationClient() {
-  if (window_to_web_contents_.empty() &&
-      activation_client_observation_.IsObserving()) {
-    activation_client_observation_.Reset();
+void WebsiteMetrics::MaybeRemoveObserveWindowActivationClient(
+    aura::Window* window) {
+  auto* activation_client = GetActivationClient(window);
+  if (!activation_client) {
+    return;
+  }
+
+  activation_client_to_windows_[activation_client].erase(window);
+
+  // If there are other windows share the `activation_client`, we can't remove
+  // the activation client observation. E.g. for browser windows in Ash, there
+  // is only 1 root window, and 1 activation_client. Only when all browser
+  // windows will be closed, we can remove the observation.
+  if (!activation_client_to_windows_[activation_client].empty()) {
+    return;
+  }
+
+  activation_client_to_windows_.erase(activation_client);
+  if (activation_client_observations_.IsObservingSource(activation_client)) {
+    activation_client_observations_.RemoveObservation(activation_client);
   }
 }
 
 void WebsiteMetrics::OnTabStripModelChangeInsert(
+    aura::Window* window,
     TabStripModel* tab_strip_model,
     const TabStripModelChange::Insert& insert,
     const TabStripSelectionChange& selection) {
   if (insert.contents.size() == 0) {
     return;
+  }
+
+  // First tab attached.
+  if (tab_strip_model->count() == static_cast<int>(insert.contents.size())) {
+    MaybeObserveWindowActivationClient(window);
   }
 
   for (const auto& inserted_tab : insert.contents) {
@@ -328,8 +360,8 @@ void WebsiteMetrics::OnTabStripModelChangeRemove(
         OnTabClosed(it->second);
       }
       window_to_web_contents_.erase(it);
-      MaybeRemoveObserveWindowActivationClient();
     }
+    MaybeRemoveObserveWindowActivationClient(window);
   }
 }
 
@@ -532,6 +564,9 @@ void WebsiteMetrics::SetTabInActivated(content::WebContents* web_contents) {
   it->second.running_time_in_five_minutes +=
       current_time - it->second.start_time;
   it->second.is_activated = false;
+  it->second.running_time_in_two_hours +=
+      GetRandomNoise() * it->second.running_time_in_five_minutes;
+  it->second.running_time_in_five_minutes = base::TimeDelta();
 }
 
 void WebsiteMetrics::SaveUsageTime() {
@@ -579,6 +614,9 @@ void WebsiteMetrics::RecordUsageTimeFromPref() {
       profile_->GetPrefs()->GetDict(kWebsiteUsageTime);
 
   for (const auto [url, url_info_value] : usage_time) {
+    if (url.empty()) {
+      continue;
+    }
     auto url_info = std::make_unique<UrlInfo>(url_info_value);
     if (!url_info->running_time_in_two_hours.is_zero()) {
       EmitUkm(GURL(url), url_info->running_time_in_two_hours.InMilliseconds(),
@@ -600,6 +638,7 @@ void WebsiteMetrics::EmitUkm(const GURL& url,
     LOG(ERROR) << "WebsiteMetrics::EmitUkm url is " << url.spec()
                << ", source id type is "
                << (int)ukm::SourceIdObj::FromInt64(source_id).GetType();
+    base::debug::DumpWithoutCrashing();
     return;
   }
 

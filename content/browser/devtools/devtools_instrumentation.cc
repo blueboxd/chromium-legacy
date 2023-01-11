@@ -31,6 +31,7 @@
 #include "content/browser/devtools/worker_devtools_agent_host.h"
 #include "content/browser/devtools/worker_devtools_manager.h"
 #include "content/browser/portal/portal.h"
+#include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -341,6 +342,20 @@ void WillSwapFrameTreeNode(FrameTreeNode& old_node, FrameTreeNode& new_node) {
   host->SetFrameTreeNode(&new_node);
 }
 
+void OnFrameTreeNodeDestroyed(FrameTreeNode& frame_tree_node) {
+  // If the child frame is an OOPIF, we emit Page.frameDetached event which
+  // otherwise might be lost because the OOPIF target is being destroyed.
+  content::RenderFrameHostImpl* parent = frame_tree_node.parent();
+  if (!parent)
+    return;
+  if (RenderFrameDevToolsAgentHost::GetFor(&frame_tree_node) !=
+      RenderFrameDevToolsAgentHost::GetFor(parent)) {
+    DispatchToAgents(RenderFrameDevToolsAgentHost::GetFor(parent),
+                     &protocol::PageHandler::OnFrameDetached,
+                     frame_tree_node.devtools_frame_token());
+  }
+}
+
 void WillInitiatePrerender(FrameTree& frame_tree) {
   DCHECK_EQ(FrameTree::Type::kPrerender, frame_tree.type());
   auto* wc = WebContentsImpl::FromFrameTreeNode(frame_tree.root());
@@ -362,7 +377,7 @@ void DidActivatePrerender(const NavigationRequest& nav_request) {
 
 void DidCancelPrerender(const GURL& prerendering_url,
                         FrameTreeNode* ftn,
-                        PrerenderHost::FinalStatus status,
+                        PrerenderFinalStatus status,
                         const std::string& disallowed_api_method) {
   std::string initiating_frame_id = ftn->devtools_frame_token().ToString();
   DispatchToAgents(ftn, &protocol::PageHandler::DidCancelPrerender,

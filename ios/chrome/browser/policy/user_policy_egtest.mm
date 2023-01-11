@@ -24,6 +24,7 @@
 #import "google_apis/gaia/gaia_switches.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_constants.h"
 #import "ios/chrome/browser/policy/policy_app_interface.h"
+#import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -31,7 +32,6 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/earl_grey/test_switches.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service_constants.h"
 #import "ios/testing/earl_grey/app_launch_configuration.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
@@ -48,7 +48,8 @@
 
 namespace {
 
-constexpr int kWaitOnScheduledUserPolicyFetchInterval = 10;
+constexpr base::TimeDelta kWaitOnScheduledUserPolicyFetchInterval =
+    base::Seconds(10);
 
 std::string GetTestEmail() {
   return base::StrCat({"enterprise@", policy::SignatureProvider::kTestDomain1});
@@ -126,7 +127,7 @@ void ClearUserPolicyPrefs() {
   [ChromeEarlGreyAppInterface commitPendingUserPrefsWrite];
 }
 
-void WaitOnUserPolicy(NSTimeInterval timeout) {
+void WaitOnUserPolicy(base::TimeDelta timeout) {
   // Wait for user policy fetch.
   ConditionBlock condition = ^{
     return [PolicyAppInterface hasUserPolicyDataInCurrentBrowserState];
@@ -208,7 +209,7 @@ void VerifyTheNotificationUI() {
 // for a managed account.
 - (void)testThatPoliciesAreFetchedWhenTurnOnSync {
   // Turn on Sync for managed account to fetch user policies.
-  FakeChromeIdentity* fakeManagedIdentity = [FakeChromeIdentity
+  FakeSystemIdentity* fakeManagedIdentity = [FakeSystemIdentity
       identityWithEmail:base::SysUTF8ToNSString(GetTestEmail().c_str())
                  gaiaID:@"exampleManagedID"
                    name:@"Fake Managed"];
@@ -220,7 +221,7 @@ void VerifyTheNotificationUI() {
 // Tests that the user policies are cleared after sign out.
 - (void)testThatPoliciesAreClearedOnSignOut {
   // Turn on Sync for managed account to fetch user policies.
-  FakeChromeIdentity* fakeManagedIdentity = [FakeChromeIdentity
+  FakeSystemIdentity* fakeManagedIdentity = [FakeSystemIdentity
       identityWithEmail:base::SysUTF8ToNSString(GetTestEmail().c_str())
                  gaiaID:@"exampleManagedID"
                    name:@"Fake Managed"];
@@ -238,7 +239,7 @@ void VerifyTheNotificationUI() {
 // with flakes.
 - (void)DISABLED_testThatPoliciesAreLoadedFromStoreAtStartupIfSyncOn {
   // Turn on Sync for managed account to fetch user policies.
-  FakeChromeIdentity* fakeManagedIdentity = [FakeChromeIdentity
+  FakeSystemIdentity* fakeManagedIdentity = [FakeSystemIdentity
       identityWithEmail:base::SysUTF8ToNSString(GetTestEmail().c_str())
                  gaiaID:@"exampleManagedID"
                    name:@"Fake Managed"];
@@ -259,13 +260,13 @@ void VerifyTheNotificationUI() {
       base::StrCat({"--", test_switches::kSignInAtStartup}));
   config.additional_args.push_back(
       std::string("-") + ios::kAddFakeIdentitiesArg + "=" +
-      [FakeChromeIdentity encodeIdentitiesToBase64:@[ fakeManagedIdentity ]]);
+      [FakeSystemIdentity encodeIdentitiesToBase64:@[ fakeManagedIdentity ]]);
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
-  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:5.0];
+  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:base::Seconds(5)];
 
   // Wait until the user policies are loaded from disk.
-  WaitOnUserPolicy(NSTimeInterval(kWaitOnScheduledUserPolicyFetchInterval));
+  WaitOnUserPolicy(kWaitOnScheduledUserPolicyFetchInterval);
 
   // Verifiy that the policies that were fetched in the previous session are
   // loaded from the cache at startup.
@@ -286,7 +287,7 @@ void VerifyTheNotificationUI() {
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
   // Turn on Sync for managed account. This won't trigger the user policy fetch.
-  FakeChromeIdentity* fakeManagedIdentity = [FakeChromeIdentity
+  FakeSystemIdentity* fakeManagedIdentity = [FakeSystemIdentity
       identityWithEmail:base::SysUTF8ToNSString(GetTestEmail().c_str())
                  gaiaID:@"exampleManagedID"
                    name:@"Fake Managed"];
@@ -300,7 +301,7 @@ void VerifyTheNotificationUI() {
       base::StrCat({"--", test_switches::kSignInAtStartup}));
   config.additional_args.push_back(
       std::string("-") + ios::kAddFakeIdentitiesArg + "=" +
-      [FakeChromeIdentity encodeIdentitiesToBase64:@[ fakeManagedIdentity ]]);
+      [FakeSystemIdentity encodeIdentitiesToBase64:@[ fakeManagedIdentity ]]);
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
   // Verify that the notification dialog is there.
@@ -320,7 +321,7 @@ void VerifyTheNotificationUI() {
   // Wait for user policy fetch. This will take at least 5 seconds which
   // corresponds to the minimal user policy fetch delay when triggering the
   // fetch at startup.
-  WaitOnUserPolicy(NSTimeInterval(kWaitOnScheduledUserPolicyFetchInterval));
+  WaitOnUserPolicy(kWaitOnScheduledUserPolicyFetchInterval);
 
   // Verifiy that the policies were fetched and loaded.
   VerifyThatPoliciesAreSet();
@@ -340,7 +341,7 @@ void VerifyTheNotificationUI() {
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
   // Turn on Sync for managed account. This won't trigger the user policy fetch.
-  FakeChromeIdentity* fakeManagedIdentity = [FakeChromeIdentity
+  FakeSystemIdentity* fakeManagedIdentity = [FakeSystemIdentity
       identityWithEmail:base::SysUTF8ToNSString(GetTestEmail().c_str())
                  gaiaID:@"exampleManagedID"
                    name:@"Fake Managed"];
@@ -354,7 +355,7 @@ void VerifyTheNotificationUI() {
       base::StrCat({"--", test_switches::kSignInAtStartup}));
   config.additional_args.push_back(
       std::string("-") + ios::kAddFakeIdentitiesArg + "=" +
-      [FakeChromeIdentity encodeIdentitiesToBase64:@[ fakeManagedIdentity ]]);
+      [FakeSystemIdentity encodeIdentitiesToBase64:@[ fakeManagedIdentity ]]);
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
   // Verify that the notification dialog is there.
@@ -373,7 +374,7 @@ void VerifyTheNotificationUI() {
   // Wait enough time to verifiy that the fetch wasn't unexpectedly triggered
   // after dismissing the notification.
   base::test::ios::SpinRunLoopWithMinDelay(
-      base::Seconds(kWaitOnScheduledUserPolicyFetchInterval));
+      kWaitOnScheduledUserPolicyFetchInterval);
 
   // Verify that the fetch wasn't done.
   VerifyThatPoliciesAreNotSet();

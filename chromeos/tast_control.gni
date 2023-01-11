@@ -2,6 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+#~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=
+# BEFORE ADDING A TEST HERE: If this is a consistent failure in Chrome on
+# ChromeOS CI builders, you should try to find and revert CLs causing new
+# regressions. Do not simply disable newly failing tests in tast_control.gni
+# as the Chrome uprev will still fail.
+#
+# Chromimum sheriffs should not disable NEW regressions here. Changes to
+# this file require the current CrOS gardener's approval. See go/chrome-sheriff-tast.
+#~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=
+
 # WARNING: if you wish to disable a tast test that runs in a ChromeOS SDK
 # build, this is the wrong file to edit. You need to mark those tests as
 # "informational" in their source .go files.
@@ -29,12 +39,6 @@ tast_disabled_tests_from_chrome_all = [
 
   # b/251833060
   "peripherals.LaunchAppFromGuestSession.diagnostics",
-
-  # b/251877133
-  "policy.*",
-
-  # b/251877700
-  "policy.DefaultSearchProviderEnabled",
 
   # https://crbug.com/1252352
   "quicksettings.SignInScreen.battery",
@@ -143,6 +147,7 @@ tast_disabled_tests_from_chrome_all = [
   "arc.Optin",
   "arc.Optin.vm",
   "arc.OptinNetworkError",
+  "arc.OptinNetworkError.vm",
 
   # https://crbug.com/1312121
   "policy.DefaultJavaScriptSetting",
@@ -202,16 +207,6 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1346149
   "apps.Sharesheet",
 
-  # http://crbug.com/1350529
-  "crostini.RemoveCancel.bullseye_stable",
-  "crostini.RemoveCancel.buster_stable",
-  "crostini.RemoveOk.bullseye_stable",
-  "crostini.RemoveOk.buster_stable",
-
-  # http://crbug.com/1259466
-  "crostini.ShareMovies.bullseye_stable_gaia",
-  "crostini.ShareMovies.buster_stable_gaia",
-
   # b/241122961
   "policy.BlockThirdPartyCookies",
 
@@ -221,6 +216,9 @@ tast_disabled_tests_from_chrome_all = [
 
   # https://crbug.com/1350191
   "arc.Print",
+
+  # https://crbug.com/1350880
+  "arc.PIPRoundedCornersUnderlay",
 
   # https://crbug.com/1352525
   "apps.ContentPreview",
@@ -303,10 +301,30 @@ tast_disabled_tests_from_chrome_all = [
   "inputs.VirtualKeyboardChangeInput.a11y",
 
   # https://crbug.com/1373329
-  "lockscreen.CloseLid",
   "peripherals.LaunchAppFromSettings.scan",
   "policy.AllowedLanguages",
-  "terminal.Crosh",
+
+  # https://crbug.com/1374943
+  "hwsec.CrossVersionLogin",
+
+  # https://crbug.com/1375191
+  "login.ChangePassword.auth_factor_experiment_on",
+  "login.ChangePassword.auth_factor_experiment_off",
+
+  # https://crbug.com/1379756
+  "inputs.PhysicalKeyboardGrammarCheck",
+  "inputs.PhysicalKeyboardGrammarCheck.lacros",
+  "inputs.VirtualKeyboardTypingUserMode.guest",
+  "inputs.VirtualKeyboardGlideTyping.clamshell_a11y_docked_lacros",
+  "inputs.VirtualKeyboardGlideTyping.clamshell_a11y_floating_lacros",
+
+  # https://crbug.com/1361163
+  "lacros.AudioPinnedStream.play",
+
+  # b/257865249
+  "policy.*",
+
+  # READ COMMENT AT TOP BEFORE ADDING NEW TESTS HERE.
 ]
 
 # To create filters to be used on specific builders add them like this:
@@ -327,4 +345,7 @@ tast_disabled_tests_from_lacros_all = [
 
   # https://crbug.com/1236234
   "lacros.AudioPlay",
+
+  # https://crbug.com/1376638
+  "lacros.AudioRecord",
 ]

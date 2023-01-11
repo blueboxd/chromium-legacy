@@ -48,13 +48,14 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
   virtual AXNode* RetargetForEvents(AXNode* node, RetargetEventType type) const;
   virtual void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
                                   const ui::AXNode* node) {}
+  virtual bool CanFireEvents() const;
 
   // Returns the AXNode with the given |node_id| from the tree that has the
   // given |tree_id|. This allows for callers to access nodes outside of their
   // own tree. Returns nullptr if |tree_id| or |node_id| is not found.
   // TODO(kschmi): Remove |tree_id| parameter, as it's unnecessary.
   virtual AXNode* GetNodeFromTree(const AXTreeID& tree_id,
-                                  const AXNodeID node_id) const = 0;
+                                  const AXNodeID node_id) const;
 
   // Returns the AXNode in the current tree that has the given |node_id|.
   // Returns nullptr if |node_id| is not found.
@@ -82,7 +83,7 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
   // If this tree has a parent tree, returns the node in the parent tree that
   // hosts the current tree. Returns nullptr if this tree doesn't have a parent
   // tree.
-  virtual AXNode* GetParentNodeFromParentTreeAsAXNode() const = 0;
+  virtual AXNode* GetParentNodeFromParentTree() const;
 
   void Initialize(const AXTreeUpdate& initial_tree);
 
@@ -112,19 +113,12 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
   void OnAtomicUpdateFinished(
       AXTree* tree,
       bool root_changed,
-      const std::vector<AXTreeObserver::Change>& changes) override {}
+      const std::vector<AXTreeObserver::Change>& changes) override;
 
  protected:
   AXTreeManager();
   explicit AXTreeManager(std::unique_ptr<AXTree> tree);
   explicit AXTreeManager(const AXTreeID& tree_id, std::unique_ptr<AXTree> tree);
-
-  // TODO(benjamin.beaudry): Remove this helper once we move the logic related
-  // to the parent connection from `BrowserAccessibilityManager` to this class.
-  // `BrowserAccessibilityManager` needs to remove the manager from the map
-  // before calling `BrowserAccessibilityManager::ParentConnectionChanged`, so
-  // the default removal of the manager in `~AXTreeManager` occurs too late.
-  void RemoveFromMap();
 
   virtual AXTreeManager* GetParentManager() const;
 
@@ -132,6 +126,28 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
   static AXNode* GetLastFocusedNode();
 
   static void SetLastFocusedNode(AXNode* node);
+
+  // Add parent connection if missing (!connected_to_parent_tree_node_). If the
+  // root's parent is in another accessibility tree but it wasn't previously
+  // connected, post the proper notifications on the parent.
+  void EnsureParentConnectionIfNotRootManager();
+
+  // Refreshes a parent node in a parent tree when it needs to be informed that
+  // this tree is ready or being destroyed.
+  void ParentConnectionChanged(AXNode* parent);
+
+  // Inheriting classes should override this method to update the `parent`
+  // attributes accordingly when the parent connection changes.
+  virtual void UpdateAttributesOnParent(AXNode* parent) {}
+
+  // Perform some additional clean up on the derived classes to be called in the
+  // destructor.
+  virtual void CleanUp() {}
+
+  // True if the root's parent is in another accessibility tree and that
+  // parent's child is the root. Ensures that the parent node is notified
+  // once when this subtree is first connected.
+  bool connected_to_parent_tree_node_;
 
   AXTreeID ax_tree_id_;
   std::unique_ptr<AXTree> ax_tree_;

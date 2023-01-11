@@ -1,4 +1,27 @@
 {
+  "Comparison Linux (reclient vs reclient remote links)": {
+    "build1": {
+      "gn_args": {
+        "dcheck_always_on": false,
+        "ffmpeg_branding": "Chrome",
+        "is_component_build": false,
+        "is_debug": false,
+        "proprietary_codecs": true,
+        "use_remoteexec": true
+      }
+    },
+    "build2": {
+      "gn_args": {
+        "dcheck_always_on": false,
+        "ffmpeg_branding": "Chrome",
+        "is_component_build": false,
+        "is_debug": false,
+        "proprietary_codecs": true,
+        "use_remoteexec": true,
+        "use_remoteexec_links": true
+      }
+    }
+  },
   "Linux Builder reclient staging": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -86,6 +109,7 @@
   "Simple Chrome Builder reclient staging": {
     "args_file": "//build/args/chromeos/amd64-generic-vm.gni",
     "gn_args": {
+      "also_build_lacros_chrome_for_architecture": "amd64",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "ozone_platform_headless": true,
@@ -96,6 +120,7 @@
   "Simple Chrome Builder reclient staging untrusted": {
     "args_file": "//build/args/chromeos/amd64-generic-vm.gni",
     "gn_args": {
+      "also_build_lacros_chrome_for_architecture": "amd64",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "ozone_platform_headless": true,
@@ -106,6 +131,7 @@
   "Simple Chrome Builder reclient test": {
     "args_file": "//build/args/chromeos/amd64-generic-vm.gni",
     "gn_args": {
+      "also_build_lacros_chrome_for_architecture": "amd64",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "ozone_platform_headless": true,
@@ -116,6 +142,7 @@
   "Simple Chrome Builder reclient test untrusted": {
     "args_file": "//build/args/chromeos/amd64-generic-vm.gni",
     "gn_args": {
+      "also_build_lacros_chrome_for_architecture": "amd64",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "ozone_platform_headless": true,

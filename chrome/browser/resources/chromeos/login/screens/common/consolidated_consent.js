@@ -11,13 +11,13 @@ import '//resources/cr_elements/cr_toggle/cr_toggle.js';
 import '//resources/js/action_link.js';
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '//resources/polymer/v3_0/paper-styles/color.js';
-import '../../components/buttons/oobe_back_button.m.js';
-import '../../components/buttons/oobe_next_button.m.js';
-import '../../components/buttons/oobe_text_button.m.js';
+import '../../components/buttons/oobe_back_button.js';
+import '../../components/buttons/oobe_next_button.js';
+import '../../components/buttons/oobe_text_button.js';
 import '../../components/common_styles/common_styles.m.js';
 import '../../components/common_styles/oobe_dialog_host_styles.m.js';
 import '../../components/oobe_icons.m.js';
-import '../../components/dialogs/oobe_adaptive_dialog.m.js';
+import '../../components/dialogs/oobe_adaptive_dialog.js';
 import '../../components/dialogs/oobe_loading_dialog.m.js';
 import '../../components/dialogs/oobe_modal_dialog.m.js';
 
@@ -342,15 +342,15 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
     webview.addContentScripts([{
       name: 'postProcess',
       matches: [this.getArcTosHostNameForMatchPattern_() + '/*'],
-      css: {files: ['playstore.css']},
-      js: {files: ['playstore.js']},
+      css: {files: ['arc_support/playstore.css']},
+      js: {files: ['arc_support/playstore.js']},
       run_at: 'document_end',
     }]);
 
     this.$.arcTosOverlayWebview.addContentScripts([{
       name: 'postProcess',
       matches: ['https://support.google.com/*'],
-      css: {files: ['overlay.css']},
+      css: {files: ['arc_support/overlay.css']},
       run_at: 'document_end',
     }]);
 
@@ -770,15 +770,15 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
   setArcTosHostNameForTesting_(hostname) {
     this.arcTosHostName_ = hostname;
 
-    // Enable loading content script 'playstore.js' when fetching ToS from
-    // the test server.
+    // Enable loading content script 'arc_support/playstore.js' when fetching
+    // ToS from the test server.
     var termsView = this.$.consolidatedConsentArcTosWebview;
     termsView.removeContentScripts(['postProcess']);
     termsView.addContentScripts([{
       name: 'postProcess',
       matches: [this.getArcTosHostNameForMatchPattern_() + '/*'],
-      css: {files: ['playstore.css']},
-      js: {files: ['playstore.js']},
+      css: {files: ['arc_support/playstore.css']},
+      js: {files: ['arc_support/playstore.js']},
       run_at: 'document_end',
     }]);
   }

@@ -102,19 +102,22 @@ class ExecutableTestRunner(TestRunner):
                             action='store_true',
                             default=False,
                             help='Enable Chrome test server spawner.')
-        parser.add_argument('test_process_args',
-                            nargs='*',
-                            help='Arguments for the test process.')
+        parser.add_argument('--test-arg',
+                            dest='test_args',
+                            action='append',
+                            help='Legacy flag to pass in arguments for '
+                            'the test process. These arguments can now be '
+                            'passed in without a preceding "--" flag.')
         args, child_args = parser.parse_known_args(self._test_args)
         if args.isolated_script_test_output:
             self._isolated_script_test_output = args.isolated_script_test_output
             child_args.append(
                 '--isolated-script-test-output=/custom_artifacts/%s' %
                 os.path.basename(self._isolated_script_test_output))
-        if args.test_launcher_shard_index:
+        if args.test_launcher_shard_index is not None:
             child_args.append('--test-launcher-shard-index=%d' %
                               args.test_launcher_shard_index)
-        if args.test_launcher_total_shards:
+        if args.test_launcher_total_shards is not None:
             child_args.append('--test-launcher-total-shards=%d' %
                               args.test_launcher_total_shards)
         if args.test_launcher_summary_output:
@@ -129,7 +132,7 @@ class ExecutableTestRunner(TestRunner):
                 args.test_launcher_filter_file.split(';'))
             child_args.append('--test-launcher-filter-file=' +
                               ';'.join(test_launcher_filter_files))
-        if args.test_launcher_jobs:
+        if args.test_launcher_jobs is not None:
             test_concurrency = args.test_launcher_jobs
         else:
             test_concurrency = DEFAULT_TEST_SERVER_CONCURRENCY
@@ -138,7 +141,8 @@ class ExecutableTestRunner(TestRunner):
                 self._target_id, test_concurrency)
             child_args.append('--remote-test-server-spawner-url-base=%s' %
                               spawner_url_base)
-        child_args.extend(args.test_process_args)
+        if args.test_args:
+            child_args.extend(args.test_args)
         return child_args
 
     def _postprocess(self, test_runner: FfxTestRunner) -> None:

@@ -25,7 +25,7 @@
 #import "components/component_updater/installer_policies/on_device_head_suggest_component_installer.h"
 #import "components/component_updater/installer_policies/optimization_hints_component_installer.h"
 #import "components/component_updater/installer_policies/safety_tips_component_installer.h"
-#import "components/component_updater/installer_policies/url_param_classification_component_installer.h"
+#import "components/component_updater/url_param_filter_remover.h"
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/tracker.h"
 #import "components/metrics/metrics_pref_names.h"
@@ -98,6 +98,7 @@
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/sessions/scene_util.h"
+#import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/share_extension/share_extension_service.h"
 #import "ios/chrome/browser/share_extension/share_extension_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate.h"
@@ -109,7 +110,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
+#import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/scene_delegate.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
@@ -218,6 +219,7 @@ void RegisterComponentsForUpdate() {
   // Clean up any legacy CRLSet on the local disk - CRLSet used to be shipped
   // as a component on iOS but is not anymore.
   component_updater::DeleteLegacyCRLSet(path);
+  component_updater::DeleteUrlParamFilter(path);
 
   RegisterOnDeviceHeadSuggestComponent(
       cus, GetApplicationContext()->GetApplicationLocale());
@@ -225,7 +227,6 @@ void RegisterComponentsForUpdate() {
   RegisterAutofillStatesComponent(cus,
                                   GetApplicationContext()->GetLocalState());
   RegisterOptimizationHintsComponent(cus);
-  RegisterUrlParamClassificationComponent(cus);
 }
 
 // The delay, in seconds, for cleaning external files.
@@ -398,6 +399,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (instancetype)init {
   if ((self = [super init])) {
+    _isFirstRun = ShouldPresentFirstRunExperience();
     _startupTasks = [[StartupTasks alloc] init];
   }
   return self;
@@ -815,11 +817,24 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // applicationWillTerminate to fail after a 5s delay. Experiment with skipping
   // this shutdown call. See: crbug.com/1328891
   if (base::FeatureList::IsEnabled(kFastApplicationWillTerminate)) {
+    [[SessionServiceIOS sharedService] shutdown];
     metrics::MetricsService* metrics =
         GetApplicationContext()->GetMetricsService();
     if (metrics) {
       metrics->Stop();
+      // MetricsService::Stop() depends on a committed local state, and does so
+      // asynchronously. To avoid losing metrics, this minimum wait is required.
+      // This will introduce a wait that will likely be the source of a number
+      // of watchdog kills, but it should still be fewer than the number of
+      // kills `_chromeMain.reset()` is responsible for.
+      dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+      GetApplicationContext()->GetLocalState()->CommitPendingWrite(
+          {}, base::BindOnce(^{
+            dispatch_semaphore_signal(semaphore);
+          }));
+      dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
     }
+
     return;
   }
 #endif  // BUILDFLAG(FAST_APP_TERMINATE_ENABLED)
@@ -973,16 +988,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)scheduleStartupCleanupTasks {
-  static bool limit_set_upload_consent_calls =
-      base::FeatureList::IsEnabled(crash_helper::kLimitSetUploadConsentCalls);
-  // TODO(crbug.com/1361334): Safety for cherry-pick. Remove feature check and
-  // keep prefs observer initialization after speculative fix is confirmed to be
-  // safe.
-  if (limit_set_upload_consent_calls) {
-    // Schedule the prefs observer init first to ensure kMetricsReportingEnabled
-    // is synced before starting uploads.
-    [self schedulePrefObserverInitialization];
-  }
+  // Schedule the prefs observer init first to ensure kMetricsReportingEnabled
+  // is synced before starting uploads.
+  [self schedulePrefObserverInitialization];
   [self scheduleCrashReportUpload];
 
   // ClearSessionCookies() is not synchronous.
@@ -1073,7 +1081,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // NSUserDefaults here.
 - (void)saveFieldTrialValuesForExtensions {
   using password_manager::features::kIOSEnablePasswordManagerBrandingUpdate;
-  using password_manager::features::kEnableFaviconForPasswords;
 
   NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
 
@@ -1081,11 +1088,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       @(base::FeatureList::IsEnabled(kIOSEnablePasswordManagerBrandingUpdate));
   NSNumber* passwordManagerBrandingUpdateVersion =
       [NSNumber numberWithInt:kPasswordManagerBrandingUpdateFeatureVersion];
-
-  NSNumber* faviconsForCredentialProviderValue =
-      @(base::FeatureList::IsEnabled(kEnableFaviconForPasswords));
-  NSNumber* faviconsForCredentialProviderVersion = [NSNumber
-      numberWithInt:kCredentialProviderExtensionFaviconsFeatureVersion];
 
   // Add other field trial values here if they are needed by extensions.
   // The general format is
@@ -1099,10 +1101,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     base::SysUTF8ToNSString(kIOSEnablePasswordManagerBrandingUpdate.name) : @{
       kFieldTrialValueKey : passwordManagerBrandingUpdateValue,
       kFieldTrialVersionKey : passwordManagerBrandingUpdateVersion,
-    },
-    base::SysUTF8ToNSString(kEnableFaviconForPasswords.name) : @{
-      kFieldTrialValueKey : faviconsForCredentialProviderValue,
-      kFieldTrialVersionKey : faviconsForCredentialProviderVersion,
     },
   };
   [sharedDefaults setObject:fieldTrialValues
@@ -1151,13 +1149,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [_startupTasks initializeOmaha];
 
   // Deferred tasks.
-  static bool limit_set_upload_consent_calls =
-      base::FeatureList::IsEnabled(crash_helper::kLimitSetUploadConsentCalls);
-  // TODO(crbug.com/1361334): Safety for cherry-pick.  Remove entire block after
-  // speculative fix is confirmed to be safe.
-  if (!limit_set_upload_consent_calls) {
-    [self schedulePrefObserverInitialization];
-  }
   [self scheduleMemoryDebuggingTools];
   [StartupTasks
       scheduleDeferredBrowserStateInitialization:self.appState

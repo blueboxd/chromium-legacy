@@ -10,6 +10,7 @@
 #include "chrome/browser/apps/app_preload_service/device_info_manager.h"
 #include "chrome/browser/apps/app_preload_service/preload_app_definition.h"
 #include "chrome/browser/apps/app_preload_service/proto/app_provisioning.pb.h"
+#include "chrome/browser/apps/user_type_filter.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -20,8 +21,7 @@ namespace {
 static constexpr char kServerUrl[] =
     "http://localhost:9876/v1/app_provisioning/apps?alt=proto";
 
-// TODO(b/244500232): Temporary placeholder value. To be updated once server
-// design is completed. Maximum accepted size of an APS Response. 1MB.
+// Maximum accepted size of an APS Response. 1MB.
 constexpr int kMaxResponseSizeInBytes = 1024 * 1024;
 
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
@@ -46,11 +46,28 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
       }
     )");
 
+apps::proto::AppProvisioningRequest::UserType ConvertStringUserTypeToProto(
+    const std::string& user_type) {
+  if (user_type == apps::kUserTypeUnmanaged) {
+    return apps::proto::AppProvisioningRequest::USERTYPE_UNMANAGED;
+  } else if (user_type == apps::kUserTypeManaged) {
+    return apps::proto::AppProvisioningRequest::USERTYPE_MANAGED;
+  } else if (user_type == apps::kUserTypeChild) {
+    return apps::proto::AppProvisioningRequest::USERTYPE_CHILD;
+  } else if (user_type == apps::kUserTypeGuest) {
+    return apps::proto::AppProvisioningRequest::USERTYPE_GUEST;
+  }
+  return apps::proto::AppProvisioningRequest::USERTYPE_UNKNOWN;
+}
+
 std::string BuildGetAppsForFirstLoginRequestBody(const apps::DeviceInfo& info) {
   base::Value::Dict request;
   request.Set("board", info.board);
   request.Set("model", info.model);
   request.Set("language", info.locale);
+  request.Set("user_type", ConvertStringUserTypeToProto(info.user_type));
+  // TODO(b/258566986): Load the device's real SKU ID.
+  request.Set("sku_id", "unknown");
 
   base::Value::Dict versions;
   versions.Set("ash_chrome", info.version_info.ash_chrome);

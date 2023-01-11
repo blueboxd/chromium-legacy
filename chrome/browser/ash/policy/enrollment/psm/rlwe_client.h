@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_ASH_POLICY_ENROLLMENT_PSM_RLWE_CLIENT_H_
 #define CHROME_BROWSER_ASH_POLICY_ENROLLMENT_PSM_RLWE_CLIENT_H_
 
-#include <memory>
-#include <vector>
-
 #include "third_party/private_membership/src/private_membership_rlwe.pb.h"
 #include "third_party/shell-encryption/src/statusor.h"
 
@@ -33,16 +30,6 @@ class RlweClient {
       private_membership::rlwe::PrivateMembershipRlweQueryResponse;
   using MembershipResponses = private_membership::rlwe::RlweMembershipResponses;
 
-  class Factory {
-   public:
-    virtual ~Factory() = default;
-    // Creates a client for the Private Membership RLWE protocol. It will be
-    // created for |plaintext_ids| with use case as |use_case|.
-    virtual ::rlwe::StatusOr<std::unique_ptr<RlweClient>> Create(
-        UseCase use_case,
-        const std::vector<PlaintextId>& plaintext_ids) = 0;
-  };
-
   virtual ~RlweClient() = default;
 
   // Creates a request proto for the first phase of the protocol.
@@ -52,12 +39,10 @@ class RlweClient {
   virtual ::rlwe::StatusOr<QueryRequest> CreateQueryRequest(
       const OprfResponse& oprf_response) = 0;
 
-  // Processes the query response from the server and returns the membership
-  // response map.
-  //
-  // Keys of the returned map match the original plaintext ids supplied to the
-  // client when it was created.
-  virtual ::rlwe::StatusOr<MembershipResponses> ProcessQueryResponse(
+  // Processes the query response from the server.
+  // The return value indicates whether the requested `plaintext_id_` is part of
+  // the set, or why the determination failed.
+  virtual ::rlwe::StatusOr<bool> ProcessQueryResponse(
       const QueryResponse& query_response) = 0;
 };
 

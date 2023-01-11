@@ -30,10 +30,12 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/event_timing.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -105,6 +107,8 @@ void PointerEventManager::Clear() {
   pointer_capture_target_.clear();
   pending_pointer_capture_target_.clear();
   dispatching_pointer_id_ = 0;
+  resize_scrollable_area_.Clear();
+  offset_from_resize_corner_ = LayoutSize();
 }
 
 void PointerEventManager::Trace(Visitor* visitor) const {
@@ -116,6 +120,7 @@ void PointerEventManager::Trace(Visitor* visitor) const {
   visitor->Trace(mouse_event_manager_);
   visitor->Trace(gesture_manager_);
   visitor->Trace(captured_scrollbar_);
+  visitor->Trace(resize_scrollable_area_);
 }
 
 PointerEventManager::PointerEventBoundaryEventDispatcher::
@@ -175,6 +180,19 @@ void PointerEventManager::PointerEventBoundaryEventDispatcher::Dispatch(
       check_for_listener);
 }
 
+bool PointerEventManager::ShouldFireEventForPopup(PointerEvent* event) {
+  // pointerdown and pointerup are used for pop-up light-dismiss in
+  // Element::HandlePopupLightDismiss
+  if (event->type() == event_type_names::kPointerup ||
+      event->type() == event_type_names::kPointerdown) {
+    if (auto* document = event->GetDocument()) {
+      // Fire pointer events if there is any showing non-manual pop-up.
+      return document->TopmostPopover();
+    }
+  }
+  return false;
+}
+
 WebInputEventResult PointerEventManager::DispatchPointerEvent(
     EventTarget* target,
     PointerEvent* pointer_event,
@@ -200,7 +218,8 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
   }
 
   if (should_filter &&
-      !HasPointerEventListener(frame_->GetEventHandlerRegistry()))
+      !HasPointerEventListener(frame_->GetEventHandlerRegistry()) &&
+      !ShouldFireEventForPopup(pointer_event))
     return WebInputEventResult::kNotHandled;
 
   if (event_type == event_type_names::kPointerdown) {
@@ -653,6 +672,9 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
   if (HandleScrollbarTouchDrag(event, pointer_event_target.scrollbar))
     return WebInputEventResult::kHandledSuppressed;
 
+  if (HandleResizerDrag(pointer_event, pointer_event_target))
+    return WebInputEventResult::kHandledSuppressed;
+
   // Any finger lifting is a user gesture only when it wasn't associated with a
   // scroll.
   // https://docs.google.com/document/d/1oF1T3O7_E4t1PYHV6gyCwHxOi3ystm0eSL5xZu7nvOg/edit#
@@ -728,6 +750,58 @@ bool PointerEventManager::HandleScrollbarTouchDrag(const WebPointerEvent& event,
     captured_scrollbar_ = nullptr;
 
   return handled;
+}
+
+bool PointerEventManager::HandleResizerDrag(
+    const WebPointerEvent& event,
+    const event_handling_util::PointerEventTarget& pointer_event_target) {
+  switch (event.GetType()) {
+    case WebPointerEvent::Type::kPointerDown: {
+      Node* node = pointer_event_target.target_element;
+      if (!node || !node->GetLayoutObject() ||
+          !node->GetLayoutObject()->EnclosingLayer())
+        return false;
+
+      PaintLayer* layer = node->GetLayoutObject()->EnclosingLayer();
+      if (!layer->GetScrollableArea())
+        return false;
+
+      gfx::Point p = frame_->View()->ConvertFromRootFrame(
+          gfx::ToFlooredPoint(event.PositionInWidget()));
+
+      if (layer->GetScrollableArea()->IsAbsolutePointInResizeControl(
+              p, kResizerForTouch)) {
+        resize_scrollable_area_ = layer->GetScrollableArea();
+        resize_scrollable_area_->SetInResizeMode(true);
+        frame_->GetPage()->GetChromeClient().SetTouchAction(frame_,
+                                                            TouchAction::kNone);
+        offset_from_resize_corner_ =
+            LayoutSize(resize_scrollable_area_->OffsetFromResizeCorner(p));
+        return true;
+      }
+      break;
+    }
+    case WebInputEvent::Type::kPointerMove: {
+      if (resize_scrollable_area_ && resize_scrollable_area_->InResizeMode()) {
+        gfx::Point pos = gfx::ToRoundedPoint(event.PositionInWidget());
+        resize_scrollable_area_->Resize(pos, offset_from_resize_corner_);
+        return true;
+      }
+      break;
+    }
+    case WebInputEvent::Type::kPointerUp: {
+      if (resize_scrollable_area_ && resize_scrollable_area_->InResizeMode()) {
+        resize_scrollable_area_->SetInResizeMode(false);
+        resize_scrollable_area_.Clear();
+        offset_from_resize_corner_ = LayoutSize();
+        return true;
+      }
+      break;
+    }
+    default:
+      return false;
+  }
+  return false;
 }
 
 WebInputEventResult PointerEventManager::CreateAndDispatchPointerEvent(

@@ -103,8 +103,8 @@ bool ContentAutofillDriver::IsInAnyMainFrame() const {
 }
 
 bool ContentAutofillDriver::IsPrerendering() const {
-  return render_frame_host_->GetLifecycleState() ==
-         content::RenderFrameHost::LifecycleState::kPrerendering;
+  return render_frame_host_->IsInLifecycleState(
+      content::RenderFrameHost::LifecycleState::kPrerendering);
 }
 
 bool ContentAutofillDriver::CanShowAutofillUi() const {
@@ -408,7 +408,7 @@ void ContentAutofillDriver::AskForValuesToFill(
     const FormFieldData& raw_field,
     const gfx::RectF& bounding_box,
     int32_t query_id,
-    bool autoselect_first_suggestion,
+    AutoselectFirstSuggestion autoselect_first_suggestion,
     FormElementWasClicked form_element_was_clicked) {
   if (!bad_message::CheckFrameNotPrerendering(render_frame_host_))
     return;
@@ -421,7 +421,8 @@ void ContentAutofillDriver::AskForValuesToFill(
       autoselect_first_suggestion, form_element_was_clicked,
       [](ContentAutofillDriver* target, const FormData& form,
          const FormFieldData& field, const gfx::RectF& bounding_box,
-         int32_t query_id, bool autoselect_first_suggestion,
+         int32_t query_id,
+         AutoselectFirstSuggestion autoselect_first_suggestion,
          FormElementWasClicked form_element_was_clicked) {
         target->autofill_manager_->OnAskForValuesToFill(
             form, field, bounding_box, query_id, autoselect_first_suggestion,
@@ -559,6 +560,24 @@ void ContentAutofillDriver::FillFormForAssistant(
         } else {
           NOTREACHED();
         }
+      });
+}
+
+void ContentAutofillDriver::OnContextMenuShownInFieldCallback(
+    const FormGlobalId& form_global_id,
+    const FieldGlobalId& field_global_id) {
+  autofill_manager_->OnContextMenuShownInField(form_global_id, field_global_id);
+}
+
+void ContentAutofillDriver::OnContextMenuShownInField(
+    const FormGlobalId& form_global_id,
+    const FieldGlobalId& field_global_id) {
+  autofill_router().OnContextMenuShownInField(
+      this, form_global_id, field_global_id,
+      [](ContentAutofillDriver* target, const FormGlobalId& form_global_id,
+         const FieldGlobalId& field_global_id) {
+        target->OnContextMenuShownInFieldCallback(form_global_id,
+                                                  field_global_id);
       });
 }
 
@@ -700,8 +719,7 @@ FormData ContentAutofillDriver::GetFormWithFrameAndFormMetaData(
 }
 
 ContentAutofillRouter& ContentAutofillDriver::autofill_router() {
-  DCHECK(content::RenderFrameHost::LifecycleState::kPrerendering !=
-         render_frame_host_->GetLifecycleState());
+  DCHECK(!IsPrerendering());
   return *autofill_router_;
 }
 

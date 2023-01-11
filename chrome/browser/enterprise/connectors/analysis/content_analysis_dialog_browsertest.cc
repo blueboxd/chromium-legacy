@@ -252,7 +252,7 @@ class ContentAnalysisDialogBehaviorBrowserTest
   base::TimeDelta response_delay() const { return std::get<2>(GetParam()); }
 
  private:
-  raw_ptr<ContentAnalysisDialog> dialog_;
+  raw_ptr<ContentAnalysisDialog, DanglingUntriaged> dialog_;
 
   base::TimeTicks ctor_called_timestamp_;
   base::TimeTicks first_shown_timestamp_;
@@ -775,6 +775,7 @@ class ContentAnalysisDialogPlainTests : public InProcessBrowserTest {
  public:
   ContentAnalysisDialogPlainTests() {
     scoped_feature_list_.InitAndEnableFeature(kBypassJustificationEnabled);
+    ContentAnalysisDialog::SetShowDialogDelayForTesting(kNoDelay);
   }
   void OpenCallback() { ++times_open_called_; }
 
@@ -858,7 +859,7 @@ class ContentAnalysisDialogPlainTests : public InProcessBrowserTest {
     // way that relinquishes its ownership. Because of this, new it here and
     // let it be deleted by the constrained_window code.
     dialog_ = new ContentAnalysisDialog(
-        std::move(delegate),
+        std::move(delegate), true,
         browser()->tab_strip_model()->GetActiveWebContents(),
         safe_browsing::DeepScanAccessPoint::DOWNLOAD, 0, result);
 
@@ -869,7 +870,7 @@ class ContentAnalysisDialogPlainTests : public InProcessBrowserTest {
   int times_discard_called_ = 0;
 
  private:
-  raw_ptr<ContentAnalysisDialog> dialog_;
+  raw_ptr<ContentAnalysisDialog, DanglingUntriaged> dialog_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -942,7 +943,9 @@ IN_PROC_BROWSER_TEST_F(ContentAnalysisDialogPlainTests,
       std::make_unique<MockDelegate>(), FinalContentAnalysisResult::WARNING);
   EXPECT_EQ(nullptr, dialog->GetSideIconSpinnerForTesting());
   EXPECT_EQ(dialog->GetMessageForTesting()->GetText(),
-            u"This data has sensitive or dangerous content");
+            u"This data or your device doesn’t meet some of your organization’s"
+            u" security policies. Check with your admin on what needs to be "
+            u"fixed.");
 }
 
 IN_PROC_BROWSER_TEST_F(ContentAnalysisDialogPlainTests, TestOpenInBlockState) {
@@ -950,8 +953,9 @@ IN_PROC_BROWSER_TEST_F(ContentAnalysisDialogPlainTests, TestOpenInBlockState) {
       std::make_unique<MockDelegate>(), FinalContentAnalysisResult::FAILURE);
   EXPECT_EQ(nullptr, dialog->GetSideIconSpinnerForTesting());
   EXPECT_EQ(dialog->GetMessageForTesting()->GetText(),
-            u"This data has sensitive or dangerous content. Remove this "
-            u"content and try again.");
+            u"This data or your device doesn’t meet some of your organization’s"
+            u" security policies. Check with your admin on what needs to be "
+            u"fixed.");
 }
 
 IN_PROC_BROWSER_TEST_F(ContentAnalysisDialogPlainTests,
@@ -1049,7 +1053,10 @@ class ContentAnalysysDialogUiTest
     : public DialogBrowserTest,
       public testing::WithParamInterface<std::tuple<bool, bool, bool>> {
  public:
-  ContentAnalysysDialogUiTest() = default;
+  ContentAnalysysDialogUiTest() {
+    ContentAnalysisDialog::SetShowDialogDelayForTesting(kNoDelay);
+  }
+
   ContentAnalysysDialogUiTest(const ContentAnalysysDialogUiTest&) = delete;
   ContentAnalysysDialogUiTest& operator=(const ContentAnalysysDialogUiTest&) =
       delete;
@@ -1078,7 +1085,7 @@ class ContentAnalysysDialogUiTest
     // way that relinquishes its ownership. Because of this, new it here and
     // let it be deleted by the constrained_window code.
     new ContentAnalysisDialog(
-        std::move(delegate),
+        std::move(delegate), true,
         browser()->tab_strip_model()->GetActiveWebContents(),
         safe_browsing::DeepScanAccessPoint::DOWNLOAD, 1,
         FinalContentAnalysisResult::WARNING);
@@ -1135,7 +1142,7 @@ IN_PROC_BROWSER_TEST_F(ContentAnalysysDialogDownloadObserverTest,
           u"", u"", GURL(), true,
           /* open_file_callback */ base::DoNothing(),
           /* discard_callback */ base::DoNothing(), &mock_download_item),
-      browser()->tab_strip_model()->GetActiveWebContents(),
+      true, browser()->tab_strip_model()->GetActiveWebContents(),
       safe_browsing::DeepScanAccessPoint::DOWNLOAD, /* file_count */ 1,
       FinalContentAnalysisResult::WARNING, &mock_download_item);
 
@@ -1161,7 +1168,7 @@ IN_PROC_BROWSER_TEST_F(ContentAnalysysDialogDownloadObserverTest,
           u"", u"", GURL(), true,
           /* open_file_callback */ base::DoNothing(),
           /* discard_callback */ base::DoNothing(), &mock_download_item),
-      browser()->tab_strip_model()->GetActiveWebContents(),
+      true, browser()->tab_strip_model()->GetActiveWebContents(),
       safe_browsing::DeepScanAccessPoint::DOWNLOAD, /* file_count */ 1,
       FinalContentAnalysisResult::WARNING, &mock_download_item);
 
@@ -1196,7 +1203,7 @@ IN_PROC_BROWSER_TEST_F(ContentAnalysysDialogDownloadObserverTest,
           u"", u"", GURL(), true,
           /* open_file_callback */ base::DoNothing(),
           /* discard_callback */ base::DoNothing(), mock_download_item.get()),
-      browser()->tab_strip_model()->GetActiveWebContents(),
+      true, browser()->tab_strip_model()->GetActiveWebContents(),
       safe_browsing::DeepScanAccessPoint::DOWNLOAD, /* file_count */ 1,
       FinalContentAnalysisResult::WARNING, mock_download_item.get());
 

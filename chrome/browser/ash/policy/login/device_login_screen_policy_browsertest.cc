@@ -27,8 +27,8 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/reset_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -236,9 +236,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLoginScreenPolicyBrowsertest, ResetScreen) {
   EXPECT_EQ(ash::LoginScreenTestApi::GetUsersCount(), 0);
 
   // Switch to another (Reset) screen.
-  ash::LoginDisplayHost::default_host()->StartWizard(
-      chromeos::ResetView::kScreenId);
-  ash::OobeScreenWaiter(chromeos::ResetView::kScreenId).Wait();
+  ash::LoginDisplayHost::default_host()->StartWizard(ash::ResetView::kScreenId);
+  ash::OobeScreenWaiter(ash::ResetView::kScreenId).Wait();
 
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
   DeviceLocalAccountTestHelper::AddPublicSession(&proto, "test");
@@ -254,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLoginScreenPolicyBrowsertest, ResetScreen) {
   // Oobe screen should not change.
   EXPECT_EQ(
       ash::LoginDisplayHost::default_host()->GetOobeUI()->current_screen(),
-      chromeos::ResetView::kScreenId);
+      ash::ResetView::kScreenId);
 }
 
 }  // namespace policy

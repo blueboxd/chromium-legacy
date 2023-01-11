@@ -5,6 +5,7 @@
 import("//third_party/closure_compiler/compile_js.gni")
 import("//third_party/closure_compiler/js_unit_tests.gni")
 import("//tools/polymer/html_to_js.gni")
+import("//tools/polymer/html_to_wrapper.gni")
 import("//ui/file_manager/base/gn/js_test_type_check.gni")
 
 visibility = [ "//ui/file_manager/file_manager/foreground/*" ]
@@ -38,11 +39,8 @@ js_type_check("closure_compile_jsmodules") {
     ":files_metadata_entry",
     ":files_password_dialog",
     ":files_quick_view",
-    ":files_ripple",
     ":files_safe_media",
     ":files_spinner",
-    ":files_toast",
-    ":files_toggle_ripple",
     ":files_tooltip",
     ":xf_button",
     ":xf_circular_progress",
@@ -59,11 +57,8 @@ html_to_js("web_components") {
     "files_metadata_entry.js",
     "files_password_dialog.js",
     "files_quick_view.js",
-    "files_ripple.js",
     "files_safe_media.js",
     "files_spinner.js",
-    "files_toast.js",
-    "files_toggle_ripple.js",
     "files_tooltip.js",
     "icons.js",
     "xf_button.js",
@@ -140,13 +135,6 @@ js_library("files_quick_view") {
   ]
 }
 
-js_library("files_ripple") {
-  deps = [
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:assert",
-  ]
-}
-
 js_library("files_safe_media") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -158,22 +146,11 @@ js_library("files_safe_media") {
 js_library("files_spinner") {
 }
 
-# TODO(tapted): Move this to //ui/file_manager/base.
-js_library("files_toast") {
-  deps = [
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-  externs_list = [
-    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
-    "//ui/webui/resources/cr_elements/cr_toast/cr_toast_externs.js",
-  ]
-}
-
-# TODO(tapted): Move this to //ui/file_manager/base.
-js_library("files_toggle_ripple") {
-  deps = [
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
+html_to_wrapper("polymer_elements") {
+  visibility += [ "//ui/file_manager/*" ]
+  in_files = [ "files_toast.html" ]
+  scheme = "relative"
+  minify = true
 }
 
 # TODO(tapted): Move this to //ui/file_manager/base.
@@ -192,9 +169,9 @@ js_library("files_tooltip") {
 }
 
 js_unittest("files_toast_unittest") {
-  deps = [
-    ":files_toast",
-    "//chrome/test/data/webui:chai_assert",
+  deps = [ "//chrome/test/data/webui:chai_assert" ]
+  externs_list = [
+    "//ui/file_manager/file_manager/externs/polymer_elements/files_toast.js",
   ]
 }
 

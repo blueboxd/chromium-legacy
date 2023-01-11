@@ -315,6 +315,10 @@ def AddDeviceOptions(parser):
       action='store_true',
       dest='upload_logcats_file',
       help='Whether to upload logcat file to logdog.')
+  parser.add_argument(
+      '--use-persistent-shell',
+      action='store_true',
+      help='Uses a persistent shell connection for the adb connection.')
 
   logcat_output_group = parser.add_mutually_exclusive_group()
   logcat_output_group.add_argument(
@@ -544,6 +548,20 @@ def AddInstrumentationTestOptions(parser):
            "on Nougat the provider can't be determined and so "
            'the system will choose the default provider.')
   parser.add_argument(
+      '--run-setup-command',
+      default=[],
+      action='append',
+      dest='run_setup_commands',
+      help='This can be used to run a custom shell command on the device as a '
+      'setup step')
+  parser.add_argument(
+      '--run-teardown-command',
+      default=[],
+      action='append',
+      dest='run_teardown_commands',
+      help='This can be used to run a custom shell command on the device as a '
+      'teardown step')
+  parser.add_argument(
       '--runtime-deps-path',
       dest='runtime_deps_path', type=os.path.realpath,
       help='Runtime data dependency file from GN.')
@@ -734,6 +752,8 @@ def AddJUnitTestOptions(parser):
   parser.add_argument(
       '--robolectric-runtime-deps-dir',
       help='Path to runtime deps for Robolectric.')
+  parser.add_argument('--native-libs-dir',
+                      help='Path to search for native libraries.')
   parser.add_argument(
       '--resource-apk',
       required=True,
@@ -1104,9 +1124,10 @@ def RunTestsInPlatformMode(args, result_sink_client=None):
             flakiness_server=getattr(args, 'flakiness_dashboard_server',
                                      None))
 
-        if iteration_results.GetNotPass():
-          _LogRerunStatement(iteration_results.GetNotPass(),
-                             args.wrapper_script_args)
+        failed_tests = (iteration_results.GetNotPass() -
+                        iteration_results.GetSkip())
+        if failed_tests:
+          _LogRerunStatement(failed_tests, args.wrapper_script_args)
 
         if args.break_on_failure and not iteration_results.DidRunPass():
           break
@@ -1194,7 +1215,13 @@ def _LogRerunStatement(failed_tests, wrapper_arg_str):
                       'test filter file.')
     return
 
-  test_filter_file = os.path.join(os.path.relpath(constants.GetOutDirectory()),
+  output_directory = constants.GetOutDirectory()
+  if not os.path.exists(output_directory):
+    logging.error('Output directory not found. Unable to generate failing '
+                  'test filter file.')
+    return
+
+  test_filter_file = os.path.join(os.path.relpath(output_directory),
                                   _RERUN_FAILED_TESTS_FILE)
   arg_list = shlex.split(wrapper_arg_str) if wrapper_arg_str else sys.argv
   index = 0

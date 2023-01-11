@@ -106,7 +106,7 @@ void AutofillProviderAndroid::OnAskForValuesToFill(
     const FormFieldData& field,
     const gfx::RectF& bounding_box,
     int32_t query_id,
-    bool /*unused_autoselect_first_suggestion*/,
+    AutoselectFirstSuggestion /*unused_autoselect_first_suggestion*/,
     FormElementWasClicked /*unused_form_element_was_clicked*/) {
   // The id isn't passed to Java side because Android API guarantees the
   // response is always for current session, so we just use the current id
@@ -154,11 +154,13 @@ void AutofillProviderAndroid::StartNewSession(AndroidAutofillManager* manager,
 
   form_ = std::make_unique<FormDataAndroid>(form);
   field_id_ = field.global_id();
+  triggered_origin_ = field.origin;
 
   size_t index;
   if (!form_->GetFieldIndex(field, &index)) {
     form_.reset();
     field_id_ = {};
+    triggered_origin_ = {};
     return;
   }
 
@@ -184,7 +186,7 @@ void AutofillProviderAndroid::OnAutofillAvailable(JNIEnv* env,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (manager_ && form_) {
     const FormData& form = form_->GetAutofillValues();
-    FillOrPreviewForm(manager_.get(), id_, form);
+    FillOrPreviewForm(manager_.get(), id_, form, triggered_origin_);
   }
 }
 
@@ -457,6 +459,7 @@ gfx::RectF AutofillProviderAndroid::ToClientAreaBound(
 void AutofillProviderAndroid::Reset() {
   form_.reset(nullptr);
   field_id_ = {};
+  triggered_origin_ = {};
   id_ = kNoQueryId;
   check_submission_ = false;
 }

@@ -35,11 +35,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/test/repeating_test_future.h"
+#include "base/test/test_future.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/ash/extensions/external_cache.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
@@ -70,7 +72,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
-#include "chrome/browser/chromeos/extensions/external_cache.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/updater/chromeos_extension_cache_delegate.h"
@@ -90,8 +91,8 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/ash/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -129,7 +130,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/browser/updater/extension_downloader_test_helper.h"
 #include "extensions/common/extension.h"
@@ -150,6 +150,9 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
+
+using base::test::TestFuture;
+using extensions::CrxInstallError;
 
 namespace policy {
 
@@ -1466,17 +1469,20 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
   installer->set_allow_silent_install(true);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_USER_DOWNLOAD);
   installer->set_creation_flags(extensions::Extension::FROM_WEBSTORE);
-  content::WindowedNotificationObserver app_install_observer(
-      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
-      content::NotificationService::AllSources());
-  base::FilePath test_dir;
-  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
-  installer->InstallCrx(test_dir.Append(kPackagedAppCRXPath));
-  app_install_observer.Wait();
-  const extensions::Extension* app =
-      content::Details<const extensions::Extension>(
-          app_install_observer.details())
-          .ptr();
+
+  {
+    TestFuture<const absl::optional<CrxInstallError>&> installer_done_future;
+    installer->AddInstallerCallback(installer_done_future.GetCallback());
+
+    base::FilePath test_dir;
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
+    installer->InstallCrx(test_dir.Append(kPackagedAppCRXPath));
+
+    const absl::optional<CrxInstallError>& error = installer_done_future.Get();
+    EXPECT_THAT(error, testing::Eq(absl::nullopt));
+  }
+
+  const extensions::Extension* app = installer->extension();
 
   // Start the platform app, causing it to open a window.
   run_loop_ = std::make_unique<base::RunLoop>();
@@ -1965,7 +1971,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
   profile_prepared.Wait();
 
   // Wait for the Terms of Service screen is being shown.
-  ash::OobeScreenWaiter(chromeos::TermsOfServiceScreenView::kScreenId).Wait();
+  ash::OobeScreenWaiter(ash::TermsOfServiceScreenView::kScreenId).Wait();
 
   // Wait for the Terms of Service to finish downloading.
   ash::test::OobeJS()
@@ -2430,7 +2436,7 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
   profile_prepared.Wait();
 
   // Verify that the Terms of Service screen is being shown.
-  ash::OobeScreenWaiter(chromeos::TermsOfServiceScreenView::kScreenId).Wait();
+  ash::OobeScreenWaiter(ash::TermsOfServiceScreenView::kScreenId).Wait();
 
   // Wait for the Terms of Service to finish loading.
 
@@ -2516,7 +2522,7 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, DeclineTermsOfService) {
   profile_prepared.Wait();
 
   // Verify that the Terms of Service screen is being shown.
-  ash::OobeScreenWaiter(chromeos::TermsOfServiceScreenView::kScreenId).Wait();
+  ash::OobeScreenWaiter(ash::TermsOfServiceScreenView::kScreenId).Wait();
 
   if (!UseValidURL()) {
     ash::test::OobeJS()

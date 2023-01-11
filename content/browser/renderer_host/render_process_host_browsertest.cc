@@ -21,6 +21,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_internal_observer.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -66,9 +67,6 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
-#include "base/win/windows_version.h"
-#include "sandbox/policy/features.h"
 #include "sandbox/policy/switches.h"
 #endif
 
@@ -887,27 +885,6 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
   EXPECT_EQ(0, host_destructions_);
 }
 
-#if BUILDFLAG(IS_WIN)
-// Test class instance to run specific setup steps for renderer app container.
-class RendererAppContainerRenderProcessHostTest : public RenderProcessHostTest {
- public:
-  RendererAppContainerRenderProcessHostTest() {
-    scoped_feature_list_.InitWithFeatureState(
-        sandbox::policy::features::kRendererAppContainer, true);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(RendererAppContainerRenderProcessHostTest, Navigate) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  EXPECT_TRUE(NavigateToURL(
-      shell(), embedded_test_server()->GetURL("foo.com", "/title1.html")));
-}
-
-#endif  // BUILDFLAG(IS_WIN)
-
 // Test class instance to run specific setup steps for capture streams.
 class CaptureStreamRenderProcessHostTest : public RenderProcessHostTest {
  public:
@@ -1300,8 +1277,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, TooManyKeepaliveRequests) {
 // |host| must remain a valid reference for the lifetime of this object.
 class IsProcessBackgroundedObserver : public RenderProcessHostInternalObserver {
  public:
-  explicit IsProcessBackgroundedObserver(RenderProcessHostImpl* host)
-      : host_observation_(this) {
+  explicit IsProcessBackgroundedObserver(RenderProcessHostImpl* host) {
     host_observation_.Observe(host);
   }
 
@@ -1321,10 +1297,8 @@ class IsProcessBackgroundedObserver : public RenderProcessHostInternalObserver {
   // Stores the last observed value of IsProcessBackgrounded for a host.
   absl::optional<bool> backgrounded_;
   base::ScopedObservation<RenderProcessHostImpl,
-                          RenderProcessHostInternalObserver,
-                          &RenderProcessHostImpl::AddInternalObserver,
-                          &RenderProcessHostImpl::RemoveInternalObserver>
-      host_observation_;
+                          RenderProcessHostInternalObserver>
+      host_observation_{this};
 };
 
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, PriorityOverride) {
@@ -1894,6 +1868,10 @@ class RenderFrameDeletionObserver : public WebContentsObserver {
 // that is no longer discoverable via FromID, while handling the deletion of a
 // subframe. One way this can occur is during bfcache eviction.
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ForEachFrameNestedFrameDeletion) {
+  // This test specifically wants to test with BackForwardCache eviction, so
+  // skip it if BackForwardCache is disabled.
+  if (!IsBackForwardCacheEnabled())
+    return;
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Ensure all sites get dedicated processes during the test.

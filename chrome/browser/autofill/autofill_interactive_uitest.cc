@@ -204,7 +204,7 @@ std::vector<FieldValue> GetFieldValues(
   DCHECK(r.value.is_list()) << r.error;
   std::vector<FieldValue> fields;
 
-  for (const base::Value& field : r.value.GetListDeprecated()) {
+  for (const base::Value& field : r.value.GetList()) {
     fields.push_back({.id = *field.FindStringKey("id"),
                       .value = *field.FindStringKey("value")});
   }
@@ -849,8 +849,7 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
     // "fr" instead of "en").
     feature_list_.InitWithFeatures(
         /*enabled_features=*/
-        {blink::features::kAutofillShadowDOM,
-         features::kAutofillRefillModifiedCreditCardExpirationDates},
+        {blink::features::kAutofillShadowDOM},
         /*disabled_features=*/{features::kAutofillPageLanguageDetection});
   }
   ~AutofillInteractiveTestBase() override = default;

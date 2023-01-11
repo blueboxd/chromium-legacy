@@ -73,6 +73,7 @@
 #include "components/app_restore/window_properties.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/devices/haptic_touchpad_effects.h"
 #include "ui/wm/core/window_animations.h"
@@ -866,7 +867,7 @@ bool DesksController::MoveWindowFromActiveDeskTo(
   // handles its desk-window relationship.
   if (is_floated) {
     Shell::Get()->float_controller()->OnMovingFloatedWindowToDesk(
-        window, target_desk, target_root);
+        window, active_desk_, target_desk, target_root);
   } else {
     active_desk_->MoveWindowToDesk(window, target_desk, target_root,
                                    /*unminimize=*/true);
@@ -932,6 +933,7 @@ void DesksController::NotifyAllDesksForContentChanged() {
 
 void DesksController::NotifyDeskNameChanged(const Desk* desk,
                                             const std::u16string& new_name) {
+  MaybeReportCustomDeskNames();
   for (auto& observer : observers_)
     observer.OnDeskNameChanged(desk, new_name);
 }
@@ -1379,8 +1381,6 @@ void DesksController::OnWindowActivating(ActivationReason reason,
   if (!gaining_active)
     return;
 
-  // TODO(crbug.com/1358761): Implement logic to activate an inactive desk when
-  // a floated window belonging to that desk gets activated.
   const Desk* window_desk = FindDeskOfWindow(gaining_active);
   if (!window_desk || window_desk == active_desk_)
     return;
@@ -1567,7 +1567,7 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
   auto* overview_controller = shell->overview_controller();
   const bool in_overview = overview_controller->InOverviewSession();
   const std::vector<aura::Window*> removed_desk_windows =
-      removed_desk->windows();
+      removed_desk->GetAllAssociatedWindows();
 
   // No need to spend time refreshing the mini_views of the removed desk.
   auto removed_desk_mini_views_pauser =
@@ -1640,7 +1640,8 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
     // Now that the windows from the removed and target desks merged, add them
     // all to the grid in the order of the new MRU.
     if (in_overview)
-      AppendWindowsToOverview(target_desk->windows());
+      AppendWindowsToOverview(target_desk->GetAllAssociatedWindows());
+
   } else if (close_type == DeskCloseType::kCombineDesks) {
     // We will refresh the mini_views of the active desk only once at the end.
     auto active_desk_mini_view_pauser =
@@ -1685,6 +1686,7 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
 
   UMA_HISTOGRAM_ENUMERATION(kRemoveDeskHistogramName, source);
   UMA_HISTOGRAM_ENUMERATION(kRemoveDeskTypeHistogramName, close_type);
+  MaybeReportCustomDeskNames();
 
   // We should only announce desks are being merged if we are combining desks.
   if (close_type == DeskCloseType::kCombineDesks) {
@@ -1740,7 +1742,7 @@ void DesksController::UndoDeskRemoval() {
     RestackVisibleOnAllDesksWindowsOnActiveDesk();
 
     if (in_overview)
-      AppendWindowsToOverview(readded_desk_ptr->windows());
+      AppendWindowsToOverview(readded_desk_ptr->GetAllAssociatedWindows());
   }
 
   Shell::Get()
@@ -1780,16 +1782,6 @@ void DesksController::FinalizeDeskRemoval(RemovedDeskData* removed_desk_data) {
 
   std::vector<aura::Window*> app_windows = removed_desk->GetAllAppWindows();
 
-  // Add the floated window that belongs to the removed desk (if any) to the
-  // list of windows that will be closed.
-  aura::Window* floated_window = nullptr;
-  if (chromeos::wm::features::IsFloatWindowEnabled() &&
-      (floated_window =
-           Shell::Get()->float_controller()->FindFloatedWindowOfDesk(
-               removed_desk))) {
-    app_windows.push_back(floated_window);
-  }
-
   // We use `closing_window_tracker` to track all app windows that should be
   // closed from the removed desk, `WindowTracker` will handle windows that may
   // have already been indirectly closed due to the closure of other windows, as
@@ -1797,7 +1789,15 @@ void DesksController::FinalizeDeskRemoval(RemovedDeskData* removed_desk_data) {
   std::unique_ptr<aura::WindowTracker> closing_window_tracker =
       std::make_unique<aura::WindowTracker>(app_windows);
 
-  for (aura::Window* window : app_windows) {
+  // We create a new tracker other than `closing_window_tracker`, since we want
+  // to leave it unaffected as we will pass it later to a delayed callback to
+  // force close the windows that haven't been closed yet. The new tracker
+  // `unclosed_windows_tracker` will be empty by the end of the below
+  // while-loop.
+  aura::WindowTracker unclosed_windows_tracker(app_windows);
+
+  while (!unclosed_windows_tracker.windows().empty()) {
+    aura::Window* window = unclosed_windows_tracker.Pop();
     views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
     DCHECK(widget);
 
@@ -1812,6 +1812,13 @@ void DesksController::FinalizeDeskRemoval(RemovedDeskData* removed_desk_data) {
     // container are removed from the container in case we want to immediately
     // reuse that container. Since floated window doesn't belong to desk
     // container, handle it separately.
+    aura::Window* floated_window = nullptr;
+    if (chromeos::wm::features::IsFloatWindowEnabled()) {
+      floated_window =
+          Shell::Get()->float_controller()->FindFloatedWindowOfDesk(
+              removed_desk);
+    }
+
     if (window != floated_window) {
       aura::Window* removed_desk_container =
           removed_desk->GetDeskContainerForRoot(window->GetRootWindow());
@@ -1946,17 +1953,19 @@ void DesksController::RestackVisibleOnAllDesksWindowsOnActiveDesk() {
 const Desk* DesksController::FindDeskOfWindow(aura::Window* window) const {
   DCHECK(window);
 
+  // Floating windows are stored in float container, their relationship with
+  // desks can be found in `FloatedWindowInfo`.
+  if (chromeos::wm::features::IsFloatWindowEnabled() &&
+      WindowState::Get(window)->IsFloated()) {
+    return Shell::Get()->float_controller()->FindDeskOfFloatedWindow(window);
+  }
+
   for (const auto& desk : desks_) {
     if (base::Contains(desk->windows(), window))
       return desk.get();
   }
 
   return nullptr;
-}
-
-void DesksController::GetAllDesks(std::vector<const Desk*>& out_desks) const {
-  for (const auto& d : desks_)
-    out_desks.push_back(d.get());
 }
 
 void DesksController::ReportNumberOfWindowsPerDeskHistogram() const {
@@ -1991,7 +2000,7 @@ void DesksController::RecordAndResetNumberOfWeeklyActiveDesks() {
 void DesksController::ReportClosedWindowsCountPerSourceHistogram(
     DesksCreationRemovalSource source,
     int windows_closed) const {
-  std::string desk_removal_source_histogram;
+  const char* desk_removal_source_histogram = nullptr;
   switch (source) {
     case DesksCreationRemovalSource::kButton:
       desk_removal_source_histogram = kNumberOfWindowsClosedByButton;
@@ -2011,9 +2020,23 @@ void DesksController::ReportClosedWindowsCountPerSourceHistogram(
     case DesksCreationRemovalSource::kDesksRestore:
     case DesksCreationRemovalSource::kEnsureDefaultDesk:
       break;
-      NOTREACHED();
   }
-  base::UmaHistogramCounts100(desk_removal_source_histogram, windows_closed);
+  if (desk_removal_source_histogram)
+    base::UmaHistogramCounts100(desk_removal_source_histogram, windows_closed);
+}
+
+void DesksController::MaybeReportCustomDeskNames() const {
+  // We only want metrics for users with two or more desks.
+  if (desks_.size() < 2)
+    return;
+
+  int custom_names_count =
+      base::ranges::count(desks_, true, &Desk::is_name_set_by_user);
+
+  base::UmaHistogramCounts100(kNumberOfCustomNamesHistogramName,
+                              custom_names_count);
+  base::UmaHistogramPercentage(kPercentageOfCustomNamesHistogramName,
+                               custom_names_count * 100 / desks_.size());
 }
 
 }  // namespace ash

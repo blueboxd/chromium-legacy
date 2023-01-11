@@ -57,14 +57,11 @@ namespace {
 constexpr int kBadgeIconShadowWidth = 1;
 constexpr int kPreferredWidth = 640;
 constexpr int kMultilineLabelWidth = 544;
-constexpr int kClassicViewHeight = 48;
 constexpr int kDefaultViewHeight = 40;
 constexpr int kDefaultAnswerCardViewHeight = 80;
 constexpr int kKeyboardShortcutViewHeight = 64;
 constexpr int kPreferredIconViewWidth = 56;
 constexpr int kTextTrailPadding = 16;
-// Extra margin at the right of the rightmost action icon.
-constexpr int kClassicActionButtonRightMargin = 8;
 // Extra margin at the right of the rightmost action icon.
 constexpr int kDefaultActionButtonRightMargin = 12;
 // Text line height in the search result.
@@ -179,14 +176,7 @@ views::Label* SetupChildLabelView(
       break;
   }
   label->SetTextContext(text_context);
-  switch (view_type) {
-    case SearchResultView::SearchResultViewType::kClassic:
-      label->SetTextStyle(STYLE_CLASSIC_LAUNCHER);
-      break;
-    case SearchResultView::SearchResultViewType::kDefault:
-    case SearchResultView::SearchResultViewType::kAnswerCard:
-      label->SetTextStyle(STYLE_PRODUCTIVITY_LAUNCHER);
-  }
+  label->SetTextStyle(STYLE_PRODUCTIVITY_LAUNCHER);
   return label;
 }
 
@@ -425,11 +415,6 @@ void SearchResultView::SetSearchResultViewType(SearchResultViewType type) {
           views::LayoutOrientation::kHorizontal);
       ClearBigTitleContainer();
       break;
-    case SearchResultViewType::kClassic:
-      title_and_details_container_->SetOrientation(
-          views::LayoutOrientation::kVertical);
-      ClearBigTitleContainer();
-      break;
     case SearchResultViewType::kAnswerCard:
       title_and_details_container_->SetOrientation(
           views::LayoutOrientation::kVertical);
@@ -455,8 +440,6 @@ views::LayoutOrientation SearchResultView::TitleAndDetailsOrientationForTest() {
 
 int SearchResultView::PreferredHeight() const {
   switch (view_type_) {
-    case SearchResultViewType::kClassic:
-      return kClassicViewHeight;
     case SearchResultViewType::kDefault:
       if (has_keyboard_shortcut_contents_)
         return kKeyboardShortcutViewHeight;
@@ -484,7 +467,6 @@ int SearchResultView::PrimaryTextHeight() const {
   if (multi_line_title_height_ > 0)
     return multi_line_title_height_;
   switch (view_type_) {
-    case SearchResultViewType::kClassic:
     case SearchResultViewType::kDefault:
     case SearchResultViewType::kAnswerCard:
       return kPrimaryTextHeight;
@@ -497,7 +479,6 @@ int SearchResultView::SecondaryTextHeight() const {
   if (multi_line_details_height_ > 0)
     return multi_line_details_height_;
   switch (view_type_) {
-    case SearchResultViewType::kClassic:
     case SearchResultViewType::kAnswerCard:
       return kAnswerCardDetailsLineHeight;
     case SearchResultViewType::kDefault:
@@ -506,13 +487,7 @@ int SearchResultView::SecondaryTextHeight() const {
 }
 
 int SearchResultView::ActionButtonRightMargin() const {
-  switch (view_type_) {
-    case SearchResultViewType::kClassic:
-      return kClassicActionButtonRightMargin;
-    case SearchResultViewType::kAnswerCard:
-    case SearchResultViewType::kDefault:
-      return kDefaultActionButtonRightMargin;
-  }
+  return kDefaultActionButtonRightMargin;
 }
 
 // static
@@ -800,7 +775,14 @@ void SearchResultView::UpdateDetailsContainer() {
   non_elided_details_label_width_ = 0;
   details_container_->RemoveAllChildViews();
   details_label_tags_.clear();
-  if (!result() || result()->details_text_vector().empty()) {
+
+  // Hide details container for answer cards with multiline titles.
+  bool hide_details_container_for_answer_card =
+      view_type_ == SearchResultViewType::kAnswerCard &&
+      multi_line_title_height_ > kPrimaryTextHeight;
+
+  if (!result() || result()->details_text_vector().empty() ||
+      hide_details_container_for_answer_card) {
     details_container_->SetVisible(false);
     result_text_separator_label_->SetVisible(false);
   } else {
@@ -818,9 +800,6 @@ void SearchResultView::UpdateDetailsContainer() {
         result_text_separator_label_->SetVisible(
             should_show_result_text_separator_label_);
         break;
-      case SearchResultViewType::kClassic:
-        result_text_separator_label_->SetVisible(false);
-        break;
       case SearchResultViewType::kAnswerCard:
         // Show `separator_label_` when SetupContainerViewForTextVector gets
         // valid contents in `result()->details_text_vector()` and
@@ -836,7 +815,6 @@ void SearchResultView::UpdateKeyboardShortcutContainer() {
   keyboard_shortcut_container_->RemoveAllChildViews();
   keyboard_shortcut_container_tags_.clear();
 
-  DCHECK(view_type_ != SearchResultViewType::kClassic);
   if (!app_list_features::IsSearchResultInlineIconEnabled() || !result() ||
       result()->keyboard_shortcut_text_vector().empty()) {
     keyboard_shortcut_container_->SetVisible(false);
@@ -847,7 +825,6 @@ void SearchResultView::UpdateKeyboardShortcutContainer() {
         title_and_details_container_->SetOrientation(
             views::LayoutOrientation::kHorizontal);
         break;
-      case SearchResultViewType::kClassic:
       case SearchResultViewType::kAnswerCard:
         title_and_details_container_->SetOrientation(
             views::LayoutOrientation::kVertical);
@@ -909,18 +886,8 @@ void SearchResultView::StyleLabel(views::Label* label,
     }
 
     bool has_match_tag = (tag.styles & SearchResult::Tag::MATCH);
-    if (has_match_tag) {
-      switch (view_type_) {
-        case SearchResultViewType::kClassic:
-          label->SetTextStyleRange(views::style::STYLE_EMPHASIZED, tag.range);
-          break;
-        case SearchResultViewType::kDefault:
-          ABSL_FALLTHROUGH_INTENDED;
-        case SearchResultViewType::kAnswerCard:
-          label->SetTextStyleRange(AshTextStyle::STYLE_HIGHLIGHT, tag.range);
-          break;
-      }
-    }
+    if (has_match_tag)
+      label->SetTextStyleRange(AshTextStyle::STYLE_HIGHLIGHT, tag.range);
   }
 
   switch (color_tag) {
@@ -988,20 +955,9 @@ void SearchResultView::OnQueryRemovalAccepted(bool accepted) {
     SetSelected(false, absl::nullopt);
   }
 
-  // Record different dialog action metric depending on productivity launcher
-  // state - productivity launcher does not show zero-state search results, so
-  // zero-state specific metric is not suitable. On the other hand, removal
-  // action outside of zero-state search UI is only allowed if the productivity
-  // launcher feature is on.
-  if (features::IsProductivityLauncherEnabled()) {
-    RecordSearchResultRemovalDialogDecision(
-        accepted ? SearchResultRemovalConfirmation::kRemovalConfirmed
-                 : SearchResultRemovalConfirmation::kRemovalCanceled);
-  } else {
-    RecordZeroStateSearchResultRemovalHistogram(
-        accepted ? SearchResultRemovalConfirmation::kRemovalConfirmed
-                 : SearchResultRemovalConfirmation::kRemovalCanceled);
-  }
+  RecordSearchResultRemovalDialogDecision(
+      accepted ? SearchResultRemovalConfirmation::kRemovalConfirmed
+               : SearchResultRemovalConfirmation::kRemovalCanceled);
 }
 
 void SearchResultView::OnSelectedResultChanged() {
@@ -1096,7 +1052,6 @@ void SearchResultView::Layout() {
         break;
       }
 
-      case SearchResultViewType::kClassic:
       case SearchResultViewType::kAnswerCard: {
         gfx::Size label_size(
             text_bounds.width(),
@@ -1110,6 +1065,13 @@ void SearchResultView::Layout() {
     }
   } else if (!title_label_tags_.empty()) {
     gfx::Size text_size(text_bounds.width(), PrimaryTextHeight());
+    if (view_type_ == SearchResultViewType::kAnswerCard &&
+        has_keyboard_shortcut_contents_) {
+      // Increase height for answer cards with keyboard shortcut contents.
+      text_size.Enlarge(
+          /*grow_width=*/0,
+          /*grow_height=*/SecondaryTextHeight() + kKeyboardShortcutTopMargin);
+    }
     gfx::Rect centered_text_bounds(text_bounds);
     centered_text_bounds.ClampToCenteredSize(text_size);
     text_container_->SetBoundsRect(centered_text_bounds);
@@ -1151,7 +1113,6 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
   const auto* app_list_widget = GetWidget();
   switch (view_type_) {
     case SearchResultViewType::kDefault:
-    case SearchResultViewType::kClassic:
       if (selected() && !actions_view()->HasSelectedAction()) {
         canvas->FillRect(
             content_rect,
@@ -1232,18 +1193,18 @@ void SearchResultView::OnThemeChanged() {
   const auto* app_list_widget = GetWidget();
   result_text_separator_label_->SetEnabledColor(
       AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
-          kDeprecatedSearchBoxTextDefaultColor, app_list_widget));
+          app_list_widget));
 
   rating_separator_label_->SetEnabledColor(
       AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
-          kDeprecatedSearchBoxTextDefaultColor, app_list_widget));
+          app_list_widget));
   rating_->SetEnabledColor(
       AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
-          kDeprecatedSearchBoxTextDefaultColor, app_list_widget));
+          app_list_widget));
   rating_star_->SetImage(gfx::CreateVectorIcon(
       kBadgeRatingIcon, kSearchRatingStarSize,
       AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
-          kDeprecatedSearchBoxTextDefaultColor, app_list_widget)));
+          app_list_widget)));
   views::View::OnThemeChanged();
 }
 
@@ -1269,8 +1230,7 @@ void SearchResultView::OnMetadataChanged() {
     UpdateBigTitleContainer();
     UpdateBigTitleSuperscriptContainer();
   }
-  if (view_type_ != SearchResultViewType::kClassic &&
-      app_list_features::IsSearchResultInlineIconEnabled()) {
+  if (app_list_features::IsSearchResultInlineIconEnabled()) {
     UpdateKeyboardShortcutContainer();
   }
   UpdateTitleContainer();

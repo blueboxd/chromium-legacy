@@ -15,9 +15,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
+#include "content/browser/interest_group/auction_worklet_manager.h"
+#include "content/browser/interest_group/subresource_url_builder.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/isolation_info.h"
+#include "net/base/network_anonymization_key.h"
+#include "net/base/schemeful_site.h"
 #include "net/cookies/site_for_cookies.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -27,10 +31,16 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/interest_group/auction_config.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace content {
+
+namespace {
+
+using WorkletHandle = AuctionWorkletManager::WorkletHandle;
+using BundleSubresourceInfo = SubresourceUrlBuilder::BundleSubresourceInfo;
 
 const char kScriptUrl[] = "https://host.test/script";
 const char kWasmUrl[] = "https://host.test/wasm";
@@ -46,6 +56,35 @@ const char kAcceptJson[] = "application/json";
 const char kAcceptOther[] = "binary/ocelot-stream";
 const char kAcceptWasm[] = "application/wasm";
 
+const char kBundleUrl[] = "https://host.test/bundle";
+
+const int kRenderProcessId = 123;
+
+// The AuctionUrlLoaerFactoryProxy doesn't care which URL is used; its users are
+// responsible for setting the correct URLs for the correct proxy.
+const char kSubresourceUrl1[] = "https://host.test/signals?fakeSuffix1";
+const char kSubresourceUrl2[] = "https://host.test/signals?fakeSuffix2";
+const char kSubresourceUrl3[] = "https://host.test/signals?fakeSuffix3";
+
+// We don't need to actually make real WorkletHandles --
+// SubresourceUrlAuthorizations only cares about the addresses of
+// WorkletHandles, so we can use hard-coded pointers.
+const WorkletHandle* const kWorkletHandle1 =
+    reinterpret_cast<const WorkletHandle*>(0xABC123);
+
+const WorkletHandle* const kWorkletHandle2 =
+    reinterpret_cast<const WorkletHandle*>(0xDEF456);
+
+BundleSubresourceInfo MakeBundleSubresourceInfo(
+    const std::string& bundle_url,
+    const std::string& subresource_url) {
+  blink::DirectFromSellerSignalsSubresource info_from_renderer;
+  info_from_renderer.bundle_url = GURL(bundle_url);
+  return BundleSubresourceInfo(GURL(subresource_url), info_from_renderer);
+}
+
+}  // namespace
+
 class AuctionUrlLoaderFactoryProxyTest : public testing::Test {
  public:
   // Ways the proxy can behave in response to a request.
@@ -60,13 +99,24 @@ class AuctionUrlLoaderFactoryProxyTest : public testing::Test {
     client_security_state_->is_web_secure_context = true;
   }
 
-  ~AuctionUrlLoaderFactoryProxyTest() override = default;
+  ~AuctionUrlLoaderFactoryProxyTest() override {
+    // This should be both set and cleared during CreateUrlLoaderFactoryProxy().
+    // Check that the callback passed to AuctionURLLoaderFactoryProxy's wasn't
+    // invoked asynchronously unexpectedly.
+    EXPECT_FALSE(preconnect_url_);
+  }
 
   void CreateUrlLoaderFactoryProxy() {
     // The AuctionURLLoaderFactoryProxy should only be created if there is no
     // old one, or the old one's pipe was closed.
     DCHECK(!remote_url_loader_factory_ ||
            !remote_url_loader_factory_.is_connected());
+
+    // `preconnect_url_` should only be set by callback (sometimes) invoked by
+    // AuctionURLLoaderFactoryProxy's constructor, and cleared at the end of
+    // CreateUrlLoaderFactoryProxy(). Check that it's nullopt here to catch it
+    // being set unexpectedly.
+    EXPECT_TRUE(!preconnect_url_);
 
     remote_url_loader_factory_.reset();
     url_loader_factory_proxy_ = std::make_unique<AuctionURLLoaderFactoryProxy>(
@@ -77,14 +127,44 @@ class AuctionUrlLoaderFactoryProxyTest : public testing::Test {
         base::BindRepeating(
             [](network::mojom::URLLoaderFactory* factory) { return factory; },
             &trusted_url_loader_factory_),
-        top_frame_origin_, frame_origin_, is_for_seller_,
+        base::BindOnce(&AuctionUrlLoaderFactoryProxyTest::PreconnectSocket,
+                       base::Unretained(this)),
+        top_frame_origin_, frame_origin_,
+        /*renderer_process_id=*/kRenderProcessId, is_for_seller_,
         client_security_state_.Clone(), GURL(kScriptUrl), wasm_url_,
         trusted_signals_base_url_);
+
+    EXPECT_EQ(preconnect_url_, trusted_signals_base_url_);
+    if (trusted_signals_base_url_) {
+      if (is_for_seller_) {
+        EXPECT_TRUE(preconnect_network_anonymization_key_->IsTransient());
+      } else {
+        net::SchemefulSite buyer_site{GURL(kScriptUrl)};
+        EXPECT_EQ(preconnect_network_anonymization_key_,
+                  net::NetworkAnonymizationKey(buyer_site, buyer_site));
+      }
+    } else {
+      // This check is not strictly needed, since `preconnect_url_` being equal
+      // to `trusted_signals_base_url_`, as checked above, implies this must
+      // also be nullopt if `trusted_signals_base_url_` is nullopt.
+      EXPECT_FALSE(preconnect_network_anonymization_key_);
+    }
+    preconnect_url_ = absl::nullopt;
+  }
+
+  void PreconnectSocket(
+      const GURL& url,
+      const net::NetworkAnonymizationKey& network_anonymization_key) {
+    EXPECT_TRUE(!preconnect_url_);
+
+    preconnect_url_ = url;
+    preconnect_network_anonymization_key_ = network_anonymization_key;
   }
 
   // Attempts to make a request for `request`.
   void TryMakeRequest(const network::ResourceRequest& request,
-                      ExpectedResponse expected_response) {
+                      ExpectedResponse expected_response,
+                      bool expect_bundle_request = false) {
     SCOPED_TRACE(is_for_seller_);
     SCOPED_TRACE(request.url);
 
@@ -180,6 +260,16 @@ class AuctionUrlLoaderFactoryProxyTest : public testing::Test {
 
     const auto& observed_request = pending_request->request;
 
+    if (expect_bundle_request) {
+      ASSERT_TRUE(observed_request.web_bundle_token_params);
+      EXPECT_EQ(observed_request.web_bundle_token_params->bundle_url,
+                GURL(kBundleUrl));
+      EXPECT_EQ(observed_request.web_bundle_token_params->render_process_id,
+                kRenderProcessId);
+    } else {
+      EXPECT_FALSE(observed_request.web_bundle_token_params);
+    }
+
     // The URL should be unaltered.
     EXPECT_EQ(request.url, observed_request.url);
 
@@ -204,7 +294,11 @@ class AuctionUrlLoaderFactoryProxyTest : public testing::Test {
     // The initiator should be set.
     EXPECT_EQ(frame_origin_, observed_request.request_initiator);
 
-    EXPECT_EQ(network::mojom::RequestMode::kNoCors, observed_request.mode);
+    if (expect_bundle_request) {
+      EXPECT_EQ(network::mojom::RequestMode::kCors, observed_request.mode);
+    } else {
+      EXPECT_EQ(network::mojom::RequestMode::kNoCors, observed_request.mode);
+    }
 
     if (is_for_seller_) {
       if (original_accept_header == kAcceptJavascript ||
@@ -216,12 +310,30 @@ class AuctionUrlLoaderFactoryProxyTest : public testing::Test {
         EXPECT_FALSE(observed_request.trusted_params);
       } else {
         // Seller worklet trusted bidding signals currently use transient
-        // IsolationInfos.
+        // IsolationInfos. DirectFromSellerSignals uses the frame's isolation
+        // info, but with a trusted URLLoaderFactory (to override the
+        // X-FLEDGE-Auction-Only request block).
         EXPECT_TRUE(trusted_factory_used);
         ASSERT_TRUE(observed_request.trusted_params);
-        EXPECT_TRUE(observed_request.trusted_params->isolation_info
-                        .network_isolation_key()
-                        .IsTransient());
+        if (expect_bundle_request) {
+          const auto& observed_isolation_info =
+              observed_request.trusted_params->isolation_info;
+          url::Origin expected_origin = url::Origin::Create(request.url);
+          EXPECT_EQ(expected_origin,
+                    observed_isolation_info.top_frame_origin());
+          EXPECT_EQ(expected_origin, observed_isolation_info.frame_origin());
+          EXPECT_TRUE(observed_isolation_info.site_for_cookies().IsNull());
+        } else {
+          EXPECT_TRUE(observed_request.trusted_params->isolation_info
+                          .network_isolation_key()
+                          .IsTransient());
+          // There should have been a preconnect in this case, with a
+          // NetworkAnonymizationKey that's consistent with the request's
+          // IsolationInfo.
+          EXPECT_EQ(preconnect_network_anonymization_key_,
+                    observed_request.trusted_params->isolation_info
+                        .network_anonymization_key());
+        }
         EXPECT_EQ(*client_security_state_,
                   *observed_request.trusted_params->client_security_state);
       }
@@ -251,7 +363,8 @@ class AuctionUrlLoaderFactoryProxyTest : public testing::Test {
 
   void TryMakeRequest(const std::string& url,
                       absl::optional<std::string> accept_value,
-                      ExpectedResponse expected_response) {
+                      ExpectedResponse expected_response,
+                      bool expect_bundle_request = false) {
     SCOPED_TRACE(accept_value ? *accept_value : "No accept value");
 
     network::ResourceRequest request;
@@ -260,7 +373,21 @@ class AuctionUrlLoaderFactoryProxyTest : public testing::Test {
       request.headers.SetHeader(net::HttpRequestHeaders::kAccept,
                                 *accept_value);
     }
-    TryMakeRequest(request, expected_response);
+    TryMakeRequest(request, expected_response, expect_bundle_request);
+  }
+
+  void AuthorizeSubresourceUrls(
+      const AuctionWorkletManager::WorkletHandle* worklet_handle,
+      const std::vector<SubresourceUrlBuilder::BundleSubresourceInfo>&
+          authorized_subresource_urls) {
+    url_loader_factory_proxy_->subresource_url_authorizations()
+        .AuthorizeSubresourceUrls(worklet_handle, authorized_subresource_urls);
+  }
+
+  void OnWorkletHandleDestruction(
+      const AuctionWorkletManager::WorkletHandle* worklet_handle) {
+    url_loader_factory_proxy_->subresource_url_authorizations()
+        .OnWorkletHandleDestruction(worklet_handle);
   }
 
  protected:
@@ -275,6 +402,10 @@ class AuctionUrlLoaderFactoryProxyTest : public testing::Test {
   url::Origin top_frame_origin_ =
       url::Origin::Create(GURL("https://top.test/"));
   url::Origin frame_origin_ = url::Origin::Create(GURL("https://foo.test/"));
+
+  absl::optional<GURL> preconnect_url_;
+  absl::optional<net::NetworkAnonymizationKey>
+      preconnect_network_anonymization_key_;
 
   network::TestURLLoaderFactory frame_url_loader_factory_;
   network::TestURLLoaderFactory trusted_url_loader_factory_;
@@ -556,6 +687,55 @@ TEST_F(AuctionUrlLoaderFactoryProxyTest, ClientSecurityState) {
 
     TryMakeRequest(kScriptUrl, kAcceptJavascript, ExpectedResponse::kAllow);
     TryMakeRequest(kTrustedSignalsUrl, kAcceptJson, ExpectedResponse::kAllow);
+  }
+}
+
+TEST_F(AuctionUrlLoaderFactoryProxyTest, BasicSubresourceBundles1) {
+  for (bool is_for_seller : {false, true}) {
+    is_for_seller_ = is_for_seller;
+    // Force creation of a new proxy, with correct `is_for_seller` value.
+    remote_url_loader_factory_.reset();
+    CreateUrlLoaderFactoryProxy();
+    AuthorizeSubresourceUrls(
+        kWorkletHandle1,
+        {MakeBundleSubresourceInfo(kBundleUrl, kSubresourceUrl1),
+         MakeBundleSubresourceInfo(kBundleUrl, kSubresourceUrl2)});
+
+    TryMakeRequest(kSubresourceUrl1, kAcceptJson, ExpectedResponse::kAllow,
+                   /*expect_bundle_request=*/true);
+    TryMakeRequest(kSubresourceUrl2, kAcceptJson, ExpectedResponse::kAllow,
+                   /*expect_bundle_request=*/true);
+    TryMakeRequest(kSubresourceUrl3, kAcceptJson, ExpectedResponse::kReject,
+                   /*expect_bundle_request=*/true);
+
+    OnWorkletHandleDestruction(kWorkletHandle1);
+  }
+}
+
+TEST_F(AuctionUrlLoaderFactoryProxyTest, BasicSubresourceBundles2) {
+  for (bool is_for_seller : {false, true}) {
+    is_for_seller_ = is_for_seller;
+    // Force creation of a new proxy, with correct `is_for_seller` value.
+    remote_url_loader_factory_.reset();
+    CreateUrlLoaderFactoryProxy();
+    AuthorizeSubresourceUrls(
+        kWorkletHandle1,
+        {MakeBundleSubresourceInfo(kBundleUrl, kSubresourceUrl1)});
+    AuthorizeSubresourceUrls(
+        kWorkletHandle2,
+        {MakeBundleSubresourceInfo(kBundleUrl, kSubresourceUrl2)});
+
+    TryMakeRequest(kSubresourceUrl1, kAcceptJson, ExpectedResponse::kAllow,
+                   /*expect_bundle_request=*/true);
+    TryMakeRequest(kSubresourceUrl2, kAcceptJson, ExpectedResponse::kAllow,
+                   /*expect_bundle_request=*/true);
+
+    OnWorkletHandleDestruction(kWorkletHandle1);
+
+    TryMakeRequest(kSubresourceUrl1, kAcceptJson, ExpectedResponse::kReject,
+                   /*expect_bundle_request=*/true);
+
+    OnWorkletHandleDestruction(kWorkletHandle2);
   }
 }
 

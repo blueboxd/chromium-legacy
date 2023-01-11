@@ -21,8 +21,9 @@
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/update_required_screen_handler.h"
 #include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -57,8 +58,8 @@ UpdateRequiredScreen::UpdateRequiredScreen(
       view_(std::move(view)),
       error_screen_(error_screen),
       exit_callback_(std::move(exit_callback)),
-      histogram_helper_(
-          std::make_unique<ErrorScreensHistogramHelper>("UpdateRequired")),
+      histogram_helper_(std::make_unique<ErrorScreensHistogramHelper>(
+          ErrorScreensHistogramHelper::ErrorParentScreen::kUpdateRequired)),
       version_updater_(std::make_unique<VersionUpdater>(this)),
       clock_(base::DefaultClock::GetInstance()) {
   error_message_delay_ = kDelayErrorMessage;

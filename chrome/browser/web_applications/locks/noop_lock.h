@@ -16,10 +16,16 @@ namespace web_app {
 // when the callback given to the WebAppLockManager is called. Destruction of
 // this class will release the lock or cancel the lock request if it is not
 // acquired yet.
-class NoopLock : public Lock {
+class NoopLockDescription : public LockDescription {
  public:
-  NoopLock();
-  ~NoopLock();
+  NoopLockDescription();
+  ~NoopLockDescription();
+};
+
+class NoopLock {
+ public:
+  NoopLock() = default;
+  ~NoopLock() = default;
 };
 
 }  // namespace web_app

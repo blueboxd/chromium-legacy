@@ -29,6 +29,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -2901,7 +2902,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, OriginUpdatesReachProxies) {
   EXPECT_TRUE(ExecJs(root->child_at(0),
                      "try { parent.frames['frame2'].location.href = "
                      "'data:text/html,foo'; } catch (e) {}"));
-  console_observer.Wait();
+  ASSERT_TRUE(console_observer.Wait());
 
   std::string frame_origin = root->child_at(1)->current_origin().Serialize();
   EXPECT_EQ(frame_origin + "/", frame_url.DeprecatedGetOriginAsURL().spec());
@@ -8509,11 +8510,11 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
       // incoming messages and learn about the renderer's cancellation
       // before the browser process dispatches a CommitNavigation() to the
       // renderer.
-      ExecuteScriptAsync(&requesting_rfh_, "window.stop()");
+      ExecuteScriptAsync(&*requesting_rfh_, "window.stop()");
     }
 
    private:
-    RenderFrameHost& requesting_rfh_;
+    const raw_ref<RenderFrameHost> requesting_rfh_;
   };
 
   // Set up a test page with a same-site child frame.
@@ -12099,7 +12100,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EXPECT_TRUE(
       ExecJs(web_contents(),
              JsReplace("document.querySelector('iframe').src = $1", file_url)));
-  console_observer.Wait();
+  ASSERT_TRUE(console_observer.Wait());
 
   // The iframe should've stayed at the original URL.
   EXPECT_EQ(original_frame_url,

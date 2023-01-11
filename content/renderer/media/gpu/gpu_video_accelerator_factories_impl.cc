@@ -146,7 +146,7 @@ void GpuVideoAcceleratorFactoriesImpl::BindOnTaskRunner(
   interface_factory_.Bind(std::move(interface_factory_remote));
   vea_provider_.Bind(std::move(vea_provider_remote));
 
-  if (context_provider_->BindToCurrentThread() !=
+  if (context_provider_->BindToCurrentSequence() !=
       gpu::ContextResult::kSuccess) {
     OnDecoderSupportFailed();
     OnEncoderSupportFailed();
@@ -431,7 +431,7 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (CheckContextLost())
     return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
-#if BUILDFLAG(IS_CHROMEOS_ASH) && defined(USE_OZONE)
+#if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(IS_OZONE)
   // TODO(sugoi): This configuration is currently used only for testing ChromeOS
   // on Linux and doesn't support hardware acceleration. OSMesa did not support
   // any hardware acceleration here, so this was never an issue, but SwiftShader

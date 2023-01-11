@@ -68,7 +68,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
-#include "chrome/browser/policy/networking/policy_cert_service_factory.h"
 #include "chrome/browser/policy/networking/user_network_configuration_updater_ash.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -289,8 +288,8 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DeviceSettingsService::Get()->AddObserver(this);
-  if (g_browser_process->profile_manager())
-    g_browser_process->profile_manager()->AddObserver(this);
+  if (ProfileManager* profile_manager = g_browser_process->profile_manager())
+    profile_manager_observation_.Observe(profile_manager);
 
   auto* session_manager = session_manager::SessionManager::Get();
   // SessionManager might not exist in unit tests.
@@ -379,8 +378,6 @@ void ChromeUserManagerImpl::UpdateOwnerId() {
 }
 
 ChromeUserManagerImpl::~ChromeUserManagerImpl() {
-  if (g_browser_process->profile_manager())
-    g_browser_process->profile_manager()->RemoveObserver(this);
   if (DeviceSettingsService::IsInitialized())
     DeviceSettingsService::Get()->RemoveObserver(this);
 }
@@ -934,9 +931,6 @@ void ChromeUserManagerImpl::RemoveNonCryptohomeData(
 
   multi_profile_user_controller_->RemoveCachedValues(account_id.GetUserEmail());
 
-  policy::PolicyCertServiceFactory::ClearUsedPolicyCertificates(
-      account_id.GetUserEmail());
-
   EasyUnlockService::ResetLocalStateForUser(account_id);
 
   ChromeUserManager::RemoveNonCryptohomeData(account_id);
@@ -1164,6 +1158,10 @@ void ChromeUserManagerImpl::OnProfileAdded(Profile* profile) {
     SwitchActiveUser(GetPendingUserSwitchID());
     SetPendingUserSwitchId(EmptyAccountId());
   }
+}
+
+void ChromeUserManagerImpl::OnProfileManagerDestroying() {
+  profile_manager_observation_.Reset();
 }
 
 bool ChromeUserManagerImpl::IsUserAllowed(

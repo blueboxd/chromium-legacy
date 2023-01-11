@@ -28,13 +28,8 @@
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/views/animation/animation_abort_handle.h"
-#include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
-
-namespace views {
-class BoundsAnimator;
-}  // namespace views
 
 namespace ash {
 
@@ -69,8 +64,7 @@ class PagedAppsGridViewTest;
 class ASH_EXPORT AppsGridView : public views::View,
                                 public AppListItemView::GridDelegate,
                                 public AppListItemListObserver,
-                                public AppListModelObserver,
-                                public views::BoundsAnimatorObserver {
+                                public AppListModelObserver {
  public:
   METADATA_HEADER(AppsGridView);
 
@@ -158,8 +152,8 @@ class ASH_EXPORT AppsGridView : public views::View,
   void SetDragAndDropHostOfCurrentAppList(
       ApplicationDragAndDropHost* drag_and_drop_host);
 
-  // Return true if the |bounds_animator_| is animating |view|.
-  bool IsAnimatingView(AppListItemView* view);
+  // Return true if `view` is undergoing a layer animation.
+  bool IsAnimatingView(AppListItemView* view) const;
 
   const AppListConfig* app_list_config() const { return app_list_config_; }
 
@@ -247,9 +241,6 @@ class ASH_EXPORT AppsGridView : public views::View,
                               AppListItemView* original_parent_item_view,
                               ui::KeyboardCode key_code);
 
-  // Updates paged view structure and save it to meta data.
-  void UpdatePagedViewStructure();
-
   // Returns true if tablet mode is active. This class does not use
   // Shell::IsInTabletMode() because it has tests that are not derived from
   // AshTestBase.
@@ -305,8 +296,11 @@ class ASH_EXPORT AppsGridView : public views::View,
     return &view_model_;
   }
 
-  // Returns true if any animation is running within the view.
-  bool IsAnimationRunningForTest();
+  // Returns whether any item view is currently animating.
+  bool IsItemAnimationRunning() const;
+
+  // Stop animations for all item views in `view_model_`.
+  void CancelAllItemAnimations();
 
   AppsGridViewFolderDelegate* folder_delegate() const {
     return folder_delegate_;
@@ -344,6 +338,12 @@ class ASH_EXPORT AppsGridView : public views::View,
   // Returns true if there is any waiting reorder animation test callback.
   bool HasAnyWaitingReorderDoneCallbackForTest() const;
 
+  // Set `view` as hidden for testing, similar to when a view is hidden during
+  // drag or a sorted folder is renamed and hidden during reorder.
+  void set_hidden_view_for_test(views::View* view) {
+    hidden_view_for_test_ = view;
+  }
+
   // For test: Return if the drag and drop handler was set.
   bool has_drag_and_drop_host_for_test() {
     return nullptr != drag_and_drop_host_;
@@ -352,10 +352,6 @@ class ASH_EXPORT AppsGridView : public views::View,
   // For test: Return if the drag and drop operation gets dispatched.
   bool forward_events_to_drag_and_drop_host_for_test() {
     return forward_events_to_drag_and_drop_host_;
-  }
-
-  views::BoundsAnimator* bounds_animator_for_testing() {
-    return bounds_animator_.get();
   }
 
   base::OneShotTimer* reorder_timer_for_test() { return &reorder_timer_; }
@@ -496,10 +492,6 @@ class ASH_EXPORT AppsGridView : public views::View,
   // Cancels any context menus showing for app items on the current page.
   void CancelContextMenusOnCurrentPage();
 
-  // views::BoundsAnimatorObserver:
-  void OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) override;
-  void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override;
-
   // Destroys all item view layers if they are not required.
   void DestroyLayerItemsIfNotNeeded();
 
@@ -513,7 +505,6 @@ class ASH_EXPORT AppsGridView : public views::View,
   void PrepareItemsForBoundsAnimation();
 
   bool ignore_layout() const { return ignore_layout_; }
-  views::BoundsAnimator* bounds_animator() { return bounds_animator_.get(); }
   views::View* items_container() { return items_container_; }
   views::ViewModelT<PulsingBlockView>& pulsing_blocks_model() {
     return pulsing_blocks_model_;
@@ -560,8 +551,6 @@ class ASH_EXPORT AppsGridView : public views::View,
   // grid icons are reduced in size in this state.
   // TODO(crbug.com/1211608): Move cardified state members to PagedAppsGridView.
   bool cardified_state_ = false;
-
-  bool bounds_animation_for_cardified_state_in_progress_ = false;
 
   // Tile spacing between the tile views.
   int horizontal_tile_padding_ = 0;
@@ -640,8 +629,15 @@ class ASH_EXPORT AppsGridView : public views::View,
   void SetSelectedItemByIndex(const GridIndex& index);
 
   // Calculates ideal bounds for app list item views within the apps grid, and
-  // animates their bounds (using `bounds_animator_`) to their ideal position.
-  void AnimateToIdealBounds();
+  // animates their bounds using layer transform.
+  // `is_animating_top_to_bottom` - Whether the ideal bounds animation will
+  // initialize starting from the top items or bottom items. The result is used
+  // to determine whether item animation duration grows top to bottom or bottom
+  // to top.
+  void AnimateToIdealBounds(bool is_animating_top_to_bottom);
+
+  // Whether the ideal bounds animation will happen across multiple rows.
+  bool WillAnimateMultipleRows();
 
   // Extracts drag location info from |root_location| into |drag_point|.
   void ExtractDragLocation(const gfx::Point& root_location,
@@ -904,6 +900,9 @@ class ASH_EXPORT AppsGridView : public views::View,
   // change" animation completes.
   void OnFolderHideAnimationDone();
 
+  // Called when ideal bounds animations complete.
+  void OnIdealBoundsAnimationDone();
+
   class ScopedModelUpdate;
 
   AppListModel* model_ = nullptr;         // Owned by AppListView.
@@ -1004,9 +1003,6 @@ class ASH_EXPORT AppsGridView : public views::View,
   // Last mouse drag location in this view's coordinates.
   gfx::Point last_drag_point_;
 
-  // Used to animate individual icon positions.
-  std::unique_ptr<views::BoundsAnimator> bounds_animator_;
-
   // Tracks if drag_view_ is dragged out of the folder container bubble
   // when dragging a item inside a folder.
   bool drag_out_of_folder_container_ = false;
@@ -1053,7 +1049,10 @@ class ASH_EXPORT AppsGridView : public views::View,
   // Folder item view that is being animated into it's target position. The
   // animation runs after a folder gets closed if the folder intended position
   // in the grid changed while the folder was open.
-  absl::optional<views::View*> reordering_folder_view_;
+  absl::optional<AppListItemView*> reordering_folder_view_;
+
+  // A view which is hidden for testing purposes.
+  views::View* hidden_view_for_test_ = nullptr;
 
   std::unique_ptr<AppsGridContextMenu> context_menu_;
 
@@ -1092,6 +1091,10 @@ class ASH_EXPORT AppsGridView : public views::View,
   // triggered by AnimateToIdealBounds(), which is mainly caused
   // by app dragging reorders. This does not track reorders due to sort.
   absl::optional<ui::ThroughputTracker> item_reorder_animation_tracker_;
+
+  // Whether an ideal bounds animation is being setup. Used to prevent item
+  // layers from being deleted during setup.
+  bool setting_up_ideal_bounds_animation_ = false;
 
   base::WeakPtrFactory<AppsGridView> weak_factory_{this};
 };

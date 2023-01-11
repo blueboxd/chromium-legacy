@@ -35,6 +35,8 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
   // Used to observe changes to the account selection bubble.
   class Observer {
    public:
+    enum class LinkType { PRIVACY_POLICY, TERMS_OF_SERVICE };
+
     // Called when the user either selects the account from the multi-account
     // chooser or clicks the "continue" button.
     // Takes `account` as well as `idp_data` since passing `account_id` is
@@ -45,7 +47,7 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
         const IdentityProviderDisplayData& idp_data) = 0;
 
     // Called when the user clicks "privacy policy" or "terms of service" link.
-    virtual void OnLinkClicked(const GURL& url) = 0;
+    virtual void OnLinkClicked(LinkType link_type, const GURL& url) = 0;
 
     // Called when the user clicks "back" button.
     virtual void OnBackButtonClicked() = 0;
@@ -58,7 +60,6 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
   AccountSelectionBubbleView(
       const std::u16string& rp_for_display,
       const absl::optional<std::u16string>& idp_title,
-      const absl::optional<std::u16string>& iframe_url_for_display,
       views::View* anchor_view,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       Observer* observer);
@@ -88,7 +89,8 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
   // Returns a View containing the logo of the identity provider and the title
   // of the bubble, properly formatted. Creates the `header_icon_view_` if
   // `has_idp_icon` is true.
-  std::unique_ptr<views::View> CreateHeaderView(bool has_idp_icon);
+  std::unique_ptr<views::View> CreateHeaderView(const std::u16string& title,
+                                                bool has_idp_icon);
 
   // Returns a View containing the account chooser, i.e. everything that goes
   // below the horizontal separator on the initial FedCM bubble.
@@ -126,8 +128,7 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
   // button visibiltiy. `idp_metadata` is not null when we need to set a header
   // image based on the IDP.
   void UpdateHeader(const content::IdentityProviderMetadata& idp_metadata,
-                    const std::u16string& title,
-                    const absl::optional<std::u16string>& subtitle,
+                    const std::u16string title,
                     bool show_back_button);
 
   // Sets the brand views::ImageView visibility and image. Initiates the
@@ -144,10 +145,6 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
 
   // The accessible title.
   std::u16string accessible_title_;
-
-  // The initial subtitle for the dialog, if present. It should only be present
-  // when the FedCM API is invoked from an iframe with showRequester="both".
-  absl::optional<std::u16string> subtitle_;
 
   // The images for the IDP icons. Stored so that they can be reused upon
   // pressing the back button after choosing an account on the multi IDP
@@ -169,10 +166,6 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
 
   // View containing the bubble title.
   raw_ptr<views::Label> title_label_ = nullptr;
-
-  // View containing the bubble subtitle, which is empty if the iframe domain
-  // does not need to be displayed.
-  raw_ptr<views::Label> subtitle_label_ = nullptr;
 
   // View containing the continue button.
   raw_ptr<views::MdTextButton> continue_button_ = nullptr;

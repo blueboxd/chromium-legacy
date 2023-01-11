@@ -19,16 +19,16 @@
 #include "base/files/file_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/sequence_checker.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/file_manager/trash_common_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
-#include "chrome/browser/chromeos/fileapi/file_change_service_factory.h"
+#include "chrome/browser/ash/fileapi/file_change_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -267,7 +267,7 @@ void HoldingSpaceFileSystemDelegate::Init() {
 
   // Local file system.
   file_change_service_observer_.Observe(
-      chromeos::FileChangeServiceFactory::GetInstance()->GetService(profile()));
+      FileChangeServiceFactory::GetInstance()->GetService(profile()));
 
   // Volume manager.
   auto* const volume_manager = file_manager::VolumeManager::Get(profile());
@@ -403,7 +403,7 @@ void HoldingSpaceFileSystemDelegate::OnVolumeUnmounted(
   // manager dbus client, the file system delegate may get shutdown after
   // unmounting a volume. To avoid observer ordering issues, schedule
   // asynchronous task to remove unmounted items from the model.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&HoldingSpaceFileSystemDelegate::RemoveItemsParentedByPath,
                      weak_factory_.GetWeakPtr(), volume.mount_path()));
@@ -550,7 +550,7 @@ void HoldingSpaceFileSystemDelegate::ScheduleFilePathValidityCheck(
   // Schedule file validity check for pending items. The check is scheduled
   // asynchronously so path checks added in quick succession are handled in a
   // single batch.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &HoldingSpaceFileSystemDelegate::RunPendingFilePathValidityChecks,

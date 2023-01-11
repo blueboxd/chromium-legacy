@@ -12,6 +12,7 @@ import org.chromium.components.autofill_assistant.form.AssistantFormModel;
 import org.chromium.components.autofill_assistant.generic_ui.AssistantGenericUiModel;
 import org.chromium.components.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.components.autofill_assistant.infobox.AssistantInfoBoxModel;
+import org.chromium.components.autofill_assistant.legal_disclaimer.AssistantLegalDisclaimerModel;
 import org.chromium.components.autofill_assistant.overlay.AssistantOverlayModel;
 import org.chromium.components.autofill_assistant.user_data.AssistantCollectUserDataModel;
 import org.chromium.content_public.browser.WebContents;
@@ -25,7 +26,8 @@ public class AssistantModel extends PropertyModel {
     static final WritableBooleanPropertyKey ALLOW_SOFT_KEYBOARD = new WritableBooleanPropertyKey();
     static final WritableBooleanPropertyKey ALLOW_TALKBACK_ON_WEBSITE =
             new WritableBooleanPropertyKey();
-
+    static final WritableBooleanPropertyKey DISABLE_SCROLLBAR_FADING =
+            new WritableBooleanPropertyKey();
     static final WritableObjectPropertyKey<AssistantBottomBarDelegate> BOTTOM_BAR_DELEGATE =
             new WritableObjectPropertyKey<>();
     static final WritableIntPropertyKey BOTTOM_SHEET_STATE = new WritableIntPropertyKey();
@@ -46,6 +48,8 @@ public class AssistantModel extends PropertyModel {
     private final AssistantInfoBoxModel mInfoBoxModel = new AssistantInfoBoxModel();
     private final AssistantCollectUserDataModel mCollectUserDataModel =
             new AssistantCollectUserDataModel();
+    private final AssistantLegalDisclaimerModel mLegalDisclaimerModel =
+            new AssistantLegalDisclaimerModel();
     private final AssistantFormModel mFormModel = new AssistantFormModel();
     private final AssistantCarouselModel mActionsModel = new AssistantCarouselModel();
     private final AssistantGenericUiModel mPersistentGenericUiModel = new AssistantGenericUiModel();
@@ -56,9 +60,9 @@ public class AssistantModel extends PropertyModel {
     }
 
     AssistantModel(AssistantOverlayModel overlayModel) {
-        super(ALLOW_SOFT_KEYBOARD, ALLOW_TALKBACK_ON_WEBSITE, BOTTOM_BAR_DELEGATE,
-                BOTTOM_SHEET_STATE, TALKBACK_SHEET_SIZE_FRACTION, VISIBLE, PEEK_MODE_DISABLED,
-                WEB_CONTENTS, HANDLE_BACK_PRESS);
+        super(ALLOW_SOFT_KEYBOARD, ALLOW_TALKBACK_ON_WEBSITE, DISABLE_SCROLLBAR_FADING,
+                BOTTOM_BAR_DELEGATE, BOTTOM_SHEET_STATE, TALKBACK_SHEET_SIZE_FRACTION, VISIBLE,
+                PEEK_MODE_DISABLED, WEB_CONTENTS, HANDLE_BACK_PRESS);
         mOverlayModel = overlayModel;
     }
 
@@ -80,6 +84,11 @@ public class AssistantModel extends PropertyModel {
     @CalledByNative
     public AssistantInfoBoxModel getInfoBoxModel() {
         return mInfoBoxModel;
+    }
+
+    @CalledByNative
+    public AssistantLegalDisclaimerModel getLegalDisclaimerModel() {
+        return mLegalDisclaimerModel;
     }
 
     @CalledByNative
@@ -126,6 +135,11 @@ public class AssistantModel extends PropertyModel {
     @CalledByNative
     private void setAllowTalkbackOnWebsite(boolean allowed) {
         set(ALLOW_TALKBACK_ON_WEBSITE, allowed);
+    }
+
+    @CalledByNative
+    private void setDisableScrollbarFading(boolean disableScrollbarFading) {
+        set(DISABLE_SCROLLBAR_FADING, disableScrollbarFading);
     }
 
     @CalledByNative

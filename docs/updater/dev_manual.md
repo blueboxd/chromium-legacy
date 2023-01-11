@@ -6,6 +6,14 @@ including tips and tricks.
 
 [TOC]
 
+## Code Organization
+
+### Cross-platform Code
+Where possible, cross-platform code is preferred to other alternatives. This
+means that the source code of the updater is organized in sub-directories,
+first by functionality (or feature), and second by platform name. For example,
+the source code contains `updater\net` instead of `updater\mac\net`.
+
 ## Bots & Lab
 >**_NOTE:_** Knowledge in this section may become out-of-date as LUCI evolves
 quickly.
@@ -55,6 +63,15 @@ This can be done by specifying bots dimension with switch `-d`. Remember
 Example:
   ```
   .\tools\mb\mb.bat run --swarmed --no-default-dimensions -d pool chromium.win.uac -d os Windows-10 .\out\Default updater_tests_system -- --gtest_filter=*Install*
+  ```
+* `mb` can schedule tests in the pools managed by different swarming servers.
+  The default server is
+  [chromium-swarm.appspot.com](https://chromium-swarm.appspot.com/botlist?k=pool).
+  To schedule tests to pools managed by
+  [chrome-swarming.appspot.com](https://chrome-swarming.appspot.com/botlist?k=pool),
+  for example `chrome.tests`, add `--internal` flag in the command line:
+  ```
+    tools/mb/mb run -v --swarmed --internal --no-default-dimensions -d pool chrome.tests -d os Windows-10 out/WinDefault updater_tests
   ```
 * If your test introduces dependency on a new app on macOS, you need to let
  `mb` tool know so it can correctly figure out the dependency. Example:

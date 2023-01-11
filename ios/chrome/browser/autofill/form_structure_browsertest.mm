@@ -213,7 +213,9 @@ FormStructureBrowserTest::FormStructureBrowserTest()
        features::kAutofillParseIBANFields,
        // TODO(crbug.com/1311937): Remove once launched.
        features::kAutofillEnableSupportForPhoneNumberTrunkTypes,
-       features::kAutofillInferCountryCallingCode},
+       features::kAutofillInferCountryCallingCode,
+       // TODO(crbug.com/1352826): Remove once launched.
+       features::kAutofillMin3FieldTypesForLocalHeuristics},
       // Disabled
       // TODO(crbug.com/1311937): Remove once launched.
       // This feature is part of the AutofillRefinedPhoneNumberTypes rollout. As
@@ -372,6 +374,14 @@ const auto& GetFailingTestNames() {
       // expectations compared to non-iOS platforms.
       "049_register_ebay.com.html",
       "148_payment_dickblick.com.html",
+      // TODO(crbug.com/1339277): These pages contain labels which are only
+      // inferred using AutofillImprovedLabelForInference. This feature is
+      // currently not available on iOS.
+      "074_register_threadless.com.html",
+      "097_register_alaskaair.com.html",
+      "115_checkout_walgreens.com.html",
+      "116_cc_checkout_walgreens.com.html",
+      "150_checkout_venus.com_search_field.html",
   };
   return failing_test_names;
 }

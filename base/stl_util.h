@@ -26,17 +26,6 @@ constexpr bool IsRandomAccessIter =
 
 }  // namespace internal
 
-// Implementation of C++23's std::to_underlying.
-//
-// Note: This has an additional `std::is_enum<EnumT>` requirement to be SFINAE
-// friendly prior to C++20.
-//
-// Reference: https://en.cppreference.com/w/cpp/utility/to_underlying
-template <typename EnumT, typename = std::enable_if_t<std::is_enum<EnumT>{}>>
-constexpr std::underlying_type_t<EnumT> to_underlying(EnumT e) noexcept {
-  return static_cast<std::underlying_type_t<EnumT>>(e);
-}
-
 // Returns a const reference to the underlying container of a container adapter.
 // Works for std::priority_queue, std::queue, and std::stack.
 template <class A>
@@ -57,14 +46,6 @@ void STLClearObject(T* obj) {
   // Sometimes "T tmp" allocates objects with memory (arena implementation?).
   // Hence using additional reserve(0) even if it doesn't always work.
   obj->reserve(0);
-}
-
-// Counts the number of instances of val in a container.
-template <typename Container, typename T>
-typename std::iterator_traits<
-    typename Container::const_iterator>::difference_type
-STLCount(const Container& container, const T& val) {
-  return std::count(container.begin(), container.end(), val);
 }
 
 // O(1) implementation of const casting an iterator for any sequence,

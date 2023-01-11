@@ -115,6 +115,13 @@ source_set("formats") {
       "mp4/hevc.cc",
       "mp4/hevc.h",
     ]
+
+    if (enable_hevc_parser_and_hw_decoder) {
+      sources += [
+        "mp4/h265_annex_b_to_hevc_bitstream_converter.cc",
+        "mp4/h265_annex_b_to_hevc_bitstream_converter.h",
+      ]
+    }
   }
 
   if (proprietary_codecs && enable_platform_dolby_vision) {
@@ -185,6 +192,8 @@ source_set("formats") {
 
   # TODO(https://crbug.com/1266991): These should be gated behind `enable_hls_demuxer`, once that's enabled by default.
   sources += [
+    "hls/audio_rendition.cc",
+    "hls/audio_rendition.h",
     "hls/items.cc",
     "hls/items.h",
     "hls/media_playlist.cc",
@@ -321,6 +330,11 @@ source_set("unit_tests") {
 
     if (enable_platform_hevc) {
       sources += [ "mp4/hevc_unittest.cc" ]
+
+      if (enable_hevc_parser_and_hw_decoder) {
+        sources +=
+            [ "mp4/h265_annex_b_to_hevc_bitstream_converter_unittest.cc" ]
+      }
     }
   }
 
@@ -397,8 +411,8 @@ if (enable_platform_dts_audio) {
   fuzzer_test("dts_util_fuzzer") {
     sources = [ "dts/dts_util_fuzzer.cc" ]
     deps = [
-      "//media",
       "//base",
+      "//media",
     ]
   }
 }

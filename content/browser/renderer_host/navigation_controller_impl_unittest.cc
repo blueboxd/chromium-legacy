@@ -710,8 +710,8 @@ TEST_F(NavigationControllerTest, LoadURLWithExtraParams_Data_Android) {
   load_url_params.load_type = NavigationController::LOAD_TYPE_DATA;
   load_url_params.base_url_for_data_url = GURL("http://foo");
   load_url_params.virtual_url_for_data_url = GURL(url::kAboutBlankURL);
-  std::string s("data:,data");
-  load_url_params.data_url_as_string = base::RefCountedString::TakeString(&s);
+  load_url_params.data_url_as_string =
+      base::MakeRefCounted<base::RefCountedString>(std::string("data:,data"));
   load_url_params.override_user_agent = NavigationController::UA_OVERRIDE_FALSE;
   navigation->SetLoadURLParams(&load_url_params);
   navigation->Start();
@@ -4312,10 +4312,8 @@ TEST_F(NavigationControllerTest, SubFrameNavigationUIData) {
   load_url_params.frame_tree_node_id = subframe->GetFrameTreeNodeId();
   navigation->SetLoadURLParams(&load_url_params);
 
-#if DCHECK_IS_ON()
   // We DCHECK to prevent misuse of the API.
-  EXPECT_DEATH_IF_SUPPORTED(navigation->Start(), "");
-#endif
+  EXPECT_DCHECK_DEATH(navigation->Start());
 }
 
 bool SrcDocRewriter(GURL* url, BrowserContext* browser_context) {

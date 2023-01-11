@@ -20,11 +20,13 @@
 #include "base/time/time.h"
 #include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
+#include "content/browser/interest_group/interest_group_auction_reporter.h"
 #include "content/browser/interest_group/interest_group_storage.h"
+#include "content/browser/interest_group/subresource_url_builder.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
-#include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom-forward.h"
+#include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom.h"
 #include "content/services/auction_worklet/public/mojom/seller_worklet.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -41,7 +43,6 @@ struct AuctionConfig;
 
 namespace content {
 
-class InterestGroupAuctionReporter;
 class InterestGroupManagerImpl;
 
 // An InterestGroupAuction Handles running an auction, or a component auction.
@@ -412,21 +413,18 @@ class CONTENT_EXPORT InterestGroupAuction
   void TakeDebugReportUrls(std::vector<GURL>& debug_win_report_urls,
                            std::vector<GURL>& debug_loss_report_urls);
 
-  // Retrieves the ad beacon map. May only be called once, since it takes
-  // ownership of the stored ad beacon map.
-  ReportingMetadata TakeAdBeaconMap() { return std::move(ad_beacon_map_); }
-
-  // Retrieves any reporting URLs returned by ReportWin() and ReportResult()
-  // methods. May only be called after an auction has completed successfully.
-  // May only be called once, since it takes ownership of stored reporting
-  // URLs.
-  std::vector<GURL> TakeReportUrls();
+  // Returns the completed reporter associated with this auction, if the auction
+  // has run to completion and has a winner.
+  std::unique_ptr<InterestGroupAuctionReporter> TakeReporter() {
+    return std::move(reporter_);
+  }
 
   // Retrieves all requests to the Private Aggregation API returned by
-  // GenerateBid(), ScoreAd(), ReportWin() and ReportResult(). The return value
-  // is keyed by reporting origin of the associated requests. May only be called
-  // after an auction has completed (successfully or not). May only be called
-  // once, since it takes ownership of stored reporting URLs.
+  // GenerateBid() and ScoreAd(). The return value is keyed by reporting origin
+  // of the associated requests. May only be called by external consumers after
+  // an auction has failed (on success, used internally to pass them to the
+  // InterestGroupAuctionReporter). May only be called once, since it takes
+  // ownership of stored reporting URLs.
   std::map<url::Origin, PrivateAggregationRequests>
   TakePrivateAggregationRequests();
 
@@ -452,7 +450,7 @@ class CONTENT_EXPORT InterestGroupAuction
       const blink::AuctionConfig& config,
       const url::Origin& buyer);
 
-  // Gets the buyer per-buyer-signals ID in `config` for buyer. Public so that
+  // Gets the buyer per-buyer-signals in `config` for buyer. Public so that
   // InterestGroupAuctionReporter can use it.
   static absl::optional<std::string> GetPerBuyerSignals(
       const blink::AuctionConfig& config,
@@ -466,6 +464,36 @@ class CONTENT_EXPORT InterestGroupAuction
   // a shared per-buyer timeout, only generating bids for the highest priority N
   // interest groups of a particular buyer, etc).
   class BuyerHelper;
+
+  struct LeaderInfo {
+    LeaderInfo();
+    ~LeaderInfo();
+
+    LeaderInfo(const LeaderInfo&) = delete;
+    LeaderInfo& operator=(LeaderInfo&) = delete;
+
+    // The highest scoring bid so far. Null if no bid has been accepted yet.
+    std::unique_ptr<ScoredBid> top_bid;
+    // Number of bidders with the same score as `top_bidder`.
+    size_t num_top_bids = 0;
+    // Number of bidders with the same score as `second_highest_score`. If the
+    // second highest score matches the highest score, this does not include the
+    // top bid.
+    size_t num_second_highest_bids = 0;
+
+    // The numeric value of the bid that got the second highest score. When
+    // there's a tie for the second highest score, one of the second highest
+    // scoring bids is randomly chosen.
+    double highest_scoring_other_bid = 0.0;
+    double second_highest_score = 0.0;
+    // Whether all bids of the highest score are from the same interest group
+    // owner.
+    bool at_most_one_top_bid_owner = true;
+    // Will be null in the end if there are interest groups having the second
+    // highest score with different owners. That includes the top bid itself, in
+    // the case there's a tie for the top bid.
+    absl::optional<url::Origin> highest_scoring_other_bid_owner;
+  };
 
   // ---------------------------------
   // Load interest group phase methods
@@ -567,14 +595,25 @@ class CONTENT_EXPORT InterestGroupAuction
       PrivateAggregationRequests pa_requests,
       const std::vector<std::string>& errors) override;
 
+  // Compares `bid` with current auction leaders in `leader_info`, updating
+  // `leader_info` if needed.
+  void UpdateAuctionLeaders(
+      std::unique_ptr<Bid> bid,
+      double score,
+      auction_worklet::mojom::ComponentAuctionModifiedBidParamsPtr
+          component_auction_modified_bid_params,
+      uint32_t data_version,
+      bool has_data_version,
+      LeaderInfo& leader_info);
+
   // Invoked when the bid becomes the new highest scoring other bid, to handle
   // calculation of post auction signals. `owner` is nullptr in the event the
   // bid is tied with the top bid, and they have different origins.
   void OnNewHighestScoringOtherBid(double score,
                                    double bid_value,
-                                   const url::Origin* owner);
+                                   const url::Origin* owner,
+                                   LeaderInfo& leader_info);
 
-  absl::optional<std::string> PerBuyerSignals(const BidState* state);
   absl::optional<base::TimeDelta> PerBuyerTimeout(const BidState* state);
   absl::optional<base::TimeDelta> SellerTimeout();
 
@@ -706,6 +745,14 @@ class CONTENT_EXPORT InterestGroupAuction
   // present a more consistent view of the universe.
   const base::Time auction_start_time_;
 
+  // Holds the computed subresource URLs (renderer-supplied prefix + browser
+  // produced suffix).
+  //
+  // Not null until moved into the InterestGroupAuctionReporter. The move occurs
+  // while the seller and bidder worklet handles, which hold raw pointers to it,
+  // are still alive.
+  std::unique_ptr<SubresourceUrlBuilder> subresource_url_builder_;
+
   // The number of buyers in the AuctionConfig that passed the
   // IsInterestGroupApiAllowedCallback filter and interest groups were found
   // for. Includes buyers from nested component auctions. Double-counts buyers
@@ -728,51 +775,20 @@ class CONTENT_EXPORT InterestGroupAuction
   std::vector<std::pair<blink::InterestGroupKey, double>>
       post_auction_priority_updates_;
 
-  // The highest scoring bid so far. Null if no bid has been accepted yet.
-  std::unique_ptr<ScoredBid> top_bid_;
-  // Number of bidders with the same score as `top_bidder`.
-  size_t num_top_bids_ = 0;
-  // Number of bidders with the same score as `second_highest_score_`. If the
-  // second highest score matches the highest score, this does not include the
-  // top bid.
-  size_t num_second_highest_bids_ = 0;
-
-  // The numeric value of the bid that got the second highest score. When
-  // there's a tie for the second highest score, one of the second highest
-  // scoring bids is randomly chosen.
-  double highest_scoring_other_bid_ = 0.0;
-  double second_highest_score_ = 0.0;
-  // Whether all bids of the highest score are from the same interest group
-  // owner.
-  bool at_most_one_top_bid_owner_ = true;
-  // Will be null in the end if there are interest groups having the second
-  // highest score with different owners. That includes the top bid itself, in
-  // the case there's a tie for the top bid.
-  absl::optional<url::Origin> highest_scoring_other_bid_owner_;
+  LeaderInfo auction_leader_;
 
   // Holds a reference to the SellerWorklet used by the auction.
   std::unique_ptr<AuctionWorkletManager::WorkletHandle> seller_worklet_handle_;
 
-  // Report URLs from reportResult() and reportWin() methods. An auction's
-  // report URL from reportResult() comes before the URL from its reportWin()
-  // method if there is one. Returned to `callback_` to deal with, so the
-  // auction itself can be deleted at the end of the auction.
-  std::vector<GURL> report_urls_;
-
-  // Stores all pending Private Aggregation API report requests until they have
-  // been flushed. Keyed by the origin of the script that issued the request
-  // (i.e. the reporting origin).
+  // Stores all pending Private Aggregation API report requests from the bidding
+  // and scoring phase. These are passed to the InterestGroupAuctionReporter
+  // when it's created. Keyed by the origin of the script that issued the
+  // request (i.e. the reporting origin).
   std::map<url::Origin, PrivateAggregationRequests>
       private_aggregation_requests_;
 
   // All errors reported by worklets thus far.
   std::vector<std::string> errors_;
-
-  // Ad Beacon URL mapping generated from reportResult() or reportWin() from
-  // this auction and its components. Destination is relative to this auction.
-  // Returned to `callback_` to deal with, so the Auction itself can be
-  // deleted at the end of the auction.
-  ReportingMetadata ad_beacon_map_;
 
   // This is set to true if the scoring phase ran and was able to score all
   // bids that were made (of which there may have been none). This is used to

@@ -70,7 +70,6 @@ CaptureModeController* g_instance = nullptr;
 // consecutive.
 constexpr base::TimeDelta kConsecutiveScreenshotThreshold = base::Seconds(5);
 
-constexpr char kScreenCaptureNotificationId[] = "capture_mode_notification";
 constexpr char kScreenCaptureStoppedNotificationId[] =
     "capture_mode_stopped_notification";
 constexpr char kScreenCaptureNotifierId[] = "ash.capture_mode_controller";
@@ -274,7 +273,7 @@ int GetDisabledNotificationMessageId(CaptureAllowance allowance,
 void ShowDisabledNotification(CaptureAllowance allowance) {
   DCHECK(allowance != CaptureAllowance::kAllowed);
   ShowNotification(
-      kScreenCaptureNotificationId,
+      capture_mode_util::kScreenCaptureNotificationId,
       GetDisabledNotificationMessageId(allowance, /*for_title=*/true),
       GetDisabledNotificationMessageId(allowance, /*for_title=*/false),
       /*optional_fields=*/{}, /*delegate=*/nullptr,
@@ -491,13 +490,6 @@ void CaptureModeController::SetType(CaptureModeType type) {
   type_ = type;
   if (capture_mode_session_)
     capture_mode_session_->OnCaptureTypeChanged(type_);
-}
-
-void CaptureModeController::EnableAudioRecording(bool enable_audio_recording) {
-  if (enable_audio_recording_ == enable_audio_recording)
-    return;
-
-  enable_audio_recording_ = enable_audio_recording;
 }
 
 void CaptureModeController::Start(CaptureModeEntryType entry_type) {
@@ -780,8 +772,9 @@ void CaptureModeController::OnActiveUserSessionChanged(
 
   // Remove the previous notification when switching to another user.
   auto* message_center = message_center::MessageCenter::Get();
-  message_center->RemoveNotification(kScreenCaptureNotificationId,
-                                     /*by_user=*/false);
+  message_center->RemoveNotificationsForNotifierId(message_center::NotifierId(
+      message_center::NotifierType::SYSTEM_COMPONENT, kScreenCaptureNotifierId,
+      NotificationCatalogName::kScreenCapture));
 }
 
 void CaptureModeController::OnSessionStateChanged(
@@ -807,6 +800,16 @@ void CaptureModeController::StartVideoRecordingImmediatelyForTesting() {
   DCHECK(IsActive());
   DCHECK_EQ(type_, CaptureModeType::kVideo);
   OnVideoRecordCountDownFinished();
+}
+
+void CaptureModeController::MaybeRestoreCachedCaptureConfigurations() {
+  if (!cached_normal_session_configs_)
+    return;
+
+  type_ = cached_normal_session_configs_->type;
+  source_ = cached_normal_session_configs_->source;
+  enable_audio_recording_ = cached_normal_session_configs_->audio_on;
+  cached_normal_session_configs_.reset();
 }
 
 void CaptureModeController::PushNewRootSizeToRecordingService(
@@ -1250,7 +1253,9 @@ void CaptureModeController::ShowPreviewNotification(
   optional_fields.image = preview_image;
 
   ShowNotification(
-      kScreenCaptureNotificationId, title_id, message_id, optional_fields,
+      capture_mode_util::GetScreenCaptureNotificationIdForPath(
+          screen_capture_path),
+      title_id, message_id, optional_fields,
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
           base::BindRepeating(&CaptureModeController::HandleNotificationClicked,
                               weak_ptr_factory_.GetWeakPtr(),
@@ -1299,7 +1304,9 @@ void CaptureModeController::HandleNotificationClicked(
   // to this function. The callback's state owns any passed-by-ref arguments,
   // such as |screen_capture_path| which we use in this function.
   message_center::MessageCenter::Get()->RemoveNotification(
-      kScreenCaptureNotificationId, /*by_user=*/false);
+      capture_mode_util::GetScreenCaptureNotificationIdForPath(
+          screen_capture_path),
+      /*by_user=*/false);
 }
 
 base::FilePath CaptureModeController::BuildImagePath() const {
@@ -1461,6 +1468,11 @@ void CaptureModeController::BeginVideoRecording(
 
   LaunchRecordingServiceAndStartRecording(capture_params,
                                           std::move(cursor_overlay_receiver));
+
+  // Restore the capture mode configurations that include the `type_`, `source_`
+  // and `enable_audio_recording_` after projector-inititated recording starts
+  // if any of them was overridden in projector-initiated capture mode session.
+  MaybeRestoreCachedCaptureConfigurations();
 
   capture_mode_util::SetStopRecordingButtonVisibility(
       capture_params.window->GetRootWindow(), true);
@@ -1641,8 +1653,12 @@ void CaptureModeController::OnDlpRestrictionCheckedAtSessionInit(
            "capture is disabled by policy.";
 
     for_projector = true;
-    // TODO(afakhry): Discuss with PM whether we want this to affect the audio
-    // settings of future generic capture mode sessions.
+
+    // Cache the normal capture mode configurations that will be used for
+    // restoration when switching to the normal capture mode session if needed.
+    cached_normal_session_configs_ =
+        CaptureSessionConfigs{type_, source_, enable_audio_recording_};
+
     enable_audio_recording_ = true;
     SetType(CaptureModeType::kVideo);
     SetSource(CaptureModeSource::kFullscreen);

@@ -44,7 +44,10 @@
 // an issue if insertion and deletion operations are interleaved with the use of
 // more than one iterator, pointer, or reference simultaneously. For this
 // reason, `insert()` and `erase()` return a valid iterator at the current
-// position.
+// position (and `extract()` cannot be used in this way).
+//
+// Another API difference is that btree iterators can be subtracted, and this
+// is faster than using std::distance.
 
 #ifndef ABSL_CONTAINER_BTREE_SET_H_
 #define ABSL_CONTAINER_BTREE_SET_H_
@@ -269,7 +272,8 @@ class btree_set
   // btree_set::extract()
   //
   // Extracts the indicated element, erasing it in the process, and returns it
-  // as a C++17-compatible node handle. Overloads are listed below.
+  // as a C++17-compatible node handle. Any references, pointers, or iterators
+  // are invalidated. Overloads are listed below.
   //
   // node_type extract(const_iterator position):
   //

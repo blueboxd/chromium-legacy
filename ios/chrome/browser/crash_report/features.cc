@@ -14,19 +14,6 @@ BASE_FEATURE(kCrashpadIOS,
              "CrashpadIOSEnabler",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kMetrickitCrashReport,
-             "MetrickitCrashReport",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kMetrickitNonCrashReport,
              "MetrickitNonCrashReport",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSyntheticCrashReportsForUte,
-             "SyntheticCrashReportsForUte",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-bool EnableSyntheticCrashReportsForUte() {
-  return base::FeatureList::IsEnabled(kSyntheticCrashReportsForUte) &&
-         base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs);
-}

@@ -287,9 +287,17 @@ void WaylandEventSource::OnPointerButtonEvent(
     EventType type,
     int changed_button,
     WaylandWindow* window,
-    wl::EventDispatchPolicy dispatch_policy) {
+    wl::EventDispatchPolicy dispatch_policy,
+    bool allow_release_of_unpressed_button) {
   DCHECK(type == ET_MOUSE_PRESSED || type == ET_MOUSE_RELEASED);
   DCHECK(HasAnyPointerButtonFlag(changed_button));
+
+  // Ignore release events for buttons that aren't currently pressed. Such
+  // events should never happen, but there have been compositor bugs before
+  // (e.g. crbug.com/1376393).
+  if (!allow_release_of_unpressed_button && type == ET_MOUSE_RELEASED &&
+      (pointer_flags_ & changed_button) == 0)
+    return;
 
   WaylandWindow* prev_focused_window =
       window_manager_->GetCurrentPointerFocusedWindow();
@@ -331,7 +339,7 @@ void WaylandEventSource::OnPointerButtonEventInternal(WaylandWindow* window,
     window_manager_->SetPointerFocusedWindow(window);
 
   if (type == ET_MOUSE_RELEASED)
-    last_pointer_stylus_tool_.reset();
+    last_pointer_stylus_data_.reset();
 }
 
 void WaylandEventSource::OnPointerMotionEvent(
@@ -676,33 +684,44 @@ bool WaylandEventSource::IsPointerButtonPressed(EventFlags button) const {
 
 void WaylandEventSource::OnPointerStylusToolChanged(
     EventPointerType pointer_type) {
-  last_pointer_stylus_tool_ = {
+  // When the reported pointer stylus type is `mouse`, handle it as a regular
+  // pointer event.
+  //
+  // TODO(https://crbug.com/1298504): Better handle the `touch` type, which
+  // seems mis-specified in
+  // //t_p/wayland-protocols/unstable/stylus/stylus-unstable-v2.xml.
+  if (pointer_type == ui::EventPointerType::kMouse) {
+    last_pointer_stylus_data_.reset();
+    return;
+  }
+
+  last_pointer_stylus_data_ = {
       .type = pointer_type,
       .tilt = gfx::Vector2dF(),
       .force = std::numeric_limits<float>::quiet_NaN()};
 }
 
 void WaylandEventSource::OnPointerStylusForceChanged(float force) {
-  if (!last_pointer_stylus_tool_.has_value()) {
+  if (!last_pointer_stylus_data_.has_value()) {
     // This is a stray force event that the default tool cannot accept.
     LOG(WARNING) << "Cannot handle force for the default tool!  (the value is "
                  << force << ")";
     return;
   }
 
-  last_pointer_stylus_tool_->force = force;
+  last_pointer_stylus_data_->force = force;
 }
 
 void WaylandEventSource::OnPointerStylusTiltChanged(
     const gfx::Vector2dF& tilt) {
-  if (!last_pointer_stylus_tool_.has_value()) {
+  if (!last_pointer_stylus_data_.has_value()) {
     // This is a stray tilt event that the default tool cannot accept.
     LOG(WARNING) << "Cannot handle tilt for the default tool!  (the value is ["
                  << tilt.x() << "," << tilt.y() << "])";
     return;
   }
 
-  last_pointer_stylus_tool_->tilt = tilt;
+  last_pointer_stylus_data_->tilt = tilt;
 }
 
 const WaylandWindow* WaylandEventSource::GetPointerTarget() const {
@@ -776,15 +795,15 @@ gfx::Vector2dF WaylandEventSource::ComputeFlingVelocity() {
 }
 
 absl::optional<PointerDetails> WaylandEventSource::AmendStylusData() const {
-  if (!last_pointer_stylus_tool_)
+  if (!last_pointer_stylus_data_)
     return absl::nullopt;
 
-  DCHECK_NE(last_pointer_stylus_tool_->type, EventPointerType::kUnknown);
-  return PointerDetails(last_pointer_stylus_tool_->type, /*pointer_id=*/0,
+  DCHECK_NE(last_pointer_stylus_data_->type, EventPointerType::kUnknown);
+  return PointerDetails(last_pointer_stylus_data_->type, /*pointer_id=*/0,
                         /*radius_x=*/1.0f,
-                        /*radius_y=*/1.0f, last_pointer_stylus_tool_->force,
-                        /*twist=*/0.0f, last_pointer_stylus_tool_->tilt.x(),
-                        last_pointer_stylus_tool_->tilt.y());
+                        /*radius_y=*/1.0f, last_pointer_stylus_data_->force,
+                        /*twist=*/0.0f, last_pointer_stylus_data_->tilt.x(),
+                        last_pointer_stylus_data_->tilt.y());
 }
 
 absl::optional<PointerDetails> WaylandEventSource::AmendStylusData(
@@ -816,25 +835,25 @@ void WaylandEventSource::ProcessPointerScrollData() {
 
   int flags = pointer_flags_ | keyboard_modifiers_;
 
-  static constexpr bool supports_trackpad_kinetic_scrolling =
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-      true;
-#else
-      false;
-#endif
-
   // Dispatch Fling event if pointer.axis_stop is notified and the recent
   // pointer.axis events meets the criteria to start fling scroll.
   if (pointer_scroll_data_->dx == 0 && pointer_scroll_data_->dy == 0 &&
-      pointer_scroll_data_->is_axis_stop &&
-      supports_trackpad_kinetic_scrolling) {
+      pointer_scroll_data_->is_axis_stop) {
     gfx::Vector2dF initial_velocity = ComputeFlingVelocity();
     float vx = initial_velocity.x();
     float vy = initial_velocity.y();
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
     ScrollEvent event(
         vx == 0 && vy == 0 ? ET_SCROLL_FLING_CANCEL : ET_SCROLL_FLING_START,
         pointer_location_, pointer_location_, EventTimeForNow(), flags, vx, vy,
         vx, vy, kGestureScrollFingerCount);
+#else
+    // In Linux there is no axis event with 0 delta when start scrolling.
+    ScrollEvent event(ET_SCROLL_FLING_START, pointer_location_,
+                      pointer_location_, EventTimeForNow(), flags, vx, vy, vx,
+                      vy, kGestureScrollFingerCount);
+    is_fling_active_ = true;
+#endif
     pointer_frames_.push_back(
         std::make_unique<FrameData>(event, base::NullCallback()));
   } else if (pointer_scroll_data_->axis_source) {
@@ -850,6 +869,17 @@ void WaylandEventSource::ProcessPointerScrollData() {
                    WL_POINTER_AXIS_SOURCE_FINGER ||
                *pointer_scroll_data_->axis_source ==
                    WL_POINTER_AXIS_SOURCE_CONTINUOUS) {
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+      // Fling has to be stopped if a new scroll event is received.
+      if (is_fling_active_) {
+        is_fling_active_ = false;
+        ScrollEvent stop_fling_event(
+            ET_SCROLL_FLING_START, pointer_location_, pointer_location_,
+            EventTimeForNow(), flags, 0, 0, 0, 0, kGestureScrollFingerCount);
+        pointer_frames_.push_back(std::make_unique<FrameData>(
+            stop_fling_event, base::NullCallback()));
+      }
+#endif
       ScrollEvent event(ET_SCROLL, pointer_location_, pointer_location_,
                         EventTimeForNow(), flags, pointer_scroll_data_->dx,
                         pointer_scroll_data_->dy, pointer_scroll_data_->dx,

@@ -26,6 +26,7 @@ source_set("backend_public") {
 
   deps = [
     ":backend",
+    "//chrome/browser/autofill",
     "//chrome/browser/profiles:profile",
     "//components/keyed_service/content:content",
     "//components/password_manager/core/browser:browser",
@@ -69,6 +70,7 @@ source_set("backend") {
   deps = [
     ":jni_headers",
     "//components/autofill/core/browser:browser",
+    "//components/crash/core/common:crash_key",
     "//components/password_manager/core/browser:browser",
     "//components/password_manager/core/browser:password_form",
     "//components/password_manager/core/browser:unified_password_manager_proto",
@@ -431,6 +433,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//chrome/app:generated_resources",
     "//chrome/browser",
+    "//chrome/browser/autofill",
     "//chrome/test:test_support",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",

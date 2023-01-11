@@ -9,19 +9,25 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
-#include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/desks/desks_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/scoped_observation.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/multitask_menu/float_controller_base.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
+
+namespace aura {
+class Window;
+}  // namespace aura
+
+namespace views {
+class Widget;
+}  // namespace views
 
 namespace ash {
 
+class Shell;
+class TabletModeController;
 class WorkspaceEventHandler;
 
 // This controller allows windows to be on top of all app windows, but below
@@ -94,15 +100,15 @@ class ASH_EXPORT FloatController : public TabletModeObserver,
   // `target_desk` has a floated window.
   void OnMovingAllWindowsOutToDesk(Desk* original_desk, Desk* target_desk);
 
-  // Called when moving the `floated_window` to `target_desk`. This function
-  // takes care of floated window since it doesn't belong to the desk container.
-  // Note: Unlike `OnMovingAllWindowsOutToDesk` above, if `target_desk` has a
-  // floated window, it will be unfloated, while `floated_window` remains
-  // floated.
-  // Note: When dragging `floated_window` to a different display, we need to map
-  // `floated_window` to the desk container with same ID on target display's
-  // root.
+  // Called when moving the `floated_window` from `active_desk` to
+  // `target_desk`. This function takes care of floated window since it doesn't
+  // belong to the desk container. Note: Unlike `OnMovingAllWindowsOutToDesk`
+  // above, if `target_desk` has a floated window, it will be unfloated, while
+  // `floated_window` remains floated. Note: When dragging `floated_window` to a
+  // different display, we need to map `floated_window` to the desk container
+  // with same ID on target display's root.
   void OnMovingFloatedWindowToDesk(aura::Window* floated_window,
+                                   Desk* active_desk,
                                    Desk* target_desk,
                                    aura::Window* target_root);
 
@@ -112,15 +118,8 @@ class ASH_EXPORT FloatController : public TabletModeObserver,
   void OnTabletControllerDestroyed() override;
 
   // DesksController::Observer:
-  void OnDeskAdded(const Desk* desk) override {}
-  void OnDeskRemoved(const Desk* desk) override {}
-  void OnDeskReordered(int old_index, int new_index) override {}
   void OnDeskActivationChanged(const Desk* activated,
                                const Desk* deactivated) override;
-  void OnDeskSwitchAnimationLaunching() override {}
-  void OnDeskSwitchAnimationFinished() override {}
-  void OnDeskNameChanged(const Desk* desk,
-                         const std::u16string& new_name) override {}
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -136,8 +135,6 @@ class ASH_EXPORT FloatController : public TabletModeObserver,
 
  private:
   class FloatedWindowInfo;
-  class ScopedWindowTucker;
-  class TuckHandle;
   friend class DefaultState;
   friend class TabletModeWindowState;
   friend class WindowFloatTest;
@@ -184,11 +181,7 @@ class ASH_EXPORT FloatController : public TabletModeObserver,
       desks_controller_observation_{this};
 
   absl::optional<display::ScopedOptionalDisplayObserver> display_observer_;
-  base::ScopedObservation<Shell,
-                          ShellObserver,
-                          &Shell::AddShellObserver,
-                          &Shell::RemoveShellObserver>
-      shell_observation_{this};
+  base::ScopedObservation<Shell, ShellObserver> shell_observation_{this};
 };
 
 }  // namespace ash

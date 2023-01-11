@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
-#include "chrome/browser/ui/views/hover_button.h"
+#include "chrome/browser/ui/views/controls/hover_button.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_access_code_cast_button.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_metrics.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -172,10 +172,10 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   raw_ptr<CastDialogController> controller_;
 
   // ScrollView containing the list of sink buttons.
-  raw_ptr<views::ScrollView> scroll_view_ = nullptr;
+  raw_ptr<views::ScrollView, DanglingUntriaged> scroll_view_ = nullptr;
 
   // View shown while there are no sinks.
-  raw_ptr<views::View> no_sinks_view_ = nullptr;
+  raw_ptr<views::View, DanglingUntriaged> no_sinks_view_ = nullptr;
 
   const raw_ptr<Profile> profile_;
 

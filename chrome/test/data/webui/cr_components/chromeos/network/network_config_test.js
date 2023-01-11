@@ -130,25 +130,55 @@ suite('network-config', function() {
     // Syntactic sugar for running test twice with different values for the
     // enableHiddenNetworkMigration feature flag.
     [true, false].forEach(isHiddenNetworkMigrationEnabled => {
-      test('New networks are explicitly not hidden', async () => {
-        loadTimeData.overrideValues(
-            {'enableHiddenNetworkMigration': isHiddenNetworkMigrationEnabled});
+      test(
+          'New networks are explicitly not hidden when logged in', async () => {
+            loadTimeData.overrideValues({
+              'enableHiddenNetworkMigration': isHiddenNetworkMigrationEnabled,
+            });
 
-        await flushAsync();
+            // Simulate the dialog being opened while a user is logged in.
+            networkConfig.isLoggedIn_ = true;
 
-        networkConfig.save();
+            await flushAsync();
 
-        await flushAsync();
+            networkConfig.save();
 
-        const props = mojoApi_.getPropertiesToSetForTest();
-        if (isHiddenNetworkMigrationEnabled) {
-          assertEquals(
-              props.typeConfig.wifi.hiddenSsid, HiddenSsidMode.kDisabled);
-        } else {
-          assertEquals(
-              props.typeConfig.wifi.hiddenSsid, HiddenSsidMode.kAutomatic);
-        }
-      });
+            await flushAsync();
+
+            const props = mojoApi_.getPropertiesToSetForTest();
+            if (isHiddenNetworkMigrationEnabled) {
+              assertEquals(
+                  props.typeConfig.wifi.hiddenSsid, HiddenSsidMode.kDisabled);
+            } else {
+              assertEquals(
+                  props.typeConfig.wifi.hiddenSsid, HiddenSsidMode.kAutomatic);
+            }
+          });
+    });
+
+    // Syntactic sugar for running test twice with different values for the
+    // enableHiddenNetworkMigration feature flag.
+    [true, false].forEach(isHiddenNetworkMigrationEnabled => {
+      test(
+          'New networks are explicitly not hidden when not logged in',
+          async () => {
+            loadTimeData.overrideValues({
+              'enableHiddenNetworkMigration': isHiddenNetworkMigrationEnabled,
+            });
+
+            // Simulate the dialog being opened when the user is not logged in.
+            networkConfig.isLoggedIn_ = false;
+
+            await flushAsync();
+
+            networkConfig.save();
+
+            await flushAsync();
+
+            assertEquals(
+                mojoApi_.getPropertiesToSetForTest().typeConfig.wifi.hiddenSsid,
+                HiddenSsidMode.kAutomatic);
+          });
     });
   });
 
@@ -937,23 +967,49 @@ suite('network-config', function() {
       });
     });
 
-    test('Enable Connect', function() {
+    test('Enable Connect', async function() {
       networkConfig.set('vpnType_', 'WireGuard');
-      flush();
+      await flushAsync();
       assertFalse(networkConfig.enableConnect);
+
       networkConfig.set('ipAddressInput_', '10.10.0.1');
       const configProperties = networkConfig.get('configProperties_');
       configProperties.name = 'test-wireguard';
       const peer = configProperties.typeConfig.vpn.wireguard.peers[0];
       peer.publicKey = 'KFhwdv4+jKpSXMW6xEUVtOe4Mo8l/xOvGmshmjiHx1Y=';
-      assertFalse(networkConfig.vpnIsConfigured_());
+      networkConfig.notifyPath(
+          `configProperties_.typeConfig.vpn.wireguard.peers.0.publicKey`);
+      await flushAsync();
+      assertFalse(networkConfig.enableConnect);
+
       peer.endpoint = '192.168.66.66:32000';
       peer.allowedIps = '0.0.0.0/0';
-      assertTrue(networkConfig.vpnIsConfigured_());
+      networkConfig.notifyPath(
+          `configProperties_.typeConfig.vpn.wireguard.peers.0.endpoint`);
+      await flushAsync();
+      assertTrue(networkConfig.enableConnect);
+
       peer.presharedKey = 'invalid_key';
-      assertFalse(networkConfig.vpnIsConfigured_());
+      networkConfig.notifyPath(
+          `configProperties_.typeConfig.vpn.wireguard.peers.0.presharedKey`);
+      await flushAsync();
+      assertFalse(networkConfig.enableConnect);
+
       peer.presharedKey = '';
-      assertTrue(networkConfig.vpnIsConfigured_());
+      networkConfig.notifyPath(
+          `configProperties_.typeConfig.vpn.wireguard.peers.0.presharedKey`);
+      await flushAsync();
+      assertTrue(networkConfig.enableConnect);
+
+      networkConfig.set('ipAddressInput_', '10.10.0.1/32');
+      networkConfig.notifyPath(`configProperties_.ipAddressInput_`);
+      await flushAsync();
+      assertFalse(networkConfig.enableConnect);
+
+      networkConfig.set('ipAddressInput_', '10.10.0.1');
+      networkConfig.notifyPath(`configProperties_.ipAddressInput_`);
+      await flushAsync();
+      assertTrue(networkConfig.enableConnect);
     });
   });
 

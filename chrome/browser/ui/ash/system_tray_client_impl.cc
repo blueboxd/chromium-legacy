@@ -50,10 +50,10 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/webui/access_code_cast/access_code_cast_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
+#include "chrome/browser/ui/webui/ash/bluetooth_pairing_dialog.h"
+#include "chrome/browser/ui/webui/ash/internet_config_dialog.h"
+#include "chrome/browser/ui/webui/ash/internet_detail_dialog.h"
+#include "chrome/browser/ui/webui/ash/multidevice_setup/multidevice_setup_dialog.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
@@ -237,11 +237,8 @@ class SystemTrayClientImpl::EnterpriseAccountObserver
   SystemTrayClientImpl* const owner_;
   Profile* profile_ = nullptr;
 
-  base::ScopedObservation<
-      user_manager::UserManager,
-      user_manager::UserManager::UserSessionStateObserver,
-      &user_manager::UserManager::AddSessionStateObserver,
-      &user_manager::UserManager::RemoveSessionStateObserver>
+  base::ScopedObservation<user_manager::UserManager,
+                          user_manager::UserManager::UserSessionStateObserver>
       session_state_observation_{this};
   base::ScopedObservation<session_manager::SessionManager,
                           session_manager::SessionManagerObserver>
@@ -402,7 +399,7 @@ void SystemTrayClientImpl::ShowBluetoothSettings(const std::string& device_id) {
 
 void SystemTrayClientImpl::ShowBluetoothPairingDialog(
     absl::optional<base::StringPiece> device_address) {
-  if (chromeos::BluetoothPairingDialog::ShowDialog(device_address)) {
+  if (ash::BluetoothPairingDialog::ShowDialog(device_address)) {
     base::RecordAction(
         base::UserMetricsAction("StatusArea_Bluetooth_Connect_Unknown"));
   }
@@ -586,7 +583,7 @@ void SystemTrayClientImpl::ShowNetworkConfigure(const std::string& network_id) {
     return;
   }
 
-  chromeos::InternetConfigDialog::ShowDialogForNetworkId(network_id);
+  ash::InternetConfigDialog::ShowDialogForNetworkId(network_id);
 }
 
 void SystemTrayClientImpl::ShowNetworkCreate(const std::string& type) {
@@ -594,7 +591,7 @@ void SystemTrayClientImpl::ShowNetworkCreate(const std::string& type) {
     ShowSettingsCellularSetup(/*show_psim_flow=*/false);
     return;
   }
-  chromeos::InternetConfigDialog::ShowDialogForNetworkType(type);
+  ash::InternetConfigDialog::ShowDialogForNetworkType(type);
 }
 
 void SystemTrayClientImpl::ShowSettingsCellularSetup(bool show_psim_flow) {
@@ -656,7 +653,7 @@ void SystemTrayClientImpl::ShowNetworkSettingsHelper(
   if (session_manager->IsInSecondaryLoginScreen())
     return;
   if (!session_manager->IsSessionStarted()) {
-    chromeos::InternetDetailDialog::ShowDialog(network_id);
+    ash::InternetDetailDialog::ShowDialog(network_id);
     return;
   }
 
@@ -693,7 +690,7 @@ void SystemTrayClientImpl::ShowNetworkSettingsHelper(
 }
 
 void SystemTrayClientImpl::ShowMultiDeviceSetup() {
-  chromeos::multidevice_setup::MultiDeviceSetupDialog::Show();
+  ash::multidevice_setup::MultiDeviceSetupDialog::Show();
 }
 
 void SystemTrayClientImpl::ShowFirmwareUpdate() {
@@ -762,19 +759,10 @@ void SystemTrayClientImpl::ShowCalendarEvent(
   }
 
   // Launch web app.
-  if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
-    proxy->LaunchAppWithUrl(
-        web_app::kGoogleCalendarAppId,
-        apps::GetEventFlags(WindowOpenDisposition::NEW_WINDOW,
-                            /*prefer_container=*/true),
-        official_url, apps::LaunchSource::kFromShelf);
-  } else {
-    proxy->LaunchAppWithUrl(
-        web_app::kGoogleCalendarAppId,
-        apps::GetEventFlags(WindowOpenDisposition::NEW_WINDOW,
-                            /*prefer_container=*/true),
-        official_url, apps::mojom::LaunchSource::kFromShelf);
-  }
+  proxy->LaunchAppWithUrl(web_app::kGoogleCalendarAppId,
+                          apps::GetEventFlags(WindowOpenDisposition::NEW_WINDOW,
+                                              /*prefer_container=*/true),
+                          official_url, apps::LaunchSource::kFromShelf);
   opened_pwa = true;
 }
 

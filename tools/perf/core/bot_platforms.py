@@ -443,6 +443,9 @@ _ANDROID_PIXEL4A_POWER_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('power.mobile'),
     _GetBenchmarkConfig('system_health.scroll_jank_mobile')
 ])
+_ANDROID_GO_WEMBLEY_BENCHMARK_CONFIGS = PerfSuite(
+    [_GetBenchmarkConfig('startup.mobile'),
+     _GetBenchmarkConfig('speedometer2')])
 _ANDROID_NEXUS5X_FYI_BENCHMARK_CONFIGS = PerfSuite(
     [_GetBenchmarkConfig('system_health.scroll_jank_mobile')])
 _ANDROID_PIXEL2_AAB_FYI_BENCHMARK_CONFIGS = PerfSuite(
@@ -466,9 +469,11 @@ _LACROS_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
 ])
 _FUCHSIA_PERF_ASTRO_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('speedometer2'),
+    _GetBenchmarkConfig('media.mobile'),
 ])
 _FUCHSIA_PERF_SHERLOCK_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('speedometer2'),
+    _GetBenchmarkConfig('media.mobile'),
 ])
 _LINUX_PERF_FYI_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('power.desktop'),
@@ -478,18 +483,12 @@ _LINUX_PERF_FYI_BENCHMARK_CONFIGS = PerfSuite([
 _FUCHSIA_PERF_FYI_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('system_health.memory_desktop'),
     _GetBenchmarkConfig('rendering.mobile'),
-    _GetBenchmarkConfig('media.mobile'),
     _GetBenchmarkConfig('jetstream2'),
-    _GetBenchmarkConfig('speedometer2'),
-    _GetBenchmarkConfig('speedometer')
 ])
 _FUCHSIA_SHERLOCK_PERF_FYI_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('system_health.memory_desktop'),
     _GetBenchmarkConfig('rendering.mobile'),
-    _GetBenchmarkConfig('media.mobile'),
     _GetBenchmarkConfig('jetstream2'),
-    _GetBenchmarkConfig('speedometer2'),
-    _GetBenchmarkConfig('speedometer')
 ])
 _FUCHSIA_ATLAS_PERF_FYI_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('system_health.common_desktop'),
@@ -618,14 +617,13 @@ WIN_10_AMD_LAPTOP_PGO = PerfPlatform('win-10_amd_laptop-perf-pgo',
                                      'win')
 
 # Android
-ANDROID_GO = PerfPlatform(
-    'android-go-perf', 'Android O (gobo)', _ANDROID_GO_BENCHMARK_CONFIGS,
-    19, 'android')
+ANDROID_GO = PerfPlatform('android-go-perf', 'Android O (gobo)',
+                          _ANDROID_GO_BENCHMARK_CONFIGS, 13, 'android')
 ANDROID_GO_PGO = PerfPlatform('android-go-perf-pgo', 'Android O (gobo)',
-                              _ANDROID_GO_BENCHMARK_CONFIGS, 19, 'android')
+                              _ANDROID_GO_BENCHMARK_CONFIGS, 13, 'android')
 ANDROID_GO_WEBVIEW = PerfPlatform('android-go_webview-perf',
                                   'Android OPM1.171019.021 (gobo)',
-                                  _ANDROID_GO_WEBVIEW_BENCHMARK_CONFIGS, 13,
+                                  _ANDROID_GO_WEBVIEW_BENCHMARK_CONFIGS, 10,
                                   'android')
 ANDROID_PIXEL2 = PerfPlatform('android-pixel2-perf',
                               'Android OPM1.171019.021',
@@ -669,6 +667,10 @@ ANDROID_PIXEL4A_POWER = PerfPlatform('android-pixel4a_power-perf',
 ANDROID_PIXEL4A_POWER_PGO = PerfPlatform(
     'android-pixel4a_power-perf-pgo', 'Android QD4A.200102.001.A1',
     _ANDROID_PIXEL4A_POWER_BENCHMARK_CONFIGS, 12, 'android')
+ANDROID_GO_WEMBLEY = PerfPlatform('android-go-wembley-perf',
+                                  'Android M | MASTER',
+                                  _ANDROID_GO_WEMBLEY_BENCHMARK_CONFIGS, 2,
+                                  'android')
 ANDROID_NEW_PIXEL = PerfPlatform('android-new-pixel-perf',
                                  'Android T',
                                  PerfSuite([]),
@@ -696,14 +698,14 @@ ANDROID_NEW_PIXEL_PRO_PGO = PerfPlatform('android-new-pixel-pro-perf-pgo',
 
 # Cros/Lacros
 LACROS_EVE_PERF = PerfPlatform('lacros-eve-perf', '', _LACROS_BENCHMARK_CONFIGS,
-                               8, 'chromeos')
+                               4, 'chromeos')
 LACROS_X86_PERF = PerfPlatform('lacros-x86-perf', '', _LACROS_BENCHMARK_CONFIGS,
-                               12, 'chromeos')
+                               6, 'chromeos')
 # Fuchsia
 FUCHSIA_PERF_ASTRO = PerfPlatform('fuchsia-perf-ast',
                                   '',
                                   _FUCHSIA_PERF_ASTRO_BENCHMARK_CONFIGS,
-                                  1,
+                                  2,
                                   'fuchsia',
                                   is_fyi=True,
                                   executables=FUCHSIA_EXEC_CONFIGS['astro'])
@@ -711,7 +713,7 @@ FUCHSIA_PERF_SHERLOCK = PerfPlatform(
     'fuchsia-perf-shk',
     '',
     _FUCHSIA_PERF_SHERLOCK_BENCHMARK_CONFIGS,
-    1,
+    2,
     'fuchsia',
     is_fyi=True,
     executables=FUCHSIA_EXEC_CONFIGS['sherlock'])
@@ -752,16 +754,14 @@ FUCHSIA_PERF_FYI = PerfPlatform('fuchsia-perf-fyi',
                                 _FUCHSIA_PERF_FYI_BENCHMARK_CONFIGS,
                                 10,
                                 'fuchsia',
-                                is_fyi=True,
-                                executables=FUCHSIA_EXEC_CONFIGS['astro'])
+                                is_fyi=True)
 FUCHSIA_PERF_SHERLOCK_FYI = PerfPlatform(
     'fuchsia-perf-sherlock-fyi',
     '',
     _FUCHSIA_SHERLOCK_PERF_FYI_BENCHMARK_CONFIGS,
     6,
     'fuchsia',
-    is_fyi=True,
-    executables=FUCHSIA_EXEC_CONFIGS['sherlock'])
+    is_fyi=True)
 FUCHSIA_PERF_ATLAS_FYI = PerfPlatform('fuchsia-perf-atlas-fyi',
                                       '',
                                       _FUCHSIA_ATLAS_PERF_FYI_BENCHMARK_CONFIGS,

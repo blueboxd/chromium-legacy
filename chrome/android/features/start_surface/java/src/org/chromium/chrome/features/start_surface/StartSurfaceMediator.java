@@ -67,6 +67,7 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -309,6 +310,14 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
                         setTabCarouselVisibility(!mIsIncognito);
                     }
                 }
+
+                @Override
+                public void didSelectTab(Tab tab, int type, int lastId) {
+                    if (type == TabSelectionType.FROM_CLOSE
+                            && UrlUtilities.isNTPUrl(tab.getUrl())) {
+                        setTabCarouselVisibility(false);
+                    }
+                }
             };
             if (mTabModelSelector.getModels().isEmpty()) {
                 TabModelSelectorObserver selectorObserver = new TabModelSelectorObserver() {
@@ -401,10 +410,15 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
 
         if (BackPressManager.isEnabled()) {
             backPressManager.addHandler(this, Type.START_SURFACE_MEDIATOR);
-            notifyBackPressStateChanged();
+            if (mPropertyModel != null) {
+                mPropertyModel.addObserver((source, key) -> {
+                    if (key == IS_INCOGNITO) notifyBackPressStateChanged();
+                });
+            }
             mController.getHandleBackPressChangedSupplier().addObserver(
                     (v) -> notifyBackPressStateChanged());
             mController.isDialogVisibleSupplier().addObserver((v) -> notifyBackPressStateChanged());
+            notifyBackPressStateChanged();
         }
     }
 
@@ -1120,19 +1134,6 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
         // shouldn't show the tab switcher layout on Start.
         boolean shouldShowTabCarousel =
                 isVisible && !(isSingleTabSwitcher() && isCurrentSelectedTabNTP());
-        // If improving Start surface when Feed is disabled is needed, mvt grid layout is shown. We
-        // need to update the body top margin according to the visibility of carousel tab.
-        // TODO(crbug.com/1360486): After Feed divider is removed, remove this setting top margin
-        // since the body top margin should always be R.dimen.tasks_surface_body_top_margin then.
-        // Also, update |tile_grid_layout_bottom_margin| in NTPLayout to be equal to
-        // |tasks_surface_body_top_margin| too.
-        if (mIsFeedGoneImprovementEnabled) {
-            Resources resources = mContext.getResources();
-            mPropertyModel.set(TASKS_SURFACE_BODY_TOP_MARGIN,
-                    resources.getDimensionPixelSize(shouldShowTabCarousel
-                                    ? R.dimen.tasks_surface_body_top_margin
-                                    : R.dimen.tile_grid_layout_bottom_margin));
-        }
 
         if (shouldShowTabCarousel == mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE)) return;
 
@@ -1345,7 +1346,7 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
                 });
         mLogoContainerView.setVisibility(View.VISIBLE);
 
-        mLogoCoordinator = new LogoCoordinator(logoClickedCallback,
+        mLogoCoordinator = new LogoCoordinator(mContext, logoClickedCallback,
                 mLogoContainerView.findViewById(R.id.search_provider_logo), true, null, null,
                 isShowingStartSurfaceHomepage());
         mLogoCoordinator.addObserver(this);

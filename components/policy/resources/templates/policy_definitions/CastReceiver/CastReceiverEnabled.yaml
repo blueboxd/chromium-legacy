@@ -11,8 +11,13 @@ features:
   per_profile: true
 future_on:
 - chrome_os
+items:
+- caption: Enable casting content to the device
+  value: true
+- caption: Disable casting content to the device
+  value: false
 owners:
-- file://components/policy/resources/OWNERS
+- file://components/policy/OWNERS
 - rsorokin@chromium.org
 schema:
   type: boolean

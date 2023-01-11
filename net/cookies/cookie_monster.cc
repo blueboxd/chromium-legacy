@@ -75,6 +75,8 @@
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster_change_dispatcher.h"
 #include "net/cookies/cookie_monster_netlog_params.h"
+#include "net/cookies/cookie_partition_key.h"
+#include "net/cookies/cookie_partition_key_collection.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
 #include "net/http/http_util.h"
@@ -162,11 +164,31 @@ bool IncludeUnpartitionedCookies(
   return false;
 }
 
-size_t NameValueSizeBytes(const std::string& name, const std::string& value) {
-  base::CheckedNumeric<size_t> name_value_pair_size = name.size();
-  name_value_pair_size += value.size();
+size_t NameValueSizeBytes(const net::CanonicalCookie& cc) {
+  base::CheckedNumeric<size_t> name_value_pair_size = cc.Name().size();
+  name_value_pair_size += cc.Value().size();
   DCHECK(name_value_pair_size.IsValid());
   return name_value_pair_size.ValueOrDie();
+}
+
+size_t NumBytesInCookieMapForKey(
+    const net::CookieMonster::CookieMap& cookie_map,
+    const std::string& key) {
+  size_t result = 0;
+  auto range = cookie_map.equal_range(key);
+  for (auto it = range.first; it != range.second; ++it) {
+    result += NameValueSizeBytes(*it->second);
+  }
+  return result;
+}
+
+size_t NumBytesInCookieItVector(
+    const net::CookieMonster::CookieItVector& cookie_its) {
+  size_t result = 0;
+  for (const auto& it : cookie_its) {
+    result += NameValueSizeBytes(*it->second);
+  }
+  return result;
 }
 
 }  // namespace
@@ -182,7 +204,8 @@ const size_t CookieMonster::kPurgeCookies = 300;
 
 const size_t CookieMonster::kMaxDomainPurgedKeys = 100;
 
-const size_t CookieMonster::kPerPartitionDomainMaxCookies = 10;
+const size_t CookieMonster::kPerPartitionDomainMaxCookieBytes = 10240;
+const size_t CookieMonster::kPerPartitionDomainMaxCookies = 180;
 
 const size_t CookieMonster::kDomainCookiesQuotaLow = 30;
 const size_t CookieMonster::kDomainCookiesQuotaMedium = 50;
@@ -1207,11 +1230,6 @@ void CookieMonster::FilterCookiesWithOptions(
                                             same_party_attribute_enabled_)});
 
     if (!access_result.status.IsInclude()) {
-      UMA_HISTOGRAM_BOOLEAN(
-          "Cookie.SameParty.ReadExclusionDecidedBySameParty",
-          access_result.status.HasOnlyExclusionReason(
-              CookieInclusionStatus::EXCLUDE_SAMEPARTY_CROSS_PARTY_CONTEXT));
-
       if (options.return_excluded_cookies())
         excluded_cookies->push_back({*cookie_ptr, access_result});
       continue;
@@ -1245,15 +1263,6 @@ void CookieMonster::FilterCookiesWithOptions(
           "Cookie.Port.ReadDiffersFromSet.DomainSet",
           IsCookieSentToSamePortThatSetIt(url, cookie_ptr->SourcePort(),
                                           cookie_ptr->SourceScheme()));
-    }
-
-    if (cookie_ptr->IsSameParty()) {
-      UMA_HISTOGRAM_BOOLEAN("Cookie.SamePartyReadIncluded.IsHTTP",
-                            !options.exclude_httponly());
-      UMA_HISTOGRAM_EXACT_LINEAR(
-          "Cookie.SamePartyReadIncluded.PartyContextSize",
-          options.full_party_context_size(),
-          1 + IsolationInfo::kPartyContextMaxSize);
     }
 
     included_cookies->push_back({*cookie_ptr, access_result});
@@ -1550,17 +1559,9 @@ void CookieMonster::SetCanonicalCookie(
     DVLOG(net::cookie_util::kVlogSetCookies)
         << "SetCookie() key: " << key << " cc: " << cc->DebugString();
 
-    if (cc->IsSameParty()) {
-      UMA_HISTOGRAM_BOOLEAN("Cookie.SamePartySetIncluded.IsHTTP",
-                            !options.exclude_httponly());
-      UMA_HISTOGRAM_EXACT_LINEAR("Cookie.SamePartySetIncluded.PartyContextSize",
-                                 options.full_party_context_size(),
-                                 1 + IsolationInfo::kPartyContextMaxSize);
-    }
-
     if (cc->IsEffectivelySameSiteNone()) {
       UMA_HISTOGRAM_COUNTS_10000("Cookie.SameSiteNoneSizeBytes",
-                                 NameValueSizeBytes(cc->Name(), cc->Value()));
+                                 NameValueSizeBytes(*cc));
     }
 
     bool is_partitioned_cookie = cc->IsPartitioned();
@@ -1632,11 +1633,6 @@ void CookieMonster::SetCanonicalCookie(
 
     UMA_HISTOGRAM_ENUMERATION("Cookie.CookieSourceSchemeName",
                               GetSchemeNameEnum(source_url));
-  } else {
-    UMA_HISTOGRAM_BOOLEAN(
-        "Cookie.SameParty.SetExclusionDecidedBySameParty",
-        access_result.status.HasOnlyExclusionReason(
-            CookieInclusionStatus::EXCLUDE_SAMEPARTY_CROSS_PARTY_CONTEXT));
   }
 
   // TODO(chlily): Log metrics.
@@ -1981,7 +1977,9 @@ size_t CookieMonster::GarbageCollectPartitionedCookies(
   if (cookie_partition_it == partitioned_cookies_.end())
     return num_deleted;
 
-  if (cookie_partition_it->second->count(key) > kPerPartitionDomainMaxCookies) {
+  if (NumBytesInCookieMapForKey(*cookie_partition_it->second.get(), key) >
+          kPerPartitionDomainMaxCookieBytes ||
+      cookie_partition_it->second->count(key) > kPerPartitionDomainMaxCookies) {
     // TODO(crbug.com/1225444): Log garbage collection for partitioned cookies.
 
     CookieItVector non_expired_cookie_its;
@@ -1989,18 +1987,20 @@ size_t CookieMonster::GarbageCollectPartitionedCookies(
         current, cookie_partition_it,
         cookie_partition_it->second->equal_range(key), &non_expired_cookie_its);
 
-    if (non_expired_cookie_its.size() > kPerPartitionDomainMaxCookies) {
+    size_t bytes_used = NumBytesInCookieItVector(non_expired_cookie_its);
+
+    if (bytes_used > kPerPartitionDomainMaxCookieBytes ||
+        non_expired_cookie_its.size() > kPerPartitionDomainMaxCookies) {
       // TODO(crbug.com/1225444): Log deep garbage collection for partitioned
       // cookies.
-
-      // For now, just delete the least recently accessed partition cookies
-      // until we are under the per-partition domain limit. All partitioned
-      // cookies are Secure since they require the __Host- prefix.
       std::sort(non_expired_cookie_its.begin(), non_expired_cookie_its.end(),
                 LRACookieSorter);
+
       for (size_t i = 0;
-           i < (non_expired_cookie_its.size() - kPerPartitionDomainMaxCookies);
+           bytes_used > kPerPartitionDomainMaxCookieBytes ||
+           non_expired_cookie_its.size() - i > kPerPartitionDomainMaxCookies;
            ++i) {
+        bytes_used -= NameValueSizeBytes(*non_expired_cookie_its[i]->second);
         InternalDeletePartitionedCookie(
             cookie_partition_it, non_expired_cookie_its[i], true,
             DELETE_COOKIE_EVICTED_PER_PARTITION_DOMAIN);
@@ -2432,159 +2432,29 @@ CookieMonster::IsCookieSentToSamePortThatSetIt(
   return CookieSentToSamePort::kNo;
 }
 
-void CookieMonster::ConvertPartitionedCookiesToUnpartitioned(const GURL& url) {
-  DoCookieCallbackForHostOrDomain(
-      base::BindOnce(
-          // base::Unretained is safe as DoCookieCallbackForHostOrDomain stores
-          // the callback on |*this|, so the callback will not outlive
-          // the object.
-          &CookieMonster::OnConvertPartitionedCookiesToUnpartitioned,
-          base::Unretained(this), url),
-      url.host());
-}
-
-void CookieMonster::OnConvertPartitionedCookiesToUnpartitioned(
-    const GURL& url) {
+absl::optional<bool> CookieMonster::SiteHasCookieInOtherPartition(
+    const net::SchemefulSite& site,
+    const absl::optional<CookiePartitionKey>& partition_key) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // If the partition key is null, it implies the partitioned cookies feature is
+  // not enabled.
+  if (!partition_key)
+    return absl::nullopt;
 
-  std::vector<CanonicalCookie*> cookie_ptrs_for_site =
-      FindCookiesForRegistryControlledHost(url);
+  std::string domain = site.GetURL().host();
+  if (store_ && !finished_fetching_all_cookies_ &&
+      !keys_loaded_.count(domain)) {
+    return absl::nullopt;
+  }
+
   for (const auto& it : partitioned_cookies_) {
-    std::vector<CanonicalCookie*> partitioned_cookie_ptrs =
-        FindPartitionedCookiesForRegistryControlledHost(it.first, url);
-    cookie_ptrs_for_site.insert(cookie_ptrs_for_site.end(),
-                                partitioned_cookie_ptrs.begin(),
-                                partitioned_cookie_ptrs.end());
-  }
-
-  // We only want cookies whose domain is a match for the entire URL host.
-  // This should exclude cookies set on subdomains.
-  std::vector<CanonicalCookie*> cookie_ptrs;
-  CookieOptions options = CookieOptions::MakeAllInclusive();
-  bool delegate_treats_url_as_trustworthy =
-      cookie_access_delegate() &&
-      cookie_access_delegate()->ShouldTreatUrlAsTrustworthy(url);
-  CookieAccessParams accesss_params{
-      net::CookieAccessSemantics::UNKNOWN, delegate_treats_url_as_trustworthy,
-      CookieSamePartyStatus::kNoSamePartyEnforcement};
-  for (auto* cookie : cookie_ptrs_for_site) {
-    if (cookie->IncludeForRequestURL(url, options, accesss_params)
-            .status.IsInclude()) {
-      cookie_ptrs.push_back(cookie);
+    if (it.first == partition_key || CookiePartitionKey::HasNonce(it.first))
+      continue;
+    if (it.second->find(domain) != it.second->end()) {
+      return true;
     }
   }
-
-  std::map<std::tuple<std::string, std::string, std::string>,
-           std::vector<const net::CanonicalCookie*>>
-      cookies;
-  for (const auto* cookie : cookie_ptrs) {
-    auto key =
-        std::make_tuple(cookie->Name(), cookie->Domain(), cookie->Path());
-    auto found_it = cookies.find(key);
-    if (found_it == cookies.end()) {
-      cookies.insert(decltype(cookies)::value_type(key, {}));
-      cookies.find(key)->second.push_back(cookie);
-    } else {
-      found_it->second.push_back(cookie);
-    }
-  }
-
-  for (const auto& kv_pair : cookies) {
-    bool should_convert_cookie = false;
-    net::CanonicalCookie cookie_to_convert;
-
-    if (kv_pair.second.size() == 1u) {
-      // If there is only a single partitioned cookie, we just need to convert
-      // it to unpartitioned.
-      if (kv_pair.second[0]->IsPartitioned() &&
-          !kv_pair.second[0]->PartitionKey()->nonce())
-        should_convert_cookie = true;
-      cookie_to_convert = *kv_pair.second[0];
-    } else {
-      for (const auto* cookie : kv_pair.second) {
-        // If the site only has partitioned cookies, we first check if there is
-        // a cookie whose partition key is same-site with the cookie's domain.
-        //
-        // If there are no partitioned cookies whose partition key is same-site
-        // with the cookie's domain, we convert the most recently accessed
-        // cookie to unpartitioned and delete the rest.
-        if (cookie->IsPartitioned() && !cookie->PartitionKey()->nonce()) {
-          if (cookie->PartitionKey()->site() ==
-              SchemefulSite(GURL("https://" + cookie->DomainWithoutDot()))) {
-            should_convert_cookie = true;
-            cookie_to_convert = *cookie;
-            break;
-          }
-          if (!should_convert_cookie ||
-              cookie->LastAccessDate() > cookie_to_convert.LastAccessDate()) {
-            should_convert_cookie = true;
-            cookie_to_convert = *cookie;
-          }
-        } else if (!cookie->IsPartitioned()) {
-          // If there is an unpartitioned cookie, we leave that cookie alone and
-          // only delete the partitioned cookies.
-          should_convert_cookie = false;
-          break;
-        }
-      }
-    }
-
-    if (should_convert_cookie)
-      ConvertPartitionedCookie(cookie_to_convert, url);
-  }
-
-  for (auto partition_it = partitioned_cookies_.begin();
-       partition_it != partitioned_cookies_.end();) {
-    // InternalDeletePartitionedCookie may invalidate |partition_it| if that
-    // cookie partition only has one cookie.
-    auto cur_partition_it = partition_it;
-    CookieMap::iterator cookie_it = cur_partition_it->second->begin();
-    CookieMap::iterator cookie_end = cur_partition_it->second->end();
-    ++partition_it;
-
-    while (cookie_it != cookie_end) {
-      auto cur_cookie_it = cookie_it;
-      CanonicalCookie* cc = cur_cookie_it->second.get();
-      ++cookie_it;
-
-      if (!cc->IncludeForRequestURL(url, options, accesss_params)
-               .status.IsInclude() ||
-          cc->PartitionKey()->nonce()) {
-        continue;
-      }
-
-      InternalDeletePartitionedCookie(cur_partition_it, cur_cookie_it, true,
-                                      DELETE_COOKIE_EXPLICIT);
-    }
-  }
-}
-
-void CookieMonster::ConvertPartitionedCookie(const net::CanonicalCookie& cookie,
-                                             const GURL& url) {
-  DCHECK(cookie.IsPartitioned());
-  auto new_cookie = net::CanonicalCookie::FromStorage(
-      cookie.Name(), cookie.Value(), cookie.Domain(), cookie.Path(),
-      cookie.CreationDate(), cookie.ExpiryDate(), base::Time::Now(),
-      cookie.LastUpdateDate(), cookie.IsSecure(), cookie.IsHttpOnly(),
-      cookie.SameSite(), cookie.Priority(), cookie.IsSameParty(), absl::nullopt,
-      cookie.SourceScheme(), cookie.SourcePort());
-  DCHECK(new_cookie);
-
-  bool delegate_treats_url_as_trustworthy =
-      cookie_access_delegate() &&
-      cookie_access_delegate()->ShouldTreatUrlAsTrustworthy(url);
-  CookieOptions options = CookieOptions::MakeAllInclusive();
-  CookieAccessResult access_result = new_cookie->IsSetPermittedInContext(
-      url, options,
-      CookieAccessParams(
-          GetAccessSemanticsForCookie(*new_cookie),
-          delegate_treats_url_as_trustworthy,
-          cookie_util::GetSamePartyStatus(*new_cookie, options,
-                                          same_party_attribute_enabled_)),
-      cookieable_schemes_);
-  auto key = GetKey(new_cookie->Domain());
-  InternalInsertCookie(key, std::move(new_cookie), /*sync_to_store=*/true,
-                       access_result);
+  return false;
 }
 
 }  // namespace net

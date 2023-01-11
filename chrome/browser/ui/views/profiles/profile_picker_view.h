@@ -32,10 +32,6 @@ class ScopedProfileKeepAlive;
 class ProfileManagementFlowController;
 class ProfilePickerFlowController;
 
-namespace base {
-class FilePath;
-}
-
 namespace content {
 struct ContextMenuParams;
 class NavigationHandle;
@@ -47,8 +43,6 @@ class WebContents;
 class ProfilePickerView : public views::WidgetDelegateView,
                           public ProfilePickerWebContentsHost {
  public:
-  METADATA_HEADER(ProfilePickerView);
-
   ProfilePickerView(const ProfilePickerView&) = delete;
   ProfilePickerView& operator=(const ProfilePickerView&) = delete;
 
@@ -70,7 +64,6 @@ class ProfilePickerView : public views::WidgetDelegateView,
       const GURL& url,
       base::OnceClosure navigation_finished_closure =
           base::OnceClosure()) override;
-  void Clear() override;
   bool ShouldUseDarkColors() const override;
   content::WebContents* GetPickerContents() const override;
 
@@ -93,14 +86,31 @@ class ProfilePickerView : public views::WidgetDelegateView,
   void AddObserver(web_modal::ModalDialogHostObserver* observer) override;
   void RemoveObserver(web_modal::ModalDialogHostObserver* observer) override;
 
+  // Gets called when the native wiget changes size.
+  // TODO(crbug.com/1380808): Remove once the cause of the bug is found.
+  virtual void OnNativeWidgetSizeChanged(const gfx::Size& new_size) {}
+
+ protected:
+  // To display the Profile picker, use ProfilePicker::Show().
+  explicit ProfilePickerView(ProfilePicker::Params&& params);
+  ~ProfilePickerView() override;
+
+  // Displays the profile picker.
+  void Display();
+
+  // Creates a `ProfileManagementFlowController` to drive the flow for which
+  // this profile picker is being shown.
+  virtual std::unique_ptr<ProfileManagementFlowController> CreateFlowController(
+      Profile* picker_profile,
+      ClearHostClosure clear_host_callback);
+
+  // TODO(crbug.com/1380808): Make private once the cause of the bug is found.
+  gfx::Size CalculatePreferredSize() const override;
+
  private:
   friend class ProfilePicker;
   FRIEND_TEST_ALL_PREFIXES(ProfilePickerCreationFlowBrowserTest,
                            CreateForceSignedInProfile);
-
-  // To display the Profile picker, use ProfilePicker::Show().
-  explicit ProfilePickerView(ProfilePicker::Params&& params);
-  ~ProfilePickerView() override;
 
   enum State { kNotStarted = 0, kInitializing = 1, kReady = 2, kClosing = 3 };
 
@@ -127,8 +137,8 @@ class ProfilePickerView : public views::WidgetDelegateView,
   // closes the picker and return true. Otherwise, it returns false.
   bool MaybeReopen(ProfilePicker::Params& params);
 
-  // Displays the profile picker.
-  void Display();
+  // Closes the profile picker.
+  void Clear();
 
   // On picker profile creation success, it initializes the view.
   void OnPickerProfileCreated(Profile* picker_profile);
@@ -167,7 +177,6 @@ class ProfilePickerView : public views::WidgetDelegateView,
   std::u16string GetAccessibleWindowTitle() const override;
 
   // views::View:
-  gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
@@ -187,22 +196,22 @@ class ProfilePickerView : public views::WidgetDelegateView,
   // Shows a dialog where the user can auth the profile or see the
   // auth error message. If a dialog is already shown, this destroys the current
   // dialog and creates a new one.
-  void ShowDialog(content::BrowserContext* browser_context,
-                  const GURL& url,
-                  const base::FilePath& profile_path);
+  void ShowDialog(Profile* profile, const GURL& url);
 
   // Hides the dialog if it is showing.
   void HideDialog();
-
-  // Getter of the path of profile which is selected in profile picker for force
-  // signin.
-  base::FilePath GetForceSigninProfilePath() const;
 
   // Getter of the target page url. If not empty and is valid, it opens on
   // profile selection instead of the new tab page.
   GURL GetOnSelectProfileTargetUrl() const;
 
   ProfilePickerFlowController* GetProfilePickerFlowController() const;
+
+  // Returns a closure that can be executed to clear (see
+  // `ProfilePickerView::Clear()`) the view. It is the owner's responsibility to
+  // make sure that the `ProfilePickerView` is still alive and that the callback
+  // is valid, before running it.
+  ClearHostClosure GetClearClosure();
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Called when the user selects an account on the Lacros-specific account

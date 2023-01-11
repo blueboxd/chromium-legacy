@@ -85,10 +85,6 @@ public class ContextualSearchRelatedSearchesTest extends ContextualSearchInstrum
     @SmallTest
     @Feature({"ContextualSearch"})
     public void testRelatedSearchesInBarSerpOffset() throws Exception {
-        // If this experiment under development is active, skip this test for now.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_TRIGGERS_SELECTION_HANDLES)) {
-            return;
-        }
         FeatureList.setTestFeatures(ENABLE_RELATED_SEARCHES_IN_BAR);
         mFakeServer.reset();
         simulateResolveSearch(SEARCH_NODE);
@@ -232,9 +228,7 @@ public class ContextualSearchRelatedSearchesTest extends ContextualSearchInstrum
                 ()
                         -> mPanel.onSearchTermResolved("obscure · əbˈskyo͝or", null, null,
                                 QuickActionCategory.NONE, ResolvedSearchTerm.CardTag.CT_DEFINITION,
-                                inBarSuggestions, false /* showDefaultSearchInBar */,
-                                null /* relatedSearchesInContent */,
-                                false /* showDefaultSearchInContent */));
+                                inBarSuggestions, false /* showDefaultSearchInBar */));
         boolean didPanelGetTaller = mPanel.getHeight() > normalHeight;
         Assert.assertTrue(
                 "Related Searches should show in a taller Bar when there's a definition card, "

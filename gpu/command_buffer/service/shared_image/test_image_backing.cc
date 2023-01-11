@@ -68,39 +68,49 @@ class TestSkiaImageRepresentation : public SkiaImageRepresentation {
       : SkiaImageRepresentation(manager, backing, tracker) {}
 
  protected:
-  sk_sp<SkSurface> BeginWriteAccess(
+  std::vector<sk_sp<SkSurface>> BeginWriteAccess(
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
+      const gfx::Rect& update_rect,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
     if (!static_cast<TestImageBacking*>(backing())->can_access()) {
-      return nullptr;
+      return {};
     }
     SkSurfaceProps props = skia::LegacyDisplayGlobals::GetSkSurfaceProps();
-    return SkSurface::MakeRasterN32Premul(size().width(), size().height(),
-                                          &props);
+    auto surface =
+        SkSurface::MakeRasterN32Premul(size().width(), size().height(), &props);
+    if (!surface)
+      return {};
+    return {surface};
   }
-  sk_sp<SkPromiseImageTexture> BeginWriteAccess(
+  std::vector<sk_sp<SkPromiseImageTexture>> BeginWriteAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
     if (!static_cast<TestImageBacking*>(backing())->can_access()) {
-      return nullptr;
+      return {};
     }
 
-    return SkPromiseImageTexture::Make(backend_tex());
+    auto promise_texture = SkPromiseImageTexture::Make(backend_tex());
+    if (!promise_texture)
+      return {};
+    return {promise_texture};
   }
-  void EndWriteAccess(sk_sp<SkSurface> surface) override {}
-  sk_sp<SkPromiseImageTexture> BeginReadAccess(
+  void EndWriteAccess() override {}
+  std::vector<sk_sp<SkPromiseImageTexture>> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
     if (!static_cast<TestImageBacking*>(backing())->can_access()) {
-      return nullptr;
+      return {};
     }
 
-    return SkPromiseImageTexture::Make(backend_tex());
+    auto promise_texture = SkPromiseImageTexture::Make(backend_tex());
+    if (!promise_texture)
+      return {};
+    return {promise_texture};
   }
   void EndReadAccess() override {}
 
@@ -146,11 +156,19 @@ class TestOverlayImageRepresentation : public OverlayImageRepresentation {
   }
   void EndReadAccess(gfx::GpuFenceHandle release_fence) override {}
 
+#if BUILDFLAG(IS_WIN)
   gl::GLImage* GetGLImage() override {
     gl_image_ = base::MakeRefCounted<gl::GLImage>();
     return gl_image_.get();
   }
+#endif
 
+#if BUILDFLAG(IS_ANDROID)
+  std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+  GetAHardwareBufferFenceSync() override {
+    return nullptr;
+  }
+#endif
  private:
   scoped_refptr<gl::GLImage> gl_image_;
 };

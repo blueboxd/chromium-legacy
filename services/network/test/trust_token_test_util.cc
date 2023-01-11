@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace network {
 
@@ -45,9 +46,12 @@ TrustTokenRequestHelperTest::ExecuteBeginOperationAndWaitForResult(
     net::URLRequest* request) {
   base::RunLoop run_loop;
   mojom::TrustTokenOperationStatus status;
-  helper->Begin(request,
+  helper->Begin(request->url(),
                 base::BindLambdaForTesting(
-                    [&](mojom::TrustTokenOperationStatus returned_status) {
+                    [&](absl::optional<net::HttpRequestHeaders> headers,
+                        mojom::TrustTokenOperationStatus returned_status) {
+                      if (headers)
+                        request->SetExtraRequestHeaders(*headers);
                       status = returned_status;
                       run_loop.Quit();
                     }));
@@ -61,7 +65,7 @@ TrustTokenRequestHelperTest::ExecuteFinalizeAndWaitForResult(
     mojom::URLResponseHead* response) {
   base::RunLoop run_loop;
   mojom::TrustTokenOperationStatus status;
-  helper->Finalize(response,
+  helper->Finalize(*response->headers.get(),
                    base::BindLambdaForTesting(
                        [&](mojom::TrustTokenOperationStatus returned_status) {
                          status = returned_status;
@@ -126,19 +130,8 @@ TrustTokenTestParameters& TrustTokenTestParameters::operator=(
 TrustTokenTestParameters::TrustTokenTestParameters(
     network::mojom::TrustTokenOperationType type,
     absl::optional<network::mojom::TrustTokenRefreshPolicy> refresh_policy,
-    absl::optional<network::mojom::TrustTokenSignRequestData> sign_request_data,
-    absl::optional<bool> include_timestamp_header,
-    absl::optional<std::vector<std::string>> issuer_specs,
-    absl::optional<std::vector<std::string>> additional_signed_headers,
-    absl::optional<std::string> possibly_unsafe_additional_signing_data)
-    : type(type),
-      refresh_policy(refresh_policy),
-      sign_request_data(sign_request_data),
-      include_timestamp_header(include_timestamp_header),
-      issuer_specs(issuer_specs),
-      additional_signed_headers(additional_signed_headers),
-      possibly_unsafe_additional_signing_data(
-          possibly_unsafe_additional_signing_data) {}
+    absl::optional<std::vector<std::string>> issuer_specs)
+    : type(type), refresh_policy(refresh_policy), issuer_specs(issuer_specs) {}
 
 TrustTokenParametersAndSerialization
 SerializeTrustTokenParametersAndConstructExpectation(
@@ -155,19 +148,6 @@ SerializeTrustTokenParametersAndConstructExpectation(
     trust_token_params->refresh_policy = *input.refresh_policy;
   }
 
-  if (input.sign_request_data.has_value()) {
-    parameters.SetStringKey("signRequestData",
-                            TrustTokenEnumToString(*input.sign_request_data));
-    trust_token_params->sign_request_data = *input.sign_request_data;
-  }
-
-  if (input.include_timestamp_header.has_value()) {
-    parameters.SetBoolKey("includeTimestampHeader",
-                          *input.include_timestamp_header);
-    trust_token_params->include_timestamp_header =
-        *input.include_timestamp_header;
-  }
-
   if (input.issuer_specs.has_value()) {
     base::Value issuers(base::Value::Type::LIST);
     for (const std::string& issuer_spec : *input.issuer_specs) {
@@ -176,23 +156,6 @@ SerializeTrustTokenParametersAndConstructExpectation(
           url::Origin::Create(GURL(issuer_spec)));
     }
     parameters.SetKey("issuers", std::move(issuers));
-  }
-
-  if (input.additional_signed_headers.has_value()) {
-    base::Value headers(base::Value::Type::LIST);
-    for (const std::string& header : *input.additional_signed_headers)
-      headers.Append(header);
-    parameters.SetKey("additionalSignedHeaders", std::move(headers));
-    for (const std::string& input_header : *input.additional_signed_headers) {
-      trust_token_params->additional_signed_headers.push_back(input_header);
-    }
-  }
-
-  if (input.possibly_unsafe_additional_signing_data.has_value()) {
-    parameters.SetStringKey("additionalSigningData",
-                            *input.possibly_unsafe_additional_signing_data);
-    trust_token_params->possibly_unsafe_additional_signing_data =
-        *input.possibly_unsafe_additional_signing_data;
   }
 
   std::string serialized_parameters;

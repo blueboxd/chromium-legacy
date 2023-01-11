@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/validation_delegate.h"
 
@@ -91,8 +92,8 @@ class ContactInfoEditorViewController : public EditorViewController {
 
     EditorField field_;
     // Outlives this class. Never null.
-    raw_ptr<ContactInfoEditorViewController> controller_;
-    const std::string& locale_;
+    raw_ptr<ContactInfoEditorViewController, DanglingUntriaged> controller_;
+    const raw_ref<const std::string> locale_;
   };
 };
 

@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">Anular</translation>
 <translation id="2084108471225856927">Definições do dispositivo</translation>
 <translation id="2084809735218147718">Pessoa a agradecer</translation>
-<translation id="2085470240340828803">Já existe um ficheiro com o nome "<ph name="FILENAME" />". O que pretende fazer?</translation>
 <translation id="2088690981887365033">Rede VPN</translation>
 <translation id="2122305276694332719">A ligação automática a uma rede oculta permite que terceiros vejam o seu dispositivo e algumas definições da rede, pelo que não é recomendada.</translation>
 <translation id="2125607626296734455">Khmer</translation>
@@ -456,7 +455,6 @@
 <translation id="4900532980794411603">Partilhar com o Parallels Desktop</translation>
 <translation id="4902546322522096650">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, intensidade do sinal: <ph name="SIGNAL_STRENGTH" />%, ligar</translation>
 <translation id="4906580650526544301">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal: <ph name="SIGNAL_STRENGTH" />%, bateria do telemóvel: <ph name="BATTERY_STATUS" />%, detalhes</translation>
-<translation id="4929673617759421391">A ação de colar este ficheiro foi bloqueada pela política do administrador</translation>
 <translation id="4935975195727477204">Flor</translation>
 <translation id="4943368462779413526">Bola de futebol</translation>
 <translation id="4961158930123534723">1 pasta partilhada com o Parallels Desktop.</translation>
@@ -534,6 +532,7 @@
 <translation id="5428105026674456456">Espanhol</translation>
 <translation id="5438282218546237410">Não existem resultados para <ph name="SEARCH_TERM" />.</translation>
 <translation id="5449551289610225147">Palavra-passe inválida</translation>
+<translation id="5459064203055649751">Já existe um ficheiro com o nome "<ph name="FILENAME" />". Quer substituí-lo pelo que está a mover?</translation>
 <translation id="5463231940765244860">Introduzir</translation>
 <translation id="5469868506864199649">Italiano</translation>
 <translation id="5473333559083690127">Voltar a introduzir o PIN novo</translation>
@@ -654,6 +653,7 @@
 <translation id="6495925982925244349">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Intensidade do sinal <ph name="SIGNAL_STRENGTH" />%, Gerida pelo administrador, Detalhes</translation>
 <translation id="649877868557234318">A extrair <ph name="FILE_NAME" /> para <ph name="FOLDER_NAME" /></translation>
 <translation id="6499681088828539489">Não permitir proxies para redes partilhadas</translation>
+<translation id="6503285896705205014">A ação de mover <ph name="COUNT" /> ficheiros foi bloqueada pela política da pessoa que administra</translation>
 <translation id="6509122719576673235">Norueguês</translation>
 <translation id="6528513914570774834">Permitir que outros utilizadores deste dispositivo utilizem esta rede</translation>
 <translation id="653019979737152879">A sincronizar <ph name="FILE_NAME" />…</translation>
@@ -756,6 +756,7 @@
 <translation id="7357762654218998920">Este tipo de ficheiro não é suportado. <ph name="BEGIN_LINK_HELP" />Saiba mais<ph name="END_LINK_HELP" /> sobre como abrir ficheiros no ChromeOS.</translation>
 <translation id="7359359531237882347">A copiar <ph name="NUMBER_OF_ITEMS" /> itens…</translation>
 <translation id="7375951387215729722">Lista de ficheiros ordenada por <ph name="COLUMN_NAME" /> por ordem descendente.</translation>
+<translation id="7377161162143020057">A ação de copiar este ficheiro foi bloqueada pela política da pessoa que administra</translation>
 <translation id="7402503521691663770">Dispositivos com ChromeOS Flex</translation>
 <translation id="7408870451288633753">Checo</translation>
 <translation id="7417453074306512035">Teclado etíope</translation>
@@ -977,7 +978,6 @@
 <translation id="9183302530794969518">Google Docs</translation>
 <translation id="9189836632794948435">Cazaque</translation>
 <translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> itens extraídos.</translation>
-<translation id="9210751050717126865">A ação de colar <ph name="COUNT" /> ficheiros foi bloqueada pela política do administrador</translation>
 <translation id="9213073329713032541">A instalação foi iniciada com êxito.</translation>
 <translation id="9219103736887031265">Imagens</translation>
 <translation id="9219908252191632183">Paisagem lunar</translation>

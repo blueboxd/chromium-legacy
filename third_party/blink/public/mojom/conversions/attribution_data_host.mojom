@@ -7,6 +7,7 @@ module blink.mojom;
 import "mojo/public/mojom/base/int128.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "url/mojom/origin.mojom";
+import "url/mojom/url.mojom";
 
 struct AttributionDebugKey {
   uint64 value;
@@ -16,16 +17,32 @@ struct AttributionDebugKey {
 // See https://github.com/WICG/attribution-reporting-api/blob/main/EVENT.md#optional-attribution-filters
 // for details.
 struct AttributionFilterData {
-  // Map of filter name to a possibly empty set of values.
+  // Map of filter name to a possibly empty set of values. Must not contain a
+  // `source_type` key.
   map<string, array<string>> filter_values;
+};
+
+// Filters for selectively matching attribution sources and triggers.
+// See https://github.com/WICG/attribution-reporting-api/blob/main/EVENT.md#optional-attribution-filters
+// for details.
+struct AttributionFilters {
+  // Map of filter name to a possibly empty set of values. May contain a
+  // `source_type` key.
+  map<string, array<string>> filter_values;
+};
+
+// See https://github.com/WICG/attribution-reporting-api/blob/main/AGGREGATE.md#attribution-source-registration
+// for details.
+struct AttributionAggregationKeys {
+  map<string, mojo_base.mojom.Uint128> keys;
 };
 
 // Struct containing the trigger-side aggregatable data.
 struct AttributionAggregatableTriggerData {
   mojo_base.mojom.Uint128 key_piece;
   array<string> source_keys;
-  AttributionFilterData filters;
-  AttributionFilterData not_filters;
+  AttributionFilters filters;
+  AttributionFilters not_filters;
 };
 
 struct AttributionSourceData {
@@ -42,8 +59,16 @@ struct AttributionSourceData {
   // Data that will be sent in attribution reports to identify this source.
   uint64 source_event_id = 0;
 
-  // Specifies how long this source is eligible for attribution
+  // Specifies how long this source is eligible for attribution.
   mojo_base.mojom.TimeDelta? expiry;
+
+  // Optionally specifies how long after source registration an event-level report
+  // can be generated with this source.
+  mojo_base.mojom.TimeDelta? event_report_window;
+
+  // Optionally specifies how long after source registration an aggregatable
+  // report can be generated with this source.
+  mojo_base.mojom.TimeDelta? aggregatable_report_window;
 
   // Priority for this source.
   int64 priority = 0;
@@ -54,7 +79,10 @@ struct AttributionSourceData {
 
   AttributionFilterData filter_data;
 
-  map<string, mojo_base.mojom.Uint128> aggregation_keys;
+  AttributionAggregationKeys aggregation_keys;
+
+  // Specifies whether to enable verbose debug reporting.
+  bool debug_reporting = false;
 };
 
 // Deduplication key set by a reporting origin which prevents duplicate triggers
@@ -83,11 +111,11 @@ struct EventTriggerData {
 
   // If non-empty, this trigger will be ignored unless the attributed source's
   // filter data matches.
-  AttributionFilterData filters;
+  AttributionFilters filters;
 
   // If non-empty, this trigger will be ignored unless the attributed source's
   // filter data does *NOT* match.
-  AttributionFilterData not_filters;
+  AttributionFilters not_filters;
 };
 
 // Represents a request from a reporting origin to trigger attribution on a
@@ -104,11 +132,11 @@ struct AttributionTriggerData {
 
   // If non-empty, this trigger will be ignored unless the attributed source's
   // filter data matches.
-  AttributionFilterData filters;
+  AttributionFilters filters;
 
   // If non-empty, this trigger will be ignored unless the attributed source's
   // filter data does *NOT* match.
-  AttributionFilterData not_filters;
+  AttributionFilters not_filters;
 
   // List of all aggregatable trigger data objects declared by the trigger
   // header.
@@ -124,6 +152,21 @@ struct AttributionTriggerData {
   // Key which allows deduplication against existing aggregatable reports for
   // the same source.
   AttributionTriggerDedupKey? aggregatable_dedup_key;
+
+  // Specifies whether to enable verbose debug reporting.
+  bool debug_reporting = false;
+};
+
+struct AttributionOsSource {
+  // The URL to which the OS will make a request. Must use HTTP or HTTPS and
+  // its origin must be potentially trustworthy.
+  url.mojom.Url url;
+};
+
+struct AttributionOsTrigger {
+  // The URL to which the OS will make a request. Must use HTTP or HTTPS and
+  // its origin must be potentially trustworthy.
+  url.mojom.Url url;
 };
 
 // Browser-process interface responsible for processing attribution

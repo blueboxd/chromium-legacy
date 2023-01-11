@@ -20,17 +20,17 @@ assert(is_chromeos_ash, "ChromeOS Settings is ChromeOS only")
 # root_gen_dir is "gen"
 # target_gen_dir is "gen/chrome/browser/resources/settings/chromeos"
 
-preprocessed_folder = "preprocessed"
-preprocessed_ts_folder = "preprocessed_ts"
-browser_settings_tsc_manifest = "browser_settings_tsc_manifest.json"
-external_mojo_manifest = "external_mojo_manifest.json"
+tsc_input_folder = "tsc_input"
+tsc_input_dir = "$target_gen_dir/$tsc_input_folder"
+tsc_output_folder = "tsc"
+tsc_output_dir = "$target_gen_dir/$tsc_output_folder"
 
 if (optimize_webui) {
   build_manifest_v3 = "build_v3_manifest.json"
 
   optimize_webui("optimize_bundle") {
     host = "os-settings"
-    input = rebase_path("$target_gen_dir/$preprocessed_folder", root_build_dir)
+    input = rebase_path(tsc_output_dir, root_build_dir)
     js_module_in_files = [
       "chromeos/lazy_load.js",
       "chromeos/os_settings.js",
@@ -44,26 +44,16 @@ if (optimize_webui) {
 
     deps = [
       ":build_ts",
-      ":preprocess_browser_settings_tsc",
       "//chrome/browser/resources/nearby_share/shared:preprocess_v3",
       "//ui/webui/resources:preprocess",
-      "//ui/webui/resources/cr_components/app_management:build_ts",
     ]
     excludes = [
-      "app-management/app_management.mojom-lite.js",
-      "app-management/bitmap.mojom-lite.js",
-      "app-management/file_path.mojom-lite.js",
-      "app-management/image_info.mojom-lite.js",
-      "app-management/image.mojom-lite.js",
-      "app-management/safe_base_name.mojom-lite.js",
-      "app-management/types.mojom-lite.js",
-      "chrome://resources/cr_components/app_management/app_management.mojom-lite.js",
       "chrome://resources/cr_components/app_management/app_management.mojom-webui.js",
       "chrome://resources/cr_components/app_management/types.mojom-webui.js",
       "chrome://resources/ash/common/bluetooth/cros_bluetooth_config.js",
       "chrome://resources/ash/common/cellular_setup/mojo_interface_provider.js",
       "chrome://resources/ash/common/network/mojo_interface_provider.js",
-      "chrome://resources/js/cr.m.js",
+      "chrome://resources/js/cr.js",
       "chrome://resources/mojo/chromeos/ash/services/cellular_setup/public/mojom/cellular_setup.mojom-webui.js",
       "chrome://resources/mojo/chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom-webui.js",
       "chrome://resources/mojo/chromeos/ash/services/auth_factor_config/public/mojom/auth_factor_config.mojom-webui.js",
@@ -87,7 +77,6 @@ if (optimize_webui) {
       "mojo/nearby_share_settings.mojom-lite.js",
       "mojo/nearby_share_share_type.mojom-lite.js",
       "mojo/nearby_share_target_types.mojom-lite.js",
-      "os_apps_page/app_notification_handler.mojom-lite.js",
     ]
   }
 }
@@ -102,59 +91,59 @@ ts_library("build_ts") {
     "//ui/webui/resources/mojo:library",
   ]
   extra_deps = [
+    ":generate_css_wrapper_files",
+    ":generate_html_wrapper_files",
     ":generate_mojom_webui",
-    ":preprocess_gen_ts_files",
-    ":preprocess_src_ts_files",
+    ":preprocess",
+    ":preprocess_generated_web_component_files",
     "//ash/webui/common/resources:generate_definitions",
   ]
-  definitions = [
-    "//tools/typescript/definitions/chrome_send.d.ts",
-    "//tools/typescript/definitions/bluetooth.d.ts",
-    "//tools/typescript/definitions/bluetooth_private.d.ts",
-    "//tools/typescript/definitions/metrics_private.d.ts",
-    "//tools/typescript/definitions/pending.d.ts",
-    "//tools/typescript/definitions/settings_private.d.ts",
-  ]
-  root_dir = "$target_gen_dir/$preprocessed_ts_folder"
-  in_files = src_ts_files + gen_ts_files + mojom_webui_files
-  out_dir = "$target_gen_dir/$preprocessed_folder"
+  definitions = ts_definition_files
+  root_dir = tsc_input_dir
+  in_files = src_ts_files + html_wrapper_files + css_wrapper_files +
+             generated_web_component_files + mojom_webui_files
+  out_dir = tsc_output_dir
 }
 
-preprocess_if_expr("preprocess_src_ts_files") {
+preprocess_if_expr("preprocess") {
   defines = chrome_grit_defines
   in_folder = "../"
-  in_files = src_ts_files
-  out_folder = "$target_gen_dir/$preprocessed_ts_folder"
+  in_files = src_ts_files + html_files + css_files
+  out_folder = tsc_input_dir
 }
 
-preprocess_if_expr("preprocess_gen_ts_files") {
+preprocess_if_expr("preprocess_generated_web_component_files") {
   defines = chrome_grit_defines
   deps = [
-    ":generate_web_component_css_wrapper_files",
-    ":generate_web_component_html_wrapper_files",
+    # preprocess should happen before these code gen.
+    # This remaining target should natually disappear after we migrated fully
+    # to typescript.
     ":generate_web_components",
   ]
   in_folder = get_path_info("../", "gen_dir")
-  in_files = gen_ts_files
-  out_folder = "$target_gen_dir/$preprocessed_ts_folder"
+  in_files = generated_web_component_files
+  out_folder = tsc_input_dir
 }
 
-html_to_wrapper("generate_web_component_html_wrapper_files") {
-  in_folder = "../"
-  in_files = web_component_html_files
-  out_folder = get_path_info("../", "gen_dir")
+html_to_wrapper("generate_html_wrapper_files") {
+  deps = [ ":preprocess" ]
+  in_files = html_files
+  in_folder = tsc_input_dir
+  out_folder = tsc_input_dir
 }
 
-css_to_wrapper("generate_web_component_css_wrapper_files") {
-  in_folder = "../"
+css_to_wrapper("generate_css_wrapper_files") {
+  deps = [ ":preprocess" ]
   in_files = css_files
-  out_folder = get_path_info("../", "gen_dir")
+  in_folder = tsc_input_dir
+  out_folder = tsc_input_dir
 }
 
-# Generate all WebUI mojom files and copy them to preprocessed_ts_folder to be
+# Generate all WebUI mojom files and copy them to tsc_input_dir to be
 # input to ts_library(). These files are bundled in optimized builds.
 group("generate_mojom_webui") {
   public_deps = [
+    ":generate_app_notification_mojo_webui",
     ":generate_ash_search_mojo_webui",
     ":generate_cros_audio_config_mojo_webui",
     ":generate_personalization_search_mojo_webui",
@@ -165,7 +154,7 @@ group("generate_mojom_webui") {
 copy("generate_cros_audio_config_mojo_webui") {
   deps = [ "//chromeos/ash/components/audio/public/mojom:mojom_webui_js" ]
   sources = [ "$root_gen_dir/mojom-webui/chromeos/ash/components/audio/public/mojom/cros_audio_config.mojom-webui.js" ]
-  outputs = [ "$target_gen_dir/$preprocessed_ts_folder/mojom-webui/audio/{{source_file_part}}" ]
+  outputs = [ "$tsc_input_dir/mojom-webui/audio/{{source_file_part}}" ]
 }
 
 copy("generate_settings_mojo_webui") {
@@ -175,15 +164,14 @@ copy("generate_settings_mojo_webui") {
     "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom-webui.js",
     "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom-webui.js",
   ]
-  outputs = [
-    "$target_gen_dir/$preprocessed_ts_folder/mojom-webui/{{source_file_part}}",
-  ]
+  outputs = [ "$tsc_input_dir/mojom-webui/{{source_file_part}}" ]
 }
 
 copy("generate_personalization_search_mojo_webui") {
   deps = [ "//ash/webui/personalization_app/search:mojo_bindings_webui_js" ]
   sources = [ "$root_gen_dir/mojom-webui/ash/webui/personalization_app/search/search.mojom-webui.js" ]
-  outputs = [ "$target_gen_dir/$preprocessed_ts_folder/mojom-webui/personalization/{{source_file_part}}" ]
+  outputs =
+      [ "$tsc_input_dir/mojom-webui/personalization/{{source_file_part}}" ]
 }
 
 copy("generate_ash_search_mojo_webui") {
@@ -194,33 +182,15 @@ copy("generate_ash_search_mojo_webui") {
     "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/settings/ash/search/search_result_icon.mojom-webui.js",
     "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/settings/ash/search/user_action_recorder.mojom-webui.js",
   ]
-  outputs = [ "$target_gen_dir/$preprocessed_ts_folder/mojom-webui/search/{{source_file_part}}" ]
+  outputs = [ "$tsc_input_dir/mojom-webui/search/{{source_file_part}}" ]
 }
 
-# Mojo files generated by non-OS-settings targets, not bundled.
-preprocess_if_expr("preprocess_external_mojo") {
+copy("generate_app_notification_mojo_webui") {
   deps = [
-    "//chrome/browser/ui/webui/settings/ash/os_apps_page/mojom:mojom_js",
-    "//components/services/app_service/public/mojom:mojom_js",
-    "//mojo/public/mojom/base",
-    "//ui/gfx/image/mojom:mojom_js",
-    "//ui/webui/resources/cr_components/app_management:mojo_bindings_js",
+    "//chrome/browser/ui/webui/settings/ash/os_apps_page/mojom:mojom_webui_js",
   ]
-  in_folder = root_gen_dir
-
-  # It does not matter which preprocess folder these files are pasted into, as
-  # they are not used for bundling; the purpose of this build rule is to
-  # include them in the generated grd file.
-  out_folder = "$target_gen_dir/$preprocessed_folder"
-  out_manifest = "$target_gen_dir/$external_mojo_manifest"
-  in_files = [
-    "chrome/browser/ui/webui/settings/ash/os_apps_page/mojom/app_notification_handler.mojom-lite.js",
-    "components/services/app_service/public/mojom/types.mojom-lite.js",
-    "mojo/public/mojom/base/file_path.mojom-lite.js",
-    "mojo/public/mojom/base/safe_base_name.mojom-lite.js",
-    "ui/gfx/image/mojom/image.mojom-lite.js",
-    "ui/webui/resources/cr_components/app_management/app_management.mojom-lite.js",
-  ]
+  sources = [ "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/settings/ash/os_apps_page/mojom/app_notification_handler.mojom-webui.js" ]
+  outputs = [ "$tsc_input_dir/mojom-webui/os_apps_page/{{source_file_part}}" ]
 }
 
 grit("resources") {
@@ -289,20 +259,11 @@ generate_grd("build_grd") {
     "../../nearby_share/shared/nearby_share_pulse_animation_light.json",
   ]
   input_files_base_dir = rebase_path(".", "//")
-  deps = [
-    ":preprocess_external_mojo",
-    "../../nearby_share:build_mojo_grdp",
-  ]
+  deps = [ "../../nearby_share:build_mojo_grdp" ]
   grdp_files = [ "$root_gen_dir/chrome/browser/resources/nearby_share/nearby_share_mojo_resources.grdp" ]
-  manifest_files = [ "$target_gen_dir/$external_mojo_manifest" ]
+  manifest_files = []
   resource_path_rewrites = [
-    "chrome/browser/ui/webui/settings/ash/os_apps_page/mojom/app_notification_handler.mojom-lite.js|os_apps_page/app_notification_handler.mojom-lite.js",
-    "components/services/app_service/public/mojom/types.mojom-lite.js|app-management/types.mojom-lite.js",
-    "mojo/public/mojom/base/file_path.mojom-lite.js|app-management/file_path.mojom-lite.js",
-    "mojo/public/mojom/base/safe_base_name.mojom-lite.js|app-management/safe_base_name.mojom-lite.js",
     "os_settings_v3.html|chromeos/os_settings_v3.html",
-    "ui/gfx/image/mojom/image.mojom-lite.js|app-management/image.mojom-lite.js",
-    "ui/webui/resources/cr_components/app_management/app_management.mojom-lite.js|app-management/app_management.mojom-lite.js",
     "../../nearby_share/shared/nearby_share_progress_bar_dark.json|nearby_share_progress_bar_dark.json",
     "../../nearby_share/shared/nearby_share_progress_bar_light.json|nearby_share_progress_bar_light.json",
     "../../nearby_share/shared/nearby_share_pulse_animation_dark.json|nearby_share_pulse_animation_dark.json",
@@ -315,7 +276,6 @@ generate_grd("build_grd") {
     input_files += [ "../../nearby_share/shared/nearby_shared_icons.html" ]
     resource_path_rewrites += [
       "lazy_load.rollup.js|chromeos/lazy_load.js",
-      "lazy_load.vulcanized.html|chromeos/lazy_load.html",
       "os_settings.rollup.js|chromeos/os_settings.js",
       "shared.rollup.js|chromeos/shared.rollup.js",
       "../../nearby_share/shared/nearby_shared_icons.html|shared/nearby_shared_icons.html",
@@ -323,72 +283,11 @@ generate_grd("build_grd") {
   } else {
     deps += [
       ":build_ts",
-      ":preprocess_browser_settings_tsc",
       "//chrome/browser/resources/nearby_share/shared:build_v3_grdp",
-      "//ui/webui/resources/cr_components/app_management:build_ts",
     ]
     grdp_files += [ "$root_gen_dir/chrome/browser/resources/nearby_share/shared/nearby_share_resources_v3.grdp" ]
-    manifest_files += [
-      "$target_gen_dir/$browser_settings_tsc_manifest",
-      "$target_gen_dir/build_ts.manifest",
-    ]
+    manifest_files += [ "$target_gen_dir/build_ts.manifest" ]
     resource_path_rewrites += [ "chromeos/os_settings.html|os_settings.html" ]
-  }
-}
-
-# Since Browser Settings is migrating to TypeScript (crbug.com/1234307), and
-# some files are still shared with CrOS Settings, need to copy the transpiled
-# JS files from TS compiler's output.
-preprocess_if_expr("preprocess_browser_settings_tsc") {
-  defines = chrome_grit_defines
-  deps = [ "..:build_ts" ]
-  in_folder = "$root_gen_dir/chrome/browser/resources/settings/tsc"
-  out_folder = "$target_gen_dir/$preprocessed_folder"
-  out_manifest = "$target_gen_dir/$browser_settings_tsc_manifest"
-
-  # Files that have a corresponding HTML wrapper file.
-  browser_settings_web_component_files = [
-    "a11y_page/captions_subpage.js",
-    "a11y_page/live_caption_section.js",
-    "controls/controlled_button.js",
-    "controls/extension_controlled_indicator.js",
-    "controls/password_prompt_dialog.js",
-    "controls/settings_slider.js",
-    "controls/settings_textarea.js",
-    "people_page/signout_dialog.js",
-    "people_page/sync_account_control.js",
-    "people_page/sync_controls.js",
-    "people_page/sync_encryption_options.js",
-    "people_page/sync_page.js",
-    "privacy_page/personalization_options.js",
-    "privacy_page/secure_dns_input.js",
-    "privacy_page/secure_dns.js",
-    "settings_page/settings_animated_pages.js",
-    "settings_page/settings_section.js",
-    "site_favicon.js",
-  ]
-
-  # Files that don't have a corresponding HTML file.
-  in_files = [
-    "appearance_page/fonts_browser_proxy.js",
-    "extension_control_browser_proxy.js",
-    "icons.html.js",
-    "people_page/profile_info_browser_proxy.js",
-    "people_page/sync_browser_proxy.js",
-    "prefs/prefs_mixin.js",
-    "privacy_page/autofill_assistant_browser_proxy.js",
-    "privacy_page/privacy_page_browser_proxy.js",
-    "relaunch_mixin.js",
-    "settings_page_styles.css.js",
-    "settings_shared.css.js",
-    "settings_vars.css.js",
-  ]
-
-  foreach(f, browser_settings_web_component_files) {
-    in_files += [
-      f,
-      string_replace(f, ".js", ".html.js"),
-    ]
   }
 }
 
@@ -404,11 +303,7 @@ group("generate_web_components") {
     ":web_components",
 
     # Sub-folder targets
-    "crostini_page:web_components",
-    "device_page:web_components",
-    "guest_os:web_components",
     "internet_page:web_components",
-    "kerberos_page:web_components",
     "multidevice_page:web_components",
     "nearby_share_page:web_components",
     "os_a11y_page:web_components",
@@ -416,10 +311,8 @@ group("generate_web_components") {
     "os_apps_page/app_management_page:web_components",
     "os_apps_page/app_management_page/borealis_page:web_components",
     "os_apps_page/app_management_page/plugin_vm_page:web_components",
-    "os_apps_page/app_notifications_page:web_components",
     "os_bluetooth_page:web_components",
     "os_people_page:web_components",
-    "os_printing_page:web_components",
     "os_privacy_page:web_components",
   ]
 }
@@ -429,22 +322,17 @@ group("generate_web_components") {
 group("closure_compile_module") {
   deps = [
     ":closure_compile_local_module",
-    "crostini_page:closure_compile_module",
     "device_page:closure_compile_module",
-    "guest_os:closure_compile_module",
     "internet_page:closure_compile_module",
-    "kerberos_page:closure_compile_module",
     "multidevice_page:closure_compile_module",
     "os_a11y_page:closure_compile_module",
     "os_apps_page:closure_compile_module",
     "os_apps_page/app_management_page:closure_compile_module",
     "os_apps_page/app_management_page/borealis_page:closure_compile_module",
     "os_apps_page/app_management_page/plugin_vm_page:closure_compile_module",
-    "os_apps_page/app_notifications_page:closure_compile",
     "os_bluetooth_page:closure_compile_module",
     "os_languages_page:closure_compile_module",
     "os_people_page:closure_compile_module",
-    "os_printing_page:closure_compile_module",
     "os_privacy_page:closure_compile_module",
   ]
 }
@@ -458,6 +346,7 @@ js_type_check("closure_compile_local_module") {
     ":deep_linking_behavior",
     ":find_shortcut_behavior",
     ":global_scroll_target_behavior",
+    ":icon",
     ":lazy_load",
     ":main_page_behavior",
     ":metrics_recorder",
@@ -587,6 +476,9 @@ js_library("combined_search_handler") {
     "//ash/webui/personalization_app/search:mojo_bindings_webui_js",
     "//mojo/public/mojom/base:base_webui_js",
   ]
+}
+
+js_library("icon") {
 }
 
 js_library("personalization_search_handler") {

@@ -1260,7 +1260,8 @@ IN_PROC_BROWSER_TEST_F(WebstoreIsolationBrowserTest, WebstorePopupIsIsolated) {
 }
 
 // Make sure that the new Chrome Web Store URL used in production
-// (webstore.google.com) is isolated from the rest of the google.com domain.
+// (chromewebstore.google.com) is isolated from the rest of the google.com
+// domain.
 IN_PROC_BROWSER_TEST_F(WebstoreIsolationBrowserTest,
                        NewWebstorePopupIsIsolated) {
   const GURL first_url("https://google.com/title1.html");
@@ -1270,11 +1271,12 @@ IN_PROC_BROWSER_TEST_F(WebstoreIsolationBrowserTest,
   scoped_refptr<content::SiteInstance> initial_instance(
       initial_web_contents->GetPrimaryMainFrame()->GetSiteInstance());
 
-  // Open a popup for webstore.google.com and ensure that it's isolated in a
-  // different SiteInstance and process from the rest of google.com. Since the
+  // Open a popup for chromewebstore.google.com and ensure that it's isolated in
+  // a different SiteInstance and process from the rest of google.com. Since the
   // new Webstore encompasses the entire subdomain, there should have also been
   // a BrowsingInstance swap at this point.
-  const GURL webstore_origin_url("https://webstore.google.com/title1.html");
+  const GURL webstore_origin_url(
+      "https://chromewebstore.google.com/title1.html");
   {
     content::TestNavigationObserver popup_waiter(webstore_origin_url);
     popup_waiter.StartWatchingNewWebContents();
@@ -1538,7 +1540,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
       popup,
       "window.opener.location ='data:html/text;base64,'+btoa('payload');"));
 
-  console_observer.Wait();
+  ASSERT_TRUE(console_observer.Wait());
   histograms.ExpectBucketCount(
       "Blink.UseCounter.Features",
       blink::mojom::WebFeature::kOpenerNavigationDownloadCrossOrigin, 1);
@@ -2606,11 +2608,10 @@ class SiteIsolationForCOOPBrowserTest : public ChromeNavigationBrowserTest {
   SiteIsolationForCOOPBrowserTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     // Enable COOP isolation with a max of 3 stored sites.
-    const std::vector<base::test::ScopedFeatureList::FeatureAndParams>
-        kEnabledFeatures = {
-            {::features::kSiteIsolationForCrossOriginOpenerPolicy,
-             {{"stored_sites_max_size", base::NumberToString(3)},
-              {"should_persist_across_restarts", "true"}}}};
+    const std::vector<base::test::FeatureRefAndParams> kEnabledFeatures = {
+        {::features::kSiteIsolationForCrossOriginOpenerPolicy,
+         {{"stored_sites_max_size", base::NumberToString(3)},
+          {"should_persist_across_restarts", "true"}}}};
     // Disable full site isolation so we can observe effects of COOP isolation.
     const std::vector<base::test::FeatureRef> kDisabledFeatures = {
         features::kSitePerProcess};

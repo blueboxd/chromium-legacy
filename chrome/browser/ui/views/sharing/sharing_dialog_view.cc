@@ -15,9 +15,9 @@
 #include "chrome/browser/ui/views/accessibility/theme_tracking_non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/controls/hover_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
-#include "chrome/browser/ui/views/hover_button.h"
 #include "components/sync/protocol/sync_enums.pb.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/url_formatter/elide_url.h"
@@ -246,9 +246,11 @@ void SharingDialogView::InitListView() {
   LogSharingDevicesToShow(data_.prefix, kSharingUiDialog, data_.devices.size());
   size_t index = 0;
   for (const auto& device : data_.devices) {
+    // TODO(crbug.com/1368080): Investigate the need to add a desktop device
+    // icon.
     auto icon =
         std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
-            device->device_type() == sync_pb::SyncEnums::TYPE_TABLET
+            device->form_factor() == syncer::DeviceInfo::FormFactor::kTablet
                 ? kTabletIcon
                 : kHardwareSmartphoneIcon,
             ui::kColorIcon, kPrimaryIconSize));

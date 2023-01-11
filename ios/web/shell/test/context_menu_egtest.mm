@@ -25,33 +25,22 @@ using testing::ButtonWithAccessibilityLabel;
 using testing::ElementToDismissAlert;
 
 namespace {
-const char kHtmlFile[] =
-    "/ios/testing/data/http_server_files/context_menu.html";
+const char kHtmlFile[] = "/context_menu.html";
 }
 
 // Context menu test cases for the web shell.
-@interface ContextMenuTestCase : WebShellTestCase {
-  net::EmbeddedTestServer _server;
-}
+@interface ContextMenuTestCase : WebShellTestCase
 
 @end
 
 @implementation ContextMenuTestCase
 
-- (void)setUp {
-  [super setUp];
-
-  NSString* bundlePath = [NSBundle bundleForClass:[self class]].resourcePath;
-  _server.ServeFilesFromDirectory(
-      base::FilePath(base::SysNSStringToUTF8(bundlePath)));
-  GREYAssert(_server.Start(), @"EmbeddedTestServer failed to start.");
-}
-
 // Tests context menu appears on a regular link.
+// TODO(crbug.com/1379375)
 - (void)DISABLED_testContextMenu {
   const char linkID[] = "normal-link";
   NSString* const linkText = @"normal-link-text";
-  const GURL pageURL = _server.GetURL(kHtmlFile);
+  const GURL pageURL = self.testServer->GetURL(kHtmlFile);
 
   [ShellEarlGrey loadURL:pageURL];
   [ShellEarlGrey waitForWebStateContainingText:linkText];
@@ -77,11 +66,11 @@ const char kHtmlFile[] =
 // Tests context menu on element that has WebkitTouchCallout set to none from an
 // ancestor and overridden.
 //
-// Disabled due to https://crbug.com/1087189.
+// TODO(crbug.com/1087189): This test is flaky.
 - (void)DISABLED_testContextMenuWebkitTouchCalloutOverride {
   const char linkID[] = "no-webkit-link";
   NSString* const linkText = @"no-webkit-link-text";
-  const GURL pageURL = _server.GetURL(kHtmlFile);
+  const GURL pageURL = self.testServer->GetURL(kHtmlFile);
 
   [ShellEarlGrey loadURL:pageURL];
   [ShellEarlGrey waitForWebStateContainingText:linkText];

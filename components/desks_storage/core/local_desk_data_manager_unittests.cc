@@ -4,6 +4,8 @@
 
 #include "components/desks_storage/core/local_desk_data_manager.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "ash/public/cpp/desk_template.h"
@@ -104,7 +106,8 @@ std::string GetUnParseableTemplate() {
 }
 
 // Verifies that the status passed into it is kOk
-void VerifyEntryAddedCorrectly(DeskModel::AddOrUpdateEntryStatus status) {
+void VerifyEntryAddedCorrectly(DeskModel::AddOrUpdateEntryStatus status,
+                               std::unique_ptr<ash::DeskTemplate> new_entry) {
   EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kOk);
 }
 
@@ -114,33 +117,33 @@ void VerifyEntryDeletedCorrectly(DeskModel::DeleteEntryStatus status) {
 }
 
 // Verifies that the status passed into it is kFailure
-void VerifyEntryAddedFailure(DeskModel::AddOrUpdateEntryStatus status) {
+void VerifyEntryAddedFailure(DeskModel::AddOrUpdateEntryStatus status,
+                             std::unique_ptr<ash::DeskTemplate> new_entry) {
   EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kFailure);
 }
 
 void VerifyEntryAddedErrorHitMaximumLimit(
-    DeskModel::AddOrUpdateEntryStatus status) {
+    DeskModel::AddOrUpdateEntryStatus status,
+    std::unique_ptr<ash::DeskTemplate> new_entry) {
   EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kHitMaximumLimit);
 }
 
 void WriteJunkData(const base::FilePath& temp_dir) {
-  base::FilePath full_path =
-      temp_dir.Append(GetTestFileNameString(TestUuidId(1)));
-
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  EXPECT_TRUE(base::WriteFile(full_path, "This is not valid template data."));
+  EXPECT_TRUE(
+      base::WriteFile(temp_dir.Append(GetTestFileNameString(TestUuidId(1))),
+                      "This is not valid template data."));
 }
 
 void WriteIncorrectlyNamedData(const base::FilePath& temp_dir) {
   base::FilePath saved_desk_path = temp_dir.Append("saveddesk");
   base::CreateDirectory(saved_desk_path);
-  base::FilePath wrong_filename_full_path =
-      saved_desk_path.Append(GetTestSaveDeskFileNameString(TestUuidId(2)));
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  EXPECT_TRUE(
-      base::WriteFile(wrong_filename_full_path, GetTestTemplateJSONData()));
+  EXPECT_TRUE(base::WriteFile(
+      saved_desk_path.Append(GetTestSaveDeskFileNameString(TestUuidId(2))),
+      GetTestTemplateJSONData()));
 }
 
 // Make test template with ID containing the index. Defaults to desk template
@@ -148,14 +151,12 @@ void WriteIncorrectlyNamedData(const base::FilePath& temp_dir) {
 std::unique_ptr<ash::DeskTemplate> MakeTestDeskTemplate(
     int index,
     ash::DeskTemplateType type) {
-  const std::string template_uuid =
-      base::StringPrintf("1c186d5a-502e-49ce-9ee1-00000000000%d", index);
-  const std::string template_name = base::StringPrintf("desk_%d", index);
   std::unique_ptr<ash::DeskTemplate> desk_template =
       std::make_unique<ash::DeskTemplate>(
-          base::GUID::ParseCaseInsensitive(template_uuid),
-          ash::DeskTemplateSource::kUser, template_name, base::Time::Now(),
-          type);
+          base::GUID::ParseCaseInsensitive(base::StringPrintf(
+              "1c186d5a-502e-49ce-9ee1-00000000000%d", index)),
+          ash::DeskTemplateSource::kUser, base::StringPrintf("desk_%d", index),
+          base::Time::Now(), type);
   desk_template->set_desk_restore_data(
       std::make_unique<app_restore::RestoreData>());
   return desk_template;
@@ -273,7 +274,8 @@ class LocalDeskDataManagerTest : public testing::Test {
     data_manager_->AddOrUpdateEntry(
         std::move(sample_desk_template_one_),
         base::BindLambdaForTesting(
-            [&](DeskModel::AddOrUpdateEntryStatus status) {
+            [&](DeskModel::AddOrUpdateEntryStatus status,
+                std::unique_ptr<ash::DeskTemplate> new_entry) {
               EXPECT_EQ(DeskModel::AddOrUpdateEntryStatus::kOk, status);
               loop1.Quit();
             }));
@@ -283,7 +285,8 @@ class LocalDeskDataManagerTest : public testing::Test {
     data_manager_->AddOrUpdateEntry(
         std::move(sample_desk_template_two_),
         base::BindLambdaForTesting(
-            [&](DeskModel::AddOrUpdateEntryStatus status) {
+            [&](DeskModel::AddOrUpdateEntryStatus status,
+                std::unique_ptr<ash::DeskTemplate> new_entry) {
               EXPECT_EQ(DeskModel::AddOrUpdateEntryStatus::kOk, status);
               loop2.Quit();
             }));
@@ -295,7 +298,8 @@ class LocalDeskDataManagerTest : public testing::Test {
     data_manager_->AddOrUpdateEntry(
         std::move(sample_save_and_recall_desk_one_),
         base::BindLambdaForTesting(
-            [&](DeskModel::AddOrUpdateEntryStatus status) {
+            [&](DeskModel::AddOrUpdateEntryStatus status,
+                std::unique_ptr<ash::DeskTemplate> new_entry) {
               EXPECT_EQ(DeskModel::AddOrUpdateEntryStatus::kOk, status);
               loop1.Quit();
             }));
@@ -305,7 +309,8 @@ class LocalDeskDataManagerTest : public testing::Test {
     data_manager_->AddOrUpdateEntry(
         std::move(sample_save_and_recall_desk_two_),
         base::BindLambdaForTesting(
-            [&](DeskModel::AddOrUpdateEntryStatus status) {
+            [&](DeskModel::AddOrUpdateEntryStatus status,
+                std::unique_ptr<ash::DeskTemplate> new_entry) {
               EXPECT_EQ(DeskModel::AddOrUpdateEntryStatus::kOk, status);
               loop2.Quit();
             }));
@@ -352,8 +357,8 @@ TEST_F(LocalDeskDataManagerTest, CanAddEntry) {
 }
 
 TEST_F(LocalDeskDataManagerTest, ReturnsErrorWhenAddingTooManyEntry) {
-  for (std::size_t index = 0u;
-       index < data_manager_->GetMaxDeskTemplateEntryCount(); ++index) {
+  for (size_t index = 0u; index < data_manager_->GetMaxDeskTemplateEntryCount();
+       ++index) {
     data_manager_->AddOrUpdateEntry(
         MakeTestDeskTemplate(index, ash::DeskTemplateType::kTemplate),
         base::BindOnce(&VerifyEntryAddedCorrectly));
@@ -369,7 +374,7 @@ TEST_F(LocalDeskDataManagerTest, ReturnsErrorWhenAddingTooManyEntry) {
 
 TEST_F(LocalDeskDataManagerTest,
        ReturnsErrorWhenAddingTooManySaveAndRecallDeskEntry) {
-  for (std::size_t index = 0u;
+  for (size_t index = 0u;
        index < data_manager_->GetMaxSaveAndRecallDeskEntryCount(); ++index) {
     data_manager_->AddOrUpdateEntry(
         MakeTestDeskTemplate(index, ash::DeskTemplateType::kSaveAndRecall),
@@ -534,28 +539,27 @@ TEST_F(LocalDeskDataManagerTest,
 TEST_F(LocalDeskDataManagerTest,
        CanRenameSavedDeskTemplateIfFilenameDoesNotMatchUUID) {
   // Initialize new local temp directory
-  base::ScopedTempDir local_temp_dir_;
-  EXPECT_TRUE(local_temp_dir_.CreateUniqueTempDir());
+  base::ScopedTempDir local_temp_dir;
+  EXPECT_TRUE(local_temp_dir.CreateUniqueTempDir());
 
   // Pre-write file into directory for correcting
-  auto task_runner = task_environment_.GetMainThreadTaskRunner();
-  task_runner->PostTask(FROM_HERE, base::BindOnce(&WriteIncorrectlyNamedData,
-                                                  local_temp_dir_.GetPath()));
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WriteIncorrectlyNamedData, local_temp_dir.GetPath()));
   task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(base::PathExists(
-      local_temp_dir_.GetPath()
+      local_temp_dir.GetPath()
           .Append("saveddesk")
           .Append(GetTestSaveDeskFileNameString(TestUuidId(2)))));
   EXPECT_FALSE(base::PathExists(
-      local_temp_dir_.GetPath()
+      local_temp_dir.GetPath()
           .Append("saveddesk")
           .Append(GetTestSaveDeskFileNameString(TestUuidId(1)))));
 
   // Initialize temp data manager
-  std::unique_ptr<LocalDeskDataManager> temp_data_manager_;
-  temp_data_manager_ = std::make_unique<LocalDeskDataManager>(
-      local_temp_dir_.GetPath(), account_id_);
+  auto temp_data_manager_ = std::make_unique<LocalDeskDataManager>(
+      local_temp_dir.GetPath(), account_id_);
   task_environment_.RunUntilIdle();
 
   // Retrieve entry from test directory
@@ -564,11 +568,11 @@ TEST_F(LocalDeskDataManagerTest,
   EXPECT_EQ(result.entry->uuid(), GetTestUuid(TestUuidId(1)));
   EXPECT_EQ(temp_data_manager_->GetEntryCount(), 1u);
   EXPECT_TRUE(base::PathExists(
-      local_temp_dir_.GetPath()
+      local_temp_dir.GetPath()
           .Append("saveddesk")
           .Append(GetTestSaveDeskFileNameString(TestUuidId(1)))));
   EXPECT_FALSE(base::PathExists(
-      local_temp_dir_.GetPath()
+      local_temp_dir.GetPath()
           .Append("saveddesk")
           .Append(GetTestSaveDeskFileNameString(TestUuidId(2)))));
 }
@@ -637,14 +641,14 @@ TEST_F(LocalDeskDataManagerTest,
   // Add two user templates.
   AddTwoTemplates();
 
-  std::size_t max_entry_count = data_manager_->GetMaxEntryCount();
+  size_t initial_max_count = data_manager_->GetMaxEntryCount();
 
   // Set one admin template.
   data_manager_->SetPolicyDeskTemplates(GetPolicyWithOneTemplate());
 
   // The max entry count should increase by 1 since we have set an admin
   // template.
-  EXPECT_EQ(max_entry_count + 1ul, data_manager_->GetMaxEntryCount());
+  EXPECT_EQ(initial_max_count + 1ul, data_manager_->GetMaxEntryCount());
 }
 
 TEST_F(LocalDeskDataManagerTest, AddDeskTemplatesAndSaveAndRecallDeskEntries) {
@@ -713,14 +717,14 @@ TEST_F(LocalDeskDataManagerTest, CanDeleteSaveAndRecallDeskEntry) {
 }
 
 TEST_F(LocalDeskDataManagerTest, CanAddMaxEntriesForBothTypes) {
-  for (std::size_t index = 0u;
+  for (size_t index = 0u;
        index < data_manager_->GetMaxSaveAndRecallDeskEntryCount(); ++index) {
     data_manager_->AddOrUpdateEntry(
         MakeTestDeskTemplate(index, ash::DeskTemplateType::kSaveAndRecall),
         base::BindOnce(&VerifyEntryAddedCorrectly));
   }
-  for (std::size_t index = 0u;
-       index < data_manager_->GetMaxDeskTemplateEntryCount(); ++index) {
+  for (size_t index = 0u; index < data_manager_->GetMaxDeskTemplateEntryCount();
+       ++index) {
     data_manager_->AddOrUpdateEntry(
         MakeTestDeskTemplate(index, ash::DeskTemplateType::kTemplate),
         base::BindOnce(&VerifyEntryAddedCorrectly));
@@ -760,8 +764,8 @@ TEST_F(LocalDeskDataManagerTest, CanDeleteAllEntriesOfBothTypes) {
 
 TEST_F(LocalDeskDataManagerTest,
        CanAddMaxEntriesDeskTemplatesAndStillAddEntryForSaveAndRecallDesks) {
-  for (std::size_t index = 0u;
-       index < data_manager_->GetMaxDeskTemplateEntryCount(); ++index) {
+  for (size_t index = 0u; index < data_manager_->GetMaxDeskTemplateEntryCount();
+       ++index) {
     data_manager_->AddOrUpdateEntry(
         MakeTestDeskTemplate(index, ash::DeskTemplateType::kTemplate),
         base::BindOnce(&VerifyEntryAddedCorrectly));
@@ -780,7 +784,7 @@ TEST_F(LocalDeskDataManagerTest,
 
 TEST_F(LocalDeskDataManagerTest,
        CanAddMaxEntriesForSaveAndRecallDeskAndStillAddEntryForDeskTemplate) {
-  for (std::size_t index = 0u;
+  for (size_t index = 0u;
        index < data_manager_->GetMaxSaveAndRecallDeskEntryCount(); ++index) {
     data_manager_->AddOrUpdateEntry(
         MakeTestDeskTemplate(index, ash::DeskTemplateType::kSaveAndRecall),
@@ -801,7 +805,7 @@ TEST_F(LocalDeskDataManagerTest,
 
 TEST_F(LocalDeskDataManagerTest, RollbackUpdateTemplatesOnFileWriteFailure) {
   // Add two user templates.
-  for (std::size_t index = 0u; index < 2u; ++index) {
+  for (size_t index = 0u; index < 2u; ++index) {
     data_manager_->AddOrUpdateEntry(
         MakeTestDeskTemplate(index, ash::DeskTemplateType::kTemplate),
         base::BindOnce(&VerifyEntryAddedCorrectly));
@@ -828,7 +832,7 @@ TEST_F(LocalDeskDataManagerTest, RollbackUpdateTemplatesOnFileWriteFailure) {
 
 TEST_F(LocalDeskDataManagerTest, RollbackAddTemplatesOnFileWriteFailure) {
   // Add two user templates.
-  for (std::size_t index = 0u; index < 2u; ++index) {
+  for (size_t index = 0u; index < 2u; ++index) {
     data_manager_->AddOrUpdateEntry(
         MakeTestDeskTemplate(index, ash::DeskTemplateType::kTemplate),
         base::BindOnce(&VerifyEntryAddedCorrectly));
@@ -879,7 +883,7 @@ TEST_F(LocalDeskDataManagerTest, RollbackDeleteTemplatesOnFileDeleteFailure) {
 TEST_F(LocalDeskDataManagerTest,
        RollbackDeleteAllTemplatesOnFileDeleteFailure) {
   // Add four user templates.
-  for (std::size_t index = 0u; index < 4u; ++index) {
+  for (size_t index = 0u; index < 4u; ++index) {
     data_manager_->AddOrUpdateEntry(
         MakeTestDeskTemplate(index, ash::DeskTemplateType::kTemplate),
         base::BindOnce(&VerifyEntryAddedCorrectly));

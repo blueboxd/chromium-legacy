@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">Desegin</translation>
 <translation id="2084108471225856927">Gailuaren ezarpenak</translation>
 <translation id="2084809735218147718">"Eskerrik asko" hitzekin sinatzen</translation>
-<translation id="2085470240340828803">Badago "<ph name="FILENAME" />" izeneko fitxategi bat. Zer egin nahi duzu?</translation>
 <translation id="2088690981887365033">VPN sarea</translation>
 <translation id="2122305276694332719">Automatikoki konektatzen bazara ezkutuko sare batera, zure gailua eta sarearen zenbait ezarpen ikusi ahalko dituzte besteek, eta hori ez da komeni.</translation>
 <translation id="2125607626296734455">Khmertarra</translation>
@@ -428,7 +427,7 @@
 <translation id="4712283082407695269">"<ph name="PATH" />" irekitzen</translation>
 <translation id="4720185134442950733">Datu-konexioaren sarea</translation>
 <translation id="4725096204469550614">Aurten lehenago</translation>
-<translation id="4725511304875193254">Corgi-a</translation>
+<translation id="4725511304875193254">Txakurra</translation>
 <translation id="4737050008115666127">Lurreratzea</translation>
 <translation id="4747271164117300400">Mazedoniarra</translation>
 <translation id="4759238208242260848">Deskargak</translation>
@@ -456,7 +455,6 @@
 <translation id="4900532980794411603">Partekatu Parallels Desktop aplikazioarekin</translation>
 <translation id="4902546322522096650"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> sarea. <ph name="NETWORK_NAME" /> (<ph name="SECURITY_STATUS" />). Seinalearen indarra % <ph name="SIGNAL_STRENGTH" />. Konektatu.</translation>
 <translation id="4906580650526544301"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> sarea, <ph name="PHONE_NAME" />. <ph name="PROVIDER_NAME" />. <ph name="CONNECTION_STATUS" />. Seinalearen indarra: % <ph name="SIGNAL_STRENGTH" />. Telefonoaren bateria: % <ph name="BATTERY_STATUS" />. Xehetasunak.</translation>
-<translation id="4929673617759421391">Administratzailearen gidalerroek ez dute uzten fitxategi hau itsasten</translation>
 <translation id="4935975195727477204">Lorea</translation>
 <translation id="4943368462779413526">Futboleko baloia</translation>
 <translation id="4961158930123534723">Karpeta bat partekatu da Parallels Desktop aplikazioarekin</translation>
@@ -533,6 +531,7 @@
 <translation id="5428105026674456456">Espaniarra</translation>
 <translation id="5438282218546237410">Ez dago "<ph name="SEARCH_TERM" />" bilaketaren emaitzarik.</translation>
 <translation id="5449551289610225147">Pasahitzak ez du balio</translation>
+<translation id="5459064203055649751">Badago "<ph name="FILENAME" />" izeneko fitxategi bat. Mugitzen ari zarenarekin ordeztu nahi duzu?</translation>
 <translation id="5463231940765244860">Idatzi</translation>
 <translation id="5469868506864199649">Italiarra</translation>
 <translation id="5473333559083690127">Idatzi berriro PINa</translation>
@@ -653,6 +652,7 @@
 <translation id="6495925982925244349"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> sarea. <ph name="NETWORK_NAME" /> (<ph name="SECURITY_STATUS" />; <ph name="CONNECTION_STATUS" />). Seinalearen indarra % <ph name="SIGNAL_STRENGTH" />. Administratzaileak kudeatua. Xehetasunak.</translation>
 <translation id="649877868557234318"><ph name="FILE_NAME" /> <ph name="FOLDER_NAME" /> karpetara ateratzen</translation>
 <translation id="6499681088828539489">Ez baimendu proxyak sare partekatuetan</translation>
+<translation id="6503285896705205014">Administratzailearen gidalerroek ez dute uzten <ph name="COUNT" /> fitxategi kopiatzen</translation>
 <translation id="6509122719576673235">Norvegiarra</translation>
 <translation id="6528513914570774834">Baimendu sare hau erabiltzea gailu hau darabiltenei</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" /> sinkronizatzen…</translation>
@@ -755,6 +755,7 @@
 <translation id="7357762654218998920">Fitxategi mota hau ez da bateragarria. <ph name="BEGIN_LINK_HELP" />Lortu informazio gehiago<ph name="END_LINK_HELP" /> fitxategiak Chrome OS-n irekitzeari buruz.</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> elementu kopiatzen…</translation>
 <translation id="7375951387215729722">"<ph name="COLUMN_NAME" />" zutabearen arabera ageri da fitxategien zerrenda, beherantz ordenatuta.</translation>
+<translation id="7377161162143020057">Administratzailearen gidalerroek ez dute uzten fitxategia kopiatzen</translation>
 <translation id="7402503521691663770">ChromeOS Flex-eko gailuak</translation>
 <translation id="7408870451288633753">Txekiarra</translation>
 <translation id="7417453074306512035">Teklatu etiopiarra</translation>
@@ -976,7 +977,6 @@
 <translation id="9183302530794969518">Google Dokumentuak</translation>
 <translation id="9189836632794948435">Kazakhtarra</translation>
 <translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> elementu atera dira.</translation>
-<translation id="9210751050717126865">Administratzailearen gidalerroek ez dute uzten <ph name="COUNT" /> fitxategi itsasten</translation>
 <translation id="9213073329713032541">Hasi da instalazioa.</translation>
 <translation id="9219103736887031265">Irudiak</translation>
 <translation id="9219908252191632183">Ilargia</translation>

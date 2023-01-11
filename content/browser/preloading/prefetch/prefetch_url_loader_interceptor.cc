@@ -190,6 +190,10 @@ void PrefetchURLLoaderInterceptor::
     EnsureCookiesCopiedAndInterceptPrefetchedNavigation(
         const network::ResourceRequest& tenative_resource_request,
         base::WeakPtr<PrefetchContainer> prefetch_container) {
+  if (prefetch_container) {
+    prefetch_container->OnInterceptorCheckCookieCopy();
+  }
+
   if (prefetch_container &&
       prefetch_container->IsIsolatedCookieCopyInProgress()) {
     cookie_copy_start_time_ = base::TimeTicks::Now();
@@ -225,6 +229,7 @@ void PrefetchURLLoaderInterceptor::InterceptPrefetchedNavigation(
   std::unique_ptr<PrefetchFromStringURLLoader> url_loader =
       std::make_unique<PrefetchFromStringURLLoader>(
           prefetch_container->ReleasePrefetchedResponse(),
+          prefetch_container->GetPrefetchResponseSizes(),
           tenative_resource_request);
   scoped_refptr<SingleRequestURLLoaderFactory>
       single_request_url_loader_factory =

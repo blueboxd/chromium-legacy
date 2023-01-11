@@ -83,9 +83,7 @@ WebSharedWorkerImpl::WebSharedWorkerImpl(
     const blink::SharedWorkerToken& token,
     CrossVariantMojoRemote<mojom::SharedWorkerHostInterfaceBase> host,
     WebSharedWorkerClient* client)
-    : reporting_proxy_(MakeGarbageCollected<SharedWorkerReportingProxy>(
-          this,
-          ParentExecutionContextTaskRunners::Create())),
+    : reporting_proxy_(MakeGarbageCollected<SharedWorkerReportingProxy>(this)),
       worker_thread_(
           std::make_unique<SharedWorkerThread>(*reporting_proxy_, token)),
       host_(std::move(host)),
@@ -285,8 +283,9 @@ void WebSharedWorkerImpl::StartWorkerContext(
       nullptr /* worklet_module_response_map */,
       std::move(browser_interface_broker),
       mojo::NullRemote() /* code_cache_host_interface */,
-      BeginFrameProviderParams(), nullptr /* parent_permissions_policy */,
-      base::UnguessableToken(), ukm_source_id);
+      mojo::NullRemote() /* blob_url_store */, BeginFrameProviderParams(),
+      nullptr /* parent_permissions_policy */, base::UnguessableToken(),
+      ukm_source_id);
 
   auto thread_startup_data = WorkerBackingThreadStartupData::CreateDefault();
   thread_startup_data.atomics_wait_mode =

@@ -29,6 +29,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -706,8 +707,8 @@ void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
     remove_listener = base::BindOnce(
         &ExtensionWebRequestEventRouter::UpdateActiveListener,
         base::Unretained(ExtensionWebRequestEventRouter::GetInstance()),
-        update_type, details.browser_context, details.extension_id,
-        sub_event_name, details.worker_thread_id,
+        update_type, base::UnsafeDanglingUntriaged(details.browser_context),
+        details.extension_id, sub_event_name, details.worker_thread_id,
         details.service_worker_version_id);
   }
 
@@ -762,11 +763,10 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     if (extensions::kExtensionScheme == request_scheme &&
         ExtensionsBrowserClient::Get()->IsExtensionTelemetryServiceEnabled(
             browser_context) &&
-        ExtensionsBrowserClient::Get()
-            ->IsExtensionTelemetryRemoteHostContactedSignalEnabled()) {
+        base::FeatureList::IsEnabled(
+            safe_browsing::kExtensionTelemetryReportContactedHosts)) {
       skip_proxy = false;
     }
-
     if (skip_proxy)
       return false;
   }
@@ -846,7 +846,7 @@ void WebRequestAPI::ProxyWebSocket(
     mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
         handshake_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(MayHaveProxies());
+  DCHECK(MayHaveProxies() || MayHaveWebsocketProxiesForExtensionTelemetry());
 
   const bool has_extra_headers =
       ExtensionWebRequestEventRouter::GetInstance()->HasAnyExtraHeadersListener(
@@ -897,6 +897,16 @@ bool WebRequestAPI::MayHaveProxies() const {
   }
 
   return web_request_extension_count_ > 0;
+}
+
+bool WebRequestAPI::MayHaveWebsocketProxiesForExtensionTelemetry() const {
+  return ExtensionsBrowserClient::Get()->IsExtensionTelemetryServiceEnabled(
+             browser_context_) &&
+         base::FeatureList::IsEnabled(
+             safe_browsing::kExtensionTelemetryReportContactedHosts) &&
+         base::FeatureList::IsEnabled(
+             safe_browsing::
+                 kExtensionTelemetryReportHostsContactedViaWebSocket);
 }
 
 bool WebRequestAPI::HasExtraHeadersListenerForTesting() {
@@ -2305,24 +2315,24 @@ helpers::EventResponseDelta CalculateDelta(
   }
 }
 
-std::unique_ptr<base::Value> SerializeResponseHeaders(
+base::Value::List SerializeResponseHeaders(
     const helpers::ResponseHeaders& headers) {
-  auto serialized_headers = std::make_unique<base::ListValue>();
+  base::Value::List serialized_headers;
   for (const auto& it : headers) {
-    serialized_headers->Append(
-        base::Value(helpers::CreateHeaderDictionary(it.first, it.second)));
+    serialized_headers.Append(
+        helpers::CreateHeaderDictionary(it.first, it.second));
   }
-  return std::move(serialized_headers);
+  return serialized_headers;
 }
 
 // Convert a RequestCookieModifications/ResponseCookieModifications object to a
-// base::ListValue which summarizes the changes made.  This is templated since
+// base::Value::List which summarizes the changes made.  This is templated since
 // the two types (request/response) are different but contain essentially the
 // same fields.
 template <typename CookieType>
-std::unique_ptr<base::ListValue> SummarizeCookieModifications(
+base::Value::List SummarizeCookieModifications(
     const std::vector<CookieType>& modifications) {
-  auto cookie_modifications = std::make_unique<base::ListValue>();
+  base::Value::List cookie_modifications;
   for (const CookieType& mod : modifications) {
     base::Value::Dict summary;
     switch (mod.type) {
@@ -2357,58 +2367,57 @@ std::unique_ptr<base::ListValue> SummarizeCookieModifications(
         summary.Set(activity_log::kCookieModDomainKey, *mod.modification->name);
       }
     }
-    cookie_modifications->Append(base::Value(std::move(summary)));
+    cookie_modifications.Append(std::move(summary));
   }
   return cookie_modifications;
 }
 
 // Converts an EventResponseDelta object to a dictionary value suitable for the
 // activity log.
-std::unique_ptr<base::DictionaryValue> SummarizeResponseDelta(
+base::Value::Dict SummarizeResponseDelta(
     const std::string& event_name,
     const helpers::EventResponseDelta& delta) {
-  std::unique_ptr<base::DictionaryValue> details(new base::DictionaryValue());
+  base::Value::Dict details;
   if (delta.cancel)
-    details->SetBoolKey(activity_log::kCancelKey, true);
+    details.Set(activity_log::kCancelKey, true);
   if (!delta.new_url.is_empty())
-    details->SetStringKey(activity_log::kNewUrlKey, delta.new_url.spec());
+    details.Set(activity_log::kNewUrlKey, delta.new_url.spec());
 
-  std::unique_ptr<base::ListValue> modified_headers(new base::ListValue());
+  base::Value::List modified_headers;
   net::HttpRequestHeaders::Iterator iter(delta.modified_request_headers);
   while (iter.GetNext()) {
-    modified_headers->Append(base::Value(
-        helpers::CreateHeaderDictionary(iter.name(), iter.value())));
+    modified_headers.Append(
+        helpers::CreateHeaderDictionary(iter.name(), iter.value()));
   }
-  if (!modified_headers->GetList().empty()) {
-    details->Set(activity_log::kModifiedRequestHeadersKey,
-                 std::move(modified_headers));
+  if (!modified_headers.empty()) {
+    details.Set(activity_log::kModifiedRequestHeadersKey,
+                std::move(modified_headers));
   }
 
-  std::unique_ptr<base::ListValue> deleted_headers(new base::ListValue());
+  base::Value::List deleted_headers;
   for (const std::string& header : delta.deleted_request_headers) {
-    deleted_headers->Append(header);
+    deleted_headers.Append(header);
   }
-  if (!deleted_headers->GetList().empty()) {
-    details->Set(activity_log::kDeletedRequestHeadersKey,
-                 std::move(deleted_headers));
+  if (!deleted_headers.empty()) {
+    details.Set(activity_log::kDeletedRequestHeadersKey,
+                std::move(deleted_headers));
   }
 
   if (!delta.added_response_headers.empty()) {
-    details->Set(activity_log::kAddedRequestHeadersKey,
-                 SerializeResponseHeaders(delta.added_response_headers));
+    details.Set(activity_log::kAddedRequestHeadersKey,
+                SerializeResponseHeaders(delta.added_response_headers));
   }
   if (!delta.deleted_response_headers.empty()) {
-    details->Set(activity_log::kDeletedResponseHeadersKey,
-                 SerializeResponseHeaders(delta.deleted_response_headers));
+    details.Set(activity_log::kDeletedResponseHeadersKey,
+                SerializeResponseHeaders(delta.deleted_response_headers));
   }
   if (delta.auth_credentials.has_value()) {
-    details->SetStringKey(
-        activity_log::kAuthCredentialsKey,
-        base::UTF16ToUTF8(delta.auth_credentials->username()) + ":*");
+    details.Set(activity_log::kAuthCredentialsKey,
+                base::UTF16ToUTF8(delta.auth_credentials->username()) + ":*");
   }
 
   if (!delta.response_cookie_modifications.empty()) {
-    details->Set(
+    details.Set(
         activity_log::kResponseCookieModificationsKey,
         SummarizeCookieModifications(delta.response_cookie_modifications));
   }

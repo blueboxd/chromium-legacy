@@ -458,7 +458,7 @@ class PrerenderOmniboxSearchSuggestionBrowserTest
 
   constexpr static char kSearchDomain[] = "a.test";
   constexpr static char16_t kSearchDomain16[] = u"a.test";
-  raw_ptr<PrerenderManager> prerender_manager_;
+  raw_ptr<PrerenderManager, DanglingUntriaged> prerender_manager_;
   net::test_server::EmbeddedTestServer search_engine_server_{
       net::test_server::EmbeddedTestServer::TYPE_HTTPS};
   std::string prerender_page_target_ = "/title1.html";
@@ -575,7 +575,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxSearchSuggestionExpiryBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
       "DefaultSearchEngine",
-      /*PrerenderHost::FinalStatus::kTriggerDestroyed*/ 16, 1);
+      /*PrerenderFinalStatus::kTriggerDestroyed*/ 16, 1);
 
   // Select the prerender hint. The prerendered result has been deleted, so
   // browser loads the search result over again.
@@ -620,7 +620,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxSearchSuggestionExpiryBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
       "DefaultSearchEngine",
-      /*PrerenderHost::FinalStatus::kTriggerDestroyed*/ 16, 1);
+      /*PrerenderFinalStatus::kTriggerDestroyed*/ 16, 1);
 
   // Nothing should be recorded. Because there is no new navigation nor new
   // search suggestion.

@@ -241,6 +241,8 @@ component("gl") {
 
     if (is_android) {
       sources += [
+        "android/egl_fence_utils.cc",
+        "android/egl_fence_utils.h",
         "gl_image_ahardwarebuffer.cc",
         "gl_image_ahardwarebuffer.h",
         "gl_surface_egl_surface_control.cc",
@@ -397,6 +399,7 @@ component("gl") {
       "egl_surface_io_surface.h",
       "gl_context_cgl.cc",
       "gl_context_cgl.h",
+      "gl_display_egl.mm",
       "gl_fence_apple.cc",
       "gl_fence_apple.h",
       "gl_image_io_surface.h",
@@ -412,19 +415,20 @@ component("gl") {
       "Quartz.framework",
     ]
 
-    if (use_egl) {
+    assert(use_egl)
+    data_deps += [
+      "//third_party/angle:libEGL",
+      "//third_party/angle:libGLESv2",
+      "//third_party/mesa_headers",
+    ]
+    if (enable_swiftshader) {
       data_deps += [
-        "//third_party/angle:libEGL",
-        "//third_party/angle:libGLESv2",
-        "//third_party/mesa_headers",
+        "//third_party/swiftshader/src/Vulkan:icd_file",
+        "//third_party/swiftshader/src/Vulkan:swiftshader_libvulkan",
       ]
-      if (enable_swiftshader) {
-        data_deps += [
-          "//third_party/swiftshader/src/Vulkan:icd_file",
-          "//third_party/swiftshader/src/Vulkan:swiftshader_libvulkan",
-        ]
-      }
     }
+
+    deps += [ "//components/metal_util:metal_util_types" ]
   }
   if (is_android) {
     defines += [
@@ -441,7 +445,9 @@ component("gl") {
   }
 }
 
-if (is_mac && use_egl) {
+if (is_mac) {
+  assert(use_egl)
+
   # We need to copy the ANGLE and SwiftShader libraries so that the
   # bundle_data dependencies have a "copy" target type. Otherwise for
   # "shared_library" target types it will try to link things into
@@ -591,11 +597,6 @@ test("gl_unittests") {
 
   if (use_glx) {
     sources += [ "glx_api_unittest.cc" ]
-  }
-
-  if (is_mac) {
-    sources += [ "gl_image_io_surface_unittest.cc" ]
-    frameworks = [ "IOSurface.framework" ]
   }
 
   if (is_win) {

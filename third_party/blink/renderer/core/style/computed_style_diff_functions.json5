@@ -87,6 +87,7 @@
                 "-webkit-border-horizontal-spacing",
                 "-webkit-border-vertical-spacing", "TextAutosizingMultiplier",
                 "ImplicitNamedGridColumnLines","ImplicitNamedGridRowLines", "NamedGridArea",
+                "initial-letter",
                 "grid-auto-rows", "grid-template-rows", "grid-template-columns",
                 "grid-auto-columns", "row-gap", "NamedGridAreaRowCount",
                 "NamedGridAreaColumnCount", "grid-auto-flow",
@@ -229,7 +230,7 @@
                 "content-visibility", "aspect-ratio", "overflow-clip-margin",
                 "-internal-align-self-block", "orphans", "widows",
                 "scrollbar-gutter", "break-after", "break-before",
-                "break-inside", "anchor-name"],
+                "break-inside"],
         methods_to_diff: [
           {
             method: "VerticalAlign()",
@@ -243,7 +244,13 @@
             method: "SkipsContents()",
             field_dependencies: ["content-visibility"]
           },
-        ]
+        ],
+	predicates_to_test: [
+	  {
+	    predicate: "a.AnchorNameDataEquivalent(b)",
+	    field_dependencies: ["anchor-name"],
+	  },
+	]
     },
     {
         name: "DiffNeedsPaintInvalidation",
@@ -256,8 +263,7 @@
                 "lighting-color", "shape-rendering", "clip-rule", "fill-rule",
                 "color-interpolation", "color-interpolation-filters", "paint-order",
                 "fill", "fill-opacity", "stroke", "stroke-opacity",
-                "-internal-visited-stroke", "stroke-dashoffset", "ColorSchemeForced",
-                "anchor-scroll"],
+                "-internal-visited-stroke", "stroke-dashoffset", "ColorSchemeForced"],
         methods_to_diff: [
           {
             method: "Visibility()",
@@ -283,10 +289,6 @@
             method: "AccentColorResolved()",
             field_dependencies: ["accent-color", "color"]
           },
-          {
-            method: "AnchorScroll()",
-            field_dependencies: ["anchor-scroll"],
-          }
         ],
         predicates_to_test: [
           {
@@ -296,10 +298,6 @@
           {
             predicate: "a.ShapeOutsideDataEquivalent(b)",
             field_dependencies: ["shape-outside"]
-          },
-          {
-            predicate: "a.ClipPathDataEquivalent(b)",
-            field_dependencies: ["clip-path"]
           },
           {
             predicate: "a.OutlineVisuallyEqual(b)",
@@ -329,6 +327,10 @@
             predicate: "a.StrokeDashArrayDataEquivalent(b)",
             field_dependencies: ["stroke-dasharray"]
           },
+	  {
+	    predicate: "a.AnchorScrollDataEquivalent(b)",
+	    field_dependencies: ["anchor-scroll"],
+	  },
         ]
     },
     {

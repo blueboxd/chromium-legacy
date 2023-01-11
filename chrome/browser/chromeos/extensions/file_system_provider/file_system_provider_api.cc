@@ -13,29 +13,17 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
-#include "chrome/browser/ash/crosapi/crosapi_ash.h"
-#include "chrome/browser/ash/crosapi/crosapi_manager.h"
-#include "chrome/browser/ash/crosapi/file_system_provider_service_ash.h"
-#include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
-#include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
-#include "chrome/browser/ash/file_system_provider/request_manager.h"
-#include "chrome/browser/ash/file_system_provider/request_value.h"
-#include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
 #include "chromeos/crosapi/mojom/file_system_provider.mojom.h"
 #include "storage/browser/file_system/watcher_manager.h"
 
-using ash::file_system_provider::MountOptions;
-using ash::file_system_provider::OpenedFiles;
-using ash::file_system_provider::ProvidedFileSystemInfo;
-using ash::file_system_provider::ProvidedFileSystemInterface;
-using ash::file_system_provider::ProvidedFileSystemObserver;
-using ash::file_system_provider::ProviderId;
-using ash::file_system_provider::RequestValue;
-using ash::file_system_provider::Service;
-using ash::file_system_provider::Watchers;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/guest_os/guest_os_terminal.h"
+#include "chrome/common/webui_url_constants.h"
+#endif
 
 namespace extensions {
 namespace {
@@ -119,6 +107,18 @@ std::vector<crosapi::mojom::FSPChangePtr> ParseChanges(
 
 }  // namespace
 
+std::string FileSystemProviderBase::GetProviderId() const {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Terminal app is the only non-extension to use fsp.
+  if (!extension()) {
+    CHECK(url::IsSameOriginWith(GURL(source_url()),
+                                GURL(chrome::kChromeUIUntrustedTerminalURL)));
+    return guest_os::kTerminalSystemAppId;
+  }
+#endif
+  return extension_id();
+}
+
 void FileSystemProviderBase::RespondWithError(const std::string& error) {
   if (error.empty()) {
     Respond(NoArguments());
@@ -172,7 +172,7 @@ ExtensionFunction::ResponseAction FileSystemProviderMountFunction::Run() {
   crosapi::mojom::FileSystemMetadataPtr metadata =
       crosapi::mojom::FileSystemMetadata::New();
   metadata->file_system_id = crosapi::mojom::FileSystemId::New();
-  metadata->file_system_id->provider = extension_id();
+  metadata->file_system_id->provider = GetProviderId();
   metadata->file_system_id->id = params->options.file_system_id;
   metadata->display_name = params->options.display_name;
   metadata->writable =
@@ -207,7 +207,7 @@ ExtensionFunction::ResponseAction FileSystemProviderUnmountFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   auto id = crosapi::mojom::FileSystemId::New();
-  id->provider = extension_id();
+  id->provider = GetProviderId();
   id->id = params->options.file_system_id;
   auto callback = base::BindOnce(
       &FileSystemProviderUnmountFunction::RespondWithError, this);
@@ -232,12 +232,12 @@ ExtensionFunction::ResponseAction FileSystemProviderGetAllFunction::Run() {
   crosapi::CrosapiManager::Get()
       ->crosapi_ash()
       ->file_system_provider_service_ash()
-      ->GetAllWithProfile(extension_id(), std::move(callback),
+      ->GetAllWithProfile(GetProviderId(), std::move(callback),
                           Profile::FromBrowserContext(browser_context()));
 #else
   if (!InterfaceAvailable())
     return RespondNow(Error(kInterfaceUnavailable));
-  GetRemote()->GetAll(extension_id(), std::move(callback));
+  GetRemote()->GetAll(GetProviderId(), std::move(callback));
 #endif
   return RespondLater();
 }
@@ -259,7 +259,7 @@ ExtensionFunction::ResponseAction FileSystemProviderGetFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   auto id = crosapi::mojom::FileSystemId::New();
-  id->provider = extension_id();
+  id->provider = GetProviderId();
   id->id = params->file_system_id;
   auto callback =
       base::BindOnce(&FileSystemProviderGetFunction::RespondWithInfo, this);
@@ -297,7 +297,7 @@ ExtensionFunction::ResponseAction FileSystemProviderNotifyFunction::Run() {
   auto callback =
       base::BindOnce(&FileSystemProviderNotifyFunction::RespondWithError, this);
   auto id = crosapi::mojom::FileSystemId::New();
-  id->provider = extension_id();
+  id->provider = GetProviderId();
   id->id = params->options.file_system_id;
 
   crosapi::mojom::FSPWatcherPtr watcher = crosapi::mojom::FSPWatcher::New();

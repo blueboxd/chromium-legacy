@@ -54,6 +54,7 @@
 #include "chrome/browser/ash/login/screens/pin_setup_screen.h"
 #include "chrome/browser/ash/login/screens/quick_start_screen.h"
 #include "chrome/browser/ash/login/screens/recommend_apps_screen.h"
+#include "chrome/browser/ash/login/screens/recovery_eligibility_screen.h"
 #include "chrome/browser/ash/login/screens/saml_confirm_password_screen.h"
 #include "chrome/browser/ash/login/screens/signin_fatal_error_screen.h"
 #include "chrome/browser/ash/login/screens/smart_privacy_protection_screen.h"
@@ -64,7 +65,7 @@
 #include "chrome/browser/ash/login/screens/user_creation_screen.h"
 #include "chrome/browser/ash/login/screens/welcome_screen.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/ash/login/oobe_ui.h"
 #include "components/account_id/account_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -158,12 +159,12 @@ class WizardController : public OobeUI::Observer {
 
   // Starts Demo Mode setup flow. The flow starts from network screen and reuses
   // some of regular OOBE screens. It consists of the following screens:
-  //    chromeos::DemoPreferencesScreenView::kScreenId
-  //    chromeos::NetworkScreenView::kScreenId
-  //    chromeos::EulaView::kScreenId
-  //    chromeos::ArcTermsOfServiceScreenView::kScreenId
-  //    chromeos::UpdateView::kScreenId
-  //    chromeos::DemoSetupScreenView::kScreenId
+  //    ash::DemoPreferencesScreenView::kScreenId
+  //    ash::NetworkScreenView::kScreenId
+  //    ash::EulaView::kScreenId
+  //    ash::ArcTermsOfServiceScreenView::kScreenId
+  //    ash::UpdateView::kScreenId
+  //    ash::DemoSetupScreenView::kScreenId
   void StartDemoModeSetup();
 
   // Simulates demo mode setup environment. If `demo_config` has a value, it
@@ -254,6 +255,12 @@ class WizardController : public OobeUI::Observer {
   // will be started it will call `Show()` on the first screen.
   void HideCurrentScreen();
 
+  // Allows tests to call `GetAutoEnrollmentController` without making those
+  // tests friend classes with access to everything.
+  AutoEnrollmentController* GetAutoEnrollmentControllerForTesting() {
+    return GetAutoEnrollmentController();
+  }
+
  private:
   // Create BaseScreen instances. These are owned by `screen_manager_`.
   std::vector<std::pair<OobeScreenId, std::unique_ptr<BaseScreen>>>
@@ -342,6 +349,8 @@ class WizardController : public OobeUI::Observer {
   void OnDemoPreferencesScreenExit(DemoPreferencesScreen::Result result);
   void OnDemoSetupScreenExit(DemoSetupScreen::Result result);
   void OnLocaleSwitchScreenExit(LocaleSwitchScreen::Result result);
+  void OnRecoveryEligibilityScreenExit(
+      RecoveryEligibilityScreen::Result result);
   void OnTermsOfServiceScreenExit(TermsOfServiceScreen::Result result);
   void OnFingerprintSetupScreenExit(FingerprintSetupScreen::Result result);
   void OnSyncConsentScreenExit(SyncConsentScreen::Result result);

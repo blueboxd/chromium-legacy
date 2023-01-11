@@ -13,6 +13,7 @@
 #import "components/omnibox/common/omnibox_features.h"
 #import "components/omnibox/common/omnibox_focus_state.h"
 #import "components/open_from_clipboard/clipboard_recent_content.h"
+#import "components/search_engines/template_url_service.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
@@ -21,6 +22,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/lens_commands.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/commands/qr_scanner_commands.h"
@@ -33,6 +35,7 @@
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/omnibox/keyboard_assist/omnibox_assistive_keyboard_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/keyboard_assist/omnibox_assistive_keyboard_views.h"
+#import "ios/chrome/browser/ui/omnibox/keyboard_assist/omnibox_keyboard_accessory_view.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_mediator.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_return_key_forwarding_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
@@ -75,6 +78,10 @@
 @property(nonatomic, strong)
     ZeroSuggestPrefetchHelper* zeroSuggestPrefetchHelper;
 
+// The keyboard accessory view. Will be nil if the app is running on an iPad.
+@property(nonatomic, strong)
+    OmniboxKeyboardAccessoryView* keyboardAccessoryView;
+
 @end
 
 @implementation OmniboxCoordinator {
@@ -99,9 +106,11 @@
       GetOmniboxSuggestionIcon(OmniboxSuggestionIconType::kDefaultFavicon);
   self.viewController.textInputDelegate = self;
   self.mediator = [[OmniboxMediator alloc] initWithIncognito:isIncognito];
-  self.mediator.templateURLService =
+
+  TemplateURLService* templateURLService =
       ios::TemplateURLServiceFactory::GetForBrowserState(
           self.browser->GetBrowserState());
+  self.mediator.templateURLService = templateURLService;
   self.mediator.faviconLoader =
       IOSChromeFaviconLoaderFactory::GetForBrowserState(
           self.browser->GetBrowserState());
@@ -128,14 +137,11 @@
 
   self.viewController.textChangeDelegate = _editView.get();
 
-  // Configure the textfield.
-  self.textField.suggestionCommandsEndpoint =
-      static_cast<id<OmniboxSuggestionCommands>>(
-          self.browser->GetCommandDispatcher());
-
   self.keyboardDelegate = [[OmniboxAssistiveKeyboardDelegateImpl alloc] init];
   self.keyboardDelegate.applicationCommandsHandler = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), ApplicationCommands);
+  self.keyboardDelegate.lensCommandsHandler =
+      HandlerForProtocol(self.browser->GetCommandDispatcher(), LensCommands);
   self.keyboardDelegate.qrScannerCommandsHandler = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), QRScannerCommands);
   self.keyboardDelegate.layoutGuideCenter =
@@ -145,8 +151,8 @@
   self.keyboardDelegate.browserCommandsHandler =
       static_cast<id<BrowserCommands>>(self.browser->GetCommandDispatcher());
   self.keyboardDelegate.omniboxTextField = self.textField;
-  ConfigureAssistiveKeyboardViews(self.textField, kDotComTLD,
-                                  self.keyboardDelegate);
+  self.keyboardAccessoryView = ConfigureAssistiveKeyboardViews(
+      self.textField, kDotComTLD, self.keyboardDelegate, templateURLService);
 
   if (base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetching)) {
     self.zeroSuggestPrefetchHelper = [[ZeroSuggestPrefetchHelper alloc]
@@ -162,6 +168,12 @@
   self.editController = nil;
   self.viewController = nil;
   self.mediator.templateURLService = nullptr;  // Unregister the observer.
+  if (self.keyboardAccessoryView) {
+    // Unregister the observer.
+    self.keyboardAccessoryView.templateURLService = nil;
+  }
+
+  self.keyboardAccessoryView = nil;
   self.mediator = nil;
   self.returnDelegate = nil;
   self.zeroSuggestPrefetchHelper = nil;

@@ -14,7 +14,6 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
-#include "cc/cc_export.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/display_resource_provider_skia.h"
 #include "components/viz/service/display_embedder/buffer_queue.h"
@@ -75,6 +74,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   gfx::Rect GetCurrentFramebufferDamage() const override;
   void Reshape(const OutputSurface::ReshapeParams& reshape_params) override;
   void EnsureMinNumberOfBuffers(int n) override;
+  gpu::Mailbox GetPrimaryPlaneOverlayTestingMailbox() override;
 
  protected:
   bool CanPartialSwap() override;
@@ -261,6 +261,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // quads. The default values perform no adjustment.
   sk_sp<SkColorFilter> GetColorSpaceConversionFilter(
       const gfx::ColorSpace& src,
+      absl::optional<uint32_t> src_bit_depth,
       absl::optional<gfx::HDRMetadata> src_hdr_metadata,
       const gfx::ColorSpace& dst,
       float resource_offset = 0.0f,
@@ -281,7 +282,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
     bool is_root;
   };
 
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
   bool CanSkipRenderPassOverlay(
       AggregatedRenderPassId render_pass_id,
       const AggregatedRenderPassDrawQuad* rpdq,
@@ -307,7 +308,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
     return static_cast<DisplayResourceProviderSkia*>(resource_provider_);
   }
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   // Gets a cached or new mailbox for a 1x1 shared image of the specified color.
   // There will only be one allocated image for a given color at any time which
   // can be reused for same-colored quads in the same frame or across frames.
@@ -384,9 +385,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
     OverlayLock(DisplayResourceProvider* resource_provider,
                 ResourceId resource_id);
 
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
     explicit OverlayLock(gpu::Mailbox mailbox);
-#endif  // BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
 
     ~OverlayLock();
 
@@ -397,11 +398,11 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
     OverlayLock& operator=(const OverlayLock&) = delete;
 
     const gpu::Mailbox& mailbox() const {
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
       if (render_pass_lock.has_value()) {
         return *render_pass_lock;
       }
-#endif  // BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
 
       DCHECK(resource_lock.has_value());
       return resource_lock->mailbox();
@@ -430,9 +431,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
     absl::optional<DisplayResourceProviderSkia::ScopedReadLockSharedImage>
         resource_lock;
 
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
     absl::optional<gpu::Mailbox> render_pass_lock;
-#endif  // BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
   };
 
   // Locks for overlays that are pending for SwapBuffers().
@@ -446,7 +447,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   base::circular_deque<std::vector<OverlayLock>>
       read_lock_release_fence_overlay_locks_;
 
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
   class OverlayLockComparator {
    public:
     using is_transparent = void;
@@ -467,7 +468,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // A feature flag that allows unchanged render pass draw quad in the overlay
   // list to skip.
   const bool can_skip_render_pass_overlay_;
-#endif  // BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
 
   const bool is_using_raw_draw_;
 
@@ -481,7 +482,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // capabilities().renderer_allocates_images = true.
   std::unique_ptr<BufferQueue> buffer_queue_;
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   struct SolidColorBuffer {
     gpu::Mailbox mailbox;
     int use_count;

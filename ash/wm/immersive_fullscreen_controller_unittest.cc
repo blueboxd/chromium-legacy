@@ -4,7 +4,6 @@
 
 #include "chromeos/ui/frame/immersive/immersive_fullscreen_controller.h"
 
-#include "ash/frame/header_view.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -17,6 +16,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/ui/frame/header_view.h"
 #include "chromeos/ui/frame/immersive/immersive_fullscreen_controller_delegate.h"
 #include "chromeos/ui/frame/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ui/aura/client/aura_constants.h"
@@ -61,7 +61,8 @@ class TestBubbleDialogDelegate : public views::BubbleDialogDelegateView {
 class MockImmersiveFullscreenControllerDelegate
     : public ImmersiveFullscreenControllerDelegate {
  public:
-  MockImmersiveFullscreenControllerDelegate(views::View* top_container_view)
+  explicit MockImmersiveFullscreenControllerDelegate(
+      views::View* top_container_view)
       : top_container_view_(top_container_view),
         enabled_(false),
         visible_fraction_(1) {}
@@ -179,7 +180,7 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
 
   aura::Window* window() { return widget_->GetNativeWindow(); }
 
-  HeaderView* immersive_delegate() {
+  chromeos::HeaderView* immersive_delegate() {
     return NonClientFrameViewAsh::Get(window())->GetHeaderView();
   }
 
@@ -1163,4 +1164,4 @@ TEST_F(ImmersiveFullscreenControllerTest, Shelf) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 }
 
-}  // namespase ash
+}  // namespace ash

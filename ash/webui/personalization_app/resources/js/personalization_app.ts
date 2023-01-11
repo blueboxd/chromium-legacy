@@ -27,8 +27,9 @@ import './personalization_test_api.js';
 import './personalization_toast_element.js';
 import './personalization_breadcrumb_element.js';
 import './personalization_main_element.js';
-import './personalization_theme_element.js';
-import './theme/theme_header_element.js';
+import './theme/color_scheme_icon_svg_element.js';
+import './theme/personalization_theme_element.js';
+import './theme/dynamic_color_element.js';
 import './user/avatar_camera_element.js';
 import './user/avatar_list_element.js';
 import './user/user_preview_element.js';
@@ -75,11 +76,12 @@ export {reduce} from './personalization_reducers.js';
 export {Paths, PersonalizationRouter} from './personalization_router_element.js';
 export {emptyState, PersonalizationState} from './personalization_state.js';
 export {PersonalizationStore} from './personalization_store.js';
-export {PersonalizationThemeElement} from './personalization_theme_element.js';
+export {PersonalizationThemeElement} from './theme/personalization_theme_element.js';
 export {PersonalizationToastElement} from './personalization_toast_element.js';
 export {setDarkModeEnabledAction, SetDarkModeEnabledAction, ThemeActionName, ThemeActions} from './theme/theme_actions.js';
 export {setThemeProviderForTesting} from './theme/theme_interface_provider.js';
-export {ThemeHeader} from './theme/theme_header_element.js';
+export {ColorSchemeIconSvgElement} from './theme/color_scheme_icon_svg_element.js';
+export {DynamicColorElement} from './theme/dynamic_color_element.js';
 export {ThemeObserver} from './theme/theme_observer.js';
 export {AvatarCamera, AvatarCameraMode} from './user/avatar_camera_element.js';
 export {AvatarList} from './user/avatar_list_element.js';
@@ -90,7 +92,6 @@ export {UserPreview} from './user/user_preview_element.js';
 export {UserSubpage} from './user/user_subpage_element.js';
 export {GetUserMediaProxy, getWebcamUtils, setWebcamUtilsForTesting} from './user/webcam_utils_proxy.js';
 export {getCountText, getNumberOfGridItemsPerRow} from './utils.js';
-export {CollectionsGrid} from './wallpaper/collections_grid_element.js';
 export {DefaultImageSymbol, DisplayableImage, kDefaultImageSymbol, kMaximumLocalImagePreviews} from './wallpaper/constants.js';
 export {GooglePhotosAlbums} from './wallpaper/google_photos_albums_element.js';
 export {GooglePhotosCollection} from './wallpaper/google_photos_collection_element.js';
@@ -101,7 +102,7 @@ export {LocalImages} from './wallpaper/local_images_element.js';
 export {isDefaultImage, isFilePath, isGooglePhotosPhoto, isWallpaperImage} from './wallpaper/utils.js';
 export * from './wallpaper/wallpaper_actions.js';
 export {WallpaperCollections} from './wallpaper/wallpaper_collections_element.js';
-export {cancelPreviewWallpaper, confirmPreviewWallpaper, fetchCollections, fetchGooglePhotosAlbum, fetchGooglePhotosAlbums, fetchGooglePhotosPhotos, fetchLocalData, getDefaultImageThumbnail, getLocalImages, initializeBackdropData, initializeGooglePhotosData, selectWallpaper, setCurrentWallpaperLayout, setDailyRefreshCollectionId, updateDailyRefreshWallpaper} from './wallpaper/wallpaper_controller.js';
+export {selectGooglePhotosAlbum, cancelPreviewWallpaper, confirmPreviewWallpaper, fetchCollections, fetchGooglePhotosAlbum, fetchGooglePhotosAlbums, fetchGooglePhotosPhotos, fetchLocalData, getDefaultImageThumbnail, getLocalImages, initializeBackdropData, initializeGooglePhotosData, selectWallpaper, setCurrentWallpaperLayout, setDailyRefreshCollectionId, updateDailyRefreshWallpaper} from './wallpaper/wallpaper_controller.js';
 export {WallpaperError} from './wallpaper/wallpaper_error_element.js';
 export {WallpaperFullscreen} from './wallpaper/wallpaper_fullscreen_element.js';
 export {WallpaperGridItem} from './wallpaper/wallpaper_grid_item_element.js';
@@ -121,9 +122,12 @@ if (link) {
 document.title = loadTimeData.getString('personalizationTitle');
 
 if (loadTimeData.getBoolean('isJellyEnabled')) {
-  // After the Jelly experiment is launched, replace `cros_styles.css` with
-  // `theme/colors.css` directly in `index.html`.
-  document.querySelector('link[href*=\'cros_styles.css\']')
-      ?.setAttribute('href', 'chrome://theme/colors.css?sets=legacy');
+  // After the Jelly experiment is launched, add the link directly to
+  // `index.html`.
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'chrome://theme/colors.css?sets=legacy,sys';
+  document.head.appendChild(link);
+  document.body.className = 'jelly-enabled';
   startColorChangeUpdater();
 }

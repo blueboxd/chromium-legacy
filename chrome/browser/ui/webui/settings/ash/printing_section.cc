@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/webui/settings/ash/printing_section.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/ui/webui/settings/ash/cups_printers_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom-forward.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
@@ -16,14 +18,14 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
-namespace chromeos {
-namespace settings {
+namespace ash::settings {
 
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
 namespace mojom {
-using ::ash::settings::mojom::SearchResultDefaultRank;
-using ::ash::settings::mojom::SearchResultIcon;
-using ::ash::settings::mojom::SearchResultType;
+using ::chromeos::settings::mojom::kPrintingDetailsSubpagePath;
+using ::chromeos::settings::mojom::kPrintingSectionPath;
+using ::chromeos::settings::mojom::Section;
+using ::chromeos::settings::mojom::Setting;
+using ::chromeos::settings::mojom::Subpage;
 }  // namespace mojom
 
 namespace {
@@ -121,6 +123,10 @@ void PrintingSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"editPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_EDIT},
       {"viewPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_VIEW},
       {"removePrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_REMOVE},
+      {"cupsPrintersViewPpd", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_VIEW_PPD},
+      {"cupsPrintersViewPpdErrorMessage",
+       IDS_SETTINGS_PRINTING_CUPS_VIEW_PPD_ERROR_MESSAGE},
+      {"cupsPrintersPpdFor", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_PPD_INTRO},
       {"setupPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SETUP_BUTTON},
       {"setupPrinterAria",
        IDS_SETTINGS_PRINTING_CUPS_PRINTER_SETUP_BUTTON_ARIA},
@@ -199,6 +205,8 @@ void PrintingSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PRINTING_CUPS_PRINTER_CONFIGURING_MESSAGE},
       {"printerManufacturer", IDS_SETTINGS_PRINTING_CUPS_PRINTER_MANUFACTURER},
       {"selectDriver", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SELECT_DRIVER},
+      {"advancedConfigSelectDriver",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_CONFIG_SELECT_DRIVER},
       {"selectDriverButtonText",
        IDS_SETTINGS_PRINTING_CUPS_PRINTER_BUTTON_SELECT_DRIVER},
       {"selectDriverButtonAriaLabel",
@@ -276,6 +284,7 @@ void PrintingSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "printingCUPSPrintPpdLearnMoreUrl",
       GetHelpUrlWithBoard(chrome::kCupsPrintPPDLearnMoreURL));
+  html_source->AddBoolean("isViewPpdEnabled", features::IsViewPpdEnabled());
 }
 
 void PrintingSection::AddHandlers(content::WebUI* web_ui) {
@@ -323,8 +332,9 @@ void PrintingSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                             kPrintingDetailsSettings, generator);
 }
 
-void PrintingSection::OnPrintersChanged(PrinterClass printer_class,
-                                        const std::vector<Printer>& printers) {
+void PrintingSection::OnPrintersChanged(
+    chromeos::PrinterClass printer_class,
+    const std::vector<chromeos::Printer>& printers) {
   UpdateSavedPrintersSearchTags();
 }
 
@@ -333,12 +343,11 @@ void PrintingSection::UpdateSavedPrintersSearchTags() {
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
   updater.RemoveSearchTags(GetSavedPrintersSearchConcepts());
 
-  std::vector<Printer> saved_printers =
-      printers_manager_->GetPrinters(PrinterClass::kSaved);
+  std::vector<chromeos::Printer> saved_printers =
+      printers_manager_->GetPrinters(chromeos::PrinterClass::kSaved);
   if (!saved_printers.empty()) {
     updater.AddSearchTags(GetSavedPrintersSearchConcepts());
   }
 }
 
-}  // namespace settings
-}  // namespace chromeos
+}  // namespace ash::settings

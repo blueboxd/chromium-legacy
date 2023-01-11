@@ -154,9 +154,9 @@ TestAutofillClient::CreateCreditCardInternalAuthenticator(
 void TestAutofillClient::ShowAutofillSettings(bool show_credit_card_settings) {}
 
 void TestAutofillClient::ShowUnmaskPrompt(
-    const CreditCard& card,
-    UnmaskCardReason reason,
-    base::WeakPtr<CardUnmaskDelegate> delegate) {}
+    const autofill::CreditCard& card,
+    const autofill::CardUnmaskPromptOptions& card_unmask_prompt_options,
+    base::WeakPtr<autofill::CardUnmaskDelegate> delegate) {}
 
 void TestAutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {}
 
@@ -314,7 +314,8 @@ bool TestAutofillClient::IsTouchToFillCreditCardSupported() {
 }
 
 bool TestAutofillClient::ShowTouchToFillCreditCard(
-    base::WeakPtr<TouchToFillDelegate> delegate) {
+    base::WeakPtr<TouchToFillDelegate> delegate,
+    base::span<const autofill::CreditCard* const> cards_to_suggest) {
   return false;
 }
 
@@ -349,7 +350,7 @@ void TestAutofillClient::ShowVirtualCardErrorDialog(
   autofill_error_dialog_context_ = context;
 }
 
-bool TestAutofillClient::IsAutocompleteEnabled() {
+bool TestAutofillClient::IsAutocompleteEnabled() const {
   return true;
 }
 
@@ -384,6 +385,10 @@ void TestAutofillClient::OpenPromoCodeOfferDetailsURL(const GURL& url) {}
 
 LogManager* TestAutofillClient::GetLogManager() const {
   return log_manager_.get();
+}
+
+FormInteractionsFlowId TestAutofillClient::GetCurrentFormInteractionsFlowId() {
+  return {};
 }
 
 void TestAutofillClient::LoadRiskData(

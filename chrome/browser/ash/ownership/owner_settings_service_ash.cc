@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_checker.h"
@@ -216,27 +217,23 @@ OwnerSettingsServiceAsh::OwnerSettingsServiceAsh(
       base::BindOnce(&OwnerSettingsServiceAsh::OnEasyUnlockKeyOpsFinished,
                      weak_factory_.GetWeakPtr()));
   // The ProfileManager may be null in unit tests.
-  if (g_browser_process->profile_manager())
-    g_browser_process->profile_manager()->AddObserver(this);
+  if (ProfileManager* profile_manager = g_browser_process->profile_manager())
+    profile_manager_observation_.Observe(profile_manager);
 
   auto ready_callback = base::BindOnce(
       &OwnerSettingsServiceAsh::OnTPMTokenReady, weak_factory_.GetWeakPtr());
   waiting_for_tpm_token_ = true;
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
-      base::BindOnce(&crypto::IsTPMTokenEnabled,
-                     base::BindOnce(OnTPMTokenReadyOnIOThread,
-                                    base::SequencedTaskRunnerHandle::Get(),
-                                    std::move(ready_callback))));
+      base::BindOnce(
+          &crypto::IsTPMTokenEnabled,
+          base::BindOnce(OnTPMTokenReadyOnIOThread,
+                         base::SequencedTaskRunner::GetCurrentDefault(),
+                         std::move(ready_callback))));
 }
 
 OwnerSettingsServiceAsh::~OwnerSettingsServiceAsh() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  // The ProfileManager may be null in unit tests.
-  if (g_browser_process->profile_manager())
-    g_browser_process->profile_manager()->RemoveObserver(this);
-
   if (device_settings_service_)
     device_settings_service_->RemoveObserver(this);
 
@@ -368,8 +365,12 @@ void OwnerSettingsServiceAsh::OnProfileAdded(Profile* profile) {
   if (profile != profile_)
     return;
 
-  g_browser_process->profile_manager()->RemoveObserver(this);
+  profile_manager_observation_.Reset();
   ReloadKeypair();
+}
+
+void OwnerSettingsServiceAsh::OnProfileManagerDestroying() {
+  profile_manager_observation_.Reset();
 }
 
 void OwnerSettingsServiceAsh::OwnerKeySet(bool success) {

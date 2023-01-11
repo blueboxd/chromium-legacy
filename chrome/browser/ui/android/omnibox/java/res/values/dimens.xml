@@ -34,11 +34,15 @@ found in the LICENSE file.
     <dimen name="location_bar_min_url_width">68dp</dimen>
     <dimen name="location_bar_min_verbose_status_text_width">48dp</dimen>
 
-    <dimen name="location_bar_lateral_padding">8dp</dimen>
+    <dimen name="location_bar_start_padding">4dp</dimen>
+    <dimen name="location_bar_start_padding_modern">0dp</dimen>
+    <dimen name="location_bar_end_padding">8dp</dimen>
     <dimen name="fake_search_box_lateral_padding">10dp</dimen>
+    <dimen name="incognito_badge_lateral_padding">4dp</dimen>
     <dimen name="location_bar_status_icon_width">24dp</dimen>
-    <dimen name="location_bar_icon_end_padding">4dp</dimen>
-    <dimen name="location_bar_icon_end_padding_focused">16dp</dimen>
+    <dimen name="location_bar_status_icon_bg_size">32dp</dimen>
+    <dimen name="location_bar_icon_end_padding">0dp</dimen>
+    <dimen name="location_bar_icon_end_padding_focused">12dp</dimen>
     <dimen name="location_bar_verbose_start_padding_verbose_text">4dp</dimen>
     <dimen name="location_bar_status_extra_padding">4dp</dimen>
     <dimen name="location_bar_url_action_offset">-8dp</dimen>
@@ -65,6 +69,10 @@ found in the LICENSE file.
     <dimen name="omnibox_suggestion_compact_padding">6dp</dimen>
     <dimen name="omnibox_suggestion_list_divider_line_padding">12dp</dimen>
     <dimen name="omnibox_suggestion_list_padding_bottom">8dp</dimen>
+    <dimen name="omnibox_suggestion_list_active_top_small_margin">8dp</dimen>
+    <dimen name="omnibox_suggestion_list_active_top_big_margin">16dp</dimen>
+    <dimen name="omnibox_suggestion_list_non_active_top_small_margin">4dp</dimen>
+    <dimen name="omnibox_suggestion_list_non_active_top_big_margin">12dp</dimen>
     <dimen name="omnibox_suggestion_start_offset_without_icon">18dp</dimen>
     <dimen name="omnibox_carousel_suggestion_padding">12dp</dimen>
     <dimen name="omnibox_carousel_suggestion_small_bottom_padding">4dp</dimen>
@@ -78,10 +86,12 @@ found in the LICENSE file.
     <dimen name="omnibox_suggestion_36dp_icon_margin_start">10dp</dimen>
     <dimen name="omnibox_suggestion_36dp_icon_margin_end">10dp</dimen>
     <dimen name="omnibox_suggestion_24dp_icon_margin_start">16dp</dimen>
+    <dimen name="omnibox_suggestion_24dp_icon_margin_start_modern">12dp</dimen>
     <dimen name="omnibox_suggestion_24dp_icon_margin_end">16dp</dimen>
     <dimen name="omnibox_suggestion_favicon_size">24dp</dimen>
     <dimen name="omnibox_suggestion_decoration_image_size">36dp</dimen>
     <dimen name="omnibox_suggestion_icon_area_size">56dp</dimen>
+    <dimen name="omnibox_suggestion_icon_area_size_modern">52dp</dimen>
 
     <dimen name="omnibox_suggestion_action_icon_width">48dp</dimen>
     <dimen name="omnibox_suggestion_refine_view_modern_end_padding">4dp</dimen>

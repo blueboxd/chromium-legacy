@@ -52,7 +52,6 @@
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "components/power_scheduler/power_mode_arbiter.h"
 #include "components/variations/variations_ids_provider.h"
-#include "content/app/mojo/mojo_init.h"
 #include "content/app/mojo_ipc_support.h"
 #include "content/browser/browser_main.h"
 #include "content/browser/browser_process_io_thread.h"
@@ -133,6 +132,7 @@
 
 #include "base/file_descriptor_store.h"
 #include "base/posix/global_descriptors.h"
+#include "content/browser/posix_file_descriptor_info_impl.h"
 #include "content/public/common/content_descriptors.h"
 
 #if !BUILDFLAG(IS_MAC)
@@ -188,7 +188,6 @@
 
 #if BUILDFLAG(IS_FUCHSIA)
 #include "base/fuchsia/system_info.h"
-#include "content/public/common/result_codes.h"
 #endif
 
 #if BUILDFLAG(BUILD_TFLITE_WITH_XNNPACK)
@@ -315,38 +314,18 @@ pid_t LaunchZygoteHelper(base::CommandLine* cmd_line,
 
   // Start up the sandbox host process and get the file descriptor for the
   // sandboxed processes to talk to it.
-  base::FileHandleMappingVector additional_remapped_fds;
-  additional_remapped_fds.emplace_back(
-      SandboxHostLinux::GetInstance()->GetChildSocket(), GetSandboxFD());
+  std::unique_ptr<PosixFileDescriptorInfo> additional_remapped_fds(
+      PosixFileDescriptorInfoImpl::Create());
+  additional_remapped_fds->Share(
+      GetSandboxFD(), SandboxHostLinux::GetInstance()->GetChildSocket());
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // Create the file descriptor for Cros startup data and pass it.
-  // This FD will be used to obtain BrowserInitParams in Zygote process.
-  // Note that this requires Mojo, but Mojo cannot be fully initialized this
-  // due to dependencies on base::FeatureList. So we also temporarily initialize
-  // Mojo and then shut it down immediately after preparing the FD. This is
-  // inexpensive, an the features which control Mojo behavior aren't relevant
-  // for this operation.
-  //
-  // TODO(https://crbug.com/1299283): This will need to be changed before
-  // MojoIpcz experimentation can happen on Lacros, as it results in
-  // inconsistent MojoIpcz feature status across Mojo initializations.
-  mojo::core::Init();
-  base::ScopedFD cros_startup_fd =
-      chromeos::BrowserInitParams::CreateStartupData();
-  mojo::core::ShutDown();
-
-  if (cros_startup_fd.is_valid()) {
-    constexpr int kStartupDataFD =
-        kCrosStartupDataDescriptor + base::GlobalDescriptors::kBaseDescriptor;
-    cmd_line->AppendSwitchASCII(chromeos::switches::kCrosStartupDataFD,
-                                base::NumberToString(kStartupDataFD));
-    additional_remapped_fds.emplace_back(cros_startup_fd.get(), kStartupDataFD);
-  }
+  GetContentClient()->browser()->GetAdditionalMappedFilesForZygote(
+      cmd_line, additional_remapped_fds.get());
 #endif
 
   return ZygoteHostImpl::GetInstance()->LaunchZygote(
-      cmd_line, control_fd, std::move(additional_remapped_fds));
+      cmd_line, control_fd, additional_remapped_fds->GetMapping());
 }
 
 // Initializes the Zygote sandbox host. No thread should be created before this
@@ -846,11 +825,7 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
   // ensure the cache is populated.
   // Making the blocking call now also avoids the potential for blocking later
   // in when it might be user-visible.
-  if (!base::FetchAndCacheSystemInfo()) {
-    // Returning `RESULT_CODE_KILLED` instead of
-    // TerminateForFatalInitializationError() to avoid CHECK.
-    return ResultCode::RESULT_CODE_KILLED;
-  }
+  base::FetchAndCacheSystemInfo();
 #endif
 
   if (!GetContentClient())
@@ -1284,11 +1259,5 @@ void ContentMainRunnerImpl::Shutdown() {
 std::unique_ptr<ContentMainRunner> ContentMainRunner::Create() {
   return ContentMainRunnerImpl::Create();
 }
-
-#if BUILDFLAG(IS_ANDROID)
-ContentMainDelegate* GetContentMainDelegateForTesting() {
-  return GetContentMainDelegate();
-}
-#endif
 
 }  // namespace content

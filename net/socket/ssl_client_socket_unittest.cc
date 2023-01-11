@@ -1597,6 +1597,8 @@ TEST_P(SSLClientSocketVersionTest, ConnectBadValidityIgnoreCertErrors) {
   EXPECT_TRUE(sock_->IsConnected());
 }
 
+// Client certificates are disabled on iOS.
+#if !BUILDFLAG(IS_IOS)
 // Attempt to connect to a page which requests a client certificate. It should
 // return an error code on connect.
 TEST_P(SSLClientSocketVersionTest, ConnectClientAuthCertRequested) {
@@ -1639,6 +1641,7 @@ TEST_P(SSLClientSocketVersionTest, ConnectClientAuthSendNullCert) {
   sock_->Disconnect();
   EXPECT_FALSE(sock_->IsConnected());
 }
+#endif  // !IS_IOS
 
 // TODO(wtc): Add unit tests for IsConnectedAndIdle:
 //   - Server closes an SSL connection (with a close_notify alert message).
@@ -2437,28 +2440,71 @@ TEST_F(SSLClientSocketTest, CipherSuiteDisables) {
   EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
 }
 
-// Test that connecting to a server only supporting TLS 1.0 will fail and
-// results in ERR_SSL_VERSION_OR_CIPHER_MISMATCH.
-TEST_F(SSLClientSocketTest, TLS1_NotSupported) {
-  SSLServerConfig config;
-  config.version_max = SSL_PROTOCOL_VERSION_TLS1;
-  config.version_min = SSL_PROTOCOL_VERSION_TLS1;
-  ASSERT_TRUE(StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, config));
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
-}
+// Test that TLS 1.0 and 1.1 are no longer supported.
+TEST_F(SSLClientSocketTest, LegacyTLSVersions) {
+  const struct {
+    uint16_t server_version;
+    absl::optional<uint16_t> client_version_min;
+    bool feature = true;
+    bool expect_error;
+  } kTests[] = {
+      // By default, TLS 1.0 and 1.1 should be disabled and will not be
+      // negotiated.
+      {.server_version = SSL_PROTOCOL_VERSION_TLS1, .expect_error = true},
+      {.server_version = SSL_PROTOCOL_VERSION_TLS1_1, .expect_error = true},
+      {.server_version = SSL_PROTOCOL_VERSION_TLS1,
+       .feature = false,
+       .expect_error = true},
+      {.server_version = SSL_PROTOCOL_VERSION_TLS1_1,
+       .feature = false,
+       .expect_error = true},
 
-// Test that connecting to a server only supporting TLS 1.1 will fail and
-// results in ERR_SSL_VERSION_OR_CIPHER_MISMATCH.
-TEST_F(SSLClientSocketTest, TLS1_1_NotSupported) {
-  SSLServerConfig config;
-  config.version_max = SSL_PROTOCOL_VERSION_TLS1_1;
-  config.version_min = SSL_PROTOCOL_VERSION_TLS1_1;
-  ASSERT_TRUE(StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, config));
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
+      // Even if enabled at the client, TLS 1.0 and 1.1 should be disabled.
+      {.server_version = SSL_PROTOCOL_VERSION_TLS1,
+       .client_version_min = SSL_PROTOCOL_VERSION_TLS1,
+       .expect_error = true},
+      {.server_version = SSL_PROTOCOL_VERSION_TLS1_1,
+       .client_version_min = SSL_PROTOCOL_VERSION_TLS1,
+       .expect_error = true},
+
+      // If `kSSLMinVersionAtLeastTLS12` is disabled, the `version_min` setting
+      // should take effect.
+      {.server_version = SSL_PROTOCOL_VERSION_TLS1,
+       .client_version_min = SSL_PROTOCOL_VERSION_TLS1,
+       .feature = false,
+       .expect_error = false},
+      {.server_version = SSL_PROTOCOL_VERSION_TLS1_1,
+       .client_version_min = SSL_PROTOCOL_VERSION_TLS1,
+       .feature = false,
+       .expect_error = false},
+  };
+  for (const auto& test : kTests) {
+    base::test::ScopedFeatureList feature_list;
+    if (!test.feature) {
+      // TODO(https://crbug.com/1376584): When this feature is removed, this
+      // test can be simplified.
+      feature_list.InitAndDisableFeature(features::kSSLMinVersionAtLeastTLS12);
+    }
+
+    SSLServerConfig config;
+    config.version_max = test.server_version;
+    config.version_min = test.server_version;
+    ASSERT_TRUE(StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, config));
+    int rv;
+
+    if (test.client_version_min) {
+      SSLContextConfig client_context_config;
+      client_context_config.version_min = *test.client_version_min;
+      ssl_config_service_->UpdateSSLConfigAndNotify(client_context_config);
+    }
+
+    ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+    if (test.expect_error) {
+      EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
+    } else {
+      EXPECT_THAT(rv, IsOk());
+    }
+  }
 }
 
 // When creating an SSLClientSocket, it is allowed to pass in a
@@ -2699,6 +2745,8 @@ TEST_P(SSLClientSocketVersionTest, VerifyReturnChainProperlyOrdered) {
   EXPECT_FALSE(sock_->IsConnected());
 }
 
+// Client certificates are disabled on iOS.
+#if !BUILDFLAG(IS_IOS)
 INSTANTIATE_TEST_SUITE_P(TLSVersion,
                          SSLClientSocketCertRequestInfoTest,
                          ValuesIn(GetTLSVersions()));
@@ -2776,6 +2824,7 @@ TEST_P(SSLClientSocketCertRequestInfoTest, CertKeyTypes) {
     EXPECT_EQ(CLIENT_CERT_ECDSA_SIGN, request_info->cert_key_types[1]);
   }
 }
+#endif  // !IS_IOS
 
 // Tests that the Certificate Transparency (RFC 6962) TLS extension is
 // supported.
@@ -3627,6 +3676,8 @@ TEST_F(SSLClientSocketTest, AlpnClientDisabled) {
   EXPECT_EQ(kProtoUnknown, sock_->GetNegotiatedProtocol());
 }
 
+// Client certificates are disabled on iOS.
+#if !BUILDFLAG(IS_IOS)
 // Connect to a server requesting client authentication, do not send
 // any client certificates. It should refuse the connection.
 TEST_P(SSLClientSocketVersionTest, NoCert) {
@@ -3769,6 +3820,7 @@ TEST_F(SSLClientSocketTest, ClearSessionCacheOnClientCertChange) {
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsError(ERR_BAD_SSL_CLIENT_AUTH_CERT));
 }
+#endif  // !IS_IOS
 
 HashValueVector MakeHashValueVector(uint8_t value) {
   HashValueVector out;
@@ -4746,7 +4798,11 @@ TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTReject) {
   rv = WriteAndWait(kRequest);
   EXPECT_EQ(ERR_EARLY_DATA_REJECTED, rv);
 
-  // Retrying the connection should succeed.
+  // Run the event loop so the rejection has reached the TLS session cache.
+  base::RunLoop().RunUntilIdle();
+
+  // Now that the session cache has been updated, retrying the connection
+  // should succeed.
   socket = MakeClient(true);
   ASSERT_THAT(Connect(), IsOk());
   ASSERT_THAT(MakeHTTPRequest(ssl_socket()), IsOk());
@@ -4778,7 +4834,11 @@ TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTWrongVersion) {
   rv = WriteAndWait(kRequest);
   EXPECT_EQ(ERR_WRONG_VERSION_ON_EARLY_DATA, rv);
 
-  // Retrying the connection should succeed.
+  // Run the event loop so the rejection has reached the TLS session cache.
+  base::RunLoop().RunUntilIdle();
+
+  // Now that the session cache has been updated, retrying the connection
+  // should succeed.
   socket = MakeClient(true);
   ASSERT_THAT(Connect(), IsOk());
   ASSERT_THAT(MakeHTTPRequest(ssl_socket()), IsOk());
@@ -5429,6 +5489,12 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ValuesIn(kSSLHandshakeDetailsParams));
 
 TEST_P(SSLHandshakeDetailsTest, Metrics) {
+  // TLS 1.0 and 1.1 are unreachable by default.
+  // TODO(https://crbug.com/1376584): When this feature is removed, just delete
+  // the TLS 1.0 and 1.1 test cases.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kSSLMinVersionAtLeastTLS12);
+
   // Enable all test features in the server.
   SSLServerConfig server_config;
   server_config.version_min = SSL_PROTOCOL_VERSION_TLS1;
@@ -5548,6 +5614,8 @@ TEST_F(SSLClientSocketZeroRTTTest, EarlyDataReasonNoResume) {
   int rv = ReadAndWait(buf.get(), 4096);
   EXPECT_EQ(ERR_EARLY_DATA_REJECTED, rv);
 
+  // The histogram may be record asynchronously.
+  base::RunLoop().RunUntilIdle();
   histograms.ExpectUniqueSample(kReasonHistogram,
                                 ssl_early_data_session_not_resumed, 1);
 }

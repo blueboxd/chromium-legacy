@@ -40,10 +40,12 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/single_task_sequence.h"
 #include "gpu/command_buffer/service/skia_utils.h"
+#include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/service/context_url.h"
 #include "gpu/vulkan/buildflags.h"
 #include "skia/buildflags.h"
 #include "skia/ext/legacy_display_globals.h"
+#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrYUVABackendTextures.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -870,13 +872,16 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(
       base::BindOnce(&SkiaOutputSurfaceImpl::ContextLost, weak_ptr_);
   auto schedule_gpu_task = base::BindRepeating(
       &SkiaOutputSurfaceImpl::ScheduleOrRetainGpuTask, weak_ptr_);
+  auto add_child_window_to_browser_callback = base::BindRepeating(
+      &SkiaOutputSurfaceImpl::AddChildWindowToBrowser, weak_ptr_);
 
   impl_on_gpu_ = SkiaOutputSurfaceImplOnGpu::Create(
       dependency_, renderer_settings_, gpu_task_scheduler_->GetSequenceId(),
       display_compositor_controller_->controller_on_gpu(),
       std::move(did_swap_buffer_complete_callback),
       std::move(buffer_presented_callback), std::move(context_lost_callback),
-      std::move(schedule_gpu_task), std::move(vsync_callback_runner));
+      std::move(schedule_gpu_task), std::move(vsync_callback_runner),
+      std::move(add_child_window_to_browser_callback));
   if (!impl_on_gpu_) {
     *result = false;
   } else {
@@ -1042,6 +1047,13 @@ void SkiaOutputSurfaceImpl::BufferPresented(
   }
 }
 
+void SkiaOutputSurfaceImpl::AddChildWindowToBrowser(
+    gpu::SurfaceHandle child_window) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(client_);
+  client_->AddChildWindowToBrowser(child_window);
+}
+
 void SkiaOutputSurfaceImpl::OnGpuVSync(base::TimeTicks timebase,
                                        base::TimeDelta interval) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -1151,7 +1163,8 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
     if (!ycbcr_info) {
       // YCbCr info is required for YUV images.
       DCHECK(resource_format != YVU_420 &&
-             resource_format != YUV_420_BIPLANAR && resource_format != P010);
+             resource_format != YUV_420_BIPLANAR &&
+             resource_format != YUVA_420_TRIPLANAR && resource_format != P010);
       return GrBackendFormat::MakeVk(ToVkFormat(resource_format));
     }
 

@@ -4,8 +4,7 @@
 
 #import "ios/chrome/browser/ui/download/download_manager_state_view.h"
 
-#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
-#import "ios/chrome/browser/ui/icons/download_icon.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -32,8 +31,13 @@ const CGFloat kViewSize = 28;
 - (void)setState:(DownloadManagerState)state {
   switch (state) {
     case kDownloadManagerStateNotStarted:
-      self.image = DefaultSymbolTemplateWithPointSize(
-          kDownloadPromptFillSymbol, kSymbolDownloadInfobarPointSize);
+      if (@available(iOS 15, *)) {
+        self.image = DefaultSymbolTemplateWithPointSize(
+            kDownloadPromptFillSymbol, kSymbolDownloadInfobarPointSize);
+      } else {
+        self.image = DefaultSymbolTemplateWithPointSize(
+            kDownloadPromptFilliOS14Symbol, kSymbolDownloadInfobarPointSize);
+      }
       self.tintColor = [UIColor colorNamed:kBlueColor];
       break;
     case kDownloadManagerStateInProgress:

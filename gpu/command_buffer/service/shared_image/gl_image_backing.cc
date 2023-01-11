@@ -22,10 +22,6 @@
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/trace_util.h"
 
-#if BUILDFLAG(IS_MAC)
-#include "gpu/command_buffer/service/shared_image/iosurface_image_backing_factory.h"
-#endif
-
 namespace gpu {
 
 namespace {
@@ -162,9 +158,10 @@ SkiaGLCommonRepresentation::~SkiaGLCommonRepresentation() {
   }
 }
 
-sk_sp<SkSurface> SkiaGLCommonRepresentation::BeginWriteAccess(
+std::vector<sk_sp<SkSurface>> SkiaGLCommonRepresentation::BeginWriteAccess(
     int final_msaa_count,
     const SkSurfaceProps& surface_props,
+    const gfx::Rect& update_rect,
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
     std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
@@ -173,15 +170,15 @@ sk_sp<SkSurface> SkiaGLCommonRepresentation::BeginWriteAccess(
     DCHECK(context_state_->GrContextIsGL());
     if (!client_->GLTextureImageRepresentationBeginAccess(
             /*readonly=*/false)) {
-      return nullptr;
+      return {};
     }
   }
 
   if (write_surface_)
-    return nullptr;
+    return {};
 
   if (!promise_texture_)
-    return nullptr;
+    return {};
 
   SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
       /*gpu_compositing=*/true, format());
@@ -193,11 +190,15 @@ sk_sp<SkSurface> SkiaGLCommonRepresentation::BeginWriteAccess(
       surface_origin(), final_msaa_count, sk_color_type,
       backing()->color_space().GetAsFullRangeRGB().ToSkColorSpace(),
       &surface_props);
-  write_surface_ = surface.get();
-  return surface;
+  write_surface_ = surface;
+
+  if (!surface)
+    return {};
+  return {surface};
 }
 
-sk_sp<SkPromiseImageTexture> SkiaGLCommonRepresentation::BeginWriteAccess(
+std::vector<sk_sp<SkPromiseImageTexture>>
+SkiaGLCommonRepresentation::BeginWriteAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
     std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
@@ -206,26 +207,29 @@ sk_sp<SkPromiseImageTexture> SkiaGLCommonRepresentation::BeginWriteAccess(
     DCHECK(context_state_->GrContextIsGL());
     if (!client_->GLTextureImageRepresentationBeginAccess(
             /*readonly=*/false)) {
-      return nullptr;
+      return {};
     }
   }
-  return promise_texture_;
+
+  if (!promise_texture_)
+    return {};
+  return {promise_texture_};
 }
 
-void SkiaGLCommonRepresentation::EndWriteAccess(sk_sp<SkSurface> surface) {
-  if (surface) {
-    DCHECK_EQ(surface.get(), write_surface_);
-    DCHECK(surface->unique());
+void SkiaGLCommonRepresentation::EndWriteAccess() {
+  if (write_surface_) {
+    DCHECK(write_surface_->unique());
     CheckContext();
     // TODO(ericrk): Keep the surface around for re-use.
-    write_surface_ = nullptr;
+    write_surface_.reset();
   }
 
   if (client_)
     client_->GLTextureImageRepresentationEndAccess(false /* readonly */);
 }
 
-sk_sp<SkPromiseImageTexture> SkiaGLCommonRepresentation::BeginReadAccess(
+std::vector<sk_sp<SkPromiseImageTexture>>
+SkiaGLCommonRepresentation::BeginReadAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
     std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
@@ -234,10 +238,13 @@ sk_sp<SkPromiseImageTexture> SkiaGLCommonRepresentation::BeginReadAccess(
     DCHECK(context_state_->GrContextIsGL());
     if (!client_->GLTextureImageRepresentationBeginAccess(
             /*readonly=*/true)) {
-      return nullptr;
+      return {};
     }
   }
-  return promise_texture_;
+
+  if (!promise_texture_)
+    return {};
+  return {promise_texture_};
 }
 
 void SkiaGLCommonRepresentation::EndReadAccess() {
@@ -284,9 +291,11 @@ void OverlayGLImageRepresentation::EndReadAccess(
   gl_backing->SetReleaseFence(std::move(release_fence));
 }
 
+#if BUILDFLAG(IS_WIN)
 gl::GLImage* OverlayGLImageRepresentation::GetGLImage() {
   return gl_image_.get();
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLImageBacking
@@ -351,12 +360,7 @@ GLImageBacking::GLImageBacking(scoped_refptr<gl::GLImage> image,
       weak_factory_(this) {
   DCHECK(image_);
 #if BUILDFLAG(IS_MAC)
-  // NOTE: Mac currently retains GLTexture and reuses it. Not sure if this is
-  // best approach as it can lead to issues with context losses.
-  if (!gl_texture_retained_for_legacy_mailbox_) {
-    RetainGLTexture();
-    gl_texture_retained_for_legacy_mailbox_ = true;
-  }
+  NOTREACHED();
 #endif
 }
 
@@ -516,12 +520,12 @@ GLImageBacking::ProduceGLTexturePassthrough(SharedImageManager* manager,
 std::unique_ptr<OverlayImageRepresentation> GLImageBacking::ProduceOverlay(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker) {
-#if BUILDFLAG(IS_MAC) || defined(USE_OZONE) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_OZONE) || BUILDFLAG(IS_WIN)
   return std::make_unique<OverlayGLImageRepresentation>(manager, this, tracker,
                                                         image_);
-#else   // !(BUILDFLAG(IS_MAC) || defined(USE_OZONE) || BUILDFLAG(IS_WIN))
+#else   // || BUILDFLAG(IS_OZONE) || BUILDFLAG(IS_WIN))
   return SharedImageBacking::ProduceOverlay(manager, tracker);
-#endif  // BUILDFLAG(IS_MAC) || defined(USE_OZONE) || BUILDFLAG(IS_WIN)
+#endif  // BUILDFLAG(IS_OZONE) || BUILDFLAG(IS_WIN)
 }
 
 std::unique_ptr<DawnImageRepresentation> GLImageBacking::ProduceDawn(
@@ -529,12 +533,6 @@ std::unique_ptr<DawnImageRepresentation> GLImageBacking::ProduceDawn(
     MemoryTypeTracker* tracker,
     WGPUDevice device,
     WGPUBackendType backend_type) {
-#if BUILDFLAG(IS_MAC)
-  auto result = IOSurfaceImageBackingFactory::ProduceDawn(
-      manager, this, tracker, device, image_);
-  if (result)
-    return result;
-#endif  // BUILDFLAG(IS_MAC)
   if (!factory()) {
     DLOG(ERROR) << "No SharedImageFactory to create a dawn representation.";
     return nullptr;
@@ -557,21 +555,12 @@ std::unique_ptr<SkiaImageRepresentation> GLImageBacking::ProduceSkia(
   }
 
   if (!cached_promise_texture_) {
-    if (context_state->GrContextIsMetal()) {
-#if BUILDFLAG(IS_MAC)
-      cached_promise_texture_ =
-          IOSurfaceImageBackingFactory::ProduceSkiaPromiseTextureMetal(
-              this, context_state, image_);
-      DCHECK(cached_promise_texture_);
-#endif
-    } else {
-      GrBackendTexture backend_texture;
-      GetGrBackendTexture(context_state->feature_info(), GetGLTarget(), size(),
-                          GetGLServiceId(), format().resource_format(),
-                          context_state->gr_context()->threadSafeProxy(),
-                          &backend_texture);
-      cached_promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
-    }
+    GrBackendTexture backend_texture;
+    GetGrBackendTexture(context_state->feature_info(), GetGLTarget(), size(),
+                        GetGLServiceId(), format().resource_format(),
+                        context_state->gr_context()->threadSafeProxy(),
+                        &backend_texture);
+    cached_promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
   }
   return std::make_unique<SkiaGLCommonRepresentation>(
       manager, this, gl_client, std::move(context_state),
@@ -619,18 +608,6 @@ void GLImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
 }
 
 bool GLImageBacking::GLTextureImageRepresentationBeginAccess(bool readonly) {
-#if BUILDFLAG(IS_MAC)
-  DCHECK(!ongoing_write_access_);
-  if (readonly) {
-    num_ongoing_read_accesses_++;
-  } else {
-    if (!(usage() & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE)) {
-      DCHECK(num_ongoing_read_accesses_ == 0);
-    }
-    ongoing_write_access_ = true;
-  }
-#endif
-
   if (!release_fence_.is_null()) {
     auto fence = gfx::GpuFence(std::move(release_fence_));
     if (gl::GLFence::IsGpuFenceSupported()) {
@@ -643,73 +620,6 @@ bool GLImageBacking::GLTextureImageRepresentationBeginAccess(bool readonly) {
 }
 
 void GLImageBacking::GLTextureImageRepresentationEndAccess(bool readonly) {
-#if BUILDFLAG(IS_MAC)
-  if (readonly) {
-    DCHECK(num_ongoing_read_accesses_ > 0);
-    if (!(usage() & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE)) {
-      DCHECK(!ongoing_write_access_);
-    }
-    num_ongoing_read_accesses_--;
-  } else {
-    DCHECK(ongoing_write_access_);
-    if (!(usage() & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE)) {
-      DCHECK(num_ongoing_read_accesses_ == 0);
-    }
-    ongoing_write_access_ = false;
-  }
-
-  // If this image could potentially be shared with Metal via WebGPU, then flush
-  // the GL context to ensure Metal will see it.
-  if (usage() & SHARED_IMAGE_USAGE_WEBGPU) {
-    gl::GLApi* api = gl::g_current_gl_context;
-    api->glFlushFn();
-  }
-
-  // When SwANGLE is used as the GL implementation, it holds an internal
-  // texture. We have to call ReleaseTexImage here to trigger a copy from that
-  // internal texture to the IOSurface (the next Bind() will then trigger an
-  // IOSurface->internal texture copy). We do this only when there are no
-  // ongoing reads in order to ensure that it does not result in the GLES2
-  // decoders needing to perform on-demand binding (rather, the binding will be
-  // performed at the next BeginAccess()). Note that it is not sufficient to
-  // release the image only at the end of a write: the CPU can write directly to
-  // the IOSurface when the GPU is not accessing the internal texture (in the
-  // case of zero-copy raster), and any such IOSurface-side modifications need
-  // to be copied to the internal texture via a Bind() when the GPU starts a
-  // subsequent read. Note also that this logic assumes that writes are
-  // serialized with respect to reads (so that the end of a write always
-  // triggers a release and copy). By design, GLImageBackingFactory enforces
-  // this property for this use case.
-  bool needs_sync_for_swangle =
-      (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader &&
-       (num_ongoing_read_accesses_ == 0));
-
-  // Similarly, when ANGLE's metal backend is used, we have to signal a call to
-  // waitUntilScheduled() using the same method on EndAccess to ensure IOSurface
-  // synchronization. In this case, it is sufficient to release the image at the
-  // end of a write. As above, GLImageBackingFactory enforces serialization of
-  // reads and writes for this use case.
-  // TODO(https://anglebug.com/7626): Enable on Metal only when
-  // CPU_READ or SCANOUT is specified. When doing so, adjust the conditions for
-  // disallowing concurrent read/write in GLImageBackingFactory as suitable.
-  bool needs_sync_for_metal =
-      (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal &&
-       !readonly);
-
-  bool needs_synchronization =
-      IsPassthrough() && (needs_sync_for_swangle || needs_sync_for_metal);
-  if (needs_synchronization &&
-      image_->ShouldBindOrCopy() == gl::GLImage::BIND) {
-    const GLenum target = GetGLTarget();
-    gl::ScopedTextureBinder binder(target, passthrough_texture_->service_id());
-    if (!passthrough_texture_->is_bind_pending()) {
-      image_->ReleaseTexImage(target);
-      image_bind_or_copy_needed_ = true;
-      passthrough_texture_->set_is_bind_pending(true);
-    }
-  }
-#else
-
   // If the image will be used for an overlay, we insert a fence that can be
   // used by OutputPresenter to synchronize image writes with presentation.
   if (!readonly && usage() & SHARED_IMAGE_USAGE_SCANOUT &&
@@ -729,7 +639,6 @@ void GLImageBacking::GLTextureImageRepresentationEndAccess(bool readonly) {
     last_write_gl_fence_ = gl::GLFence::CreateForGpuFence();
     DCHECK(last_write_gl_fence_);
   }
-#endif
 }
 
 void GLImageBacking::GLTextureImageRepresentationRelease(bool has_context) {
@@ -794,10 +703,6 @@ void GLImageBacking::InitializePixels(GLenum format,
                                       GLenum type,
                                       const uint8_t* data) {
   DCHECK_EQ(image_->ShouldBindOrCopy(), gl::GLImage::BIND);
-#if BUILDFLAG(IS_MAC)
-  if (IOSurfaceImageBackingFactory::InitializePixels(this, image_, data))
-    return;
-#else
   RetainGLTexture();
   BindOrCopyImageIfNeeded();
 
@@ -810,7 +715,6 @@ void GLImageBacking::InitializePixels(GLenum format,
   api->glTexSubImage2DFn(target, 0, 0, 0, size().width(), size().height(),
                          format, type, data);
   ReleaseGLTexture(true /* have_context */);
-#endif
 }
 
 }  // namespace gpu

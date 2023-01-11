@@ -36,6 +36,12 @@ _COMPILATOR = nodes.create_node_type_with_builder_ref("compilator")
 # compilator.
 _EXPERIMENTAL_ORCHESTRATOR_NAMES_BY_COMPILATOR_NAME = {
     "try/linux-rel-compilator": ["try/linux-rel-inverse-fyi"],
+    "try/android-nougat-x86-rel-compilator": ["try/android-nougat-x86-rel-inverse-fyi"],
+    "try/win10_chromium_x64_rel_ng-compilator": ["try/win10_chromium_x64_rel_ng-inverse-fyi"],
+    "try/mac-rel-compilator": ["try/mac-rel-inverse-fyi"],
+    "try/android-pie-arm64-rel-compilator": ["try/android-pie-arm64-rel-inverse-fyi"],
+    "try/linux_chromium_asan_rel_ng-compilator": ["try/linux_chromium_asan_rel_ng-inverse-fyi"],
+    "try/linux_chromium_tsan_rel_ng-compilator": ["try/linux_chromium_tsan_rel_ng-inverse-fyi"],
 }
 
 def register_orchestrator(bucket, name, builder_group, compilator):
@@ -182,6 +188,8 @@ def _get_orchestrators_and_compilators(ctx):
     experimental_orchestrators_by_compilator_name = {}
 
     for bucket in cfg.buckets:
+        if not proto.has(bucket, "swarming"):
+            continue
         bucket_name = bucket.name
         for builder in bucket.swarming.builders:
             compilator = _get_compilator(bucket_name, builder)

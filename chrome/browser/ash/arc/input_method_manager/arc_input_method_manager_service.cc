@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/arc/input_method_manager/arc_input_method_manager_service.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
@@ -21,11 +20,13 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/input_method_manager/arc_input_method_manager_bridge_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chromeos/ash/services/ime/public/cpp/assistive_suggestions.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -270,6 +271,8 @@ class ArcInputMethodManagerService::InputMethodEngineObserver
                           int candidate_id,
                           ash::input_method::MouseButtonEvent button) override {
   }
+  void OnAssistiveWindowChanged(
+      const ash::ime::AssistiveWindow& window) override {}
   void OnMenuItemActivated(const std::string& component_id,
                            const std::string& menu_id) override {}
   void OnScreenProjectionChanged(bool is_projected) override {}
@@ -631,12 +634,12 @@ void ArcInputMethodManagerService::SyncEnabledImesInArc() {
 
   // Filter out non ARC IME ids.
   std::set<std::string> new_arc_enabled_ime_ids;
-  std::copy_if(
-      new_enabled_ime_ids.begin(), new_enabled_ime_ids.end(),
+  base::ranges::copy_if(
+      new_enabled_ime_ids,
       std::inserter(new_arc_enabled_ime_ids, new_arc_enabled_ime_ids.end()),
-      [](const auto& id) { return ash::extension_ime_util::IsArcIME(id); });
+      &ash::extension_ime_util::IsArcIME);
 
-  // TODO(yhanada|yusukes): Instead of observing ImeMenuListChanged(), it's
+  // TODO(yhanada): Instead of observing ImeMenuListChanged(), it's
   // probably better to just observe the pref (and not disabling ones still
   // in the prefs.) See also the comment below in the second for-loop.
   const std::set<std::string> enabled_ime_ids_on_prefs =
@@ -662,7 +665,7 @@ void ArcInputMethodManagerService::SyncEnabledImesInArc() {
       // IME on laptop mode wouldn't be propagated to the container. Otherwise,
       // the IME confirmation dialog will be shown again next time when you
       // use the IME in tablet mode.
-      // TODO(yhanada|yusukes): Only observe the prefs and remove the hack.
+      // TODO(yhanada): Only observe the prefs and remove the hack.
       EnableIme(id, false /* enable */);
     }
   }
@@ -734,7 +737,7 @@ void ArcInputMethodManagerService::NotifyInputMethodManagerObservers(
   // Togging the mode may enable or disable all the ARC IMEs. To dynamically
   // reflect the potential state changes to chrome://settings, notify the
   // manager's observers here.
-  // TODO(yusukes): This is a temporary workaround for supporting ARC IMEs
+  // TODO(yhanada): This is a temporary workaround for supporting ARC IMEs
   // and supports neither Chrome OS extensions nor state changes enforced by
   // the policy. The better way to do this is to add a dedicated event to
   // language_settings_private.idl and send the new event to the JS side

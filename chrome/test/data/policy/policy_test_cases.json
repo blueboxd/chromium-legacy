@@ -2592,18 +2592,40 @@
     "os": [
       "win",
       "linux",
+      "mac",
       "chromeos_ash",
       "chromeos_lacros",
       "fuchsia"
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "ssl.rev_checking.required_for_local_anchors": {
+            "location": "local_state",
+            "default_value": false
+          }
+        }
+      },
+      {
         "policies": {
           "RequireOnlineRevocationChecksForLocalAnchors": true
         },
         "prefs": {
           "ssl.rev_checking.required_for_local_anchors": {
-            "location": "local_state"
+            "location": "local_state",
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "RequireOnlineRevocationChecksForLocalAnchors": false
+        },
+        "prefs": {
+          "ssl.rev_checking.required_for_local_anchors": {
+            "location": "local_state",
+            "value": false
           }
         }
       }
@@ -8774,11 +8796,40 @@
     "can_be_recommended": true,
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "policy_pinned_launcher_apps": {
+            "default_value": []
+          }
+        }
+      },
+      {
         "policies": {
           "PinnedLauncherApps": []
         },
         "prefs": {
           "policy_pinned_launcher_apps": {}
+        }
+      },
+      {
+        "policies": {
+          "PinnedLauncherApps": [
+            "abcdefghijklmnopabcdefghijklmnop",
+            "com.google.android.pm",
+            "https://google.com",
+            "camera",
+            "unknown_id_should_be_filtered"
+          ]
+        },
+        "prefs": {
+          "policy_pinned_launcher_apps" : {
+            "value": [
+              { "id": "abcdefghijklmnopabcdefghijklmnop" },
+              { "id": "com.google.android.pm" },
+              { "id": "https://google.com" },
+              { "id": "camera" }
+            ]
+          }
         }
       }
     ]
@@ -14336,7 +14387,8 @@
       "mac",
       "chromeos_ash",
       "chromeos_lacros",
-      "fuchsia"
+      "fuchsia",
+      "android"
     ],
     "can_be_recommended": true,
     "policy_pref_mapping_tests": [
@@ -15928,107 +15980,6 @@
       }
     ]
   },
-  "SendDownloadToCloudEnterpriseConnector": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_ash",
-      "chromeos_lacros",
-      "fuchsia"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {
-          "SendDownloadToCloudEnterpriseConnector": [
-            {
-              "service_provider": "box",
-              "enterprise_id": "1234567890",
-              "domain": "example.com",
-              "enable": [
-                {
-                  "url_list": [
-                    "*"
-                  ],
-                  "mime_types": [
-                    "text/plain"
-                  ]
-                },
-                {
-                  "url_list": [
-                    "*.them.com",
-                    "*.others.com"
-                  ],
-                  "mime_types": [
-                    "image/png"
-                  ]
-                }
-              ],
-              "disable": [
-                {
-                  "url_list": [
-                    "*.us.com"
-                  ],
-                  "mime_types": [
-                    "application/zip"
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        "prefs": {
-          "enterprise_connectors.send_download_to_cloud": {
-            "value": [
-              {
-                "service_provider": "box",
-                "enterprise_id": "1234567890",
-                "domain": "example.com",
-                "enable": [
-                  {
-                    "url_list": [
-                      "*"
-                    ],
-                    "mime_types": [
-                      "text/plain"
-                    ]
-                  },
-                  {
-                    "url_list": [
-                      "*.them.com",
-                      "*.others.com"
-                    ],
-                    "mime_types": [
-                      "image/png"
-                    ]
-                  }
-                ],
-                "disable": [
-                  {
-                    "url_list": [
-                      "*.us.com"
-                    ],
-                    "mime_types": [
-                      "application/zip"
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        }
-      },
-      {
-        "policies": {},
-        "prefs": {
-          "enterprise_connectors.send_download_to_cloud": {
-            "default_value": [
-            ]
-          }
-        }
-      }
-    ]
-  },
   "OnFileAttachedEnterpriseConnector": {
     "os": [
       "win",
@@ -16891,33 +16842,7 @@
     ]
   },
   "UrlParamFilterEnabled": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_lacros",
-      "chromeos_ash",
-      "android",
-      "fuchsia"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {},
-        "prefs": {
-          "policy.url_param_filter_enabled": {
-            "default_value": true
-          }
-        }
-      },
-      {
-        "policies": { "UrlParamFilterEnabled": false },
-        "prefs": {
-          "policy.url_param_filter_enabled": {
-            "value": false
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "ScreenTimeEnabled": {
     "os": [
@@ -17106,6 +17031,30 @@
         "policies": { },
         "prefs": {
           "policy.lens_region_search_enabled": {
+            "location": "user_profile",
+            "default_value": true
+          }
+        }
+      }
+    ]
+  },
+  "LensDesktopNTPSearchEnabled": {
+    "os": ["win", "linux", "mac", "chromeos_ash", "chromeos_lacros", "fuchsia"],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": { "LensDesktopNTPSearchEnabled": true },
+        "prefs": {
+          "policy.lens_desktop_ntp_search_enabled": {
+            "location": "user_profile",
+            "value": true
+          }
+        }
+      },
+      {
+        "note": "Check default values (no policies set)",
+        "policies": { },
+        "prefs": {
+          "policy.lens_desktop_ntp_search_enabled": {
             "location": "user_profile",
             "default_value": true
           }
@@ -18469,39 +18418,7 @@
     "reason_for_missing_test": "Policy was deprecated in M103"
   },
   "LoadCryptoTokenExtension": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_ash",
-      "chromeos_lacros"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": { "LoadCryptoTokenExtension": false },
-        "prefs": {
-          "extensions.load_cryptotoken_extension": {
-            "value": false
-          }
-        }
-      },
-      {
-        "policies": { "LoadCryptoTokenExtension": true },
-        "prefs": {
-          "extensions.load_cryptotoken_extension": {
-            "value": true
-          }
-        }
-      },
-      {
-        "policies": {},
-        "prefs": {
-          "extensions.load_cryptotoken_extension": {
-            "default_value": false
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was deprecated in M108"
   },
   "DeviceLoginScreenPromptOnMultipleMatchingCertificates": {
     "os": ["chromeos_ash"],
@@ -19748,7 +19665,7 @@
         "policies": {},
         "prefs": {
           "policy.event_path_enabled": {
-            "default_value": true
+            "default_value": false
           }
         }
       }
@@ -19873,41 +19790,7 @@
     ]
   },
   "PersistentQuotaEnabled": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_ash",
-      "chromeos_lacros",
-      "android",
-      "fuchsia"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {},
-        "prefs": {
-          "policy.persistent_quota_enabled": {
-            "default_value": false
-          }
-        }
-      },
-      {
-        "policies": { "PersistentQuotaEnabled": false },
-        "prefs": {
-          "policy.persistent_quota_enabled": {
-            "value": false
-          }
-        }
-      },
-      {
-        "policies": { "PersistentQuotaEnabled": true },
-        "prefs": {
-          "policy.persistent_quota_enabled": {
-            "value": true
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "PrefixedStorageInfoEnabled": {
     "os": [
@@ -20192,6 +20075,15 @@
           }, {
             "policy_id": "pnomlkjighijklmnopabcdefghijklff",
             "file_extensions": ["docx", "pdf"]
+          }, {
+            "policy_id": "com.android.google.pm",
+            "file_extensions": ["arc", "arcpp"]
+          }, {
+            "policy_id": "projector",
+            "file_extensions": ["proj"]
+          }, {
+            "policy_id": "unknown_id_should_be_filtered",
+            "file_extensions": ["filtered"]
           }]
         },
         "prefs": {
@@ -20199,7 +20091,10 @@
             "value": {
               ".maps": "https://google.com/maps",
               ".docx": "pnomlkjighijklmnopabcdefghijklff",
-              ".pdf": "pnomlkjighijklmnopabcdefghijklff"
+              ".pdf": "pnomlkjighijklmnopabcdefghijklff",
+              ".arc": "com.android.google.pm",
+              ".arcpp": "com.android.google.pm",
+              ".proj": "projector"
             }
           }
         }
@@ -20234,6 +20129,165 @@
         "prefs": {
           "virtual_keyboard_resizes_layout_by_default": {
             "default_value": false
+          }
+        }
+      }
+    ]
+  },
+  "HindiInscriptLayoutEnabled": {
+    "os": ["chromeos_ash"],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "settings.input.hindi_inscript_layout_enabled": {
+            "location": "local_state",
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "HindiInscriptLayoutEnabled": false
+        },
+        "prefs": {
+          "settings.input.hindi_inscript_layout_enabled": {
+            "location": "local_state",
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "HindiInscriptLayoutEnabled": true
+        },
+        "prefs": {
+          "settings.input.hindi_inscript_layout_enabled": {
+            "location": "local_state",
+            "value": true
+          }
+        }
+      }
+    ]
+  },
+  "DeviceKeyboardBacklightColor": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "ash.personalization.keyboard_backlight_color": {
+            "location": "local_state",
+            "default_value": 0,
+            "check_for_recommended": true
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "ash.personalization.keyboard_backlight_color": {
+            "location": "user_profile",
+            "default_value": 0,
+            "check_for_recommended": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeviceKeyboardBacklightColor": 1
+        },
+        "prefs": {
+          "ash.personalization.keyboard_backlight_color": {
+            "location": "local_state",
+            "value": 1,
+            "check_for_recommended": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeviceKeyboardBacklightColor": 1
+        },
+        "prefs": {
+          "ash.personalization.keyboard_backlight_color": {
+            "location": "user_profile",
+            "value": 1,
+            "check_for_recommended": true
+          }
+        }
+      }
+    ]
+  },
+  "AccessControlAllowMethodsInCORSPreflightSpecConformant": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "android",
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "access_control_allow_methods_in_cors_preflight_spec_conformant": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": { "AccessControlAllowMethodsInCORSPreflightSpecConformant": true },
+        "prefs": {
+          "access_control_allow_methods_in_cors_preflight_spec_conformant": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": { "AccessControlAllowMethodsInCORSPreflightSpecConformant": false },
+        "prefs": {
+          "access_control_allow_methods_in_cors_preflight_spec_conformant": {
+            "value": false
+          }
+        }
+      }
+    ]
+  },
+  "AllowWebAuthnWithBrokenTlsCerts": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "android",
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "webauthn.allow_with_broken_certs": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": { "AllowWebAuthnWithBrokenTlsCerts": true },
+        "prefs": {
+          "webauthn.allow_with_broken_certs": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": { "AllowWebAuthnWithBrokenTlsCerts": false },
+        "prefs": {
+          "webauthn.allow_with_broken_certs": {
+            "value": false
           }
         }
       }

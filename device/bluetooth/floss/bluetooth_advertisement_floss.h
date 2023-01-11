@@ -25,6 +25,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementFloss
  public:
   BluetoothAdvertisementFloss(
       std::unique_ptr<device::BluetoothAdvertisement::Data> data,
+      const uint16_t interval_ms,
       scoped_refptr<BluetoothAdapterFloss> adapter);
 
   BluetoothAdvertisementFloss(const BluetoothAdvertisementFloss&) = delete;
@@ -51,6 +52,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementFloss
       SuccessCallback success_callback,
       device::BluetoothAdapter::AdvertisementErrorCallback error_callback);
 
+  const AdvertisingSetParameters& params() const { return params_; }
+
  protected:
   void OnStartSuccess(SuccessCallback success_callback,
                       FlossAdvertiserClient::AdvertiserId adv_id);
@@ -66,7 +69,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementFloss
   AdvertisingSetParameters params_;
   AdvertiseData adv_data_;
   AdvertiseData scan_rsp_;
-  bool with_scan_rsp_;
 
   base::WeakPtrFactory<BluetoothAdvertisementFloss> weak_ptr_factory_{this};
 };

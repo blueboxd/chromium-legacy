@@ -4,9 +4,10 @@
 
 #include "chrome/browser/win/conflicts/installed_applications.h"
 
-#include <algorithm>
 #include <map>
 
+#include "base/memory/raw_ref.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
@@ -46,8 +47,8 @@ class MockMsiUtil : public MsiUtil {
       const std::wstring& product_guid,
       const std::wstring& user_sid,
       std::vector<std::wstring>* component_paths) const override {
-    auto iter = component_paths_map_.find(product_guid);
-    if (iter == component_paths_map_.end())
+    auto iter = component_paths_map_->find(product_guid);
+    if (iter == component_paths_map_->end())
       return false;
 
     *component_paths = iter->second;
@@ -55,7 +56,8 @@ class MockMsiUtil : public MsiUtil {
   }
 
  private:
-  const std::map<std::wstring, std::vector<std::wstring>>& component_paths_map_;
+  const raw_ref<const std::map<std::wstring, std::vector<std::wstring>>>
+      component_paths_map_;
 };
 
 class TestInstalledApplications : public InstalledApplications {
@@ -397,13 +399,10 @@ TEST_F(InstalledApplicationsTest, NoDuplicates) {
   auto applications = installed_applications().applications_;
   std::sort(std::begin(applications), std::end(applications));
   EXPECT_EQ(std::end(applications),
-            std::adjacent_find(std::begin(applications), std::end(applications),
-                               [](const auto& lhs, const auto& rhs) {
-                                 return std::tie(lhs.name, lhs.registry_root,
-                                                 lhs.registry_key_path,
-                                                 lhs.registry_wow64_access) ==
-                                        std::tie(rhs.name, rhs.registry_root,
-                                                 rhs.registry_key_path,
-                                                 rhs.registry_wow64_access);
-                               }));
+            base::ranges::adjacent_find(
+                applications, std::equal_to<>(), [](const auto& app) {
+                  return std::tie(app.name, app.registry_root,
+                                  app.registry_key_path,
+                                  app.registry_wow64_access);
+                }));
 }

@@ -9,8 +9,8 @@
 #include "ash/constants/ash_constants.h"
 #include "ash/system/message_center/ash_message_popup_collection.h"
 #include "ash/system/message_center/unified_message_center_bubble.h"
-#include "ash/system/message_center/unified_message_center_view.h"
-#include "ash/system/message_center/unified_message_list_view.h"
+#include "ash/system/notification_center/notification_center_view.h"
+#include "ash/system/notification_center/notification_list_view.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
@@ -62,8 +62,8 @@ class PrivacyIndicatorsControllerTest : public AshTestBase {
   views::View* GetNotificationViewFromMessageCenter(const std::string& id) {
     return GetPrimaryUnifiedSystemTray()
         ->message_center_bubble()
-        ->message_center_view()
-        ->message_list_view()
+        ->notification_center_view()
+        ->notification_list_view()
         ->GetMessageViewForNotificationId(id);
   }
 
@@ -90,7 +90,7 @@ class PrivacyIndicatorsControllerTest : public AshTestBase {
 TEST_F(PrivacyIndicatorsControllerTest, NotificationMetadata) {
   std::string app_id = "test_app_id";
   std::u16string app_name = u"test_app_name";
-  std::string notification_id = kPrivacyIndicatorsNotificationIdPrefix + app_id;
+  std::string notification_id = GetPrivacyIndicatorsNotificationId(app_id);
   scoped_refptr<TestDelegate> delegate = base::MakeRefCounted<TestDelegate>();
   ash::ModifyPrivacyIndicatorsNotification(
       app_id, app_name, /*is_camera_used=*/true, /*is_microphone_used=*/true,
@@ -106,7 +106,7 @@ TEST_F(PrivacyIndicatorsControllerTest, NotificationMetadata) {
 
 TEST_F(PrivacyIndicatorsControllerTest, NotificationClickButton) {
   std::string app_id = "test_app_id";
-  std::string notification_id = kPrivacyIndicatorsNotificationIdPrefix + app_id;
+  std::string notification_id = GetPrivacyIndicatorsNotificationId(app_id);
   scoped_refptr<TestDelegate> delegate = base::MakeRefCounted<TestDelegate>();
   ash::ModifyPrivacyIndicatorsNotification(
       app_id, u"test_app_name", /*is_camera_used=*/true,

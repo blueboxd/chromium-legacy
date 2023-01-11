@@ -17,7 +17,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/autofill/autofill_context_menu_manager.h"
+#include "chrome/browser/ui/autofill/autofill_context_menu_manager.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/renderer_context_menu/context_menu_content_type.h"
 #include "components/renderer_context_menu/render_view_context_menu_base.h"
@@ -377,7 +377,8 @@ class RenderViewContextMenu
   // - The submenu containing the installed protocol handlers.
   ui::SimpleMenuModel protocol_handler_submenu_model_;
   // - The registry with the protocols.
-  raw_ptr<custom_handlers::ProtocolHandlerRegistry> protocol_handler_registry_;
+  raw_ptr<custom_handlers::ProtocolHandlerRegistry, DanglingUntriaged>
+      protocol_handler_registry_;
   // - The observation of the registry.
   base::ScopedObservation<custom_handlers::ProtocolHandlerRegistry,
                           custom_handlers::ProtocolHandlerRegistry::Observer>
@@ -422,7 +423,7 @@ class RenderViewContextMenu
   // In the case of a MimeHandlerView this will point to the WebContents that
   // embeds the MimeHandlerViewGuest. Otherwise this will be the same as
   // |source_web_contents_|.
-  const raw_ptr<content::WebContents> embedder_web_contents_;
+  const raw_ptr<content::WebContents, DanglingUntriaged> embedder_web_contents_;
 
   // Click to call menu observer.
   std::unique_ptr<ClickToCallContextMenuObserver>

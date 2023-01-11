@@ -208,7 +208,8 @@ class OAuth2AccessTokenManager::Fetcher : public OAuth2AccessTokenConsumer {
   // Fetcher, since this Fetcher is destructed in the dtor of the
   // OAuth2AccessTokenManager or is scheduled for deletion at the end of
   // OnGetTokenFailure/OnGetTokenSuccess (whichever comes first).
-  const raw_ptr<OAuth2AccessTokenManager> oauth2_access_token_manager_;
+  const raw_ptr<OAuth2AccessTokenManager, DanglingUntriaged>
+      oauth2_access_token_manager_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   const CoreAccountId account_id_;
   const ScopeSet scopes_;
@@ -361,16 +362,10 @@ bool OAuth2AccessTokenManager::Fetcher::RetryIfPossible(
 
 bool OAuth2AccessTokenManager::Fetcher::ShouldRetry(
     const GoogleServiceAuthError& error) const {
-  GoogleServiceAuthError::State error_state = error.state();
-  bool should_retry =
-      error_state == GoogleServiceAuthError::CONNECTION_FAILED ||
-      error_state == GoogleServiceAuthError::REQUEST_CANCELED ||
-      error_state == GoogleServiceAuthError::SERVICE_UNAVAILABLE;
-
-  // Give the delegate a chance to correct the error first.  This is a best
+  // Give the delegate a chance to correct the error first. This is a best
   // effort only.
-  return should_retry || oauth2_access_token_manager_->GetDelegate()
-                             ->FixRequestErrorIfPossible();
+  return error.IsTransientError() || oauth2_access_token_manager_->GetDelegate()
+                                         ->FixRequestErrorIfPossible();
 }
 
 void OAuth2AccessTokenManager::Fetcher::InformWaitingRequests() {

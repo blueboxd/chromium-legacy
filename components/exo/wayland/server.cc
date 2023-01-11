@@ -6,6 +6,7 @@
 
 #include <alpha-compositing-unstable-v1-server-protocol.h>
 #include <aura-shell-server-protocol.h>
+#include <chrome-color-management-server-protocol.h>
 #include <content-type-v1-server-protocol.h>
 #include <cursor-shapes-unstable-v1-server-protocol.h>
 #include <extended-drag-unstable-v1-server-protocol.h>
@@ -54,8 +55,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/thread_pool.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "components/exo/buildflags.h"
 #include "components/exo/display.h"
 #include "components/exo/security_delegate.h"
 #include "components/exo/wayland/content_type.h"
@@ -64,6 +65,7 @@
 #include "components/exo/wayland/server_util.h"
 #include "components/exo/wayland/surface_augmenter.h"
 #include "components/exo/wayland/wayland_display_output.h"
+#include "components/exo/wayland/wayland_dmabuf_feedback_manager.h"
 #include "components/exo/wayland/wayland_watcher.h"
 #include "components/exo/wayland/weston_test.h"
 #include "components/exo/wayland/wl_compositor.h"
@@ -78,6 +80,7 @@
 #include "components/exo/wayland/xdg_shell.h"
 #include "components/exo/wayland/zaura_shell.h"
 #include "components/exo/wayland/zcr_alpha_compositing.h"
+#include "components/exo/wayland/zcr_color_manager.h"
 #include "components/exo/wayland/zcr_cursor_shapes.h"
 #include "components/exo/wayland/zcr_extended_drag.h"
 #include "components/exo/wayland/zcr_gaming_input.h"
@@ -107,11 +110,6 @@
 #include "ui/display/screen.h"
 #include "ui/ozone/public/ozone_platform.h"
 
-#if BUILDFLAG(ENABLE_COLOR_MANAGER)
-#include <chrome-color-management-server-protocol.h>
-#include "components/exo/wayland/zcr_color_manager.h"
-#endif
-
 namespace exo {
 namespace wayland {
 namespace switches {
@@ -136,7 +134,7 @@ constexpr base::FilePath::CharType kCustomServerDir[] =
     FILE_PATH_LITERAL("wayland");
 
 bool IsDrmAtomicAvailable() {
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   auto& host_properties =
       ui::OzonePlatform::GetInstance()->GetPlatformRuntimeProperties();
   return host_properties.supports_overlays;
@@ -279,8 +277,13 @@ void Server::Initialize() {
   wl_global_create(wl_display_.get(), &wl_compositor_interface,
                    kWlCompositorVersion, this, bind_compositor);
   wl_global_create(wl_display_.get(), &wl_shm_interface, 1, display_, bind_shm);
-  wl_global_create(wl_display_.get(), &zwp_linux_dmabuf_v1_interface,
-                   kZwpLinuxDmabufVersion, display_, bind_linux_dmabuf);
+  wayland_feedback_manager_ =
+      std::make_unique<WaylandDmabufFeedbackManager>(display_);
+  if (wayland_feedback_manager_->GetVersionSupportedByPlatform() > 0) {
+    wl_global_create(wl_display_.get(), &zwp_linux_dmabuf_v1_interface,
+                     wayland_feedback_manager_->GetVersionSupportedByPlatform(),
+                     wayland_feedback_manager_.get(), bind_linux_dmabuf);
+  }
   wl_global_create(wl_display_.get(), &wl_subcompositor_interface, 1, display_,
                    bind_subcompositor);
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays())
@@ -361,10 +364,8 @@ void Server::Initialize() {
   wl_global_create(wl_display_.get(),
                    &zwp_relative_pointer_manager_v1_interface, 1, display_,
                    bind_relative_pointer_manager);
-#if BUILDFLAG(ENABLE_COLOR_MANAGER)
   wl_global_create(wl_display_.get(), &zcr_color_manager_v1_interface, 1, this,
                    bind_zcr_color_manager);
-#endif
   wl_global_create(wl_display_.get(), &zxdg_decoration_manager_v1_interface, 1,
                    display_, bind_zxdg_decoration_manager);
   wl_global_create(wl_display_.get(), &zcr_extended_drag_v1_interface, 1,

@@ -49,7 +49,6 @@ TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env,
     scrollable_strip_layer_->AddChild(new_tab_button_);
   }
 
-  tab_strip_layer_->SetBackgroundColor(SkColors::kBlack);
   tab_strip_layer_->SetIsDrawable(true);
   tab_strip_layer_->AddChild(scrollable_strip_layer_);
 
@@ -113,11 +112,13 @@ void TabStripSceneLayer::UpdateTabStripLayer(JNIEnv* env,
                                              jfloat width,
                                              jfloat height,
                                              jfloat y_offset,
-                                             jboolean should_readd_background) {
+                                             jboolean should_readd_background,
+                                             jint background_color) {
   gfx::RectF content(0, y_offset, width, height);
   layer()->SetPosition(gfx::PointF(0, y_offset));
   tab_strip_layer_->SetBounds(gfx::Size(width, height));
   scrollable_strip_layer_->SetBounds(gfx::Size(width, height));
+  tab_strip_layer_->SetBackgroundColor(SkColor4f::FromColor(background_color));
 
   // Content tree should not be affected by tab strip scene layer visibility.
   if (content_tree_)
@@ -150,7 +151,6 @@ void TabStripSceneLayer::UpdateStripScrim(JNIEnv* env,
     scrim_layer_->SetIsDrawable(false);
     return;
   }
-
   scrim_layer_->SetIsDrawable(true);
   // TODO(crbug/1308932): Remove FromColor and make all SkColor4f.
   scrim_layer_->SetBackgroundColor(SkColor4f::FromColor(color));
@@ -200,6 +200,7 @@ void TabStripSceneLayer::UpdateModelSelectorButton(
     jfloat height,
     jboolean incognito,
     jboolean visible,
+    jfloat button_alpha,
     const JavaParamRef<jobject>& jresource_manager) {
   ui::ResourceManager* resource_manager =
       ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
@@ -213,6 +214,7 @@ void TabStripSceneLayer::UpdateModelSelectorButton(
       gfx::PointF(x + left_offset, y + top_offset));
   model_selector_button_->SetBounds(button_resource->size());
   model_selector_button_->SetHideLayerAndSubtree(!visible);
+  model_selector_button_->SetOpacity(button_alpha);
 }
 
 void TabStripSceneLayer::UpdateTabStripLeftFade(
@@ -220,7 +222,8 @@ void TabStripSceneLayer::UpdateTabStripLeftFade(
     const JavaParamRef<jobject>& jobj,
     jint resource_id,
     jfloat opacity,
-    const JavaParamRef<jobject>& jresource_manager) {
+    const JavaParamRef<jobject>& jresource_manager,
+    jint left_fade_color) {
 
   // Hide layer if it's not visible.
   if (opacity == 0.f) {
@@ -231,8 +234,8 @@ void TabStripSceneLayer::UpdateTabStripLeftFade(
   // Set UI resource.
   ui::ResourceManager* resource_manager =
       ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
-  ui::Resource* fade_resource = resource_manager->GetResource(
-      ui::ANDROID_RESOURCE_TYPE_STATIC, resource_id);
+  ui::Resource* fade_resource = resource_manager->GetStaticResourceWithTint(
+        resource_id, left_fade_color);
   left_fade_->SetUIResourceId(fade_resource->ui_resource()->id());
 
   // The same resource is used for both left and right fade, so the
@@ -262,7 +265,8 @@ void TabStripSceneLayer::UpdateTabStripRightFade(
     const JavaParamRef<jobject>& jobj,
     jint resource_id,
     jfloat opacity,
-    const JavaParamRef<jobject>& jresource_manager) {
+    const JavaParamRef<jobject>& jresource_manager,
+    jint right_fade_color) {
 
   // Hide layer if it's not visible.
   if (opacity == 0.f) {
@@ -273,8 +277,8 @@ void TabStripSceneLayer::UpdateTabStripRightFade(
   // Set UI resource.
   ui::ResourceManager* resource_manager =
       ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
-  ui::Resource* fade_resource = resource_manager->GetResource(
-      ui::ANDROID_RESOURCE_TYPE_STATIC, resource_id);
+  ui::Resource* fade_resource = resource_manager->GetStaticResourceWithTint(
+        resource_id, right_fade_color);
   right_fade_->SetUIResourceId(fade_resource->ui_resource()->id());
 
   // Set opacity.
@@ -316,6 +320,7 @@ void TabStripSceneLayer::PutStripTabLayer(
     jboolean is_loading,
     jfloat spinner_rotation,
     jfloat brightness,
+    jfloat opacity,
     const JavaParamRef<jobject>& jlayer_title_cache,
     const JavaParamRef<jobject>& jresource_manager) {
   LayerTitleCache* layer_title_cache =
@@ -336,7 +341,7 @@ void TabStripSceneLayer::PutStripTabLayer(
                        tab_handle_outline_resource, foreground, close_pressed,
                        toolbar_width, x, y, width, height, content_offset_x,
                        close_button_alpha, is_loading, spinner_rotation,
-                       brightness);
+                       brightness, opacity);
 }
 
 scoped_refptr<TabHandleLayer> TabStripSceneLayer::GetNextLayer(

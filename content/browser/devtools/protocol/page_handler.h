@@ -20,7 +20,7 @@
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/devtools/protocol/page.h"
-#include "content/browser/preloading/prerender/prerender_host.h"
+#include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/download_manager.h"
@@ -87,7 +87,6 @@ class PageHandler : public DevToolsDomainHandler,
   // Instrumentation signals.
   void DidAttachInterstitialPage();
   void DidDetachInterstitialPage();
-  bool screencast_enabled() const { return enabled_ && screencast_enabled_; }
   using JavaScriptDialogCallback =
       content::JavaScriptDialogManager::DialogClosedCallback;
   void DidRunJavaScriptDialog(const GURL& url,
@@ -103,6 +102,8 @@ class PageHandler : public DevToolsDomainHandler,
   void NavigationReset(NavigationRequest* navigation_request);
   void DownloadWillBegin(FrameTreeNode* ftn, download::DownloadItem* item);
 
+  void OnFrameDetached(const base::UnguessableToken& frame_id);
+
   bool ShouldBypassCSP();
   void BackForwardCacheNotUsed(
       const NavigationRequest* nav_request,
@@ -112,7 +113,7 @@ class PageHandler : public DevToolsDomainHandler,
   void DidActivatePrerender(const NavigationRequest& nav_request);
   void DidCancelPrerender(const GURL& prerendering_url,
                           const std::string& initiating_frame_id,
-                          PrerenderHost::FinalStatus status,
+                          PrerenderFinalStatus status,
                           const std::string& disallowed_api_method);
 
   Response Enable() override;
@@ -144,6 +145,7 @@ class PageHandler : public DevToolsDomainHandler,
       Maybe<Page::Viewport> clip,
       Maybe<bool> from_surface,
       Maybe<bool> capture_beyond_viewport,
+      Maybe<bool> optimize_for_speed,
       std::unique_ptr<CaptureScreenshotCallback> callback) override;
   void CaptureSnapshot(
       Maybe<std::string> format,
@@ -183,11 +185,14 @@ class PageHandler : public DevToolsDomainHandler,
   Response AssureTopLevelActiveFrame();
 
  private:
-  enum EncodingFormat { PNG, JPEG };
+  using BitmapEncoder =
+      base::RepeatingCallback<bool(const SkBitmap& bitmap,
+                                   std::vector<uint8_t>& output)>;
 
   void CaptureFullPageScreenshot(
       Maybe<std::string> format,
       Maybe<int> quality,
+      Maybe<bool> optimize_for_speed,
       std::unique_ptr<CaptureScreenshotCallback> callback,
       const gfx::Size& full_page_size);
   bool ShouldCaptureNextScreencastFrame();
@@ -198,12 +203,11 @@ class PageHandler : public DevToolsDomainHandler,
       const SkBitmap& bitmap);
   void ScreencastFrameEncoded(
       std::unique_ptr<Page::ScreencastFrameMetadata> metadata,
-      const protocol::Binary& data);
+      std::vector<uint8_t> data);
 
   void ScreenshotCaptured(
       std::unique_ptr<CaptureScreenshotCallback> callback,
-      const std::string& format,
-      int quality,
+      BitmapEncoder encoder,
       const gfx::Size& original_view_size,
       const gfx::Size& requested_image_size,
       const blink::DeviceEmulationParams& original_params,
@@ -239,9 +243,7 @@ class PageHandler : public DevToolsDomainHandler,
   bool enabled_;
   bool bypass_csp_ = false;
 
-  bool screencast_enabled_;
-  std::string screencast_format_;
-  int screencast_quality_;
+  BitmapEncoder screencast_encoder_;
   int screencast_max_width_;
   int screencast_max_height_;
   int capture_every_nth_frame_;

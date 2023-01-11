@@ -76,7 +76,7 @@ suite('internet-detail-dialog', () => {
     await flushAsync();
   }
 
-  async function setupCellularNetwork(isPrimary, isInhibited) {
+  async function setupCellularNetwork(isPrimary, isInhibited, connectedApn) {
     await mojoApi_.setNetworkTypeEnabledState(NetworkType.kCellular, true);
 
     const cellularNetwork =
@@ -88,6 +88,7 @@ suite('internet-detail-dialog', () => {
         ConnectionStateType.kNotConnected;
     // Required for networkChooseMobile to be rendered.
     cellularNetwork.typeProperties.cellular.supportNetworkScan = true;
+    cellularNetwork.typeProperties.cellular.connectedApn = connectedApn;
 
     mojoApi_.setManagedPropertiesForTest(cellularNetwork);
     mojoApi_.setDeviceStateForTest({
@@ -304,5 +305,68 @@ suite('internet-detail-dialog', () => {
     assertFalse(networkIpConfig.disabled);
     assertFalse(networkNameservers.disabled);
     assertFalse(infoFields.disabled);
+  });
+
+  // Syntactic sugar for running test twice with different values for the
+  // apnRevamp feature flag.
+  [true, false].forEach(isApnRevampEnabled => {
+    test('Show/Hide APN row correspondingly to ApnRevamp flag', async () => {
+      loadTimeData.overrideValues({
+        apnRevamp: isApnRevampEnabled,
+      });
+      await setupCellularNetwork(
+          /* isPrimary= */ true, /* isInhibited= */ false);
+
+      await init();
+      const legacyApnElement =
+          internetDetailDialog.shadowRoot.querySelector('network-apnlist');
+      const apnSection =
+          internetDetailDialog.shadowRoot.querySelector('cr-expand-button');
+
+      if (isApnRevampEnabled) {
+        assertFalse(!!legacyApnElement);
+        assertTrue(!!apnSection);
+        assertEquals(
+            internetDetailDialog.i18n('internetApnPageTitle'),
+            internetDetailDialog.shadowRoot.querySelector('#apnRowTitle')
+                .textContent);
+        const getApnSectionSublabel = () =>
+            internetDetailDialog.shadowRoot.querySelector('#apnRowSublabel')
+                .textContent.trim();
+        assertFalse(!!getApnSectionSublabel());
+        assertTrue(!!internetDetailDialog.shadowRoot.querySelector('apn-list'));
+        const isApnListShowing = () =>
+            internetDetailDialog.shadowRoot.querySelector('iron-collapse')
+                .opened;
+        assertFalse(isApnListShowing());
+
+        // Add a connected APN.
+        const accessPointName = 'access point name';
+        await setupCellularNetwork(
+            /* isPrimary= */ true, /* isInhibited= */ false,
+            {accessPointName: accessPointName});
+
+        // Force a refresh.
+        internetDetailDialog.onDeviceStateListChanged();
+        await flushAsync();
+        assertEquals(accessPointName, getApnSectionSublabel());
+        assertFalse(isApnListShowing());
+
+        // Expand the section, the sublabel should no longer show.
+        apnSection.click();
+        await flushAsync();
+        assertFalse(!!getApnSectionSublabel());
+        assertTrue(isApnListShowing());
+
+        // Collapse the section, the sublabel should show.
+        apnSection.click();
+        await flushAsync();
+        assertEquals(accessPointName, getApnSectionSublabel());
+        assertFalse(isApnListShowing());
+      } else {
+        assertTrue(!!legacyApnElement);
+        assertFalse(!!apnSection);
+      }
+    });
   });
 });

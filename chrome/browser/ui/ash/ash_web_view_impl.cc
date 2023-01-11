@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/ash_web_view_impl.h"
 
 #include "ash/public/cpp/window_properties.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -25,12 +26,10 @@
 #include "ui/views/widget/widget.h"
 
 namespace {
-void FixZoomLevelToOne(content::WebContents* web_contents,
-                       content::RenderViewHost* render_view_host) {
+void FixZoomLevelToOne(content::RenderFrameHost* render_frame_host) {
   content::HostZoomMap* zoom_map =
-      content::HostZoomMap::GetForWebContents(web_contents);
-  zoom_map->SetTemporaryZoomLevel(render_view_host->GetProcess()->GetID(),
-                                  render_view_host->GetRoutingID(), 1.0);
+      content::HostZoomMap::Get(render_frame_host->GetSiteInstance());
+  zoom_map->SetTemporaryZoomLevel(render_frame_host->GetGlobalId(), 1.0);
 }
 }  // namespace
 
@@ -185,13 +184,19 @@ void AshWebViewImpl::OnFocusChangedInPage(
     observer.DidChangeFocusedNode(details->node_bounds_in_screen);
 }
 
+void AshWebViewImpl::RenderFrameHostChanged(
+    content::RenderFrameHost* old_host,
+    content::RenderFrameHost* new_host) {
+  if (new_host != new_host->GetOutermostMainFrame())
+    return;
+  if (params_.fix_zoom_level_to_one)
+    FixZoomLevelToOne(new_host);
+}
+
 void AshWebViewImpl::RenderViewHostChanged(content::RenderViewHost* old_host,
                                            content::RenderViewHost* new_host) {
   if (!web_contents_->GetRenderWidgetHostView())
     return;
-
-  if (params_.fix_zoom_level_to_one)
-    FixZoomLevelToOne(web_contents_.get(), new_host);
 
   if (!params_.enable_auto_resize)
     return;
@@ -232,7 +237,7 @@ void AshWebViewImpl::InitWebContents(Profile* profile) {
   }
 
   if (params_.fix_zoom_level_to_one)
-    FixZoomLevelToOne(web_contents_.get(), web_contents_->GetRenderViewHost());
+    FixZoomLevelToOne(web_contents_->GetPrimaryMainFrame());
 }
 
 void AshWebViewImpl::InitLayout(Profile* profile) {
@@ -247,7 +252,7 @@ void AshWebViewImpl::NotifyDidSuppressNavigation(
   // Note that we post notification to |observers_| as an observer may cause
   // |this| to be deleted during handling of the event which is unsafe to do
   // until the original navigation sequence has been completed.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(
           [](const base::WeakPtr<AshWebViewImpl>& self, GURL url,

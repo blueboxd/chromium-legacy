@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -71,7 +72,7 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
 
   WebMediaPlayerMSCompositor(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       MediaStreamDescriptor* media_stream_descriptor,
       std::unique_ptr<WebVideoFrameSubmitter> submitter,
       bool use_surface_layer,
@@ -155,7 +156,7 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   // Struct used to keep information about frames pending in
   // |rendering_frame_buffer_|.
   struct PendingFrameInfo {
-    int unique_id;
+    media::VideoFrame::ID unique_id;
     base::TimeDelta timestamp;
     base::TimeTicks reference_time;
     bool is_copy;
@@ -226,7 +227,7 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
 
   const scoped_refptr<base::SingleThreadTaskRunner>
       video_frame_compositor_task_runner_;
-  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   base::WeakPtr<WebMediaPlayerMS> player_;

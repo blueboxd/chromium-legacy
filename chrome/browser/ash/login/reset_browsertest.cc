@@ -20,13 +20,14 @@
 #include "chrome/browser/ash/login/test/oobe_window_visibility_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/reset_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/welcome_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/system/fake_statistics_provider.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_launcher.h"
@@ -109,7 +110,10 @@ void ExpectConfirmationDialogClosed() {
 
 class ResetTest : public OobeBaseTest, public LocalStateMixin::Delegate {
  public:
-  ResetTest() = default;
+  ResetTest() {
+    fake_statistics_provider_.SetVpdStatus(
+        system::StatisticsProvider::VpdStatus::kValid);
+  }
 
   ResetTest(const ResetTest&) = delete;
   ResetTest& operator=(const ResetTest&) = delete;
@@ -136,11 +140,15 @@ class ResetTest : public OobeBaseTest, public LocalStateMixin::Delegate {
   LoginManagerMixin::TestUserInfo test_user_{
       AccountId::FromUserEmailGaiaId(kTestUser1, kTestUser1GaiaId)};
   LoginManagerMixin login_manager_mixin_{&mixin_host_, {test_user_}};
+  system::ScopedFakeStatisticsProvider fake_statistics_provider_;
 };
 
 class ResetOobeTest : public OobeBaseTest {
  public:
-  ResetOobeTest() = default;
+  ResetOobeTest() {
+    fake_statistics_provider_.SetVpdStatus(
+        system::StatisticsProvider::VpdStatus::kValid);
+  }
 
   ResetOobeTest(const ResetOobeTest&) = delete;
   ResetOobeTest& operator=(const ResetOobeTest&) = delete;
@@ -160,6 +168,9 @@ class ResetOobeTest : public OobeBaseTest {
     EXPECT_FALSE(LoginScreenTestApi::IsGuestButtonShown());
     ExpectConfirmationDialogClosed();
   }
+
+ private:
+  system::ScopedFakeStatisticsProvider fake_statistics_provider_;
 };
 
 class ResetFirstAfterBootTest : public ResetTest {

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/ash/crosapi/crosapi_util.h"
 #include "chrome/browser/ash/crosapi/environment_provider.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/crosapi/mojom/desk_template.mojom.h"
 #include "components/component_updater/component_updater_service.h"
@@ -54,7 +56,7 @@ class ApkWebAppService;
 namespace login {
 class SecurityTokenSessionController;
 }
-}
+}  // namespace ash
 
 namespace extensions {
 class AutotestPrivateGetLacrosInfoFunction;
@@ -70,6 +72,9 @@ namespace mojom {
 class Crosapi;
 }  // namespace mojom
 
+// Enable pre-launching Lacros at login screen.
+BASE_DECLARE_FEATURE(kLacrosLaunchAtLoginScreen);
+
 class BrowserLoader;
 class FilesAppLauncher;
 class TestMojoConnectionManager;
@@ -80,6 +85,7 @@ using component_updater::ComponentUpdateService;
 // Manages the lifetime of lacros-chrome, and its loading status. Observes the
 // component updater for future updates. This class is a part of ash-chrome.
 class BrowserManager : public session_manager::SessionManagerObserver,
+                       public ash::SessionManagerClient::Observer,
                        public BrowserServiceHostObserver,
                        public policy::CloudPolicyCore::Observer,
                        public policy::CloudPolicyStore::Observer,
@@ -171,7 +177,7 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
   // Similar to NewWindow(), but opens a tab instead if there already is a
   // window. See crosapi::mojom::BrowserService::NewTab for more details.
-  void NewTab(bool should_trigger_session_restore);
+  void NewTab();
 
   // Similar to NewWindow and NewTab. If a suitable window exists, a new tab is
   // added. Otherwise a new window is created with session restore (no new tab
@@ -220,6 +226,10 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // - For Kiosk sessions, Lacros needs to be started earlier because all
   // extensions and browser window should be well prepared before the user
   // enters the session. This method should be called at the appropriate time.
+  //
+  // NOTE: If InitializeAndStartIfNeeded finds Lacros disabled, it unloads
+  // Lacros via BrowserLoader::Unload, which also deletes the user data
+  // directory.
   void InitializeAndStartIfNeeded();
 
   // Returns true if keep-alive is enabled.
@@ -299,8 +309,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   };
 
   // Disable most of BrowserManager's functionality such that it never tries to
-  // launch Lacros. This is used by test_ash_chrome.
+  // launch Lacros. This is used e.g. by test_ash_chrome.
   static void DisableForTesting();
+  static void EnableForTesting();
 
  protected:
   // The actual Lacros launch mode.
@@ -397,7 +408,7 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Posts CreateLogFile() and StartWithLogFile() to the thread pool.
   // Also takes care of loading an update first, if available.
   // Virtual for tests.
-  virtual void Start();
+  virtual void Start(bool launching_at_login_screen = false);
 
   // BrowserServiceHostObserver:
   void OnBrowserServiceConnected(CrosapiId id,
@@ -503,11 +514,14 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // marked as friends of this class so that lacros owners can audit usage.
   std::unique_ptr<ScopedKeepAlive> KeepAlive(Feature feature);
 
-  void StartIfNeeded();
+  void StartIfNeeded(bool launching_at_login_screen = false);
 
   // Starts the lacros-chrome process and redirects stdout/err to file pointed
   // by |params.logfd|.
   void StartWithLogFile(LaunchParamsFromBackground params);
+
+  // ash::SessionManagerClient::Observer:
+  void EmitLoginPromptVisibleCalled() override;
 
   // BrowserServiceHostObserver:
   void OnBrowserRelaunchRequested(CrosapiId id) override;
@@ -533,8 +547,20 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // killing the process.
   void HandleLacrosChromeTermination(base::TimeDelta timeout);
 
+  // Called as soon as the login prompt is visible.
+  void OnLoginPromptVisible();
+
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
+
+  // Pre-launch Lacros at login screen.
+  void PrelaunchAtLoginScreen();
+
+  // Resume Lacros startup process after login.
+  void ResumeLaunch();
+
+  // Launch "Go to files" if the migration error page was clicked.
+  void HandleGoToFiles();
 
   // Sets user policy to be propagated to Lacros and subsribes to the user
   // policy updates in Ash.
@@ -564,7 +590,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   void OnEvent(Events event, const std::string& id) override;
 
   // crosapi::BrowserManagerObserver:
-  void OnLoadComplete(const base::FilePath& path, LacrosSelection selection);
+  void OnLoadComplete(bool launching_at_login_screen,
+                      const base::FilePath& path,
+                      LacrosSelection selection);
 
   // Methods for features to register and de-register for needing to keep Lacros
   // alive.
@@ -606,6 +634,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Path to the lacros-chrome disk image directory.
   base::FilePath lacros_path_;
 
+  // Pipe FDs through which Ash and Lacros exchange post-login parameters.
+  base::ScopedFD postlogin_pipe_fd_;
+
   // Whether we are starting "rootfs" or "stateful" lacros.
   absl::optional<LacrosSelection> lacros_selection_;
 
@@ -628,6 +659,11 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Tracks whether Shutdown() has been signalled by ash. This flag ensures any
   // new or existing lacros startup tasks are not executed during shutdown.
   bool shutdown_requested_ = false;
+
+  // Tracks whether unloading Lacros was requested. Used to unload
+  // Lacros after terminating it in case pre-loading at login screen
+  // was unnecessary (e.g. because the user doesn't have Lacros enabled).
+  bool unload_requested_ = false;
 
   // Tracks whether an updated browser component is available. Used to determine
   // if an update should be loaded prior to starting the browser.
@@ -657,6 +693,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   std::set<Feature> keep_alive_features_;
 
   base::ObserverList<BrowserManagerObserver> observers_;
+
+  const bool launch_at_login_screen_;
 
   const bool disabled_for_testing_;
 

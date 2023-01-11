@@ -8,13 +8,16 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <array>
 #include <string>
 #include <vector>
 
 #include "base/check_op.h"
 #include "base/strings/string_piece.h"
+#include "base/values.h"
 #include "net/base/net_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 
@@ -98,6 +101,9 @@ class NET_EXPORT IPAddressBytes {
 class NET_EXPORT IPAddress {
  public:
   enum : size_t { kIPv4AddressSize = 4, kIPv6AddressSize = 16 };
+
+  // Nullopt if `value` is malformed to be deserialized to IPAddress.
+  static absl::optional<IPAddress> FromValue(const base::Value& value);
 
   // Creates a zero-sized, invalid address.
   IPAddress();
@@ -185,7 +191,7 @@ class NET_EXPORT IPAddress {
   //
   // When parsing fails, the original value of |this| will be overwritten such
   // that |this->empty()| and |!this->IsValid()|.
-  [[nodiscard]] bool AssignFromIPLiteral(const base::StringPiece& ip_literal);
+  [[nodiscard]] bool AssignFromIPLiteral(base::StringPiece ip_literal);
 
   // Returns the underlying bytes.
   const IPAddressBytes& bytes() const { return ip_address_; }
@@ -214,6 +220,9 @@ class NET_EXPORT IPAddress {
   bool operator==(const IPAddress& that) const;
   bool operator!=(const IPAddress& that) const;
   bool operator<(const IPAddress& that) const;
+
+  // Must be a valid address (per IsValid()).
+  base::Value ToValue() const;
 
  private:
   IPAddressBytes ip_address_;
@@ -274,7 +283,7 @@ NET_EXPORT bool ParseCIDRBlock(base::StringPiece cidr_literal,
 // surrounded by brackets as in [::1]. On failure |ip_address| may have been
 // overwritten and could contain an invalid IPAddress.
 [[nodiscard]] NET_EXPORT bool ParseURLHostnameToAddress(
-    const base::StringPiece& hostname,
+    base::StringPiece hostname,
     IPAddress* ip_address);
 
 // Returns number of matching initial bits between the addresses |a1| and |a2|.

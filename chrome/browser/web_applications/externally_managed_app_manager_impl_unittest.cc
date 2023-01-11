@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/containers/contains.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/one_shot_event.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -205,7 +206,7 @@ class TestExternallyManagedAppManager : public ExternallyManagedAppManagerImpl {
   std::unique_ptr<ExternallyManagedAppInstallTask> CreateInstallationTask(
       ExternalInstallOptions install_options) override {
     return std::make_unique<TestExternallyManagedAppInstallTask>(
-        this, profile(), &test_url_loader_, test_install_task_manager_,
+        this, profile(), &test_url_loader_, *test_install_task_manager_,
         std::move(install_options));
   }
 
@@ -265,7 +266,7 @@ class TestExternallyManagedAppManager : public ExternallyManagedAppManagerImpl {
     run_loop.Run();
   }
 
-  FakeWebAppProvider& provider() { return provider_; }
+  FakeWebAppProvider& provider() { return *provider_; }
 
  private:
   class TestExternallyManagedAppInstallTask
@@ -331,7 +332,7 @@ class TestExternallyManagedAppManager : public ExternallyManagedAppManagerImpl {
           install_options().only_use_app_info_factory
               ? install_options().app_info_factory.Run()->start_url
               : install_options().install_url;
-      test_install_task_manager_.RunOrSaveRequest(base::BindLambdaForTesting(
+      test_install_task_manager_->RunOrSaveRequest(base::BindLambdaForTesting(
           [&, install_url, callback = std::move(callback)]() mutable {
             DoInstall(install_url, std::move(callback));
           }));
@@ -347,7 +348,8 @@ class TestExternallyManagedAppManager : public ExternallyManagedAppManagerImpl {
    private:
     raw_ptr<TestExternallyManagedAppManager>
         externally_managed_app_manager_impl_;
-    TestExternallyManagedAppInstallTaskManager& test_install_task_manager_;
+    const raw_ref<TestExternallyManagedAppInstallTaskManager>
+        test_install_task_manager_;
     raw_ptr<Profile> profile_;
   };
 
@@ -386,9 +388,10 @@ class TestExternallyManagedAppManager : public ExternallyManagedAppManagerImpl {
         weak_ptr_factory_{this};
   };
 
-  FakeWebAppProvider& provider_;
+  const raw_ref<FakeWebAppProvider> provider_;
   TestWebAppUrlLoader test_url_loader_;
-  TestExternallyManagedAppInstallTaskManager& test_install_task_manager_;
+  const raw_ref<TestExternallyManagedAppInstallTaskManager>
+      test_install_task_manager_;
 
   std::vector<ExternalInstallOptions> install_options_list_;
   GURL last_registered_install_url_;
@@ -429,8 +432,6 @@ class ExternallyManagedAppManagerImplTest
     WebAppTest::SetUp();
 
     provider_ = web_app::FakeWebAppProvider::Get(profile());
-    provider_->SetDefaultFakeSubsystems();
-
     auto externally_managed_app_manager_impl =
         std::make_unique<TestExternallyManagedAppManager>(
             profile(), provider(), test_install_task_manager_);
@@ -857,17 +858,19 @@ TEST_P(ExternallyManagedAppManagerImplTest,
           }));
 
   base::RunLoop().RunUntilIdle();
+  externally_managed_app_manager_impl().SetNextInstallationTaskResult(
+      kFooWebAppUrl, webapps::InstallResultCode::kSuccessNewInstall);
 
   externally_managed_app_manager_impl().Install(
       GetInstallOptionsWithWebAppInfo(kFooWebAppUrl),
       base::BindLambdaForTesting(
           [&](const GURL& url,
               ExternallyManagedAppManager::InstallResult result) {
-            EXPECT_EQ(webapps::InstallResultCode::kSuccessAlreadyInstalled,
+            EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall,
                       result.code);
             EXPECT_EQ(kFooWebAppUrl, url);
 
-            EXPECT_EQ(1u, install_run_count());
+            EXPECT_EQ(2u, install_run_count());
             EXPECT_EQ(GetInstallOptionsWithWebAppInfo(kFooWebAppUrl),
                       last_install_options());
 
@@ -977,11 +980,11 @@ TEST_P(ExternallyManagedAppManagerImplTest, Install_ReentrantCallback) {
 
 TEST_P(ExternallyManagedAppManagerImplTest, Install_SerialCallsSameApp) {
   const GURL kFooWebAppUrl("https://foo.example");
-  externally_managed_app_manager_impl().SetNextInstallationTaskResult(
-      kFooWebAppUrl, webapps::InstallResultCode::kSuccessNewInstall);
   install_finalizer().SetNextUninstallExternalWebAppResult(
       kFooWebAppUrl, webapps::UninstallResultCode::kSuccess);
   {
+    externally_managed_app_manager_impl().SetNextInstallationTaskResult(
+        kFooWebAppUrl, webapps::InstallResultCode::kSuccessNewInstall);
     auto [url, code] = InstallAndWait(&externally_managed_app_manager_impl(),
                                       GetInstallOptions(kFooWebAppUrl));
 
@@ -993,14 +996,15 @@ TEST_P(ExternallyManagedAppManagerImplTest, Install_SerialCallsSameApp) {
   }
 
   {
+    externally_managed_app_manager_impl().SetNextInstallationTaskResult(
+        kFooWebAppUrl, webapps::InstallResultCode::kSuccessNewInstall);
     auto [url, code] = InstallAndWait(&externally_managed_app_manager_impl(),
                                       GetInstallOptions(kFooWebAppUrl));
 
-    EXPECT_EQ(webapps::InstallResultCode::kSuccessAlreadyInstalled, code);
+    EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall, code);
     EXPECT_EQ(kFooWebAppUrl, url);
 
-    // The app is already installed so we shouldn't try to install it again.
-    EXPECT_EQ(1u, install_run_count());
+    EXPECT_EQ(2u, install_run_count());
   }
 }
 
@@ -1019,21 +1023,16 @@ TEST_P(ExternallyManagedAppManagerImplTest, Install_ConcurrentCallsSameApp) {
       base::BindLambdaForTesting(
           [&](const GURL& url,
               ExternallyManagedAppManager::InstallResult result) {
-            // kSuccessAlreadyInstalled because the last call to Install gets
-            // higher priority.
-            EXPECT_EQ(webapps::InstallResultCode::kSuccessAlreadyInstalled,
+            EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall,
                       result.code);
             EXPECT_EQ(kFooWebAppUrl, url);
 
-            // Only one installation task should run because the app was already
-            // installed.
-            EXPECT_EQ(1u, install_run_count());
-
+            // Both installation tasks run if the install was triggered
+            // by policy.
+            EXPECT_EQ(2u, install_run_count());
             EXPECT_TRUE(first_callback_ran);
-
             run_loop.Quit();
           }));
-
   externally_managed_app_manager_impl().InstallNow(
       GetInstallOptions(kFooWebAppUrl),
       base::BindLambdaForTesting(
@@ -1046,10 +1045,12 @@ TEST_P(ExternallyManagedAppManagerImplTest, Install_ConcurrentCallsSameApp) {
             EXPECT_EQ(1u, install_run_count());
             EXPECT_EQ(GetInstallOptions(kFooWebAppUrl), last_install_options());
             first_callback_ran = true;
+            externally_managed_app_manager_impl().SetNextInstallationTaskResult(
+                kFooWebAppUrl, webapps::InstallResultCode::kSuccessNewInstall);
           }));
   run_loop.Run();
 
-  EXPECT_EQ(1u, install_run_count());
+  EXPECT_EQ(2u, install_run_count());
   EXPECT_EQ(GetInstallOptions(kFooWebAppUrl), last_install_options());
 }
 

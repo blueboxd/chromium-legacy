@@ -7,11 +7,11 @@ import {LockScreenProgress} from 'chrome://resources/ash/common/quick_unlock/loc
 import {assert} from 'chrome://resources/js/assert.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {FakeSettingsPrivate} from 'chrome://test/settings/chromeos/fake_settings_private.js';
+import {FakeSettingsPrivate} from 'chrome://webui-test/settings/chromeos/fake_settings_private.js';
 import {waitAfterNextRender, waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
-import {eventToPromise, isVisible as testUtilIsVisible} from '../../../test_util.js';
-import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
+import {eventToPromise, isVisible as testUtilIsVisible} from 'chrome://webui-test/test_util.js';
+import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 import {FakeQuickUnlockPrivate} from './fake_quick_unlock_private.js';
 import {FakeQuickUnlockUma} from './fake_quick_unlock_uma.js';
@@ -235,24 +235,24 @@ function registerLockScreenTests() {
 
     /**
      * Returns the lock screen pref value.
-     * @return {boolean}
+     * @return {!Promise<boolean>}
      */
     function getLockScreenPref() {
-      let result;
-      fakeSettings.getPref(ENABLE_LOCK_SCREEN_PREF, function(value) {
-        result = value;
+      return fakeSettings.getPref(ENABLE_LOCK_SCREEN_PREF).then((result) => {
+        assertNotEquals(undefined, result);
+        return result.value;
       });
-      assertNotEquals(undefined, result);
-      return result.value;
     }
 
     /**
      * Changes the lock screen pref value using the settings API; this is like
      * the pref got changed from an unknown source such as another tab.
      * @param {boolean} value
+     * @return {!Promise<void>}
      */
     function setLockScreenPref(value) {
-      fakeSettings.setPref(ENABLE_LOCK_SCREEN_PREF, value, '', assertTrue);
+      return fakeSettings.setPref(ENABLE_LOCK_SCREEN_PREF, value, '')
+          .then(assertTrue);
     }
 
     function isSetupPinButtonVisible() {
@@ -337,8 +337,8 @@ function registerLockScreenTests() {
 
     // Showing the choose method screen does not make any destructive pref or
     // quickUnlockPrivate calls.
-    test('ShowingScreenDoesNotModifyPrefs', function() {
-      assertTrue(getLockScreenPref());
+    test('ShowingScreenDoesNotModifyPrefs', async function() {
+      assertTrue(await getLockScreenPref());
       assertRadioButtonChecked(passwordRadioButton);
       assertDeepEquals([], quickUnlockPrivateApi.activeModes);
     });
@@ -375,7 +375,7 @@ function registerLockScreenTests() {
 
     // The various radio buttons update internal state and do not modify
     // prefs.
-    test('TappingButtonsChangesUnderlyingState', function() {
+    test('TappingButtonsChangesUnderlyingState', async function() {
       function togglePin() {
         assertRadioButtonChecked(passwordRadioButton);
 
@@ -397,14 +397,14 @@ function registerLockScreenTests() {
       testElement.authToken = quickUnlockPrivateApi.getFakeToken();
 
       // Verify toggling PIN on/off does not disable screen lock.
-      setLockScreenPref(true);
+      await setLockScreenPref(true);
       togglePin();
-      assertTrue(getLockScreenPref());
+      assertTrue(await getLockScreenPref());
 
       // Verify toggling PIN on/off does not enable screen lock.
-      setLockScreenPref(false);
+      await setLockScreenPref(false);
       togglePin();
-      assertFalse(getLockScreenPref());
+      assertFalse(await getLockScreenPref());
     });
 
     // If quick unlock is changed by another settings page the radio button

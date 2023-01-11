@@ -11,6 +11,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/pref_font_webkit_names.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
@@ -1705,6 +1706,12 @@ const char kWebRtcLocalIpsAllowedUrls[] = "webrtc.local_ips_allowed_urls";
 const char kWebRTCAllowLegacyTLSProtocols[] =
     "webrtc.allow_legacy_tls_protocols";
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(ENABLE_DICE_SUPPORT)
+// Boolean that indicates that the first run experience has been finished (or
+// skipped by some policy) for this browser install.
+const char kFirstRunFinished[] = "browser.first_run_finished";
+#endif
+
 #if !BUILDFLAG(IS_ANDROID)
 // Whether or not this profile has been shown the Welcome page.
 const char kHasSeenWelcomePage[] = "browser.has_seen_welcome_page";
@@ -2804,20 +2811,6 @@ const char kCloudPrintSubmitEnabled[] = "cloud_print.submit_enabled";
 const char kMaxConnectionsPerProxy[] = "net.max_connections_per_proxy";
 
 #if BUILDFLAG(IS_MAC)
-// Set to true if the user removed our login item so we should not create a new
-// one when uninstalling background apps.
-const char kUserRemovedLoginItem[] = "background_mode.user_removed_login_item";
-
-// Set to true if Chrome already created a login item, so there's no need to
-// create another one.
-const char kChromeCreatedLoginItem[] =
-    "background_mode.chrome_created_login_item";
-
-// Set to true once we've initialized kChromeCreatedLoginItem for the first
-// time.
-const char kMigratedLoginItemPref[] =
-    "background_mode.migrated_login_item_pref";
-
 // A boolean that tracks whether to show a notification when trying to quit
 // while there are apps running.
 const char kNotifyWhenAppsKeepChromeAlive[] =
@@ -3568,6 +3561,10 @@ const char kLastWhatsNewVersion[] = "browser.last_whats_new_version";
 // A boolean indicating whether the Lens Region search feature should be enabled
 // if supported.
 const char kLensRegionSearchEnabled[] = "policy.lens_region_search_enabled";
+// A boolean indicating whether the Lens NTP searchbox feature should be enabled
+// if supported.
+const char kLensDesktopNTPSearchEnabled[] =
+    "policy.lens_desktop_ntp_search_enabled";
 #endif
 
 // A boolean indicating whether the Privacy guide feature has been viewed. This
@@ -3596,6 +3593,11 @@ const char kSCTAuditingHashdanceReportCount[] =
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kConsumerAutoUpdateToggle[] = "settings.consumer_auto_update_toggle";
+
+// A boolean pref that controls whether or not Hindi Inscript keyboard layout
+// is available. Set with the corresponding enterprise policy.
+const char kHindiInscriptLayoutEnabled[] =
+    "settings.input.hindi_inscript_layout_enabled";
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -3627,5 +3629,14 @@ const char kStrictMimetypeCheckForWorkerScriptsEnabled[] =
 const char kVirtualKeyboardResizesLayoutByDefault[] =
     "virtual_keyboard_resizes_layout_by_default";
 #endif  // BUILDFLAG(IS_ANDROID)
+
+// A boolean indicating whether Access-Control-Allow-Methods matching in CORS
+// preflights is fixed according to the spec. https://crbug.com/1228178
+const char kAccessControlAllowMethodsInCORSPreflightSpecConformant[] =
+    "access_control_allow_methods_in_cors_preflight_spec_conformant";
+
+// A time preference keeping track of the last time the DIPS service performed
+// DIPS-related repeated actions (logging metrics, clearing state, etc).
+const char kDIPSTimerLastUpdate[] = "dips_timer_last_update";
 
 }  // namespace prefs

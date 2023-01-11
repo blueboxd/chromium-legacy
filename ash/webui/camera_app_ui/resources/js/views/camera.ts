@@ -80,6 +80,9 @@ export class Camera extends View implements CameraViewUI {
   private readonly docModeDialogView =
       new Dialog(ViewName.DOCUMENT_MODE_DIALOG);
 
+  private readonly lowStorageDialogView =
+      new Dialog(ViewName.LOW_STORAGE_DIALOG);
+
   private readonly subViews: View[];
 
   /**
@@ -137,6 +140,7 @@ export class Camera extends View implements CameraViewUI {
       this.cropDocument,
       this.documentReview,
       this.docModeDialogView,
+      this.lowStorageDialogView,
       new View(ViewName.FLASH),
     ];
 
@@ -162,12 +166,17 @@ export class Camera extends View implements CameraViewUI {
           metrics.ShutterType.TOUCH :
           metrics.ShutterType.MOUSE;
     }
-
-    dom.get('#start-takephoto', HTMLButtonElement)
-        .addEventListener('click', (e) => {
-          const mouseEvent = assertInstanceof(e, MouseEvent);
-          this.beginTake(getShutterType(mouseEvent));
-        });
+    const photoShutter = dom.get('#start-takephoto', HTMLButtonElement);
+    photoShutter.addEventListener('click', (e) => {
+      this.beginTake(getShutterType(e));
+    });
+    function checkPhotoShutter() {
+      const disabled = state.get(state.State.CAMERA_CONFIGURING) ||
+          state.get(state.State.TAKING);
+      photoShutter.disabled = disabled;
+    }
+    state.addObserver(state.State.CAMERA_CONFIGURING, checkPhotoShutter);
+    state.addObserver(state.State.TAKING, checkPhotoShutter);
 
     dom.get('#stop-takephoto', HTMLButtonElement)
         .addEventListener('click', () => this.endTake());
@@ -175,16 +184,28 @@ export class Camera extends View implements CameraViewUI {
     const videoShutter = dom.get('#recordvideo', HTMLButtonElement);
     videoShutter.addEventListener('click', (e) => {
       if (!state.get(state.State.TAKING)) {
-        this.beginTake(getShutterType(assertInstanceof(e, MouseEvent)));
+        this.beginTake(getShutterType(e));
       } else {
         this.endTake();
       }
     });
+    function checkVideoShutter() {
+      const disabled = state.get(state.State.CAMERA_CONFIGURING) &&
+          !state.get(state.State.TAKING);
+      videoShutter.disabled = disabled;
+    }
+    state.addObserver(state.State.CAMERA_CONFIGURING, checkVideoShutter);
+    state.addObserver(state.State.TAKING, checkVideoShutter);
 
-    dom.get('#video-snapshot', HTMLButtonElement)
-        .addEventListener('click', () => {
-          this.cameraManager.takeVideoSnapshot();
-        });
+    const videoSnapshotButton = dom.get('#video-snapshot', HTMLButtonElement);
+    videoSnapshotButton.addEventListener('click', () => {
+      this.cameraManager.takeVideoSnapshot();
+    });
+    function checkVideoSnapshotButton() {
+      const disabled = state.get(state.State.SNAPSHOTTING);
+      videoSnapshotButton.disabled = disabled;
+    }
+    state.addObserver(state.State.SNAPSHOTTING, checkVideoSnapshotButton);
 
     const pauseShutter = dom.get('#pause-recordvideo', HTMLButtonElement);
     pauseShutter.addEventListener('click', () => {
@@ -209,6 +230,7 @@ export class Camera extends View implements CameraViewUI {
     this.cameraManager.registerCameraUI({
       onTryingNewConfig: (config: CameraConfig) => {
         this.updateModeUI(config.mode);
+        this.updateShutterLabel(config.mode);
       },
       onUpdateConfig: async (config: CameraConfig) => {
         nav.close(ViewName.WARNING, WarningType.NO_CAMERA);
@@ -246,9 +268,21 @@ export class Camera extends View implements CameraViewUI {
       },
     });
 
+    const checkModesGroupDisabled = () => {
+      const disabled =
+          !state.get(state.State.STREAMING) || state.get(state.State.TAKING);
+      const modes =
+          dom.getAllFrom(this.modesGroup, '.mode-item>input', HTMLInputElement);
+      for (const mode of modes) {
+        mode.disabled = disabled;
+      }
+    };
+    state.addObserver(state.State.STREAMING, checkModesGroupDisabled);
+    state.addObserver(state.State.TAKING, checkModesGroupDisabled);
+
     for (const el of dom.getAll('.mode-item>input', HTMLInputElement)) {
       el.addEventListener('click', (event) => {
-        if (!this.cameraReady) {
+        if (!this.cameraReady.isSignaled()) {
           event.preventDefault();
         }
       });
@@ -256,6 +290,7 @@ export class Camera extends View implements CameraViewUI {
         if (el.checked) {
           const mode = util.assertEnumVariant(Mode, el.dataset['mode']);
           this.updateModeUI(mode);
+          this.updateShutterLabel(mode);
           state.set(state.State.MODE_SWITCHING, true);
           const isSuccess = await this.cameraManager.switchMode(mode);
           state.set(state.State.MODE_SWITCHING, false, {hasError: !isSuccess});
@@ -311,6 +346,14 @@ export class Camera extends View implements CameraViewUI {
       top: 0,
       behavior: 'smooth',
     });
+  }
+
+  private updateShutterLabel(mode: Mode) {
+    const element = dom.get('#start-takephoto', HTMLButtonElement);
+    const label =
+        mode === 'scan' ? I18nString.SCAN_BUTTON : I18nString.TAKE_PHOTO_BUTTON;
+    element.setAttribute('i18n-label', label);
+    element.setAttribute('aria-label', getI18nMessage(label));
   }
 
   private initVideoEncoderOptions() {
@@ -927,7 +970,7 @@ export class Camera extends View implements CameraViewUI {
     this.layoutHandler.update();
   }
 
-  override handlingKey(key: string): boolean {
+  override handlingKey(key: util.KeyboardShortcut): boolean {
     if (key === 'Ctrl-R') {
       toast.showDebugMessage(
           this.cameraManager.getPreviewResolution().toString());
@@ -942,7 +985,7 @@ export class Camera extends View implements CameraViewUI {
       }
       return true;
     }
-    if (key === 'Space') {
+    if (key === ' ') {
       this.focusShutterButton();
       if (state.get(state.State.TAKING)) {
         this.endTake();

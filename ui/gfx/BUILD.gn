@@ -657,6 +657,12 @@ static_library("test_support") {
   if (is_mac) {
     sources += [ "image/image_unittest_util_mac.mm" ]
   }
+  if (use_fuzzing_engine) {
+    sources += [
+      "geometry/test/fuzzer_util.cc",
+      "geometry/test/fuzzer_util.h",
+    ]
+  }
 
   public_deps = [ ":gfx" ]
 
@@ -902,7 +908,7 @@ test("gfx_unittests") {
   }
 
   if (is_fuchsia) {
-    deps += [ "//skia:test_fonts_cfv2" ]
+    deps += [ "//skia:test_fonts" ]
     additional_manifest_fragments =
         [ "//build/config/fuchsia/test/test_fonts.shard.test-cml" ]
   }

@@ -22,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/system/sys_info.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/atl.h"
 #include "base/win/scoped_handle.h"
@@ -185,7 +186,10 @@ TEST(WinUtil, GetOSVersion) {
   // Compare to the version from `::GetVersionEx`.
   OSVERSIONINFOEX os = {};
   os.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   EXPECT_TRUE(::GetVersionEx(reinterpret_cast<OSVERSIONINFO*>(&os)));
+#pragma clang diagnostic pop
 
   EXPECT_EQ(rtl_os_version->dwOSVersionInfoSize, os.dwOSVersionInfoSize);
   EXPECT_EQ(rtl_os_version->dwMajorVersion, os.dwMajorVersion);

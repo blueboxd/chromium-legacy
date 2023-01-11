@@ -10,6 +10,7 @@
 
 #include "ash/constants/ash_pref_names.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time_override.h"
 #include "chromeos/ash/components/audio/audio_device.h"
 #include "chromeos/ash/components/audio/audio_devices_pref_handler.h"
 #include "chromeos/ash/components/dbus/audio/audio_node.h"
@@ -179,7 +180,7 @@ class AudioDevicesPrefHandlerTest : public testing::TestWithParam<bool> {
                          : audio_pref_handler_->GetOutputVolumeValue(&device);
   }
 
-  double GetUserPriority(const AudioDevice& device) {
+  int GetUserPriority(const AudioDevice& device) {
     return audio_pref_handler_->GetUserPriority(device);
   }
 
@@ -482,30 +483,90 @@ TEST_P(AudioDevicesPrefHandlerTest, UserPriority) {
   EXPECT_EQ(kUserPriorityNone, GetUserPriority(device));
 
   AudioDevice device2 = GetSecondaryDeviceWithVersion(2);
-  audio_pref_handler_->SetUserPriorityHigherThan(device2, device);
+  audio_pref_handler_->SetUserPriorityHigherThan(device2, &device);
   EXPECT_EQ(kUserPriorityNone, GetUserPriority(device));
   EXPECT_EQ(kUserPriorityMin, GetUserPriority(device2));
 
-  audio_pref_handler_->SetUserPriorityHigherThan(device, device2);
+  audio_pref_handler_->SetUserPriorityHigherThan(device, &device2);
   EXPECT_EQ(2, GetUserPriority(device));
   EXPECT_EQ(kUserPriorityMin, GetUserPriority(device2));
 
   AudioDevice device3 = GetDeviceWithSpecialCharactersWithVersion(2);
 
-  audio_pref_handler_->SetUserPriorityHigherThan(device3, device2);
+  audio_pref_handler_->SetUserPriorityHigherThan(device3, &device2);
   EXPECT_EQ(2, GetUserPriority(device3));
   EXPECT_EQ(3, GetUserPriority(device));
   EXPECT_EQ(kUserPriorityMin, GetUserPriority(device2));
 
-  audio_pref_handler_->SetUserPriorityHigherThan(device, device3);
+  audio_pref_handler_->SetUserPriorityHigherThan(device, &device3);
   EXPECT_EQ(2, GetUserPriority(device3));
   EXPECT_EQ(3, GetUserPriority(device));
   EXPECT_EQ(kUserPriorityMin, GetUserPriority(device2));
 
-  audio_pref_handler_->SetUserPriorityHigherThan(device3, device);
+  audio_pref_handler_->SetUserPriorityHigherThan(device3, &device);
   EXPECT_EQ(3, GetUserPriority(device3));
   EXPECT_EQ(2, GetUserPriority(device));
   EXPECT_EQ(kUserPriorityMin, GetUserPriority(device2));
+}
+
+TEST_P(AudioDevicesPrefHandlerTest, UserPrioritySingle) {
+  AudioDevice device = GetDeviceWithVersion(2);
+  AudioDevice device2 = GetSecondaryDeviceWithVersion(2);
+  audio_pref_handler_->SetUserPriorityHigherThan(device, nullptr);
+  EXPECT_EQ(kUserPriorityMin, GetUserPriority(device));
+
+  audio_pref_handler_->SetUserPriorityHigherThan(device2, nullptr);
+  EXPECT_LT(GetUserPriority(device2), GetUserPriority(device));
+  EXPECT_NE(kUserPriorityNone, GetUserPriority(device2));
+  EXPECT_NE(kUserPriorityNone, GetUserPriority(device));
+}
+
+TEST_P(AudioDevicesPrefHandlerTest, DropLeastRecentlySeenDevices) {
+  base::subtle::ScopedTimeClockOverrides time_override(
+      []() {
+        static int i = 0;
+        i++;
+        return base::Time::FromDoubleT(i);
+      },
+      nullptr, nullptr);
+
+  AudioDevice d[3] = {
+      GetDeviceWithVersion(2),
+      GetSecondaryDeviceWithVersion(2),
+      GetDeviceWithSpecialCharactersWithVersion(2),
+  };
+
+  audio_pref_handler_->SetUserPriorityHigherThan(d[0], nullptr);
+  audio_pref_handler_->SetUserPriorityHigherThan(d[1], &d[0]);
+  audio_pref_handler_->SetUserPriorityHigherThan(d[2], &d[1]);
+
+  // All devices should have priorities assigned.
+  ASSERT_NE(kUserPriorityNone, GetUserPriority(d[0]));
+  ASSERT_NE(kUserPriorityNone, GetUserPriority(d[1]));
+  ASSERT_NE(kUserPriorityNone, GetUserPriority(d[2]));
+
+  audio_pref_handler_->DropLeastRecentlySeenDevices(
+      /*connected_devices=*/{d[0], d[1], d[2]}, 3);
+  // Keep 2 devices. Only the most recently seen d[0], d[2] should be left.
+  audio_pref_handler_->DropLeastRecentlySeenDevices(
+      /*connected_devices=*/{d[0], d[2]}, 2);
+  EXPECT_NE(kUserPriorityNone, GetUserPriority(d[0]));
+  EXPECT_EQ(kUserPriorityNone, GetUserPriority(d[1]));
+  EXPECT_NE(kUserPriorityNone, GetUserPriority(d[2]));
+
+  // Request to keep 1 device. But connected devices are always kept.
+  audio_pref_handler_->DropLeastRecentlySeenDevices(
+      /*connected_devices=*/{d[0], d[2]}, 1);
+  EXPECT_NE(kUserPriorityNone, GetUserPriority(d[0]));
+  EXPECT_EQ(kUserPriorityNone, GetUserPriority(d[1]));
+  EXPECT_NE(kUserPriorityNone, GetUserPriority(d[2]));
+
+  // Keep 1 devices. Only the most recently seen d[2] should be left.
+  audio_pref_handler_->DropLeastRecentlySeenDevices(
+      /*connected_devices=*/{d[2]}, 1);
+  EXPECT_EQ(kUserPriorityNone, GetUserPriority(d[0]));
+  EXPECT_EQ(kUserPriorityNone, GetUserPriority(d[1]));
+  EXPECT_NE(kUserPriorityNone, GetUserPriority(d[2]));
 }
 
 }  // namespace ash

@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/base_control_test_widget.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/test/view_metadata_test_utils.h"
 #include "ui/views/widget/widget.h"
 
@@ -87,7 +88,7 @@ TEST_F(LinkFragmentTest, Metadata) {
 // Tests that hovering and unhovering a link adds and removes an underline
 // under all connected fragments.
 TEST_F(LinkFragmentTest, TestUnderlineOnHover) {
-  // A non-hovered link fragment should not be underlined.
+  // A link fragment should be underlined.
   const gfx::Point point_outside =
       GetBoundsForFragment(2).bottom_right() + gfx::Vector2d(1, 1);
   event_generator()->MoveMouseTo(point_outside);
@@ -97,7 +98,17 @@ TEST_F(LinkFragmentTest, TestUnderlineOnHover) {
     return !!(fragment(index)->font_list().GetFontStyle() &
               gfx::Font::UNDERLINE);
   };
+  EXPECT_TRUE(is_underlined(0));
+  EXPECT_TRUE(is_underlined(1));
+  EXPECT_TRUE(is_underlined(2));
+
+  // A non-hovered link fragment should not be underlined.
+  fragment(0)->SetForceUnderline(false);
+  fragment(1)->SetForceUnderline(false);
+  fragment(2)->SetForceUnderline(false);
   EXPECT_FALSE(is_underlined(0));
+  EXPECT_FALSE(is_underlined(1));
+  EXPECT_FALSE(is_underlined(2));
 
   // Hovering the first link fragment underlines it.
   event_generator()->MoveMouseTo(GetBoundsForFragment(0).CenterPoint());
@@ -135,6 +146,48 @@ TEST_F(LinkFragmentTest, TestUnderlineOnHover) {
   EXPECT_FALSE(is_underlined(0));
   EXPECT_FALSE(is_underlined(1));
   EXPECT_FALSE(is_underlined(2));
+}
+
+// Tests that focusing and unfocusing a link keeps the underline and adds a
+// focus ring for all connected fragments.
+TEST_F(LinkFragmentTest, TestUnderlineAndFocusRingOnFocus) {
+  const auto is_underlined = [this](size_t index) {
+    return !!(fragment(index)->font_list().GetFontStyle() &
+              gfx::Font::UNDERLINE);
+  };
+
+  // A non-focused link fragment should be underlined.
+  EXPECT_TRUE(is_underlined(0));
+  EXPECT_TRUE(is_underlined(1));
+  EXPECT_TRUE(is_underlined(2));
+
+  EXPECT_FALSE(views::FocusRing::Get(fragment(0))->ShouldPaintForTesting());
+  EXPECT_FALSE(views::FocusRing::Get(fragment(1))->ShouldPaintForTesting());
+  EXPECT_FALSE(views::FocusRing::Get(fragment(2))->ShouldPaintForTesting());
+
+  // Focusing on fragment 0, which is standalone, will only show focus ring for
+  // that fragment.
+  fragment(0)->RequestFocus();
+
+  EXPECT_TRUE(is_underlined(0));
+  EXPECT_TRUE(is_underlined(1));
+  EXPECT_TRUE(is_underlined(2));
+
+  EXPECT_TRUE(views::FocusRing::Get(fragment(0))->ShouldPaintForTesting());
+  EXPECT_FALSE(views::FocusRing::Get(fragment(1))->ShouldPaintForTesting());
+  EXPECT_FALSE(views::FocusRing::Get(fragment(2))->ShouldPaintForTesting());
+
+  // Focusing on fragment 1, which is connected to fragment 2, will focus both
+  // fragments 1 and 2.
+  fragment(1)->RequestFocus();
+
+  EXPECT_TRUE(is_underlined(0));
+  EXPECT_TRUE(is_underlined(1));
+  EXPECT_TRUE(is_underlined(2));
+
+  EXPECT_FALSE(views::FocusRing::Get(fragment(0))->ShouldPaintForTesting());
+  EXPECT_TRUE(views::FocusRing::Get(fragment(1))->ShouldPaintForTesting());
+  EXPECT_TRUE(views::FocusRing::Get(fragment(2))->ShouldPaintForTesting());
 }
 
 }  // namespace views

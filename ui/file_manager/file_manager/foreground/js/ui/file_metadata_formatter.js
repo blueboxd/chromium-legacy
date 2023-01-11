@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
+import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
 
 import {strf, util} from '../../../common/js/util.js';
@@ -27,16 +27,30 @@ export class FileMetadataFormatter extends EventTarget {
    */
   setDateTimeFormat(use12hourClock) {
     const locale = util.getCurrentLocaleOrDefault();
-    this.timeFormatter_ = new Intl.DateTimeFormat(
-        locale, {hour: 'numeric', minute: 'numeric', hour12: use12hourClock});
-    this.dateFormatter_ = new Intl.DateTimeFormat(locale, {
+    const options = {
+      hour: 'numeric',
+      minute: 'numeric',
+    };
+    if (use12hourClock) {
+      options['hour12'] = true;
+    } else {
+      options['hourCycle'] = 'h23';
+    }
+    this.timeFormatter_ = new Intl.DateTimeFormat(locale, options);
+    const dateOptions = {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
       minute: 'numeric',
-      hour12: use12hourClock,
-    });
+    };
+    if (use12hourClock) {
+      dateOptions['hour12'] = true;
+    } else {
+      dateOptions['hourCycle'] = 'h23';
+    }
+
+    this.dateFormatter_ = new Intl.DateTimeFormat(locale, dateOptions);
     dispatchSimpleEvent(this, 'date-time-format-changed');
   }
 

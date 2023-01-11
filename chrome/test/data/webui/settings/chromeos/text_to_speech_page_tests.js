@@ -9,7 +9,7 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {waitAfterNextRender, waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
 
-import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 suite('TextToSpeechPageTests', function() {
   let page = null;
@@ -75,5 +75,27 @@ suite('TextToSpeechPageTests', function() {
               subpageButton, page.shadowRoot.activeElement,
               `${selector} should be focused`);
         });
+  });
+
+  test('only allowed subpages are available in kiosk mode', function() {
+    loadTimeData.overrideValues({
+      isKioskModeActive: true,
+      showTabletModeShelfNavigationButtonsSettings: true,
+    });
+    initPage();
+    flush();
+
+    const allowed_subpages = [
+      'chromeVoxSubpageButton',
+      'selectToSpeakSubpageButton',
+      'ttsSubpageButton',
+    ];
+
+    const subpages = page.root.querySelectorAll('cr-link-row');
+    subpages.forEach(function(subpage) {
+      if (isVisible(subpage)) {
+        assertTrue(allowed_subpages.includes(subpage.id));
+      }
+    });
   });
 });

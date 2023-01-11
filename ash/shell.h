@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/accessibility/accessibility_event_handler_manager.h"
 #include "ash/ash_export.h"
 #include "ash/constants/ash_features.h"
 #include "ash/in_session_auth/in_session_auth_dialog_controller_impl.h"
@@ -18,6 +19,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observation_traits.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
@@ -84,6 +86,7 @@ namespace ash {
 class AcceleratorControllerImpl;
 class AccessibilityControllerImpl;
 class AccessibilityDelegate;
+class AccessibilityEventHandlerManager;
 class AccessibilityFocusRingControllerImpl;
 class AdaptiveChargingController;
 class AmbientController;
@@ -126,6 +129,7 @@ class EventClientImpl;
 class EventRewriterControllerImpl;
 class EventTransformationHandler;
 class WindowRestoreController;
+class FirmwareUpdateManager;
 class FirmwareUpdateNotificationController;
 class FloatController;
 class FocusCycler;
@@ -215,6 +219,7 @@ class ClipboardHistoryControllerImpl;
 class TouchDevicesController;
 class TrayAction;
 class UserMetricsRecorder;
+class VideoConferenceTrayController;
 class VideoActivityNotifier;
 class VideoDetector;
 class WallpaperControllerImpl;
@@ -230,6 +235,10 @@ enum class LoginStatus;
 namespace diagnostics {
 class DiagnosticsLogController;
 }  // namespace diagnostics
+
+namespace federated {
+class FederatedServiceController;
+}  // namespace federated
 
 namespace quick_pair {
 class Mediator;
@@ -452,6 +461,10 @@ class ASH_EXPORT Shell : public SessionObserver,
     return event_transformation_handler_.get();
   }
 
+  federated::FederatedServiceController* federated_service_controller() {
+    return federated_service_controller_.get();
+  }
+
   FirmwareUpdateNotificationController*
   firmware_update_notification_controller() {
     return firmware_update_notification_controller_.get();
@@ -641,6 +654,11 @@ class ASH_EXPORT Shell : public SessionObserver,
   TrayAction* tray_action() { return tray_action_.get(); }
 
   UserMetricsRecorder* metrics() { return user_metrics_recorder_.get(); }
+
+  VideoConferenceTrayController* video_conference_tray_controller() {
+    return video_conference_tray_controller_.get();
+  }
+
   VideoDetector* video_detector() { return video_detector_.get(); }
   WallpaperControllerImpl* wallpaper_controller() {
     return wallpaper_controller_.get();
@@ -738,6 +756,19 @@ class ASH_EXPORT Shell : public SessionObserver,
   void NotifyShelfAlignmentChanged(aura::Window* root_window,
                                    ShelfAlignment old_alignment);
 
+  // Adds the |handler| based on its |type| to receive events, ensuring that
+  // event handlers continue to be called in their HandlerType order.
+  void AddAccessibilityEventHandler(
+      ui::EventHandler* handler,
+      AccessibilityEventHandlerManager::HandlerType type);
+
+  // Removes |handler| which was added through AddAccessibilityEventHandler.
+  void RemoveAccessibilityEventHandler(ui::EventHandler* handler);
+
+  LoginUnlockThroughputRecorder* login_unlock_throughput_recorder() {
+    return login_unlock_throughput_recorder_.get();
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
@@ -827,6 +858,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<DisplayHighlightController> display_highlight_controller_;
   std::unique_ptr<DisplaySpeakerController> display_speaker_controller_;
   std::unique_ptr<DragDropController> drag_drop_controller_;
+  std::unique_ptr<FirmwareUpdateManager> firmware_update_manager_;
   std::unique_ptr<FirmwareUpdateNotificationController>
       firmware_update_notification_controller_;
   std::unique_ptr<FocusCycler> focus_cycler_;
@@ -894,6 +926,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ClipboardHistoryControllerImpl> clipboard_history_controller_;
   std::unique_ptr<TouchDevicesController> touch_devices_controller_;
   std::unique_ptr<TrayAction> tray_action_;
+  std::unique_ptr<VideoConferenceTrayController>
+      video_conference_tray_controller_;
   std::unique_ptr<WallpaperControllerImpl> wallpaper_controller_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<WindowRestoreController> window_restore_controller_;
@@ -1014,6 +1048,9 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   std::unique_ptr<ProjectorControllerImpl> projector_controller_;
 
+  std::unique_ptr<AccessibilityEventHandlerManager>
+      accessibility_event_handler_manager_;
+
   // For testing only: simulate that a modal window is open
   bool simulate_modal_window_open_for_test_ = false;
 
@@ -1026,6 +1063,9 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   std::unique_ptr<MultiCaptureServiceClient> multi_capture_service_client_;
 
+  std::unique_ptr<federated::FederatedServiceController>
+      federated_service_controller_;
+
   std::unique_ptr<quick_pair::Mediator> quick_pair_mediator_;
 
   base::ObserverList<ShellObserver>::Unchecked shell_observers_;
@@ -1034,5 +1074,19 @@ class ASH_EXPORT Shell : public SessionObserver,
 };
 
 }  // namespace ash
+
+namespace base {
+
+template <>
+struct ScopedObservationTraits<ash::Shell, ash::ShellObserver> {
+  static void AddObserver(ash::Shell* source, ash::ShellObserver* observer) {
+    source->AddShellObserver(observer);
+  }
+  static void RemoveObserver(ash::Shell* source, ash::ShellObserver* observer) {
+    source->RemoveShellObserver(observer);
+  }
+};
+
+}  // namespace base
 
 #endif  // ASH_SHELL_H_

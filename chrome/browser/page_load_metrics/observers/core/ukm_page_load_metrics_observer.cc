@@ -688,6 +688,9 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
             LargestContentTextOrImage::kImage) {
       builder.SetPaintTiming_LargestContentfulPaintBPP(
           CalculateLCPEntropyBucket(cwv_lcp_timing_info.ImageBPP()));
+      auto priority = cwv_lcp_timing_info.ImageRequestPriority();
+      if (priority)
+        builder.SetPaintTiming_LargestContentfulPaintRequestPriority(*priority);
     }
   }
   RecordInternalTimingMetrics(cwv_lcp_timing_info);
@@ -1325,7 +1328,6 @@ void UkmPageLoadMetricsObserver::RecordMobileFriendlinessMetrics() {
       page_load_metrics::GetBucketedViewportHardcodedWidth(*mf));
   builder.SetTextContentOutsideViewportPercentage(
       mf->text_content_outside_viewport_percentage);
-  builder.SetBadTapTargetsRatio(mf->bad_tap_targets_ratio);
 
   // Make sure at least one MF evaluation happen.
   builder.Record(ukm::UkmRecorder::Get());

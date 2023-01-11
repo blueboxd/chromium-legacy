@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
+
 import {ConnectionType, KeyEvent, KeyEventType, MechanicalLayout, NumberPadPresence, PhysicalLayout, TopRightKey} from 'chrome://diagnostics/input_data_provider.mojom-webui.js';
 import {TopRightKey as DiagramTopRightKey} from 'chrome://resources/ash/common/keyboard_diagram.js';
 import {KeyboardKeyState} from 'chrome://resources/ash/common/keyboard_key.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {MockController} from '../../mock_controller.js';
+import {MockController} from '../mock_controller.m.js';
 
-export function keyboardTesterTestSuite() {
+suite('keyboardTesterTestSuite', function() {
   /** @type {?KeyboardTesterElement} */
   let keyboardTesterElement = null;
 
@@ -183,8 +186,11 @@ export function keyboardTesterTestSuite() {
     assertTrue(keyboardTesterElement.isOpen());
 
     // Alt + Escape should close the tester
-    keyboardTesterElement.dispatchEvent(
-        new KeyboardEvent('keydown', {key: 'Escape', altKey: true}));
+    const keyDownEvent = eventToPromise('keydown', keyboardTesterElement);
+
+    keyboardTesterElement.dispatchEvent(new KeyboardEvent(
+        'keydown', {bubbles: true, key: 'Escape', altKey: true}));
+    await keyDownEvent;
     assertFalse(keyboardTesterElement.isOpen());
   });
-}
+});

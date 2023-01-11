@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/task/thread_pool.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "media/base/video_codecs.h"
@@ -20,8 +22,8 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
-#include "third_party/openh264/src/codec/api/svc/codec_app_def.h"
-#include "third_party/openh264/src/codec/api/svc/codec_def.h"
+#include "third_party/openh264/src/codec/api/wels/codec_app_def.h"
+#include "third_party/openh264/src/codec/api/wels/codec_def.h"
 #include "ui/gfx/geometry/size.h"
 
 using media::VideoFrame;
@@ -89,7 +91,9 @@ void H264Encoder::ShutdownEncoder(
     std::unique_ptr<NonMainThread> encoding_thread,
     ScopedISVCEncoderPtr encoder) {
   DCHECK(encoding_thread);
-  // Both |encoding_thread| and |encoder| will be destroyed at end-of-scope.
+  base::ScopedAllowBaseSyncPrimitives allow;
+  encoding_thread = nullptr;
+  encoder = nullptr;
 }
 
 H264Encoder::H264Encoder(
@@ -104,10 +108,11 @@ H264Encoder::H264Encoder(
 }
 
 H264Encoder::~H264Encoder() {
-  PostCrossThreadTask(*main_task_runner_.get(), FROM_HERE,
-                      CrossThreadBindOnce(&H264Encoder::ShutdownEncoder,
-                                          std::move(encoding_thread_),
-                                          std::move(openh264_encoder_)));
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock()},
+      ConvertToBaseOnceCallback(CrossThreadBindOnce(
+          &H264Encoder::ShutdownEncoder, std::move(encoding_thread_),
+          std::move(openh264_encoder_))));
 }
 
 void H264Encoder::EncodeOnEncodingTaskRunner(
@@ -119,8 +124,13 @@ void H264Encoder::EncodeOnEncodingTaskRunner(
          frame->format() == media::VideoPixelFormat::PIXEL_FORMAT_I420 ||
          frame->format() == media::VideoPixelFormat::PIXEL_FORMAT_I420A);
 
-  if (frame->format() == media::PIXEL_FORMAT_NV12)
+  if (frame->format() == media::PIXEL_FORMAT_NV12) {
     frame = ConvertToI420ForSoftwareEncoder(frame);
+    if (!frame) {
+      DLOG(ERROR) << "VideoFrame failed to map";
+      return;
+    }
+  }
   DCHECK(frame->IsMappable());
 
   const gfx::Size frame_size = frame->visible_rect().size();
@@ -176,12 +186,8 @@ void H264Encoder::EncodeOnEncodingTaskRunner(
   }
 
   const bool is_key_frame = info.eFrameType == videoFrameTypeIDR;
-  PostCrossThreadTask(
-      *origin_task_runner_.get(), FROM_HERE,
-      CrossThreadBindOnce(OnFrameEncodeCompleted,
-                          CrossThreadBindRepeating(on_encoded_video_cb_),
-                          video_params, std::move(data), std::string(),
-                          capture_timestamp, is_key_frame));
+  on_encoded_video_cb_.Run(video_params, std::move(data), std::string(),
+                           capture_timestamp, is_key_frame);
 }
 
 bool H264Encoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {

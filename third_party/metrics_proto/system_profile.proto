@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -335,6 +335,7 @@ message SystemProfileProto {
       FORM_FACTOR_PHONE = 2;
       FORM_FACTOR_TABLET = 3;
       FORM_FACTOR_TV = 4;
+      FORM_FACTOR_MEET_DEVICE = 5;
     }
     optional FormFactor form_factor = 22;
 
@@ -1024,6 +1025,7 @@ message SystemProfileProto {
     CRL_SET = 10;
     SUBRESOURCE_FILTER = 11;
     SW_REPORTER = 12;
+    // Software Decryption CDM on all platforms of Chrome
     WIDEVINE_CDM = 13;
     EPSON_INKJET_PRINTER_ESCPR = 14;
     CROS_TERMINA = 15;

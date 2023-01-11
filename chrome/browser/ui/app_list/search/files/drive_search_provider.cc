@@ -109,8 +109,6 @@ void DriveSearchProvider::Start(const std::u16string& query) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   query_start_time_ = base::TimeTicks::Now();
 
-  // Clear results and cancel any outgoing requests.
-  ClearResultsSilently();
   weak_factory_.InvalidateWeakPtrs();
 
   if (!drive_service_ || !drive_service_->is_enabled()) {
@@ -128,6 +126,12 @@ void DriveSearchProvider::Start(const std::u16string& query) {
       drivefs::mojom::QueryParameters::QuerySource::kLocalOnly,
       base::BindOnce(&DriveSearchProvider::OnSearchDriveByFileName,
                      weak_factory_.GetWeakPtr()));
+}
+
+void DriveSearchProvider::StopQuery() {
+  weak_factory_.InvalidateWeakPtrs();
+  last_query_.clear();
+  last_tokenized_query_.reset();
 }
 
 void DriveSearchProvider::OnSearchDriveByFileName(

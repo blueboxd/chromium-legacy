@@ -7,8 +7,8 @@
  */
 
 import {assert} from 'chrome://resources/js/assert.js';
-import {getPropertyDescriptor, PropertyKind} from 'chrome://resources/js/cr.m.js';
-import {decorate} from 'chrome://resources/js/cr/ui.js';
+import {getPropertyDescriptor, PropertyKind} from 'chrome://resources/ash/common/cr_deprecated.js';
+import {decorate} from '../../../common/js/ui.js';
 import {Command} from './command.js';
 
 /**

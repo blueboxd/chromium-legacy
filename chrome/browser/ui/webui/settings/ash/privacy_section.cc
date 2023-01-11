@@ -33,14 +33,18 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 
-namespace chromeos {
-namespace settings {
+namespace ash::settings {
 
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
 namespace mojom {
-using ::ash::settings::mojom::SearchResultDefaultRank;
-using ::ash::settings::mojom::SearchResultIcon;
-using ::ash::settings::mojom::SearchResultType;
+using ::chromeos::settings::mojom::kFingerprintSubpagePathV2;
+using ::chromeos::settings::mojom::kManageOtherPeopleSubpagePathV2;
+using ::chromeos::settings::mojom::kPrivacyAndSecuritySectionPath;
+using ::chromeos::settings::mojom::kPrivacyHubSubpagePath;
+using ::chromeos::settings::mojom::kSecurityAndSignInSubpagePathV2;
+using ::chromeos::settings::mojom::kSmartPrivacySubpagePath;
+using ::chromeos::settings::mojom::Section;
+using ::chromeos::settings::mojom::Setting;
+using ::chromeos::settings::mojom::Subpage;
 }  // namespace mojom
 
 namespace {
@@ -54,7 +58,7 @@ const std::vector<SearchConcept>& GetPrivacySearchConcepts() {
          mojom::SearchResultDefaultRank::kMedium,
          mojom::SearchResultType::kSetting,
          {.setting = mojom::Setting::kVerifiedAccess}},
-        {IDS_OS_SETTINGS_TAG_PRIVACY,
+        {IDS_OS_SETTINGS_TAG_SECURITY_AND_PRIVACY,
          mojom::kPrivacyAndSecuritySectionPath,
          mojom::SearchResultIcon::kShield,
          mojom::SearchResultDefaultRank::kMedium,
@@ -237,10 +241,51 @@ const std::vector<SearchConcept>& GetPrivacyGoogleChromeSearchConcepts() {
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
+const std::vector<SearchConcept>& GetPrivacyControlsSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags([] {
+    std::vector<SearchConcept> init_tags;
+
+    if (ash::features::IsCrosPrivacyHubEnabled()) {
+      init_tags.push_back({IDS_OS_SETTINGS_TAG_PRIVACY_CONTROLS,
+                           mojom::kPrivacyHubSubpagePath,
+                           mojom::SearchResultIcon::kShield,
+                           mojom::SearchResultDefaultRank::kMedium,
+                           mojom::SearchResultType::kSubpage,
+                           {.subpage = mojom::Subpage::kPrivacyHub}});
+      init_tags.push_back({IDS_OS_SETTINGS_TAG_CAMERA,
+                           mojom::kPrivacyHubSubpagePath,
+                           mojom::SearchResultIcon::kCamera,
+                           mojom::SearchResultDefaultRank::kMedium,
+                           mojom::SearchResultType::kSetting,
+                           {.setting = mojom::Setting::kCameraOnOff}});
+
+      init_tags.push_back({IDS_OS_SETTINGS_TAG_MICROPHONE,
+                           mojom::kPrivacyHubSubpagePath,
+                           mojom::SearchResultIcon::kMicrophone,
+                           mojom::SearchResultDefaultRank::kMedium,
+                           mojom::SearchResultType::kSetting,
+                           {.setting = mojom::Setting::kMicrophoneOnOff}});
+    }
+
+    if (ash::features::IsCrosPrivacyHubV1Enabled()) {
+      init_tags.push_back({IDS_OS_SETTINGS_TAG_GEOLOCATION,
+                           mojom::kPrivacyHubSubpagePath,
+                           mojom::SearchResultIcon::kGeolocation,
+                           mojom::SearchResultDefaultRank::kMedium,
+                           mojom::SearchResultType::kSetting,
+                           {.setting = mojom::Setting::kGeolocationOnOff}});
+    }
+
+    return init_tags;
+  }());
+
+  return *tags;
+}
+
 bool IsSecureDnsAvailable() {
   return
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-      base::FeatureList::IsEnabled(chromeos::features::kEnableDnsProxy) &&
+      base::FeatureList::IsEnabled(ash::features::kEnableDnsProxy) &&
       base::FeatureList::IsEnabled(::features::kDnsProxyEnableDOH) &&
 #endif
       ::features::kDnsOverHttpsShowUiParam.Get();
@@ -277,6 +322,10 @@ PrivacySection::PrivacySection(Profile* profile,
   // Conditionally adds search tags concepts based on the subset of smart
   // privacy functionality enabled.
   updater.AddSearchTags(GetSmartPrivacySearchConcepts());
+
+  // Adds search concepts for the contents in the Privacy controls page
+  // depending on the enabled flags.
+  updater.AddSearchTags(GetPrivacyControlsSearchConcepts());
 }
 
 PrivacySection::~PrivacySection() = default;
@@ -324,6 +373,12 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_SMART_PRIVACY_QUICK_DIM_TITLE},
       {"smartPrivacyQuickDimSubtext",
        IDS_OS_SETTINGS_SMART_PRIVACY_QUICK_DIM_SUBTEXT},
+      {"smartPrivacyQuickLockLong",
+       IDS_OS_SETTINGS_SMART_PRIVACY_QUICK_LOCK_LONG},
+      {"smartPrivacyQuickLockShort",
+       IDS_OS_SETTINGS_SMART_PRIVACY_QUICK_LOCK_SHORT},
+      {"smartPrivacyQuickLockTitle",
+       IDS_OS_SETTINGS_SMART_PRIVACY_QUICK_LOCK_TITLE},
       {"smartPrivacySnoopingTitle",
        IDS_OS_SETTINGS_SMART_PRIVACY_SNOOPING_TITLE},
       {"smartPrivacySnoopingSubtext",
@@ -331,19 +386,20 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"smartPrivacySnoopingNotifications",
        IDS_OS_SETTINGS_SMART_PRIVACY_SNOOPING_NOTIFICATIONS},
       {"privacyHubTitle", IDS_OS_SETTINGS_PRIVACY_HUB_TITLE},
-      {"cameraToggleTitle", IDS_OS_SETTINGS_CAMERA_TOGGLE_TITLE},
-      {"cameraToggleSublabelActive",
-       IDS_OS_SETTINGS_PRIVACY_HUB_CAMERA_HARDWARE_TOGGLE_ACTIVE_SUBTEXT},
-      {"microphoneToggleTitle", IDS_OS_SETTINGS_MICROPHONE_TOGGLE_TITLE},
-      {"microphoneToggleSublabelHWToggleActive",
-       IDS_OS_SETTINGS_PRIVACY_HUB_MICROPHONE_HARDWARE_TOGGLE_ACTIVE_SUBTEXT},
-      {"microphoneToggleSublabelNoMicConnected",
-       IDS_OS_SETTINGS_PRIVACY_HUB_MICROPHONE_TOGGLE_NO_MICROPHONE_CONNECTED_SUBTEXT},
+      {"privacyHubSubtext", IDS_OS_SETTINGS_PRIVACY_HUB_SUBTEXT},
+      {"cameraToggleTitle", IDS_OS_SETTINGS_PRIVACY_HUB_CAMERA_TOGGLE_TITLE},
+      {"cameraToggleSubtext",
+       IDS_OS_SETTINGS_PRIVACY_HUB_CAMERA_TOGGLE_SUBTEXT},
       {"noCameraConnectedText",
        IDS_OS_SETTINGS_PRIVACY_HUB_NO_CAMERA_CONNECTED_TEXT},
+      {"microphoneToggleTitle",
+       IDS_OS_SETTINGS_PRIVACY_HUB_MICROPHONE_TOGGLE_TITLE},
+      {"microphoneToggleSubtext",
+       IDS_OS_SETTINGS_PRIVACY_HUB_MICROPHONE_TOGGLE_SUBTEXT},
       {"noMicrophoneConnectedText",
        IDS_OS_SETTINGS_PRIVACY_HUB_NO_MICROPHONE_CONNECTED_TEXT},
-      {"geolocationToggleTitle", IDS_OS_SETTINGS_GEOLOCATION_TOGGLE_TITLE},
+      {"geolocationToggleTitle",
+       IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_TOGGLE_TITLE},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -515,5 +571,4 @@ void PrivacySection::UpdateRemoveFingerprintSearchTags() {
   }
 }
 
-}  // namespace settings
-}  // namespace chromeos
+}  // namespace ash::settings

@@ -18,7 +18,6 @@
 #include "android_webview/browser/aw_devtools_manager_delegate.h"
 #include "android_webview/browser/aw_feature_list_creator.h"
 #include "android_webview/browser/aw_http_auth_handler.h"
-#include "android_webview/browser/aw_quota_permission_context.h"
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/aw_settings.h"
 #include "android_webview/browser/aw_speech_recognition_manager_delegate.h"
@@ -378,11 +377,6 @@ gfx::ImageSkia AwContentBrowserClient::GetDefaultFavicon() {
   return rb.GetImageNamed(IDR_DEFAULT_FAVICON).AsImageSkia();
 }
 
-scoped_refptr<content::QuotaPermissionContext>
-AwContentBrowserClient::CreateQuotaPermissionContext() {
-  return new AwQuotaPermissionContext;
-}
-
 content::GeneratedCodeCacheSettings
 AwContentBrowserClient::GetGeneratedCodeCacheSettings(
     content::BrowserContext* context) {
@@ -702,20 +696,6 @@ bool AwContentBrowserClient::ShouldOverrideUrlLoading(
   return client_bridge->ShouldOverrideUrlLoading(
       url, has_user_gesture, is_redirect, is_outermost_main_frame,
       ignore_navigation);
-}
-
-bool AwContentBrowserClient::
-    ShouldIgnoreInitialNavigationEntryNavigationStateChangedForLegacySupport() {
-  // On Android WebView, we should not fire the initial NavigationEntry
-  // creation/modification NavigationStateChanged calls to preserve legacy
-  // behavior (not firing extra onPageFinished calls), as initial
-  // NavigationEntries used to not exist. See https://crbug.com/1277414.
-  // However, if kWebViewSynthesizePageLoadOnlyOnInitialMainDocumentAccess is
-  // enabled, we won't need to ignore the extra NavigationStateChanged() calls,
-  // because they won't trigger synthesized page loads and won't cause extra
-  // onPageFinished calls.
-  return !base::FeatureList::IsEnabled(
-      features::kWebViewSynthesizePageLoadOnlyOnInitialMainDocumentAccess);
 }
 
 bool AwContentBrowserClient::SupportsAvoidUnnecessaryBeforeUnloadCheckSync() {

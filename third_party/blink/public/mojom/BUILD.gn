@@ -40,6 +40,8 @@ mojom("mojom_platform") {
     "choosers/file_chooser.mojom",
     "choosers/popup_menu.mojom",
     "chromeos/system_extensions/hid/cros_hid.mojom",
+    "chromeos/system_extensions/managed_device_health_services/telemetry/cros_telemetry.mojom",
+    "chromeos/system_extensions/managed_device_health_services/telemetry/nullable_primitives.mojom",
     "chromeos/system_extensions/window_management/cros_window_management.mojom",
     "clipboard/clipboard.mojom",
     "close_watcher/close_listener.mojom",
@@ -48,6 +50,7 @@ mojom("mojom_platform") {
     "content_index/content_index.mojom",
     "context_menu/context_menu.mojom",
     "conversions/attribution_data_host.mojom",
+    "conversions/attribution_reporting.mojom",
     "conversions/attribution_reporting_automation.mojom",
     "conversions/conversions.mojom",
     "cookie_manager/cookie_manager_automation.mojom",
@@ -105,7 +108,6 @@ mojom("mojom_platform") {
     "keyboard_lock/keyboard_lock.mojom",
     "leak_detector/leak_detector.mojom",
     "link_to_text/link_to_text.mojom",
-    "loader/anchor_element_interaction_host.mojom",
     "loader/code_cache.mojom",
     "loader/content_security_notifier.mojom",
     "loader/fetch_client_settings_object.mojom",
@@ -160,6 +162,7 @@ mojom("mojom_platform") {
     "picture_in_picture/picture_in_picture.mojom",
     "picture_in_picture_window_options/picture_in_picture_window_options.mojom",
     "plugins/plugin_registry.mojom",
+    "preloading/anchor_element_interaction_host.mojom",
     "prerender/prerender.mojom",
     "presentation/presentation.mojom",
     "push_messaging/push_messaging.mojom",
@@ -264,6 +267,7 @@ mojom("mojom_platform") {
     "//skia/public/mojom",
     "//third_party/blink/public/mojom/gpu",
     "//third_party/blink/public/mojom/quota",
+    "//third_party/blink/public/mojom/runtime_feature_state",
     "//third_party/blink/public/mojom/service_worker:storage",
     "//third_party/blink/public/mojom/storage_key",
     "//third_party/blink/public/mojom/tokens",
@@ -521,6 +525,30 @@ mojom("mojom_platform") {
       ]
       traits_headers = [ "//third_party/blink/public/common/link_to_text/link_to_text_mojom_traits.h" ]
       traits_public_deps = [ "//components/shared_highlighting/core/common" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.AttributionOsSource"
+          cpp = "::attribution_reporting::OsSource"
+          move_only = true
+        },
+        {
+          mojom = "blink.mojom.AttributionOsTrigger"
+          cpp = "::attribution_reporting::OsTrigger"
+          move_only = true
+        },
+        {
+          mojom = "blink.mojom.AttributionDebugKey"
+          cpp = "uint64_t"
+        },
+        {
+          mojom = "blink.mojom.AttributionTriggerDedupKey"
+          cpp = "uint64_t"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/attribution_reporting/mojom_traits.h" ]
+      traits_public_deps = [ "//components/attribution_reporting" ]
     },
   ]
   cpp_typemaps = [
@@ -1024,6 +1052,7 @@ mojom("mojom_core") {
     "frame/triggering_event_info.mojom",
     "frame/user_activation_notification_type.mojom",
     "frame/user_activation_update_types.mojom",
+    "frame/view_transition_state.mojom",
     "frame/viewport_intersection_state.mojom",
     "page/display_cutout.mojom",
     "page/page.mojom",
@@ -1142,6 +1171,21 @@ mojom("mojom_core") {
     {
       types = [
         {
+          mojom = "blink.mojom.ViewTransitionState"
+          cpp = "::blink::ViewTransitionState"
+        },
+        {
+          mojom = "blink.mojom.ViewTransitionElement"
+          cpp = "::blink::ViewTransitionElement"
+        },
+      ]
+      traits_headers =
+          [ "//third_party/blink/public/common/frame/view_transition_state.h" ]
+      traits_private_headers = [ "//third_party/blink/public/common/frame/view_transition_state_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
           mojom = "blink.mojom.TransferableMessage"
           cpp = "::blink::TransferableMessage"
           move_only = true
@@ -1196,6 +1240,21 @@ mojom("mojom_core") {
         "//third_party/blink/public/common",
         "//third_party/blink/renderer/platform/wtf",
       ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.ViewTransitionState"
+          cpp = "::blink::ViewTransitionState"
+        },
+        {
+          mojom = "blink.mojom.ViewTransitionElement"
+          cpp = "::blink::ViewTransitionElement"
+        },
+      ]
+      traits_headers =
+          [ "//third_party/blink/public/common/frame/view_transition_state.h" ]
+      traits_private_headers = [ "//third_party/blink/public/common/frame/view_transition_state_mojom_traits.h" ]
     },
   ]
   blink_cpp_typemaps += shared_cpp_typemaps

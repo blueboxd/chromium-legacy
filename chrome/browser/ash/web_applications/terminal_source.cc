@@ -18,9 +18,13 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/ash/file_system_provider/provider_interface.h"
+#include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/ash/guest_os/guest_os_terminal.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
@@ -88,10 +92,8 @@ void ReadFile(const base::FilePath downloads,
   }
 
   DCHECK(result) << path;
-
-  scoped_refptr<base::RefCountedString> response =
-      base::RefCountedString::TakeString(&content);
-  std::move(callback).Run(response.get());
+  std::move(callback).Run(
+      base::MakeRefCounted<base::RefCountedString>(std::move(content)));
 }
 }  // namespace
 
@@ -107,6 +109,18 @@ std::unique_ptr<TerminalSource> TerminalSource::ForCrosh(Profile* profile) {
 
 // static
 std::unique_ptr<TerminalSource> TerminalSource::ForTerminal(Profile* profile) {
+  auto provider_id =
+      ash::file_system_provider::ProviderId::CreateFromExtensionId(
+          guest_os::kTerminalSystemAppId);
+  ash::file_system_provider::Capabilities capabilities(
+      /*configurable=*/true, /*watchable=*/false, /*multiple_mounts=*/true,
+      extensions::FileSystemProviderSource::SOURCE_NETWORK);
+  auto provider =
+      std::make_unique<ash::file_system_provider::ExtensionProvider>(
+          ProfileManager::GetPrimaryUserProfile(), std::move(provider_id),
+          std::move(capabilities), chrome::kChromeUIUntrustedTerminalURL);
+  ash::file_system_provider::Service::Get(profile)->RegisterProvider(
+      std::move(provider));
   return base::WrapUnique(new TerminalSource(
       profile, chrome::kChromeUIUntrustedTerminalURL, "html/terminal.html",
       profile->GetPrefs()
@@ -203,14 +217,7 @@ std::string TerminalSource::GetContentSecurityPolicy(
   if (ssh_allowed_) {
     switch (directive) {
       case network::mojom::CSPDirectiveName::ConnectSrc:
-        // TODO(b/247580345): Allow connect to any relay / proxy.
-        // First test this behind flag.
-        if (base::FeatureList::IsEnabled(chromeos::features::kTerminalDev)) {
-          return "connect-src *;";
-        }
-        return "connect-src 'self' "
-               "https://*.corp.google.com:* wss://*.corp.google.com:* "
-               "https://*.r.ext.google.com:* wss://*.r.ext.google.com:*;";
+        return "connect-src *;";
       case network::mojom::CSPDirectiveName::FrameAncestors:
         return "frame-ancestors 'self';";
       case network::mojom::CSPDirectiveName::FrameSrc:

@@ -5,7 +5,7 @@
 
 load("//lib/args.star", "args")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "builders", "goma", "os", "reclient", "sheriff_rotations")
+load("//lib/builders.star", "builders", "os", "reclient", "sheriff_rotations")
 load("//lib/branches.star", "branches")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
@@ -71,43 +71,6 @@ ci.builder(
     # build.
     execution_timeout = 5 * time.hour,
     tree_closing = True,
-)
-
-ci.thin_tester(
-    name = "Android WebView M (dbg)",
-    branch_selector = branches.STANDARD_MILESTONE,
-    builder_spec = builder_config.builder_spec(
-        execution_mode = builder_config.execution_mode.TEST,
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "android",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "android",
-            apply_configs = [
-                "download_vr_test_apks",
-            ],
-            build_config = builder_config.build_config.DEBUG,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.ANDROID,
-        ),
-        android_config = builder_config.android_config(
-            config = "main_builder_mb",
-            apply_configs = [
-                "remove_all_system_webviews",
-            ],
-        ),
-        build_gs_bucket = "chromium-android-archive",
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "tester|webview",
-        short_name = "M",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    triggered_by = ["ci/Android arm64 Builder (dbg)"],
-    sheriff_rotations = args.ignore_default(None),
 )
 
 ci.thin_tester(
@@ -761,12 +724,7 @@ ci.builder(
         category = "builder_tester|arm64",
         short_name = "M proguard",
     ),
-    execution_timeout = 6 * time.hour,
-    # TODO(b/234140184) Once reproxy is fixed, remove the goma and reclient
-    # values
-    goma_backend = goma.backend.RBE_PROD,
-    goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
-    reclient_instance = None,
+    execution_timeout = 8 * time.hour,
     sheriff_rotations = args.ignore_default(None),
 )
 
@@ -775,22 +733,16 @@ ci.builder(
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
-            apply_configs = [
-                "android",
-            ],
+            apply_configs = ["android"],
         ),
         chromium_config = builder_config.chromium_config(
             config = "android",
-            apply_configs = [
-                "download_vr_test_apks",
-                "mb",
-            ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 32,
             target_platform = builder_config.target_platform.ANDROID,
         ),
         android_config = builder_config.android_config(
-            config = "main_builder",
+            config = "x86_builder_mb",
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
@@ -798,7 +750,7 @@ ci.builder(
         category = "bfcache",
         short_name = "bfc",
     ),
-    sheriff_rotations = args.ignore_default(None),
+    execution_timeout = 4 * time.hour,
 )
 
 ci.builder(

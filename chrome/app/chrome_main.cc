@@ -19,12 +19,10 @@
 #include "content/public/common/content_switches.h"
 #include "headless/app/headless_shell_switches.h"
 #include "headless/public/headless_shell.h"
-#include "ui/gfx/switches.h"
 
 #if BUILDFLAG(IS_MAC)
 #include "chrome/app/chrome_main_mac.h"
 #include "chrome/app/notification_metrics.h"
-#include "ui/gl/gl_switches.h"
 #endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
@@ -133,11 +131,6 @@ int ChromeMain(int argc, const char** argv) {
   if(!__builtin_available(macOS 10.10,*)) {
     command_line->AppendSwitch(switches::kDisableGpuCompositing);
   }
-
-  if(!__builtin_available(macOS 10.8,*)) {
-    command_line->AppendSwitchASCII(switches::kUseGL, gl::kGLImplementationANGLEName);
-    command_line->AppendSwitchASCII(switches::kUseANGLE, gl::kANGLEImplementationSwiftShaderForWebGLName);
-  }
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -159,12 +152,12 @@ int ChromeMain(int argc, const char** argv) {
   MainThreadStackSamplingProfiler scoped_sampling_profiler;
 
   // Chrome-specific process modes.
-  if (headless::IsChromeNativeHeadless()) {
+  if (headless::IsHeadlessMode()) {
     headless::SetUpCommandLine(command_line);
   } else {
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || \
     BUILDFLAG(IS_WIN)
-    if (command_line->HasSwitch(switches::kHeadless)) {
+    if (headless::IsOldHeadlessMode()) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       command_line->AppendSwitch(::headless::switches::kEnableCrashReporter);
 #endif

@@ -4,11 +4,6 @@
 #ifndef CHROME_BROWSER_ASH_INPUT_METHOD_NATIVE_INPUT_METHOD_ENGINE_OBSERVER_H_
 #define CHROME_BROWSER_ASH_INPUT_METHOD_NATIVE_INPUT_METHOD_ENGINE_OBSERVER_H_
 
-#include "ash/services/ime/public/cpp/suggestions.h"
-#include "ash/services/ime/public/mojom/connection_factory.mojom.h"
-#include "ash/services/ime/public/mojom/input_engine.mojom.h"
-#include "ash/services/ime/public/mojom/input_method.mojom.h"
-#include "ash/services/ime/public/mojom/input_method_host.mojom.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/input_method/assistive_suggester.h"
@@ -18,6 +13,11 @@
 #include "chrome/browser/ash/input_method/input_method_engine.h"
 #include "chrome/browser/ash/input_method/suggestions_collector.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chromeos/ash/services/ime/public/cpp/assistive_suggestions.h"
+#include "chromeos/ash/services/ime/public/mojom/connection_factory.mojom.h"
+#include "chromeos/ash/services/ime/public/mojom/input_engine.mojom.h"
+#include "chromeos/ash/services/ime/public/mojom/input_method.mojom.h"
+#include "chromeos/ash/services/ime/public/mojom/input_method_host.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -80,6 +80,8 @@ class NativeInputMethodEngineObserver : public InputMethodEngineObserver,
                           MouseButtonEvent button) override;
   void OnAssistiveWindowButtonClicked(
       const ui::ime::AssistiveWindowButton& button) override;
+  void OnAssistiveWindowChanged(
+      const ash::ime::AssistiveWindow& window) override;
   void OnMenuItemActivated(const std::string& component_id,
                            const std::string& menu_id) override;
   void OnScreenProjectionChanged(bool is_projected) override;
@@ -106,11 +108,12 @@ class NativeInputMethodEngineObserver : public InputMethodEngineObserver,
   void RequestSuggestions(ime::mojom::SuggestionsRequestPtr request,
                           RequestSuggestionsCallback callback) override;
   void DisplaySuggestions(
-      const std::vector<ime::TextSuggestion>& suggestions) override;
+      const std::vector<ime::AssistiveSuggestion>& suggestions) override;
   void UpdateCandidatesWindow(ime::mojom::CandidatesWindowPtr window) override;
   void RecordUkm(ime::mojom::UkmEntryPtr entry) override;
   void ReportKoreanAction(ime::mojom::KoreanAction action) override;
   void ReportKoreanSettings(ime::mojom::KoreanSettingsPtr settings) override;
+  void ReportSuggestionOpportunity(ime::AssistiveSuggestionMode mode) override;
   void UpdateQuickSettings(
       ime::mojom::InputMethodQuickSettingsPtr quick_settings) override;
 

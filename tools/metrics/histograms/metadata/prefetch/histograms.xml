@@ -27,6 +27,24 @@ chromium-metrics-reviews@google.com.
   <variant name="TLS" summary="TLS canary check"/>
 </variants>
 
+<histogram
+    name="PrefetchProxy.AfterClick.Mainframe.CookieCopyStartToInterceptorCheck"
+    units="ms" expires_after="2023-04-25">
+  <owner>curranmax@chromium.org</owner>
+  <owner>ryansturm@chromium.org</owner>
+  <owner>spelchat@chromium.org</owner>
+  <summary>
+    Cross-Origin prefetches requested via the Speculation Rules API are made in
+    an isolated network context. When the prefetched link is navigated to, the
+    cookies are copied from this isolated network context to the user's default
+    network context.
+
+    This histogram records the time from the start of the cookie copy to when
+    the URL interceptor trying to serve the prefetch checks the status of the
+    cookie copy.
+  </summary>
+</histogram>
+
 <histogram name="PrefetchProxy.AfterClick.Mainframe.CookieCopyTime" units="ms"
     expires_after="2023-04-25">
   <owner>curranmax@chromium.org</owner>
@@ -229,8 +247,8 @@ chromium-metrics-reviews@google.com.
   <owner>spelchat@chromium.org</owner>
   <summary>
     Records whether or not there was an existing prefetch with a matching URL
-    from a different referring page when a new prefetch is requested. This is
-    recorded everytime a prefetch is requested.
+    from a different referring document when a new prefetch is requested. This
+    is recorded everytime a prefetch is requested.
   </summary>
 </histogram>
 
@@ -325,6 +343,77 @@ chromium-metrics-reviews@google.com.
     Records the total time taken when isolated prefetching a mainframe HTML
     resource from the Google Search Result Page. Recorded for successful
     non-network error prefetches only.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrefetchProxy.Prefetch.NumExistingEligiblePrefetchWithMatchingURL"
+    units="count" expires_after="2023-04-25">
+  <owner>curranmax@chromium.org</owner>
+  <owner>ryansturm@chromium.org</owner>
+  <owner>spelchat@chromium.org</owner>
+  <summary>
+    Records the number of existing eligible prefetches with a matching URL from
+    a different referring document when a new prefetch is requested. This is
+    only recorded for prefetches where there is at least one existing prefetch
+    with a matching URL.
+  </summary>
+</histogram>
+
+<histogram name="PrefetchProxy.Prefetch.NumExistingPrefetchWithMatchingURL"
+    units="count" expires_after="2023-04-25">
+  <owner>curranmax@chromium.org</owner>
+  <owner>ryansturm@chromium.org</owner>
+  <owner>spelchat@chromium.org</owner>
+  <summary>
+    Records the number of existing prefetches with a matching URL from a
+    different referring document when a new prefetch is requested. This is
+    recorded everytime a prefetch is requested.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrefetchProxy.Prefetch.NumExistingPrefetchWithMatchingURLAndReferrer"
+    units="count" expires_after="2023-04-25">
+  <owner>curranmax@chromium.org</owner>
+  <owner>ryansturm@chromium.org</owner>
+  <owner>spelchat@chromium.org</owner>
+  <summary>
+    Records the number of existing prefetches with a matching referring URL and
+    matching prefetch URL from a different referring document when a new
+    prefetch is requested. This is only recorded for prefetches where there is
+    at least one existing prefetch with a matching URL.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrefetchProxy.Prefetch.NumExistingPrefetchWithMatchingURLAndRenderFrameHost"
+    units="count" expires_after="2023-04-25">
+  <owner>curranmax@chromium.org</owner>
+  <owner>ryansturm@chromium.org</owner>
+  <owner>spelchat@chromium.org</owner>
+  <summary>
+    Records the number of existing prefetches with a matching referring render
+    frame host and matching prefetch URL from a different referring document
+    when a new prefetch is requested. This case can occur if and only if there
+    was a same origin navigation that re-used the same render frame host and
+    both pages requested to prefetch the same URL. This is only recorded for
+    prefetches where there is at least one existing prefetch with a matching
+    URL.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrefetchProxy.Prefetch.NumExistingServablePrefetchWithMatchingURL"
+    units="count" expires_after="2023-04-25">
+  <owner>curranmax@chromium.org</owner>
+  <owner>ryansturm@chromium.org</owner>
+  <owner>spelchat@chromium.org</owner>
+  <summary>
+    Records the number of existing prefetches with a successfully completed
+    prefetched responses and matching URL from a different referring document
+    when a new prefetch is requested. This is only recorded for prefetches where
+    there is at least one existing prefetch with a matching URL.
   </summary>
 </histogram>
 

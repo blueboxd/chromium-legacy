@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import '../elements/files_toggle_ripple.js';
-
-import {Menu} from './ui/menu.js';
-
+import {queryRequiredElement} from '../../common/js/dom_utils.js';
 import {util} from '../../common/js/util.js';
 import {FilesTooltip} from '../elements/files_tooltip.js';
 
+import {Menu} from './ui/menu.js';
 import {MultiMenuButton} from './ui/multi_menu_button.js';
 
 export class SelectionMenuController {
@@ -17,15 +15,6 @@ export class SelectionMenuController {
    * @param {!Menu} menu
    */
   constructor(selectionMenuButton, menu) {
-    /**
-     * @type {!FilesToggleRippleElement}
-     * @const
-     * @private
-     */
-    this.toggleRipple_ =
-        /** @type {!FilesToggleRippleElement} */ (util.queryRequiredElement(
-            'files-toggle-ripple', selectionMenuButton));
-
     /**
      * @type {!Menu}
      * @const
@@ -43,7 +32,6 @@ export class SelectionMenuController {
    */
   onShowMenu_() {
     this.menu_.classList.toggle('toolbar-menu', true);
-    this.toggleRipple_.activated = true;
     // crbug.com 752035 focus still on button, get rid of the tooltip
     /** @type {!FilesTooltip} */ (document.querySelector('files-tooltip'))
         .hideTooltip();
@@ -59,6 +47,5 @@ export class SelectionMenuController {
     if (!this.menu_.classList.contains('animating')) {
       this.menu_.classList.toggle('toolbar-menu', false);
     }
-    this.toggleRipple_.activated = false;
   }
 }

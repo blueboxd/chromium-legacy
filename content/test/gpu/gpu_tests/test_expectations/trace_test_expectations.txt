@@ -8,7 +8,7 @@
 #         mac highsierra mojave catalina bigsur monterey
 #         win win8 win10 ]
 # Devices
-# tags: [ android-nexus-5 android-nexus-5x android-pixel-2 android-pixel-4
+# tags: [ android-nexus-5x android-pixel-2 android-pixel-4
 #             android-pixel-6 android-shield-android-tv android-sm-a135m
 #             android-sm-a235m
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
@@ -136,6 +136,9 @@ crbug.com/1345767 [ mac asan ] WebGPUTraceTest_WebGPUCanvasDisableOneCopyCapture
 # Test is very slow and there's no point in running it as a trace test.
 crbug.com/1356246 TraceTest_SVGHuge [ Skip ]
 
+# This test was mainly meant to run as a pixel test, so skipping in this test suite.
+TraceTest_MediaFoundationClearDirectComposition [ Skip ]
+
 ###############################
 # Temporary Skip Expectations #
 ###############################
@@ -193,11 +196,6 @@ crbug.com/1151767 [ win10 amd-0x7340 ] VideoPathTraceTest_DirectComposition_Vide
 # Flakes on linux-rel.
 crbug.com/1216377 [ linux ] TraceTest_Video_Media_Stream_Incompatible_Stride [ RetryOnFailure ]
 
-# New flakes seen on Nexus 5X bot.
-crbug.com/1278028 [ android android-nexus-5x ] TraceTest_Video_MP4_FourColors_Rot_180 [ RetryOnFailure ]
-crbug.com/1278028 [ android android-nexus-5x ] TraceTest_Video_VP9 [ RetryOnFailure ]
-crbug.com/1278028 [ android android-nexus-5x ] TraceTest_Video_VP9_DXVA [ RetryOnFailure ]
-
 # WebGL's accelerated canvas capture is currently only supported on Win, Mac, ChromeOS.
 crbug.com/1345777 [ android ] WebGLCanvasCaptureTraceTest_VideoStreamFromWebGLCanvas* [ Skip ]
 crbug.com/1201009 [ linux ] WebGLCanvasCaptureTraceTest_VideoStreamFromWebGLCanvas_OneCopy [ Failure ]
@@ -206,7 +204,6 @@ crbug.com/1201009 [ fuchsia ] WebGLCanvasCaptureTraceTest_VideoStreamFromWebGLCa
 crbug.com/1201009 [ fuchsia ] WebGLCanvasCaptureTraceTest_VideoStreamFromWebGLCanvas_TwoCopy_Accelerated [ Failure ]
 
 # Timeout on Nexus 5
-crbug.com/1353189 [ android android-nexus-5 ] WebGLCanvasCaptureTraceTest_VideoStreamFromWebGLAlphaCanvas* [ Failure ]
 
 # WebGL's accelerated canvas capture is failing on ChromeOS
 crbug.com/1353813 [ chromeos ] WebGLCanvasCaptureTraceTest_VideoStreamFromWebGLCanvas_OneCopy [ Failure ]
@@ -224,6 +221,12 @@ crbug.com/dawn/549 [ linux renderer-skia-gl ] WebGPUCachingTraceTest_* [ Skip ]
 crbug.com/dawn/549 [ mac ] WebGPUCachingTraceTest_* [ Skip ]
 crbug.com/dawn/549 [ chromeos ] WebGPUCachingTraceTest_* [ Skip ]
 crbug.com/dawn/549 [ fuchsia ] WebGPUCachingTraceTest_* [ Skip ]
+
+crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] TraceTest_2DCanvasWebGL [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] TraceTest_Canvas2DRedBox [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] TraceTest_Video_MP4_Rounded_Corner [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] TraceTest_WebGLGreenTriangle_* [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] TraceTest_WebGLPreservedAfterTabSwitch [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

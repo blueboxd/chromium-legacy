@@ -166,11 +166,6 @@ class PreloadManageAccountsDelegate : public ManageAccountsDelegate {
 // Maximum time to let a cancelled webState attempt to finish restore.
 static const size_t kMaximumCancelledWebStateDelay = 2;
 
-// Kill switch guarding a workaround for a WebKit crash, see crbug.com/1032928.
-BASE_FEATURE(kPreloadDelayWebStateReset,
-             "PreloadDelayWebStateReset",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Helper function to destroy a pre-rendering WebState. This is a free function
 // so that the code does not accidently try to access to PreloadController's
 // _webState ivar (which has been set to null by the time this function is
@@ -191,11 +186,7 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
   // See crbug.com/1032928 for an explanation for how to trigger this crash.
   // Note the timer should only be called if for some reason session restoration
   // fails to complete -- thus preventing a WebState leak.
-  static bool delay_preload_destroy_web_state =
-      base::FeatureList::IsEnabled(kPreloadDelayWebStateReset);
-
-  if (!delay_preload_destroy_web_state ||
-      !web_state->GetNavigationManager()->IsRestoreSessionInProgress()) {
+  if (!web_state->GetNavigationManager()->IsRestoreSessionInProgress()) {
     web_state.reset();
     return;
   }
@@ -465,7 +456,8 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
   [self removeScheduledPrerenderRequests];
 
   // Use the helper function to properly release the web::WebState.
-  auto webState = [self releasePrerenderContentsInternal];
+  std::unique_ptr<web::WebState> webState =
+      [self releasePrerenderContentsInternal];
 
   // The WebState will be converted to a proper tab. Record navigations that
   // happened during pre-rendering to the HistoryService.

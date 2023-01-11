@@ -1,5 +1,5 @@
 <style>
-  :root {
+  :host {
     --grid-gap: max(3px, 0.5vw);
     --key-travel: 3px;
 
@@ -262,11 +262,7 @@
           </keyboard-key>
         </template>
       </dom-repeat>
-      <keyboard-key
-          id="topRightKey"
-          icon="[[topRightKeyIcon_]]"
-          aria-name="[[i18n(topRightKeyAriaNameI18n_)]]"
-          data-code$="[[topRightKeyCode_]]">
+      <keyboard-key id="topRightKey" class="disabled">
       </keyboard-key>
     </div>
 

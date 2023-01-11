@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/media_export.h"
 #include "media/base/stream_parser.h"
@@ -43,7 +42,9 @@ class MEDIA_EXPORT WebCodecsEncodedChunkStreamParser : public StreamParser {
             MediaLog* media_log) override;
   void Flush() override;
   bool GetGenerateTimestampsFlag() const override;
-  bool Parse(const uint8_t* buf, int size) override;
+  [[nodiscard]] bool AppendToParseBuffer(const uint8_t* buf,
+                                         size_t size) override;
+  [[nodiscard]] ParseStatus Parse(int max_pending_bytes_to_expect) override;
 
   // Processes and emits buffers from |buffer_queue|. If state is
   // kWaitingForConfigEmission, first emit the config.

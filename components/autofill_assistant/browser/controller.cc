@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
@@ -30,6 +31,7 @@
 #include "components/autofill_assistant/browser/view_layout.pb.h"
 #include "components/google/core/common/google_util.h"
 #include "components/password_manager/core/browser/password_change_success_tracker_impl.h"
+#include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -101,11 +103,6 @@ const GURL& Controller::GetScriptURL() {
   return script_url_;
 }
 
-Service* Controller::GetService() {
-  DCHECK(service_);
-  return service_.get();
-}
-
 WebController* Controller::GetWebController() {
   if (!web_controller_) {
     web_controller_ = WebController::CreateForWebContents(
@@ -149,7 +146,7 @@ void Controller::SetJsFlowLibrary(const std::string& js_flow_library) {
   }
 
   GetJsFlowDevtoolsWrapper()->SetJsFlowLibrary(js_flow_library);
-  GetService()->UpdateJsFlowLibraryLoaded(!js_flow_library.empty());
+  service_->UpdateJsFlowLibraryLoaded(!js_flow_library.empty());
 }
 
 JsFlowDevtoolsWrapper* Controller::GetJsFlowDevtoolsWrapper() {
@@ -370,6 +367,11 @@ void Controller::ShutdownIfNecessary() {
   }
 }
 
+void Controller::EnterBrowseModeForShutdown() {
+  browse_mode_invisible_ = true;
+  EnterState(AutofillAssistantState::BROWSE);
+}
+
 void Controller::ReportNavigationStateChanged() {
   for (auto& listener : navigation_listeners_) {
     listener.OnNavigationStateChanged();
@@ -486,13 +488,13 @@ void Controller::OnGetAnnotateDomModelVersionForGetScripts(
     const GURL& url,
     absl::optional<int64_t> model_version) {
   if (model_version) {
-    GetService()->UpdateAnnotateDomModelContext(*model_version);
+    service_->UpdateAnnotateDomModelContext(*model_version);
   }
   GetScriptsForUrl(url);
 }
 
 void Controller::GetScriptsForUrl(const GURL& url) {
-  GetService()->GetScriptsForUrl(
+  service_->GetScriptsForUrl(
       url, *trigger_context_,
       base::BindOnce(&Controller::OnGetScripts, weak_ptr_factory_.GetWeakPtr(),
                      url));
@@ -603,7 +605,7 @@ void Controller::OnGetScripts(
     SetClientSettings(response_proto.client_settings());
   }
   if (response_proto.has_script_store_config()) {
-    GetService()->SetScriptStoreConfig(response_proto.script_store_config());
+    service_->SetScriptStoreConfig(response_proto.script_store_config());
   }
   std::vector<std::unique_ptr<Script>> scripts;
   for (const auto& script_proto : response_proto.scripts()) {
@@ -852,7 +854,7 @@ void Controller::InitFromParameters() {
 
   user_model_.SetCurrentURL(GetCurrentURL());
 
-  GetService()->SetDisableRpcSigning(
+  service_->SetDisableRpcSigning(
       trigger_context_->GetScriptParameters().GetDisableRpcSigning());
 }
 
@@ -892,6 +894,11 @@ bool Controller::Start(const GURL& deeplink_url,
   trigger_context_ = std::move(trigger_context);
   deeplink_url_ = deeplink_url;
   InitFromParameters();
+
+  // Shut down immediately if the certificate is insecure.
+  if (ShutdownIfCertificateInsecure()) {
+    return false;
+  }
 
   // Force a re-evaluation of the script, to get a chance to autostart.
   if (state_ == AutofillAssistantState::TRACKING)
@@ -1243,11 +1250,31 @@ void Controller::DidStartNavigation(
 
 void Controller::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
+      !navigation_handle->HasCommitted()) {
+    return;
+  }
+
+  // Ensure that the connection is still secure.
+  switch (GetState()) {
+    case AutofillAssistantState::STARTING:
+    case AutofillAssistantState::RUNNING:
+    case AutofillAssistantState::PROMPT:
+    case AutofillAssistantState::BROWSE:
+    case AutofillAssistantState::MODAL_DIALOG:
+      if (ShutdownIfCertificateInsecure()) {
+        return;
+      }
+      break;
+    case AutofillAssistantState::TRACKING:
+    case AutofillAssistantState::STOPPED:
+    case AutofillAssistantState::INACTIVE:
+      break;
+  }
+
   // TODO(b/159871774): Rethink how we handle navigation events. The early
   // return here may prevent us from updating |navigating_to_new_document_|.
-  if (!navigation_handle->IsInPrimaryMainFrame() ||
-      navigation_handle->IsSameDocument() ||
-      !navigation_handle->HasCommitted() || !IsNavigatingToNewDocument()) {
+  if (navigation_handle->IsSameDocument() || !IsNavigatingToNewDocument()) {
     return;
   }
 
@@ -1307,6 +1334,26 @@ void Controller::WebContentsDestroyed() {
   suppress_keyboard_raii_.reset();
   // Record failure, iff an earlier call didn't already record.
   MaybeRecordFlowFinishedMetrics(Metrics::FlowFinishedState::DESTROYED);
+}
+
+bool Controller::ShutdownIfCertificateInsecure() {
+  if (!web_contents()->GetLastCommittedURL().SchemeIsCryptographic()) {
+    return false;
+  }
+
+  switch (client_->GetSecurityLevel()) {
+    case security_state::SecurityLevel::SECURE:
+    case security_state::SecurityLevel::SECURE_WITH_POLICY_INSTALLED_CERT:
+      return false;
+    case security_state::SecurityLevel::NONE:
+    case security_state::SecurityLevel::DANGEROUS:
+    case security_state::SecurityLevel::WARNING:
+    case security_state::SecurityLevel::SECURITY_LEVEL_COUNT:
+      OnFatalError(GetDisplayStringUTF8(ClientSettingsProto::DEFAULT_ERROR,
+                                        GetSettings()),
+                   Metrics::DropOutReason::CERTIFICATE_ERROR);
+      return true;
+  }
 }
 
 void Controller::SuppressKeyboard(bool suppress) {
@@ -1381,6 +1428,7 @@ ScriptTracker* Controller::script_tracker() {
     DCHECK(client_->GetScriptExecutorUiDelegate());
     script_tracker_ = std::make_unique<ScriptTracker>(
         /* delegate= */ this,
+        /* service= */ service_.get(),
         /* ui_delegate= */ client_->GetScriptExecutorUiDelegate(),
         /* listener= */ this);
   }

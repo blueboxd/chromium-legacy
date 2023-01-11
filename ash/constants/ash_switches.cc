@@ -105,7 +105,8 @@ const char kArcDisablePlayAutoInstall[] = "arc-disable-play-auto-install";
 const char kArcDisableTtsCache[] = "arc-disable-tts-cache";
 
 // Flag that disables ureadahead completely, including host and guest parts.
-// See also |kArcVmUreadaheadMode|.
+// To enable only guest ureadahead, please use --arcvm-ureadahead-mode=readahead
+// in combination with this switch (see |kArcVmUreadaheadMode|).
 const char kArcDisableUreadahead[] = "arc-disable-ureadahead";
 
 // Flag that forces the OptIn ui to be shown. Used in tests.
@@ -149,6 +150,9 @@ const char kArcTosHostForTests[] = "arc-tos-host-for-tests";
 // Sets the mode of operation for ureadahead during ARCVM boot. If this switch
 // is not set, ARCVM ureadahead will check for the presence and age of pack
 // file and reads ahead files to page cache for improved boot performance.
+// readahead (default) - used during production and is equivalent to no switch
+//                       being set. This is used in tast test to explicitly turn
+//                       on guest ureadahead (see |kArcDisableUreadahead|).
 // generate - used during Android PFQ data collector to pre-generate pack file
 //            and upload to Google Cloud as build artifact for CrOS build image.
 // disabled - used for test purpose to disable ureadahead during ARCVM boot.
@@ -470,11 +474,6 @@ const char kEnterpriseEnableForcedReEnrollment[] =
 const char kEnterpriseEnableInitialEnrollment[] =
     "enterprise-enable-initial-enrollment";
 
-// Whether to use fake PSM (private set membership) RLWE client for testing
-// purposes.
-const char kEnterpriseUseFakePsmRlweClientForTesting[] =
-    "enterprise-use-fake-psm-rlwe-client-for-testing";
-
 // Enables the zero-touch enterprise enrollment flow.
 const char kEnterpriseEnableZeroTouchEnrollment[] =
     "enterprise-enable-zero-touch-enrollment";
@@ -562,8 +561,8 @@ const char kForceLaunchBrowser[] = "force-launch-browser";
 // tests can change how it's brought up. This flag disables that.
 const char kForceLoginManagerInTests[] = "force-login-manager-in-tests";
 
-// Forces the cursor to be shown even if we are mimicing touch events. Note that
-// cursor changes are locked when using this switch.
+// Forces the cursor to be shown even if we are mimicking touch events. Note
+// that cursor changes are locked when using this switch.
 const char kForceShowCursor[] = "force-show-cursor";
 
 // Force the "release track" UI to show in the system tray. Simulates the system
@@ -732,12 +731,6 @@ const char kNaturalScrollDefault[] = "enable-natural-scroll-default";
 // notes. If unset, a hardcoded list is used instead.
 const char kNoteTakingAppIds[] = "note-taking-app-ids";
 
-// Used for overriding the time limit imposed by the policies
-// SAMLOfflineSigninTimeLimit & GaiaOfflineSigninTimeLimitDays when testing.
-// TODO(crbug.com/1177416): Clean up once testing is complete
-const char kOfflineSignInTimeLimitInSecondsOverrideForTesting[] =
-    "offline-signin-timelimit-in-seconds-override-for-testing";
-
 // Allows the eula url to be overridden for tests.
 const char kOobeEulaUrlForTests[] = "oobe-eula-url-for-tests";
 
@@ -785,6 +778,9 @@ const char kProfileRequiresPolicy[] = "profile-requires-policy";
 // TODO(984021): Remove when URL is sent by DMServer.
 const char kPublicAccountsSamlAclUrl[] = "public-accounts-saml-acl-url";
 
+// Adds fake Bluetooth devices to the quick settings menu for UI testing.
+const char kQsAddFakeBluetoothDevices[] = "qs-add-fake-bluetooth-devices";
+
 // The name of the per-model directory which contains per-region
 // subdirectories with regulatory label files for this model.
 // The per-model directories (if there are any) are located under
@@ -804,12 +800,6 @@ const char kRmaNotAllowed[] = "rma-not-allowed";
 // more within the first 60 seconds on start.
 // See BrowserJob::ExportArgv in platform2/login_manager/browser_job.cc.
 const char kSafeMode[] = "safe-mode";
-
-// Used for overriding the preference set by the policy
-// kSamlLockScreenReauthenticationEnabled to true.
-// TODO(crbug.com/1177416): Clean up once testing is complete
-const char kSamlLockScreenReauthenticationEnabledOverrideForTesting[] =
-    "saml-lockscreen-reauthentication-enabled-override-for-testing";
 
 // Password change url for SAML users.
 // TODO(941489): Remove when the bug is fixed.

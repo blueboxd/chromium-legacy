@@ -13,7 +13,7 @@ import {AcceleratorSource, Modifier} from 'chrome://shortcut-customization/js/sh
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
-import {createUserAccelerator} from './shortcut_customization_test_util.js';
+import {createUserAcceleratorInfo} from './shortcut_customization_test_util.js';
 
 export function initAcceleratorRowElement(): AcceleratorRowElement {
   const element = document.createElement('accelerator-row');
@@ -35,12 +35,12 @@ suite('acceleratorRowTest', function() {
   test('LoadsBasicRow', async () => {
     loadTimeData.overrideValues({isCustomizationEnabled: true});
     rowElement = initAcceleratorRowElement();
-    const acceleratorInfo1 = createUserAccelerator(
+    const acceleratorInfo1 = createUserAcceleratorInfo(
         Modifier.CONTROL | Modifier.SHIFT,
         /*key=*/ 71,
         /*keyDisplay=*/ 'g');
 
-    const acceleratorInfo2 = createUserAccelerator(
+    const acceleratorInfo2 = createUserAcceleratorInfo(
         Modifier.CONTROL,
         /*key=*/ 67,
         /*keyDisplay=*/ 'c');
@@ -86,7 +86,7 @@ suite('acceleratorRowTest', function() {
   test('LockIconVisibleWhenCustomizationEnabled', async () => {
     loadTimeData.overrideValues({isCustomizationEnabled: true});
     rowElement = initAcceleratorRowElement();
-    const acceleratorInfo1 = createUserAccelerator(
+    const acceleratorInfo1 = createUserAcceleratorInfo(
         Modifier.CONTROL | Modifier.SHIFT,
         /*key=*/ 71,
         /*keyDisplay=*/ 'g');
@@ -96,7 +96,7 @@ suite('acceleratorRowTest', function() {
 
     rowElement.acceleratorInfos = accelerators;
     rowElement.description = description;
-    rowElement.source = AcceleratorSource.BROWSER;
+    rowElement.source = AcceleratorSource.kBrowser;
     await flushTasks();
 
     // Expected the lock icon to appear if the source is kBrowser.
@@ -105,7 +105,7 @@ suite('acceleratorRowTest', function() {
     assertFalse(lockItemContainer.hidden);
 
     // Update source to be kAsh, lock icon should no longer appear.
-    rowElement!.source = AcceleratorSource.ASH;
+    rowElement!.source = AcceleratorSource.kAsh;
     await flushTasks();
     lockItemContainer = rowElement!.shadowRoot!.querySelector(
                             '#lockIconContainer') as HTMLDivElement;
@@ -116,7 +116,7 @@ suite('acceleratorRowTest', function() {
   test('LockIconHiddenWhenCustomizationDisabled', async () => {
     loadTimeData.overrideValues({isCustomizationEnabled: false});
     rowElement = initAcceleratorRowElement();
-    const acceleratorInfo1 = createUserAccelerator(
+    const acceleratorInfo1 = createUserAcceleratorInfo(
         Modifier.CONTROL | Modifier.SHIFT,
         /*key=*/ 71,
         /*keyDisplay=*/ 'g');
@@ -126,7 +126,7 @@ suite('acceleratorRowTest', function() {
 
     rowElement.acceleratorInfos = accelerators;
     rowElement.description = description;
-    rowElement.source = AcceleratorSource.BROWSER;
+    rowElement.source = AcceleratorSource.kBrowser;
     await flushTasks();
 
     // Expected the lock icon to appear if the source is kBrowser.
@@ -140,7 +140,7 @@ suite('acceleratorRowTest', function() {
     rowElement = initAcceleratorRowElement();
     waitAfterNextRender(rowElement);
 
-    const acceleratorInfo1 = createUserAccelerator(
+    const acceleratorInfo1 = createUserAcceleratorInfo(
         Modifier.CONTROL | Modifier.SHIFT,
         /*key=*/ 71,
         /*keyDisplay=*/ 'g');
@@ -150,7 +150,7 @@ suite('acceleratorRowTest', function() {
 
     rowElement.acceleratorInfos = accelerators;
     rowElement.description = description;
-    rowElement.source = AcceleratorSource.BROWSER;
+    rowElement.source = AcceleratorSource.kBrowser;
 
     let showDialogListenerCalled = false;
     rowElement.addEventListener('show-edit-dialog', () => {
@@ -173,7 +173,7 @@ suite('acceleratorRowTest', function() {
     rowElement = initAcceleratorRowElement();
     waitAfterNextRender(rowElement);
 
-    const acceleratorInfo1 = createUserAccelerator(
+    const acceleratorInfo1 = createUserAcceleratorInfo(
         Modifier.CONTROL | Modifier.SHIFT,
         /*key=*/ 71,
         /*keyDisplay=*/ 'g');
@@ -183,7 +183,7 @@ suite('acceleratorRowTest', function() {
 
     rowElement.acceleratorInfos = accelerators;
     rowElement.description = description;
-    rowElement.source = AcceleratorSource.BROWSER;
+    rowElement.source = AcceleratorSource.kBrowser;
 
     let showDialogListenerCalled = false;
     rowElement.addEventListener('show-edit-dialog', () => {

@@ -32,16 +32,22 @@ namespace {
 
 bool RunGetDisplayMediaSet(content::WebContents* tab,
                            const std::string& constraints,
-                           std::vector<std::string>& track_ids) {
+                           std::vector<std::string>& track_ids,
+                           std::string* error_name_out = nullptr) {
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       tab->GetPrimaryMainFrame(),
       base::StringPrintf("runGetDisplayMediaSet(%s);", constraints.c_str()),
       &result));
-  if (result == "capture-failure")
+  std::vector<std::string> split_result = base::SplitString(
+      result, ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (split_result.empty() || split_result[0] == "capture-failure") {
+    if (error_name_out && split_result.size() == 2) {
+      *error_name_out = split_result[1];
+    }
     return false;
-  track_ids = base::SplitString(result, ",", base::KEEP_WHITESPACE,
-                                base::SPLIT_WANT_ALL);
+  }
+  track_ids = split_result;
   return true;
 }
 
@@ -63,8 +69,15 @@ class ContentBrowserClientMock : public ChromeContentBrowserClient {
   bool IsGetDisplayMediaSetSelectAllScreensAllowed(
       content::BrowserContext* context,
       const url::Origin& origin) override {
-    return true;
+    return is_get_display_media_set_select_all_screens_allowed_;
   }
+
+  void SetIsGetDisplayMediaSetSelectAllScreensAllowed(bool is_allowed) {
+    is_get_display_media_set_select_all_screens_allowed_ = is_allowed;
+  }
+
+ private:
+  bool is_get_display_media_set_select_all_screens_allowed_ = true;
 };
 
 }  // namespace
@@ -109,10 +122,10 @@ class GetDisplayMediaSetBrowserTest : public WebRtcTestBase {
 
  protected:
   content::WebContents* contents_ = nullptr;
+  std::unique_ptr<ContentBrowserClientMock> browser_client_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<ContentBrowserClientMock> browser_client_;
   std::vector<aura::Window*> windows_;
 };
 
@@ -133,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(GetDisplayMediaSetBrowserTest,
                                     track_ids));
   // If no screen is attached to a device, the |DisplayManager| will add a
   // default device. This same behavior is used in other places in Chrome that
-  // handle multiple screens (e.g. in the window placement API) and
+  // handle multiple screens (e.g. in JS window.getScreenDetails() API) and
   // getDisplayMediaSet will follow the same convention.
   EXPECT_EQ(1u, track_ids.size());
   EXPECT_EQ(track_ids.size(), base::flat_set<std::string>(track_ids).size());
@@ -172,6 +185,18 @@ IN_PROC_BROWSER_TEST_F(GetDisplayMediaSetBrowserTest,
     std::string screen_detailed_attributes;
     EXPECT_TRUE(CheckScreenDetailedExists(contents_, track_id));
   }
+}
+
+IN_PROC_BROWSER_TEST_F(GetDisplayMediaSetBrowserTest,
+                       AutoSelectAllScreensNotAllowed) {
+  SetScreens(/*screen_count=*/1u);
+  browser_client_->SetIsGetDisplayMediaSetSelectAllScreensAllowed(
+      /*is_allowed=*/false);
+  std::vector<std::string> track_ids;
+  std::string error_name;
+  EXPECT_FALSE(RunGetDisplayMediaSet(contents_, "{autoSelectAllScreens: true}",
+                                     track_ids, &error_name));
+  EXPECT_EQ("NotAllowedError", error_name);
 }
 
 #endif

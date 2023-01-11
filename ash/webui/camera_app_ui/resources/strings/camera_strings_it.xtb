@@ -31,6 +31,8 @@
 <translation id="1862930711583847113">Impossibile esportare <ph name="FILE" /></translation>
 <translation id="1899697626337024495">Risoluzione foto</translation>
 <translation id="1925845977604399247">Vai alla galleria</translation>
+<translation id="199526504800285197">La registrazione è stata interrotta</translation>
+<translation id="1995951722691075581">La registrazione è stata interrotta perché lo spazio di archiviazione del dispositivo è in esaurimento. Per registrare altri video, devi liberare spazio sul dispositivo.</translation>
 <translation id="2022953316617983419">Codice QR</translation>
 <translation id="2036868001356139588">Durata del timer</translation>
 <translation id="2050339315714019657">Verticale</translation>
@@ -47,6 +49,7 @@
 <translation id="2501953888035679275">Realizza foto e video con la tua fotocamera.</translation>
 <translation id="2517472476991765520">Scansiona</translation>
 <translation id="2549985041256363841">Avvia registrazione</translation>
+<translation id="2577915835281444458">La registrazione verrà interrotta a breve. Vai allo spazio di archiviazione del dispositivo per liberare memoria.</translation>
 <translation id="2599796128805996109">Fotocamera posteriore</translation>
 <translation id="2759905922487820242"><ph name="CURRENT" />/<ph name="MAXIMAL" /> s</translation>
 <translation id="2761536921376153655">Tipo di scansione</translation>
@@ -77,6 +80,7 @@ Le app con autorizzazioni di accesso allo spazio di archiviazione potranno acced
 <translation id="3810838688059735925">Video</translation>
 <translation id="3838931309141338733">Scansiona il codice a barre</translation>
 <translation id="3892148308691398805">Copia testo</translation>
+<translation id="4060608699153044055">Impossibile registrare perché lo spazio di archiviazione del dispositivo è in esaurimento. Per avviare la registrazione, devi liberare spazio sul dispositivo.</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> MP</translation>
 <translation id="4118525110028899586">Metti in pausa la registrazione</translation>
 <translation id="4121305183798804752">Documento rilevato</translation>
@@ -90,6 +94,7 @@ Le app con autorizzazioni di accesso allo spazio di archiviazione potranno acced
 <translation id="4445542136948522167">Interrompi acquisizione foto</translation>
 <translation id="4497569853498380347">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" />) <ph name="MEGAPIXEL" /> megapixel</translation>
 <translation id="4570032796877367747">Fotocamera anteriore</translation>
+<translation id="4598556348158889687">Gestione dello spazio di archiviazione</translation>
 <translation id="4620818268515773682">Attiva/disattiva audio del microfono. Opzione Disattiva audio non attiva</translation>
 <translation id="4628948037717959914">Foto</translation>
 <translation id="4649291346448517080">Impossibile salvare il file</translation>
@@ -159,6 +164,7 @@ Se il feedback riguarda la qualità di immagini o video, allega una foto o un vi
 <translation id="7748344063862150053">Angolo superiore destro del documento</translation>
 <translation id="7933675232020478311">Spostamento in basso a destra</translation>
 <translation id="7983668134180549431">Testo rilevato.</translation>
+<translation id="8079255378695216066">Impossibile avviare la registrazione</translation>
 <translation id="8120146556401698679">Panoramica Inclinazione Zoom</translation>
 <translation id="8131740175452115882">Conferma</translation>
 <translation id="8145038249676204903">Passa alla modalità foto</translation>

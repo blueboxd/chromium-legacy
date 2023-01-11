@@ -6,7 +6,7 @@ import 'chrome://profile-picker/lazy_load.js';
 
 import {AccountSelectionLacrosElement} from 'chrome://profile-picker/lazy_load.js';
 import {AvailableAccount, ensureLazyLoaded, ManageProfilesBrowserProxyImpl} from 'chrome://profile-picker/profile_picker.js';
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {isChildVisible} from 'chrome://webui-test/test_util.js';
@@ -56,8 +56,7 @@ import {TestManageProfilesBrowserProxy} from './test_manage_profiles_browser_pro
           },
           '', '/account-selection-lacros');
 
-      document.body.innerHTML =
-          window.trustedTypes!.emptyHTML as unknown as string;
+      document.body.innerHTML = window.trustedTypes!.emptyHTML;
       testElement = document.createElement('account-selection-lacros');
       testElement.profileThemeInfo = browserProxy.profileThemeInfo;
       document.body.append(testElement);

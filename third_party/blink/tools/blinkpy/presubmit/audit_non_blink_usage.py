@@ -34,6 +34,7 @@ _CONFIG = [
             # TODO(dcheng): Should these be in a more specific config?
             'gfx::ColorSpace',
             'gfx::CubicBezier',
+            'gfx::HDRMode',
             'gfx::HDRMetadata',
             'gfx::ICCProfile',
             'gfx::RadToDeg',
@@ -129,7 +130,9 @@ _CONFIG = [
             'base::WritableSharedMemoryMapping',
             'base::as_bytes',
             'base::bit_cast',
+            'base::expected',
             'base::make_span',
+            'base::unexpected',
             'base::ranges::.+',
             'base::sequence_manager::TaskTimeObserver',
             'base::span',
@@ -329,6 +332,7 @@ _CONFIG = [
             'cc::UsePaintCache',
 
             # Chromium geometry types.
+            'gfx::DecomposedTransform',
             'gfx::Insets',
             'gfx::InsetsF',
             'gfx::Outsets',
@@ -506,9 +510,10 @@ _CONFIG = [
             'ui::ScrollGranularity',
 
             # Document transitions
-            'cc::DocumentTransitionRequest',
-            'cc::DocumentTransitionContentLayer',
-            'viz::SharedElementResourceId',
+            'cc::ViewTransitionRequest',
+            'cc::ViewTransitionContentLayer',
+            'viz::NavigationID'
+            'viz::ViewTransitionElementResourceId',
 
             # base/types/strong_alias.h
             'base::StrongAlias',
@@ -590,6 +595,10 @@ _CONFIG = [
 
             # TODO(crbug.com/1296161): Remove this when the CHIPS OT ends.
             "net::features::kPartitionedCookiesBypassOriginTrial",
+
+            # TODO(https://crbug.com/1261328): Remove this once the Blob URL
+            # partitioning killswitch is removed.
+            "net::features::kSupportPartitionedBlobUrl",
 
             # HTTP structured headers
             'net::structured_headers::.+',
@@ -731,6 +740,11 @@ _CONFIG = [
     {
         'paths': ['third_party/blink/renderer/bindings/'],
         'allowed': ['gin::.+'],
+    },
+    {
+        'paths':
+        ['third_party/blink/renderer/bindings/core/v8/serialization/'],
+        'allowed': ['base::BufferIterator'],
     },
     {
         'paths':
@@ -942,6 +956,14 @@ _CONFIG = [
         'allowed': [
             # Used by WebPackageRequestMatcher in //third_party/blink/common.
             'net::HttpRequestHeaders',
+        ],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/loader/web_bundle/script_web_bundle.cc'
+        ],
+        'allowed': [
+            'web_package::ScriptWebBundleOriginType',
         ],
     },
     {
@@ -1389,6 +1411,7 @@ _CONFIG = [
         ],
         'allowed': [
             'base::ClampMul',
+            'base::DoNothingWithBoundArgs',
             'base::PlatformThreadRef',
             'base::WrapRefCounted',
             'cc::kNumYUVPlanes',
@@ -1427,6 +1450,7 @@ _CONFIG = [
         'allowed': [
             'gpu::webgpu::PowerPreference',
             'gpu::webgpu::WebGPUInterface',
+            'media::PIXEL_FORMAT_NV12',
         ],
     },
     {
@@ -1512,7 +1536,7 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/blink/renderer/modules/url_pattern/',
+            'third_party/blink/renderer/core/url_pattern/',
         ],
         'allowed': [
             # Required to provide a canonicalization functor to liburlpattern.
@@ -1735,9 +1759,9 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/blink/renderer/platform/graphics/document_transition_shared_element_id.h'
+            'third_party/blink/renderer/platform/graphics/view_transition_shared_element_id.h'
         ],
-        'allowed': ['cc::DocumentTransitionSharedElementId'],
+        'allowed': ['cc::ViewTransitionElementId'],
     },
     {
         'paths': [
@@ -1812,6 +1836,22 @@ _CONFIG = [
         'allowed': [
             # Used for injecting a mock.
             'base::NoDestructor',
+        ]
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/browsing_topics/browsing_topics_document_supplement.cc',
+        ],
+        'allowed': [
+            'browsing_topics::ApiAccessFailureReason',
+        ]
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/frame/attribution_response_parsing.cc',
+        ],
+        'allowed': [
+            'attribution_reporting:.*',
         ]
     },
 ]

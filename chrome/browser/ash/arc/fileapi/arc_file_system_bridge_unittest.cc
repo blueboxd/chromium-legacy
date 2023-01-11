@@ -24,8 +24,8 @@
 #include "chrome/browser/ash/file_system_provider/fake_extension_provider.h"
 #include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/ash/file_system_provider/service_factory.h"
-#include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
-#include "chrome/browser/chromeos/fileapi/file_system_backend.h"
+#include "chrome/browser/ash/fileapi/external_file_url_util.h"
+#include "chrome/browser/ash/fileapi/file_system_backend.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
@@ -292,8 +292,8 @@ TEST_F(ArcFileSystemBridgeTest, GetLinuxVFSPathFromExternalFileURL) {
 
   // Create externalfile: URL as would be encoded inside the
   // ChromeContentProvider URL.
-  GURL smbfs_url = chromeos::CreateExternalFileURLFromPath(
-      profile_, smbfs_path_expected, true);
+  GURL smbfs_url =
+      ash::CreateExternalFileURLFromPath(profile_, smbfs_path_expected, true);
 
   // Check: The path returned matches the path encoded into the URL.
   base::FilePath smbfs_path =

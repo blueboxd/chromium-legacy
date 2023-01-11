@@ -6,7 +6,6 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> o drywyddau, <ph name="CPU_MAX_CLOCK_SPEED" />GHz)</translation>
 <translation id="1047773237499189053">Mae nodwedd newydd ar gael, defnyddiwch y fysell saeth I Fyny i ddysgu rhagor.</translation>
 <translation id="1059913517121127803">Methu â dechrau sganio</translation>
-<translation id="1062407476771304334">Disodli</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Canfuwyd wal dân</translation>
 <translation id="1075811647922107217">Maint y dudalen</translation>
@@ -72,6 +71,7 @@
 <translation id="1567064801249837505">Albymau</translation>
 <translation id="1572585716423026576">Gosod fel papur wal</translation>
 <translation id="1578784163189013834">Dewis cefndir yr arbedydd sgrîn</translation>
+<translation id="160633243685262989">Rhagolwg o'r Llun</translation>
 <translation id="1615335640928990664">Defnydd data ers <ph name="FRIENDLY_DATE" /></translation>
 <translation id="1621067168122174824">Rhedeg prawf Gwefru</translation>
 <translation id="1639239467298939599">Wrthi'n llwytho</translation>
@@ -139,7 +139,6 @@
 <translation id="2161394479394250669">Canslo'r dasg argraffu</translation>
 <translation id="2163937499206714165">Troi'r modd tywyll ymlaen</translation>
 <translation id="2180197493692062006">Aeth rhywbeth o'i le. Rhowch gynnig ar ailagor yr ap.</translation>
-<translation id="2182088270354640012">Diolch am yr adborth. Mae eich adborth yn helpu i wella Chrome OS a bydd yn cael ei adolygu gan dîm Chrome OS. Oherwydd nifer yr adroddiadau a gyflwynwyd, ni fyddwch yn derbyn ateb uniongyrchol.</translation>
 <translation id="2209788852729124853">Ailosod Rhifyddion Traffig</translation>
 <translation id="2212733584906323460">Cydraniad Enw</translation>
 <translation id="2217935453350629363">Cyflymder presennol</translation>
@@ -221,6 +220,7 @@
 <translation id="315116470104423982">Data symudol</translation>
 <translation id="3156846309055100599">Wrthi'n sganio tudalen <ph name="PAGE_NUMBER" />...</translation>
 <translation id="315738237743207937">Mae porth caeth wedi'i ganfod</translation>
+<translation id="3160172848211257835">Anfon <ph name="BEGIN_LINK1" />gwybodaeth system ac ap<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />metrigau<ph name="END_LINK2" /></translation>
 <translation id="3170673040743561620">Rhowch eich dogfen ar y sganiwr</translation>
 <translation id="3188257591659621405">Fy ffeiliau</translation>
 <translation id="319101249942218879">Wedi newid y llun rhithffurf</translation>
@@ -333,6 +333,7 @@
 <translation id="4297501883039923494">Wedi stopio - Gwall anhysbys</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> Llun</translation>
 <translation id="4333390807948134856">Mae'r fysell <ph name="KEY_NAME" /> wedi'i phwyso</translation>
+<translation id="435692326371619097">Rheoli gosodiadau APN rhwydwaith. Mae APN yn sefydlu cysylltiad rhwng rhwydwaith cellog a'r rhyngrwyd. <ph name="BEGIN_LINK" />Dysgu rhagor<ph name="END_LINK" /></translation>
 <translation id="4378373042927530923">Ni Redwyd</translation>
 <translation id="4378551569595875038">Yn cysylltu...</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -482,7 +483,6 @@ Rhowch gynnig ar dapio'r meic i ofyn unrhyw beth i fi.</translation>
 <translation id="5669267381087807207">Yn gweithredu</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Teulu</translation>
-<translation id="5695599963893094957">Teipiwch unrhyw fysell ar eich bysellfwrdd. Gallwch bwyso hyd at 4 bysell ar yr un pryd.</translation>
 <translation id="5701381305118179107">Canoli</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> o <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Diweddaru <ph name="DEVICE_NAME" /></translation>
@@ -584,6 +584,7 @@ Rhowch gynnig ar dapio'r meic i ofyn unrhyw beth i fi.</translation>
 <translation id="6575134580692778371">Heb ei ffurfweddu</translation>
 <translation id="6579509898032828423">Defnyddio'r llun hwn</translation>
 <translation id="6596816719288285829">Cyfeiriad IP</translation>
+<translation id="6599673642868607614">Diolch am eich adborth. Mae eich adborth yn ein helpu i wella profiad Chromebook a bydd yn cael ei adolygu gan ein tîm. Oherwydd y nifer fawr o adroddiadau, ni fyddwn yn gallu anfon ateb.</translation>
 <translation id="6618744767048954150">wrthi'n rhedeg</translation>
 <translation id="6620487321149975369">Bydd tasgau argraffu yn ymddangos yn yr hanes oni bai eu bod yn cael eu tynnu'n bwrpasol</translation>
 <translation id="6624819909909965616">Methu ag uwchlwytho ffeil sy'n fwy na 10 MB</translation>
@@ -628,6 +629,7 @@ Rhowch gynnig ar dapio'r meic i ofyn unrhyw beth i fi.</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">Wedi methu - Wedi Methu ag Awdurdodi</translation>
 <translation id="7103252855940681301">Dyfais <ph name="INDEX" /> o <ph name="COUNT" /> o'r enw <ph name="NAME" />.</translation>
+<translation id="7130438335435247835">Enw Pwynt Mynediad (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{Gweinydd enwau}zero{Gweinyddion enwau}two{Gweinyddion enwau}few{Gweinyddion enwau}many{Gweinyddion enwau}other{Gweinyddion enwau}}</translation>
 <translation id="7143207342074048698">Wrthi'n cysylltu</translation>
 <translation id="7144878232160441200">Ceisio eto</translation>
@@ -672,6 +674,7 @@ Rhowch gynnig ar dapio'r meic i ofyn unrhyw beth i fi.</translation>
 <translation id="7535791657097741517">Troi'r thema olau ymlaen</translation>
 <translation id="7550715992156305117">Arferion Diagnostig</translation>
 <translation id="7551123448725492271">Mae'r ddyfais yn ddyfais sain.</translation>
+<translation id="7559239713112547082">Rhagolwg o'r Sgrinlun</translation>
 <translation id="7561454561030345039">Rheolir y weithred hon gan eich gweinyddwr</translation>
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7570674786725311828">Sgrîn gyffwrdd USB</translation>
@@ -688,9 +691,9 @@ Rhowch gynnig ar dapio'r meic i ofyn unrhyw beth i fi.</translation>
 <translation id="773153675489693198">Cyfrif cylch gwefru</translation>
 <translation id="7747039790905080783">Allwedd a rannwyd ymlaen llaw</translation>
 <translation id="7762130827864645708">Gwnaethoch newid eich cyfrinair yn llwyddiannus. Defnyddiwch y cyfrinair newydd o hyn ymlaen.</translation>
-<translation id="7762839321248874531">Anfon <ph name="BEGIN_LINK1" />gwybodaeth system ac ap<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />metrigau<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Cyfateb ôl-ddodiad parth</translation>
 <translation id="7769672763586021400">Rhif adnabod y Model</translation>
+<translation id="7778717409420828014">Mae eich adborth yn ein helpu i wella profiad Chromebook a bydd yn cael ei adolygu gan ein tîm. Oherwydd y nifer fawr o adroddiadau, ni fyddwn yn gallu anfon ateb.</translation>
 <translation id="7784116172884276937">Nid oes unrhyw weinyddion DNS wedi'u gosod</translation>
 <translation id="779591286616261875">Anfon adroddiad newydd</translation>
 <translation id="7799817062559422778">Modd golau</translation>
@@ -825,7 +828,6 @@ Rhowch gynnig ar dapio'r meic i ofyn unrhyw beth i fi.</translation>
 <translation id="9082718469794970195">Defnyddio'r fideo hwn</translation>
 <translation id="9087578468327036362">Adrodd am yr ymholiad hwn</translation>
 <translation id="9088306295921699330">Defnydd presennol</translation>
-<translation id="9092255287806472980">Mae eich adborth yn helpu i wella Chrome OS a bydd yn cael ei adolygu gan ein tîm. Oherwydd y nifer fawr o adroddiadau, ni fyddwn yn gallu anfon ateb.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="910415269708673980">Adnewyddu'r tocyn ar gyfer <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Wrthi'n sganio'r dudalen <ph name="PAGE_NUMBER" /></translation>

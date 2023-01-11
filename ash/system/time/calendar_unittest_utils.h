@@ -9,6 +9,7 @@
 #include <string>
 
 #include "ash/calendar/calendar_client.h"
+#include "ash/system/time/calendar_utils.h"
 #include "base/time/time.h"
 #include "google_apis/calendar/calendar_api_response_types.h"
 
@@ -234,7 +235,8 @@ std::unique_ptr<google_apis::calendar::CalendarEvent> CreateEvent(
         google_apis::calendar::CalendarEvent::EventStatus::kConfirmed,
     const google_apis::calendar::CalendarEvent::ResponseStatus
         self_response_status =
-            google_apis::calendar::CalendarEvent::ResponseStatus::kAccepted);
+            google_apis::calendar::CalendarEvent::ResponseStatus::kAccepted,
+    const bool all_day_event = false);
 
 // Creates a `google_apis::calendar::CalendarEvent` for testing, that converts
 // start/end `base::Time` objects to `google_apis::calendar::DateTime`.
@@ -247,7 +249,8 @@ std::unique_ptr<google_apis::calendar::CalendarEvent> CreateEvent(
         google_apis::calendar::CalendarEvent::EventStatus::kConfirmed,
     const google_apis::calendar::CalendarEvent::ResponseStatus
         self_response_status =
-            google_apis::calendar::CalendarEvent::ResponseStatus::kAccepted);
+            google_apis::calendar::CalendarEvent::ResponseStatus::kAccepted,
+    const bool all_day_event = false);
 
 // Checks if the two exploded are in the same month.
 bool IsTheSameMonth(const base::Time& date_a, const base::Time& date_b);
@@ -281,9 +284,16 @@ class CalendarClientTestImpl : public CalendarClient {
   // `google_apis::HTTP_SUCCESS` by default.
   void SetError(google_apis::ApiErrorCode error) { error_ = error; }
 
+  // Force the task to take longer than the default timeout, causing an internal
+  // error to be propagated.
+  void ForceTimeout() {
+    task_delay_ = calendar_utils::kEventFetchTimeout + base::Seconds(1);
+  }
+
  private:
   google_apis::ApiErrorCode error_ = google_apis::HTTP_SUCCESS;
   std::unique_ptr<google_apis::calendar::EventList> events_ = nullptr;
+  base::TimeDelta task_delay_ = kAnimationSettleDownDuration + base::Seconds(2);
 };
 
 }  // namespace calendar_test_utils

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <tuple>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/callback_list.h"
@@ -114,8 +115,8 @@ class COMPONENT_EXPORT(COLOR) ColorProviderManager {
     //
     // TODO(crbug.com/1298696): browser_tests breaks with MTECheckedPtr
     // enabled. Triage.
-    raw_ptr<InitializerSupplier, DegradeToNoOpWhenMTE> app_controller =
-        nullptr;  // unowned
+    raw_ptr<InitializerSupplier, DanglingUntriagedDegradeToNoOpWhenMTE>
+        app_controller = nullptr;  // unowned
 
     bool operator<(const Key& other) const {
       auto* lhs_app_controller = app_controller.get();

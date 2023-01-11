@@ -7,8 +7,17 @@
 
 #import <UIKit/UIKit.h>
 
+@class CarouselItem;
 @class CrURL;
 @class FaviconAttributes;
+
+// An abstract consumer of carousel items.
+@protocol CarouselItemConsumer <NSObject>
+
+// Removes `carouselItem`.
+- (void)deleteCarouselItem:(CarouselItem*)carouselItem;
+
+@end
 
 // Represent an carousel item in UI.
 @interface CarouselItem : NSObject

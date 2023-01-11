@@ -88,6 +88,10 @@ class UiControllerObserver : public base::CheckedObserver {
   virtual void OnQrCodeScanUiChanged(
       const PromptQrCodeScanProto* qr_code_scan) = 0;
 
+  // Called when the legal_disclaimer is set or cleared.
+  virtual void OnLegalDisclaimerChanged(
+      const LegalDisclaimerProto* legal_disclaimer) = 0;
+
   // Called when the generic user interface to show has been changed or cleared.
   virtual void OnGenericUserInterfaceChanged(
       const GenericUserInterfaceProto* generic_ui) = 0;
@@ -107,6 +111,11 @@ class UiControllerObserver : public base::CheckedObserver {
 
   // Called when Tts Button State has changed.
   virtual void OnTtsButtonStateChanged(TtsButtonState state) = 0;
+
+  // Called when the disable_scrollbar_fading parameter has
+  // changed.
+  virtual void OnDisableScrollbarFadingChanged(
+      bool disable_scrollbar_fading) = 0;
 };
 }  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_OBSERVER_H_

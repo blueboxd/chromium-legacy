@@ -269,55 +269,6 @@ void WebAppsCrosapi::Launch(const std::string& app_id,
       base::DoNothing());
 }
 
-void WebAppsCrosapi::LaunchAppWithIntent(
-    const std::string& app_id,
-    int32_t event_flags,
-    apps::mojom::IntentPtr intent,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::WindowInfoPtr window_info,
-    LaunchAppWithIntentCallback callback) {
-  if (!LogIfNotConnected(FROM_HERE)) {
-    std::move(callback).Run(/*success=*/false);
-    return;
-  }
-
-  auto params = CreateCrosapiLaunchParamsWithEventFlags(
-      proxy_, app_id, event_flags,
-      ConvertMojomLaunchSourceToLaunchSource(launch_source),
-      window_info ? window_info->display_id : display::kInvalidDisplayId);
-
-  params->intent =
-      apps_util::ConvertAppServiceToCrosapiIntent(intent, proxy_->profile());
-  controller_->Launch(std::move(params), base::DoNothing());
-  // TODO(crbug/1261263): handle the case where launch fails.
-  std::move(callback).Run(/*success=*/true);
-}
-
-void WebAppsCrosapi::LaunchAppWithFiles(const std::string& app_id,
-                                        int32_t event_flags,
-                                        apps::mojom::LaunchSource launch_source,
-                                        apps::mojom::FilePathsPtr file_paths) {
-  if (!LogIfNotConnected(FROM_HERE)) {
-    return;
-  }
-
-  auto params = CreateCrosapiLaunchParamsWithEventFlags(
-      proxy_, app_id, event_flags,
-      ConvertMojomLaunchSourceToLaunchSource(launch_source),
-      display::kInvalidDisplayId);
-  params->intent = apps_util::CreateCrosapiIntentForViewFiles(file_paths);
-  controller_->Launch(std::move(params), base::DoNothing());
-}
-
-void WebAppsCrosapi::Uninstall(const std::string& app_id,
-                               apps::mojom::UninstallSource uninstall_source,
-                               bool clear_site_data,
-                               bool report_abuse) {
-  Uninstall(app_id,
-            ConvertMojomUninstallSourceToUninstallSource(uninstall_source),
-            clear_site_data, report_abuse);
-}
-
 void WebAppsCrosapi::GetMenuModel(const std::string& app_id,
                                   apps::mojom::MenuType menu_type,
                                   int64_t display_id,
@@ -406,11 +357,6 @@ void WebAppsCrosapi::ExecuteContextMenuCommand(const std::string& app_id,
 
   controller_->ExecuteContextMenuCommand(app_id, shortcut_id,
                                          base::DoNothing());
-}
-
-void WebAppsCrosapi::SetPermission(const std::string& app_id,
-                                   apps::mojom::PermissionPtr permission) {
-  SetPermission(app_id, ConvertMojomPermissionToPermission(permission));
 }
 
 void WebAppsCrosapi::OnApps(std::vector<AppPtr> deltas) {

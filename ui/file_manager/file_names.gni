@@ -23,7 +23,6 @@ static_js_files = [
   "file_manager/background/js/file_operation_manager.js",
   "file_manager/background/js/file_operation_util.js",
   "file_manager/background/js/launcher.js",
-  "file_manager/background/js/metadata_proxy.js",
   "file_manager/background/js/metrics_start.js",
 
   # TODO(lucmult): Check if we can move those mocks to the test files section.
@@ -51,7 +50,6 @@ static_js_files = [
   "file_manager/common/js/dialog_type.js",
   "file_manager/common/js/error_counter.js",
   "file_manager/common/js/glitch.js",
-  "file_manager/common/js/file_operation_common.js",
   "file_manager/common/js/file_type.js",
   "file_manager/common/js/files_app_entry_types.js",
   "file_manager/common/js/files_app_state.js",
@@ -68,6 +66,7 @@ static_js_files = [
   "file_manager/common/js/storage_adapter.js",
   "file_manager/common/js/test_error_reporting.js",
   "file_manager/common/js/trash.js",
+  "file_manager/common/js/ui.js",
   "file_manager/common/js/unittest_util.js",
   "file_manager/common/js/url_constants.js",
   "file_manager/common/js/util.js",
@@ -121,7 +120,6 @@ static_js_files = [
   "file_manager/foreground/js/file_manager.js",
   "file_manager/foreground/js/file_manager_commands.js",
   "file_manager/foreground/js/file_selection.js",
-  "file_manager/foreground/js/file_tasks.js",
   "file_manager/foreground/js/file_transfer_controller.js",
   "file_manager/foreground/js/file_type_filters_controller.js",
   "file_manager/foreground/js/file_watcher.js",
@@ -156,7 +154,6 @@ static_js_files = [
   "file_manager/foreground/js/selection_menu_controller.js",
   "file_manager/foreground/js/sort_menu_controller.js",
   "file_manager/foreground/js/spinner_controller.js",
-  "file_manager/foreground/js/task_controller.js",
   "file_manager/foreground/js/task_history.js",
   "file_manager/foreground/js/thumbnail_loader.js",
   "file_manager/foreground/js/toolbar_controller.js",
@@ -244,10 +241,16 @@ static_js_files = [
 # END: static_js_files.
 
 ts_files = [
+  # Common.
+  "file_manager/common/js/dom_utils.ts",
+  "file_manager/common/js/tslib_shim.ts",
+
+  # Lib.
   "file_manager/lib/actions_producer.ts",
   "file_manager/lib/base_store.ts",
   "file_manager/lib/concurrency_models.ts",
 
+  # State.
   "file_manager/state/store.ts",
   "file_manager/state/reducers/root.ts",
   "file_manager/state/reducers/all_entries.ts",
@@ -255,18 +258,35 @@ ts_files = [
   "file_manager/state/reducers/search.ts",
   "file_manager/state/actions.ts",
   "file_manager/state/file_key.ts",
-  "file_manager/widgets/xf_breadcrumb.ts",
-  "file_manager/widgets/xf_nudge.ts",
+
+  # Containers.
   "file_manager/containers/breadcrumb_container.ts",
   "file_manager/containers/nudge_container.ts",
+
+  # Widgets.
+  "file_manager/widgets/xf_base.ts",
+  "file_manager/widgets/xf_breadcrumb.ts",
+  "file_manager/widgets/xf_conflict_dialog.ts",
   "file_manager/widgets/xf_dlp_restriction_details_dialog.ts",
+  "file_manager/widgets/xf_nudge.ts",
+  "file_manager/widgets/xf_select.ts",
+
+  # Foreground.
+  "file_manager/foreground/js/file_tasks.ts",
+  "file_manager/foreground/js/task_controller.ts",
 ]
+
+# Isolate Polymer TS to avoid sending them to Closure via the rule `js_from_ts`.
+# Closure is failing to recognize the generated JS from the TS.
+# JS targets should rely on externs to type check the Polymer elements from TS.
+ts_polymer = [ "file_manager/foreground/elements/files_toast.ts" ]
 
 # HTML template files that are used to generate the ".html.ts"
 ts_templates = [
-  "file_manager/widgets/xf_breadcrumb.html",
-  "file_manager/widgets/xf_nudge.html",
+  "file_manager/widgets/xf_conflict_dialog.html",
   "file_manager/widgets/xf_dlp_restriction_details_dialog.html",
+  "file_manager/widgets/xf_nudge.html",
+  "file_manager/widgets/xf_select.html",
 ]
 
 ts_test_files = [
@@ -283,8 +303,14 @@ ts_test_files = [
 
   # Widgets:
   "file_manager/widgets/xf_breadcrumb_unittest.ts",
+  "file_manager/widgets/xf_conflict_dialog_unittest.ts",
   "file_manager/widgets/xf_dlp_restriction_details_dialog_unittest.ts",
   "file_manager/widgets/xf_nudge_unittest.ts",
+  "file_manager/widgets/xf_select_unittest.ts",
+
+  # Foreground:
+  "file_manager/foreground/js/file_tasks_unittest.ts",
+  "file_manager/foreground/js/task_controller_unittest.ts",
 ]
 
 ts_generated_templates = []
@@ -292,9 +318,27 @@ foreach(_t, ts_templates) {
   ts_generated_templates += [ _t + ".ts" ]
 }
 
-# Generated files are built from the repository and the final JS files is only
-# available in the "gen/" folder.
-image_loader_generated_js_files = [ "image_loader/lru_cache.js" ]
+# Generated in foregorund/elements folder.
+ts_generated_templates +=
+    [ "file_manager/foreground/elements/files_toast.html.ts" ]
+
+# d.ts. files that are automatically generated from the JS file.
+generate_definitions_js_files = [
+  "file_manager/common/js/volume_manager_types.js",
+  "file_manager/externs/entry_location.js",
+  "file_manager/externs/files_app_entry_interfaces.js",
+  "file_manager/externs/volume_info.js",
+  "file_manager/externs/volume_info_list.js",
+  "file_manager/externs/volume_manager.js",
+]
+
+# d.ts. files that are manually created and checked-in in the repo.
+checked_in_dts_files = [
+  "file_manager/definitions/file_error.d.ts",
+  "file_manager/definitions/file_manager.d.ts",
+  "file_manager/foreground/js/ui/command.d.ts",
+  "file_manager/foreground/js/ui/multi_menu_button.d.ts",
+]
 
 generated_js_files = [
   # Common:
@@ -306,11 +350,8 @@ generated_js_files = [
   "file_manager/foreground/elements/files_metadata_entry.js",
   "file_manager/foreground/elements/files_password_dialog.js",
   "file_manager/foreground/elements/files_quick_view.js",
-  "file_manager/foreground/elements/files_ripple.js",
   "file_manager/foreground/elements/files_safe_media.js",
   "file_manager/foreground/elements/files_spinner.js",
-  "file_manager/foreground/elements/files_toast.js",
-  "file_manager/foreground/elements/files_toggle_ripple.js",
   "file_manager/foreground/elements/files_tooltip.js",
   "file_manager/foreground/elements/icons.js",
   "file_manager/foreground/elements/xf_button.js",
@@ -356,7 +397,6 @@ unittest_files = [
   "file_manager/background/js/file_operation_manager_unittest.js",
   "file_manager/background/js/trash_unittest.js",
   "file_manager/background/js/volume_manager_unittest.js",
-  "file_manager/background/js/metadata_proxy_unittest.js",
   "file_manager/background/js/crostini_unittest.js",
 
   # Foreground:
@@ -374,7 +414,6 @@ unittest_files = [
   "file_manager/foreground/js/metadata/metadata_cache_set_unittest.js",
   "file_manager/foreground/js/metadata/multi_metadata_provider_unittest.js",
   "file_manager/foreground/js/file_manager_commands_unittest.js",
-  "file_manager/foreground/js/task_controller_unittest.js",
   "file_manager/foreground/js/thumbnail_loader_unittest.js",
   "file_manager/foreground/js/directory_contents_unittest.js",
   "file_manager/foreground/js/file_list_model_unittest.js",
@@ -406,6 +445,7 @@ unittest_files = [
   "file_manager/foreground/js/ui/multi_menu_unittest.js",
   "file_manager/foreground/js/ui/position_util_unittest.js",
   "file_manager/foreground/js/ui/splitter_unittest.js",
+  "file_manager/foreground/js/ui/banners/dlp_restricted_banner_unittest.js",
   "file_manager/foreground/js/ui/banners/state_banner_unittest.js",
   "file_manager/foreground/js/ui/banners/educational_banner_unittest.js",
   "file_manager/foreground/js/ui/banners/warning_banner_unittest.js",
@@ -413,7 +453,6 @@ unittest_files = [
   "file_manager/foreground/js/ui/directory_tree_unittest.js",
   "file_manager/foreground/js/navigation_list_model_unittest.js",
   "file_manager/foreground/js/directory_model_unittest.js",
-  "file_manager/foreground/js/file_tasks_unittest.js",
   "file_manager/foreground/js/file_transfer_controller_unittest.js",
 
   # Image Loader:

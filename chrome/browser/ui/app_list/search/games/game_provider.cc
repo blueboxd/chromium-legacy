@@ -37,7 +37,7 @@ using ::ash::string_matching::TokenizedString;
 // Parameters for FuzzyTokenizedStringMatch.
 constexpr bool kUseWeightedRatio = false;
 
-constexpr double kRelevanceThreshold = 0.65;
+constexpr double kRelevanceThreshold = 0.32;
 constexpr size_t kMaxResults = 3u;
 constexpr double kEpsilon = 1e-5;
 
@@ -187,8 +187,6 @@ void GameProvider::Start(const std::u16string& query) {
     return;
   }
 
-  // Clear results and discard any existing searches.
-  ClearResultsSilently();
   weak_factory_.InvalidateWeakPtrs();
 
   base::ThreadPool::PostTaskAndReplyWithResult(
@@ -196,6 +194,10 @@ void GameProvider::Start(const std::u16string& query) {
       base::BindOnce(&SearchGames, query, &game_index_),
       base::BindOnce(&GameProvider::OnSearchComplete,
                      weak_factory_.GetWeakPtr(), query));
+}
+
+void GameProvider::StopQuery() {
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void GameProvider::SetGameIndexForTest(GameIndex game_index) {

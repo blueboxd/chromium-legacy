@@ -281,15 +281,6 @@ void SessionService::SetTabGroupMetadata(
       sessions::CreateTabGroupMetadataUpdateCommand(group_id, visual_data));
 }
 
-void SessionService::SetPinnedState(const SessionID& window_id,
-                                    const SessionID& tab_id,
-                                    bool is_pinned) {
-  if (!ShouldTrackChangesToWindow(window_id))
-    return;
-
-  ScheduleCommand(sessions::CreatePinnedStateCommand(tab_id, is_pinned));
-}
-
 void SessionService::AddTabExtraData(const SessionID& window_id,
                                      const SessionID& tab_id,
                                      const char* key,
@@ -567,7 +558,7 @@ bool SessionService::RestoreIfNecessary(const StartupTabs& startup_tabs,
       browser_creator.LaunchBrowser(*command_line, profile(), base::FilePath(),
                                     chrome::startup::IsProcessStartup::kYes,
                                     chrome::startup::IsFirstRun::kNo,
-                                    std::make_unique<LaunchModeRecorder>());
+                                    std::make_unique<OldLaunchModeRecorder>());
       return true;
     } else {
       // If 'browser' is not null, show the crash bubble in the current browser

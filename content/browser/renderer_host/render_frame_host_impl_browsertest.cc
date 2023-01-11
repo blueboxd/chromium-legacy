@@ -17,6 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
@@ -59,6 +60,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/navigation_handle_observer.h"
+#include "content/public/test/prerender_test_util.h"
 #include "content/public/test/render_frame_host_test_support.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_frame_navigation_observer.h"
@@ -5375,13 +5377,15 @@ const char kAppHost[] = "app.com";
 const char kNonAppHost[] = "non-app.com";
 }  // namespace
 
-class IsolatedAppContentBrowserClient : public ContentBrowserClient {
+class IsolatedWebAppContentBrowserClient : public ContentBrowserClient {
  public:
-  IsolatedAppContentBrowserClient() = default;
+  IsolatedWebAppContentBrowserClient() = default;
 
-  bool ShouldUrlUseApplicationIsolationLevel(BrowserContext* browser_context,
-                                             const GURL& url) override {
-    return true;
+  bool ShouldUrlUseApplicationIsolationLevel(
+      BrowserContext* browser_context,
+      const GURL& url,
+      bool origin_matches_flag) override {
+    return origin_matches_flag;
   }
 };
 
@@ -5413,7 +5417,7 @@ class RenderFrameHostImplBrowserTestWithRestrictedApis
     net::test_server::RegisterDefaultHandlers(https_server());
     ASSERT_TRUE(https_server()->Start());
 
-    test_client_ = std::make_unique<IsolatedAppContentBrowserClient>();
+    test_client_ = std::make_unique<IsolatedWebAppContentBrowserClient>();
     old_client_ = SetBrowserClientForTesting(test_client_.get());
   }
 
@@ -5423,7 +5427,7 @@ class RenderFrameHostImplBrowserTestWithRestrictedApis
   }
 
  private:
-  std::unique_ptr<IsolatedAppContentBrowserClient> test_client_;
+  std::unique_ptr<IsolatedWebAppContentBrowserClient> test_client_;
   raw_ptr<ContentBrowserClient> old_client_;
   ContentMockCertVerifier mock_cert_verifier_;
 };
@@ -6149,7 +6153,7 @@ class DestructorLifetimeDocumentService
         was_destroyed_(was_destroyed) {}
 
   ~DestructorLifetimeDocumentService() override {
-    was_destroyed_ = true;
+    *was_destroyed_ = true;
     // The destructor should run before SafeRef<RenderFrameHost> is invalidated.
     EXPECT_TRUE(render_frame_host_);
     EXPECT_TRUE(page_);
@@ -6161,7 +6165,7 @@ class DestructorLifetimeDocumentService
   // This should be a SafeRef but that is not yet exposed publicly.
   const base::WeakPtr<RenderFrameHostImpl> render_frame_host_;
   const base::WeakPtr<Page> page_;
-  bool& was_destroyed_;
+  const raw_ref<bool> was_destroyed_;
 };
 
 class DestructorLifetimeDocumentUserData
@@ -6177,7 +6181,7 @@ class DestructorLifetimeDocumentUserData
         was_destroyed_(was_destroyed) {}
 
   ~DestructorLifetimeDocumentUserData() override {
-    was_destroyed_ = true;
+    *was_destroyed_ = true;
     // The destructor should run before SafeRef<RenderFrameHost> is invalidated.
     EXPECT_TRUE(render_frame_host_);
     EXPECT_TRUE(page_);
@@ -6190,7 +6194,7 @@ class DestructorLifetimeDocumentUserData
   // This should be a SafeRef or use render_frame_host().
   const base::WeakPtr<RenderFrameHostImpl> render_frame_host_;
   const base::WeakPtr<Page> page_;
-  bool& was_destroyed_;
+  const raw_ref<bool> was_destroyed_;
 };
 
 DOCUMENT_USER_DATA_KEY_IMPL(DestructorLifetimeDocumentUserData);
@@ -6939,6 +6943,10 @@ class RenderFrameHostImplBrowsingContextStateNameTest
 #endif  // BUILDFLAG(IS_MAC)
 IN_PROC_BROWSER_TEST_P(RenderFrameHostImplBrowsingContextStateNameTest,
                        MAYBE_BlockNameUpdateForBackForwardCache) {
+  // This test specifically wants to test with BackForwardCache enabled, so skip
+  // it if BackForwardCache is disabled.
+  if (!IsBackForwardCacheEnabled())
+    return;
   const bool disable_frame_name_update = base::FeatureList::IsEnabled(
       features::kDisableFrameNameUpdateOnNonCurrentRenderFrameHost);
 
@@ -7070,5 +7078,157 @@ INSTANTIATE_TEST_SUITE_P(
     RenderFrameHostImplBrowsingContextStateNameTest,
     testing::Combine(testing::Bool(), testing::Bool()),
     RenderFrameHostImplBrowsingContextStateNameTest::DescribeParams);
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ResetOwnerInPendingDeletion) {
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  // Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = web_contents()->GetPrimaryMainFrame();
+
+  // With BackForwardCache, swapped out RenderFrameHost won't have a
+  // replacement proxy as the document is stored in cache.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
+  // Set up a slow unload handler to force the RFH to linger in the unloaded
+  // but not-yet-deleted state.
+  EXPECT_TRUE(ExecJs(rfh_a, "window.onunload = function(){}"));
+
+  // Leave rfh_a in pending deletion state.
+  LeaveInPendingDeletionState(rfh_a);
+
+  // Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = web_contents()->GetPrimaryMainFrame();
+
+  EXPECT_NE(rfh_a, rfh_b);
+
+  EXPECT_TRUE(rfh_a->IsPendingDeletion());
+  EXPECT_EQ(nullptr, rfh_a->owner_);
+  EXPECT_NE(nullptr, rfh_b->owner_);
+  EXPECT_EQ(rfh_b->owner_, web_contents()->GetPrimaryFrameTree().root());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       SetOwnerInSpeculativeRFHOwner) {
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = web_contents()->GetPrimaryMainFrame();
+
+  // 2) Leave rfh_a in pending deletion state to check for rfh_a
+  // LifecycleStateImpl after navigating to B.
+  LeaveInPendingDeletionState(rfh_a);
+
+  // 3) Start navigation to B, but don't commit yet.
+  TestNavigationManager manager(web_contents(), url_b);
+  shell()->LoadURL(url_b);
+  EXPECT_TRUE(manager.WaitForRequestStart());
+
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+  RenderFrameHostImpl* pending_rfh =
+      root->render_manager()->speculative_frame_host();
+  EXPECT_TRUE(pending_rfh);
+  EXPECT_NE(nullptr, pending_rfh->owner_);
+}
+
+class RenderFrameHostImplBrowserTestWithBFCache
+    : public RenderFrameHostImplBrowserTest {
+ public:
+  RenderFrameHostImplBrowserTestWithBFCache() {
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kBackForwardCache,
+          {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}}},
+        // Allow BackForwardCache for all devices regardless of their memory.
+        {features::kBackForwardCacheMemoryControls});
+  }
+  ~RenderFrameHostImplBrowserTestWithBFCache() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTestWithBFCache,
+                       ResetOwnerInBFCache) {
+  GURL url_a(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/title2.html"));
+
+  // 1) Navigate to A(B).
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = web_contents()->GetPrimaryMainFrame();
+  RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
+  FrameTreeNode* expected_parent_ftn = rfh_a->frame_tree_node();
+  FrameTreeNode* expected_child_ftn = rfh_b->frame_tree_node();
+
+  // 2) Navigate to C.
+  EXPECT_TRUE(NavigateToURL(shell(), url_c));
+  RenderFrameHostImpl* rfh_c = web_contents()->GetPrimaryMainFrame();
+
+  // 3) Ensure A(B) are cached.
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_b->IsInBackForwardCache());
+  EXPECT_FALSE(rfh_c->IsInBackForwardCache());
+  EXPECT_NE(rfh_a, rfh_c);
+  EXPECT_EQ(nullptr, rfh_a->owner_);
+  EXPECT_EQ(expected_child_ftn, rfh_b->owner_);
+  EXPECT_EQ(expected_parent_ftn, rfh_c->owner_);
+
+  // 4) Navigate back to A(B).
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+
+  // 5) Ensure C is cached and A's owner is updated.
+  EXPECT_TRUE(rfh_c->IsInBackForwardCache());
+  EXPECT_EQ(rfh_a, web_contents()->GetPrimaryMainFrame());
+  EXPECT_EQ(expected_parent_ftn, rfh_a->owner_);
+  EXPECT_EQ(expected_child_ftn, rfh_b->owner_);
+  EXPECT_EQ(nullptr, rfh_c->owner_);
+}
+
+class RenderFrameHostImplPrerenderBrowserTest
+    : public RenderFrameHostImplBrowserTest {
+ public:
+  RenderFrameHostImplPrerenderBrowserTest()
+      : prerender_helper_(base::BindRepeating(
+            &RenderFrameHostImplPrerenderBrowserTest::GetWebContents,
+            base::Unretained(this))) {}
+
+  test::PrerenderTestHelper& prerender_helper() { return prerender_helper_; }
+
+  WebContents* GetWebContents() { return shell()->web_contents(); }
+
+ private:
+  test::PrerenderTestHelper prerender_helper_;
+};
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplPrerenderBrowserTest,
+                       KeepPrerenderRFHOwnerAfterActivation) {
+  GURL url_a = embedded_test_server()->GetURL("/title1.html");
+  GURL prerender_url = embedded_test_server()->GetURL("/title2.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+
+  RenderFrameHostImpl* rfh_a = web_contents()->GetPrimaryMainFrame();
+  FrameTreeNode* expected_ftn = rfh_a->frame_tree_node();
+
+  // Load a page in the prerender.
+  int host_id = prerender_helper().AddPrerender(prerender_url);
+  RenderFrameHostImpl* prerender_frame_host = static_cast<RenderFrameHostImpl*>(
+      prerender_helper().GetPrerenderedMainFrameHost(host_id));
+
+  EXPECT_NE(rfh_a->owner_, prerender_frame_host->owner_);
+
+  // Activate the prerendered page.
+  prerender_helper().NavigatePrimaryPage(prerender_url);
+
+  RenderFrameHostImpl* activated_rfh = web_contents()->GetPrimaryMainFrame();
+  EXPECT_EQ(prerender_frame_host, activated_rfh);
+  EXPECT_EQ(expected_ftn, activated_rfh->owner_);
+}
 
 }  // namespace content

@@ -18,7 +18,7 @@
 #import "ios/chrome/browser/promos_manager/promos_manager.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/authentication_service_fake.h"
+#import "ios/chrome/browser/signin/fake_authentication_service_delegate.h"
 #import "ios/chrome/browser/signin/signin_util.h"
 #import "ios/chrome/browser/ui/post_restore_signin/features.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
@@ -73,9 +73,11 @@ class PostRestoreAppAgentTest : public PlatformTest {
     TestChromeBrowserState::Builder builder;
     builder.AddTestingFactory(
         AuthenticationServiceFactory::GetInstance(),
-        base::BindRepeating(
-            &AuthenticationServiceFake::CreateAuthenticationService));
+        base::BindRepeating(AuthenticationServiceFactory::GetDefaultFactory()));
     browser_state_ = builder.Build();
+    AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
+        browser_state_.get(),
+        std::make_unique<FakeAuthenticationServiceDelegate>());
     auth_service_ =
         AuthenticationServiceFactory::GetForBrowserState(browser_state_.get());
     return auth_service_;
@@ -100,7 +102,7 @@ class PostRestoreAppAgentTest : public PlatformTest {
 
   void EnableFeatureVariationAlert() {
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {base::test::ScopedFeatureList::FeatureAndParams(
+        {base::test::FeatureRefAndParams(
             post_restore_signin::features::kIOSNewPostRestoreExperience,
             {{post_restore_signin::features::kIOSNewPostRestoreExperienceParam,
               "true"}})},

@@ -875,8 +875,10 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Blink.HitTestDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.ImplCompositorCommit.UpdateTime"/>
   <affected-histogram name="Blink.IntersectionObservation.UpdateTime"/>
-  <affected-histogram name="Blink.IntersectionObservationInternalCount.UpdateTime"/>
-  <affected-histogram name="Blink.IntersectionObservationJavascriptCount.UpdateTime"/>
+  <affected-histogram
+      name="Blink.IntersectionObservationInternalCount.UpdateTime"/>
+  <affected-histogram
+      name="Blink.IntersectionObservationJavascriptCount.UpdateTime"/>
   <affected-histogram name="Blink.JavascriptDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.JavascriptIntersectionObserver.UpdateTime"/>
   <affected-histogram name="Blink.Layout.UpdateTime"/>
@@ -888,9 +890,11 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Blink.PrePaint.UpdateTime"/>
   <affected-histogram name="Blink.ProxyCommit.UpdateTime"/>
   <affected-histogram name="Blink.ScrollDocumentUpdate.UpdateTime"/>
+  <affected-histogram name="Blink.ServiceDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.Style.UpdateTime"/>
   <affected-histogram name="Blink.StyleAndLayout.UpdateTime"/>
   <affected-histogram name="Blink.UpdateViewportIntersection.UpdateTime"/>
+  <affected-histogram name="Blink.UserDrivenDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.WaitForCommit.UpdateTime"/>
 </histogram_suffixes>
 
@@ -910,8 +914,10 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Blink.HitTestDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.ImplCompositorCommit.UpdateTime"/>
   <affected-histogram name="Blink.IntersectionObservation.UpdateTime"/>
-  <affected-histogram name="Blink.IntersectionObservationInternalCount.UpdateTime"/>
-  <affected-histogram name="Blink.IntersectionObservationJavascriptCount.UpdateTime"/>
+  <affected-histogram
+      name="Blink.IntersectionObservationInternalCount.UpdateTime"/>
+  <affected-histogram
+      name="Blink.IntersectionObservationJavascriptCount.UpdateTime"/>
   <affected-histogram name="Blink.JavascriptDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.JavascriptIntersectionObserver.UpdateTime"/>
   <affected-histogram name="Blink.Layout.UpdateTime"/>
@@ -923,9 +929,11 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Blink.PrePaint.UpdateTime"/>
   <affected-histogram name="Blink.ProxyCommit.UpdateTime"/>
   <affected-histogram name="Blink.ScrollDocumentUpdate.UpdateTime"/>
+  <affected-histogram name="Blink.ServiceDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.Style.UpdateTime"/>
   <affected-histogram name="Blink.StyleAndLayout.UpdateTime"/>
   <affected-histogram name="Blink.UpdateViewportIntersection.UpdateTime"/>
+  <affected-histogram name="Blink.UserDrivenDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.WaitForCommit.UpdateTime"/>
 </histogram_suffixes>
 
@@ -945,8 +953,10 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Blink.HitTestDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.ImplCompositorCommit.UpdateTime"/>
   <affected-histogram name="Blink.IntersectionObservation.UpdateTime"/>
-  <affected-histogram name="Blink.IntersectionObservationInternalCount.UpdateTime"/>
-  <affected-histogram name="Blink.IntersectionObservationJavascriptCount.UpdateTime"/>
+  <affected-histogram
+      name="Blink.IntersectionObservationInternalCount.UpdateTime"/>
+  <affected-histogram
+      name="Blink.IntersectionObservationJavascriptCount.UpdateTime"/>
   <affected-histogram name="Blink.JavascriptDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.JavascriptIntersectionObserver.UpdateTime"/>
   <affected-histogram name="Blink.Layout.UpdateTime"/>
@@ -958,9 +968,11 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Blink.PrePaint.UpdateTime"/>
   <affected-histogram name="Blink.ProxyCommit.UpdateTime"/>
   <affected-histogram name="Blink.ScrollDocumentUpdate.UpdateTime"/>
+  <affected-histogram name="Blink.ServiceDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.Style.UpdateTime"/>
   <affected-histogram name="Blink.StyleAndLayout.UpdateTime"/>
   <affected-histogram name="Blink.UpdateViewportIntersection.UpdateTime"/>
+  <affected-histogram name="Blink.UserDrivenDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.WaitForCommit.UpdateTime"/>
 </histogram_suffixes>
 
@@ -1421,9 +1433,29 @@ chromium-metrics-reviews@google.com.
   <suffix name="Block" label="Block"/>
   <suffix name="DetectImportantContent" label="Detect important content"/>
   <suffix name="SessionOnly" label="Session only"/>
-  <affected-histogram name="ContentSettings.Exceptions.cookies"/>
-  <affected-histogram name="ContentSettings.Exceptions.popups"/>
-  <affected-histogram name="ContentSettings.Exceptions.subresource-filter"/>
+  <affected-histogram name="ContentSettings.Exceptions.cookies">
+    <obsolete>
+      Removed in M107. See ContentSettings.RegularProfile.Exceptions.cookies
+      instead, which includes data only from regular profiles.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="ContentSettings.Exceptions.popups">
+    <obsolete>
+      Removed in M107. See ContentSettings.RegularProfile.Exceptions.popups
+      instead, which includes data only from regular profiles.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="ContentSettings.Exceptions.subresource-filter">
+    <obsolete>
+      Removed in M107. See
+      ContentSettings.RegularProfile.Exceptions.subresource-filter instead,
+      which includes data only from regular profiles.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="ContentSettings.RegularProfile.Exceptions.cookies"/>
+  <affected-histogram name="ContentSettings.RegularProfile.Exceptions.popups"/>
+  <affected-histogram
+      name="ContentSettings.RegularProfile.Exceptions.subresource-filter"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ContentSuggestionCategory" separator=".">
@@ -2391,7 +2423,6 @@ chromium-metrics-reviews@google.com.
       label="Charter Communications/Spectrum DoH endpoint1."/>
   <suffix name="Spectrum2"
       label="Charter Communications/Spectrum DoH endpoint2."/>
-  <suffix name="Switch" label="SWITCH Public DNS."/>
   <affected-histogram name="Net.DNS.DnsTransaction.Insecure.FailureTime"/>
   <affected-histogram name="Net.DNS.DnsTransaction.Insecure.SuccessTime"/>
   <affected-histogram
@@ -2839,13 +2870,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="PLT.PT_RequestToStart"/>
   <affected-histogram name="PLT.PT_StartToCommit"/>
   <affected-histogram name="PLT.PT_StartToFinish"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="GaiaAccountType" separator=".">
-  <suffix name="SignedInNonSync"
-      label="A primary account does not exist for the profile"/>
-  <suffix name="Sync" label="A primary account exists for the profile"/>
-  <affected-histogram name="PasswordManager.SavedGaiaPasswordHashCount"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="GeolocationSettingsDialogSource" separator=".">
@@ -6935,29 +6959,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="PasswordManager.NewlySavedPasswordIsGenerated"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="PasswordAccountStorageUserState" separator=".">
-  <suffix name="SignedInAccountStoreUser"
-      label="Signed-in user, opted in to the account storage, and saving
-             passwords to the account storage."/>
-  <suffix name="SignedInAccountStoreUserSavingLocally"
-      label="Signed-in user and opted in to the account storage, but has
-             chosen to save passwords only on the device."/>
-  <suffix name="SignedInUser"
-      label="Signed-in user, not opted in to the account storage (but will
-             save passwords to the account storage by default)."/>
-  <suffix name="SignedInUserSavingLocally"
-      label="Signed-in user, not opted in to the account storage, and has
-             explicitly chosen to save passwords only on the device."/>
-  <suffix name="SignedOutAccountStoreUser"
-      label="Signed-out user, but an account storage opt-in exists."/>
-  <suffix name="SignedOutUser"
-      label="Signed-out user (and no account storage opt-in exists)."/>
-  <suffix name="SyncUser" label="Syncing user."/>
-  <affected-histogram name="PasswordManager.AccountStorageUserStateDuration"/>
-  <affected-histogram name="PasswordManager.MoveUIDismissalReason"/>
-  <affected-histogram name="PasswordManager.SaveUIDismissalReason"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="PasswordCustomPassphrase" separator=".">
   <suffix name="WithCustomPassphrase" label=""/>
   <suffix name="WithoutCustomPassphrase" label=""/>
@@ -7760,6 +7761,27 @@ chromium-metrics-reviews@google.com.
   <suffix name="PartitionAlloc.AddressSpace.ConfigurablePoolUsage.After24H"
       label="Used super pages in the configurable pool. Only recorded for
              64-bit with process uptime 24H+."/>
+  <suffix
+      name="PartitionAlloc.AddressSpace.PkeyPoolLargestAvailableReservation"
+      label="Longest free chunk in the pkey pool. Only recorded on
+             pkey-supported platforms."/>
+  <suffix
+      name="PartitionAlloc.AddressSpace.PkeyPoolLargestAvailableReservation.After1H"
+      label="Longest free chunk in the pkey pool. Only recorded on
+             pkey-supported platforms with process uptime [1,24)H."/>
+  <suffix
+      name="PartitionAlloc.AddressSpace.PkeyPoolLargestAvailableReservation.After24H"
+      label="Longest free chunk in the pkey pool. Only recorded on
+             pkey-supported platforms with process uptime 24H+."/>
+  <suffix name="PartitionAlloc.AddressSpace.PkeyPoolUsage"
+      label="Used super pages in the pkey pool. Only recorded on
+             pkey-supported platforms."/>
+  <suffix name="PartitionAlloc.AddressSpace.PkeyPoolUsage.After1H"
+      label="Used super pages in the pkey pool. Only recorded on
+             pkey-supported platforms with process uptime [1,24)H."/>
+  <suffix name="PartitionAlloc.AddressSpace.PkeyPoolUsage.After24H"
+      label="Used super pages in the pkey pool. Only recorded on
+             pkey-supported platforms with process uptime 24H+."/>
   <suffix
       name="PartitionAlloc.AddressSpace.RegularPoolLargestAvailableReservation"
       label="Longest free chunk in the regular pool. Only recorded for
@@ -9253,116 +9275,13 @@ chromium-metrics-reviews@google.com.
       name="ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="ServiceWorkerCache_Cache" separator=".">
-  <suffix name="MatchAll2"
-      label="The time to perform the 'matchAll' operation on a ServiceWorker
-             Cache, which does a mass cache lookup."/>
-  <affected-histogram name="ServiceWorkerCache.Cache"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="ServiceWorkerCache_Cache_MatchSuffixes" separator=".">
-  <owner>wanderview@chromium.org</owner>
-  <suffix name="Hit"
-      label="The time to perform a 'match' operation on a given Cache that
-             successfully results in a Response."/>
-  <suffix name="IgnoreSearch"
-      label="The time to perform a 'match' operation on a given Cache with
-             the 'ignoreSearch' option set. This includes measurements for
-             hits, misses, and errors."/>
-  <suffix name="Miss"
-      label="The time to perform a 'match' operation on a given Cache that
-             completes successfully, but does not find a matching entry."/>
-  <affected-histogram name="ServiceWorkerCache.Cache.Browser.Match"/>
-  <affected-histogram name="ServiceWorkerCache.Cache.Renderer.Match"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="ServiceWorkerCache_Cache_ProcessOpSuffixes"
-    separator=".">
-  <owner>wanderview@chromium.org</owner>
-  <suffix name="DeleteOne"
-      label="The time to delete a single Request/Response entry from a Cache.
-             This measurement includes times for both existing or
-             non-existant entries."/>
-  <suffix name="Keys"
-      label="The time to perform the 'keys' operation on a given Cache. This
-             includes measurements for both invocations targeting all entries
-             or only entries for a specific request parameter."/>
-  <suffix name="Match"
-      label="The time to perform a 'match' operation on a given Cache. This
-             includes measurements for all invocations, including hits,
-             misses, errors, etc."/>
-  <suffix name="MatchAll"
-      label="The time to perform a 'matchAll' operation on a given Cache.
-             This includes measurements for all invocations, including hits,
-             misses, and errors. In addition requests for all Cache entries
-             and for specific request params are included together in this
-             histogram."/>
-  <suffix name="PutMany"
-      label="The time to put a multiple Request/Response entries into a given
-             Cache. This may or may not include deleting existing entries
-             that match any of the Requests. This includes measurements for
-             both successes and failures."/>
-  <suffix name="PutOne"
-      label="The time to put a single Request/Response entry into a given
-             Cache. This may or may not include deleting an existing entry
-             matching the Request. This includes measurements for both
-             successes and failures."/>
-  <affected-histogram name="ServiceWorkerCache.Cache.Browser"/>
-  <affected-histogram name="ServiceWorkerCache.Cache.Renderer"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="ServiceWorkerCache_CacheStorage_ProcessOpSuffixes"
-    separator=".">
-  <owner>wanderview@chromium.org</owner>
-  <suffix name="Delete"
-      label="The time to 'delete' a Cache from the origin's CacheStorage. If
-             the Cache is still in use then the actual deletion may be
-             deferred until the last reference is dropped. Additional time
-             due to deferral is not included in this measurement."/>
-  <suffix name="Has"
-      label="The time to perform the 'has' operation on the origin's
-             CacheStorage."/>
-  <suffix name="Keys"
-      label="The time to perform the 'keys' operation on the origin's
-             CacheStorage."/>
-  <suffix name="MatchAllCaches"
-      label="The time to perform a 'match' operation against all caches
-             associated with the origin's CacheStorage. This histogram
-             includes measurements for hits, misses, and errors."/>
-  <suffix name="MatchOneCache"
-      label="The time to perform a 'match' operation against a single cache
-             associated with the origin's CacheStorage. This histogram
-             includes measurements for hits, misses, and errors."/>
-  <suffix name="Open"
-      label="The time to 'open' a Cache in the origin's CacheStorage. Some
-             opening operations may happen asynchronously after the 'open'
-             returns a Cache object. That deferred asynchronous work is not
-             included in this measurement."/>
-  <affected-histogram name="ServiceWorkerCache.CacheStorage.Browser"/>
-  <affected-histogram name="ServiceWorkerCache.CacheStorage.Renderer"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="ServiceWorkerCache_ProcessSuffixes" separator=".">
-  <owner>wanderview@chromium.org</owner>
-  <suffix base="true" name="Browser"
-      label="Measurements taken in the browser process on the IO thread."/>
-  <suffix base="true" name="Renderer"
-      label="Measurements taken in the renderer process on the javascript
-             thread."/>
-  <affected-histogram name="ServiceWorkerCache.Cache"/>
-  <affected-histogram name="ServiceWorkerCache.CacheStorage"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="ServiceWorkerScheduler" separator="."
     ordering="prefix">
   <suffix name="BackgroundSyncManager"
       label="Collected from a BackgroundSyncManager instance"/>
   <suffix name="Cache" label="Collected from a CacheStorageCache instance"/>
   <suffix name="CacheStorage" label="Collected from a CacheStorage instance"/>
-  <affected-histogram name="ServiceWorkerCache.Scheduler.IsOperationSlow"/>
-  <affected-histogram name="ServiceWorkerCache.Scheduler.OperationDuration"/>
   <affected-histogram name="ServiceWorkerCache.Scheduler.OperationDuration2"/>
-  <affected-histogram name="ServiceWorkerCache.Scheduler.QueueDuration"/>
   <affected-histogram name="ServiceWorkerCache.Scheduler.QueueDuration2"/>
   <affected-histogram name="ServiceWorkerCache.Scheduler.QueueLength"/>
 </histogram_suffixes>
@@ -9383,13 +9302,9 @@ chromium-metrics-reviews@google.com.
   <suffix name="WriteIndex" label=""/>
   <suffix name="WriteSideData" label=""/>
   <affected-histogram
-      name="ServiceWorkerCache.Cache.Scheduler.IsOperationSlow"/>
-  <affected-histogram
       name="ServiceWorkerCache.Cache.Scheduler.OperationDuration2"/>
   <affected-histogram name="ServiceWorkerCache.Cache.Scheduler.QueueDuration2"/>
   <affected-histogram name="ServiceWorkerCache.Cache.Scheduler.QueueLength"/>
-  <affected-histogram
-      name="ServiceWorkerCache.CacheStorage.Scheduler.IsOperationSlow"/>
   <affected-histogram
       name="ServiceWorkerCache.CacheStorage.Scheduler.OperationDuration2"/>
   <affected-histogram

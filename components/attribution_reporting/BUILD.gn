@@ -1,0 +1,113 @@
+# Copyright 2022 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
+
+mojom("source_registration_error_mojom") {
+  sources = [ "source_registration_error.mojom" ]
+  webui_module_path = "/"
+}
+
+component("attribution_reporting") {
+  sources = [
+    "aggregatable_trigger_data.cc",
+    "aggregatable_trigger_data.h",
+    "aggregatable_values.cc",
+    "aggregatable_values.h",
+    "aggregation_keys.cc",
+    "aggregation_keys.h",
+    "constants.h",
+    "event_trigger_data.cc",
+    "event_trigger_data.h",
+    "filters.cc",
+    "filters.h",
+    "os_registration.cc",
+    "os_registration.h",
+    "source_registration.cc",
+    "source_registration.h",
+  ]
+
+  public_deps = [
+    ":source_registration_error_mojom",
+    "//base",
+    "//url",
+  ]
+
+  deps = [
+    "//net",
+    "//services/network/public/cpp",
+  ]
+
+  defines = [ "IS_ATTRIBUTION_REPORTING_IMPL" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "aggregation_keys_unittest.cc",
+    "filters_unittest.cc",
+    "os_registration_unittest.cc",
+    "source_registration_unittest.cc",
+  ]
+
+  deps = [
+    ":attribution_reporting",
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "test_utils.cc",
+    "test_utils.h",
+  ]
+
+  public_deps = [ ":attribution_reporting" ]
+
+  deps = [ "//base" ]
+}
+
+fuzzer_test("os_source_parse_fuzzer") {
+  sources = [ "os_source_parse_fuzzer.cc" ]
+  deps = [
+    ":attribution_reporting",
+    "//base",
+    "//base:i18n",
+  ]
+
+  seed_corpus = "//components/attribution_reporting/os_source_fuzzer_corpus/"
+}
+
+fuzzer_test("os_trigger_parse_fuzzer") {
+  sources = [ "os_trigger_parse_fuzzer.cc" ]
+  deps = [
+    ":attribution_reporting",
+    "//base",
+    "//base:i18n",
+  ]
+
+  seed_corpus = "//components/attribution_reporting/os_trigger_fuzzer_corpus/"
+}
+
+fuzzer_test("source_registration_fuzzer") {
+  sources = [ "source_registration_fuzzer.cc" ]
+  deps = [
+    ":attribution_reporting",
+    "//base",
+    "//base:i18n",
+    "//testing/libfuzzer/proto:json_proto",
+    "//testing/libfuzzer/proto:json_proto_converter",
+    "//third_party/libprotobuf-mutator",
+    "//url",
+  ]
+  seed_corpus =
+      "//testing/libfuzzer/fuzzers/attribution_source_registration_corpus/"
+}

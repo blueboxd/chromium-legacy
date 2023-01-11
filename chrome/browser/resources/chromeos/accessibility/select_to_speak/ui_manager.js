@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 import {AutomationUtil} from '../common/automation_util.js';
+import {ParagraphUtils} from '../common/paragraph_utils.js';
 
-import {ParagraphUtils} from './paragraph_utils.js';
 import {PrefsManager} from './prefs_manager.js';
 
 const AutomationEvent = chrome.automation.AutomationEvent;
@@ -16,11 +16,9 @@ const RoleType = chrome.automation.RoleType;
 const SelectToSpeakPanelAction =
     chrome.accessibilityPrivate.SelectToSpeakPanelAction;
 
-// This must be the same as in
-// ash/system/accessibility/select_to_speak/select_to_speak_tray.cc:
-// ash::kSelectToSpeakTrayClassName.
-export const SELECT_TO_SPEAK_TRAY_CLASS_NAME =
-    'tray/TrayBackgroundView/SelectToSpeakTray';
+// This must match the name of view class that implements the SelectToSpeakTray:
+// ash/system/accessibility/select_to_speak/select_to_speak_tray.h
+export const SELECT_TO_SPEAK_TRAY_CLASS_NAME = 'SelectToSpeakTray';
 
 // This must match the name of view class that implements the menu view:
 // ash/system/accessibility/select_to_speak/select_to_speak_menu_view.h
@@ -86,18 +84,16 @@ export class SelectToSpeakUiListener {
  */
 export class UiManager {
   /**
+   * Please keep fields in alphabetical order.
    * @param {!PrefsManager} prefsManager
    * @param {!SelectToSpeakUiListener} listener
    */
   constructor(prefsManager, listener) {
-    /** @private {!PrefsManager} */
-    this.prefsManager_ = prefsManager;
+    /** @private {?chrome.automation.AutomationNode} */
+    this.desktop_ = null;
 
     /** @private {!SelectToSpeakUiListener} */
     this.listener_ = listener;
-
-    /** @private {?chrome.automation.AutomationNode} */
-    this.desktop_ = null;
 
     /**
      * Button in the floating panel, useful for restoring focus to the panel.
@@ -105,6 +101,14 @@ export class UiManager {
      */
     this.panelButton_ = null;
 
+    /** @private {!PrefsManager} */
+    this.prefsManager_ = prefsManager;
+
+    this.init_();
+  }
+
+  /** @private */
+  init_() {
     // Cache desktop and listen to focus changes.
     chrome.automation.getDesktop(desktop => {
       this.desktop_ = desktop;

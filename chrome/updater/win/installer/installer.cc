@@ -37,6 +37,7 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
+#include "chrome/updater/util.h"
 #include "chrome/updater/win/installer/configuration.h"
 #include "chrome/updater/win/installer/installer_constants.h"
 #include "chrome/updater/win/installer/pe_resource.h"
@@ -227,11 +228,12 @@ ProcessExitResult BuildCommandLineArguments(const wchar_t* cmd_line,
     return ProcessExitResult(INVALID_OPTION);
   }
 
-  // Append logging-related arguments for debugging purposes, at least for
-  // now.
+  // Append logging-related arguments for debugging purposes.
   if (!args.append(
-          L" --enable-logging "
-          L"--vmodule=*/chrome/updater/*=2,*/components/winhttp/*=2")) {
+          base::SysUTF8ToWide(base::StrCat({" --", kEnableLoggingSwitch, " --",
+                                            kLoggingModuleSwitch, "=",
+                                            kLoggingModuleSwitchValue}))
+              .c_str())) {
     return ProcessExitResult(COMMAND_STRING_OVERFLOW);
   }
 
@@ -311,7 +313,7 @@ ProcessExitResult HandleRunDeElevated(const base::CommandLine& command_line) {
              : ProcessExitResult(RUN_SETUP_FAILED_COULD_NOT_CREATE_PROCESS, hr);
 }
 
-ProcessExitResult WMain(HMODULE module) {
+ProcessExitResult InstallerMain(HMODULE module) {
   CHECK(EnableSecureDllLoading());
   EnableProcessHeapMetadataProtection();
 
@@ -354,6 +356,13 @@ ProcessExitResult WMain(HMODULE module) {
   } else if (::IsUserAnAdmin() && scope == UpdaterScope::kUser && IsUACOn()) {
     return HandleRunDeElevated(command_line);
   }
+
+  // TODO(crbug.com/1379164) - simplify the command line handling to avoid
+  // mutating the command line of the process to make logging work.
+  base::CommandLine::Init(0, nullptr);
+  *base::CommandLine::ForCurrentProcess() = command_line;
+  InitLogging(scope);
+  VLOG(1) << command_line.GetCommandLineString();
 
   ProcessExitResult exit_code = ProcessExitResult(SUCCESS_EXIT_CODE);
 
@@ -435,6 +444,13 @@ ProcessExitResult WMain(HMODULE module) {
   }
 
   return exit_code;
+}
+
+ProcessExitResult WMain(HMODULE module) {
+  const updater::ProcessExitResult result = InstallerMain(module);
+  VLOG(1) << "Metainstaller WMain returned: " << result.exit_code
+          << ", Windows error: " << result.windows_error;
+  return result;
 }
 
 }  // namespace updater

@@ -136,6 +136,7 @@ if (current_toolchain == default_toolchain) {
 
   _use_stable_package_name_for_trichrome =
       use_stable_package_name_for_trichrome && android_channel == "beta"
+  _use_high_package_name_for_64bit_only_trichrome = is_high_end_android
 
   jinja_template("trichrome_library_android_manifest") {
     input = "java/AndroidManifest_trichrome_library.xml"
@@ -169,10 +170,18 @@ if (current_toolchain == default_toolchain) {
     jinja_template("trichrome_library_64_android_manifest") {
       input = "java/AndroidManifest_trichrome_library.xml"
       output = trichrome_library_64_android_manifest
-      if (_use_stable_package_name_for_trichrome) {
-        _version_code = trichrome_64_beta_version_code
+      if (_use_high_package_name_for_64bit_only_trichrome) {
+        if (_use_stable_package_name_for_trichrome) {
+          _version_code = trichrome_64_high_beta_version_code
+        } else {
+          _version_code = trichrome_64_high_version_code
+        }
       } else {
-        _version_code = trichrome_64_version_code
+        if (_use_stable_package_name_for_trichrome) {
+          _version_code = trichrome_64_beta_version_code
+        } else {
+          _version_code = trichrome_64_version_code
+        }
       }
       variables = trichrome_jinja_variables + [
                     "trichrome_version=$_version_code",
@@ -337,6 +346,7 @@ if (current_toolchain == default_toolchain) {
   java_group("delegate_public_impl_java") {
     deps = [
       ":app_hooks_java",
+      "//chrome/browser/accessibility/hierarchysnapshotter/android:delegate_public_impl_java",
       "//chrome/browser/feed/android:hooks_public_impl_java",
       "//chrome/browser/lens:delegate_public_impl_java",
       "//chrome/browser/locale:delegate_public_impl_java",
@@ -391,11 +401,13 @@ if (current_toolchain == default_toolchain) {
       "//chrome/android/webapk/libs/common:common_java",
       "//chrome/android/webapk/libs/common:splash_java",
       "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",
+      "//chrome/browser/accessibility/hierarchysnapshotter/android:java",
       "//chrome/browser/android/browserservices/constants:java",
       "//chrome/browser/android/browserservices/intents:java",
       "//chrome/browser/android/browserservices/metrics:java",
       "//chrome/browser/android/browserservices/verification:java",
       "//chrome/browser/android/crypto:java",
+      "//chrome/browser/android/customtabs/branding:java",
       "//chrome/browser/android/lifecycle:java",
       "//chrome/browser/android/messages:java",
       "//chrome/browser/android/webapps/launchpad:java",
@@ -481,7 +493,6 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/ui/android/favicon:java",
       "//chrome/browser/ui/android/layouts:java",
       "//chrome/browser/ui/android/layouts/glue:java",
-      "//chrome/browser/ui/android/layouts/third_party/float_property:java",
       "//chrome/browser/ui/android/logo:java",
       "//chrome/browser/ui/android/management:java",
       "//chrome/browser/ui/android/multiwindow:java",
@@ -697,7 +708,6 @@ if (current_toolchain == default_toolchain) {
       "//third_party/gif_player:gif_player_java",
       "//third_party/metrics_proto:metrics_proto_java",
       "//ui/android:ui_java",
-      "//ui/base:features_java",
       "//ui/base/ime/mojom:mojom_java",
       "//ui/base/mojom:mojom_java",
       "//ui/gfx/geometry/mojom:mojom_java",
@@ -715,7 +725,6 @@ if (current_toolchain == default_toolchain) {
       ":chrome_strict_mode_switch",
       ":resource_id_javagen",
       ":vr_build_config",
-      "//chrome:instant_apps_reasons_enum_javagen",
       "//chrome:offline_pages_enum_javagen",
       "//chrome:partner_bookmarks_javagen",
       "//chrome:supervised_user_url_filter_enum_javagen",
@@ -799,7 +808,7 @@ if (current_toolchain == default_toolchain) {
     sources += commerce_subscriptions_java_sources
     deps += commerce_subscriptions_java_deps
 
-    if (enable_basic_printing) {
+    if (enable_printing) {
       deps += [ "//printing:printing_java" ]
     }
 
@@ -952,6 +961,8 @@ if (current_toolchain == default_toolchain) {
     # From java_sources.gni.
     sources = chrome_junit_test_java_sources
 
+    shared_libraries = [ "//url:libgurl_robolectric($robolectric_toolchain)" ]
+
     # Should not have any deps native targets since junit tests are java-only.
     assert_no_deps = [
       "//content",
@@ -996,6 +1007,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/android/browserservices/verification:java",
       "//chrome/browser/android/browserservices/verification:junit_test_support",
       "//chrome/browser/android/crypto:java",
+      "//chrome/browser/android/customtabs/branding:junit",
       "//chrome/browser/android/httpclient:junit_tests",
       "//chrome/browser/android/lifecycle:java",
       "//chrome/browser/android/webapps/launchpad:junit_tests",
@@ -1482,9 +1494,9 @@ if (current_toolchain == default_toolchain) {
       "//ui/android:ui_full_java",
       "//ui/android:ui_java_test_support",
       "//url:gurl_java",
-      "//url:gurl_java_unit_tests",
       "//url:gurl_junit_test_support",
       "//url:origin_java",
+      "//url:url_java_unit_tests",
     ]
 
     sources += share_unit_device_javatest_java_sources
@@ -1532,6 +1544,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/android/browserservices/verification:java",
       "//chrome/browser/android/browserservices/verification:javatests",
       "//chrome/browser/android/crypto:java",
+      "//chrome/browser/android/customtabs/branding:java",
       "//chrome/browser/android/httpclient:javatests",
       "//chrome/browser/android/lifecycle:java",
       "//chrome/browser/android/metrics:ukm_java_test_support",
@@ -1627,7 +1640,6 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/ui/android/favicon:java",
       "//chrome/browser/ui/android/layouts:java",
       "//chrome/browser/ui/android/layouts/test:java",
-      "//chrome/browser/ui/android/layouts/third_party/float_property:java",
       "//chrome/browser/ui/android/logo:java",
       "//chrome/browser/ui/android/multiwindow:javatests",
       "//chrome/browser/ui/android/native_page:java",
@@ -1762,7 +1774,9 @@ if (current_toolchain == default_toolchain) {
       "//components/url_formatter/android:url_formatter_java",
       "//components/user_prefs/android:java",
       "//components/version_info/android:version_constants_java",
+      "//components/webapk:proto_java",
       "//components/webapk/android/libs/client:java",
+      "//components/webapk/android/libs/common:java",
       "//components/webapps/browser/android:java",
       "//components/webauthn/android:java",
       "//components/webauthn/android:test_support_java",
@@ -1786,7 +1800,6 @@ if (current_toolchain == default_toolchain) {
       "//services/network/public/mojom:url_loader_base_java",
       "//services/service_manager/public/java:service_manager_java",
       "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
-      "//third_party/android_deps:com_google_flatbuffers_flatbuffers_java_java",
       "//third_party/android_deps:espresso_java",
       "//third_party/android_deps:material_design_java",
       "//third_party/android_deps:protobuf_lite_runtime_java",
@@ -1810,6 +1823,7 @@ if (current_toolchain == default_toolchain) {
       "//third_party/blink/public/mojom:mojom_core_java",
       "//third_party/blink/public/mojom:mojom_mhtml_load_result_java",
       "//third_party/blink/public/mojom:mojom_platform_java",
+      "//third_party/flatbuffers:flatbuffers_java",
       "//third_party/hamcrest:hamcrest_java",
       "//third_party/junit",
       "//third_party/metrics_proto:metrics_proto_java",
@@ -1830,7 +1844,7 @@ if (current_toolchain == default_toolchain) {
 
     deps += commerce_subscriptions_java_test_deps
 
-    if (enable_basic_printing) {
+    if (enable_printing) {
       deps += [ "//printing:printing_java" ]
     }
 
@@ -1856,6 +1870,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/test/data/portal/",
       "//chrome/test/data/push_messaging/",
       "//chrome/test/data/translate/",
+      "//chrome/test/data/webauthn/",
       "//chrome/test/media_router/resources/",
       "//components/test/data/autofill/",
       "//components/test/data/payments/",
@@ -2460,8 +2475,9 @@ if (current_toolchain == default_toolchain) {
       "//third_party/android_deps:protobuf_lite_runtime_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/junit",
-      "//url:gurl_android_test_helper_java",
+      "//url:android_test_helper_java",
       "//url:gurl_java",
+      "//url:origin_java",
     ]
 
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -2489,8 +2505,8 @@ if (current_toolchain == default_toolchain) {
       "//components/sync:test_support",
       "//content/test:test_support",
       "//net:test_support",
+      "//url:android_test_helper",
       "//url:gurl_android",
-      "//url:gurl_android_test_helper",
     ]
   }
 
@@ -2754,10 +2770,18 @@ if (current_toolchain == default_toolchain) {
                 _version_code = trichrome_64_32_version_code
               }
             } else {
-              if (_use_stable_package_name_for_trichrome) {
-                _version_code = trichrome_64_beta_version_code
+              if (_use_high_package_name_for_64bit_only_trichrome) {
+                if (_use_stable_package_name_for_trichrome) {
+                  _version_code = trichrome_64_high_beta_version_code
+                } else {
+                  _version_code = trichrome_64_high_version_code
+                }
               } else {
-                _version_code = trichrome_64_version_code
+                if (_use_stable_package_name_for_trichrome) {
+                  _version_code = trichrome_64_beta_version_code
+                } else {
+                  _version_code = trichrome_64_version_code
+                }
               }
             }
           } else {
@@ -3182,6 +3206,7 @@ if (current_toolchain == default_toolchain) {
       "//components/payments/content/android:unit_device_javatests",
       "//components/signin/public/android:unit_device_javatests",
       "//components/strictmode/android:unit_device_javatests",
+      "//components/translate/content/android:unit_device_javatests",
       "//components/url_formatter/android:unit_device_javatests",
       "//ui/android:ui_unit_device_javatests",
     ]
@@ -3543,7 +3568,7 @@ if (current_toolchain == default_toolchain) {
     ]
     data_deps = [
       ":chrome_public_apk",
-      "//chrome/test/chromedriver:chromedriver($host_toolchain)",
+      "//chrome/test/chromedriver:chromedriver_server($host_toolchain)",
       "//third_party/blink/tools:wpt_tests_android_isolate",
     ]
   }
@@ -3598,10 +3623,18 @@ if (current_toolchain == default_toolchain) {
               _version_code = trichrome_64_32_version_code
             }
           } else {
-            if (_use_stable_package_name_for_trichrome) {
-              _version_code = trichrome_64_beta_version_code
+            if (_use_high_package_name_for_64bit_only_trichrome) {
+              if (_use_stable_package_name_for_trichrome) {
+                _version_code = trichrome_64_high_beta_version_code
+              } else {
+                _version_code = trichrome_64_high_version_code
+              }
             } else {
-              _version_code = trichrome_64_version_code
+              if (_use_stable_package_name_for_trichrome) {
+                _version_code = trichrome_64_beta_version_code
+              } else {
+                _version_code = trichrome_64_version_code
+              }
             }
           }
         } else {
@@ -3965,7 +3998,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/app/video_tutorials/VideoTutorialsServiceUtils.java",
     "java/src/org/chromium/chrome/browser/autofill/AutofillExpirationDateFixFlowBridge.java",
     "java/src/org/chromium/chrome/browser/autofill/AutofillLogger.java",
-    "java/src/org/chromium/chrome/browser/autofill/AutofillMessageConfirmFlowBridge.java",
     "java/src/org/chromium/chrome/browser/autofill/AutofillNameFixFlowBridge.java",
     "java/src/org/chromium/chrome/browser/autofill/AutofillPopupBridge.java",
     "java/src/org/chromium/chrome/browser/autofill/AutofillSnackbarController.java",
@@ -4017,7 +4049,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/device_dialog/ChromeBluetoothChooserAndroidDelegate.java",
     "java/src/org/chromium/chrome/browser/device_dialog/ChromeBluetoothScanningPromptAndroidDelegate.java",
     "java/src/org/chromium/chrome/browser/device_dialog/UsbChooserDialog.java",
-    "java/src/org/chromium/chrome/browser/document/DocumentWebContentsDelegate.java",
     "java/src/org/chromium/chrome/browser/dom_distiller/DomDistillerServiceFactory.java",
     "java/src/org/chromium/chrome/browser/dom_distiller/DomDistillerTabUtils.java",
     "java/src/org/chromium/chrome/browser/dom_distiller/DomDistillerUIUtils.java",
@@ -4051,8 +4082,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/infobar/FramebustBlockInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/GeneratedPasswordSavedInfoBarDelegate.java",
     "java/src/org/chromium/chrome/browser/infobar/InfoBarContainer.java",
-    "java/src/org/chromium/chrome/browser/infobar/InstantAppsInfoBar.java",
-    "java/src/org/chromium/chrome/browser/infobar/InstantAppsInfoBarDelegate.java",
     "java/src/org/chromium/chrome/browser/infobar/KnownInterceptionDisclosureInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/NearOomInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/NearOomReductionInfoBar.java",
@@ -4064,8 +4093,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/infobar/TranslateCompactInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/UpdatePasswordInfoBar.java",
     "java/src/org/chromium/chrome/browser/init/NativeStartupBridge.java",
-    "java/src/org/chromium/chrome/browser/instantapps/InstantAppsMessageDelegate.java",
-    "java/src/org/chromium/chrome/browser/instantapps/InstantAppsSettings.java",
     "java/src/org/chromium/chrome/browser/javascript/WebContextFetcher.java",
     "java/src/org/chromium/chrome/browser/lens/LensDebugBridge.java",
     "java/src/org/chromium/chrome/browser/lens/LensPolicyUtils.java",

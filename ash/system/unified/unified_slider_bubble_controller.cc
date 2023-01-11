@@ -96,6 +96,31 @@ void UnifiedSliderBubbleController::OnMouseExitedView() {
   mouse_hovered_ = false;
 }
 
+void UnifiedSliderBubbleController::DisplayMicrophoneMuteToast() {
+  // We will not display the microphone mute toast if no microphone is connected
+  // to the device.
+  if (features::IsMicMuteNotificationsEnabled() &&
+      CrasAudioHandler::Get()->HasActiveInputDeviceForSimpleUsage()) {
+    ShowBubble(SLIDER_TYPE_MIC);
+  }
+}
+
+void UnifiedSliderBubbleController::OnInputMuteChanged(
+    bool mute,
+    CrasAudioHandler::InputMuteChangeMethod method) {
+  // The toast is displayed when the input mute state is changed by the
+  // dedicated keyboard button.
+  if (method == CrasAudioHandler::InputMuteChangeMethod::kKeyboardButton) {
+    DisplayMicrophoneMuteToast();
+  }
+}
+
+void UnifiedSliderBubbleController::OnInputMutedByMicrophoneMuteSwitchChanged(
+    bool muted) {
+  // The toast is displayed whenever the state of the hadrdware switch changes.
+  DisplayMicrophoneMuteToast();
+}
+
 void UnifiedSliderBubbleController::OnOutputNodeVolumeChanged(uint64_t node_id,
                                                               int volume) {
   ShowBubble(SLIDER_TYPE_VOLUME);
@@ -103,15 +128,6 @@ void UnifiedSliderBubbleController::OnOutputNodeVolumeChanged(uint64_t node_id,
 
 void UnifiedSliderBubbleController::OnOutputMuteChanged(bool mute_on) {
   ShowBubble(SLIDER_TYPE_VOLUME);
-}
-
-void UnifiedSliderBubbleController::OnInputMuteChanged(bool mute_on) {
-  // We will display the mic mute toast only when the device has an
-  // internal/external microphone attached.
-  if (features::IsMicMuteNotificationsEnabled() &&
-      CrasAudioHandler::Get()->HasActiveInputDeviceForSimpleUsage()) {
-    ShowBubble(SLIDER_TYPE_MIC);
-  }
 }
 
 void UnifiedSliderBubbleController::OnDisplayBrightnessChanged(bool by_user) {

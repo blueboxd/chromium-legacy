@@ -4,13 +4,16 @@
 
 #include "chrome/browser/web_applications/os_integration/web_app_protocol_handler_registration.h"
 
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 
 namespace web_app {
 
-#if !BUILDFLAG(IS_WIN)
+// This block defines stub implementations of OS specific methods for
+// FileHandling. Currently, Windows and MacOSX have their own
+// implementations.
+#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_MAC)
 // Registers a protocol handler for the web app with the OS.
 void RegisterProtocolHandlersWithOs(
     const AppId& app_id,
@@ -18,7 +21,7 @@ void RegisterProtocolHandlersWithOs(
     Profile* profile,
     std::vector<apps::ProtocolHandlerInfo> protocol_handlers,
     ResultCallback callback) {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), Result::kOk));
 }
 
@@ -26,7 +29,7 @@ void RegisterProtocolHandlersWithOs(
 void UnregisterProtocolHandlersWithOs(const AppId& app_id,
                                       Profile* profile,
                                       ResultCallback callback) {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), Result::kOk));
 }
 #endif

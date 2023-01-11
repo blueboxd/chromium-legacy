@@ -118,7 +118,7 @@ void CastDetailedView::UpdateReceiverListFromCachedData() {
   // receivers.
   if (CastConfigController::Get()->AccessCodeCastingEnabled()) {
     add_access_code_device_ = AddScrollListItem(
-        vector_icons::kKeyboardIcon,
+        scroll_content(), vector_icons::kKeyboardIcon,
         l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_CAST_ACCESS_CODE_CAST_CONNECT));
   }
@@ -127,8 +127,15 @@ void CastDetailedView::UpdateReceiverListFromCachedData() {
   for (auto& it : sinks_and_routes_) {
     const CastSink& sink = it.second.sink;
     views::View* container = AddScrollListItem(
-        SinkIconTypeToIcon(sink.sink_icon_type), base::UTF8ToUTF16(sink.name));
+        scroll_content(), SinkIconTypeToIcon(sink.sink_icon_type),
+        base::UTF8ToUTF16(sink.name));
     view_to_sink_map_[container] = sink.id;
+  }
+
+  if (features::IsQsRevampEnabled()) {
+    // TODO(b/252872586): Implement an empty state of the cast detailed view.
+    // The following line shows a fake entry.
+    AddScrollListItem(scroll_content(), kSystemMenuCastGenericIcon, u"Device");
   }
 
   scroll_content()->SizeToPreferredSize();
@@ -145,7 +152,7 @@ void CastDetailedView::HandleViewClicked(views::View* view) {
   } else if (view == add_access_code_device_) {
     base::RecordAction(base::UserMetricsAction(
         "StatusArea_Cast_Detailed_Launch_AccesCastDialog"));
-    Shell::Get()->system_tray_model()->client()-> ShowAccessCodeCastingDialog(
+    Shell::Get()->system_tray_model()->client()->ShowAccessCodeCastingDialog(
         AccessCodeCastDialogOpenLocation::kSystemTrayCastMenu);
   }
 }

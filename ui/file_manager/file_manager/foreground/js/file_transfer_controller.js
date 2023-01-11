@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
-import {Command} from './ui/command.js';
 
 import {getDisallowedTransfers, startIOTask} from '../../common/js/api.js';
+import {queryRequiredElement} from '../../common/js/dom_utils.js';
 import {FileType} from '../../common/js/file_type.js';
 import {ProgressCenterItem, ProgressItemState, ProgressItemType} from '../../common/js/progress_center_common.js';
 import {getEnabledTrashVolumeURLs, isAllTrashEntries, TrashEntry} from '../../common/js/trash.js';
@@ -17,12 +17,12 @@ import {EntryLocation} from '../../externs/entry_location.js';
 import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import {VolumeInfo} from '../../externs/volume_info.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
-import {FilesToast} from '../elements/files_toast.js';
 
 import {DirectoryModel} from './directory_model.js';
 import {DropEffectAndLabel, DropEffectType} from './drop_effect_and_label.js';
 import {FileSelectionHandler} from './file_selection.js';
 import {MetadataModel} from './metadata/metadata_model.js';
+import {Command} from './ui/command.js';
 import {DirectoryItem, DirectoryTree} from './ui/directory_tree.js';
 import {DragSelector} from './ui/drag_selector.js';
 import {List} from './ui/list.js';
@@ -168,14 +168,14 @@ export class FileTransferController {
      * @const
      */
     this.copyCommand_ = /** @type {!Command} */ (
-        util.queryRequiredElement('command#copy', assert(this.document_.body)));
+        queryRequiredElement('command#copy', assert(this.document_.body)));
 
     /**
      * @private {!Command}
      * @const
      */
     this.cutCommand_ = /** @type {!Command} */ (
-        util.queryRequiredElement('command#cut', assert(this.document_.body)));
+        queryRequiredElement('command#cut', assert(this.document_.body)));
 
     /**
      * @private {DirectoryEntry|FilesAppDirEntry}
@@ -448,7 +448,8 @@ export class FileTransferController {
    * user.
    *
    * @param {!FileTransferController.PastePlan} pastePlan
-   * @return {!Promise<string>} Either "copy" or "move".
+   * @return {!Promise<string>} Either "copy", "move", "user-cancelled" or
+   *     "dlp-aborted".
    * @private
    */
   async executePasteIfAllowed_(pastePlan) {
@@ -457,10 +458,10 @@ export class FileTransferController {
     try {
       if (util.isDlpEnabled()) {
         const destinationDir =
-          /** @type{!DirectoryEntry} */ (
-              assert(util.unwrapEntry(pastePlan.destinationEntry)));
-        disallowedTransfers =
-            await getDisallowedTransfers(sourceEntries, destinationDir);
+            /** @type{!DirectoryEntry} */ (
+                assert(util.unwrapEntry(pastePlan.destinationEntry)));
+        disallowedTransfers = await getDisallowedTransfers(
+            sourceEntries, destinationDir, pastePlan.isMove);
       }
     } catch (error) {
       disallowedTransfers = [];
@@ -492,7 +493,7 @@ export class FileTransferController {
                   'https://support.google.com/chrome/a/?p=chromeos_datacontrols');
             },
           });
-      throw new Error('ABORT');
+      return 'dlp-blocked';
     }
     if (sourceEntries.length == 0) {
       // This can happen when copied files were deleted before pasting
@@ -509,7 +510,7 @@ export class FileTransferController {
     const userApproved =
         await this.confirmationCallback_(pastePlan.isMove, messages);
     if (!userApproved) {
-      throw new Error('ABORT');
+      return 'user-cancelled';
     }
     return this.executePaste(pastePlan);
   }
@@ -564,9 +565,8 @@ export class FileTransferController {
     const effectAllowed = clipboardData.effectAllowed !== 'uninitialized' ?
         clipboardData.effectAllowed :
         clipboardData.getData('fs/effectallowed');
-    const toMove = util.isDropEffectAllowed(effectAllowed, 'move') &&
-        (!util.isDropEffectAllowed(effectAllowed, 'copy') ||
-         opt_effect === 'move');
+    const toMove = isDropEffectAllowed(effectAllowed, 'move') &&
+        (!isDropEffectAllowed(effectAllowed, 'copy') || opt_effect === 'move');
 
     const destinationLocationInfo =
         this.volumeManager_.getLocationInfo(destinationEntry);
@@ -1522,8 +1522,8 @@ export class FileTransferController {
           DropEffectType.NONE;
       return new DropEffectAndLabel(effect, null);
     }
-    if (util.isDropEffectAllowed(event.dataTransfer.effectAllowed, 'move')) {
-      if (!util.isDropEffectAllowed(event.dataTransfer.effectAllowed, 'copy')) {
+    if (isDropEffectAllowed(event.dataTransfer.effectAllowed, 'move')) {
+      if (!isDropEffectAllowed(event.dataTransfer.effectAllowed, 'copy')) {
         return new DropEffectAndLabel(DropEffectType.MOVE, null);
       }
       // TODO(mtomasz): Use volumeId instead of comparing roots, as soon as
@@ -1849,4 +1849,18 @@ FileTransferController.URLsToEntriesWithAccess = urls => {
       .then(() => {
         return util.URLsToEntries(urls);
       });
+};
+
+
+/**
+ * Checks if the specified set of allowed effects contains the given effect.
+ * See: http://www.w3.org/TR/html5/editing.html#the-datatransfer-interface
+ *
+ * @param {string} effectAllowed The string denoting the set of allowed effects.
+ * @param {string} dropEffect The effect to be checked.
+ * @return {boolean} True if |dropEffect| is included in |effectAllowed|.
+ */
+const isDropEffectAllowed = (effectAllowed, dropEffect) => {
+  return effectAllowed === 'all' ||
+      effectAllowed.toLowerCase().indexOf(dropEffect) !== -1;
 };

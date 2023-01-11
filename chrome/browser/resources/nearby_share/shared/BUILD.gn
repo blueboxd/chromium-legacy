@@ -10,7 +10,7 @@ import("//ui/webui/resources/tools/generate_grd.gni")
 assert(is_chromeos, "Nearby Share is CrOS only")
 
 os_settings_dir = "$root_gen_dir/chrome/browser/resources/settings/chromeos"
-preprocess_folder = "preprocessed/shared"
+preprocess_folder = "tsc/shared"
 preprocess_gen_v3_manifest = "preprocessed_gen_v3_manifest.json"
 preprocess_v3_manifest = "preprocessed_v3_manifest.json"
 
@@ -218,6 +218,7 @@ js_library("nearby_visibility_page") {
 
 js_library("nearby_metrics_logger") {
   deps = []
+  externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
 js_library("types") {

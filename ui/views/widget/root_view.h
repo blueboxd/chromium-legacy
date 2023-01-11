@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "ui/events/event_processor.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/focus_search.h"
@@ -111,7 +110,10 @@ class VIEWS_EXPORT RootView : public View,
   ui::EventTarget* GetRootForEvent(ui::Event* event) override;
   ui::EventTargeter* GetDefaultEventTargeter() override;
   void OnEventProcessingStarted(ui::Event* event) override;
-  void OnEventProcessingFinished(ui::Event* event) override;
+  void OnEventProcessingFinished(
+      ui::Event* event,
+      ui::EventTarget* target,
+      const ui::EventDispatchDetails& details) override;
 
   // View:
   const Widget* GetWidget() const override;

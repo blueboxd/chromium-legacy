@@ -105,12 +105,6 @@ interface HTMLInputElement : HTMLElement
 # File System Access API not supported on Android, crbug.com/1011535
 interface DataTransferItem
     method getAsFileSystemHandle
-interface StorageManager : EventTarget
-    method getDirectory
-interface FileSystemHandle
-interface FileSystemDirectoryHandle : FileSystemHandle
-interface FileSystemFileHandle : FileSystemHandle
-interface FileSystemWritableFileStream : WritableStream
 
 interface MediaDevices : EventTarget
     # MediaDevices devicechange disabled on Android, crbug.com/671461
@@ -127,6 +121,7 @@ interface MediaStreamTrack : EventTarget
   method getCaptureHandle
 interface BrowserCaptureMediaStreamTrack : MediaStreamTrack
 interface CropTarget
+interface CaptureController
 
 # WebAuthN API should not be exposed in WebView, crbug.com/828168
 interface AuthenticatorAssertionResponse : AuthenticatorResponse
@@ -264,19 +259,13 @@ interface LaunchQueue
 # crbug.com/1326898
 interface FontData
 
-# Event.path is disabled in pre-Beta channels to help the deprecation.
-interface Event
-    getter path                        # crbug.com/1277431
-
-# The Pop-Up API (crbug.com/1307772) is enabled by the fieldtrial_testing_config,
+# The Popover API (crbug.com/1307772) is enabled by the fieldtrial_testing_config,
 # but only for desktop and Android platforms. It is not shipped to stable yet,
 # on any platform.
-interface Element : Node
-	  getter popUp
-	  method hidePopUp
+interface HTMLElement : Element
+	  method hidePopover
 	  setter defaultOpen
-	  method showPopUp
-	  setter popUp
+	  method showPopover
 	  getter defaultOpen
 
 # FedCM API is not implemented on WebView. crbug.com/1340252

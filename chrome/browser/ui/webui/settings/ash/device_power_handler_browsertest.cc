@@ -77,6 +77,7 @@ class PowerHandlerTest : public InProcessBrowserTest {
     bool lid_closed_controlled = false;
     bool has_lid = true;
     bool adaptive_charging = true;
+    bool adaptive_charging_managed = false;
   };
 
   PowerHandlerTest() = default;
@@ -136,31 +137,30 @@ class PowerHandlerTest : public InProcessBrowserTest {
   // Returns a string for the given |settings|. Used to verify expected
   // settings are sent to the UI.
   std::string ToString(const DevicePowerSettings& settings) {
-    base::DictionaryValue dict;
-    base::Value* list = dict.SetKey(PowerHandler::kPossibleAcIdleBehaviorsKey,
-                                    base::Value(base::Value::Type::LIST));
+    base::Value::Dict dict;
+    base::Value::List* list =
+        dict.EnsureList(PowerHandler::kPossibleAcIdleBehaviorsKey);
     for (auto idle_behavior : settings.possible_ac_behaviors)
       list->Append(static_cast<int>(idle_behavior));
 
-    list = dict.SetKey(PowerHandler::kPossibleBatteryIdleBehaviorsKey,
-                       base::Value(base::Value::Type::LIST));
+    list = dict.EnsureList(PowerHandler::kPossibleBatteryIdleBehaviorsKey);
     for (auto idle_behavior : settings.possible_battery_behaviors)
       list->Append(static_cast<int>(idle_behavior));
 
-    dict.SetIntKey(PowerHandler::kCurrentAcIdleBehaviorKey,
-                   static_cast<int>(settings.current_ac_behavior));
-    dict.SetIntKey(PowerHandler::kCurrentBatteryIdleBehaviorKey,
-                   static_cast<int>(settings.current_battery_behavior));
-    dict.SetBoolKey(PowerHandler::kAcIdleManagedKey, settings.ac_idle_managed);
-    dict.SetBoolKey(PowerHandler::kBatteryIdleManagedKey,
-                    settings.battery_idle_managed);
-    dict.SetIntKey(PowerHandler::kLidClosedBehaviorKey,
-                   settings.lid_closed_behavior);
-    dict.SetBoolKey(PowerHandler::kLidClosedControlledKey,
-                    settings.lid_closed_controlled);
-    dict.SetBoolKey(PowerHandler::kHasLidKey, settings.has_lid);
-    dict.SetBoolKey(PowerHandler::kAdaptiveChargingKey,
-                    settings.adaptive_charging);
+    dict.Set(PowerHandler::kCurrentAcIdleBehaviorKey,
+             static_cast<int>(settings.current_ac_behavior));
+    dict.Set(PowerHandler::kCurrentBatteryIdleBehaviorKey,
+             static_cast<int>(settings.current_battery_behavior));
+    dict.Set(PowerHandler::kAcIdleManagedKey, settings.ac_idle_managed);
+    dict.Set(PowerHandler::kBatteryIdleManagedKey,
+             settings.battery_idle_managed);
+    dict.Set(PowerHandler::kLidClosedBehaviorKey, settings.lid_closed_behavior);
+    dict.Set(PowerHandler::kLidClosedControlledKey,
+             settings.lid_closed_controlled);
+    dict.Set(PowerHandler::kHasLidKey, settings.has_lid);
+    dict.Set(PowerHandler::kAdaptiveChargingKey, settings.adaptive_charging);
+    dict.Set(PowerHandler::kAdaptiveChargingManagedKey,
+             settings.adaptive_charging_managed);
     std::string out;
     EXPECT_TRUE(base::JSONWriter::Write(dict, &out));
     return out;
@@ -243,6 +243,13 @@ IN_PROC_BROWSER_TEST_F(PowerHandlerTest, SendSettingsForControlledPrefs) {
   SetPolicyForPolicyKey(&policy_map, policy::key::kLidCloseAction,
                         base::Value(PowerPolicyController::ACTION_SUSPEND));
   settings.lid_closed_controlled = true;
+  EXPECT_EQ(ToString(settings), GetLastSettingsChangedMessage());
+
+  // Ditto for making the adaptive charging pref managed.
+  SetPolicyForPolicyKey(&policy_map,
+                        policy::key::kDevicePowerAdaptiveChargingEnabled,
+                        base::Value(true));
+  settings.adaptive_charging_managed = true;
   EXPECT_EQ(ToString(settings), GetLastSettingsChangedMessage());
 }
 

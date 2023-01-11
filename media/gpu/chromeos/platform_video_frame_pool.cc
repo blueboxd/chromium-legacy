@@ -116,7 +116,7 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
     CroStatus::Or<scoped_refptr<VideoFrame>> new_frame = create_frame_cb_.Run(
         format, coded_size, gfx::Rect(GetRectSizeFromOrigin(visible_rect_)),
         coded_size, use_protected_, *use_linear_buffers_, base::TimeDelta());
-    if (new_frame.has_error()) {
+    if (!new_frame.has_value()) {
       // TODO(crbug.com/c/1103510) Push the error up instead of dropping it.
       return nullptr;
     }
@@ -212,7 +212,7 @@ CroStatus::Or<GpuBufferLayout> PlatformVideoFramePool::Initialize(
     auto maybe_frame = create_frame_cb_.Run(
         format, coded_size, visible_rect, natural_size, use_protected,
         *use_linear_buffers_, base::TimeDelta());
-    if (maybe_frame.has_error())
+    if (!maybe_frame.has_value())
       return std::move(maybe_frame).error();
     auto frame = std::move(maybe_frame).value();
     frame_layout_ = GpuBufferLayout::Create(fourcc, frame->coded_size(),
@@ -286,6 +286,12 @@ void PlatformVideoFramePool::ReleaseAllFrames() {
   frames_in_use_.clear();
   weak_this_factory_.InvalidateWeakPtrs();
   weak_this_ = weak_this_factory_.GetWeakPtr();
+}
+
+absl::optional<GpuBufferLayout> PlatformVideoFramePool::GetGpuBufferLayout() {
+  DCHECK(parent_task_runner_->RunsTasksInCurrentSequence());
+  base::AutoLock auto_lock(lock_);
+  return frame_layout_;
 }
 
 // static

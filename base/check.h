@@ -51,11 +51,6 @@ class VoidifyStream {
   void operator&(std::ostream&) {}
 };
 
-// Helper macro which avoids evaluating the arguents to a stream if the
-// condition is false.
-#define LAZY_CHECK_STREAM(stream, condition) \
-  !(condition) ? (void)0 : ::logging::VoidifyStream() & (stream)
-
 // Macro which uses but does not evaluate expr and any stream parameters.
 #define EAT_CHECK_STREAM_PARAMS(expr) \
   true ? (void)0                      \
@@ -93,18 +88,44 @@ class BASE_EXPORT CheckError {
   CheckError(const CheckError&) = delete;
   CheckError& operator=(const CheckError&) = delete;
 
+  template <typename T>
+  std::ostream& operator<<(T&& streamed_type) {
+    return stream() << streamed_type;
+  }
+
  private:
   explicit CheckError(LogMessage* log_message);
 
   LogMessage* const log_message_;
 };
 
-#define CHECK_FUNCTION_IMPL(check_function, condition)                       \
-  LAZY_CHECK_STREAM(check_function(__FILE__, __LINE__, #condition).stream(), \
-                    !ANALYZER_ASSUME_TRUE(condition))
+// The 'switch' is used to prevent the 'else' from being ambiguous when the
+// macro is used in an 'if' clause such as:
+// if (a == 1)
+//   CHECK(Foo());
+//
+// TODO(crbug.com/1380930): Remove the const bool when the blink-gc plugin has
+// been updated to accept `if (LIKELY(!field_))` as well as `if (!field_)`.
+#define CHECK_FUNCTION_IMPL(check_failure_invocation, condition)   \
+  switch (0)                                                       \
+  case 0:                                                          \
+  default:                                                         \
+    if (const bool checky_bool_lol = static_cast<bool>(condition); \
+        LIKELY(ANALYZER_ASSUME_TRUE(checky_bool_lol)))             \
+      ;                                                            \
+    else                                                           \
+      check_failure_invocation
 
-#if defined(OFFICIAL_BUILD) && defined(NDEBUG) && \
-    !BUILDFLAG(DCHECK_IS_CONFIGURABLE)
+#if defined(OFFICIAL_BUILD) && !defined(NDEBUG)
+#error "Debug builds are not expected to be optimized as official builds."
+#endif  // defined(OFFICIAL_BUILD) && !defined(NDEBUG)
+
+#if defined(OFFICIAL_BUILD) && !DCHECK_IS_ON()
+// Note that this uses IMMEDIATE_CRASH_ALWAYS_INLINE to force-inline in debug
+// mode as well. See LoggingTest.CheckCausesDistinctBreakpoints.
+[[noreturn]] IMMEDIATE_CRASH_ALWAYS_INLINE void CheckFailure() {
+  base::ImmediateCrash();
+}
 
 // Discard log strings to reduce code bloat.
 //
@@ -112,33 +133,40 @@ class BASE_EXPORT CheckError {
 // calling an out-of-line function instead of a noreturn inline macro prevents
 // compiler optimizations.
 #define CHECK(condition) \
-  UNLIKELY(!(condition)) ? IMMEDIATE_CRASH() : EAT_CHECK_STREAM_PARAMS()
+  UNLIKELY(!(condition)) ? logging::CheckFailure() : EAT_CHECK_STREAM_PARAMS()
 
 #define CHECK_WILL_STREAM() false
 
-#define PCHECK(condition)                                         \
-  LAZY_CHECK_STREAM(                                              \
-      ::logging::CheckError::PCheck(__FILE__, __LINE__).stream(), \
-      UNLIKELY(!(condition)))
+// Strip the conditional string from official builds.
+#define PCHECK(condition)                                                \
+  CHECK_FUNCTION_IMPL(::logging::CheckError::PCheck(__FILE__, __LINE__), \
+                      condition)
 
 #else
 
 #define CHECK_WILL_STREAM() true
 
 #define CHECK(condition) \
-  CHECK_FUNCTION_IMPL(::logging::CheckError::Check, condition)
+  CHECK_FUNCTION_IMPL(   \
+      ::logging::CheckError::Check(__FILE__, __LINE__, #condition), condition)
 
-#define PCHECK(condition) \
-  CHECK_FUNCTION_IMPL(::logging::CheckError::PCheck, condition)
+#define PCHECK(condition)                                            \
+  CHECK_FUNCTION_IMPL(                                               \
+      ::logging::CheckError::PCheck(__FILE__, __LINE__, #condition), \
+      condition)
 
 #endif
 
 #if DCHECK_IS_ON()
 
-#define DCHECK(condition) \
-  CHECK_FUNCTION_IMPL(::logging::CheckError::DCheck, condition)
-#define DPCHECK(condition) \
-  CHECK_FUNCTION_IMPL(::logging::CheckError::DPCheck, condition)
+#define DCHECK(condition)                                            \
+  CHECK_FUNCTION_IMPL(                                               \
+      ::logging::CheckError::DCheck(__FILE__, __LINE__, #condition), \
+      condition)
+#define DPCHECK(condition)                                            \
+  CHECK_FUNCTION_IMPL(                                                \
+      ::logging::CheckError::DPCheck(__FILE__, __LINE__, #condition), \
+      condition)
 
 #else
 

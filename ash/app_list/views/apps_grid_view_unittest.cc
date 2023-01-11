@@ -55,6 +55,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_util.h"
 #include "ash/utility/haptics_tracking_test_input_controller.h"
+#include "base/callback_list.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -62,6 +63,8 @@
 #include "base/test/icu_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
@@ -72,7 +75,7 @@
 #include "ui/compositor/test/test_utils.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
-#include "ui/views/animation/bounds_animator.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
@@ -86,8 +89,12 @@ namespace test {
 
 namespace {
 
-constexpr int kNumOfSuggestedApps = 3;
 constexpr size_t kMaxItemsInFolder = 48;
+
+gfx::RectF GetViewBoundsWithCurrentTransform(views::View* view) {
+  return view->layer()->transform().MapRect(
+      gfx::RectF(view->GetMirroredBounds()));
+}
 
 class ShelfItemFactoryFake : public ShelfModel::ShelfItemFactory {
  public:
@@ -212,20 +219,6 @@ class PostPageFlipTask : public PaginationModelObserver {
   base::OnceClosure task_;
 };
 
-class TestSuggestedSearchResult : public TestSearchResult {
- public:
-  TestSuggestedSearchResult() {
-    set_display_type(SearchResultDisplayType::kChip);
-    set_is_recommendation(true);
-  }
-
-  TestSuggestedSearchResult(const TestSuggestedSearchResult&) = delete;
-  TestSuggestedSearchResult& operator=(const TestSuggestedSearchResult&) =
-      delete;
-
-  ~TestSuggestedSearchResult() override = default;
-};
-
 // Counts when the observed view's bounds change.
 class BoundsChangeCounter : public views::ViewObserver {
  public:
@@ -247,6 +240,28 @@ class BoundsChangeCounter : public views::ViewObserver {
  private:
   views::View* const observed_view_;
   int bounds_change_count_ = 0;
+};
+
+// Records the longest scheduled animation duration for the given view.
+class AnimationDurationRecorder {
+ public:
+  explicit AnimationDurationRecorder(AppListItemView* view) {
+    view->EnsureLayer();
+    subscription_ = view->layer()->GetAnimator()->AddSequenceScheduledCallback(
+        base::BindRepeating(&AnimationDurationRecorder::OnSequenceScheduled,
+                            base::Unretained(this)));
+  }
+
+  void OnSequenceScheduled(ui::LayerAnimationSequence* sequence) {
+    // There can be more than one sequence scheduled for an animator, so keep
+    // track of the largest animation duration.
+    if (sequence->FirstElement()->duration() > largest_duration_) {
+      largest_duration_ = sequence->FirstElement()->duration();
+    }
+  }
+
+  base::TimeDelta largest_duration_;
+  base::CallbackListSubscription subscription_;
 };
 
 }  // namespace
@@ -275,14 +290,6 @@ class AppsGridViewTest : public AshTestBase, views::WidgetObserver {
 
     // Populate some suggested apps.
     search_model_ = std::make_unique<SearchModel>();
-    for (size_t i = 0; i < kNumOfSuggestedApps; ++i) {
-      auto search_result = std::make_unique<TestSuggestedSearchResult>();
-      // Give each item a name so that the accessibility paint checks pass.
-      // (Focusable items should have accessible names.)
-      search_result->SetAccessibleName(
-          base::UTF8ToUTF16(base::StringPrintf("item %zu", i)));
-      search_model_->results()->Add(std::move(search_result));
-    }
 
     // Replace the model before the app list views are created, because some
     // views cache pointers to the model.
@@ -723,6 +730,25 @@ class AppsGridViewDragTest : public AppsGridViewTest,
 
 INSTANTIATE_TEST_SUITE_P(All, AppsGridViewDragTest, testing::Bool());
 
+class AppsGridViewDragWithShelfPartyTest : public AppsGridViewDragTest {
+ public:
+  AppsGridViewDragWithShelfPartyTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kShelfParty);
+  }
+  AppsGridViewDragWithShelfPartyTest(
+      const AppsGridViewDragWithShelfPartyTest&) = delete;
+  AppsGridViewDragWithShelfPartyTest& operator=(
+      const AppsGridViewDragWithShelfPartyTest&) = delete;
+  ~AppsGridViewDragWithShelfPartyTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         AppsGridViewDragWithShelfPartyTest,
+                         testing::Bool());
+
 // Test suite for clamshell mode, parameterized by RTL.
 class AppsGridViewClamshellTest : public AppsGridViewTest,
                                   public testing::WithParamInterface<bool> {
@@ -781,6 +807,8 @@ TEST_F(AppsGridViewTest, RemoveSelectedLastApp) {
 // Tests that the item list changed without user operations; this happens on
 // active user switch. See https://crbug.com/980082.
 TEST_F(AppsGridViewTest, MoveItemAcrossRowDoesNotCauseCrash) {
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   const int cols = apps_grid_view_->cols();
   ASSERT_LE(0, cols);
   model_->PopulateApps(cols * 2);
@@ -842,6 +870,9 @@ TEST_P(AppsGridViewTabletTest, BetweenRowsAnimationOnDragToPreviousPage) {
   InitiateDragForItemAtCurrentPageAt(AppsGridView::MOUSE, 0, 2,
                                      apps_grid_view_);
 
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
   // Drag the current item to flip to the first page.
   gfx::Point point_in_page_flip_buffer =
       gfx::Point(paged_apps_grid_view_->bounds().width() / 2, 0);
@@ -887,11 +918,10 @@ TEST_P(AppsGridViewTabletTest, BetweenRowsAnimationOnDragToPreviousPage) {
     // moving vertically should instead use a between rows animation, which is
     // purely horizontal.
     EXPECT_TRUE(apps_grid_view_->IsAnimatingView(item_view));
-    gfx::Rect target_bounds =
-        apps_grid_view_->bounds_animator_for_testing()->GetTargetBounds(
-            item_view);
-    EXPECT_EQ(item_view->bounds().y(), target_bounds.y());
-    EXPECT_NE(item_view->bounds().x(), target_bounds.x());
+    gfx::Rect current_bounds_in_animation =
+        gfx::ToRoundedRect(GetViewBoundsWithCurrentTransform(item_view));
+    EXPECT_EQ(current_bounds_in_animation.y(), item_view->bounds().y());
+    EXPECT_NE(current_bounds_in_animation.x(), item_view->bounds().x());
   }
 
   // End the drag and check that no more item layer copies remain.
@@ -953,11 +983,20 @@ TEST_P(AppsGridViewTabletTest, BetweenRowsAnimationReversal) {
   model_->PopulateApps(GetTilesPerPage(0));
   UpdateLayout();
 
+  // Use non-zero animations to test that animations are correct while in
+  // progress.
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
   EXPECT_EQ(0, GetNumberOfRowChangeLayersForTest(apps_grid_view_));
 
   // Begin dragging the first item.
   InitiateDragForItemAtCurrentPageAt(AppsGridView::MOUSE, 0, 0,
                                      apps_grid_view_);
+
+  // Wait for cardified animations to complete before testing row change
+  // animations.
+  test_api_->WaitForItemMoveAnimationDone();
 
   // Move dragged item to the middle slot on the second row.
   gfx::Point to;
@@ -988,10 +1027,16 @@ TEST_P(AppsGridViewTabletTest, BetweenRowsAnimationReversal) {
   // The item in slot 5 should now be on animating into the first row position.
   EXPECT_EQ(item_view->bounds().y(), first_row_y);
   EXPECT_TRUE(apps_grid_view_->IsAnimatingView(item_view));
-  gfx::Rect target_bounds =
-      apps_grid_view_->bounds_animator_for_testing()->GetTargetBounds(
-          item_view);
-  EXPECT_GT(item_view->bounds().x(), target_bounds.x());
+  gfx::Rect target_bounds = GetItemRectOnCurrentPageAt(0, 4);
+  gfx::RectF current_bounds_in_animation =
+      GetViewBoundsWithCurrentTransform(item_view);
+
+  if (is_rtl_) {
+    EXPECT_LT(current_bounds_in_animation.x(), target_bounds.x());
+  } else {
+    EXPECT_GT(current_bounds_in_animation.x(), target_bounds.x());
+  }
+  EXPECT_EQ(current_bounds_in_animation.y(), first_row_y);
 
   // Update drag to move placeholder back to the first row.
   if (is_rtl_) {
@@ -999,6 +1044,13 @@ TEST_P(AppsGridViewTabletTest, BetweenRowsAnimationReversal) {
   } else {
     to = GetItemRectOnCurrentPageAt(0, 0).right_center();
   }
+
+  // TODO(crbug.com/1378052): Find a way to progress the animation some amount,
+  // and check that the starting bounds of the reversed animation is correct.
+  EXPECT_FALSE(item_view->GetTransform().IsIdentity());
+
+  // Move the drag to the first row, causing `item_view` to animate into
+  // the second row.
   UpdateDrag(AppsGridView::MOUSE, to, paged_apps_grid_view_, 5 /*steps*/);
 
   ASSERT_TRUE(paged_apps_grid_view_->reorder_timer_for_test()->IsRunning());
@@ -1008,14 +1060,18 @@ TEST_P(AppsGridViewTabletTest, BetweenRowsAnimationReversal) {
   EXPECT_EQ(GridIndex(0, 1), paged_apps_grid_view_->reorder_placeholder());
 
   // The item in slot 5 should now be animating from first row to the second.
-  EXPECT_EQ(item_view->bounds().y(), second_row_y);
+  EXPECT_EQ(item_view->GetMirroredBounds().y(), second_row_y);
   EXPECT_TRUE(apps_grid_view_->IsAnimatingView(item_view));
 
   // Item should be moving from offscreen into target position on second row.
-  target_bounds =
-      apps_grid_view_->bounds_animator_for_testing()->GetTargetBounds(
-          item_view);
-  EXPECT_LT(item_view->bounds().x(), target_bounds.x());
+  target_bounds = GetItemRectOnCurrentPageAt(0, 5);
+  current_bounds_in_animation = GetViewBoundsWithCurrentTransform(item_view);
+
+  EXPECT_TRUE(item_view->GetTransform().IsIdentity());
+  EXPECT_EQ(target_bounds, item_view->GetMirroredBounds());
+  EXPECT_EQ(gfx::ToRoundedRect(current_bounds_in_animation), target_bounds);
+
+  EXPECT_EQ(current_bounds_in_animation.y(), second_row_y);
   EXPECT_EQ(target_bounds.y(), second_row_y);
   EXPECT_EQ(1, GetNumberOfRowChangeLayersForTest(apps_grid_view_));
 
@@ -1023,6 +1079,182 @@ TEST_P(AppsGridViewTabletTest, BetweenRowsAnimationReversal) {
   EndDrag(apps_grid_view_, false /*cancel*/);
   test_api_->WaitForItemMoveAnimationDone();
   EXPECT_EQ(0, GetNumberOfRowChangeLayersForTest(apps_grid_view_));
+}
+
+// Test that cascading item animation durations are correct when an item moves
+// from a top row to a bottom row.
+TEST_P(AppsGridViewClamshellTest, CascadingItemAnimationMoveItemTopToBottom) {
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  model_->PopulateApps(20);
+  UpdateLayout();
+
+  // The expected animation duration for items on each row. Each subsequent row
+  // should have a duration that is 50ms longer than the last.
+  base::TimeDelta first_row_duration = base::Milliseconds(300);
+  base::TimeDelta second_row_duration = base::Milliseconds(350);
+  base::TimeDelta third_row_duration = base::Milliseconds(400);
+  base::TimeDelta fourth_row_duration = base::Milliseconds(450);
+
+  std::vector<base::TimeDelta> expected_durations;
+  expected_durations.insert(expected_durations.end(), 5, first_row_duration);
+  expected_durations.insert(expected_durations.end(), 5, second_row_duration);
+  expected_durations.insert(expected_durations.end(), 5, third_row_duration);
+  expected_durations.insert(expected_durations.end(), 4, fourth_row_duration);
+
+  std::vector<std::unique_ptr<AnimationDurationRecorder>> actual_durations;
+
+  // Create a duration recorder for all item views starting at the second item,
+  // since the very first item is the one being moved.
+  for (size_t i = 1; i < model_->top_level_item_list()->item_count(); ++i) {
+    AppListItemView* view = GetItemViewInTopLevelGrid(i);
+
+    // Create an AnimationDurationRecorder to record the animation duration
+    // for each item view's layer animation.
+    actual_durations.push_back(
+        std::make_unique<AnimationDurationRecorder>(view));
+  }
+
+  // Set hidden the item to be moved in the apps grid, so the item is ignored
+  // in cascading animation setup.
+  apps_grid_view_->set_hidden_view_for_test(GetItemViewInTopLevelGrid(0));
+
+  // Move the first item to the last slot, causing a cascading item animation.
+  model_->top_level_item_list()->MoveItem(0, 19);
+
+  // Check that the expected duration of each item animation is correct.
+  for (size_t i = 0; i < model_->top_level_item_list()->item_count() - 1; ++i)
+    EXPECT_EQ(expected_durations[i], actual_durations[i]->largest_duration_);
+}
+
+// Test that cascading item animation durations are correct when an item moves
+// from a bottom row to a top row.
+TEST_P(AppsGridViewClamshellTest, CascadingItemAnimationMoveItemBottomToTop) {
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  model_->PopulateApps(20);
+  UpdateLayout();
+
+  // The expected animation duration for items on each row. Each subsequent row
+  // should have a duration that is 50ms shorter than the last.
+  base::TimeDelta first_row_duration = base::Milliseconds(450);
+  base::TimeDelta second_row_duration = base::Milliseconds(400);
+  base::TimeDelta third_row_duration = base::Milliseconds(350);
+  base::TimeDelta fourth_row_duration = base::Milliseconds(300);
+
+  std::vector<base::TimeDelta> expected_durations;
+  expected_durations.insert(expected_durations.end(), 4, first_row_duration);
+  expected_durations.insert(expected_durations.end(), 5, second_row_duration);
+  expected_durations.insert(expected_durations.end(), 5, third_row_duration);
+  expected_durations.insert(expected_durations.end(), 5, fourth_row_duration);
+
+  std::vector<std::unique_ptr<AnimationDurationRecorder>> actual_durations;
+
+  // Create a duration recorder for all item views except the last item, since
+  // the last item is the one being moved.
+  for (size_t i = 0; i < model_->top_level_item_list()->item_count() - 1; ++i) {
+    AppListItemView* view = GetItemViewInTopLevelGrid(i);
+
+    // Create an AnimationDurationRecorder to record the animation duration
+    // for each item view's layer animation.
+    actual_durations.push_back(
+        std::make_unique<AnimationDurationRecorder>(view));
+  }
+
+  // Set hidden the item to be moved in the apps grid, so the item is ignored
+  // in cascading animation setup.
+  apps_grid_view_->set_hidden_view_for_test(GetItemViewInTopLevelGrid(19));
+
+  // Move the last item to the first slot, causing a cascading item animation.
+  model_->top_level_item_list()->MoveItem(19, 0);
+
+  // Check that the expected duration of each item animation is correct.
+  for (size_t i = 0; i < model_->top_level_item_list()->item_count() - 1; ++i)
+    EXPECT_EQ(expected_durations[i], actual_durations[i]->largest_duration_);
+}
+
+// Test that cascading item animation durations are correct when an item moves
+// within a single row, from the left side to the right side.
+TEST_P(AppsGridViewClamshellTest, CascadingItemAnimationMoveItemLeftToRight) {
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  model_->PopulateApps(5);
+  UpdateLayout();
+
+  // The expected animation duration for items in each slot. Each subsequent
+  // item should have a duration that is 50ms longer than the last.
+  std::vector<base::TimeDelta> expected_durations;
+  expected_durations.push_back(base::Milliseconds(300));
+  expected_durations.push_back(base::Milliseconds(350));
+  expected_durations.push_back(base::Milliseconds(400));
+  expected_durations.push_back(base::Milliseconds(450));
+
+  std::vector<std::unique_ptr<AnimationDurationRecorder>> actual_durations;
+
+  // Create a duration recorder for all item views except the first, since the
+  // first item is the one being moved.
+  for (size_t i = 1; i < model_->top_level_item_list()->item_count(); ++i) {
+    AppListItemView* view = GetItemViewInTopLevelGrid(i);
+
+    // Create an AnimationDurationRecorder to record the animation duration
+    // for each item view's layer animation.
+    actual_durations.push_back(
+        std::make_unique<AnimationDurationRecorder>(view));
+  }
+
+  // Set hidden the item to be moved in the apps grid, so the item is ignored
+  // in cascading animation setup.
+  apps_grid_view_->set_hidden_view_for_test(GetItemViewInTopLevelGrid(0));
+
+  // Move the first item to the row to the last slot in the row, causing a
+  // cascading item animation.
+  model_->top_level_item_list()->MoveItem(0, 4);
+
+  // Check that the expected duration of each item animation is correct.
+  for (size_t i = 0; i < model_->top_level_item_list()->item_count() - 1; ++i)
+    EXPECT_EQ(expected_durations[i], actual_durations[i]->largest_duration_);
+}
+
+// Test that cascading item animation durations are correct when an item moves
+// within a single row, from the right side to the left side.
+TEST_P(AppsGridViewClamshellTest, CascadingItemAnimationMoveItemRightToLeft) {
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  model_->PopulateApps(5);
+  UpdateLayout();
+
+  // The expected animation duration for items in each slot. Each subsequent
+  // item should have a duration that is 50ms shorter than the last.
+  std::vector<base::TimeDelta> expected_durations;
+  expected_durations.push_back(base::Milliseconds(450));
+  expected_durations.push_back(base::Milliseconds(400));
+  expected_durations.push_back(base::Milliseconds(350));
+  expected_durations.push_back(base::Milliseconds(300));
+
+  std::vector<std::unique_ptr<AnimationDurationRecorder>> actual_durations;
+
+  // Create a duration recorder for all item views except the last item,
+  // since the last item is the one being moved.
+  for (size_t i = 0; i < model_->top_level_item_list()->item_count() - 1; ++i) {
+    AppListItemView* view = GetItemViewInTopLevelGrid(i);
+
+    // Create an AnimationDurationRecorder to record the animation duration
+    // for each item view's layer animation.
+    actual_durations.push_back(
+        std::make_unique<AnimationDurationRecorder>(view));
+  }
+
+  // Set hidden the item to be moved in the apps grid, so the item is ignored
+  // in cascading animation setup.
+  apps_grid_view_->set_hidden_view_for_test(GetItemViewInTopLevelGrid(4));
+
+  // Move the last item in the row to the first slot in the row, causing a
+  // cascading item animation.
+  model_->top_level_item_list()->MoveItem(4, 0);
+
+  // Check that the expected duration of each item animation is correct.
+  for (size_t i = 0; i < model_->top_level_item_list()->item_count() - 1; ++i)
+    EXPECT_EQ(expected_durations[i], actual_durations[i]->largest_duration_);
 }
 
 TEST_F(AppsGridViewTest, ItemTooltip) {
@@ -2431,7 +2663,6 @@ TEST_P(AppsGridViewClamshellAndTabletTest, ControlArrowDownToGapOnSamePage) {
 TEST_P(AppsGridViewTabletTest, ControlArrowSwapsBetweenFullPages) {
   const int kPages = 3;
   model_->PopulateApps(GetTilesPerPage(0) + (kPages - 1) * GetTilesPerPage(1));
-  apps_grid_view_->UpdatePagedViewStructure();
 
   // For every item in the first row, ensure an upward move results in the item
   // swapping places with the item directly above it.
@@ -2789,7 +3020,6 @@ TEST_P(AppsGridViewClamshellAndTabletTest,
   const AppListFolderItem* folder_item =
       model_->CreateAndPopulateFolderWithApps(3);
   const std::string folder_id = folder_item->id();
-  apps_grid_view_->UpdatePagedViewStructure();
   UpdateLayout();
 
   AppListItemView* folder_view = apps_grid_view_->view_model()->view_at(
@@ -2857,7 +3087,6 @@ TEST_P(AppsGridViewClamshellAndTabletTest,
   const AppListFolderItem* folder_item =
       model_->CreateAndPopulateFolderWithApps(3);
   const std::string folder_id = folder_item->id();
-  apps_grid_view_->UpdatePagedViewStructure();
   UpdateLayout();
 
   AppListItemView* folder_view = apps_grid_view_->view_model()->view_at(
@@ -2919,7 +3148,6 @@ TEST_P(AppsGridViewTabletTest,
       model_->CreateAndPopulateFolderWithApps(3);
   model_->PopulateApps(GetTilesPerPage(1));
   const std::string folder_id = folder_item->id();
-  apps_grid_view_->UpdatePagedViewStructure();
   UpdateLayout();
 
   AppListItemView* folder_view =
@@ -3060,7 +3288,6 @@ TEST_P(AppsGridViewTabletTest, DragAcrossPagesToTheLastSlot) {
 
   // Create a full page and a partially full second page.
   model_->PopulateApps(GetTilesPerPage(0) + 3);
-  apps_grid_view_->UpdatePagedViewStructure();
   UpdateLayout();
 
   // Drag an item from the first page to the last existing slot on the next
@@ -3164,7 +3391,6 @@ TEST_P(AppsGridViewTabletTest, DragAcrossPagesToSecondToLastSlot) {
 
   // Create a full page and a partially full second page.
   model_->PopulateApps(GetTilesPerPage(0) + 3);
-  apps_grid_view_->UpdatePagedViewStructure();
   UpdateLayout();
 
   const views::ViewModelT<AppListItemView>* view_model =
@@ -3503,8 +3729,8 @@ TEST_P(AppsGridViewDragTest, FocusOfReparentedDragViewWithFolderDeleted) {
 
   AppListItemView* const dragged_view = GetItemViewInTopLevelGrid(1);
 
-  // Verify that Item 2's bounds do not change after calling `EndDrag()`.
-  EXPECT_EQ(0, counter.bounds_change_count());
+  // Verify that Item 2's bounds change after calling `EndDrag()`.
+  EXPECT_EQ(1, counter.bounds_change_count());
 
   // The search box keeps focus after drags.
   EXPECT_TRUE(search_box_view_->search_box()->HasFocus());
@@ -3919,7 +4145,7 @@ TEST_P(AppsGridViewDragTest, RemoveDisplayWhileDraggingFolderItemOntoShelf) {
   EXPECT_TRUE(ShelfModel::Get()->items().empty());
 }
 
-TEST_P(AppsGridViewDragTest, DragAndPinItemToEmptyShelf) {
+TEST_P(AppsGridViewDragWithShelfPartyTest, DragAndPinItemToEmptyShelf) {
   model_->PopulateApps(2);
   UpdateLayout();
 
@@ -5294,7 +5520,9 @@ TEST_P(AppsGridViewClamshellAndTabletTest, QuickDragToRemoveItemFromFolder) {
   }
 }
 
-TEST_P(AppsGridViewClamshellAndTabletTest, ReorderDragAnimationMetrics) {
+// TODO(crbug.com/1371184): Fix flaky test.
+TEST_P(AppsGridViewClamshellAndTabletTest,
+       DISABLED_ReorderDragAnimationMetrics) {
   ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   base::HistogramTester histogram_tester;

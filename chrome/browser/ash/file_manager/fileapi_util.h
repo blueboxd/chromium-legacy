@@ -44,7 +44,7 @@ namespace util {
 struct FileDefinition {
   base::FilePath virtual_path;
   base::FilePath absolute_path;
-  bool is_directory;
+  bool is_directory = false;
 };
 
 // Contains all information needed to create an Entry object in custom bindings.
@@ -58,8 +58,8 @@ struct EntryDefinition {
   base::FilePath full_path;          // Value of Entry.fullPath.
   // Whether to create FileEntry or DirectoryEntry when the corresponding entry
   // is not found.
-  bool is_directory;
-  base::File::Error error;
+  bool is_directory = false;
+  base::File::Error error = base::File::FILE_ERROR_FAILED;
 };
 
 typedef std::vector<FileDefinition> FileDefinitionList;
@@ -155,7 +155,7 @@ void ConvertFileDefinitionListToEntryDefinitionList(
 // Converts SelectedFileInfoList into FileChooserFileInfoList.
 void ConvertSelectedFileInfoListToFileChooserFileInfoList(
     storage::FileSystemContext* context,
-    const GURL& origin,
+    const url::Origin& origin,
     const SelectedFileInfoList& selected_info_list,
     FileChooserFileInfoListCallback callback);
 
@@ -191,7 +191,7 @@ struct FileSystemURLAndHandle {
 // external file system.
 FileSystemURLAndHandle CreateIsolatedURLFromVirtualPath(
     const storage::FileSystemContext& context,
-    const GURL& origin,
+    const url::Origin& origin,
     const base::FilePath& virtual_path);
 
 // Given a |destination_folder| and a |filename|, returns a suitable path inside

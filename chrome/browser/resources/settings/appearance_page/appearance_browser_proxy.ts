@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {sendWithPromise} from 'chrome://resources/js/cr.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // clang-format on
 
@@ -26,15 +26,11 @@ export interface AppearanceBrowserProxy {
 
 export class AppearanceBrowserProxyImpl implements AppearanceBrowserProxy {
   getDefaultZoom(): Promise<number> {
-    return new Promise(function(resolve) {
-      chrome.settingsPrivate.getDefaultZoom(resolve);
-    });
+    return chrome.settingsPrivate.getDefaultZoom();
   }
 
   getThemeInfo(themeId: string): Promise<chrome.management.ExtensionInfo> {
-    return new Promise(function(resolve) {
-      chrome.management.get(themeId, resolve);
-    });
+    return chrome.management.get(themeId);
   }
 
   isChildAccount() {

@@ -32,8 +32,7 @@ suite('I18nMixinTest', function() {
   });
 
   setup(function() {
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     testElement = document.createElement('test-element') as TestElement;
     document.body.appendChild(testElement);
   });
@@ -58,7 +57,8 @@ suite('I18nMixinTest', function() {
 
   test('i18n advanced', function() {
     assertEquals(
-        allowedByDefault, testElement.i18nAdvanced('allowedByDefault'));
+        allowedByDefault,
+        testElement.i18nAdvanced('allowedByDefault').toString());
     testElement.i18nAdvanced('customAttr', {attrs: ['is']});
     testElement.i18nAdvanced('optionalTag', {tags: ['img']});
   });

@@ -8,7 +8,7 @@ import {ProfileCustomizationAppElement} from 'chrome://profile-customization/pro
 import {ProfileCustomizationBrowserProxyImpl} from 'chrome://profile-customization/profile_customization_browser_proxy.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {isChildVisible} from 'chrome://webui-test/test_util.js';
@@ -42,8 +42,7 @@ import {TestProfileCustomizationBrowserProxy} from './test_profile_customization
         welcomeTitle: WELCOME_TEXT_1,
       });
       ProfileCustomizationBrowserProxyImpl.setInstance(browserProxy);
-      document.body.innerHTML =
-          window.trustedTypes!.emptyHTML as unknown as string;
+      document.body.innerHTML = window.trustedTypes!.emptyHTML;
       app = document.createElement('profile-customization-app');
       document.body.append(app);
       return browserProxy.whenCalled('initialized');
@@ -57,17 +56,17 @@ import {TestProfileCustomizationBrowserProxy} from './test_profile_customization
 
     // Checks that clicking Done without interacting with the input does not
     // change the name.
-    test('ClickDone', function() {
+    test('ClickDone', async function() {
       assertTrue(isChildVisible(app, '#doneButton'));
       const doneButton = app.$.doneButton;
       assertFalse(doneButton.disabled);
       doneButton.click();
-      return browserProxy.whenCalled('done').then(
-          profileName => assertEquals('TestName', profileName));
+      const profileName = await browserProxy.whenCalled('done');
+      assertEquals('TestName', profileName);
     });
 
     // Checks that the name can be changed.
-    test('ChangeName', function() {
+    test('ChangeName', async function() {
       const nameInput = app.$.nameInput;
       // Check the default value for the input.
       assertEquals('TestName', nameInput.value);
@@ -95,8 +94,8 @@ import {TestProfileCustomizationBrowserProxy} from './test_profile_customization
       assertTrue(isChildVisible(app, '#doneButton'));
       assertFalse(doneButton.disabled);
       doneButton.click();
-      return browserProxy.whenCalled('done').then(
-          profileName => assertEquals('Bob', profileName));
+      const profileName = await browserProxy.whenCalled('done');
+      assertEquals('Bob', profileName);
     });
 
     test('ProfileInfo', function() {
@@ -181,8 +180,7 @@ suite(`LocalProfileCreationTest`, function() {
       welcomeTitle: '',
     });
     ProfileCustomizationBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     app = document.createElement('profile-customization-app');
     document.body.append(app);
     return browserProxy.whenCalled('initialized');

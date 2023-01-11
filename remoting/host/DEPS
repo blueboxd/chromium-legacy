@@ -1,6 +1,7 @@
 include_rules = [
   "+ash",
   "+cc/output",
+  "+components/named_mojo_ipc_server",
   "+components/policy/core/common",
   "+components/viz/common",
   "+components/webrtc",
@@ -44,5 +45,8 @@ specific_include_rules = {
   ],
   ".*wayland.*\.(h|cc)": [
     "+third_party/wayland-protocols",
+  ],
+  "it2me_desktop_environment*": [
+    "+components/user_manager"
   ],
 }

@@ -384,13 +384,6 @@
         <category android:name="android.intent.category.DEFAULT"/>
       </intent-filter>  # DIFF-ANCHOR: 8f811d02
     </activity>  # DIFF-ANCHOR: b98302dc
-    <activity  # DIFF-ANCHOR: 349d8ca5
-        android:name="org.chromium.chrome.browser.instantapps.AuthenticatedProxyActivity"
-        android:excludeFromRecents="true"
-        android:exported="false"
-        android:noHistory="true"
-        android:theme="@style/Theme.BrowserUI.NoDisplay">
-    </activity>  # DIFF-ANCHOR: 349d8ca5
     <activity  # DIFF-ANCHOR: ecd48344
         android:name="org.chromium.chrome.browser.media.MediaLauncherActivity"
         android:enabled="false"
@@ -1177,7 +1170,7 @@
         android:name="org.chromium.android_webview.services.StartupFeatureMetadataHolder"
         android:enabled="false"
         android:exported="true">
-      <meta-data android:name="SET_DATA_DIRECTORY_SUFFIX:DEV" android:value="true"/>
+      <meta-data android:name="STARTUP_FEATURE_SET_DATA_DIRECTORY_SUFFIX" android:value="true"/>
     </service>  # DIFF-ANCHOR: c52936d7
     <service  # DIFF-ANCHOR: dc926e35
         android:name="org.chromium.android_webview.services.VariationsSeedServer"

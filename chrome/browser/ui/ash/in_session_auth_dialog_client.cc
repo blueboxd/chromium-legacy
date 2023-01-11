@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/webauthn_dialog_controller.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/login/quick_unlock/fingerprint_storage.h"
@@ -17,10 +19,16 @@
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/cryptohome_pin_engine.h"
+#include "chrome/browser/ui/ash/legacy_fingerprint_engine.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chromeos/ash/components/cryptohome/common_types.h"
+#include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
+#include "chromeos/ash/components/login/auth/auth_performer.h"
+#include "chromeos/ash/components/login/auth/public/auth_session_intent.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -41,7 +49,8 @@ InSessionAuthDialogClient* g_auth_dialog_client_instance = nullptr;
 
 }  // namespace
 
-InSessionAuthDialogClient::InSessionAuthDialogClient() {
+InSessionAuthDialogClient::InSessionAuthDialogClient()
+    : auth_performer_(ash::UserDataAuthClient::Get()) {
   ash::WebAuthNDialogController::Get()->SetClient(this);
 
   DCHECK(!g_auth_dialog_client_instance);
@@ -67,11 +76,17 @@ InSessionAuthDialogClient* InSessionAuthDialogClient::Get() {
 
 bool InSessionAuthDialogClient::IsFingerprintAuthAvailable(
     const AccountId& account_id) {
-  ash::quick_unlock::QuickUnlockStorage* quick_unlock_storage =
-      ash::quick_unlock::QuickUnlockFactory::GetForAccountId(account_id);
-  return quick_unlock_storage &&
-         quick_unlock_storage->fingerprint_storage()->IsFingerprintAvailable(
-             ash::quick_unlock::Purpose::kWebAuthn);
+  if (!ash::features::IsUseAuthsessionForWebAuthNEnabled()) {
+    ash::quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+        ash::quick_unlock::QuickUnlockFactory::GetForAccountId(account_id);
+    return quick_unlock_storage &&
+           quick_unlock_storage->fingerprint_storage()->IsFingerprintAvailable(
+               ash::quick_unlock::Purpose::kWebAuthn);
+  }
+
+  return legacy_fingerprint_engine_->IsFingerprintAvailable(
+      ash::LegacyFingerprintEngine::Purpose::kWebAuthn,
+      user_context_->GetAccountId());
 }
 
 ExtendedAuthenticator* InSessionAuthDialogClient::GetExtendedAuthenticator() {
@@ -85,25 +100,124 @@ ExtendedAuthenticator* InSessionAuthDialogClient::GetExtendedAuthenticator() {
 void InSessionAuthDialogClient::StartFingerprintAuthSession(
     const AccountId& account_id,
     base::OnceCallback<void(bool)> callback) {
-  GetExtendedAuthenticator()->StartFingerprintAuthSession(account_id,
-                                                          std::move(callback));
+  if (!ash::features::IsUseAuthsessionForWebAuthNEnabled()) {
+    GetExtendedAuthenticator()->StartFingerprintAuthSession(
+        account_id, std::move(callback));
+    return;
+  }
+
+  legacy_fingerprint_engine_->PrepareLegacyFingerprintFactor(
+      std::move(user_context_),
+      base::BindOnce(
+          &InSessionAuthDialogClient::OnPrepareLegacyFingerprintFactor,
+          weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void InSessionAuthDialogClient::EndFingerprintAuthSession() {
-  DCHECK(extended_authenticator_);
-  extended_authenticator_->EndFingerprintAuthSession();
+void InSessionAuthDialogClient::OnPrepareLegacyFingerprintFactor(
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<UserContext> user_context,
+    absl::optional<AuthenticationError> error) {
+  user_context_ = std::move(user_context);
+
+  if (error.has_value()) {
+    LOG(ERROR) << "Could not prepare legacy fingerprint auth factor, code: "
+               << error->get_cryptohome_code();
+    std::move(callback).Run(false);
+    return;
+  }
+
+  observation_.Observe(ash::UserDataAuthClient::Get());
+  std::move(callback).Run(true);
+}
+
+void InSessionAuthDialogClient::EndFingerprintAuthSession(
+    base::OnceClosure callback) {
+  if (!ash::features::IsUseAuthsessionForWebAuthNEnabled()) {
+    DCHECK(extended_authenticator_);
+    extended_authenticator_->EndFingerprintAuthSession();
+    std::move(callback).Run();
+    return;
+  }
+
+  if (legacy_fingerprint_engine_.has_value()) {
+    legacy_fingerprint_engine_->TerminateLegacyFingerprintFactor(
+        std::move(user_context_),
+        base::BindOnce(
+            &InSessionAuthDialogClient::OnTerminateLegacyFingerprintFactor,
+            weak_factory_.GetWeakPtr(), std::move(callback)));
+  }
+}
+
+void InSessionAuthDialogClient::OnTerminateLegacyFingerprintFactor(
+    base::OnceClosure callback,
+    std::unique_ptr<UserContext> user_context,
+    absl::optional<AuthenticationError> error) {
+  // Proceed to updating the state and running the callback.
+  // We need this regardless of whether an error occurred.
+  if (error.has_value()) {
+    LOG(ERROR) << "Error terminating legacy fingerprint auth factor, code: "
+               << error->get_cryptohome_code();
+  }
+  user_context_ = std::move(user_context);
+  observation_.Reset();
+  std::move(callback).Run();
 }
 
 void InSessionAuthDialogClient::CheckPinAuthAvailability(
     const AccountId& account_id,
     base::OnceCallback<void(bool)> callback) {
-  // PinBackend may be using cryptohome backend or prefs backend.
-  ash::quick_unlock::PinBackend::GetInstance()->CanAuthenticate(
-      account_id, ash::quick_unlock::Purpose::kWebAuthn, std::move(callback));
+  if (!ash::features::IsUseAuthsessionForWebAuthNEnabled()) {
+    // PinBackend may be using cryptohome backend or prefs backend.
+    ash::quick_unlock::PinBackend::GetInstance()->CanAuthenticate(
+        account_id, ash::quick_unlock::Purpose::kWebAuthn, std::move(callback));
+    return;
+  }
+
+  auto on_pin_availability_checked =
+      base::BindOnce(&InSessionAuthDialogClient::OnCheckPinAuthAvailability,
+                     weak_factory_.GetWeakPtr(), std::move(callback));
+
+  CHECK(pin_engine_.has_value());
+  pin_engine_->IsPinAuthAvailable(ash::CryptohomePinEngine::Purpose::kWebAuthn,
+                                  std::move(user_context_),
+                                  std::move(on_pin_availability_checked));
+}
+
+void InSessionAuthDialogClient::OnCheckPinAuthAvailability(
+    base::OnceCallback<void(bool)> callback,
+    bool is_pin_auth_available,
+    std::unique_ptr<UserContext> user_context) {
+  user_context_ = std::move(user_context);
+  std::move(callback).Run(is_pin_auth_available);
+}
+
+void InSessionAuthDialogClient::StartAuthSession(
+    base::OnceCallback<void(bool)> callback) {
+  auto* user_manager = user_manager::UserManager::Get();
+  const user_manager::User* const user = user_manager->GetActiveUser();
+  const bool ephemeral =
+      user_manager->IsUserCryptohomeDataEphemeral(user->GetAccountId());
+  auto user_context = std::make_unique<UserContext>(*user);
+
+  auto on_auth_session_started =
+      base::BindOnce(&InSessionAuthDialogClient::OnAuthSessionStarted,
+                     weak_factory_.GetWeakPtr(), std::move(callback));
+
+  auth_performer_.StartAuthSession(std::move(user_context), ephemeral,
+                                   ash::AuthSessionIntent::kWebAuthn,
+                                   std::move(on_auth_session_started));
+}
+
+void InSessionAuthDialogClient::InvalidateAuthSession() {
+  if (user_context_) {
+    auth_performer_.InvalidateAuthSession(std::move(user_context_),
+                                          base::DoNothing());
+    pin_engine_.reset();
+  }
 }
 
 void InSessionAuthDialogClient::AuthenticateUserWithPasswordOrPin(
-    const std::string& password,
+    const std::string& secret,
     bool authenticated_by_pin,
     base::OnceCallback<void(bool)> callback) {
   // TODO(b/156258540): Pick/validate the correct user.
@@ -111,10 +225,10 @@ void InSessionAuthDialogClient::AuthenticateUserWithPasswordOrPin(
       user_manager::UserManager::Get()->GetActiveUser();
   DCHECK(user);
   auto user_context = std::make_unique<UserContext>(*user);
-  Key key(Key::KEY_TYPE_PASSWORD_PLAIN, std::string(), password);
+  Key key(Key::KEY_TYPE_PASSWORD_PLAIN, std::string(), secret);
   user_context->SetIsUsingPin(authenticated_by_pin);
   user_context->SetSyncPasswordData(password_manager::PasswordHashData(
-      user->GetAccountId().GetUserEmail(), base::UTF8ToUTF16(password),
+      user->GetAccountId().GetUserEmail(), base::UTF8ToUTF16(secret),
       false /*force_update*/));
   if (user->GetAccountId().GetAccountType() == AccountType::ACTIVE_DIRECTORY &&
       (user_context->GetUserType() !=
@@ -126,7 +240,15 @@ void InSessionAuthDialogClient::AuthenticateUserWithPasswordOrPin(
   DCHECK(!pending_auth_state_);
   pending_auth_state_.emplace(std::move(callback));
 
-  if (authenticated_by_pin) {
+  if (!authenticated_by_pin) {
+    // TODO(yichengli): If user type is SUPERVISED, use supervised
+    // authenticator?
+    user_context->SetKey(std::move(key));
+    AuthenticateWithPassword(std::move(user_context), secret);
+    return;
+  }
+
+  if (!ash::features::IsUseAuthsessionForWebAuthNEnabled()) {
     ash::quick_unlock::PinBackend::GetInstance()->TryAuthenticate(
         std::move(user_context), std::move(key),
         ash::quick_unlock::Purpose::kWebAuthn,
@@ -135,10 +257,11 @@ void InSessionAuthDialogClient::AuthenticateUserWithPasswordOrPin(
     return;
   }
 
-  // TODO(yichengli): If user type is SUPERVISED, use supervised authenticator?
-
-  user_context->SetKey(std::move(key));
-  AuthenticateWithPassword(std::move(*user_context));
+  pin_engine_->Authenticate(
+      cryptohome::RawPin(secret), std::move(user_context_),
+      base::BindOnce(&InSessionAuthDialogClient::OnAuthVerified,
+                     weak_factory_.GetWeakPtr(),
+                     /*authenticated_by_password=*/false));
 }
 
 void InSessionAuthDialogClient::OnPinAttemptDone(
@@ -156,16 +279,92 @@ void InSessionAuthDialogClient::OnPinAttemptDone(
 }
 
 void InSessionAuthDialogClient::AuthenticateWithPassword(
-    const UserContext& user_context) {
-  // TODO(crbug.com/1115120): Don't post to UI thread if it turns out to be
-  // unnecessary.
-  content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &ExtendedAuthenticator::AuthenticateToUnlockWebAuthnSecret,
-          GetExtendedAuthenticator(), user_context,
-          base::BindOnce(&InSessionAuthDialogClient::OnPasswordAuthSuccess,
-                         weak_factory_.GetWeakPtr(), user_context)));
+    std::unique_ptr<UserContext> user_context,
+    const std::string& password) {
+  if (!ash::features::IsUseAuthsessionForWebAuthNEnabled()) {
+    // TODO(crbug.com/1115120): Don't post to UI thread if it turns out to be
+    // unnecessary.
+    auto context = std::move(*user_context);
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &ExtendedAuthenticator::AuthenticateToUnlockWebAuthnSecret,
+            GetExtendedAuthenticator(), context,
+            base::BindOnce(&InSessionAuthDialogClient::OnPasswordAuthSuccess,
+                           weak_factory_.GetWeakPtr(), context)));
+    return;
+  }
+
+  // Check that we have a valid `user_context_`, provided by a prior
+  // `StartAuthSession`, this also nicely asserts that we are not waiting
+  // on other UserDataAuth dbus calls that involve the auth_session_id stored
+  // in this `user_context`.
+  CHECK(user_context_);
+
+  const cryptohome::AuthFactor* password_factor =
+      user_context_->GetAuthFactorsData().FindOnlinePasswordFactor();
+  if (!password_factor) {
+    LOG(ERROR) << "Could not find password key";
+    std::move(pending_auth_state_->callback).Run(false);
+    return;
+  }
+
+  auto on_authenticated = base::BindOnce(
+      &InSessionAuthDialogClient::OnAuthVerified, weak_factory_.GetWeakPtr(),
+      /*authenticated_by_password=*/true);
+
+  auth_performer_.AuthenticateWithPassword(*(password_factor->ref().label()),
+                                           password, std::move(user_context_),
+                                           std::move(on_authenticated));
+}
+
+void InSessionAuthDialogClient::OnAuthSessionStarted(
+    base::OnceCallback<void(bool)> callback,
+    bool user_exists,
+    std::unique_ptr<UserContext> user_context,
+    absl::optional<AuthenticationError> error) {
+  if (error.has_value()) {
+    LOG(ERROR) << "Failed to start auth session, code "
+               << error->get_cryptohome_code();
+    std::move(callback).Run(false);
+    return;
+  }
+
+  if (!user_exists) {
+    LOG(ERROR) << "User does not exist";
+    // Invalidate the auth session that started, do not leave orphans behind.
+    auth_performer_.InvalidateAuthSession(std::move(user_context),
+                                          base::DoNothing());
+    std::move(callback).Run(false);
+    return;
+  }
+
+  // Take temporary ownership of user_context to pass on later.
+  user_context_ = std::move(user_context);
+  pin_engine_.emplace(&auth_performer_);
+  legacy_fingerprint_engine_.emplace(&auth_performer_);
+  std::move(callback).Run(true);
+}
+
+void InSessionAuthDialogClient::OnAuthVerified(
+    bool authenticated_by_password,
+    std::unique_ptr<UserContext> user_context,
+    absl::optional<AuthenticationError> error) {
+  // Take back ownership of user_context for future auth attempts.
+  user_context_ = std::move(user_context);
+
+  if (error.has_value()) {
+    LOG(ERROR) << "Failed to authenticate, code "
+               << error->get_cryptohome_code();
+    std::move(pending_auth_state_->callback).Run(false);
+  } else {
+    // TODO(b:241256423): Tell cryptohome to release WebAuthN secret.
+    if (authenticated_by_password)
+      OnPasswordAuthSuccess(*user_context_);
+    std::move(pending_auth_state_->callback).Run(true);
+  }
+
+  pending_auth_state_.reset();
 }
 
 void InSessionAuthDialogClient::OnPasswordAuthSuccess(
@@ -179,16 +378,50 @@ void InSessionAuthDialogClient::OnPasswordAuthSuccess(
 
 void InSessionAuthDialogClient::AuthenticateUserWithFingerprint(
     base::OnceCallback<void(bool, ash::FingerprintState)> callback) {
-  const user_manager::User* const user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  DCHECK(user);
-  UserContext user_context(*user);
+  if (!ash::features::IsUseAuthsessionForWebAuthNEnabled()) {
+    const user_manager::User* const user =
+        user_manager::UserManager::Get()->GetActiveUser();
+    DCHECK(user);
+    UserContext user_context(*user);
 
-  DCHECK(extended_authenticator_);
-  extended_authenticator_->AuthenticateWithFingerprint(
-      user_context,
-      base::BindOnce(&InSessionAuthDialogClient::OnFingerprintAuthDone,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+    DCHECK(extended_authenticator_);
+    extended_authenticator_->AuthenticateWithFingerprint(
+        user_context,
+        base::BindOnce(&InSessionAuthDialogClient::OnFingerprintAuthDone,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
+    return;
+  }
+
+  DCHECK(!fingerprint_scan_done_callback_);
+  fingerprint_scan_done_callback_ = std::move(callback);
+}
+
+void InSessionAuthDialogClient::OnFingerprintScan(
+    const ::user_data_auth::FingerprintScanResult& result) {
+  if (!fingerprint_scan_done_callback_)
+    return;
+
+  switch (result) {
+    case user_data_auth::FINGERPRINT_SCAN_RESULT_SUCCESS:
+      std::move(fingerprint_scan_done_callback_)
+          .Run(true, ash::FingerprintState::AVAILABLE_DEFAULT);
+      break;
+    case user_data_auth::FINGERPRINT_SCAN_RESULT_RETRY:
+      std::move(fingerprint_scan_done_callback_)
+          .Run(false, ash::FingerprintState::AVAILABLE_DEFAULT);
+      break;
+    case user_data_auth::FINGERPRINT_SCAN_RESULT_LOCKOUT:
+      std::move(fingerprint_scan_done_callback_)
+          .Run(false, ash::FingerprintState::DISABLED_FROM_ATTEMPTS);
+      break;
+    case user_data_auth::FINGERPRINT_SCAN_RESULT_FATAL_ERROR:
+      std::move(fingerprint_scan_done_callback_)
+          .Run(false, ash::FingerprintState::UNAVAILABLE);
+      break;
+    default:
+      std::move(fingerprint_scan_done_callback_)
+          .Run(false, ash::FingerprintState::UNAVAILABLE);
+  }
 }
 
 void InSessionAuthDialogClient::OnFingerprintAuthDone(

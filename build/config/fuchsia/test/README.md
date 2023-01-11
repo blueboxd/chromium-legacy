@@ -28,7 +28,7 @@ For tests that use the fonts in `//third_party/test_fonts` by way of
 Required by tests that execute JavaScript. Should only be required in a small
 number of tests.
 
-#### minimum_capabilites.test-cmx and minimum.shard.test-cml
+#### minimum.shard.test-cml
 Capabilities required by anything that uses `//base/test`, used as the base
 fragment for all test suites.
 
@@ -36,15 +36,18 @@ fragment for all test suites.
 ICU timezone data to these tests when they are being run.  A more general
 approach is discussed in https://fxbug.dev/85845.
 
-#### read_debug_data.test-cmx
-Required by tests that need access to its debug directory. Should only be
-required in a small number of tests.
-
 #### logger.shard.test-cml
 For tests that test logging functionality by providing `fuchsia.logger.Log`.
 
 #### test_ui_stack.shard.test-cml
-For tests that need an isolated Scenic by way of Fuchsia's test-ui-stack.
+For tests that need an isolated UI subsystem, that supports the Flatland
+API set.  This allows tests to e.g. run with view-focus unaffected by any
+other tests running concurrently on the device, as well as providing test-only
+functionality such as input-injection support.
+
+#### gfx_test_ui_stack.shard.test-cml
+For tests that need an isolated display subsystem supporting the legacy
+Scenic/GFX APIs.
 
 ### WebEngine Fragments
 The following fragments are specific to WebEngine functionality as documented
@@ -65,27 +68,20 @@ support of running on system images that don't run it.
 For tests that need access to network services, including those that access a
 local HTTP server.
 
-#### network_capabilities.test-cmx
+#### network.shard.test-cml
 Corresponds to the `NETWORK` flag. Required for enabling network access. Note
 that access to the root SSL certificates is not needed if ContextProvider is
 used to launch the `Context`. The `fuchsia.device.NameProvider` dependency comes
-from fdio. The injected `netstack.cmx` requires `fuchsia.stash.SecureStore`.
+from fdio.
 
 #### present_view.shard.test-cml
 Services that are needed to render web content in a Scenic view and present it.
 Most services are required per the FIDL documentation.
 
-#### vulkan_capabilities.test-cmx
-Corresponds to the `VULKAN` flag. Required for enabling GPU-accelerated
-rendering of the web content.
-
-CFv2 tests should use
-`//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml`.
-
-#### web_instance.shard.test-cml and web_engine_required_capabilities.test-cmx
+#### web_instance.shard.test-cml
 Contains services that need to be present when creating a `fuchsia.web.Context`.
 Note that the `fuchsia.scheduler.ProfileProvider` service is only used in tests
 that encounter memory pressure code.
 
-#### web_instance_host_capabilities.test-cmx and web_instance_host.shard.test-cml
+#### web_instance_host.shard.test-cml
 Contains services that need to be present to use `WebInstanceHost`.

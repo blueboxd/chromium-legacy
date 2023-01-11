@@ -41,11 +41,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
-#include "components/services/app_service/public/mojom/types.mojom-shared.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/entry_info.h"
 #include "extensions/browser/extension_registry.h"
@@ -76,8 +73,6 @@ ConvertLaunchResultToTaskResult(const apps::LaunchResult& result,
       return fmp::TASK_RESULT_FAILED;
   }
 }
-
-using extensions::api::file_manager_private::Verb;
 
 namespace {
 
@@ -181,6 +176,10 @@ bool IsFilesAppUrlOpener(const apps::IntentLaunchInfo& launch_entry) {
              ToSwaActionId(kActionIdWebDriveOfficePowerPoint);
 }
 
+bool IsSystemAppIdWithFileHandlers(base::StringPiece id) {
+  return id == web_app::kMediaAppId;
+}
+
 void FindAppServiceTasks(Profile* profile,
                          const std::vector<extensions::EntryInfo>& entries,
                          const std::vector<GURL>& file_urls,
@@ -253,7 +252,7 @@ void FindAppServiceTasks(Profile* profile,
       // Media app and other SWAs can handle "non-native" files, as can special
       // tasks which only access the file via URL.
       if (has_non_native_file &&
-          !(web_app::IsSystemAppIdWithFileHandlers(launch_entry.app_id) ||
+          !(IsSystemAppIdWithFileHandlers(launch_entry.app_id) ||
             IsFilesAppUrlOpener(launch_entry))) {
         continue;
       }
@@ -292,7 +291,7 @@ void FindAppServiceTasks(Profile* profile,
     result_list->push_back(FullTaskDescriptor(
         TaskDescriptor(launch_entry.app_id, GetTaskType(app_type),
                        launch_entry.activity_name),
-        launch_entry.activity_label, Verb::VERB_NONE, icon_url,
+        launch_entry.activity_label, icon_url,
         /* is_default=*/false,
         // TODO(petermarshall): Handle the rest of the logic from FindWebTasks()
         // e.g. prioritise non-generic handlers.
@@ -349,46 +348,18 @@ void ExecuteAppServiceTask(
       apps_util::kIntentActionView, std::move(intent_files));
   intent->activity_name = task.action_id;
 
-  if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
-    apps::AppServiceProxyFactory::GetForProfile(profile_with_app_service)
-        ->LaunchAppWithIntent(
-            task.app_id, ui::EF_NONE, std::move(intent),
-            apps::LaunchSource::kFromFileManager,
-            std::make_unique<apps::WindowInfo>(display::kDefaultDisplayId),
-            base::BindOnce(
-                [](FileTaskFinishedCallback done, TaskType task_type,
-                   apps::LaunchResult&& result) {
-                  std::move(done).Run(
-                      ConvertLaunchResultToTaskResult(result, task_type), "");
-                },
-                std::move(done), task.task_type));
-  } else {
-    apps::AppServiceProxyFactory::GetForProfile(profile_with_app_service)
-        ->LaunchAppWithIntent(
-            task.app_id, ui::EF_NONE, apps::ConvertIntentToMojomIntent(intent),
-            apps::mojom::LaunchSource::kFromFileManager,
-            apps::MakeWindowInfo(display::kDefaultDisplayId),
-            base::BindOnce(
-                [](FileTaskFinishedCallback done, TaskType task_type,
-                   bool success) {
-                  if (!success) {
-                    std::move(done).Run(extensions::api::file_manager_private::
-                                            TASK_RESULT_FAILED,
-                                        "");
-                  } else if (task_type == TASK_TYPE_WEB_APP) {
-                    // TODO(benwells): return the correct code here, depending
-                    // on how the app will be opened in multiprofile.
-                    std::move(done).Run(extensions::api::file_manager_private::
-                                            TASK_RESULT_OPENED,
-                                        "");
-                  } else {
-                    std::move(done).Run(extensions::api::file_manager_private::
-                                            TASK_RESULT_MESSAGE_SENT,
-                                        "");
-                  }
-                },
-                std::move(done), task.task_type));
-  }
+  apps::AppServiceProxyFactory::GetForProfile(profile_with_app_service)
+      ->LaunchAppWithIntent(
+          task.app_id, ui::EF_NONE, std::move(intent),
+          apps::LaunchSource::kFromFileManager,
+          std::make_unique<apps::WindowInfo>(display::kDefaultDisplayId),
+          base::BindOnce(
+              [](FileTaskFinishedCallback done, TaskType task_type,
+                 apps::LaunchResult&& result) {
+                std::move(done).Run(
+                    ConvertLaunchResultToTaskResult(result, task_type), "");
+              },
+              std::move(done), task.task_type));
 }
 
 absl::optional<std::string> GetPolicyDefaultHandlerForFileExtension(

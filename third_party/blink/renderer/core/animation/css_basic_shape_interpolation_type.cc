@@ -186,15 +186,15 @@ void CSSBasicShapeInterpolationType::ApplyStandardPropertyValue(
           state.CssToLengthConversionData());
   switch (CssProperty().PropertyID()) {
     case CSSPropertyID::kShapeOutside:
-      state.Style()->SetShapeOutside(MakeGarbageCollected<ShapeValue>(
+      state.StyleBuilder().SetShapeOutside(MakeGarbageCollected<ShapeValue>(
           std::move(shape), CSSBoxType::kMissing));
       break;
     case CSSPropertyID::kClipPath:
-      state.Style()->SetClipPath(
+      state.StyleBuilder().SetClipPath(
           ShapeClipPathOperation::Create(std::move(shape)));
       break;
     case CSSPropertyID::kObjectViewBox:
-      state.Style()->SetObjectViewBox(std::move(shape));
+      state.StyleBuilder().SetObjectViewBox(std::move(shape));
       break;
     default:
       NOTREACHED();

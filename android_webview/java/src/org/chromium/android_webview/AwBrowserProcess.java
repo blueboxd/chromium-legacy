@@ -23,6 +23,7 @@ import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.android_webview.common.services.ICrashReceiverService;
 import org.chromium.android_webview.common.services.IMetricsBridgeService;
+import org.chromium.android_webview.common.services.ServiceConnectionDelayRecorder;
 import org.chromium.android_webview.common.services.ServiceHelper;
 import org.chromium.android_webview.common.services.ServiceNames;
 import org.chromium.android_webview.metrics.AwMetricsLogUploader;
@@ -167,7 +168,8 @@ public final class AwBrowserProcess {
                 try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
                              "AwBrowserProcess.startBrowserProcessesSync")) {
                     BrowserStartupController.getInstance().startBrowserProcessesSync(
-                            LibraryProcessType.PROCESS_WEBVIEW, !multiProcess);
+                            LibraryProcessType.PROCESS_WEBVIEW, !multiProcess,
+                            /*startGpuProcess=*/false);
                 }
 
                 PowerMonitor.create();
@@ -439,11 +441,11 @@ public final class AwBrowserProcess {
         final Intent intent = new Intent();
         intent.setClassName(getWebViewPackageName(), ServiceNames.METRICS_BRIDGE_SERVICE);
 
-        ServiceConnection connection = new ServiceConnection() {
+        ServiceConnectionDelayRecorder connection = new ServiceConnectionDelayRecorder() {
             private boolean mHasConnected;
 
             @Override
-            public void onServiceConnected(ComponentName className, IBinder service) {
+            public void onServiceConnectedImpl(ComponentName className, IBinder service) {
                 if (mHasConnected) return;
                 mHasConnected = true;
                 // onServiceConnected is called on the UI thread, so punt this back to the
@@ -487,7 +489,8 @@ public final class AwBrowserProcess {
             @Override
             public void onServiceDisconnected(ComponentName className) {}
         };
-        if (!ServiceHelper.bindService(appContext, intent, connection, Context.BIND_AUTO_CREATE)) {
+
+        if (!connection.bind(appContext, intent, Context.BIND_AUTO_CREATE)) {
             Log.d(TAG, "Could not bind to MetricsBridgeService " + intent);
         }
     }

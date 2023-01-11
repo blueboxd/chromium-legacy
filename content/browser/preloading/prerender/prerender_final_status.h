@@ -1,0 +1,75 @@
+// Copyright 2022 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_BROWSER_PRELOADING_PRERENDER_PRERENDER_FINAL_STATUS_H_
+#define CONTENT_BROWSER_PRELOADING_PRERENDER_PRERENDER_FINAL_STATUS_H_
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PrerenderFinalStatus {
+  kActivated = 0,
+  kDestroyed = 1,
+  kLowEndDevice = 2,
+  // These have been broken down into SameSiteCrossOrigin and CrossSite for
+  // better understanding of the metrics. kCrossOriginRedirect = 3,
+  // kCrossOriginNavigation = 4,
+  kInvalidSchemeRedirect = 5,
+  kInvalidSchemeNavigation = 6,
+  kInProgressNavigation = 7,
+  // kNavigationRequestFailure = 8,  // No longer used.
+  kNavigationRequestBlockedByCsp = 9,
+  kMainFrameNavigation = 10,
+  kMojoBinderPolicy = 11,
+  // kPlugin = 12,  // No longer used.
+  kRendererProcessCrashed = 13,
+  kRendererProcessKilled = 14,
+  kDownload = 15,
+  kTriggerDestroyed = 16,
+  kNavigationNotCommitted = 17,
+  kNavigationBadHttpStatus = 18,
+  kClientCertRequested = 19,
+  kNavigationRequestNetworkError = 20,
+  kMaxNumOfRunningPrerendersExceeded = 21,
+  kCancelAllHostsForTesting = 22,
+  kDidFailLoad = 23,
+  kStop = 24,
+  kSslCertificateError = 25,
+  kLoginAuthRequested = 26,
+  kUaChangeRequiresReload = 27,
+  kBlockedByClient = 28,
+  kAudioOutputDeviceRequested = 29,
+  kMixedContent = 30,
+  kTriggerBackgrounded = 31,
+  // Break down into kEmbedderTriggeredAndSameOriginRedirected and
+  // kEmbedderTriggeredAndCrossOriginRedirected for investigation.
+  // kEmbedderTriggeredAndRedirected = 32,
+  // Deprecate since same origin redirection is allowed considering that the
+  // initial prerender origin is a safe site.
+  // kEmbedderTriggeredAndSameOriginRedirected = 33,
+  kEmbedderTriggeredAndCrossOriginRedirected = 34,
+  // Deprecated. This has the same meaning as kTriggerDestroyed because the
+  // metric's name includes trigger type.
+  // kEmbedderTriggeredAndDestroyed = 35,
+  kMemoryLimitExceeded = 36,
+  kFailToGetMemoryUsage = 37,
+  kDataSaverEnabled = 38,
+  kHasEffectiveUrl = 39,
+  kActivatedBeforeStarted = 40,
+  kInactivePageRestriction = 41,
+  kStartFailed = 42,
+  kTimeoutBackgrounded = 43,
+  kCrossSiteRedirect = 44,
+  kCrossSiteNavigation = 45,
+  kSameSiteCrossOriginRedirect = 46,
+  kSameSiteCrossOriginNavigation = 47,
+  kSameSiteCrossOriginRedirectNotOptIn = 48,
+  kSameSiteCrossOriginNavigationNotOptIn = 49,
+  // The prediction is correct, and we are almost ready to activate this
+  // PrerenderHost, but the activation navigation's parameters are different
+  // from the initial prerendering navigation so Prerender fails to activate it.
+  kActivationNavigationParameterMismatch = 50,
+  kMaxValue = kActivationNavigationParameterMismatch,
+};
+
+#endif  // CONTENT_BROWSER_PRELOADING_PRERENDER_PRERENDER_FINAL_STATUS_H_

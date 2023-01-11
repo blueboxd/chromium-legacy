@@ -257,6 +257,65 @@
     column-gap: 12px;
   }
 
+  #contentContainer.tangible-sync {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    padding-top: 120px;
+    width: 500px;
+  }
+
+  .tangible-sync #avatar {
+    height: 64px;
+    width: 64px;
+  }
+
+  .tangible-sync #syncConfirmationHeading {
+    font-size: 2.92em;
+    font-weight: 500;
+    line-height: 44px;
+    margin: 24px 0 16px;
+  }
+
+  #syncInfoTitle {
+    font-size: 1.6em;
+    line-height: 24px;
+  }
+
+  #syncBenefitsList {
+    background: var(--google-grey-50);
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    font-size: 1.05em;
+    font-weight: 400;
+    line-height: 20px;
+    margin: 24px 0 16px;
+    padding: 24px;
+    row-gap: 16px;
+    width: 452px;
+  }
+
+  .sync-benefit {
+    align-items: center;
+    column-gap: 12px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+
+  .sync-benefit-icon {
+    color: var(--google-blue-600);
+    height: 24px;
+    width: 24px;
+  }
+
+  #syncInfoDesc {
+    font-size: 0.95em;
+    line-height: 20px;
+  }
+
   @media (prefers-color-scheme: dark) {
     /* Modal dialog design */
     #illustration {
@@ -292,7 +351,7 @@
   which user clicks to indicate consent.
 -->
 
-<template is="dom-if" if="[[isModalDialog_]]">
+<template is="dom-if" if="[[isModalDialogWithoutTangibleSync_()]]">
   <template is="dom-if" if="[[!isSigninInterceptFre_]]">
     <div id="illustration-container">
       <div id="grey-banner"></div>
@@ -357,7 +416,7 @@
   </div>
 </template>
 
-<template is="dom-if" if="[[!isModalDialog_]]">
+<template is="dom-if" if="[[isWindowVersionWithoutTangibleSync_()]]">
   <div id="confirmationContainer">
     <div id="headerContainer">
       <div id="syncPromoBanner"></div>
@@ -406,6 +465,81 @@
           </cr-button>
         </if>
       </div>
+    </div>
+  </div>
+</template>
+
+<template is="dom-if" if="[[isTangibleSync_]]">
+  <div id="contentContainer" class="tangible-sync">
+    <!-- TODO(crbug.com/1374702): Add work badge to avatar for managed
+         accounts -->
+    <img id="avatar" alt="" src="[[accountImageSrc_]]">
+    <h1 id="syncConfirmationHeading" consent-description>
+      $i18n{syncConfirmationTitle}
+    </h1>
+    <div id="syncInfoTitle" class="secondary" consent-description>
+      $i18n{syncConfirmationSyncInfoTitle}
+    </div>
+    <div id="syncBenefitsList">
+      <!-- TODO(crbug.com/1374702): Transform the sync benefit item into a
+           polymer component. Replace filled icons and move repeated ones to cr
+           icons -->
+      <div class="sync-benefit">
+        <iron-icon class="sync-benefit-icon" icon="signin:star-border">
+        </iron-icon>
+        <div class="sync-benefit-text" consent-description>
+          $i18n{syncConfirmationBookmarks}
+        </div>
+      </div>
+      <div class="sync-benefit">
+        <iron-icon class="sync-benefit-icon" icon="signin:assignment">
+        </iron-icon>
+        <div class="sync-benefit-text" consent-description>
+          $i18n{syncConfirmationAutofill}
+        </div>
+      </div>
+      <div class="sync-benefit">
+        <iron-icon class="sync-benefit-icon" icon="signin:devices"></iron-icon>
+        <div class="sync-benefit-text" consent-description>
+          $i18n{syncConfirmationHistory}
+        </div>
+      </div>
+      <div class="sync-benefit">
+        <iron-icon class="sync-benefit-icon" icon="cr:extension"></iron-icon>
+        <div class="sync-benefit-text" consent-description>
+          $i18n{syncConfirmationExtensionsAndMore}
+        </div>
+      </div>
+    </div>
+    <div id="syncInfoDesc" class="secondary" consent-description>
+      $i18n{syncConfirmationSyncInfoDesc}
+    </div>
+  </div>
+
+  <div class="action-row">
+    <paper-spinner-lite active="[[anyButtonClicked_]]"></paper-spinner-lite>
+    <div id="buttonsContainer" class="action-container">
+      <cr-button id="confirmButton" class="action-button" on-click="onConfirm_"
+          disabled="[[anyButtonClicked_]]" consent-confirmation
+          autofocus="[[isModalDialog_]]">
+        $i18n{syncConfirmationConfirmLabel}
+      </cr-button>
+      <if expr="is_macosx or is_linux or chromeos_ash or chromeos_lacros">
+        <cr-button id="settingsButton" on-click="onGoToSettings_"
+            disabled="[[anyButtonClicked_]]" consent-confirmation>
+          $i18n{syncConfirmationSettingsLabel}
+        </cr-button>
+      </if>
+      <cr-button id="notNowButton" on-click="onUndo_"
+          disabled="[[anyButtonClicked_]]">
+        $i18n{syncConfirmationUndoLabel}
+      </cr-button>
+      <if expr="not (is_macosx or is_linux or chromeos_ash or chromeos_lacros)">
+        <cr-button id="settingsButton" on-click="onGoToSettings_"
+            disabled="[[anyButtonClicked_]]" consent-confirmation>
+          $i18n{syncConfirmationSettingsLabel}
+        </cr-button>
+      </if>
     </div>
   </div>
 </template>

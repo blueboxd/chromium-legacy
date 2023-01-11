@@ -15,8 +15,8 @@ example_value:
 features:
   dynamic_refresh: true
 owners:
-- file://components/policy/resources/OWNERS
-- atwilson@chromium.org
+- file://components/policy/OWNERS
+- emaamari@google.com
 schema:
   items:
     type: string

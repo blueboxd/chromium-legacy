@@ -14,6 +14,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -23,7 +24,6 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/form_events/form_events.h"
-#include "components/autofill/core/browser/metrics/form_interactions_counter.h"
 #include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/dense_set.h"
@@ -46,6 +46,8 @@ namespace autofill {
 class AutofillField;
 class CreditCard;
 class FormEventLoggerBase;
+
+struct FormGroupFillingStats;
 
 // A given maximum is enforced to minimize the number of buckets generated.
 extern const int kMaxBucketsCount;
@@ -714,9 +716,7 @@ class AutofillMetrics {
     // If present, the ZIP must be valid (if verifiable).
     ZIP_VALID_REQUIREMENT_FULFILLED = 16,
     ZIP_VALID_REQUIREMENT_VIOLATED = 17,
-    // If present, the phone number must be valid (if verifiable).
-    PHONE_VALID_REQUIREMENT_FULFILLED = 18,
-    PHONE_VALID_REQUIREMENT_VIOLATED = 19,
+    // 18 and 19 are deprecated, as phone numbers are not a requirement anymore.
     // Indicates the overall status of the import requirements check.
     OVERALL_REQUIREMENT_FULFILLED = 20,
     OVERALL_REQUIREMENT_VIOLATED = 21,
@@ -875,6 +875,33 @@ class AutofillMetrics {
     kMaxValue = kOtpMismatchError,
   };
 
+  // The filling status of an autofilled field.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class FieldFillingStatus {
+    // The field was filled and accepted.
+    kAccepted = 0,
+    // The field was filled and corrected to a value of the same type.
+    kCorrectedToSameType = 1,
+    // The field was filled and corrected to a value of a different type.
+    kCorrectedToDifferentType = 2,
+    // The field was filled and corrected to a value of an unknown type.
+    kCorrectedToUnknownType = 3,
+    // The field was filled and the value was cleared afterwards.
+    kCorrectedToEmpty = 4,
+    // The field was manually filled to a value of the same type as the
+    // field was predicted to.
+    kManuallyFilledToSameType = 5,
+    // The field was manually filled to a value of a different type as the field
+    // was predicted to.
+    kManuallyFilledToDifferentType = 6,
+    // The field was manually filled to a value of an unknown type.
+    kManuallyFilledToUnknownType = 7,
+    // The field was left empty.
+    kLeftEmpty = 8,
+    kMaxValue = kLeftEmpty
+  };
+
   // Utility class for determining the seamlessness of a credit card fill.
   class CreditCardSeamlessness {
    public:
@@ -982,7 +1009,9 @@ class AutofillMetrics {
                        bool suggestions_shown,
                        bool edited_autofilled_field,
                        bool suggestion_filled,
-                       autofill_assistant::AutofillAssistantIntent intent);
+                       autofill_assistant::AutofillAssistantIntent intent,
+                       const FormInteractionCounts& form_interaction_counts,
+                       const FormInteractionsFlowId& flow_id);
     void LogFormEvent(FormEvent form_event,
                       const DenseSet<FormType>& form_types,
                       const base::TimeTicks& form_parsed_timestamp);
@@ -1040,8 +1069,8 @@ class AutofillMetrics {
     kNone = 0,
     kValid = 1,
     kGarbage = 2,
-    kOff = 3,
-    kMaxValue = kOff
+    kIgnored = 3,
+    kMaxValue = kIgnored
   };
 
   AutofillMetrics() = delete;
@@ -1398,6 +1427,12 @@ class AutofillMetrics {
       size_t num_edited_autofilled_fields,
       bool observed_submission);
 
+  // Logs the `filling_stats` of the fields within a `form_type`. The filling
+  // status consistent of the number of accepted, corrected or and unfilled
+  // fields.
+  static void LogFieldFillingStats(FormType form_type,
+                                   const FormGroupFillingStats& filling_stats);
+
   // This should be called each time a server response is parsed for a form.
   static void LogServerResponseHasDataForForm(bool has_data);
 
@@ -1430,12 +1465,12 @@ class AutofillMetrics {
       size_t num_frames);
 
   struct LogCreditCardSeamlessnessParam {
-    const FormEventLoggerBase& event_logger;
-    const FormStructure& form;
-    const AutofillField& field;
-    const base::flat_set<FieldGlobalId>& newly_filled_fields;
-    const base::flat_set<FieldGlobalId>& safe_fields;
-    ukm::builders::Autofill_CreditCardFill& builder;
+    const raw_ref<const FormEventLoggerBase> event_logger;
+    const raw_ref<const FormStructure> form;
+    const raw_ref<const AutofillField> field;
+    const raw_ref<const base::flat_set<FieldGlobalId>> newly_filled_fields;
+    const raw_ref<const base::flat_set<FieldGlobalId>> safe_fields;
+    const raw_ref<ukm::builders::Autofill_CreditCardFill> builder;
   };
 
   // Logs several metrics about seamlessness. These are qualitative and bitmask
@@ -1765,6 +1800,21 @@ class AutofillMetrics {
   static void LogAutocompletePredictionCollisionTypes(
       ServerFieldType server_type,
       ServerFieldType heuristic_types);
+
+  // Logs whether a heuristic detection for an NUMERIC_QUANTITY collides with a
+  // server prediction.
+  static void LogNumericQuantityCollidesWithServerPrediction(bool collision);
+
+  // Logs if the filling of a field was accepted even though it had a
+  // NUMERIC_QUANTITY. This metric is only emitted if the feature to grant the
+  // heuristic precedence is disabled.
+  static void LogAcceptedFilledFieldWithNumericQuantityHeuristicPrediction(
+      bool accepted);
+
+  // Logs the context menu impressions based on the autofill type as well as
+  // based on the autocomplete type.
+  static void LogContextMenuImpressions(ServerFieldType field_type,
+                                        AutocompleteState autocomplete_state);
 
  private:
   static void Log(AutocompleteEvent event);

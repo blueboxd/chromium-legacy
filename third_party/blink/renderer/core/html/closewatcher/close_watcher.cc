@@ -121,7 +121,8 @@ CloseWatcher* CloseWatcher::CreateInternal(LocalDOMWindow* window,
                                            CloseWatcherOptions* options) {
   CloseWatcher* watcher = MakeGarbageCollected<CloseWatcher>(window);
 
-  if (LocalFrame::ConsumeTransientUserActivation(window->GetFrame())) {
+  if (window->history_user_activation_state().IsActive()) {
+    window->history_user_activation_state().Consume();
     watcher->created_with_user_activation_ = true;
     watcher->grouped_with_previous_ = false;
   } else if (!stack.HasConsumedFreeWatcher()) {
@@ -132,15 +133,13 @@ CloseWatcher* CloseWatcher::CreateInternal(LocalDOMWindow* window,
     watcher->grouped_with_previous_ = true;
   }
 
-  stack.ConsumeCloseWatcherCancelability();
-
   if (options && options->hasSignal()) {
     AbortSignal* signal = options->signal();
     if (signal->aborted()) {
       watcher->state_ = State::kClosed;
       return watcher;
     }
-    signal->AddAlgorithm(
+    watcher->abort_handle_ = signal->AddAlgorithm(
         MakeGarbageCollected<DestroyOnAbortAlgorithm>(watcher));
   }
 
@@ -155,17 +154,16 @@ void CloseWatcher::close() {
   if (IsClosed() || dispatching_cancel_ || !DomWindow())
     return;
 
-  WatcherStack& stack = *DomWindow()->closewatcher_stack();
-
-  if (stack.CanCloseWatcherFireCancel()) {
-    stack.ConsumeCloseWatcherCancelability();
+  if (DomWindow()->history_user_activation_state().IsActive()) {
     Event& cancel_event = *Event::CreateCancelable(event_type_names::kCancel);
     {
       base::AutoReset<bool> scoped_committing(&dispatching_cancel_, true);
       DispatchEvent(cancel_event);
     }
-    if (cancel_event.defaultPrevented())
+    if (cancel_event.defaultPrevented()) {
+      DomWindow()->history_user_activation_state().Consume();
       return;
+    }
   }
 
   // These might have changed because of the event firing.
@@ -174,6 +172,7 @@ void CloseWatcher::close() {
   if (DomWindow())
     DomWindow()->closewatcher_stack()->Remove(this);
 
+  abort_handle_.Clear();
   state_ = State::kClosed;
   DispatchEvent(*Event::Create(event_type_names::kClose));
 }
@@ -183,6 +182,7 @@ void CloseWatcher::destroy() {
   if (DomWindow())
     DomWindow()->closewatcher_stack()->Remove(this);
   state_ = State::kClosed;
+  abort_handle_.Clear();
 }
 
 const AtomicString& CloseWatcher::InterfaceName() const {
@@ -190,6 +190,7 @@ const AtomicString& CloseWatcher::InterfaceName() const {
 }
 
 void CloseWatcher::Trace(Visitor* visitor) const {
+  visitor->Trace(abort_handle_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }

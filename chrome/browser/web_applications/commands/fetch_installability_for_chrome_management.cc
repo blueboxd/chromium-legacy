@@ -20,19 +20,18 @@
 #include "chrome/browser/web_applications/web_app_url_loader.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/gurl.h"
 
 namespace web_app {
 
 FetchInstallabilityForChromeManagement::FetchInstallabilityForChromeManagement(
     const GURL& url,
     base::WeakPtr<content::WebContents> web_contents,
-    const WebAppRegistrar& registry,
     std::unique_ptr<WebAppUrlLoader> url_loader,
     std::unique_ptr<WebAppDataRetriever> data_retriever,
     FetchInstallabilityForChromeManagementCallback callback)
-    : noop_lock_(std::make_unique<NoopLock>()),
+    : noop_lock_description_(std::make_unique<NoopLockDescription>()),
       url_(url),
-      registry_(registry),
       web_contents_(web_contents),
       url_loader_(std::move(url_loader)),
       data_retriever_(std::move(data_retriever)),
@@ -46,14 +45,18 @@ FetchInstallabilityForChromeManagement::FetchInstallabilityForChromeManagement(
 FetchInstallabilityForChromeManagement::
     ~FetchInstallabilityForChromeManagement() = default;
 
-Lock& FetchInstallabilityForChromeManagement::lock() const {
-  DCHECK(noop_lock_ || app_lock_);
-  if (noop_lock_)
-    return *noop_lock_;
-  return *app_lock_;
+LockDescription& FetchInstallabilityForChromeManagement::lock_description()
+    const {
+  DCHECK(noop_lock_description_ || app_lock_description_);
+  if (noop_lock_description_)
+    return *noop_lock_description_;
+  return *app_lock_description_;
 }
 
-void FetchInstallabilityForChromeManagement::Start() {
+void FetchInstallabilityForChromeManagement::StartWithLock(
+    std::unique_ptr<NoopLock> lock) {
+  noop_lock_ = std::move(lock);
+
   if (IsWebContentsDestroyed()) {
     error_log_.Append(base::Value("Web contents destroyed"));
     Abort(InstallableCheckResult::kNotInstallable);
@@ -143,13 +146,18 @@ void FetchInstallabilityForChromeManagement::OnWebAppInstallabilityChecked(
   DCHECK(opt_manifest);
   app_id_ = GenerateAppIdFromManifest(*opt_manifest);
 
-  app_lock_ = command_manager()->lock_manager().UpgradeAndAcquireLock(
-      std::move(noop_lock_), {app_id_},
-      base::BindOnce(&FetchInstallabilityForChromeManagement::OnAppLockGranted,
-                     weak_factory_.GetWeakPtr()));
+  app_lock_description_ =
+      command_manager()->lock_manager().UpgradeAndAcquireLock(
+          std::move(noop_lock_description_), std::move(noop_lock_), {app_id_},
+          base::BindOnce(
+              &FetchInstallabilityForChromeManagement::OnAppLockGranted,
+              weak_factory_.GetWeakPtr()));
 }
 
-void FetchInstallabilityForChromeManagement::OnAppLockGranted() {
+void FetchInstallabilityForChromeManagement::OnAppLockGranted(
+    std::unique_ptr<AppLock> app_lock) {
+  app_lock_ = std::move(app_lock);
+
   if (IsWebContentsDestroyed()) {
     error_log_.Append(base::Value("Web contents destroyed"));
     Abort(InstallableCheckResult::kNotInstallable);
@@ -157,7 +165,7 @@ void FetchInstallabilityForChromeManagement::OnAppLockGranted() {
   }
   DCHECK(!app_id_.empty());
   InstallableCheckResult result;
-  if (registry_->IsInstalled(app_id_)) {
+  if (app_lock_->registrar().IsInstalled(app_id_)) {
     result = InstallableCheckResult::kAlreadyInstalled;
   } else {
     result = InstallableCheckResult::kInstallable;

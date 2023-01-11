@@ -273,8 +273,6 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   autofill::PersonalDataManager* GetPersonalDataManager();
   autofill::RegionDataLoader* GetRegionDataLoader();
 
-  base::WeakPtr<Delegate> delegate() { return delegate_; }
-
   PaymentsProfileComparator* profile_comparator() {
     return &profile_comparator_;
   }
@@ -373,13 +371,16 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
 
   const std::string app_locale_;
 
+  // These WeakPtrs can be null when the webpage closes or the iframe refreshes
+  // or navigates.
   base::WeakPtr<PaymentRequestSpec> spec_;
   base::WeakPtr<Delegate> delegate_;
   base::WeakPtr<JourneyLogger> journey_logger_;
   base::WeakPtr<CSPChecker> csp_checker_;
 
-  // Not owned. Never null. Will outlive this object.
-  raw_ptr<autofill::PersonalDataManager> personal_data_manager_;
+  // Not owned. Never null. Must outlive this object.
+  raw_ptr<autofill::PersonalDataManager, DanglingUntriaged>
+      personal_data_manager_;
 
   StatusCallback can_make_payment_callback_;
   StatusCallback has_enrolled_instrument_callback_;
@@ -389,12 +390,16 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   AppCreationFailureReason get_all_payment_apps_error_reason_ =
       AppCreationFailureReason::UNKNOWN;
 
-  raw_ptr<autofill::AutofillProfile> selected_shipping_profile_ = nullptr;
-  raw_ptr<autofill::AutofillProfile> selected_shipping_option_error_profile_ =
-      nullptr;
-  raw_ptr<autofill::AutofillProfile> selected_contact_profile_ = nullptr;
-  raw_ptr<autofill::AutofillProfile> invalid_shipping_profile_ = nullptr;
-  raw_ptr<autofill::AutofillProfile> invalid_contact_profile_ = nullptr;
+  raw_ptr<autofill::AutofillProfile, DanglingUntriaged>
+      selected_shipping_profile_ = nullptr;
+  raw_ptr<autofill::AutofillProfile, DanglingUntriaged>
+      selected_shipping_option_error_profile_ = nullptr;
+  raw_ptr<autofill::AutofillProfile, DanglingUntriaged>
+      selected_contact_profile_ = nullptr;
+  raw_ptr<autofill::AutofillProfile, DanglingUntriaged>
+      invalid_shipping_profile_ = nullptr;
+  raw_ptr<autofill::AutofillProfile, DanglingUntriaged>
+      invalid_contact_profile_ = nullptr;
   base::WeakPtr<PaymentApp> selected_app_;
 
   // Profiles may change due to (e.g.) sync events, so profiles are cached after

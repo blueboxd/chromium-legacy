@@ -11,6 +11,8 @@
 #include "components/feed/core/v2/test/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::ElementsAreArray;
+
 namespace feedstore {
 namespace {
 base::Time kTestTimeEpoch = base::Time::UnixEpoch();
@@ -70,24 +72,25 @@ TEST(feedstore_util_test, GetNextActionId) {
 
 using feed::StreamKind;
 using feed::StreamType;
-TEST(feedstore_util_test, StreamTypeFromKey) {
+TEST(feedstore_util_test, StreamTypeFromId) {
   StreamType for_you = StreamType(StreamKind::kForYou);
   StreamType following = StreamType(StreamKind::kFollowing);
-  StreamType channel = StreamType(StreamKind::kChannel);
-  StreamType channel_a = StreamType(StreamKind::kChannel, "A");
+  StreamType single_web_feed = StreamType(StreamKind::kSingleWebFeed);
+  StreamType single_web_feed_a = StreamType(StreamKind::kSingleWebFeed, "A");
   StreamType unknown = StreamType();
 
   EXPECT_EQ(StreamKey(for_you), kForYouStreamKey);
   EXPECT_EQ(StreamKey(following), kFollowStreamKey);
   EXPECT_DCHECK_DEATH(StreamKey(unknown));
 
-  EXPECT_TRUE(StreamTypeFromKey(StreamKey(channel)).IsChannelFeed());
-  EXPECT_TRUE(StreamTypeFromKey(StreamKey(channel_a)).IsChannelFeed());
+  EXPECT_TRUE(StreamTypeFromId(StreamKey(single_web_feed)).IsSingleWebFeed());
+  EXPECT_TRUE(StreamTypeFromId(StreamKey(single_web_feed_a)).IsSingleWebFeed());
 
-  EXPECT_EQ(StreamTypeFromKey(StreamKey(channel_a)).GetWebFeedId(), "A");
+  EXPECT_EQ(StreamTypeFromId(StreamKey(single_web_feed_a)).GetWebFeedId(), "A");
 
-  EXPECT_TRUE(StreamTypeFromKey(StreamKey(following)).IsWebFeed());
-  EXPECT_TRUE(StreamTypeFromKey(StreamKey(for_you)).IsForYou());
+  EXPECT_TRUE(StreamTypeFromId(StreamKey(following)).IsWebFeed());
+  EXPECT_TRUE(StreamTypeFromId(StreamKey(for_you)).IsForYou());
+  EXPECT_EQ(StreamTypeFromId("z"), StreamType());
 }
 
 }  // namespace

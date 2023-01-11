@@ -70,10 +70,9 @@ constexpr auto kShortDelay = base::Milliseconds(10);
 std::unique_ptr<PageSchedulerImpl> CreatePageScheduler(
     PageScheduler::Delegate* page_scheduler_delegate,
     MainThreadSchedulerImpl* scheduler,
-    WebAgentGroupScheduler& agent_group_scheduler) {
+    AgentGroupScheduler& agent_group_scheduler) {
   std::unique_ptr<PageScheduler> page_scheduler =
-      agent_group_scheduler.AsAgentGroupScheduler().CreatePageScheduler(
-          page_scheduler_delegate);
+      agent_group_scheduler.CreatePageScheduler(page_scheduler_delegate);
   std::unique_ptr<PageSchedulerImpl> page_scheduler_impl(
       static_cast<PageSchedulerImpl*>(page_scheduler.release()));
   return page_scheduler_impl;
@@ -183,8 +182,11 @@ class FrameSchedulerDelegateForTesting : public FrameScheduler::Delegate {
   const base::UnguessableToken& GetAgentClusterId() const override {
     return base::UnguessableToken::Null();
   }
-
-  MOCK_METHOD1(UpdateBackForwardCacheDisablingFeatures, void(uint64_t));
+  MOCK_METHOD(void,
+              UpdateBackForwardCacheDisablingFeatures,
+              (uint64_t,
+               const BFCacheBlockingFeatureAndLocations&,
+               const BFCacheBlockingFeatureAndLocations&));
 
   int update_task_time_calls_ = 0;
 };
@@ -260,7 +262,7 @@ class FrameSchedulerImplTest : public testing::Test {
     throttleable_task_queue_.reset();
     frame_scheduler_.reset();
     page_scheduler_.reset();
-    agent_group_scheduler_.reset();
+    agent_group_scheduler_ = nullptr;
     scheduler_->Shutdown();
     scheduler_.reset();
     frame_scheduler_delegate_.reset();
@@ -494,7 +496,7 @@ class FrameSchedulerImplTest : public testing::Test {
   base::test::ScopedFeatureList feature_list_;
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
-  std::unique_ptr<WebAgentGroupScheduler> agent_group_scheduler_;
+  Persistent<AgentGroupScheduler> agent_group_scheduler_;
   std::unique_ptr<PageSchedulerImpl> page_scheduler_;
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler_;
   std::unique_ptr<testing::StrictMock<FrameSchedulerDelegateForTesting>>
@@ -2118,9 +2120,19 @@ TEST_F(FrameSchedulerImplTest, FeatureUpload) {
                         (1 << static_cast<size_t>(
                              SchedulingPolicy::Feature::
                                  kMainResourceHasCacheControlNoStore)) |
-                        (1 << static_cast<size_t>(
-                             SchedulingPolicy::Feature::
-                                 kMainResourceHasCacheControlNoCache))));
+                            (1 << static_cast<size_t>(
+                                 SchedulingPolicy::Feature::
+                                     kMainResourceHasCacheControlNoCache)),
+                        BFCacheBlockingFeatureAndLocations(),
+                        BFCacheBlockingFeatureAndLocations(
+                            {FeatureAndJSLocationBlockingBFCache(
+                                 SchedulingPolicy::Feature::
+                                     kMainResourceHasCacheControlNoStore,
+                                 nullptr),
+                             FeatureAndJSLocationBlockingBFCache(
+                                 SchedulingPolicy::Feature::
+                                     kMainResourceHasCacheControlNoCache,
+                                 nullptr)})));
               },
               frame_scheduler_.get(), frame_scheduler_delegate_.get()));
 
@@ -2133,7 +2145,9 @@ TEST_F(FrameSchedulerImplTest, FeatureUpload_FrameDestruction) {
   ResetFrameScheduler(/*is_in_embedded_frame_tree=*/false,
                       FrameScheduler::FrameType::kMainFrame);
 
-  FeatureHandle feature_handle;
+  FeatureHandle feature_handle(frame_scheduler_->RegisterFeature(
+      SchedulingPolicy::Feature::kWebSocket,
+      {SchedulingPolicy::DisableBackForwardCache()}));
 
   frame_scheduler_->GetTaskRunner(TaskType::kJavascriptTimerImmediate)
       ->PostTask(
@@ -2143,15 +2157,17 @@ TEST_F(FrameSchedulerImplTest, FeatureUpload_FrameDestruction) {
                  testing::StrictMock<FrameSchedulerDelegateForTesting>*
                      delegate,
                  FeatureHandle* feature_handle) {
-                *feature_handle = frame_scheduler->RegisterFeature(
-                    SchedulingPolicy::Feature::kWebSocket,
-                    {SchedulingPolicy::DisableBackForwardCache()});
                 // Ensure that the feature upload is delayed.
                 testing::Mock::VerifyAndClearExpectations(delegate);
-                EXPECT_CALL(*delegate,
-                            UpdateBackForwardCacheDisablingFeatures(
-                                (1 << static_cast<size_t>(
-                                     SchedulingPolicy::Feature::kWebSocket))));
+                EXPECT_CALL(
+                    *delegate,
+                    UpdateBackForwardCacheDisablingFeatures(
+                        (1 << static_cast<size_t>(
+                             SchedulingPolicy::Feature::kWebSocket)),
+                        BFCacheBlockingFeatureAndLocations(
+                            {feature_handle
+                                 ->GetFeatureAndJSLocationBlockingBFCache()}),
+                        BFCacheBlockingFeatureAndLocations()));
               },
               frame_scheduler_.get(), frame_scheduler_delegate_.get(),
               &feature_handle));
@@ -2169,7 +2185,9 @@ TEST_F(FrameSchedulerImplTest, FeatureUpload_FrameDestruction) {
                        testing::Mock::VerifyAndClearExpectations(delegate);
                        EXPECT_CALL(
                            *delegate,
-                           UpdateBackForwardCacheDisablingFeatures(testing::_))
+                           UpdateBackForwardCacheDisablingFeatures(
+                               testing::_, BFCacheBlockingFeatureAndLocations(),
+                               BFCacheBlockingFeatureAndLocations()))
                            .Times(0);
                      },
                      frame_scheduler_.get(), frame_scheduler_delegate_.get(),
@@ -2369,7 +2387,7 @@ class MockMainThreadScheduler : public MainThreadSchedulerImpl {
 
 TEST_F(FrameSchedulerImplTest, ReportFMPAndFCPForMainFrames) {
   MockMainThreadScheduler mock_main_thread_scheduler{task_environment_};
-  std::unique_ptr<WebAgentGroupScheduler> agent_group_scheduler =
+  AgentGroupScheduler* agent_group_scheduler =
       mock_main_thread_scheduler.CreateAgentGroupScheduler();
   std::unique_ptr<PageSchedulerImpl> page_scheduler = CreatePageScheduler(
       nullptr, &mock_main_thread_scheduler, *agent_group_scheduler);
@@ -2392,7 +2410,7 @@ TEST_F(FrameSchedulerImplTest, ReportFMPAndFCPForMainFrames) {
 
 TEST_F(FrameSchedulerImplTest, DontReportFMPAndFCPForSubframes) {
   MockMainThreadScheduler mock_main_thread_scheduler{task_environment_};
-  std::unique_ptr<WebAgentGroupScheduler> agent_group_scheduler =
+  AgentGroupScheduler* agent_group_scheduler =
       mock_main_thread_scheduler.CreateAgentGroupScheduler();
   std::unique_ptr<PageSchedulerImpl> page_scheduler = CreatePageScheduler(
       nullptr, &mock_main_thread_scheduler, *agent_group_scheduler);

@@ -461,6 +461,11 @@ public class LocationBarCoordinator implements LocationBar, NativeInitObserver,
         updateButtonVisibility();
     }
 
+    /** @see UrlBarCoordinator#getVisibleTextPrefixHint() */
+    public CharSequence getOmniboxVisibleTextPrefixHint() {
+        return mUrlCoordinator.getVisibleTextPrefixHint();
+    }
+
     /**
      * Returns the {@link LocationBarCoordinatorPhone} for this coordinator.
      *
@@ -573,6 +578,11 @@ public class LocationBarCoordinator implements LocationBar, NativeInitObserver,
     /** Updates the visibility of the buttons inside the location bar. */
     public void updateButtonVisibility() {
         mLocationBarMediator.updateButtonVisibility();
+    }
+
+    /** @param show Whether the status icon background should be shown. */
+    public void setStatusIconBackgroundVisibility(boolean show) {
+        mStatusCoordinator.setStatusIconBackgroundVisibility(show);
     }
 
     /** Returns whether the layout is RTL. */

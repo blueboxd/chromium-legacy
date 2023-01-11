@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {sendWithPromise} from 'chrome://resources/js/cr.js';
 
 export interface DataCollectorItem {
   name: string;
@@ -16,7 +16,7 @@ export interface IssueDetails {
   issueDescription: string;
 }
 
-export interface PIIDataItem {
+export interface PiiDataItem {
   piiTypeDescription: string;
   piiType: number;
   detectedData: string;
@@ -52,7 +52,7 @@ export interface BrowserProxy {
 
   cancelDataCollection(): void;
 
-  startDataExport(piiItems: PIIDataItem[]): void;
+  startDataExport(piiItems: PiiDataItem[]): void;
 
   showExportedDataInFolder(): void;
 
@@ -82,7 +82,7 @@ export class BrowserProxyImpl implements BrowserProxy {
     chrome.send('cancelDataCollection');
   }
 
-  startDataExport(piiItems: PIIDataItem[]) {
+  startDataExport(piiItems: PiiDataItem[]) {
     chrome.send('startDataExport', [piiItems]);
   }
 

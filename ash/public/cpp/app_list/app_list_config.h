@@ -33,8 +33,6 @@ class ASH_PUBLIC_EXPORT SharedAppListConfig {
 
   size_t max_search_results() const { return max_search_results_; }
 
-  size_t max_search_result_tiles() const { return max_search_result_tiles_; }
-
   size_t max_search_result_list_items() const {
     return max_search_result_list_items_;
   }
@@ -85,14 +83,6 @@ class ASH_PUBLIC_EXPORT SharedAppListConfig {
     return suggestion_chip_icon_dimension_;
   }
 
-  ui::ResourceBundle::FontStyle search_result_title_font_style() const {
-    return search_result_title_font_style_;
-  }
-
-  gfx::FontList search_result_recommendation_title_font() const {
-    return search_result_recommendation_title_font_;
-  }
-
   int search_tile_height() const { return search_tile_height_; }
 
   // Returns the maximum number of items allowed in a page in the apps grid.
@@ -102,7 +92,7 @@ class ASH_PUBLIC_EXPORT SharedAppListConfig {
   int GetPreferredIconDimension(SearchResultDisplayType display_type) const;
 
  private:
-  friend class base::NoDestructor<SharedAppListConfig>;
+  friend class SharedAppListConfig;
   SharedAppListConfig();
 
   // The icon dimension of tile views in apps grid view.
@@ -110,9 +100,6 @@ class ASH_PUBLIC_EXPORT SharedAppListConfig {
 
   // Maximum number of results to show in the launcher Search UI.
   const size_t max_search_results_ = 6;
-
-  // Max number of search result tiles in the launcher suggestion window.
-  const size_t max_search_result_tiles_ = 6;
 
   // Max number of search result list items in the launcher suggestion window.
   const size_t max_search_result_list_items_ = 5;
@@ -143,14 +130,6 @@ class ASH_PUBLIC_EXPORT SharedAppListConfig {
   // The suggestion chip icon dimension.
   const int suggestion_chip_icon_dimension_ = 20;
 
-  // Font style for AppListSearchResultItemViews that are not suggested
-  // apps.
-  const ui::ResourceBundle::FontStyle search_result_title_font_style_;
-
-  // Font style for AppListSearchResultTileItemViews that are suggested
-  // apps.
-  const gfx::FontList search_result_recommendation_title_font_;
-
   // The height of tiles in search result.
   const int search_tile_height_ = 92;
 };
@@ -167,19 +146,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   explicit AppListConfig(AppListConfigType type);
 
   // Constructor for scaled app list configuration.
-  // |scale_x| - The scale at which apps grid tile should be scaled
+  // `scale_x` - The scale at which apps grid tile should be scaled
   // horizontally.
-  // |scale_y| - The scale at which apps grid tile should be scaled
-  // vertically.
-  // |inner_title_scale_y| - The scale to use to vertically scale dimensions
-  // |min_y_scale| - Whether |scale_y| is the minimum scale allowed.
-  // within the apps grid tile. Different from |scale_y| because tile title
-  // height is not vertically scaled.
-  AppListConfig(const AppListConfig& base_config,
-                float scale_x,
-                float scale_y,
-                float inner_tile_scale_y,
-                bool min_y_scale);
+  AppListConfig(const AppListConfig& base_config, float scale_x);
 
   AppListConfig(const AppListConfig&) = delete;
   AppListConfig& operator=(const AppListConfig&) = delete;
@@ -188,7 +157,6 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   AppListConfigType type() const { return type_; }
   float scale_x() const { return scale_x_; }
-  float scale_y() const { return scale_y_; }
   int grid_tile_width() const { return grid_tile_width_; }
   int grid_tile_height() const { return grid_tile_height_; }
   int grid_icon_dimension() const { return grid_icon_dimension_; }
@@ -223,10 +191,6 @@ class ASH_PUBLIC_EXPORT AppListConfig {
     return gfx::Size(grid_icon_dimension_, grid_icon_dimension_);
   }
 
-  gfx::Size grid_focus_size() const {
-    return gfx::Size(grid_focus_dimension_, grid_focus_dimension_);
-  }
-
   gfx::Size folder_icon_size() const {
     return gfx::Size(folder_icon_dimension_, folder_icon_dimension_);
   }
@@ -254,9 +218,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   const AppListConfigType type_;
 
   // Current config scale values - should be different from 1 for
-  // AppListConfigType::kShared only.
+  // AppListConfigType::kShared only. Note that `scale_x_` should be always less
+  // or equal to 1.
   const float scale_x_;
-  const float scale_y_;
 
   // The tile view's width and height of the item in apps grid view.
   const int grid_tile_width_;
@@ -276,11 +240,6 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   // The title width of tile views in apps grid view.
   const int grid_title_width_;
-
-  // The focus dimension of tile views in apps grid view. Only used when
-  // ProductivityLauncher is disabled. ProductivityLauncher draws the focus ring
-  // around the entire AppListItemView.
-  const int grid_focus_dimension_;
 
   // Corner radius of the focus ring for tile views in apps grid view.
   const int grid_focus_corner_radius_;

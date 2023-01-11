@@ -57,6 +57,12 @@ def main():
         # meantime exclude such comments to reduce file size.
         '--comments', 'false',
         #'--comments', '/Copyright|license|LICENSE/',
+
+        # Declare global variables as false, to prune out unnecessary code.
+        '--define', 'window.ShadyDOM=false',
+        '--define', 'window.ShadyCSS=false',
+        '--define', 'window.Polymer.legacyOptimizations=false',
+
         '--output', minified_js])
 
     # Copy generated JS bundle back to the original location.

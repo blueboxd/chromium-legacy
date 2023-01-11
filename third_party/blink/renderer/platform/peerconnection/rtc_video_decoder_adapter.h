@@ -8,54 +8,41 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/synchronization/lock.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
-#include "media/base/decoder_status.h"
-#include "media/base/status.h"
-#include "media/base/supported_video_decoder_config.h"
-#include "media/base/video_codecs.h"
-#include "media/base/video_decoder.h"
+#include "media/base/decoder.h"
 #include "media/base/video_decoder_config.h"
-#include "third_party/abseil-cpp/absl/types/variant.h"
-#include "third_party/blink/renderer/platform/peerconnection/rtc_video_decoder_fallback_recorder.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/deque.h"
-#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
 #include "third_party/webrtc/api/video_codecs/video_decoder.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace base {
 class SequencedTaskRunner;
 }  // namespace base
 
 namespace media {
-class DecoderBuffer;
 class GpuVideoAcceleratorFactories;
-class MediaLog;
-class VideoFrame;
 }  // namespace media
 
 namespace blink {
 
+namespace features {
+PLATFORM_EXPORT BASE_DECLARE_FEATURE(kWebRtcDecoderAdapterSyncDecode);
+}
+
 // This class decodes video for WebRTC using a media::VideoDecoder. In
-// particular, either GpuVideoDecoder or MojoVideoDecoder are used to provide
-// access to hardware decoding in the GPU process.
+// particular, MojoVideoDecoder are used to provide access to hardware decoding
+// in the GPU process.
 //
-// Lifecycle methods are called on the WebRTC worker thread. Decoding happens on
-// a WebRTC DecodingThread, which is an rtc::PlatformThread owend by WebRTC; it
-// does not have a TaskRunner.
+// This is created and destroyed on a WebRTC DecodingThread and decoding happens
+// also on the thread.
 //
-// To stop decoding, WebRTC stops the DecodingThread and then calls Release() on
-// the worker. Calling the DecodedImageCallback after the DecodingThread is
-// stopped is illegal but, because we decode on the media thread, there is no
-// way to synchronize this correctly.
+// The webrtc::VideoDecoder functions delegates |impl_| functions through
+// posting the task to |media_task_runner_|.
 class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
  public:
   // Minimum resolution that we'll consider "not low resolution" for the purpose
@@ -88,10 +75,8 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   // webrtc::VideoDecoder implementation.
   // Called on the DecodingThread.
   bool Configure(const Settings& _settings) override;
-  // Called on the DecodingThread.
   int32_t RegisterDecodeCompleteCallback(
       webrtc::DecodedImageCallback* callback) override;
-  // Called on the DecodingThread.
   int32_t Decode(const webrtc::EncodedImage& input_image,
                  bool missing_frames,
                  int64_t render_time_ms) override;
@@ -101,6 +86,7 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   DecoderInfo GetDecoderInfo() const override { return decoder_info_; }
 
   // Gets / adjusts the current decoder count.
+  // They are must be executed on media thread.
   static int GetCurrentDecoderCountForTesting();
   static void IncrementCurrentDecoderCountForTesting();
   static void DecrementCurrentDecoderCountForTesting();
@@ -111,6 +97,8 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   static bool Vp9HwSupportForSpatialLayers();
 
  private:
+  class Impl;
+
   enum class DecodeResult {
     kOk,
     kErrorRequestKeyFrame,
@@ -126,72 +114,40 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
                          const media::VideoDecoderConfig& config);
 
   bool InitializeSync(const media::VideoDecoderConfig& config);
-  void InitializeOnMediaThread(const media::VideoDecoderConfig& config,
-                               CrossThreadOnceFunction<void(bool)> init_cb,
-                               base::TimeTicks start_time,
-                               std::string* decoder_name);
-  absl::optional<RTCVideoDecoderFallbackReason>
-  FallbackOrRegisterConcurrentInstanceOnce(media::VideoCodec codec);
-  absl::optional<RTCVideoDecoderFallbackReason> NeedSoftwareFallback(
-      media::VideoCodec codec,
-      const media::DecoderBuffer& buffer) const;
-  absl::variant<DecodeResult, RTCVideoDecoderFallbackReason> EnqueueBuffer(
-      scoped_refptr<media::DecoderBuffer> buffer);
-  void DecodeOnMediaThread();
-  void OnDecodeDone(media::DecoderStatus status);
-  void OnOutput(scoped_refptr<media::VideoFrame> frame);
-
-  absl::variant<DecodeResult, RTCVideoDecoderFallbackReason> DecodeInternal(
+  absl::optional<DecodeResult> DecodeInternal(
       const webrtc::EncodedImage& input_image,
       bool missing_frames,
       int64_t render_time_ms);
   bool ShouldReinitializeForSettingHDRColorSpace(
       const webrtc::EncodedImage& input_image) const;
   bool ReinitializeSync(const media::VideoDecoderConfig& config);
-  void FlushOnMediaThread(WTF::CrossThreadOnceClosure flush_success_cb,
-                          WTF::CrossThreadOnceClosure flush_fail_cb);
-  void ChangeStatus(Status new_status) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void ChangeStatus(Status new_status);
 
   // Construction parameters.
   const scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
-  media::GpuVideoAcceleratorFactories* const gpu_factories_;
-  media::VideoDecoderConfig config_;
+  std::unique_ptr<Impl> impl_ GUARDED_BY_CONTEXT(decoding_sequence_checker_);
 
-  // Media thread members.
-  // |media_log_| must outlive |video_decoder_| because it is passed as a raw
-  // pointer.
-  std::unique_ptr<media::MediaLog> media_log_;
-  std::unique_ptr<media::VideoDecoder> video_decoder_;
-  int32_t outstanding_decode_requests_ = 0;
-  absl::optional<base::TimeTicks> start_time_
-      GUARDED_BY_CONTEXT(media_sequence_checker_);
+  // Construction parameters.
+  media::VideoDecoderConfig config_;
 
   // Decoding thread members.
   // Has anything been sent to Decode() yet?
-  bool have_started_decoding_ = false;
-
-  // Shared members.
-  base::Lock lock_;
-  int32_t consecutive_error_count_ = 0;
-  Status status_ GUARDED_BY(lock_){Status::kNeedKeyFrame};
-  webrtc::DecodedImageCallback* decode_complete_callback_ = nullptr;
-  // Requests that have not been submitted to the decoder yet.
-  WTF::Deque<scoped_refptr<media::DecoderBuffer>> pending_buffers_;
-  // Record of timestamps that have been sent to be decoded. Removing a
-  // timestamp will cause the frame to be dropped when it is output.
-  WTF::Deque<base::TimeDelta> decode_timestamps_;
-  // Resolution of most recently decoded frame, or the initial resolution if we
-  // haven't decoded anything yet.  Since this is updated asynchronously, it's
-  // only an approximation of "most recently".
-  int32_t current_resolution_ GUARDED_BY(lock_){0};
+  Status status_ GUARDED_BY_CONTEXT(decoding_sequence_checker_){
+      Status::kNeedKeyFrame};
 
   // DecoderInfo is constant after InitializeSync() is complete.
   DecoderInfo decoder_info_;
 
+  media::VideoDecoderType decoder_type_ GUARDED_BY_CONTEXT(
+      decoding_sequence_checker_){media::VideoDecoderType::kUnknown};
+
   // Thread management.
-  SEQUENCE_CHECKER(media_sequence_checker_);
   SEQUENCE_CHECKER(decoding_sequence_checker_);
 
+  // This weak pointer is bound to |media_task_runner_|.
+  base::WeakPtr<Impl> weak_impl_;
+
+  // These are bound to |decoding_sequence_checker_|.
   base::WeakPtr<RTCVideoDecoderAdapter> weak_this_;
   base::WeakPtrFactory<RTCVideoDecoderAdapter> weak_this_factory_{this};
 };

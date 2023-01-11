@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <memory>
 #include <set>
 #include <string>
@@ -16,6 +15,7 @@
 
 #include "base/callback.h"
 #include "base/callback_list.h"
+#include "base/containers/contains.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -449,8 +449,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
     DCHECK(!view->owned_by_client())
         << "This should only be called if the client doesn't already have "
            "ownership of |view|.";
-    DCHECK(std::find(children_.cbegin(), children_.cend(), view) !=
-           children_.cend());
+    DCHECK(base::Contains(children_, view));
     RemoveChildView(view);
     return base::WrapUnique(view);
   }
@@ -2039,7 +2038,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Tree operations -----------------------------------------------------------
 
   // This view's parent.
-  raw_ptr<View> parent_ = nullptr;
+  raw_ptr<View, DanglingUntriaged> parent_ = nullptr;
 
   // This view's children.
   Views children_;
@@ -2129,7 +2128,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // A native theme for this view and its descendants. Typically null, in which
   // case the native theme is drawn from the parent view (eventually the
   // widget).
-  raw_ptr<ui::NativeTheme> native_theme_ = nullptr;
+  raw_ptr<ui::NativeTheme, DanglingUntriaged> native_theme_ = nullptr;
 
   // RTL painting --------------------------------------------------------------
 
@@ -2165,7 +2164,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Accelerators --------------------------------------------------------------
 
   // Focus manager accelerators registered on.
-  raw_ptr<FocusManager> accelerator_focus_manager_ = nullptr;
+  raw_ptr<FocusManager, DanglingUntriaged> accelerator_focus_manager_ = nullptr;
 
   // The list of accelerators. List elements in the range
   // [0, registered_accelerator_count_) are already registered to FocusManager,
@@ -2176,10 +2175,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Focus ---------------------------------------------------------------------
 
   // Next view to be focused when the Tab key is pressed.
-  raw_ptr<View> next_focusable_view_ = nullptr;
+  raw_ptr<View, DanglingUntriaged> next_focusable_view_ = nullptr;
 
   // Next view to be focused when the Shift-Tab key combination is pressed.
-  raw_ptr<View> previous_focusable_view_ = nullptr;
+  raw_ptr<View, DanglingUntriaged> previous_focusable_view_ = nullptr;
 
   // The focus behavior of the view in regular and accessibility mode.
   FocusBehavior focus_behavior_ = FocusBehavior::NEVER;
@@ -2191,11 +2190,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Context menus -------------------------------------------------------------
 
   // The menu controller.
-  raw_ptr<ContextMenuController> context_menu_controller_ = nullptr;
+  raw_ptr<ContextMenuController, DanglingUntriaged> context_menu_controller_ =
+      nullptr;
 
   // Drag and drop -------------------------------------------------------------
 
-  raw_ptr<DragController> drag_controller_ = nullptr;
+  raw_ptr<DragController, DanglingUntriaged> drag_controller_ = nullptr;
 
   // Input  --------------------------------------------------------------------
 

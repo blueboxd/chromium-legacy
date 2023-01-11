@@ -327,7 +327,6 @@ AutocompleteController::AutocompleteController(
       search_provider_(nullptr),
       zero_suggest_provider_(nullptr),
       on_device_head_provider_(nullptr),
-      stop_timer_duration_(OmniboxFieldTrial::StopTimerFieldTrialDuration()),
       notify_changed_debouncer_(
           OmniboxFieldTrial::
               kAutocompleteStabilityUpdateResultDebounceFromLastRun.Get(),
@@ -810,13 +809,17 @@ void AutocompleteController::
     UpdateMatchDestinationURLWithAdditionalAssistedQueryStats(
         base::TimeDelta query_formulation_time,
         AutocompleteMatch* match) const {
-  // We expect the assisted_query_stats and the searchbox_stats to have been
-  // previously set when this method is called. If that is not the case, this
-  // method is being called by mistake and assisted_query_stats and the
-  // searchbox_stats should not be updated with additional information.
+  // The assisted_query_stats is expected to have been previously set when this
+  // method is called. If that is not the case, this method is being called by
+  // mistake and assisted_query_stats (and searchbox_stats) should not be
+  // updated with additional information.
   if (!match->search_terms_args ||
-      match->search_terms_args->assisted_query_stats.empty() ||
-      match->search_terms_args->searchbox_stats.ByteSizeLong() == 0) {
+      match->search_terms_args->assisted_query_stats.empty()) {
+    return;
+  }
+
+  if (match->search_terms_args->searchbox_stats.ByteSizeLong() == 0) {
+    NOTREACHED() << "searchbox_stats must be set when assisted_query_stats is.";
     return;
   }
 
@@ -929,7 +932,13 @@ void AutocompleteController::UpdateResult(
     result_.MergeSuggestionGroupsMap(provider->suggestion_groups_map());
   }
 
-  bool perform_tab_match = true;
+  // Zero suggest state is determined implicitly from focus state and is
+  // used to inform tab matching and action attachment below.
+  // Only attach for the default focus case (not on focus or on delete).
+  const bool is_zero_suggest =
+      input_.focus_type() != metrics::OmniboxFocusType::INTERACTION_DEFAULT;
+
+  bool perform_tab_match = !is_zero_suggest;
 #if BUILDFLAG(IS_ANDROID)
   // Do not look for matching tabs on Android unless we collected all the
   // suggestions. Tab matching is an expensive process with multiple JNI calls
@@ -971,15 +980,15 @@ void AutocompleteController::UpdateResult(
 
   // Below are all annotations after the match list is ready.
 
-  // Only produce Pedals for the default focus case (not on focus or on delete).
-  if (input_.focus_type() == metrics::OmniboxFocusType::INTERACTION_DEFAULT)
+  if (!is_zero_suggest) {
     result_.AttachPedalsToMatches(input_, *provider_client_);
 
 #if !BUILDFLAG(IS_IOS)
-  // HistoryClusters is not enabled on iOS.
-  AttachHistoryClustersActions(provider_client_->GetHistoryClustersService(),
-                               provider_client_->GetPrefs(), result_);
+    // HistoryClusters is not enabled on iOS.
+    AttachHistoryClustersActions(provider_client_->GetHistoryClustersService(),
+                                 provider_client_->GetPrefs(), result_);
 #endif
+  }
   UpdateKeywordDescriptions(&result_);
   UpdateAssociatedKeywords(&result_);
   UpdateAssistedQueryStats(&result_);

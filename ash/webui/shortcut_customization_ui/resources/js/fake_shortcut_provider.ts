@@ -4,7 +4,8 @@
 
 import {FakeMethodResolver} from 'chrome://resources/ash/common/fake_method_resolver.js';
 
-import {AcceleratorConfig, AcceleratorConfigResult, AcceleratorSource, LayoutInfoList, ShortcutProviderInterface} from './shortcut_types.js';
+import {AcceleratorConfigResult, AcceleratorSource, MojoAcceleratorConfig, MojoLayoutInfo, ShortcutProviderInterface} from './shortcut_types.js';
+
 
 /**
  * @fileoverview
@@ -18,8 +19,8 @@ export class FakeShortcutProvider implements ShortcutProviderInterface {
     this.methods_ = new FakeMethodResolver();
 
     // Setup method resolvers.
-    this.methods_.register('getAllAcceleratorConfig');
-    this.methods_.register('getLayoutInfo');
+    this.methods_.register('getAccelerators');
+    this.methods_.register('getAcceleratorLayoutInfos');
     this.methods_.register('isMutable');
     this.methods_.register('addUserAccelerator');
     this.methods_.register('replaceAccelerator');
@@ -28,18 +29,22 @@ export class FakeShortcutProvider implements ShortcutProviderInterface {
     this.methods_.register('restoreActionDefaults');
   }
 
-  getAllAcceleratorConfig(): Promise<AcceleratorConfig> {
-    return this.methods_.resolveMethod('getAllAcceleratorConfig');
+  getAcceleratorLayoutInfos(): Promise<{layoutInfos: MojoLayoutInfo[]}> {
+    return this.methods_.resolveMethod('getAcceleratorLayoutInfos');
   }
 
-  getLayoutInfo(): Promise<LayoutInfoList> {
-    return this.methods_.resolveMethod('getLayoutInfo');
+  getAccelerators(): Promise<{config: MojoAcceleratorConfig}> {
+    return this.methods_.resolveMethod('getAccelerators');
   }
 
-  isMutable(source: AcceleratorSource): Promise<boolean> {
-    this.methods_.setResult('isMutable', source !== AcceleratorSource.BROWSER);
+  isMutable(source: AcceleratorSource): Promise<{isMutable: boolean}> {
+    this.methods_.setResult(
+        'isMutable', {isMutable: source !== AcceleratorSource.kBrowser});
     return this.methods_.resolveMethod('isMutable');
   }
+
+  // Return nothing because this method has a void return type.
+  addObserver(): void {}
 
   addUserAccelerator(): Promise<AcceleratorConfigResult> {
     // Always return kSuccess in this fake.
@@ -78,17 +83,17 @@ export class FakeShortcutProvider implements ShortcutProviderInterface {
 
   /**
    * Sets the value that will be returned when calling
-   * getAllAcceleratorConfig().
+   * getAccelerators().
    */
-  setFakeAcceleratorConfig(config: AcceleratorConfig) {
-    this.methods_.setResult('getAllAcceleratorConfig', config);
+  setFakeAcceleratorConfig(config: MojoAcceleratorConfig) {
+    this.methods_.setResult('getAccelerators', {config});
   }
 
   /**
    * Sets the value that will be returned when calling
-   * getLayoutInfo().
+   * getAcceleratorLayoutInfos().
    */
-  setFakeLayoutInfo(layout: LayoutInfoList) {
-    this.methods_.setResult('getLayoutInfo', layout);
+  setFakeAcceleratorLayoutInfos(layoutInfos: MojoLayoutInfo[]) {
+    this.methods_.setResult('getAcceleratorLayoutInfos', {layoutInfos});
   }
 }

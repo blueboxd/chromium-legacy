@@ -9,10 +9,6 @@
 
 namespace first_run {
 
-// The accessibility identifier for the UMA collection checkbox shown in first
-// run.
-extern NSString* const kUMAMetricsButtonAccessibilityIdentifier;
-
 // The accessibility identifier for the Welcome screen shown in first run.
 extern NSString* const kFirstRunWelcomeScreenAccessibilityIdentifier;
 
@@ -35,6 +31,9 @@ extern NSString* const kTermsOfServiceURL;
 
 // URL for the metric reporting text.
 extern NSString* const kMetricReportingURL;
+
+// Accessibility identifier of the enterprise loading screen.
+extern NSString* const kLaunchScreenAccessibilityIdentifier;
 
 // Accessibility identifier of the enterprise loading screen.
 extern NSString* const kEnterpriseLoadingScreenAccessibilityIdentifier;

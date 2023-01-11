@@ -19,6 +19,13 @@
     grid-template-rows: auto minmax(158px, 220px) 20px auto 106px 24px;
   }
 
+  .preview-button {
+    bottom: 0;
+    left: 50%;
+    position: absolute;
+    transform: translate(-50%, -50%);
+  }
+
   #messageContainer {
     align-items: center;
     display: flex;
@@ -39,7 +46,13 @@
     margin-top: 20px;
   }
 
-  :host(:not([main-page])) #container {
+  :host([main-page]) #zeroStateTextContainer,
+  :host(:not([main-page])) #messageContainer {
+    display: none;
+  }
+
+  /* TODO(b/253470553): Remove after Ambient subpage UI change is released. */
+  :host(:not([main-page])) #container.pre-ui-change {
     border: none;
     display: grid;
     grid-template-areas:
@@ -48,6 +61,16 @@
       '.              . .';
     grid-template-columns: 224px 32px minmax(0,1fr);
     grid-template-rows: 20px 152px 20px;
+  }
+
+  :host(:not([main-page])) #container {
+    border: none;
+    display: grid;
+    grid-template-areas:
+      'image          . subpage-desc'
+      '.              . .';
+    grid-template-columns: 224px 32px minmax(0,1fr);
+    grid-template-rows: 152px 20px;
   }
 
   :host([main-page]) .currently-set-text {
@@ -80,7 +103,8 @@
   }
 
   .album-info-mainpage,
-  .album-info-subpage {
+  .album-info-subpage,
+  .zero-state-info-subpage {
     display: none;
   }
 
@@ -90,7 +114,8 @@
     justify-content: center;
   }
 
-  :host(:not([main-page])) .album-info-subpage {
+  :host(:not([main-page])) .album-info-subpage,
+  :host(:not([main-page])) .zero-state-info-subpage {
     display: flex;
     grid-area: subpage-desc;
     justify-content: center;
@@ -176,6 +201,13 @@
         <div class="preview-image-border"></div>
         <img class="preview-image disabled" src="//personalization/images/slideshow.png">
       </div>
+      <h3 id="zeroStateTextContainer"
+          class="preview-text-container zero-state-info-subpage"
+          aria-label$="$i18n{ambientModeMainPageZeroStateMessage}">
+        <span class="text">
+          $i18n{ambientModeMainPageZeroStateMessage}
+        </span>
+      </h3>
       <div id="messageContainer">
         <span class="text" id="turnOnDescription">
           $i18n{ambientModeMainPageZeroStateMessage}
@@ -206,6 +238,11 @@
                 alt$="[[getAlbumTitle_(firstPreviewAlbum_)]]"
                 is-google-photos>
           </template>
+          <div hidden$="[[!isScreenSaverPreviewEnabled_()]]">
+            <cr-button class="preview-button" on-click="startScreenSaverPreview_">
+              Preview
+            </cr-button>
+          </div>
         </div>
         <h3 id="textContainer" class="preview-text-container album-info-mainpage album-info-subpage"
             aria-label$="[[getPreviewTextAriaLabel_(firstPreviewAlbum_, topicSource_, previewAlbums_)]]">

@@ -555,7 +555,7 @@ SkiaRenderer::DrawQuadParams::DrawQuadParams(const gfx::Transform& cdt,
   }
 }
 
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
 struct SkiaRenderer::RenderPassOverlayParams {
   AggregatedRenderPassId render_pass_id;
   RenderPassBacking render_pass_backing;
@@ -792,7 +792,7 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
                      resource_provider,
                      overlay_processor),
       skia_output_surface_(skia_output_surface),
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
       can_skip_render_pass_overlay_(
           base::FeatureList::IsEnabled(features::kCanSkipRenderPassOverlay)),
 #endif
@@ -851,9 +851,9 @@ void SkiaRenderer::FinishDrawingFrame() {
 
   swap_buffer_rect_ = current_frame()->root_damage_rect;
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   MaybeScheduleBackgroundImage(current_frame()->overlay_list);
-#endif  // defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_OZONE)
 
   // TODO(weiliangc): Remove this once OverlayProcessor schedules overlays.
   if (current_frame()->output_surface_plane) {
@@ -934,7 +934,7 @@ void SkiaRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
 
   FlushOutputSurface();
 
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
   // Delete render pass overlay backings from the previous frame that will not
   // be used again.
   for (auto& overlay : available_render_pass_overlay_backings_) {
@@ -942,9 +942,9 @@ void SkiaRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
         overlay.render_pass_backing.mailbox);
   }
   available_render_pass_overlay_backings_.clear();
-#endif  // BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   // Clear cached solid color buffers that weren't reused.
   base::EraseIf(solid_color_buffers_, [this](auto entry) {
     SolidColorBuffer& color_buffer = entry.second;
@@ -954,7 +954,7 @@ void SkiaRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
     }
     return false;
   });
-#endif  // defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_OZONE)
 }
 
 void SkiaRenderer::SwapBuffersSkipped() {
@@ -962,9 +962,9 @@ void SkiaRenderer::SwapBuffersSkipped() {
   if (use_partial_swap_)
     root_pass_damage_rect.Intersect(swap_buffer_rect_);
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   MaybeDecrementSolidColorBuffers(pending_overlay_locks_.back());
-#endif  // defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_OZONE)
 
   pending_overlay_locks_.pop_back();
   skia_output_surface_->SwapBuffersSkipped(root_pass_damage_rect);
@@ -1001,19 +1001,19 @@ void SkiaRenderer::SwapBuffersComplete(gfx::GpuFenceHandle release_fence) {
         std::make_move_iterator(committed_overlay_locks_.end()));
   }
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   MaybeDecrementSolidColorBuffers(committed_overlay_locks_);
-#endif  // defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_OZONE)
 
   // Right now, only macOS and Ozone need to return mailboxes of released
   // overlays, so we should not release |committed_overlay_locks_| here. The
   // resources in it will be released in DidReceiveReleasedOverlays() later.
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
   for (auto lock_iter = committed_overlay_locks_.begin();
        lock_iter != read_fence_lock_iter; ++lock_iter) {
     awaiting_release_overlay_locks_.insert(std::move(*lock_iter));
   }
-#endif  // BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
 
   // Current pending locks should have been committed by the next time
   // SwapBuffers() is completed.
@@ -1034,7 +1034,7 @@ void SkiaRenderer::BuffersPresented() {
 void SkiaRenderer::DidReceiveReleasedOverlays(
     const std::vector<gpu::Mailbox>& released_overlays) {
   // This method is only called on macOS and Ozone right now.
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
   for (const auto& mailbox : released_overlays) {
     // If this mailbox is for render pass overlay, mark the released render pass
     // overlay backing as available to be re-used.
@@ -1052,17 +1052,17 @@ void SkiaRenderer::DidReceiveReleasedOverlays(
                                    &OverlayLock::mailbox);
     if (iter == awaiting_release_overlay_locks_.end()) {
 // TODO(crbug.com/1299794): Re-enable this DCHECK on Ozone.
-#if !defined(USE_OZONE)
+#if !BUILDFLAG(IS_OZONE)
       // The released overlay should always be found as awaiting to be released.
       DLOG(FATAL) << "Got an unexpected mailbox";
-#endif  // !defined(USE_OZONE)
+#endif  // !BUILDFLAG(IS_OZONE)
       continue;
     }
     awaiting_release_overlay_locks_.erase(iter);
   }
 #else
   NOTREACHED();
-#endif  // BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
 }
 
 bool SkiaRenderer::FlippedFramebuffer() const {
@@ -1556,7 +1556,7 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
       GetSampling(quad), draw_region);
 
   params.content_device_transform.PostConcat(target_to_device);
-  params.content_device_transform.FlattenTo2d();
+  params.content_device_transform.Flatten();
 
   // Respect per-quad setting overrides as highest priority setting
   if (!IsAAForcedOff(quad)) {
@@ -2449,7 +2449,7 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
     DCHECK(SkColorSpace::Equals(image->colorSpace(),
                                 CurrentRenderPassSkColorSpace().get()));
     sk_sp<SkColorFilter> color_filter = GetColorSpaceConversionFilter(
-        src_color_space, quad->hdr_metadata, dst_color_space);
+        src_color_space, absl::nullopt, quad->hdr_metadata, dst_color_space);
     paint.setColorFilter(color_filter->makeComposed(paint.refColorFilter()));
   }
 
@@ -2505,11 +2505,6 @@ void SkiaRenderer::DrawTileDrawQuad(const TileDrawQuad* quad,
   params->vis_tex_coords = cc::MathUtil::ScaleRectProportional(
       quad->tex_coord_rect, gfx::RectF(quad->rect), params->visible_rect);
 
-  bool translate_only =
-      params->content_device_transform.IsIdentityOrTranslation();
-  UMA_HISTOGRAM_BOOLEAN(
-      "Compositing.SkiaRenderer.DrawTileDrawQuad.CDT.IsTranslateOnly",
-      translate_only);
   bool using_raw_draw = builder.paint_op_buffer();
   if (is_using_raw_draw_) {
     UMA_HISTOGRAM_BOOLEAN(
@@ -2603,8 +2598,8 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
       quad->ya_tex_coord_rect(), gfx::RectF(quad->rect), params->visible_rect);
 
   sk_sp<SkColorFilter> color_filter = GetColorSpaceConversionFilter(
-      src_color_space, quad->hdr_metadata, dst_color_space,
-      quad->resource_offset, quad->resource_multiplier);
+      src_color_space, quad->bits_per_channel, quad->hdr_metadata,
+      dst_color_space, quad->resource_offset, quad->resource_multiplier);
 
   auto content_color_filter = GetContentColorFilter();
   if (content_color_filter)
@@ -2715,9 +2710,12 @@ void SkiaRenderer::ScheduleOverlays() {
     ca_layer_overlay.mailbox = lock.mailbox();
     DCHECK(!ca_layer_overlay.mailbox.IsZero());
   }
-#elif defined(USE_OZONE)
+#elif BUILDFLAG(IS_OZONE)
   // Only Wayland uses this code path.
   for (auto& overlay : current_frame()->overlay_list) {
+    if (overlay.is_root_render_pass) {
+      continue;
+    }
     if (overlay.rpdq) {
       PrepareRenderPassOverlay(&overlay);
       locks.emplace_back(overlay.mailbox);
@@ -2765,12 +2763,14 @@ void SkiaRenderer::ScheduleOverlays() {
 
 sk_sp<SkColorFilter> SkiaRenderer::GetColorSpaceConversionFilter(
     const gfx::ColorSpace& src,
+    absl::optional<uint32_t> src_bit_depth,
     absl::optional<gfx::HDRMetadata> src_hdr_metadata,
     const gfx::ColorSpace& dst,
     float resource_offset,
     float resource_multiplier) {
   return color_filter_cache_.Get(
-      src, dst, resource_offset, resource_multiplier, src_hdr_metadata,
+      src, dst, resource_offset, resource_multiplier, src_bit_depth,
+      src_hdr_metadata,
       current_frame()->display_color_spaces.GetSDRMaxLuminanceNits(),
       current_frame()->display_color_spaces.GetHDRMaxLuminanceRelative());
 }
@@ -2886,7 +2886,7 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
           quad->shared_quad_state->clip_rect.value_or(current_draw_rect_);
       gfx::Transform transform =
           quad->shared_quad_state->quad_to_target_transform;
-      transform.FlattenTo2d();
+      transform.Flatten();
       if (!transform.IsInvertible()) {
         return rpdq_params;
       }
@@ -3208,7 +3208,7 @@ void SkiaRenderer::FlushOutputSurface() {
   lock_set_for_external_use_->UnlockResources(sync_token);
 }
 
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
 bool SkiaRenderer::CanSkipRenderPassOverlay(
     AggregatedRenderPassId render_pass_id,
     const AggregatedRenderPassDrawQuad* rpdq,
@@ -3375,17 +3375,15 @@ void SkiaRenderer::PrepareRenderPassOverlay(
     // We cannot handle rotation with clip rect or mask filter.
     DCHECK(
         shared_quad_state->quad_to_target_transform.Preserves2dAxisAlignment());
-    quad_to_target_transform_inverse.emplace(
-        gfx::Transform::kSkipInitialization);
+    quad_to_target_transform_inverse.emplace();
     // Flatten before inverting, since we're interested in how points
     // with z=0 in local space map to the clip rect, not in how the clip
     // rect at z=0 in device space maps to some other z in local space.
     gfx::Transform flat_quad_to_target_transform(
         shared_quad_state->quad_to_target_transform);
-    flat_quad_to_target_transform.FlattenTo2d();
-    bool result = flat_quad_to_target_transform.GetInverse(
-        &*quad_to_target_transform_inverse);
-    DCHECK(result) << "flat_quad_to_target_transform.GetInverse() failed";
+    flat_quad_to_target_transform.Flatten();
+    quad_to_target_transform_inverse =
+        flat_quad_to_target_transform.GetCheckedInverse();
   }
 
   // The |clip_rect| is in the device coordinate and with all transforms
@@ -3568,7 +3566,7 @@ void SkiaRenderer::PrepareRenderPassOverlay(
   // Adjust |bounds_rect| to contain the whole buffer and at the right location.
   overlay->bounds_rect.set_origin(gfx::PointF(filter_bounds.origin()));
   overlay->bounds_rect.set_size(gfx::SizeF(buffer_size));
-#else   // defined(USE_OZONE)
+#else   // BUILDFLAG(IS_OZONE)
   // Adjust |display_rect| to be include the expanded |filter_bounds|, and
   // transformed.
   // TODO(fangzhoug): Merge Ozone and Apple code paths of delegated compositing.
@@ -3588,7 +3586,7 @@ void SkiaRenderer::PrepareRenderPassOverlay(
   }
 #endif  // BUILDFLAG(IS_APPLE)
 }
-#endif  // BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
 
 void SkiaRenderer::EndPaint(bool failed) {
   base::OnceClosure on_finished_callback;
@@ -3711,7 +3709,24 @@ void SkiaRenderer::EnsureMinNumberOfBuffers(int n) {
   }
 }
 
-#if defined(USE_OZONE)
+gpu::Mailbox SkiaRenderer::GetPrimaryPlaneOverlayTestingMailbox() {
+  // For the purpose of testing the overlay configuration, the mailbox for ANY
+  // buffer from BufferQueue is good enough because they're all created with
+  // identical properties.
+  // At the time we're testing overlays we don't yet know which mailbox will be
+  // presented this frame so we'll just use the last swapped buffer. (We might
+  // present a new frame's mailbox, or if we empty-swap we'll present the
+  // previous frame's mailbox.)
+  if (buffer_queue_) {
+    return buffer_queue_->GetLastSwappedBuffer();
+  } else {
+    // OutputSurface::GetOverlayMailbox() returns the mailbox for the last
+    // swapped buffer.
+    return skia_output_surface_->GetOverlayMailbox();
+  }
+}
+
+#if BUILDFLAG(IS_OZONE)
 const gpu::Mailbox SkiaRenderer::GetImageMailboxForColor(
     const SkColor4f& color) {
   // Currently the Wayland protocol does not have protocol to support solid
@@ -3768,7 +3783,7 @@ void SkiaRenderer::MaybeDecrementSolidColorBuffers(
     }
   }
 }
-#endif  // defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_OZONE)
 
 SkiaRenderer::OverlayLock::OverlayLock(
     DisplayResourceProvider* resource_provider,
@@ -3781,23 +3796,23 @@ SkiaRenderer::OverlayLock::~OverlayLock() = default;
 SkiaRenderer::OverlayLock::OverlayLock(SkiaRenderer::OverlayLock&& other) {
   resource_lock = std::move(other.resource_lock);
 
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
   render_pass_lock = std::move(other.render_pass_lock);
-#endif  // BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
 }
 
 SkiaRenderer::OverlayLock& SkiaRenderer::OverlayLock::OverlayLock::operator=(
     SkiaRenderer::OverlayLock&& other) {
   resource_lock = std::move(other.resource_lock);
 
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
   render_pass_lock = std::move(other.render_pass_lock);
-#endif  // BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
 
   return *this;
 }
 
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
 SkiaRenderer::OverlayLock::OverlayLock(gpu::Mailbox mailbox) {
   render_pass_lock.emplace(mailbox);
 }
@@ -3807,6 +3822,6 @@ bool SkiaRenderer::OverlayLockComparator::operator()(
     const OverlayLock& rhs) const {
   return lhs.mailbox() < rhs.mailbox();
 }
-#endif  // BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
 
 }  // namespace viz

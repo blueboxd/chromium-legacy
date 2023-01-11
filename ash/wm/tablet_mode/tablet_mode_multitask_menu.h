@@ -20,9 +20,10 @@ class MultitaskMenuView;
 namespace ash {
 
 class TabletModeMultitaskMenuEventHandler;
+class TabletModeMultitaskMenuView;
 
-// The container of the multitask menu. Creates and owns the multitask menu
-// widget.
+// Creates and maintains the multitask menu. Responsible for showing,
+// hiding, and animating the menu.
 class ASH_EXPORT TabletModeMultitaskMenu : aura::WindowObserver,
                                            public views::WidgetObserver,
                                            public display::DisplayObserver {
@@ -38,9 +39,7 @@ class ASH_EXPORT TabletModeMultitaskMenu : aura::WindowObserver,
 
   aura::Window* window() { return window_; }
 
-  views::Widget* multitask_menu_widget() {
-    return multitask_menu_widget_.get();
-  }
+  views::Widget* widget() { return widget_.get(); }
 
   // Show the menu using a slide down animation.
   void AnimateShow();
@@ -68,8 +67,14 @@ class ASH_EXPORT TabletModeMultitaskMenu : aura::WindowObserver,
   // `this`.
   TabletModeMultitaskMenuEventHandler* event_handler_;
 
-  // The window associated with this multitask menu.
+  // The window that opened this multitask menu.
   aura::Window* window_ = nullptr;
+
+  // Widget implementation that is created and maintained by `this`.
+  views::UniqueWidgetPtr widget_ = std::make_unique<views::Widget>();
+
+  // The contents view of the above widget.
+  raw_ptr<TabletModeMultitaskMenuView> menu_view_ = nullptr;
 
   // Window observer for `window_`.
   base::ScopedObservation<aura::Window, aura::WindowObserver> observed_window_{
@@ -79,9 +84,6 @@ class ASH_EXPORT TabletModeMultitaskMenu : aura::WindowObserver,
       widget_observation_{this};
 
   display::ScopedOptionalDisplayObserver display_observer_{this};
-
-  views::UniqueWidgetPtr multitask_menu_widget_ =
-      std::make_unique<views::Widget>();
 
   base::WeakPtrFactory<TabletModeMultitaskMenu> weak_factory_{this};
 };

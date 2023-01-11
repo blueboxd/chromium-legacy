@@ -23,6 +23,7 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
 
   // PasswordsPrivateDelegate implementation.
   void GetSavedPasswordsList(UiEntriesCallback callback) override;
+  CredentialsGroups GetCredentialGroups() override;
   void GetPasswordExceptionsList(ExceptionEntriesCallback callback) override;
   // Fake implementation of `GetUrlCollection`. This returns a value if `url` is
   // not empty.
@@ -54,9 +55,9 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
                                 api::passwords_private::PlaintextReason reason,
                                 PlaintextPasswordCallback callback,
                                 content::WebContents* web_contents) override;
-  void RequestCredentialDetails(int id,
-                                RequestCredentialDetailsCallback callback,
-                                content::WebContents* web_contents) override;
+  void RequestCredentialsDetails(const std::vector<int>& ids,
+                                 UiEntriesCallback callback,
+                                 content::WebContents* web_contents) override;
   void MovePasswordsToAccount(const std::vector<int>& ids,
                               content::WebContents* web_contents) override;
   void ImportPasswords(api::passwords_private::PasswordStoreSet to_store,
@@ -100,6 +101,7 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
   void ExtendAuthValidity() override;
   void SwitchBiometricAuthBeforeFillingState(
       content::WebContents* web_contents) override;
+  void ShowAddShortcutDialog(content::WebContents* web_contents) override;
 
   void SetProfile(Profile* profile);
   void SetOptedInForAccountStorage(bool opted_in);
@@ -132,6 +134,10 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
 
   bool get_authenticator_interaction_status() const {
     return authenticator_interacted_;
+  }
+
+  bool get_add_shortcut_dialog_shown() const {
+    return add_shortcut_dialog_shown_;
   }
 
  private:
@@ -183,6 +189,9 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
 
   // Used to track whether user interacted with the ExtendAuthValidity API.
   bool authenticator_interacted_ = false;
+
+  // Used to track whether shortcut creation dialog was shown.
+  bool add_shortcut_dialog_shown_ = false;
 };
 }  // namespace extensions
 

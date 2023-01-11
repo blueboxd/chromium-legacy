@@ -43,10 +43,11 @@ import {EventSourceState} from './event_source.js';
 import {GestureInterface} from './gesture_interface.js';
 import {LogStore} from './logging/log_store.js';
 import {Output} from './output/output.js';
-import {OutputEventType} from './output/output_types.js';
+import {OutputCustomEvent} from './output/output_types.js';
 import {PhoneticData} from './phonetic_data.js';
 import {ChromeVoxPrefs} from './prefs.js';
 import {SmartStickyMode} from './smart_sticky_mode.js';
+import {TtsBackground} from './tts_background.js';
 
 const AutomationNode = chrome.automation.AutomationNode;
 const Dir = constants.Dir;
@@ -130,7 +131,7 @@ export class CommandHandler extends CommandHandlerInterface {
         break;
       case Command.DUMP_TREE:
         chrome.automation.getDesktop(
-            root => LogStore.getInstance().writeTreeLog(new TreeDumper(root)));
+            root => LogStore.instance.writeTreeLog(new TreeDumper(root)));
         break;
       case Command.DECREASE_TTS_RATE:
         this.increaseOrDecreaseSpeechProperty_(AbstractTts.RATE, false);
@@ -162,8 +163,7 @@ export class CommandHandler extends CommandHandlerInterface {
         return false;
       case Command.CYCLE_PUNCTUATION_ECHO:
         ChromeVox.tts.speak(
-            Msgs.getMsg(
-                ChromeVoxState.instance.backgroundTts.cyclePunctuationEcho()),
+            Msgs.getMsg(TtsBackground.base.cyclePunctuationEcho()),
             QueueMode.FLUSH);
         return false;
       case Command.REPORT_ISSUE:
@@ -597,7 +597,7 @@ export class CommandHandler extends CommandHandlerInterface {
         const o = new Output();
         o.withContextFirst()
             .withRichSpeechAndBraille(
-                currentRange, null, OutputEventType.NAVIGATE)
+                currentRange, null, OutputCustomEvent.NAVIGATE)
             .go();
         return false;
       case Command.VIEW_GRAPHIC_AS_BRAILLE:
@@ -791,7 +791,7 @@ export class CommandHandler extends CommandHandlerInterface {
 
     // TODO(accessibility): extract into function.
     if (tryScrolling && currentRange &&
-        !AutoScrollHandler.getInstance().onCommandNavigation(
+        !AutoScrollHandler.instance.onCommandNavigation(
             currentRange, dir, pred, unit, speechProps, rootPred, () => {
               this.onCommand(command);
               this.onFinishCommand();
@@ -1535,7 +1535,7 @@ export class CommandHandler extends CommandHandlerInterface {
                     .withoutHints()
                     .withRichSpeechAndBraille(
                         ChromeVoxState.instance.currentRange, prevRange,
-                        OutputEventType.NAVIGATE)
+                        OutputCustomEvent.NAVIGATE)
                     .onSpeechEnd(continueReading);
 
       if (!o.hasSpeech) {
@@ -1553,7 +1553,7 @@ export class CommandHandler extends CommandHandlerInterface {
           new Output()
               .withoutHints()
               .withRichSpeechAndBraille(
-                  collapsedRange, collapsedRange, OutputEventType.NAVIGATE)
+                  collapsedRange, collapsedRange, OutputCustomEvent.NAVIGATE)
               .onSpeechEnd(continueReading);
 
       if (o.hasSpeech) {
@@ -1812,10 +1812,11 @@ export class CommandHandler extends CommandHandlerInterface {
             new Cursor(
                 root.selectionEndObject,
                 /** @type {number} */ (root.selectionEndOffset)));
-        const o = new Output()
-                      .format('@end_selection')
-                      .withSpeechAndBraille(sel, sel, OutputEventType.NAVIGATE)
-                      .go();
+        const o =
+            new Output()
+                .format('@end_selection')
+                .withSpeechAndBraille(sel, sel, OutputCustomEvent.NAVIGATE)
+                .go();
         DesktopAutomationInterface.instance.ignoreDocumentSelectionFromAction(
             false);
       }
@@ -1827,7 +1828,8 @@ export class CommandHandler extends CommandHandlerInterface {
 
   /** @private */
   toggleStickyMode_() {
-    ChromeVoxBackground.setPref('sticky', !ChromeVox.isStickyPrefOn, true);
+    ChromeVoxPrefs.instance.setAndAnnounceStickyPref(!ChromeVox.isStickyPrefOn);
+
     if (ChromeVoxState.instance.currentRange) {
       this.smartStickyMode_.onStickyModeCommand(
           ChromeVoxState.instance.currentRange);

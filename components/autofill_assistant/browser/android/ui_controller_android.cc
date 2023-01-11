@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -26,6 +27,7 @@
 #include "components/autofill_assistant/android/jni_headers/AssistantGenericUiModel_jni.h"
 #include "components/autofill_assistant/android/jni_headers/AssistantInfoBoxModel_jni.h"
 #include "components/autofill_assistant/android/jni_headers/AssistantInfoBox_jni.h"
+#include "components/autofill_assistant/android/jni_headers/AssistantLegalDisclaimerModel_jni.h"
 #include "components/autofill_assistant/android/jni_headers/AssistantModel_jni.h"
 #include "components/autofill_assistant/android/jni_headers/AssistantOverlayModel_jni.h"
 #include "components/autofill_assistant/android/jni_headers/AssistantPlaceholdersConfiguration_jni.h"
@@ -750,11 +752,14 @@ void UiControllerAndroid::RestoreUi() {
   OnViewportModeChanged(execution_delegate_->GetViewportMode());
   OnPeekModeChanged(ui_delegate_->GetPeekMode());
   OnFormChanged(ui_delegate_->GetForm(), ui_delegate_->GetFormResult());
+  OnLegalDisclaimerChanged(ui_delegate_->GetLegalDisclaimer());
+
   ExecutionDelegate::OverlayColors colors;
   execution_delegate_->GetOverlayColors(&colors);
   OnOverlayColorsChanged(colors);
   OnTtsButtonVisibilityChanged(ui_delegate_->GetTtsButtonVisible());
   OnTtsButtonStateChanged(ui_delegate_->GetTtsButtonState());
+  OnDisableScrollbarFadingChanged(ui_delegate_->GetDisableScrollbarFading());
   SetVisible(true);
   Java_AutofillAssistantUiController_restoreBottomSheetState(
       AttachCurrentThread(), java_object_,
@@ -793,7 +798,6 @@ void UiControllerAndroid::UpdateActions(
     const std::vector<UserAction>& user_actions) {
   DCHECK(execution_delegate_);
   DCHECK(ui_delegate_);
-
   JNIEnv* env = AttachCurrentThread();
 
   bool has_close_or_cancel = false;
@@ -813,7 +817,7 @@ void UiControllerAndroid::UpdateActions(
       case HIGHLIGHTED_ACTION:
         jchip =
             Java_AutofillAssistantUiController_createHighlightedActionButton(
-                env, java_object_, chip.icon,
+                env, java_object_, static_cast<int>(chip.type), chip.icon,
                 ConvertUTF8ToJavaString(env, chip.text), i, !action.enabled(),
                 chip.sticky, chip.visible,
                 chip.is_content_description_set
@@ -823,7 +827,7 @@ void UiControllerAndroid::UpdateActions(
 
       case NORMAL_ACTION:
         jchip = Java_AutofillAssistantUiController_createActionButton(
-            env, java_object_, chip.icon,
+            env, java_object_, static_cast<int>(chip.type), chip.icon,
             ConvertUTF8ToJavaString(env, chip.text), i, !action.enabled(),
             chip.sticky, chip.visible,
             chip.is_content_description_set
@@ -835,7 +839,7 @@ void UiControllerAndroid::UpdateActions(
         // A "Send feedback" button which will show the feedback form before
         // executing the action.
         jchip = Java_AutofillAssistantUiController_createFeedbackButton(
-            env, java_object_, chip.icon,
+            env, java_object_, static_cast<int>(chip.type), chip.icon,
             ConvertUTF8ToJavaString(env, chip.text), i, !action.enabled(),
             chip.sticky, chip.visible,
             chip.is_content_description_set
@@ -847,7 +851,7 @@ void UiControllerAndroid::UpdateActions(
         // A Cancel button sneaks in an UNDO snackbar before executing the
         // action, while a close button behaves like a normal button.
         jchip = Java_AutofillAssistantUiController_createCancelButton(
-            env, java_object_, chip.icon,
+            env, java_object_, static_cast<int>(chip.type), chip.icon,
             ConvertUTF8ToJavaString(env, chip.text), i, !action.enabled(),
             chip.sticky, chip.visible,
             chip.is_content_description_set
@@ -858,7 +862,7 @@ void UiControllerAndroid::UpdateActions(
 
       case CLOSE_ACTION:
         jchip = Java_AutofillAssistantUiController_createActionButton(
-            env, java_object_, chip.icon,
+            env, java_object_, static_cast<int>(chip.type), chip.icon,
             ConvertUTF8ToJavaString(env, chip.text), i, !action.enabled(),
             chip.sticky, chip.visible,
             chip.is_content_description_set
@@ -870,7 +874,7 @@ void UiControllerAndroid::UpdateActions(
       case DONE_ACTION:
         jchip =
             Java_AutofillAssistantUiController_createHighlightedActionButton(
-                env, java_object_, chip.icon,
+                env, java_object_, static_cast<int>(chip.type), chip.icon,
                 ConvertUTF8ToJavaString(env, chip.text), i, !action.enabled(),
                 chip.sticky, chip.visible,
                 chip.is_content_description_set
@@ -888,21 +892,25 @@ void UiControllerAndroid::UpdateActions(
     }
   }
 
-  if (!has_close_or_cancel) {
+  // Special case: don't create a default cancel chip during shutdown.
+  if (!has_close_or_cancel && !ui_delegate_->IsUiShuttingDown()) {
     base::android::ScopedJavaLocalRef<jobject> jcancel_chip;
     if (execution_delegate_->GetState() == AutofillAssistantState::STOPPED ||
         execution_delegate_->GetState() == AutofillAssistantState::TRACKING) {
       jcancel_chip = Java_AutofillAssistantUiController_createCloseButton(
-          env, java_object_, ICON_CLEAR, ConvertUTF8ToJavaString(env, ""),
+          env, java_object_, static_cast<int>(CLOSE_ACTION), ICON_CLEAR,
+          ConvertUTF8ToJavaString(env, ""),
           /* disabled= */ false, /* sticky= */ true, /* visible=*/true,
           /* contentDescription= */ nullptr);
     } else if (execution_delegate_->GetState() !=
                AutofillAssistantState::INACTIVE) {
       jcancel_chip = Java_AutofillAssistantUiController_createCancelButton(
-          env, java_object_, ICON_CLEAR, ConvertUTF8ToJavaString(env, ""), -1,
+          env, java_object_, static_cast<int>(CANCEL_ACTION), ICON_CLEAR,
+          ConvertUTF8ToJavaString(env, ""), -1,
           /* disabled= */ false, /* sticky= */ true, /* visible=*/true,
           /* contentDescription= */ nullptr);
     }
+
     if (jcancel_chip) {
       Java_AutofillAssistantUiController_appendChipToList(env, jchips,
                                                           jcancel_chip);
@@ -1128,6 +1136,12 @@ void UiControllerAndroid::OnTtsButtonStateChanged(TtsButtonState state) {
   header_model_->SetTtsButtonState(state);
 }
 
+void UiControllerAndroid::OnDisableScrollbarFadingChanged(
+    bool disable_scrollbar_fading) {
+  Java_AssistantModel_setDisableScrollbarFading(
+      AttachCurrentThread(), GetModel(), disable_scrollbar_fading);
+}
+
 void UiControllerAndroid::OnTouchableAreaChanged(
     const RectF& visual_viewport,
     const std::vector<RectF>& touchable_areas,
@@ -1221,6 +1235,10 @@ void UiControllerAndroid::OnTextLinkClicked(int link) {
 
 void UiControllerAndroid::OnFormActionLinkClicked(int link) {
   ui_delegate_->OnFormActionLinkClicked(link);
+}
+
+void UiControllerAndroid::OnLegalDisclaimerLinkClicked(int link) {
+  ui_delegate_->OnLegalDisclaimerLinkClicked(link);
 }
 
 void UiControllerAndroid::OnKeyValueChanged(const std::string& key,
@@ -1766,6 +1784,35 @@ base::android::ScopedJavaLocalRef<jobject> UiControllerAndroid::GetFormModel() {
   return Java_AssistantModel_getFormModel(AttachCurrentThread(), GetModel());
 }
 
+base::android::ScopedJavaLocalRef<jobject>
+UiControllerAndroid::GetLegalDisclaimerModel() {
+  return Java_AssistantModel_getLegalDisclaimerModel(AttachCurrentThread(),
+                                                     GetModel());
+}
+
+void UiControllerAndroid::OnLegalDisclaimerChanged(
+    const LegalDisclaimerProto* legal_disclaimer) {
+  JNIEnv* env = AttachCurrentThread();
+  auto jmodel = GetLegalDisclaimerModel();
+
+  if (!legal_disclaimer) {
+    Java_AssistantLegalDisclaimerModel_setLegalDisclaimer(env, jmodel, nullptr,
+                                                          nullptr);
+    legal_disclaimer_delegate_.reset();
+    return;
+  }
+
+  if (!legal_disclaimer_delegate_) {
+    legal_disclaimer_delegate_ =
+        std::make_unique<AssistantLegalDisclaimerNativeDelegate>(this);
+  }
+
+  Java_AssistantLegalDisclaimerModel_setLegalDisclaimer(
+      env, jmodel, legal_disclaimer_delegate_->GetJavaObject(),
+      ConvertUTF8ToJavaString(env,
+                              legal_disclaimer->legal_disclaimer_message()));
+}
+
 void UiControllerAndroid::OnFormChanged(const FormProto* form,
                                         const FormProto::Result* result) {
   JNIEnv* env = AttachCurrentThread();
@@ -2237,13 +2284,11 @@ UiControllerAndroid::CreateJavaAdditionalSections(
       }
       case UserFormSectionProto::kPopupListSection: {
         std::vector<std::string> items;
-        std::copy(section.popup_list_section().item_names().begin(),
-                  section.popup_list_section().item_names().end(),
-                  std::back_inserter(items));
+        base::ranges::copy(section.popup_list_section().item_names(),
+                           std::back_inserter(items));
         std::vector<int> initial_selections;
-        std::copy(section.popup_list_section().initial_selection().begin(),
-                  section.popup_list_section().initial_selection().end(),
-                  std::back_inserter(initial_selections));
+        base::ranges::copy(section.popup_list_section().initial_selection(),
+                           std::back_inserter(initial_selections));
         Java_AssistantCollectUserDataModel_appendPopupListSection(
             env, jsection_list, ConvertUTF8ToJavaString(env, section.title()),
             ConvertUTF8ToJavaString(

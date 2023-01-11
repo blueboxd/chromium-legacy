@@ -12,6 +12,7 @@
 
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -199,6 +200,15 @@ class CONTENT_EXPORT BackForwardCacheImpl
 
   // Returns whether back/forward cache is enabled for screen reader users.
   static bool IsScreenReaderAllowed();
+
+  // Log an unexpected message from the renderer. Doing it here so that it is
+  // grouped with other back/forward cache vlogging and e.g. will show up in
+  // test logs. `message_name` varies in each build however when a test failure
+  // occurs, it should be possible to recreate the build and find which message
+  // corresponds to this the value.
+  static void VlogUnexpectedRendererToBrowserMessage(
+      const char* interface_name_,
+      uint32_t message_name);
 
   // Returns the reasons (if any) why this document and its children cannot
   // enter the back/forward cache. Depends on the |render_frame_host| and its
@@ -524,7 +534,7 @@ class CONTENT_EXPORT BackForwardCacheImpl
     // Root document of the tree.
     const raw_ptr<RenderFrameHostImpl> root_rfh_;
     // BackForwardCacheImpl instance to access eligibility check functions.
-    BackForwardCacheImpl& bfcache_;
+    const raw_ref<BackForwardCacheImpl> bfcache_;
     // Flattened list of NotRestoredReasons for the tree. This is empty at the
     // start and has to be merged using |GetFlattenedResult()|.
     BackForwardCacheCanStoreDocumentResult flattened_result_;

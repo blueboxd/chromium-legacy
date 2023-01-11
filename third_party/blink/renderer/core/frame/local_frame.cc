@@ -162,7 +162,6 @@
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 #include "third_party/blink/renderer/core/loader/prerender_handle.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
-#include "third_party/blink/renderer/core/mobile_metrics/mobile_friendliness_checker.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/drag_controller.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -177,6 +176,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/classic_script.h"
+#include "third_party/blink/renderer/core/scroll/scroll_snapshot_client.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/platform/back_forward_cache_utils.h"
@@ -410,6 +410,8 @@ void LocalFrame::Trace(Visitor* visitor) const {
   visitor->Trace(frame_color_overlay_);
   visitor->Trace(mojo_handler_);
   visitor->Trace(text_fragment_handler_);
+  visitor->Trace(scroll_snapshot_clients_);
+  visitor->Trace(unvalidated_scroll_snapshot_clients_);
   visitor->Trace(saved_scroll_offsets_);
   visitor->Trace(background_color_paint_image_generator_);
   visitor->Trace(box_shadow_paint_image_generator_);
@@ -891,6 +893,13 @@ void LocalFrame::HookBackForwardCacheEviction() {
             if (frame) {
               frame->EvictFromBackForwardCache(
                   mojom::blink::RendererEvictionReason::kJavaScriptExecution);
+              if (base::FeatureList::IsEnabled(
+                      features::
+                          kBackForwardCacheNotReachedOnJavaScriptExecution)) {
+                // Adding |NOTREACHED()| here to make sure this is not happening
+                // in any tests, except for when this is expected.
+                NOTREACHED();
+              }
             }
           });
 }
@@ -1868,6 +1877,12 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
   return false;
 }
 
+void LocalFrame::WillPotentiallyStartNavigation(const KURL& url) const {
+  TRACE_EVENT1("navigation", "LocalFrame::WillPotentiallyStartNavigation",
+               "url", url);
+  GetLocalFrameHostRemote().WillPotentiallyStartNavigation(url);
+}
+
 ContentCaptureManager* LocalFrame::GetOrResetContentCaptureManager() {
   DCHECK(Client());
   if (!IsLocalRoot())
@@ -2297,7 +2312,13 @@ void LocalFrame::UpdateTaskTime(base::TimeDelta time) {
 }
 
 void LocalFrame::UpdateBackForwardCacheDisablingFeatures(
-    uint64_t features_mask) {
+    uint64_t features_mask,
+    const BFCacheBlockingFeatureAndLocations&
+        non_sticky_features_and_js_locations,
+    const BFCacheBlockingFeatureAndLocations&
+        sticky_features_and_js_locations) {
+  // TODO(crbug.com/1366675): Add two Vectors to argument of
+  // DidChangeBackForwardCacheDisablingFeatures
   GetBackForwardCacheControllerHostRemote()
       .DidChangeBackForwardCacheDisablingFeatures(features_mask);
 }
@@ -2348,7 +2369,7 @@ void LocalFrame::NotifyUserActivation(
                                                       notification_type);
   Client()->NotifyUserActivation();
   NotifyUserActivationInFrameTree(notification_type);
-  DomWindow()->closewatcher_stack()->DidReceiveUserActivation();
+  DomWindow()->history_user_activation_state().Activate();
 }
 
 bool LocalFrame::ConsumeTransientUserActivation(
@@ -2633,7 +2654,7 @@ void LocalFrame::DidResume() {
 
   // TODO(yuzus): Figure out where these calls should really belong.
   GetDocument()->DispatchHandleLoadStart();
-  GetDocument()->DispatchHandleLoadOrLayoutComplete();
+  GetDocument()->DispatchHandleLoadComplete();
 }
 
 void LocalFrame::MaybeLogAdClickNavigation() {
@@ -3233,6 +3254,18 @@ void LocalFrame::WriteIntoTrace(perfetto::TracedValue ctx) const {
            IsCrossOriginToOutermostMainFrame());
 }
 
+mojo::PendingRemote<mojom::blink::BlobURLStore>
+LocalFrame::GetBlobUrlStorePendingRemote() {
+  if (base::FeatureList::IsEnabled(net::features::kSupportPartitionedBlobUrl)) {
+    mojo::PendingRemote<mojom::blink::BlobURLStore> pending_remote;
+    GetBrowserInterfaceBroker().GetInterface(
+        pending_remote.InitWithNewPipeAndPassReceiver());
+    return pending_remote;
+  } else {
+    return mojo::NullRemote();
+  }
+}
+
 #if !BUILDFLAG(IS_ANDROID)
 void LocalFrame::SetTitlebarAreaDocumentStyleEnvironmentVariables() const {
   DCHECK(is_window_controls_overlay_visible_);
@@ -3297,6 +3330,35 @@ bool LocalFrame::HasBlockingReasonsHelper(
     return false;
   }
   return false;
+}
+
+void LocalFrame::AddScrollSnapshotClient(ScrollSnapshotClient& client) {
+  scroll_snapshot_clients_.insert(&client);
+  unvalidated_scroll_snapshot_clients_.insert(&client);
+}
+
+void LocalFrame::UpdateScrollSnapshots() {
+  // TODO(xiaochengh): Can we DCHECK that is is done at the beginning of a frame
+  // and is done exactly once?
+  for (auto& client : scroll_snapshot_clients_)
+    client->UpdateSnapshot();
+}
+
+bool LocalFrame::ValidateScrollSnapshotClients() {
+  bool valid = true;
+  for (auto& client : unvalidated_scroll_snapshot_clients_)
+    valid &= client->ValidateSnapshot();
+  unvalidated_scroll_snapshot_clients_.clear();
+  return valid;
+}
+
+void LocalFrame::ScheduleNextServiceForScrollSnapshotClients() {
+  for (auto& client : scroll_snapshot_clients_) {
+    if (client->ShouldScheduleNextService()) {
+      View()->ScheduleAnimation();
+      return;
+    }
+  }
 }
 
 }  // namespace blink

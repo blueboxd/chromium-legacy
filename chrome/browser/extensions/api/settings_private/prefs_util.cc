@@ -555,6 +555,25 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)
       [ash::prefs::kAccessibilityEnhancedNetworkVoicesInSelectToSpeakAllowed] =
           settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[ash::prefs::kAccessibilitySelectToSpeakBackgroundShading] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[ash::prefs::kAccessibilitySelectToSpeakEnhancedNetworkVoices] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[ash::prefs::kAccessibilitySelectToSpeakEnhancedVoiceName] =
+      settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_allowlist)
+      [ash::prefs::kAccessibilitySelectToSpeakEnhancedVoicesDialogShown] =
+          settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[ash::prefs::kAccessibilitySelectToSpeakHighlightColor] =
+      settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_allowlist)[ash::prefs::kAccessibilitySelectToSpeakNavigationControls] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[ash::prefs::kAccessibilitySelectToSpeakVoiceName] =
+      settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_allowlist)[ash::prefs::kAccessibilitySelectToSpeakVoiceSwitching] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[ash::prefs::kAccessibilitySelectToSpeakWordHighlight] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Text to Speech.
   (*s_allowlist)[::prefs::kTextToSpeechLangToVoiceName] =
@@ -588,6 +607,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
 
   // Android Apps.
   (*s_allowlist)[arc::prefs::kArcEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+
+  // App Notifications
+  (*s_allowlist)[::ash::prefs::kAppNotificationBadgingEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Ambient Mode.
@@ -814,6 +837,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
           settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::ash::prefs::kPowerQuickDimEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::ash::prefs::kPowerQuickLockDelay] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[ash::prefs::kUserCameraAllowed] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[ash::prefs::kUserMicrophoneAllowed] =

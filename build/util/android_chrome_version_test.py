@@ -136,21 +136,6 @@ class _VersionTest(unittest.TestCase):
 
     self.assertEqual(arch_chrome_version_code, '484400001')
 
-  def testGenerateVersionCodesAndroidArchMips(self):
-    """Assert it handles different architectures correctly.
-
-    Version codes for different builds need to be distinct and maintain a
-    certain ordering.
-    See docstring on android_chrome_version._ABIS_TO_BIT_MASK for
-    reasoning.
-    """
-    output = GenerateVersionCodes(EXAMPLE_VERSION_VALUES,
-                                  arch='mipsel',
-                                  is_next_build=False)
-    arch_chrome_version_code = output['CHROME_VERSION_CODE']
-
-    self.assertEqual(arch_chrome_version_code, '484400002')
-
   def testGenerateVersionCodesAndroidArchArm64(self):
     """Assert it handles different architectures correctly.
 
@@ -185,6 +170,8 @@ class _VersionTest(unittest.TestCase):
     arch_trichrome_32_64_version_code = output['TRICHROME_32_64_VERSION_CODE']
     arch_trichrome_64_32_version_code = output['TRICHROME_64_32_VERSION_CODE']
     arch_trichrome_64_version_code = output['TRICHROME_64_VERSION_CODE']
+    arch_trichrome_64_high_version_code = output[
+        'TRICHROME_64_HIGH_VERSION_CODE']
 
     self.assertEqual(arch_monochrome_32_version_code, '484400020')
     self.assertEqual(arch_monochrome_32_64_version_code, '484400023')
@@ -196,6 +183,7 @@ class _VersionTest(unittest.TestCase):
     self.assertEqual(arch_trichrome_version_code, '484400033')
     self.assertEqual(arch_trichrome_64_32_version_code, '484400034')
     self.assertEqual(arch_trichrome_64_version_code, '484400035')
+    self.assertEqual(arch_trichrome_64_high_version_code, '484400039')
 
   def testGenerateVersionCodesAndroidArchX64(self):
     """Assert it handles different architectures correctly.
@@ -426,11 +414,21 @@ class _VersionCodeTest(unittest.TestCase):
   def testArm_64_32Translate(self):
     """Test for a build with Trichrome and arm_64_32."""
     build, patch, package, abi, is_next_build = TranslateVersionCode(
-        '499900014')
+        '499900034')
     self.assertEqual(build, 4999)
     self.assertEqual(patch, 0)
-    self.assertEqual(package, 'CHROME_MODERN')
+    self.assertEqual(package, 'TRICHROME')
     self.assertEqual(abi, 'arm_64_32')
+    self.assertEqual(is_next_build, False)
+
+  def testArm_64BuildTranslate(self):
+    """Test for a build with Trichrome and arm_64_high."""
+    build, patch, package, abi, is_next_build = TranslateVersionCode(
+        '534613739')
+    self.assertEqual(build, 5346)
+    self.assertEqual(patch, 137)
+    self.assertEqual(package, 'TRICHROME')
+    self.assertEqual(abi, 'arm_64_high')
     self.assertEqual(is_next_build, False)
 
   def testX86_64Translate(self):

@@ -460,7 +460,7 @@ class DownloadDeepScanningBrowserTestBase
   bool is_consumer_;
 
   std::unique_ptr<TestSafeBrowsingServiceFactory> test_sb_factory_;
-  raw_ptr<FakeBinaryFCMService> binary_fcm_service_;
+  raw_ptr<FakeBinaryFCMService, DanglingUntriaged> binary_fcm_service_;
 
   enterprise_connectors::ContentAnalysisRequest last_request_;
 
@@ -1015,10 +1015,10 @@ class AllowlistedUrlDeepScanningBrowserTest
   void SetUpOnMainThread() override {
     DownloadDeepScanningBrowserTestBase::SetUpOnMainThread();
 
-    base::ListValue domain_list;
+    base::Value::List domain_list;
     domain_list.Append(embedded_test_server()->base_url().host_piece());
-    browser()->profile()->GetPrefs()->Set(prefs::kSafeBrowsingAllowlistDomains,
-                                          domain_list);
+    browser()->profile()->GetPrefs()->SetList(
+        prefs::kSafeBrowsingAllowlistDomains, std::move(domain_list));
   }
 };
 

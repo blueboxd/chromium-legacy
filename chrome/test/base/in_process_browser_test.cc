@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/in_process_browser_test.h"
 
+#include <map>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -16,6 +17,7 @@
 #include "base/location.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -109,20 +111,20 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/test/shell_test_api.h"
-#include "ash/services/device_sync/device_sync_impl.h"
-#include "ash/services/device_sync/fake_device_sync.h"
 #include "ash/shell.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/ash/app_restore/full_restore_app_launch_handler.h"
 #include "chrome/browser/ash/input_method/input_method_configuration.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
+#include "chromeos/ash/services/device_sync/device_sync_impl.h"
+#include "chromeos/ash/services/device_sync/fake_device_sync.h"
 #include "components/user_manager/user_names.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/test/event_generator.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 #include "ui/views/test/test_desktop_screen_ozone.h"
 #endif
 
@@ -529,6 +531,23 @@ void InProcessBrowserTest::SelectFirstBrowser() {
   const BrowserList* browser_list = BrowserList::GetInstance();
   if (!browser_list->empty())
     browser_ = browser_list->get(0);
+}
+
+void InProcessBrowserTest::RecordPropertyFromMap(
+    const std::map<std::string, std::string>& tags) {
+  std::string result = "";
+  for (auto const& tag_pair : tags) {
+    // Make sure the key value pair does not contain  ; and = characters.
+    DCHECK(tag_pair.first.find(";") == std::string::npos &&
+           tag_pair.first.find("=") == std::string::npos);
+    DCHECK(tag_pair.second.find(";") == std::string::npos &&
+           tag_pair.second.find("=") == std::string::npos);
+    if (!result.empty())
+      result = base::StrCat({result, ";"});
+    result = base::StrCat({result, tag_pair.first, "=", tag_pair.second});
+  }
+  if (!result.empty())
+    RecordProperty("gtest_tag", result);
 }
 
 void InProcessBrowserTest::CloseBrowserSynchronously(Browser* browser) {

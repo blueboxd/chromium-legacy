@@ -25,8 +25,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ui/webui/chromeos/parent_access/parent_access_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/parent_access/parent_access_ui.mojom.h"
+#include "chrome/browser/ui/webui/ash/parent_access/parent_access_ui.mojom.h"
 #endif
 
 namespace {
@@ -54,9 +53,23 @@ std::string EnumLocalWebApprovalFlowOutcomeToString(
   }
 }
 
-// TODO(b/250947827): Record the
-// "ManagedUsers.LocalWebApprovalCompleteRequestTotalDuration" metric for
-// completed verification flows on Chrome OS.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Helper method for getting human readable outcome for a local web approval.
+std::string ParentAccessResultToLoggingStringChromeOS(
+    ash::ParentAccessDialog::Result::Status outcome) {
+  switch (outcome) {
+    case ash::ParentAccessDialog::Result::Status::kApproved:
+      return "Approved";
+    case ash::ParentAccessDialog::Result::Status::kDeclined:
+      return "Declined";
+    case ash::ParentAccessDialog::Result::Status::kCancelled:
+      return "Cancelled";
+    case ash::ParentAccessDialog::Result::Status::kError:
+      return "Error";
+  }
+}
+#endif
+
 void RecordTimeToApprovalDurationMetric(base::TimeDelta durationMs) {
   base::UmaHistogramLongTimes(kLocalWebApprovalDurationHistogramName,
                               durationMs);
@@ -77,6 +90,10 @@ void WebApprovalsManager::RequestLocalApproval(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // TODO(b/250954669): replace this with call to the ParentAccess crosapi with
   // appropriate parameters and handle the ParentAccess crosapi result.
+  SupervisedUserSettingsService* settings_service =
+      SupervisedUserSettingsServiceFactory::GetForKey(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext())
+              ->GetProfileKey());
   std::vector<uint8_t> favicon_bytes;
   gfx::PNGCodec::FastEncodeBGRASkBitmap(*favicon.bitmap(), false,
                                         &favicon_bytes);
@@ -87,15 +104,17 @@ void WebApprovalsManager::RequestLocalApproval(
               parent_access_ui::mojom::WebApprovalsParams::New(
                   url.GetWithEmptyPath(), child_display_name, favicon_bytes)));
 
-  chromeos::ParentAccessDialogProvider provider;
-  chromeos::ParentAccessDialogProvider::ShowError result = provider.Show(
+  ash::ParentAccessDialogProvider provider;
+  ash::ParentAccessDialogProvider::ShowError result = provider.Show(
       std::move(params),
       base::BindOnce(
-          [](std::unique_ptr<chromeos::ParentAccessDialog::Result> result)
-              -> void {}));
+          &WebApprovalsManager::OnLocalApprovalRequestCompletedChromeOS,
+          weak_ptr_factory_.GetWeakPtr(), settings_service, url,
+          base::TimeTicks::Now()));
 
-  if (result != chromeos::ParentAccessDialogProvider::ShowError::kNone) {
-    LOG(ERROR) << "Error showing ParentAccessDialog: " << result;
+  if (result != ash::ParentAccessDialogProvider::ShowError::kNone) {
+    LOG(ERROR) << "Error showing ParentAccessDialog: "
+               << static_cast<int>(result);
     std::move(callback).Run(false);
     return;
   }
@@ -201,3 +220,25 @@ void WebApprovalsManager::OnLocalApprovalRequestCompleted(
     settings_service->RecordLocalWebsiteApproval(url.host());
   }
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void WebApprovalsManager::OnLocalApprovalRequestCompletedChromeOS(
+    SupervisedUserSettingsService* settings_service,
+    const GURL& url,
+    base::TimeTicks start_time,
+    std::unique_ptr<ash::ParentAccessDialog::Result> result) {
+  VLOG(0) << "Local URL approval final result: "
+          << ParentAccessResultToLoggingStringChromeOS(result->status);
+
+  // Record duration metrics only for completed approval flows.
+  if (result->status == ash::ParentAccessDialog::Result::Status::kApproved ||
+      result->status == ash::ParentAccessDialog::Result::Status::kDeclined) {
+    RecordTimeToApprovalDurationMetric(base::TimeTicks::Now() - start_time);
+  }
+
+  // TODO(b/250947827): Add request result metric for CrOS.
+  if (result->status == ash::ParentAccessDialog::Result::Status::kApproved) {
+    settings_service->RecordLocalWebsiteApproval(url.host());
+  }
+}
+#endif

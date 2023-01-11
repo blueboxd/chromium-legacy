@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -19,6 +20,7 @@
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
+#include "ui/ozone/platform/wayland/host/wayland_output.h"
 #include "ui/ozone/public/platform_screen.h"
 
 namespace gfx {
@@ -41,16 +43,10 @@ class WaylandScreen : public PlatformScreen {
   WaylandScreen& operator=(const WaylandScreen&) = delete;
   ~WaylandScreen() override;
 
-  void OnOutputAddedOrUpdated(uint32_t output_id,
-                              const gfx::Point& origin,
-                              const gfx::Size& logical_size,
-                              const gfx::Size& physical_size,
-                              const gfx::Insets& insets,
-                              float scale,
-                              int32_t panel_transform,
-                              int32_t logical_transform,
-                              const std::string& label);
+  void OnOutputAddedOrUpdated(const WaylandOutput::Metrics& metrics);
   void OnOutputRemoved(uint32_t output_id);
+
+  uint32_t GetOutputIdForDisplayId(int64_t display_id);
 
   void OnTabletStateChanged(display::TabletState tablet_state);
 
@@ -110,20 +106,10 @@ class WaylandScreen : public PlatformScreen {
     bool is_suspending_ = false;
   };
 
-  // All parameters are in DIP screen coordinates/units except |physical_size|,
-  // which is in physical pixels.
-  void AddOrUpdateDisplay(uint32_t output_id,
-                          const gfx::Point& origin,
-                          const gfx::Size& logical_size,
-                          const gfx::Size& physical_size,
-                          const gfx::Insets& insets,
-                          float scale,
-                          int32_t panel_transform,
-                          int32_t logical_transform,
-                          const std::string& label);
-
+  void AddOrUpdateDisplay(const WaylandOutput::Metrics& metrics);
   raw_ptr<WaylandConnection> connection_ = nullptr;
 
+  base::flat_map<WaylandOutput::Id, int64_t> display_id_map_;
   display::DisplayList display_list_;
 
   base::ObserverList<display::DisplayObserver> observers_;

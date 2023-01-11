@@ -35,6 +35,7 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/field_type_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/buildflags.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
@@ -446,7 +447,10 @@ std::vector<AutofillUploadContents> FormStructure::EncodeUploadRequest(
   // flattened into `this` (see the function's documentation for details).
   std::vector<std::pair<FormGlobalId, FormSignature>> subforms;
   for (const auto& field : *this) {
-    if (field->host_form_signature != form_signature()) {
+    // Autofill on iOS and the Password Manager in general have a null
+    // FormFieldData::host_form_signature.
+    if (field->host_form_signature &&
+        field->host_form_signature != form_signature()) {
       subforms.emplace_back(field->renderer_form_id(),
                             field->host_form_signature);
     }
@@ -901,6 +905,7 @@ void FormStructure::RetrieveFromCache(const FormStructure& cached_form,
     }
 
     field->set_previously_autofilled(cached_field->previously_autofilled());
+    field->set_was_context_menu_shown(cached_field->was_context_menu_shown());
     if (cached_field->value_not_autofilled_over_existing_value_hash()) {
       field->set_value_not_autofilled_over_existing_value_hash(
           *cached_field->value_not_autofilled_over_existing_value_hash());
@@ -974,6 +979,11 @@ void FormStructure::LogQualityMetrics(
   size_t num_of_accepted_autofilled_fields = 0;
   size_t num_of_corrected_autofilled_fields = 0;
 
+  // Tracks how many fields are filled, unfilled or corrected for the address
+  // and credit card forms.
+  FormGroupFillingStats address_field_stats;
+  FormGroupFillingStats cc_field_stats;
+
   // Count the number of filled (and corrected) fields which used to not get a
   // type prediction due to autocomplete=unrecognized. Note that credit card
   // related fields are excluded from this since an unrecognized autocomplete
@@ -1002,12 +1012,15 @@ void FormStructure::LogQualityMetrics(
                           : AutofillMetrics::TYPE_NO_SUBMISSION;
 
   for (auto& field : *this) {
+    DCHECK(field);
+
     AutofillType type = field->Type();
+    const FieldTypeGroup group = type.group();
 
     if (IsUPIVirtualPaymentAddress(field->value)) {
       has_upi_vpa_field = true;
       AutofillMetrics::LogUserHappinessMetric(
-          AutofillMetrics::USER_DID_ENTER_UPI_VPA, type.group(),
+          AutofillMetrics::USER_DID_ENTER_UPI_VPA, group,
           security_state::SecurityLevel::SECURITY_LEVEL_COUNT,
           data_util::DetermineGroups(*this));
     }
@@ -1044,6 +1057,26 @@ void FormStructure::LogQualityMetrics(
         AutofillMetrics::LogEditedAutofilledFieldAtSubmission(
             form_interactions_ukm_logger, *this, *field);
       }
+
+      // For any field that belongs to either an address or a credit card form,
+      // collect the type-unspecific field filling statistics.
+      // Those are only emitted when autofill was used on at least one field of
+      // the form.
+      const FormType form_type_of_field = FieldTypeGroupToFormType(group);
+      const bool is_address_form_field =
+          form_type_of_field == FormType::kAddressForm;
+      const bool credit_card_form_field =
+          form_type_of_field == FormType::kCreditCardForm;
+
+      if (is_address_form_field || credit_card_form_field) {
+        // Address and credit cards fields are mutually exclusive.
+        FormGroupFillingStats& group_stats =
+            is_address_form_field ? address_field_stats : cc_field_stats;
+
+        // Get the filling status of this field and add it to the form group
+        // counter.
+        group_stats.AddFieldFillingStatus(GetFieldFillingStatus(*field));
+      }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -1054,14 +1087,45 @@ void FormStructure::LogQualityMetrics(
     const ServerFieldTypeSet& field_types = field->possible_types();
     DCHECK(!field_types.empty());
 
+    // For every field that has a heuristics prediction for a
+    // NUMERIC_QUANTITY, log if there was a colliding server
+    // prediction and if the NUMERIC_QUANTITY was a false-positive prediction.
+    // The latter is true when the field was correctly filled. This can
+    // only be recorded when the feature to grant precedence to
+    // NUMERIC_QUANTITY predictions is disabled.
+    if (observed_submission && field->heuristic_type() == NUMERIC_QUANTITY) {
+      bool field_has_non_empty_server_prediction =
+          field->server_type() != UNKNOWN_TYPE &&
+          field->server_type() != NO_SERVER_DATA;
+
+      // Log if there was a colliding server prediction.
+      AutofillMetrics::LogNumericQuantityCollidesWithServerPrediction(
+          field_has_non_empty_server_prediction);
+
+      // If there was a collision, log if the NUMERIC_QUANTITY was a false
+      // positive since the field was correctly filled.
+      if ((field->is_autofilled || field->previously_autofilled()) &&
+          field_has_non_empty_server_prediction &&
+          !base::FeatureList::IsEnabled(
+              features::kAutofillGivePrecedenceToNumericQuantitites)) {
+        AutofillMetrics::
+            LogAcceptedFilledFieldWithNumericQuantityHeuristicPrediction(
+                !field->previously_autofilled());
+      }
+    }
+
     // Skip all remaining metrics if there wasn't a single possible field type
     // detected.
-    if (!FieldHasMeaningfulFieldTypes(*field))
+    if (!FieldHasMeaningfulPossibleFieldTypes(*field))
       continue;
 
     ++num_detected_field_types;
 
     // Count the number of autofilled and corrected fields.
+    // TODO(crbug.com/1368096): This metric is defective because it is falsely
+    // conditioned on having a detected field type. The metric is replaced by a
+    // new one and the old one should be removed once the new one is fully
+    // launched.
     if (field->is_autofilled) {
       ++num_of_accepted_autofilled_fields;
       if (field->ShouldSuppressPromptDueToUnrecognizedAutocompleteAttribute()) {
@@ -1084,7 +1148,7 @@ void FormStructure::LogQualityMetrics(
 
     // Keep track of the frames of detected and autofilled (credit card) fields.
     frames_of_detected_fields.insert(field->host_frame);
-    if (type.group() == FieldTypeGroup::kCreditCard) {
+    if (group == FieldTypeGroup::kCreditCard) {
       frames_of_detected_credit_card_fields.insert(field->host_frame);
       if (field->is_autofilled)
         frames_of_autofilled_credit_card_fields.insert(field->host_frame);
@@ -1217,6 +1281,14 @@ void FormStructure::LogQualityMetrics(
                                                    perfect_filling);
       }
     }
+
+    // Log the field filling statistics if autofill was used.
+    // The metrics are only emitted if there was at least one field in the
+    // corresponding form group that is or was filled by autofill.
+    AutofillMetrics::LogFieldFillingStats(FormType::kAddressForm,
+                                          address_field_stats);
+    AutofillMetrics::LogFieldFillingStats(FormType::kCreditCardForm,
+                                          cc_field_stats);
 
     AutofillMetrics::LogNumberOfFramesWithDetectedFields(
         frames_of_detected_fields.size());
@@ -1839,21 +1911,16 @@ void FormStructure::ExtractParseableFieldLabels() {
 }
 
 void FormStructure::ExtractParseableFieldNames() {
-  // Create a vector of string pieces containing the field names.
   std::vector<base::StringPiece16> names;
   names.reserve(field_count());
-  for (const auto& field : *this) {
+  for (const auto& field : *this)
     names.emplace_back(field->name);
-  }
 
   // Determine the parseable names and write them into the corresponding field.
-  std::vector<base::StringPiece16> parseable_names =
-      GetParseableNamesAsStringPiece(&names);
-  DCHECK_EQ(parseable_names.size(), field_count());
+  ComputeParseableNames(names);
   size_t idx = 0;
-  for (auto& field : *this) {
-    field->set_parseable_name(std::u16string(parseable_names[idx++]));
-  }
+  for (auto& field : *this)
+    field->set_parseable_name(std::u16string(names[idx++]));
 }
 
 DenseSet<FormType> FormStructure::GetFormTypes() const {

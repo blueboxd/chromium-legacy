@@ -4,6 +4,7 @@
 
 #include "FindBadConstructsConsumer.h"
 
+#include "FindBadRawPtrPatterns.h"
 #include "Util.h"
 #include "clang/AST/Attr.h"
 #include "clang/Frontend/CompilerInstance.h"
@@ -230,6 +231,7 @@ void FindBadConstructsConsumer::Traverse(ASTContext& context) {
   RecursiveASTVisitor::TraverseDecl(context.getTranslationUnitDecl());
   if (ipc_visitor_)
     ipc_visitor_->set_context(nullptr);
+  FindBadRawPtrPatterns(options_, context, instance());
 }
 
 bool FindBadConstructsConsumer::TraverseDecl(Decl* decl) {
@@ -1049,12 +1051,14 @@ void FindBadConstructsConsumer::CheckWeakPtrFactoryMembers(
     if (template_spec_type) {
       const TemplateDecl* template_decl =
           template_spec_type->getTemplateName().getAsTemplateDecl();
-      if (template_decl && template_spec_type->getNumArgs() == 1) {
+      if (template_decl &&
+          template_spec_type->template_arguments().size() == 1) {
         if (template_decl->getNameAsString().compare("WeakPtrFactory") == 0 &&
             GetNamespace(template_decl) == "base") {
           // Only consider WeakPtrFactory members which are specialized for the
           // owning class.
-          const TemplateArgument& arg = template_spec_type->getArg(0);
+          const TemplateArgument& arg =
+              template_spec_type->template_arguments()[0];
           if (arg.getAsType().getTypePtr()->getAsCXXRecordDecl() ==
               record->getTypeForDecl()->getAsCXXRecordDecl()) {
             if (!weak_ptr_factory_location.isValid()) {

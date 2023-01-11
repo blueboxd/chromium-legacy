@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -29,11 +30,13 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/test_management_policy.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/api/management.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -323,12 +326,16 @@ TEST_F(ManagementApiUnitTest, ComponentPolicyEnabling) {
 
 // Tests management.uninstall.
 TEST_F(ManagementApiUnitTest, ManagementUninstall) {
+  // Note: uninstall calls must come from an extension, WebUI or the Webstore.
+  // To test default behavior we test calling from a WebUI context, akin to what
+  // we would get from the extension management page.
   scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
   service()->AddExtension(extension.get());
   std::string extension_id = extension->id();
 
   base::Value uninstall_args(base::Value::Type::LIST);
   uninstall_args.Append(extension->id());
+  base::HistogramTester tester;
 
   // Auto-accept any uninstalls.
   {
@@ -338,6 +345,7 @@ TEST_F(ManagementApiUnitTest, ManagementUninstall) {
     // Uninstall requires a user gesture, so this should fail.
     scoped_refptr<ExtensionFunction> function(
         new ManagementUninstallFunction());
+    function->set_source_context_type(Feature::WEBUI_CONTEXT);
     EXPECT_FALSE(RunFunction(function, uninstall_args));
     EXPECT_EQ(std::string(constants::kGestureNeededForUninstallError),
               function->GetError());
@@ -345,11 +353,15 @@ TEST_F(ManagementApiUnitTest, ManagementUninstall) {
     ExtensionFunction::ScopedUserGestureForTests scoped_user_gesture;
 
     function = new ManagementUninstallFunction();
+    function->set_source_context_type(Feature::WEBUI_CONTEXT);
     EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_id));
     EXPECT_TRUE(RunFunction(function, uninstall_args)) << function->GetError();
     // The extension should be uninstalled.
     EXPECT_FALSE(registry()->GetExtensionById(extension_id,
                                               ExtensionRegistry::EVERYTHING));
+    tester.ExpectBucketCount(
+        "Extensions.UninstallSource",
+        extensions::UNINSTALL_SOURCE_CHROME_EXTENSIONS_PAGE, 1);
   }
 
   // Install the extension again, and try uninstalling, auto-canceling the
@@ -362,6 +374,7 @@ TEST_F(ManagementApiUnitTest, ManagementUninstall) {
     service()->AddExtension(extension.get());
     scoped_refptr<ExtensionFunction> function =
         new ManagementUninstallFunction();
+    function->set_source_context_type(Feature::WEBUI_CONTEXT);
     EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_id));
     EXPECT_FALSE(RunFunction(function, uninstall_args));
     // The uninstall should have failed.
@@ -369,12 +382,16 @@ TEST_F(ManagementApiUnitTest, ManagementUninstall) {
     EXPECT_EQ(ErrorUtils::FormatErrorMessage(constants::kUninstallCanceledError,
                                              extension_id),
               function->GetError());
+    tester.ExpectBucketCount(
+        "Extensions.UninstallSource",
+        extensions::UNINSTALL_SOURCE_CHROME_EXTENSIONS_PAGE, 2);
 
     // Try again, using showConfirmDialog: false.
     base::Value options(base::Value::Type::DICTIONARY);
     options.SetBoolPath("showConfirmDialog", false);
     uninstall_args.Append(std::move(options));
     function = new ManagementUninstallFunction();
+    function->set_source_context_type(Feature::WEBUI_CONTEXT);
     EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_id));
     EXPECT_FALSE(RunFunction(function, uninstall_args));
     // This should still fail, since extensions can only suppress the dialog for
@@ -383,22 +400,29 @@ TEST_F(ManagementApiUnitTest, ManagementUninstall) {
     EXPECT_EQ(ErrorUtils::FormatErrorMessage(constants::kUninstallCanceledError,
                                              extension_id),
               function->GetError());
+    tester.ExpectBucketCount(
+        "Extensions.UninstallSource",
+        extensions::UNINSTALL_SOURCE_CHROME_EXTENSIONS_PAGE, 3);
 
-    // If we try uninstall the extension itself, the uninstall should succeed
+    // If we have the extension uninstall itself, the uninstall should succeed
     // (even though we auto-cancel any dialog), because the dialog is never
     // shown.
     uninstall_args.GetList().erase(uninstall_args.GetList().begin());
     function = new ManagementUninstallSelfFunction();
+    // Note: this time the source is coming from the extension itself, not a
+    // WebUI based context.
     function->set_extension(extension);
     EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_id));
     EXPECT_TRUE(RunFunction(function, uninstall_args)) << function->GetError();
     EXPECT_FALSE(registry()->GetExtensionById(extension_id,
                                               ExtensionRegistry::EVERYTHING));
+    // Note: No Extensins.UninstallSource bucket is incremented here, as no
+    // dialog was shown.
   }
 }
 
-// Tests management.uninstall from Web Store
-TEST_F(ManagementApiUnitTest, ManagementWebStoreUninstall) {
+// Tests management.uninstall from the Web Store hosted app.
+TEST_F(ManagementApiUnitTest, ManagementUninstallWebstoreHostedApp) {
   scoped_refptr<const Extension> triggering_extension =
       ExtensionBuilder("Test").SetID(extensions::kWebStoreAppId).Build();
   scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
@@ -406,32 +430,37 @@ TEST_F(ManagementApiUnitTest, ManagementWebStoreUninstall) {
   std::string extension_id = extension->id();
   base::Value uninstall_args(base::Value::Type::LIST);
   uninstall_args.Append(extension->id());
+  base::HistogramTester tester;
 
   {
+    auto function = base::MakeRefCounted<ManagementUninstallFunction>();
+    function->set_extension(triggering_extension);
+
     ScopedTestDialogAutoConfirm auto_confirm(
         ScopedTestDialogAutoConfirm::CANCEL);
     ExtensionFunction::ScopedUserGestureForTests scoped_user_gesture;
 
-    scoped_refptr<ExtensionFunction> function(
-        new ManagementUninstallFunction());
-    function->set_extension(triggering_extension);
     EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_id));
     EXPECT_FALSE(RunFunction(function, uninstall_args));
-    // Webstore does not suppress the dialog for uninstalling extensions.
+    // When the dialog is automatically canceled, an error will have been
+    // reported to the extension telling it.
     EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_id));
     EXPECT_EQ(ErrorUtils::FormatErrorMessage(constants::kUninstallCanceledError,
                                              extension_id),
               function->GetError());
+    tester.ExpectBucketCount("Extensions.UninstallSource",
+                             extensions::UNINSTALL_SOURCE_CHROME_WEBSTORE, 1);
   }
 
   {
-    scoped_refptr<ExtensionFunction> function(
-        new ManagementUninstallFunction());
+    auto function = base::MakeRefCounted<ManagementUninstallFunction>();
     function->set_extension(triggering_extension);
 
     bool did_show = false;
     auto callback = base::BindRepeating(
         [](bool* did_show, extensions::ExtensionUninstallDialog* dialog) {
+          // The dialog should be shown, only identifying the extension being
+          // removed and not the caller of the function.
           EXPECT_EQ("Remove \"Test\"?", dialog->GetHeadingText());
           *did_show = true;
         },
@@ -442,18 +471,61 @@ TEST_F(ManagementApiUnitTest, ManagementWebStoreUninstall) {
     ScopedTestDialogAutoConfirm auto_confirm(
         ScopedTestDialogAutoConfirm::ACCEPT);
     ExtensionFunction::ScopedUserGestureForTests scoped_user_gesture;
+
     EXPECT_TRUE(RunFunction(function, uninstall_args)) << function->GetError();
     // The extension should be uninstalled.
     EXPECT_EQ(nullptr, registry()->GetInstalledExtension(extension_id));
     EXPECT_TRUE(did_show);
+    tester.ExpectBucketCount("Extensions.UninstallSource",
+                             extensions::UNINSTALL_SOURCE_CHROME_WEBSTORE, 2);
 
     // Reset the callback.
     extensions::ExtensionUninstallDialog::SetOnShownCallbackForTesting(nullptr);
   }
 }
 
-// Tests management.uninstall with programmatic uninstall.
-TEST_F(ManagementApiUnitTest, ManagementProgrammaticUninstall) {
+// Tests management.uninstall from the new Webstore domain.
+TEST_F(ManagementApiUnitTest, ManagementUninstallNewWebstore) {
+  scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
+  service()->AddExtension(extension.get());
+  std::string extension_id = extension->id();
+  base::Value uninstall_args(base::Value::Type::LIST);
+  uninstall_args.Append(extension->id());
+  base::HistogramTester tester;
+
+  // Note: no triggering extension is set on the ExtensionFunction, but the
+  // associated URL should be from the webstore domain.
+  auto function = base::MakeRefCounted<ManagementUninstallFunction>();
+  function->set_source_url(GURL(extension_urls::GetNewWebstoreLaunchURL()));
+
+  bool did_show = false;
+  auto callback = base::BindRepeating(
+      [](bool* did_show, extensions::ExtensionUninstallDialog* dialog) {
+        // The dialog should be shown, only identifying the extension being
+        // removed and not the caller of the function.
+        EXPECT_EQ("Remove \"Test\"?", dialog->GetHeadingText());
+        *did_show = true;
+      },
+      &did_show);
+  extensions::ExtensionUninstallDialog::SetOnShownCallbackForTesting(&callback);
+
+  ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
+  ExtensionFunction::ScopedUserGestureForTests scoped_user_gesture;
+
+  EXPECT_TRUE(RunFunction(function, uninstall_args)) << function->GetError();
+  // The extension should be uninstalled.
+  EXPECT_EQ(nullptr, registry()->GetInstalledExtension(extension_id));
+  EXPECT_TRUE(did_show);
+  tester.ExpectBucketCount("Extensions.UninstallSource",
+                           extensions::UNINSTALL_SOURCE_CHROME_WEBSTORE, 1);
+
+  // Reset the callback.
+  extensions::ExtensionUninstallDialog::SetOnShownCallbackForTesting(nullptr);
+}
+
+// Tests management.uninstall from a normal extension, which will create a
+// programmatic uninstall dialog that identifies the extension that called it.
+TEST_F(ManagementApiUnitTest, ManagementUninstallProgramatic) {
   scoped_refptr<const Extension> triggering_extension =
       ExtensionBuilder("Triggering Extension").SetID("123").Build();
   scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
@@ -461,14 +533,16 @@ TEST_F(ManagementApiUnitTest, ManagementProgrammaticUninstall) {
   std::string extension_id = extension->id();
   base::Value uninstall_args(base::Value::Type::LIST);
   uninstall_args.Append(extension->id());
+  base::HistogramTester tester;
   {
-    scoped_refptr<ExtensionFunction> function(
-        new ManagementUninstallFunction());
+    auto function = base::MakeRefCounted<ManagementUninstallFunction>();
     function->set_extension(triggering_extension);
 
     bool did_show = false;
     auto callback = base::BindRepeating(
         [](bool* did_show, extensions::ExtensionUninstallDialog* dialog) {
+          // The dialog should be shown, identifying the extension that called
+          // the function and the extension being removed.
           EXPECT_EQ("\"Triggering Extension\" would like to remove \"Test\".",
                     dialog->GetHeadingText());
           *did_show = true;
@@ -484,6 +558,8 @@ TEST_F(ManagementApiUnitTest, ManagementProgrammaticUninstall) {
     // The extension should be uninstalled.
     EXPECT_EQ(nullptr, registry()->GetInstalledExtension(extension_id));
     EXPECT_TRUE(did_show);
+    tester.ExpectBucketCount("Extensions.UninstallSource",
+                             extensions::UNINSTALL_SOURCE_EXTENSION, 1);
 
     // Reset the callback.
     extensions::ExtensionUninstallDialog::SetOnShownCallbackForTesting(nullptr);
@@ -501,6 +577,7 @@ TEST_F(ManagementApiUnitTest, ManagementUninstallBlocklisted) {
   ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
   ExtensionFunction::ScopedUserGestureForTests scoped_user_gesture;
   scoped_refptr<ExtensionFunction> function(new ManagementUninstallFunction());
+  function->set_source_context_type(Feature::WEBUI_CONTEXT);
   base::Value uninstall_args(base::Value::Type::LIST);
   uninstall_args.Append(id);
   EXPECT_TRUE(RunFunction(function, uninstall_args)) << function->GetError();

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/ranges/algorithm.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -554,7 +555,7 @@ void GvrGraphicsDelegate::PrepareBufferForWebXr() {
   }
   // We're redrawing over the entire viewport, but it's generally more
   // efficient on mobile tiling GPUs to clear anyway as a hint that
-  // we're done with the old content. TODO(klausw, https://crbug.com/700389):
+  // we're done with the old content. TODO(https://crbug.com/700389):
   // investigate using glDiscardFramebufferEXT here since that's more
   // efficient on desktop, but it would need a capability check since
   // it's not supported on older devices such as Nexus 5X.
@@ -666,9 +667,7 @@ bool GvrGraphicsDelegate::IsContentQuadReady() {
 void GvrGraphicsDelegate::GetContentQuadDrawParams(Transform* uv_transform,
                                                    float* border_x,
                                                    float* border_y) {
-  std::copy(kContentUvTransform,
-            kContentUvTransform + std::size(kContentUvTransform),
-            *uv_transform);
+  base::ranges::copy(kContentUvTransform, *uv_transform);
   DCHECK(!content_tex_buffer_size_.IsEmpty());
   *border_x = kContentBorderPixels / content_tex_buffer_size_.width();
   *border_y = kContentBorderPixels / content_tex_buffer_size_.height();
@@ -682,16 +681,11 @@ void GvrGraphicsDelegate::GetWebXrDrawParams(int* texture_id,
     CHECK(buffer);
     *texture_id = buffer->local_texture;
     // Use an identity UV transform, the image is already oriented correctly.
-    std::copy(kWebVrIdentityUvTransform,
-              kWebVrIdentityUvTransform + std::size(kWebVrIdentityUvTransform),
-              *uv_transform);
+    base::ranges::copy(kWebVrIdentityUvTransform, *uv_transform);
   } else {
     *texture_id = webvr_texture_id_;
     // Apply the UV transform from the SurfaceTexture, that's usually a Y flip.
-    std::copy(webvr_surface_texture_uv_transform_,
-              webvr_surface_texture_uv_transform_ +
-                  std::size(webvr_surface_texture_uv_transform_),
-              *uv_transform);
+    base::ranges::copy(webvr_surface_texture_uv_transform_, *uv_transform);
   }
 }
 

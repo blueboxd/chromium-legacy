@@ -7,6 +7,7 @@
 
 #include "base/time/time.h"
 #include "third_party/blink/public/mojom/close_watcher/close_listener.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
@@ -64,16 +65,6 @@ class CloseWatcher final : public EventTargetWithInlineData,
 
     void Trace(Visitor*) const;
 
-    void DidReceiveUserActivation() {
-      user_activation_time_ = base::TimeTicks::Now();
-    }
-    void ConsumeCloseWatcherCancelability() {
-      last_used_user_activation_time_ = user_activation_time_;
-    }
-    bool CanCloseWatcherFireCancel() const {
-      return last_used_user_activation_time_ != user_activation_time_;
-    }
-
     void EscapeKeyHandler(KeyboardEvent*);
 
    private:
@@ -85,13 +76,6 @@ class CloseWatcher final : public EventTargetWithInlineData,
     // Holds a pipe which the service uses to notify this object
     // when the idle state has changed.
     HeapMojoReceiver<mojom::blink::CloseListener, WatcherStack> receiver_;
-
-    // Tracks last use activation time consumed by a close watcher vs. last
-    // time user activation happened:
-    // https://wicg.github.io/close-watcher/#timestamp-of-last-activation-used-for-close-watchers
-    base::TimeTicks user_activation_time_;
-    base::TimeTicks last_used_user_activation_time_;
-
     Member<LocalDOMWindow> window_;
   };
 
@@ -105,6 +89,7 @@ class CloseWatcher final : public EventTargetWithInlineData,
   bool dispatching_cancel_ = false;
   bool grouped_with_previous_ = false;
   bool created_with_user_activation_ = false;
+  Member<AbortSignal::AlgorithmHandle> abort_handle_;
 };
 
 }  // namespace blink

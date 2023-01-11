@@ -21,6 +21,10 @@ source_set("dns") {
     "//chrome/test/*",
     "//components/certificate_transparency:unit_tests",
     "//components/cronet/*",
+
+    # Needed for brokering system DNS resolution out of the network service.
+    "//content/browser/system_dns_resolution",
+    "//content/test/*",
     "//net/*",
     "//services/network/*",
   ]
@@ -57,6 +61,8 @@ source_set("dns") {
     "dns_util.h",
     "host_cache.cc",
     "host_resolver.cc",
+    "host_resolver_internal_result.cc",
+    "host_resolver_internal_result.h",
     "host_resolver_manager.cc",
     "host_resolver_mdns_listener_impl.cc",
     "host_resolver_mdns_listener_impl.h",
@@ -399,6 +405,7 @@ source_set("tests") {
     "dns_udp_tracker_unittest.cc",
     "dns_util_unittest.cc",
     "host_cache_unittest.cc",
+    "host_resolver_internal_result_unittest.cc",
     "host_resolver_manager_unittest.cc",
     "https_record_rdata_unittest.cc",
     "httpssvc_metrics_unittest.cc",

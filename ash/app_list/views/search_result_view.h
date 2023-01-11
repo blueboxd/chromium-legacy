@@ -101,11 +101,8 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
   };
 
   enum class SearchResultViewType {
-    // The default vew type used for the majority of search results.
+    // The default view type used for the majority of search results.
     kDefault,
-    // The classic view type continues support for pre-BubbleView launcher's
-    // search UI.
-    kClassic,
     // Inline Answer views are used to directly answer questions posed by the
     // search query.
     kAnswerCard,
@@ -160,11 +157,6 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
       views::FlexLayoutView* title_container,
       views::FlexLayoutView* details_container);
 
- private:
-  friend class test::SearchResultListViewTest;
-  friend class SearchResultListView;
-  friend class SearchResultViewWidgetTest;
-
   void set_multi_line_details_height_for_test(int height) {
     multi_line_details_height_ = height;
   }
@@ -176,6 +168,23 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
   views::FlexLayoutView* get_keyboard_shortcut_container_for_test() {
     return keyboard_shortcut_container_;
   }
+
+  views::FlexLayoutView* get_title_container_for_test() {
+    return title_container_;
+  }
+
+  views::FlexLayoutView* get_details_container_for_test() {
+    return details_container_;
+  }
+
+  views::Label* get_result_text_separator_label_for_test() {
+    return result_text_separator_label_;
+  }
+
+ private:
+  friend class test::SearchResultListViewTest;
+  friend class SearchResultListView;
+  friend class SearchResultViewWidgetTest;
 
   int PreferredHeight() const;
   int PrimaryTextHeight() const;

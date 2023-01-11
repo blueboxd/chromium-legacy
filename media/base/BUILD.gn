@@ -105,6 +105,7 @@ source_set("base") {
     "byte_queue.h",
     "callback_holder.h",
     "callback_registry.h",
+    "callback_timeout_helpers.h",
     "cdm_callback_promise.cc",
     "cdm_callback_promise.h",
     "cdm_config.cc",
@@ -136,6 +137,7 @@ source_set("base") {
     "converting_audio_fifo.cc",
     "converting_audio_fifo.h",
     "crc_16.h",
+    "cross_origin_data_source.h",
     "data_buffer.cc",
     "data_buffer.h",
     "data_source.cc",
@@ -578,6 +580,7 @@ source_set("unit_tests") {
     "bitrate_unittest.cc",
     "callback_holder_unittest.cc",
     "callback_registry_unittest.cc",
+    "callback_timeout_helpers_unittest.cc",
     "channel_mixer_unittest.cc",
     "channel_mixing_matrix_unittest.cc",
     "container_names_unittest.cc",
@@ -650,7 +653,7 @@ source_set("unit_tests") {
     "//ui/gfx",
   ]
 
-  if (is_apple) {
+  if (is_mac) {
     deps += [ "//media/base/mac:unit_tests" ]
   }
 

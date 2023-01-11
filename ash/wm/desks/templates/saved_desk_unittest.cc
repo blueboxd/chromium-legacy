@@ -9,12 +9,10 @@
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
-#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/desk_template.h"
 #include "ash/public/cpp/desks_templates_delegate.h"
 #include "ash/public/cpp/rounded_image_view.h"
 #include "ash/public/cpp/test/test_desks_templates_delegate.h"
-#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -54,9 +52,9 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/feature_list.h"
+#include "base/functional/callback_helpers.h"
 #include "base/guid.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
@@ -71,11 +69,8 @@
 #include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/window_info.h"
 #include "components/app_restore/window_properties.h"
-#include "components/desks_storage/core/desk_test_util.h"
 #include "components/desks_storage/core/local_desk_data_manager.h"
-#include "components/prefs/pref_service.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/window.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
@@ -93,7 +88,7 @@ namespace ash {
 
 class SavedDeskTest : public OverviewTestBase {
  public:
-  SavedDeskTest() {}
+  SavedDeskTest() = default;
   SavedDeskTest(const SavedDeskTest&) = delete;
   SavedDeskTest& operator=(const SavedDeskTest&) = delete;
   ~SavedDeskTest() override = default;
@@ -127,7 +122,8 @@ class SavedDeskTest : public OverviewTestBase {
     desk_model()->AddOrUpdateEntry(
         std::move(desk_template),
         base::BindLambdaForTesting(
-            [&](desks_storage::DeskModel::AddOrUpdateEntryStatus status) {
+            [&](desks_storage::DeskModel::AddOrUpdateEntryStatus status,
+                std::unique_ptr<ash::DeskTemplate> new_entry) {
               EXPECT_EQ(desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk,
                         status);
               loop.Quit();
@@ -1525,10 +1521,10 @@ TEST_F(SavedDeskTest, IdenticalURL) {
   // as its identifier, and have a count of 2 because its representing both
   // urls.
   EXPECT_EQ(kTabs[0].spec(), icon_views[0]->icon_identifier());
-  EXPECT_EQ(2, icon_views[0]->count());
+  EXPECT_EQ(2, icon_views[0]->GetCount());
   // The second icon view should have a count of 0, because there are no
   // overflow windows.
-  EXPECT_EQ(0, icon_views[1]->count());
+  EXPECT_EQ(0, icon_views[1]->GetCount());
 }
 
 // Tests that the overflow count view is visible, in bounds, displays the right
@@ -2369,7 +2365,7 @@ TEST_F(SavedDeskTest, DesksTemplatesButtonBorderColor) {
   // Helper to get the color of the border of the desks templates button.
   auto get_border_color = [button]() {
     // The inner button is the one where the border is applied to.
-    DeskButtonBase* inner_button = button->inner_button();
+    DeskButtonBase* inner_button = button->GetInnerButton();
     views::Border* border = inner_button->GetBorder();
     DCHECK(border);
     return border->color();
@@ -3771,7 +3767,8 @@ TEST_F(SavedDeskTest, NoDuplicateDisplayedName) {
   desk_model()->AddOrUpdateEntry(
       std::move(new_desk_template),
       base::BindLambdaForTesting(
-          [&](desks_storage::DeskModel::AddOrUpdateEntryStatus status) {
+          [&](desks_storage::DeskModel::AddOrUpdateEntryStatus status,
+              std::unique_ptr<ash::DeskTemplate> new_entry) {
             EXPECT_EQ(desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk,
                       status);
             loop.Quit();
@@ -4426,7 +4423,7 @@ TEST_F(DeskSaveAndRecallTest, NewDeskButtonDisabledWhenRecallingToMaxDesks) {
   // desk button should be disabled.
   auto* new_desk_button = GetPrimaryRootDesksBarView()
                               ->expanded_state_new_desk_button()
-                              ->inner_button();
+                              ->GetInnerButton();
   ASSERT_FALSE(controller->CanCreateDesks());
   ASSERT_FALSE(new_desk_button->GetEnabled());
 
@@ -4516,6 +4513,36 @@ TEST_F(SavedDeskTest, SpamClickSaveDeskButtons) {
   const std::vector<SavedDeskItemView*> grid_items2 =
       GetItemViewsFromDeskLibrary(overview_grid2);
   EXPECT_EQ(2u, GetItemViewsFromDeskLibrary(overview_grid2).size());
+}
+
+// This tests that unknown desk types added into the desk model do not affect
+// the UI.  This is done by adding a template in the normal way and then
+// injecting an unknown type template into the storage model.  The result should
+// be that the saved desk library only shows the normal template.
+TEST_F(SavedDeskTest, UiIgnoresUnknownDeskTypes) {
+  // Add a window.
+  auto test_window = CreateAppWindow();
+
+  // Enter overview.
+  ToggleOverview();
+  ASSERT_TRUE(GetOverviewSession());
+
+  // Save a normal template here.
+  aura::Window* root = Shell::GetPrimaryRootWindow();
+  SavedDeskSaveDeskButton* save_template_button =
+      GetSaveDeskAsTemplateButtonForRoot(root);
+  ASSERT_TRUE(save_template_button);
+  ClickOnView(save_template_button);
+  WaitForDesksTemplatesUI();
+  WaitForLibraryUI();
+
+  // Add unknown type into model.
+  AddEntry(base::GUID::GenerateRandomV4(), "Unknown desk type name\n",
+           base::Time::Now(), DeskTemplateType::kUnknown);
+
+  // Ensure only the normal template appears in the overview grid.
+  OverviewGrid* overview_grid = GetOverviewGridList().front().get();
+  EXPECT_EQ(1u, GetItemViewsFromDeskLibrary(overview_grid).size());
 }
 
 }  // namespace ash

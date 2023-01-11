@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -47,6 +48,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace policy {
 
@@ -382,6 +384,14 @@ void EnrollmentHandler::OnRegistrationStateChanged(CloudPolicyClient* client) {
   }
 
   device_mode_ = client_->device_mode();
+
+  // If Chromad features are disabled and the management mode setting from DM
+  // Server is Active Directory, we override this setting to cloud management.
+  if (!ash::features::IsChromadAvailableEnabled() &&
+      device_mode_ == DEVICE_MODE_ENTERPRISE_AD) {
+    device_mode_ = DEVICE_MODE_ENTERPRISE;
+  }
+
   switch (device_mode_) {
     case DEVICE_MODE_ENTERPRISE:
     case DEVICE_MODE_DEMO:
@@ -505,10 +515,13 @@ void EnrollmentHandler::StartAttestationBasedEnrollmentFlow(
       base::BindOnce(&EnrollmentHandler::HandleRegistrationCertificateResult,
                      weak_ptr_factory_.GetWeakPtr(), is_initial_attempt);
   attestation_flow_->GetCertificate(
-      ash::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
-      EmptyAccountId(), /*request_origin=*/std::string(), force_new_key,
-      ::attestation::KEY_TYPE_RSA, /*=key_name=*/std::string(),
-      std::move(callback));
+      /*certificate_profile=*/ash::attestation::
+          PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
+      /*account_id=*/EmptyAccountId(), /*request_origin=*/std::string(),
+      /*force_new_key=*/force_new_key,
+      /*key_crypto_type=*/::attestation::KEY_TYPE_ECC,
+      /*=key_name=*/std::string(), /*profile_specific_data=*/absl::nullopt,
+      /*callback=*/std::move(callback));
 }
 
 void EnrollmentHandler::HandleRegistrationCertificateResult(

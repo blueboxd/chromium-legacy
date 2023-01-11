@@ -123,8 +123,13 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
     return s_test_delegate_->get_authenticator_interaction_status();
   }
 
+  bool get_add_shortcut_dialog_shown() const {
+    return s_test_delegate_->get_add_shortcut_dialog_shown();
+  }
+
  private:
-  raw_ptr<TestPasswordsPrivateDelegate> s_test_delegate_ = nullptr;
+  raw_ptr<TestPasswordsPrivateDelegate, DanglingUntriaged> s_test_delegate_ =
+      nullptr;
 };
 
 }  // namespace
@@ -205,13 +210,15 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, RequestPlaintextPasswordFails) {
   EXPECT_TRUE(RunPasswordsSubtest("requestPlaintextPasswordFails")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, RequestCredentialDetails) {
-  EXPECT_TRUE(RunPasswordsSubtest("requestCredentialDetails")) << message_;
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, RequestCredentialsDetails) {
+  EXPECT_TRUE(RunPasswordsSubtest("requestCredentialsDetails")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, RequestCredentialDetailsFails) {
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       RequestCredentialsDetailsFails) {
   ResetPlaintextPassword();
-  EXPECT_TRUE(RunPasswordsSubtest("requestCredentialDetailsFails")) << message_;
+  EXPECT_TRUE(RunPasswordsSubtest("requestCredentialsDetailsFails"))
+      << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetSavedPasswordList) {
@@ -365,5 +372,15 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
   EXPECT_TRUE(get_authenticator_interaction_status());
 }
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, AddShortcut) {
+  EXPECT_FALSE(get_add_shortcut_dialog_shown());
+  EXPECT_TRUE(RunPasswordsSubtest("showAddShortcutDialog")) << message_;
+  EXPECT_TRUE(get_add_shortcut_dialog_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetCredentialGroups) {
+  EXPECT_TRUE(RunPasswordsSubtest("getCredentialGroups"));
+}
 
 }  // namespace extensions

@@ -75,6 +75,7 @@ ScriptExecutor::ScriptExecutor(
     ScriptExecutor::Listener* listener,
     const std::vector<std::unique_ptr<Script>>* ordered_interrupts,
     ScriptExecutorDelegate* delegate,
+    Service* service,
     ScriptExecutorUiDelegate* ui_delegate,
     bool is_interrupt_executor)
     : script_path_(script_path),
@@ -84,12 +85,14 @@ ScriptExecutor::ScriptExecutor(
       last_script_payload_(script_payload),
       listener_(listener),
       delegate_(delegate),
+      service_(service),
       ui_delegate_(ui_delegate),
       ordered_interrupts_(ordered_interrupts),
       element_store_(
           std::make_unique<ElementStore>(delegate->GetWebContents())),
       is_interrupt_executor_(is_interrupt_executor) {
   DCHECK(delegate_);
+  DCHECK(service_);
   DCHECK(ui_delegate_);
   DCHECK(ordered_interrupts_);
 }
@@ -115,7 +118,6 @@ void ScriptExecutor::Run(const UserData* user_data,
   delegate_->AddNavigationListener(this);
 
   callback_ = std::move(callback);
-  DCHECK(delegate_->GetService());
 
 #ifdef NDEBUG
   VLOG(2) << "GetActions for (redacted)";
@@ -123,7 +125,7 @@ void ScriptExecutor::Run(const UserData* user_data,
   VLOG(2) << "GetActions for " << delegate_->GetCurrentURL().host();
 #endif
 
-  delegate_->GetService()->GetActions(
+  service_->GetActions(
       script_path_, delegate_->GetScriptURL(), GetMergedTriggerContext(),
       last_global_payload_, last_script_payload_,
       base::BindOnce(&ScriptExecutor::OnGetActions,
@@ -425,7 +427,9 @@ void ScriptExecutor::Prompt(
     bool disable_force_expand_sheet,
     base::OnceCallback<void()> end_on_navigation_callback,
     bool browse_mode,
-    bool browse_mode_invisible) {
+    bool browse_mode_invisible,
+    std::unique_ptr<LegalDisclaimerProto> legal_disclaimer,
+    base::OnceCallback<void(int link)> legal_disclaimer_link_callback) {
   if (!current_action_) {
     NOTREACHED() << "must not be called outside of actions";
     return;
@@ -455,12 +459,18 @@ void ScriptExecutor::Prompt(
     }
   }
 
+  if (legal_disclaimer != nullptr) {
+    ui_delegate_->SetLegalDisclaimer(std::move(legal_disclaimer),
+                                     std::move(legal_disclaimer_link_callback));
+  }
+
   if (user_actions != nullptr) {
     ui_delegate_->SetUserActions(std::move(user_actions));
   }
 }
 
 void ScriptExecutor::CleanUpAfterPrompt(bool consume_touchable_area) {
+  ui_delegate_->SetLegalDisclaimer(nullptr, base::DoNothing());
   ui_delegate_->SetUserActions(nullptr);
   if (consume_touchable_area) {
     // Mark touchable_elements_ as consumed, so that it won't affect the next
@@ -1018,7 +1028,7 @@ void ScriptExecutor::GetNextActions() {
   VLOG(2) << "Roundtrip time: " << roundtrip_timing_stats_.roundtrip_time_ms();
   VLOG(2) << "Client execution time: "
           << roundtrip_timing_stats_.client_time_ms();
-  delegate_->GetService()->GetNextActions(
+  service_->GetNextActions(
       GetMergedTriggerContext(), last_global_payload_, last_script_payload_,
       processed_actions_, roundtrip_timing_stats_, roundtrip_network_stats_,
       base::BindOnce(&ScriptExecutor::OnGetActions,
@@ -1140,10 +1150,8 @@ ProcessedActionStatusDetailsProto& ScriptExecutor::GetLogInfo() {
 void ScriptExecutor::RequestUserData(
     const CollectUserDataOptions& options,
     base::OnceCallback<void(bool, const GetUserDataResponseProto&)> callback) {
-  auto* service = delegate_->GetService();
-  DCHECK(service);
   delegate_->EnterState(AutofillAssistantState::RUNNING);
-  service->GetUserData(
+  service_->GetUserData(
       options, run_id_, user_data_,
       base::BindOnce(&ScriptExecutor::OnRequestUserData,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -1235,9 +1243,7 @@ const std::string ScriptExecutor::GetLocale() const {
 
 void ScriptExecutor::ReportProgress(const std::string& payload,
                                     base::OnceCallback<void(bool)> callback) {
-  auto* service = delegate_->GetService();
-  DCHECK(service);
-  service->ReportProgress(
+  service_->ReportProgress(
       report_token_, payload,
       base::BindOnce(&ScriptExecutor::OnReportProgress,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -1249,6 +1255,23 @@ void ScriptExecutor::OnReportProgress(
     const std::string& response,
     const ServiceRequestSender::ResponseInfo& response_info) {
   std::move(callback).Run(http_status == net::HTTP_OK);
+}
+
+void ScriptExecutor::AddInterruptScript(
+    std::unique_ptr<Script> interrupt_script,
+    std::unique_ptr<Service> optional_service) {
+  DCHECK(interrupt_script);
+  if (!interrupt_script->handle.interrupt) {
+    LOG(ERROR) << "Tried to add non-interrupt script as interrupt";
+    return;
+  }
+
+  additional_interrupt_scripts.push_back(
+      std::make_pair(std::move(interrupt_script), std::move(optional_service)));
+}
+
+const Action* ScriptExecutor::GetCurrentRootAction() const {
+  return current_action_;
 }
 
 }  // namespace autofill_assistant

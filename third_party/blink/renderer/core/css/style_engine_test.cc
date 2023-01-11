@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/public/common/css/navigation_controls.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_shadow_root_init.h"
@@ -140,6 +141,10 @@ class StyleEngineTest : public PageTestBase {
              counter_style.GetSuffix();
     }
     return ListMarker::Get(marker)->GetTextChild(*marker).GetText();
+  }
+
+  size_t FillOrClipPathCacheSize() {
+    return GetStyleEngine().fill_or_clip_path_uri_value_cache_.size();
   }
 
   void SimulateFrame() {
@@ -347,12 +352,14 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   ASSERT_TRUE(t4->GetComputedStyle());
 
   // There's only one font and it's bold and normal.
-  EXPECT_EQ(1u, GetStyleEngine().GetFontSelector()->GetFontFaceCache()
-                ->GetNumSegmentedFacesForTesting());
+  EXPECT_EQ(1u, GetStyleEngine()
+                    .GetFontSelector()
+                    ->GetFontFaceCache()
+                    ->GetNumSegmentedFacesForTesting());
   CSSSegmentedFontFace* font_face =
-      GetStyleEngine().GetFontSelector()->GetFontFaceCache()
-      ->Get(t4->GetComputedStyle()->GetFontDescription(),
-            AtomicString("Cool Font"));
+      GetStyleEngine().GetFontSelector()->GetFontFaceCache()->Get(
+          t4->GetComputedStyle()->GetFontDescription(),
+          AtomicString("Cool Font"));
   EXPECT_TRUE(font_face);
   FontSelectionCapabilities capabilities =
       font_face->GetFontSelectionCapabilities();
@@ -377,11 +384,12 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
 
   // After injecting a more specific font, now there are two and the
   // bold-italic one is selected.
-  EXPECT_EQ(2u, GetStyleEngine().GetFontSelector()->GetFontFaceCache()
-                ->GetNumSegmentedFacesForTesting());
-  font_face = GetStyleEngine().GetFontSelector()->GetFontFaceCache()
-              ->Get(t4->GetComputedStyle()->GetFontDescription(),
-                    AtomicString("Cool Font"));
+  EXPECT_EQ(2u, GetStyleEngine()
+                    .GetFontSelector()
+                    ->GetFontFaceCache()
+                    ->GetNumSegmentedFacesForTesting());
+  font_face = GetStyleEngine().GetFontSelector()->GetFontFaceCache()->Get(
+      t4->GetComputedStyle()->GetFontDescription(), AtomicString("Cool Font"));
   EXPECT_TRUE(font_face);
   capabilities = font_face->GetFontSelectionCapabilities();
   ASSERT_EQ(capabilities.weight,
@@ -403,11 +411,12 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
 
   // Now there are three fonts, but the newest one does not override the older,
   // better matching one.
-  EXPECT_EQ(3u, GetStyleEngine().GetFontSelector()->GetFontFaceCache()
-                ->GetNumSegmentedFacesForTesting());
-  font_face = GetStyleEngine().GetFontSelector()->GetFontFaceCache()
-              ->Get(t4->GetComputedStyle()->GetFontDescription(),
-                    AtomicString("Cool Font"));
+  EXPECT_EQ(3u, GetStyleEngine()
+                    .GetFontSelector()
+                    ->GetFontFaceCache()
+                    ->GetNumSegmentedFacesForTesting());
+  font_face = GetStyleEngine().GetFontSelector()->GetFontFaceCache()->Get(
+      t4->GetComputedStyle()->GetFontDescription(), AtomicString("Cool Font"));
   EXPECT_TRUE(font_face);
   capabilities = font_face->GetFontSelectionCapabilities();
   ASSERT_EQ(capabilities.weight,
@@ -421,11 +430,12 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   // After removing the injected style sheet we're left with a bold-normal and
   // a normal-italic font, and the latter is selected by the matching algorithm
   // as font-style trumps font-weight.
-  EXPECT_EQ(2u, GetStyleEngine().GetFontSelector()->GetFontFaceCache()
-                ->GetNumSegmentedFacesForTesting());
-  font_face = GetStyleEngine().GetFontSelector()->GetFontFaceCache()
-              ->Get(t4->GetComputedStyle()->GetFontDescription(),
-                    AtomicString("Cool Font"));
+  EXPECT_EQ(2u, GetStyleEngine()
+                    .GetFontSelector()
+                    ->GetFontFaceCache()
+                    ->GetNumSegmentedFacesForTesting());
+  font_face = GetStyleEngine().GetFontSelector()->GetFontFaceCache()->Get(
+      t4->GetComputedStyle()->GetFontDescription(), AtomicString("Cool Font"));
   EXPECT_TRUE(font_face);
   capabilities = font_face->GetFontSelectionCapabilities();
   ASSERT_EQ(capabilities.weight,
@@ -4494,6 +4504,46 @@ TEST_F(StyleEngineTest, AtContainerUseCount) {
   EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleContainer));
 }
 
+TEST_F(StyleEngineTest, NestingUseCount) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      body { --x: No @nest or & rule here; }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kCSSNesting));
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      body {
+        & .foo { color: fuchsia; }
+      }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSNesting));
+}
+
+TEST_F(StyleEngineTest, NestingUseCountNotStartingWithAmpersand) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      body { --x: No @nest rule or & here; }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kCSSNesting));
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      body {
+        .foo & { color: lemonchiffon; }
+      }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSNesting));
+}
+
 TEST_F(StyleEngineTest, SystemFontsObeyDefaultFontSize) {
   // <input> get assigned "font: -webkit-small-control" in the UA sheet.
   Element* body = GetDocument().body();
@@ -5995,6 +6045,150 @@ TEST_F(StyleEngineTest, StyleElementTypeAttrChange) {
   EXPECT_EQ(Color::FromRGB(255, 0, 0),
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
                 GetCSSPropertyColor()));
+}
+
+TEST_F(StyleEngineTest, SVGURIValueCacheClipPath) {
+  Element* body = GetDocument().body();
+  body->setInnerHTML(R"HTML(
+    <svg><text clip-path="inset(10px)">CLIPPED</text><svg>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(FillOrClipPathCacheSize(), 0u);
+
+  body->setInnerHTML(R"HTML(
+    <svg><text clip-path="url(#clipped)">CLIPPED</text><svg>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(FillOrClipPathCacheSize(), 1u);
+}
+
+TEST_F(StyleEngineTest, SVGURIValueCacheFill) {
+  Element* body = GetDocument().body();
+  body->setInnerHTML(R"HTML(
+    <svg><rect fill="red">FILLED</rect><svg>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(FillOrClipPathCacheSize(), 0u);
+
+  body->setInnerHTML(R"HTML(
+    <svg><rect fill="url(#fill)">FILLED</rect><svg>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(FillOrClipPathCacheSize(), 1u);
+}
+
+TEST_F(StyleEngineTest, BorderWidthsAreRecalculatedWhenZoomChanges) {
+  // Tests that Border Widths are recalculated as expected
+  // when Zoom and Device Scale Factor are changed.
+
+  ScopedSnapBorderWidthsBeforeLayoutForTest
+      enableSnapBorderWidthsBeforeLayoutForTest(true);
+
+  frame_test_helpers::WebViewHelper web_view_helper;
+  WebViewImpl* web_view_impl = web_view_helper.Initialize();
+
+  WebFrameWidget* mainFrameWidget = web_view_impl->MainFrameWidget();
+
+  const auto setZoom{[&](const float zoomFactor) {
+    mainFrameWidget->SetZoomLevelForTesting(
+        PageZoomFactorToZoomLevel(zoomFactor));
+
+    mainFrameWidget->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+  }};
+
+  auto resetZoom{[&]() { setZoom(1.0f); }};
+
+  const auto setDeviceScaleFactor{[&](const float deviceScaleFactor) {
+    mainFrameWidget->SetDeviceScaleFactorForTesting(deviceScaleFactor);
+
+    mainFrameWidget->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+  }};
+
+  auto resetDeviceScaleFactor{[&]() { setDeviceScaleFactor(1.0f); }};
+
+  auto reset{[&]() {
+    resetZoom();
+    resetDeviceScaleFactor();
+  }};
+
+  Document* document =
+      To<LocalFrame>(web_view_impl->GetPage()->MainFrame())->GetDocument();
+
+  document->body()->setInnerHTML(R"HTML(
+    <style>
+    #square {
+      height: 100px;
+      width: 100px;
+      border: 1.5px solid gray;
+    }
+    </style>
+    <div id='square'></div>
+  )HTML");
+
+  mainFrameWidget->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+
+  const Element* square = document->getElementById("square");
+  ASSERT_NE(square, nullptr);
+
+  const auto checkBorderWidth{[&](const float expected) {
+    const ComputedStyle* computedStyle = square->GetComputedStyle();
+    ASSERT_NE(computedStyle, nullptr);
+
+    EXPECT_FLOAT_EQ(expected, computedStyle->BorderTopWidth());
+  }};
+
+  // Check initial border width.
+  reset();
+  checkBorderWidth(1.0f);
+
+  // Check border width with zoom factors.
+  setZoom(0.33f);
+  checkBorderWidth(1.0f);
+
+  setZoom(1.75f);
+  checkBorderWidth(2.0f);
+
+  setZoom(2.0f);
+  checkBorderWidth(3.0f);
+
+  // Check border width after zoom is reset.
+  resetZoom();
+  checkBorderWidth(1.0f);
+
+  // Check border width with device scale factors.
+  setDeviceScaleFactor(2.0f);
+  checkBorderWidth(3.0f);
+
+  setDeviceScaleFactor(3.0f);
+  checkBorderWidth(4.0f);
+
+  // Check border width after device scale factor is reset.
+  resetDeviceScaleFactor();
+  checkBorderWidth(1.0f);
+
+  // Check border width with a combination
+  // of zoom and device scale factors.
+  setZoom(2.0f);
+  setDeviceScaleFactor(2.0f);
+  checkBorderWidth(6.0f);
+
+  setZoom(1.5f);
+  checkBorderWidth(4.0f);
+
+  setDeviceScaleFactor(2.6f);
+  checkBorderWidth(5.0f);
+
+  setZoom(0.33f);
+  checkBorderWidth(1.0f);
+
+  // Check border width after resetting both
+  // zoom and device scale factor is reset.
+  reset();
+  checkBorderWidth(1.0f);
 }
 
 }  // namespace blink

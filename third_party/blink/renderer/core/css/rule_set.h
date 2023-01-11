@@ -354,7 +354,12 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
                          const MediaQueryEvaluator&,
                          AddRuleFlags = kRuleHasNoSpecialState,
                          CascadeLayer* = nullptr);
-  void AddStyleRule(StyleRule*, AddRuleFlags);
+  void AddStyleRule(StyleRule* style_rule,
+                    const MediaQueryEvaluator& medium,
+                    AddRuleFlags add_rule_flags,
+                    const ContainerQuery* container_query = nullptr,
+                    CascadeLayer* cascade_layer = nullptr,
+                    const StyleScope* style_scope = nullptr);
 
   const RuleFeatureSet& Features() const { return features_; }
 

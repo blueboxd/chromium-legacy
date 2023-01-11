@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_BINARY_UPLOAD_SERVICE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_BINARY_UPLOAD_SERVICE_H_
 
+#include "base/functional/bind.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "chrome/browser/enterprise/connectors/analysis/analysis_settings.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
@@ -63,7 +64,7 @@ class BinaryUploadService : public KeyedService {
   static std::string ResultToString(Result result);
 
   // Callbacks used to pass along the results of scanning. The response protos
-  // will only be populated if the result is SUCCESS.
+  // will only be populated if the result is SUCCESS. Will run on UI thread.
   using ContentAnalysisCallback =
       base::OnceCallback<void(Result,
                               enterprise_connectors::ContentAnalysisResponse)>;
@@ -74,8 +75,18 @@ class BinaryUploadService : public KeyedService {
   // page or string).
   class Request {
    public:
+    // RequestStartCallback: Optional callback, called on the UI thread before
+    // authentication attempts or upload. Useful for tracking individual
+    // uploads.
+    using RequestStartCallback = base::OnceCallback<void(const Request&)>;
+
     Request(ContentAnalysisCallback,
             enterprise_connectors::CloudOrLocalAnalysisSettings settings);
+    // Optional constructor which accepts RequestStartCallback. Will be called
+    // before request attempts upload.
+    Request(ContentAnalysisCallback,
+            enterprise_connectors::CloudOrLocalAnalysisSettings settings,
+            RequestStartCallback);
     virtual ~Request();
     Request(const Request&) = delete;
     Request& operator=(const Request&) = delete;
@@ -85,10 +96,10 @@ class BinaryUploadService : public KeyedService {
     // Structure of data returned in the callback to GetRequestData().
     struct Data {
       Data();
+      Data(const Data&);
       Data(Data&&);
+      Data& operator=(const Data&);
       Data& operator=(Data&&);
-      Data(const Data&) = delete;
-      Data& operator=(const Data&) = delete;
       ~Data();
 
       // The data content. Only populated for string requests.
@@ -132,9 +143,6 @@ class BinaryUploadService : public KeyedService {
       return cloud_or_local_settings_;
     }
 
-    void set_tab_url(const GURL& tab_url);
-    const GURL& tab_url() const;
-
     void set_per_profile_request(bool per_profile_request);
     bool per_profile_request() const;
 
@@ -157,6 +165,7 @@ class BinaryUploadService : public KeyedService {
     void set_tab_title(const std::string& tab_title);
     void set_user_action_id(const std::string& user_action_id);
     void set_user_action_requests_count(uint64_t user_action_requests_count);
+    void set_tab_url(const GURL& tab_url);
 
     std::string SetRandomRequestToken();
 
@@ -170,6 +179,10 @@ class BinaryUploadService : public KeyedService {
     const std::string& content_type() const;
     const std::string& user_action_id() const;
     uint64_t user_action_requests_count() const;
+    GURL tab_url() const;
+
+    // Called when beginning to try upload.
+    void StartRequest();
 
     // Finish the request, with the given `result` and `response` from the
     // server.
@@ -189,14 +202,12 @@ class BinaryUploadService : public KeyedService {
    private:
     enterprise_connectors::ContentAnalysisRequest content_analysis_request_;
     ContentAnalysisCallback content_analysis_callback_;
+    RequestStartCallback request_start_callback_;
 
     // Settings used to determine how the request is used in the cloud or
     // locally.
     enterprise_connectors::CloudOrLocalAnalysisSettings
         cloud_or_local_settings_;
-
-    // The URL of the page that initially triggered the scan.
-    GURL tab_url_;
 
     // Indicates if the request was triggered by a profile-level policy or not.
     bool per_profile_request_ = false;
@@ -242,6 +253,36 @@ class BinaryUploadService : public KeyedService {
         cloud_or_local_settings_;
   };
 
+  // A class to encapsulate requests to cancel.  Any request that match the
+  // given criteria is canceled.  This is best effort only, in some cases
+  // requests may have already started and can no longer be canceled.
+  class CancelRequests {
+   public:
+    explicit CancelRequests(
+        enterprise_connectors::CloudOrLocalAnalysisSettings settings);
+    virtual ~CancelRequests();
+    CancelRequests(const CancelRequests&) = delete;
+    CancelRequests& operator=(const CancelRequests&) = delete;
+    CancelRequests(CancelRequests&&) = delete;
+    CancelRequests& operator=(CancelRequests&&) = delete;
+
+    void set_user_action_id(const std::string& user_action_id);
+    const std::string& get_user_action_id() const { return user_action_id_; }
+
+    const enterprise_connectors::CloudOrLocalAnalysisSettings&
+    cloud_or_local_settings() const {
+      return cloud_or_local_settings_;
+    }
+
+   private:
+    std::string user_action_id_;
+
+    // Settings used to determine how the request is used in the cloud or
+    // locally.
+    enterprise_connectors::CloudOrLocalAnalysisSettings
+        cloud_or_local_settings_;
+  };
+
   static BinaryUploadService* GetForProfile(
       Profile* profile,
       const enterprise_connectors::AnalysisSettings& settings);
@@ -252,6 +293,11 @@ class BinaryUploadService : public KeyedService {
 
   // Send an acknowledgement for the request with the given token.
   virtual void MaybeAcknowledge(std::unique_ptr<Ack> ack) = 0;
+
+  // Cancel any requests that match the given criteria .  This is a best effort
+  // approach only, since it is possible that requests have been started in a
+  // way that they are no longer cancelable.
+  virtual void MaybeCancelRequests(std::unique_ptr<CancelRequests> cancel) = 0;
 };
 
 }  // namespace safe_browsing

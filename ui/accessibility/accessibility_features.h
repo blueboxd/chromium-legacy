@@ -98,6 +98,13 @@ AX_BASE_EXPORT bool IsDictationOfflineAvailable();
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(
     kExperimentalAccessibilityDictationWithPumpkin);
 
+// Returns true if Dictation with context checking is enabled.
+AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationContextCheckingEnabled();
+
+// Enables Context Checking with the accessibility Dictation feature.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(
+    kExperimentalAccessibilityDictationContextChecking);
+
 // Returns true if dictation with pumpkin is enabled.
 AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationWithPumpkinEnabled();
 
@@ -115,6 +122,14 @@ AX_BASE_EXPORT BASE_DECLARE_FEATURE(
 // Returns true if using Language Packs to download Google TTS voices is
 // enabled.
 AX_BASE_EXPORT bool IsExperimentalAccessibilityGoogleTtsLanguagePacksEnabled();
+
+// Enables Select-to-Speak voice switching.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(
+    kExperimentalAccessibilitySelectToSpeakVoiceSwitching);
+
+// Returns true if the Select-to-Speak voice switching feature is enabled.
+AX_BASE_EXPORT bool
+IsExperimentalAccessibilitySelectToSpeakVoiceSwitchingEnabled();
 
 // Enables high-quality, network-based voices in Select-to-speak.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kEnhancedNetworkVoices);
@@ -154,6 +169,20 @@ AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilitySelectToSpeakPrefsMigration);
 
 // Returns true if AccessibilitySelectToSpeakPrefsMigration enabled.
 AX_BASE_EXPORT bool IsAccessibilitySelectToSpeakPrefsMigrationEnabled();
+
+// Enables AccessibilitySelectToSpeakContextMenuOption.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(
+    kAccessibilitySelectToSpeakContextMenuOption);
+
+// Returns true if AccessibilitySelectToSpeakContextMenuOption is enabled.
+AX_BASE_EXPORT bool IsAccessibilitySelectToSpeakContextMenuOptionEnabled();
+
+// Enables AccessibilitySelectToSpeakHoverTextImprovements.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(
+    kAccessibilitySelectToSpeakHoverTextImprovements);
+
+// Returns true if AccessibilitySelectToSpeakHoverTextImprovements is enabled.
+AX_BASE_EXPORT bool IsAccessibilitySelectToSpeakHoverTextImprovementsEnabled();
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

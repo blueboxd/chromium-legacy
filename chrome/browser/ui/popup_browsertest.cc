@@ -39,7 +39,7 @@
 namespace {
 
 // Tests of window placement for popup browser windows. Test fixtures are run
-// with and without the experimental WindowPlacement blink feature.
+// with and without multi-screen Window Management permission.
 class PopupBrowserTest : public InProcessBrowserTest,
                          public ::testing::WithParamInterface<bool> {
  public:
@@ -53,11 +53,6 @@ class PopupBrowserTest : public InProcessBrowserTest,
   void SetUpCommandLine(base::CommandLine* command_line) override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         embedder_support::kDisablePopupBlocking);
-    const bool enable_window_placement = GetParam();
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        enable_window_placement ? switches::kEnableBlinkFeatures
-                                : switches::kDisableBlinkFeatures,
-        "WindowPlacement");
   }
 
   display::Display GetDisplayNearestBrowser(const Browser* browser) const {
@@ -166,7 +161,7 @@ IN_PROC_BROWSER_TEST_P(PopupBrowserTest, DISABLED_OpenClampedToCurrentDisplay) {
 
 // Ensure popups cannot be moved beyond the available display space by script.
 // TODO(crbug.com/1228795): Flaking on Linux Ozone
-#if BUILDFLAG(IS_LINUX) && defined(USE_OZONE)
+#if BUILDFLAG(IS_LINUX) && BUILDFLAG(IS_OZONE)
 #define MAYBE_MoveClampedToCurrentDisplay DISABLED_MoveClampedToCurrentDisplay
 #else
 #define MAYBE_MoveClampedToCurrentDisplay MoveClampedToCurrentDisplay
@@ -284,8 +279,8 @@ IN_PROC_BROWSER_TEST_P(PopupBrowserTest, MAYBE_AboutBlankCrossScreenPlacement) {
   // TODO(crbug.com/1119974): this test could be in content_browsertests
   // and not browser_tests if permission controls were supported.
 
-  if (GetParam()) {  // Check whether the WindowPlacement feature is enabled.
-    // Request and auto-accept the Window Placement permission request.
+  if (GetParam()) {  // Check whether to test multi-screen features.
+    // Request and auto-accept the permission request.
     permissions::PermissionRequestManager* permission_request_manager =
         permissions::PermissionRequestManager::FromWebContents(opener);
     permission_request_manager->set_auto_response_for_test(
@@ -324,7 +319,7 @@ IN_PROC_BROWSER_TEST_P(PopupBrowserTest, MAYBE_AboutBlankCrossScreenPlacement) {
       popup->window()->GetNativeWindow());
   WidgetBoundsChangeWaiter(widget, /*move_by=*/40, /*resize_by=*/0).Wait();
   auto new_popup_display = GetDisplayNearestBrowser(popup);
-  // The popup only moves to the second screen with Window Placement permission.
+  // The popup only moves to the second screen with permission.
   EXPECT_EQ(GetParam(), original_popup_display != new_popup_display);
   EXPECT_EQ(GetParam(), second_display == new_popup_display);
   // The popup is always constrained to the bounds of the target display.

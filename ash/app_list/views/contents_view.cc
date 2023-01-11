@@ -18,7 +18,6 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
-#include "ash/app_list/views/search_result_tile_item_list_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
@@ -46,17 +45,8 @@
 namespace ash {
 
 namespace {
-
-// The contents view height threshold under which search box should be shown in
-// dense layout.
-constexpr int kDenseLayoutHeightThreshold = 600;
-
 // The preferred search box height.
 constexpr int kSearchBoxHeight = 48;
-
-// The preferred search box height when the vertical app list contents space
-// is condensed - normally `kSearchBoxHeight` would be used.
-constexpr int kSearchBoxHeightForDenseLayout = 40;
 
 // The top search box margin (measured from the app list view top bound) when
 // app list view is in peeking state on non-apps page.
@@ -148,11 +138,11 @@ void ContentsView::ResetForShow() {
   if (assistant_page_view_)
     assistant_page_view_->SetVisible(false);
   SetActiveState(AppListState::kStateApps, /*animate=*/false);
-  // In side shelf, the opacity of the contents is not animated so set it to the
-  // final state. In tablet mode, opacity of the elements is controlled by the
+
+  // In tablet mode, opacity of the elements is controlled by the
   // AppListControllerImpl which expects these elements to be opaque.
   // Otherwise the contents animate from 0 to 1 so set the initial opacity to 0.
-  if (app_list_view_->is_side_shelf() || app_list_view_->is_tablet_mode()) {
+  if (app_list_view_->is_tablet_mode()) {
     AnimateToViewState(AppListViewState::kFullscreenAllApps, base::TimeDelta());
   } else if (!last_target_view_state_.has_value() ||
              *last_target_view_state_ != AppListViewState::kClosed) {
@@ -245,8 +235,8 @@ int ContentsView::NumLauncherPages() const {
 
 gfx::Size ContentsView::AdjustSearchBoxSizeToFitMargins(
     const gfx::Size& preferred_size) const {
-  const int padded_width = GetContentsBounds().width() -
-                           2 * apps_container_view_->GetIdealHorizontalMargin();
+  const int padded_width =
+      GetContentsBounds().width() - 2 * AppsContainerView::kHorizontalMargin;
   return gfx::Size(
       base::clamp(padded_width, kSearchBarMinWidth, preferred_size.width()),
       preferred_size.height());
@@ -458,15 +448,7 @@ gfx::Size ContentsView::GetSearchBoxSize(AppListState state) const {
 
   gfx::Size preferred_size = GetSearchBoxView()->GetPreferredSize();
 
-  // Reduce the search box size in fullscreen view state when the work area
-  // height is less than 600 dip - the goal is to increase the amount of space
-  // available to the apps grid.
-  if (!features::IsProductivityLauncherEnabled() &&
-      GetContentsBounds().height() < kDenseLayoutHeightThreshold) {
-    preferred_size.set_height(kSearchBoxHeightForDenseLayout);
-  } else {
-    preferred_size.set_height(kSearchBoxHeight);
-  }
+  preferred_size.set_height(kSearchBoxHeight);
 
   return AdjustSearchBoxSizeToFitMargins(preferred_size);
 }
@@ -611,8 +593,13 @@ void ContentsView::UpdateYPositionAndOpacity() {
           ConvertRectToWidgetWithoutTransform(search_box_bounds));
   search_box->GetWidget()->SetBounds(search_rect);
 
-  const float search_box_opacity =
-      target_view_state() != AppListViewState::kClosed ? 1.0f : 0.0f;
+  float search_box_opacity;
+  if (app_list_features::IsAnimateScaleOnTabletModeTransitionEnabled()) {
+    search_box_opacity = 1.0f;
+  } else {
+    search_box_opacity =
+        target_view_state() != AppListViewState::kClosed ? 1.0f : 0.0f;
+  }
   search_box->layer()->SetOpacity(search_box_opacity);
 
   for (AppListPage* page : app_list_pages_) {
@@ -630,6 +617,13 @@ void ContentsView::AnimateToViewState(AppListViewState target_view_state,
       GetStateForPageIndex(pagination_model_.has_transition()
                                ? pagination_model_.transition().target_page
                                : pagination_model_.selected_page());
+
+  if (app_list_features::IsAnimateScaleOnTabletModeTransitionEnabled()) {
+    apps_container_view_->Layout();
+    last_target_view_state_ = target_view_state;
+    target_page_for_last_view_state_update_ = target_page;
+    return;
+  }
 
   // Animates layer's opacity.
   // |duration| - The default transition duration. The actual transition gets
@@ -786,7 +780,9 @@ int ContentsView::GetSearchBoxTopForViewState(
     AppListViewState view_state) const {
   switch (view_state) {
     case AppListViewState::kClosed:
-      return 0;
+      if (!app_list_features::IsAnimateScaleOnTabletModeTransitionEnabled())
+        return 0;
+      [[fallthrough]];
     case AppListViewState::kFullscreenAllApps:
     case AppListViewState::kFullscreenSearch:
       return apps_container_view_

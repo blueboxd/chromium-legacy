@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
-#include "third_party/blink/renderer/core/document_transition/document_transition_utils.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/child_list_mutation_scope.h"
@@ -125,6 +124,7 @@
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
@@ -1357,7 +1357,7 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
   if (auto* this_element = DynamicTo<Element>(this)) {
     this_element->SetAnimationStyleChange(false);
 
-    // The style walk for the pseudo tree created for a DocumentTransition is
+    // The style walk for the pseudo tree created for a ViewTransition is
     // done after resolving style for the author DOM. See
     // StyleEngine::RecalcTransitionPseudoStyle.
     // Since the dirty bits from the originating element (root element) are not
@@ -1367,10 +1367,10 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
       auto update_style_change = [](PseudoElement* pseudo_element) {
         pseudo_element->SetNeedsStyleRecalc(
             kLocalStyleChange, StyleChangeReasonForTracing::Create(
-                                   style_change_reason::kDocumentTransition));
+                                   style_change_reason::kViewTransition));
       };
-      DocumentTransitionUtils::ForEachTransitionPseudo(GetDocument(),
-                                                       update_style_change);
+      ViewTransitionUtils::ForEachTransitionPseudo(GetDocument(),
+                                                   update_style_change);
     }
   }
 
@@ -2581,6 +2581,11 @@ ExecutionContext* Node::GetExecutionContext() const {
 
 void Node::WillMoveToNewDocument(Document& old_document,
                                  Document& new_document) {
+#if DCHECK_IS_ON()
+  if (RuntimeEnabledFeatures::UseSeparateTraversalForWillMoveEnabled()) {
+    DCHECK_NE(&GetDocument(), &new_document);
+  }
+#endif  // DCHECK_IS_ON()
   // In rare situations, this node may be the focused element of the old
   // document. In this case, we need to clear the focused element of the old
   // document, and since we are currently in an event forbidden scope, we can't
@@ -2610,6 +2615,7 @@ void Node::WillMoveToNewDocument(Document& old_document,
 
 void Node::DidMoveToNewDocument(Document& old_document) {
   TreeScopeAdopter::EnsureDidMoveToNewDocumentWasCalled(old_document);
+  DCHECK_NE(&GetDocument(), &old_document);
 
   if (const EventTargetData* event_target_data = GetEventTargetData()) {
     const EventListenerMap& listener_map =
@@ -2880,9 +2886,9 @@ void Node::NotifyMutationObserversNodeWillDetach() {
 }
 
 void Node::HandleLocalEvents(Event& event) {
-  if (UNLIKELY(IsDocumentNode() && GetDocument().TopmostPopupAutoOrHint())) {
-    // Check if this event should "light dismiss" one or more popups.
-    Element::HandlePopupLightDismiss(event);
+  if (UNLIKELY(IsDocumentNode() && GetDocument().TopmostPopover())) {
+    // Check if this event should "light dismiss" one or more popovers.
+    HTMLElement::HandlePopoverLightDismiss(event);
   }
 
   if (!HasEventTargetData())
@@ -3382,6 +3388,10 @@ void Node::RemovedFromFlatTree() {
     DetachLayoutTree();
   }
   GetDocument().GetStyleEngine().RemovedFromFlatTree(*this);
+
+  // Ensure removal from accessibility cache even if it doesn't have layout.
+  if (GetDocument().HasAXObjectCache())
+    GetDocument().ExistingAXObjectCache()->Remove(this);
 }
 
 void Node::RegisterScrollTimeline(ScrollTimeline* timeline) {
@@ -3398,6 +3408,15 @@ HTMLSlotElement* Node::ManuallyAssignedSlot() {
   if (FlatTreeNodeData* data = GetFlatTreeNodeData())
     return data->ManuallyAssignedSlot();
   return nullptr;
+}
+
+HashSet<Member<TreeScope>> Node::GetAncestorTreeScopes() const {
+  HashSet<Member<TreeScope>> ancestor_tree_scopes;
+  for (TreeScope* scope = &GetTreeScope(); scope;
+       scope = scope->ParentTreeScope()) {
+    ancestor_tree_scopes.insert(scope);
+  }
+  return ancestor_tree_scopes;
 }
 
 void Node::Trace(Visitor* visitor) const {

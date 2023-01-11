@@ -18,7 +18,6 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_type_checker.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
+#include "chromeos/system/statistics_provider.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 
 namespace ash {
@@ -110,7 +110,7 @@ class AvailabilityChecker {
   static void Start(ResponseCallback callback, base::TimeDelta timeout) {
     // Schedule a task to run when the timeout expires. The task also owns
     // |checker| and thus takes care of eventual deletion.
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(
             &AvailabilityChecker::OnTimeout,
@@ -124,9 +124,10 @@ class AvailabilityChecker {
         background_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
             {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
         watcher_(new base::FilePathWatcher()) {
-    auto watch_callback = base::BindRepeating(
-        &AvailabilityChecker::OnFilePathChanged,
-        base::SequencedTaskRunnerHandle::Get(), weak_ptr_factory_.GetWeakPtr());
+    auto watch_callback =
+        base::BindRepeating(&AvailabilityChecker::OnFilePathChanged,
+                            base::SequencedTaskRunner::GetCurrentDefault(),
+                            weak_ptr_factory_.GetWeakPtr());
     background_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&AvailabilityChecker::StartOnBackgroundThread,
                                   watcher_.get(), watch_callback));
@@ -258,7 +259,8 @@ void GetAvailableUpdateModes(
     // disallowed until FRE determines that the device is not remotely managed
     // or it does get enrolled and the admin allows TPM firmware updates.
     const auto requirement =
-        policy::AutoEnrollmentTypeChecker::GetFRERequirementAccordingToVPD();
+        policy::AutoEnrollmentTypeChecker::GetFRERequirementAccordingToVPD(
+            system::StatisticsProvider::GetInstance());
     if (requirement == policy::AutoEnrollmentTypeChecker::FRERequirement::
                            kExplicitlyRequired) {
       std::move(completion).Run(std::set<Mode>());

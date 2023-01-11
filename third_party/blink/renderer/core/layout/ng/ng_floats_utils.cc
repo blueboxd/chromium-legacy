@@ -94,7 +94,7 @@ NGConstraintSpace CreateConstraintSpaceForFloat(
   // If we're resuming layout of this float after a fragmentainer break, the
   // margins of its children may be adjoining with the fragmentainer
   // block-start, in which case they may get truncated.
-  if (IsResumingLayout(unpositioned_float.token))
+  if (IsBreakInside(unpositioned_float.token))
     builder.SetDiscardingMarginStrut();
 
   builder.SetAvailableSize(unpositioned_float.available_size);
@@ -369,7 +369,7 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
   }
 
   if (parent_space.HasBlockFragmentation() && !need_break_before &&
-      !IsResumingLayout(unpositioned_float->token) &&
+      !IsBreakInside(unpositioned_float->token) &&
       exclusion_space->NeedsBreakBeforeFloat(
           unpositioned_float->ClearType(parent_space.Direction())))
     need_break_before = true;
@@ -380,7 +380,8 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
     // Create a special exclusion past everything, so that the container(s) may
     // grow to encompass the floats, if appropriate.
     NGBfcOffset past_everything(LayoutUnit(),
-                                FragmentainerSpaceLeft(parent_space));
+                                FragmentainerSpaceLeft(parent_space) +
+                                    parent_space.ExpectedBfcBlockOffset());
     const NGExclusion* exclusion = NGExclusion::Create(
         NGBfcRect(past_everything, past_everything), float_type);
     exclusion_space->Add(std::move(exclusion));

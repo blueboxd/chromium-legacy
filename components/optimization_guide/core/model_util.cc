@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/containers/flat_set.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/strings/string_split.h"
@@ -83,6 +84,8 @@ std::string GetStringNameForOptimizationTarget(
       return "SegmentationSearchUser";
     case proto::OPTIMIZATION_TARGET_OMNIBOX_ON_DEVICE_TAIL_SUGGEST:
       return "OmniboxOnDeviceTailSuggest";
+    case proto::OPTIMIZATION_TARGET_CLIENT_SIDE_PHISHING:
+      return "ClientSidePhishing";
       // Whenever a new value is added, make sure to add it to the OptTarget
       // variant list in
       // //tools/metrics/histograms/metadata/optimization/histograms.xml.
@@ -112,6 +115,10 @@ std::string FilePathToString(const base::FilePath& file_path) {
 
 base::FilePath GetBaseFileNameForModels() {
   return base::FilePath(FILE_PATH_LITERAL("model.tflite"));
+}
+
+base::FilePath GetBaseFileNameForModelInfo() {
+  return base::FilePath(FILE_PATH_LITERAL("model-info.pb"));
 }
 
 std::string ModelOverrideSeparator() {
@@ -178,6 +185,16 @@ GetModelOverrideForOptimizationTarget(
     return file_path_and_metadata;
   }
   return absl::nullopt;
+}
+
+bool CheckAllPathsExist(
+    const std::vector<base::FilePath>& file_paths_to_check) {
+  for (const base::FilePath& file_path : file_paths_to_check) {
+    if (!base::PathExists(file_path)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace optimization_guide

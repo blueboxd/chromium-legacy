@@ -82,6 +82,8 @@ source_set("browser") {
       "issue_manager.h",
       "issues_observer.cc",
       "issues_observer.h",
+      "log_util.cc",
+      "log_util.h",
       "logger_impl.cc",
       "logger_impl.h",
       "presentation/presentation_navigation_policy.cc",
@@ -114,6 +116,7 @@ source_set("unit_tests") {
   sources = [
     "media_router_base_unittest.cc",
     "media_router_dialog_controller_unittest.cc",
+    "media_router_factory_unittest.cc",
     "media_router_metrics_unittest.cc",
     "media_sinks_observer_unittest.cc",
     "presentation/browser_presentation_connection_proxy_unittest.cc",

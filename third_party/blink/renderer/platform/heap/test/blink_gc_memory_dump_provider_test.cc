@@ -4,9 +4,11 @@
 
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 
+#include "base/ranges/algorithm.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/platform/heap/custom_spaces.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
@@ -35,12 +37,11 @@ template <typename Callback>
 void IterateMemoryDumps(base::trace_event::ProcessMemoryDump& dump,
                         const std::string dump_prefix,
                         Callback callback) {
-  auto dump_prefix_depth =
-      std::count(dump_prefix.begin(), dump_prefix.end(), '/');
+  auto dump_prefix_depth = base::ranges::count(dump_prefix, '/');
   for (auto& it : dump.allocator_dumps()) {
     const std::string& key = it.first;
     if ((key.compare(0, dump_prefix.size(), dump_prefix) == 0) &&
-        (std::count(key.begin(), key.end(), '/') == dump_prefix_depth)) {
+        (base::ranges::count(key, '/') == dump_prefix_depth)) {
       callback(it.second.get());
     }
   }
@@ -66,7 +67,8 @@ TEST_F(BlinkGCMemoryDumpProviderTest, MainThreadLightDump) {
       new base::trace_event::ProcessMemoryDump(args));
   std::unique_ptr<BlinkGCMemoryDumpProvider> dump_provider(
       new BlinkGCMemoryDumpProvider(
-          ThreadState::Current(), base::ThreadTaskRunnerHandle::Get(),
+          ThreadState::Current(),
+          scheduler::GetSingleThreadTaskRunnerForTesting(),
           BlinkGCMemoryDumpProvider::HeapType::kBlinkMainThread));
   dump_provider->OnMemoryDump(args, dump.get());
 
@@ -81,7 +83,8 @@ TEST_F(BlinkGCMemoryDumpProviderTest, MainThreadDetailedDump) {
       new base::trace_event::ProcessMemoryDump(args));
   std::unique_ptr<BlinkGCMemoryDumpProvider> dump_provider(
       new BlinkGCMemoryDumpProvider(
-          ThreadState::Current(), base::ThreadTaskRunnerHandle::Get(),
+          ThreadState::Current(),
+          scheduler::GetSingleThreadTaskRunnerForTesting(),
           BlinkGCMemoryDumpProvider::HeapType::kBlinkMainThread));
   dump_provider->OnMemoryDump(args, dump.get());
 
@@ -96,7 +99,8 @@ TEST_F(BlinkGCMemoryDumpProviderTest, WorkerLightDump) {
       new base::trace_event::ProcessMemoryDump(args));
   std::unique_ptr<BlinkGCMemoryDumpProvider> dump_provider(
       new BlinkGCMemoryDumpProvider(
-          ThreadState::Current(), base::ThreadTaskRunnerHandle::Get(),
+          ThreadState::Current(),
+          scheduler::GetSingleThreadTaskRunnerForTesting(),
           BlinkGCMemoryDumpProvider::HeapType::kBlinkWorkerThread));
   dump_provider->OnMemoryDump(args, dump.get());
 
@@ -120,7 +124,8 @@ TEST_F(BlinkGCMemoryDumpProviderTest, WorkerDetailedDump) {
       new base::trace_event::ProcessMemoryDump(args));
   std::unique_ptr<BlinkGCMemoryDumpProvider> dump_provider(
       new BlinkGCMemoryDumpProvider(
-          ThreadState::Current(), base::ThreadTaskRunnerHandle::Get(),
+          ThreadState::Current(),
+          scheduler::GetSingleThreadTaskRunnerForTesting(),
           BlinkGCMemoryDumpProvider::HeapType::kBlinkWorkerThread));
   dump_provider->OnMemoryDump(args, dump.get());
 

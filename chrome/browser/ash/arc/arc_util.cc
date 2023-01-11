@@ -52,6 +52,7 @@
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -230,9 +231,16 @@ void SharePathIfRequired(ConvertToContentUrlsAndShareCallback callback,
     return;
   }
 
+  const auto& vm_info = arc::ArcSessionManager::Get()->GetVmInfo();
+  if (!vm_info) {
+    LOG(WARNING) << "ARCVM not running, cannot share paths";
+    std::move(callback).Run(std::vector<GURL>());
+    return;
+  }
   guest_os::GuestOsSharePath::GetForProfile(
       ProfileManager::GetPrimaryUserProfile())
-      ->SharePaths(arc::kArcVmName, path_list, /*persist=*/false,
+      ->SharePaths(arc::kArcVmName, vm_info->seneschal_server_handle(),
+                   path_list,
                    base::BindOnce(
                        [](ConvertToContentUrlsAndShareCallback callback,
                           const std::vector<GURL>& content_urls, bool success,
@@ -252,7 +260,7 @@ void SharePathIfRequired(ConvertToContentUrlsAndShareCallback callback,
 
 bool IsRealUserProfile(const Profile* profile) {
   // Return false for signin, lock screen and incognito profiles.
-  return profile && ash::ProfileHelper::IsRegularProfile(profile) &&
+  return profile && ash::ProfileHelper::IsUserProfile(profile) &&
          !profile->IsOffTheRecord();
 }
 

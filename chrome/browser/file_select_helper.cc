@@ -317,8 +317,8 @@ void FileSelectHelper::ConvertToFileChooserFileInfoList(
     storage::FileSystemContext* file_system_context =
         profile_->GetStoragePartition(site_instance)->GetFileSystemContext();
     file_manager::util::ConvertSelectedFileInfoListToFileChooserFileInfoList(
-        file_system_context, site_instance->GetSiteURL(), files,
-        base::BindOnce(&FileSelectHelper::CheckIfPolicyAllowed, this));
+        file_system_context, render_frame_host_->GetLastCommittedOrigin(),
+        files, base::BindOnce(&FileSelectHelper::CheckIfPolicyAllowed, this));
     return;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -749,10 +749,14 @@ void FileSelectHelper::RunFileChooserOnUIThread(
   // 1-based index of default extension to show.
   int file_type_index =
       select_file_types_ && !select_file_types_->extensions.empty() ? 1 : 0;
+
+  const GURL* caller =
+      &render_frame_host_->GetMainFrame()->GetLastCommittedURL();
+
   select_file_dialog_->SelectFile(dialog_type_, params->title,
                                   default_file_path, select_file_types_.get(),
                                   file_type_index, base::FilePath::StringType(),
-                                  owning_window, accept_types_ptr);
+                                  owning_window, accept_types_ptr, caller);
 
   select_file_types_.reset();
 }

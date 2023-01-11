@@ -31,7 +31,13 @@ import {
   Rotation,
   ViewName,
 } from '../type.js';
-import {instantiateTemplate, loadImage, share} from '../util.js';
+import {
+  getKeyboardShortcut,
+  instantiateTemplate,
+  KeyboardShortcut,
+  loadImage,
+  share,
+} from '../util.js';
 
 import {DocumentFixMode} from './document_fix_mode.js';
 import {DocumentPreviewMode} from './document_preview_mode.js';
@@ -45,6 +51,7 @@ export interface Page {
 interface PageInternal extends Page {
   isCornersUpdated: boolean;
   isRotationUpdated: boolean;
+  croppedBlob: Blob;
 }
 
 export enum Mode {
@@ -89,7 +96,6 @@ export class DocumentReview extends View {
     pages: 'document-pages',
     preview: 'document-preview',
     thumbnail: 'thumbnail',
-    single: 'single',
   } as const;
 
   private readonly pageTemplateSelector = '#document-review-page';
@@ -132,7 +138,8 @@ export class DocumentReview extends View {
     this.previewElement =
         dom.getFrom(this.root, `.${this.classes.preview}`, HTMLDivElement);
     this.pagesElement.addEventListener('keydown', (e) => {
-      if (e.key === ' ') {
+      const key = getKeyboardShortcut(e);
+      if (key === ' ') {
         const target = assertInstanceof(e.target, HTMLElement);
         target.click();
       }
@@ -215,10 +222,17 @@ export class DocumentReview extends View {
             mimeType === MimeType.JPEG ? DocScanResultActionType.SAVE_AS_PHOTO :
                                          DocScanResultActionType.SAVE_AS_PDF);
         nav.open(ViewName.FLASH);
-        this.save(mimeType).then(() => this.clearPages()).finally(() => {
-          this.close();
-          nav.close(ViewName.FLASH);
-        });
+        this.save(mimeType)
+            .then(() => {
+              this.clearPages();
+              this.close();
+            })
+            .catch(() => {
+              showToast(I18nString.ERROR_MSG_SAVE_FILE_FAILED);
+            })
+            .finally(() => {
+              nav.close(ViewName.FLASH);
+            });
       },
     });
     this.modes = {
@@ -232,15 +246,15 @@ export class DocumentReview extends View {
    * Adds a page to `this.pages` and updates related elements.
    */
   async addPage(page: Page): Promise<void> {
+    const {blob: croppedBlob} = await this.crop(page);
     const pageInternal: PageInternal = {
       ...page,
       isCornersUpdated: false,
       isRotationUpdated: false,
+      croppedBlob,
     };
-    const croppedPage = await this.crop(pageInternal);
-    await this.addPageView(croppedPage.blob);
+    await this.addPageView(croppedBlob);
     this.pages.push(pageInternal);
-    this.root.classList.toggle(this.classes.single, this.pages.length === 1);
   }
 
   private async addPageView(blob: Blob): Promise<void> {
@@ -254,21 +268,13 @@ export class DocumentReview extends View {
    * is JPEG, only saves the first page.
    */
   private async save(mimeType: MimeType.JPEG|MimeType.PDF): Promise<void> {
-    const blobs = await Promise.all(this.pages.map(async (page) => {
-      const croppedPage = await this.crop(page);
-      return croppedPage.blob;
-    }));
+    const blobs = this.pages.map((page) => page.croppedBlob);
     const name = (new Filenamer()).newDocumentName(mimeType);
-    try {
-      if (mimeType === MimeType.JPEG) {
-        await this.resultSaver.savePhoto(blobs[0], name, null);
-      } else {
-        const pdfBlob = await ChromeHelper.getInstance().convertToPdf(blobs);
-        await this.resultSaver.savePhoto(pdfBlob, name, null);
-      }
-    } catch (e) {
-      showToast(I18nString.ERROR_MSG_SAVE_FILE_FAILED);
-      throw e;
+    if (mimeType === MimeType.JPEG) {
+      await this.resultSaver.savePhoto(blobs[0], name, null);
+    } else {
+      const pdfBlob = await ChromeHelper.getInstance().convertToPdf(blobs);
+      await this.resultSaver.savePhoto(pdfBlob, name, null);
     }
   }
 
@@ -277,10 +283,7 @@ export class DocumentReview extends View {
    * share the first page.
    */
   private async share(mimeType: MimeType.JPEG|MimeType.PDF): Promise<void> {
-    const blobs = await Promise.all(this.pages.map(async (page) => {
-      const croppedPage = await this.crop(page);
-      return croppedPage.blob;
-    }));
+    const blobs = this.pages.map((page) => page.croppedBlob);
     const name = (new Filenamer()).newDocumentName(mimeType);
     const blob = mimeType === MimeType.JPEG ?
         blobs[0] :
@@ -389,10 +392,10 @@ export class DocumentReview extends View {
 
   private async updatePageInternal(index: number, page: PageInternal):
       Promise<void> {
-    const croppedPage = await this.crop(page);
+    const {blob: croppedBlob} = await this.crop(page);
     const pageElement = this.pagesElement.children[index];
-    await this.updatePageView(pageElement, croppedPage.blob);
-    this.pages[index] = page;
+    await this.updatePageView(pageElement, croppedBlob);
+    this.pages[index] = {...page, croppedBlob};
   }
 
   private async updatePageView(pageElement: ParentNode, blob: Blob):
@@ -424,7 +427,6 @@ export class DocumentReview extends View {
     await this.selectPage(
         this.selectedIndex === this.pages.length ? this.pages.length - 1 :
                                                    this.selectedIndex);
-    this.root.classList.toggle(this.classes.single, this.pages.length === 1);
   }
 
   private deletePageView(index: number): void {
@@ -475,7 +477,7 @@ export class DocumentReview extends View {
     this.pagesElement.replaceChildren();
   }
 
-  private async crop(page: PageInternal): Promise<PageInternal> {
+  private async crop(page: Page): Promise<Page> {
     const {blob, corners, rotation} = page;
     const newBlob = await ChromeHelper.getInstance().convertToDocument(
         blob, corners, rotation, MimeType.JPEG);
@@ -505,13 +507,14 @@ export class DocumentReview extends View {
   protected override leaving(): boolean {
     this.hideMultiPageAvailableIndicator?.();
     this.hideMultiPageAvailableIndicator = null;
+    this.waitForUpdatingPage();
     if (this.pages.length === 0) {
       this.fixCount = 0;
     }
     return true;
   }
 
-  override onKeyPressed(key: string): boolean {
+  override onKeyPressed(key: KeyboardShortcut): boolean {
     if (super.onKeyPressed(key)) {
       return true;
     }
@@ -519,12 +522,12 @@ export class DocumentReview extends View {
         !this.pagesElement.contains(document.activeElement)) {
       return false;
     }
-    if (key === 'Up') {
+    if (key === 'ArrowUp') {
       const index = this.selectedIndex === 0 ? this.pages.length - 1 :
                                                this.selectedIndex - 1;
       this.selectPage(index);
       return true;
-    } else if (key === 'Down') {
+    } else if (key === 'ArrowDown') {
       const index = this.selectedIndex === this.pages.length - 1 ?
           0 :
           this.selectedIndex + 1;

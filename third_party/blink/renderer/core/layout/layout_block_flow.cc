@@ -34,6 +34,7 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
 #include "third_party/blink/renderer/core/editing/editing_behavior.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
@@ -278,7 +279,7 @@ LayoutBlockFlow::~LayoutBlockFlow() = default;
 
 LayoutBlockFlow* LayoutBlockFlow::CreateAnonymous(
     Document* document,
-    scoped_refptr<ComputedStyle> style,
+    scoped_refptr<const ComputedStyle> style,
     LegacyLayout legacy) {
   LayoutBlockFlow* layout_block_flow =
       LayoutObjectFactory::CreateBlockFlow(*document, *style, legacy);
@@ -344,6 +345,11 @@ void LayoutBlockFlow::ClearShouldBreakAtLineToAvoidWidow() const {
     return;
 
   rare_data_->line_break_to_avoid_widow_ = -1;
+}
+
+bool LayoutBlockFlow::IsInitialLetterBox() const {
+  return IsA<FirstLetterPseudoElement>(GetNode()) &&
+         !StyleRef().InitialLetter().IsNormal();
 }
 
 bool LayoutBlockFlow::IsSelfCollapsingBlock() const {

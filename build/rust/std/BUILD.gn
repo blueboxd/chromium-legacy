@@ -60,6 +60,10 @@ if (toolchain_has_rust) {
     "unwind",
   ]
 
+  if (use_chromium_rust_toolchain) {
+    stdlib_files += [ "cfg_if-2" ]
+  }
+
   # Different Rust toolchains may add or remove files relative to the above
   # list. That can be specified in gn args for anyone using (for instance)
   # nightly or some other experimental toolchain, prior to it becoming official.

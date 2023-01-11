@@ -7,6 +7,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
@@ -35,6 +36,39 @@ namespace {
 BASE_FEATURE(kUnpremultiplyAndDitherLowBitDepthTiles,
              "UnpremultiplyAndDitherLowBitDepthTiles",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// When enabled, scrollbar fade animations' delay and duration are scaled
+// according to `kFadeDelayScalingFactor` and `kFadeDurationScalingFactor`
+// below, respectively. For more context, please see https://crbug.com/1245964.
+BASE_FEATURE(kScaleScrollbarAnimationTiming,
+             "ScaleScrollbarAnimationTiming",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+constexpr base::FeatureParam<double> kFadeDelayScalingFactor{
+    &kScaleScrollbarAnimationTiming, "fade_delay_scaling_factor",
+    /*default_value=*/1.0};
+
+constexpr base::FeatureParam<double> kFadeDurationScalingFactor{
+    &kScaleScrollbarAnimationTiming, "fade_duration_scaling_factor",
+    /*default_value=*/1.0};
+
+void InitializeScrollbarFadeAndDelay(cc::LayerTreeSettings& settings) {
+  // Default settings that may be overridden below for specific platforms.
+  settings.scrollbar_fade_delay = base::Milliseconds(300);
+  settings.scrollbar_fade_duration = base::Milliseconds(300);
+
+#if !BUILDFLAG(IS_ANDROID)
+  if (ui::IsOverlayScrollbarEnabled()) {
+    settings.scrollbar_fade_delay = ui::kOverlayScrollbarFadeDelay;
+    settings.scrollbar_fade_duration = ui::kOverlayScrollbarFadeDuration;
+  }
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+  if (base::FeatureList::IsEnabled(kScaleScrollbarAnimationTiming)) {
+    settings.scrollbar_fade_delay *= kFadeDelayScalingFactor.Get();
+    settings.scrollbar_fade_duration *= kFadeDurationScalingFactor.Get();
+  }
+}
 
 #if BUILDFLAG(IS_ANDROID)
 // With 32 bit pixels, this would mean less than 400kb per buffer. Much less
@@ -164,7 +198,7 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
   settings.skip_commits_if_not_synchronizing_compositor_state =
       base::FeatureList::IsEnabled(
           ::features::kSkipCommitsIfNotSynchronizingCompositorState) &&
-      !RuntimeEnabledFeatures::DocumentTransitionEnabled();
+      !RuntimeEnabledFeatures::ViewTransitionEnabled();
   settings.enable_synchronized_scrolling =
       base::FeatureList::IsEnabled(::features::kSynchronizedScrolling);
   Platform* platform = Platform::Current();
@@ -390,8 +424,8 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
   // emulator. Aura Overlay Scrollbar will override below.
   settings.scrollbar_animator = cc::LayerTreeSettings::ANDROID_OVERLAY;
   settings.solid_color_scrollbar_color = {0.5f, 0.5f, 0.5f, 0.5f};
-  settings.scrollbar_fade_delay = base::Milliseconds(300);
-  settings.scrollbar_fade_duration = base::Milliseconds(300);
+
+  InitializeScrollbarFadeAndDelay(settings);
 
   if (cmd.HasSwitch(cc::switches::kCCScrollAnimationDurationForTesting)) {
     const int kMinScrollAnimationDuration = 0;
@@ -449,8 +483,6 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
 
   if (ui::IsOverlayScrollbarEnabled()) {
     settings.scrollbar_animator = cc::LayerTreeSettings::AURA_OVERLAY;
-    settings.scrollbar_fade_delay = ui::kOverlayScrollbarFadeDelay;
-    settings.scrollbar_fade_duration = ui::kOverlayScrollbarFadeDuration;
     settings.scrollbar_thinning_duration =
         ui::kOverlayScrollbarThinningDuration;
     settings.scrollbar_flash_after_any_scroll_update = true;

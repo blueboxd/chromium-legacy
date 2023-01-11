@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">Hlehlisa</translation>
 <translation id="2084108471225856927">Izilungiselelo zedivayisi</translation>
 <translation id="2084809735218147718">Ukusayinda ukuthi ngiyabonga</translation>
-<translation id="2085470240340828803">Ifayela elinegama le-"<ph name="FILENAME" />" selivele likhona. Yini ofuna ukuyenza?</translation>
 <translation id="2088690981887365033">Inethiwekhi ye-VPN</translation>
 <translation id="2122305276694332719">Ukuxhumeka ngokuzenzakalela kunethiwekhi efihliwe kuvumela abanye ukuthi babone idivayisi yakho nezinye izilungiselelo zenethiwekhi futhi akunconyiwe.</translation>
 <translation id="2125607626296734455">Isi-Khmer</translation>
@@ -456,7 +455,6 @@
 <translation id="4900532980794411603">Yabelana ne-Parallels Desktop</translation>
 <translation id="4902546322522096650">Inethiwekhi <ph name="NETWORK_INDEX" /> ye-<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, amandla esignali <ph name="SIGNAL_STRENGTH" />%, Xhuma</translation>
 <translation id="4906580650526544301">Inethiwekhi ye-<ph name="NETWORK_INDEX" /> kwangu-<ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, Amandla Esignali <ph name="SIGNAL_STRENGTH" />%, Ibhethri Lefoni <ph name="BATTERY_STATUS" />%, Imininingwane</translation>
-<translation id="4929673617759421391">Ukunamathisela leli fayela kuvinjelwe yinqubomgomo yomlawuli</translation>
 <translation id="4935975195727477204">Imbali ye-Gazania</translation>
 <translation id="4943368462779413526">Ibhola lezinyawo</translation>
 <translation id="4961158930123534723">Ifolda e-1 yabelenwe ne-Parallels Desktop</translation>
@@ -533,6 +531,7 @@
 <translation id="5428105026674456456">Spanish</translation>
 <translation id="5438282218546237410">Ayikho imiphumela ye-<ph name="SEARCH_TERM" />.</translation>
 <translation id="5449551289610225147">Iphasiwedi engavumelekile</translation>
+<translation id="5459064203055649751">Ifayela elinegama "<ph name="FILENAME" />" selivele likhona. Ingabe ufuna ukuyifaka esikhundleni saleyo oyihambisayo?</translation>
 <translation id="5463231940765244860">Faka</translation>
 <translation id="5469868506864199649">Italian</translation>
 <translation id="5473333559083690127">Phinda ufake iphinikhodi entsha</translation>
@@ -653,6 +652,7 @@
 <translation id="6495925982925244349">Inethiwekhi <ph name="NETWORK_INDEX" /> ye-<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, amandla esignali <ph name="SIGNAL_STRENGTH" />%, kuphethwe umlawuli wakho, imininingwane</translation>
 <translation id="649877868557234318">Ikhipha i-<ph name="FILE_NAME" /> ku-<ph name="FOLDER_NAME" /></translation>
 <translation id="6499681088828539489">Ungavumeli abammeleli kumanethiwekhi abiwe</translation>
+<translation id="6503285896705205014">Ukukopisha amafayela angu-<ph name="COUNT" /> kuvinjelwe yinqubomgomo yomlawuli</translation>
 <translation id="6509122719576673235">Norwegian</translation>
 <translation id="6528513914570774834">Vumela abanye abasebenzisi bale divayisi ukuthi basebenzise le nethiwekhi</translation>
 <translation id="653019979737152879">Ivumelanisa i-<ph name="FILE_NAME" />...</translation>
@@ -755,6 +755,7 @@
 <translation id="7357762654218998920">Lolu hlobo lwefayela alusekelwa. <ph name="BEGIN_LINK_HELP" />Funda Kabanzi<ph name="END_LINK_HELP" /> ngokuvula amafayela ku-ChromeOS.</translation>
 <translation id="7359359531237882347">Ukukopisha izinto ezingu-<ph name="NUMBER_OF_ITEMS" />...</translation>
 <translation id="7375951387215729722">Uhlu lwefayela luhlungwe nge-<ph name="COLUMN_NAME" /> nge-oda eyehlayo.</translation>
+<translation id="7377161162143020057">Ukukopisha leli fayela kuvinjelwe yinqubomgomo yomlawuli</translation>
 <translation id="7402503521691663770">Amadivayisi we-ChromeOS Flex</translation>
 <translation id="7408870451288633753">Czech</translation>
 <translation id="7417453074306512035">Ikhibhodi ye-Ethiopic</translation>
@@ -976,7 +977,6 @@
 <translation id="9183302530794969518">Google Amadokhumenti</translation>
 <translation id="9189836632794948435">Kazakh</translation>
 <translation id="9200427192836333033">Izinto ezingu-<ph name="NUMBER_OF_ITEMS" /> zithukululiwe.</translation>
-<translation id="9210751050717126865">Ukunamathisela amafayela angu-<ph name="COUNT" /> kuvinjelwe yinqubomgomo yomlawuli</translation>
 <translation id="9213073329713032541">Ukufaka kuqaliswe ngempumelelo.</translation>
 <translation id="9219103736887031265">Izithombe</translation>
 <translation id="9219908252191632183">I-Lunar</translation>

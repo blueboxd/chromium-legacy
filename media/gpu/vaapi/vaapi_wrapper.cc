@@ -72,7 +72,7 @@ extern "C" {
 #include "ui/gfx/x/connection.h"  // nogncheck
 #endif                            // BUILDFLAG(USE_VAAPI_X11)
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #endif
@@ -629,7 +629,7 @@ bool IsVAProfileSupported(VAProfile va_profile) {
 bool IsBlockedDriver(VaapiWrapper::CodecMode mode, VAProfile va_profile) {
   if (!IsModeEncoding(mode)) {
     return va_profile == VAProfileAV1Profile0 &&
-           !base::FeatureList::IsEnabled(kVaapiAV1Decoder);
+           !base::FeatureList::IsEnabled(kChromeOSHWAV1Decoder);
   }
 
   // TODO(posciak): Remove once VP8 encoding is to be enabled by default.
@@ -740,7 +740,7 @@ VADisplayState::VADisplayState()
 bool VADisplayState::Initialize() {
   base::AutoLock auto_lock(va_lock_);
 
-#if defined(USE_OZONE) && BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_OZONE) && BUILDFLAG(IS_LINUX)
   // TODO(crbug.com/1116701): add vaapi support for other Ozone platforms on
   // Linux. See comment in OzonePlatform::PlatformProperties::supports_vaapi
   // for more details. This will also require revisiting everything that's
@@ -973,11 +973,11 @@ std::vector<VAEntrypoint> GetEntryPointsForProfile(const base::Lock* va_lock,
                 "");
 
   std::vector<VAEntrypoint> entrypoints;
-  std::copy_if(va_entrypoints.begin(), va_entrypoints.end(),
-               std::back_inserter(entrypoints),
-               [&kAllowedEntryPoints, mode](VAEntrypoint entry_point) {
-                 return base::Contains(kAllowedEntryPoints[mode], entry_point);
-               });
+  base::ranges::copy_if(va_entrypoints, std::back_inserter(entrypoints),
+                        [&kAllowedEntryPoints, mode](VAEntrypoint entry_point) {
+                          return base::Contains(kAllowedEntryPoints[mode],
+                                                entry_point);
+                        });
   return entrypoints;
 }
 

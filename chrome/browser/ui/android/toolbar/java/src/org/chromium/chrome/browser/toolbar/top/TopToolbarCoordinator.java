@@ -71,6 +71,14 @@ public class TopToolbarCoordinator implements Toolbar {
         void onUrlExpansionProgressChanged(float fraction);
     }
 
+    /**
+     * Observes toolbar color change.
+     */
+    public interface ToolbarColorObserver {
+        /** @param color The toolbar color value. */
+        void onToolbarColorChanged(int color);
+    }
+
     public static final int TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS = 200;
     public static final int TAB_SWITCHER_MODE_GTS_ANIMATION_DURATION_MS = 150;
 
@@ -191,10 +199,8 @@ public class TopToolbarCoordinator implements Toolbar {
                     isIncognitoModeEnabledSupplier);
         }
         controlContainer.setPostInitializationDependencies(this, initializeWithIncognitoColors,
-                constraintsSupplier,
-                ()
-                        -> toolbarDataProvider.getTab(),
-                compositorInMotionSupplier, browserStateBrowserControlsVisibilityDelegate);
+                constraintsSupplier, toolbarDataProvider::getTab, compositorInMotionSupplier,
+                browserStateBrowserControlsVisibilityDelegate);
         mToolbarLayout.initialize(toolbarDataProvider, tabController, mMenuButtonCoordinator,
                 isProgressBarVisibleSupplier, historyDelegate, partnerHomepageEnabledSupplier,
                 offlineDownloader);
@@ -304,6 +310,13 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public void removeUrlExpansionObserver(UrlExpansionObserver urlExpansionObserver) {
         mToolbarLayout.removeUrlExpansionObserver(urlExpansionObserver);
+    }
+
+    /**
+     * @param toolbarColorObserver The observer that observes toolbar color change.
+     */
+    public void setToolbarColorObserver(@NonNull ToolbarColorObserver toolbarColorObserver) {
+        mToolbarLayout.setToolbarColorObserver(toolbarColorObserver);
     }
 
     /**
@@ -693,6 +706,7 @@ public class TopToolbarCoordinator implements Toolbar {
         mStartSurfaceToolbarCoordinator.onStartSurfaceStateChanged(
                 newState, requestToShow, newLayoutType);
         updateToolbarLayoutVisibility();
+        updateButtonVisibility();
     }
 
     /**
@@ -770,5 +784,10 @@ public class TopToolbarCoordinator implements Toolbar {
     @VisibleForTesting
     public StartSurfaceToolbarCoordinator getStartSurfaceToolbarForTesting() {
         return mStartSurfaceToolbarCoordinator;
+    }
+
+    @Override
+    public void setHairlineVisibility(boolean isVisible) {
+        mToolbarLayout.setHairlineVisibility(isVisible);
     }
 }

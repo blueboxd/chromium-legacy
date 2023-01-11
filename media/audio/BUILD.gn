@@ -90,8 +90,6 @@ source_set("audio") {
     "audio_manager_base.h",
     "audio_opus_encoder.cc",
     "audio_opus_encoder.h",
-    "audio_output_delegate.cc",
-    "audio_output_delegate.h",
     "audio_output_device.cc",
     "audio_output_device.h",
     "audio_output_device_thread_callback.cc",
@@ -206,18 +204,9 @@ source_set("audio") {
       "win/core_audio_util_win.h",
       "win/device_enumeration_win.cc",
       "win/device_enumeration_win.h",
-      "win/volume_range_util.cc",
-      "win/volume_range_util.h",
       "win/waveout_output_win.cc",
       "win/waveout_output_win.h",
     ]
-
-    if (enable_platform_dts_audio) {
-      sources += [
-        "win/audio_edid_scan_win.cc",
-        "win/audio_edid_scan_win.h",
-      ]
-    }
 
     deps += [ "//media/base/win:media_foundation_util" ]
 
@@ -495,7 +484,6 @@ source_set("unit_tests") {
       "win/audio_session_event_listener_win_unittest.cc",
       "win/core_audio_util_win_unittest.cc",
       "win/device_enumeration_win_unittest.cc",
-      "win/volume_range_util_unittest.cc",
     ]
 
     deps += [ "//media/gpu:gpu" ]

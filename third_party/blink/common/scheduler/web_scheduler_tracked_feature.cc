@@ -61,9 +61,6 @@ FeatureNames FeatureToNames(WebSchedulerTrackedFeature feature) {
     case WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction:
       return {"OutstandingIndexedDBTransaction",
               "outstanding IndexedDB transaction"};
-    case WebSchedulerTrackedFeature::kRequestedNotificationsPermission:
-      return {"RequestedNotificationsPermission",
-              "requested notifications permission"};
     case WebSchedulerTrackedFeature::kRequestedMIDIPermission:
       return {"RequestedMIDIPermission", "requested midi permission"};
     case WebSchedulerTrackedFeature::kRequestedAudioCapturePermission:
@@ -124,6 +121,8 @@ FeatureNames FeatureToNames(WebSchedulerTrackedFeature feature) {
       return {"InjectedJavascript", "External javascript injected"};
     case WebSchedulerTrackedFeature::kInjectedStyleSheet:
       return {"InjectedStyleSheet", "External systesheet injected"};
+    case WebSchedulerTrackedFeature::kKeepaliveRequest:
+      return {"InjectedStyleSheet", "requests with keepalive set"};
     case WebSchedulerTrackedFeature::kDummy:
       return {"Dummy", "Dummy for testing"};
   }
@@ -196,7 +195,6 @@ WebSchedulerTrackedFeatures StickyFeatures() {
       WebSchedulerTrackedFeature::kSubresourceHasCacheControlNoCache,
       WebSchedulerTrackedFeature::kContainsPlugins,
       WebSchedulerTrackedFeature::kDocumentLoaded,
-      WebSchedulerTrackedFeature::kRequestedNotificationsPermission,
       WebSchedulerTrackedFeature::kRequestedMIDIPermission,
       WebSchedulerTrackedFeature::kRequestedAudioCapturePermission,
       WebSchedulerTrackedFeature::kRequestedVideoCapturePermission,
@@ -213,6 +211,7 @@ WebSchedulerTrackedFeatures StickyFeatures() {
       WebSchedulerTrackedFeature::kWebOTPService,
       WebSchedulerTrackedFeature::kInjectedJavascript,
       WebSchedulerTrackedFeature::kInjectedStyleSheet,
+      WebSchedulerTrackedFeature::kKeepaliveRequest,
       WebSchedulerTrackedFeature::kDummy);
   return features;
 }

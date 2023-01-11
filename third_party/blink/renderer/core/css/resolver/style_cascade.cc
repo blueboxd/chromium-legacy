@@ -218,17 +218,17 @@ void StyleCascade::Apply(CascadeFilter filter) {
   // but we compute them nevertheless, to avoid suddenly having to compute them
   // after-the-fact if inline style is updated incrementally.
   if (resolver.AuthorFlags() & CSSProperty::kBackground)
-    state_.Style()->SetHasAuthorBackground();
+    state_.StyleBuilder().SetHasAuthorBackground();
   if (resolver.AuthorFlags() & CSSProperty::kBorder)
-    state_.Style()->SetHasAuthorBorder();
+    state_.StyleBuilder().SetHasAuthorBorder();
   if (resolver.AuthorFlags() & CSSProperty::kBorderRadius)
-    state_.Style()->SetHasAuthorBorderRadius();
+    state_.StyleBuilder().SetHasAuthorBorderRadius();
 
   if ((state_.Style()->InsideLink() != EInsideLink::kInsideVisitedLink &&
        (resolver.AuthorFlags() & CSSProperty::kHighlightColors)) ||
       (state_.Style()->InsideLink() == EInsideLink::kInsideVisitedLink &&
        (resolver.AuthorFlags() & CSSProperty::kVisitedHighlightColors))) {
-    state_.Style()->SetHasAuthorHighlightColors();
+    state_.StyleBuilder().SetHasAuthorHighlightColors();
   }
 
   if (resolver.Flags() & CSSProperty::kAnimation)
@@ -674,8 +674,8 @@ void StyleCascade::LookupAndApplyDeclaration(const CSSProperty& property,
     tree_scope = &TreeScopeAt(match_result_, priority->GetPosition());
   else if (origin == CascadeOrigin::kAuthorPresentationalHint)
     tree_scope = &GetDocument();
-  StyleBuilder::ApplyProperty(property, state_,
-                              ScopedCSSValue(*value, tree_scope));
+  StyleBuilder::ApplyPhysicalProperty(property, state_,
+                                      ScopedCSSValue(*value, tree_scope));
 }
 
 void StyleCascade::LookupAndApplyInterpolation(const CSSProperty& property,
@@ -812,7 +812,7 @@ const CSSValue* StyleCascade::ResolveCustomProperty(
   if (HasLineHeightDependency(To<CustomProperty>(property), data.get()))
     resolver.DetectCycle(GetCSSPropertyLineHeight());
 
-  state_.Style()->SetHasVariableDeclaration();
+  state_.StyleBuilder().SetHasVariableDeclaration();
 
   if (resolver.InCycle())
     return CSSCyclicVariableValue::Create();
@@ -1172,8 +1172,8 @@ void StyleCascade::MarkIsReferenced(const CSSProperty& referencer,
 
 void StyleCascade::MarkHasVariableReference(const CSSProperty& property) {
   if (!property.IsInherited())
-    state_.Style()->SetHasVariableReferenceFromNonInheritedProperty();
-  state_.Style()->SetHasVariableReference();
+    state_.StyleBuilder().SetHasVariableReferenceFromNonInheritedProperty();
+  state_.StyleBuilder().SetHasVariableReference();
 }
 
 const Document& StyleCascade::GetDocument() const {

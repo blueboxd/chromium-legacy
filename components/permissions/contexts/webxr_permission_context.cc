@@ -10,6 +10,7 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "components/permissions/android/android_permission_util.h"
+#include "components/permissions/android/permissions_reprompt_controller_android.h"
 #include "components/permissions/permission_request_id.h"
 #include "components/permissions/permissions_client.h"
 #include "content/public/browser/web_contents.h"
@@ -72,8 +73,7 @@ void WebXrPermissionContext::NotifyPermissionSet(
 
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(
-          content::RenderFrameHost::FromID(id.render_process_id(),
-                                           id.render_frame_id()));
+          content::RenderFrameHost::FromID(id.global_render_frame_host_id()));
   if (!web_contents) {
     // If we can't get the web contents, we don't know the state of the OS
     // permission, so assume we don't have it.
@@ -107,11 +107,16 @@ void WebXrPermissionContext::NotifyPermissionSet(
 
     case PermissionRepromptState::kShow:
       // Otherwise, prompt the user that we need additional permissions.
-      PermissionsClient::Get()->RepromptForAndroidPermissions(
-          web_contents, permission_type,
-          base::BindOnce(&WebXrPermissionContext::OnAndroidPermissionDecided,
-                         weak_ptr_factory_.GetWeakPtr(), id, requesting_origin,
-                         embedding_origin, std::move(callback)));
+      permissions::PermissionsRepromptControllerAndroid::CreateForWebContents(
+          web_contents);
+      permissions::PermissionsRepromptControllerAndroid::FromWebContents(
+          web_contents)
+          ->RepromptPermissionRequest(
+              permission_type, content_settings_type(),
+              base::BindOnce(
+                  &WebXrPermissionContext::OnAndroidPermissionDecided,
+                  weak_ptr_factory_.GetWeakPtr(), id, requesting_origin,
+                  embedding_origin, std::move(callback)));
       return;
   }
 }

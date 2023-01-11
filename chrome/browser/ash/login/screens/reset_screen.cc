@@ -26,11 +26,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browser_process_platform_part_ash.h"
-#include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/reset_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/system/statistics_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -150,7 +151,8 @@ void ResetScreen::CheckIfPowerwashAllowed(
   // powerwash either. Note that taking consumer device ownership has the side
   // effect of dropping the FRE requirement if it was previously in effect.
   const auto is_reset_allowed =
-      policy::AutoEnrollmentTypeChecker::GetFRERequirementAccordingToVPD() !=
+      policy::AutoEnrollmentTypeChecker::GetFRERequirementAccordingToVPD(
+          system::StatisticsProvider::GetInstance()) !=
       policy::AutoEnrollmentTypeChecker::FRERequirement::kExplicitlyRequired;
   std::move(callback).Run(is_reset_allowed, absl::nullopt);
 }

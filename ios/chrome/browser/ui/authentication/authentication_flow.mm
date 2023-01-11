@@ -17,9 +17,9 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/constants.h"
+#import "ios/chrome/browser/signin/system_identity.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow_performer.h"
 #import "ios/chrome/grit/ios_strings.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/signin_error_api.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -386,9 +386,9 @@ enum AuthenticationState {
 }
 
 - (void)checkMergeCaseForUnsupervisedAccounts {
-  if (([_performer
-          shouldHandleMergeCaseForIdentity:_identityToSignIn
-                              browserState:_browser->GetBrowserState()])) {
+  if (([_performer shouldHandleMergeCaseForIdentity:_identityToSignIn
+                                  browserStatePrefs:_browser->GetBrowserState()
+                                                        ->GetPrefs()])) {
     [_performer promptMergeCaseForIdentity:_identityToSignIn
                                    browser:_browser
                             viewController:_presentingViewController];

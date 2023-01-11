@@ -6,21 +6,79 @@
 
 #include "base/check.h"
 #include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/field_type_utils.h"
+#include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/form_types.h"
 
 namespace autofill {
 
-bool FieldHasMeaningfulFieldTypes(const AutofillField& field) {
-  // This function should only be invoked when the possible types have been
-  // determined.
-  DCHECK(!field.possible_types().empty());
+using FieldFillingStatus = AutofillMetrics::FieldFillingStatus;
 
-  if (field.possible_types().contains_any({UNKNOWN_TYPE, EMPTY_TYPE})) {
-    // If either UNKNOWN_TYPE or EMPTY_TYPE is present, there should be no other
-    // type
-    DCHECK_EQ(field.possible_types().size(), 1u);
-    return false;
+void FormGroupFillingStats::AddFieldFillingStatus(FieldFillingStatus status) {
+  switch (status) {
+    case FieldFillingStatus::kAccepted:
+      num_accepted++;
+      return;
+    case FieldFillingStatus::kCorrectedToSameType:
+      num_corrected_to_same_type++;
+      return;
+    case FieldFillingStatus::kCorrectedToDifferentType:
+      num_corrected_to_different_type++;
+      return;
+    case FieldFillingStatus::kCorrectedToUnknownType:
+      num_corrected_to_unknown_type++;
+      return;
+    case FieldFillingStatus::kCorrectedToEmpty:
+      num_corrected_to_empty++;
+      return;
+    case FieldFillingStatus::kManuallyFilledToSameType:
+      num_manually_filled_to_same_type++;
+      return;
+    case FieldFillingStatus::kManuallyFilledToDifferentType:
+      num_manually_filled_to_differt_type++;
+      return;
+    case FieldFillingStatus::kManuallyFilledToUnknownType:
+      num_manually_filled_to_unknown_type++;
+      return;
+    case FieldFillingStatus::kLeftEmpty:
+      num_left_empty++;
+      return;
   }
-  return true;
+  NOTREACHED();
+}
+
+FieldFillingStatus GetFieldFillingStatus(const AutofillField& field) {
+  const bool is_empty = field.IsEmpty();
+  const bool possible_types_empty =
+      !FieldHasMeaningfulPossibleFieldTypes(field);
+  const bool possible_types_contain_type = TypeOfFieldIsPossibleType(field);
+
+  if (field.is_autofilled)
+    return FieldFillingStatus::kAccepted;
+
+  if (field.previously_autofilled()) {
+    if (is_empty)
+      return FieldFillingStatus::kCorrectedToEmpty;
+
+    if (possible_types_contain_type)
+      return FieldFillingStatus::kCorrectedToSameType;
+
+    if (possible_types_empty)
+      return FieldFillingStatus::kCorrectedToUnknownType;
+
+    return FieldFillingStatus::kCorrectedToDifferentType;
+  }
+
+  if (is_empty)
+    return FieldFillingStatus::kLeftEmpty;
+
+  if (possible_types_contain_type)
+    return FieldFillingStatus::kManuallyFilledToSameType;
+
+  if (possible_types_empty)
+    return FieldFillingStatus::kManuallyFilledToUnknownType;
+
+  return FieldFillingStatus::kManuallyFilledToDifferentType;
 }
 
 }  // namespace autofill

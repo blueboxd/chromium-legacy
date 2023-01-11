@@ -10,7 +10,7 @@ load("//lib/branches.star", "branches")
 load("//project.star", "settings")
 
 lucicfg.check_version(
-    min = "1.33.7",
+    min = "1.31.6",
     message = "Update depot_tools",
 )
 
@@ -102,7 +102,10 @@ luci.project(
     bindings = [
         luci.binding(
             roles = "role/configs.validator",
-            groups = "project-chromium-try-task-accounts",
+            groups = [
+                "project-chromium-try-task-accounts",
+                "project-chromium-ci-task-accounts",
+            ],
         ),
         # Roles for LUCI Analysis.
         luci.binding(

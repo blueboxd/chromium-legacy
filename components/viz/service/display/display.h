@@ -12,7 +12,6 @@
 #include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
@@ -167,6 +166,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
       const gfx::PresentationFeedback& feedback) override;
   void DidReceiveReleasedOverlays(
       const std::vector<gpu::Mailbox>& released_overlays) override;
+  void AddChildWindowToBrowser(gpu::SurfaceHandle child_window) override;
 
   // LatestLocalSurfaceIdLookupDelegate implementation.
   LocalSurfaceId GetSurfaceAtAggregation(

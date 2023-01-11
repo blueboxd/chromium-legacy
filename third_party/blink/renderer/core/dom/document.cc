@@ -74,6 +74,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_aria_notification_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_creation_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_registration_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_observable_array_css_style_sheet.h"
@@ -117,7 +118,6 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
-#include "third_party/blink/renderer/core/document_transition/document_transition_supplement.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/beforeunload_event_listener.h"
 #include "third_party/blink/renderer/core/dom/cdata_section.h"
@@ -288,10 +288,10 @@
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
-#include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/core/paint/paint_timing.h"
+#include "third_party/blink/renderer/core/paint/timing/first_meaningful_paint_detector.h"
+#include "third_party/blink/renderer/core/paint/timing/paint_timing.h"
 #include "third_party/blink/renderer/core/permissions_policy/dom_feature_policy.h"
 #include "third_party/blink/renderer/core/permissions_policy/permissions_policy_parser.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -311,6 +311,7 @@
 #include "third_party/blink/renderer/core/timing/render_blocking_metrics_reporter.h"
 #include "third_party/blink/renderer/core/timing/soft_navigation_heuristics.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
 #include "third_party/blink/renderer/core/xml_names.h"
 #include "third_party/blink/renderer/core/xmlns_names.h"
@@ -378,7 +379,8 @@ enum class RequestStorageResult {
   REJECTED_SANDBOXED = 6,
   REJECTED_GRANT_DENIED = 7,
   REJECTED_INCORRECT_FRAME = 8,
-  kMaxValue = REJECTED_INCORRECT_FRAME,
+  REJECTED_INSECURE_CONTEXT = 9,
+  kMaxValue = REJECTED_INSECURE_CONTEXT,
 };
 void FireRequestStorageAccessHistogram(RequestStorageResult result) {
   base::UmaHistogramEnumeration("API.StorageAccess.RequestStorageAccess",
@@ -678,12 +680,13 @@ Document* Document::Create(Document& document) {
   Document* new_document = MakeGarbageCollected<Document>(
       DocumentInit::Create()
           .WithExecutionContext(document.GetExecutionContext())
+          .WithAgent(document.GetAgent())
           .WithURL(BlankURL()));
   new_document->SetContextFeatures(document.GetContextFeatures());
   return new_document;
 }
 
-Document* Document::CreateForTest(ExecutionContext* execution_context) {
+Document* Document::CreateForTest(ExecutionContext& execution_context) {
   return MakeGarbageCollected<Document>(
       DocumentInit::Create().ForTest(execution_context));
 }
@@ -704,7 +707,7 @@ Document::Document(const DocumentInit& initializer,
       pending_sheet_layout_(kNoLayoutWithPendingSheets),
       dom_window_(initializer.GetWindow()),
       execution_context_(initializer.GetExecutionContext()),
-      agent_(execution_context_ ? execution_context_->GetAgent() : nullptr),
+      agent_(initializer.GetAgent()),
       context_features_(ContextFeatures::DefaultSwitch()),
       http_refresh_scheduler_(MakeGarbageCollected<HttpRefreshScheduler>(this)),
       well_formed_(false),
@@ -817,6 +820,7 @@ Document::Document(const DocumentInit& initializer,
               ? MakeGarbageCollected<RenderBlockingResourceManager>(*this)
               : nullptr),
       data_(MakeGarbageCollected<DocumentData>(GetExecutionContext())) {
+  DCHECK(agent_);
   if (base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution))
     script_runner_delayer_->Activate();
 
@@ -840,6 +844,11 @@ Document::Document(const DocumentInit& initializer,
                             nullptr /* back_forward_cache_loader_helper */));
   }
   DCHECK(fetcher_);
+
+  // Since CSSFontSelector requires Document::fetcher_ and StyleEngine owns
+  // CSSFontSelector, need to initialize |style_engine_| after initializing
+  // |fetcher_|.
+  style_engine_ = MakeGarbageCollected<StyleEngine>(*this);
 
   root_scroller_controller_ =
       MakeGarbageCollected<RootScrollerController>(*this);
@@ -873,11 +882,6 @@ Document::Document(const DocumentInit& initializer,
   InstanceCounters::IncrementCounter(InstanceCounters::kDocumentCounter);
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kInactive);
-
-  // Since CSSFontSelector requires Document::fetcher_ and StyleEngine owns
-  // CSSFontSelector, need to initialize |style_engine_| after initializing
-  // |fetcher_|.
-  style_engine_ = MakeGarbageCollected<StyleEngine>(*this);
 
   UpdateThemeColorCache();
 
@@ -1330,10 +1334,15 @@ Node* Document::importNode(Node* imported_node,
     return nullptr;
   }
 
-  // 2. Return a clone of node, with context object and the clone children flag
-  // set if deep is true.
+  // 2. Return a clone of node, with context object, the clone children flag set
+  // if deep is true, and the clone shadows flag set if this is a
+  // DocumentFragment whose host is an HTML template element.
+  auto* fragment = DynamicTo<DocumentFragment>(imported_node);
+  bool clone_shadows_flag = fragment && fragment->IsTemplateContent();
   return imported_node->Clone(
-      *this, deep ? CloneChildrenFlag::kClone : CloneChildrenFlag::kSkip);
+      *this, deep ? (clone_shadows_flag ? CloneChildrenFlag::kCloneWithShadows
+                                        : CloneChildrenFlag::kClone)
+                  : CloneChildrenFlag::kSkip);
 }
 
 Node* Document::adoptNode(Node* source, ExceptionState& exception_state) {
@@ -2423,7 +2432,7 @@ bool Document::SetNeedsStyleRecalcForToggles() {
 
 void Document::ApplyScrollRestorationLogic() {
   DCHECK(View());
-  // This function in not re-entrant. However, the places that invoke this are
+  // This function is not re-entrant. However, the places that invoke this are
   // re-entrant. Specifically, UpdateStyleAndLayout() calls this, which in turn
   // can do a find-in-page for the scroll-to-text feature, which can cause
   // UpdateStyleAndLayout to happen with content-visibility, which gets back
@@ -3042,9 +3051,9 @@ static ui::AXMode ComputeAXModeFromAXContexts(Vector<AXContext*> ax_contexts) {
 
 void Document::AddAXContext(AXContext* context) {
   // The only case when |&cache_owner| is not |this| is when this is a
-  // pop-up. We want pop-ups to share the AXObjectCache of their parent
+  // popup. We want popups to share the AXObjectCache of their parent
   // document. However, there's no valid reason to explicitly create an
-  // AXContext for a pop-up document, so check to make sure we're not
+  // AXContext for a popup document, so check to make sure we're not
   // trying to do that here.
   DCHECK_EQ(&AXObjectCacheOwner(), this);
 
@@ -3270,32 +3279,58 @@ void Document::open(LocalDOMWindow* entered_window,
       Loader()->DidOpenDocumentInputStream(new_url);
 
     if (dom_window_ != entered_window) {
-      // We inherit the sandbox flags of the entered document, so mask on
-      // the ones contained in the CSP. The operator| is a bitwise operation on
-      // the sandbox flags bits. It makes the sandbox policy stricter (or as
-      // strict) as both policy.
-      //
-      // TODO(arthursonzogni): Why merging sandbox flags?
-      // This doesn't look great at many levels:
-      // - The browser process won't be notified of the update.
-      // - The origin won't be made opaque, despite the new flags.
-      // - The sandbox flags of the document can't be considered to be an
-      //   immutable property anymore.
-      //
-      // Ideally:
-      // - javascript-url document.
-      // - XSLT document.
-      // - document.open.
-      // should not mutate the security properties of the current document. From
-      // the browser process point of view, all of those operations are not
-      // considered to produce new documents. No IPCs are sent, it is as if it
-      // was a no-op.
-      dom_window_->GetSecurityContext().SetSandboxFlags(
-          dom_window_->GetSecurityContext().GetSandboxFlags() |
-          entered_window->GetSandboxFlags());
+      CountUse(WebFeature::kDocumentOpenDifferentWindow);
 
-      dom_window_->GetSecurityContext().SetSecurityOrigin(
-          entered_window->GetMutableSecurityOrigin());
+      if ((dom_window_->GetSecurityContext().GetSandboxFlags() |
+           entered_window->GetSandboxFlags()) !=
+          dom_window_->GetSecurityContext().GetSandboxFlags()) {
+        CountUse(WebFeature::kDocumentOpenMutateSandbox);
+      }
+
+      if (!RuntimeEnabledFeatures::
+              DocumentOpenSandboxInheritanceRemovalEnabled()) {
+        // We inherit the sandbox flags of the entered document, so mask on
+        // the ones contained in the CSP. The operator| is a bitwise operation
+        // on the sandbox flags bits. It makes the sandbox policy stricter (or
+        // as strict) as both policy.
+        //
+        // TODO(arthursonzogni): Why merging sandbox flags?
+        // This doesn't look great at many levels:
+        // - The browser process won't be notified of the update.
+        // - The origin won't be made opaque, despite the new flags.
+        // - The sandbox flags of the document can't be considered to be an
+        //   immutable property anymore.
+        //
+        // Ideally:
+        // - javascript-url document.
+        // - XSLT document.
+        // - document.open.
+        // should not mutate the security properties of the current document.
+        // From the browser process point of view, all of those operations are
+        // not considered to produce new documents. No IPCs are sent, it is as
+        // if it was a no-op.
+        //
+        // TODO(https://crbug.com/1360795) Remove this
+        dom_window_->GetSecurityContext().SetSandboxFlags(
+            dom_window_->GetSecurityContext().GetSandboxFlags() |
+            entered_window->GetSandboxFlags());
+
+        dom_window_->GetSecurityContext().SetSecurityOrigin(
+            entered_window->GetMutableSecurityOrigin());
+      }
+
+      // Question: Should we remove the inheritance of the CookieURL via
+      // document.open?
+      //
+      // Arguments in favor of maintaining this behavior include the fact that
+      // document.open can be used to alter the document's URL. According to
+      // prior talks, this is necessary for web compatibility. It looks nicer if
+      // all URL variations change uniformly and simultaneously.
+      //
+      // Arguments in favor of eliminating this behavior include the fact that
+      // cookie URLs are extremely particular pieces of state that resemble the
+      // origin more than they do actual URLs. The less we inherit via
+      // document.open, the better.
       cookie_url_ = entered_window->document()->CookieURL();
     }
   }
@@ -3432,20 +3467,13 @@ DocumentParser* Document::ImplicitOpen(
 }
 
 void Document::DispatchHandleLoadStart() {
-  if (AXObjectCache* cache = ExistingAXObjectCache()) {
-    // Don't fire load start for popup document.
-    if (this == &AXObjectCacheOwner())
-      cache->HandleLoadStart(this);
-  }
+  if (AXObjectCache* cache = ExistingAXObjectCache())
+    cache->HandleLoadStart(this);
 }
 
-void Document::DispatchHandleLoadOrLayoutComplete() {
-  if (AXObjectCache* cache = ExistingAXObjectCache()) {
-    if (this == &AXObjectCacheOwner())
-      cache->HandleLoadComplete(this);
-    else
-      cache->HandleLayoutComplete(this);
-  }
+void Document::DispatchHandleLoadComplete() {
+  if (AXObjectCache* cache = ExistingAXObjectCache())
+    cache->HandleLoadComplete(this);
 }
 
 HTMLElement* Document::body() const {
@@ -3684,7 +3712,7 @@ void Document::ImplicitClose() {
   load_event_progress_ = kLoadEventCompleted;
 
   if (GetFrame() && GetLayoutView()) {
-    DispatchHandleLoadOrLayoutComplete();
+    DispatchHandleLoadComplete();
     FontFaceSetDocument::DidLayout(*this);
   }
 
@@ -4301,8 +4329,10 @@ void Document::UpdateBaseURL() {
   if (elem_sheet_) {
     // Element sheet is silly. It never contains anything.
     DCHECK(!elem_sheet_->Contents()->RuleCount());
-    elem_sheet_ = CSSStyleSheet::CreateInline(*this, base_url_);
+    elem_sheet_ = nullptr;
   }
+
+  GetStyleEngine().BaseURLChanged();
 
   if (!EqualIgnoringFragmentIdentifier(old_base_url, base_url_)) {
     // Base URL change changes any relative visited links.
@@ -4336,11 +4366,14 @@ KURL Document::FallbackBaseURL() const {
     // `fallback_base_url_for_srcdoc_` will only be sent from the frame host if
     // we are process isolating sandboxed srcdoc iframes (although when the
     // IsolateSandboxedIframes feature is enabled we will send it for all srcdoc
-    // iframes, not just sandboxed ones). If `fallback_base_url_for_srcdoc_`
-    // isn't sent, then we must still check that `ParentDocument()` is non-null,
-    // in case this function is called while the document is detached.
+    // iframes, not just sandboxed ones). The fallback base url will also be
+    // sent from the frame host if kNewBaseUrlInheritanceBehavior is enabled.
+    // If `fallback_base_url_for_srcdoc_` isn't sent, then we must still check
+    // that `ParentDocument()` is non-null, in case this function is called
+    // while the document is detached.
     // TODO(https://crbug.com/751329, https://crbug.com/1336904): Referring to
     // ParentDocument() is not correct.
+    DCHECK(!blink::features::IsNewBaseUrlInheritanceBehaviorEnabled());
     if (ParentDocument())
       return ParentDocument()->BaseURL();
   }
@@ -4790,6 +4823,7 @@ void Document::UnobserveForIntrinsicSize(Element* element) {
 Document* Document::CloneDocumentWithoutChildren() const {
   DocumentInit init = DocumentInit::Create()
                           .WithExecutionContext(execution_context_.Get())
+                          .WithAgent(GetAgent())
                           .WithURL(Url());
   if (IsA<XMLDocument>(this)) {
     if (IsXHTMLDocument())
@@ -6084,7 +6118,7 @@ ScriptPromise Document::hasStorageAccess(ScriptState* script_state) {
   const bool has_access =
       TopFrameOrigin() && GetExecutionContext() &&
       !GetExecutionContext()->GetSecurityOrigin()->IsOpaque() &&
-      CookiesEnabled();
+      dom_window_->isSecureContext() && CookiesEnabled();
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
@@ -6126,7 +6160,9 @@ ScriptPromise Document::requestStorageAccessForOrigin(
 
     FireRequestStorageAccessForOriginHistogram(
         RequestStorageResult::REJECTED_NO_USER_GESTURE);
-    resolver->Reject();
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+        "requestStorageAccessForOrigin not allowed"));
     return promise;
   }
 
@@ -6138,7 +6174,9 @@ ScriptPromise Document::requestStorageAccessForOrigin(
         "browsing contexts."));
     FireRequestStorageAccessForOriginHistogram(
         RequestStorageResult::REJECTED_INCORRECT_FRAME);
-    resolver->Reject();
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+        "requestStorageAccessForOrigin not allowed"));
     return promise;
   }
 
@@ -6150,7 +6188,9 @@ ScriptPromise Document::requestStorageAccessForOrigin(
 
     FireRequestStorageAccessForOriginHistogram(
         RequestStorageResult::REJECTED_OPAQUE_ORIGIN);
-    resolver->Reject();
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+        "requestStorageAccessForOrigin not allowed"));
     return promise;
   }
 
@@ -6164,7 +6204,9 @@ ScriptPromise Document::requestStorageAccessForOrigin(
         "requestStorageAccessForOrigin: Invalid origin parameter."));
     FireRequestStorageAccessForOriginHistogram(
         RequestStorageResult::REJECTED_OPAQUE_ORIGIN);
-    resolver->Reject();
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+        "requestStorageAccessForOrigin not allowed"));
     return promise;
   }
 
@@ -6210,7 +6252,12 @@ ScriptPromise Document::requestStorageAccessForOrigin(
                   default:
                     FireRequestStorageAccessForOriginHistogram(
                         RequestStorageResult::REJECTED_GRANT_DENIED);
-                    resolver->Reject();
+                    ScriptState* state = resolver->GetScriptState();
+                    DCHECK(state->ContextIsValid());
+                    ScriptState::Scope scope(state);
+                    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+                        state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+                        "requestStorageAccessForOrigin not allowed"));
                 }
               },
               WrapPersistent(resolver), WrapPersistent(this)));
@@ -6237,6 +6284,20 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
   // can be changed when it is resolved or rejected.
   ScriptPromise promise = resolver->Promise();
 
+  if (!dom_window_->isSecureContext()) {
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "requestStorageAccess: May not be used in an insecure context."));
+    FireRequestStorageAccessHistogram(
+        RequestStorageResult::REJECTED_INSECURE_CONTEXT);
+
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+        "requestStorageAccess not allowed"));
+    return promise;
+  }
+
   const bool has_user_gesture =
       LocalFrame::HasTransientUserActivation(GetFrame());
   if (!has_user_gesture) {
@@ -6247,7 +6308,9 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
     FireRequestStorageAccessHistogram(
         RequestStorageResult::REJECTED_NO_USER_GESTURE);
 
-    resolver->Reject();
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+        "requestStorageAccess not allowed"));
     return promise;
   }
 
@@ -6259,7 +6322,9 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
     FireRequestStorageAccessHistogram(
         RequestStorageResult::REJECTED_OPAQUE_ORIGIN);
 
-    resolver->Reject();
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+        "requestStorageAccess not allowed"));
     return promise;
   }
 
@@ -6279,7 +6344,9 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
           RequestStorageResult::REJECTED_SANDBOXED);
     }
 
-    resolver->Reject();
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+        "requestStorageAccess not allowed"));
     return promise;
   }
 
@@ -6299,7 +6366,9 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
 
     // If a previous rejection has been received the promise can be immediately
     // rejected without further action.
-    resolver->Reject();
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+        "requestStorageAccess not allowed"));
     return promise;
   }
 
@@ -6330,7 +6399,12 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
                   default:
                     FireRequestStorageAccessHistogram(
                         RequestStorageResult::REJECTED_GRANT_DENIED);
-                    resolver->Reject();
+                    ScriptState* state = resolver->GetScriptState();
+                    DCHECK(state->ContextIsValid());
+                    ScriptState::Scope scope(state);
+                    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+                        state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+                        "requestStorageAccess not allowed"));
                 }
               },
               WrapPersistent(resolver), WrapPersistent(this)));
@@ -6541,6 +6615,17 @@ void Document::TrustTokenQueryAnswererConnectionError() {
         "Internal error retrieving trust token response."));
   }
   data_->pending_trust_token_query_resolvers_.clear();
+}
+
+void Document::ariaNotify(const String announcement,
+                          const AriaNotificationOptions* options) {
+  DCHECK(RuntimeEnabledFeatures::ConfirmationOfActionEnabled());
+
+  AXObjectCache* cache = ExistingAXObjectCache();
+  if (!cache)
+    return;
+
+  cache->AddAriaNotification(this, announcement, options);
 }
 
 static bool IsValidNameNonASCII(const LChar* characters, unsigned length) {
@@ -6909,8 +6994,8 @@ ExecutionContext* Document::GetExecutionContext() const {
   return execution_context_.Get();
 }
 
-Agent* Document::GetAgent() const {
-  return agent_.Get();
+Agent& Document::GetAgent() const {
+  return *agent_;
 }
 
 Attr* Document::createAttribute(const AtomicString& name,
@@ -7124,6 +7209,11 @@ void Document::FinishedParsing() {
   if (document_timing_.DomContentLoadedEventEnd().is_null())
     document_timing_.MarkDomContentLoadedEventEnd();
   SetParsingState(kFinishedParsing);
+
+  if (AnnotationAgentContainerImpl* container =
+          Supplement<Document>::From<AnnotationAgentContainerImpl>(*this)) {
+    container->FinishedParsing();
+  }
 
   // Ensure Custom Element callbacks are drained before DOMContentLoaded.
   // FIXME: Remove this ad-hoc checkpoint when DOMContentLoaded is dispatched in
@@ -7619,19 +7709,17 @@ HTMLDialogElement* Document::ActiveModalDialog() const {
   return nullptr;
 }
 
-Element* Document::TopmostPopupAutoOrHint() const {
-  if (PopupHintShowing())
-    return PopupHintShowing();
-  if (PopupStack().empty())
+HTMLElement* Document::TopmostPopover() const {
+  if (PopoverStack().empty())
     return nullptr;
-  return PopupStack().back();
+  return PopoverStack().back();
 }
 
-void Document::SetPopUpMousedownTarget(const Element* pop_up) {
-  DCHECK(
-      RuntimeEnabledFeatures::HTMLPopupAttributeEnabled(GetExecutionContext()));
-  DCHECK(!pop_up || pop_up->HasPopupAttribute());
-  pop_up_mousedown_target_ = pop_up;
+void Document::SetPopoverPointerdownTarget(const HTMLElement* popover) {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
+      GetExecutionContext()));
+  DCHECK(!popover || popover->HasPopoverAttribute());
+  popover_pointerdown_target_ = popover;
 }
 
 void Document::exitPointerLock() {
@@ -7980,11 +8068,13 @@ Document& Document::EnsureTemplateDocument() {
     template_document_ = MakeGarbageCollected<HTMLDocument>(
         DocumentInit::Create()
             .WithExecutionContext(execution_context_.Get())
+            .WithAgent(GetAgent())
             .WithURL(BlankURL()));
   } else {
     template_document_ = MakeGarbageCollected<Document>(
         DocumentInit::Create()
             .WithExecutionContext(execution_context_.Get())
+            .WithAgent(GetAgent())
             .WithURL(BlankURL()));
   }
 
@@ -8334,8 +8424,11 @@ scoped_refptr<base::SingleThreadTaskRunner> Document::GetTaskRunner(
   if (GetExecutionContext())
     return GetExecutionContext()->GetTaskRunner(type);
   // GetExecutionContext() can be nullptr in unit tests and after Shutdown().
-  // Fallback to the default task runner for this thread if all else fails.
-  return Thread::Current()->GetDeprecatedTaskRunner();
+  // Fallback to the Agent's default task runner for this thread if all else
+  // fails.
+  return To<WindowAgent>(GetAgent())
+      .GetAgentGroupScheduler()
+      .DefaultTaskRunner();
 }
 
 DOMFeaturePolicy* Document::featurePolicy() {
@@ -8385,10 +8478,9 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(lists_invalidated_at_document_);
   visitor->Trace(node_lists_);
   visitor->Trace(top_layer_elements_);
-  visitor->Trace(popup_hint_showing_);
-  visitor->Trace(popup_stack_);
-  visitor->Trace(pop_up_mousedown_target_);
-  visitor->Trace(popups_waiting_to_hide_);
+  visitor->Trace(popover_stack_);
+  visitor->Trace(popover_pointerdown_target_);
+  visitor->Trace(popovers_waiting_to_hide_);
   visitor->Trace(elements_needing_style_recalc_for_toggle_);
   visitor->Trace(load_event_delay_timer_);
   visitor->Trace(plugin_loading_timer_);
@@ -8806,10 +8898,8 @@ bool Document::DeferredCompositorCommitIsAllowed() const {
   // Don't defer commits if a transition is in progress. It requires commits to
   // send directives to the compositor and uses a separate mechanism to pause
   // all rendering when needed.
-  auto* supplement = DocumentTransitionSupplement::FromIfExists(*this);
-  if (supplement && !supplement->GetTransition()->IsIdle())
+  if (ViewTransitionUtils::GetActiveTransition(*this))
     return false;
-
   return deferred_compositor_commit_is_allowed_;
 }
 
@@ -8833,11 +8923,6 @@ Document::PendingJavascriptUrl::PendingJavascriptUrl(
     : url(input_url), world(std::move(world)) {}
 
 Document::PendingJavascriptUrl::~PendingJavascriptUrl() = default;
-
-void Document::CheckPartitionedCookiesOriginTrial(
-    const ResourceResponse& response) {
-  cookie_jar_->CheckPartitionedCookiesOriginTrial(response);
-}
 
 static wtf_size_t MaxEventNodePathCachedEntriesValue() {
   // The cache stores N entries/nodes that are receiving events simultaneously
@@ -8893,6 +8978,10 @@ const EventPath::NodePath& Document::GetOrCalculateEventNodePath(Node& node) {
   DCHECK_EQ(event_node_path_cache_.size(),
             event_node_path_cache_key_list_.size());
   return *event_node_path;
+}
+
+void Document::ResetAgent(Agent& agent) {
+  agent_ = agent;
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;

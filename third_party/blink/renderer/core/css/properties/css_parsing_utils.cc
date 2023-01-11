@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/css/css_border_image.h"
 #include "third_party/blink/renderer/core/css/css_bracketed_value_list.h"
 #include "third_party/blink/renderer/core/css/css_color.h"
+#include "third_party/blink/renderer/core/css/css_color_mix_value.h"
 #include "third_party/blink/renderer/core/css/css_content_distribution_value.h"
 #include "third_party/blink/renderer/core/css/css_crossfade_value.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
@@ -73,7 +74,6 @@
 #include "third_party/blink/renderer/core/svg/svg_path_utilities.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
 #include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
-#include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
@@ -1295,27 +1295,6 @@ CSSCustomIdentValue* ConsumeCustomIdent(CSSParserTokenRange& range,
       range.ConsumeIncludingWhitespace().Value().ToAtomicString());
 }
 
-// Consume a custom ident more conservatively, for use in new uses of custom
-// idents, while we figure out if we can make these changes to existing uses.
-// Making new uses different avoids adding to the compatibility problem.
-CSSCustomIdentValue* ConsumeCustomIdentConservatively(
-    CSSParserTokenRange& range,
-    const CSSParserContext& context) {
-  if (range.Peek().GetType() != kIdentToken)
-    return nullptr;
-  switch (range.Peek().Id()) {
-    // TODO(crbug.com/1340852): Find out if we can make auto/none/normal
-    // invalid generally.  For now, avoid allowing them on new custom idents.
-    case CSSValueID::kNone:
-    case CSSValueID::kNormal:
-    case CSSValueID::kAuto:
-      return nullptr;
-    default:
-      break;
-  }
-  return ConsumeCustomIdent(range, context);
-}
-
 CSSCustomIdentValue* ConsumeDashedIdent(CSSParserTokenRange& range,
                                         const CSSParserContext& context) {
   if (range.Peek().GetType() != kIdentToken)
@@ -1393,12 +1372,12 @@ static bool ParseRGBParameters(CSSParserTokenRange& range,
          range.Peek().FunctionId() == CSSValueID::kRgba);
   CSSParserTokenRange args = ConsumeFunction(range);
   CSSPrimitiveValue* value;
-  int color_array[3];
+  absl::optional<int> color_array[3];
   bool requires_commas = false;
   bool requires_percent = false;
   bool requires_bare_numbers = false;
   bool has_none = false;
-  for (int& color : color_array) {
+  for (absl::optional<int>& color : color_array) {
     // Commas have to be consistent
     if (ConsumeCommaIncludingWhitespace(args)) {
       requires_commas = true;
@@ -1426,7 +1405,6 @@ static bool ParseRGBParameters(CSSParserTokenRange& range,
     } else {
       if (!ConsumeIdent<CSSValueID::kNone>(args))
         return false;
-      color = 0;
       has_none = true;
     }
   }
@@ -1437,26 +1415,31 @@ static bool ParseRGBParameters(CSSParserTokenRange& range,
       (slash_consumed && requires_commas))
     return false;
   if (comma_consumed || slash_consumed) {
-    double alpha;
-    if (!ConsumeNumberRaw(args, context, alpha)) {
+    absl::optional<double> alpha;
+    if (double alpha_double; ConsumeNumberRaw(args, context, alpha_double)) {
+      alpha = alpha_double;
+    } else {
       CSSPrimitiveValue* alpha_percent =
           ConsumePercent(args, context, CSSPrimitiveValue::ValueRange::kAll);
       if (!alpha_percent) {
         if (!ConsumeIdent<CSSValueID::kNone>(args))
           return false;
-        alpha = 0.0;
         has_none = true;
       } else {
         alpha = alpha_percent->GetDoubleValue() / 100.0;
       }
     }
     // W3 standard stipulates a 2.55 alpha value multiplication factor.
-    int alpha_component =
-        static_cast<int>(lround(ClampTo<double>(alpha, 0.0, 1.0) * 255.0));
-    result = Color::FromRGBA(color_array[0], color_array[1], color_array[2],
-                             alpha_component);
+    absl::optional<int> alpha_component;
+    if (alpha) {
+      alpha_component = static_cast<int>(
+          lround(ClampTo<double>(alpha.value(), 0.0, 1.0) * 255.0));
+    }
+    result = Color::FromRGBALegacy(color_array[0], color_array[1],
+                                   color_array[2], alpha_component);
   } else {
-    result = Color::FromRGB(color_array[0], color_array[1], color_array[2]);
+    result = Color::FromRGBALegacy(color_array[0], color_array[1],
+                                   color_array[2], 255);
   }
 
   if (has_none && requires_commas)
@@ -1471,17 +1454,16 @@ static bool ParseHSLParameters(CSSParserTokenRange& range,
   DCHECK(range.Peek().FunctionId() == CSSValueID::kHsl ||
          range.Peek().FunctionId() == CSSValueID::kHsla);
   CSSParserTokenRange args = ConsumeFunction(range);
-  double color_array[3];
+  absl::optional<float> color_array[3];
   CSSPrimitiveValue* value = ConsumeHue(args, context, absl::nullopt);
   bool has_none = false;
   if (value) {
     // HSL expects a hue in the range [0.0, 6.0]
     // https://www.w3.org/TR/css-color-4/#typedef-hue
-    color_array[0] = value->GetDoubleValue() / 60.0;
+    color_array[0] = value->GetDoubleValue() / 60.0f;
   } else {
     if (!ConsumeIdent<CSSValueID::kNone>(args))
       return false;
-    color_array[0] = 0.0;
     has_none = true;
   }
 
@@ -1497,36 +1479,39 @@ static bool ParseHSLParameters(CSSParserTokenRange& range,
     value = ConsumePercent(args, context, CSSPrimitiveValue::ValueRange::kAll);
     if (value) {
       double double_value = value->GetDoubleValue();
-      color_array[i] = ClampTo<double>(double_value, 0.0, 100.0) /
-                       100.0;  // Needs to be value between 0 and 1.0.
+      color_array[i] = ClampTo<float>(double_value, 0.0f, 100.0f) /
+                       100.0f;  // Needs to be value between 0 and 1.0.
     } else {
       if (!ConsumeIdent<CSSValueID::kNone>(args))
         return false;
-      color_array[i] = 0.0;
       has_none = true;
     }
   }
 
-  double alpha = 1.0;
+  absl::optional<float> alpha;
   bool comma_consumed = ConsumeCommaIncludingWhitespace(args);
   bool slash_consumed = ConsumeSlashIncludingWhitespace(args);
   if ((comma_consumed && !requires_commas) ||
       (slash_consumed && requires_commas))
     return false;
   if (comma_consumed || slash_consumed) {
-    if (!ConsumeNumberRaw(args, context, alpha)) {
+    double alpha_param = 1.0;
+    if (ConsumeNumberRaw(args, context, alpha_param)) {
+      alpha = ClampTo<float>(alpha_param, 0.0f, 1.0f);
+    } else {
       CSSPrimitiveValue* alpha_percent =
           ConsumePercent(args, context, CSSPrimitiveValue::ValueRange::kAll);
       if (alpha_percent) {
-        alpha = alpha_percent->GetDoubleValue() / 100.0;
+        alpha = alpha_percent->GetDoubleValue() / 100.0f;
       } else {
         if (!ConsumeIdent<CSSValueID::kNone>(args))
           return false;
-        alpha = 0.0;
         has_none = true;
       }
     }
-    alpha = ClampTo<double>(alpha, 0.0, 1.0);
+  } else {
+    // It was the hsl form so it should consider alpha to be 1.0f.
+    alpha = 1.0f;
   }
 
   if (requires_commas && has_none)
@@ -1570,37 +1555,37 @@ static bool ParseHWBParameters(CSSParserTokenRange& range,
   DCHECK(range.Peek().FunctionId() == CSSValueID::kHwb);
   CSSParserTokenRange args = ConsumeFunction(range);
   CSSPrimitiveValue* value;
-  double hue = 0.0;
+  absl::optional<float> hue;
   if (!ConsumeIdent<CSSValueID::kNone>(args)) {
     value = ConsumeHue(args, context, absl::nullopt);
     if (!value)
       return false;
     // HWB expects a hue in the range [0.0, 6.0]
     // https://www.w3.org/TR/css-color-4/#typedef-hue
-    hue = value->GetDoubleValue() / 60.0;
+    hue = value->GetDoubleValue() / 60.0f;
   }
 
   // Consume two percentage values.
-  double percentages[2] = {0.0, 0.0};
-  for (double& percentage : percentages) {
+  absl::optional<float> percentages[2];
+  for (auto& percentage : percentages) {
     if (ConsumeIdent<CSSValueID::kNone>(args))
       continue;
     value = ConsumePercent(args, context, CSSPrimitiveValue::ValueRange::kAll);
     if (!value)
       return false;
     double double_value = value->GetDoubleValue();
-    percentage = ClampTo<double>(double_value, 0.0, 100.0) /
-                 100.0;  // Needs to be a value between 0 and 1.0.
+    percentage = ClampTo<float>(double_value, 0.0f, 100.0f) /
+                 100.0f;  // Needs to be a value between 0 and 1.0.
   }
 
-  double alpha = 0.0;
+  absl::optional<float> float_alpha;
   absl::optional<double> optional_alpha =
       ConsumeAlphaWithLeadingSlash(args, context);
   // Per spec, "none" for hwb = 0.0
   if (optional_alpha.has_value())
-    alpha = optional_alpha.value();
+    float_alpha = optional_alpha.value();
 
-  result = Color::FromHWBA(hue, percentages[0], percentages[1], alpha);
+  result = Color::FromHWBA(hue, percentages[0], percentages[1], float_alpha);
   return args.AtEnd();
 }
 
@@ -1637,7 +1622,7 @@ static bool ParseLABOrOKLABParameters(CSSParserTokenRange& range,
   absl::optional<double> alpha = ConsumeAlphaWithLeadingSlash(args, context);
 
   if (function_id == CSSValueID::kOklab)
-    result = Color::FromOKLab(lightness, ab[0], ab[1], alpha);
+    result = Color::FromOklab(lightness, ab[0], ab[1], alpha);
   else
     result = Color::FromLab(lightness, ab[0], ab[1], alpha);
   return args.AtEnd();
@@ -1682,10 +1667,137 @@ static bool ParseLCHOrOKLCHParameters(CSSParserTokenRange& range,
   absl::optional<double> alpha = ConsumeAlphaWithLeadingSlash(args, context);
 
   if (function_id == CSSValueID::kOklch)
-    result = Color::FromOKLCH(lightness, chroma, hue, alpha);
+    result = Color::FromOklch(lightness, chroma, hue, alpha);
   else
-    result = Color::FromLCH(lightness, chroma, hue, alpha);
+    result = Color::FromLch(lightness, chroma, hue, alpha);
   return args.AtEnd();
+}
+
+static bool ConsumeColorInterpolationSpace(
+    CSSParserTokenRange& args,
+    Color::ColorInterpolationSpace& color_space,
+    Color::HueInterpolationMethod& hue_interpolation) {
+  if (!RuntimeEnabledFeatures::CSSColor4Enabled())
+    return false;
+
+  if (!ConsumeIdent<CSSValueID::kIn>(args))
+    return false;
+
+  absl::optional<Color::ColorInterpolationSpace> read_color_space;
+  if (ConsumeIdent<CSSValueID::kXyz>(args))
+    read_color_space = Color::ColorInterpolationSpace::kXYZD65;
+  else if (ConsumeIdent<CSSValueID::kXyzD50>(args))
+    read_color_space = Color::ColorInterpolationSpace::kXYZD50;
+  else if (ConsumeIdent<CSSValueID::kXyzD65>(args))
+    read_color_space = Color::ColorInterpolationSpace::kXYZD65;
+  else if (ConsumeIdent<CSSValueID::kSRGBLinear>(args))
+    read_color_space = Color::ColorInterpolationSpace::kSRGBLinear;
+  else if (ConsumeIdent<CSSValueID::kLab>(args))
+    read_color_space = Color::ColorInterpolationSpace::kLab;
+  else if (ConsumeIdent<CSSValueID::kOklab>(args))
+    read_color_space = Color::ColorInterpolationSpace::kOklab;
+  else if (ConsumeIdent<CSSValueID::kLch>(args))
+    read_color_space = Color::ColorInterpolationSpace::kLch;
+  else if (ConsumeIdent<CSSValueID::kOklch>(args))
+    read_color_space = Color::ColorInterpolationSpace::kOklch;
+  else if (ConsumeIdent<CSSValueID::kSRGB>(args))
+    read_color_space = Color::ColorInterpolationSpace::kSRGB;
+  else if (ConsumeIdent<CSSValueID::kHsl>(args))
+    read_color_space = Color::ColorInterpolationSpace::kHSL;
+  else if (ConsumeIdent<CSSValueID::kHwb>(args))
+    read_color_space = Color::ColorInterpolationSpace::kHWB;
+
+  if (read_color_space) {
+    color_space = read_color_space.value();
+    absl::optional<Color::HueInterpolationMethod> read_hue;
+    if (color_space == Color::ColorInterpolationSpace::kHSL ||
+        color_space == Color::ColorInterpolationSpace::kHWB ||
+        color_space == Color::ColorInterpolationSpace::kLch ||
+        color_space == Color::ColorInterpolationSpace::kOklch) {
+      if (ConsumeIdent<CSSValueID::kShorter>(args))
+        read_hue = Color::HueInterpolationMethod::kShorter;
+      else if (ConsumeIdent<CSSValueID::kLonger>(args))
+        read_hue = Color::HueInterpolationMethod::kLonger;
+      else if (ConsumeIdent<CSSValueID::kDecreasing>(args))
+        read_hue = Color::HueInterpolationMethod::kDecreasing;
+      else if (ConsumeIdent<CSSValueID::kIncreasing>(args))
+        read_hue = Color::HueInterpolationMethod::kIncreasing;
+      if (read_hue) {
+        if (!ConsumeIdent<CSSValueID::kHue>(args))
+          return false;
+        hue_interpolation = read_hue.value();
+      } else {
+        // Shorter is the default method for hue interpolation.
+        hue_interpolation = Color::HueInterpolationMethod::kShorter;
+      }
+    }
+    return true;
+  }
+
+  return false;
+}
+
+// https://www.w3.org/TR/css-color-5/#color-mix
+static CSSValue* ConsumeColorMixFunction(CSSParserTokenRange& range,
+                                         const CSSParserContext& context) {
+  DCHECK(range.Peek().FunctionId() == CSSValueID::kColorMix);
+  if (!RuntimeEnabledFeatures::CSSColor4Enabled())
+    return nullptr;
+
+  CSSParserTokenRange args = ConsumeFunction(range);
+  // First argument is the colorspace
+  Color::ColorInterpolationSpace color_space;
+  Color::HueInterpolationMethod hue_interpolation_method =
+      Color::HueInterpolationMethod::kShorter;
+  if (!ConsumeColorInterpolationSpace(args, color_space,
+                                      hue_interpolation_method))
+    return nullptr;
+
+  if (!ConsumeCommaIncludingWhitespace(args))
+    return nullptr;
+
+  CSSValue* color1 =
+      ConsumeColor(args, context, false /* Accept quirky colors */);
+  CSSPrimitiveValue* p1 =
+      ConsumePercent(args, context, CSSPrimitiveValue::ValueRange::kAll);
+  // Color can come after the percentage
+  if (!color1) {
+    color1 = ConsumeColor(args, context, false /* Accept quirky colors */);
+    if (!color1)
+      return nullptr;
+  }
+  // Reject negative values and values > 100%, but not calc() values.
+  if (p1 && p1->IsNumericLiteralValue() &&
+      (p1->GetDoubleValue() < 0.0 || p1->GetDoubleValue() > 100.0))
+    return nullptr;
+
+  if (!ConsumeCommaIncludingWhitespace(args))
+    return nullptr;
+
+  CSSValue* color2 =
+      ConsumeColor(args, context, false /* Accept quirky colors */);
+  CSSPrimitiveValue* p2 =
+      ConsumePercent(args, context, CSSPrimitiveValue::ValueRange::kAll);
+  // Color can come after the percentage
+  if (!color2) {
+    color2 = ConsumeColor(args, context, false /* Accept quirky colors */);
+    if (!color2)
+      return nullptr;
+  }
+  // Reject negative values and values > 100%, but not calc() values.
+  if (p2 && p2->IsNumericLiteralValue() &&
+      (p2->GetDoubleValue() < 0.0 || p2->GetDoubleValue() > 100.0))
+    return nullptr;
+
+  // If both values are literally zero (and not calc()) reject at parse time
+  if (p1 && p2 && p1->IsNumericLiteralValue() && p1->GetDoubleValue() == 0.0f &&
+      p2->IsNumericLiteralValue() && p2->GetDoubleValue() == 0.0)
+    return nullptr;
+
+  cssvalue::CSSColorMixValue* result =
+      MakeGarbageCollected<cssvalue::CSSColorMixValue>(
+          color1, color2, p1, p2, color_space, hue_interpolation_method);
+  return result;
 }
 
 // https://www.w3.org/TR/css-color-4/#funcdef-color
@@ -1693,35 +1805,36 @@ static bool ParseColorFunctionParameters(CSSParserTokenRange& range,
                                          const CSSParserContext& context,
                                          Color& result) {
   DCHECK(range.Peek().FunctionId() == CSSValueID::kColor);
+
   CSSParserTokenRange args = ConsumeFunction(range);
   // First argument is the colorspace
   CSSValueID colorspace_id_ = args.ConsumeIncludingWhitespace().Id();
-  Color::ColorFunctionSpace colorspace;
+  Color::ColorSpace colorspace;
   switch (colorspace_id_) {
     case CSSValueID::kSRGB:
-      colorspace = Color::ColorFunctionSpace::kSRGB;
+      colorspace = Color::ColorSpace::kSRGB;
       break;
     case CSSValueID::kRec2020:
-      colorspace = Color::ColorFunctionSpace::kRec2020;
+      colorspace = Color::ColorSpace::kRec2020;
       break;
     case CSSValueID::kSRGBLinear:
-      colorspace = Color::ColorFunctionSpace::kSRGBLinear;
+      colorspace = Color::ColorSpace::kSRGBLinear;
       break;
     case CSSValueID::kDisplayP3:
-      colorspace = Color::ColorFunctionSpace::kDisplayP3;
+      colorspace = Color::ColorSpace::kDisplayP3;
       break;
     case CSSValueID::kA98Rgb:
-      colorspace = Color::ColorFunctionSpace::kA98RGB;
+      colorspace = Color::ColorSpace::kA98RGB;
       break;
     case CSSValueID::kProphotoRgb:
-      colorspace = Color::ColorFunctionSpace::kProPhotoRGB;
+      colorspace = Color::ColorSpace::kProPhotoRGB;
       break;
     case CSSValueID::kXyzD50:
-      colorspace = Color::ColorFunctionSpace::kXYZD50;
+      colorspace = Color::ColorSpace::kXYZD50;
       break;
     case CSSValueID::kXyz:
     case CSSValueID::kXyzD65:
-      colorspace = Color::ColorFunctionSpace::kXYZD65;
+      colorspace = Color::ColorSpace::kXYZD65;
       break;
     default:
       return false;
@@ -1962,6 +2075,13 @@ CSSValue* ConsumeColor(CSSParserTokenRange& range,
       range.Peek().FunctionId() == CSSValueID::kColorContrast) {
     return ConsumeColorContrast(range, context, accept_quirky_colors);
   }
+
+  if (RuntimeEnabledFeatures::CSSColor4Enabled() &&
+      range.Peek().FunctionId() == CSSValueID::kColorMix) {
+    CSSValue* color = ConsumeColorMixFunction(range, context);
+    return color;
+  }
+
   CSSValueID id = range.Peek().Id();
   if (StyleColor::IsColorKeyword(id)) {
     if (!isValueAllowedInMode(id, context.Mode()))
@@ -1974,6 +2094,7 @@ CSSValue* ConsumeColor(CSSParserTokenRange& range,
     CSSIdentifierValue* color = ConsumeIdent(range);
     return color;
   }
+
   Color color = Color::kTransparent;
   if (!ParseHexColor(range, color, accept_quirky_colors) &&
       !ParseFunctionalSyntaxColor(range, context, color)) {
@@ -2524,72 +2645,6 @@ static CSSValue* ConsumeDeprecatedRadialGradient(
              : nullptr;
 }
 
-static bool ConsumeColorSpace(
-    CSSParserTokenRange& args,
-    Color::ColorInterpolationSpace& color_space,
-    Color::HueInterpolationMethod& hue_interpolation) {
-  if (!RuntimeEnabledFeatures::CSSColor4Enabled())
-    return false;
-
-  if (!ConsumeIdent<CSSValueID::kIn>(args))
-    return false;
-
-  absl::optional<Color::ColorInterpolationSpace> read_color_space;
-  if (ConsumeIdent<CSSValueID::kXyz>(args))
-    read_color_space = Color::ColorInterpolationSpace::kXYZD65;
-  else if (ConsumeIdent<CSSValueID::kXyzD50>(args))
-    read_color_space = Color::ColorInterpolationSpace::kXYZD50;
-  else if (ConsumeIdent<CSSValueID::kXyzD65>(args))
-    read_color_space = Color::ColorInterpolationSpace::kXYZD65;
-  else if (ConsumeIdent<CSSValueID::kSRGBLinear>(args))
-    read_color_space = Color::ColorInterpolationSpace::kSRGBLinear;
-  else if (ConsumeIdent<CSSValueID::kLab>(args))
-    read_color_space = Color::ColorInterpolationSpace::kLab;
-  else if (ConsumeIdent<CSSValueID::kOklab>(args))
-    read_color_space = Color::ColorInterpolationSpace::kOKLab;
-  else if (ConsumeIdent<CSSValueID::kLch>(args))
-    read_color_space = Color::ColorInterpolationSpace::kLCH;
-  else if (ConsumeIdent<CSSValueID::kOklch>(args))
-    read_color_space = Color::ColorInterpolationSpace::kOKLCH;
-  else if (ConsumeIdent<CSSValueID::kSRGB>(args))
-    read_color_space = Color::ColorInterpolationSpace::kSRGB;
-  else if (ConsumeIdent<CSSValueID::kHsl>(args))
-    read_color_space = Color::ColorInterpolationSpace::kHSL;
-  else if (ConsumeIdent<CSSValueID::kHwb>(args))
-    read_color_space = Color::ColorInterpolationSpace::kHWB;
-
-  if (read_color_space) {
-    color_space = read_color_space.value();
-    absl::optional<Color::HueInterpolationMethod> read_hue;
-    if (color_space == Color::ColorInterpolationSpace::kHSL ||
-        color_space == Color::ColorInterpolationSpace::kHWB ||
-        color_space == Color::ColorInterpolationSpace::kLCH ||
-        color_space == Color::ColorInterpolationSpace::kOKLCH) {
-      if (ConsumeIdent<CSSValueID::kShorter>(args))
-        read_hue = Color::HueInterpolationMethod::kShorter;
-      else if (ConsumeIdent<CSSValueID::kLonger>(args))
-        read_hue = Color::HueInterpolationMethod::kLonger;
-      else if (ConsumeIdent<CSSValueID::kDecreasing>(args))
-        read_hue = Color::HueInterpolationMethod::kDecreasing;
-      else if (ConsumeIdent<CSSValueID::kIncreasing>(args))
-        read_hue = Color::HueInterpolationMethod::kIncreasing;
-      else if (ConsumeIdent<CSSValueID::kSpecified>(args))
-        read_hue = Color::HueInterpolationMethod::kSpecified;
-      if (read_hue) {
-        if (!ConsumeIdent<CSSValueID::kHue>(args))
-          return false;
-        hue_interpolation = read_hue.value();
-      } else {
-        // Shorter is the default method for hue interpolation.
-        hue_interpolation = Color::HueInterpolationMethod::kShorter;
-      }
-    }
-    return true;
-  }
-
-  return false;
-}
-
 static CSSValue* ConsumeRadialGradient(CSSParserTokenRange& args,
                                        const CSSParserContext& context,
                                        cssvalue::CSSGradientRepeat repeating) {
@@ -2605,9 +2660,10 @@ static CSSValue* ConsumeRadialGradient(CSSParserTokenRange& args,
   // [ [ circle | ellipse] || <size-keyword> ]] ]
 
   Color::ColorInterpolationSpace color_space;
-  Color::HueInterpolationMethod hue_interpolation_method;
-  bool has_color_space =
-      ConsumeColorSpace(args, color_space, hue_interpolation_method);
+  Color::HueInterpolationMethod hue_interpolation_method =
+      Color::HueInterpolationMethod::kShorter;
+  bool has_color_space = ConsumeColorInterpolationSpace(
+      args, color_space, hue_interpolation_method);
 
   for (int i = 0; i < 3; ++i) {
     if (args.Peek().GetType() == kIdentToken) {
@@ -2675,8 +2731,8 @@ static CSSValue* ConsumeRadialGradient(CSSParserTokenRange& args,
   }
 
   if (!has_color_space) {
-    has_color_space =
-        ConsumeColorSpace(args, color_space, hue_interpolation_method);
+    has_color_space = ConsumeColorInterpolationSpace(args, color_space,
+                                                     hue_interpolation_method);
   }
 
   if ((shape || size_keyword || horizontal_size || center_x || center_y ||
@@ -2708,9 +2764,10 @@ static CSSValue* ConsumeLinearGradient(
   // [ in <color-space>? || [ <angle> | to <side-or-corner> ]?]
   bool expect_comma = true;
   Color::ColorInterpolationSpace color_space;
-  Color::HueInterpolationMethod hue_interpolation_method;
-  bool has_color_space =
-      ConsumeColorSpace(args, color_space, hue_interpolation_method);
+  Color::HueInterpolationMethod hue_interpolation_method =
+      Color::HueInterpolationMethod::kShorter;
+  bool has_color_space = ConsumeColorInterpolationSpace(
+      args, color_space, hue_interpolation_method);
 
   const CSSPrimitiveValue* angle =
       ConsumeAngle(args, context, WebFeature::kUnitlessZeroAngleGradient);
@@ -2738,8 +2795,8 @@ static CSSValue* ConsumeLinearGradient(
   // It's possible that the <color-space> comes after the [ <angle> |
   // <side-or-corner> ]
   if (!has_color_space) {
-    has_color_space =
-        ConsumeColorSpace(args, color_space, hue_interpolation_method);
+    has_color_space = ConsumeColorInterpolationSpace(args, color_space,
+                                                     hue_interpolation_method);
   }
 
   if (has_color_space)
@@ -2765,9 +2822,10 @@ static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
                                       const CSSParserContext& context,
                                       cssvalue::CSSGradientRepeat repeating) {
   Color::ColorInterpolationSpace color_space;
-  Color::HueInterpolationMethod hue_interpolation_method;
-  bool has_color_space =
-      ConsumeColorSpace(args, color_space, hue_interpolation_method);
+  Color::HueInterpolationMethod hue_interpolation_method =
+      Color::HueInterpolationMethod::kShorter;
+  bool has_color_space = ConsumeColorInterpolationSpace(
+      args, color_space, hue_interpolation_method);
 
   const CSSPrimitiveValue* from_angle = nullptr;
   if (ConsumeIdent<CSSValueID::kFrom>(args)) {
@@ -2785,8 +2843,8 @@ static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
   }
 
   if (!has_color_space) {
-    has_color_space =
-        ConsumeColorSpace(args, color_space, hue_interpolation_method);
+    has_color_space = ConsumeColorInterpolationSpace(args, color_space,
+                                                     hue_interpolation_method);
   }
 
   // Comma separator required when fromAngle, position or color_space is
@@ -3249,7 +3307,7 @@ const CSSValue* ParseLonghand(CSSPropertyID unresolved_property,
                               CSSParserTokenRange& range) {
   CSSPropertyID property_id = ResolveCSSPropertyID(unresolved_property);
   DCHECK(!CSSProperty::Get(property_id).IsShorthand());
-  if (CSSParserFastPaths::IsKeywordPropertyID(property_id)) {
+  if (CSSParserFastPaths::IsHandledByKeywordFastPath(property_id)) {
     if (CSSParserFastPaths::IsValidKeywordPropertyAndValue(
             property_id, range.Peek().Id(), context.Mode())) {
       CountKeywordOnlyPropertyUsage(property_id, context, range.Peek().Id());
@@ -3636,6 +3694,28 @@ CSSValue* ConsumeAnimationTimingFunction(CSSParserTokenRange& range,
   return nullptr;
 }
 
+CSSValue* ConsumeAnimationDelay(CSSParserTokenRange& range,
+                                const CSSParserContext& context) {
+  DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+  if (CSSPrimitiveValue* time =
+          ConsumeTime(range, context, CSSPrimitiveValue::ValueRange::kAll)) {
+    return time;
+  }
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  CSSValue* range_name =
+      ConsumeIdent<CSSValueID::kContain, CSSValueID::kCover, CSSValueID::kEnter,
+                   CSSValueID::kExit>(range);
+  if (!range_name)
+    return nullptr;
+  list->Append(*range_name);
+  CSSValue* percentage =
+      ConsumePercent(range, context, CSSPrimitiveValue::ValueRange::kAll);
+  if (!percentage)
+    return nullptr;
+  list->Append(*percentage);
+  return list;
+}
+
 bool ConsumeAnimationShorthand(
     const StylePropertyShorthand& shorthand,
     HeapVector<Member<CSSValueList>, kMaxNumAnimationLonghands>& longhands,
@@ -3693,7 +3773,7 @@ CSSValue* ConsumeSingleTimelineName(CSSParserTokenRange& range,
                                     const CSSParserContext& context) {
   if (CSSValue* value = ConsumeIdent<CSSValueID::kNone>(range))
     return value;
-  return ConsumeCustomIdentConservatively(range, context);
+  return ConsumeCustomIdent(range, context);
 }
 
 namespace {
@@ -5817,8 +5897,7 @@ CSSValue* ConsumeToggleGroup(CSSParserTokenRange& range,
                              const CSSParserContext& context) {
   if (range.Peek().Id() == CSSValueID::kNone)
     return nullptr;
-  CSSCustomIdentValue* toggle_name =
-      ConsumeCustomIdentConservatively(range, context);
+  CSSCustomIdentValue* toggle_name = ConsumeCustomIdent(range, context);
   if (!toggle_name)
     return nullptr;
 
@@ -5840,15 +5919,14 @@ static CSSValue* ConsumeToggleValue(CSSParserTokenRange& range,
     return integer_value;
   }
 
-  return ConsumeCustomIdentConservatively(range, context);
+  return ConsumeCustomIdent(range, context);
 }
 
 CSSValue* ConsumeToggleSpecifier(CSSParserTokenRange& range,
                                  const CSSParserContext& context) {
   if (range.Peek().Id() == CSSValueID::kNone)
     return nullptr;
-  CSSCustomIdentValue* toggle_name =
-      ConsumeCustomIdentConservatively(range, context);
+  CSSCustomIdentValue* toggle_name = ConsumeCustomIdent(range, context);
   if (!toggle_name)
     return nullptr;
 
@@ -5898,8 +5976,7 @@ CSSValue* ConsumeToggleSpecifier(CSSParserTokenRange& range,
         HashSet<AtomicString> states_found;
 
         while (true) {
-          CSSCustomIdentValue* state_name =
-              ConsumeCustomIdentConservatively(block, context);
+          CSSCustomIdentValue* state_name = ConsumeCustomIdent(block, context);
           if (!state_name)
             break;
 
@@ -5949,8 +6026,7 @@ CSSValue* ConsumeToggleTrigger(CSSParserTokenRange& range,
                                const CSSParserContext& context) {
   if (range.Peek().Id() == CSSValueID::kNone)
     return nullptr;
-  CSSCustomIdentValue* toggle_name =
-      ConsumeCustomIdentConservatively(range, context);
+  CSSCustomIdentValue* toggle_name = ConsumeCustomIdent(range, context);
   if (!toggle_name)
     return nullptr;
 
@@ -6176,7 +6252,7 @@ CSSValue* ConsumeSingleContainerName(CSSParserTokenRange& range,
                                      const CSSParserContext& context) {
   if (range.Peek().GetType() != kIdentToken)
     return nullptr;
-  if (range.Peek().Id() == CSSValueID::kNormal)
+  if (range.Peek().Id() == CSSValueID::kNone)
     return nullptr;
   if (EqualIgnoringASCIICase(range.Peek().Value(), "not"))
     return nullptr;
@@ -6184,7 +6260,7 @@ CSSValue* ConsumeSingleContainerName(CSSParserTokenRange& range,
     return nullptr;
   if (EqualIgnoringASCIICase(range.Peek().Value(), "or"))
     return nullptr;
-  return ConsumeCustomIdentConservatively(range, context);
+  return ConsumeCustomIdent(range, context);
 }
 
 CSSValue* ConsumeContainerName(CSSParserTokenRange& range,

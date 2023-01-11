@@ -19,6 +19,8 @@
 #include "content/browser/shared_storage/shared_storage_document_service_impl.h"
 #include "content/browser/shared_storage/shared_storage_url_loader_factory_proxy.h"
 #include "content/browser/shared_storage/shared_storage_worklet_driver.h"
+#include "content/browser/shared_storage/shared_storage_worklet_host_manager.h"
+#include "content/common/private_aggregation_features.h"
 #include "content/common/private_aggregation_host.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/public/browser/browser_context.h"
@@ -28,6 +30,9 @@
 namespace content {
 
 namespace {
+
+using AccessType =
+    SharedStorageWorkletHostManager::SharedStorageObserverInterface::AccessType;
 
 constexpr base::TimeDelta kKeepAliveTimeout = base::Seconds(2);
 
@@ -85,6 +90,12 @@ SharedStorageWorkletHost::SharedStorageWorkletHost(
                                       .GetProcess()
                                       ->GetStoragePartition())
                                   ->GetSharedStorageManager()),
+      shared_storage_worklet_host_manager_(
+          static_cast<StoragePartitionImpl*>(
+              document_service.render_frame_host()
+                  .GetProcess()
+                  ->GetStoragePartition())
+              ->GetSharedStorageWorkletHostManager()),
       browser_context_(
           document_service.render_frame_host().GetBrowserContext()),
       shared_storage_origin_(
@@ -293,6 +304,15 @@ void SharedStorageWorkletHost::SharedStorageSet(
     return;
   }
 
+  if (document_service_) {
+    shared_storage_worklet_host_manager_->NotifySharedStorageAccessed(
+        AccessType::kWorkletSet, document_service_->main_frame_id(),
+        shared_storage_origin_.Serialize(),
+        SharedStorageEventParams::CreateForSet(base::UTF16ToUTF8(key),
+                                               base::UTF16ToUTF8(value),
+                                               ignore_if_present));
+  }
+
   auto operation_completed_callback = base::BindOnce(
       [](SharedStorageSetCallback callback, OperationResult result) {
         if (result != OperationResult::kSet &&
@@ -332,6 +352,14 @@ void SharedStorageWorkletHost::SharedStorageAppend(
     return;
   }
 
+  if (document_service_) {
+    shared_storage_worklet_host_manager_->NotifySharedStorageAccessed(
+        AccessType::kWorkletAppend, document_service_->main_frame_id(),
+        shared_storage_origin_.Serialize(),
+        SharedStorageEventParams::CreateForAppend(base::UTF16ToUTF8(key),
+                                                  base::UTF16ToUTF8(value)));
+  }
+
   auto operation_completed_callback = base::BindOnce(
       [](SharedStorageAppendCallback callback, OperationResult result) {
         if (result != OperationResult::kSet) {
@@ -361,6 +389,13 @@ void SharedStorageWorkletHost::SharedStorageDelete(
         /*success=*/false,
         /*error_message=*/kSharedStorageDisabledMessage);
     return;
+  }
+
+  if (document_service_) {
+    shared_storage_worklet_host_manager_->NotifySharedStorageAccessed(
+        AccessType::kWorkletDelete, document_service_->main_frame_id(),
+        shared_storage_origin_.Serialize(),
+        SharedStorageEventParams::CreateForGetOrDelete(base::UTF16ToUTF8(key)));
   }
 
   auto operation_completed_callback = base::BindOnce(
@@ -393,6 +428,13 @@ void SharedStorageWorkletHost::SharedStorageClear(
     return;
   }
 
+  if (document_service_) {
+    shared_storage_worklet_host_manager_->NotifySharedStorageAccessed(
+        AccessType::kWorkletClear, document_service_->main_frame_id(),
+        shared_storage_origin_.Serialize(),
+        SharedStorageEventParams::CreateDefault());
+  }
+
   auto operation_completed_callback = base::BindOnce(
       [](SharedStorageClearCallback callback, OperationResult result) {
         if (result != OperationResult::kSuccess) {
@@ -422,6 +464,13 @@ void SharedStorageWorkletHost::SharedStorageGet(
         shared_storage_worklet::mojom::SharedStorageGetStatus::kError,
         /*error_message=*/kSharedStorageDisabledMessage, /*value=*/{});
     return;
+  }
+
+  if (document_service_) {
+    shared_storage_worklet_host_manager_->NotifySharedStorageAccessed(
+        AccessType::kWorkletGet, document_service_->main_frame_id(),
+        shared_storage_origin_.Serialize(),
+        SharedStorageEventParams::CreateForGetOrDelete(base::UTF16ToUTF8(key)));
   }
 
   auto operation_completed_callback = base::BindOnce(
@@ -468,6 +517,13 @@ void SharedStorageWorkletHost::SharedStorageKeys(
     return;
   }
 
+  if (document_service_) {
+    shared_storage_worklet_host_manager_->NotifySharedStorageAccessed(
+        AccessType::kWorkletKeys, document_service_->main_frame_id(),
+        shared_storage_origin_.Serialize(),
+        SharedStorageEventParams::CreateDefault());
+  }
+
   shared_storage_manager_->Keys(shared_storage_origin_,
                                 std::move(pending_listener), base::DoNothing());
 }
@@ -487,6 +543,13 @@ void SharedStorageWorkletHost::SharedStorageEntries(
     return;
   }
 
+  if (document_service_) {
+    shared_storage_worklet_host_manager_->NotifySharedStorageAccessed(
+        AccessType::kWorkletEntries, document_service_->main_frame_id(),
+        shared_storage_origin_.Serialize(),
+        SharedStorageEventParams::CreateDefault());
+  }
+
   shared_storage_manager_->Entries(
       shared_storage_origin_, std::move(pending_listener), base::DoNothing());
 }
@@ -500,6 +563,13 @@ void SharedStorageWorkletHost::SharedStorageLength(
         /*success=*/false,
         /*error_message=*/kSharedStorageDisabledMessage, /*length=*/0);
     return;
+  }
+
+  if (document_service_) {
+    shared_storage_worklet_host_manager_->NotifySharedStorageAccessed(
+        AccessType::kWorkletLength, document_service_->main_frame_id(),
+        shared_storage_origin_.Serialize(),
+        SharedStorageEventParams::CreateDefault());
   }
 
   auto operation_completed_callback = base::BindOnce(
@@ -533,6 +603,13 @@ void SharedStorageWorkletHost::SharedStorageRemainingBudget(
         /*success=*/false,
         /*error_message=*/kSharedStorageDisabledMessage, /*bits=*/0.0);
     return;
+  }
+
+  if (document_service_) {
+    shared_storage_worklet_host_manager_->NotifySharedStorageAccessed(
+        AccessType::kWorkletRemainingBudget, document_service_->main_frame_id(),
+        shared_storage_origin_.Serialize(),
+        SharedStorageEventParams::CreateDefault());
   }
 
   auto operation_completed_callback = base::BindOnce(
@@ -766,10 +843,15 @@ SharedStorageWorkletHost::GetAndConnectToSharedStorageWorkletService() {
 mojo::PendingRemote<content::mojom::PrivateAggregationHost>
 SharedStorageWorkletHost::MaybeBindPrivateAggregationHost() {
   DCHECK(browser_context_);
+
+  if (!base::FeatureList::IsEnabled(content::kPrivateAggregationApi) ||
+      !content::kPrivateAggregationApiEnabledInSharedStorage.Get()) {
+    return mojo::PendingRemote<content::mojom::PrivateAggregationHost>();
+  }
+
   PrivateAggregationManager* private_aggregation_manager =
       PrivateAggregationManager::GetManager(*browser_context_);
-  if (!private_aggregation_manager)
-    return mojo::PendingRemote<content::mojom::PrivateAggregationHost>();
+  DCHECK(private_aggregation_manager);
 
   mojo::PendingRemote<content::mojom::PrivateAggregationHost>
       pending_pa_host_remote;

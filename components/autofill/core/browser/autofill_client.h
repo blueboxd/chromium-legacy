@@ -14,7 +14,6 @@
 #include "base/containers/span.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
-#include "base/types/strong_alias.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/fast_checkout_delegate.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
@@ -22,6 +21,8 @@
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/browser/ui/touch_to_fill_delegate.h"
+#include "components/autofill/core/common/aliases.h"
+#include "components/autofill/core/common/form_interactions_flow.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/security_state/core/security_state.h"
 #include "components/translate/core/browser/language_state.h"
@@ -68,6 +69,7 @@ class AutofillProfile;
 enum class AutofillProgressDialogType;
 struct CardUnmaskChallengeOption;
 class CardUnmaskDelegate;
+struct CardUnmaskPromptOptions;
 class CreditCard;
 class CreditCardCVCAuthenticator;
 enum class CreditCardFetchResult;
@@ -86,6 +88,7 @@ class StrikeDatabase;
 struct Suggestion;
 struct VirtualCardEnrollmentFields;
 class VirtualCardEnrollmentManager;
+struct VirtualCardManualFallbackBubbleOptions;
 enum class WebauthnDialogCallbackType;
 enum class WebauthnDialogState;
 
@@ -146,6 +149,17 @@ class AutofillClient : public RiskDataLoader {
     kDeclined,
 
     // The user ignored the credit card save prompt.
+    kIgnored,
+  };
+
+  enum class SaveIBANOfferUserDecision {
+    // The user accepted IBAN save.
+    kAccepted,
+
+    // The user explicitly declined IBAN save.
+    kDeclined,
+
+    // The user ignored the IBAN save prompt.
     kIgnored,
   };
 
@@ -251,9 +265,6 @@ class AutofillClient : public RiskDataLoader {
 
   // Required arguments to create a dropdown showing autofill suggestions.
   struct PopupOpenArgs {
-    using AutoselectFirstSuggestion =
-        ::base::StrongAlias<class AutoSelectFirstSuggestionTag, bool>;
-
     PopupOpenArgs();
     PopupOpenArgs(const gfx::RectF& element_bounds,
                   base::i18n::TextDirection text_direction,
@@ -419,9 +430,10 @@ class AutofillClient : public RiskDataLoader {
 
   // A user has attempted to use a masked card. Prompt them for further
   // information to proceed.
-  virtual void ShowUnmaskPrompt(const CreditCard& card,
-                                UnmaskCardReason reason,
-                                base::WeakPtr<CardUnmaskDelegate> delegate) = 0;
+  virtual void ShowUnmaskPrompt(
+      const CreditCard& card,
+      const CardUnmaskPromptOptions& card_unmask_prompt_options,
+      base::WeakPtr<CardUnmaskDelegate> delegate) = 0;
   virtual void OnUnmaskVerificationResult(PaymentsRpcResult result) = 0;
 
   // Shows a dialog for the user to choose/confirm the authentication
@@ -634,7 +646,8 @@ class AutofillClient : public RiskDataLoader {
   // events. Should be called only if |IsTouchToFillCreditCardSupported|
   // returns true.
   virtual bool ShowTouchToFillCreditCard(
-      base::WeakPtr<TouchToFillDelegate> delegate) = 0;
+      base::WeakPtr<TouchToFillDelegate> delegate,
+      base::span<const autofill::CreditCard* const> cards_to_suggest) = 0;
 
   // Hides the Touch To Fill surface for filling credit card information
   // if one is currently shown. Should be called only if
@@ -685,17 +698,10 @@ class AutofillClient : public RiskDataLoader {
   // Dismiss any visible offer notification on the current tab.
   virtual void DismissOfferNotification();
 
-  // Called when the virtual card has been fetched successfully.
-  // |masked_card_identifier_string| is the network + last four digits of
-  // the card number of the corresponding masked server card.
-  // |credit_card| and |cvc| include the information that allow the user to
-  // manually fill payment form. |card_image| is used for manual fallback
-  // bubble.
+  // Called when the virtual card has been fetched successfully. Uses the
+  // necessary information in `options` to show the manual fallback bubble.
   virtual void OnVirtualCardDataAvailable(
-      const std::u16string& masked_card_identifier_string,
-      const CreditCard* credit_card,
-      const std::u16string& cvc,
-      const gfx::Image& card_image = gfx::Image());
+      const VirtualCardManualFallbackBubbleOptions& options);
 
   // Called when some virtual card retrieval errors happened. Will show the
   // error dialog with virtual card related messages. The type of error dialog
@@ -718,7 +724,7 @@ class AutofillClient : public RiskDataLoader {
   virtual bool IsAutofillAssistantShowing();
 
   // Whether the Autocomplete feature of Autofill should be enabled.
-  virtual bool IsAutocompleteEnabled() = 0;
+  virtual bool IsAutocompleteEnabled() const = 0;
 
   // Returns whether password management is enabled as per the user preferences.
   virtual bool IsPasswordManagerEnabled() = 0;
@@ -762,6 +768,14 @@ class AutofillClient : public RiskDataLoader {
   // details page for the offers in a promo code suggestions popup. Every offer
   // in a promo code suggestions popup links to the same offer details page.
   virtual void OpenPromoCodeOfferDetailsURL(const GURL& url) = 0;
+
+  // Updates and returns the current form interactions flow id. This is used as
+  // an approximation for keeping track of the number of user interactions with
+  // related forms for logging. Example implementation: the flow id is set to a
+  // GUID on the first call. That same GUID will be returned for consecutive
+  // calls in the next 20 minutes. Afterwards a new GUID is set and the pattern
+  // repeated.
+  virtual FormInteractionsFlowId GetCurrentFormInteractionsFlowId() = 0;
 };
 
 }  // namespace autofill

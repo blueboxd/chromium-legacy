@@ -127,9 +127,16 @@
       </div>
       <div id="ppdLabel" class="cr-form-field-label"
            hidden="[[pendingPrinter_.isManaged]]">
-        <localized-link localized-string="$i18n{selectDriver}"
-            link-url="$i18n{printingCUPSPrintPpdLearnMoreUrl}">
-        </localized-link>
+        <div class="select-ppd-and-view">
+          <cr-button class="ppd-button" on-click="onViewPpd_"
+                     disabled="[[!isViewPpdEnabled_(printerInfoChanged_,
+                         viewPpdEnabled_)]]">
+            $i18n{cupsPrintersViewPpd}
+          </cr-button>
+          <localized-link localized-string="$i18n{selectDriver}"
+                          link-url="$i18n{printingCUPSPrintPpdLearnMoreUrl}">
+          </localized-link>
+        </div>
       </div>
       <div class="settings-box two-line"
            hidden="[[pendingPrinter_.isManaged]]">

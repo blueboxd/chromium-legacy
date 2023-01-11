@@ -5,7 +5,7 @@
 // clang-format off
 import 'chrome://settings/lazy_load.js';
 
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {CrInputElement, SettingsOmniboxExtensionEntryElement, SettingsSearchEngineEditDialogElement, SettingsSearchEngineEntryElement, SettingsSearchEnginesListElement, SettingsSearchEnginesPageElement} from 'chrome://settings/lazy_load.js';
 import {ExtensionControlBrowserProxyImpl, loadTimeData, SearchEngine, SearchEnginesBrowserProxyImpl, SearchEnginesInfo, SearchEnginesInteractions} from 'chrome://settings/settings.js';
@@ -50,8 +50,7 @@ suite('AddSearchEngineDialogTests', function() {
   setup(function() {
     browserProxy = new TestSearchEnginesBrowserProxy();
     SearchEnginesBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     dialog = document.createElement('settings-search-engine-edit-dialog');
     document.body.appendChild(dialog);
   });
@@ -74,7 +73,7 @@ suite('AddSearchEngineDialogTests', function() {
   //  - validation is triggered on 'input' event.
   //  - action button is enabled when all fields are valid.
   //  - action button triggers appropriate browser signal when tapped.
-  test('DialogAddSearchEngine', function() {
+  test('DialogAddSearchEngine', async function() {
     /**
      * Triggers an 'input' event on the cr-input element and checks that
      * validation is triggered.
@@ -93,31 +92,26 @@ suite('AddSearchEngineDialogTests', function() {
 
     const actionButton = dialog.$.actionButton;
 
-    return browserProxy.whenCalled('searchEngineEditStarted')
-        .then(() => {
-          assertEquals('', dialog.$.searchEngine.value);
-          assertEquals('', dialog.$.keyword.value);
-          assertEquals('', dialog.$.queryUrl.value);
-          assertTrue(actionButton.disabled);
-        })
-        .then(() => inputAndValidate('searchEngine'))
-        .then(() => inputAndValidate('keyword'))
-        .then(() => inputAndValidate('queryUrl'))
-        .then(() => {
-          // Manually set the text to a non-empty string for all fields.
-          dialog.$.searchEngine.value = 'foo';
-          dialog.$.keyword.value = 'bar';
-          dialog.$.queryUrl.value = 'baz';
+    await browserProxy.whenCalled('searchEngineEditStarted');
+    assertEquals('', dialog.$.searchEngine.value);
+    assertEquals('', dialog.$.keyword.value);
+    assertEquals('', dialog.$.queryUrl.value);
+    assertTrue(actionButton.disabled);
+    await inputAndValidate('searchEngine');
+    await inputAndValidate('keyword');
+    await inputAndValidate('queryUrl');
 
-          return inputAndValidate('searchEngine');
-        })
-        .then(() => {
-          // Assert that the action button has been enabled now that all
-          // input is valid and non-empty.
-          assertFalse(actionButton.disabled);
-          actionButton.click();
-          return browserProxy.whenCalled('searchEngineEditCompleted');
-        });
+    // Manually set the text to a non-empty string for all fields.
+    dialog.$.searchEngine.value = 'foo';
+    dialog.$.keyword.value = 'bar';
+    dialog.$.queryUrl.value = 'baz';
+
+    await inputAndValidate('searchEngine');
+    // Assert that the action button has been enabled now that all
+    // input is valid and non-empty.
+    assertFalse(actionButton.disabled);
+    actionButton.click();
+    await browserProxy.whenCalled('searchEngineEditCompleted');
   });
 
   test('DialogCloseWhenEnginesChangedModelEngineNotFound', function() {
@@ -154,8 +148,7 @@ suite('SearchEngineEntryTests', function() {
   setup(function() {
     browserProxy = new TestSearchEnginesBrowserProxy();
     SearchEnginesBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     entry = document.createElement('settings-search-engine-entry');
     entry.set('engine', searchEngine);
     entry.set('isActiveSearchEnginesFlagEnabled', false);
@@ -432,8 +425,7 @@ suite('SearchEnginePageTests', function() {
     });
     loadTimeData.overrideValues({'isActiveSearchEnginesFlagEnabled': false});
     SearchEnginesBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     page = document.createElement('settings-search-engines-page');
     page.set('prefs.omnibox.keyword_space_triggering_enabled', {
       key: 'prefs.omnibox.keyword_space_triggering_enabled',
@@ -623,7 +615,7 @@ suite('SearchEnginePageTests', function() {
         !!page.shadowRoot!.querySelector('settings-search-engine-edit-dialog'));
   });
 
-  test('EditSearchEngineDialog', function() {
+  test('EditSearchEngineDialog', async function() {
     const engine = searchEnginesInfo.others[0]!;
     page.dispatchEvent(new CustomEvent('edit-search-engine', {
       bubbles: true,
@@ -633,20 +625,18 @@ suite('SearchEnginePageTests', function() {
         anchorElement: page.shadowRoot!.querySelector('#addSearchEngine')!,
       },
     }));
-    return browserProxy.whenCalled('searchEngineEditStarted')
-        .then(modelIndex => {
-          assertEquals(engine.modelIndex, modelIndex);
-          const dialog = page.shadowRoot!.querySelector(
-              'settings-search-engine-edit-dialog')!;
-          assertTrue(!!dialog);
+    const modelIndex = await browserProxy.whenCalled('searchEngineEditStarted');
+    assertEquals(engine.modelIndex, modelIndex);
+    const dialog =
+        page.shadowRoot!.querySelector('settings-search-engine-edit-dialog')!;
+    assertTrue(!!dialog);
 
-          // Check that the cr-input fields are pre-populated.
-          assertEquals(engine.name, dialog.$.searchEngine.value);
-          assertEquals(engine.keyword, dialog.$.keyword.value);
-          assertEquals(engine.url, dialog.$.queryUrl.value);
+    // Check that the cr-input fields are pre-populated.
+    assertEquals(engine.name, dialog.$.searchEngine.value);
+    assertEquals(engine.keyword, dialog.$.keyword.value);
+    assertEquals(engine.url, dialog.$.queryUrl.value);
 
-          assertFalse(dialog.$.actionButton.disabled);
-        });
+    assertFalse(dialog.$.actionButton.disabled);
   });
 
   // Tests that filtering the three search engines lists works, and that the
@@ -750,8 +740,7 @@ suite('OmniboxExtensionEntryTests', function() {
   setup(function() {
     browserProxy = new TestExtensionControlBrowserProxy();
     ExtensionControlBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     entry = document.createElement('settings-omnibox-extension-entry');
     entry.set('engine', createSampleOmniboxExtension());
     document.body.appendChild(entry);
@@ -764,23 +753,19 @@ suite('OmniboxExtensionEntryTests', function() {
     entry.remove();
   });
 
-  test('Manage', function() {
+  test('Manage', async function() {
     const manageButton = entry.$.manage;
     assertTrue(!!manageButton);
     manageButton.click();
-    return browserProxy.whenCalled('manageExtension')
-        .then(function(extensionId) {
-          assertEquals(entry.engine.extension!.id, extensionId);
-        });
+    const extensionId = await browserProxy.whenCalled('manageExtension');
+    assertEquals(entry.engine.extension!.id, extensionId);
   });
 
-  test('Disable', function() {
+  test('Disable', async function() {
     const disableButton = entry.$.disable;
     assertTrue(!!disableButton);
     disableButton.click();
-    return browserProxy.whenCalled('disableExtension')
-        .then(function(extensionId) {
-          assertEquals(entry.engine.extension!.id, extensionId);
-        });
+    const extensionId = await browserProxy.whenCalled('disableExtension');
+    assertEquals(entry.engine.extension!.id, extensionId);
   });
 });

@@ -32,7 +32,7 @@
 #include "ui/gl/gl_surface_egl_surface_control.h"
 #endif
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 #include "ui/base/ui_base_features.h"
 #endif
 
@@ -60,7 +60,7 @@ class PresenterImageGL : public OutputPresenter::Image {
   int GetPresentCount() const final;
   void OnContextLost() final;
 
-  gl::GLImage* GetGLImage(std::unique_ptr<gfx::GpuFence>* fence);
+  gl::OverlayImage GetOverlayImage(std::unique_ptr<gfx::GpuFence>* fence);
 
   const gfx::ColorSpace& color_space() {
     DCHECK(overlay_representation_);
@@ -77,10 +77,9 @@ void PresenterImageGL::BeginPresent() {
   DCHECK(!sk_surface());
   DCHECK(!scoped_overlay_read_access_);
 
-    scoped_overlay_read_access_ =
-        overlay_representation_->BeginScopedReadAccess(
-            true /* need_gl_image */);
-    DCHECK(scoped_overlay_read_access_);
+  scoped_overlay_read_access_ =
+      overlay_representation_->BeginScopedReadAccess();
+  DCHECK(scoped_overlay_read_access_);
 }
 
 void PresenterImageGL::EndPresent(gfx::GpuFenceHandle release_fence) {
@@ -102,13 +101,21 @@ void PresenterImageGL::OnContextLost() {
     overlay_representation_->OnContextLost();
 }
 
-gl::GLImage* PresenterImageGL::GetGLImage(
+gl::OverlayImage PresenterImageGL::GetOverlayImage(
     std::unique_ptr<gfx::GpuFence>* fence) {
   DCHECK(scoped_overlay_read_access_);
   if (fence) {
     *fence = TakeGpuFence(scoped_overlay_read_access_->TakeAcquireFence());
   }
-  return scoped_overlay_read_access_->gl_image();
+#if BUILDFLAG(IS_OZONE)
+  return scoped_overlay_read_access_->GetNativePixmap();
+#elif BUILDFLAG(IS_MAC)
+  return scoped_overlay_read_access_->GetIOSurface();
+#elif BUILDFLAG(IS_ANDROID)
+  return scoped_overlay_read_access_->GetAHardwareBufferFenceSync();
+#else
+  LOG(FATAL) << "GetOverlayImage() is not implemented on this platform".
+#endif
 }
 
 }  // namespace
@@ -319,7 +326,7 @@ void OutputPresenterGL::SchedulePrimaryPlane(
   std::unique_ptr<gfx::GpuFence> fence;
   auto* presenter_image = static_cast<PresenterImageGL*>(image);
   // If the submitted_image() is being scheduled, we don't new a new fence.
-  auto* gl_image = presenter_image->GetGLImage(
+  gl::OverlayImage overlay_image = presenter_image->GetOverlayImage(
       (is_submitted || !gl_surface_->SupportsPlaneGpuFences()) ? nullptr
                                                                : &fence);
 
@@ -330,7 +337,7 @@ void OutputPresenterGL::SchedulePrimaryPlane(
   // overlays, damage should be added to OutputSurfaceOverlayPlane and passed in
   // here.
   gl_surface_->ScheduleOverlayPlane(
-      gl_image, std::move(fence),
+      std::move(overlay_image), std::move(fence),
       gfx::OverlayPlaneData(
           kPlaneZOrder, plane.transform, plane.display_rect, plane.uv_rect,
           plane.enable_blending,
@@ -359,12 +366,18 @@ void OutputPresenterGL::ScheduleOverlayPlane(
     const OutputPresenter::OverlayPlaneCandidate& overlay_plane_candidate,
     ScopedOverlayAccess* access,
     std::unique_ptr<gfx::GpuFence> acquire_fence) {
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
   // Note that |overlay_plane_candidate| has different types on different
   // platforms. On Android and Ozone it is an OverlayCandidate, on Windows it is
   // a DCLayerOverlay, and on macOS it is a CALayeroverlay.
-  auto* gl_image = access ? access->gl_image() : nullptr;
-#if BUILDFLAG(IS_ANDROID) || defined(USE_OZONE)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_OZONE)
+#if BUILDFLAG(IS_OZONE)
+  // TODO(crbug.com/1366808): Add ScopedOverlayAccess::GetOverlayImage() that
+  // works on all platforms.
+  gl::OverlayImage overlay_image = access ? access->GetNativePixmap() : nullptr;
+#elif BUILDFLAG(IS_ANDROID)
+  gl::OverlayImage overlay_image =
+      access ? access->GetAHardwareBufferFenceSync() : nullptr;
+#endif
   // TODO(msisov): Once shared image factory allows creating a non backed
   // images and ScheduleOverlayPlane does not rely on GLImage, remove the if
   // condition that checks if this is a solid color overlay plane.
@@ -374,7 +387,7 @@ void OutputPresenterGL::ScheduleOverlayPlane(
   // may have a protocol that asks Wayland compositor to create a solid color
   // buffer for a client. OverlayProcessorDelegated decides if a solid color
   // overlay is an overlay candidate and should be scheduled.
-  if (gl_image || overlay_plane_candidate.is_solid_color) {
+  if (overlay_image || overlay_plane_candidate.is_solid_color) {
 #if DCHECK_IS_ON()
     if (overlay_plane_candidate.is_solid_color) {
       LOG_IF(FATAL, !overlay_plane_candidate.color.has_value())
@@ -400,7 +413,7 @@ void OutputPresenterGL::ScheduleOverlayPlane(
     }
 
     gl_surface_->ScheduleOverlayPlane(
-        gl_image, std::move(acquire_fence),
+        std::move(overlay_image), std::move(acquire_fence),
         gfx::OverlayPlaneData(
             overlay_plane_candidate.plane_z_order,
             absl::get<gfx::OverlayTransform>(overlay_plane_candidate.transform),
@@ -421,15 +434,17 @@ void OutputPresenterGL::ScheduleOverlayPlane(
       gfx::ToEnclosingRect(overlay_plane_candidate.shared_state->clip_rect),
       overlay_plane_candidate.shared_state->rounded_corner_bounds,
       overlay_plane_candidate.shared_state->sorting_context_id,
-      gfx::Transform(overlay_plane_candidate.shared_state->transform), gl_image,
+      gfx::Transform(overlay_plane_candidate.shared_state->transform),
+      access ? access->GetIOSurface() : gfx::ScopedIOSurface(),
+      access ? access->representation()->color_space() : gfx::ColorSpace(),
       overlay_plane_candidate.contents_rect,
       gfx::ToEnclosingRect(overlay_plane_candidate.bounds_rect),
-      overlay_plane_candidate.background_color.toSkColor(),
+      overlay_plane_candidate.background_color,
       overlay_plane_candidate.edge_aa_mask, overlay_plane_candidate.opacity,
-      overlay_plane_candidate.filter, overlay_plane_candidate.hdr_metadata,
+      overlay_plane_candidate.filter, overlay_plane_candidate.hdr_mode,
+      overlay_plane_candidate.hdr_metadata,
       overlay_plane_candidate.protected_video_type));
 #endif
-#endif  //  BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
 }
 
 #if BUILDFLAG(IS_MAC)

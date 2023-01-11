@@ -33,6 +33,8 @@ View::Views ShuffledChildren(View* view) {
   return children;
 }
 
+}  // namespace
+
 View* AnyViewMatchingPredicate(View* view, const ViewPredicate& predicate) {
   if (predicate.Run(view))
     return view;
@@ -47,8 +49,6 @@ View* AnyViewMatchingPredicate(View* view, const ViewPredicate& predicate) {
   }
   return nullptr;
 }
-
-}  // namespace
 
 View* AnyViewMatchingPredicate(Widget* widget, const ViewPredicate& predicate) {
   return AnyViewMatchingPredicate(widget->GetRootView(), predicate);
@@ -76,6 +76,17 @@ Widget* WidgetTest::CreateTopLevelPlatformWidget() {
   widget->Init(std::move(params));
   return widget;
 }
+
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
+Widget* WidgetTest::CreateTopLevelPlatformDesktopWidget() {
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.native_widget = CreatePlatformDesktopNativeWidgetImpl(
+      widget, kStubCapture, base::DoNothing());
+  widget->Init(std::move(params));
+  return widget;
+}
+#endif
 
 Widget* WidgetTest::CreateTopLevelFramelessPlatformWidget() {
   Widget* widget = new Widget;
@@ -115,15 +126,15 @@ Widget* WidgetTest::CreateChildNativeWidgetWithParent(Widget* parent) {
   return child;
 }
 
-View* WidgetTest::GetMousePressedHandler(internal::RootView* root_view) {
+View* WidgetTest::GetMousePressedHandler(views::internal::RootView* root_view) {
   return root_view->mouse_pressed_handler_;
 }
 
-View* WidgetTest::GetMouseMoveHandler(internal::RootView* root_view) {
+View* WidgetTest::GetMouseMoveHandler(views::internal::RootView* root_view) {
   return root_view->mouse_move_handler_;
 }
 
-View* WidgetTest::GetGestureHandler(internal::RootView* root_view) {
+View* WidgetTest::GetGestureHandler(views::internal::RootView* root_view) {
   return root_view->gesture_handler_;
 }
 
@@ -218,7 +229,7 @@ View* TestInitialFocusWidgetDelegate::GetInitiallyFocusedView() {
 }
 
 WidgetActivationWaiter::WidgetActivationWaiter(Widget* widget, bool active)
-    : observed_(false), active_(active) {
+    : active_(active) {
   if (active == widget->IsActive()) {
     observed_ = true;
     return;

@@ -75,6 +75,11 @@
 #include "content/browser/network/network_service_process_tracker_win.h"
 #endif
 
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#include "content/browser/system_dns_resolution/system_dns_resolver.h"
+#include "services/network/public/mojom/system_dns_resolution.mojom-forward.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -174,8 +179,7 @@ bool IsSafeToUseDataPath(SandboxGrantResult result) {
       //
       // These cases are handled internally and so this case should never be
       // hit. It is undefined behavior to proceed in this case so CHECK here.
-      IMMEDIATE_CRASH();
-      return false;
+      base::ImmediateCrash();
     case SandboxGrantResult::kFailedToCreateDataDirectory:
       // A failure to create the `data_directory` is fatal, and the
       // `unsandboxed_data_path` should be used.
@@ -398,6 +402,20 @@ network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   }
 #endif  // BUILDFLAG(IS_POSIX)
+
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(
+          network::features::kOutOfProcessSystemDnsResolution) &&
+      IsOutOfProcessNetworkService() &&
+      !g_force_create_network_service_directly) {
+    mojo::PendingRemote<network::mojom::SystemDnsResolver> dns_remote;
+    mojo::MakeSelfOwnedReceiver(
+        std::make_unique<content::SystemDnsResolverMojoImpl>(),
+        dns_remote.InitWithNewPipeAndPassReceiver());
+    network_service_params->system_dns_resolver = std::move(dns_remote);
+  }
+#endif
+
   return network_service_params;
 }
 

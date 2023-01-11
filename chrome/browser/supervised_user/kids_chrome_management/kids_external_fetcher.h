@@ -5,10 +5,9 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_KIDS_CHROME_MANAGEMENT_KIDS_EXTERNAL_FETCHER_H_
 #define CHROME_BROWSER_SUPERVISED_USER_KIDS_CHROME_MANAGEMENT_KIDS_EXTERNAL_FETCHER_H_
 
-#include "base/callback.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
-#include "chrome/browser/supervised_user/kids_chrome_management/kids_access_token_fetcher.h"
 #include "chrome/browser/supervised_user/kids_chrome_management/kidschromemanagement_messages.pb.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -16,16 +15,19 @@
 
 // Holds the status of the fetch. The callback's response will be set iff the
 // status is ok.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 class KidsExternalFetcherStatus {
  public:
   enum State {
-    NO_ERROR,                   // No error.
-    GOOGLE_SERVICE_AUTH_ERROR,  // Error occurred during the access token
-                                // fetching phase. See GetGoogleServiceAuthError
-                                // for details.
-    HTTP_ERROR,        // The request was performed, but http returned errors.
-    INVALID_RESPONSE,  // The request was performed without error, but http
-                       // response could not be processed or was unexpected.
+    NO_ERROR = 0,                   // No error.
+    GOOGLE_SERVICE_AUTH_ERROR = 1,  // Error occurred during the access token
+                                    // fetching phase. See
+                                    // GetGoogleServiceAuthError for details.
+    HTTP_ERROR = 2,  // The request was performed, but http returned errors.
+    INVALID_RESPONSE = 3,  // The request was performed without error, but http
+                           // response could not be processed or was unexpected.
+    kMaxValue = INVALID_RESPONSE,  // keep last, required for metrics.
   };
   // Status might be used in base::expected context as possible error, since it
   // contains two error-enabled attributes which are copyable / assignable.
@@ -48,6 +50,11 @@ class KidsExternalFetcherStatus {
   // KidsExternalFetcherStatus::IsOk iff google_service_auth_error_.state() ==
   // NONE and state_ == NONE
   bool IsOk() const;
+  // Indicates whether the status is not ok, but is worth retrying because it
+  // might go away.
+  bool IsTransientError() const;
+  // Indicates whether the status is not ok and there is no point in retrying.
+  bool IsPersistentError() const;
 
   State state() const;
   const class GoogleServiceAuthError& google_service_auth_error() const;

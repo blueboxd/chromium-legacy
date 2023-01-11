@@ -8,7 +8,9 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "content/public/browser/ax_inspect_factory.h"
 #include "tools/accessibility/inspect/ax_tree_server.h"
@@ -36,8 +38,8 @@ std::vector<ui::AXApiType::Type> SupportedApis() {
   std::vector<ui::AXApiType::Type> apis =
       content::AXInspectFactory::SupportedApis();
   std::vector<ui::AXApiType::Type> filter_apis;
-  std::copy_if(
-      begin(apis), end(apis), std::back_inserter(filter_apis),
+  base::ranges::copy_if(
+      apis, std::back_inserter(filter_apis),
       [](ui::AXApiType::Type t) { return t != ui::AXApiType::kBlink; });
   return filter_apis;
 }
@@ -97,7 +99,7 @@ int main(int argc, char** argv) {
       LOG(ERROR) << "Unknown API type: " << api_str;
       return 1;
     }
-    if (std::find(apis.begin(), apis.end(), api) == apis.end()) {
+    if (!base::Contains(apis, api)) {
       LOG(ERROR) << "Unsupported API for this platform: "
                  << static_cast<std::string>(api);
       return 1;

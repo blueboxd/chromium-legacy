@@ -45,91 +45,11 @@ constexpr char kMountLabelOption[] = "mountlabel";
 
 CrosDisksClient* g_instance = nullptr;
 
-// Checks if retrieved media type is in boundaries of DeviceMediaType.
-bool IsValidMediaType(uint32_t type) {
-  return type < static_cast<uint32_t>(cros_disks::DEVICE_MEDIA_NUM_VALUES);
-}
-
-// Translates enum used in cros-disks to enum used in Chrome.
-// Note that we could just do static_cast, but this is less sensitive to
-// changes in cros-disks.
-DeviceType DeviceMediaTypeToDeviceType(uint32_t media_type_uint32) {
-  if (!IsValidMediaType(media_type_uint32))
+DeviceType ToDeviceType(uint32_t media_type) {
+  if (media_type > static_cast<uint32_t>(DeviceType::kMaxValue))
     return DeviceType::kUnknown;
 
-  cros_disks::DeviceMediaType media_type =
-      cros_disks::DeviceMediaType(media_type_uint32);
-
-  switch (media_type) {
-    case (cros_disks::DEVICE_MEDIA_UNKNOWN):
-      return DeviceType::kUnknown;
-    case (cros_disks::DEVICE_MEDIA_USB):
-      return DeviceType::kUSB;
-    case (cros_disks::DEVICE_MEDIA_SD):
-      return DeviceType::kSD;
-    case (cros_disks::DEVICE_MEDIA_OPTICAL_DISC):
-      return DeviceType::kOpticalDisc;
-    case (cros_disks::DEVICE_MEDIA_MOBILE):
-      return DeviceType::kMobile;
-    case (cros_disks::DEVICE_MEDIA_DVD):
-      return DeviceType::kDVD;
-    default:
-      return DeviceType::kUnknown;
-  }
-}
-
-MountError CrosDisksMountErrorToChromeMountError(
-    cros_disks::MountErrorType mount_error) {
-  switch (mount_error) {
-    case cros_disks::MOUNT_ERROR_NONE:
-      return MountError::kNone;
-    case cros_disks::MOUNT_ERROR_UNKNOWN:
-      return MountError::kUnknown;
-    case cros_disks::MOUNT_ERROR_INTERNAL:
-      return MountError::kInternal;
-    case cros_disks::MOUNT_ERROR_INVALID_ARGUMENT:
-      return MountError::kInvalidArgument;
-    case cros_disks::MOUNT_ERROR_INVALID_PATH:
-      return MountError::kInvalidPath;
-    case cros_disks::MOUNT_ERROR_PATH_ALREADY_MOUNTED:
-      return MountError::kPathAlreadyMounted;
-    case cros_disks::MOUNT_ERROR_PATH_NOT_MOUNTED:
-      return MountError::kPathNotMounted;
-    case cros_disks::MOUNT_ERROR_DIRECTORY_CREATION_FAILED:
-      return MountError::kDirectoryCreationFailed;
-    case cros_disks::MOUNT_ERROR_INVALID_MOUNT_OPTIONS:
-      return MountError::kInvalidMountOptions;
-    case cros_disks::MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS:
-      return MountError::kInvalidUnmountOptions;
-    case cros_disks::MOUNT_ERROR_INSUFFICIENT_PERMISSIONS:
-      return MountError::kInsufficientPermissions;
-    case cros_disks::MOUNT_ERROR_MOUNT_PROGRAM_NOT_FOUND:
-      return MountError::kMountProgramNotFound;
-    case cros_disks::MOUNT_ERROR_MOUNT_PROGRAM_FAILED:
-      return MountError::kMountProgramFailed;
-    case cros_disks::MOUNT_ERROR_INVALID_DEVICE_PATH:
-      return MountError::kInvalidDevicePath;
-    case cros_disks::MOUNT_ERROR_UNKNOWN_FILESYSTEM:
-      return MountError::kUnknownFilesystem;
-    case cros_disks::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM:
-      return MountError::kUnsupportedFilesystem;
-    case cros_disks::MOUNT_ERROR_INVALID_ARCHIVE:
-      return MountError::kInvalidArchive;
-    case cros_disks::MOUNT_ERROR_NEED_PASSWORD:
-    case cros_disks::MOUNT_ERROR_NEED_PASSWORD_EX:
-      return MountError::kNeedPassword;
-    case cros_disks::MOUNT_ERROR_IN_PROGRESS:
-    case cros_disks::MOUNT_ERROR_IN_PROGRESS_EX:
-      return MountError::kInProgress;
-    case cros_disks::MOUNT_ERROR_CANCELLED:
-    case cros_disks::MOUNT_ERROR_CANCELLED_EX:
-      return MountError::kCancelled;
-    case cros_disks::MOUNT_ERROR_BUSY:
-      return MountError::kBusy;
-    default:
-      LOG(ERROR) << "Unrecognised mount error code " << mount_error;
-      return MountError::kUnknown;
-  }
+  return static_cast<DeviceType>(media_type);
 }
 
 bool ReadMountEntryFromDbus(dbus::MessageReader* reader, MountPoint* entry) {
@@ -150,8 +70,7 @@ bool ReadMountEntryFromDbus(dbus::MessageReader* reader, MountPoint* entry) {
     LOG(WARNING) << "Cannot get MountEntry's read-only flag from DBus";
   }
 
-  entry->mount_error = CrosDisksMountErrorToChromeMountError(
-      static_cast<cros_disks::MountErrorType>(error_code));
+  entry->mount_error = static_cast<MountError>(error_code);
   entry->mount_type = static_cast<MountType>(mount_type);
   entry->progress_percent = 100;
 
@@ -425,20 +344,20 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
     const char kUnmountHistogramName[] = "CrosDisksClient.UnmountError";
     if (!response) {
-      UMA_HISTOGRAM_ENUMERATION(kUnmountHistogramName, MountError::kUnknown);
-      std::move(callback).Run(MountError::kUnknown);
+      UMA_HISTOGRAM_ENUMERATION(kUnmountHistogramName,
+                                MountError::kUnknownError);
+      std::move(callback).Run(MountError::kUnknownError);
       return;
     }
 
     dbus::MessageReader reader(response);
     uint32_t error_code = 0;
-    MountError mount_error = MountError::kNone;
+    MountError mount_error = MountError::kSuccess;
     if (reader.PopUint32(&error_code)) {
-      mount_error = CrosDisksMountErrorToChromeMountError(
-          static_cast<cros_disks::MountErrorType>(error_code));
+      mount_error = static_cast<MountError>(error_code);
     } else {
       LOG(ERROR) << "Invalid response: " << response->ToString();
-      mount_error = MountError::kUnknown;
+      mount_error = MountError::kUnknownError;
     }
     UMA_HISTOGRAM_ENUMERATION(kUnmountHistogramName, mount_error);
     std::move(callback).Run(mount_error);
@@ -592,15 +511,15 @@ class CrosDisksClientImpl : public CrosDisksClient {
   void OnPartitionCompleted(PartitionCallback callback,
                             dbus::Response* response) {
     if (!response) {
-      std::move(callback).Run(PartitionError::kUnknown);
+      std::move(callback).Run(PartitionError::kUnknownError);
       return;
     }
-    uint32_t status = static_cast<uint32_t>(PartitionError::kUnknown);
+    uint32_t status = static_cast<uint32_t>(PartitionError::kUnknownError);
     dbus::MessageReader reader(response);
     if (!reader.PopUint32(&status)) {
       LOG(ERROR) << "Error reading SinglePartitionFormat response: "
                  << response->ToString();
-      std::move(callback).Run(PartitionError::kUnknown);
+      std::move(callback).Run(PartitionError::kUnknownError);
       return;
     }
     std::move(callback).Run(static_cast<PartitionError>(status));
@@ -645,147 +564,35 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
 std::ostream& operator<<(std::ostream& out, const MountType type) {
   switch (type) {
-#define PRINT_TYPE(s) \
-  case MountType::s:  \
+#define PRINT(s)        \
+  case MountType::k##s: \
     return out << #s;
-    PRINT_TYPE(kInvalid)
-    PRINT_TYPE(kDevice)
-    PRINT_TYPE(kArchive)
-    PRINT_TYPE(kNetworkStorage)
-#undef PRINT_TYPE
+    PRINT(Invalid)
+    PRINT(Device)
+    PRINT(Archive)
+    PRINT(NetworkStorage)
+#undef PRINT
   }
 
-  return out << std::underlying_type_t<MountType>(type);
-}
-
-std::ostream& operator<<(std::ostream& out, const DeviceType type) {
-  switch (type) {
-#define PRINT_TYPE(s) \
-  case DeviceType::s: \
-    return out << #s;
-    PRINT_TYPE(kUnknown)
-    PRINT_TYPE(kUSB)
-    PRINT_TYPE(kSD)
-    PRINT_TYPE(kOpticalDisc)
-    PRINT_TYPE(kMobile)
-    PRINT_TYPE(kDVD)
-#undef PRINT_TYPE
-  }
-
-  return out << std::underlying_type_t<DeviceType>(type);
-}
-
-std::ostream& operator<<(std::ostream& out, const MountError error) {
-  switch (error) {
-#define PRINT_ERROR(s) \
-  case MountError::s:  \
-    return out << #s;
-    PRINT_ERROR(kNone)
-    PRINT_ERROR(kUnknown)
-    PRINT_ERROR(kInternal)
-    PRINT_ERROR(kInvalidArgument)
-    PRINT_ERROR(kInvalidPath)
-    PRINT_ERROR(kPathAlreadyMounted)
-    PRINT_ERROR(kPathNotMounted)
-    PRINT_ERROR(kDirectoryCreationFailed)
-    PRINT_ERROR(kInvalidMountOptions)
-    PRINT_ERROR(kInvalidUnmountOptions)
-    PRINT_ERROR(kInsufficientPermissions)
-    PRINT_ERROR(kMountProgramNotFound)
-    PRINT_ERROR(kMountProgramFailed)
-    PRINT_ERROR(kInvalidDevicePath)
-    PRINT_ERROR(kUnknownFilesystem)
-    PRINT_ERROR(kUnsupportedFilesystem)
-    PRINT_ERROR(kInvalidArchive)
-    PRINT_ERROR(kNeedPassword)
-    PRINT_ERROR(kInProgress)
-    PRINT_ERROR(kCancelled)
-    PRINT_ERROR(kBusy)
-#undef PRINT_ERROR
-  }
-
-  return out << std::underlying_type_t<MountError>(error);
-}
-
-std::ostream& operator<<(std::ostream& out, const RenameError error) {
-  switch (error) {
-#define PRINT_ERROR(s) \
-  case RenameError::s: \
-    return out << #s;
-    PRINT_ERROR(kNone)
-    PRINT_ERROR(kUnknown)
-    PRINT_ERROR(kInternal)
-    PRINT_ERROR(kInvalidDevicePath)
-    PRINT_ERROR(kDeviceBeingRenamed)
-    PRINT_ERROR(kUnsupportedFilesystem)
-    PRINT_ERROR(kRenameProgramNotFound)
-    PRINT_ERROR(kRenameProgramFailed)
-    PRINT_ERROR(kDeviceNotAllowed)
-    PRINT_ERROR(kLongName)
-    PRINT_ERROR(kInvalidCharacter)
-#undef PRINT_ERROR
-  }
-
-  return out << std::underlying_type_t<RenameError>(error);
-}
-
-std::ostream& operator<<(std::ostream& out, const FormatError error) {
-  switch (error) {
-#define PRINT_ERROR(s) \
-  case FormatError::s: \
-    return out << #s;
-    PRINT_ERROR(kNone)
-    PRINT_ERROR(kUnknown)
-    PRINT_ERROR(kInternal)
-    PRINT_ERROR(kInvalidDevicePath)
-    PRINT_ERROR(kDeviceBeingFormatted)
-    PRINT_ERROR(kUnsupportedFilesystem)
-    PRINT_ERROR(kFormatProgramNotFound)
-    PRINT_ERROR(kFormatProgramFailed)
-    PRINT_ERROR(kDeviceNotAllowed)
-    PRINT_ERROR(kInvalidOptions)
-    PRINT_ERROR(kLongName)
-    PRINT_ERROR(kInvalidCharacter)
-#undef PRINT_ERROR
-  }
-
-  return out << std::underlying_type_t<FormatError>(error);
-}
-
-std::ostream& operator<<(std::ostream& out, const PartitionError error) {
-  switch (error) {
-#define PRINT_ERROR(s)    \
-  case PartitionError::s: \
-    return out << #s;
-    PRINT_ERROR(kNone)
-    PRINT_ERROR(kUnknown)
-    PRINT_ERROR(kInternal)
-    PRINT_ERROR(kInvalidDevicePath)
-    PRINT_ERROR(kDeviceBeingPartitioned)
-    PRINT_ERROR(kProgramNotFound)
-    PRINT_ERROR(kProgramFailed)
-    PRINT_ERROR(kDeviceNotAllowed)
-#undef PRINT_ERROR
-  }
-
-  return out << std::underlying_type_t<PartitionError>(error);
+  return out << "MountType(" << std::underlying_type_t<MountType>(type) << ")";
 }
 
 std::ostream& operator<<(std::ostream& out, const MountEventType event) {
   switch (event) {
-#define PRINT_ERROR(s)    \
-  case MountEventType::s: \
+#define PRINT(s)             \
+  case MountEventType::k##s: \
     return out << #s;
-    PRINT_ERROR(kDiskAdded)
-    PRINT_ERROR(kDiskRemoved)
-    PRINT_ERROR(kDiskChanged)
-    PRINT_ERROR(kDeviceAdded)
-    PRINT_ERROR(kDeviceRemoved)
-    PRINT_ERROR(kDeviceScanned)
-#undef PRINT_ERROR
+    PRINT(DiskAdded)
+    PRINT(DiskRemoved)
+    PRINT(DiskChanged)
+    PRINT(DeviceAdded)
+    PRINT(DeviceRemoved)
+    PRINT(DeviceScanned)
+#undef PRINT
   }
 
-  return out << std::underlying_type_t<MountEventType>(event);
+  return out << "MountEventType("
+             << std::underlying_type_t<MountEventType>(event) << ")";
 }
 
 std::ostream& operator<<(std::ostream& out, const MountPoint& entry) {
@@ -994,7 +801,7 @@ bool DiskInfo::InitializeFromResponse(dbus::Response* response) {
   absl::optional<double> media_type_double =
       value.FindDoubleKey(cros_disks::kDeviceMediaType);
   if (media_type_double.has_value())
-    device_type_ = DeviceMediaTypeToDeviceType(media_type_double.value());
+    device_type_ = ToDeviceType(media_type_double.value());
 
   if (const base::Value* const mount_paths =
           value.FindListKey(cros_disks::kDeviceMountPaths);

@@ -58,7 +58,7 @@
 namespace gpu {
 namespace {
 
-class OverlayImage final : public gl::GLImage {
+class OverlayImage final : public base::RefCounted<OverlayImage> {
  public:
   explicit OverlayImage(AHardwareBuffer* buffer)
       : handle_(base::android::ScopedHardwareBufferHandle::Create(buffer)) {}
@@ -69,18 +69,16 @@ class OverlayImage final : public gl::GLImage {
     return std::move(end_read_fence_);
   }
 
-  // gl::GLImage:
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
-  GetAHardwareBuffer() override {
+  GetAHardwareBuffer() {
     return std::make_unique<ScopedHardwareBufferFenceSyncImpl>(
         this, base::android::ScopedHardwareBufferHandle::Create(handle_.get()),
         std::move(previous_end_read_fence_));
   }
 
- protected:
-  ~OverlayImage() override = default;
-
  private:
+  friend class base::RefCounted<OverlayImage>;
+
   class ScopedHardwareBufferFenceSyncImpl
       : public base::android::ScopedHardwareBufferFenceSync {
    public:
@@ -95,7 +93,7 @@ class OverlayImage final : public gl::GLImage {
           image_(std::move(image)) {}
     ~ScopedHardwareBufferFenceSyncImpl() override = default;
 
-    void SetReadFence(base::ScopedFD fence_fd, bool has_context) override {
+    void SetReadFence(base::ScopedFD fence_fd) override {
       DCHECK(!image_->end_read_fence_.is_valid());
       DCHECK(!image_->previous_end_read_fence_.is_valid());
 
@@ -105,6 +103,8 @@ class OverlayImage final : public gl::GLImage {
    private:
     scoped_refptr<OverlayImage> image_;
   };
+
+  ~OverlayImage() = default;
 
   base::android::ScopedHardwareBufferHandle handle_;
 
@@ -151,7 +151,7 @@ class AHardwareBufferImageBacking : public AndroidImageBacking {
   gfx::Rect ClearedRect() const override;
   void SetClearedRect(const gfx::Rect& cleared_rect) override;
   base::android::ScopedHardwareBufferHandle GetAhbHandle() const;
-  gl::GLImage* BeginOverlayAccess(gfx::GpuFenceHandle&);
+  OverlayImage* BeginOverlayAccess(gfx::GpuFenceHandle&);
   void EndOverlayAccess();
 
  protected:
@@ -241,9 +241,12 @@ class OverlayAHBImageRepresentation : public OverlayImageRepresentation {
     }
   }
 
-  gl::GLImage* GetGLImage() override { return gl_image_; }
+  std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+  GetAHardwareBufferFenceSync() override {
+    return gl_image_->GetAHardwareBuffer();
+  }
 
-  raw_ptr<gl::GLImage> gl_image_ = nullptr;
+  raw_ptr<OverlayImage> gl_image_ = nullptr;
 };
 
 AHardwareBufferImageBacking::AHardwareBufferImageBacking(
@@ -425,7 +428,7 @@ AHardwareBufferImageBacking::ProduceDawn(SharedImageManager* manager,
 #endif  // BUILDFLAG(USE_DAWN)
 }
 
-gl::GLImage* AHardwareBufferImageBacking::BeginOverlayAccess(
+OverlayImage* AHardwareBufferImageBacking::BeginOverlayAccess(
     gfx::GpuFenceHandle& begin_read_fence) {
   AutoLock auto_lock(this);
 
@@ -440,7 +443,6 @@ gl::GLImage* AHardwareBufferImageBacking::BeginOverlayAccess(
   if (!overlay_image_) {
     overlay_image_ =
         base::MakeRefCounted<OverlayImage>(hardware_buffer_handle_.get());
-    overlay_image_->SetColorSpace(color_space());
   }
 
   if (write_sync_fd_.is_valid()) {

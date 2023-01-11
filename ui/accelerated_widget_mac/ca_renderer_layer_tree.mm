@@ -18,6 +18,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/trace_event/trace_event.h"
 #include "components/metal_util/hdr_copier_layer.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/ui_base_switches.h"
@@ -30,6 +31,13 @@
 namespace ui {
 
 namespace {
+
+class ComparatorSkColor4f {
+ public:
+  bool operator()(const SkColor4f& a, const SkColor4f& b) const {
+    return std::tie(a.fR, a.fG, a.fB, a.fA) < std::tie(b.fR, b.fG, b.fB, b.fA);
+  }
+};
 
 // TODO(https://crbug.com/1313999): Remove debug prints after the code is
 // stable.
@@ -177,29 +185,29 @@ bool AVSampleBufferDisplayLayerEnqueueIOSurface(
       CVBufferSetAttachment(cv_pixel_buffer, kCVImageBufferYCbCrMatrixKey,
                             kCVImageBufferYCbCrMatrix_ITU_R_2020,
                             kCVAttachmentMode_ShouldPropagate);
-      CVBufferSetAttachment(
-          cv_pixel_buffer, kCVImageBufferTransferFunctionKey,
-          io_surface_color_space.GetTransferID() ==
-                  gfx::ColorSpace::TransferID::HLG
-              ? kCVImageBufferTransferFunction_ITU_R_2100_HLG
-              : kCVImageBufferTransferFunction_SMPTE_ST_2084_PQ,
-          kCVAttachmentMode_ShouldPropagate);
-
-      if (hdr_metadata) {
-        if (!(hdr_metadata->color_volume_metadata ==
-              gfx::ColorVolumeMetadata())) {
+      switch (io_surface_color_space.GetTransferID()) {
+        case gfx::ColorSpace::TransferID::HLG:
+          CVBufferSetAttachment(cv_pixel_buffer,
+                                kCVImageBufferTransferFunctionKey,
+                                kCVImageBufferTransferFunction_ITU_R_2100_HLG,
+                                kCVAttachmentMode_ShouldPropagate);
+          break;
+        case gfx::ColorSpace::TransferID::PQ:
+          CVBufferSetAttachment(cv_pixel_buffer,
+                                kCVImageBufferTransferFunctionKey,
+                                kCVImageBufferTransferFunction_SMPTE_ST_2084_PQ,
+                                kCVAttachmentMode_ShouldPropagate);
           CVBufferSetAttachment(
               cv_pixel_buffer, kCVImageBufferMasteringDisplayColorVolumeKey,
-              gfx::GenerateMasteringDisplayColorVolume(*hdr_metadata),
+              gfx::GenerateMasteringDisplayColorVolume(hdr_metadata),
               kCVAttachmentMode_ShouldPropagate);
-        }
-        if (hdr_metadata->max_content_light_level ||
-            hdr_metadata->max_frame_average_light_level) {
           CVBufferSetAttachment(
               cv_pixel_buffer, kCVImageBufferContentLightLevelInfoKey,
-              gfx::GenerateContentLightLevelInfo(*hdr_metadata),
+              gfx::GenerateContentLightLevelInfo(hdr_metadata),
               kCVAttachmentMode_ShouldPropagate);
-        }
+          break;
+        default:
+          break;
       }
     }
   }
@@ -223,25 +231,28 @@ CATransform3D ToCATransform3D(const gfx::Transform& t) {
 class CARendererLayerTree::SolidColorContents
     : public base::RefCounted<CARendererLayerTree::SolidColorContents> {
  public:
-  static scoped_refptr<SolidColorContents> Get(SkColor color);
+  static scoped_refptr<SolidColorContents> Get(SkColor4f color);
   id GetContents() const;
   IOSurfaceRef GetIOSurfaceRef() const;
 
  private:
   friend class base::RefCounted<SolidColorContents>;
 
-  SolidColorContents(SkColor color, IOSurfaceRef io_surface);
+  SolidColorContents(SkColor4f color, IOSurfaceRef io_surface);
   ~SolidColorContents();
 
-  static std::map<SkColor, SolidColorContents*>* GetMap();
+  using Map = std::map<SkColor4f,
+                       CARendererLayerTree::SolidColorContents*,
+                       ComparatorSkColor4f>;
+  static Map* GetMap();
 
-  SkColor color_ = 0;
+  const SkColor4f color_;
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
 };
 
 // static
 scoped_refptr<CARendererLayerTree::SolidColorContents>
-CARendererLayerTree::SolidColorContents::Get(SkColor color) {
+CARendererLayerTree::SolidColorContents::Get(SkColor4f color) {
   const int kSolidColorContentsSize = 16;
 
   auto* map = GetMap();
@@ -249,24 +260,36 @@ CARendererLayerTree::SolidColorContents::Get(SkColor color) {
   if (found != map->end())
     return found->second;
 
-  IOSurfaceRef io_surface = CreateIOSurface(
-      gfx::Size(kSolidColorContentsSize, kSolidColorContentsSize),
-      gfx::BufferFormat::BGRA_8888);
+  const gfx::Size size(kSolidColorContentsSize, kSolidColorContentsSize);
+  gfx::BufferFormat buffer_format = gfx::BufferFormat::BGRA_8888;
+  SkColorType color_type = kBGRA_8888_SkColorType;
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+
+  // Use P3 for non-sRGB solid colors, because that is likely the tile
+  // rasterization color space.
+  // https://crbug.com/1376717
+  if (!color.fitsInBytes()) {
+    color_space = gfx::ColorSpace::CreateDisplayP3D65();
+  }
+
+  IOSurfaceRef io_surface = CreateIOSurface(size, buffer_format);
   if (!io_surface)
     return nullptr;
+  IOSurfaceSetColorSpace(io_surface, color_space);
 
-  size_t bytes_per_row = IOSurfaceGetBytesPerRowOfPlane(io_surface, 0);
-  IOSurfaceLock(io_surface, 0, NULL);
-  char* row_base_address =
-      reinterpret_cast<char*>(IOSurfaceGetBaseAddress(io_surface));
-  for (int i = 0; i < kSolidColorContentsSize; ++i) {
-    unsigned int* pixel = reinterpret_cast<unsigned int*>(row_base_address);
-    for (int j = 0; j < kSolidColorContentsSize; ++j)
-      *(pixel++) = color;
-    row_base_address += bytes_per_row;
+  {
+    size_t bytes_per_row = IOSurfaceGetBytesPerRowOfPlane(io_surface, 0);
+    IOSurfaceLock(io_surface, 0, NULL);
+    char* base_address =
+        reinterpret_cast<char*>(IOSurfaceGetBaseAddress(io_surface));
+    SkImageInfo info = SkImageInfo::Make(size.width(), size.height(),
+                                         color_type, kPremul_SkAlphaType);
+    auto canvas = SkCanvas::MakeRasterDirect(info, base_address, bytes_per_row);
+    DCHECK(canvas);
+    canvas->clear(color);
+
+    IOSurfaceUnlock(io_surface, 0, NULL);
   }
-  IOSurfaceUnlock(io_surface, 0, NULL);
-
   return new SolidColorContents(color, io_surface);
 }
 
@@ -279,7 +302,7 @@ IOSurfaceRef CARendererLayerTree::SolidColorContents::GetIOSurfaceRef() const {
 }
 
 CARendererLayerTree::SolidColorContents::SolidColorContents(
-    SkColor color,
+    SkColor4f color,
     IOSurfaceRef io_surface)
     : color_(color), io_surface_(io_surface) {
   auto* map = GetMap();
@@ -296,10 +319,10 @@ CARendererLayerTree::SolidColorContents::~SolidColorContents() {
 }
 
 // static
-std::map<SkColor, CARendererLayerTree::SolidColorContents*>*
+CARendererLayerTree::SolidColorContents::Map*
 CARendererLayerTree::SolidColorContents::GetMap() {
-  static auto* map = new std::map<SkColor, SolidColorContents*>();
-  return map;
+  static base::NoDestructor<Map> map;
+  return map.get();
 }
 
 CARendererLayerTree::CARendererLayerTree(
@@ -635,8 +658,8 @@ bool CARendererLayerTree::RootLayer::WantsFullscreenLowPowerBackdrop() const {
         // solid black or transparent
         if (content_layer.io_surface_)
           return false;
-        if (content_layer.background_color_ != SK_ColorBLACK &&
-            content_layer.background_color_ != SK_ColorTRANSPARENT) {
+        if (content_layer.background_color_ != SkColors::kBlack &&
+            content_layer.background_color_ != SkColors::kTransparent) {
           return false;
         }
       }
@@ -658,7 +681,7 @@ void CARendererLayerTree::RootLayer::DowngradeAVLayersToCALayers() {
   }
 }
 
-id CARendererLayerTree::ContentsForSolidColorForTesting(SkColor color) {
+id CARendererLayerTree::ContentsForSolidColorForTesting(SkColor4f color) {
   return SolidColorContents::Get(color)->GetContents();
 }
 
@@ -731,11 +754,12 @@ CARendererLayerTree::ContentLayer::ContentLayer(
     base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
     const gfx::RectF& contents_rect,
     const gfx::Rect& rect,
-    unsigned background_color,
+    SkColor4f background_color,
     const gfx::ColorSpace& io_surface_color_space,
     unsigned edge_aa_mask,
     float opacity,
     unsigned filter,
+    gfx::HDRMode hdr_mode,
     absl::optional<gfx::HDRMetadata> hdr_metadata,
     gfx::ProtectedVideoType protected_video_type)
     : parent_layer_(parent_layer),
@@ -748,6 +772,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(
       ca_edge_aa_mask_(0),
       opacity_(opacity),
       ca_filter_(filter == GL_LINEAR ? kCAFilterLinear : kCAFilterNearest),
+      hdr_mode_(hdr_mode),
       hdr_metadata_(hdr_metadata),
       protected_video_type_(protected_video_type) {
   DCHECK(filter == GL_LINEAR || filter == GL_NEAREST);
@@ -761,8 +786,8 @@ CARendererLayerTree::ContentLayer::ContentLayer(
   // detachment in fullscreen.
   // https://crbug.com/633805
   if (!io_surface && !tree()->allow_solid_color_layers_ &&
-      background_color_ != SK_ColorBLACK &&
-      background_color_ != SK_ColorTRANSPARENT) {
+      background_color_ != SkColors::kBlack &&
+      background_color_ != SkColors::kTransparent) {
     solid_color_contents_ = SolidColorContents::Get(background_color);
     contents_rect_ = gfx::RectF(0, 0, 1, 1);
   }
@@ -792,7 +817,8 @@ CARendererLayerTree::ContentLayer::ContentLayer(
   }
 
   // Determine which type of CALayer subclass we should use.
-  if (metal::ShouldUseHDRCopier(io_surface, io_surface_color_space)) {
+  if (metal::ShouldUseHDRCopier(io_surface, hdr_mode_,
+                                io_surface_color_space)) {
     type_ = CALayerType::kHDRCopier;
   } else if (io_surface) {
     // Only allow 4:2:0 frames which fill the layer's contents or protected
@@ -918,7 +944,8 @@ void CARendererLayerTree::TransformLayer::AddContentLayer(
       this, params.io_surface, base::ScopedCFTypeRef<CVPixelBufferRef>(),
       params.contents_rect, params.rect, params.background_color,
       params.io_surface_color_space, params.edge_aa_mask, params.opacity,
-      params.filter, params.hdr_metadata, params.protected_video_type);
+      params.filter, params.hdr_mode, params.hdr_metadata,
+      params.protected_video_type);
 }
 
 void CARendererLayerTree::RootLayer::CommitToCA(CALayer* superlayer,
@@ -1271,13 +1298,14 @@ void CARendererLayerTree::ContentLayer::CommitToCA(
   }
   if (update_background_color) {
     CGFloat rgba_color_components[4] = {
-        SkColorGetR(background_color_) / 255.,
-        SkColorGetG(background_color_) / 255.,
-        SkColorGetB(background_color_) / 255.,
-        SkColorGetA(background_color_) / 255.,
+        background_color_.fR,
+        background_color_.fG,
+        background_color_.fB,
+        background_color_.fA,
     };
-    base::ScopedCFTypeRef<CGColorRef> srgb_background_color(CGColorCreate(
-        CGColorSpaceCreateWithName(kCGColorSpaceSRGB), rgba_color_components));
+    base::ScopedCFTypeRef<CGColorRef> srgb_background_color(
+        CGColorCreate(CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB),
+                      rgba_color_components));
     [ca_layer_ setBackgroundColor:srgb_background_color];
   }
   if (update_ca_edge_aa_mask)

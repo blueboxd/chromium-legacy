@@ -874,23 +874,14 @@ static void FillStaticResponseIfNeeded(WebNavigationParams* params,
   const KURL& url = params->url;
   // See WebNavigationParams for special case explanations.
   if (url.IsAboutSrcdocURL()) {
-    if (params->body_loader)
-      return;
-    // TODO(wjmaclean): It seems some pathways don't go via the
-    // RenderFrameImpl::BeginNavigation/CommitNavigation functions.
-    // https://crbug.com/1290435.
-    String srcdoc;
-    HTMLFrameOwnerElement* owner_element = frame->DeprecatedLocalOwner();
-    if (!IsA<HTMLIFrameElement>(owner_element) ||
-        !owner_element->FastHasAttribute(html_names::kSrcdocAttr)) {
-      // Cannot retrieve srcdoc content anymore (perhaps, the attribute was
-      // cleared) - load empty instead.
-    } else {
-      srcdoc = owner_element->FastGetAttribute(html_names::kSrcdocAttr);
-      DCHECK(!srcdoc.IsNull());
-    }
-    WebNavigationParams::FillStaticResponse(params, "text/html", "UTF-8",
-                                            StringUTF8Adaptor(srcdoc));
+    CHECK(params->body_loader);
+    // Originally, this branch was responsible for retrieving the value of the
+    // srcdoc attribute and turning it into a body loader when committing a
+    // navigation to about:srcdoc. To support out-of-process sandboxed iframes,
+    // the value of the srcdoc attribute is now sent to the browser in
+    // BeginNavigation, and the body loader should have already been created
+    // by the time the browser asks the renderer to commit, like other
+    // standard navigations.
     return;
   }
 
@@ -1552,6 +1543,9 @@ void FrameLoader::ProcessFragment(const KURL& url,
 }
 
 bool FrameLoader::ShouldClose(bool is_reload) {
+  TRACE_EVENT1("loading", "FrameLoader::ShouldClose", "is_reload", is_reload);
+  const base::TimeTicks before_unload_events_start = base::TimeTicks::Now();
+
   Page* page = frame_->GetPage();
   if (!page || !page->GetChromeClient().CanOpenBeforeUnloadConfirmPanel())
     return true;
@@ -1616,6 +1610,13 @@ bool FrameLoader::ShouldClose(bool is_reload) {
     if (!descendant_frame->Tree().IsDescendantOf(frame_))
       continue;
     descendant_frame->GetDocument()->BeforeUnloadDoneWillUnload();
+  }
+
+  if (!is_reload) {
+    // Records only when a non-reload navigation occurs.
+    base::UmaHistogramMediumTimes(
+        "Navigation.OnBeforeUnloadTotalTime",
+        base::TimeTicks::Now() - before_unload_events_start);
   }
 
   return true;
@@ -1729,18 +1730,21 @@ void FrameLoader::DispatchDidClearDocumentOfWindowObject() {
       &dispatching_did_clear_window_object_in_main_world_, true);
   // We just cleared the document, not the entire window object, but for the
   // embedder that's close enough.
-  Client()->DispatchDidClearWindowObjectInMainWorld();
+  Client()->DispatchDidClearWindowObjectInMainWorld(
+      window->GetIsolate(), window->GetMicrotaskQueue());
 }
 
 void FrameLoader::DispatchDidClearWindowObjectInMainWorld() {
-  if (!frame_->DomWindow()->CanExecuteScripts(kNotAboutToExecuteScript))
+  LocalDOMWindow* window = frame_->DomWindow();
+  if (!window->CanExecuteScripts(kNotAboutToExecuteScript))
     return;
 
   if (dispatching_did_clear_window_object_in_main_world_)
     return;
   base::AutoReset<bool> in_did_clear_window_object(
       &dispatching_did_clear_window_object_in_main_world_, true);
-  Client()->DispatchDidClearWindowObjectInMainWorld();
+  Client()->DispatchDidClearWindowObjectInMainWorld(
+      window->GetIsolate(), window->GetMicrotaskQueue());
 }
 
 network::mojom::blink::WebSandboxFlags

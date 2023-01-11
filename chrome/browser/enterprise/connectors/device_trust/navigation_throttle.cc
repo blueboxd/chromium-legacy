@@ -6,10 +6,12 @@
 
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "chrome/browser/enterprise/connectors/device_trust/common/common_types.h"
+#include "chrome/browser/enterprise/connectors/device_trust/common/device_trust_constants.h"
 #include "chrome/browser/enterprise/connectors/device_trust/common/metrics_utils.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_features.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_service.h"
@@ -161,9 +163,10 @@ DeviceTrustNavigationThrottle::AddHeadersIfNeeded() {
       // Create callback for `ReplyChallengeResponseAndResume` which will
       // be called after the challenge response is created. With this
       // we can defer the navigation to unblock the main thread.
+      const base::TimeTicks start_time = base::TimeTicks::Now();
       DeviceTrustCallback resume_navigation_callback = base::BindOnce(
           &DeviceTrustNavigationThrottle::ReplyChallengeResponseAndResume,
-          weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now());
+          weak_ptr_factory_.GetWeakPtr(), start_time);
 
       // Call `DeviceTrustService::BuildChallengeResponse` which is one step on
       // the chain that builds the challenge response. In this chain we post a
@@ -172,7 +175,7 @@ DeviceTrustNavigationThrottle::AddHeadersIfNeeded() {
       // Because BuildChallengeResponse() may run the resume callback
       // synchronously, this call is deferred to ensure that this method returns
       // DEFER before `resume_navigation_callback` is invoked.
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(
               [](base::WeakPtr<DeviceTrustNavigationThrottle> throttler,
@@ -185,6 +188,14 @@ DeviceTrustNavigationThrottle::AddHeadersIfNeeded() {
               },
               weak_ptr_factory_.GetWeakPtr(), challenge,
               std::move(resume_navigation_callback)));
+
+      base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&DeviceTrustNavigationThrottle::OnResponseTimedOut,
+                         weak_ptr_factory_.GetWeakPtr(), start_time),
+          timeouts::kHandshakeTimeout);
+
+      is_resumed_ = false;
       return DEFER;
     }
   }
@@ -194,6 +205,11 @@ DeviceTrustNavigationThrottle::AddHeadersIfNeeded() {
 void DeviceTrustNavigationThrottle::ReplyChallengeResponseAndResume(
     base::TimeTicks start_time,
     const DeviceTrustResponse& dt_response) {
+  if (is_resumed_) {
+    return;
+  }
+  is_resumed_ = true;
+
   // Make a copy to allow mutations.
   auto copied_dt_response = dt_response;
 
@@ -204,8 +220,7 @@ void DeviceTrustNavigationThrottle::ReplyChallengeResponseAndResume(
     copied_dt_response.error = DeviceTrustError::kUnknown;
   }
 
-  LogAttestationResponseLatency(start_time,
-                                /*success=*/!copied_dt_response.error);
+  LogDeviceTrustResponse(copied_dt_response, start_time);
 
   if (copied_dt_response.error) {
     navigation_handle()->SetRequestHeader(
@@ -217,6 +232,23 @@ void DeviceTrustNavigationThrottle::ReplyChallengeResponseAndResume(
         kVerifiedAccessResponseHeader, copied_dt_response.challenge_response);
   }
 
+  Resume();
+}
+
+void DeviceTrustNavigationThrottle::OnResponseTimedOut(
+    base::TimeTicks start_time) {
+  if (is_resumed_) {
+    return;
+  }
+  is_resumed_ = true;
+
+  DeviceTrustResponse timeout_response;
+  timeout_response.error = DeviceTrustError::kTimeout;
+
+  LogDeviceTrustResponse(timeout_response, start_time);
+
+  navigation_handle()->SetRequestHeader(
+      kVerifiedAccessResponseHeader, CreateErrorJsonString(timeout_response));
   Resume();
 }
 

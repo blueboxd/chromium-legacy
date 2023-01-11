@@ -10,8 +10,11 @@
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/microphone_mute_notification_delegate.h"
 #include "ash/public/cpp/notification_utils.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/privacy_hub/privacy_hub_metrics.h"
+#include "ash/system/privacy_hub/privacy_hub_notification_controller.h"
+#include "ash/system/system_notification_controller.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/vector_icons/vector_icons.h"
@@ -19,6 +22,21 @@
 #include "ui/message_center/message_center.h"
 
 namespace ash {
+namespace {
+
+void SetMicrosphoneNotificationVisible(const bool visible) {
+  PrivacyHubNotificationController* const privacy_hub_notification_controller =
+      Shell::Get()->system_notification_controller()->privacy_hub();
+  if (visible) {
+    privacy_hub_notification_controller->ShowSensorDisabledNotification(
+        PrivacyHubNotificationController::Sensor::kMicrophone);
+  } else {
+    privacy_hub_notification_controller->RemoveSensorDisabledNotification(
+        PrivacyHubNotificationController::Sensor::kMicrophone);
+  }
+}
+
+}  // namespace
 
 // static
 const char MicrophoneMuteNotificationController::kNotificationId[] =
@@ -31,18 +49,14 @@ MicrophoneMuteNotificationController::MicrophoneMuteNotificationController() {
 MicrophoneMuteNotificationController::~MicrophoneMuteNotificationController() =
     default;
 
-void MicrophoneMuteNotificationController::OnInputMuteChanged(bool mute_on) {
+void MicrophoneMuteNotificationController::OnInputMuteChanged(
+    bool mute_on,
+    CrasAudioHandler::InputMuteChangeMethod method) {
   mic_mute_on_ = mute_on;
   mic_muted_by_mute_switch_ =
       CrasAudioHandler::Get()->input_muted_by_microphone_mute_switch();
 
-  // Show the notification with low priority when the mute state changes, so the
-  // notification gets shown silently. This prevents the notification from
-  // interfering with the mute state change toast that gets shown on mute state
-  // change.
-  MaybeShowNotification(
-      current_notification_priority_.value_or(message_center::LOW_PRIORITY),
-      /*recreate=*/false);
+  SetMicrosphoneNotificationVisible(input_stream_count_ && mic_mute_on_);
 }
 
 void MicrophoneMuteNotificationController::
@@ -51,13 +65,8 @@ void MicrophoneMuteNotificationController::
     return;
 
   mic_muted_by_mute_switch_ = muted;
-  // Show the notification with low priority when the mute state changes, so the
-  // notification gets shown silently. This prevents the notification from
-  // interfering with the mute state change toast that gets shown on mute state
-  // change.
-  MaybeShowNotification(
-      current_notification_priority_.value_or(message_center::LOW_PRIORITY),
-      /*recreate=*/false);
+
+  SetMicrosphoneNotificationVisible(input_stream_count_ && mic_mute_on_);
 }
 
 void MicrophoneMuteNotificationController::
@@ -67,13 +76,11 @@ void MicrophoneMuteNotificationController::
   const bool stream_count_decreased = input_stream_count < input_stream_count_;
   input_stream_count_ = input_stream_count;
 
-  if (!input_stream_count_) {
-    RemoveMicrophoneMuteNotification();
-    return;
+  if (!stream_count_decreased) {
+    SetMicrosphoneNotificationVisible(input_stream_count_ && mic_mute_on_);
+  } else if (!input_stream_count_) {
+    SetMicrosphoneNotificationVisible(false);
   }
-
-  MaybeShowNotification(message_center::DEFAULT_PRIORITY,
-                        /*recreate=*/!stream_count_decreased);
 }
 
 void MicrophoneMuteNotificationController::MaybeShowNotification(
@@ -102,6 +109,14 @@ void MicrophoneMuteNotificationController::MaybeShowNotification(
   RemoveMicrophoneMuteNotification();
 }
 
+// static
+void MicrophoneMuteNotificationController::SetAndLogMicrophoneMute(
+    const bool muted) {
+  CrasAudioHandler::Get()->SetInputMute(
+      muted, CrasAudioHandler::InputMuteChangeMethod::kOther);
+  privacy_hub_metrics::LogMicrophoneEnabledFromNotification(!muted);
+}
+
 std::unique_ptr<message_center::Notification>
 MicrophoneMuteNotificationController::GenerateMicrophoneMuteNotification(
     const absl::optional<std::u16string>& app_name,
@@ -109,7 +124,6 @@ MicrophoneMuteNotificationController::GenerateMicrophoneMuteNotification(
   message_center::RichNotificationData notification_data;
   notification_data.priority = priority;
   current_notification_priority_ = priority;
-  notification_data.pinned = true;
 
   scoped_refptr<message_center::NotificationDelegate> delegate;
   // Don't show a button to unmute device if the microphone was muted by a HW
@@ -124,15 +138,15 @@ MicrophoneMuteNotificationController::GenerateMicrophoneMuteNotification(
               // Click on the notification body is no-op.
               if (!button_index)
                 return;
-              CrasAudioHandler::Get()->SetInputMute(false);
-              privacy_hub_metrics::LogMicrophoneEnabledFromNotification(true);
+
+              SetAndLogMicrophoneMute(false);
             }));
   }
 
   std::unique_ptr<message_center::Notification> notification =
       CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
-          GetNotificationTitle(app_name), GetNotificationMessage(),
+          GetNotificationTitle(), GetNotificationMessage(app_name),
           /*display_source=*/std::u16string(), GURL(),
           message_center::NotifierId(
               message_center::NotifierType::SYSTEM_COMPONENT, kNotificationId,
@@ -142,23 +156,23 @@ MicrophoneMuteNotificationController::GenerateMicrophoneMuteNotification(
   return notification;
 }
 
-std::u16string MicrophoneMuteNotificationController::GetNotificationMessage()
-    const {
-  return mic_muted_by_mute_switch_
-             ? l10n_util::GetStringUTF16(
-                   IDS_MICROPHONE_MUTE_SWITCH_ON_NOTIFICATION_MESSAGE)
-             : l10n_util::GetStringUTF16(
-                   IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE);
+std::u16string MicrophoneMuteNotificationController::GetNotificationMessage(
+    const absl::optional<std::u16string>& app_name) const {
+  if (mic_muted_by_mute_switch_) {
+    return l10n_util::GetStringUTF16(
+        IDS_MICROPHONE_MUTE_SWITCH_ON_NOTIFICATION_MESSAGE);
+  }
+  if (app_name.value_or(u"").empty()) {
+    return l10n_util::GetStringUTF16(IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE);
+  }
+  return l10n_util::GetStringFUTF16(
+      IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE_WITH_APP_NAME,
+      app_name.value());
 }
 
-std::u16string MicrophoneMuteNotificationController::GetNotificationTitle(
-    const absl::optional<std::u16string>& app_name) const {
-  return !app_name.value_or(u"").empty()
-             ? l10n_util::GetStringFUTF16(
-                   IDS_MICROPHONE_MUTED_NOTIFICATION_TITLE_WITH_APP_NAME,
-                   app_name.value())
-             : l10n_util::GetStringUTF16(
-                   IDS_MICROPHONE_MUTED_NOTIFICATION_TITLE);
+std::u16string MicrophoneMuteNotificationController::GetNotificationTitle()
+    const {
+  return l10n_util::GetStringUTF16(IDS_MICROPHONE_MUTED_NOTIFICATION_TITLE);
 }
 
 void MicrophoneMuteNotificationController::RemoveMicrophoneMuteNotification() {

@@ -75,11 +75,15 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
 
   // Create a new ComputedStyle copy based on the initial style singleton.
   scoped_refptr<ComputedStyle> CreateComputedStyle() const;
+  ComputedStyleBuilder CreateComputedStyleBuilder() const;
 
   // Create a ComputedStyle for initial styles to be used as the basis for the
   // root element style. In addition to initial values things like zoom, font,
   // forced color mode etc. is set.
-  scoped_refptr<ComputedStyle> InitialStyleForElement() const;
+  ComputedStyleBuilder InitialStyleBuilderForElement() const;
+  scoped_refptr<ComputedStyle> InitialStyleForElement() const {
+    return InitialStyleBuilderForElement().TakeStyle();
+  }
   float InitialZoom() const;
 
   static CompositorKeyframeValue* CreateCompositorKeyframeValueSnapshot(
@@ -103,19 +107,32 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
       bool is_text_run,
       const FontDescription& default_font,
       const CSSPropertyValueSet* css_property_value_set);
+  // Returns `ComputedStyle` for rendering initial letter text.
+  // `initial_letter_box_style` should have non-normal `initial-letter`
+  // property.
+  scoped_refptr<const ComputedStyle> StyleForInitialLetterText(
+      const ComputedStyle& initial_letter_box_style,
+      const ComputedStyle& paragraph_style);
 
   // Propagate computed values from the root or body element to the viewport
   // when specified to do so.
   void PropagateStyleToViewport();
 
   // Create ComputedStyle for anonymous boxes.
-  scoped_refptr<ComputedStyle> CreateAnonymousStyleWithDisplay(
+  ComputedStyleBuilder CreateAnonymousStyleBuilderWithDisplay(
       const ComputedStyle& parent_style,
       EDisplay);
+  scoped_refptr<const ComputedStyle> CreateAnonymousStyleWithDisplay(
+      const ComputedStyle& parent_style,
+      EDisplay display) {
+    return CreateAnonymousStyleBuilderWithDisplay(parent_style, display)
+        .TakeStyle();
+  }
 
   // Create ComputedStyle for anonymous wrappers between text boxes and
   // display:contents elements.
-  scoped_refptr<ComputedStyle> CreateInheritedDisplayContentsStyleIfNeeded(
+  scoped_refptr<const ComputedStyle>
+  CreateInheritedDisplayContentsStyleIfNeeded(
       const ComputedStyle& parent_style,
       const ComputedStyle& layout_parent_style);
 
@@ -143,7 +160,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   RuleIndexList* PseudoCSSRulesForElement(
       Element*,
       PseudoId,
-      const AtomicString& document_transition_tag,
+      const AtomicString& view_transition_name,
       unsigned rules_to_include = kAllCSSRules);
   StyleRuleList* StyleRulesForElement(Element*, unsigned rules_to_include);
   HeapHashMap<CSSPropertyName, Member<const CSSValue>> CascadedValuesForElement(
@@ -229,7 +246,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   void CollectPseudoRulesForElement(const Element&,
                                     ElementRuleCollector&,
                                     PseudoId,
-                                    const AtomicString& document_transition_tag,
+                                    const AtomicString& view_transition_name,
                                     unsigned rules_to_include);
   void MatchRuleSets(ElementRuleCollector&, const MatchRequest&);
   void MatchUARules(const Element&, ElementRuleCollector&);

@@ -51,6 +51,7 @@
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/cookie_partition_key.mojom.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-shared.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -481,8 +482,7 @@ void PrefetchService::OnGotEligibilityResult(
     bool eligible,
     absl::optional<PrefetchStatus> status) {
   if (prefetch_container)
-    prefetch_container->GetPrefetchDocumentManager()
-        ->OnEligibilityCheckComplete(eligible);
+    prefetch_container->OnEligibilityCheckComplete(eligible);
 
   if (!eligible || !prefetch_container) {
     if (status && prefetch_container) {
@@ -567,7 +567,7 @@ base::WeakPtr<PrefetchContainer> PrefetchService::PopNextPrefetchContainer() {
     return nullptr;
   }
 
-  // Get the first prefetch that is from an active render frame host and in a
+  // Get the first prefetch that is from an active RenderFrameHost and in a
   // visible WebContents.
   auto prefetch_iter = base::ranges::find_if(
       prefetch_queue_,
@@ -889,6 +889,8 @@ void PrefetchService::OnPrefetchComplete(
       prefetch_container->GetLoader()->ResponseInfo()) {
     network::mojom::URLResponseHeadPtr head =
         prefetch_container->GetLoader()->ResponseInfo()->Clone();
+    head->navigation_delivery_type =
+        network::mojom::NavigationDeliveryType::kNavigationalPrefetch;
 
     // Verifies that the request was made using the prefetch proxy if required,
     // or made directly if the proxy was not required.
@@ -1093,17 +1095,63 @@ void PrefetchService::SetNetworkContextForProxyLookupForTesting(
 void PrefetchService::RecordExistingPrefetchWithMatchingURL(
     base::WeakPtr<PrefetchContainer> prefetch_container) const {
   bool matching_prefetch = false;
+  int num_matching_prefetches = 0;
+
+  int num_matching_eligible_prefetch = 0;
+  int num_matching_servable_prefetch = 0;
+  int num_matching_prefetch_same_referrer = 0;
+  int num_matching_prefetch_same_rfh = 0;
+
   for (const auto& prefetch_iter : all_prefetches_) {
     if (prefetch_iter.second &&
         prefetch_iter.second->GetURL() == prefetch_container->GetURL()) {
       matching_prefetch = true;
-      break;
+      num_matching_prefetches++;
+
+      if (prefetch_iter.second->IsEligible()) {
+        num_matching_eligible_prefetch++;
+      }
+
+      if (prefetch_iter.second->HasValidPrefetchedResponse(
+              PrefetchCacheableDuration()) &&
+          !prefetch_iter.second->HasPrefetchBeenConsideredToServe()) {
+        num_matching_servable_prefetch++;
+      }
+
+      if (prefetch_iter.second->GetReferrer().url ==
+          prefetch_container->GetReferrer().url) {
+        num_matching_prefetch_same_referrer++;
+      }
+
+      if (prefetch_iter.second->GetReferringRenderFrameHostId() ==
+          prefetch_container->GetReferringRenderFrameHostId()) {
+        num_matching_prefetch_same_rfh++;
+      }
     }
   }
 
   base::UmaHistogramBoolean(
       "PrefetchProxy.Prefetch.ExistingPrefetchWithMatchingURL",
       matching_prefetch);
+  base::UmaHistogramCounts100(
+      "PrefetchProxy.Prefetch.NumExistingPrefetchWithMatchingURL",
+      num_matching_prefetches);
+
+  if (matching_prefetch) {
+    base::UmaHistogramCounts100(
+        "PrefetchProxy.Prefetch.NumExistingEligiblePrefetchWithMatchingURL",
+        num_matching_eligible_prefetch);
+    base::UmaHistogramCounts100(
+        "PrefetchProxy.Prefetch.NumExistingServablePrefetchWithMatchingURL",
+        num_matching_servable_prefetch);
+    base::UmaHistogramCounts100(
+        "PrefetchProxy.Prefetch.NumExistingPrefetchWithMatchingURLAndReferrer",
+        num_matching_prefetch_same_referrer);
+    base::UmaHistogramCounts100(
+        "PrefetchProxy.Prefetch."
+        "NumExistingPrefetchWithMatchingURLAndRenderFrameHost",
+        num_matching_prefetch_same_rfh);
+  }
 }
 
 }  // namespace content

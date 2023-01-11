@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
@@ -393,6 +392,19 @@ class OpenscreenSessionHostTest : public mojom::ResourceProvider,
     Mock::VerifyAndClear(&remoting_source_);
   }
 
+  void SendRemotingNotSupported() {
+    // Remoting not being supported should NOT surface an error.
+    EXPECT_CALL(*this, OnError(_)).Times(0);
+
+    session_host_->OnError(
+        session_host_->session_.get(),
+        openscreen::Error(openscreen::Error::Code::kRemotingNotSupported,
+                          "this receiver does not support remoting"));
+
+    task_environment_.RunUntilIdle();
+    Mock::VerifyAndClear(this);
+  }
+
   void StartRemoting() {
     base::RunLoop run_loop;
     ASSERT_TRUE(remoter_.is_bound());
@@ -494,7 +506,9 @@ TEST_F(OpenscreenSessionHostTest, AudioAndVideoMirroring) {
   StopSession();
 }
 
-TEST_F(OpenscreenSessionHostTest, AnswerWithConstraints) {
+TEST_F(OpenscreenSessionHostTest, AnswerWithConstraintsLetterboxDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kCastDisableLetterboxing);
   SetAnswer(std::make_unique<openscreen::cast::Answer>(kAnswerWithConstraints));
   media::VideoCaptureParams::SuggestedConstraints expected_constraints = {
       .min_frame_size = gfx::Size(2, 2),
@@ -535,6 +549,13 @@ TEST_F(OpenscreenSessionHostTest, SwitchToAndFromRemoting) {
   StartRemoting();
   RemotingStarted();
   StopRemoting();
+  StopSession();
+}
+
+TEST_F(OpenscreenSessionHostTest, RemotingNotSupported) {
+  CreateSession(SessionType::AUDIO_AND_VIDEO);
+  StartSession();
+  SendRemotingNotSupported();
   StopSession();
 }
 

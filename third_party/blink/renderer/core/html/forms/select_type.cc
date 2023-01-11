@@ -325,22 +325,21 @@ void MenuListSelectType::ShowPopup(PopupMenu::ShowEventType type) {
 
   gfx::Rect local_root_rect = select_->VisibleBoundsInLocalRoot();
 
-  if (document.GetFrame()->LocalFrameRoot().IsOutermostMainFrame()) {
-    gfx::Rect visual_viewport_rect =
-        document.GetPage()->GetVisualViewport().RootFrameToViewport(
-            local_root_rect);
-    visual_viewport_rect.Intersect(
-        gfx::Rect(document.GetPage()->GetVisualViewport().Size()));
-    if (visual_viewport_rect.IsEmpty())
-      return;
-  } else {
+  if (!document.GetFrame()->LocalFrameRoot().IsOutermostMainFrame()) {
     // TODO(bokan): If we're in a remote frame, we cannot access the active
     // visual viewport. VisibleBoundsInLocalRoot will clip to the outermost
     // main frame but if the user is pinch-zoomed this won't be accurate.
-    // https://crbug.com/840944.
     if (local_root_rect.IsEmpty())
       return;
   }
+
+  gfx::Rect visual_viewport_rect =
+      document.GetPage()->GetVisualViewport().RootFrameToViewport(
+          local_root_rect);
+  visual_viewport_rect.Intersect(
+      gfx::Rect(document.GetPage()->GetVisualViewport().Size()));
+  if (visual_viewport_rect.IsEmpty())
+    return;
 
   if (!popup_) {
     popup_ = document.GetPage()->GetChromeClient().OpenPopupMenu(
@@ -510,16 +509,16 @@ String MenuListSelectType::UpdateTextStyleInternal() {
       ((option_style->Direction() != inner_style->Direction() ||
         option_style->GetUnicodeBidi() != inner_style->GetUnicodeBidi() ||
         option_style->GetTextAlign(true) != inner_style->GetTextAlign(true)))) {
-    scoped_refptr<ComputedStyle> cloned_style =
-        ComputedStyle::Clone(*inner_style);
-    cloned_style->SetDirection(option_style->Direction());
-    cloned_style->SetUnicodeBidi(option_style->GetUnicodeBidi());
-    cloned_style->SetTextAlign(option_style->GetTextAlign(true));
+    ComputedStyleBuilder builder(*inner_style);
+    builder.SetDirection(option_style->Direction());
+    builder.SetUnicodeBidi(option_style->GetUnicodeBidi());
+    builder.SetTextAlign(option_style->GetTextAlign(true));
+    scoped_refptr<const ComputedStyle> new_style = builder.TakeStyle();
     if (auto* inner_layout = inner_element.GetLayoutObject()) {
       inner_layout->SetModifiedStyleOutsideStyleRecalc(
-          std::move(cloned_style), LayoutObject::ApplyStyleChanges::kYes);
+          std::move(new_style), LayoutObject::ApplyStyleChanges::kYes);
     } else {
-      inner_element.SetComputedStyle(std::move(cloned_style));
+      inner_element.SetComputedStyle(std::move(new_style));
     }
   }
   if (select_->GetLayoutObject())

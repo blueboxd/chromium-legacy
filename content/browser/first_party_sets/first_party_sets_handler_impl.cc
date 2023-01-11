@@ -23,6 +23,7 @@
 #include "content/public/browser/first_party_sets_handler.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
+#include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/first_party_sets/first_party_sets_context_config.h"
 #include "net/first_party_sets/global_first_party_sets.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -100,6 +101,13 @@ FirstPartySetsHandler::ValidateEnterprisePolicy(
     return {parsed_or_error.error().first, parsed_or_error.error().second};
   }
   return {absl::nullopt, parsed_or_error.value().second};
+}
+
+// static
+FirstPartySetsHandlerImpl FirstPartySetsHandlerImpl::CreateForTesting(
+    bool enabled,
+    bool embedder_will_provide_public_sets) {
+  return FirstPartySetsHandlerImpl(enabled, embedder_will_provide_public_sets);
 }
 
 void FirstPartySetsHandlerImpl::GetContextConfigForPolicy(
@@ -201,31 +209,6 @@ void FirstPartySetsHandlerImpl::SetPublicFirstPartySets(
   // TODO(crbug.com/1219656): Use this value to compute sets diff.
   version_ = version;
   sets_loader_->SetComponentSets(std::move(sets_file));
-}
-
-void FirstPartySetsHandlerImpl::ResetForTesting() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  initialized_ = false;
-  enabled_ = GetContentClient()->browser()->IsFirstPartySetsEnabled();
-  embedder_will_provide_public_sets_ =
-      GetContentClient()->browser()->WillProvidePublicFirstPartySets();
-
-  // Initializes the `sets_loader_` member with a callback to SetCompleteSets
-  // and the result of content::GetFirstPartySetsOverrides.
-  sets_loader_ = std::make_unique<FirstPartySetsLoader>(
-      base::BindOnce(&FirstPartySetsHandlerImpl::SetCompleteSets,
-                     // base::Unretained(this) is safe here because
-                     // this is a static singleton.
-                     base::Unretained(this)));
-  on_sets_ready_callbacks_.clear();
-  global_sets_ = absl::nullopt;
-  db_helper_.Reset();
-}
-
-void FirstPartySetsHandlerImpl::SetGlobalSetsForTesting(
-    net::GlobalFirstPartySets global_sets) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  global_sets_ = std::move(global_sets);
 }
 
 void FirstPartySetsHandlerImpl::GetPersistedGlobalSetsForTesting(
@@ -439,6 +422,37 @@ void FirstPartySetsHandlerImpl::DidClearSiteDataOnChangedSetsForContext(
       .WithArgs(browser_context_id, version_, global_sets_->Clone(),
                 context_config.Clone());
   std::move(callback).Run(std::move(context_config), std::move(cache_filter));
+}
+
+void FirstPartySetsHandlerImpl::ComputeFirstPartySetMetadata(
+    const net::SchemefulSite& site,
+    const net::SchemefulSite* top_frame_site,
+    const std::set<net::SchemefulSite>& party_context,
+    const net::FirstPartySetsContextConfig& config,
+    base::OnceCallback<void(net::FirstPartySetMetadata)> callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!global_sets_.has_value()) {
+    on_sets_ready_callbacks_.push_back(base::BindOnce(
+        &FirstPartySetsHandlerImpl::ComputeFirstPartySetMetadataInternal,
+        base::Unretained(this), site, base::OptionalFromPtr(top_frame_site),
+        party_context, config.Clone(), std::move(callback)));
+    return;
+  }
+
+  std::move(callback).Run(global_sets_->ComputeMetadata(site, top_frame_site,
+                                                        party_context, config));
+}
+
+void FirstPartySetsHandlerImpl::ComputeFirstPartySetMetadataInternal(
+    const net::SchemefulSite& site,
+    const absl::optional<net::SchemefulSite>& top_frame_site,
+    const std::set<net::SchemefulSite>& party_context,
+    const net::FirstPartySetsContextConfig& config,
+    base::OnceCallback<void(net::FirstPartySetMetadata)> callback) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(global_sets_.has_value());
+  std::move(callback).Run(global_sets_->ComputeMetadata(
+      site, base::OptionalToPtr(top_frame_site), party_context, config));
 }
 
 net::FirstPartySetsContextConfig

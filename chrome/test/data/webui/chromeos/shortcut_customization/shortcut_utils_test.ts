@@ -5,8 +5,9 @@
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {isCustomizationDisabled} from 'chrome://shortcut-customization/js/shortcut_utils.js';
-import {assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {Accelerator, Modifier, MojoAccelerator} from 'chrome://shortcut-customization/js/shortcut_types.js';
+import {areAcceleratorsEqual, getAcceleratorId, isCustomizationDisabled} from 'chrome://shortcut-customization/js/shortcut_utils.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 suite('shortcutUtilsTest', function() {
   test('CustomizationDisabled', async () => {
@@ -17,5 +18,57 @@ suite('shortcutUtilsTest', function() {
   test('CustomizationEnabled', async () => {
     loadTimeData.overrideValues({isCustomizationEnabled: true});
     assertFalse(isCustomizationDisabled());
+  });
+
+  test('AreAcceleratorsEqual', async () => {
+    const accelShiftC: Accelerator = {
+      modifiers: Modifier.SHIFT,
+      keyCode: 67,  // c
+    };
+    const accelShiftCCopy: Accelerator = {
+      ...accelShiftC,
+    };
+    const accelAltC: Accelerator = {
+      modifiers: Modifier.ALT,
+      keyCode: 67,  // c
+    };
+    const accelShiftD: Accelerator = {
+      modifiers: Modifier.SHIFT,
+      keyCode: 68,  // d
+    };
+
+    // Compare the same accelerator.
+    assertTrue(areAcceleratorsEqual(accelShiftC, accelShiftC));
+
+    // Compare accelerators with the same properties.
+    assertTrue(areAcceleratorsEqual(accelShiftC, accelShiftCCopy));
+
+    // Compare accelerators with different modifiers.
+    assertFalse(areAcceleratorsEqual(accelShiftC, accelAltC));
+
+    // Compare accelerators with different key and keyDisplay.
+    assertFalse(areAcceleratorsEqual(accelShiftC, accelShiftD));
+  });
+
+  test('AreAcceleratorsEqualMojo', async () => {
+    const accelShiftC: Accelerator = {
+      modifiers: Modifier.SHIFT,
+      keyCode: 67,  // c
+    };
+    const accelShiftCMojo: MojoAccelerator = {
+      modifiers: Modifier.SHIFT,
+      keyCode: 67,  // c
+      keyState: 0,
+      timeStamp: {internalValue: BigInt(0)},
+    };
+
+    // Accelerators and MojoAccelerators are comparable,
+    // and shouldn't throw an error.
+    assertTrue(areAcceleratorsEqual(accelShiftC, accelShiftCMojo));
+  });
+
+  test('GetAcceleratorId', async () => {
+    assertEquals(`${0}-${80}`, getAcceleratorId(0, 80));
+    assertEquals(`${0}-${80}`, getAcceleratorId('0', '80'));
   });
 });

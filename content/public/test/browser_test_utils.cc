@@ -113,6 +113,7 @@
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
+#include "storage/browser/blob/blob_url_registry.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -471,6 +472,7 @@ class TestNavigationManagerThrottle : public NavigationThrottle {
   base::OnceClosure on_will_process_response_closure_;
 };
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 bool HasGzipHeader(const base::RefCountedMemory& maybe_gzipped) {
   net::GZipHeader header;
   net::GZipHeader::Status header_status = net::GZipHeader::INCOMPLETE_HEADER;
@@ -504,6 +506,7 @@ void AppendGzippedResource(const base::RefCountedMemory& encoded,
     to_append->append(dest_buffer->data(), rv);
   }
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Queries for video input devices on the current system using the getSources
 // API.
@@ -631,6 +634,25 @@ ProxyHostObserver* GetProxyHostObserver() {
 }
 
 }  // namespace
+
+bool WaiterHelper::WaitInternal() {
+  if (event_received_) {
+    return true;
+  }
+  run_loop_.Run();
+  return event_received_;
+}
+
+bool WaiterHelper::Wait() {
+  bool result = WaitInternal();
+  event_received_ = false;
+  return result;
+}
+
+void WaiterHelper::OnEvent() {
+  event_received_ = true;
+  run_loop_.Quit();
+}
 
 bool NavigateToURL(WebContents* web_contents, const GURL& url) {
   return NavigateToURL(web_contents, url, url);
@@ -2014,12 +2036,13 @@ std::vector<RenderFrameHost*> CollectAllRenderFrameHosts(
   return visited_frames;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 bool ExecuteWebUIResourceTest(WebContents* web_contents) {
   // Inject WebUI test runner script.
   std::string script;
   scoped_refptr<base::RefCountedMemory> bytes =
       ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-          IDR_WEBUI_JS_WEBUI_RESOURCE_TEST_JS);
+          IDR_ASH_COMMON_WEBUI_RESOURCE_TEST_JS);
 
   if (HasGzipHeader(*bytes))
     AppendGzippedResource(*bytes, &script);
@@ -2053,6 +2076,7 @@ bool ExecuteWebUIResourceTest(WebContents* web_contents) {
 
   return message.compare("\"SUCCESS\"") == 0;
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 std::string GetCookies(BrowserContext* browser_context,
                        const GURL& url,
@@ -3604,8 +3628,8 @@ WebContentsConsoleObserver::WebContentsConsoleObserver(
     : WebContentsObserver(web_contents) {}
 WebContentsConsoleObserver::~WebContentsConsoleObserver() = default;
 
-void WebContentsConsoleObserver::Wait() {
-  run_loop_.Run();
+bool WebContentsConsoleObserver::Wait() {
+  return waiter_helper_.Wait();
 }
 
 void WebContentsConsoleObserver::SetFilter(Filter filter) {
@@ -3644,7 +3668,7 @@ void WebContentsConsoleObserver::OnDidAddMessageToConsole(
   }
 
   messages_.push_back(std::move(message));
-  run_loop_.Quit();
+  waiter_helper_.OnEvent();
 }
 
 namespace {
@@ -3867,12 +3891,27 @@ void UpdateUserActivationStateInterceptor::UpdateUserActivationState(
 }
 
 // static
-void BlobURLStoreInterceptor::Intercept(
+void BlobURLStoreInterceptor::InterceptDeprecated(
     GURL target_url,
     mojo::SelfOwnedAssociatedReceiverRef<blink::mojom::BlobURLStore> receiver) {
+  DCHECK(
+      !base::FeatureList::IsEnabled(net::features::kSupportPartitionedBlobUrl));
   auto interceptor = base::WrapUnique(new BlobURLStoreInterceptor(target_url));
   auto* raw_interceptor = interceptor.get();
   auto impl = receiver->SwapImplForTesting(std::move(interceptor));
+  raw_interceptor->url_store_ = std::move(impl);
+}
+
+// static
+void BlobURLStoreInterceptor::Intercept(GURL target_url,
+                                        storage::BlobUrlRegistry* registry,
+                                        mojo::ReceiverId receiver_id) {
+  DCHECK(
+      base::FeatureList::IsEnabled(net::features::kSupportPartitionedBlobUrl));
+  auto interceptor = base::WrapUnique(new BlobURLStoreInterceptor(target_url));
+  auto* raw_interceptor = interceptor.get();
+  auto impl = registry->receivers_for_testing().SwapImplForTesting(
+      receiver_id, std::move(interceptor));
   raw_interceptor->url_store_ = std::move(impl);
 }
 
@@ -4047,17 +4086,10 @@ viz::LocalSurfaceId SynchronizeVisualPropertiesInterceptor::WaitForSurfaceId() {
 
 void SynchronizeVisualPropertiesInterceptor::SynchronizeVisualProperties(
     const blink::FrameVisualProperties& visual_properties) {
-  // Monitor |is_pinch_gesture_active| to determine when pinch gestures begin
-  // and end.
-  if (visual_properties.is_pinch_gesture_active &&
-      !last_pinch_gesture_active_) {
-    pinch_gesture_active_set_ = true;
-  }
+  // Monitor |is_pinch_gesture_active| to determine when pinch gesture ends.
   if (!visual_properties.is_pinch_gesture_active &&
       last_pinch_gesture_active_) {
-    pinch_gesture_active_cleared_ = true;
-    if (pinch_end_run_loop_)
-      pinch_end_run_loop_->Quit();
+    pinch_end_run_loop_.Quit();
   }
   last_pinch_gesture_active_ = visual_properties.is_pinch_gesture_active;
 
@@ -4119,11 +4151,7 @@ void SynchronizeVisualPropertiesInterceptor::OnUpdatedSurfaceIdOnUI(
 }
 
 void SynchronizeVisualPropertiesInterceptor::WaitForPinchGestureEnd() {
-  if (pinch_gesture_active_cleared_)
-    return;
-  DCHECK(!pinch_end_run_loop_);
-  pinch_end_run_loop_ = std::make_unique<base::RunLoop>();
-  pinch_end_run_loop_->Run();
+  pinch_end_run_loop_.Run();
 }
 
 RenderWidgetHostMouseEventMonitor::RenderWidgetHostMouseEventMonitor(
@@ -4300,49 +4328,58 @@ bool HistoryGoForward(WebContents* wc) {
   return WaitForLoadStop(wc);
 }
 
-CreateAndLoadWebContentsObserver::CreateAndLoadWebContentsObserver()
+CreateAndLoadWebContentsObserver::CreateAndLoadWebContentsObserver(
+    int num_expected_contents)
     : creation_subscription_(
           RegisterWebContentsCreationCallback(base::BindRepeating(
               &CreateAndLoadWebContentsObserver::OnWebContentsCreated,
-              base::Unretained(this)))) {}
+              base::Unretained(this)))),
+      num_expected_contents_(num_expected_contents) {
+  EXPECT_GE(num_expected_contents, 1);
+}
 
 CreateAndLoadWebContentsObserver::~CreateAndLoadWebContentsObserver() = default;
 
 void CreateAndLoadWebContentsObserver::OnWebContentsCreated(
     WebContents* web_contents) {
+  ++num_new_contents_seen_;
+  if (num_new_contents_seen_ < num_expected_contents_) {
+    return;
+  }
+
   // If there is already a WebContents, then this will fail the test later.
-  if (web_contents_) {
-    failed_ = true;
-    // If we're called before Wait(), then `quit_closure_` has not been set.  If
-    // we're called after, then we'll clear this the first time through and it
-    // won't be set again.
-    DCHECK(!quit_closure_);
+  if (num_new_contents_seen_ > num_expected_contents_) {
+    ADD_FAILURE() << "Unexpected WebContents creation";
+    // If we're called before Wait(), then `contents_creation_quit_closure_`
+    // has not been set. If we're called after, then we'll clear this when
+    // we see the creation of the expected contents and it won't be set again.
+    EXPECT_FALSE(contents_creation_quit_closure_);
     return;
   }
 
   web_contents_ = web_contents;
   load_stop_observer_.emplace(web_contents_);
 
-  if (quit_closure_)
-    std::move(quit_closure_).Run();
+  if (contents_creation_quit_closure_)
+    std::move(contents_creation_quit_closure_).Run();
 }
 
 WebContents* CreateAndLoadWebContentsObserver::Wait() {
   // Wait for a new WebContents if we haven't gotten one yet.
   if (!load_stop_observer_) {
     base::RunLoop run_loop;
-    quit_closure_ = run_loop.QuitClosure();
+    contents_creation_quit_closure_ = run_loop.QuitClosure();
     run_loop.Run();
   }
 
   load_stop_observer_->Wait();
 
-  // Do this after waiting for load to complete, since exactly one WebContents
-  // should be created before Wait() returns.  If a second one is created while
-  // the first is loading, then it's still broken.
+  // Do this after waiting for load to complete, since only the specified number
+  // of WebContents should be created before Wait() returns. If an additional
+  // one is created while the expected contents is loading, then we still fail
+  // the test.
+  EXPECT_EQ(num_expected_contents_, num_new_contents_seen_);
   creation_subscription_ = base::CallbackListSubscription();
-
-  EXPECT_FALSE(failed_);
 
   return web_contents_;
 }

@@ -71,13 +71,13 @@ NSString* const kUnreadTitle2 = @"I am another unread entry";
 NSString* const kUnreadURL2 = @"http://unreadfoobar2.com";
 const size_t kNumberReadEntries = 2;
 const size_t kNumberUnreadEntries = 2;
-const CFTimeInterval kSnackbarAppearanceTimeout = 5;
+constexpr base::TimeDelta kSnackbarAppearanceTimeout = base::Seconds(5);
 // kSnackbarDisappearanceTimeout = MDCSnackbarMessageDurationMax + 1
-const CFTimeInterval kSnackbarDisappearanceTimeout = 10 + 1;
-const CFTimeInterval kDelayForSlowWebServer = 4;
-const CFTimeInterval kLongPressDuration = 1.0;
-const CFTimeInterval kDistillationTimeout = 5;
-const CFTimeInterval kServerOperationDelay = 1;
+constexpr base::TimeDelta kSnackbarDisappearanceTimeout = base::Seconds(10 + 1);
+constexpr base::TimeDelta kDelayForSlowWebServer = base::Seconds(4);
+constexpr base::TimeDelta kLongPressDuration = base::Seconds(1);
+constexpr base::TimeDelta kDistillationTimeout = base::Seconds(5);
+constexpr base::TimeDelta kServerOperationDelay = base::Seconds(1);
 NSString* const kReadHeader = @"Read";
 NSString* const kUnreadHeader = @"Unread";
 
@@ -371,15 +371,15 @@ void WaitForDistillation() {
 // If `distillable`, result is can be distilled for offline display.
 std::unique_ptr<net::test_server::HttpResponse> HandleQueryOrCloseSocket(
     const bool& responds_with_content,
-    const int& delay,
+    const base::TimeDelta& delay,
     bool distillable,
     const net::test_server::HttpRequest& request) {
   if (!responds_with_content) {
     return std::make_unique<net::test_server::RawHttpResponse>(
         /*headers=*/"", /*contents=*/"");
   }
-  auto response = std::make_unique<net::test_server::DelayedHttpResponse>(
-      base::Seconds(delay));
+  auto response =
+      std::make_unique<net::test_server::DelayedHttpResponse>(delay);
 
   if (base::StartsWith(request.relative_url, kDistillableURL)) {
     response->set_content_type("text/html");
@@ -496,7 +496,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 @property(nonatomic, assign) bool serverServedRedImage;
 
 // The delay after which self.testServer will send a response.
-@property(nonatomic, assign) NSTimeInterval serverResponseDelay;
+@property(nonatomic, assign) base::TimeDelta serverResponseDelay;
 @end
 
 @implementation ReadingListTestCase
@@ -686,7 +686,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   GREYAssertFalse(self.serverServedRedImage,
                   @"Offline page accessed online resource.");
 
-  auto checkImage = [ChromeEarlGrey evaluateJavaScript:kCheckImagesJS];
+  base::Value checkImage = [ChromeEarlGrey evaluateJavaScript:kCheckImagesJS];
 
   GREYAssertTrue(checkImage.is_bool(), @"CheckImage is not a boolean.");
   GREYAssert(checkImage.GetBool(), @"Incorrect image loading.");
@@ -722,8 +722,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   AssertIsShowingDistillablePage(true, distillableURL);
   // Stop server to reload offline.
   self.serverRespondsWithContent = NO;
-  base::test::ios::SpinRunLoopWithMinDelay(
-      base::Seconds(kServerOperationDelay));
+  base::test::ios::SpinRunLoopWithMinDelay(kServerOperationDelay);
 
   [ChromeEarlGreyAppInterface startReloading];
   AssertIsShowingDistillablePage(false, distillableURL);
@@ -753,8 +752,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 
   // Stop server to generate error.
   self.serverRespondsWithContent = NO;
-  base::test::ios::SpinRunLoopWithMinDelay(
-      base::Seconds(kServerOperationDelay));
+  base::test::ios::SpinRunLoopWithMinDelay(kServerOperationDelay);
   // Long press the entry, and open it offline.
   TapEntry(kDistillableTitle);
   AssertIsShowingDistillablePage(false, distillableURL);
@@ -769,8 +767,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 
   // Start server to reload online error.
   self.serverRespondsWithContent = YES;
-  base::test::ios::SpinRunLoopWithMinDelay(
-      base::Seconds(kServerOperationDelay));
+  base::test::ios::SpinRunLoopWithMinDelay(kServerOperationDelay);
 
   [ChromeEarlGreyAppInterface startReloading];
   AssertIsShowingDistillablePage(true, distillableURL);
@@ -779,12 +776,8 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry with delayed web server.
-- (void)testSavingToReadingListAndLoadBadNetwork {
-  // TODO(crbug.com/1350732): Re-enable when flake fixed.
-  if (@available(iOS 16, *)) {
-    EARL_GREY_TEST_DISABLED(@"Test consistently failing on iOS16 iPhone 8.");
-  }
-
+// crbug.com/1382372: Reenable this test.
+- (void)DISABLED_testSavingToReadingListAndLoadBadNetwork {
   [ReadingListAppInterface forceConnectionToWifi];
   GURL distillableURL = self.testServer->GetURL(kDistillableURL);
   // Open http://potato
@@ -864,11 +857,6 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // Tests that the "Cancel", "Edit" and "Mark Unread" buttons are not visible
 // after delete (using swipe).
 - (void)testVisibleButtonsAfterSwipeDeletion {
-  // TODO(crbug.com/1046978): Test fails on iOS 13.3 iPad
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 13.3 iPad and later.");
-  }
-
   AddEntriesAndOpenReadingList();
 
   [[[EarlGrey
@@ -881,11 +869,30 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
       onElementWithMatcher:grey_accessibilityID(kReadingListViewID)]
       performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
 
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_text(@"Delete"),
-                                          grey_ancestor(grey_kindOfClassName(
-                                              @"UISwipeActionPullView")),
-                                          nil)] performAction:grey_tap()];
+  id<GREYMatcher> deleteButtonMatcher =
+      grey_allOf(grey_accessibilityLabel(@"Delete"),
+                 grey_kindOfClassName(@"UISwipeActionStandardButton"), nil);
+  // Depending on the device, the swipe may have deleted the element or just
+  // displayed the "Delete" button. Check if the delete button is still on
+  // screen and tap it if it is the case.
+  GREYCondition* waitForDeleteToDisappear = [GREYCondition
+      conditionWithName:@"Element is already deleted"
+                  block:^{
+                    NSError* error = nil;
+                    [[EarlGrey selectElementWithMatcher:deleteButtonMatcher]
+                        assertWithMatcher:grey_nil()
+                                    error:&error];
+                    return error == nil;
+                  }];
+
+  bool matchedElement = [waitForDeleteToDisappear
+      waitWithTimeout:base::test::ios::kWaitForUIElementTimeout.InSecondsF()];
+
+  if (!matchedElement) {
+    // Delete button is still on screen, tap it
+    [[EarlGrey selectElementWithMatcher:deleteButtonMatcher]
+        performAction:grey_tap()];
+  }
 
   AssertToolbarButtonNotVisibleWithID(kReadingListToolbarMarkButtonID);
   AssertToolbarButtonNotVisibleWithID(kReadingListToolbarCancelButtonID);
@@ -1206,11 +1213,6 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 
 // Tests the Mark as Read/Unread context menu action for a reading list entry.
 - (void)testContextMenuMarkAsReadAndBack {
-  // TODO(crbug.com/1350732): Re-enable when flake fixed.
-  if (@available(iOS 16, *)) {
-    EARL_GREY_TEST_DISABLED(@"Test consistently failing on iOS16 iPhone 8.");
-  }
-
   AddEntriesAndOpenReadingList();
 
   AssertAllEntriesVisible();
@@ -1268,7 +1270,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 #pragma mark - Multiwindow
 
 // Tests the Open in New Window context menu action for a reading list entry.
-// The test is flaky. https://crbug.com/1274099
+// TODO(crbug.com/1274099): Test is flaky
 - (void)DISABLED_testContextMenuOpenInNewWindow {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");

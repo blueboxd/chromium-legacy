@@ -18,8 +18,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
@@ -85,7 +86,7 @@ class OsIntegrationManager::OsHooksBarrier
 
   ~OsHooksBarrier() {
     DCHECK(callback_);
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback_), std::move(errors_)));
   }
 
@@ -143,6 +144,7 @@ void OsIntegrationManager::Start() {
   DCHECK(file_handler_manager_);
 
   registrar_observation_.Observe(registrar_.get());
+  shortcut_manager_->Start();
   file_handler_manager_->Start();
   if (protocol_handler_manager_)
     protocol_handler_manager_->Start();
@@ -188,7 +190,7 @@ void OsIntegrationManager::InstallOsHooks(
     InstallOsHooksOptions options) {
   if (g_suppress_os_hooks_for_testing_) {
     OsHooksErrors os_hooks_errors;
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), os_hooks_errors));
     return;
   }
@@ -222,7 +224,7 @@ void OsIntegrationManager::InstallOsHooks(
     CreateShortcuts(app_id, options.add_to_desktop, options.reason,
                     std::move(shortcuts_callback));
   } else {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(shortcuts_callback),
                                   /*shortcuts_created=*/false));
   }
@@ -241,7 +243,7 @@ void OsIntegrationManager::UninstallOsHooks(const AppId& app_id,
                                             UninstallOsHooksCallback callback) {
   if (g_suppress_os_hooks_for_testing_) {
     OsHooksErrors os_hooks_errors;
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), os_hooks_errors));
     return;
   }
@@ -258,23 +260,20 @@ void OsIntegrationManager::UninstallOsHooks(const AppId& app_id,
       barrier->OnError(OsHookType::kShortcutsMenu);
   }
 
-  if (os_hooks[OsHookType::kShortcuts] || os_hooks[OsHookType::kRunOnOsLogin]) {
+  if (os_hooks[OsHookType::kRunOnOsLogin] &&
+      base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin)) {
+    UnregisterRunOnOsLogin(app_id, barrier->CreateBarrierCallbackForType(
+                                       OsHookType::kRunOnOsLogin));
+  }
+
+  if (os_hooks[OsHookType::kShortcuts]) {
     std::unique_ptr<ShortcutInfo> shortcut_info = BuildShortcutInfo(app_id);
     base::FilePath shortcut_data_dir =
         internals::GetShortcutDataDir(*shortcut_info);
 
-    if (os_hooks[OsHookType::kRunOnOsLogin] &&
-        base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin)) {
-      UnregisterRunOnOsLogin(
-          app_id, shortcut_info->profile_path, shortcut_info->title,
-          barrier->CreateBarrierCallbackForType(OsHookType::kRunOnOsLogin));
-    }
-
-    if (os_hooks[OsHookType::kShortcuts]) {
-      DeleteShortcuts(
-          app_id, shortcut_data_dir, std::move(shortcut_info),
-          barrier->CreateBarrierCallbackForType(OsHookType::kShortcuts));
-    }
+    DeleteShortcuts(
+        app_id, shortcut_data_dir, std::move(shortcut_info),
+        barrier->CreateBarrierCallbackForType(OsHookType::kShortcuts));
   }
   // unregistration and record errors during unregistration.
   if (os_hooks[OsHookType::kFileHandlers]) {
@@ -304,7 +303,7 @@ void OsIntegrationManager::UpdateOsHooks(
     UpdateOsHooksCallback callback) {
   if (g_suppress_os_hooks_for_testing_) {
     OsHooksErrors os_hooks_errors;
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), os_hooks_errors));
     return;
   }
@@ -395,6 +394,11 @@ OsIntegrationManager::GetDisallowedHandlersForProtocol(
     return std::vector<custom_handlers::ProtocolHandler>();
 
   return protocol_handler_manager_->GetDisallowedHandlersForProtocol(protocol);
+}
+
+WebAppShortcutManager& OsIntegrationManager::shortcut_manager_for_testing() {
+  DCHECK(shortcut_manager_);
+  return *shortcut_manager_;
 }
 
 UrlHandlerManager& OsIntegrationManager::url_handler_manager_for_testing() {
@@ -560,13 +564,12 @@ bool OsIntegrationManager::UnregisterShortcutsMenu(const AppId& app_id,
                                        std::move(metrics_callback));
 }
 
-void OsIntegrationManager::UnregisterRunOnOsLogin(
-    const AppId& app_id,
-    const base::FilePath& profile_path,
-    const std::u16string& shortcut_title,
-    ResultCallback callback) {
-  ScheduleUnregisterRunOnOsLogin(sync_bridge_, app_id, profile_path,
-                                 shortcut_title, std::move(callback));
+void OsIntegrationManager::UnregisterRunOnOsLogin(const AppId& app_id,
+                                                  ResultCallback callback) {
+  ScheduleUnregisterRunOnOsLogin(
+      sync_bridge_, app_id, profile_->GetPath(),
+      base::UTF8ToUTF16(registrar_->GetAppShortName(app_id)),
+      std::move(callback));
 }
 
 void OsIntegrationManager::DeleteShortcuts(

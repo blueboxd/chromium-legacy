@@ -969,7 +969,7 @@ void UpdateTypeAndSkip(T* op) {
 template <typename T>
 class PaintOpDeserializer {
  public:
-  static_assert(std::is_convertible<T, PaintOp>::value, "T not a PaintOp.");
+  static_assert(std::is_base_of<PaintOp, T>::value, "T not a PaintOp.");
 
   explicit PaintOpDeserializer(const volatile void* input,
                                size_t input_size,
@@ -2771,6 +2771,8 @@ AnnotateOp::AnnotateOp(PaintCanvas::AnnotationType annotation_type,
       data(std::move(data)) {}
 
 AnnotateOp::~AnnotateOp() = default;
+AnnotateOp::AnnotateOp(const AnnotateOp&) = default;
+AnnotateOp& AnnotateOp::operator=(const AnnotateOp&) = default;
 
 DrawImageOp::DrawImageOp() : PaintOpWithFlags(kType) {}
 
@@ -2832,6 +2834,8 @@ DrawRecordOp::DrawRecordOp(sk_sp<const PaintRecord> record)
     : PaintOp(kType), record(std::move(record)) {}
 
 DrawRecordOp::~DrawRecordOp() = default;
+DrawRecordOp::DrawRecordOp(const DrawRecordOp&) = default;
+DrawRecordOp& DrawRecordOp::operator=(const DrawRecordOp&) = default;
 
 size_t DrawRecordOp::AdditionalBytesUsed() const {
   return record->bytes_used();
@@ -2858,6 +2862,8 @@ DrawSkottieOp::DrawSkottieOp(scoped_refptr<SkottieWrapper> skottie,
 DrawSkottieOp::DrawSkottieOp() : PaintOp(kType) {}
 
 DrawSkottieOp::~DrawSkottieOp() = default;
+DrawSkottieOp::DrawSkottieOp(const DrawSkottieOp&) = default;
+DrawSkottieOp& DrawSkottieOp::operator=(const DrawSkottieOp&) = default;
 
 bool DrawSkottieOp::HasDiscardableImages() const {
   return !images.empty();
@@ -2887,6 +2893,8 @@ DrawTextBlobOp::DrawTextBlobOp(sk_sp<SkTextBlob> blob,
       node_id(node_id) {}
 
 DrawTextBlobOp::~DrawTextBlobOp() = default;
+DrawTextBlobOp::DrawTextBlobOp(const DrawTextBlobOp&) = default;
+DrawTextBlobOp& DrawTextBlobOp::operator=(const DrawTextBlobOp&) = default;
 
 PaintOpBuffer::CompositeIterator::CompositeIterator(
     const PaintOpBuffer* buffer,
@@ -3090,6 +3098,24 @@ const PaintOp* PaintOpBuffer::PlaybackFoldingIterator::NextUnfoldedOp() {
   return &op;
 }
 
+sk_sp<PaintRecord> PaintOpBuffer::MoveRetainingBufferIfPossible() {
+  if (!data_ || used_ == reserved_)
+    return sk_make_sp<PaintOpBuffer>(std::move(*this));
+
+  const size_t old_reserved = reserved_;
+  BufferDataPtr old;
+  if (!used_) {
+    old = std::move(data_);
+    reserved_ = 0;
+  } else {
+    old = ReallocBuffer(used_);
+  }
+  sk_sp<PaintRecord> copy = sk_make_sp<PaintOpBuffer>(std::move(*this));
+  data_ = std::move(old);
+  reserved_ = old_reserved;
+  return copy;
+}
+
 void PaintOpBuffer::Playback(SkCanvas* canvas,
                              const PlaybackParams& params,
                              const std::vector<size_t>* offsets) const {
@@ -3243,14 +3269,16 @@ SkRect PaintOpBuffer::GetFixedScaleBounds(const SkMatrix& ctm,
       SkScalarCeilToInt(SkScalarAbs(scale.height() * bounds.height())));
 }
 
-void PaintOpBuffer::ReallocBuffer(size_t new_size) {
+PaintOpBuffer::BufferDataPtr PaintOpBuffer::ReallocBuffer(size_t new_size) {
   DCHECK_GE(new_size, used_);
   std::unique_ptr<char, base::AlignedFreeDeleter> new_data(
       static_cast<char*>(base::AlignedAlloc(new_size, PaintOpAlign)));
   if (data_)
     memcpy(new_data.get(), data_.get(), used_);
+  BufferDataPtr old_data = std::move(data_);
   data_ = std::move(new_data);
   reserved_ = new_size;
+  return old_data;
 }
 
 void* PaintOpBuffer::AllocatePaintOp(size_t skip) {

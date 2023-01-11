@@ -49,7 +49,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     child_break_tokens_.clear();
   }
 
-  using ChildrenVector = HeapVector<NGLogicalLink, 4>;
+  using ChildrenVector = NGLogicalLinkVector;
   using MulticolCollection =
       HeapHashMap<Member<LayoutBox>,
                   Member<NGMulticolWithPendingOOFs<LogicalOffset>>>;
@@ -105,6 +105,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
                     const LogicalOffset offset);
 
   const ChildrenVector& Children() const { return children_; }
+
+  // True if |this| has |NGFragmentItemsBuilder|; i.e., if |this| is an inline
+  // formatting context.
+  virtual bool HasItems() const { return false; }
 
   // Builder has non-trivial OOF-positioned methods.
   // They are intended to be used by a layout algorithm like this:

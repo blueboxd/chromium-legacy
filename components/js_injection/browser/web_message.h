@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_JS_INJECTION_BROWSER_WEB_MESSAGE_H_
 #define COMPONENTS_JS_INJECTION_BROWSER_WEB_MESSAGE_H_
 
-#include <string>
 #include <vector>
 
+#include "components/js_injection/common/interfaces.mojom.h"
 #include "third_party/blink/public/common/messaging/message_port_descriptor.h"
 
 namespace js_injection {
@@ -17,7 +17,7 @@ struct WebMessage {
   WebMessage();
   ~WebMessage();
 
-  std::u16string message;
+  mojom::JsWebMessagePtr message;
   std::vector<blink::MessagePortDescriptor> ports;
 };
 

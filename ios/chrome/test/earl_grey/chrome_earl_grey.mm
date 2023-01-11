@@ -94,6 +94,10 @@ UIWindow* GetAnyKeyWindow() {
 }
 }  // namespace chrome_test_util
 
+id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
+  return grey_longPressWithDuration(duration.InSecondsF());
+}
+
 @interface ChromeEarlGreyImpl ()
 
 // Waits for session restoration to finish within a timeout, or a GREYAssert is
@@ -269,14 +273,6 @@ UIWindow* GetAnyKeyWindow() {
       [ChromeEarlGreyAppInterface simulateTabsBackgrounding]);
 }
 
-- (void)saveSessionImmediately {
-  [ChromeEarlGreyAppInterface saveSessionImmediately];
-
-  // Saving is always performed on a separate thread, so spin the run loop a
-  // bit to ensure save.
-  base::test::ios::SpinRunLoopWithMaxDelay(base::Seconds(1));
-}
-
 - (void)setCurrentTabsToBeColdStartTabs {
   EG_TEST_HELPER_ASSERT_NO_ERROR(
       [ChromeEarlGreyAppInterface setCurrentTabsToBeColdStartTabs]);
@@ -411,12 +407,11 @@ UIWindow* GetAnyKeyWindow() {
 
 - (void)waitForUIElementToAppearWithMatcher:(id<GREYMatcher>)matcher {
   [self waitForUIElementToAppearWithMatcher:matcher
-                                    timeout:kWaitForUIElementTimeout
-                                                .InSecondsF()];
+                                    timeout:kWaitForUIElementTimeout];
 }
 
 - (void)waitForUIElementToAppearWithMatcher:(id<GREYMatcher>)matcher
-                                    timeout:(NSTimeInterval)timeout {
+                                    timeout:(base::TimeDelta)timeout {
   NSString* errorDescription = [NSString
       stringWithFormat:@"Failed waiting for element with matcher %@ to appear",
                        matcher];
@@ -434,12 +429,11 @@ UIWindow* GetAnyKeyWindow() {
 
 - (void)waitForUIElementToDisappearWithMatcher:(id<GREYMatcher>)matcher {
   [self waitForUIElementToDisappearWithMatcher:matcher
-                                       timeout:kWaitForUIElementTimeout
-                                                   .InSecondsF()];
+                                       timeout:kWaitForUIElementTimeout];
 }
 
 - (void)waitForUIElementToDisappearWithMatcher:(id<GREYMatcher>)matcher
-                                       timeout:(NSTimeInterval)timeout {
+                                       timeout:(base::TimeDelta)timeout {
   NSString* errorDescription = [NSString
       stringWithFormat:
           @"Failed waiting for element with matcher %@ to disappear", matcher];
@@ -502,7 +496,7 @@ UIWindow* GetAnyKeyWindow() {
 - (NSDictionary*)cookies {
   NSString* const kGetCookiesScript =
       @"document.cookie ? document.cookie.split(/;\\s*/) : [];";
-  auto result = [self evaluateJavaScript:kGetCookiesScript];
+  base::Value result = [self evaluateJavaScript:kGetCookiesScript];
 
   EG_TEST_HELPER_ASSERT_TRUE(result.is_list(),
                              @"The script response is not iterable.");
@@ -636,8 +630,7 @@ UIWindow* GetAnyKeyWindow() {
 }
 
 - (void)waitForWebStateContainingText:(const std::string&)UTF8Text {
-  [self waitForWebStateContainingText:UTF8Text
-                              timeout:kWaitForPageLoadTimeout.InSecondsF()];
+  [self waitForWebStateContainingText:UTF8Text timeout:kWaitForPageLoadTimeout];
 }
 
 - (void)waitForWebStateFrameContainingText:(const std::string&)UTF8Text {
@@ -647,7 +640,7 @@ UIWindow* GetAnyKeyWindow() {
 }
 
 - (void)waitForWebStateContainingText:(const std::string&)UTF8Text
-                              timeout:(NSTimeInterval)timeout {
+                              timeout:(base::TimeDelta)timeout {
   NSString* text = base::SysUTF8ToNSString(UTF8Text);
   NSString* errorString = [NSString
       stringWithFormat:@"Failed waiting for web state containing %@", text];
@@ -658,7 +651,7 @@ UIWindow* GetAnyKeyWindow() {
                     return
                         [ChromeEarlGreyAppInterface webStateContainsText:text];
                   }];
-  bool containsText = [waitForText waitWithTimeout:timeout];
+  bool containsText = [waitForText waitWithTimeout:timeout.InSecondsF()];
   EG_TEST_HELPER_ASSERT_TRUE(containsText, errorString);
 }
 
@@ -743,11 +736,6 @@ UIWindow* GetAnyKeyWindow() {
       @"Failed to wait app to idle after stopping all WebStates");
 }
 
-- (void)clearAllWebStateBrowsingData {
-  EG_TEST_HELPER_ASSERT_NO_ERROR(
-      [ChromeEarlGreyAppInterface clearAllWebStateBrowsingData]);
-}
-
 - (void)clearAllWebStateBrowsingData:(AppLaunchConfiguration)config {
   EG_TEST_HELPER_ASSERT_NO_ERROR(
       [ChromeEarlGreyAppInterface clearAllWebStateBrowsingData]);
@@ -765,7 +753,7 @@ UIWindow* GetAnyKeyWindow() {
   [ChromeEarlGreyAppInterface clearSyncServerData];
 }
 
-- (void)signInWithoutSyncWithIdentity:(FakeChromeIdentity*)identity {
+- (void)signInWithoutSyncWithIdentity:(FakeSystemIdentity*)identity {
   [ChromeEarlGreyAppInterface signInWithoutSyncWithIdentity:identity];
 }
 
@@ -867,7 +855,7 @@ UIWindow* GetAnyKeyWindow() {
 
 - (void)waitForTypedURL:(const GURL&)URL
           expectPresent:(BOOL)expectPresent
-                timeout:(NSTimeInterval)timeout {
+                timeout:(base::TimeDelta)timeout {
   NSString* spec = base::SysUTF8ToNSString(URL.spec());
   GREYCondition* waitForTypedURL =
       [GREYCondition conditionWithName:kTypedURLError
@@ -877,7 +865,7 @@ UIWindow* GetAnyKeyWindow() {
                                        presentOnClient:expectPresent];
                                  }];
 
-  bool success = [waitForTypedURL waitWithTimeout:timeout];
+  bool success = [waitForTypedURL waitWithTimeout:timeout.InSecondsF()];
   EG_TEST_HELPER_ASSERT_TRUE(success, kTypedURLError);
 }
 
@@ -898,7 +886,7 @@ UIWindow* GetAnyKeyWindow() {
 }
 
 - (void)waitForSyncInitialized:(BOOL)isInitialized
-                   syncTimeout:(NSTimeInterval)timeout {
+                   syncTimeout:(base::TimeDelta)timeout {
   EG_TEST_HELPER_ASSERT_NO_ERROR([ChromeEarlGreyAppInterface
       waitForSyncInitialized:isInitialized
                  syncTimeout:timeout]);
@@ -917,7 +905,7 @@ UIWindow* GetAnyKeyWindow() {
 - (void)waitForSyncServerEntitiesWithType:(syncer::ModelType)type
                                      name:(const std::string&)UTF8Name
                                     count:(size_t)count
-                                  timeout:(NSTimeInterval)timeout {
+                                  timeout:(base::TimeDelta)timeout {
   NSString* errorString = [NSString
       stringWithFormat:@"Expected %zu entities of the %d type.", count, type];
   NSString* name = base::SysUTF8ToNSString(UTF8Name);
@@ -931,7 +919,7 @@ UIWindow* GetAnyKeyWindow() {
                     return !error;
                   }];
 
-  bool success = [verifyEntities waitWithTimeout:timeout];
+  bool success = [verifyEntities waitWithTimeout:timeout.InSecondsF()];
   EG_TEST_HELPER_ASSERT_TRUE(success, errorString);
 }
 
@@ -1050,12 +1038,12 @@ UIWindow* GetAnyKeyWindow() {
 - (void)waitForWebStateContainingText:(const std::string&)UTF8Text
                    inWindowWithNumber:(int)windowNumber {
   [self waitForWebStateContainingText:UTF8Text
-                              timeout:kWaitForPageLoadTimeout.InSecondsF()
+                              timeout:kWaitForPageLoadTimeout
                    inWindowWithNumber:windowNumber];
 }
 
 - (void)waitForWebStateContainingText:(const std::string&)UTF8Text
-                              timeout:(NSTimeInterval)timeout
+                              timeout:(base::TimeDelta)timeout
                    inWindowWithNumber:(int)windowNumber {
   NSString* text = base::SysUTF8ToNSString(UTF8Text);
   NSString* errorString =
@@ -1070,7 +1058,7 @@ UIWindow* GetAnyKeyWindow() {
                                        webStateContainsText:text
                                          inWindowWithNumber:windowNumber];
                                  }];
-  bool containsText = [waitForText waitWithTimeout:timeout];
+  bool containsText = [waitForText waitWithTimeout:timeout.InSecondsF()];
   EG_TEST_HELPER_ASSERT_TRUE(containsText, errorString);
 }
 
@@ -1138,11 +1126,11 @@ UIWindow* GetAnyKeyWindow() {
 
 - (void)waitForJavaScriptCondition:(NSString*)javaScriptCondition {
   auto verifyBlock = ^BOOL {
-    auto value = [ChromeEarlGrey evaluateJavaScript:javaScriptCondition];
+    base::Value value = [ChromeEarlGrey evaluateJavaScript:javaScriptCondition];
     DCHECK(value.is_bool());
     return value.GetBool();
   };
-  NSTimeInterval timeout = base::test::ios::kWaitForActionTimeout.InSecondsF();
+  base::TimeDelta timeout = base::test::ios::kWaitForActionTimeout;
   NSString* conditionName = [NSString
       stringWithFormat:@"Wait for JS condition: %@", javaScriptCondition];
   GREYCondition* condition = [GREYCondition conditionWithName:conditionName
@@ -1151,7 +1139,8 @@ UIWindow* GetAnyKeyWindow() {
   NSString* errorString =
       [NSString stringWithFormat:@"Failed waiting for condition '%@'",
                                  javaScriptCondition];
-  EG_TEST_HELPER_ASSERT_TRUE([condition waitWithTimeout:timeout], errorString);
+  EG_TEST_HELPER_ASSERT_TRUE([condition waitWithTimeout:timeout.InSecondsF()],
+                             errorString);
 }
 
 - (void)waitUntilReadyWindowWithNumber:(int)windowNumber {
@@ -1547,7 +1536,7 @@ UIWindow* GetAnyKeyWindow() {
 #pragma mark - Watcher utilities
 
 - (void)watchForButtonsWithLabels:(NSArray<NSString*>*)labels
-                          timeout:(NSTimeInterval)timeout {
+                          timeout:(base::TimeDelta)timeout {
   [ChromeEarlGreyAppInterface watchForButtonsWithLabels:labels timeout:timeout];
 }
 
@@ -1557,16 +1546,6 @@ UIWindow* GetAnyKeyWindow() {
 
 - (void)stopWatcher {
   [ChromeEarlGreyAppInterface stopWatcher];
-}
-
-#pragma mark - Url Param Classification utilities
-- (void)setUrlParamClassifications:(const std::string&)raw_classifications {
-  [ChromeEarlGreyAppInterface
-      setUrlParamClassifications:base::SysUTF8ToNSString(raw_classifications)];
-}
-
-- (void)resetUrlParamClassifications {
-  [ChromeEarlGreyAppInterface resetUrlParamClassifications];
 }
 
 @end

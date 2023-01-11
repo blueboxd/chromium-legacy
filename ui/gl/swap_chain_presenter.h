@@ -50,7 +50,6 @@ class SwapChainPresenter : public base::PowerStateObserver {
     return swap_chain_;
   }
 
-  DCLayerTree::VisualSubtree& visual_subtree() { return visual_subtree_; }
   const Microsoft::WRL::ComPtr<IUnknown>& content() const { return content_; }
 
   void SetFrameRate(float frame_rate);
@@ -140,10 +139,23 @@ class SwapChainPresenter : public base::PowerStateObserver {
 
   gfx::Size GetMonitorSize();
 
+  // Takes in input DC layer params and the video overlay quad. The swap chain
+  // backbuffer size will be rounded to the monitor size if it is within a close
+  // margin. The visual_transform will be calculated by what scaling factor is
+  // needed to scale the swap chain backbuffer to the monitor size.
+  // The visual_clip_rect will be adjusted to the monitor size for fullscreen
+  // mode, and to the video overlay quad for letterboxing mode.
+  void AdjustTargetToOptimalSizeIfNeeded(
+      const ui::DCRendererLayerParams& params,
+      const gfx::Rect& overlay_onscreen_rect,
+      gfx::Size* swap_chain_size,
+      gfx::Transform* visual_transform,
+      gfx::Rect* visual_clip_rect);
+
   // If the swap chain size is very close to the screen size but not exactly the
   // same, the swap chain should be adjusted to fit the screen size in order to
   // get the fullscreen DWM optimizations.
-  bool AdjustSwapChainToFullScreenSizeIfNeeded(
+  bool AdjustTargetToFullScreenSizeIfNeeded(
       const gfx::Size& monitor_size,
       const ui::DCRendererLayerParams& params,
       const gfx::Rect& overlay_onscreen_rect,
@@ -151,7 +163,7 @@ class SwapChainPresenter : public base::PowerStateObserver {
       gfx::Transform* visual_transform,
       gfx::Rect* visual_clip_rect);
 
-  void AdjustSwapChainForFullScreenLetterboxing(
+  void AdjustTargetForFullScreenLetterboxing(
       const gfx::Size& monitor_size,
       const ui::DCRendererLayerParams& params,
       const gfx::Rect& overlay_onscreen_rect,
@@ -207,7 +219,8 @@ class SwapChainPresenter : public base::PowerStateObserver {
 
   // Present the Direct Composition surface from MediaFoundationRenderer.
   bool PresentDCOMPSurface(const ui::DCRendererLayerParams& overlay,
-                           gfx::Transform* visual_transform);
+                           gfx::Transform* visual_transform,
+                           gfx::Rect* visual_clip_rect);
 
   // Release resources related to `PresentDCOMPSurface()`.
   void ReleaseDCOMPSurfaceResourcesIfNeeded();
@@ -248,12 +261,10 @@ class SwapChainPresenter : public base::PowerStateObserver {
   // which we won't attempt to use decode swap chain again.
   bool failed_to_present_decode_swapchain_ = false;
 
-  // Contains the visuals for the overlay that uses this SwapChainPresenter.
-  DCLayerTree::VisualSubtree visual_subtree_;
-
   // The swap chain content, sometimes a IDCompositionSurface. This is updated
-  // during |PresentToSwapChain| and copied to |visual_subtree_| and set as the
-  // content of the content visual when the subtree is updated.
+  // during |PresentToSwapChain| and copied to VisualSubtree owned by
+  // DCLayerTree and set as the content of the content visual when the subtree
+  // is updated.
   Microsoft::WRL::ComPtr<IUnknown> content_;
 
   // GLImages that were presented in the last frame.
@@ -282,6 +293,7 @@ class SwapChainPresenter : public base::PowerStateObserver {
   Microsoft::WRL::ComPtr<IDXGIDecodeSwapChain> decode_swap_chain_;
   Microsoft::WRL::ComPtr<IUnknown> decode_surface_;
   bool is_on_battery_power_;
+  UINT gpu_vendor_id_ = 0;
 
   // Number of frames per second.
   float frame_rate_ = 0.f;

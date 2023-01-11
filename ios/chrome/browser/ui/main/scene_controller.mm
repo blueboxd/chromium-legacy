@@ -27,7 +27,6 @@
 #import "components/signin/public/base/signin_pref_names.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/url_formatter/url_formatter.h"
-#import "components/url_param_filter/core/url_param_filterer.h"
 #import "components/version_info/version_info.h"
 #import "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
@@ -87,6 +86,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/lens_commands.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/policy_change_commands.h"
@@ -100,6 +100,7 @@
 #import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_coordinator.h"
 #import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
+#import "ios/chrome/browser/ui/lens/lens_entrypoint.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
@@ -1639,26 +1640,6 @@ bool IsSigninForcedByPolicy() {
   [self startSigninCoordinatorWithCompletion:command.callback];
 }
 
-- (void)showAdvancedSigninSettingsFromViewController:
-    (UIViewController*)baseViewController {
-  DCHECK(!self.signinCoordinator)
-      << "self.signinCoordinator: "
-      << base::SysNSStringToUTF8([self.signinCoordinator description]);
-  Browser* mainBrowser = self.mainInterface.browser;
-  // If the account is in the decoupled FRE then the user has already signed-in
-  // before opening advanced settings, otherwise they are signed out.
-  // Note that this method should only be used by the FRE.
-  IdentitySigninState signinState =
-      base::FeatureList::IsEnabled(kEnableFREUIModuleIOS)
-          ? IdentitySigninStateSignedInWithSyncDisabled
-          : IdentitySigninStateSignedOut;
-  self.signinCoordinator = [SigninCoordinator
-      advancedSettingsSigninCoordinatorWithBaseViewController:baseViewController
-                                                      browser:mainBrowser
-                                                  signinState:signinState];
-  [self startSigninCoordinatorWithCompletion:nil];
-}
-
 - (void)
     showTrustedVaultReauthForFetchKeysFromViewController:
         (UIViewController*)viewController
@@ -2211,6 +2192,10 @@ bool IsSigninForcedByPolicy() {
       return ^{
         [weakSelf startQRCodeScanner];
       };
+    case START_LENS:
+      return ^{
+        [weakSelf startLens];
+      };
     case FOCUS_OMNIBOX:
       return ^{
         [weakSelf focusOmnibox];
@@ -2246,6 +2231,16 @@ bool IsSigninForcedByPolicy() {
   id<QRScannerCommands> QRHandler = HandlerForProtocol(
       self.currentInterface.browser->GetCommandDispatcher(), QRScannerCommands);
   [QRHandler showQRScanner];
+}
+
+- (void)startLens {
+  if (!self.currentInterface.browser) {
+    return;
+  }
+  id<LensCommands> lensHandler = HandlerForProtocol(
+      self.currentInterface.browser->GetCommandDispatcher(), LensCommands);
+  [lensHandler
+      openInputSelectionForEntrypoint:LensEntrypoint::HomeScreenWidget];
 }
 
 - (void)focusOmnibox {
@@ -2921,17 +2916,31 @@ bool IsSigninForcedByPolicy() {
 - (void)startSigninCoordinatorWithCompletion:
     (signin_ui::CompletionCallback)completion {
   DCHECK(self.signinCoordinator);
-  if (!signin::IsSigninAllowedByPolicy()) {
-    if (completion) {
-      completion(/*success=*/NO);
+  AuthenticationService* authenticationService =
+      AuthenticationServiceFactory::GetForBrowserState(
+          self.sceneState.appState.mainBrowserState);
+  switch (authenticationService->GetServiceStatus()) {
+    case AuthenticationService::ServiceStatus::SigninDisabledByPolicy: {
+      if (completion) {
+        completion(/*success=*/NO);
+      }
+      [self.signinCoordinator stop];
+      id<PolicyChangeCommands> handler = HandlerForProtocol(
+          self.signinCoordinator.browser->GetCommandDispatcher(),
+          PolicyChangeCommands);
+      [handler showForceSignedOutPrompt];
+      self.signinCoordinator = nil;
+      return;
     }
-    [self.signinCoordinator stop];
-    id<PolicyChangeCommands> handler = HandlerForProtocol(
-        self.signinCoordinator.browser->GetCommandDispatcher(),
-        PolicyChangeCommands);
-    [handler showForceSignedOutPrompt];
-    self.signinCoordinator = nil;
-    return;
+    case AuthenticationService::ServiceStatus::SigninForcedByPolicy:
+    case AuthenticationService::ServiceStatus::SigninAllowed: {
+      break;
+    }
+    case AuthenticationService::ServiceStatus::SigninDisabledByInternal:
+    case AuthenticationService::ServiceStatus::SigninDisabledByUser: {
+      NOTREACHED();
+      break;
+    }
   }
 
   DCHECK(self.signinCoordinator);
@@ -3184,7 +3193,7 @@ bool IsSigninForcedByPolicy() {
   TabInsertionBrowserAgent::FromBrowser(browser)->InsertWebState(
       urlLoadParams.web_params, nil, false, browser->GetWebStateList()->count(),
       /*in_background=*/false, /*inherit_opener=*/false,
-      /*should_show_start_surface=*/false, url_param_filter::FilterResult());
+      /*should_show_start_surface=*/false);
   [self beginActivatingBrowser:browser dismissTabSwitcher:YES focusOmnibox:NO];
 }
 

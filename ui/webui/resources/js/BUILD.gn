@@ -42,13 +42,17 @@ preprocess_if_expr("preprocess_src_ts") {
     "action_link.ts",
     "assert_ts.ts",
     "color_utils.ts",
+    "cr.ts",
     "custom_element.ts",
     "drag_wrapper.ts",
     "event_tracker.ts",
     "focus_grid.ts",
     "focus_outline_manager.ts",
     "focus_row.ts",
+    "icon.ts",
     "keyboard_shortcut_list.ts",
+    "parse_html_subset.ts",
+    "platform.ts",
     "plural_string_proxy.ts",
     "search_highlight_utils.ts",
     "static_types.ts",
@@ -77,14 +81,10 @@ preprocess_if_expr("preprocess_src") {
     "assert.js",
     "cr.m.js",
     "cr/event_target.js",
-    "cr/ui.js",
-    "icon.js",
     "load_time_data.m.js",
     "load_time_data_deprecated.js",
-    "parse_html_subset.js",
     "promise_resolver.js",
     "util.js",
-    "webui_resource_test.js",
   ]
 
   if (is_chromeos_ash || is_ios) {
@@ -106,10 +106,7 @@ group("closure_compile") {
 
 js_type_check("js_resources") {
   uses_legacy_modules = true
-  deps = [
-    ":load_time_data_deprecated",
-    ":webui_resource_test",
-  ]
+  deps = [ ":load_time_data_deprecated" ]
 
   if (is_ios) {
     deps += [ "ios:web_ui" ]
@@ -128,10 +125,6 @@ if (is_chromeos_ash) {
   }
 }
 
-js_library("webui_resource_test") {
-  externs_list = [ "dom_automation_controller.js" ]
-}
-
 # Targets for type-checking JS Modules
 
 group("closure_compile_modules") {
@@ -146,9 +139,7 @@ js_type_check("js_resources_modules") {
   deps = [
     ":assert",
     ":cr.m",
-    ":icon",
     ":load_time_data.m",
-    ":parse_html_subset",
     ":promise_resolver",
     ":util",
   ]
@@ -158,21 +149,9 @@ js_library("assert") {
 }
 
 js_library("cr.m") {
-  deps = [
-    ":assert",
-    ":promise_resolver",
-  ]
-  externs_list = [ "$externs_path/chrome_send.js" ]
-}
-
-js_library("icon") {
-  deps = [ ":cr.m" ]
 }
 
 js_library("load_time_data.m") {
-}
-
-js_library("parse_html_subset") {
 }
 
 js_library("promise_resolver") {
@@ -180,9 +159,5 @@ js_library("promise_resolver") {
 }
 
 js_library("util") {
-  deps = [
-    ":assert",
-    ":cr.m",
-  ]
-  externs_list = [ "$externs_path/chrome_send.js" ]
+  deps = [ ":assert" ]
 }

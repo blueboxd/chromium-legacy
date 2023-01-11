@@ -15,13 +15,13 @@
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
+#import "ios/chrome/browser/signin/system_identity.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/first_run_signin_logger.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/user_signin_logger.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/first_run/signin/signin_screen_consumer.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -150,7 +150,7 @@
         completion();
     }];
   };
-  ChromeIdentity* primaryIdentity =
+  id<SystemIdentity> primaryIdentity =
       self.authenticationService->GetPrimaryIdentity(
           signin::ConsentLevel::kSignin);
   if (primaryIdentity && ![primaryIdentity isEqual:self.selectedIdentity]) {
@@ -271,7 +271,7 @@
   }
 }
 
-- (void)setSelectedIdentity:(ChromeIdentity*)selectedIdentity {
+- (void)setSelectedIdentity:(id<SystemIdentity>)selectedIdentity {
   if ([_selectedIdentity isEqual:selectedIdentity]) {
     return;
   }

@@ -37,44 +37,6 @@ interface AppService {
       LaunchSource launch_source,
       WindowInfo? window_info);
 
-  // Launches an app with |app_id| and |file_path|.
-  // DEPRECATED. Prefer passing the files in an Intent through
-  // LaunchAppWithIntent.
-  // TODO(crbug.com/1264164): Remove this method.
-  LaunchAppWithFiles(
-      AppType app_type,
-      string app_id,
-      int32 event_flags,
-      LaunchSource launch_source,
-      FilePaths file_paths);
-
-  // Launches an app with |app_id| and Chrome OS generic |intent| irrespective
-  // of app platform. Returns whether the app was successfully launched.
-  LaunchAppWithIntent(
-      AppType app_type,
-      string app_id,
-      int32 event_flags,
-      Intent intent,
-      LaunchSource launch_source,
-      WindowInfo? window_info) => (bool success);
-
-  SetPermission(
-      AppType app_type,
-      string app_id,
-      Permission permission);
-
-  // Directly uninstalls |app_id| without prompting the user.
-  // |clear_site_data| is available for bookmark apps only. If true, any site
-  // data associated with the app will be removed..
-  // |report_abuse| is available for Chrome Apps only. If true, the app will be
-  // reported for abuse to the Web Store.
-  Uninstall(
-      AppType app_type,
-      string app_id,
-      UninstallSource uninstall_source,
-      bool clear_site_data,
-      bool report_abuse);
-
   // Pauses an app to stop the current running app, and apply the icon effect.
   PauseApp(
       AppType app_type,
@@ -122,12 +84,6 @@ interface AppService {
       AppType app_type,
       string app_id,
       WindowMode window_mode);
-
-  // Set the mode for the app to be run on os login identified by |app_id|.
-  SetRunOnOsLoginMode(
-    AppType app_type,
-    string app_id,
-    RunOnOsLoginMode run_on_os_login_mode);
 };
 
 interface Publisher {
@@ -144,46 +100,6 @@ interface Publisher {
       int32 event_flags,
       LaunchSource launch_source,
       WindowInfo? window_info);
-
-  // Launches an app identified by |app_id| and |file_path|, parameterised by
-  // |event_flags|.
-  // DEPRECATED. Prefer passing the files in an Intent through
-  // LaunchAppWithIntent.
-  // TODO(crbug.com/1264164): Remove this method.
-  LaunchAppWithFiles(
-      string app_id,
-      int32 event_flags,
-      LaunchSource launch_source,
-      FilePaths file_paths);
-
-  // Launches an app identified by |app_id|, with |intent| as a parameter.
-  // |event_flags| contains launch options (e.g. window disposition).
-  // |launch_source| contains the source of the launch.
-  // Returns whether the app was successfully launched.
-  LaunchAppWithIntent(
-    string app_id,
-    int32 event_flags,
-    Intent intent,
-    LaunchSource launch_source,
-    WindowInfo? window_info) => (bool success);
-
-  // Sets |permission| for an app identified with |app_id|. Implemented if the
-  // publisher supports per-app permissions that are exposed in App Management.
-  SetPermission(
-      string app_id,
-      Permission permission);
-
-  // Directly uninstalls an app identified by |app_id| without prompting the
-  // user. |uninstall_source| indicates where the uninstallation came from.
-  // |clear_site_data| is available for web apps only. If true, any site
-  // data associated with the app will be removed.
-  // |report_abuse| is available for Chrome Apps only. If true, the app will be
-  // reported for abuse to the Chrome Web Store.
-  Uninstall(
-      string app_id,
-      UninstallSource uninstall_source,
-      bool clear_site_data,
-      bool report_abuse);
 
   // Requests that the app identified by |app_id| is marked as paused. Paused
   // apps cannot be launched. Implemented if the publisher supports the pausing
@@ -253,12 +169,6 @@ interface Publisher {
   SetWindowMode(
       string app_id,
       WindowMode window_mode);
-
-  // Set the mode to run on OS Login for the app identified by |app_id|.
-  // Implemented if the publisher supports setting this mode for OS Login,
-  // otherwise should do nothing.
-  SetRunOnOsLoginMode(string app_id,
-                      RunOnOsLoginMode run_on_os_login_mode);
 };
 
 // Subscriber works as a proxy, to receive a stream of apps from publishers,

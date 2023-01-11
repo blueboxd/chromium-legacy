@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/thread_annotations.h"
@@ -250,7 +250,7 @@ class BLINK_PLATFORM_EXPORT VideoFrameCompositor
   base::RetainingOneShotTimer force_begin_frames_timer_;
 
   // These values are only set and read on the compositor thread.
-  raw_ptr<cc::VideoFrameProvider::Client> client_ = nullptr;
+  raw_ptr<cc::VideoFrameProvider::Client, DanglingUntriaged> client_ = nullptr;
   bool rendering_ = false;
   bool rendered_last_frame_ = false;
   bool is_background_rendering_ = false;

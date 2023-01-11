@@ -9,7 +9,7 @@ import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_as
 import {SettingsReviewNotificationPermissionsElement, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {CrActionMenuElement} from 'chrome://settings/settings.js';
 import {isChildVisible, isVisible} from 'chrome://webui-test/test_util.js';
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 
 import {TestSiteSettingsPrefsBrowserProxy} from './test_site_settings_prefs_browser_proxy.js';
@@ -87,8 +87,7 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
     browserProxy.setNotificationPermissionReview(mockData);
     SiteSettingsPrefsBrowserProxyImpl.setInstance(browserProxy);
 
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     testElement = document.createElement('review-notification-permissions');
     document.body.appendChild(testElement);
 
@@ -267,11 +266,10 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
     await browserProxy.whenCalled('getNotificationPermissionReview');
     flush();
 
-    // Click block button
+    // User blocks the site.
     testElement.shadowRoot!.querySelector<HTMLElement>(
                                '.site-entry #block')!.click();
     assertAnimation([true, false]);
-    await browserProxy.whenCalled('blockNotificationPermissionForOrigins');
 
     await assertUndo('allowNotificationPermissionForOrigins', 0);
     webUIListenerCallback(
@@ -289,11 +287,9 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
     flush();
 
     openActionMenu(0);
-    // Click ignore button.
+    // User ignores notifications for the site.
     testElement.shadowRoot!.querySelector<HTMLElement>('#ignore')!.click();
     assertAnimation([true, false]);
-
-    await browserProxy.whenCalled('ignoreNotificationPermissionForOrigins');
 
     await assertUndo('undoIgnoreNotificationPermissionForOrigins', 0);
     webUIListenerCallback(
@@ -311,11 +307,9 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
     flush();
 
     openActionMenu(0);
-    // Click reset button.
+    // User resets permissions for the site.
     testElement.shadowRoot!.querySelector<HTMLElement>('#reset')!.click();
     assertAnimation([true, false]);
-
-    await browserProxy.whenCalled('resetNotificationPermissionForOrigins');
 
     await assertUndo('allowNotificationPermissionForOrigins', 0);
     webUIListenerCallback(

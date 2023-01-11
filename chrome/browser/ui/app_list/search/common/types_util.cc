@@ -14,6 +14,8 @@ std::string ResultTypeToString(const ash::AppListSearchResultType result_type) {
       return "Unknown";
     case ash::AppListSearchResultType::kInstalledApp:
       return "Installed app";
+    case ash::AppListSearchResultType::kZeroStateApp:
+      return "Zero state app";
     case ash::AppListSearchResultType::kPlayStoreApp:
       return "Play store app";
     case ash::AppListSearchResultType::kInstantApp:
@@ -34,12 +36,6 @@ std::string ResultTypeToString(const ash::AppListSearchResultType result_type) {
       return "Zero state file";
     case ash::AppListSearchResultType::kZeroStateDrive:
       return "Zero state drive";
-    case ash::AppListSearchResultType::kFileChip:
-      return "File chip";
-    case ash::AppListSearchResultType::kDriveChip:
-      return "Drive chip";
-    case ash::AppListSearchResultType::kAssistantChip:
-      return "Assistant chip";
     case ash::AppListSearchResultType::kOsSettings:
       return "OS settings";
     case ash::AppListSearchResultType::kInternalPrivacyInfo:

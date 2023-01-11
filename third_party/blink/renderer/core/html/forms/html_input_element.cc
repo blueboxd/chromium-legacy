@@ -503,7 +503,7 @@ void HTMLInputElement::UpdateType() {
   if (old_value_mode == ValueMode::kValue &&
       (new_value_mode == ValueMode::kDefault ||
        new_value_mode == ValueMode::kDefaultOn)) {
-    if (HasDirtyValue())
+    if (HasDirtyValue() && !non_attribute_value_.empty())
       setAttribute(html_names::kValueAttr, AtomicString(non_attribute_value_));
     non_attribute_value_ = String();
     has_dirty_value_ = false;
@@ -1985,9 +1985,9 @@ bool HTMLInputElement::ShouldAppearIndeterminate() const {
   return input_type_->ShouldAppearIndeterminate();
 }
 
-HTMLFormControlElement::PopupTriggerSupport
-HTMLInputElement::SupportsPopupTriggering() const {
-  return input_type_->SupportsPopupTriggering();
+HTMLFormControlElement::PopoverTriggerSupport
+HTMLInputElement::SupportsPopoverTriggering() const {
+  return input_type_->SupportsPopoverTriggering();
 }
 
 RadioButtonGroupScope* HTMLInputElement::GetRadioButtonGroupScope() const {
@@ -2184,10 +2184,10 @@ bool HTMLInputElement::IsInteractiveContent() const {
 
 scoped_refptr<ComputedStyle> HTMLInputElement::CustomStyleForLayoutObject(
     const StyleRecalcContext& style_recalc_context) {
-  scoped_refptr<ComputedStyle> style =
+  scoped_refptr<ComputedStyle> original_style =
       OriginalStyleForLayoutObject(style_recalc_context);
-  input_type_view_->CustomStyleForLayoutObject(*style);
-  return style;
+  return input_type_view_->CustomStyleForLayoutObject(
+      std::move(original_style));
 }
 
 void HTMLInputElement::DidNotifySubtreeInsertionsToDocument() {

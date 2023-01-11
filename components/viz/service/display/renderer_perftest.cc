@@ -86,6 +86,8 @@ class WaitForSwapDisplayClient : public DisplayClient {
     DCHECK(loop_);
     loop_->Quit();
   }
+  void DisplayAddChildWindowToBrowser(
+      gpu::SurfaceHandle child_window) override {}
   void SetWideColorEnabled(bool enabled) override {}
   void SetPreferredFrameInterval(base::TimeDelta interval) override {}
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
@@ -259,7 +261,7 @@ class RendererPerfTest : public VizPerfTest {
     child_context_provider_ =
         base::MakeRefCounted<TestInProcessContextProvider>(
             TestContextType::kGLES2, /*support_locking=*/false);
-    child_context_provider_->BindToCurrentThread();
+    child_context_provider_->BindToCurrentSequence();
     child_resource_provider_ = std::make_unique<ClientResourceProvider>();
 
     auto skia_deps = std::make_unique<SkiaOutputSurfaceDependencyImpl>(

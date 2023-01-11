@@ -279,8 +279,18 @@ class AvdConfig:
                         *self._config.system_image_name.split(';'))
 
   @property
+  def _root_ini_path(self):
+    """The <avd_name>.ini file."""
+    return os.path.join(self._avd_home, '%s.ini' % self._config.avd_name)
+
+  @property
   def _config_ini_path(self):
+    """The config.ini file under _avd_dir."""
     return os.path.join(self._avd_dir, 'config.ini')
+
+  @property
+  def _features_ini_path(self):
+    return os.path.join(self._emulator_home, 'advancedFeatures.ini')
 
   def Create(self,
              force=False,
@@ -345,20 +355,15 @@ class AvdConfig:
       logging.info('Modifying AVD configuration.')
 
       # Clear out any previous configuration or state from this AVD.
-      root_ini = os.path.join(android_avd_home,
-                              '%s.ini' % self._config.avd_name)
-      features_ini = os.path.join(self._emulator_home, 'advancedFeatures.ini')
-      avd_dir = self._avd_dir
+      with ini.update_ini_file(self._root_ini_path) as r_ini_contents:
+        r_ini_contents['path.rel'] = 'avd/%s.avd' % self._config.avd_name
 
-      with ini.update_ini_file(root_ini) as root_ini_contents:
-        root_ini_contents['path.rel'] = 'avd/%s.avd' % self._config.avd_name
-
-      with ini.update_ini_file(features_ini) as features_ini_contents:
+      with ini.update_ini_file(self._features_ini_path) as f_ini_contents:
         # features_ini file will not be refreshed by avdmanager during
         # creation. So explicitly clear its content to exclude any leftover
         # from previous creation.
-        features_ini_contents.clear()
-        features_ini_contents.update(self.avd_settings.advanced_features)
+        f_ini_contents.clear()
+        f_ini_contents.update(self.avd_settings.advanced_features)
 
       with ini.update_ini_file(self._config_ini_path) as config_ini_contents:
         # Update avd_properties first so that they won't override settings
@@ -383,7 +388,7 @@ class AvdConfig:
 
         config_ini_contents['hw.sdCard'] = 'yes'
         if self.avd_settings.sdcard.size:
-          sdcard_path = os.path.join(avd_dir, _SDCARD_NAME)
+          sdcard_path = os.path.join(self._avd_dir, _SDCARD_NAME)
           mksdcard_path = os.path.join(os.path.dirname(self._emulator_path),
                                        'mksdcard')
           cmd_helper.RunCmd([
@@ -421,7 +426,7 @@ class AvdConfig:
       instance = _AvdInstance(self._emulator_path, self._emulator_home,
                               self._config)
       # Enable debug for snapshot when it is set to True
-      debug_tags = 'init,snapshot' if snapshot else None
+      debug_tags = 'time,init,snapshot' if snapshot else None
       # Installing privileged apks requires modifying the system
       # image.
       writable_system = bool(privileged_apk_tuples)
@@ -473,7 +478,7 @@ class AvdConfig:
       # operation in some circumstances (beyond the obvious -read-only ones),
       # and there seems to be no mechanism by which it gets closed or deleted.
       # See https://bit.ly/2pWQTH7 for context.
-      multiInstanceLockFile = os.path.join(avd_dir, 'multiinstance.lock')
+      multiInstanceLockFile = os.path.join(self._avd_dir, 'multiinstance.lock')
       if os.path.exists(multiInstanceLockFile):
         os.unlink(multiInstanceLockFile)
 
@@ -485,17 +490,19 @@ class AvdConfig:
           'install_mode':
           'copy',
           'data': [{
-              'dir': os.path.relpath(avd_dir, self._emulator_home)
+              'dir': os.path.relpath(self._avd_dir, self._emulator_home)
           }, {
-              'file': os.path.relpath(root_ini, self._emulator_home)
+              'file':
+              os.path.relpath(self._root_ini_path, self._emulator_home)
           }, {
-              'file': os.path.relpath(features_ini, self._emulator_home)
+              'file':
+              os.path.relpath(self._features_ini_path, self._emulator_home)
           }],
       }
 
       logging.info('Creating AVD CIPD package.')
-      logging.debug('ensure file content: %s',
-                    json.dumps(package_def_content, indent=2))
+      logging.info('ensure file content: %s',
+                   json.dumps(package_def_content, indent=2))
 
       with tempfile_ext.TemporaryFileName(suffix='.json') as package_def_path:
         with open(package_def_path, 'w') as package_def_file:
@@ -664,6 +671,11 @@ class AvdConfig:
      * Emulator instance can be booted correctly.
      * The snapshot can be loaded successfully.
     """
+    # Update the absolute avd path in root_ini file
+    with ini.update_ini_file(self._root_ini_path) as r_ini_contents:
+      r_ini_contents['path'] = self._avd_dir
+
+    # Update hardware settings.
     config_files = [self._config_ini_path]
     # The file hardware.ini within each snapshot need to be updated as well.
     hw_ini_glob_pattern = os.path.join(self._avd_dir, 'snapshots', '*',
@@ -816,7 +828,10 @@ class _AvdInstance:
       if debug_tags:
         emulator_cmd.extend(['-debug', debug_tags])
 
-      emulator_env = {}
+      emulator_env = {
+          # kill immediately when emulator hang.
+          'ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL': '0',
+      }
       if self._emulator_home:
         emulator_env['ANDROID_EMULATOR_HOME'] = self._emulator_home
       if 'DISPLAY' in os.environ:
@@ -855,11 +870,9 @@ class _AvdInstance:
         self._emulator_serial = timeout_retry.Run(
             listen_for_serial, timeout=30, retries=0, args=[sock])
         logging.info('%s started', self._emulator_serial)
-      except Exception as e:
-        self.Stop()
-        # avd.py is executed with python2.
-        # pylint: disable=W0707
-        raise AvdException('Emulator failed to start: %s' % str(e))
+      except Exception:
+        self.Stop(force=True)
+        raise
 
     # Set the system settings in "Start" here instead of setting in "Create"
     # because "Create" is used during AVD creation, and we want to avoid extra
@@ -869,14 +882,18 @@ class _AvdInstance:
       self.device.WaitUntilFullyBooted(timeout=120 if is_slow_start else 30)
       _EnsureSystemSettings(self.device)
 
-  def Stop(self):
-    """Stops the emulator process."""
+  def Stop(self, force=False):
+    """Stops the emulator process.
+
+    When "force" is True, we will call "terminate" on the emulator process,
+    which is recommended when emulator is not responding to adb commands.
+    """
     if self._emulator_proc:
       if self._emulator_proc.poll() is None:
-        if self.device:
-          self.device.adb.Emu('kill')
-        else:
+        if force or not self.device:
           self._emulator_proc.terminate()
+        else:
+          self.device.adb.Emu('kill')
         self._emulator_proc.wait()
       self._emulator_proc = None
       self._emulator_serial = None

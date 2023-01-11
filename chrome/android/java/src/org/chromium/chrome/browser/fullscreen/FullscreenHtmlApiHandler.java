@@ -52,6 +52,7 @@ import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.ViewUtils;
 
 import java.lang.ref.WeakReference;
 
@@ -202,7 +203,8 @@ public class FullscreenHtmlApiHandler implements ActivityStateListener, WindowFo
                         }
                     });
 
-                    contentView.requestLayout();
+                    ViewUtils.requestLayout(contentView,
+                            "FullscreenHtmlApiHandler.FullscreenHandler.handleMessage");
                     break;
                 }
                 case MSG_ID_CLEAR_LAYOUT_FULLSCREEN_FLAG: {
@@ -586,7 +588,10 @@ public class FullscreenHtmlApiHandler implements ActivityStateListener, WindowFo
                 // onLayoutChange would have no effect.
                 mHandler.sendEmptyMessage(MSG_ID_SET_FULLSCREEN_SYSTEM_UI_FLAGS);
 
-                if ((bottom - top) <= (oldBottom - oldTop)) return;
+                if ((bottom - top) <= (oldBottom - oldTop)
+                        && (right - left) <= (oldRight - oldLeft)) {
+                    return;
+                }
 
                 beginNotificationToast();
                 contentView.removeOnLayoutChangeListener(this);
@@ -600,7 +605,7 @@ public class FullscreenHtmlApiHandler implements ActivityStateListener, WindowFo
 
         // Request a layout so the updated system visibility takes affect.
         // The flow will continue in the handler of MSG_ID_SET_FULLSCREEN_SYSTEM_UI_FLAGS message.
-        contentView.requestLayout();
+        ViewUtils.requestLayout(contentView, "FullscreenHtmlApiHandler.enterFullScreen");
 
         mWebContentsInFullscreen = webContents;
         mContentViewInFullscreen = contentView;
@@ -666,7 +671,7 @@ public class FullscreenHtmlApiHandler implements ActivityStateListener, WindowFo
         if (addView) {
             mActivity.addContentView(mNotificationToast,
                     new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT));
+                            ViewGroup.LayoutParams.MATCH_PARENT));
             // Ensure the toast is visible on bottom sheet CCT which is elevated for shadow effect.
             // Does no harm on other embedders.
             mNotificationToast.setElevation(mActivity.getResources().getDimensionPixelSize(

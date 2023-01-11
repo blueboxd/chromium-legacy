@@ -7,7 +7,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
@@ -57,8 +57,10 @@ class FakeClipboardNotifier : public DlpClipboardNotifier {
  public:
   views::Widget* GetWidget() { return widget_.get(); }
 
-  void ProceedPressed(const ui::DataTransferEndpoint& data_dst) {
-    DlpClipboardNotifier::ProceedPressed(data_dst, GetWidget());
+  void ProceedPressed(const ui::DataTransferEndpoint& data_dst,
+                      base::RepeatingCallback<void()> reporting_cb) {
+    DlpClipboardNotifier::ProceedPressed(data_dst, std::move(reporting_cb),
+                                         GetWidget());
   }
 
   void BlinkProceedPressed(const ui::DataTransferEndpoint& data_dst) {
@@ -92,8 +94,9 @@ class FakeDlpController : public DataTransferDlpController,
   }
 
   void WarnOnPaste(const ui::DataTransferEndpoint* const data_src,
-                   const ui::DataTransferEndpoint* const data_dst) override {
-    helper_->WarnOnPaste(data_src, data_dst);
+                   const ui::DataTransferEndpoint* const data_dst,
+                   base::RepeatingCallback<void()> reporting_cb) override {
+    helper_->WarnOnPaste(data_src, data_dst, std::move(reporting_cb));
   }
 
   void SetBlinkQuitCallback(base::RepeatingClosure cb) {
@@ -166,8 +169,9 @@ class DataTransferDlpAshBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(DlpRulesManagerFactory::GetForPrimaryProfile());
 
     reporting_manager_ = std::make_unique<DlpReportingManager>();
-    SetReportQueueForReportingManager(reporting_manager_.get(), events,
-                                      base::SequencedTaskRunnerHandle::Get());
+    SetReportQueueForReportingManager(
+        reporting_manager_.get(), events,
+        base::SequencedTaskRunner::GetCurrentDefault());
     ON_CALL(*rules_manager_, GetReportingManager)
         .WillByDefault(::testing::Return(reporting_manager_.get()));
 

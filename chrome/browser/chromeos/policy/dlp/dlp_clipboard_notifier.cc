@@ -10,6 +10,7 @@
 #include "base/notreached.h"
 #include "chrome/browser/chromeos/policy/dlp/clipboard_bubble.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_clipboard_bubble_constants.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_policy_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/aura/window_tree_host.h"
@@ -95,7 +96,7 @@ bool HasEndpoint(const std::vector<ui::DataTransferEndpoint>& saved_endpoints,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void OnToastClicked() {
   ash::NewWindowDelegate::GetPrimary()->OpenUrl(
-      GURL(kDlpLearnMoreUrl),
+      GURL(dlp::kDlpLearnMoreUrl),
       ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
       ash::NewWindowDelegate::Disposition::kNewForegroundTab);
 }
@@ -153,7 +154,8 @@ void DlpClipboardNotifier::NotifyBlockedAction(
 
 void DlpClipboardNotifier::WarnOnPaste(
     const ui::DataTransferEndpoint* const data_src,
-    const ui::DataTransferEndpoint* const data_dst) {
+    const ui::DataTransferEndpoint* const data_dst,
+    base::RepeatingCallback<void()> reporting_cb) {
   DCHECK(data_src);
   DCHECK(data_src->GetURL());
 
@@ -190,9 +192,9 @@ void DlpClipboardNotifier::WarnOnPaste(
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-  auto proceed_cb =
-      base::BindRepeating(&DlpClipboardNotifier::ProceedPressed,
-                          base::Unretained(this), CloneEndpoint(data_dst));
+  auto proceed_cb = base::BindRepeating(
+      &DlpClipboardNotifier::ProceedPressed, base::Unretained(this),
+      CloneEndpoint(data_dst), std::move(reporting_cb));
   auto cancel_cb =
       base::BindRepeating(&DlpClipboardNotifier::CancelWarningPressed,
                           base::Unretained(this), CloneEndpoint(data_dst));
@@ -241,10 +243,12 @@ bool DlpClipboardNotifier::DidUserCancelDst(
 
 void DlpClipboardNotifier::ProceedPressed(
     const ui::DataTransferEndpoint& data_dst,
+    base::RepeatingCallback<void()> reporting_cb,
     views::Widget* widget) {
   CloseWidget(widget, views::Widget::ClosedReason::kAcceptButtonClicked);
   approved_dsts_.push_back(data_dst);
   SynthesizePaste();
+  std::move(reporting_cb).Run();
 }
 
 void DlpClipboardNotifier::BlinkProceedPressed(

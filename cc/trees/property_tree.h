@@ -18,6 +18,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/base/synced_property.h"
 #include "cc/cc_export.h"
@@ -30,7 +31,7 @@
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/sticky_position_constraint.h"
 #include "cc/trees/transform_node.h"
-#include "components/viz/common/shared_element_resource_id.h"
+#include "components/viz/common/view_transition_element_resource_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -717,7 +718,7 @@ class CC_EXPORT PropertyTrees final {
 #endif
 
   const ProtectedSequenceSynchronizer& synchronizer() const {
-    return synchronizer_;
+    return *synchronizer_;
   }
 
   const ClipTree& clip_tree() const { return clip_tree_; }
@@ -822,7 +823,7 @@ class CC_EXPORT PropertyTrees final {
   bool HasElement(ElementId element_id) const;
 
  private:
-  const ProtectedSequenceSynchronizer& synchronizer_;
+  const raw_ref<const ProtectedSequenceSynchronizer> synchronizer_;
 
   TransformTree transform_tree_;
   EffectTree effect_tree_;

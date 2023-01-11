@@ -15,14 +15,14 @@
 #include "third_party/blink/renderer/core/layout/layout_progress.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/box_border_painter.h"
-#include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/nine_piece_image_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
 #include "third_party/blink/renderer/core/paint/rounded_inner_rect_clipper.h"
+#include "third_party/blink/renderer/core/paint/timing/image_element_timing.h"
+#include "third_party/blink/renderer/core/paint/timing/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/style/border_edge.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
@@ -90,11 +90,11 @@ BackgroundColorPaintImageGenerator* GetBackgroundColorPaintImageGenerator(
 }
 
 void SetHasNativeBackgroundPainter(Node* node, bool state) {
-  if (!node || !node->IsElementNode())
+  Element* element = DynamicTo<Element>(node);
+  if (!element)
     return;
 
-  ElementAnimations* element_animations =
-      static_cast<Element*>(node)->GetElementAnimations();
+  ElementAnimations* element_animations = element->GetElementAnimations();
   DCHECK(element_animations || !state);
   if (element_animations) {
     element_animations->SetCompositedBackgroundColorStatus(
@@ -104,7 +104,8 @@ void SetHasNativeBackgroundPainter(Node* node, bool state) {
 }
 
 bool CanCompositeBackgroundColorAnimation(Node* node) {
-  if (!node || !node->IsElementNode())
+  Element* element = DynamicTo<Element>(node);
+  if (!element)
     return false;
 
   BackgroundColorPaintImageGenerator* generator =
@@ -113,7 +114,6 @@ bool CanCompositeBackgroundColorAnimation(Node* node) {
   if (!generator)
     return false;
 
-  Element* element = DynamicTo<Element>(node);
   Animation* animation = generator->GetAnimationIfCompositable(element);
   if (!animation)
     return false;
@@ -123,13 +123,12 @@ bool CanCompositeBackgroundColorAnimation(Node* node) {
 }
 
 CompositedPaintStatus CompositedBackgroundColorStatus(Node* node) {
-  if (!node || !node->IsElementNode())
+  Element* element = DynamicTo<Element>(node);
+  if (!element)
     return CompositedPaintStatus::kNotComposited;
 
-  ElementAnimations* element_animations =
-      static_cast<Element*>(node)->GetElementAnimations();
+  ElementAnimations* element_animations = element->GetElementAnimations();
   DCHECK(element_animations);
-
   return element_animations->CompositedBackgroundColorStatus();
 }
 

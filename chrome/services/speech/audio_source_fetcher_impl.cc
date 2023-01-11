@@ -4,6 +4,11 @@
 
 #include "chrome/services/speech/audio_source_fetcher_impl.h"
 
+#include <memory>
+
+#include "base/check.h"
+#include "base/functional/bind.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/services/speech/speech_recognition_recognizer_impl.h"
 #include "media/audio/audio_device_description.h"
@@ -23,20 +28,39 @@
 
 namespace speech {
 
+namespace {
+
+// Buffer size should be 100ms.
+constexpr int kServerBasedRecognitionAudioSampleRate = 16000;
+constexpr base::TimeDelta kServerBasedRecognitionAudioBufferSize =
+    base::Milliseconds(100);
+
+}  // namespace
+
 AudioSourceFetcherImpl::AudioSourceFetcherImpl(
-    std::unique_ptr<SpeechRecognitionRecognizerImpl> recognition_recognizer)
-    : speech_recognition_recognizer_(std::move(recognition_recognizer)),
-      is_started_(false) {}
+    std::unique_ptr<AudioSourceConsumer> audio_consumer,
+    bool is_multi_channel_supported,
+    bool is_server_based)
+    : audio_consumer_(std::move(audio_consumer)),
+      is_started_(false),
+      is_multi_channel_supported_(is_multi_channel_supported),
+      is_server_based_(is_server_based) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
 AudioSourceFetcherImpl::~AudioSourceFetcherImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Stop();
 }
 
 void AudioSourceFetcherImpl::Create(
     mojo::PendingReceiver<media::mojom::AudioSourceFetcher> receiver,
-    std::unique_ptr<SpeechRecognitionRecognizerImpl> recognition_recognizer) {
+    std::unique_ptr<AudioSourceConsumer> recognition_recognizer,
+    bool is_multi_channel_supported,
+    bool is_server_based) {
   mojo::MakeSelfOwnedReceiver(std::make_unique<AudioSourceFetcherImpl>(
-                                  std::move(recognition_recognizer)),
+                                  std::move(recognition_recognizer),
+                                  is_multi_channel_supported, is_server_based),
                               std::move(receiver));
 }
 
@@ -44,6 +68,8 @@ void AudioSourceFetcherImpl::Start(
     mojo::PendingRemote<media::mojom::AudioStreamFactory> stream_factory,
     const std::string& device_id,
     const ::media::AudioParameters& audio_parameters) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // If we've already started fetching audio from this device with these params,
   // return early. Otherwise start over and reset.
   if (is_started_) {
@@ -59,6 +85,32 @@ void AudioSourceFetcherImpl::Start(
 
   device_id_ = device_id;
   audio_parameters_ = audio_parameters;
+
+  // Resample only if the recognizer is server based and the device's sample
+  // rate is > 16khz.
+  if (is_server_based_ && audio_parameters_.sample_rate() >
+                              kServerBasedRecognitionAudioSampleRate) {
+    server_based_recognition_params_ = media::AudioParameters(
+        media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+        is_multi_channel_supported_ ? audio_parameters_.channel_layout_config()
+                                    : media::ChannelLayoutConfig::Mono(),
+        kServerBasedRecognitionAudioSampleRate,
+        media::AudioTimestampHelper::TimeToFrames(
+            kServerBasedRecognitionAudioBufferSize,
+            kServerBasedRecognitionAudioSampleRate));
+
+    // Bind to current loop to ensure the `ConvertingAudioFifo::OutputCallback`
+    // and `ConvertingAudioFifo::Push` to be called on same thread.
+    converter_ = std::make_unique<media::ConvertingAudioFifo>(
+        audio_parameters_, server_based_recognition_params_.value(),
+        /*output_callback=*/
+        base::BindRepeating(&AudioSourceFetcherImpl::OnAudioFinishedConvert,
+                            weak_factory_.GetWeakPtr()));
+    resample_callback_ = media::BindToCurrentLoop(
+        base::BindRepeating(&AudioSourceFetcherImpl::SendAudioToResample,
+                            weak_factory_.GetWeakPtr()));
+  }
+
   auto audio_log_remote = VLOG_IS_ON(1)
                               ? audio_log_receiver_.BindNewPipeAndPassRemote()
                               : mojo::NullRemote();
@@ -82,42 +134,56 @@ void AudioSourceFetcherImpl::Start(
 }
 
 void AudioSourceFetcherImpl::Stop() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (GetAudioCapturerSource()) {
     GetAudioCapturerSource()->Stop();
     audio_capturer_source_.reset();
   }
-  send_audio_callback_.Reset();
   is_started_ = false;
-  speech_recognition_recognizer_->MarkDone();
+  if (converter_) {
+    // If converter is not null, flush remaining frames.
+    converter_->Flush();
+    converter_.reset();
+  }
+  send_audio_callback_.Reset();
+  audio_consumer_->OnAudioCaptureEnd();
 }
 
 void AudioSourceFetcherImpl::Capture(const media::AudioBus* audio_source,
                                      base::TimeTicks audio_capture_time,
                                      double volume,
                                      bool key_pressed) {
-  // Called on a worker thread created by the AudioCapturerSource.
-  // (See |media::AudioDeviceThread|).
-  auto audio_bus =
-      media::AudioBus::Create(audio_source->channels(), audio_source->frames());
-  DCHECK(audio_bus);
-  audio_source->CopyTo(audio_bus.get());
-  // Send the audio callback from the main thread.
-  send_audio_callback_.Run(ConvertToAudioDataS16(
-      std::move(audio_bus), audio_parameters_.sample_rate(),
-      audio_parameters_.channel_layout(),
-      SpeechRecognitionRecognizerImpl::IsMultichannelSupported()));
+  if (converter_) {
+    // Send the audio callback to the main thread to resample.
+    std::unique_ptr<media::AudioBus> input =
+        media::AudioBus::Create(audio_parameters_);
+    audio_source->CopyTo(input.get());
+    resample_callback_.Run(std::move(input));
+  } else {
+    // Send the audio callback to the main thread.
+    send_audio_callback_.Run(ConvertToAudioDataS16(
+        *audio_source, audio_parameters_.sample_rate(),
+        audio_parameters_.channel_layout(), is_multi_channel_supported_));
+  }
 }
 
 void AudioSourceFetcherImpl::OnCaptureError(
     media::AudioCapturerSource::ErrorCode code,
     const std::string& message) {
-  speech_recognition_recognizer_->OnSpeechRecognitionError();
+  LOG(ERROR) << "Audio Capture Error" << message;
+  audio_consumer_->OnAudioCaptureError();
 }
 
 void AudioSourceFetcherImpl::SendAudioToSpeechRecognitionService(
     media::mojom::AudioDataS16Ptr buffer) {
-  speech_recognition_recognizer_->SendAudioToSpeechRecognitionService(
-      std::move(buffer));
+  audio_consumer_->AddAudio(std::move(buffer));
+}
+
+void AudioSourceFetcherImpl::SendAudioToResample(
+    std::unique_ptr<media::AudioBus> audio_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  converter_->Push(std::move(audio_data));
 }
 
 media::AudioCapturerSource* AudioSourceFetcherImpl::GetAudioCapturerSource() {
@@ -153,6 +219,16 @@ void AudioSourceFetcherImpl::OnLogMessage(const std::string& message) {
 void AudioSourceFetcherImpl::OnProcessingStateChanged(
     const std::string& message) {
   VLOG(1) << "Processing State Changed for " << device_id_ << ": " << message;
+}
+
+void AudioSourceFetcherImpl::OnAudioFinishedConvert(
+    media::AudioBus* output_bus) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(output_bus && send_audio_callback_);
+  send_audio_callback_.Run(ConvertToAudioDataS16(
+      *output_bus, server_based_recognition_params_->sample_rate(),
+      server_based_recognition_params_->channel_layout(),
+      is_multi_channel_supported_));
 }
 
 }  // namespace speech

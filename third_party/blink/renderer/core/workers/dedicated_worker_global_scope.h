@@ -127,8 +127,12 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   bool IsOffMainThreadScriptFetchDisabled() override;
 
   // Implements scheduler::WorkerScheduler::Delegate.
-  void UpdateBackForwardCacheDisablingFeatures(uint64_t features_mask) override;
-
+  void UpdateBackForwardCacheDisablingFeatures(
+      uint64_t features_mask,
+      const BFCacheBlockingFeatureAndLocations&
+          non_sticky_features_and_js_locations,
+      const BFCacheBlockingFeatureAndLocations&
+          sticky_features_and_js_locations) override;
   // Implements BackForwardCacheLoaderHelperImpl::Delegate.
   void EvictFromBackForwardCache(
       mojom::blink::RendererEvictionReason reason) override;
@@ -161,9 +165,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   bool CrossOriginIsolatedCapability() const final {
     return cross_origin_isolated_capability_;
   }
-  bool IsolatedApplicationCapability() const final {
-    return isolated_application_capability_;
-  }
+  bool IsIsolatedContext() const final { return is_isolated_context_; }
   ExecutionContextToken GetExecutionContextToken() const final {
     return token_;
   }
@@ -196,7 +198,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
       std::unique_ptr<Vector<OriginTrialFeature>> inherited_trial_features,
       const BeginFrameProviderParams& begin_frame_provider_params,
       bool parent_cross_origin_isolated_capability,
-      bool isolated_application_capability,
+      bool is_isolated_context,
       mojo::PendingRemote<mojom::blink::DedicatedWorkerHost>
           dedicated_worker_host,
       mojo::PendingRemote<mojom::blink::BackForwardCacheControllerHost>
@@ -214,7 +216,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   // The ID of the parent context that owns this worker.
   const ExecutionContextToken parent_token_;
   bool cross_origin_isolated_capability_;
-  bool isolated_application_capability_;
+  bool is_isolated_context_;
   Member<WorkerAnimationFrameProvider> animation_frame_provider_;
   RejectCoepUnsafeNone reject_coep_unsafe_none_ = RejectCoepUnsafeNone(false);
 

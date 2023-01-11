@@ -38,15 +38,13 @@ TEST(LocationTest, CurrentYieldsCorrectValue) {
 #endif
 #elif defined(OFFICIAL_BUILD)
 #error Location builtins must be supported in official builds.
-#elif BUILDFLAG(FROM_HERE_USES_LOCATION_BUILTINS)
-#error FROM_HERE requires location builtins to be supported.
 #endif
 }
 
 #if BUILDFLAG(ENABLE_BASE_TRACING)
 TEST(LocationTest, TracingSupport) {
-  EXPECT_EQ(perfetto::TracedValueToString(
-                Location("func", "file", 42, WhereAmI().program_counter())),
+  EXPECT_EQ(perfetto::TracedValueToString(Location::CreateForTesting(
+                "func", "file", 42, WhereAmI().program_counter())),
             "{function_name:func,file_name:file,line_number:42}");
 }
 #endif  // BUILDFLAG(ENABLE_BASE_TRACING)

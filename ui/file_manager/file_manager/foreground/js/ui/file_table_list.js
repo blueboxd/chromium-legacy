@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert.js';
-import {isMac} from 'chrome://resources/js/cr.m.js';
 
 import {FileType} from '../../../common/js/file_type.js';
 import {str, strf, util} from '../../../common/js/util.js';
@@ -362,6 +361,7 @@ filelist.decorateListItem = (li, entry, metadataModel) => {
     'isMachineRoot',
     'isExternalMedia',
     'pinned',
+    'syncStatus',
   ])[0];
   filelist.updateListItemExternalProps(
       li, externalProps, util.isTeamDriveRoot(entry));
@@ -473,11 +473,13 @@ filelist.updateListItemExternalProps = (li, externalProps, isTeamDriveRoot) => {
         'external-media-root', !!externalProps.isExternalMedia);
   }
 
-  if (util.isInlineSyncStatusEnabled()) {
-    li.toggleAttribute(
-        'data-sync-status', externalProps.syncStatus !== 'not_found');
-    li.setAttribute('data-sync-status', externalProps.syncStatus);
-    // TODO(msalomao): set sync status aria-label.
+  if (util.isInlineSyncStatusEnabled() && externalProps.syncStatus) {
+    if (externalProps.syncStatus === 'not_found') {
+      li.removeAttribute('data-sync-status');
+    } else {
+      li.setAttribute('data-sync-status', externalProps.syncStatus);
+    }
+    // TODO(b/255474670): set sync status aria-label.
   }
 };
 
@@ -756,8 +758,7 @@ filelist.handleKeyDown = function(e) {
   // Ctrl/Meta+A. Use keyCode=65 to use the same shortcut key regardless of
   // keyboard layout.
   const pressedKeyA = e.keyCode === 65 || e.key === 'a';
-  if (sm.multiple && pressedKeyA &&
-      (isMac && e.metaKey || !isMac && e.ctrlKey)) {
+  if (sm.multiple && pressedKeyA && e.ctrlKey) {
     this.filesView.a11y.speakA11yMessage(str('SELECTION_ALL_ENTRIES'));
     sm.setCheckSelectMode(true);
     sm.selectAll();

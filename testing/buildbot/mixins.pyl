@@ -228,7 +228,7 @@
   'android_t': {
     'swarming': {
       'dimensions': {
-        'device_os': 'T',
+        'device_os': 'TP1A.220624.021',
       },
     },
   },
@@ -302,6 +302,11 @@
         },
       ],
     },
+    '$mixin_append': {
+      'args': [
+        '--magic-vm-cache=magic_cros_vm_cache',
+      ],
+    },
   },
   'chromeos-betty': {
     'swarming': {
@@ -328,6 +333,11 @@
           'name': 'cros_vm',
           'path': 'magic_cros_vm_cache',
         },
+      ],
+    },
+    '$mixin_append': {
+      'args': [
+        '--magic-vm-cache=magic_cros_vm_cache',
       ],
     },
   },
@@ -388,6 +398,11 @@
         },
       ],
     },
+    '$mixin_append': {
+      'args': [
+        '--magic-vm-cache=magic_cros_reven_vm_cache',
+      ],
+    },
   },
   'chromeos-zork': {
     'swarming': {
@@ -445,7 +460,7 @@
         'device_os': None,
         'device_type': None,
         'pool': 'chromium.tests.avd',
-        'cores': '4',
+        'machine_type': 'n1-standard-4|e2-standard-4|n2-standard-4',
       },
     },
   },
@@ -455,7 +470,7 @@
         'device_os': None,
         'device_type': None,
         'pool': 'chromium.tests.avd',
-        'cores': '8',
+        'machine_type': 'e2-standard-8|n2-standard-8',
       },
     },
   },
@@ -525,15 +540,6 @@
       ],
     },
   },
-  'hammerhead': {
-    # Nexus 5
-    'swarming': {
-      'dimensions': {
-        'device_type': 'hammerhead',
-        'os': 'Android',
-      },
-    },
-  },
   # Use of this mixin signals to the recipe that the test uploads its results
   # to result-sink and doesn't need to be wrapped by result_adapter.
   'has_native_resultdb_integration': {
@@ -555,8 +561,7 @@
   'ios_output_disabled_tests': {
     '$mixin_append': {
       'args': [
-        '--args-json',
-        '{"test_args": ["--write-compiled-tests-json-to-writable-path"]}'
+        '--output-disabled-tests',
       ],
     },
   },
@@ -1027,13 +1032,6 @@
       ]
     },
   },
-  'marshmallow_generic': {
-    'swarming': {
-      'dimensions': {
-        'device_os': 'M',
-      },
-    },
-  },
   'mdarcy': {
     # NVIDIA Shield TV 2019
     'swarming': {
@@ -1068,14 +1066,14 @@
       'optional_dimensions': {
         '60': [
           {
-            'caches': 'generic_android25',
+            'caches': 'generic_android24',
           }
         ],
       },
       'named_caches': [
         {
-          'name': 'generic_android25',
-          'path': '.android_emulator/generic_android25',
+          'name': 'generic_android24',
+          'path': '.android_emulator/generic_android24',
         },
       ]
     },

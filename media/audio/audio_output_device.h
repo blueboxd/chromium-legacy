@@ -7,11 +7,11 @@
 //
 // Relationship of classes.
 //
-//  AudioOutputController                AudioOutputDevice
+//  audio::OutputController              AudioOutputDevice
 //           ^                                  ^
 //           |                                  |
 //           v                 IPC              v
-//  MojoAudioOutputStream  <---------> AudioOutputIPC (MojoAudioOutputIPC)
+//  audio::OutputStream  <---------> AudioOutputIPC (MojoAudioOutputIPC)
 //
 // Transportation of audio samples from the render to the browser process
 // is done by using shared memory in combination with a sync socket pair
@@ -184,7 +184,7 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
 
   AudioParameters audio_parameters_;
 
-  raw_ptr<RenderCallback> callback_;
+  raw_ptr<RenderCallback, DanglingUntriaged> callback_;
 
   // A pointer to the IPC layer that takes care of sending requests over to
   // the implementation. May be set to nullptr after errors.

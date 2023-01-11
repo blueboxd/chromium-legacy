@@ -464,7 +464,7 @@ class MODULES_EXPORT ManifestParser {
                                       const String& feature);
 
   // Parses the 'launch_handler' field of the manifest as defined in:
-  // https://github.com/WICG/sw-launch/blob/main/launch_handler.md
+  // https://github.com/WICG/web-app-launch/blob/main/launch_handler.md
   // Returns default values if parsing fails.
   mojom::blink::ManifestLaunchHandlerPtr ParseLaunchHandler(
       const JSONObject* object);
@@ -486,6 +486,12 @@ class MODULES_EXPORT ManifestParser {
   // Returns nullptr if parsing fails.
   mojom::blink::ManifestUserPreferencesPtr ParseUserPreferences(
       const JSONObject* object);
+
+  // Parse the override fields for theme_color and background_color as defined
+  // in: https://github.com/w3c/manifest/issues/1045
+  // Returns the dark mode color if any, or a null optional otherwise.
+  absl::optional<RGBA32> ParseDarkColorOverride(const JSONObject* object,
+                                                const String& key);
 
   // Parses the 'tab_strip' field of the manifest as defined in:
   // https://github.com/WICG/manifest-incubations/blob/gh-pages/tabbed-mode-explainer.md

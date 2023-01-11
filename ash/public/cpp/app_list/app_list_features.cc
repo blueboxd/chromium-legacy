@@ -10,15 +10,6 @@
 
 namespace app_list_features {
 
-BASE_FEATURE(kEnableAppRanker,
-             "EnableAppRanker",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-BASE_FEATURE(kEnableZeroStateAppsRanker,
-             "EnableZeroStateAppsRanker",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-BASE_FEATURE(kEnableZeroStateMixedTypesRanker,
-             "EnableZeroStateMixedTypesRanker",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kEnableAppReinstallZeroState,
              "EnableAppReinstallZeroState",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -28,9 +19,6 @@ BASE_FEATURE(kEnableAppListLaunchRecording,
 BASE_FEATURE(kEnableExactMatchForNonLatinLocale,
              "EnableExactMatchForNonLatinLocale",
              base::FEATURE_ENABLED_BY_DEFAULT);
-BASE_FEATURE(kCategoricalSearch,
-             "CategoricalSearch",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 // DO NOT REMOVE: Tast integration tests use this feature. (See crbug/1340267)
 BASE_FEATURE(kForceShowContinueSection,
              "ForceShowContinueSection",
@@ -50,18 +38,9 @@ BASE_FEATURE(kCompactBubbleLauncher,
 BASE_FEATURE(kLauncherPlayStoreSearch,
              "LauncherPlayStoreSearch",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-bool IsAppRankerEnabled() {
-  return base::FeatureList::IsEnabled(kEnableAppRanker);
-}
-
-bool IsZeroStateAppsRankerEnabled() {
-  return base::FeatureList::IsEnabled(kEnableZeroStateAppsRanker);
-}
-
-bool IsZeroStateMixedTypesRankerEnabled() {
-  return base::FeatureList::IsEnabled(kEnableZeroStateMixedTypesRanker);
-}
+BASE_FEATURE(kAnimateScaleOnTabletModeTransition,
+             "AnimateScaleOnTabletModeTransition",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsAppReinstallZeroStateEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppReinstallZeroState);
@@ -71,43 +50,22 @@ bool IsExactMatchForNonLatinLocaleEnabled() {
   return base::FeatureList::IsEnabled(kEnableExactMatchForNonLatinLocale);
 }
 
-std::string AppSearchResultRankerPredictorName() {
-  const std::string predictor_name = base::GetFieldTrialParamValueByFeature(
-      kEnableZeroStateAppsRanker, "app_search_result_ranker_predictor_name");
-  if (!predictor_name.empty())
-    return predictor_name;
-  return std::string("MrfuAppLaunchPredictor");
-}
-
 bool IsAppListLaunchRecordingEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppListLaunchRecording);
 }
 
-bool IsCategoricalSearchEnabled() {
-  // Force categorical search for the latest version of the launcher.
-  return ash::features::IsProductivityLauncherEnabled() ||
-         base::FeatureList::IsEnabled(kCategoricalSearch);
-}
-
 bool IsSearchResultInlineIconEnabled() {
   // Inline Icons are only supported for categorical search.
-  return IsCategoricalSearchEnabled() &&
-         base::FeatureList::IsEnabled(kSearchResultInlineIcon);
+  return base::FeatureList::IsEnabled(kSearchResultInlineIcon);
 }
 
 bool IsQuickActionShowBubbleLauncherEnabled() {
-  return ash::features::IsProductivityLauncherEnabled() &&
-         base::FeatureList::IsEnabled(kQuickActionShowBubbleLauncher);
+  return base::FeatureList::IsEnabled(kQuickActionShowBubbleLauncher);
 }
 
 bool IsDynamicSearchUpdateAnimationEnabled() {
   // Search update animations are only supported for categorical search.
-  return IsCategoricalSearchEnabled() &&
-         base::FeatureList::IsEnabled(kDynamicSearchUpdateAnimation);
-}
-
-std::string CategoricalSearchType() {
-  return GetFieldTrialParamValueByFeature(kCategoricalSearch, "ranking");
+  return base::FeatureList::IsEnabled(kDynamicSearchUpdateAnimation);
 }
 
 base::TimeDelta DynamicSearchUpdateAnimationDuration() {
@@ -125,8 +83,11 @@ bool IsCompactBubbleLauncherEnabled() {
 }
 
 bool IsLauncherPlayStoreSearchEnabled() {
-  return ash::features::IsProductivityLauncherEnabled() &&
-         base::FeatureList::IsEnabled(kLauncherPlayStoreSearch);
+  return base::FeatureList::IsEnabled(kLauncherPlayStoreSearch);
+}
+
+bool IsAnimateScaleOnTabletModeTransitionEnabled() {
+  return base::FeatureList::IsEnabled(kAnimateScaleOnTabletModeTransition);
 }
 
 }  // namespace app_list_features

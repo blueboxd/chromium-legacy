@@ -4,6 +4,7 @@ include_rules = [
   "+components/keyed_service",
   "+components/privacy_sandbox",
   "+content/public/browser",
+  "+components/content_settings/browser",
   "+content/public/test",
   "+content/test",
   "+crypto",
@@ -16,6 +17,9 @@ specific_include_rules = {
   ".*_unittest.cc": [
     "+components/content_settings/core",
     "+components/sync_preferences",
+    "+components/ukm",
+  ],
+  ".*test_util.cc": [
     "+components/ukm",
   ],
 }

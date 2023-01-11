@@ -24,6 +24,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_test.h"
+#include "extensions/common/warnings_test_util.h"
 #include "extensions/test/test_extension_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -158,7 +159,8 @@ class ExtensionActionManifestTest
              "%s": %s
            })";
 
-    const char* action_key = GetManifestKeyForActionType(GetParam());
+    const char* action_key =
+        ActionInfo::GetManifestKeyForActionType(GetParam());
 
     base::Value manifest_value = base::test::ParseJson(
         base::StringPrintf(kManifestStub, action_key, action_spec));
@@ -171,7 +173,8 @@ class ExtensionActionManifestTest
       const char* popup_file_name,
       int manifest_version,
       TestExtensionDir* test_extension_dir) {
-    const char* action_key = GetManifestKeyForActionType(GetParam());
+    const char* action_key =
+        ActionInfo::GetManifestKeyForActionType(GetParam());
 
     test_extension_dir->WriteManifest(base::StringPrintf(
         R"({
@@ -189,37 +192,6 @@ class ExtensionActionManifestTest
         Extension::NO_FLAGS, &error));
     EXPECT_EQ(error, "");
     return extension;
-  }
-
-  // Verifies that a specific warning was set on install. Or if not, that the
-  // expected number of warnings were generated.
-  void VerifyInstallWarnings(scoped_refptr<Extension> extension,
-                             int manifest_version,
-                             const std::string& expected_warning_message) {
-    std::vector<const std::string> install_warning_messages;
-    for (const InstallWarning& warning : extension->install_warnings()) {
-      install_warning_messages.push_back(warning.message);
-    }
-    std::vector<const std::string> expected_warning_messages;
-
-    // The test does not register these features, so this warning is
-    // expected.
-    const char* action_key = GetManifestKeyForActionType(GetParam());
-    expected_warning_messages.push_back(ErrorUtils::FormatErrorMessage(
-        manifest_errors::kUnrecognizedManifestKey, action_key));
-    if (manifest_version == 2) {
-      // Manifest v2 always installs a warning that it is deprecated.
-      expected_warning_messages.push_back(
-          manifest_errors::kManifestV2IsDeprecatedWarning);
-    }
-
-    if (!expected_warning_message.empty()) {
-      expected_warning_messages.push_back(expected_warning_message);
-    }
-    EXPECT_THAT(install_warning_messages,
-                testing::ContainerEq(expected_warning_messages));
-    EXPECT_EQ(expected_warning_messages.size(),
-              extension->install_warnings().size());
   }
 
  private:
@@ -340,7 +312,8 @@ TEST_P(ExtensionActionManifestTest, ValidDefaultPopup) {
   scoped_refptr<Extension> test_extension = LoadExtensionWithDefaultPopup(
       valid_popup_file_name, manifest_version, &test_extension_dir);
   ASSERT_TRUE(test_extension);
-  VerifyInstallWarnings(test_extension, manifest_version, "");
+  EXPECT_FALSE(warnings_test_util::HasInstallWarning(
+      test_extension, manifest_errors::kInvalidExtensionOriginPopup));
 }
 
 // Tests success when default_popup is empty.
@@ -351,7 +324,8 @@ TEST_P(ExtensionActionManifestTest, EmptyDefaultPopup) {
   scoped_refptr<Extension> test_extension = LoadExtensionWithDefaultPopup(
       empty_popup_file_name, manifest_version, &test_extension_dir);
   ASSERT_TRUE(test_extension);
-  VerifyInstallWarnings(test_extension, manifest_version, "");
+  EXPECT_FALSE(warnings_test_util::HasInstallWarning(
+      test_extension, manifest_errors::kInvalidExtensionOriginPopup));
 }
 
 // Tests warning when the default_popup seems to be for another extension.
@@ -364,8 +338,8 @@ TEST_P(ExtensionActionManifestTest, OtherExtensionSpecifiedDefaultPopup) {
       LoadExtensionWithDefaultPopup(other_extension_specified_popup_file_name,
                                     manifest_version, &test_extension_dir);
   ASSERT_TRUE(test_extension);
-  VerifyInstallWarnings(test_extension, manifest_version,
-                        manifest_errors::kInvalidExtensionOriginPopup);
+  EXPECT_TRUE(warnings_test_util::HasInstallWarning(
+      test_extension, manifest_errors::kInvalidExtensionOriginPopup));
 }
 
 // Tests warning when the default_popup doesn't exist on file system.
@@ -376,8 +350,8 @@ TEST_P(ExtensionActionManifestTest, NonexistentDefaultPopup) {
   scoped_refptr<Extension> test_extension = LoadExtensionWithDefaultPopup(
       nonexistent_popup_file_name, manifest_version, &test_extension_dir);
   ASSERT_TRUE(test_extension);
-  VerifyInstallWarnings(test_extension, manifest_version,
-                        manifest_errors::kNonexistentDefaultPopup);
+  EXPECT_TRUE(warnings_test_util::HasInstallWarning(
+      test_extension, manifest_errors::kNonexistentDefaultPopup));
 }
 
 // Test the handling of the default_state key.

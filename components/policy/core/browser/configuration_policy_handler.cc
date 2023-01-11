@@ -21,7 +21,6 @@
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
@@ -254,13 +253,13 @@ void StringMappingListPolicyHandler::ApplyPolicySettings(
     return;
   const base::Value* value =
       policies.GetValue(policy_name(), base::Value::Type::LIST);
-  base::ListValue list;
+  base::Value::List list;
   if (value && Convert(value, &list, nullptr))
-    prefs->SetValue(pref_path_, std::move(list));
+    prefs->SetValue(pref_path_, base::Value(std::move(list)));
 }
 
 bool StringMappingListPolicyHandler::Convert(const base::Value* input,
-                                             base::ListValue* output,
+                                             base::Value::List* output,
                                              PolicyErrorMap* errors) {
   if (!input)
     return true;
@@ -281,7 +280,7 @@ bool StringMappingListPolicyHandler::Convert(const base::Value* input,
     std::unique_ptr<base::Value> mapped_value = Map(entry.GetString());
     if (mapped_value) {
       if (output) {
-        output->GetList().Append(
+        output->Append(
             base::Value::FromUniquePtrValue(std::move(mapped_value)));
       }
     } else if (errors) {

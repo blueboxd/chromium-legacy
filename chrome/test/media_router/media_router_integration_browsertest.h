@@ -179,7 +179,7 @@ class MediaRouterIntegrationBrowserTest
   void WaitUntilNoRoutes(content::WebContents* web_contents);
 
   // Test API for manipulating the UI.
-  raw_ptr<MediaRouterUiForTestBase> test_ui_ = nullptr;
+  raw_ptr<MediaRouterUiForTestBase, DanglingUntriaged> test_ui_ = nullptr;
 
   // Enabled features.
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -214,7 +214,7 @@ class MediaRouterIntegrationIncognitoBrowserTest
   Browser* browser() override;
 
  private:
-  raw_ptr<Browser> incognito_browser_ = nullptr;
+  raw_ptr<Browser, DanglingUntriaged> incognito_browser_ = nullptr;
 };
 
 }  // namespace media_router

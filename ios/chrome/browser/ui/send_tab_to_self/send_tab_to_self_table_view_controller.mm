@@ -15,7 +15,7 @@
 #import "components/send_tab_to_self/send_tab_to_self_model.h"
 #import "components/send_tab_to_self/target_device_info.h"
 #import "components/sync_device_info/device_info.h"
-#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_manage_devices_item.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_modal_delegate.h"
@@ -257,8 +257,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     switch (iter->form_factor) {
       case syncer::DeviceInfo::FormFactor::kTablet:
         if (UseSymbols()) {
-          deviceItem.iconImage =
-              DefaultSymbolWithPointSize(kIPadSymbol, kSymbolSize);
+          deviceItem.iconImage = MakeSymbolMonochrome(
+              DefaultSymbolWithPointSize(kIPadSymbol, kSymbolSize));
         } else {
           deviceItem.iconImage =
               [UIImage imageNamed:@"send_tab_to_self_tablet"];
@@ -266,8 +266,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
         break;
       case syncer::DeviceInfo::FormFactor::kPhone:
         if (UseSymbols()) {
-          deviceItem.iconImage =
-              DefaultSymbolWithPointSize(kIPhoneSymbol, kSymbolSize);
+          deviceItem.iconImage = MakeSymbolMonochrome(
+              DefaultSymbolWithPointSize(kIPhoneSymbol, kSymbolSize));
         } else {
           deviceItem.iconImage =
               [UIImage imageNamed:@"send_tab_to_self_smartphone"];
@@ -275,8 +275,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
         break;
       case syncer::DeviceInfo::FormFactor::kDesktop:
         if (UseSymbols()) {
-          deviceItem.iconImage =
-              DefaultSymbolWithPointSize(kLaptopSymbol, kSymbolSize);
+          deviceItem.iconImage = MakeSymbolMonochrome(
+              DefaultSymbolWithPointSize(kLaptopSymbol, kSymbolSize));
         } else {
           deviceItem.iconImage =
               [UIImage imageNamed:@"send_tab_to_self_laptop"];
@@ -284,9 +284,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
         break;
       default:
         if (UseSymbols()) {
-          // TODO(crbug.com/1315544): Use correct symbol
-          deviceItem.iconImage =
-              DefaultSymbolWithPointSize(kLaptopSymbol, kSymbolSize);
+          deviceItem.iconImage = MakeSymbolMonochrome(
+              DefaultSymbolWithPointSize(kLaptopSymbol, kSymbolSize));
         } else {
           deviceItem.iconImage =
               [UIImage imageNamed:@"send_tab_to_self_devices"];

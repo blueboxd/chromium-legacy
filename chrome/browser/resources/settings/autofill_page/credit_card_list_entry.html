@@ -1,9 +1,15 @@
     <style include="settings-shared passwords-shared">
-      .expiration-column {
+      .expiration-column,
+      .misc-column {
         align-items: center;
         display: flex;
         flex: 1;
       }
+
+      .misc-column {
+        justify-content: flex-end;
+      }
+
       .list-item {
         margin-bottom: 8px;
         margin-top: 8px;
@@ -13,12 +19,11 @@
         flex: 1;
       }
 
-      #summarySublabel {
+      .sub-label {
         color: var(--cr-secondary-text-color);
       }
 
-      .payments-label {
-        color: var(--cr-secondary-text-color);
+      #paymentsLabel {
         margin-inline-start: 16px;
       }
 
@@ -32,10 +37,11 @@
 
       #cardImage {
         margin-inline-end: 16px;
+        vertical-align: middle;
       }
     </style>
-    <div class="list-item">
-      <div class="type-column">
+    <div class="list-item" role="row">
+      <div class="type-column" role="cell">
         <template is="dom-if" if="[[virtualCardMetadataEnabled_]]">
           <img id="cardImage" src="[[creditCard.imageSrc]]" alt="">
         </template>
@@ -44,7 +50,8 @@
             [[creditCard.metadata.summaryLabel]]
           </div>
           <div id="summarySublabel"
-            hidden$="[[!shouldShowSecondarySublabel_()]]" class="ellipses">
+            hidden$="[[!shouldShowSecondarySublabel_()]]"
+            class="ellipses sub-label">
             [[getSecondarySublabel_(creditCard.metadata)]]
           </div>
         </div>
@@ -52,41 +59,43 @@
             hidden$="[[!shouldShowVirtualCardLabel_(creditCard.metadata)]]">
           $i18n{virtualCardEnabled}
         </span>
-        <span id="paymentsLabel" class="payments-label"
+        <span id="paymentsLabel" class="sub-label"
             hidden$="[[!shouldShowPaymentsLabel_(creditCard.metadata)]]">
             [[getPaymentsLabel_(creditCard.metadata)]]
         </span>
       </div>
       <div class="expiration-column">
-        <div id="creditCardExpiration">
+        <div id="creditCardExpiration" role="cell">
             [[creditCard.expirationMonth]]/[[creditCard.expirationYear]]
         </div>
-        <div id="paymentsIndicator"
-          hidden$="[[!shouldShowPaymentsIndicator_(creditCard.metadata)]]">
-          <if expr="_google_chrome">
-            <picture id="paymentsIcon">
-              <source
-                  srcset="chrome://theme/IDR_AUTOFILL_GOOGLE_PAY_DARK"
-                  media="(prefers-color-scheme: dark)">
-              <img alt="" src="chrome://theme/IDR_AUTOFILL_GOOGLE_PAY">
-            </picture>
-          </if>
-          <if expr="not _google_chrome">
-            <span class="payments-label">
-              [[getPaymentsLabel_(creditCard.metadata)]]
-            </span>
-          </if>
+        <div role="cell" class="misc-column">
+          <div id="paymentsIndicator"
+              hidden$="[[!shouldShowPaymentsIndicator_(creditCard.metadata)]]">
+            <if expr="_google_chrome">
+              <picture id="paymentsIcon">
+                <source
+                    srcset="chrome://theme/IDR_AUTOFILL_GOOGLE_PAY_DARK_SMALL"
+                    media="(prefers-color-scheme: dark)">
+                <img alt="" src="chrome://theme/IDR_AUTOFILL_GOOGLE_PAY_SMALL">
+              </picture>
+            </if>
+            <if expr="not _google_chrome">
+              <span class="sub-label">
+                [[getPaymentsLabel_(creditCard.metadata)]]
+              </span>
+            </if>
+          </div>
+          <template is="dom-if" if="[[showDots_(creditCard.metadata)]]">
+            <cr-icon-button class="icon-more-vert" id="creditCardMenu"
+                title="[[moreActionsTitle_(creditCard)]]"
+                on-click="onDotsMenuClick_">
+            </cr-icon-button>
+          </template>
+          <template is="dom-if" if="[[!showDots_(creditCard.metadata)]]">
+            <cr-icon-button class="icon-external" id="remoteCreditCardLink"
+                title="$i18n{remoteCreditCardLinkLabel}" role="link"
+                on-click="onRemoteEditClick_"></cr-icon-button>
+          </template>
         </div>
-        <template is="dom-if" if="[[showDots_(creditCard.metadata)]]">
-          <cr-icon-button class="icon-more-vert" id="creditCardMenu"
-              title="[[moreActionsTitle_(creditCard)]]"
-              on-click="onDotsMenuClick_">
-          </cr-icon-button>
-        </template>
-        <template is="dom-if" if="[[!showDots_(creditCard.metadata)]]">
-          <cr-icon-button class="icon-external" id="remoteCreditCardLink"
-              title="$i18n{remoteCreditCardLinkLabel}" role="link"
-              on-click="onRemoteEditClick_"></cr-icon-button>
-        </template>
       </div>
     </div>

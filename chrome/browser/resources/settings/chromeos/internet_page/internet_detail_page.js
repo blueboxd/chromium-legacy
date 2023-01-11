@@ -324,6 +324,15 @@ class SettingsInternetDetailPageElement extends
         computed: 'computeDisabled_(deviceState_.*)',
       },
 
+      /** @private */
+      enableHiddenNetworkMigration_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.valueExists('enableHiddenNetworkMigration') &&
+              loadTimeData.getBoolean('enableHiddenNetworkMigration');
+        },
+      },
+
       /**
        * Return true if captivePortalUI2022 feature flag is enabled.
        * @private
@@ -333,6 +342,18 @@ class SettingsInternetDetailPageElement extends
         value() {
           return loadTimeData.valueExists('captivePortalUI2022') &&
               loadTimeData.getBoolean('captivePortalUI2022');
+        },
+      },
+
+      /**
+       * Return true if apnRevamp feature flag is enabled.
+       * @private
+       */
+      isApnRevampEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.valueExists('isApnRevampEnabled') &&
+              loadTimeData.getBoolean('isApnRevampEnabled');
         },
       },
 
@@ -592,6 +613,18 @@ class SettingsInternetDetailPageElement extends
     const name = queryParams.get('name') || type;
     this.init(guid, type, name);
 
+    // If we are getting back from APN subpage set focus to the APN subpage
+    // row.
+    if (oldRoute === routes.APN &&
+        Router.getInstance().lastRouteChangeWasPopstate()) {
+      this.didSetFocus_ = true;
+      afterNextRender(this, () => {
+        const element = this.shadowRoot.querySelector('#apnSubpageButton');
+        if (element) {
+          element.focus();
+        }
+      });
+    }
     this.attemptDeepLink();
   }
 
@@ -1308,7 +1341,7 @@ class SettingsInternetDetailPageElement extends
   }
 
   /**
-   * @param {!ManagedProperties} managedProperties
+   * @param {!ManagedProperties|undefined} managedProperties
    * @return {boolean}
    * @private
    */
@@ -1373,6 +1406,24 @@ class SettingsInternetDetailPageElement extends
          !!managedNetworkAvailable) ||
         (!!hexSsid && !!globalPolicy.blockedHexSsids &&
          globalPolicy.blockedHexSsids.includes(hexSsid));
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowApnRow_() {
+    return this.isApnRevampEnabled_ &&
+        this.isCellular_(this.managedProperties_);
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowApnList_() {
+    return !this.isApnRevampEnabled_ &&
+        this.isCellular_(this.managedProperties_);
   }
 
   /**
@@ -1970,6 +2021,26 @@ class SettingsInternetDetailPageElement extends
     this.setMojoNetworkProperties_(config);
   }
 
+  /**
+   * @return {string}
+   * @private
+   */
+  getApnRowSubLabel_() {
+    if (!this.isCellular_(this.managedProperties_) ||
+        !this.managedProperties_.typeProperties.cellular.connectedApn) {
+      return '';
+    }
+
+    return this.managedProperties_.typeProperties.cellular.connectedApn
+        .accessPointName;
+  }
+
+  /**
+   * @private
+   */
+  onApnRowClicked_() {
+    Router.getInstance().navigateTo(routes.APN);
+  }
 
   /**
    * Event triggered when the IP Config or NameServers element changes.
@@ -2123,35 +2194,49 @@ class SettingsInternetDetailPageElement extends
   }
 
   /**
-   * @param {!ManagedProperties} managedProperties
-   * @param {!GlobalPolicy} globalPolicy
-   * @param {boolean} managedNetworkAvailable
    * @return {boolean} True if the Hidden checkbox should be shown.
    * @private
    */
-  showHiddenNetwork_(managedProperties, globalPolicy, managedNetworkAvailable) {
+  showHiddenNetwork_() {
     if (!this.showHiddenToggle_) {
       return false;
     }
 
-    if (!managedProperties) {
+    if (!this.managedProperties_) {
       return false;
     }
 
-    if (managedProperties.type !== NetworkType.kWiFi) {
+    if (this.managedProperties_.type !== NetworkType.kWiFi) {
       return false;
     }
 
-    if (!this.isRemembered_(managedProperties)) {
+    if (!this.isRemembered_(this.managedProperties_)) {
       return false;
     }
 
     if (this.isBlockedByPolicy_(
-            managedProperties, globalPolicy, managedNetworkAvailable)) {
+            this.managedProperties_, this.globalPolicy,
+            this.managedNetworkAvailable)) {
       return false;
     }
 
     return true;
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  showHiddenNetworkToggleLegacy_() {
+    return this.showHiddenNetwork_() && !this.enableHiddenNetworkMigration_;
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  showHiddenNetworkToggleMoved_() {
+    return this.showHiddenNetwork_() && this.enableHiddenNetworkMigration_;
   }
 
   /**

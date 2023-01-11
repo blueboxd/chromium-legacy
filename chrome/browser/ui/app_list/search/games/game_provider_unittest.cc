@@ -26,7 +26,6 @@
 namespace app_list {
 namespace {
 
-using ::base::test::ScopedFeatureList;
 using ::testing::ElementsAre;
 using ::testing::UnorderedElementsAre;
 
@@ -71,7 +70,7 @@ class GameProviderTest : public testing::Test,
  public:
   GameProviderTest() {
     bool enabled_override = GetParam();
-    std::vector<ScopedFeatureList::FeatureAndParams> enabled_features = {
+    std::vector<base::test::FeatureRefAndParams> enabled_features = {
         {ash::features::kProductivityLauncher, {}},
         {search_features::kLauncherGameSearch,
          {{"enabled_override", enabled_override ? "true" : "false"}}}};
@@ -87,15 +86,11 @@ class GameProviderTest : public testing::Test,
     provider_ = provider.get();
 
     search_controller_ = std::make_unique<TestSearchController>();
-    search_controller_->AddProvider(0, std::move(provider));
+    search_controller_->AddProvider(std::move(provider));
   }
 
   const SearchProvider::Results& LastResults() {
-    if (app_list_features::IsCategoricalSearchEnabled()) {
-      return search_controller_->last_results();
-    } else {
-      return provider_->results();
-    }
+    return search_controller_->last_results();
   }
 
   void SetUpTestingIndex() {
@@ -113,7 +108,7 @@ class GameProviderTest : public testing::Test,
 
   GameProvider* provider() const { return provider_; }
 
-  ScopedFeatureList feature_list_;
+  base::test::ScopedFeatureList feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   ::test::TestAppListControllerDelegate list_controller_;
   std::unique_ptr<TestSearchController> search_controller_;
@@ -210,6 +205,43 @@ TEST_P(GameProviderTest, RandomizeSourceOrder) {
   // each happen at least 10 times, which has a very high chance of being true.
   EXPECT_GE(a_first, 10);
   EXPECT_GE(b_first, 10);
+}
+
+// Tests that threshold is loose enough to include the acronym match results.
+TEST_P(GameProviderTest, AcronymMatchIncluded) {
+  GameProvider::GameIndex index;
+  index.push_back(MakeAppsResult(u"Clash of Clan"));
+  index.push_back(MakeAppsResult(u"Assassin's Creed Origins"));
+  provider_->SetGameIndexForTest(std::move(index));
+
+  StartSearch(u"coc");
+  EXPECT_THAT(LastResults(), ElementsAre(Title(u"Clash of Clan")));
+
+  StartSearch(u"aco");
+  EXPECT_THAT(LastResults(), ElementsAre(Title(u"Assassin's Creed Origins")));
+}
+
+// Tests that threshold is strict enough to exclude certain problematic cases.
+TEST_P(GameProviderTest, ProblematicCasesExcluded) {
+  GameProvider::GameIndex index;
+  index.push_back(MakeAppsResult(u"Distance"));
+  index.push_back(MakeAppsResult(u"Hell Pie"));
+  index.push_back(MakeAppsResult(u"Hell Pie Demo"));
+  index.push_back(MakeAppsResult(u"Elyon"));
+  index.push_back(MakeAppsResult(u"Kill It With Fire"));
+  provider_->SetGameIndexForTest(std::move(index));
+
+  StartSearch(u"disney");
+  ASSERT_EQ(LastResults().size(), 0u);
+
+  StartSearch(u"help");
+  ASSERT_EQ(LastResults().size(), 0u);
+
+  StartSearch(u"layton");
+  ASSERT_EQ(LastResults().size(), 0u);
+
+  StartSearch(u"wifi");
+  ASSERT_EQ(LastResults().size(), 0u);
 }
 
 }  // namespace app_list

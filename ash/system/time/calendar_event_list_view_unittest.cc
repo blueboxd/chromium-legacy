@@ -13,6 +13,7 @@
 #include "ash/system/time/calendar_view_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/settings/scoped_timezone_settings.h"
 #include "google_apis/common/api_error_codes.h"
@@ -118,6 +119,7 @@ class CalendarViewEventListViewTest : public AshTestBase {
  private:
   std::unique_ptr<CalendarEventListView> event_list_view_;
   std::unique_ptr<CalendarViewController> controller_;
+  base::test::ScopedFeatureList features_;
 };
 
 TEST_F(CalendarViewEventListViewTest, ShowEvents) {

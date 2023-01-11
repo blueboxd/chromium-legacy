@@ -4,15 +4,16 @@
 
 #include "mojo/core/ipcz_driver/mojo_message.h"
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <utility>
 
 #include "base/containers/span.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/ranges/algorithm.h"
 #include "mojo/core/ipcz_api.h"
 #include "mojo/core/ipcz_driver/data_pipe.h"
+#include "mojo/core/scoped_ipcz_handle.h"
 #include "third_party/ipcz/include/ipcz/ipcz.h"
 
 namespace mojo::core::ipcz_driver {
@@ -21,7 +22,7 @@ MojoMessage::MojoMessage() = default;
 
 MojoMessage::MojoMessage(std::vector<uint8_t> data,
                          std::vector<IpczHandle> handles) {
-  SetContents(std::move(data), std::move(handles), IPCZ_INVALID_HANDLE);
+  SetContents(std::move(data), std::move(handles), ScopedIpczHandle());
 }
 
 MojoMessage::~MojoMessage() {
@@ -31,10 +32,6 @@ MojoMessage::~MojoMessage() {
     }
   }
 
-  if (validator_ != IPCZ_INVALID_HANDLE) {
-    GetIpczAPI().Close(validator_, IPCZ_NO_FLAGS, nullptr);
-  }
-
   if (destructor_) {
     destructor_(context_);
   }
@@ -42,16 +39,16 @@ MojoMessage::~MojoMessage() {
 
 bool MojoMessage::SetContents(std::vector<uint8_t> data,
                               std::vector<IpczHandle> handles,
-                              IpczHandle validator) {
+                              ScopedIpczHandle validator) {
   const size_t size = data.size();
   if (size >= kMinBufferSize) {
     data_storage_ = std::move(data);
   } else {
     data_storage_.resize(kMinBufferSize);
-    std::copy(data.begin(), data.end(), data_storage_.begin());
+    base::ranges::copy(data, data_storage_.begin());
   }
 
-  validator_ = validator;
+  validator_ = std::move(validator);
   data_ = base::make_span(data_storage_).first(size);
   size_committed_ = true;
   if (handles.empty()) {
@@ -86,7 +83,7 @@ bool MojoMessage::SetContents(std::vector<uint8_t> data,
       return false;
     }
 
-    data_pipes[i]->AdoptPortal(handle);
+    data_pipes[i]->AdoptPortal(ScopedIpczHandle(handle));
   }
   handles.resize(first_data_pipe_portal);
   handles_ = std::move(handles);
@@ -156,7 +153,7 @@ IpczResult MojoMessage::GetData(void** buffer,
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
   }
 
-  std::copy(handles_.begin(), handles_.end(), handles);
+  base::ranges::copy(handles_, handles);
   handles_.clear();
   handles_consumed_ = true;
   return MOJO_RESULT_OK;
@@ -166,7 +163,7 @@ void MojoMessage::AttachDataPipePortals() {
   const size_t base_num_handles = handles_.size();
   for (size_t i = 0; i < base_num_handles; ++i) {
     if (auto* data_pipe = ipcz_driver::DataPipe::FromBox(handles_[i])) {
-      handles_.push_back(data_pipe->TakePortal());
+      handles_.push_back(data_pipe->TakePortal().release());
     }
   }
 }

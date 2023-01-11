@@ -189,7 +189,7 @@ void MailboxToSurfaceBridgeImpl::OnContextAvailableOnUiThread(
 }
 
 void MailboxToSurfaceBridgeImpl::BindContextProviderToCurrentThread() {
-  auto result = context_provider_->BindToCurrentThread();
+  auto result = context_provider_->BindToCurrentSequence();
   if (result != gpu::ContextResult::kSuccess) {
     DLOG(ERROR) << "Failed to init viz::ContextProvider";
     return;
@@ -304,7 +304,10 @@ bool MailboxToSurfaceBridgeImpl::CopyMailboxToSurfaceAndSwap(
   if (!IsConnected()) {
     // We may not have a context yet, i.e. due to surface initialization
     // being incomplete. This is not an error, but we obviously can't draw
-    // yet. TODO(klausw): change the caller to defer this until we are ready.
+    // yet. This affects the non-shared-buffer path on Android N (or
+    // if UseSharedBuffer was forced to false due to GPU bug workarounds),
+    // and may result in a couple of discarded images while waiting for
+    // initialization which is generally harmless.
     return false;
   }
 
@@ -484,10 +487,7 @@ void MailboxToSurfaceBridgeImpl::DrawQuad(unsigned int texture_handle,
 
   // We're redrawing over the entire viewport, but it's generally more
   // efficient on mobile tiling GPUs to clear anyway as a hint that
-  // we're done with the old content. TODO(klausw, https://crbug.com/700389):
-  // investigate using gl_->DiscardFramebufferEXT here since that's more
-  // efficient on desktop, but it would need a capability check since
-  // it's not supported on older devices such as Nexus 5X.
+  // we're done with the old content.
   gl_->Clear(GL_COLOR_BUFFER_BIT);
 
   float uv_transform_floats[16];

@@ -25,7 +25,7 @@
 
 html {
     display: block;
-    page-transition-tag: root;
+    view-transition-name: root;
 }
 
 /* generic block-level elements */
@@ -398,7 +398,7 @@ button {
 }
 
 /* Form controls don't go vertical. */
-input, textarea, select, button, meter, progress {
+input, textarea, select, button, meter {
     writing-mode: horizontal-tb !important;
 }
 
@@ -541,11 +541,14 @@ input::-internal-input-suggested {
     text-overflow: inherit;
     white-space: nowrap;
     overflow: hidden;
-}
+  }
 
-input::-internal-input-suggested,
-textarea::-internal-input-suggested {
+  input::-internal-input-suggested,
+  textarea::-internal-input-suggested {
     font: -webkit-small-control !important;
+    /* -webkit-small-control does not pin the font-feature-settings and we want
+       previews to look consistent. */
+    font-feature-settings: normal !important;
     /* Prevent that overflow affects the scrollable area. Without this,
        LayoutBox::*Scroll{Height,Width}() may determine the scroll width/height
        from the scrollable area instead of from the overrides in
@@ -1062,8 +1065,8 @@ progress {
     appearance: auto;
     box-sizing: border-box;
     display: inline-block;
-    height: 1em;
-    width: 10em;
+    block-size: 1em;
+    inline-size: 10em;
     vertical-align: -0.2em;
 }
 
@@ -1367,15 +1370,8 @@ textarea[dir=auto i] {
     unicode-bidi: plaintext;
 }
 
-/* The `,[popup]:-internal-popup-opening-or-open` is to support the pop-up API, and
-   has no effect if the HTMLPopupAttribute feature is disabled. */
-dialog:not([open],[popup]:-internal-popup-opening-or-open) {
-    /* https://html.spec.whatwg.org/multipage/rendering.html#flow-content-3 */
-    display: none;
-}
-
 dialog {
-    display: block;
+    display: none;
     /* https://html.spec.whatwg.org/multipage/rendering.html#flow-content-3 */
     position: absolute;
     inset-inline-start: 0;
@@ -1387,6 +1383,10 @@ dialog {
     padding: 1em;
     background-color: Canvas;
     color: CanvasText;
+}
+
+dialog[open] {
+    display: block;
 }
 
 dialog:modal {

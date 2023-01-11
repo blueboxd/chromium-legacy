@@ -15,11 +15,11 @@
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
-#include "chrome/browser/web_applications/isolated_web_apps/signed_web_bundle_integrity_block.h"
 #include "components/web_package/mojom/web_bundle_parser.mojom.h"
+#include "components/web_package/signed_web_bundles/signed_web_bundle_integrity_block.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -29,7 +29,8 @@ namespace web_app {
 
 SignedWebBundleReader::SignedWebBundleReader(
     const base::FilePath& web_bundle_path,
-    std::unique_ptr<SignedWebBundleSignatureVerifier> signature_verifier)
+    std::unique_ptr<web_package::SignedWebBundleSignatureVerifier>
+        signature_verifier)
     : web_bundle_path_(web_bundle_path),
       signature_verifier_(std::move(signature_verifier)) {}
 
@@ -43,7 +44,8 @@ SignedWebBundleReader::CreateAndStartReading(
     const base::FilePath& web_bundle_path,
     IntegrityBlockReadResultCallback integrity_block_result_callback,
     ReadErrorCallback read_error_callback,
-    std::unique_ptr<SignedWebBundleSignatureVerifier> signature_verifier) {
+    std::unique_ptr<web_package::SignedWebBundleSignatureVerifier>
+        signature_verifier) {
   // Using `new` to access a non-public constructor.
   auto reader = base::WrapUnique(new SignedWebBundleReader(
       web_bundle_path, std::move(signature_verifier)));
@@ -135,8 +137,8 @@ void SignedWebBundleReader::OnIntegrityBlockParsed(
     return;
   }
 
-  auto integrity_block =
-      SignedWebBundleIntegrityBlock::Create(std::move(raw_integrity_block));
+  auto integrity_block = web_package::SignedWebBundleIntegrityBlock::Create(
+      std::move(raw_integrity_block));
   if (!integrity_block.has_value()) {
     FulfillWithError(
         std::move(read_error_callback),
@@ -162,7 +164,7 @@ void SignedWebBundleReader::OnIntegrityBlockParsed(
 }
 
 void SignedWebBundleReader::OnShouldContinueParsingAfterIntegrityBlock(
-    SignedWebBundleIntegrityBlock integrity_block,
+    web_package::SignedWebBundleIntegrityBlock integrity_block,
     ReadErrorCallback callback,
     SignatureVerificationAction action) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -176,17 +178,15 @@ void SignedWebBundleReader::OnShouldContinueParsingAfterIntegrityBlock(
     case SignatureVerificationAction::Type::kContinueAndVerifySignatures:
       VerifySignatures(std::move(integrity_block), std::move(callback));
       return;
-#if BUILDFLAG(IS_CHROMEOS)
     case SignatureVerificationAction::Type::
         kContinueAndSkipSignatureVerification:
       ReadMetadata(std::move(callback));
       return;
-#endif
   }
 }
 
 void SignedWebBundleReader::VerifySignatures(
-    SignedWebBundleIntegrityBlock integrity_block,
+    web_package::SignedWebBundleIntegrityBlock integrity_block,
     ReadErrorCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK_EQ(state_, State::kInitializing);
@@ -199,7 +199,7 @@ void SignedWebBundleReader::VerifySignatures(
 
 void SignedWebBundleReader::OnSignaturesVerified(
     ReadErrorCallback callback,
-    absl::optional<SignedWebBundleSignatureVerifier::Error>
+    absl::optional<web_package::SignedWebBundleSignatureVerifier::Error>
         verification_error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK_EQ(state_, State::kInitializing);
@@ -261,8 +261,8 @@ void SignedWebBundleReader::FulfillWithError(ReadErrorCallback callback,
   // deletes `this` in response to the error, because `parser_` would attempt to
   // access its already freed instance variables when its `OnDisconnect` method
   // continues execution after running this callback.
-  base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
-                                                     std::move(parser_));
+  base::SequencedTaskRunner::GetCurrentDefault()->DeleteSoon(
+      FROM_HERE, std::move(parser_));
 
   std::move(callback).Run(std::move(error));
 }
@@ -294,7 +294,7 @@ void SignedWebBundleReader::ReadResponse(
   const GURL& url = net::SimplifyUrlForRequest(resource_request.url);
   auto entry_it = entries_.find(url);
   if (entry_it == entries_.end()) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(
             std::move(callback),
@@ -416,7 +416,7 @@ void SignedWebBundleReader::ReconnectForFile(base::File file) {
   absl::optional<std::string> error;
   if (file_error != base::File::FILE_OK)
     error = base::File::ErrorToString(file_error);
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&SignedWebBundleReader::DidReconnect,
                      weak_ptr_factory_.GetWeakPtr(), std::move(error)));
@@ -433,7 +433,7 @@ void SignedWebBundleReader::DidReconnect(absl::optional<std::string> error) {
 
   if (error) {
     for (auto& [response_location, response_callback] : read_tasks) {
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(
               std::move(response_callback),
@@ -501,16 +501,12 @@ SignedWebBundleReader::SignatureVerificationAction SignedWebBundleReader::
                                      absl::nullopt);
 }
 
-#if BUILDFLAG(IS_CHROMEOS)
-
 // static
 SignedWebBundleReader::SignatureVerificationAction SignedWebBundleReader::
     SignatureVerificationAction::ContinueAndSkipSignatureVerification() {
   return SignatureVerificationAction(
       Type::kContinueAndSkipSignatureVerification, absl::nullopt);
 }
-
-#endif
 
 SignedWebBundleReader::SignatureVerificationAction::SignatureVerificationAction(
     Type type,

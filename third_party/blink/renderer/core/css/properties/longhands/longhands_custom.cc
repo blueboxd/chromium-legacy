@@ -51,7 +51,6 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/zoom_adjusted_pixel_value.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
-#include "third_party/blink/renderer/core/document_transition/document_transition_style_tracker.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/counter_node.h"
@@ -63,6 +62,7 @@
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/style_overflow_clip_margin.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_style_tracker.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -161,9 +161,10 @@ const CSSValue* AnchorName::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  if (style.AnchorName().empty())
+  if (!style.AnchorName())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
-  return MakeGarbageCollected<CSSCustomIdentValue>(style.AnchorName());
+  return MakeGarbageCollected<CSSCustomIdentValue>(
+      style.AnchorName()->GetName());
 }
 
 const CSSValue* AnchorScroll::ParseSingleValue(
@@ -180,9 +181,10 @@ const CSSValue* AnchorScroll::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  if (style.AnchorScroll().empty())
+  if (!style.AnchorScroll())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
-  return MakeGarbageCollected<CSSCustomIdentValue>(style.AnchorScroll());
+  return MakeGarbageCollected<CSSCustomIdentValue>(
+      style.AnchorScroll()->GetName());
 }
 
 const CSSValue* AnimationDelay::ParseSingleValue(
@@ -207,6 +209,38 @@ const CSSValue* AnimationDelay::InitialValue() const {
       (CSSNumericLiteralValue::Create(CSSTimingData::InitialDelay(),
                                       CSSPrimitiveValue::UnitType::kSeconds)));
   return value;
+}
+
+const CSSValue* AnimationDelayStart::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+  return css_parsing_utils::ConsumeCommaSeparatedList(
+      css_parsing_utils::ConsumeAnimationDelay, range, context);
+}
+
+const CSSValue* AnimationDelayStart::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValueForAnimationDelayStart(style.Animations());
+}
+
+const CSSValue* AnimationDelayEnd::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+  return css_parsing_utils::ConsumeCommaSeparatedList(
+      css_parsing_utils::ConsumeAnimationDelay, range, context);
+}
+
+const CSSValue* AnimationDelayEnd::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValueForAnimationDelayEnd(style.Animations());
 }
 
 const CSSValue* AnimationDirection::ParseSingleValue(
@@ -362,12 +396,6 @@ const CSSValue* AnimationName::InitialValue() const {
   return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
 
-void AnimationName::ApplyValue(StyleResolverState& state,
-                               const ScopedCSSValue& scoped_value) const {
-  // TODO(futhark): Set the TreeScope on CSSAnimationData.
-  ApplyValue(state, scoped_value.GetCSSValue());
-}
-
 const CSSValue* AnimationPlayState::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
@@ -516,7 +544,7 @@ const CSSValue* BackdropFilter::CSSValueFromComputedStyleInternal(
 
 void BackdropFilter::ApplyValue(StyleResolverState& state,
                                 const CSSValue& value) const {
-  state.Style()->SetBackdropFilter(
+  state.StyleBuilder().SetBackdropFilter(
       StyleBuilderConverter::ConvertFilterOperations(state, value,
                                                      PropertyID()));
 }
@@ -754,12 +782,14 @@ const CSSValue* BaselineShift::CSSValueFromComputedStyleInternal(
 }
 
 void BaselineShift::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetBaselineShiftType(state.ParentStyle()->BaselineShiftType());
-  state.Style()->SetBaselineShift(state.ParentStyle()->BaselineShift());
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetBaselineShiftType(state.ParentStyle()->BaselineShiftType());
+  builder.SetBaselineShift(state.ParentStyle()->BaselineShift());
 }
 
 void BaselineShift::ApplyValue(StyleResolverState& state,
                                const CSSValue& value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     EBaselineShiftType baseline_shift_type = EBaselineShiftType::kLength;
     switch (identifier_value->GetValueID()) {
@@ -775,11 +805,11 @@ void BaselineShift::ApplyValue(StyleResolverState& state,
       default:
         NOTREACHED();
     }
-    state.Style()->SetBaselineShiftType(baseline_shift_type);
-    state.Style()->SetBaselineShift(Length::Fixed());
+    builder.SetBaselineShiftType(baseline_shift_type);
+    builder.SetBaselineShift(Length::Fixed());
   } else {
-    state.Style()->SetBaselineShiftType(EBaselineShiftType::kLength);
-    state.Style()->SetBaselineShift(StyleBuilderConverter::ConvertLength(
+    builder.SetBaselineShiftType(EBaselineShiftType::kLength);
+    builder.SetBaselineShift(StyleBuilderConverter::ConvertLength(
         state, To<CSSPrimitiveValue>(value)));
   }
 }
@@ -1032,7 +1062,7 @@ const CSSValue* BorderImageSource::InitialValue() const {
 
 void BorderImageSource::ApplyValue(StyleResolverState& state,
                                    const CSSValue& value) const {
-  state.Style()->SetBorderImageSource(
+  state.StyleBuilder().SetBorderImageSource(
       state.GetStyleImage(CSSPropertyID::kBorderImageSource, value));
 }
 
@@ -1449,20 +1479,6 @@ const CSSValue* CaretColor::CSSValueFromComputedStyleInternal(
                                                     CSSValuePhase::kUsedValue);
 }
 
-void CaretColor::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetCaretColor(StyleAutoColor::AutoColor());
-}
-
-void CaretColor::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetCaretColor(state.ParentStyle()->CaretColor());
-}
-
-void CaretColor::ApplyValue(StyleResolverState& state,
-                            const CSSValue& value) const {
-  state.Style()->SetCaretColor(
-      StyleBuilderConverter::ConvertStyleAutoColor(state, value));
-}
-
 const CSSValue* Clear::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
@@ -1599,45 +1615,45 @@ const CSSValue* Color::CSSValueFromComputedStyleInternal(
 }
 
 void Color::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetColor(state.Style()->InitialColorForColorScheme());
-  state.Style()->SetColorIsInherited(false);
-  state.Style()->SetColorIsCurrentColor(false);
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetColor(builder.InitialColorForColorScheme());
+  builder.SetColorIsInherited(false);
+  builder.SetColorIsCurrentColor(false);
 }
 
 void Color::ApplyInherit(StyleResolverState& state) const {
-  ComputedStyle* style = state.Style();
-  if (style->ShouldPreserveParentColor()) {
-    style->SetColor(StyleColor(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  if (builder.ShouldPreserveParentColor()) {
+    builder.SetColor(StyleColor(
         state.ParentStyle()->VisitedDependentColor(GetCSSPropertyColor())));
   } else {
-    style->SetColor(state.ParentStyle()->GetColor());
+    builder.SetColor(state.ParentStyle()->GetColor());
   }
-  style->SetColorIsInherited(true);
-  state.Style()->SetColorIsCurrentColor(
-      state.ParentStyle()->ColorIsCurrentColor());
+  builder.SetColorIsInherited(true);
+  builder.SetColorIsCurrentColor(state.ParentStyle()->ColorIsCurrentColor());
 }
 
 void Color::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
   // As per the spec, 'color: currentColor' is treated as 'color: inherit'
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value &&
       identifier_value->GetValueID() == CSSValueID::kCurrentcolor) {
     ApplyInherit(state);
-    state.Style()->SetColorIsCurrentColor(true);
+    builder.SetColorIsCurrentColor(true);
     if (state.UsesHighlightPseudoInheritance() &&
         state.OriginatingElementStyle())
-      state.Style()->SetColor(state.OriginatingElementStyle()->GetColor());
+      builder.SetColor(state.OriginatingElementStyle()->GetColor());
     return;
   }
   if (value.IsInitialColorValue()) {
     DCHECK_EQ(state.GetElement(), state.GetDocument().documentElement());
-    state.Style()->SetColor(state.Style()->InitialColorForColorScheme());
+    builder.SetColor(builder.InitialColorForColorScheme());
   } else {
-    state.Style()->SetColor(
-        StyleBuilderConverter::ConvertStyleColor(state, value));
+    builder.SetColor(StyleBuilderConverter::ConvertStyleColor(state, value));
   }
-  state.Style()->SetColorIsInherited(false);
-  state.Style()->SetColorIsCurrentColor(false);
+  builder.SetColorIsInherited(false);
+  builder.SetColorIsCurrentColor(false);
 }
 
 const CSSValue* ColorInterpolation::CSSValueFromComputedStyleInternal(
@@ -1736,9 +1752,8 @@ void ApplyColorSchemeValue(StyleResolverState& state,
     flags = document.GetStyleEngine().GetPageColorSchemes();
   }
 
-  state.StyleRef().SetColorScheme(std::move(color_schemes));
-
-  state.StyleRef().SetUsedColorScheme(
+  state.StyleBuilder().SetColorScheme(std::move(color_schemes));
+  state.StyleBuilder().SetUsedColorScheme(
       flags, document.GetStyleEngine().GetPreferredColorScheme(),
       document.GetStyleEngine().GetForceDarkModeEnabled());
 
@@ -1759,9 +1774,10 @@ void ColorScheme::ApplyInitial(StyleResolverState& state) const {
 }
 
 void ColorScheme::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetColorScheme(state.ParentStyle()->ColorScheme());
-  state.Style()->SetDarkColorScheme(state.ParentStyle()->DarkColorScheme());
-  state.Style()->SetColorSchemeForced(state.ParentStyle()->ColorSchemeForced());
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetColorScheme(state.ParentStyle()->ColorScheme());
+  builder.SetDarkColorScheme(state.ParentStyle()->DarkColorScheme());
+  builder.SetColorSchemeForced(state.ParentStyle()->ColorSchemeForced());
 }
 
 void ColorScheme::ApplyValue(StyleResolverState& state,
@@ -2190,7 +2206,7 @@ const CSSValue* Content::CSSValueFromComputedStyleInternal(
 }
 
 void Content::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetContent(nullptr);
+  state.StyleBuilder().SetContent(nullptr);
 }
 
 void Content::ApplyInherit(StyleResolverState& state) const {
@@ -2205,14 +2221,15 @@ void Content::ApplyValue(StyleResolverState& state,
 
 void Content::ApplyValue(StyleResolverState& state,
                          const ScopedCSSValue& scoped_value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   const CSSValue& value = scoped_value.GetCSSValue();
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     DCHECK(identifier_value->GetValueID() == CSSValueID::kNormal ||
            identifier_value->GetValueID() == CSSValueID::kNone);
     if (identifier_value->GetValueID() == CSSValueID::kNone)
-      state.Style()->SetContent(MakeGarbageCollected<NoneContentData>());
+      builder.SetContent(MakeGarbageCollected<NoneContentData>());
     else
-      state.Style()->SetContent(nullptr);
+      builder.SetContent(nullptr);
     return;
   }
   const CSSValueList& outer_list = To<CSSValueList>(value);
@@ -2256,7 +2273,7 @@ void Content::ApplyValue(StyleResolverState& state,
       if (const auto* function_value =
               DynamicTo<CSSFunctionValue>(item.Get())) {
         DCHECK_EQ(function_value->FunctionType(), CSSValueID::kAttr);
-        state.Style()->SetHasAttrContent();
+        builder.SetHasAttrContent();
         // TODO: Can a namespace be specified for an attr(foo)?
         QualifiedName attr(
             g_null_atom,
@@ -2290,7 +2307,7 @@ void Content::ApplyValue(StyleResolverState& state,
     prev_content->SetNext(alt_content);
   }
   DCHECK(first_content);
-  state.Style()->SetContent(first_content);
+  builder.SetContent(first_content);
 }
 
 const int kCounterIncrementDefaultValue = 1;
@@ -2430,35 +2447,35 @@ const CSSValue* Cursor::CSSValueFromComputedStyleInternal(
 }
 
 void Cursor::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->ClearCursorList();
-  state.Style()->SetCursor(ComputedStyleInitialValues::InitialCursor());
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.ClearCursorList();
+  builder.SetCursor(ComputedStyleInitialValues::InitialCursor());
 }
 
 void Cursor::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetCursor(state.ParentStyle()->Cursor());
-  state.Style()->SetCursorList(state.ParentStyle()->Cursors());
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetCursor(state.ParentStyle()->Cursor());
+  builder.SetCursorList(state.ParentStyle()->Cursors());
 }
 
 void Cursor::ApplyValue(StyleResolverState& state,
                         const CSSValue& value) const {
-  state.Style()->ClearCursorList();
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.ClearCursorList();
   if (auto* value_list = DynamicTo<CSSValueList>(value)) {
-    state.Style()->SetCursor(ECursor::kAuto);
+    builder.SetCursor(ECursor::kAuto);
     for (const auto& item : *value_list) {
       if (const auto* cursor =
               DynamicTo<cssvalue::CSSCursorImageValue>(*item)) {
         const CSSValue& image = cursor->ImageValue();
-        state.Style()->AddCursor(
-            state.GetStyleImage(CSSPropertyID::kCursor, image),
-            cursor->HotSpotSpecified(), cursor->HotSpot());
+        builder.AddCursor(state.GetStyleImage(CSSPropertyID::kCursor, image),
+                          cursor->HotSpotSpecified(), cursor->HotSpot());
       } else {
-        state.Style()->SetCursor(
-            To<CSSIdentifierValue>(*item).ConvertTo<ECursor>());
+        builder.SetCursor(To<CSSIdentifierValue>(*item).ConvertTo<ECursor>());
       }
     }
   } else {
-    state.Style()->SetCursor(
-        To<CSSIdentifierValue>(value).ConvertTo<ECursor>());
+    builder.SetCursor(To<CSSIdentifierValue>(value).ConvertTo<ECursor>());
   }
 }
 
@@ -2514,7 +2531,7 @@ const CSSValue* Direction::CSSValueFromComputedStyleInternal(
 
 void Direction::ApplyValue(StyleResolverState& state,
                            const CSSValue& value) const {
-  state.Style()->SetDirection(
+  state.StyleBuilder().SetDirection(
       To<CSSIdentifierValue>(value).ConvertTo<TextDirection>());
 }
 
@@ -2631,28 +2648,31 @@ const CSSValue* Display::CSSValueFromComputedStyleInternal(
 }
 
 void Display::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetDisplay(ComputedStyleInitialValues::InitialDisplay());
-  state.Style()->SetDisplayLayoutCustomName(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetDisplay(ComputedStyleInitialValues::InitialDisplay());
+  builder.SetDisplayLayoutCustomName(
       ComputedStyleInitialValues::InitialDisplayLayoutCustomName());
 }
 
 void Display::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetDisplay(state.ParentStyle()->Display());
-  state.Style()->SetDisplayLayoutCustomName(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetDisplay(state.ParentStyle()->Display());
+  builder.SetDisplayLayoutCustomName(
       state.ParentStyle()->DisplayLayoutCustomName());
 }
 
 void Display::ApplyValue(StyleResolverState& state,
                          const CSSValue& value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    state.Style()->SetDisplay(identifier_value->ConvertTo<EDisplay>());
-    state.Style()->SetDisplayLayoutCustomName(
+    builder.SetDisplay(identifier_value->ConvertTo<EDisplay>());
+    builder.SetDisplayLayoutCustomName(
         ComputedStyleInitialValues::InitialDisplayLayoutCustomName());
     return;
   }
 
   if (value.IsValueList()) {
-    state.Style()->SetDisplayLayoutCustomName(
+    builder.SetDisplayLayoutCustomName(
         ComputedStyleInitialValues::InitialDisplayLayoutCustomName());
     const CSSValueList& display_pair = To<CSSValueList>(value);
     DCHECK_EQ(display_pair.length(), 2u);
@@ -2663,9 +2683,9 @@ void Display::ApplyValue(StyleResolverState& state,
     // TODO(crbug.com/995106): should apply to more than just math.
     DCHECK(inside.GetValueID() == CSSValueID::kMath);
     if (outside.GetValueID() == CSSValueID::kBlock)
-      state.Style()->SetDisplay(EDisplay::kBlockMath);
+      builder.SetDisplay(EDisplay::kBlockMath);
     else
-      state.Style()->SetDisplay(EDisplay::kMath);
+      builder.SetDisplay(EDisplay::kMath);
     return;
   }
 
@@ -2675,8 +2695,8 @@ void Display::ApplyValue(StyleResolverState& state,
   EDisplay display = layout_function_value.IsInline()
                          ? EDisplay::kInlineLayoutCustom
                          : EDisplay::kLayoutCustom;
-  state.Style()->SetDisplay(display);
-  state.Style()->SetDisplayLayoutCustomName(layout_function_value.GetName());
+  builder.SetDisplay(display);
+  builder.SetDisplayLayoutCustomName(layout_function_value.GetName());
 }
 
 const CSSValue* DominantBaseline::CSSValueFromComputedStyleInternal(
@@ -2755,7 +2775,7 @@ const CSSValue* Filter::CSSValueFromComputedStyleInternal(
 
 void Filter::ApplyValue(StyleResolverState& state,
                         const CSSValue& value) const {
-  state.Style()->SetFilter(StyleBuilderConverter::ConvertFilterOperations(
+  state.StyleBuilder().SetFilter(StyleBuilderConverter::ConvertFilterOperations(
       state, value, PropertyID()));
 }
 
@@ -2885,12 +2905,6 @@ const CSSValue* FontFamily::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForFontFamily(style);
-}
-
-void FontFamily::ApplyValue(StyleResolverState& state,
-                            const ScopedCSSValue& scoped_value) const {
-  state.GetFontBuilder().SetFamilyTreeScope(scoped_value.GetTreeScope());
-  ApplyValue(state, scoped_value.GetCSSValue());
 }
 
 void FontFamily::ApplyInitial(StyleResolverState& state) const {
@@ -3257,46 +3271,46 @@ const CSSValue* ForcedColorAdjust::CSSValueFromComputedStyleInternal(
 }
 
 void InternalVisitedColor::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetInternalVisitedColor(
-      state.Style()->InitialColorForColorScheme());
-  state.Style()->SetInternalVisitedColorIsCurrentColor(false);
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetInternalVisitedColor(builder.InitialColorForColorScheme());
+  builder.SetInternalVisitedColorIsCurrentColor(false);
 }
 
 void InternalVisitedColor::ApplyInherit(StyleResolverState& state) const {
-  ComputedStyle* style = state.Style();
-  if (style->ShouldPreserveParentColor()) {
-    style->SetInternalVisitedColor(StyleColor(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  if (builder.ShouldPreserveParentColor()) {
+    builder.SetInternalVisitedColor(StyleColor(
         state.ParentStyle()->VisitedDependentColor(GetCSSPropertyColor())));
   } else {
-    style->SetInternalVisitedColor(state.ParentStyle()->GetColor());
+    builder.SetInternalVisitedColor(state.ParentStyle()->GetColor());
   }
-  state.Style()->SetInternalVisitedColorIsCurrentColor(
+  builder.SetInternalVisitedColorIsCurrentColor(
       state.ParentStyle()->InternalVisitedColorIsCurrentColor());
 }
 
 void InternalVisitedColor::ApplyValue(StyleResolverState& state,
                                       const CSSValue& value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value &&
       identifier_value->GetValueID() == CSSValueID::kCurrentcolor) {
     ApplyInherit(state);
-    state.Style()->SetInternalVisitedColorIsCurrentColor(true);
+    builder.SetInternalVisitedColorIsCurrentColor(true);
     if (state.UsesHighlightPseudoInheritance() &&
         state.OriginatingElementStyle()) {
-      state.Style()->SetInternalVisitedColor(
+      builder.SetInternalVisitedColor(
           state.OriginatingElementStyle()->InternalVisitedColor());
     }
     return;
   }
   if (value.IsInitialColorValue()) {
     DCHECK_EQ(state.GetElement(), state.GetDocument().documentElement());
-    state.Style()->SetInternalVisitedColor(
-        state.Style()->InitialColorForColorScheme());
+    builder.SetInternalVisitedColor(builder.InitialColorForColorScheme());
   } else {
-    state.Style()->SetInternalVisitedColor(
+    builder.SetInternalVisitedColor(
         StyleBuilderConverter::ConvertStyleColor(state, value, true));
   }
-  state.Style()->SetInternalVisitedColorIsCurrentColor(false);
+  builder.SetInternalVisitedColorIsCurrentColor(false);
 }
 
 const blink::Color InternalVisitedColor::ColorIncludingFallback(
@@ -3527,29 +3541,30 @@ const CSSValue* GridTemplateAreas::CSSValueFromComputedStyleInternal(
 }
 
 void GridTemplateAreas::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetImplicitNamedGridColumnLines(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetImplicitNamedGridColumnLines(
       ComputedStyleInitialValues::InitialImplicitNamedGridColumnLines());
-  state.Style()->SetImplicitNamedGridRowLines(
+  builder.SetImplicitNamedGridRowLines(
       ComputedStyleInitialValues::InitialImplicitNamedGridRowLines());
 
-  state.Style()->SetNamedGridArea(
-      ComputedStyleInitialValues::InitialNamedGridArea());
-  state.Style()->SetNamedGridAreaRowCount(
+  builder.SetNamedGridArea(ComputedStyleInitialValues::InitialNamedGridArea());
+  builder.SetNamedGridAreaRowCount(
       ComputedStyleInitialValues::InitialNamedGridAreaRowCount());
-  state.Style()->SetNamedGridAreaColumnCount(
+  builder.SetNamedGridAreaColumnCount(
       ComputedStyleInitialValues::InitialNamedGridAreaColumnCount());
 }
 
 void GridTemplateAreas::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetImplicitNamedGridColumnLines(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetImplicitNamedGridColumnLines(
       state.ParentStyle()->ImplicitNamedGridColumnLines());
-  state.Style()->SetImplicitNamedGridRowLines(
+  builder.SetImplicitNamedGridRowLines(
       state.ParentStyle()->ImplicitNamedGridRowLines());
 
-  state.Style()->SetNamedGridArea(state.ParentStyle()->NamedGridArea());
-  state.Style()->SetNamedGridAreaRowCount(
+  builder.SetNamedGridArea(state.ParentStyle()->NamedGridArea());
+  builder.SetNamedGridAreaRowCount(
       state.ParentStyle()->NamedGridAreaRowCount());
-  state.Style()->SetNamedGridAreaColumnCount(
+  builder.SetNamedGridAreaColumnCount(
       state.ParentStyle()->NamedGridAreaColumnCount());
 }
 
@@ -3572,14 +3587,14 @@ void GridTemplateAreas::ApplyValue(StyleResolverState& state,
       new_named_grid_areas, implicit_named_grid_column_lines, kForColumns);
   StyleBuilderConverter::CreateImplicitNamedGridLinesFromGridArea(
       new_named_grid_areas, implicit_named_grid_row_lines, kForRows);
-  state.Style()->SetImplicitNamedGridColumnLines(
-      implicit_named_grid_column_lines);
-  state.Style()->SetImplicitNamedGridRowLines(implicit_named_grid_row_lines);
 
-  state.Style()->SetNamedGridArea(new_named_grid_areas);
-  state.Style()->SetNamedGridAreaRowCount(grid_template_areas_value.RowCount());
-  state.Style()->SetNamedGridAreaColumnCount(
-      grid_template_areas_value.ColumnCount());
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetImplicitNamedGridColumnLines(implicit_named_grid_column_lines);
+  builder.SetImplicitNamedGridRowLines(implicit_named_grid_row_lines);
+
+  builder.SetNamedGridArea(new_named_grid_areas);
+  builder.SetNamedGridAreaRowCount(grid_template_areas_value.RowCount());
+  builder.SetNamedGridAreaColumnCount(grid_template_areas_value.ColumnCount());
 }
 
 const CSSValue* GridTemplateAreas::InitialValue() const {
@@ -4246,13 +4261,13 @@ const CSSValue* InternalForcedBorderColor::ParseSingleValue(
 }
 
 void InternalForcedColor::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetInternalForcedColor(
+  state.StyleBuilder().SetInternalForcedColor(
       ComputedStyleInitialValues::InitialInternalForcedColor());
 }
 
 void InternalForcedColor::ApplyInherit(StyleResolverState& state) const {
-  auto color = state.ParentStyle()->InternalForcedColor();
-  state.Style()->SetInternalForcedColor(color);
+  state.StyleBuilder().SetInternalForcedColor(
+      state.ParentStyle()->InternalForcedColor());
 }
 
 void InternalForcedColor::ApplyValue(StyleResolverState& state,
@@ -4263,13 +4278,14 @@ void InternalForcedColor::ApplyValue(StyleResolverState& state,
     ApplyInherit(state);
     return;
   }
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   if (value.IsInitialColorValue()) {
     DCHECK_EQ(state.GetElement(), state.GetDocument().documentElement());
-    state.Style()->SetInternalForcedColor(
+    builder.SetInternalForcedColor(
         ComputedStyleInitialValues::InitialInternalForcedColor());
     return;
   }
-  state.Style()->SetInternalForcedColor(
+  builder.SetInternalForcedColor(
       StyleBuilderConverter::ConvertStyleColor(state, value));
 }
 
@@ -4330,13 +4346,13 @@ const CSSValue* InternalForcedOutlineColor::ParseSingleValue(
 }
 
 void InternalForcedVisitedColor::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetInternalForcedVisitedColor(
+  state.StyleBuilder().SetInternalForcedVisitedColor(
       ComputedStyleInitialValues::InitialInternalForcedVisitedColor());
 }
 
 void InternalForcedVisitedColor::ApplyInherit(StyleResolverState& state) const {
   auto color = state.ParentStyle()->InternalForcedVisitedColor();
-  state.Style()->SetInternalForcedVisitedColor(color);
+  state.StyleBuilder().SetInternalForcedVisitedColor(color);
 }
 
 void InternalForcedVisitedColor::ApplyValue(StyleResolverState& state,
@@ -4347,13 +4363,14 @@ void InternalForcedVisitedColor::ApplyValue(StyleResolverState& state,
     ApplyInherit(state);
     return;
   }
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   if (value.IsInitialColorValue()) {
     DCHECK_EQ(state.GetElement(), state.GetDocument().documentElement());
-    state.Style()->SetInternalForcedVisitedColor(
+    builder.SetInternalForcedVisitedColor(
         ComputedStyleInitialValues::InitialInternalForcedVisitedColor());
     return;
   }
-  state.Style()->SetInternalForcedVisitedColor(
+  builder.SetInternalForcedVisitedColor(
       StyleBuilderConverter::ConvertStyleColor(state, value, true));
 }
 
@@ -4574,7 +4591,7 @@ const CSSValue* ListStyleImage::CSSValueFromComputedStyleInternal(
 
 void ListStyleImage::ApplyValue(StyleResolverState& state,
                                 const CSSValue& value) const {
-  state.Style()->SetListStyleImage(
+  state.StyleBuilder().SetListStyleImage(
       state.GetStyleImage(CSSPropertyID::kListStyleImage, value));
 }
 
@@ -4614,15 +4631,6 @@ const CSSValue* ListStyleType::CSSValueFromComputedStyleInternal(
       style.ListStyleType()->GetCounterStyleName());
 }
 
-void ListStyleType::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetListStyleType(
-      ComputedStyleInitialValues::InitialListStyleType());
-}
-
-void ListStyleType::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetListStyleType(state.ParentStyle()->ListStyleType());
-}
-
 void ListStyleType::ApplyValue(StyleResolverState& state,
                                const CSSValue& value) const {
   NOTREACHED();
@@ -4630,22 +4638,23 @@ void ListStyleType::ApplyValue(StyleResolverState& state,
 
 void ListStyleType::ApplyValue(StyleResolverState& state,
                                const ScopedCSSValue& scoped_value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   const CSSValue& value = scoped_value.GetCSSValue();
   if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     DCHECK_EQ(CSSValueID::kNone, identifier_value->GetValueID());
-    state.Style()->SetListStyleType(nullptr);
+    builder.SetListStyleType(nullptr);
     return;
   }
 
   if (const auto* string_value = DynamicTo<CSSStringValue>(value)) {
-    state.Style()->SetListStyleType(
+    builder.SetListStyleType(
         ListStyleTypeData::CreateString(AtomicString(string_value->Value())));
     return;
   }
 
   DCHECK(value.IsCustomIdentValue());
   const auto& custom_ident_value = To<CSSCustomIdentValue>(value);
-  state.Style()->SetListStyleType(ListStyleTypeData::CreateCounterStyle(
+  builder.SetListStyleType(ListStyleTypeData::CreateCounterStyle(
       custom_ident_value.Value(), scoped_value.GetTreeScope()));
 }
 
@@ -4923,20 +4932,21 @@ const CSSValue* MathDepth::CSSValueFromComputedStyleInternal(
 
 void MathDepth::ApplyValue(StyleResolverState& state,
                            const CSSValue& value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   if (const auto* list = DynamicTo<CSSValueList>(value)) {
     DCHECK_EQ(list->length(), 1U);
     const auto& relative_value = To<CSSPrimitiveValue>(list->Item(0));
-    state.Style()->SetMathDepth(base::ClampAdd(state.ParentStyle()->MathDepth(),
-                                               relative_value.GetIntValue()));
+    builder.SetMathDepth(base::ClampAdd(state.ParentStyle()->MathDepth(),
+                                        relative_value.GetIntValue()));
   } else if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     DCHECK(identifier_value->GetValueID() == CSSValueID::kAutoAdd);
     int16_t depth = 0;
     if (state.ParentStyle()->MathStyle() == EMathStyle::kCompact)
       depth += 1;
-    state.Style()->SetMathDepth(
+    builder.SetMathDepth(
         base::ClampAdd(state.ParentStyle()->MathDepth(), depth));
   } else if (DynamicTo<CSSPrimitiveValue>(value)) {
-    state.Style()->SetMathDepth(
+    builder.SetMathDepth(
         ClampTo<int16_t>(To<CSSPrimitiveValue>(value).GetIntValue()));
   }
 }
@@ -5283,20 +5293,6 @@ const CSSValue* AccentColor::CSSValueFromComputedStyleInternal(
       style, style.AccentColor(), CSSValuePhase::kComputedValue);
 }
 
-void AccentColor::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetAccentColor(StyleAutoColor::AutoColor());
-}
-
-void AccentColor::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetAccentColor(state.ParentStyle()->AccentColor());
-}
-
-void AccentColor::ApplyValue(StyleResolverState& state,
-                             const CSSValue& value) const {
-  state.Style()->SetAccentColor(
-      StyleBuilderConverter::ConvertStyleAutoColor(state, value));
-}
-
 const blink::Color OutlineColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style,
@@ -5353,23 +5349,25 @@ const CSSValue* OutlineStyle::CSSValueFromComputedStyleInternal(
 }
 
 void OutlineStyle::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetOutlineStyleIsAuto(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetOutlineStyleIsAuto(
       ComputedStyleInitialValues::InitialOutlineStyleIsAuto());
-  state.Style()->SetOutlineStyle(EBorderStyle::kNone);
+  builder.SetOutlineStyle(EBorderStyle::kNone);
 }
 
 void OutlineStyle::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetOutlineStyleIsAuto(
-      state.ParentStyle()->OutlineStyleIsAuto());
-  state.Style()->SetOutlineStyle(state.ParentStyle()->OutlineStyle());
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetOutlineStyleIsAuto(state.ParentStyle()->OutlineStyleIsAuto());
+  builder.SetOutlineStyle(state.ParentStyle()->OutlineStyle());
 }
 
 void OutlineStyle::ApplyValue(StyleResolverState& state,
                               const CSSValue& value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   const auto& identifier_value = To<CSSIdentifierValue>(value);
-  state.Style()->SetOutlineStyleIsAuto(
+  builder.SetOutlineStyleIsAuto(
       static_cast<bool>(identifier_value.ConvertTo<OutlineIsAuto>()));
-  state.Style()->SetOutlineStyle(identifier_value.ConvertTo<EBorderStyle>());
+  builder.SetOutlineStyle(identifier_value.ConvertTo<EBorderStyle>());
 }
 
 const CSSValue* OutlineWidth::ParseSingleValue(
@@ -5488,28 +5486,31 @@ const CSSValue* OverflowX::CSSValueFromComputedStyleInternal(
 }
 
 void OverflowX::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetOverflowX(ComputedStyleInitialValues::InitialOverflowX());
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetOverflowX(ComputedStyleInitialValues::InitialOverflowX());
 
-  DCHECK_EQ(state.Style()->OverflowX(), EOverflow::kVisible);
-  state.Style()->SetHasExplicitOverflowXVisible();
+  DCHECK_EQ(builder.OverflowX(), EOverflow::kVisible);
+  builder.SetHasExplicitOverflowXVisible();
 }
 
 void OverflowX::ApplyInherit(StyleResolverState& state) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   auto parent_value = state.ParentStyle()->OverflowX();
-  state.Style()->SetOverflowX(parent_value);
+  builder.SetOverflowX(parent_value);
 
   if (parent_value == EOverflow::kVisible)
-    state.Style()->SetHasExplicitOverflowXVisible();
+    builder.SetHasExplicitOverflowXVisible();
 }
 
 void OverflowX::ApplyValue(StyleResolverState& state,
                            const CSSValue& value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   auto converted_value =
       To<CSSIdentifierValue>(value).ConvertTo<blink::EOverflow>();
-  state.Style()->SetOverflowX(converted_value);
+  builder.SetOverflowX(converted_value);
 
   if (converted_value == EOverflow::kVisible)
-    state.Style()->SetHasExplicitOverflowXVisible();
+    builder.SetHasExplicitOverflowXVisible();
 }
 
 const CSSValue* OverflowY::CSSValueFromComputedStyleInternal(
@@ -5520,28 +5521,31 @@ const CSSValue* OverflowY::CSSValueFromComputedStyleInternal(
 }
 
 void OverflowY::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetOverflowY(ComputedStyleInitialValues::InitialOverflowY());
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetOverflowY(ComputedStyleInitialValues::InitialOverflowY());
 
-  DCHECK_EQ(state.Style()->OverflowY(), EOverflow::kVisible);
-  state.Style()->SetHasExplicitOverflowYVisible();
+  DCHECK_EQ(builder.OverflowY(), EOverflow::kVisible);
+  builder.SetHasExplicitOverflowYVisible();
 }
 
 void OverflowY::ApplyInherit(StyleResolverState& state) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   auto parent_value = state.ParentStyle()->OverflowY();
-  state.Style()->SetOverflowY(parent_value);
+  builder.SetOverflowY(parent_value);
 
   if (parent_value == EOverflow::kVisible)
-    state.Style()->SetHasExplicitOverflowYVisible();
+    builder.SetHasExplicitOverflowYVisible();
 }
 
 void OverflowY::ApplyValue(StyleResolverState& state,
                            const CSSValue& value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   auto converted_value =
       To<CSSIdentifierValue>(value).ConvertTo<blink::EOverflow>();
-  state.Style()->SetOverflowY(converted_value);
+  builder.SetOverflowY(converted_value);
 
   if (converted_value == EOverflow::kVisible)
-    state.Style()->SetHasExplicitOverflowYVisible();
+    builder.SetHasExplicitOverflowYVisible();
 }
 
 const CSSValue* OverscrollBehaviorX::CSSValueFromComputedStyleInternal(
@@ -5743,7 +5747,7 @@ const CSSValue* Page::CSSValueFromComputedStyleInternal(
   return MakeGarbageCollected<CSSCustomIdentValue>(style.Page());
 }
 
-const CSSValue* PageTransitionTag::ParseSingleValue(
+const CSSValue* ViewTransitionName::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
@@ -5752,13 +5756,13 @@ const CSSValue* PageTransitionTag::ParseSingleValue(
   return css_parsing_utils::ConsumeCustomIdent(range, context);
 }
 
-const CSSValue* PageTransitionTag::CSSValueFromComputedStyleInternal(
+const CSSValue* ViewTransitionName::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  if (style.PageTransitionTag().IsNull())
+  if (style.ViewTransitionName().IsNull())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
-  return MakeGarbageCollected<CSSCustomIdentValue>(style.PageTransitionTag());
+  return MakeGarbageCollected<CSSCustomIdentValue>(style.ViewTransitionName());
 }
 
 const CSSValue* PaintOrder::ParseSingleValue(
@@ -5905,18 +5909,18 @@ const CSSValue* PerspectiveOrigin::CSSValueFromComputedStyleInternal(
 
     return MakeGarbageCollected<CSSValuePair>(
         ZoomAdjustedPixelValue(
-            MinimumValueForLength(style.PerspectiveOriginX(), box.Width()),
+            MinimumValueForLength(style.PerspectiveOrigin().X(), box.Width()),
             style),
         ZoomAdjustedPixelValue(
-            MinimumValueForLength(style.PerspectiveOriginY(), box.Height()),
+            MinimumValueForLength(style.PerspectiveOrigin().Y(), box.Height()),
             style),
         CSSValuePair::kKeepIdenticalValues);
   } else {
     return MakeGarbageCollected<CSSValuePair>(
         ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-            style.PerspectiveOriginX(), style),
+            style.PerspectiveOrigin().X(), style),
         ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-            style.PerspectiveOriginY(), style),
+            style.PerspectiveOrigin().Y(), style),
         CSSValuePair::kKeepIdenticalValues);
   }
 }
@@ -5937,7 +5941,7 @@ const CSSValue* Position::CSSValueFromComputedStyleInternal(
 
 void Position::ApplyInherit(StyleResolverState& state) const {
   if (!state.ParentNode()->IsDocumentNode())
-    state.Style()->SetPosition(state.ParentStyle()->GetPosition());
+    state.StyleBuilder().SetPosition(state.ParentStyle()->GetPosition());
 }
 
 const CSSValue* PositionFallback::ParseSingleValue(
@@ -6033,7 +6037,7 @@ void Resize::ApplyValue(StyleResolverState& state,
   } else {
     r = identifier_value.ConvertTo<EResize>();
   }
-  state.Style()->SetResize(r);
+  state.StyleBuilder().SetResize(r);
 }
 
 const CSSValue* Right::ParseSingleValue(
@@ -6787,7 +6791,8 @@ void Size::ApplyInitial(StyleResolverState& state) const {}
 void Size::ApplyInherit(StyleResolverState& state) const {}
 
 void Size::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
-  state.Style()->ResetPageSizeType();
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.ResetPageSizeType();
   gfx::SizeF size;
   PageSizeType page_size_type = PageSizeType::kAuto;
   const auto& list = To<CSSValueList>(value);
@@ -6846,8 +6851,8 @@ void Size::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
       }
     }
   }
-  state.Style()->SetPageSizeType(page_size_type);
-  state.Style()->SetPageSize(size);
+  builder.SetPageSizeType(page_size_type);
+  builder.SetPageSize(size);
 }
 
 const CSSValue* Speak::CSSValueFromComputedStyleInternal(
@@ -7086,6 +7091,7 @@ const CSSValue* TextAlign::CSSValueFromComputedStyleInternal(
 
 void TextAlign::ApplyValue(StyleResolverState& state,
                            const CSSValue& value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   const auto* ident_value = DynamicTo<CSSIdentifierValue>(value);
   if (ident_value &&
       ident_value->GetValueID() != CSSValueID::kWebkitMatchParent) {
@@ -7095,19 +7101,19 @@ void TextAlign::ApplyValue(StyleResolverState& state,
     if (ident_value->GetValueID() == CSSValueID::kInternalCenter &&
         state.ParentStyle()->GetTextAlign() !=
             ComputedStyleInitialValues::InitialTextAlign())
-      state.Style()->SetTextAlign(state.ParentStyle()->GetTextAlign());
+      builder.SetTextAlign(state.ParentStyle()->GetTextAlign());
     else
-      state.Style()->SetTextAlign(ident_value->ConvertTo<ETextAlign>());
+      builder.SetTextAlign(ident_value->ConvertTo<ETextAlign>());
   } else if (state.ParentStyle()->GetTextAlign() == ETextAlign::kStart) {
-    state.Style()->SetTextAlign(state.ParentStyle()->IsLeftToRightDirection()
-                                    ? ETextAlign::kLeft
-                                    : ETextAlign::kRight);
+    builder.SetTextAlign(state.ParentStyle()->IsLeftToRightDirection()
+                             ? ETextAlign::kLeft
+                             : ETextAlign::kRight);
   } else if (state.ParentStyle()->GetTextAlign() == ETextAlign::kEnd) {
-    state.Style()->SetTextAlign(state.ParentStyle()->IsLeftToRightDirection()
-                                    ? ETextAlign::kRight
-                                    : ETextAlign::kLeft);
+    builder.SetTextAlign(state.ParentStyle()->IsLeftToRightDirection()
+                             ? ETextAlign::kRight
+                             : ETextAlign::kLeft);
   } else {
-    state.Style()->SetTextAlign(state.ParentStyle()->GetTextAlign());
+    builder.SetTextAlign(state.ParentStyle()->GetTextAlign());
   }
 }
 
@@ -7253,14 +7259,6 @@ const CSSValue* TextIndent::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-void TextIndent::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetTextIndent(ComputedStyleInitialValues::InitialTextIndent());
-}
-
-void TextIndent::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetTextIndent(state.ParentStyle()->TextIndent());
-}
-
 void TextIndent::ApplyValue(StyleResolverState& state,
                             const CSSValue& value) const {
   Length length_or_percentage_value;
@@ -7275,7 +7273,7 @@ void TextIndent::ApplyValue(StyleResolverState& state,
     }
   }
 
-  state.Style()->SetTextIndent(length_or_percentage_value);
+  state.StyleBuilder().SetTextIndent(length_or_percentage_value);
 }
 
 const CSSValue* TextOrientation::CSSValueFromComputedStyleInternal(
@@ -7589,18 +7587,22 @@ const CSSValue* TransformOrigin::CSSValueFromComputedStyleInternal(
     gfx::RectF reference_box = ComputedStyleUtils::ReferenceBoxForTransform(
         *layout_object, ComputedStyleUtils::kDontUsePixelSnappedBox);
     gfx::PointF resolved_origin(
-        FloatValueForLength(style.TransformOriginX(), reference_box.width()),
-        FloatValueForLength(style.TransformOriginY(), reference_box.height()));
+        FloatValueForLength(style.GetTransformOrigin().X(),
+                            reference_box.width()),
+        FloatValueForLength(style.GetTransformOrigin().Y(),
+                            reference_box.height()));
     list->Append(*ZoomAdjustedPixelValue(resolved_origin.x(), style));
     list->Append(*ZoomAdjustedPixelValue(resolved_origin.y(), style));
   } else {
     list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-        style.TransformOriginX(), style));
+        style.GetTransformOrigin().X(), style));
     list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-        style.TransformOriginY(), style));
+        style.GetTransformOrigin().Y(), style));
   }
-  if (style.TransformOriginZ() != 0)
-    list->Append(*ZoomAdjustedPixelValue(style.TransformOriginZ(), style));
+  if (style.GetTransformOrigin().Z() != 0) {
+    list->Append(
+        *ZoomAdjustedPixelValue(style.GetTransformOrigin().Z(), style));
+  }
   return list;
 }
 
@@ -7833,23 +7835,23 @@ const CSSValue* VerticalAlign::CSSValueFromComputedStyleInternal(
 }
 
 void VerticalAlign::ApplyInherit(StyleResolverState& state) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   EVerticalAlign vertical_align = state.ParentStyle()->VerticalAlign();
-  state.Style()->SetVerticalAlign(vertical_align);
+  builder.SetVerticalAlign(vertical_align);
   if (vertical_align == EVerticalAlign::kLength) {
-    state.Style()->SetVerticalAlignLength(
+    builder.SetVerticalAlignLength(
         state.ParentStyle()->GetVerticalAlignLength());
   }
 }
 
 void VerticalAlign::ApplyValue(StyleResolverState& state,
                                const CSSValue& value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    state.Style()->SetVerticalAlign(
-        identifier_value->ConvertTo<EVerticalAlign>());
+    builder.SetVerticalAlign(identifier_value->ConvertTo<EVerticalAlign>());
   } else {
-    state.Style()->SetVerticalAlignLength(
-        To<CSSPrimitiveValue>(value).ConvertToLength(
-            state.CssToLengthConversionData()));
+    builder.SetVerticalAlignLength(To<CSSPrimitiveValue>(value).ConvertToLength(
+        state.CssToLengthConversionData()));
   }
 }
 
@@ -7972,10 +7974,10 @@ void AppRegion::ApplyInherit(StyleResolverState& state) const {}
 void AppRegion::ApplyValue(StyleResolverState& state,
                            const CSSValue& value) const {
   const auto& identifier_value = To<CSSIdentifierValue>(value);
-  state.Style()->SetDraggableRegionMode(identifier_value.GetValueID() ==
-                                                CSSValueID::kDrag
-                                            ? EDraggableRegionMode::kDrag
-                                            : EDraggableRegionMode::kNoDrag);
+  state.StyleBuilder().SetDraggableRegionMode(
+      identifier_value.GetValueID() == CSSValueID::kDrag
+          ? EDraggableRegionMode::kDrag
+          : EDraggableRegionMode::kNoDrag);
   state.GetDocument().SetHasAnnotatedRegions(true);
 }
 
@@ -8038,7 +8040,7 @@ void WebkitBorderImage::ApplyValue(StyleResolverState& state,
   NinePieceImage image;
   CSSToStyleMap::MapNinePieceImage(state, CSSPropertyID::kWebkitBorderImage,
                                    value, image);
-  state.Style()->SetBorderImage(image);
+  state.StyleBuilder().SetBorderImage(image);
 }
 
 const CSSValue* WebkitBorderVerticalSpacing::ParseSingleValue(
@@ -8344,7 +8346,7 @@ const CSSValue* WebkitMaskBoxImageSource::CSSValueFromComputedStyleInternal(
 
 void WebkitMaskBoxImageSource::ApplyValue(StyleResolverState& state,
                                           const CSSValue& value) const {
-  state.Style()->SetMaskBoxImageSource(
+  state.StyleBuilder().SetMaskBoxImageSource(
       state.GetStyleImage(CSSPropertyID::kWebkitMaskBoxImageSource, value));
 }
 
@@ -8506,6 +8508,11 @@ const CSSValue* WebkitPerspectiveOriginX::ParseSingleValue(
       range, context);
 }
 
+void WebkitPerspectiveOriginX::ApplyInherit(StyleResolverState& state) const {
+  state.StyleBuilder().SetPerspectiveOriginX(
+      state.ParentStyle()->PerspectiveOrigin().X());
+}
+
 const CSSValue* WebkitPerspectiveOriginY::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -8513,6 +8520,11 @@ const CSSValue* WebkitPerspectiveOriginY::ParseSingleValue(
   return css_parsing_utils::ConsumePositionLonghand<CSSValueID::kTop,
                                                     CSSValueID::kBottom>(
       range, context);
+}
+
+void WebkitPerspectiveOriginY::ApplyInherit(StyleResolverState& state) const {
+  state.StyleBuilder().SetPerspectiveOriginY(
+      state.ParentStyle()->PerspectiveOrigin().Y());
 }
 
 const CSSValue* WebkitPrintColorAdjust::CSSValueFromComputedStyleInternal(
@@ -8771,63 +8783,59 @@ const CSSValue* TextEmphasisStyle::CSSValueFromComputedStyleInternal(
 }
 
 void TextEmphasisStyle::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetTextEmphasisFill(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetTextEmphasisFill(
       ComputedStyleInitialValues::InitialTextEmphasisFill());
-  state.Style()->SetTextEmphasisMark(
+  builder.SetTextEmphasisMark(
       ComputedStyleInitialValues::InitialTextEmphasisMark());
-  state.Style()->SetTextEmphasisCustomMark(
+  builder.SetTextEmphasisCustomMark(
       ComputedStyleInitialValues::InitialTextEmphasisCustomMark());
 }
 
 void TextEmphasisStyle::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetTextEmphasisFill(
-      state.ParentStyle()->GetTextEmphasisFill());
-  state.Style()->SetTextEmphasisMark(
-      state.ParentStyle()->GetTextEmphasisMark());
-  state.Style()->SetTextEmphasisCustomMark(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetTextEmphasisFill(state.ParentStyle()->GetTextEmphasisFill());
+  builder.SetTextEmphasisMark(state.ParentStyle()->GetTextEmphasisMark());
+  builder.SetTextEmphasisCustomMark(
       state.ParentStyle()->TextEmphasisCustomMark());
 }
 
 void TextEmphasisStyle::ApplyValue(StyleResolverState& state,
                                    const CSSValue& value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   if (const auto* list = DynamicTo<CSSValueList>(value)) {
     DCHECK_EQ(list->length(), 2U);
     for (unsigned i = 0; i < 2; ++i) {
       const auto& ident_value = To<CSSIdentifierValue>(list->Item(i));
       if (ident_value.GetValueID() == CSSValueID::kFilled ||
           ident_value.GetValueID() == CSSValueID::kOpen) {
-        state.Style()->SetTextEmphasisFill(
-            ident_value.ConvertTo<TextEmphasisFill>());
+        builder.SetTextEmphasisFill(ident_value.ConvertTo<TextEmphasisFill>());
       } else {
-        state.Style()->SetTextEmphasisMark(
-            ident_value.ConvertTo<TextEmphasisMark>());
+        builder.SetTextEmphasisMark(ident_value.ConvertTo<TextEmphasisMark>());
       }
     }
-    state.Style()->SetTextEmphasisCustomMark(g_null_atom);
+    builder.SetTextEmphasisCustomMark(g_null_atom);
     return;
   }
 
   if (auto* string_value = DynamicTo<CSSStringValue>(value)) {
-    state.Style()->SetTextEmphasisFill(TextEmphasisFill::kFilled);
-    state.Style()->SetTextEmphasisMark(TextEmphasisMark::kCustom);
-    state.Style()->SetTextEmphasisCustomMark(
-        AtomicString(string_value->Value()));
+    builder.SetTextEmphasisFill(TextEmphasisFill::kFilled);
+    builder.SetTextEmphasisMark(TextEmphasisMark::kCustom);
+    builder.SetTextEmphasisCustomMark(AtomicString(string_value->Value()));
     return;
   }
 
   const auto& identifier_value = To<CSSIdentifierValue>(value);
 
-  state.Style()->SetTextEmphasisCustomMark(g_null_atom);
+  builder.SetTextEmphasisCustomMark(g_null_atom);
 
   if (identifier_value.GetValueID() == CSSValueID::kFilled ||
       identifier_value.GetValueID() == CSSValueID::kOpen) {
-    state.Style()->SetTextEmphasisFill(
-        identifier_value.ConvertTo<TextEmphasisFill>());
-    state.Style()->SetTextEmphasisMark(TextEmphasisMark::kAuto);
+    builder.SetTextEmphasisFill(identifier_value.ConvertTo<TextEmphasisFill>());
+    builder.SetTextEmphasisMark(TextEmphasisMark::kAuto);
   } else {
-    state.Style()->SetTextEmphasisFill(TextEmphasisFill::kFilled);
-    state.Style()->SetTextEmphasisMark(
-        identifier_value.ConvertTo<TextEmphasisMark>());
+    builder.SetTextEmphasisFill(TextEmphasisFill::kFilled);
+    builder.SetTextEmphasisMark(identifier_value.ConvertTo<TextEmphasisMark>());
   }
 }
 
@@ -8865,21 +8873,6 @@ const CSSValue* WebkitTextOrientation::CSSValueFromComputedStyleInternal(
   if (style.GetTextOrientation() == ETextOrientation::kMixed)
     return CSSIdentifierValue::Create(CSSValueID::kVerticalRight);
   return CSSIdentifierValue::Create(style.GetTextOrientation());
-}
-
-void WebkitTextOrientation::ApplyInitial(StyleResolverState& state) const {
-  state.SetTextOrientation(
-      ComputedStyleInitialValues::InitialTextOrientation());
-}
-
-void WebkitTextOrientation::ApplyInherit(StyleResolverState& state) const {
-  state.SetTextOrientation(state.ParentStyle()->GetTextOrientation());
-}
-
-void WebkitTextOrientation::ApplyValue(StyleResolverState& state,
-                                       const CSSValue& value) const {
-  state.SetTextOrientation(
-      To<CSSIdentifierValue>(value).ConvertTo<ETextOrientation>());
 }
 
 const CSSValue* WebkitTextSecurity::CSSValueFromComputedStyleInternal(
@@ -9127,6 +9120,11 @@ const CSSValue* WebkitTransformOriginX::ParseSingleValue(
       range, context);
 }
 
+void WebkitTransformOriginX::ApplyInherit(StyleResolverState& state) const {
+  state.StyleBuilder().SetTransformOriginX(
+      state.ParentStyle()->GetTransformOrigin().X());
+}
+
 const CSSValue* ToggleVisibility::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -9170,12 +9168,22 @@ const CSSValue* WebkitTransformOriginY::ParseSingleValue(
       range, context);
 }
 
+void WebkitTransformOriginY::ApplyInherit(StyleResolverState& state) const {
+  state.StyleBuilder().SetTransformOriginY(
+      state.ParentStyle()->GetTransformOrigin().Y());
+}
+
 const CSSValue* WebkitTransformOriginZ::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return css_parsing_utils::ConsumeLength(range, context,
                                           CSSPrimitiveValue::ValueRange::kAll);
+}
+
+void WebkitTransformOriginZ::ApplyInherit(StyleResolverState& state) const {
+  state.StyleBuilder().SetTransformOriginZ(
+      state.ParentStyle()->GetTransformOrigin().Z());
 }
 
 const CSSValue* WebkitUserDrag::CSSValueFromComputedStyleInternal(
@@ -9197,19 +9205,6 @@ const CSSValue* WebkitWritingMode::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetWritingMode());
-}
-
-void WebkitWritingMode::ApplyInitial(StyleResolverState& state) const {
-  state.SetWritingMode(ComputedStyleInitialValues::InitialWritingMode());
-}
-void WebkitWritingMode::ApplyInherit(StyleResolverState& state) const {
-  state.SetWritingMode(state.ParentStyle()->GetWritingMode());
-}
-
-void WebkitWritingMode::ApplyValue(StyleResolverState& state,
-                                   const CSSValue& value) const {
-  state.SetWritingMode(
-      To<CSSIdentifierValue>(value).ConvertTo<blink::WritingMode>());
 }
 
 const CSSValue* WhiteSpace::CSSValueFromComputedStyleInternal(
@@ -9325,21 +9320,21 @@ const CSSValue* WillChange::CSSValueFromComputedStyleInternal(
 }
 
 void WillChange::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetWillChangeContents(false);
-  state.Style()->SetWillChangeScrollPosition(false);
-  state.Style()->SetWillChangeProperties(Vector<CSSPropertyID>());
-  state.Style()->SetSubtreeWillChangeContents(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetWillChangeContents(false);
+  builder.SetWillChangeScrollPosition(false);
+  builder.SetWillChangeProperties(Vector<CSSPropertyID>());
+  builder.SetSubtreeWillChangeContents(
       state.ParentStyle()->SubtreeWillChangeContents());
 }
 
 void WillChange::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetWillChangeContents(
-      state.ParentStyle()->WillChangeContents());
-  state.Style()->SetWillChangeScrollPosition(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetWillChangeContents(state.ParentStyle()->WillChangeContents());
+  builder.SetWillChangeScrollPosition(
       state.ParentStyle()->WillChangeScrollPosition());
-  state.Style()->SetWillChangeProperties(
-      state.ParentStyle()->WillChangeProperties());
-  state.Style()->SetSubtreeWillChangeContents(
+  builder.SetWillChangeProperties(state.ParentStyle()->WillChangeProperties());
+  builder.SetSubtreeWillChangeContents(
       state.ParentStyle()->SubtreeWillChangeContents());
 }
 
@@ -9367,10 +9362,11 @@ void WillChange::ApplyValue(StyleResolverState& state,
       }
     }
   }
-  state.Style()->SetWillChangeContents(will_change_contents);
-  state.Style()->SetWillChangeScrollPosition(will_change_scroll_position);
-  state.Style()->SetWillChangeProperties(will_change_properties);
-  state.Style()->SetSubtreeWillChangeContents(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetWillChangeContents(will_change_contents);
+  builder.SetWillChangeScrollPosition(will_change_scroll_position);
+  builder.SetWillChangeProperties(will_change_properties);
+  builder.SetSubtreeWillChangeContents(
       will_change_contents || state.ParentStyle()->SubtreeWillChangeContents());
 }
 

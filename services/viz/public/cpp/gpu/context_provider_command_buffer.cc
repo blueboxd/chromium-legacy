@@ -19,8 +19,10 @@
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -84,11 +86,11 @@ ContextProviderCommandBuffer::ContextProviderCommandBuffer(
       buffer_mapper_(buffer_mapper) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(channel_);
-  context_thread_checker_.DetachFromThread();
+  context_sequence_checker_.DetachFromSequence();
 }
 
 ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
-  DCHECK(context_thread_checker_.CalledOnValidThread());
+  DCHECK(context_sequence_checker_.CalledOnValidSequence());
 
   if (bind_tried_ && bind_result_ == gpu::ContextResult::kSuccess) {
     // Clear the lock to avoid DCHECKs that the lock is being held during
@@ -124,9 +126,9 @@ void ContextProviderCommandBuffer::Release() const {
   base::RefCountedThreadSafe<ContextProviderCommandBuffer>::Release();
 }
 
-gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
+gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentSequence() {
   // This is called on the thread the context will be used.
-  DCHECK(context_thread_checker_.CalledOnValidThread());
+  DCHECK(context_sequence_checker_.CalledOnValidSequence());
 
   if (bind_tried_)
     return bind_result_;
@@ -135,11 +137,9 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
   // Any early-out should set this to a failure code and return it.
   bind_result_ = gpu::ContextResult::kSuccess;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      default_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner = default_task_runner_;
   if (!task_runner)
-    task_runner = base::ThreadTaskRunnerHandle::Get();
-
+    task_runner = base::SequencedTaskRunnerHandle::Get();
   // This command buffer is a client-side proxy to the command buffer in the
   // GPU process.
   command_buffer_ = std::make_unique<gpu::CommandBufferProxyImpl>(
@@ -337,15 +337,17 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
   shared_image_interface_ = channel_->CreateClientSharedImageInterface();
   DCHECK(shared_image_interface_);
 
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "ContextProviderCommandBuffer", std::move(task_runner));
+  base::trace_event::MemoryDumpManager::GetInstance()
+      ->RegisterDumpProviderWithSequencedTaskRunner(
+          this, "ContextProviderCommandBuffer", std::move(task_runner),
+          base::trace_event::MemoryDumpProvider::Options());
   return bind_result_;
 }
 
 gpu::gles2::GLES2Interface* ContextProviderCommandBuffer::ContextGL() {
   DCHECK(bind_tried_);
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
-  CheckValidThreadOrLockAcquired();
+  CheckValidSequenceOrLockAcquired();
 
   if (!attributes_.enable_gles2_interface)
     return nullptr;
@@ -358,7 +360,7 @@ gpu::gles2::GLES2Interface* ContextProviderCommandBuffer::ContextGL() {
 gpu::raster::RasterInterface* ContextProviderCommandBuffer::RasterInterface() {
   DCHECK(bind_tried_);
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
-  CheckValidThreadOrLockAcquired();
+  CheckValidSequenceOrLockAcquired();
 
   if (raster_interface_)
     return raster_interface_.get();
@@ -384,7 +386,7 @@ class GrDirectContext* ContextProviderCommandBuffer::GrContext() {
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
   if (!support_grcontext_ || !ContextSupport()->HasGrContextSupport())
     return nullptr;
-  CheckValidThreadOrLockAcquired();
+  CheckValidSequenceOrLockAcquired();
 
   if (gr_context_)
     return gr_context_->get();
@@ -442,7 +444,7 @@ ContextProviderCommandBuffer::SharedImageInterface() {
 }
 
 ContextCacheController* ContextProviderCommandBuffer::CacheController() {
-  CheckValidThreadOrLockAcquired();
+  CheckValidSequenceOrLockAcquired();
   return cache_controller_.get();
 }
 
@@ -462,7 +464,7 @@ const gpu::Capabilities& ContextProviderCommandBuffer::ContextCapabilities()
     const {
   DCHECK(bind_tried_);
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
-  CheckValidThreadOrLockAcquired();
+  CheckValidSequenceOrLockAcquired();
   // Skips past the trace_impl_ as it doesn't have capabilities.
   return impl_->capabilities();
 }
@@ -471,7 +473,7 @@ const gpu::GpuFeatureInfo& ContextProviderCommandBuffer::GetGpuFeatureInfo()
     const {
   DCHECK(bind_tried_);
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
-  CheckValidThreadOrLockAcquired();
+  CheckValidSequenceOrLockAcquired();
   if (!command_buffer_ || !command_buffer_->channel()) {
     static const base::NoDestructor<gpu::GpuFeatureInfo>
         default_gpu_feature_info;
@@ -481,15 +483,13 @@ const gpu::GpuFeatureInfo& ContextProviderCommandBuffer::GetGpuFeatureInfo()
 }
 
 void ContextProviderCommandBuffer::OnLostContext() {
-  CheckValidThreadOrLockAcquired();
+  CheckValidSequenceOrLockAcquired();
 
   // Observers may drop the last persistent references to `this`, but there may
   // be weak references in use further up the stack. This task is posted to
   // ensure that destruction is deferred until it's safe.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce([](scoped_refptr<ContextProviderCommandBuffer>) {},
-                     base::WrapRefCounted(this)));
+      FROM_HERE, base::DoNothingWithBoundArgs(base::WrapRefCounted(this)));
 
   for (auto& observer : observers_)
     observer.OnContextLost();
@@ -502,19 +502,19 @@ void ContextProviderCommandBuffer::OnLostContext() {
 }
 
 void ContextProviderCommandBuffer::AddObserver(ContextLostObserver* obs) {
-  CheckValidThreadOrLockAcquired();
+  CheckValidSequenceOrLockAcquired();
   observers_.AddObserver(obs);
 }
 
 void ContextProviderCommandBuffer::RemoveObserver(ContextLostObserver* obs) {
-  CheckValidThreadOrLockAcquired();
+  CheckValidSequenceOrLockAcquired();
   observers_.RemoveObserver(obs);
 }
 
 gpu::webgpu::WebGPUInterface* ContextProviderCommandBuffer::WebGPUInterface() {
   DCHECK(bind_tried_);
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
-  CheckValidThreadOrLockAcquired();
+  CheckValidSequenceOrLockAcquired();
 
   return webgpu_interface_.get();
 }
@@ -531,10 +531,10 @@ bool ContextProviderCommandBuffer::OnMemoryDump(
   helper_->OnMemoryDump(args, pmd);
 
   if (gr_context_) {
-    context_thread_checker_.DetachFromThread();
+    context_sequence_checker_.DetachFromSequence();
     gpu::raster::DumpGrMemoryStatistics(gr_context_->get(), pmd,
                                         gles2_impl_->ShareGroupTracingGUID());
-    context_thread_checker_.DetachFromThread();
+    context_sequence_checker_.DetachFromSequence();
   }
   return true;
 }

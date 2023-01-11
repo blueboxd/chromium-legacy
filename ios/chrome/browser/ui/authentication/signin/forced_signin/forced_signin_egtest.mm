@@ -5,12 +5,14 @@
 #import "base/strings/string_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "base/time/time.h"
 #import "components/policy/core/common/policy_loader_ios_constants.h"
 #import "components/policy/policy_constants.h"
 #import "components/signin/ios/browser/features.h"
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_matchers.h"
@@ -29,7 +31,6 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_interaction_manager_constants.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/base_eg_test_helper_impl.h"
@@ -55,9 +56,11 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 
 namespace {
 
+constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(5);
+
 // Returns a matcher for the sign-in screen "Continue as <identity>" button.
 id<GREYMatcher> GetContinueButtonWithIdentityMatcher(
-    FakeChromeIdentity* fakeIdentity) {
+    FakeSystemIdentity* fakeIdentity) {
   NSString* buttonTitle = l10n_util::GetNSStringF(
       IDS_IOS_FIRST_RUN_SIGNIN_CONTINUE_AS,
       base::SysNSStringToUTF16(fakeIdentity.userGivenName));
@@ -101,7 +104,7 @@ void ScrollToElementAndAssertVisibility(id<GREYMatcher> elementMatcher) {
 }
 
 // Signs in the browser from the forced sign-in screen.
-void WaitForForcedSigninScreenAndSignin(FakeChromeIdentity* fakeIdentity) {
+void WaitForForcedSigninScreenAndSignin(FakeSystemIdentity* fakeIdentity) {
   // Wait and verify that the forced sign-in screen is shown.
   [ChromeEarlGrey waitForMatcher:GetForcedSigninScreenMatcher()];
 
@@ -236,7 +239,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 - (void)DISABLED_testSignInScreenWithAccount {
   // Add an identity to sign-in to enable the "Continue as ..." button in the
   // sign-in screen.
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   // Validate the Title text of the forced sign-in screen.
@@ -290,7 +293,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
   // during the animation of the SSO view controler.
   [ChromeEarlGreyUI waitForAppToIdle];
 
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   // Check that the title of the primary button updates for `fakeIdentity`.
@@ -314,8 +317,8 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 // Tests that accounts can be switched and that there is the button add a new
 // account.
 - (void)testSignInScreenSwitchAccount {
-  FakeChromeIdentity* fakeIdentity1 = [FakeChromeIdentity fakeIdentity1];
-  FakeChromeIdentity* fakeIdentity2 = [FakeChromeIdentity fakeIdentity2];
+  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity2 = [FakeSystemIdentity fakeIdentity2];
   [SigninEarlGrey addFakeIdentity:fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity2];
 
@@ -349,7 +352,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 // Tests that the sign-out action sheet has the right UI.
 - (void)testSignOutActionSheetUI {
   // Add account.
-  FakeChromeIdentity* fakeIdentity1 = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity1];
 
   // Sign in account without enabling sync.
@@ -377,7 +380,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 // Tests signing out account from settings with sync disabled.
 - (void)testSignOutFromAccountSettingSyncDisabled {
   // Add account.
-  FakeChromeIdentity* fakeIdentity1 = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity1];
 
   // Sign in account without enabling sync.
@@ -397,7 +400,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 // Tests signing out account from settings with sync enabled.
 - (void)testSignOutFromAccountSettingSyncEnable {
   // Add account.
-  FakeChromeIdentity* fakeIdentity1 = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity1];
 
   // Sign in account without enabling sync.
@@ -405,7 +408,6 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 
   // Enable sync.
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity1];
-  const NSTimeInterval kSyncOperationTimeout = 5.0;
   [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kSyncOperationTimeout];
 
   OpenAccountSettingsAndSignOut(YES);
@@ -417,7 +419,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 // Test cancelling sign out from account settings.
 - (void)testSignOutFromAccountSettingCancel {
   // Add account.
-  FakeChromeIdentity* fakeIdentity1 = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity1];
 
   // Sign in account without enabling sync.
@@ -444,7 +446,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 // Tests signing out from sync settings.
 - (void)testSignOutFromSyncSettings {
   // Add account.
-  FakeChromeIdentity* fakeIdentity1 = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity1];
 
   // Sign in.
@@ -452,7 +454,6 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 
   // Enable sync.
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity1];
-  const NSTimeInterval kSyncOperationTimeout = 5.0;
   [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kSyncOperationTimeout];
 
   [ChromeEarlGreyUI openSettingsMenu];
@@ -474,9 +475,9 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 // Tests turning on sync for an account different from the one that is
 // currently signed in.
 - (void)testSignInWithOneAccountStartSyncWithAnotherAccount {
-  FakeChromeIdentity* fakeIdentity1 = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity1];
-  FakeChromeIdentity* fakeIdentity2 = [FakeChromeIdentity fakeIdentity2];
+  FakeSystemIdentity* fakeIdentity2 = [FakeSystemIdentity fakeIdentity2];
   [SigninEarlGrey addFakeIdentity:fakeIdentity2];
 
   // Tap on the account switcher and select `fakeIdentity1`..
@@ -509,7 +510,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 // Tests that the sign-out footer has the right text when the user is signed in
 // and not syncing with forced sign-in enabled.
 - (void)testSignOutFooterForSignInOnlyUserWithForcedSigninEnabled {
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   // Sign in from forced sign-in prompt.
@@ -533,7 +534,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 // Tests that the sign-out footer has the right text when the user is syncing
 // and forced sign-in is enabled.
 - (void)testSignOutFooterForSignInAndSyncUserWithForcedSigninEnabled {
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   // Sign in from forced sign-in prompt and enable sync for the signed in
@@ -658,7 +659,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   // Disable the forced sign-in policy.
@@ -695,7 +696,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   // Disable the forced sign-in policy.
@@ -717,7 +718,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 
   // Sync utilities require sync to be initialized in order to perform
   // operations on the Sync server.
-  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:10.0];
+  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:base::Seconds(10)];
 
   // Make sure the forced sign-in screen isn't shown because sign-in was
   // already done.
@@ -735,7 +736,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
   NSURL* URLToOpen = net::NSURLWithGURL(self.testServer->GetURL(kPageURL));
 
   // Add account.
-  FakeChromeIdentity* fakeIdentity1 = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity1];
 
   // Trigger a open URL external intent while the app is opened.
@@ -773,7 +774,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   // Disable the forced sign-in policy.
@@ -830,7 +831,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   // Disable the forced sign-in policy.
@@ -856,7 +857,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 
   // Sync utilities require sync to be initialized in order to perform
   // operations on the Sync server.
-  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:10.0];
+  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:base::Seconds(10)];
 
   // Make sure the forced sign-in screen isn't shown because the browser is
   // already signed in.
@@ -887,7 +888,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
-  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   // Disable the forced sign-in policy.
@@ -956,7 +957,7 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
     EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
 
   // Add account.
-  FakeChromeIdentity* fakeIdentity1 = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity1];
 
   // Wait and verify that the forced sign-in screen is shown.
@@ -983,16 +984,11 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 // Tests that the sign-in prompt is shown on the other window when the window
 // presenting the forced sign-in screen is closed.
 - (void)testSigninScreenTransferToOtherWindow {
-#if TARGET_OS_SIMULATOR
-  // TODO(crbug.com/1370470): Re-enable the test.
-  EARL_GREY_TEST_DISABLED(@"Test failing on simulator.");
-#endif
-
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
 
   // Add account.
-  FakeChromeIdentity* fakeIdentity1 = [FakeChromeIdentity fakeIdentity1];
+  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity1];
 
   // Wait and verify that the forced sign-in screen is shown.

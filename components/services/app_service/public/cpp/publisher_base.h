@@ -58,26 +58,6 @@ class PublisherBase : public apps::mojom::Publisher {
   mojo::Receiver<apps::mojom::Publisher>& receiver() { return receiver_; }
 
  private:
-  // apps::mojom::Publisher overrides.
-  // DEPRECATED. Prefer passing the files in an Intent through
-  // LaunchAppWithIntent.
-  // TODO(crbug.com/1264164): Remove this method.
-  void LaunchAppWithFiles(const std::string& app_id,
-                          int32_t event_flags,
-                          apps::mojom::LaunchSource launch_source,
-                          apps::mojom::FilePathsPtr file_paths) override;
-  void LaunchAppWithIntent(const std::string& app_id,
-                           int32_t event_flags,
-                           apps::mojom::IntentPtr intent,
-                           apps::mojom::LaunchSource launch_source,
-                           apps::mojom::WindowInfoPtr window_info,
-                           LaunchAppWithIntentCallback callback) override;
-  void SetPermission(const std::string& app_id,
-                     apps::mojom::PermissionPtr permission) override;
-  void Uninstall(const std::string& app_id,
-                 apps::mojom::UninstallSource uninstall_source,
-                 bool clear_site_data,
-                 bool report_abuse) override;
   void PauseApp(const std::string& app_id) override;
   void UnpauseApp(const std::string& app_id) override;
   void StopApp(const std::string& app_id) override;
@@ -94,9 +74,6 @@ class PublisherBase : public apps::mojom::Publisher {
                        apps::mojom::OptionalBool locked) override;
   void SetWindowMode(const std::string& app_id,
                      apps::mojom::WindowMode window_mode) override;
-  void SetRunOnOsLoginMode(
-      const std::string& app_id,
-      apps::mojom::RunOnOsLoginMode run_on_os_login_mode) override;
 
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
 };

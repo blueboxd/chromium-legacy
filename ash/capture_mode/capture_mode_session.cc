@@ -17,7 +17,6 @@
 #include "ash/capture_mode/capture_mode_menu_group.h"
 #include "ash/capture_mode/capture_mode_session_focus_cycler.h"
 #include "ash/capture_mode/capture_mode_settings_view.h"
-#include "ash/capture_mode/capture_mode_toggle_button.h"
 #include "ash/capture_mode/capture_mode_type_view.h"
 #include "ash/capture_mode/capture_mode_util.h"
 #include "ash/capture_mode/capture_window_observer.h"
@@ -730,6 +729,12 @@ void CaptureModeSession::Shutdown() {
       // settings of the normal capture mode session being overridden by the
       // projector-initiated capture mode session.
       controller_->camera_controller()->MaybeRevertAutoCameraSelection();
+
+      // Restore the capture mode configurations that include the `type_`,
+      // `source_` and `enable_audio_recording_` when the projector-initiated
+      // session ends without starting a new recording, in case any of them were
+      // overwritten by projector.
+      controller_->MaybeRestoreCachedCaptureConfigurations();
     }
   }
 

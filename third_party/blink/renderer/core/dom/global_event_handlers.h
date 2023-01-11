@@ -54,8 +54,8 @@ class GlobalEventHandlers {
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(change, kChange)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(click, kClick)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(close, kClose)
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(contentvisibilityautostatechange,
-                                         kContentvisibilityautostatechange)
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(contentvisibilityautostatechanged,
+                                         kContentvisibilityautostatechanged)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(contextmenu, kContextmenu)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(contextlost, kContextlost)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(contextrestored, kContextrestored)
@@ -107,8 +107,8 @@ class GlobalEventHandlers {
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(pointerover, kPointerover)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(pointerrawupdate, kPointerrawupdate)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(pointerup, kPointerup)
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(popuphide, kPopuphide)
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(popupshow, kPopupshow)
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(popoverhide, kPopoverhide)
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(popovershow, kPopovershow)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(progress, kProgress)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(ratechange, kRatechange)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(reset, kReset)

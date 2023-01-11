@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/autofill/core/browser/ui/payments/card_unmask_prompt_options.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/variations/scoped_variations_ids_provider.h"
@@ -58,7 +59,7 @@ class MockUIDelegate : public FullCardRequest::UIDelegate,
   MOCK_METHOD(void,
               ShowUnmaskPrompt,
               (const CreditCard&,
-               AutofillClient::UnmaskCardReason,
+               const CardUnmaskPromptOptions&,
                base::WeakPtr<CardUnmaskDelegate>),
               (override));
   MOCK_METHOD(void,
@@ -402,7 +403,7 @@ TEST_F(FullCardRequestTest,
   request()->GetFullVirtualCardViaCVC(
       card, AutofillClient::UnmaskCardReason::kAutofill,
       result_delegate()->AsWeakPtr(), ui_delegate()->AsWeakPtr(),
-      GURL("https://example.com/"), "test_vcn_context_token",
+      GURL("https://example.com/"), "test_context_token",
       CardUnmaskChallengeOption{.id = "test_challenge_option_id",
                                 .type = CardUnmaskChallengeOptionType::kCvc});
   ASSERT_TRUE(request()->GetShouldUnmaskCardForTesting());
@@ -412,7 +413,7 @@ TEST_F(FullCardRequestTest,
             CardUnmaskChallengeOptionType::kCvc);
   EXPECT_EQ(request_details->selected_challenge_option->id,
             "test_challenge_option_id");
-  EXPECT_EQ(request_details->context_token, "test_vcn_context_token");
+  EXPECT_EQ(request_details->context_token, "test_context_token");
   EXPECT_EQ(request_details->last_committed_primary_main_frame_origin->spec(),
             GURL("https://example.com/").spec());
 
@@ -523,7 +524,7 @@ TEST_F(FullCardRequestTest, PermanentFailure) {
 // If the server provides an empty PAN with VCN_RETRIEVAL_TRY_AGAIN_FAILURE
 // error, FullCardRequest::Delegate::OnFullCardRequestFailed() should be
 // invoked.
-TEST_F(FullCardRequestTest, VcnRetrievalTryAgainFailure) {
+TEST_F(FullCardRequestTest, VcnRetrievalTemporaryFailure) {
   EXPECT_CALL(
       *result_delegate(),
       OnFullCardRequestFailed(FullCardRequest::FailureType::
@@ -539,7 +540,7 @@ TEST_F(FullCardRequestTest, VcnRetrievalTryAgainFailure) {
   request()->GetFullVirtualCardViaCVC(
       card, AutofillClient::UnmaskCardReason::kAutofill,
       result_delegate()->AsWeakPtr(), ui_delegate()->AsWeakPtr(),
-      GURL("https://example.com/"), "test_vcn_context_token",
+      GURL("https://example.com/"), "test_context_token",
       CardUnmaskChallengeOption{.type = CardUnmaskChallengeOptionType::kCvc});
   CardUnmaskDelegate::UserProvidedUnmaskDetails details;
   details.cvc = u"123";
@@ -569,7 +570,7 @@ TEST_F(FullCardRequestTest, VcnRetrievalPermanentFailure) {
   request()->GetFullVirtualCardViaCVC(
       card, AutofillClient::UnmaskCardReason::kAutofill,
       result_delegate()->AsWeakPtr(), ui_delegate()->AsWeakPtr(),
-      GURL("https://example.com/"), "test_vcn_context_token",
+      GURL("https://example.com/"), "test_context_token",
       CardUnmaskChallengeOption{.type = CardUnmaskChallengeOptionType::kCvc});
   CardUnmaskDelegate::UserProvidedUnmaskDetails details;
   details.cvc = u"123";
@@ -626,7 +627,7 @@ TEST_F(FullCardRequestTest, TryAgainFailureGiveUp) {
 
 // If the server provides an empty PAN with TRY_AGAIN_FAILURE, the user can
 // correct their mistake and resubmit.
-TEST_F(FullCardRequestTest, TryAgainFailureRetry) {
+TEST_F(FullCardRequestTest, ServerCardTryAgainFailure) {
   EXPECT_CALL(*result_delegate(), OnFullCardRequestFailed(_)).Times(0);
   EXPECT_CALL(*result_delegate(),
               OnFullCardRequestSucceeded(
@@ -652,6 +653,49 @@ TEST_F(FullCardRequestTest, TryAgainFailureRetry) {
   card_unmask_delegate()->OnUnmaskPromptAccepted(details);
   OnDidGetRealPan(AutofillClient::PaymentsRpcResult::kSuccess, "4111");
   card_unmask_delegate()->OnUnmaskPromptClosed();
+}
+
+// If the server provides an empty PAN with TRY_AGAIN_FAILURE for virtual card,
+// ensure it is handled the same way as a regular try again case.
+TEST_F(FullCardRequestTest, VirtualCardTryAgainFailure) {
+  EXPECT_CALL(*ui_delegate(), ShowUnmaskPrompt(_, _, _)).Times(1);
+  EXPECT_CALL(*ui_delegate(),
+              OnUnmaskVerificationResult(
+                  AutofillClient::PaymentsRpcResult::kTryAgainFailure))
+      .Times(1);
+
+  CreditCard virtual_card;
+  virtual_card.set_record_type(CreditCard::RecordType::VIRTUAL_CARD);
+  virtual_card.set_server_id("server_id");
+  request()->GetFullVirtualCardViaCVC(
+      virtual_card, AutofillClient::UnmaskCardReason::kAutofill,
+      result_delegate()->AsWeakPtr(), ui_delegate()->AsWeakPtr(),
+      GURL("https://example.com/"), "test_context_token",
+      CardUnmaskChallengeOption{.id = "test_challenge_option_id",
+                                .type = CardUnmaskChallengeOptionType::kCvc});
+  CardUnmaskDelegate::UserProvidedUnmaskDetails user_provided_details;
+  user_provided_details.cvc = u"321";
+  card_unmask_delegate()->OnUnmaskPromptAccepted(user_provided_details);
+  PaymentsClient::UnmaskResponseDetails response_details;
+  response_details.card_type =
+      AutofillClient::PaymentsRpcCardType::kVirtualCard;
+  response_details.context_token = "test_context_token";
+  request()->OnDidGetRealPan(
+      AutofillClient::PaymentsRpcResult::kTryAgainFailure, response_details);
+  EXPECT_EQ(request()->GetUnmaskRequestDetailsForTesting()->context_token,
+            "test_context_token");
+  EXPECT_EQ(request()
+                ->GetUnmaskRequestDetailsForTesting()
+                ->selected_challenge_option->id,
+            "test_challenge_option_id");
+  EXPECT_EQ(request()
+                ->GetUnmaskRequestDetailsForTesting()
+                ->selected_challenge_option->type,
+            CardUnmaskChallengeOptionType::kCvc);
+  EXPECT_EQ(request()
+                ->GetUnmaskRequestDetailsForTesting()
+                ->last_committed_primary_main_frame_origin->spec(),
+            "https://example.com/");
 }
 
 // Verify updating expiration date for a masked server card.

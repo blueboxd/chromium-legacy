@@ -14,7 +14,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
-#include "components/exo/buildflags.h"
 #include "components/exo/wayland/scoped_wl.h"
 #include "ui/display/display_observer.h"
 
@@ -37,6 +36,7 @@ struct WaylandTextInputManager;
 struct WaylandXdgShell;
 struct WaylandZxdgShell;
 struct WaylandRemoteShellData;
+class WaylandDmabufFeedbackManager;
 class WestonTest;
 class WaylandWatcher;
 
@@ -129,6 +129,7 @@ class Server : public display::DisplayObserver {
   display::ScopedDisplayObserver display_observer_{this};
   std::unique_ptr<wayland::WaylandWatcher> wayland_watcher_;
   base::FilePath socket_path_;
+  std::unique_ptr<WaylandDmabufFeedbackManager> wayland_feedback_manager_;
 
   std::unique_ptr<WaylandKeyboardExtension> zcr_keyboard_extension_data_;
   std::unique_ptr<WaylandTextInputManager> zwp_text_manager_data_;

@@ -26,6 +26,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/image_loader/image_loader_client.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
@@ -52,7 +53,7 @@ namespace {
 const ComponentConfig kConfigs[] = {
     {"cros-termina", ComponentConfig::PolicyType::kEnvVersion, "980.1",
      "e9d960f84f628e1f42d05de4046bb5b3154b6f1f65c08412c6af57a29aecaffb"},
-    {"rtanalytics-full", ComponentConfig::PolicyType::kEnvVersion, "103.0",
+    {"rtanalytics-full", ComponentConfig::PolicyType::kEnvVersion, "106.0",
      "c93c3e1013c52100a20038b405ac854d69fa889f6dc4fa6f188267051e05e444"},
     {"demo-mode-resources", ComponentConfig::PolicyType::kEnvVersion, "1.0",
      "93c093ebac788581389015e9c59c5af111d2fa5174d206eb795042e6376cbd10"},
@@ -296,6 +297,8 @@ DemoAppInstallerPolicy::GetInstallerAttributes() const {
       prefs->GetString(prefs::kDemoModeStoreId);
   demo_app_installer_attributes["demo_country"] =
       prefs->GetString(prefs::kDemoModeCountry);
+  demo_app_installer_attributes["is_cloud_gaming_device"] =
+      chromeos::features::IsCloudGamingDeviceEnabled() ? "true" : "false";
   return demo_app_installer_attributes;
 }
 

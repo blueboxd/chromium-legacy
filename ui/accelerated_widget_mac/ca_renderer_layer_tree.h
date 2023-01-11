@@ -16,8 +16,9 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -76,7 +77,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
                                float scale_factor);
 
   // Returns the contents used for a given solid color.
-  id ContentsForSolidColorForTesting(unsigned int color);
+  id ContentsForSolidColorForTesting(SkColor4f color);
 
   // If there exists only a single content layer, return the IOSurface of that
   // layer.
@@ -224,11 +225,12 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
                  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
                  const gfx::RectF& contents_rect,
                  const gfx::Rect& rect,
-                 unsigned background_color,
+                 SkColor4f background_color,
                  const gfx::ColorSpace& color_space,
                  unsigned edge_aa_mask,
                  float opacity,
                  unsigned filter,
+                 gfx::HDRMode hdr_mode,
                  absl::optional<gfx::HDRMetadata> hdr_metadata,
                  gfx::ProtectedVideoType protected_video_type);
 
@@ -256,7 +258,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
     scoped_refptr<SolidColorContents> solid_color_contents_;
     gfx::RectF contents_rect_;
     gfx::RectF rect_;
-    unsigned background_color_ = 0;
+    SkColor4f background_color_ = SkColors::kTransparent;
     // The color space of |io_surface|. Used for HDR tonemapping.
     gfx::ColorSpace io_surface_color_space_;
     // Note that the CoreAnimation edge antialiasing mask is not the same as
@@ -273,6 +275,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
     // protected content (see https://crbug.com/1026703).
     bool video_type_can_downgrade_ = true;
 
+    gfx::HDRMode hdr_mode_ = gfx::HDRMode::kDefault;
     absl::optional<gfx::HDRMetadata> hdr_metadata_;
 
     gfx::ProtectedVideoType protected_video_type_ =

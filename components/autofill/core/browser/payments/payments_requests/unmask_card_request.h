@@ -23,6 +23,10 @@ class UnmaskCardRequest : public PaymentsRequest {
   UnmaskCardRequest& operator=(const UnmaskCardRequest&) = delete;
   ~UnmaskCardRequest() override;
 
+  const PaymentsClient::UnmaskResponseDetails& GetResponseDetailsForTesting() {
+    return response_details_;
+  }
+
   // PaymentsRequest:
   std::string GetRequestUrlPath() override;
   std::string GetRequestContentType() override;
@@ -30,6 +34,7 @@ class UnmaskCardRequest : public PaymentsRequest {
   void ParseResponse(const base::Value& response) override;
   bool IsResponseComplete() override;
   void RespondToDelegate(AutofillClient::PaymentsRpcResult result) override;
+  bool IsRetryableFailure(const std::string& error_code) override;
 
  private:
   // Returns whether the response contains all the information of the virtual

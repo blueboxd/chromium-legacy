@@ -9,9 +9,10 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "components/attribution_reporting/source_registration_error.mojom-forward.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/attribution_reporting.mojom-forward.h"
 #include "content/public/browser/storage_partition.h"
+#include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom-forward.h"
 
 namespace base {
 class Time;
@@ -27,6 +28,7 @@ class AttributionDataHostManager;
 class AttributionObserver;
 class AttributionTrigger;
 class BrowsingDataFilterBuilder;
+class OsLevelAttributionManager;
 class StorableSource;
 class StoredSource;
 class WebContents;
@@ -37,6 +39,8 @@ class AttributionManager {
  public:
   static AttributionManager* FromWebContents(WebContents* web_contents);
 
+  static blink::mojom::AttributionOsSupport GetOsSupport();
+
   virtual ~AttributionManager() = default;
 
   virtual void AddObserver(AttributionObserver* observer) = 0;
@@ -45,6 +49,10 @@ class AttributionManager {
 
   // Gets manager responsible for tracking pending data hosts targeting `this`.
   virtual AttributionDataHostManager* GetDataHostManager() = 0;
+
+  // Gets the os-level manager responsible for handling OS sources and
+  // triggers targeting `this`. May return `nullptr`.
+  virtual OsLevelAttributionManager* GetOsLevelManager() = 0;
 
   // Persists the given |source| to storage. Called when a navigation
   // originating from a source tag finishes.

@@ -11,7 +11,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/payments/autofill_error_dialog_context.h"
+#include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
 namespace payments {
@@ -88,18 +91,36 @@ void ParseAsCvcChallengeOption(
   // Get the position of the CVC on the card. In most cases it will be on the
   // back of the card, but it is possible for it to be on the front, for
   // example in the case of the Card Identification Number on the front of an
-  // American Express card.
+  // American Express card. We will also build `challenge_info_position_string`,
+  // which will be used to build the challenge info that will be rendered if we
+  // end up displaying the authentication selection dialog.
+  std::u16string challenge_info_position_string;
   const auto* cvc_position =
       defined_challenge_option->FindStringKey("cvc_position");
   if (cvc_position) {
     if (*cvc_position == "CVC_POSITION_FRONT") {
       parsed_challenge_option->cvc_position = CvcPosition::kFrontOfCard;
+      challenge_info_position_string = l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_CARD_UNMASK_PROMPT_SECURITY_CODE_POSITION_FRONT_OF_CARD);
     } else if (*cvc_position == "CVC_POSITION_BACK") {
       parsed_challenge_option->cvc_position = CvcPosition::kBackOfCard;
+      challenge_info_position_string = l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_CARD_UNMASK_PROMPT_SECURITY_CODE_POSITION_BACK_OF_CARD);
     } else {
       NOTREACHED();
       parsed_challenge_option->cvc_position = CvcPosition::kUnknown;
     }
+  }
+
+  // Build the challenge info for this CVC challenge option. The challenge info
+  // will be displayed under the authentication label for the challenge option
+  // in the authentication selection dialog if we have multiple challenge
+  // options present.
+  if (!challenge_info_position_string.empty()) {
+    parsed_challenge_option->challenge_info = l10n_util::GetStringFUTF16(
+        IDS_AUTOFILL_CARD_UNMASK_AUTHENTICATION_SELECTION_DIALOG_CVC_CHALLENGE_INFO,
+        base::NumberToString16(parsed_challenge_option->challenge_input_length),
+        challenge_info_position_string);
   }
 }
 
@@ -397,6 +418,36 @@ bool UnmaskCardRequest::IsResponseComplete() {
 void UnmaskCardRequest::RespondToDelegate(
     AutofillClient::PaymentsRpcResult result) {
   std::move(callback_).Run(result, response_details_);
+}
+
+bool UnmaskCardRequest::IsRetryableFailure(const std::string& error_code) {
+  // If the response error code indicates we are in the retryable failure case,
+  // return true.
+  if (PaymentsRequest::IsRetryableFailure(error_code))
+    return true;
+
+  // The additional case where this can be a retryable failure is only for
+  // virtual cards, so if we are not in the virtual card unmasking case at this
+  // point, return false.
+  if (request_details_.card.record_type() != CreditCard::VIRTUAL_CARD)
+    return false;
+
+  // If a challenge option was not selected, we are not in the virtual card
+  // unmasking case, so return false.
+  if (!request_details_.selected_challenge_option)
+    return false;
+
+  // The additional retryable failure functionality currently only applies to
+  // virtual card CVC auth, so if we did not select a CVC challenge option,
+  // return false.
+  if (request_details_.selected_challenge_option->type !=
+      CardUnmaskChallengeOptionType::kCvc) {
+    return false;
+  }
+
+  // If we are in the VCN CVC auth case and there is a flow status present
+  // return true, otherwise return false.
+  return !response_details_.flow_status.empty();
 }
 
 bool UnmaskCardRequest::IsAllCardInformationValidIncludingDcvv() {

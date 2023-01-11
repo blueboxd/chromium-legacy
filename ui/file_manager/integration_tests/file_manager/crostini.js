@@ -106,12 +106,10 @@ testcase.pluginVmDirectoryNotSharedErrorDialog = async () => {
             actionId: 'text',
           },
           title: 'Text',
-          verb: 'open_with',
         },
         {
           descriptor: pluginVmAppDescriptor,
           title: 'App (Windows)',
-          verb: 'open_with',
         },
       ]]));
 
@@ -139,7 +137,8 @@ testcase.pluginVmDirectoryNotSharedErrorDialog = async () => {
       [`#tasks-menu [tabindex]:nth-of-type(${
           appOptions.map(el => el.text).indexOf('App (Windows)') + 1})`]);
   await remoteCall.waitUntilTaskExecutes(
-      appId, pluginVmAppDescriptor, ['failed_plugin_vm_directory_not_shared']);
+      appId, pluginVmAppDescriptor, ['hello.txt'],
+      ['failed_plugin_vm_directory_not_shared']);
   await remoteCall.waitForElement(
       appId, '.cr-dialog-frame:not(#default-task-dialog):not([hidden])');
 
@@ -181,12 +180,10 @@ testcase.pluginVmFileOnExternalDriveErrorDialog = async () => {
             actionId: 'text',
           },
           title: 'Text',
-          verb: 'open_with',
         },
         {
           descriptor: pluginVmAppDescriptor,
           title: 'App (Windows)',
-          verb: 'open_with',
         },
       ]]));
 
@@ -214,7 +211,8 @@ testcase.pluginVmFileOnExternalDriveErrorDialog = async () => {
       [`#tasks-menu [tabindex]:nth-of-type(${
           appOptions.map(el => el.text).indexOf('App (Windows)') + 1})`]);
   await remoteCall.waitUntilTaskExecutes(
-      appId, pluginVmAppDescriptor, ['failed_plugin_vm_directory_not_shared']);
+      appId, pluginVmAppDescriptor, ['hello.txt'],
+      ['failed_plugin_vm_directory_not_shared']);
   await remoteCall.waitForElement(
       appId, '.cr-dialog-frame:not(#default-task-dialog):not([hidden])');
 

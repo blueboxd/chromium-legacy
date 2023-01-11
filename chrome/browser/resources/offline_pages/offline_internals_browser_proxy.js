@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
 
 /**
  * @typedef {{
@@ -284,6 +284,12 @@ export class OfflineInternalsBrowserProxyImpl {
   downloadArchive(name) {
     chrome.send('downloadArchive', [name]);
   }
+
+  /** @return {!OfflineInternalsBrowserProxy} */
+  static getInstance() {
+    return instance || (instance = new OfflineInternalsBrowserProxyImpl());
+  }
 }
 
-addSingletonGetter(OfflineInternalsBrowserProxyImpl);
+/** @type {?OfflineInternalsBrowserProxy} */
+let instance = null;

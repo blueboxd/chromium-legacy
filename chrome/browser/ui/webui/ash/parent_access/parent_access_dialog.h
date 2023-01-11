@@ -1,0 +1,114 @@
+// Copyright 2021 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_WEBUI_ASH_PARENT_ACCESS_PARENT_ACCESS_DIALOG_H_
+#define CHROME_BROWSER_UI_WEBUI_ASH_PARENT_ACCESS_PARENT_ACCESS_DIALOG_H_
+
+#include <memory>
+#include <string>
+
+#include "base/callback_forward.h"
+#include "base/time/time.h"
+#include "chrome/browser/ui/webui/ash/parent_access/parent_access_ui.mojom.h"
+#include "chrome/browser/ui/webui/ash/parent_access/parent_access_ui_handler_delegate.h"
+#include "chrome/browser/ui/webui/ash/system_web_dialog_delegate.h"
+
+namespace ash {
+
+// Dialog which embeds the Parent Access UI, which verifies a
+// parent during a child session.
+class ParentAccessDialog : public ParentAccessUIHandlerDelegate,
+                           public SystemWebDialogDelegate {
+ public:
+  struct Result {
+    // The status of the result.
+    enum class Status {
+      kApproved,   // The parent was verified and they approved.
+      kDeclined,   // The request was explicitly declined by the parent.
+      kCancelled,  // The request was cancelled/dismissed by the parent.
+      kError,      // An error occurred while handling the request.
+    };
+    Status status = Status::kCancelled;
+
+    // The Parent Access Token.  Only set if status is kVerified.
+    std::string parent_access_token = "";
+
+    // The UTC timestamp at which the token expires.
+    base::Time parent_access_token_expire_timestamp;
+  };
+
+  // Callback for the result of the dialog.
+  using Callback = base::OnceCallback<void(std::unique_ptr<Result>)>;
+
+  static ParentAccessDialog* GetInstance();
+
+  explicit ParentAccessDialog(const ParentAccessDialog&) = delete;
+  ParentAccessDialog& operator=(const ParentAccessDialog&) = delete;
+
+  // ui::WebDialogDelegate:
+  ui::ModalType GetDialogModalType() const override;
+  void GetDialogSize(gfx::Size* size) const override;
+  bool ShouldCloseDialogOnEscape() const override;
+
+  // ParentAccessUIHandlerDelegate:
+  parent_access_ui::mojom::ParentAccessParamsPtr CloneParentAccessParams()
+      override;
+  void SetApproved(const std::string& parent_access_token,
+                   const base::Time& expire_timestamp) override;
+  void SetDeclined() override;
+  void SetCanceled() override;
+  void SetError() override;
+
+  parent_access_ui::mojom::ParentAccessParams* GetParentAccessParamsForTest()
+      const;
+
+  explicit ParentAccessDialog(
+      parent_access_ui::mojom::ParentAccessParamsPtr params,
+      Callback callback);
+
+ protected:
+  ~ParentAccessDialog() override;
+
+ private:
+  void CloseWithResult(std::unique_ptr<Result> result);
+
+  parent_access_ui::mojom::ParentAccessParamsPtr parent_access_params_;
+  Callback callback_;
+
+  // The Parent Access Dialog result passed back to the caller when the dialog
+  // completes.
+  std::unique_ptr<Result> result_;
+};
+
+// Interface that provides the ParentAccessDialog to external clients.
+// The provider should be used to show the dialog.  The default implementation
+// is can be overridden by tests to provide a fake implementation like this:
+//
+// class FakeParentAccessDialogProvider
+//    : public ash::ParentAccessDialogProvider {
+// public:
+//  ParentAccessDialogProvider::ShowError Show(
+//      parent_access_ui::mojom::ParentAccessParamsPtr params,
+//      ash::ParentAccessDialog::Callback callback) override {}
+// }
+class ParentAccessDialogProvider {
+ public:
+  // Error state returned by the Show() function.
+  enum class ShowError { kNone, kDialogAlreadyVisible, kNotAChildUser };
+
+  ParentAccessDialogProvider() = default;
+  ParentAccessDialogProvider(const ParentAccessDialogProvider& other) = delete;
+  ParentAccessDialogProvider& operator=(
+      const ParentAccessDialogProvider& other) = delete;
+  virtual ~ParentAccessDialogProvider() = default;
+
+  // Shows the dialog. If the dialog is already displayed, this returns an
+  // error.  virtual so it can be overridden for tests to fake dialog behavior.
+  virtual ShowError Show(parent_access_ui::mojom::ParentAccessParamsPtr params,
+                         ParentAccessDialog::Callback callback);
+};
+
+}  // namespace ash
+
+#endif  // CHROME_BROWSER_UI_WEBUI_ASH_PARENT_ACCESS_PARENT_ACCESS_DIALOG_H_

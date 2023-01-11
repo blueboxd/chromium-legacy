@@ -9,8 +9,8 @@
 
 #include "base/observer_list_types.h"
 #include "base/time/time.h"
+#include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 
 namespace url {
@@ -38,6 +38,7 @@ class AttributionObserver : public base::CheckedObserver {
 
   // Called when a source is registered, regardless of success.
   virtual void OnSourceHandled(const StorableSource& source,
+                               absl::optional<uint64_t> cleared_debug_key,
                                StorableSource::Result result) {}
 
   // Called when a report is sent, regardless of success, but not for attempts
@@ -48,6 +49,7 @@ class AttributionObserver : public base::CheckedObserver {
 
   // Called when a trigger is registered, regardless of success.
   virtual void OnTriggerHandled(const AttributionTrigger& trigger,
+                                absl::optional<uint64_t> cleared_debug_key,
                                 const CreateReportResult& result) {}
 
   // Called when the source header registration json parser fails.

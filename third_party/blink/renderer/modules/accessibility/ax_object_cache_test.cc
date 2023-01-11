@@ -7,14 +7,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_document_transition_callback.h"
-#include "third_party/blink/renderer/core/document_transition/document_transition.h"
-#include "third_party/blink/renderer/core/document_transition/document_transition_supplement.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_view_transition_callback.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/testing/mock_function_scope.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_supplement.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/testing/accessibility_test.h"
@@ -113,16 +113,15 @@ TEST_F(AccessibilityTest, PauseUpdatesAfterMaxNumberQueued) {
     ax_object_cache->DeferTreeUpdate(
         &AXObjectCacheImpl::ChildrenChangedWithCleanLayout, ax_obj);
   }
-  document.Lifecycle().AdvanceTo(DocumentLifecycle::kInAccessibility);
   ax_object_cache->ProcessCleanLayoutCallbacks(document);
 
   ASSERT_EQ(0u, MockAXObject::num_children_changed_calls_);
 }
 
-class AXDocumentTransitionTest : public testing::Test,
-                                 private ScopedDocumentTransitionForTest {
+class AXViewTransitionTest : public testing::Test,
+                             private ScopedViewTransitionForTest {
  public:
-  AXDocumentTransitionTest() : ScopedDocumentTransitionForTest(true) {}
+  AXViewTransitionTest() : ScopedViewTransitionForTest(true) {}
 
   void SetUp() override {
     web_view_helper_ = std::make_unique<frame_test_helpers::WebViewHelper>();
@@ -142,7 +141,7 @@ class AXDocumentTransitionTest : public testing::Test,
   void UpdateAllLifecyclePhasesAndFinishDirectives() {
     UpdateAllLifecyclePhasesForTest();
     for (auto& callback :
-         LayerTreeHost()->TakeDocumentTransitionCallbacksForTesting()) {
+         LayerTreeHost()->TakeViewTransitionCallbacksForTesting()) {
       std::move(callback).Run();
     }
   }
@@ -163,9 +162,9 @@ class AXDocumentTransitionTest : public testing::Test,
         DocumentUpdateReason::kTest);
   }
 
-  using State = DocumentTransition::State;
+  using State = ViewTransition::State;
 
-  State GetState(DocumentTransition* transition) const {
+  State GetState(ViewTransition* transition) const {
     return transition->state_;
   }
 
@@ -173,13 +172,13 @@ class AXDocumentTransitionTest : public testing::Test,
   std::unique_ptr<frame_test_helpers::WebViewHelper> web_view_helper_;
 };
 
-TEST_F(AXDocumentTransitionTest, TransitionPseudoNotRelevant) {
+TEST_F(AXViewTransitionTest, TransitionPseudoNotRelevant) {
   SetHtmlInnerHTML(R"HTML(
     <style>
       .shared {
         width: 100px;
         height: 100px;
-        page-transition-tag: shared;
+        view-transition-name: shared;
         contain: layout;
         background: green;
       }
@@ -187,51 +186,45 @@ TEST_F(AXDocumentTransitionTest, TransitionPseudoNotRelevant) {
     <div id=target class=shared></div>
   )HTML");
 
-  auto* transition =
-      DocumentTransitionSupplement::EnsureDocumentTransition(GetDocument());
-  ASSERT_TRUE(transition->StartNewTransition());
-
   V8TestingScope v8_scope;
   ScriptState* script_state = v8_scope.GetScriptState();
   ExceptionState& exception_state = v8_scope.GetExceptionState();
 
   MockFunctionScope funcs(script_state);
-  auto* document_transition_callback =
-      V8DocumentTransitionCallback::Create(funcs.ExpectCall());
+  auto* view_transition_callback =
+      V8ViewTransitionCallback::Create(funcs.ExpectCall());
 
-  ScriptPromiseTester start_tester(
-      script_state,
-      transition->start(script_state, document_transition_callback,
-                        exception_state));
+  auto* transition = ViewTransitionSupplement::startViewTransition(
+      script_state, GetDocument(), view_transition_callback, exception_state);
+
+  ScriptPromiseTester finish_tester(script_state, transition->finished());
+
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(GetState(transition), State::kCapturing);
 
   UpdateAllLifecyclePhasesAndFinishDirectives();
-  EXPECT_EQ(GetState(transition), State::kCaptured);
+  EXPECT_EQ(GetState(transition), State::kDOMCallbackRunning);
 
   // We should have a start request from the async callback passed to start()
   // resolving.
   test::RunPendingTasks();
-  auto start_request = transition->TakePendingRequest();
-  EXPECT_TRUE(start_request);
-  EXPECT_EQ(GetState(transition), State::kStarted);
-
   UpdateAllLifecyclePhasesAndFinishDirectives();
 
   // We should have a transition pseudo
   auto* transition_pseudo = GetDocument().documentElement()->GetPseudoElement(
-      kPseudoIdPageTransition);
+      kPseudoIdViewTransition);
   ASSERT_TRUE(transition_pseudo);
   auto* container_pseudo = transition_pseudo->GetPseudoElement(
-      kPseudoIdPageTransitionContainer, "shared");
+      kPseudoIdViewTransitionGroup, "shared");
   ASSERT_TRUE(container_pseudo);
   auto* image_wrapper_pseudo = container_pseudo->GetPseudoElement(
-      kPseudoIdPageTransitionImageWrapper, "shared");
+      kPseudoIdViewTransitionImagePair, "shared");
   ASSERT_TRUE(image_wrapper_pseudo);
   auto* incoming_image_pseudo = image_wrapper_pseudo->GetPseudoElement(
-      kPseudoIdPageTransitionIncomingImage, "shared");
+      kPseudoIdViewTransitionNew, "shared");
   ASSERT_TRUE(incoming_image_pseudo);
   auto* outgoing_image_pseudo = image_wrapper_pseudo->GetPseudoElement(
-      kPseudoIdPageTransitionOutgoingImage, "shared");
+      kPseudoIdViewTransitionOld, "shared");
   ASSERT_TRUE(outgoing_image_pseudo);
 
   ASSERT_TRUE(transition_pseudo->GetLayoutObject());

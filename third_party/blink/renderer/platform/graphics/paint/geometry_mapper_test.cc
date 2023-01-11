@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 #include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
+#include "ui/gfx/geometry/test/geometry_util.h"
 
 namespace blink {
 
@@ -78,7 +79,7 @@ class GeometryMapperTest : public testing::Test,
   FloatClipRect expected_visual_rect;
   absl::optional<FloatClipRect> expected_visual_rect_expanded_for_compositing;
   gfx::Vector2dF expected_translation_2d;
-  absl::optional<TransformationMatrix> expected_transform;
+  absl::optional<gfx::Transform> expected_transform;
   FloatClipRect expected_clip;
   bool expected_clip_has_transform_animation = false;
   bool expected_clip_has_sticky_transform = false;
@@ -87,15 +88,18 @@ class GeometryMapperTest : public testing::Test,
 
 INSTANTIATE_PAINT_TEST_SUITE_P(GeometryMapperTest);
 
-#define EXPECT_CLIP_RECT_EQ(expected, actual)                       \
-  do {                                                              \
-    SCOPED_TRACE("EXPECT_CLIP_RECT_EQ: " #expected " vs " #actual); \
-    EXPECT_EQ((expected).IsInfinite(), (actual).IsInfinite());      \
-    EXPECT_EQ((expected).HasRadius(), (actual).HasRadius());        \
-    EXPECT_EQ((expected).IsTight(), (actual).IsTight());            \
-    if (!(expected).IsInfinite())                                   \
-      EXPECT_EQ((expected).Rect(), (actual).Rect());                \
+#define EXPECT_CLIP_RECT_NEAR(expected, actual, tolerance)                \
+  do {                                                                    \
+    SCOPED_TRACE("EXPECT_CLIP_RECT_EQ: " #expected " vs " #actual);       \
+    EXPECT_EQ((expected).IsInfinite(), (actual).IsInfinite());            \
+    EXPECT_EQ((expected).HasRadius(), (actual).HasRadius());              \
+    EXPECT_EQ((expected).IsTight(), (actual).IsTight());                  \
+    if (!(expected).IsInfinite())                                         \
+      EXPECT_RECTF_NEAR((expected).Rect(), (actual).Rect(), (tolerance)); \
   } while (false)
+
+#define EXPECT_CLIP_RECT_EQ(expected, actual) \
+  EXPECT_CLIP_RECT_NEAR(expected, actual, 0)
 
 void GeometryMapperTest::CheckLocalToAncestorVisualRect() {
   FloatClipRect actual_visual_rect(input_rect);
@@ -343,9 +347,9 @@ TEST_P(GeometryMapperTest, NestedTransformsFlattening) {
   local_state.SetTransform(*transform2);
 
   input_rect = gfx::RectF(0, 0, 100, 100);
-  rotate_transform.FlattenTo2d();
+  rotate_transform.Flatten();
   expected_transform = rotate_transform * inverse_rotate_transform;
-  expected_transform->FlattenTo2d();
+  expected_transform->Flatten();
   expected_transformed_rect = expected_transform->MapRect(input_rect);
   expected_visual_rect = FloatClipRect(expected_transformed_rect);
   expected_visual_rect.ClearIsTight();
@@ -822,8 +826,8 @@ TEST_P(GeometryMapperTest, ExpandVisualRectForFixed) {
   if (RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled())
     return;
 
-  auto above_viewport = CreateTransform(t0(), TransformationMatrix());
-  auto viewport = CreateTransform(*above_viewport, TransformationMatrix());
+  auto above_viewport = CreateTransform(t0(), gfx::Transform());
+  auto viewport = CreateTransform(*above_viewport, gfx::Transform());
   auto scroll_state = CreateCompositedScrollTranslationState(
       PropertyTreeState(*viewport, c0(), e0()), -100, -200,
       gfx::Rect(0, 0, 800, 600), gfx::Size(2400, 1800));
@@ -880,22 +884,22 @@ TEST_P(GeometryMapperTest, SiblingTransforms) {
   // We convervatively treat any rotated clip rect as not tight, even if it's
   // rotated by 90 degrees.
   expected_clip.ClearIsTight();
-  EXPECT_CLIP_RECT_EQ(expected_clip, result_clip);
+  EXPECT_CLIP_RECT_NEAR(expected_clip, result_clip, 1e-12f);
 
   gfx::RectF result = input_rect;
   GeometryMapper::SourceToDestinationRect(*transform1, *transform2, result);
-  EXPECT_EQ(gfx::RectF(-100, 0, 100, 100), result);
+  EXPECT_RECTF_NEAR(gfx::RectF(-100, 0, 100, 100), result, 1e-12f);
 
   result_clip = FloatClipRect(input_rect);
   GeometryMapper::LocalToAncestorVisualRect(transform2_state, transform1_state,
                                             result_clip);
   expected_clip = FloatClipRect(gfx::RectF(0, -100, 100, 100));
   expected_clip.ClearIsTight();
-  EXPECT_CLIP_RECT_EQ(expected_clip, result_clip);
+  EXPECT_CLIP_RECT_NEAR(expected_clip, result_clip, 1e-12f);
 
   result = input_rect;
   GeometryMapper::SourceToDestinationRect(*transform2, *transform1, result);
-  EXPECT_EQ(gfx::RectF(0, -100, 100, 100), result);
+  EXPECT_RECTF_NEAR(gfx::RectF(0, -100, 100, 100), result, 1e-12f);
 }
 
 TEST_P(GeometryMapperTest, SiblingTransformsWithClip) {
@@ -923,7 +927,7 @@ TEST_P(GeometryMapperTest, SiblingTransformsWithClip) {
   // of the source state, no clips are applied.
   FloatClipRect expected(gfx::RectF(-100, 0, 100, 100));
   expected.ClearIsTight();
-  EXPECT_CLIP_RECT_EQ(expected, result);
+  EXPECT_CLIP_RECT_NEAR(expected, result, 1e-12f);
 
   result = FloatClipRect(input_rect);
   GeometryMapper::LocalToAncestorVisualRect(transform2_and_clip_state,
@@ -932,7 +936,7 @@ TEST_P(GeometryMapperTest, SiblingTransformsWithClip) {
   // This is because the combined Rotate(45) and Rotate(-45) is not exactly a
   // translation-only transform due to calculation errors.
   expected.ClearIsTight();
-  EXPECT_CLIP_RECT_EQ(expected, result);
+  EXPECT_CLIP_RECT_NEAR(expected, result, 1e-12f);
 }
 
 TEST_P(GeometryMapperTest, FilterWithClipsAndTransforms) {
@@ -1145,7 +1149,7 @@ TEST_P(GeometryMapperTest, MightOverlapCommonClipAncestor) {
 }
 
 TEST_P(GeometryMapperTest, MightOverlapFixed) {
-  auto viewport = CreateTransform(t0(), TransformationMatrix());
+  auto viewport = CreateTransform(t0(), gfx::Transform());
   auto scroll_state1 = CreateScrollTranslationState(
       PropertyTreeState(*viewport, c0(), e0()), -1234, -567,
       gfx::Rect(0, 0, 800, 600), gfx::Size(2400, 1800));
@@ -1192,7 +1196,7 @@ TEST_P(GeometryMapperTest, MightOverlapScroll) {
   if (!RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled())
     return;
 
-  auto viewport = CreateTransform(t0(), TransformationMatrix());
+  auto viewport = CreateTransform(t0(), gfx::Transform());
   auto scroll_state1 = CreateScrollTranslationState(
       PropertyTreeState(*viewport, c0(), e0()), -1234, -567,
       gfx::Rect(10, 20, 100, 200), gfx::Size(2400, 1800));

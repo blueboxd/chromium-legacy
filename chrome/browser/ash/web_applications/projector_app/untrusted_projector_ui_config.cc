@@ -50,6 +50,13 @@ void ChromeUntrustedProjectorUIDelegate::PopulateLoadTimeData(
   source->AddBoolean(
       "isViewerUseSecondaryAccountEnabled",
       ash::features::IsProjectorViewerUseSecondaryAccountEnabled());
+  source->AddBoolean(
+      "isAccountSwitchNotificationEnabled",
+      ash::features::IsProjectorAccountSwitchNotificationEnabled());
+
+  source->AddBoolean(
+      "isInternalServerSideSpeechRecognitionEnabled",
+      ash::features::IsInternalServerSideSpeechRecognitionEnabled());
   source->AddString("appLocale", g_browser_process->GetApplicationLocale());
 }
 

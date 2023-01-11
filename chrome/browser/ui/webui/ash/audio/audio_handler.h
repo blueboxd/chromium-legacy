@@ -45,7 +45,9 @@ class AudioHandler : public audio::mojom::PageHandler,
 
   void OnOutputMuteChanged(bool mute) override;
 
-  void OnInputMuteChanged(bool mute) override;
+  void OnInputMuteChanged(
+      bool mute_on,
+      CrasAudioHandler::InputMuteChangeMethod method) override;
 
   void OnInputMutedByMicrophoneMuteSwitchChanged(bool mute) override;
 
@@ -56,11 +58,7 @@ class AudioHandler : public audio::mojom::PageHandler,
  private:
   void UpdateAudioDeviceInfo();
 
-  base::ScopedObservation<CrasAudioHandler,
-                          AudioObserver,
-                          &CrasAudioHandler::AddAudioObserver,
-                          &CrasAudioHandler::RemoveAudioObserver>
-      observation_{this};
+  base::ScopedObservation<CrasAudioHandler, AudioObserver> observation_{this};
 
   audio::mojom::DeviceDataPtr CreateDeviceData(const AudioDevice* item) const;
 

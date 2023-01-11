@@ -168,7 +168,6 @@ component("gpu") {
     libs += [ "android" ]
     deps += [
       ":mediacodec_stubs",
-      "//gpu/ipc/common:android_image_reader_utils",
 
       # TODO(crbug.com/789435): This can be removed once CdmManager is removed.
       "//gpu/ipc/common",
@@ -237,6 +236,7 @@ component("gpu") {
       "windows/mf_audio_encoder.h",
       "windows/supported_profile_helpers.cc",
       "windows/supported_profile_helpers.h",
+      "windows/video_rate_control_wrapper.h",
     ]
     if (enable_hevc_parser_and_hw_decoder) {
       sources += [
@@ -594,9 +594,8 @@ source_set("unit_tests") {
 }
 
 # TODO(crbug.com/1006266): consider using |use_chromeos_video_acceleration|.
-if (use_v4l2_codec || use_vaapi) {
+if (enable_av1_decoder && (use_v4l2_codec || use_vaapi)) {
   test("video_decode_accelerator_tests") {
-    assert(enable_av1_decoder)
     testonly = true
     sources = [ "video_decode_accelerator_tests.cc" ]
     data = [ "//media/test/data/" ]

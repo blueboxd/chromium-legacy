@@ -39,11 +39,10 @@ class PointF;
 class QuadF;
 class Rect;
 class RectF;
+class Transform;
 }  // namespace gfx
 
 namespace blink {
-
-class TransformationMatrix;
 
 class PLATFORM_EXPORT AffineTransform {
   DISALLOW_NEW();
@@ -127,7 +126,11 @@ class PLATFORM_EXPORT AffineTransform {
   bool IsInvertible() const;
   [[nodiscard]] AffineTransform Inverse() const;
 
-  TransformationMatrix ToTransformationMatrix() const;
+  // Creates an AffineTransform by extracting affine components from
+  // gfx::Transform and ignoring other components.
+  [[nodiscard]] static AffineTransform FromTransform(const gfx::Transform&);
+
+  [[nodiscard]] gfx::Transform ToTransform() const;
 
   bool operator==(const AffineTransform& m2) const {
     return gfx::AllTrue(gfx::LoadDouble4(transform_) ==
@@ -150,6 +153,12 @@ class PLATFORM_EXPORT AffineTransform {
     return result;
   }
 
+  [[nodiscard]] static constexpr AffineTransform MakeSkewX(double angle) {
+    return AffineTransform(1, 0, std::tan(Deg2rad(angle)), 1, 0, 0);
+  }
+  [[nodiscard]] static constexpr AffineTransform MakeSkewY(double angle) {
+    return AffineTransform(1, std::tan(Deg2rad(angle)), 0, 1, 0, 0);
+  }
   [[nodiscard]] static constexpr AffineTransform Translation(double x,
                                                              double y) {
     return AffineTransform(1, 0, 0, 1, x, y);
@@ -162,8 +171,16 @@ class PLATFORM_EXPORT AffineTransform {
       double sy) {
     return AffineTransform(sx, 0, 0, sy, 0, 0);
   }
+  [[nodiscard]] static AffineTransform MakeRotationAroundPoint(double angle,
+                                                               double cx,
+                                                               double cy) {
+    AffineTransform result = Translation(cx, cy);
+    result.Rotate(angle);
+    result.Translate(-cx, -cy);
+    return result;
+  }
 
-  // The 2d version of TransformationMatrix::Zoom().
+  // The 2d version of gfx::Transform::Zoom().
   AffineTransform& Zoom(double zoom_factor);
 
   // If |as_matrix| is true, the transform is returned as a matrix in row-major

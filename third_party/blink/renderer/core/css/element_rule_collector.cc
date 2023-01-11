@@ -81,7 +81,7 @@ unsigned LinkMatchTypeFromInsideLink(EInsideLink inside_link) {
 }
 
 bool EvaluateAndAddContainerQueries(
-    const Element& matching_element,
+    Element* style_container_candidate,
     const ContainerQuery& container_query,
     const StyleRecalcContext& style_recalc_context,
     ContainerSelectorCache& container_selector_cache,
@@ -89,7 +89,7 @@ bool EvaluateAndAddContainerQueries(
   for (const ContainerQuery* current = &container_query; current;
        current = current->Parent()) {
     if (!ContainerQueryEvaluator::EvalAndAdd(
-            matching_element, style_recalc_context, *current,
+            style_container_candidate, style_recalc_context, *current,
             container_selector_cache, result)) {
       return false;
     }
@@ -398,9 +398,10 @@ void ElementRuleCollector::CollectMatchingRulesForListInternal(
         rule_data.LinkMatchType() == CSSSelector::kMatchVisited;
     DCHECK(!context.is_inside_visited_link ||
            inside_link_ != EInsideLink::kNotInsideLink);
-    if (!checker.Match(context, result)) {
+    bool match = checker.Match(context, result);
+    result_.AddFlags(result.flags);
+    if (!match)
       continue;
-    }
     if (pseudo_style_request_.pseudo_id != kPseudoIdNone &&
         pseudo_style_request_.pseudo_id != result.dynamic_pseudo) {
       continue;
@@ -422,9 +423,13 @@ void ElementRuleCollector::CollectMatchingRulesForListInternal(
       // elements when they depend on the originating element.
       if (pseudo_style_request_.pseudo_id != kPseudoIdNone ||
           result.dynamic_pseudo == kPseudoIdNone) {
+        Element* style_container_candidate =
+            pseudo_style_request_.pseudo_id == kPseudoIdNone
+                ? context_.GetElement().ParentOrShadowHostElement()
+                : &context_.GetElement();
         if (!EvaluateAndAddContainerQueries(
-                context_.GetElement(), *container_query, style_recalc_context_,
-                container_selector_cache_, result_)) {
+                style_container_candidate, *container_query,
+                style_recalc_context_, container_selector_cache_, result_)) {
           if (AffectsAnimations(rule_data))
             result_.SetConditionallyAffectsAnimations();
           continue;
@@ -507,7 +512,7 @@ void ElementRuleCollector::CollectMatchingRules(
     const MatchRequest& match_request) {
   DCHECK(!match_request.IsEmpty());
 
-  SelectorChecker checker(style_.get(), nullptr, pseudo_style_request_, mode_,
+  SelectorChecker checker(nullptr, pseudo_style_request_, mode_,
                           matching_ua_rules_);
 
   Element& element = context_.GetElement();
@@ -706,7 +711,7 @@ void ElementRuleCollector::CollectMatchingRules(
 
 void ElementRuleCollector::CollectMatchingShadowHostRules(
     const MatchRequest& match_request) {
-  SelectorChecker checker(style_.get(), nullptr, pseudo_style_request_, mode_,
+  SelectorChecker checker(nullptr, pseudo_style_request_, mode_,
                           matching_ua_rules_);
 
   for (const auto bundle : match_request.AllRuleSets()) {
@@ -718,7 +723,7 @@ void ElementRuleCollector::CollectMatchingShadowHostRules(
 
 void ElementRuleCollector::CollectMatchingSlottedRules(
     const MatchRequest& match_request) {
-  SelectorChecker checker(style_.get(), nullptr, pseudo_style_request_, mode_,
+  SelectorChecker checker(nullptr, pseudo_style_request_, mode_,
                           matching_ua_rules_);
 
   for (const auto bundle : match_request.AllRuleSets()) {
@@ -733,8 +738,8 @@ void ElementRuleCollector::CollectMatchingPartPseudoRules(
     PartNames& part_names,
     bool for_shadow_pseudo) {
   PartRequest request{part_names, for_shadow_pseudo};
-  SelectorChecker checker(style_.get(), &part_names, pseudo_style_request_,
-                          mode_, matching_ua_rules_);
+  SelectorChecker checker(&part_names, pseudo_style_request_, mode_,
+                          matching_ua_rules_);
 
   for (const auto bundle : match_request.AllRuleSets()) {
     CollectMatchingRulesForList(
@@ -882,15 +887,18 @@ void ElementRuleCollector::DidMatchRule(
       }
 
       if (!universal)
-        style_->SetHasNonUniversalHighlightPseudoStyles(true);
+        result_.SetHasNonUniversalHighlightPseudoStyles();
+
+      if (!matching_ua_rules_)
+        result_.SetHasNonUaHighlightPseudoStyles();
 
       if (dynamic_pseudo == kPseudoIdHighlight) {
         DCHECK(result.custom_highlight_name);
-        style_->SetHasCustomHighlightName(
+        result_.AddCustomHighlightName(
             AtomicString(result.custom_highlight_name));
       }
     } else if (dynamic_pseudo == kPseudoIdFirstLine && container_query) {
-      style_->SetFirstLineDependsOnSizeContainerQueries(true);
+      result_.SetFirstLineDependsOnSizeContainerQueries();
     }
   } else {
     matched_rules_.push_back(MatchedRule(rule_data, layer_order, proximity,

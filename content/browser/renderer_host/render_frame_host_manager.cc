@@ -40,6 +40,7 @@
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_factory.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_frame_host_owner.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -660,7 +661,7 @@ void RenderFrameHostManager::DidChangeOpener(
 
   if (render_frame_host_->GetSiteInstance()->group() !=
       source_site_instance_group) {
-    render_frame_host_->UpdateOpener();
+    UpdateOpener(render_frame_host_.get());
   }
 
   // Notify the speculative RenderFrameHosts as well.  This is necessary in case
@@ -668,7 +669,7 @@ void RenderFrameHostManager::DidChangeOpener(
   if (speculative_render_frame_host_ &&
       speculative_render_frame_host_->GetSiteInstance()->group() !=
           source_site_instance_group) {
-    speculative_render_frame_host_->UpdateOpener();
+    UpdateOpener(speculative_render_frame_host_.get());
   }
 }
 
@@ -762,6 +763,26 @@ std::unique_ptr<StoredPage> RenderFrameHostManager::CollectPage(
   return stored_page;
 }
 
+void RenderFrameHostManager::UpdateOpener(
+    RenderFrameHostImpl* render_frame_host) {
+  TRACE_EVENT1("navigation", "RenderFrameHostManager::UpdateOpener",
+               "render_frame_host", render_frame_host);
+
+  // `render_frame_host` (the frame whose opener is being updated) might not
+  // have had proxies for the new opener chain in its SiteInstance.  Make sure
+  // they exist.
+  if (frame_tree_node_->opener()) {
+    frame_tree_node_->opener()->render_manager()->CreateOpenerProxies(
+        render_frame_host->GetSiteInstance(), frame_tree_node_,
+        render_frame_host->browsing_context_state());
+  }
+
+  auto opener_frame_token =
+      GetOpenerFrameToken(render_frame_host->GetSiteInstance()->group());
+  render_frame_host->GetAssociatedLocalFrame()->UpdateOpener(
+      opener_frame_token);
+}
+
 void RenderFrameHostManager::UnloadOldFrame(
     std::unique_ptr<RenderFrameHostImpl> old_render_frame_host) {
   TRACE_EVENT1("navigation", "RenderFrameHostManager::UnloadOldFrame",
@@ -794,6 +815,11 @@ void RenderFrameHostManager::UnloadOldFrame(
   // RenderFrameHost should not be trying to commit a navigation.
   old_render_frame_host->ResetNavigationRequests();
 
+  // Sends out all pending beacons on navigation away.
+  // Whether or not `old_render_frame_host` is put into BackForwardCache is not
+  // relevant.
+  // TODO(crbug.com/1378833): Allow to keep pending beacons when the old rfh is
+  // put into BackForwardCache.
   if (base::FeatureList::IsEnabled(blink::features::kPendingBeaconAPI) &&
       blink::features::kPendingBeaconAPIForcesSendingOnNavigation.Get()) {
     old_render_frame_host->SendAllPendingBeaconsOnNavigation();
@@ -1109,7 +1135,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
 
   bool is_same_site =
       render_frame_host_->IsNavigationSameSite(request->GetUrlInfo());
-  if (frame_tree_node_->IsMainFrame()) {
+  if (frame_tree_node_->IsOutermostMainFrame()) {
     // Same-site navigations could swap BrowsingInstance as well. But we only
     // want to clear window.name on cross-site cross-BrowsingInstance main frame
     // navigations.
@@ -3926,6 +3952,18 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
           ->DecrementRelatedActiveContentsCount();
     }
   }
+
+  // Update the owner of the new RenderFrameHost to point to the current frame.
+  // Note that this is a no-op for pending commit RenderFrameHosts (which start
+  // with owner pointing to the FrameTreeNode owning them) and prerendering
+  // activations (where RenderFrameHost's owner has been updated in
+  // PrerenderPageHolder::Activate), but is necessary for RFHs restored from
+  // back/forward cache.
+  if (render_frame_host_)
+    render_frame_host_->SetRenderFrameHostOwner(frame_tree_node_);
+
+  if (old_render_frame_host)
+    old_render_frame_host->SetRenderFrameHostOwner(nullptr);
 
   return old_render_frame_host;
 }

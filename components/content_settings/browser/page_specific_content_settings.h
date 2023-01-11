@@ -14,7 +14,6 @@
 
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
@@ -196,8 +195,9 @@ class PageSpecificContentSettings
   // Returns the object given a RenderFrameHost ids. Returns nullptr if the
   // frame no longer exist or there are no PageSpecificContentSettings attached
   // to the document.
-  static PageSpecificContentSettings* GetForFrame(int render_process_id,
-                                                  int render_frame_id);
+  static PageSpecificContentSettings* GetForFrame(
+      const content::GlobalRenderFrameHostId& id);
+
   // Returns the object given a RenderFrameHost. Returns nullptr if the frame
   // is nullptr or there are no PageSpecificContentSettings attached to the
   // document.

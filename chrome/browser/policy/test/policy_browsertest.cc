@@ -48,6 +48,7 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "url/gurl.h"
 
 #if !BUILDFLAG(IS_MAC)
@@ -119,7 +120,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_Disable3DAPIs) {
   EXPECT_TRUE(IsWebGLEnabled(contents));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
+// TODO(crbug.com/1378338): Re-enable this flaky test on Linux.
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_HomepageLocation DISABLED_HomepageLocation
+#else
+#define MAYBE_HomepageLocation HomepageLocation
+#endif
+IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_HomepageLocation) {
   // Verifies that the homepage can be configured with policies.
   // Set a default, and check that the home button navigates there.
   browser()->profile()->GetPrefs()->SetString(prefs::kHomePage,
@@ -190,9 +197,31 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_IncognitoEnabled) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
-// Disabled, see http://crbug.com/554728.
-IN_PROC_BROWSER_TEST_F(PolicyTest,
-                       DISABLED_PRE_WaitForInitialUserActivityUnsatisfied) {
+// We need to block mouse events in |WaitForInitialUserActivityUnsatisfied| test
+// to avoid flakiness due to unexpected mouse input.
+class BlockMouseEventPolicyTest : public PolicyTest {
+ public:
+  void SetUp() override {
+    // Backup previous IgnoreNativePlatformEvents value to restore after test.
+    old_ignore_native_platform_events_ =
+        ui::PlatformEventSource::ShouldIgnoreNativePlatformEvents();
+    ui::PlatformEventSource::SetIgnoreNativePlatformEvents(true);
+
+    PolicyTest::SetUp();
+  }
+  void TearDown() override {
+    ui::PlatformEventSource::SetIgnoreNativePlatformEvents(
+        old_ignore_native_platform_events_);
+
+    PolicyTest::TearDown();
+  }
+
+ private:
+  bool old_ignore_native_platform_events_;
+};
+
+IN_PROC_BROWSER_TEST_F(BlockMouseEventPolicyTest,
+                       PRE_WaitForInitialUserActivityUnsatisfied) {
   // Indicate that the session started 2 hours ago and no user activity has
   // occurred yet.
   g_browser_process->local_state()->SetInt64(
@@ -200,9 +229,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
       (base::Time::Now() - base::Hours(2)).ToInternalValue());
 }
 
-// Disabled, see http://crbug.com/554728.
-IN_PROC_BROWSER_TEST_F(PolicyTest,
-                       DISABLED_WaitForInitialUserActivityUnsatisfied) {
+IN_PROC_BROWSER_TEST_F(BlockMouseEventPolicyTest,
+                       WaitForInitialUserActivityUnsatisfied) {
   PolicyTestAppTerminationObserver observer;
 
   // Require initial user activity.

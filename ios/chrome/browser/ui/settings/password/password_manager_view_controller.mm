@@ -18,6 +18,7 @@
 #import "components/password_manager/core/browser/password_manager_constants.h"
 #import "components/password_manager/core/browser/password_manager_metrics_util.h"
 #import "components/password_manager/core/browser/password_ui_utils.h"
+#import "components/password_manager/core/browser/ui/affiliated_group.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/browser/ui/password_check_referrer.h"
 #import "components/password_manager/core/common/password_manager_features.h"
@@ -35,6 +36,7 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
 #import "ios/chrome/browser/ui/elements/home_waiting_view.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
@@ -46,6 +48,9 @@
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_settings_commands.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
+#import "ios/chrome/browser/ui/settings/settings_root_table_view_controller+toolbar_add.h"
+#import "ios/chrome/browser/ui/settings/settings_root_table_view_controller+toolbar_settings.h"
+#import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/password_auto_fill_status_manager.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
@@ -61,10 +66,12 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
+#import "ios/chrome/browser/ui/table_view/table_view_illustrated_empty_view.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
+#import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
@@ -115,12 +122,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAddPasswordButton,
 };
 
-// Return if the feature flag for the favicon is enabled.
-// TODO(crbug.com/1300569): Remove this when kEnableFaviconForPasswords flag is
-// removed.
-bool IsFaviconEnabled() {
+// Return if the feature flag for the password grouping is enabled.
+// TODO(crbug.com/1359392): Remove this when kPasswordsGrouping flag is removed.
+bool IsPasswordGroupingEnabled() {
   return base::FeatureList::IsEnabled(
-      password_manager::features::kEnableFaviconForPasswords);
+      password_manager::features::kPasswordsGrouping);
 }
 
 // Returns true if settings (e.g., "Offer To Save Passwords") should be visible
@@ -130,18 +136,15 @@ bool ShouldShowSettingsUI() {
       password_manager::features::kIOSPasswordUISplit);
 }
 
+// The size of trailing symbol icons for safe/unsafe state.
+NSInteger kTrailingSymbolSize = 18;
+
 }  // namespace
 
-// TODO(crbug.com/1300569): Remove this when kEnableFaviconForPasswords flag is
-// removed.
-@interface LegacyPasswordFormContentItem : TableViewDetailTextItem
-@property(nonatomic) password_manager::CredentialUIEntry credential;
-@end
-@implementation LegacyPasswordFormContentItem
-@end
-
 @interface PasswordFormContentItem : TableViewURLItem
+// TODO(crbug.com/1359392): Remove CredentialUIEntry object.
 @property(nonatomic) password_manager::CredentialUIEntry credential;
+@property(nonatomic) password_manager::AffiliatedGroup affiliatedGroup;
 @end
 @implementation PasswordFormContentItem
 @end
@@ -192,6 +195,7 @@ bool ShouldShowSettingsUI() {
     PasswordExportActivityViewControllerDelegate,
     PasswordsConsumer,
     PopoverLabelViewControllerDelegate,
+    TableViewIllustratedEmptyViewDelegate,
     UISearchBarDelegate,
     UISearchControllerDelegate> {
   // The observable boolean that binds to the password manager setting state.
@@ -227,6 +231,8 @@ bool ShouldShowSettingsUI() {
   std::vector<password_manager::CredentialUIEntry> _passwords;
   // The list of the user's blocked sites.
   std::vector<password_manager::CredentialUIEntry> _blockedSites;
+  // The list of the user's saved grouped passwords.
+  std::vector<password_manager::AffiliatedGroup> _affiliatedGroups;
   // The browser where the screen is being displayed.
   Browser* _browser;
   // The current Chrome browser state.
@@ -273,6 +279,10 @@ bool ShouldShowSettingsUI() {
 // Number of compromised passwords.
 @property(assign) NSInteger compromisedPasswordsCount;
 
+// Stores the most recently created or updated Affiliated Group.
+@property(nonatomic, assign) absl::optional<password_manager::AffiliatedGroup>
+    mostRecentlyUpdatedAffiliatedGroup;
+
 // Stores the most recently created or updated password form.
 @property(nonatomic, assign) absl::optional<password_manager::CredentialUIEntry>
     mostRecentlyUpdatedPassword;
@@ -280,13 +290,6 @@ bool ShouldShowSettingsUI() {
 // Stores the PasswordFormContentItem which has form attribute's username and
 // site equivalent to that of `mostRecentlyUpdatedPassword`.
 @property(nonatomic, weak) PasswordFormContentItem* mostRecentlyUpdatedItem;
-
-// Stores the PasswordFormContentItem which has form attribute's username and
-// site equivalent to that of `legacyMostRecentlyUpdatedItem`.
-// TODO(crbug.com/1300569): Remove this when kEnableFaviconForPasswords flag is
-// removed.
-@property(nonatomic, weak)
-    LegacyPasswordFormContentItem* legacyMostRecentlyUpdatedItem;
 
 // YES, if the user has tapped on the "Check Now" button.
 @property(nonatomic, assign) BOOL shouldFocusAccessibilityOnPasswordCheckStatus;
@@ -302,6 +305,16 @@ bool ShouldShowSettingsUI() {
 // of them are favicons with an image (not monogram string).
 @property(nonatomic, strong)
     NSMutableDictionary<NSString*, NSNumber*>* passwordsLoadedWithFavicons;
+
+// The search controller used in this view. This may be added/removed from the
+// navigation controller, but the instance will persist here.
+@property(nonatomic, strong) UISearchController* searchController;
+
+// Settings button for the toolbar.
+@property(nonatomic, strong) UIBarButtonItem* settingsButtonInToolbar;
+
+// Add button for the toolbar.
+@property(nonatomic, strong) UIBarButtonItem* addButtonInToolbar;
 
 @end
 
@@ -342,6 +355,10 @@ bool ShouldShowSettingsUI() {
   return self;
 }
 
+- (void)dealloc {
+  DCHECK(!_accountManagerServiceObserver.get());
+}
+
 - (void)setReauthenticationModule:
     (ReauthenticationModule*)reauthenticationModule {
   _reauthenticationModule = reauthenticationModule;
@@ -350,6 +367,8 @@ bool ShouldShowSettingsUI() {
                             delegate:self];
 }
 
+// TODO(crbug.com/1358978): Receive AffiliatedGroup object instead of a
+// CredentialUIEntry. Store into mostRecentlyUpdatedAffiliatedGroup.
 - (void)setMostRecentlyUpdatedPasswordDetails:
     (const password_manager::CredentialUIEntry&)credential {
   self.mostRecentlyUpdatedPassword = credential;
@@ -376,16 +395,20 @@ bool ShouldShowSettingsUI() {
   // TableView.
   UISearchController* searchController =
       [[UISearchController alloc] initWithSearchResultsController:nil];
+  self.searchController = searchController;
+
   searchController.obscuresBackgroundDuringPresentation = NO;
   searchController.delegate = self;
-  searchController.searchBar.delegate = self;
-  searchController.searchBar.backgroundColor = UIColor.clearColor;
-  searchController.searchBar.accessibilityIdentifier = kPasswordsSearchBarId;
+
+  UISearchBar* searchBar = searchController.searchBar;
+  searchBar.delegate = self;
+  searchBar.backgroundColor = UIColor.clearColor;
+  searchBar.accessibilityIdentifier = kPasswordsSearchBarId;
   // Center search bar and cancel button vertically so it looks centered
   // in the header when searching.
   UIOffset offset =
       UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
-  searchController.searchBar.searchFieldBackgroundPositionAdjustment = offset;
+  searchBar.searchFieldBackgroundPositionAdjustment = offset;
 
   // TODO(crbug.com/1268684): Explicitly set the background color for the search
   // bar to match with the color of navigation bar in iOS 13/14 to work around
@@ -408,14 +431,6 @@ bool ShouldShowSettingsUI() {
   [self.scrimView addTarget:self
                      action:@selector(dismissSearchController:)
            forControlEvents:UIControlEventTouchUpInside];
-
-  if (ShouldShowSettingsUI() && [self allowsAddPassword]) {
-    self.shouldShowAddButtonInToolbar = YES;
-    self.addButtonInToolbar.enabled = YES;
-  } else if (!ShouldShowSettingsUI()) {
-    self.shouldShowSettingsButtonInToolbar = YES;
-    self.settingsButtonInToolbar.enabled = YES;
-  }
 
   [self loadModel];
 
@@ -447,9 +462,7 @@ bool ShouldShowSettingsUI() {
   [super viewWillDisappear:animated];
 
   // Record favicons metrics only if the feature is enabled.
-  if (IsFaviconEnabled()) {
-    [self logMetricsForFavicons];
-  }
+  [self logMetricsForFavicons];
 
   // Restore to default origin offset for cancel button proxy style.
   UIBarButtonItem* cancelButton = [UIBarButtonItem
@@ -497,12 +510,28 @@ bool ShouldShowSettingsUI() {
   [self updateUIForEditState];
 }
 
+- (BOOL)hasPasswords {
+  if (IsPasswordGroupingEnabled()) {
+    return !_affiliatedGroups.empty();
+  }
+  return !_passwords.empty();
+}
+
 #pragma mark - SettingsRootTableViewController
 
 - (void)loadModel {
   [super loadModel];
 
   if (!_didReceivePasswords) {
+    return;
+  }
+
+  [self showOrHideEmptyView];
+
+  // If we don't have data or settings to show, add an empty state, then
+  // stop so that we don't add anything that overlaps the illustrated
+  // background.
+  if ([self shouldShowEmptyStateView]) {
     return;
   }
 
@@ -573,7 +602,7 @@ bool ShouldShowSettingsUI() {
   }
 
   // Saved passwords.
-  if (!_passwords.empty()) {
+  if ([self hasPasswords]) {
     [model addSectionWithIdentifier:SectionIdentifierSavedPasswords];
     TableViewTextHeaderFooterItem* headerItem =
         [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeHeader];
@@ -714,7 +743,7 @@ bool ShouldShowSettingsUI() {
 }
 
 - (BOOL)editButtonEnabled {
-  return !_passwords.empty() || !_blockedSites.empty();
+  return [self hasPasswords] || !_blockedSites.empty();
 }
 
 - (BOOL)shouldHideToolbar {
@@ -731,14 +760,6 @@ bool ShouldShowSettingsUI() {
   [self updatedToolbarForEditState];
 }
 
-- (void)addButtonCallback {
-  [self.handler showAddPasswordSheet];
-}
-
-- (void)settingsButtonCallback {
-  [self.presentationDelegate showPasswordSettingsSubmenu];
-}
-
 - (void)editButtonPressed {
   // Disable search bar if the user is bulk editing (edit mode). (Reverse logic
   // because parent method -editButtonPressed is calling setEditing to change
@@ -747,14 +768,40 @@ bool ShouldShowSettingsUI() {
   [super editButtonPressed];
 }
 
+- (UIBarButtonItem*)customLeftToolbarButton {
+  if (!self.tableView.isEditing) {
+    if (ShouldShowSettingsUI() && [self allowsAddPassword]) {
+      return self.addButtonInToolbar;
+    } else if (!ShouldShowSettingsUI()) {
+      return self.settingsButtonInToolbar;
+    }
+  }
+
+  return nil;
+}
+
+- (UIBarButtonItem*)customRightToolbarButton {
+  if (!self.tableView.isEditing) {
+    // Display Add button on the right side of the toolbar when the empty state
+    // is displayed. The Settings button will be on the left. When the tableView
+    // is not empty, the Add button is displayed in a row.
+    if ([self shouldShowEmptyStateView]) {
+      return self.addButtonInToolbar;
+    }
+  }
+  return nil;
+}
+
 #pragma mark - SettingsControllerProtocol
 
 - (void)reportDismissalUserAction {
   base::RecordAction(base::UserMetricsAction("MobilePasswordsSettingsClose"));
+  _accountManagerServiceObserver.reset();
 }
 
 - (void)reportBackUserAction {
   base::RecordAction(base::UserMetricsAction("MobilePasswordsSettingsBack"));
+  _accountManagerServiceObserver.reset();
 }
 
 - (void)settingsWillBeDismissed {
@@ -948,6 +995,7 @@ bool ShouldShowSettingsUI() {
   return exportPasswordsItem;
 }
 
+// TODO(crbug.com/1359392): Remove this.
 - (PasswordFormContentItem*)
     savedFormItemWithText:(NSString*)text
             andDetailText:(NSString*)detailText
@@ -972,51 +1020,41 @@ bool ShouldShowSettingsUI() {
   return passwordItem;
 }
 
+- (PasswordFormContentItem*)savedFormItemWithText:(NSString*)text
+                                    andDetailText:(NSString*)detailText
+                               forAffiliatedGroup:
+                                   (const password_manager::AffiliatedGroup&)
+                                       affiliatedGroup {
+  PasswordFormContentItem* passwordItem =
+      [[PasswordFormContentItem alloc] initWithType:ItemTypeSavedPassword];
+  passwordItem.title = text;
+  passwordItem.affiliatedGroup = affiliatedGroup;
+  // TODO(crbug.com/1358978): Temporary credential object so Password Details
+  // works.
+  passwordItem.credential = *affiliatedGroup.GetCredentials().begin();
+  passwordItem.detailText = detailText;
+  // TODO(crbug.com/1355956): Fix favicon logic.
+  passwordItem.URL =
+      [[CrURL alloc] initWithGURL:GURL(passwordItem.credential.GetURL())];
+  passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
+  passwordItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+
+  if (self.mostRecentlyUpdatedAffiliatedGroup) {
+    if (self.mostRecentlyUpdatedAffiliatedGroup->GetDisplayName() ==
+        affiliatedGroup.GetDisplayName()) {
+      self.mostRecentlyUpdatedItem = passwordItem;
+      self.mostRecentlyUpdatedAffiliatedGroup = absl::nullopt;
+    }
+  }
+  return passwordItem;
+}
+
 - (PasswordFormContentItem*)blockedSiteItem:
     (const password_manager::CredentialUIEntry&)credential {
   PasswordFormContentItem* passwordItem =
       [[PasswordFormContentItem alloc] initWithType:ItemTypeBlocked];
   passwordItem.credential = credential;
   passwordItem.URL = [[CrURL alloc] initWithGURL:GURL(credential.GetURL())];
-  passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
-  passwordItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-  return passwordItem;
-}
-
-- (LegacyPasswordFormContentItem*)
-    legacySavedFormItemWithText:(NSString*)text
-                  andDetailText:(NSString*)detailText
-                  forCredential:
-                      (const password_manager::CredentialUIEntry&)credential {
-  DCHECK(!IsFaviconEnabled());
-  LegacyPasswordFormContentItem* passwordItem =
-      [[LegacyPasswordFormContentItem alloc]
-          initWithType:ItemTypeSavedPassword];
-  passwordItem.text = text;
-  passwordItem.credential = credential;
-  passwordItem.detailText = detailText;
-  passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
-  passwordItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-  if (self.mostRecentlyUpdatedPassword) {
-    if (self.mostRecentlyUpdatedPassword->username == credential.username &&
-        self.mostRecentlyUpdatedPassword->GetFirstSignonRealm() ==
-            credential.GetFirstSignonRealm()) {
-      self.legacyMostRecentlyUpdatedItem = passwordItem;
-      self.mostRecentlyUpdatedPassword = absl::nullopt;
-    }
-  }
-  return passwordItem;
-}
-
-- (LegacyPasswordFormContentItem*)
-    legacyBlockedFormItemWithText:(NSString*)text
-                    forCredential:
-                        (const password_manager::CredentialUIEntry&)credential {
-  DCHECK(!IsFaviconEnabled());
-  LegacyPasswordFormContentItem* passwordItem =
-      [[LegacyPasswordFormContentItem alloc] initWithType:ItemTypeBlocked];
-  passwordItem.text = text;
-  passwordItem.credential = credential;
   passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
   passwordItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   return passwordItem;
@@ -1133,16 +1171,14 @@ bool ShouldShowSettingsUI() {
   _passwordCheckState = state;
 }
 
+// TODO(crbug.com/1359392): Remove this.
 - (void)setPasswords:(std::vector<password_manager::CredentialUIEntry>)passwords
         blockedSites:
             (std::vector<password_manager::CredentialUIEntry>)blockedSites {
   if (!_didReceivePasswords) {
     _blockedSites = std::move(blockedSites);
     _passwords = std::move(passwords);
-    _didReceivePasswords = YES;
     [self hideLoadingSpinnerBackground];
-    [self updateUIForEditState];
-    [self reloadData];
   } else {
     if (_passwords == passwords && _blockedSites == blockedSites) {
       return;
@@ -1150,60 +1186,88 @@ bool ShouldShowSettingsUI() {
 
     _blockedSites = std::move(blockedSites);
     _passwords = std::move(passwords);
-    TableViewModel* model = self.tableViewModel;
-    NSMutableIndexSet* sectionIdentifiersToUpdate = [NSMutableIndexSet indexSet];
 
-    // Hold in reverse order of section indexes (bottom up of section
-    // displayed). If we don't we'll cause a crash.
-    PasswordSectionIdentifier sections[2] = {SectionIdentifierBlocked,
-                                             SectionIdentifierSavedPasswords};
-    for (int i = 0; i < 2; i++) {
-      PasswordSectionIdentifier section = sections[i];
-      bool hasSection = [model hasSectionForSectionIdentifier:section];
-      bool needsSection = section == SectionIdentifierBlocked
-                              ? !_blockedSites.empty()
-                              : !_passwords.empty();
+    [self updatePasswordManagerUI];
+  }
+}
 
-      // If section exists but it shouldn't - gracefully remove it with
-      // animation.
-      if (!needsSection && hasSection) {
-        [self clearSectionWithIdentifier:section
-                        withRowAnimation:UITableViewRowAnimationAutomatic];
-      }
-      // If section exists and it should - reload it.
-      else if (needsSection && hasSection) {
-        [sectionIdentifiersToUpdate addIndex:section];
-      }
-      // If section doesn't exist but it should - add it.
-      else if (needsSection && !hasSection) {
-        // This is very rare condition, in this case just reload all data.
-        [self updateUIForEditState];
-        [self reloadData];
-        return;
-      }
+- (void)setAffiliatedGroups:
+            (const std::vector<password_manager::AffiliatedGroup>&)
+                affiliatedGroups
+               blockedSites:
+                   (const std::vector<password_manager::CredentialUIEntry>&)
+                       blockedSites {
+  DCHECK(IsPasswordGroupingEnabled());
+  if (!_didReceivePasswords) {
+    _blockedSites = blockedSites;
+    _affiliatedGroups = affiliatedGroups;
+    _didReceivePasswords = YES;
+    [self hideLoadingSpinnerBackground];
+    [self updateUIForEditState];
+    [self reloadData];
+  } else {
+    if (_affiliatedGroups == affiliatedGroups &&
+        _blockedSites == blockedSites) {
+      return;
     }
 
-    [self updateExportPasswordsButton];
+    _blockedSites = blockedSites;
+    _affiliatedGroups = affiliatedGroups;
 
-    // After deleting any sections, calculate the indices of sections to be
-    // updated. Doing this before deleting sections will lead to incorrect indices
-    // and possible crashes.
-    NSMutableIndexSet* sectionsToUpdate = [NSMutableIndexSet indexSet];
-    [sectionIdentifiersToUpdate
-        enumerateIndexesUsingBlock:^(NSUInteger sectionIdentifier, BOOL* stop) {
-          [sectionsToUpdate
-              addIndex:[model sectionForSectionIdentifier:sectionIdentifier]];
-        }];
+    [self updatePasswordManagerUI];
+  }
+}
 
-    // Reload items in sections.
-    if (sectionsToUpdate.count > 0) {
-      [self filterItems:self.searchTerm];
-      [self.tableView reloadSections:sectionsToUpdate
-                    withRowAnimation:UITableViewRowAnimationAutomatic];
-      [self scrollToLastUpdatedItem];
-    } else if (_passwords.empty() && _blockedSites.empty()) {
-      [self setEditing:NO animated:YES];
+- (void)updatePasswordManagerUI {
+  if ([self shouldShowEmptyStateView]) {
+    [self setEditing:NO animated:YES];
+    [self reloadData];
+    return;
+  }
+
+  TableViewModel* model = self.tableViewModel;
+  NSMutableIndexSet* sectionsToUpdate = [NSMutableIndexSet indexSet];
+
+  // Hold in reverse order of section indexes (bottom up of section
+  // displayed). If we don't we'll cause a crash.
+  std::vector<PasswordSectionIdentifier> sections = {
+      SectionIdentifierBlocked, SectionIdentifierSavedPasswords};
+
+  for (const auto& section : sections) {
+    bool hasSection = [model hasSectionForSectionIdentifier:section];
+    bool needsSection = section == SectionIdentifierBlocked
+                            ? !_blockedSites.empty()
+                            : [self hasPasswords];
+
+    // If section exists but it shouldn't - gracefully remove it with
+    // animation.
+    if (!needsSection && hasSection) {
+      [self clearSectionWithIdentifier:section
+                      withRowAnimation:UITableViewRowAnimationAutomatic];
     }
+    // If section exists and it should - reload it.
+    else if (needsSection && hasSection) {
+      [sectionsToUpdate addIndex:[model sectionForSectionIdentifier:section]];
+    }
+    // If section doesn't exist but it should - add it.
+    else if (needsSection && !hasSection) {
+      // This is very rare condition, in this case just reload all data.
+      [self updateUIForEditState];
+      [self reloadData];
+      return;
+    }
+  }
+
+  [self updateExportPasswordsButton];
+
+  // Reload items in sections.
+  if (sectionsToUpdate.count > 0) {
+    [self filterItems:self.searchTerm];
+    [self.tableView reloadSections:sectionsToUpdate
+                  withRowAnimation:UITableViewRowAnimationAutomatic];
+    [self scrollToLastUpdatedItem];
+  } else if (_affiliatedGroups.empty() && _blockedSites.empty()) {
+    [self setEditing:NO animated:YES];
   }
 }
 
@@ -1421,20 +1485,30 @@ bool ShouldShowSettingsUI() {
 
 // Hide the loading spinner if it is showing.
 - (void)hideLoadingSpinnerBackground {
-  if (self.spinnerView) {
-    [self.spinnerView stopWaitingWithCompletion:^{
-      [UIView animateWithDuration:0.2
-          animations:^{
-            self.spinnerView.alpha = 0.0;
-          }
-          completion:^(BOOL finished) {
-            self.navigationItem.searchController.searchBar
-                .userInteractionEnabled = YES;
-            self.tableView.backgroundView = nil;
-            self.spinnerView = nil;
-          }];
-    }];
-  }
+  DCHECK(self.spinnerView);
+  PasswordManagerViewController* weakSelf = self;
+  [self.spinnerView stopWaitingWithCompletion:^{
+    [UIView animateWithDuration:0.2
+        animations:^{
+          self.spinnerView.alpha = 0.0;
+        }
+        completion:^(BOOL finished) {
+          [weakSelf didHideSpinner];
+        }];
+  }];
+}
+
+// Called after the loading spinner hiding animation finished. Updates
+// `tableViewModel` and then the view hierarchy.
+- (void)didHideSpinner {
+  // Remove spinner view after animation finished.
+  self.navigationItem.searchController.searchBar.userInteractionEnabled = YES;
+  self.tableView.backgroundView = nil;
+  self.spinnerView = nil;
+  // Update model and view hierarchy.
+  _didReceivePasswords = YES;
+  [self updateUIForEditState];
+  [self reloadData];
 }
 
 // Dismisses the search controller when there's a touch event on the scrim.
@@ -1503,14 +1577,29 @@ bool ShouldShowSettingsUI() {
   }
 }
 
-// Builds the filtered list of passwords/blocked based on given
-// `searchTerm`.
-- (void)filterItems:(NSString*)searchTerm {
-  TableViewModel* model = self.tableViewModel;
+- (void)updatePasswordsSectionWithSearchTerm:(NSString*)searchTerm {
+  if (IsPasswordGroupingEnabled()) {
+    for (const auto& affiliatedGroup : _affiliatedGroups) {
+      NSString* text =
+          base::SysUTF8ToNSString(affiliatedGroup.GetDisplayName());
+      bool hidden = searchTerm.length > 0 &&
+                    ![text localizedCaseInsensitiveContainsString:searchTerm];
+      if (hidden)
+        continue;
 
-  if (!_passwords.empty()) {
-    [model deleteAllItemsFromSectionWithIdentifier:
-               SectionIdentifierSavedPasswords];
+      int nbAccounts = affiliatedGroup.GetCredentials().size();
+      NSString* detailText =
+          nbAccounts > 1 ? l10n_util::GetNSStringF(
+                               IDS_IOS_SETTINGS_PASSWORDS_NUMBER_ACCOUNT,
+                               base::NumberToString16(nbAccounts))
+                         : @"";
+      [self.tableViewModel
+                          addItem:([self savedFormItemWithText:text
+                                                 andDetailText:detailText
+                                            forAffiliatedGroup:affiliatedGroup])
+          toSectionWithIdentifier:SectionIdentifierSavedPasswords];
+    }
+  } else {
     for (const auto& credential : _passwords) {
       NSString* text =
           base::SysUTF8ToNSString(password_manager::GetShownOrigin(credential));
@@ -1521,15 +1610,23 @@ bool ShouldShowSettingsUI() {
           ![detailText localizedCaseInsensitiveContainsString:searchTerm];
       if (hidden)
         continue;
-      [model addItem:(IsFaviconEnabled()
-                          ? [self savedFormItemWithText:text
-                                          andDetailText:detailText
-                                          forCredential:credential]
-                          : [self legacySavedFormItemWithText:text
-                                                andDetailText:detailText
-                                                forCredential:credential])
-          toSectionWithIdentifier:SectionIdentifierSavedPasswords];
+      [self.tableViewModel addItem:[self savedFormItemWithText:text
+                                                 andDetailText:detailText
+                                                 forCredential:credential]
+           toSectionWithIdentifier:SectionIdentifierSavedPasswords];
     }
+  }
+}
+
+// Builds the filtered list of passwords/blocked based on given
+// `searchTerm`.
+- (void)filterItems:(NSString*)searchTerm {
+  TableViewModel* model = self.tableViewModel;
+
+  if ([self hasPasswords]) {
+    [model deleteAllItemsFromSectionWithIdentifier:
+               SectionIdentifierSavedPasswords];
+    [self updatePasswordsSectionWithSearchTerm:searchTerm];
   }
 
   if (!_blockedSites.empty()) {
@@ -1541,10 +1638,7 @@ bool ShouldShowSettingsUI() {
                     ![text localizedCaseInsensitiveContainsString:searchTerm];
       if (hidden)
         continue;
-      [model addItem:(IsFaviconEnabled()
-                          ? [self blockedSiteItem:credential]
-                          : [self legacyBlockedFormItemWithText:text
-                                                  forCredential:credential])
+      [model addItem:[self blockedSiteItem:credential]
           toSectionWithIdentifier:SectionIdentifierBlocked];
     }
   }
@@ -1555,7 +1649,7 @@ bool ShouldShowSettingsUI() {
 - (void)updateLastCheckTimestampWithState:(PasswordCheckUIState)state
                                 fromState:(PasswordCheckUIState)oldState
                                    update:(BOOL)update {
-  if (!_didReceivePasswords) {
+  if (!_didReceivePasswords || ![self hasPasswords]) {
     return;
   }
 
@@ -1669,18 +1763,26 @@ bool ShouldShowSettingsUI() {
           base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
               IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT,
               self.compromisedPasswordsCount));
-      if (base::FeatureList::IsEnabled(
-              password_manager::features::
-                  kIOSEnablePasswordManagerBrandingUpdate)) {
+      if (UseSymbols()) {
         _passwordProblemsItem.trailingImage =
-            [UIImage imageNamed:@"round_settings_unsafe_state"];
-      } else {
-        UIImage* unSafeIconImage =
-            [[UIImage imageNamed:@"settings_unsafe_state"]
-                imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-        _passwordProblemsItem.trailingImage = unSafeIconImage;
+            DefaultSymbolTemplateWithPointSize(kWarningFillSymbol,
+                                               kTrailingSymbolSize);
         _passwordProblemsItem.trailingImageTintColor =
             [UIColor colorNamed:kRedColor];
+      } else {
+        if (base::FeatureList::IsEnabled(
+                password_manager::features::
+                    kIOSEnablePasswordManagerBrandingUpdate)) {
+          _passwordProblemsItem.trailingImage =
+              [UIImage imageNamed:@"round_settings_unsafe_state"];
+        } else {
+          UIImage* unSafeIconImage =
+              [[UIImage imageNamed:@"settings_unsafe_state"]
+                  imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+          _passwordProblemsItem.trailingImage = unSafeIconImage;
+          _passwordProblemsItem.trailingImageTintColor =
+              [UIColor colorNamed:kRedColor];
+        }
       }
 
       _passwordProblemsItem.accessoryType =
@@ -1689,8 +1791,12 @@ bool ShouldShowSettingsUI() {
     }
     case PasswordCheckStateSafe: {
       DCHECK(!self.compromisedPasswordsCount);
-      UIImage* safeIconImage = [[UIImage imageNamed:@"settings_safe_state"]
-          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      UIImage* safeIconImage =
+          UseSymbols()
+              ? DefaultSymbolTemplateWithPointSize(kCheckmarkCircleFillSymbol,
+                                                   kTrailingSymbolSize)
+              : [[UIImage imageNamed:@"settings_safe_state"]
+                    imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       _passwordProblemsItem.detailText =
           base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
               IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT, 0));
@@ -1737,7 +1843,7 @@ bool ShouldShowSettingsUI() {
 - (void)updateExportPasswordsButton {
   if (!_exportPasswordsItem)
     return;
-  if (!_passwords.empty() &&
+  if ([self hasPasswords] &&
       self.passwordExporter.exportState == ExportState::IDLE) {
     _exportReady = YES;
     if (!self.editing) {
@@ -1791,8 +1897,23 @@ bool ShouldShowSettingsUI() {
                 if (!strongSelf) {
                   return;
                 }
-                [strongSelf.passwordExporter
-                    startExportFlow:strongSelf->_passwords];
+
+                // Convert to vector of CredentialUIEntry for the password
+                // exporter.
+                if (IsPasswordGroupingEnabled()) {
+                  std::vector<password_manager::CredentialUIEntry> passwords;
+                  for (const auto& affiliatedGroup :
+                       strongSelf->_affiliatedGroups) {
+                    for (const auto& credentialGroup :
+                         affiliatedGroup.GetCredentials()) {
+                      passwords.push_back(std::move(credentialGroup));
+                    }
+                  }
+                  [strongSelf.passwordExporter startExportFlow:passwords];
+                } else {
+                  [strongSelf.passwordExporter
+                      startExportFlow:strongSelf->_passwords];
+                }
               }];
 
   [exportConfirmation addAction:exportAction];
@@ -1819,36 +1940,52 @@ bool ShouldShowSettingsUI() {
   }
 }
 
+// TODO(crbug.com/1358976): Fix batch delete logic with affiliated groups.
 - (void)deleteItemAtIndexPaths:(NSArray<NSIndexPath*>*)indexPaths {
   std::vector<password_manager::CredentialUIEntry> credentialsToDelete;
 
   for (NSIndexPath* indexPath in indexPaths) {
-    password_manager::CredentialUIEntry credential =
-        IsFaviconEnabled()
-            ? base::mac::ObjCCastStrict<PasswordFormContentItem>(
-                  [self.tableViewModel itemAtIndexPath:indexPath])
-                  .credential
-            : base::mac::ObjCCastStrict<LegacyPasswordFormContentItem>(
-                  [self.tableViewModel itemAtIndexPath:indexPath])
-                  .credential;
     // Only form items are editable.
     NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
 
-    auto removeCredential =
-        [](std::vector<password_manager::CredentialUIEntry>& credentials,
-           const password_manager::CredentialUIEntry& credential) {
-          auto iterator = base::ranges::find(credentials, credential);
-          if (iterator != credentials.end())
-            credentials.erase(iterator);
-        };
+    // Remove affiliated group.
+    if (IsPasswordGroupingEnabled() && itemType == ItemTypeSavedPassword) {
+      password_manager::AffiliatedGroup affiliatedGroup =
+          base::mac::ObjCCastStrict<PasswordFormContentItem>(
+              [self.tableViewModel itemAtIndexPath:indexPath])
+              .affiliatedGroup;
 
-    if (itemType == ItemTypeBlocked) {
-      removeCredential(_blockedSites, credential);
+      // Remove from local cache.
+      auto iterator = base::ranges::find(_affiliatedGroups, affiliatedGroup);
+      if (iterator != _affiliatedGroups.end())
+        _affiliatedGroups.erase(iterator);
+
+      // Add to the credentials to delete vector to remove from store.
+      credentialsToDelete.insert(credentialsToDelete.end(),
+                                 affiliatedGroup.GetCredentials().begin(),
+                                 affiliatedGroup.GetCredentials().end());
     } else {
-      removeCredential(_passwords, credential);
+      password_manager::CredentialUIEntry credential =
+          base::mac::ObjCCastStrict<PasswordFormContentItem>(
+              [self.tableViewModel itemAtIndexPath:indexPath])
+              .credential;
+
+      auto removeCredential =
+          [](std::vector<password_manager::CredentialUIEntry>& credentials,
+             const password_manager::CredentialUIEntry& credential) {
+            auto iterator = base::ranges::find(credentials, credential);
+            if (iterator != credentials.end())
+              credentials.erase(iterator);
+          };
+
+      if (itemType == ItemTypeBlocked) {
+        removeCredential(_blockedSites, credential);
+      } else {
+        removeCredential(_passwords, credential);
+      }
+
+      credentialsToDelete.push_back(std::move(credential));
     }
-    
-    credentialsToDelete.push_back(std::move(credential));
   }
 
   // Remove empty sections.
@@ -1868,10 +2005,11 @@ bool ShouldShowSettingsUI() {
         // displayed), so that indexes in model matches those in the view.  if
         // we don't we'll cause a crash.
         if (strongSelf->_blockedSites.empty()) {
-          [self clearSectionWithIdentifier:SectionIdentifierBlocked
-                          withRowAnimation:UITableViewRowAnimationAutomatic];
+          [strongSelf
+              clearSectionWithIdentifier:SectionIdentifierBlocked
+                        withRowAnimation:UITableViewRowAnimationAutomatic];
         }
-        if (strongSelf->_passwords.empty()) {
+        if (![strongSelf hasPasswords]) {
           [strongSelf
               clearSectionWithIdentifier:SectionIdentifierSavedPasswords
                         withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -1882,8 +2020,14 @@ bool ShouldShowSettingsUI() {
         if (!strongSelf)
           return;
         // If both lists are empty, exit editing mode.
-        if (strongSelf->_passwords.empty() && strongSelf->_blockedSites.empty())
+        if (![strongSelf hasPasswords] && strongSelf->_blockedSites.empty()) {
           [strongSelf setEditing:NO animated:YES];
+          if (!ShouldShowSettingsUI()) {
+            // In this case, an illustrated empty state is required, so reload
+            // the whole model.
+            [strongSelf reloadData];
+          }
+        }
         [strongSelf updateUIForEditState];
         [strongSelf updateExportPasswordsButton];
       }];
@@ -1910,14 +2054,6 @@ bool ShouldShowSettingsUI() {
                           atScrollPosition:UITableViewScrollPositionTop
                                   animated:NO];
     self.mostRecentlyUpdatedItem = nil;
-  } else if (self.legacyMostRecentlyUpdatedItem) {
-    DCHECK(!IsFaviconEnabled());
-    NSIndexPath* indexPath = [self.tableViewModel
-        indexPathForItem:self.legacyMostRecentlyUpdatedItem];
-    [self.tableView scrollToRowAtIndexPath:indexPath
-                          atScrollPosition:UITableViewScrollPositionTop
-                                  animated:NO];
-    self.legacyMostRecentlyUpdatedItem = nil;
   }
 }
 
@@ -1984,6 +2120,79 @@ bool ShouldShowSettingsUI() {
   }
 }
 
+// Shows the empty state view when there is no content to display in the
+// tableView, otherwise hides the empty state view if one is being displayed.
+- (void)showOrHideEmptyView {
+  if (ShouldShowSettingsUI()) {
+    // Empty view is only used when the settings submenu is enabled.
+    return;
+  }
+  if (![self hasPasswords] && _blockedSites.empty()) {
+    NSString* title =
+        l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_EMPTY_TITLE);
+
+    NSDictionary* textAttributes =
+        [TableViewIllustratedEmptyView defaultTextAttributesForSubtitle];
+    NSURL* linkURL = net::NSURLWithGURL(google_util::AppendGoogleLocaleParam(
+        GURL(password_manager::kPasswordManagerHelpCenteriOSURL),
+        GetApplicationContext()->GetApplicationLocale()));
+    NSDictionary* linkAttributes = @{
+      NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor],
+      NSLinkAttributeName : linkURL,
+    };
+    NSAttributedString* subtitle = AttributedStringFromStringWithLink(
+        l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS_MANAGE_ACCOUNT_HEADER),
+        textAttributes, linkAttributes);
+
+    [self addEmptyTableViewWithImage:[UIImage imageNamed:@"passwords_empty"]
+                               title:title
+                  attributedSubtitle:subtitle
+                            delegate:self];
+    self.navigationItem.searchController = nil;
+    self.tableView.alwaysBounceVertical = NO;
+  } else {
+    [self removeEmptyTableView];
+    self.navigationItem.searchController = self.searchController;
+    self.tableView.alwaysBounceVertical = YES;
+  }
+}
+
+// Private accessor to `_didReceivePasswords` only exposed to unit tests.
+- (BOOL)didReceivePasswords {
+  return _didReceivePasswords;
+}
+
+- (void)settingsButtonCallback {
+  [self.presentationDelegate showPasswordSettingsSubmenu];
+}
+
+- (void)addButtonCallback {
+  [self.handler showAddPasswordSheet];
+}
+
+- (UIBarButtonItem*)settingsButtonInToolbar {
+  if (!_settingsButtonInToolbar) {
+    _settingsButtonInToolbar =
+        [self settingsButtonWithAction:@selector(settingsButtonCallback)];
+  }
+
+  return _settingsButtonInToolbar;
+}
+
+- (UIBarButtonItem*)addButtonInToolbar {
+  if (!_addButtonInToolbar) {
+    _addButtonInToolbar =
+        [self addButtonWithAction:@selector(addButtonCallback)];
+  }
+  return _addButtonInToolbar;
+}
+
+// Helper method determining if the empty state view should be displayed.
+- (BOOL)shouldShowEmptyStateView {
+  return !ShouldShowSettingsUI() && ![self hasPasswords] &&
+         _blockedSites.empty();
+}
+
 #pragma mark - UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView
@@ -2010,13 +2219,9 @@ bool ShouldShowSettingsUI() {
       DCHECK_EQ(SectionIdentifierSavedPasswords,
                 [model sectionIdentifierForSectionIndex:indexPath.section]);
       password_manager::CredentialUIEntry credential =
-          IsFaviconEnabled()
-              ? base::mac::ObjCCastStrict<PasswordFormContentItem>(
-                    [model itemAtIndexPath:indexPath])
-                    .credential
-              : base::mac::ObjCCastStrict<LegacyPasswordFormContentItem>(
-                    [model itemAtIndexPath:indexPath])
-                    .credential;
+          base::mac::ObjCCastStrict<PasswordFormContentItem>(
+              [model itemAtIndexPath:indexPath])
+              .credential;
       [self.handler showDetailedViewForCredential:credential];
       break;
     }
@@ -2024,14 +2229,9 @@ bool ShouldShowSettingsUI() {
       DCHECK_EQ(SectionIdentifierBlocked,
                 [model sectionIdentifierForSectionIndex:indexPath.section]);
       password_manager::CredentialUIEntry credential =
-          IsFaviconEnabled()
-              ? base::mac::ObjCCastStrict<PasswordFormContentItem>(
-                    [model itemAtIndexPath:indexPath])
-                    .credential
-              : base::mac::ObjCCastStrict<LegacyPasswordFormContentItem>(
-                    [model itemAtIndexPath:indexPath])
-
-                    .credential;
+          base::mac::ObjCCastStrict<PasswordFormContentItem>(
+              [model itemAtIndexPath:indexPath])
+              .credential;
       [self.handler showDetailedViewForCredential:credential];
       break;
     }
@@ -2175,17 +2375,11 @@ bool ShouldShowSettingsUI() {
     }
     case ItemTypeSavedPassword:
     case ItemTypeBlocked: {
-      if (IsFaviconEnabled()) {
-        TableViewURLCell* urlCell =
-            base::mac::ObjCCastStrict<TableViewURLCell>(cell);
-        urlCell.textLabel.lineBreakMode = NSLineBreakByTruncatingHead;
-        // Load the favicon from cache.
-        [self loadFaviconAtIndexPath:indexPath forCell:cell];
-      } else {
-        TableViewDetailTextCell* textCell =
-            base::mac::ObjCCastStrict<TableViewDetailTextCell>(cell);
-        textCell.textLabel.lineBreakMode = NSLineBreakByTruncatingHead;
-      }
+      TableViewURLCell* urlCell =
+          base::mac::ObjCCastStrict<TableViewURLCell>(cell);
+      urlCell.textLabel.lineBreakMode = NSLineBreakByTruncatingHead;
+      // Load the favicon from cache.
+      [self loadFaviconAtIndexPath:indexPath forCell:cell];
       break;
     }
   }
@@ -2234,7 +2428,7 @@ bool ShouldShowSettingsUI() {
                                IDS_IOS_SETTINGS_EXPORT_PASSWORDS_SET_UP_SCREENLOCK_CONTENT)
                 preferredStyle:UIAlertControllerStyleAlert];
 
-  ProceduralBlockWithURL blockOpenURL = BlockToOpenURL(self, self.dispatcher);
+  void (^blockOpenURL)(const GURL&) = BlockToOpenURL(self, self.dispatcher);
   UIAlertAction* learnAction = [UIAlertAction
       actionWithTitle:l10n_util::GetNSString(
                           IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_LEARN_HOW)
@@ -2384,6 +2578,14 @@ bool ShouldShowSettingsUI() {
     (UIPresentationController*)presentationController {
   base::RecordAction(
       base::UserMetricsAction("IOSPasswordsSettingsCloseWithSwipe"));
+  _accountManagerServiceObserver.reset();
+}
+
+#pragma mark - TableViewIllustratedEmptyViewDelegate
+
+- (void)tableViewIllustratedEmptyView:(TableViewIllustratedEmptyView*)view
+                   didTapSubtitleLink:(NSURL*)URL {
+  [self didTapLinkURL:URL];
 }
 
 @end

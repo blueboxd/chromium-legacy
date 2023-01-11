@@ -24,9 +24,6 @@ BASE_DECLARE_FEATURE(kSharedHighlightingIOS);
 // Settings.app.
 BASE_DECLARE_FEATURE(kEnableFREDefaultBrowserPromoScreen);
 
-// Feature flag that enables using the FRE UI module to show first run screens.
-BASE_DECLARE_FEATURE(kEnableFREUIModuleIOS);
-
 // TODO(crbug.com/1128242): Remove this flag after the refactoring work is
 // finished. Flag to modernize the tabstrip without disturbing the existing one.
 BASE_DECLARE_FEATURE(kModernTabStrip);
@@ -96,6 +93,9 @@ BASE_DECLARE_FEATURE(kEnableShortenedPasswordAutoFillInstruction);
 // Feature flag to switch images to SFSymbols when enabled.
 BASE_DECLARE_FEATURE(kUseSFSymbols);
 
+// Feature flag to switch images to SFSymbols in the omnibox when enabled.
+BASE_DECLARE_FEATURE(kUseSFSymbolsInOmnibox);
+
 // Feature flag to enable Calendar event in experience kit.
 BASE_DECLARE_FEATURE(kCalendarExperienceKit);
 
@@ -105,10 +105,23 @@ BASE_DECLARE_FEATURE(kEnableExpKitAppleCalendar);
 // Feature flag to enable Phone Numbers detection.
 BASE_DECLARE_FEATURE(kEnablePhoneNumbers);
 
+// Parameter name for the parameter controlling whether or not experience kit
+// maps should be enabled in search result pages or not.
+extern const char kExperienceKitMapsVariationName[];
+
+// Variation to enable experience kit Maps in search result pages.
+extern const char kEnableExperienceKitMapsVariationSrp[];
+
 // Feature flag to enable Maps in experience kit.
 BASE_DECLARE_FEATURE(kMapsExperienceKit);
 
 // Feature flag to enable Mini Map in experience kit.
 BASE_DECLARE_FEATURE(kEnableMiniMap);
+
+// When enabled sort tab by last usage in the TabGrid.
+BASE_DECLARE_FEATURE(kTabGridRecencySort);
+
+// Whether the tab grid tabs should be sorted by recency.
+bool IsTabGridSortedByRecency();
 
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

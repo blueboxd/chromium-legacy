@@ -330,32 +330,35 @@ EXTENSIONS_EXPORT extern const char kGoogleSheetsAppId[];
 EXTENSIONS_EXPORT extern const char kGoogleSlidesAppId[];
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// The extension id of the default Demo Mode Highlights app.
-EXTENSIONS_EXPORT extern const char kHighlightsAppId[];
-
-// The extension id of the default Demo Mode screensaver app.
-EXTENSIONS_EXPORT extern const char kScreensaverAppId[];
-
 // The id of the testing extension allowed in the signin profile.
 EXTENSIONS_EXPORT extern const char kSigninProfileTestExtensionId[];
 
 // The id of the testing extension allowed in guest mode.
 EXTENSIONS_EXPORT extern const char kGuestModeTestExtensionId[];
 
+// Returns true if this app is part of the "system UI". Generally this is UI
+// that that on other operating systems would be considered part of the OS,
+// for example the file manager.
+EXTENSIONS_EXPORT bool IsSystemUIApp(base::StringPiece extension_id);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS)
+// The extension id of the default Demo Mode Highlights app.
+EXTENSIONS_EXPORT extern const char kHighlightsAppId[];
+
+// The extension id of the default Demo Mode screensaver app.
+EXTENSIONS_EXPORT extern const char kScreensaverAppId[];
+
 // The extension id of 2022 Demo Mode Highlights app.
 EXTENSIONS_EXPORT extern const char kNewAttractLoopAppId[];
 
 // The extension id of 2022 Demo Mode screensaver app.
 EXTENSIONS_EXPORT extern const char kNewHighlightsAppId[];
-// Returns true if this app is part of the "system UI". Generally this is UI
-// that that on other operating systems would be considered part of the OS,
-// for example the file manager.
-EXTENSIONS_EXPORT bool IsSystemUIApp(base::StringPiece extension_id);
 
 // Returns true if this app is one of Demo Mode Chrome Apps, including
 // attract loop and highlights apps.
 EXTENSIONS_EXPORT bool IsDemoModeChromeApp(base::StringPiece extension_id);
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // True if the id matches any of the QuickOffice extension ids.
 EXTENSIONS_EXPORT bool IsQuickOfficeExtension(const std::string& id);
@@ -384,18 +387,11 @@ EXTENSIONS_EXPORT extern const char kIncognitoErrorMessage[];
 // scope is denied.
 EXTENSIONS_EXPORT extern const char kIncognitoSessionOnlyErrorMessage[];
 
+// Error message when an invalid color is provided to an API method.
+EXTENSIONS_EXPORT extern const char kInvalidColorError[];
+
 // The default block size for hashing used in content verification.
 EXTENSIONS_EXPORT extern const int kContentVerificationDefaultBlockSize;
-
-// The origin of the CryptoToken component extension, which implements the
-// deprecated U2F Security Key API.
-// TODO(1224886): Delete together with CryptoToken code.
-EXTENSIONS_EXPORT extern const char kCryptotokenExtensionId[];
-
-// The name of the CryptoToken component extension deprecation trial, which
-// allows making requests to the extension after it has been default disabled.
-// TODO(1224886): Delete together with CryptoToken code.
-EXTENSIONS_EXPORT extern const char kCryptotokenDeprecationTrialName[];
 
 }  // namespace extension_misc
 

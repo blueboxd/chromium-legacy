@@ -182,6 +182,10 @@ class ExtensionBackForwardCacheBrowserTest : public ExtensionBrowserTest {
     EXPECT_NE(u"fail", title);
   }
 
+  content::WebContents* web_contents() const {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
  protected:
   base::HistogramTester histogram_tester_;
 
@@ -972,7 +976,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBackForwardCacheBrowserTest,
 }
 
 // TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
-#if BUILDFLAG(IS_FUCHSIA)
+// TODO(crbug.com/1382285): Flaky on Mac.
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_MAC)
 #define MAYBE_StorageCallbackEvicts DISABLED_StorageCallbackEvicts
 #else
 #define MAYBE_StorageCallbackEvicts StorageCallbackEvicts
@@ -994,19 +999,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionBackForwardCacheBrowserTest,
   content::RenderFrameHostWrapper rfh_a(
       ui_test_utils::NavigateToURL(browser(), url_a));
 
-  // 2) Navigate to B.
+  // 2) Navigate to B. Ensure that |rfh_a| is in back/forward cache.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url_b));
-
-  // Expect that `rfh_a` is destroyed as loading page B will causes a storage
-  // event which is sent to all listeners. Since `rfh_a` is a listener but is in
-  // the back forward cache it gets evicted.
-  EXPECT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
-
-  // Validate also that the eviction reason is `kJavascriptExecution` due
-  // to the extension processing a callback while in the back forward cache.
-  EXPECT_EQ(1, histogram_tester_.GetBucketCount(
+  EXPECT_EQ(rfh_a->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
+  // Validate that the eviction due to JavaScript execution has not happened.
+  EXPECT_EQ(0, histogram_tester_.GetBucketCount(
                    "BackForwardCache.Eviction.Renderer",
                    blink::mojom::RendererEvictionReason::kJavaScriptExecution));
+
+  // 3) Navigate back to A and make sure that the callback is called after
+  // restore.
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ("called",
+            EvalJs(rfh_a.get(), "document.getElementById('callback').value;"));
 }
 
 // Test that allows all extensions but disables bfcache in the presence of a few

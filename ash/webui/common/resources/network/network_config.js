@@ -211,7 +211,10 @@ Polymer({
     },
 
     /** @private {string|undefined} */
-    selectedUserCertHash_: String,
+    selectedUserCertHash_: {
+      type: String,
+      observer: 'updateIsConfigured_',
+    },
 
     /**
      * Whether all required properties have been set.
@@ -235,7 +238,10 @@ Polymer({
      * Whether the device should automatically connect to the network.
      * @private
      */
-    autoConnect_: Boolean,
+    autoConnect_: {
+      type: Boolean,
+      observer: 'updateHiddenNetworkWarning_',
+    },
 
     /**
      * Whether or not to show the hidden network warning.
@@ -264,7 +270,10 @@ Polymer({
      * VPN Type from vpnTypeItems_.
      * @private {VPNConfigType|undefined}
      */
-    vpnType_: String,
+    vpnType_: {
+      type: String,
+      observer: 'updateVpnIPsecAuthTypeItems_',
+    },
 
     /**
      * Ipsec auth type from ipsecAuthTypeItems_.
@@ -279,7 +288,10 @@ Polymer({
     wireguardKeyType_: String,
 
     /** @private {string|undefined} */
-    ipAddressInput_: String,
+    ipAddressInput_: {
+      type: String,
+      observer: 'updateIsConfigured_',
+    },
 
     /** @private {string|undefined} */
     nameServersInput_: String,
@@ -439,7 +451,6 @@ Polymer({
     'setEnableSave_(isConfigured_, managedProperties_)',
     'setShareNetwork_(mojoType_, managedProperties_, securityType_,' +
         'shareDefault, shareAllowEnable)',
-    'updateHiddenNetworkWarning_(autoConnect_)',
     'updateConfigProperties_(mojoType_, managedProperties_)',
     'updateSecurity_(configProperties_, securityType_)',
     'updateCertItems_(cachedServerCaCerts_, cachedUserCerts_, vpnType_, ' +
@@ -448,7 +459,6 @@ Polymer({
     'updateEapCerts_(eapProperties_.*, serverCaCerts_, userCerts_)',
     'updateShowEap_(configProperties_.*, eapProperties_.*, securityType_)',
     'updateVpnType_(configProperties_, vpnType_, ipsecAuthType_)',
-    'updateVpnIPsecAuthTypeItems_(vpnType_)',
     'updateVpnIPsecCerts_(vpnType_, ipsecAuthType_,' +
         'configProperties_.typeConfig.vpn.ipSec.*, serverCaCerts_, userCerts_)',
     'updateOpenVPNCerts_(vpnType_,' +
@@ -460,7 +470,6 @@ Polymer({
     'updateIsConfigured_(configProperties_.typeConfig.wifi.*)',
     'updateIsConfigured_(configProperties_.typeConfig.vpn.*, vpnType_,' +
         'ipsecAuthType_)',
-    'updateIsConfigured_(selectedUserCertHash_)',
   ],
 
   listeners: {'enter': 'onEnterEvent_'},
@@ -470,6 +479,15 @@ Polymer({
 
   /** @private {?CrosNetworkConfigRemote} */
   networkConfig_: null,
+
+  /*
+   * This value is used to avoid an edge case when configuring a network. We
+   * default to |true| since this is the more privacy-preserving option. This
+   * value is overridden with dialog arguments in specific situations where it
+   * ought be |false|. For more information see b/253247084.
+   * @private {boolean}
+   */
+  isLoggedIn_: true,
 
   /** @override */
   created() {
@@ -494,6 +512,16 @@ Polymer({
     this.cachedUserCerts_ = undefined;
     this.selectedServerCaHash_ = undefined;
     this.selectedUserCertHash_ = undefined;
+
+    if (this.getHiddenNetworkMigrationEnabled()) {
+      const dialogArgs = chrome.getVariableValue('dialogArguments');
+      if (dialogArgs) {
+        const args = JSON.parse(dialogArgs);
+        if ('loggedIn' in args) {
+          this.isLoggedIn_ = args.loggedIn;
+        }
+      }
+    }
 
     this.networkConfig_.getSupportedVpnTypes().then(response => {
       this.updateVpnTypeItems_(response.vpnTypes);
@@ -585,7 +613,7 @@ Polymer({
     }
     const propertiesToSet = this.getPropertiesToSet_();
     if (this.managedProperties_.source === OncSource.kNone) {
-      if (this.getHiddenNetworkMigrationEnabled()) {
+      if (this.getHiddenNetworkMigrationEnabled() && this.isLoggedIn_) {
         // Note: Set hidden SSID mode of new WiFi networks to disabled to avoid
         // unintentionally marking networks as hidden if not in range or
         // misspelled, etc.

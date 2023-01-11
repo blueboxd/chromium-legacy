@@ -7,17 +7,14 @@ package org.chromium.weblayer_private;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.view.SurfaceControlViewHost;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentManager;
 
 import org.chromium.base.ObserverList;
@@ -34,7 +31,6 @@ import org.chromium.weblayer_private.interfaces.IBrowser;
 import org.chromium.weblayer_private.interfaces.IBrowserClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.ITab;
-import org.chromium.weblayer_private.interfaces.IUrlBarController;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 import org.chromium.weblayer_private.media.MediaRouteDialogFragmentImpl;
@@ -74,7 +70,6 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
     private IBrowserClient mClient;
     private LocaleChangedBroadcastReceiver mLocaleReceiver;
     private boolean mInDestroy;
-    private final UrlBarControllerImpl mUrlBarController;
     private boolean mFragmentStarted;
     private boolean mFragmentResumed;
 
@@ -103,9 +98,6 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
     // Created in the constructor from saved state.
     private FullPersistenceInfo mFullPersistenceInfo;
     private MinimalPersistenceInfo mMinimalPersistenceInfo;
-
-    private int mMinimumSurfaceWidth;
-    private int mMinimumSurfaceHeight;
 
     // This persistence state is saved to disk, and loaded async.
     private static final class FullPersistenceInfo {
@@ -166,7 +158,6 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
 
         createAttachmentState(embedderAppContext, windowAndroid);
         mNativeBrowser = BrowserImplJni.get().createBrowser(profile.getNativeProfile(), this);
-        mUrlBarController = new UrlBarControllerImpl(this, mNativeBrowser);
     }
 
     public WindowAndroid getWindowAndroid() {
@@ -176,10 +167,6 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
     public ContentView getViewAndroidDelegateContainerView() {
         if (mViewController == null) return null;
         return mViewController.getContentView();
-    }
-
-    public UrlBarControllerImpl getUrlBarControllerImpl() {
-        return mUrlBarController;
     }
 
     // Called from constructor and onFragmentAttached() to configure state needed when attached.
@@ -192,7 +179,6 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
         mEmbedderActivityContext = embedderAppContext;
         mViewController = new BrowserViewController(
                 windowAndroid, this, mViewControllerState, mInConfigurationChangeAndWasAttached);
-        mViewController.setMinimumSurfaceSize(mMinimumSurfaceWidth, mMinimumSurfaceHeight);
         mLocaleReceiver = new LocaleChangedBroadcastReceiver(windowAndroid.getContext().get());
         mPasswordEchoEnabled = null;
     }
@@ -285,16 +271,6 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
         if (isViewAttachedToWindow()) {
             mForcedVisible = !changeVisibility;
         }
-    }
-
-    @Override
-    public void setMinimumSurfaceSize(int width, int height) {
-        StrictModeWorkaround.apply();
-        mMinimumSurfaceWidth = width;
-        mMinimumSurfaceHeight = height;
-        BrowserViewController viewController = getPossiblyNullViewController();
-        if (viewController == null) return;
-        viewController.setMinimumSurfaceSize(width, height);
     }
 
     // Only call this if it's guaranteed that Browser is attached to an activity.
@@ -516,12 +492,6 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
     }
 
     @Override
-    public IUrlBarController getUrlBarController() {
-        StrictModeWorkaround.apply();
-        return mUrlBarController;
-    }
-
-    @Override
     public void setBrowserControlsOffsetsEnabled(boolean enable) {
         mNotifyOnBrowserControlsOffsetsChanged = enable;
     }
@@ -564,9 +534,6 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
         }
         destroyAttachmentState();
 
-        // mUrlBarController keeps a reference to mNativeBrowser, and hence must be destroyed before
-        // mNativeBrowser.
-        mUrlBarController.destroy();
         BrowserImplJni.get().deleteBrowser(mNativeBrowser);
 
         if (--sInstanceCount == 0) {
@@ -722,20 +689,6 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
         for (Object tab : getTabs()) {
             ((TabImpl) tab).updateFromBrowser();
         }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.R)
-    @Override
-    public void setSurfaceControlViewHost(IObjectWrapper wrappedHost) {
-        // TODO(rayankans): Handle fallback for older devices.
-        SurfaceControlViewHost host =
-                ObjectWrapper.unwrap(wrappedHost, SurfaceControlViewHost.class);
-        host.setView(mViewController.getView(), 0, 0);
-    }
-
-    @Override
-    public IObjectWrapper getContentViewRenderView() {
-        return ObjectWrapper.wrap(mViewController.getView());
     }
 
     @NativeMethods

@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
-import {dispatchSimpleEvent, isMac} from 'chrome://resources/js/cr.m.js';
-import {toCssPx} from 'chrome://resources/js/cr/ui.js';
 import {DragWrapper, DragWrapperDelegate} from 'chrome://resources/js/drag_wrapper.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {$, isRTL} from 'chrome://resources/js/util.js';
 
 import {App} from './apps_page.js';
+import {dispatchSimpleEvent} from './cr_deprecated.js';
 import {enterRearrangeMode, getCardSlider, leaveRearrangeMode} from './new_tab.js';
+import {toCssPx} from './ui.js';
 import {findAncestorByClass} from './util.js';
 
 // We can't pass the currently dragging tile via dataTransfer because of
@@ -1011,9 +1011,9 @@ TilePage.prototype = {
     fadeDistance = Math.min(leftMargin, fadeDistance);
     // On Skia we don't use any fade because it works very poorly. See
     // http://crbug.com/99373
-    if (!isMac) {
-      fadeDistance = 1;
-    }
+    // <if expr="not is_macosx">
+    fadeDistance = 1;
+    // </if>
     const gradient = '-webkit-linear-gradient(left,' +
         'transparent, ' +
         'transparent ' + (leftMargin - fadeDistance) + 'px, ' +

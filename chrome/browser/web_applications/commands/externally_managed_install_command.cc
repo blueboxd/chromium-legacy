@@ -31,16 +31,14 @@ ExternallyManagedInstallCommand::ExternallyManagedInstallCommand(
     const ExternalInstallOptions& external_install_options,
     OnceInstallCallback callback,
     base::WeakPtr<content::WebContents> contents,
-    WebAppInstallFinalizer* install_finalizer,
     std::unique_ptr<WebAppDataRetriever> data_retriever)
-    : noop_lock_(std::make_unique<NoopLock>()),
+    : noop_lock_description_(std::make_unique<NoopLockDescription>()),
       install_params_(
           ConvertExternalInstallOptionsToParams(external_install_options)),
       install_surface_(ConvertExternalInstallSourceToInstallSource(
           external_install_options.install_source)),
       install_callback_(std::move(callback)),
       web_contents_(contents),
-      install_finalizer_(install_finalizer),
       data_retriever_(std::move(data_retriever)),
       install_error_log_entry_(/*background_installation=*/true,
                                install_surface_) {
@@ -54,16 +52,19 @@ ExternallyManagedInstallCommand::ExternallyManagedInstallCommand(
 
 ExternallyManagedInstallCommand::~ExternallyManagedInstallCommand() = default;
 
-Lock& ExternallyManagedInstallCommand::lock() const {
-  DCHECK(noop_lock_ || app_lock_);
+LockDescription& ExternallyManagedInstallCommand::lock_description() const {
+  DCHECK(noop_lock_description_ || app_lock_description_);
 
-  if (noop_lock_ != nullptr)
-    return *noop_lock_;
+  if (noop_lock_description_)
+    return *noop_lock_description_;
 
-  return *app_lock_;
+  return *app_lock_description_;
 }
 
-void ExternallyManagedInstallCommand::Start() {
+void ExternallyManagedInstallCommand::StartWithLock(
+    std::unique_ptr<NoopLock> lock) {
+  noop_lock_ = std::move(lock);
+
   if (!web_contents_ || web_contents_->IsBeingDestroyed()) {
     Abort(webapps::InstallResultCode::kWebContentsDestroyed);
     return;
@@ -183,12 +184,12 @@ void ExternallyManagedInstallCommand::OnDidPerformInstallableCheck(
   base::flat_set<GURL> icon_urls = GetValidIconUrlsToDownload(*web_app_info_);
   data_retriever_->GetIcons(
       web_contents_.get(), std::move(icon_urls), skip_page_favicons,
-      base::BindOnce(
-          &ExternallyManagedInstallCommand::OnIconsRetrievedUpgradeLock,
-          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ExternallyManagedInstallCommand::
+                         OnIconsRetrievedUpgradeLockDescription,
+                     weak_factory_.GetWeakPtr()));
 }
 
-void ExternallyManagedInstallCommand::OnIconsRetrievedUpgradeLock(
+void ExternallyManagedInstallCommand::OnIconsRetrievedUpgradeLockDescription(
     IconsDownloadedResult result,
     IconsMap icons_map,
     DownloadedIconsHttpResults icons_http_results) {
@@ -205,14 +206,22 @@ void ExternallyManagedInstallCommand::OnIconsRetrievedUpgradeLock(
   install_error_log_entry_.LogDownloadedIconsErrors(
       *web_app_info_, result, icons_map, icons_http_results);
 
-  app_lock_ = command_manager()->lock_manager().UpgradeAndAcquireLock(
-      std::move(noop_lock_), {app_id_},
-      base::BindOnce(
-          &ExternallyManagedInstallCommand::OnLockUpgradedFinalizeInstall,
-          weak_factory_.GetWeakPtr()));
+  if (result != IconsDownloadedResult::kCompleted) {
+    icon_download_failed_ = true;
+  }
+
+  app_lock_description_ =
+      command_manager()->lock_manager().UpgradeAndAcquireLock(
+          std::move(noop_lock_description_), std::move(noop_lock_), {app_id_},
+          base::BindOnce(
+              &ExternallyManagedInstallCommand::OnLockUpgradedFinalizeInstall,
+              weak_factory_.GetWeakPtr()));
 }
 
-void ExternallyManagedInstallCommand::OnLockUpgradedFinalizeInstall() {
+void ExternallyManagedInstallCommand::OnLockUpgradedFinalizeInstall(
+    std::unique_ptr<AppLock> app_lock) {
+  app_lock_ = std::move(app_lock);
+
   if (on_lock_upgraded_callback_for_testing_)
     std::move(on_lock_upgraded_callback_for_testing_).Run();
 
@@ -238,7 +247,17 @@ void ExternallyManagedInstallCommand::OnLockUpgradedFinalizeInstall() {
   finalize_options.add_to_quick_launch_bar =
       install_params_.add_to_quick_launch_bar;
 
-  install_finalizer_->FinalizeInstall(
+  if (app_lock_->registrar().IsInstalled(app_id_)) {
+    // If an installation is triggered for the same app but with a
+    // different install_url, then we overwrite the manifest fields.
+    // If icon downloads fail, then we would not overwrite the icon
+    // in the web_app DB.
+    finalize_options.overwrite_existing_manifest_fields = true;
+    finalize_options.skip_icon_writes_on_download_failure =
+        icon_download_failed_;
+  }
+
+  app_lock_->install_finalizer().FinalizeInstall(
       *web_app_info_, finalize_options,
       base::BindOnce(&ExternallyManagedInstallCommand::OnInstallFinalized,
                      weak_factory_.GetWeakPtr()));

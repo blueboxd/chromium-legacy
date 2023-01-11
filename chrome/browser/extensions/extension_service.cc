@@ -113,11 +113,14 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chromeos/constants/chromeos_features.h"
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_features.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/ash/extensions/install_limiter.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/extensions/install_limiter.h"
 #include "storage/browser/file_system/file_system_backend.h"
 #include "storage/browser/file_system/file_system_context.h"
 #endif
@@ -471,7 +474,7 @@ void ExtensionService::Init() {
   bool load_saved_extensions = true;
   bool load_command_line_extensions = extensions_enabled_;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!ash::ProfileHelper::IsRegularProfile(profile_)) {
+  if (!ash::ProfileHelper::IsUserProfile(profile_)) {
     load_saved_extensions = false;
     load_command_line_extensions = false;
   }
@@ -561,16 +564,16 @@ void ExtensionService::MaybeFinishShutdownDelayed() {
                            delayed_info2->size() - delayed_info->size());
 }
 
-bool ExtensionService::UpdateExtension(const CRXFileInfo& file,
-                                       bool file_ownership_passed,
-                                       CrxInstaller** out_crx_installer) {
+scoped_refptr<CrxInstaller> ExtensionService::CreateUpdateInstaller(
+    const CRXFileInfo& file,
+    bool file_ownership_passed) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (browser_terminating_) {
     LOG(WARNING) << "Skipping UpdateExtension due to browser shutdown";
     // Leak the temp file at extension_path. We don't want to add to the disk
     // I/O burden at shutdown, we can't rely on the I/O completing anyway, and
     // the file is in the OS temp directory which should be cleaned up for us.
-    return false;
+    return nullptr;
   }
 
   const std::string& id = file.extension_id;
@@ -590,7 +593,7 @@ bool ExtensionService::UpdateExtension(const CRXFileInfo& file,
       NOTREACHED();
     }
 
-    return false;
+    return nullptr;
   }
   // Either |pending_extension_info| or |extension| or both must not be null.
   scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(this));
@@ -645,12 +648,8 @@ bool ExtensionService::UpdateExtension(const CRXFileInfo& file,
 
   installer->set_delete_source(file_ownership_passed);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);
-  installer->InstallCrxFile(file);
 
-  if (out_crx_installer)
-    *out_crx_installer = installer.get();
-
-  return true;
+  return installer;
 }
 
 base::AutoReset<bool> ExtensionService::DisableExternalUpdatesForTesting() {
@@ -822,8 +821,9 @@ bool ExtensionService::UninstallExtension(
     if (!GetExtensionFileTaskRunner()->PostTaskAndReply(
             FROM_HERE,
             base::BindOnce(&ExtensionService::UninstallExtensionOnFileThread,
-                           extension->id(), profile_, install_directory_,
-                           extension->path()),
+                           extension->id(),
+                           base::UnsafeDanglingUntriaged(profile_),
+                           install_directory_, extension->path()),
             subtask_done_callback))
       NOTREACHED();
   }
@@ -1915,18 +1915,18 @@ bool ExtensionService::OnExternalExtensionFileFound(
     return false;
   }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (ash::features::IsDemoModeSWAEnabled()) {
+#if BUILDFLAG(IS_CHROMEOS)
+  if (chromeos::features::IsDemoModeSWAEnabled()) {
     if (extension_misc::IsDemoModeChromeApp(info.extension_id)) {
       pending_extension_manager()->Remove(info.extension_id);
       return true;
     }
   }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   // no client (silent install)
   scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(this));
-  installer->set_installer_callback(
+  installer->AddInstallerCallback(
       base::BindOnce(&ExtensionService::InstallationFromExternalFileFinished,
                      AsWeakPtr(), info.extension_id));
   installer->set_install_source(info.crx_location);

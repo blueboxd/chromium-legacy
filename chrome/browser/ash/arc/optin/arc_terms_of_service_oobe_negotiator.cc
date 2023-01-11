@@ -9,17 +9,17 @@
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/consolidated_consent_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/ash/login/arc_terms_of_service_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/consolidated_consent_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/oobe_ui.h"
 
 namespace arc {
 
 namespace {
 
-chromeos::ArcTermsOfServiceScreenView* g_view_for_testing = nullptr;
+ash::ArcTermsOfServiceScreenView* g_view_for_testing = nullptr;
 
-chromeos::ArcTermsOfServiceScreenView* GetScreenView() {
+ash::ArcTermsOfServiceScreenView* GetScreenView() {
   // Inject testing instance.
   if (g_view_for_testing)
     return g_view_for_testing;
@@ -30,7 +30,7 @@ chromeos::ArcTermsOfServiceScreenView* GetScreenView() {
   // Ensure WebUI is loaded
   host->GetWizardController();
 
-  return host->GetOobeUI()->GetView<chromeos::ArcTermsOfServiceScreenHandler>();
+  return host->GetOobeUI()->GetView<ash::ArcTermsOfServiceScreenHandler>();
 }
 
 chromeos::ConsolidatedConsentScreen* GetConsolidatedConsentScreen() {
@@ -46,7 +46,7 @@ chromeos::ConsolidatedConsentScreen* GetConsolidatedConsentScreen() {
 
 // static
 void ArcTermsOfServiceOobeNegotiator::SetArcTermsOfServiceScreenViewForTesting(
-    chromeos::ArcTermsOfServiceScreenView* view) {
+    ash::ArcTermsOfServiceScreenView* view) {
   g_view_for_testing = view;
 }
 
@@ -89,7 +89,7 @@ void ArcTermsOfServiceOobeNegotiator::OnAccept(bool /* review_arc_settings */) {
 }
 
 void ArcTermsOfServiceOobeNegotiator::OnViewDestroyed(
-    chromeos::ArcTermsOfServiceScreenView* view) {
+    ash::ArcTermsOfServiceScreenView* view) {
   DCHECK_EQ(view, screen_view_);
   HandleTermsAccepted(false);
 }

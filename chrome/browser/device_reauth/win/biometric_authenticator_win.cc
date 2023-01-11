@@ -6,18 +6,23 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 
 namespace {
 
-void SaveAvailability(bool availability) {
+void SaveAvailability(BiometricAuthenticationStatusWin availability) {
   g_browser_process->local_state()->SetBoolean(
-      password_manager::prefs::kIsBiometricAvailable, availability);
+      password_manager::prefs::kIsBiometricAvailable,
+      availability == BiometricAuthenticationStatusWin::kAvailable);
+  base::UmaHistogramEnumeration("PasswordManager.BiometricAvailabilityWin",
+                                availability);
 }
 
 }  // namespace
@@ -57,16 +62,15 @@ void BiometricAuthenticatorWin::AuthenticateWithMessage(
     const std::u16string& message,
     AuthenticateCallback callback) {
   if (!NeedsToAuthenticate()) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), /*success=*/true));
     return;
   }
 
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback),
-                     RecordAuthenticationResult(
-                         authenticator_->AuthenticateUser(message))));
+  authenticator_->AuthenticateUser(
+      message,
+      base::BindOnce(&BiometricAuthenticatorWin::OnAuthenticationCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void BiometricAuthenticatorWin::Cancel(
@@ -77,4 +81,11 @@ void BiometricAuthenticatorWin::Cancel(
 
 void BiometricAuthenticatorWin::CacheIfBiometricsAvailable() {
   authenticator_->CheckIfBiometricsAvailable(base::BindOnce(&SaveAvailability));
+}
+
+void BiometricAuthenticatorWin::OnAuthenticationCompleted(
+    base::OnceCallback<void(bool)> callback,
+    bool success) {
+  RecordAuthenticationTimeIfSuccessful(success);
+  std::move(callback).Run(success);
 }

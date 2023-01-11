@@ -18,10 +18,7 @@ DIPSState::DIPSState(DIPSStorage* storage,
     : storage_(storage),
       site_(std::move(site)),
       was_loaded_(true),
-      first_site_storage_time_(state.first_site_storage_time),
-      last_site_storage_time_(state.last_site_storage_time),
-      first_user_interaction_time_(state.first_user_interaction_time),
-      last_user_interaction_time_(state.last_user_interaction_time) {}
+      state_(state) {}
 
 DIPSState::DIPSState(DIPSState&&) = default;
 
@@ -32,28 +29,54 @@ DIPSState::~DIPSState() {
 }
 
 void DIPSState::update_site_storage_time(base::Time time) {
-  if (time == first_site_storage_time_ || time == last_site_storage_time_) {
+  if (time == site_storage_times().first || time == site_storage_times().last)
     return;
-  }
 
-  if (!first_site_storage_time_.has_value())
-    first_site_storage_time_ = time;
+  if (!site_storage_times().first.has_value())
+    state_.site_storage_times.first = time;
 
-  DCHECK_GE(time, first_site_storage_time_.value());
-  last_site_storage_time_ = time;
+  DCHECK_GE(time, site_storage_times().first.value());
+  state_.site_storage_times.last = time;
   dirty_ = true;
 }
 
 void DIPSState::update_user_interaction_time(base::Time time) {
-  if (time == first_user_interaction_time_ ||
-      time == last_user_interaction_time_) {
+  if (time == user_interaction_times().first ||
+      time == user_interaction_times().last) {
     return;
   }
 
-  if (!first_user_interaction_time_.has_value())
-    first_user_interaction_time_ = time;
+  if (!user_interaction_times().first.has_value())
+    state_.user_interaction_times.first = time;
 
-  DCHECK_GE(time, first_user_interaction_time_.value());
-  last_user_interaction_time_ = time;
+  DCHECK_GE(time, user_interaction_times().first.value());
+  state_.user_interaction_times.last = time;
+  dirty_ = true;
+}
+
+void DIPSState::update_stateful_bounce_time(base::Time time) {
+  if (time == stateful_bounce_times().first ||
+      time == stateful_bounce_times().last)
+    return;
+
+  if (!stateful_bounce_times().first.has_value())
+    state_.stateful_bounce_times.first = time;
+
+  DCHECK_GE(time, stateful_bounce_times().first.value());
+  state_.stateful_bounce_times.last = time;
+  dirty_ = true;
+}
+
+void DIPSState::update_stateless_bounce_time(base::Time time) {
+  if (time == stateless_bounce_times().first ||
+      time == stateless_bounce_times().last) {
+    return;
+  }
+
+  if (!stateless_bounce_times().first.has_value())
+    state_.stateless_bounce_times.first = time;
+
+  DCHECK_GE(time, stateless_bounce_times().first.value());
+  state_.stateless_bounce_times.last = time;
   dirty_ = true;
 }

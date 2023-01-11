@@ -192,9 +192,8 @@ base::RefCountedMemory* NTPResourceCache::GetNewTabHTML(
 
     case NON_PRIMARY_OTR:
       if (!new_tab_non_primary_otr_html_) {
-        std::string empty_html;
         new_tab_non_primary_otr_html_ =
-            base::RefCountedString::TakeString(&empty_html);
+            base::MakeRefCounted<base::RefCountedString>(std::string());
       }
       return new_tab_non_primary_otr_html_.get();
 
@@ -309,6 +308,8 @@ void NTPResourceCache::CreateNewTabIncognitoHTML(
   }
 
   replacements["learnMoreLink"] = kLearnMoreIncognitoUrl;
+  replacements["learnMoreA11yLabel"] = l10n_util::GetStringUTF8(
+      IDS_INCOGNITO_TAB_LEARN_MORE_ACCESSIBILITY_LABEL);
   replacements["title"] = l10n_util::GetStringUTF8(
       base::FeatureList::IsEnabled(
           features::kUpdateHistoryEntryPointsInIncognito)
@@ -341,11 +342,8 @@ void NTPResourceCache::CreateNewTabIncognitoHTML(
           ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
               incognito_tab_html_resource_id));
   CHECK(*incognito_tab_html);
-
-  std::string full_html =
-      ReplaceTemplateExpressions(*incognito_tab_html, replacements);
-
-  new_tab_incognito_html_ = base::RefCountedString::TakeString(&full_html);
+  new_tab_incognito_html_ = base::MakeRefCounted<base::RefCountedString>(
+      ReplaceTemplateExpressions(*incognito_tab_html, replacements));
 }
 
 void NTPResourceCache::CreateNewTabGuestHTML() {
@@ -398,6 +396,10 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
   localized_strings.Set("learnMore",
                         l10n_util::GetStringUTF16(guest_tab_link_ids));
   localized_strings.Set("learnMoreLink", guest_tab_link);
+  localized_strings.Set(
+      "learnMoreA11yLabel",
+      l10n_util::GetStringUTF16(
+          IDS_NEW_TAB_GUEST_SESSION_LEARN_MORE_ACCESSIBILITY_TEXT));
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, &localized_strings);
@@ -409,10 +411,8 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
   CHECK(*guest_tab_html);
   ui::TemplateReplacements replacements;
   ui::TemplateReplacementsFromDictionaryValue(localized_strings, &replacements);
-  std::string full_html =
-      ReplaceTemplateExpressions(*guest_tab_html, replacements);
-
-  new_tab_guest_html_ = base::RefCountedString::TakeString(&full_html);
+  new_tab_guest_html_ = base::MakeRefCounted<base::RefCountedString>(
+      ReplaceTemplateExpressions(*guest_tab_html, replacements));
 }
 
 void NTPResourceCache::CreateNewTabIncognitoCSS(
@@ -444,12 +444,8 @@ void NTPResourceCache::CreateNewTabIncognitoCSS(
           ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
               IDR_INCOGNITO_TAB_THEME_CSS));
   CHECK(*new_tab_theme_css);
-
-  // Create the string from our template and the replacements.
-  std::string full_css =
-      ReplaceTemplateExpressions(*new_tab_theme_css, substitutions);
-
-  new_tab_incognito_css_ = base::RefCountedString::TakeString(&full_css);
+  new_tab_incognito_css_ = base::MakeRefCounted<base::RefCountedString>(
+      ReplaceTemplateExpressions(*new_tab_theme_css, substitutions));
 }
 
 void NTPResourceCache::CreateNewTabCSS(
@@ -516,11 +512,8 @@ void NTPResourceCache::CreateNewTabCSS(
           ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
               IDR_NEW_TAB_4_THEME_CSS));
   CHECK(*new_tab_theme_css);
-
-  // Create the string from our template and the replacements.
-  std::string css_string =
-      ReplaceTemplateExpressions(*new_tab_theme_css, substitutions);
-  new_tab_css_ = base::RefCountedString::TakeString(&css_string);
+  new_tab_css_ = base::MakeRefCounted<base::RefCountedString>(
+      ReplaceTemplateExpressions(*new_tab_theme_css, substitutions));
 }
 
 void NTPResourceCache::OnPolicyChanged(const base::Value* previous,

@@ -4,26 +4,23 @@
 
 #include "ui/views/test/widget_test.h"
 
-#include <algorithm>
 #include <vector>
 
+#include "base/ranges/algorithm.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
 #endif
 
-namespace views {
-namespace test {
+namespace views::test {
 namespace {
 
 // Insert |widget| into |expected| and ensure it's reported by GetAllWidgets().
 void ExpectAdd(Widget::Widgets* expected, Widget* widget, const char* message) {
   SCOPED_TRACE(message);
   EXPECT_TRUE(expected->insert(widget).second);
-  Widget::Widgets actual = WidgetTest::GetAllWidgets();
-  EXPECT_EQ(expected->size(), actual.size());
-  EXPECT_TRUE(std::equal(expected->begin(), expected->end(), actual.begin()));
+  EXPECT_TRUE(base::ranges::equal(*expected, WidgetTest::GetAllWidgets()));
 }
 
 // Close |widgets[0]|, and expect all |widgets| to be removed.
@@ -34,9 +31,7 @@ void ExpectClose(Widget::Widgets* expected,
   for (Widget* widget : widgets)
     EXPECT_EQ(1u, expected->erase(widget));
   widgets[0]->CloseNow();
-  Widget::Widgets actual = WidgetTest::GetAllWidgets();
-  EXPECT_EQ(expected->size(), actual.size());
-  EXPECT_TRUE(std::equal(expected->begin(), expected->end(), actual.begin()));
+  EXPECT_TRUE(base::ranges::equal(*expected, WidgetTest::GetAllWidgets()));
 }
 
 }  // namespace
@@ -113,5 +108,4 @@ TEST_F(DesktopWidgetTestTest, GetAllWidgets) {
   ExpectClose(&expected, {frameless}, "frameless");
 }
 
-}  // namespace test
-}  // namespace views
+}  // namespace views::test

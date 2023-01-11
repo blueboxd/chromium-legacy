@@ -10,8 +10,8 @@ declare namespace chrome {
     // Implemented in read_anything_app_controller.cc and consumed by ts.
     /////////////////////////////////////////////////////////////////////
 
-    // A list of AXNodeIDs whose subtree should be displayed.
-    let displayNodeIds: number[];
+    // The root AXNodeID of the tree to be displayed.
+    let displayRootId: number;
 
     // Items in the ReadAnythingTheme struct, see read_anything.mojom for info.
     let fontName: string;
@@ -38,12 +38,17 @@ declare namespace chrome {
     // the selected text.
     function getTextContent(nodeId: number): string;
 
+    // Returns the text direction of the AXNode for the provided AXNodeID.
+    function getTextDirection(nodeId: number): string;
+
     // Returns the url of the AXNode for the provided AXNodeID.
     function getUrl(nodeId: number): string;
 
     // Connects to the browser process. Called by ts when the read anything
     // element is added to the document.
     function onConnected(): void;
+
+    function onLinkClicked(nodeId: number): void;
 
     // Set the content. Used by tests only.
     // SnapshotLite is a data structure which resembles an AXTreeUpdate. E.g.:

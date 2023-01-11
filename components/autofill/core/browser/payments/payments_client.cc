@@ -15,7 +15,6 @@
 #include "base/json/json_reader.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
@@ -443,7 +442,7 @@ void PaymentsClient::OnSimpleLoaderCompleteInternal(int response_code,
                      error_api_error_reason, "virtual_card_permanent_error")) {
         result =
             AutofillClient::PaymentsRpcResult::kVcnRetrievalPermanentFailure;
-      } else if (base::EqualsCaseInsensitiveASCII(error_code, "internal")) {
+      } else if (request_->IsRetryableFailure(error_code)) {
         result = AutofillClient::PaymentsRpcResult::kTryAgainFailure;
       } else if (!error_code.empty() || !request_->IsResponseComplete()) {
         result = AutofillClient::PaymentsRpcResult::kPermanentFailure;

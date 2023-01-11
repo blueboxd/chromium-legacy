@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
-#include "chrome/browser/ui/webui/chromeos/login/guest_tos_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/guest_tos_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/user_creation_screen_handler.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
@@ -65,16 +65,8 @@ class GuestLoginTest : public MixinBasedInProcessBrowserTest {
   }
 
   void CheckCryptohomeMountAssertions() {
-    if (base::FeatureList::IsEnabled(
-            ash::features::kUseAuthsessionAuthentication)) {
-      ASSERT_EQ(
-          FakeUserDataAuthClient::Get()->get_prepare_guest_request_count(), 1);
-    } else {
-      ASSERT_EQ(FakeUserDataAuthClient::Get()->get_mount_request_count(), 1);
-      EXPECT_TRUE(FakeUserDataAuthClient::Get()
-                      ->get_last_mount_request()
-                      .guest_mount());
-    }
+    ASSERT_EQ(FakeUserDataAuthClient::Get()->get_prepare_guest_request_count(),
+              1);
   }
 
  protected:

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
 #include <set>
 #include <string>
 
@@ -11,8 +10,10 @@
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/ranges/algorithm.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind.h"
+#include "base/test/gtest_util.h"
 #include "base/test/mock_log.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
@@ -234,10 +235,8 @@ class ChildProcessSecurityPolicyTest : public testing::Test {
     GURL key(SiteInfo::GetSiteForOrigin(origin));
     base::AutoLock isolated_origins_lock(p->isolated_origins_lock_);
     auto origins_for_key = p->isolated_origins_[key];
-    return std::count_if(origins_for_key.begin(), origins_for_key.end(),
-                         [origin](const IsolatedOriginEntry& entry) {
-                           return entry.origin() == origin;
-                         });
+    return base::ranges::count(origins_for_key, origin,
+                               &IsolatedOriginEntry::origin);
   }
 
   void CheckGetSiteForURL(BrowserContext* context,
@@ -3193,9 +3192,6 @@ TEST_F(ChildProcessSecurityPolicyTest, NoBrowsingInstanceIDs_UnlockedProcess) {
 }
 
 // Regression test for https://crbug.com/1324407.
-// This does not pass on Android due to a difference with threads in the
-// EXPECT_DEATH_IF_SUPPORTED block.
-#if !BUILDFLAG(IS_ANDROID)
 TEST_F(ChildProcessSecurityPolicyTest, CannotLockUsedProcessToSite) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
@@ -3218,17 +3214,13 @@ TEST_F(ChildProcessSecurityPolicyTest, CannotLockUsedProcessToSite) {
 
   // If the process is then considered used (e.g., by loading content), it
   // should not be possible to lock it to another site.
-  EXPECT_DEATH_IF_SUPPORTED(
+  EXPECT_CHECK_DEATH_WITH(
       {
         p->LockProcess(bar_instance->GetIsolationContext(), kRendererID,
                        /*is_process_used=*/true,
                        ProcessLock::FromSiteInfo(bar_instance->GetSiteInfo()));
       },
-      // We expect the message to include 'Cannot lock an already used process
-      // to { https://bar.com }', but we don't search for that in the output
-      // because some bots are inconsistent in how much of the logging occurs.
-      "");
+      "Cannot lock an already used process to .*bar\\.com");
 }
-#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace content

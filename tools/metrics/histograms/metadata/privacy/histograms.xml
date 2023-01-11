@@ -151,8 +151,8 @@ reviewer.
   </summary>
 </histogram>
 
-<histogram name="Privacy.CookieControlsSetting" enum="CookieControlsMode"
-    expires_after="never">
+<histogram name="Privacy.CookieControlsSetting{RegularProfileFiltered}"
+    enum="CookieControlsMode" expires_after="never">
 <!-- expires-never: tracked as an important privacy metric. -->
 
   <owner>dullweber@chromium.org</owner>
@@ -161,7 +161,22 @@ reviewer.
     Whether third-party cookies are blocked in incognito mode or completely.
     Recorded at the Profile startup. In case that &quot;Block all cookies&quot;
     is selected in settings, this metric records BlockThirdParty.
+
+    This histogram is only recorded {RegularProfileFiltered}.
   </summary>
+  <token key="RegularProfileFiltered">
+    <variant name=""
+        summary="prior to version M-109. It is recorded for both regular and
+                 irregular profiles">
+      <obsolete>
+        Deprecated in M109. Used to include data from both regular and irregular
+        profiles, such as incognito profiles. Consult the new histograms with
+        the RegularProfile tag instead.
+      </obsolete>
+    </variant>
+    <variant name=".RegularProfile"
+        summary="from version M-109. It is recorded only for regular profiles"/>
+  </token>
 </histogram>
 
 <histogram name="Privacy.CookiesInUseDialog.Action"
@@ -216,7 +231,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.TimeFromNavigationCommitToClientBounce"
-    units="ms" expires_after="2023-02-12">
+    units="ms" expires_after="2023-04-16">
   <owner>bcl@chromium.org</owner>
   <owner>jdh@chromium.org</owner>
   <owner>rtarpine@chromium.org</owner>
@@ -269,8 +284,9 @@ reviewer.
   </summary>
 </histogram>
 
-<histogram name="Privacy.ThirdPartyCookieBlockingSetting" enum="BooleanEnabled"
-    expires_after="never">
+<histogram
+    name="Privacy.ThirdPartyCookieBlockingSetting{RegularProfileFiltered}"
+    enum="BooleanEnabled" expires_after="never">
 <!-- expires-never: tracked as an important privacy metric. -->
 
   <owner>mkwst@chromium.org</owner>
@@ -282,12 +298,27 @@ reviewer.
 
     Previously recorded as the &quot;ThirdPartyCookieBlockingEnabled&quot; and
     &quot;ThirdPartyCookieBlockingDisabled&quot; actions.
+
+    This histogram is only recorded {RegularProfileFiltered}.
   </summary>
+  <token key="RegularProfileFiltered">
+    <variant name=""
+        summary="prior to version M-109. It is recorded for both regular and
+                 irregular profiles">
+      <obsolete>
+        Deprecated in M109. Used to include data from both regular and irregular
+        profiles, such as incognito profiles. Consult the new histograms with
+        the RegularProfile tag instead.
+      </obsolete>
+    </variant>
+    <variant name=".RegularProfile"
+        summary="from version M-109. It is recorded only for regular profiles"/>
+  </token>
 </histogram>
 
 <histogram
     name="PrivacySandbox.AggregationService.KeyFetcher.HttpResponseOrNetErrorCode"
-    enum="NetErrorCodes" expires_after="2023-02-23">
+    enum="NetErrorCodes" expires_after="M117">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -312,7 +343,7 @@ reviewer.
 
 <histogram name="PrivacySandbox.AggregationService.KeyFetcher.Status2"
     enum="PrivacySandboxAggregationServiceKeyFetcherStatus"
-    expires_after="2023-03-05">
+    expires_after="M117">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -322,7 +353,7 @@ reviewer.
 
 <histogram name="PrivacySandbox.AggregationService.ReportAssembler.Status"
     enum="PrivacySandboxAggregationServiceReportAssemblerStatus"
-    expires_after="2023-03-05">
+    expires_after="M117">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -334,7 +365,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.ReportSender.HttpResponseOrNetErrorCode"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-02-23">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="M117">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -346,7 +377,7 @@ reviewer.
 
 <histogram name="PrivacySandbox.AggregationService.ReportSender.Status"
     enum="PrivacySandboxAggregationServiceReportSenderStatus"
-    expires_after="2023-02-23">
+    expires_after="M117">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -378,6 +409,40 @@ reviewer.
   </summary>
 </histogram>
 
+<histogram
+    name="PrivacySandbox.AggregationService.ScheduledRequests.NumRetriesBeforeSuccess"
+    units="retries" expires_after="M117">
+  <owner>alexmt@chromium.org</owner>
+  <owner>linnan@chromium.org</owner>
+  <summary>
+    Among scheduled report requests that succeeded (eventually), records the
+    number of retries needed, i.e. how many send attempts failed. For example, 2
+    if the attempts were: fail, fail, success.
+  </summary>
+</histogram>
+
+<histogram name="PrivacySandbox.AggregationService.ScheduledRequests.Status"
+    enum="AggregationServiceObserverReportStatus" expires_after="M117">
+  <owner>alexmt@chromium.org</owner>
+  <owner>linnan@chromium.org</owner>
+  <summary>
+    Records the final status of a scheduled report request, i.e. whether it
+    succeeded eventually, including after retries (if any). In case of failure,
+    records the type of failure in the final retry attempt.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.AggregationService.Storage.Sql.ClearDataTaskDelay"
+    units="ms" expires_after="2023-02-04">
+  <owner>alexmt@chromium.org</owner>
+  <owner>linnan@chromium.org</owner>
+  <summary>
+    Records how long a ClearDataBetween() task waits in the database task runner
+    queue. Recorded for each ClearDataBetween() call when it starts running.
+  </summary>
+</histogram>
+
 <histogram name="PrivacySandbox.AggregationService.Storage.Sql.CreationTime"
     units="ms" expires_after="2023-02-23">
   <obsolete>
@@ -394,7 +459,7 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacySandbox.AggregationService.Storage.Sql.CreationTime2"
-    units="ms" expires_after="2023-02-23">
+    units="ms" expires_after="M117">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -407,7 +472,7 @@ reviewer.
 
 <histogram name="PrivacySandbox.AggregationService.Storage.Sql.InitStatus"
     enum="PrivacySandboxAggregationServiceStorageSqlInitStatus"
-    expires_after="2022-10-23">
+    expires_after="M117">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -418,13 +483,92 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.Storage.Sql.StoreRequestHasCapacity"
-    enum="Boolean" expires_after="2023-02-24">
+    enum="Boolean" expires_after="M117">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
     Records whether there was sufficient capacity to store the request, i.e.
     that the per-reporting origin limit had not been reached. Recorded for each
     StoreRequest attempt.
+  </summary>
+</histogram>
+
+<histogram name="PrivacySandbox.AggregationService.UnscheduledRequests.Status"
+    enum="AggregationServiceObserverReportStatus" expires_after="M117">
+  <owner>alexmt@chromium.org</owner>
+  <owner>linnan@chromium.org</owner>
+  <summary>
+    Records the final status of an *unscheduled* report request, i.e. whether it
+    was successfully sent and, if not, the type of failure. These are typically
+    debug reports.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.PrivateAggregation.Budgeter.BudgetValidityStatus"
+    enum="PrivacySandboxPrivateAggregationBudgeterBudgetValidityStatus"
+    expires_after="M117">
+  <owner>anthonygarant@chromium.org</owner>
+  <owner>alexmt@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the validity of budget entries read from disk. Recorded once every
+    time that budget is attempted to be consumed to reflect the state of stored
+    budget data for the requested origin and API. If multiple errors are found,
+    only the first encountered/detected is reported. As a result, reported
+    errors will be skewed in favor of checks performed first, but we expect
+    multiple instances of corruption for budget entries on disk to be rare.
+  </summary>
+</histogram>
+
+<histogram name="PrivacySandbox.PrivateAggregation.Budgeter.RequestResult"
+    enum="PrivacySandboxPrivateAggregationBudgeterRequestResult"
+    expires_after="2023-04-27">
+  <owner>alexmt@chromium.org</owner>
+  <owner>linnan@chromium.org</owner>
+  <summary>
+    Records the result of a request to consume budget for the Private
+    Aggregation API. Recorded for each individual aggregatable report request
+    (but not each individual histogram contribution).
+  </summary>
+</histogram>
+
+<histogram name="PrivacySandbox.PrivateAggregation.BudgetStorage.InitStatus"
+    enum="PrivacySandboxPrivateAggregationBudgetStorageInitStatus"
+    expires_after="M117">
+  <owner>alexmt@chromium.org</owner>
+  <owner>linnan@chromium.org</owner>
+  <summary>
+    Records the initialization statuses of PrivateAggregationBudgetStorage,
+    indicating whether it was successful and, if not, why it failed. Recorded
+    when the initialization reply callback is run on the main sequence.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.PrivateAggregation.BudgetStorage.ShutdownBeforeFinishingInitialization"
+    enum="Boolean" expires_after="M117">
+  <owner>alexmt@chromium.org</owner>
+  <owner>linnan@chromium.org</owner>
+  <summary>
+    Records whether PrivateAggregationBudgetStorage has already been shut down
+    when the initialization finishes (i.e. the reply callback is run on the main
+    sequence). Recorded when that callback is run.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.PrivateAggregation.Host.SendHistogramReportResult"
+    enum="PrivacySandboxPrivateAggregationHostSendHistogramReportResult"
+    expires_after="M117">
+  <owner>alexmt@chromium.org</owner>
+  <owner>linnan@chromium.org</owner>
+  <summary>
+    Records whether a call to PrivateAggregationHost::SendHistogramReport()
+    successfully resulted in a report request being forwarded to the manager
+    and, if not, the reason for failure. Note that, even if successfully
+    forwarded, the report may still be rejected by the budgeter or in the
+    aggregation_service layer. Recorded for every call.
   </summary>
 </histogram>
 

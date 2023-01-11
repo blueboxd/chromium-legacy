@@ -283,6 +283,14 @@
           'shards': 6,
         },
       },
+      'content_browsertests': {
+        'android_swarming': {
+          'shards': 15,
+        },
+        'swarming': {
+          'shards': 8,
+        },
+      },
       'content_unittests': {
         'android_swarming': {
           'shards': 3,
@@ -307,14 +315,18 @@
         'args': [
           '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
         ],
+        'swarming': {
+          'shards': 2,
+        },
         'test': 'android_browsertests',
       },
       'bf_cache_chrome_public_test_apk': {
         'args': [
           '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.chrome_public_test_apk.filter',
         ],
         'swarming': {
-          'shards': 20,
+          'shards': 12,
         },
         'mixins': [
           'skia_gold_test',
@@ -333,10 +345,8 @@
       'bf_cache_content_shell_test_apk': {
         'args': [
           '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.content_shell_test_apk.filter',
         ],
-        'swarming': {
-          'shards': 5,
-        },
         'test': 'content_shell_test_apk',
       },
     },
@@ -461,20 +471,56 @@
 
     # TODO(crbug/1239300): Remove when persistent_shell experiment is over.
     'chrome_persistent_shell_tests': {
-       'chrome_public_persistent_shell_unit_test_apk': {
-         'args': [
-           '--use-persistent-shell',
-         ],
-         'ci_only': True,
-         'test': 'chrome_public_unit_test_apk',
-         'experiment_percentage': 100,
-         'swarming': {
-           'shards': 2,
-         },
-         'mixins': [
-           'skia_gold_test',
-         ],
-      }
+      'chrome_public_persistent_shell_test_apk': {
+        'args': [
+          '--use-persistent-shell',
+        ],
+        'ci_only': True,
+        'test': 'chrome_public_test_apk',
+        'experiment_percentage': 100,
+        'swarming': {
+          'shards': 19,
+        },
+        'mixins': [
+          'skia_gold_test',
+        ],
+      },
+      'chrome_public_persistent_shell_unit_test_apk': {
+        'args': [
+          '--use-persistent-shell',
+        ],
+        'ci_only': True,
+        'test': 'chrome_public_unit_test_apk',
+        'experiment_percentage': 100,
+        'swarming': {
+          'shards': 2,
+        },
+        'mixins': [
+          'skia_gold_test',
+        ],
+      },
+      'content_browsertests_persistent_shell': {
+        'args': [
+          '--use-persistent-shell',
+        ],
+        'ci_only': True,
+        'test': 'content_browsertests',
+        'experiment_percentage': 100,
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'webview_instrumentation_test_apk_persistent_shell': {
+        'args': [
+          '--use-persistent-shell',
+        ],
+        'ci_only': True,
+        'test': 'webview_instrumentation_test_apk',
+        'experiment_percentage': 100,
+        'swarming': {
+          'shards': 9,
+        },
+      },
     },
 
     'chrome_public_tests': {
@@ -553,9 +599,7 @@
           'android_r',
           'bullhead',
           'flame',
-          'hammerhead',
           'marshmallow',
-          'marshmallow_generic',
           'mdarcy',
           'nougat_generic',
           'oreo_fleet',
@@ -588,22 +632,6 @@
 
     'chromeos_browser_all_tast_tests': {
       'chrome_all_tast_tests': {
-        'swarming': {
-          'idempotent': False,  # https://crbug.com/923426#c27
-          # Tast test doesn't always output. See crbug.com/1306300
-          'io_timeout': 3600,
-          'shards': 10,
-        },
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-      },
-    },
-
-    # TODO(crbug.com/1306345): Merge this back to
-    # 'chromeos_browser_all_tast_tests'.
-    'chromeos_browser_all_tast_tests_with_lacros': {
-      'chrome_all_tast_tests_with_lacros': {
         'swarming': {
           'idempotent': False,  # https://crbug.com/923426#c27
           # Tast test doesn't always output. See crbug.com/1306300
@@ -1291,6 +1319,7 @@
         # running Layout Tests with forced device scale factor.
         'args': [
           '--flag-specific=highdpi',
+          '--skipped=always',
 
           # layout test failures are retried 3 times when '--test-list' is not
           # passed, but 0 times when '--test-list' is passed. We want to always
@@ -1323,6 +1352,7 @@
         # running Layout Tests with forced device scale factor.
         'args': [
           '--flag-specific=highdpi',
+          '--skipped=always',
 
           # layout test failures are retried 3 times when '--test-list' is not
           # passed, but 0 times when '--test-list' is passed. We want to always
@@ -1577,9 +1607,7 @@
           'android_r',
           'bullhead',
           'flame',
-          'hammerhead',
           'marshmallow',
-          'marshmallow_generic',
           'mdarcy',
           'nougat_generic',
           'oreo_fleet',
@@ -1589,17 +1617,218 @@
       },
     },
 
-    # At the moment only content_browsertests passes with dangling pointer
-    # detection on.
+    'dangling_pointer_detection_chromium_web_tests_and_wpt_webdriver_isolated_scripts': {
+      'blink_web_tests': {
+        # layout test failures are retried 3 times when '--test-list' is not
+        # passed, but 0 times when '--test-list' is passed. We want to always
+        # retry 3 times, so we explicitly specify it.
+        'args': [
+          '--num-retries=3',
+        ],
+        'isolate_name': 'blink_web_tests',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'mixins': [
+          'blink_tests_write_run_histories',
+           # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
+          'skia_gold_test',
+        ],
+        'resultdb': {
+          'enable': True,
+        },
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 5,
+        },
+      },
+      'blink_wpt_tests': {
+        # layout test failures are retried 3 times when '--test-list' is not
+        # passed, but 0 times when '--test-list' is passed. We want to always
+        # retry 3 times, so we explicitly specify it.
+        'args': [
+          '--num-retries=3',
+          '--step-name=blink-wpt-tests',
+        ],
+        'isolate_name': 'blink_wpt_tests',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'mixins': [
+          'blink_tests_write_run_histories',
+          # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
+          'skia_gold_test',
+        ],
+        'resultdb': {
+          'enable': True,
+        },
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 7,
+        },
+      },
+      'dangling_pointer_detection_blink_web_tests': {
+        # layout test failures are retried 3 times when '--test-list' is not
+        # passed, but 0 times when '--test-list' is passed. We want to always
+        # retry 3 times, so we explicitly specify it.
+        'args': [
+          '--flag-specific=dangling-pointer-detection',
+          '--num-retries=3',
+        ],
+        'isolate_name': 'blink_web_tests',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'mixins': [
+          'blink_tests_write_run_histories',
+           # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
+          'skia_gold_test',
+        ],
+        'resultdb': {
+          'enable': True,
+        },
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 5,
+        },
+      },
+      'dangling_pointer_detection_blink_wpt_tests': {
+        # layout test failures are retried 3 times when '--test-list' is not
+        # passed, but 0 times when '--test-list' is passed. We want to always
+        # retry 3 times, so we explicitly specify it.
+        'args': [
+          '--flag-specific=dangling-pointer-detection',
+          '--num-retries=3',
+          '--step-name=blink-wpt-tests',
+        ],
+        'isolate_name': 'blink_wpt_tests',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'mixins': [
+          'blink_tests_write_run_histories',
+          # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
+          'skia_gold_test',
+        ],
+        'resultdb': {
+          'enable': True,
+        },
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 7,
+        },
+      },
+    },
+
     'dangling_pointer_detection_tests': {
+      'dangling_pointer_detection_base_unittests': {
+        'args': [
+          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
+        ],
+        'test': 'base_unittests',
+        'swarming': {
+          'shards': 8,
+        },
+      },
+      'dangling_pointer_detection_blink_common_unittests': {
+        'args': [
+          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
+        ],
+        'test': 'blink_common_unittests',
+      },
+      'dangling_pointer_detection_blink_platform_unittests': {
+        'args': [
+          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
+        ],
+        'test': 'blink_platform_unittests',
+      },
+      'dangling_pointer_detection_cast_unittests': {
+        'args': [
+          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
+        ],
+        'test': 'cast_unittests',
+      },
+      'dangling_pointer_detection_cc_unittests': {
+        'args': [
+          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
+        ],
+        'test': 'cc_unittests',
+      },
+      'dangling_pointer_detection_components_browsertests': {
+        'args': [
+          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
+        ],
+        'test': 'components_browsertests',
+      },
+      'dangling_pointer_detection_components_unittests': {
+        'android_swarming': {
+          'shards': 6,
+        },
+        'args': [
+          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
+        ],
+        'test': 'components_unittests',
+      },
       'dangling_pointer_detection_content_browsertests': {
         'args': [
           '--enable-features=PartitionAllocDanglingPtr:mode/crash',
         ],
         'test': 'content_browsertests',
+        'android_swarming': {
+          'shards': 15,
+        },
         'swarming': {
           'shards': 8,
         },
+      },
+      'dangling_pointer_detection_content_unittests': {
+        'android_swarming': {
+          'shards': 3,
+        },
+        'args': [
+          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
+        ],
+        'test': 'content_unittests',
+      },
+      'dangling_pointer_detection_unit_tests': {
+        'android_swarming': {
+          'shards': 2,
+        },
+        'args': [
+          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
+        ],
+        'test': 'unit_tests',
+      },
+      'dangling_pointer_detection_webkit_unit_tests': {
+        'android_swarming': {
+          'shards': 6,
+        },
+        'args': [
+          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
+        ],
+        'test': 'blink_unittests',
+      },
+      'dangling_pointer_detection_wtf_unittests': {
+        'args': [
+          '--enable-features=PartitionAllocDanglingPtr:mode/crash',
+        ],
+        'test': 'wtf_unittests',
       },
     },
 
@@ -1908,8 +2137,7 @@
       'browser_tests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.browser_tests.filter',
-          '--',
-          '--test-launcher-timeout=60000',
+          '--test-arg=--test-launcher-timeout=60000',
         ],
         'swarming': {
           'shards': 40,
@@ -1918,15 +2146,15 @@
       # TODO(crbug.com/1371630): Move to one of the fuchsia_common_gtests* sets.
       'content_browsertests': {
         'args': [
-          '--',
-          '--disable-gpu',
-          '--headless',
-          '--ozone-platform=headless',
+          '--test-arg=--disable-gpu',
+          '--test-arg=--headless',
+          '--test-arg=--ozone-platform=headless',
         ],
         'swarming': {
           'shards': 8,
         },
       },
+      'sync_integration_tests': {},
       'unit_tests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.unit_tests.filter',
@@ -1972,6 +2200,16 @@
         },
       },
       'compositor_unittests': {},
+      'content_browsertests': {
+        'args': [
+          '--test-arg=--disable-gpu',
+          '--test-arg=--headless',
+          '--test-arg=--ozone-platform=headless',
+        ],
+        'swarming': {
+          'shards': 14,
+        },
+      },
       'content_unittests': {},
       'crypto_unittests': {},
       'events_unittests': {},
@@ -1999,8 +2237,7 @@
       },
       'ozone_gl_unittests': {
         'args': [
-          '--',
-          '--ozone-platform=headless',
+          '--test-arg=--ozone-platform=headless',
         ],
       },
       'ozone_unittests': {},
@@ -3036,6 +3273,9 @@
           '--use-weston',
           '--weston-use-gl',
         ],
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
       },
     },
 
@@ -3057,6 +3297,9 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
+        ],
+        'mixins': [
+          'has_native_resultdb_integration',
         ],
       },
     },
@@ -3631,6 +3874,30 @@
       },
     },
 
+    'lacros_cq_tast_tests_eve': {
+      'lacros_cq_tast_tests_eve': {
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/923426#c27
+        },
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'experiment_percentage': 5,
+      },
+    },
+
+    'lacros_cq_tast_tests_jacuzzi': {
+      'lacros_cq_tast_tests_jacuzzi': {
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/923426#c27
+        },
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'experiment_percentage': 5,
+      },
+    },
+
     # TODO(crbug.com/1204231): Re-enable vaapi_unittest.
     'lacros_device_or_vm_gtests': {
       'aura_unittests': {},
@@ -3819,7 +4086,7 @@
       # Chrome OS only.
       'ash_components_unittests': {},
       # TODO(crbug.com/1351793) Enable on CQ when stable.
-      'ash_crosapi_browsertests': {
+      'ash_crosapi_tests': {
         'ci_only': True,
       },
       'ash_unittests': {
@@ -4061,9 +4328,7 @@
           'android_r',
           'bullhead',
           'flame',
-          'hammerhead',
           'marshmallow',
-          'marshmallow_generic',
           'mdarcy',
           'nougat_generic',
           'oreo_fleet',
@@ -4194,6 +4459,19 @@
 
     'perfetto_gtests': {
       'base_unittests': {},
+      'browser_tests': {
+        'args': [
+          '--gtest_filter=ChromeTracingDelegateBrowserTest.*',
+        ],
+      },
+      'content_browsertests': {
+        'android_swarming': {
+          'shards': 15,
+        },
+        'swarming': {
+          'shards': 8,
+        },
+      },
       'perfetto_unittests': {},
       'services_unittests': {},
     },
@@ -4299,10 +4577,11 @@
     },
 
     'rust_native_tests': {
-      'autocxx_tests': {
-        'swarming': {},
-        'test': 'autocxx_tests',
-      },
+      # TODO(https://crbug.com/1380857): reenable test coverage.
+      # 'autocxx_tests': {
+      #   'swarming': {},
+      #   'test': 'autocxx_tests',
+      # },
       'build_rust_tests': {
         'swarming': {},
         'test': 'build_rust_tests',
@@ -4671,6 +4950,7 @@
           '--test-launcher-timeout=90000',
           '--ui-test-action-max-timeout=45000',
           '--ui-test-action-timeout=40000',
+          '--exclude-paths-from-win-defender',
         ],
         'swarming': {
           'dimension_sets': [
@@ -4741,7 +5021,6 @@
         'args': [
           '--num-retries=3',
           '--skipped=always',
-          '--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter',
           '--flag-specific=skia-vulkan-swiftshader',
         ],
         'isolate_name': 'blink_web_tests',
@@ -4771,14 +5050,12 @@
       'web_engine_browsertests': {},
       'web_engine_integration_tests': {
         'args': [
-          '--',
-          '--vmodule=test_navigation_listener=1',
+          '--test-arg=--vmodule=test_navigation_listener=1',
         ],
       },
       'web_engine_integration_tests_cfv1': {
         'args': [
-          '--',
-          '--vmodule=test_navigation_listener=1',
+          '--test-arg=--vmodule=test_navigation_listener=1',
         ],
       },
       'web_engine_unittests': {},
@@ -5095,9 +5372,7 @@
     'wpt_web_tests': {
       'wpt_tests_suite': {
         'args': [
-          '--no-wpt-internal',
           '--child-processes=8',
-          '--no-restart-on-new-group',
           '--log-wptreport',
         ],
         'merge': {
@@ -5119,7 +5394,6 @@
       'wpt_tests_suite': {
         'args': [
           '--child-processes=8',
-          '--no-restart-on-new-group',
           '--log-wptreport',
           '--xvfb'
         ],
@@ -5133,6 +5407,30 @@
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 15,
+        },
+        'experiment_percentage': 100,
+      },
+    },
+
+    'wpt_web_tests_highdpi': {
+      'wpt_tests_suite_highdpi': {
+        'args': [
+          '--child-processes=8',
+          '--log-wptreport',
+          '--xvfb',
+          '--flag-specific',
+          'highdpi',
+        ],
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'isolate_name': 'wpt_tests_isolate_content_shell',
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 3,
         },
         'experiment_percentage': 100,
       },
@@ -5187,7 +5485,6 @@
       'wpt_tests_suite': {
         'args': [
           '--child-processes=8',
-          '--no-restart-on-new-group',
           '--product=chrome_ios'
         ],
         'merge': {
@@ -5200,6 +5497,30 @@
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 15,
+        },
+        'experiment_percentage': 100,
+      },
+    },
+
+    'wpt_web_tests_layout_ng_disabled': {
+      'wpt_tests_suite_layout_ng_disabled': {
+        'args': [
+          '--child-processes=8',
+          '--log-wptreport',
+          '--xvfb',
+          '--flag-specific',
+          'disable-layout-ng',
+        ],
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'isolate_name': 'wpt_tests_isolate_content_shell',
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 12,
         },
         'experiment_percentage': 100,
       },
@@ -5346,12 +5667,6 @@
 
     'chromeos_device_gtests': [
       'chromeos_browser_all_tast_tests',
-      'chromeos_browser_integration_tests',
-      'chromeos_device_only_gtests',
-    ],
-
-    'chromeos_device_gtests_with_lacros': [
-      'chromeos_browser_all_tast_tests_with_lacros',
       'chromeos_browser_integration_tests',
       'chromeos_device_only_gtests',
     ],
@@ -5702,6 +6017,20 @@
       'gpu_common_and_optional_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
+    ],
+
+    'gpu_dawn_android_isolated_scripts': [
+      # Same as gpu_dawn_isolated_scripts, but with some suites removed:
+      # * telemetry_gpu_unittests since those aren't built for Android
+      # * SwiftShader-related tests since SwiftShader is not used on Android.
+      'gpu_dawn_perf_smoke_isolated_scripts',
+      'gpu_dawn_webgpu_blink_web_tests',
+    ],
+
+    'gpu_dawn_android_telemetry_tests': [
+      # Same as gpu_dawn_telemetry_tests, but without SwiftShader tests since
+      # SwiftShader is not used on Android.
+      'gpu_dawn_webgpu_cts',
     ],
 
     'gpu_dawn_asan_isolated_scripts': [
@@ -6102,17 +6431,15 @@
       'webview_ui_instrumentation_tests_no_field_trial',
     ],
 
-    'webview_bot_system_gtests': [
-      'system_webview_shell_instrumentation_tests',
-      'webview_cts_tests_gtest',
-      'webview_cts_tests_gtest_no_field_trial',
-      'webview_ui_instrumentation_tests',
-      'webview_ui_instrumentation_tests_no_field_trial',
-    ],
-
     'win_specific_isolated_scripts_and_sizes': [
       'chrome_sizes',
       'win_specific_isolated_scripts',
+    ],
+
+    'wpt_web_tests_content_shell_multiple_flags': [
+      'wpt_web_tests_content_shell',
+      'wpt_web_tests_layout_ng_disabled',
+      'wpt_web_tests_highdpi',
     ],
   },
 
@@ -6317,7 +6644,7 @@
         ],
       },
       'ios_eg2_tests': {
-        'mixins': ['xcode_parallelization'],
+        'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
           'SIM_IPHONE_X_16_1',
           'SIM_IPHONE_8_16_1',
@@ -6327,7 +6654,7 @@
         ]
       },
       'ios_eg2_cq_tests': {
-        'mixins': ['xcode_parallelization'],
+        'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
           'SIM_IPHONE_8_16_1',
           'SIM_IPHONE_X_16_1',
@@ -6500,7 +6827,7 @@
         ],
       },
       'ios_eg2_tests': {
-        'mixins': ['xcode_parallelization'],
+        'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
           # Latest beta iOS version Sims
           'SIM_IPHONE_7_14_5',
@@ -6509,7 +6836,7 @@
         ]
       },
       'ios_eg2_cq_tests': {
-        'mixins': ['xcode_parallelization'],
+        'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
           # Latest beta iOS version Sims
           'SIM_IPHONE_X_14_5',
@@ -6611,7 +6938,7 @@
         ]
       },
       'ios_eg2_tests': {
-        'mixins': ['xcode_parallelization'],
+        'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
           'SIM_IPHONE_6S_14_5',
           'SIM_IPHONE_7_14_5',
@@ -6620,7 +6947,7 @@
         ]
       },
       'ios_eg2_cq_tests': {
-        'mixins': ['xcode_parallelization'],
+        'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
           'SIM_IPHONE_6S_PLUS_14_5',
           'SIM_IPHONE_6S_14_5',
@@ -6708,6 +7035,14 @@
       },
     },
 
+    'lacros_amd64_generic_rel_skylab': {
+      'lacros_skylab_poc': {
+        'variants': [
+          'CROS_EVE_PUBLIC_LKGM',
+        ]
+      },
+    },
+
     'lacros_amd64_generic_rel_skylab_fyi': {
       'lacros_skylab_poc': {
         'variants': [
@@ -6735,6 +7070,19 @@
       },
     },
 
+    'lacros_device_arm_tests_rel': {
+      'lacros_all_tast_tests': {
+        'variants': [
+          'LACROS_JACUZZI',
+        ]
+      },
+      'lacros_cq_tast_tests_jacuzzi': {
+        'variants': [
+          'LACROS_JACUZZI',
+        ]
+      },
+    },
+
     'lacros_device_or_vm_tast_tests': {
       'lacros_all_tast_tests': {
         'variants': [
@@ -6752,6 +7100,11 @@
       'lacros_all_tast_tests': {
         'variants': [
           'LACROS_AMD64_GENERIC',
+          'LACROS_EVE',
+        ]
+      },
+      'lacros_cq_tast_tests_eve': {
+        'variants': [
           'LACROS_EVE',
         ]
       },
@@ -6829,10 +7182,10 @@
     'lacros_skylab_tests_amd64_generic': {
       'lacros_skylab_tests': {
         'variants': [
-          'CROS_ATLAS_RELEASE_LKGM',
-          'CROS_ATLAS_RELEASE_DEV',
-          'CROS_ATLAS_RELEASE_BETA',
-          'CROS_ATLAS_RELEASE_STABLE',
+          'CROS_DEDEDE_RELEASE_LKGM',
+          'CROS_DEDEDE_RELEASE_DEV',
+          'CROS_DEDEDE_RELEASE_BETA',
+          'CROS_DEDEDE_RELEASE_STABLE',
           'CROS_EVE_RELEASE_LKGM',
           'CROS_EVE_RELEASE_DEV',
           'CROS_EVE_RELEASE_BETA',
@@ -6953,52 +7306,60 @@
       'gpu_common_and_optional_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_mediapipe_passthrough_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_passthrough_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
         ],
       },
       'gpu_webcodecs_telemetry_test': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1375306.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
         ],
       },
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
         ],
       },
       'gpu_webgl_conformance_metal_passthrough_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
         ],
       },
       'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
         ],
       },
     },
@@ -7007,21 +7368,24 @@
       'gpu_fyi_and_optional_non_linux_gtests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_fyi_mac_specific_gtests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_gles2_conform_gtests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },

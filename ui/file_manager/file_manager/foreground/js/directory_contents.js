@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert.js';
-import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
+import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
 
 import {mountGuest} from '../../common/js/api.js';
-import {AsyncUtil} from '../../common/js/async_util.js';
+import {AsyncQueue, ConcurrentQueue} from '../../common/js/async_util.js';
+import {createDOMError} from '../../common/js/dom_utils.js';
 import {metrics} from '../../common/js/metrics.js';
 import {createTrashReaders} from '../../common/js/trash.js';
 import {util} from '../../common/js/util.js';
@@ -77,8 +78,7 @@ export class DirectoryContentScanner extends ContentScanner {
     if (!this.entry_ || !this.entry_.createReader) {
       // If entry is not specified or if entry doesn't implement createReader,
       // we cannot read it.
-      errorCallback(
-          util.createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
+      errorCallback(createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
       return;
     }
 
@@ -87,7 +87,7 @@ export class DirectoryContentScanner extends ContentScanner {
     const readEntries = () => {
       reader.readEntries(entries => {
         if (this.cancelled_) {
-          errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
+          errorCallback(createDOMError(util.FileError.ABORT_ERR));
           return;
         }
 
@@ -128,7 +128,7 @@ export class DriveSearchContentScanner extends ContentScanner {
     setTimeout(() => {
       // Check cancelled state before read the entries.
       if (this.cancelled_) {
-        errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
+        errorCallback(createDOMError(util.FileError.ABORT_ERR));
         return;
       }
       chrome.fileManagerPrivate.searchDrive(
@@ -138,7 +138,7 @@ export class DriveSearchContentScanner extends ContentScanner {
             }
 
             if (this.cancelled_) {
-              errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
+              errorCallback(createDOMError(util.FileError.ABORT_ERR));
               return;
             }
 
@@ -146,7 +146,7 @@ export class DriveSearchContentScanner extends ContentScanner {
             if (!entries) {
               console.warn('Drive search encountered an error.');
               errorCallback(
-                  util.createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
+                  createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
               return;
             }
 
@@ -243,14 +243,14 @@ export class DriveMetadataSearchContentScanner extends ContentScanner {
             console.error(chrome.runtime.lastError.message);
           }
           if (this.cancelled_) {
-            errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
+            errorCallback(createDOMError(util.FileError.ABORT_ERR));
             return;
           }
 
           if (!results) {
             console.warn('Drive search encountered an error.');
             errorCallback(
-                util.createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
+                createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
             return;
           }
 
@@ -322,7 +322,7 @@ export class RecentContentScanner extends ContentScanner {
           if (chrome.runtime.lastError) {
             console.error(chrome.runtime.lastError.message);
             errorCallback(
-                util.createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
+                createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
             return;
           }
           if (entries.length > 0) {
@@ -394,7 +394,7 @@ export class CrostiniMounter extends ContentScanner {
       if (chrome.runtime.lastError) {
         console.warn(`Cannot mount Crostini volume: ${
             chrome.runtime.lastError.message}`);
-        errorCallback(util.createDOMError(
+        errorCallback(createDOMError(
             constants.CROSTINI_CONNECT_ERR, chrome.runtime.lastError.message));
         return;
       }
@@ -435,7 +435,7 @@ export class GuestOsMounter extends ContentScanner {
       await mountGuest(this.guest_id_);
       successCallback();
     } catch (error) {
-      errorCallback(util.createDOMError(
+      errorCallback(createDOMError(
           // TODO(crbug/1293229): Strings
           constants.CROSTINI_CONNECT_ERR, error));
     }
@@ -471,7 +471,7 @@ export class TrashContentScanner extends ContentScanner {
       }
       this.readers_[idx].readEntries(entries => {
         if (this.cancelled_) {
-          errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
+          errorCallback(createDOMError(util.FileError.ABORT_ERR));
           return;
         }
 
@@ -728,7 +728,7 @@ export class DirectoryContents extends EventTarget {
 
     this.scannerFactory_ = scannerFactory;
     this.scanner_ = null;
-    this.processNewEntriesQueue_ = new AsyncUtil.Queue();
+    this.processNewEntriesQueue_ = new AsyncQueue();
     this.scanCancelled_ = false;
 
     /**
@@ -1068,7 +1068,7 @@ export class DirectoryContents extends EventTarget {
       // entries into smaller chunks to reduce UI latency.
       // TODO(hidehiko,mtomasz): This should be handled in MetadataCache.
       const MAX_CHUNK_SIZE = 25;
-      const prefetchMetadataQueue = new AsyncUtil.ConcurrentQueue(4);
+      const prefetchMetadataQueue = new ConcurrentQueue(4);
       for (let i = 0; i < entries.length; i += MAX_CHUNK_SIZE) {
         if (prefetchMetadataQueue.isCancelled()) {
           break;

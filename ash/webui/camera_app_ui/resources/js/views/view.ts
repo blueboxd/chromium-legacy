@@ -7,18 +7,26 @@ import * as dom from '../dom.js';
 import {I18nString} from '../i18n_string.js';
 import * as state from '../state.js';
 import {ViewName} from '../type.js';
+import {KeyboardShortcut} from '../util.js';
 import {WaitableEvent} from '../waitable_event.js';
 
 export interface DialogEnterOptions {
   /**
-   * Message of the dialog view.
-   */
-  message?: string;
-
-  /**
    * Whether the dialog view is cancellable.
    */
   cancellable?: boolean;
+  /**
+   * Description of the dialog.
+   */
+  description?: I18nString;
+  /**
+   * Message of the dialog view.
+   */
+  message?: string;
+  /**
+   * Title of the dialog.
+   */
+  title?: I18nString;
 }
 
 /**
@@ -176,7 +184,7 @@ export class View {
    * @param key Key to be handled.
    * @return Whether the key has been handled or not.
    */
-  onKeyPressed(key: string): boolean {
+  onKeyPressed(key: KeyboardShortcut): boolean {
     if (this.handlingKey(key)) {
       return true;
     } else if (this.dismissByEsc && key === 'Escape') {

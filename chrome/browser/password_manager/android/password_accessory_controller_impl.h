@@ -185,14 +185,16 @@ class PasswordAccessoryControllerImpl
   content::WebContents& GetWebContents() const;
 
   // Keeps track of credentials which are stored for all origins in this tab.
-  raw_ptr<password_manager::CredentialCache> credential_cache_ = nullptr;
+  raw_ptr<password_manager::CredentialCache, DanglingUntriaged>
+      credential_cache_ = nullptr;
 
   // The password accessory controller object to forward client requests to.
   base::WeakPtr<ManualFillingController> mf_controller_;
 
   // The password manager client is used to update the save passwords status
   // for the currently focused origin.
-  raw_ptr<password_manager::PasswordManagerClient> password_client_ = nullptr;
+  raw_ptr<password_manager::PasswordManagerClient, DanglingUntriaged>
+      password_client_ = nullptr;
 
   // The authenticator used to trigger a biometric re-auth before filling.
   // null, if there is no ongoing authentication.

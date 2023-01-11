@@ -16,7 +16,7 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations(
     GpuMemoryBufferSupport* support) {
   GpuMemoryBufferConfigurationSet configurations;
 
-#if defined(USE_OZONE) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || \
+#if BUILDFLAG(IS_OZONE) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || \
     BUILDFLAG(IS_ANDROID)
   const gfx::BufferFormat kBufferFormats[] = {
       gfx::BufferFormat::R_8,
@@ -34,6 +34,7 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations(
       gfx::BufferFormat::RGBA_F16,
       gfx::BufferFormat::YVU_420,
       gfx::BufferFormat::YUV_420_BIPLANAR,
+      gfx::BufferFormat::YUVA_420_TRIPLANAR,
       gfx::BufferFormat::P010};
 
   const gfx::BufferUsage kUsages[] = {
@@ -56,7 +57,7 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations(
         configurations.insert(gfx::BufferUsageAndFormat(usage, format));
     }
   }
-#endif  // defined(USE_OZONE) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) ||
+#endif  // BUILDFLAG(IS_OZONE) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) ||
         // BUILDFLAG(IS_ANDROID)
 
   return configurations;
@@ -66,7 +67,7 @@ bool GetImageNeedsPlatformSpecificTextureTarget(gfx::BufferFormat format,
                                                 gfx::BufferUsage usage) {
   if (!NativeBufferNeedsPlatformSpecificTextureTarget(format))
     return false;
-#if defined(USE_OZONE) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || \
+#if BUILDFLAG(IS_OZONE) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || \
     BUILDFLAG(IS_ANDROID)
   GpuMemoryBufferSupport support;
   GpuMemoryBufferConfigurationSet native_configurations =

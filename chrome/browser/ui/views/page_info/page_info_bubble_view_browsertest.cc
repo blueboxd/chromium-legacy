@@ -28,11 +28,11 @@
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/controls/rich_hover_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_cookies_content_view.h"
-#include "chrome/browser/ui/views/page_info/page_info_hover_button.h"
 #include "chrome/browser/ui/views/page_info/page_info_view_factory.h"
 #include "chrome/browser/ui/views/page_info/security_information_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -168,7 +168,15 @@ void AddHintForTesting(Browser* browser,
 
 class PageInfoBubbleViewBrowserTest : public InProcessBrowserTest {
  public:
-  PageInfoBubbleViewBrowserTest() = default;
+  PageInfoBubbleViewBrowserTest() {
+    // TODO(crbug.com/1344787): Clean up when PageSpecificSiteDataDialog is
+    // launched. Disable features for the new version of "Cookies in use"
+    // dialog. The new UI is covered by
+    // PageInfoBubbleViewBrowserTestCookiesSubpage.
+    feature_list_.InitWithFeatures({}, {page_info::kPageSpecificSiteDataDialog,
+                                        page_info::kPageInfoCookiesSubpage});
+  }
+
   PageInfoBubbleViewBrowserTest(const PageInfoBubbleViewBrowserTest& test) =
       delete;
   PageInfoBubbleViewBrowserTest& operator=(
@@ -235,19 +243,19 @@ class PageInfoBubbleViewBrowserTest : public InProcessBrowserTest {
   std::u16string GetCertificateButtonTitle() const {
     // Only PageInfoBubbleViewBrowserTest can access certificate_button_ in
     // PageInfoBubbleView, or title() in HoverButton.
-    auto* certificate_button = static_cast<PageInfoHoverButton*>(
+    auto* certificate_button = static_cast<RichHoverButton*>(
         PageInfoBubbleView::GetPageInfoBubbleForTesting()->GetViewByID(
             PageInfoViewFactory::
                 VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER));
-    return certificate_button->title()->GetText();
+    return certificate_button->GetTitleViewForTesting()->GetText();
   }
 
   std::u16string GetCertificateButtonSubtitle() const {
-    auto* certificate_button = static_cast<PageInfoHoverButton*>(
+    auto* certificate_button = static_cast<RichHoverButton*>(
         PageInfoBubbleView::GetPageInfoBubbleForTesting()->GetViewByID(
             PageInfoViewFactory::
                 VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER));
-    return certificate_button->subtitle()->GetText();
+    return certificate_button->GetSubTitleViewForTesting()->GetText();
   }
 
   const std::u16string GetPageInfoBubbleViewDetailText() {
@@ -269,7 +277,9 @@ class PageInfoBubbleViewBrowserTest : public InProcessBrowserTest {
         PageInfoBubbleView::GetPageInfoBubbleForTesting()->GetViewByID(
             PageInfoViewFactory::
                 VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SECURITY_INFORMATION);
-    return static_cast<PageInfoHoverButton*>(button)->title()->GetText();
+    return static_cast<RichHoverButton*>(button)
+        ->GetTitleViewForTesting()
+        ->GetText();
   }
 
   void SetupSentimentServiceExpectations(bool interacted) {
@@ -280,10 +290,12 @@ class PageInfoBubbleViewBrowserTest : public InProcessBrowserTest {
     EXPECT_CALL(*mock_sentiment_service_, PageInfoClosed);
   }
 
-  raw_ptr<MockTrustSafetySentimentService> mock_sentiment_service_;
+  raw_ptr<MockTrustSafetySentimentService, DanglingUntriaged>
+      mock_sentiment_service_;
 
  private:
   std::vector<PageInfoViewFactory::PageInfoViewID> expected_identifiers_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, ShowBubble) {
@@ -1071,6 +1083,7 @@ class PageInfoBubbleViewBrowserTestCookiesSubpage
   PageInfoBubbleViewBrowserTestCookiesSubpage() {
     feature_list_.InitWithFeatures(
         {page_info::kPageInfoCookiesSubpage,
+         page_info::kPageSpecificSiteDataDialog,
          privacy_sandbox::kPrivacySandboxFirstPartySetsUI},
         {});
   }
@@ -1122,7 +1135,8 @@ class PageInfoBubbleViewBrowserTestCookiesSubpage
  private:
   base::test::ScopedFeatureList feature_list_;
   PrefService* prefs_;
-  raw_ptr<MockPrivacySandboxService> mock_privacy_sandbox_service_;
+  raw_ptr<MockPrivacySandboxService, DanglingUntriaged>
+      mock_privacy_sandbox_service_;
 };
 
 // Checks if there is correct number of buttons in cookies subpage when fps are

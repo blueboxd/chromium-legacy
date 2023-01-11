@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.browser_ui.widget.chips.ChipProperties;
 import org.chromium.components.browser_ui.widget.chips.ChipsCoordinator;
 import org.chromium.ui.base.LocalizationUtils;
+import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -94,9 +95,6 @@ public class RelatedSearchesControl {
     /** The reference to the host for this part of the panel (callbacks to the Panel). */
     private RelatedSearchesSectionHost mPanelSectionHost;
 
-    /** Whether this control is for a view that appears in the Bar vs the panel's content area. */
-    boolean mIsInBarControl;
-
     /** The number of chips that have been selected so far. */
     private int mChipsSelected;
 
@@ -112,16 +110,12 @@ public class RelatedSearchesControl {
     /**
      * @param panel             The panel.
      * @param panelSectionHost  A reference to the host of this panel section for notifications.
-     * @param isInBarControl    Whether this control is for a control that appears in the Bar as
-     *                          opposed to appearing in the content area of the Panel.
      * @param context           The Android Context used to inflate the View.
      * @param container         The container View used to inflate the View.
      * @param resourceLoader    The resource loader that will handle the snapshot capturing.
      */
     RelatedSearchesControl(OverlayPanel panel, RelatedSearchesSectionHost panelSectionHost,
-            boolean isInBarControl, Context context, ViewGroup container,
-            DynamicResourceLoader resourceLoader) {
-        mIsInBarControl = isInBarControl;
+            Context context, ViewGroup container, DynamicResourceLoader resourceLoader) {
         mContext = context;
         mViewContainer = container;
         mResourceLoader = resourceLoader;
@@ -219,17 +213,10 @@ public class RelatedSearchesControl {
     void setRelatedSearchesSuggestions(@Nullable List<String> relatedSearches,
             boolean displayDefaultQuery, @Px int defaultQueryTextMaxWidthPx) {
         if (mControlView == null) {
-            int layoutId = mIsInBarControl
-                    ? R.layout.contextual_search_related_searches_view
-                    : R.layout.contextual_search_related_searches_in_content_view;
-            int viewId = mIsInBarControl
-                    ? R.id.contextual_search_related_searches_view_id
-                    : R.id.contextual_search_related_searches_in_content_view_id;
-            int controlId = mIsInBarControl
-                    ? R.id.contextual_search_related_searches_view_control_id
-                    : R.id.contextual_search_related_searches_in_content_view_id;
             mControlView = new RelatedSearchesControlView(mOverlayPanel, mContext, mViewContainer,
-                    mResourceLoader, layoutId, viewId, controlId);
+                    mResourceLoader, R.layout.contextual_search_related_searches_view,
+                    R.id.contextual_search_related_searches_view_id,
+                    R.id.contextual_search_related_searches_view_control_id);
         }
         assert mChipsSelected == 0 || hasReleatedSearchesToShow();
         mRelatedSearchesSuggestions = relatedSearches;
@@ -303,12 +290,7 @@ public class RelatedSearchesControl {
         // The View snapshot should be fully visible here.
         updateAppearance(1.0f);
 
-        // Only the Bar is on screen, so show if this is an in-bar control and hide otherwise.
-        if (mIsInBarControl) {
-            showView(true);
-        } else {
-            hideView();
-        }
+        showView(true);
     }
 
     /**
@@ -429,7 +411,7 @@ public class RelatedSearchesControl {
         view.setVisibility(View.VISIBLE);
 
         // NOTE: We need to call requestLayout, otherwise the View will not become visible.
-        view.requestLayout();
+        ViewUtils.requestLayout(view, "RelatedSearchesControl.showView");
 
         mIsShowingView = true;
         mViewY = y;

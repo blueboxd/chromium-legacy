@@ -7,10 +7,10 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "base/test/metrics/histogram_tester.h"
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
@@ -19,6 +19,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ui/webui/ash/parent_access/parent_access_dialog.h"
+#endif
 
 namespace {
 
@@ -83,6 +87,12 @@ class MockPermissionRequestCreator : public PermissionRequestCreator {
   bool enabled_ = false;
   std::vector<GURL> requested_urls_;
   std::vector<SuccessCallback> callbacks_;
+};
+
+class MockSupervisedUserSettingsService
+    : public ::SupervisedUserSettingsService {
+ public:
+  MOCK_METHOD1(RecordLocalWebsiteApproval, void(const std::string& host));
 };
 
 constexpr char kLocalWebApprovalDurationHistogramName[] =
@@ -203,12 +213,6 @@ TEST_F(WebApprovalsManagerTest, CreatePermissionRequest) {
   }
 }
 
-class MockSupervisedUserSettingsService
-    : public ::SupervisedUserSettingsService {
- public:
-  MOCK_METHOD1(RecordLocalWebsiteApproval, void(const std::string& host));
-};
-
 TEST_F(WebApprovalsManagerTest, LocalWebApprovalDurationHistogramTest) {
   base::HistogramTester histogram_tester;
 
@@ -253,3 +257,114 @@ TEST_F(WebApprovalsManagerTest, LocalWebApprovalDurationHistogramTest) {
   histogram_tester.ExpectTimeBucketCount(kLocalWebApprovalDurationHistogramName,
                                          elapsed_time, 1);
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(WebApprovalsManagerTest, LocalWebApprovalApprovedChromeOSTest) {
+  base::HistogramTester histogram_tester;
+  const GURL url("http://www.example.com");
+
+  testing::NiceMock<MockSupervisedUserSettingsService>
+      supervisedUserSettingsServiceMock;
+  EXPECT_CALL(supervisedUserSettingsServiceMock,
+              RecordLocalWebsiteApproval(url.host()));
+
+  auto dialog_result = std::make_unique<ash::ParentAccessDialog::Result>();
+  dialog_result->status = ash::ParentAccessDialog::Result::Status::kApproved;
+
+  // Capture approval start time and forward clock by the fake approval
+  // duration.
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+  const base::TimeDelta approval_duration = base::Seconds(35);
+  task_environment().FastForwardBy(approval_duration);
+
+  web_approvals_manager().OnLocalApprovalRequestCompletedChromeOS(
+      &supervisedUserSettingsServiceMock, url, start_time,
+      std::move(dialog_result));
+
+  histogram_tester.ExpectTotalCount(kLocalWebApprovalDurationHistogramName, 1);
+  histogram_tester.ExpectTimeBucketCount(kLocalWebApprovalDurationHistogramName,
+                                         approval_duration, 1);
+}
+
+TEST_F(WebApprovalsManagerTest, LocalWebApprovalDeclinedChromeOSTest) {
+  base::HistogramTester histogram_tester;
+  const GURL url("http://www.example.com");
+
+  testing::NiceMock<MockSupervisedUserSettingsService>
+      supervisedUserSettingsServiceMock;
+  EXPECT_CALL(supervisedUserSettingsServiceMock,
+              RecordLocalWebsiteApproval(url.host()))
+      .Times(0);
+
+  auto dialog_result = std::make_unique<ash::ParentAccessDialog::Result>();
+  dialog_result->status = ash::ParentAccessDialog::Result::Status::kDeclined;
+
+  // Capture approval start time and forward clock by the fake approval
+  // duration.
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+  const base::TimeDelta approval_duration = base::Seconds(35);
+  task_environment().FastForwardBy(approval_duration);
+
+  web_approvals_manager().OnLocalApprovalRequestCompletedChromeOS(
+      &supervisedUserSettingsServiceMock, url, start_time,
+      std::move(dialog_result));
+
+  histogram_tester.ExpectTotalCount(kLocalWebApprovalDurationHistogramName, 1);
+  histogram_tester.ExpectTimeBucketCount(kLocalWebApprovalDurationHistogramName,
+                                         approval_duration, 1);
+}
+
+TEST_F(WebApprovalsManagerTest, LocalWebApprovalCancelledChromeOSTest) {
+  base::HistogramTester histogram_tester;
+  const GURL url("http://www.example.com");
+
+  testing::NiceMock<MockSupervisedUserSettingsService>
+      supervisedUserSettingsServiceMock;
+  EXPECT_CALL(supervisedUserSettingsServiceMock,
+              RecordLocalWebsiteApproval(url.host()))
+      .Times(0);
+
+  auto dialog_result = std::make_unique<ash::ParentAccessDialog::Result>();
+  dialog_result->status = ash::ParentAccessDialog::Result::Status::kCancelled;
+
+  // Capture approval start time and forward clock by the fake approval
+  // duration.
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+  const base::TimeDelta approval_duration = base::Seconds(35);
+  task_environment().FastForwardBy(approval_duration);
+
+  web_approvals_manager().OnLocalApprovalRequestCompletedChromeOS(
+      &supervisedUserSettingsServiceMock, url, start_time,
+      std::move(dialog_result));
+
+  // Check that the approval duration was NOT recorded for canceled request.
+  histogram_tester.ExpectTotalCount(kLocalWebApprovalDurationHistogramName, 0);
+}
+
+TEST_F(WebApprovalsManagerTest, LocalWebApprovalErrorChromeOSTest) {
+  base::HistogramTester histogram_tester;
+  const GURL url("http://www.example.com");
+
+  testing::NiceMock<MockSupervisedUserSettingsService>
+      supervisedUserSettingsServiceMock;
+  EXPECT_CALL(supervisedUserSettingsServiceMock,
+              RecordLocalWebsiteApproval(url.host()))
+      .Times(0);
+
+  auto dialog_result = std::make_unique<ash::ParentAccessDialog::Result>();
+  dialog_result->status = ash::ParentAccessDialog::Result::Status::kError;
+
+  // Capture approval start time and forward clock by the fake approval
+  // duration.
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+  const base::TimeDelta approval_duration = base::Seconds(35);
+  task_environment().FastForwardBy(approval_duration);
+
+  web_approvals_manager().OnLocalApprovalRequestCompletedChromeOS(
+      &supervisedUserSettingsServiceMock, url, start_time,
+      std::move(dialog_result));
+
+  // Check that the approval duration was NOT recorded on error.
+  histogram_tester.ExpectTotalCount(kLocalWebApprovalDurationHistogramName, 0);
+}
+#endif

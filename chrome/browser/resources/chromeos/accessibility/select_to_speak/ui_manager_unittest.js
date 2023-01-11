@@ -94,9 +94,9 @@ SelectToSpeakUiManagerUnitTest = class extends SelectToSpeakE2ETest {
   /** @override */
   async setUpDeferred() {
     await super.setUpDeferred();
+    await importModule('ParagraphUtils', '/common/paragraph_utils.js');
     await importModule('UiManager', '/select_to_speak/ui_manager.js');
     await importModule('PrefsManager', '/select_to_speak/prefs_manager.js');
-    await importModule('ParagraphUtils', '/select_to_speak/paragraph_utils.js');
 
     this.mockPrefsManager = new MockPrefsManager();
     this.mockListener = new MockUiListener();
@@ -222,7 +222,7 @@ AX_TEST_F('SelectToSpeakUiManagerUnitTest', 'UpdatesUi', function() {
 });
 
 // This represents how Google Docs renders Canvas accessibility as of
-// October 2022.
+// October 24 2022.
 AX_TEST_F(
     'SelectToSpeakUiManagerUnitTest', 'UpdatesUiMultipleNodesInBlock',
     function() {
@@ -231,7 +231,7 @@ AX_TEST_F(
         location: {left: 0, top: 0, width: 500, height: 50},
       };
       const group = {
-        role: 'group',
+        role: 'paragraph',
         parent: root,
         display: 'inline',
         location: {left: 20, top: 10, width: 200, height: 10},

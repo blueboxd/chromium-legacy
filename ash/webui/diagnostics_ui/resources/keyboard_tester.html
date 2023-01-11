@@ -1,6 +1,6 @@
 <style>
   #dialog {
-    --cr-dialog-width: min(calc(100% - 80px), 1400px);
+    --cr-dialog-width: calc(100% - 80px);
   }
 
   [slot='title'] {
@@ -58,7 +58,6 @@
   </div>
   <div slot="button-container">
     <div id="help" inner-h-t-m-l="[[i18nAdvanced('keyboardTesterHelpLink')]]"></div>
-
     <cr-button class="action-button" on-click="close">
       [[i18n('inputTesterDone')]]
     </cr-button>

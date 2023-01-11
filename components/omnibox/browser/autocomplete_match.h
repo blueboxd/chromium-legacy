@@ -190,6 +190,55 @@ struct AutocompleteMatch {
     kMaxValue = kShortcutTextPrefix,
   };
 
+  // Signals for ML scoring.
+  struct ScoringSignals {
+    ScoringSignals();
+
+    // Number of times the suggestion was typed in the Omnibox.
+    int typed_count = 0;
+    // Number of times the suggestion was visited in general.
+    int visit_count = 0;
+    // Number of times the suggestion was visited with the current input or
+    // prefix of it.
+    int shortcut_visit_count = 0;
+
+    // Elapsed time since last visit.
+    base::TimeDelta elapsed_time_last_visit = base::TimeDelta::FiniteMax();
+
+    // URL only contains the host name, i.e., no query, path, or reference.
+    bool is_host_only = false;
+
+    // Number of bookmarks with this URL.
+    int num_bookmarks = 0;
+    // Position of the first matched bookmark title term.
+    // E.g. 4 for input 'x' and title '0123x56'.
+    // Set to -1 when there is no match in the bookmark title.
+    int first_bookmark_title_match_position = -1;
+    // Total length of matched strings in the bookmark title.
+    // E.g. 2 for input 'xy' and title 'ab xyz'.
+    int total_bookmark_title_match_length = 0;
+
+    // Position of the first matched URL substring.
+    // Set to -1 when there is no URL match.
+    int first_url_match_position = -1;
+    int total_url_match_length = 0;
+
+    // Host match is at the word boundary.
+    // E.g., true for 'h' in '[h]ost.com'.
+    bool host_match_at_word_boundary = false;
+    // Total length of the matched host substrings.
+    int total_host_match_length = 0;
+
+    // Total lengths of the matched substrings in the path at word boundary.
+    // E.g. 1 for 'p' in 'a.com/[p]ath'.
+    int total_path_match_length = 0;
+    // Total lengths of the matched substrings in query_or_ref at word boundary.
+    // E.g., 2 for 'qu' in 'a.com/a?[qu]ery'.
+    int total_query_or_ref_match_length = 0;
+    // Total lengths of the matched substrings in page title at word boundary.
+    int total_title_match_length = 0;
+  };
+
   static const char* const kDocumentTypeStrings[];
 
   // Return a string version of the core type values. Only used for
@@ -343,9 +392,6 @@ struct AutocompleteMatch {
   // usually this surfaces a clock icon to the user.
   static bool IsSearchHistoryType(Type type);
 
-  // Returns true if matches with given `type` may be attach an `action`.
-  static bool IsActionCompatibleType(Type type);
-
   // Returns whether this match is a starter pack suggestion provided by the
   // built-in provider. This is the suggestion that the starter pack keyword
   // mode chips attach to.
@@ -440,6 +486,11 @@ struct AutocompleteMatch {
   // Returns whether `destination_url` looks like a doc URL. If so, will also
   // set `stripped_destination_url` to avoid repeating the computation later.
   bool IsDocumentSuggestion();
+
+  // Returns true if this match may attach an `action`.
+  // This method is used to keep actions off of matches with types that don't
+  // mix well with Pedals or other actions (e.g. entities).
+  bool IsActionCompatible() const;
 
   // Gets data relevant to whether there should be any special keyword-related
   // UI shown for this match.  If this match represents a selected keyword, i.e.
@@ -664,6 +715,8 @@ struct AutocompleteMatch {
   GURL image_url;
 
   // Optional entity id for entity suggestions. Empty string means no entity ID.
+  // This is not meant for display, but internal use only. The actual UI display
+  // is controlled by the `type` and `image_url`.
   std::string entity_id;
 
   // Optional override to use for types that specify an icon sub-type.

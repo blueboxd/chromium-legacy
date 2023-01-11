@@ -14,13 +14,13 @@
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 class Browser;
-@class ChromeIdentity;
 namespace syncer {
 enum class TrustedVaultUserActionTriggerForUMA;
 }  // namespace syncer
 namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
+@protocol SystemIdentity;
 
 // Main class for sign-in coordinator. This class should not be instantiated
 // directly, this should be done using the class methods.
@@ -42,22 +42,11 @@ class PrefRegistrySyncable;
     userSigninCoordinatorWithBaseViewController:
         (UIViewController*)viewController
                                         browser:(Browser*)browser
-                                       identity:(ChromeIdentity*)identity
+                                       identity:(id<SystemIdentity>)identity
                                     accessPoint:
                                         (signin_metrics::AccessPoint)accessPoint
                                     promoAction:(signin_metrics::PromoAction)
                                                     promoAction;
-
-// Returns a coordinator for first run sign-in workflow. If the user tap on the
-// settings link to open the advanced settings sign-in, the SigninCoordinator
-// owner is in charge open this view, according to -[SigninCompletionInfo
-// signinCompletionAction] in `signinCompletionInfo` from `signinCompletion`.
-// `navigationController` presents the sign-in. Will be responsible for
-// dismissing itself upon sign-in completion.
-+ (instancetype)firstRunCoordinatorWithBaseNavigationController:
-                    (UINavigationController*)navigationController
-                                                        browser:
-                                                            (Browser*)browser;
 
 // Returns a coordinator for forced sign-in workflow.
 // `viewController` presents the sign-in.

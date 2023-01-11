@@ -166,14 +166,14 @@
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/lacros/account_manager/account_profile_mapper.h"
-#include "chrome/browser/ui/startup/lacros_first_run_service.h"
+#include "chrome/browser/ui/startup/first_run_service.h"
 #include "chromeos/startup/browser_params_proxy.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/ash/extensions/desk_api/desk_api_extension_manager.h"
 #include "chrome/browser/chromeos/extensions/contact_center_insights/contact_center_insights_extension_manager.h"
-#include "chrome/browser/chromeos/extensions/desk_api/desk_api_extension_manager.h"
 #endif
 
 using base::UserMetricsAction;
@@ -513,6 +513,21 @@ void RunCallbacks(std::vector<base::OnceCallback<void(Profile*)>>& callbacks,
   for (base::OnceCallback<void(Profile*)>& callback : callbacks)
     std::move(callback).Run(profile);
 }
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+void ClearPrimaryAccountForProfile(
+    base::WeakPtr<Profile> weak_profile,
+    signin_metrics::ProfileSignout signout_source_metric,
+    signin_metrics::SignoutDelete signout_delete_metric) {
+  Profile* profile = weak_profile.get();
+  if (!profile)
+    return;
+
+  IdentityManagerFactory::GetForProfile(profile)
+      ->GetPrimaryAccountMutator()
+      ->ClearPrimaryAccount(signout_source_metric, signout_delete_metric);
+}
+#endif
 
 }  // namespace
 
@@ -1635,7 +1650,8 @@ void ProfileManager::DoFinalInit(ProfileInfo* profile_info,
   // At this point, the user policy service and the child account service
   // had enough time to initialize and should have updated the user signout
   // flag attached to the profile.
-  signin_util::EnsureUserSignoutAllowedIsInitializedForProfile(profile);
+  signin_util::UserSignoutSetting::GetForProfile(profile)
+      ->InitializeUserSignoutSettingIfNeeded();
   PrimaryAccountPolicyManagerFactory::GetForProfile(profile)->Initialize();
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -1723,13 +1739,6 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   // because SyncService needs the URL context getter.
   UnifiedConsentServiceFactory::GetForProfile(profile);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!ash::ProfileHelper::IsSigninProfile(profile))
-    captions::LiveCaptionControllerFactory::GetForProfile(profile)->Init();
-#elif !BUILDFLAG(IS_ANDROID)  // !BUILDFLAG(IS_ANDROID) && !IS_CHROMEOS_ASH
-  captions::LiveCaptionControllerFactory::GetForProfile(profile)->Init();
-#endif
-
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_DICE_SUPPORT)
   signin_util::SigninWithCredentialProviderIfPossible(profile);
 #endif
@@ -1780,7 +1789,8 @@ ProfileManager::ProfileInfo::~ProfileInfo() {
   DCHECK(owned_profile_);
   DCHECK_EQ(owned_profile_.get(), unowned_profile_);
   unowned_profile_ = nullptr;
-  ProfileDestroyer::DestroyProfileWhenAppropriate(owned_profile_.release());
+  ProfileDestroyer::DestroyOriginalProfileWhenAppropriate(
+      std::move(owned_profile_));
 }
 
 // static
@@ -1789,6 +1799,17 @@ ProfileManager::ProfileInfo::FromUnownedProfile(Profile* profile) {
   // ProfileInfo's constructor is private, can't make_unique().
   std::unique_ptr<ProfileInfo> info(new ProfileInfo());
   info->unowned_profile_ = profile;
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Lacros primary profile should not be destroyed, this KeepAlive will be
+  // set and not expected to be removed at any point. On Secondary profiles, we
+  // do not set it to allow the profiles to be destroyed.
+  if (base::FeatureList::IsEnabled(features::kDestroyProfileOnBrowserClose) &&
+      Profile::IsMainProfilePath(info->unowned_profile_->GetPath())) {
+    info->keep_alives[ProfileKeepAliveOrigin::kLacrosMainProfile] = 1;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   return info;
 }
 
@@ -2279,16 +2300,10 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
               << !entry->CanBeManaged();
       if (signin_util::IsForceSigninEnabled() && could_be_managed_status &&
           !entry->CanBeManaged()) {
-        auto* account_mutator = identity_manager->GetPrimaryAccountMutator();
-
-        // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
-        DCHECK(account_mutator);
         content::GetUIThreadTaskRunner({})->PostTask(
             FROM_HERE,
             base::BindOnce(
-                base::IgnoreResult(
-                    &signin::PrimaryAccountMutator::ClearPrimaryAccount),
-                base::Unretained(account_mutator),
+                &ClearPrimaryAccountForProfile, profile->GetWeakPtr(),
                 signin_metrics::AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN,
                 signin_metrics::SignoutDelete::kIgnoreMetric));
       }
@@ -2339,7 +2354,7 @@ void ProfileManager::SetNonPersonalProfilePrefs(Profile* profile) {
 
 bool ProfileManager::ShouldGoOffTheRecord(Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!ash::ProfileHelper::IsRegularProfile(profile)) {
+  if (!ash::ProfileHelper::IsUserProfile(profile)) {
     return true;
   }
 #endif
@@ -2393,7 +2408,7 @@ void ProfileManager::OnBrowserOpened(Browser* browser) {
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // No browser should be opened before the FRE is finished.
-  DCHECK(!ShouldOpenPrimaryProfileFirstRun(profile));
+  DCHECK(!ShouldOpenFirstRun(profile));
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   if (!profile->IsOffTheRecord() &&

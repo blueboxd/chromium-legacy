@@ -89,7 +89,7 @@ AccessCodeCastSinkService::AccessCodeCastSinkService(
       media_routes_observer_(
           std::make_unique<AccessCodeMediaRoutesObserver>(media_router, this)),
       cast_media_sink_service_impl_(cast_media_sink_service_impl),
-      task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      task_runner_(base::SequencedTaskRunner::GetCurrentDefault()),
       network_monitor_(network_monitor),
       prefs_(prefs),
       identity_manager_(IdentityManagerFactory::GetForProfile(profile_)) {
@@ -331,6 +331,15 @@ void AccessCodeCastSinkService::OpenChannelIfNecessary(
         "The sink already exists in the media router, no channel "
         "needs to be opened.",
         sink.id());
+
+    // Only refresh data if this new sink came from typing in an access code.
+    if (sink.cast_data().discovery_type ==
+        CastDiscoveryType::kAccessCodeManualEntry) {
+      // We can't store the sink by ID, since that will pull the outdated
+      // information already in the media router.
+      StoreSinkInPrefs(&sink);
+      SetExpirationTimer(&sink);
+    }
 
     std::move(add_sink_callback).Run(AddSinkResultCode::OK, sink.id());
     return;

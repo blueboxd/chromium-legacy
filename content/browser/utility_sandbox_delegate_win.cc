@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file_path.h"
 #include "content/browser/utility_sandbox_delegate.h"
 
 #include "base/check.h"
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/services/screen_ai/public/cpp/utilities.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -37,8 +39,8 @@ bool AudioPreSpawnTarget(sandbox::TargetConfig* config) {
   //
   // For audio streams to create shared memory regions, lockdown level must be
   // at least USER_LIMITED and delayed integrity level INTEGRITY_LEVEL_LOW,
-  // otherwise CreateFileMapping() will fail with error code ERROR_ACCESS_DENIED
-  // (0x5).
+  // otherwise CreateFileMapping() will fail with error code
+  // ERROR_ACCESS_DENIED (0x5).
   //
   // For audio input streams to use ISimpleAudioVolume interface, lockdown
   // level must be set to USER_NON_ADMIN, otherwise
@@ -61,6 +63,18 @@ bool AudioPreSpawnTarget(sandbox::TargetConfig* config) {
                                  sandbox::USER_RESTRICTED_NON_ADMIN);
   if (result != sandbox::SBOX_ALL_OK)
     return false;
+
+  if (base::FeatureList::IsEnabled(
+          sandbox::policy::features::kChromePipeLockdown)) {
+    // The Audio Service process uses a base::SyncSocket for transmitting audio
+    // data.
+    result = config->AddRule(sandbox::SubSystem::kNamedPipes,
+                             sandbox::Semantics::kNamedPipesAllowAny,
+                             L"\\\\.\\pipe\\chrome.sync.*");
+    if (result != sandbox::SBOX_ALL_OK)
+      return false;
+  }
+
   config->SetDesktop(sandbox::Desktop::kAlternateWinstation);
 
   return true;
@@ -99,6 +113,7 @@ bool NetworkPreSpawnTarget(sandbox::TargetConfig* config) {
   return true;
 }
 
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
 // Sets the sandbox policy for the print backend service process.
 bool PrintBackendPreSpawnTarget(sandbox::TargetConfig* config) {
   DCHECK(!config->IsConfigured());
@@ -112,6 +127,7 @@ bool PrintBackendPreSpawnTarget(sandbox::TargetConfig* config) {
   config->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
   return true;
 }
+#endif
 
 std::string UtilityAppContainerId(base::CommandLine& cmd_line) {
   return base::WideToUTF8(cmd_line.GetProgram().value());
@@ -192,6 +208,35 @@ bool XrCompositingPreSpawnTarget(sandbox::TargetConfig* config,
 
   return true;
 }
+
+bool ScreenAIPreSpawnTarget(sandbox::TargetConfig* config,
+                            sandbox::mojom::Sandbox sandbox_type) {
+  DCHECK(!config->IsConfigured());
+
+  auto result = config->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
+                                      sandbox::USER_LOCKDOWN);
+  if (result != sandbox::SBOX_ALL_OK)
+    return false;
+
+  result = sandbox::policy::SandboxWin::SetJobLevel(
+      sandbox_type, sandbox::JobLevel::kLimitedUser, 0, config);
+  if (result != sandbox::SBOX_ALL_OK)
+    return false;
+
+  base::FilePath library_binary_path =
+      screen_ai::GetLatestComponentBinaryPath();
+  if (library_binary_path.empty())
+    return false;
+  DCHECK_EQ(library_binary_path.Extension(), FILE_PATH_LITERAL(".dll"));
+
+  // TODO(https://crbug.com/1278249): Preload the binary instead of giving
+  // read permission to the sandbox.
+  result = config->AddRule(sandbox::SubSystem::kFiles,
+                           sandbox::Semantics::kFilesAllowReadonly,
+                           library_binary_path.value().c_str());
+  return result == sandbox::SBOX_ALL_OK;
+}
+
 }  // namespace
 
 std::string UtilitySandboxedProcessLauncherDelegate::GetSandboxTag() {
@@ -264,6 +309,11 @@ bool UtilitySandboxedProcessLauncherDelegate::PreSpawnTarget(
         return false;
     }
 
+    if (sandbox_type_ == sandbox::mojom::Sandbox::kScreenAI) {
+      if (!ScreenAIPreSpawnTarget(config, sandbox_type_))
+        return false;
+    }
+
     if (sandbox_type_ == sandbox::mojom::Sandbox::kSpeechRecognition) {
       auto result = config->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
       if (result != sandbox::SBOX_ALL_OK)
@@ -298,7 +348,7 @@ bool UtilitySandboxedProcessLauncherDelegate::PreSpawnTarget(
       if (result != sandbox::SBOX_ALL_OK)
         return false;
     }
-#if BUILDFLAG(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
     if (sandbox_type_ == sandbox::mojom::Sandbox::kPrintBackend) {
       if (!PrintBackendPreSpawnTarget(config))
         return false;

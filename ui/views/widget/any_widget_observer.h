@@ -183,14 +183,14 @@ class VIEWS_EXPORT NamedWidgetShownWaiter {
   void OnAnyWidgetShown(Widget* widget);
 
   AnyWidgetObserver observer_;
-  raw_ptr<Widget> widget_ = nullptr;
+  raw_ptr<Widget, DanglingUntriaged> widget_ = nullptr;
   base::RunLoop run_loop_;
   const std::string name_;
 };
 
 class AnyWidgetPasskey {
  private:
-  AnyWidgetPasskey();
+  AnyWidgetPasskey();  // NOLINT
 
   // Add friend classes here that are allowed to use AnyWidgetObserver in
   // production code.

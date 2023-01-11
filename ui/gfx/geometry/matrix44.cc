@@ -4,271 +4,216 @@
 
 #include "ui/gfx/geometry/matrix44.h"
 
+#include <algorithm>
+#include <cmath>
 #include <type_traits>
 #include <utility>
 
-#include "build/build_config.h"
-
-#if BUILDFLAG(IS_MAC)
-#include <QuartzCore/CATransform3D.h>
-#endif
+#include "ui/gfx/geometry/decomposed_transform.h"
 
 namespace gfx {
 
-// Copying Matrix44 byte-wise is performance-critical to Blink. This class is
-// contained in several Transform classes, which are copied multiple times
-// during the rendering life cycle. See crbug.com/938563 for reference.
-#if defined(SK_BUILD_FOR_WIN) || defined(SK_BUILD_FOR_MAC)
-// std::is_trivially_copyable is not supported for some older clang versions,
-// which (at least as of this patch) are in use for Chromecast.
-static_assert(std::is_trivially_copyable<Matrix44>::value,
-              "Matrix44 must be trivially copyable");
-#endif
+namespace {
 
-static inline bool eq4(const SkScalar* SK_RESTRICT a,
-                       const SkScalar* SK_RESTRICT b) {
-  return (a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3]);
+ALWAYS_INLINE Double4 SwapHighLow(Double4 v) {
+  return Double4{v[2], v[3], v[0], v[1]};
 }
 
-bool Matrix44::operator==(const Matrix44& other) const {
-  if (this == &other) {
-    return true;
-  }
+ALWAYS_INLINE Double4 SwapInPairs(Double4 v) {
+  return Double4{v[1], v[0], v[3], v[2]};
+}
 
-  if (this->isIdentity() && other.isIdentity()) {
-    return true;
-  }
+// This is based on
+// https://github.com/niswegmann/small-matrix-inverse/blob/master/invert4x4_llvm.h,
+// which is based on Intel AP-928 "Streaming SIMD Extensions - Inverse of 4x4
+// Matrix": https://drive.google.com/file/d/0B9rh9tVI0J5mX1RUam5nZm85OFE/view.
+ALWAYS_INLINE bool InverseWithDouble4Cols(Double4& c0,
+                                          Double4& c1,
+                                          Double4& c2,
+                                          Double4& c3) {
+  // Note that r1 and r3 have components 2/3 and 0/1 swapped.
+  Double4 r0 = {c0[0], c1[0], c2[0], c3[0]};
+  Double4 r1 = {c2[1], c3[1], c0[1], c1[1]};
+  Double4 r2 = {c0[2], c1[2], c2[2], c3[2]};
+  Double4 r3 = {c2[3], c3[3], c0[3], c1[3]};
 
-  const SkScalar* SK_RESTRICT a = &fMat[0][0];
-  const SkScalar* SK_RESTRICT b = &other.fMat[0][0];
+  Double4 t = SwapInPairs(r2 * r3);
+  c0 = r1 * t;
+  c1 = r0 * t;
 
-#if 0
-    for (int i = 0; i < 16; ++i) {
-        if (a[i] != b[i]) {
-            return false;
-        }
+  t = SwapHighLow(t);
+  c0 = r1 * t - c0;
+  c1 = SwapHighLow(r0 * t - c1);
+
+  t = SwapInPairs(r1 * r2);
+  c0 += r3 * t;
+  c3 = r0 * t;
+
+  t = SwapHighLow(t);
+  c0 -= r3 * t;
+  c3 = SwapHighLow(r0 * t - c3);
+
+  t = SwapInPairs(SwapHighLow(r1) * r3);
+  r2 = SwapHighLow(r2);
+  c0 += r2 * t;
+  c2 = r0 * t;
+
+  t = SwapHighLow(t);
+  c0 -= r2 * t;
+
+  double det = Sum(r0 * c0);
+  if (!std::isnormal(static_cast<float>(det)))
+    return false;
+
+  c2 = SwapHighLow(r0 * t - c2);
+
+  t = SwapInPairs(r0 * r1);
+  c2 = r3 * t + c2;
+  c3 = r2 * t - c3;
+
+  t = SwapHighLow(t);
+  c2 = r3 * t - c2;
+  c3 -= r2 * t;
+
+  t = SwapInPairs(r0 * r3);
+  c1 -= r2 * t;
+  c2 = r1 * t + c2;
+
+  t = SwapHighLow(t);
+  c1 = r2 * t + c1;
+  c2 -= r1 * t;
+
+  t = SwapInPairs(r0 * r2);
+  c1 = r3 * t + c1;
+  c3 -= r1 * t;
+
+  t = SwapHighLow(t);
+  c1 -= r3 * t;
+  c3 = r1 * t + c3;
+
+  det = 1.0 / det;
+  c0 *= det;
+  c1 *= det;
+  c2 *= det;
+  c3 *= det;
+  return true;
+}
+
+}  // anonymous namespace
+
+void Matrix44::GetColMajor(double dst[16]) const {
+  const double* src = &matrix_[0][0];
+  std::copy(src, src + 16, dst);
+}
+
+void Matrix44::GetColMajorF(float dst[16]) const {
+  const double* src = &matrix_[0][0];
+  std::copy(src, src + 16, dst);
+}
+
+void Matrix44::PreTranslate(double dx, double dy) {
+  SetCol(3, Col(0) * dx + Col(1) * dy + Col(3));
+}
+
+void Matrix44::PreTranslate3d(double dx, double dy, double dz) {
+  if (AllTrue(Double4{dx, dy, dz, 0} == Double4{0, 0, 0, 0}))
+    return;
+
+  SetCol(3, Col(0) * dx + Col(1) * dy + Col(2) * dz + Col(3));
+}
+
+void Matrix44::PostTranslate(double dx, double dy) {
+  if (LIKELY(!HasPerspective())) {
+    matrix_[3][0] += dx;
+    matrix_[3][1] += dy;
+  } else {
+    if (dx != 0) {
+      matrix_[0][0] += matrix_[0][3] * dx;
+      matrix_[1][0] += matrix_[1][3] * dx;
+      matrix_[2][0] += matrix_[2][3] * dx;
+      matrix_[3][0] += matrix_[3][3] * dx;
     }
-    return true;
-#else
-  // to reduce branch instructions, we compare 4 at a time.
-  // see bench/Matrix44Bench.cpp for test.
-  if (!eq4(&a[0], &b[0])) {
-    return false;
+    if (dy != 0) {
+      matrix_[0][1] += matrix_[0][3] * dy;
+      matrix_[1][1] += matrix_[1][3] * dy;
+      matrix_[2][1] += matrix_[2][3] * dy;
+      matrix_[3][1] += matrix_[3][3] * dy;
+    }
   }
-  if (!eq4(&a[4], &b[4])) {
-    return false;
-  }
-  if (!eq4(&a[8], &b[8])) {
-    return false;
-  }
-  return eq4(&a[12], &b[12]);
-#endif
 }
 
-///////////////////////////////////////////////////////////////////////////////
-void Matrix44::recomputeTypeMask() {
-  if (0 != perspX() || 0 != perspY() || 0 != perspZ() || 1 != fMat[3][3]) {
-    fTypeMask =
-        kTranslate_Mask | kScale_Mask | kAffine_Mask | kPerspective_Mask;
+void Matrix44::PostTranslate3d(double dx, double dy, double dz) {
+  Double4 t{dx, dy, dz, 0};
+  if (AllTrue(t == Double4{0, 0, 0, 0}))
+    return;
+
+  if (LIKELY(!HasPerspective())) {
+    SetCol(3, Col(3) + t);
+  } else {
+    for (int i = 0; i < 4; ++i)
+      SetCol(i, Col(i) + t * matrix_[i][3]);
+  }
+}
+
+void Matrix44::PreScale(double sx, double sy) {
+  SetCol(0, Col(0) * sx);
+  SetCol(1, Col(1) * sy);
+}
+
+void Matrix44::PreScale3d(double sx, double sy, double sz) {
+  if (AllTrue(Double4{sx, sy, sz, 1} == Double4{1, 1, 1, 1}))
+    return;
+
+  SetCol(0, Col(0) * sx);
+  SetCol(1, Col(1) * sy);
+  SetCol(2, Col(2) * sz);
+}
+
+void Matrix44::PostScale(double sx, double sy) {
+  if (sx != 1) {
+    matrix_[0][0] *= sx;
+    matrix_[1][0] *= sx;
+    matrix_[2][0] *= sx;
+    matrix_[3][0] *= sx;
+  }
+  if (sy != 1) {
+    matrix_[0][1] *= sy;
+    matrix_[1][1] *= sy;
+    matrix_[2][1] *= sy;
+    matrix_[3][1] *= sy;
+  }
+}
+
+void Matrix44::PostScale3d(double sx, double sy, double sz) {
+  if (AllTrue(Double4{sx, sy, sz, 1} == Double4{1, 1, 1, 1}))
+    return;
+
+  Double4 s{sx, sy, sz, 1};
+  for (int i = 0; i < 4; i++)
+    SetCol(i, Col(i) * s);
+}
+
+void Matrix44::RotateUnitSinCos(double x,
+                                double y,
+                                double z,
+                                double sin_angle,
+                                double cos_angle) {
+  // Optimize cases where the axis is along a major axis. Since we've already
+  // normalized the vector we don't need to check that the other two dimensions
+  // are zero. Tiny errors of the other two dimensions are ignored.
+  if (z == 1.0) {
+    RotateAboutZAxisSinCos(sin_angle, cos_angle);
+    return;
+  }
+  if (y == 1.0) {
+    RotateAboutYAxisSinCos(sin_angle, cos_angle);
+    return;
+  }
+  if (x == 1.0) {
+    RotateAboutXAxisSinCos(sin_angle, cos_angle);
     return;
   }
 
-  TypeMask mask = kIdentity_Mask;
-  if (0 != transX() || 0 != transY() || 0 != transZ()) {
-    mask |= kTranslate_Mask;
-  }
-
-  if (1 != scaleX() || 1 != scaleY() || 1 != scaleZ()) {
-    mask |= kScale_Mask;
-  }
-
-  if (0 != fMat[1][0] || 0 != fMat[0][1] || 0 != fMat[0][2] ||
-      0 != fMat[2][0] || 0 != fMat[1][2] || 0 != fMat[2][1]) {
-    mask |= kAffine_Mask;
-  }
-  fTypeMask = mask;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void Matrix44::getColMajor(float dst[]) const {
-  const SkScalar* src = &fMat[0][0];
-  for (int i = 0; i < 16; ++i) {
-    dst[i] = src[i];
-  }
-}
-
-void Matrix44::getRowMajor(float dst[]) const {
-  const SkScalar* src = &fMat[0][0];
-  for (int i = 0; i < 4; ++i) {
-    dst[0] = float(src[0]);
-    dst[4] = float(src[1]);
-    dst[8] = float(src[2]);
-    dst[12] = float(src[3]);
-    src += 4;
-    dst += 1;
-  }
-}
-
-void Matrix44::setColMajor(const float src[]) {
-  SkScalar* dst = &fMat[0][0];
-  for (int i = 0; i < 16; ++i) {
-    dst[i] = src[i];
-  }
-
-  this->recomputeTypeMask();
-}
-
-void Matrix44::setRowMajor(const float src[]) {
-  SkScalar* dst = &fMat[0][0];
-  for (int i = 0; i < 4; ++i) {
-    dst[0] = src[0];
-    dst[4] = src[1];
-    dst[8] = src[2];
-    dst[12] = src[3];
-    src += 4;
-    dst += 1;
-  }
-  this->recomputeTypeMask();
-}
-
-#if BUILDFLAG(IS_MAC)
-CATransform3D Matrix44::ToCATransform3D() const {
-  CATransform3D result;
-  const float* src = &fMat[0][0];
-  auto* dst = &result.m11;
-  for (int i = 0; i < 16; ++i)
-    dst[i] = src[i];
-  return result;
-}
-#endif  // BUILDFLAG(IS_MAC)
-
-///////////////////////////////////////////////////////////////////////////////
-
-void Matrix44::setIdentity() {
-  fMat[0][0] = 1;
-  fMat[0][1] = 0;
-  fMat[0][2] = 0;
-  fMat[0][3] = 0;
-  fMat[1][0] = 0;
-  fMat[1][1] = 1;
-  fMat[1][2] = 0;
-  fMat[1][3] = 0;
-  fMat[2][0] = 0;
-  fMat[2][1] = 0;
-  fMat[2][2] = 1;
-  fMat[2][3] = 0;
-  fMat[3][0] = 0;
-  fMat[3][1] = 0;
-  fMat[3][2] = 0;
-  fMat[3][3] = 1;
-  this->setTypeMask(kIdentity_Mask);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-Matrix44& Matrix44::setTranslate(SkScalar dx, SkScalar dy, SkScalar dz) {
-  this->setIdentity();
-
-  if (!dx && !dy && !dz) {
-    return *this;
-  }
-
-  fMat[3][0] = dx;
-  fMat[3][1] = dy;
-  fMat[3][2] = dz;
-  this->setTypeMask(kTranslate_Mask);
-  return *this;
-}
-
-Matrix44& Matrix44::preTranslate(SkScalar dx, SkScalar dy, SkScalar dz) {
-  if (!dx && !dy && !dz) {
-    return *this;
-  }
-
-  for (int i = 0; i < 4; ++i) {
-    fMat[3][i] =
-        fMat[0][i] * dx + fMat[1][i] * dy + fMat[2][i] * dz + fMat[3][i];
-  }
-  this->recomputeTypeMask();
-  return *this;
-}
-
-Matrix44& Matrix44::postTranslate(SkScalar dx, SkScalar dy, SkScalar dz) {
-  if (!dx && !dy && !dz) {
-    return *this;
-  }
-
-  if (this->getType() & kPerspective_Mask) {
-    for (int i = 0; i < 4; ++i) {
-      fMat[i][0] += fMat[i][3] * dx;
-      fMat[i][1] += fMat[i][3] * dy;
-      fMat[i][2] += fMat[i][3] * dz;
-    }
-  } else {
-    fMat[3][0] += dx;
-    fMat[3][1] += dy;
-    fMat[3][2] += dz;
-    this->recomputeTypeMask();
-  }
-  return *this;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-Matrix44& Matrix44::setScale(SkScalar sx, SkScalar sy, SkScalar sz) {
-  this->setIdentity();
-
-  if (1 == sx && 1 == sy && 1 == sz) {
-    return *this;
-  }
-
-  fMat[0][0] = sx;
-  fMat[1][1] = sy;
-  fMat[2][2] = sz;
-  this->setTypeMask(kScale_Mask);
-  return *this;
-}
-
-Matrix44& Matrix44::preScale(SkScalar sx, SkScalar sy, SkScalar sz) {
-  if (1 == sx && 1 == sy && 1 == sz) {
-    return *this;
-  }
-
-  // The implementation matrix * pureScale can be shortcut
-  // by knowing that pureScale components effectively scale
-  // the columns of the original matrix.
-  for (int i = 0; i < 4; i++) {
-    fMat[0][i] *= sx;
-    fMat[1][i] *= sy;
-    fMat[2][i] *= sz;
-  }
-  this->recomputeTypeMask();
-  return *this;
-}
-
-Matrix44& Matrix44::postScale(SkScalar sx, SkScalar sy, SkScalar sz) {
-  if (1 == sx && 1 == sy && 1 == sz) {
-    return *this;
-  }
-
-  for (int i = 0; i < 4; i++) {
-    fMat[i][0] *= sx;
-    fMat[i][1] *= sy;
-    fMat[i][2] *= sz;
-  }
-  this->recomputeTypeMask();
-  return *this;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void Matrix44::setRotateUnitSinCos(SkScalar x,
-                                   SkScalar y,
-                                   SkScalar z,
-                                   SkScalar sin_angle,
-                                   SkScalar cos_angle) {
-  // Use double precision for intermediate results.
   double c = cos_angle;
   double s = sin_angle;
   double C = 1 - c;
@@ -282,456 +227,519 @@ void Matrix44::setRotateUnitSinCos(SkScalar x,
   double yzC = y * zC;
   double zxC = z * xC;
 
-  fMat[0][0] = SkDoubleToScalar(x * xC + c);
-  fMat[0][1] = SkDoubleToScalar(xyC + zs);
-  fMat[0][2] = SkDoubleToScalar(zxC - ys);
-  fMat[0][3] = SkDoubleToScalar(0);
-  fMat[1][0] = SkDoubleToScalar(xyC - zs);
-  fMat[1][1] = SkDoubleToScalar(y * yC + c);
-  fMat[1][2] = SkDoubleToScalar(yzC + xs);
-  fMat[1][3] = SkDoubleToScalar(0);
-  fMat[2][0] = SkDoubleToScalar(zxC + ys);
-  fMat[2][1] = SkDoubleToScalar(yzC - xs);
-  fMat[2][2] = SkDoubleToScalar(z * zC + c);
-  fMat[2][3] = SkDoubleToScalar(0);
-  fMat[3][0] = SkDoubleToScalar(0);
-  fMat[3][1] = SkDoubleToScalar(0);
-  fMat[3][2] = SkDoubleToScalar(0);
-  fMat[3][3] = SkDoubleToScalar(1);
-
-  this->recomputeTypeMask();
+  PreConcat(Matrix44(x * xC + c, xyC + zs, zxC - ys, 0,  // col 0
+                     xyC - zs, y * yC + c, yzC + xs, 0,  // col 1
+                     zxC + ys, yzC - xs, z * zC + c, 0,  // col 2
+                     0, 0, 0, 1));                       // col 3
 }
 
-void Matrix44::setRotateAboutXAxisSinCos(SkScalar sin_angle,
-                                         SkScalar cos_angle) {
-  fMat[0][0] = 1;
-  fMat[0][1] = 0;
-  fMat[0][2] = 0;
-  fMat[0][3] = 0;
-  fMat[1][0] = 0;
-  fMat[1][1] = cos_angle;
-  fMat[1][2] = sin_angle;
-  fMat[1][3] = 0;
-  fMat[2][0] = 0;
-  fMat[2][1] = -sin_angle;
-  fMat[2][2] = cos_angle;
-  fMat[2][3] = 0;
-  fMat[3][0] = 0;
-  fMat[3][1] = 0;
-  fMat[3][2] = 0;
-  fMat[3][3] = 1;
-
-  this->recomputeTypeMask();
+void Matrix44::RotateAboutXAxisSinCos(double sin_angle, double cos_angle) {
+  Double4 c1 = Col(1);
+  Double4 c2 = Col(2);
+  SetCol(1, c1 * cos_angle + c2 * sin_angle);
+  SetCol(2, c2 * cos_angle - c1 * sin_angle);
 }
 
-void Matrix44::setRotateAboutYAxisSinCos(SkScalar sin_angle,
-                                         SkScalar cos_angle) {
-  fMat[0][0] = cos_angle;
-  fMat[0][1] = 0;
-  fMat[0][2] = -sin_angle;
-  fMat[0][3] = 0;
-  fMat[1][0] = 0;
-  fMat[1][1] = 1;
-  fMat[1][2] = 0;
-  fMat[1][3] = 0;
-  fMat[2][0] = sin_angle;
-  fMat[2][1] = 0;
-  fMat[2][2] = cos_angle;
-  fMat[2][3] = 0;
-  fMat[3][0] = 0;
-  fMat[3][1] = 0;
-  fMat[3][2] = 0;
-  fMat[3][3] = 1;
-
-  this->recomputeTypeMask();
+void Matrix44::RotateAboutYAxisSinCos(double sin_angle, double cos_angle) {
+  Double4 c0 = Col(0);
+  Double4 c2 = Col(2);
+  SetCol(0, c0 * cos_angle - c2 * sin_angle);
+  SetCol(2, c2 * cos_angle + c0 * sin_angle);
 }
 
-void Matrix44::setRotateAboutZAxisSinCos(SkScalar sin_angle,
-                                         SkScalar cos_angle) {
-  fMat[0][0] = cos_angle;
-  fMat[0][1] = sin_angle;
-  fMat[0][2] = 0;
-  fMat[0][3] = 0;
-  fMat[1][0] = -sin_angle;
-  fMat[1][1] = cos_angle;
-  fMat[1][2] = 0;
-  fMat[1][3] = 0;
-  fMat[2][0] = 0;
-  fMat[2][1] = 0;
-  fMat[2][2] = 1;
-  fMat[2][3] = 0;
-  fMat[3][0] = 0;
-  fMat[3][1] = 0;
-  fMat[3][2] = 0;
-  fMat[3][3] = 1;
-
-  this->recomputeTypeMask();
+void Matrix44::RotateAboutZAxisSinCos(double sin_angle, double cos_angle) {
+  Double4 c0 = Col(0);
+  Double4 c1 = Col(1);
+  SetCol(0, c0 * cos_angle + c1 * sin_angle);
+  SetCol(1, c1 * cos_angle - c0 * sin_angle);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-static bool bits_isonly(int value, int mask) {
-  return 0 == (value & ~mask);
+void Matrix44::Skew(double tan_skew_x, double tan_skew_y) {
+  Double4 c0 = Col(0);
+  Double4 c1 = Col(1);
+  SetCol(0, c0 + c1 * tan_skew_y);
+  SetCol(1, c1 + c0 * tan_skew_x);
 }
 
-void Matrix44::setConcat(const Matrix44& a, const Matrix44& b) {
-  const Matrix44::TypeMask a_mask = a.getType();
-  const Matrix44::TypeMask b_mask = b.getType();
+void Matrix44::ApplyDecomposedSkews(const double skews[3]) {
+  Double4 c0 = Col(0);
+  Double4 c1 = Col(1);
+  Double4 c2 = Col(2);
+  //                  / |1 0 0  0|   |1 0 s1 0|   |1 s0 0 0|   |1 s0 s1 0| \
+  // |c0 c1 c2 c3| * |  |0 1 s2 0| * |0 1  0 0| * |0  1 0 0| = |0  1 s2 0|  |
+  //                 |  |0 0 1  0|   |0 0  1 0|   |0  0 1 0|   |0  0  1 0|  |
+  //                  \ |0 0 0  1|   |0 0  0 1|   |0  0 0 1|   |0  0  0 1| /
+  SetCol(1, c1 + c0 * skews[0]);
+  SetCol(2, c0 * skews[1] + c1 * skews[2] + c2);
+}
 
-  if (kIdentity_Mask == a_mask) {
-    *this = b;
-    return;
-  }
-  if (kIdentity_Mask == b_mask) {
-    *this = a;
+void Matrix44::ApplyPerspectiveDepth(double perspective) {
+  DCHECK_NE(perspective, 0.0);
+  SetCol(2, Col(2) + Col(3) * (-1.0 / perspective));
+}
+
+void Matrix44::SetConcat(const Matrix44& x, const Matrix44& y) {
+  if (x.Is2dTransform() && y.Is2dTransform()) {
+    double a = x.matrix_[0][0];
+    double b = x.matrix_[0][1];
+    double c = x.matrix_[1][0];
+    double d = x.matrix_[1][1];
+    double e = x.matrix_[3][0];
+    double f = x.matrix_[3][1];
+    double ya = y.matrix_[0][0];
+    double yb = y.matrix_[0][1];
+    double yc = y.matrix_[1][0];
+    double yd = y.matrix_[1][1];
+    double ye = y.matrix_[3][0];
+    double yf = y.matrix_[3][1];
+    *this = Matrix44(a * ya + c * yb, b * ya + d * yb, 0, 0,           // col 0
+                     a * yc + c * yd, b * yc + d * yd, 0, 0,           // col 1
+                     0, 0, 1, 0,                                       // col 2
+                     a * ye + c * yf + e, b * ye + d * yf + f, 0, 1);  // col 3
     return;
   }
 
-  bool useStorage = (this == &a || this == &b);
-  SkScalar storage[16];
-  SkScalar* result = useStorage ? storage : &fMat[0][0];
+  auto c0 = x.Col(0);
+  auto c1 = x.Col(1);
+  auto c2 = x.Col(2);
+  auto c3 = x.Col(3);
 
-  // Both matrices are at most scale+translate
-  if (bits_isonly(a_mask | b_mask, kScale_Mask | kTranslate_Mask)) {
-    result[0] = a.fMat[0][0] * b.fMat[0][0];
-    result[1] = result[2] = result[3] = result[4] = 0;
-    result[5] = a.fMat[1][1] * b.fMat[1][1];
-    result[6] = result[7] = result[8] = result[9] = 0;
-    result[10] = a.fMat[2][2] * b.fMat[2][2];
-    result[11] = 0;
-    result[12] = a.fMat[0][0] * b.fMat[3][0] + a.fMat[3][0];
-    result[13] = a.fMat[1][1] * b.fMat[3][1] + a.fMat[3][1];
-    result[14] = a.fMat[2][2] * b.fMat[3][2] + a.fMat[3][2];
-    result[15] = 1;
-  } else {
-    for (int j = 0; j < 4; j++) {
-      for (int i = 0; i < 4; i++) {
-        double value = 0;
-        for (int k = 0; k < 4; k++) {
-          value += double(a.fMat[k][i]) * b.fMat[j][k];
-        }
-        *result++ = SkScalar(value);
-      }
-    }
-  }
+  auto mc0 = y.Col(0);
+  auto mc1 = y.Col(1);
+  auto mc2 = y.Col(2);
+  auto mc3 = y.Col(3);
 
-  if (useStorage) {
-    memcpy(fMat, storage, sizeof(storage));
-  }
-  this->recomputeTypeMask();
+  SetCol(0, c0 * mc0[0] + c1 * mc0[1] + c2 * mc0[2] + c3 * mc0[3]);
+  SetCol(1, c0 * mc1[0] + c1 * mc1[1] + c2 * mc1[2] + c3 * mc1[3]);
+  SetCol(2, c0 * mc2[0] + c1 * mc2[1] + c2 * mc2[2] + c3 * mc2[3]);
+  SetCol(3, c0 * mc3[0] + c1 * mc3[1] + c2 * mc3[2] + c3 * mc3[3]);
 }
 
-///////////////////////////////////////////////////////////////////////////////
+bool Matrix44::GetInverse(Matrix44& result) const {
+  if (Is2dTransform()) {
+    double determinant = Determinant();
+    if (!std::isnormal(static_cast<float>(determinant)))
+      return false;
 
-/** We always perform the calculation in doubles, to avoid prematurely losing
-    precision along the way. This relies on the compiler automatically
-    promoting our SkScalar values to double (if needed).
- */
-double Matrix44::determinant() const {
-  if (this->isIdentity()) {
-    return 1;
-  }
-  if (this->isScaleTranslate()) {
-    return fMat[0][0] * fMat[1][1] * fMat[2][2] * fMat[3][3];
-  }
-
-  double a00 = fMat[0][0];
-  double a01 = fMat[0][1];
-  double a02 = fMat[0][2];
-  double a03 = fMat[0][3];
-  double a10 = fMat[1][0];
-  double a11 = fMat[1][1];
-  double a12 = fMat[1][2];
-  double a13 = fMat[1][3];
-  double a20 = fMat[2][0];
-  double a21 = fMat[2][1];
-  double a22 = fMat[2][2];
-  double a23 = fMat[2][3];
-  double a30 = fMat[3][0];
-  double a31 = fMat[3][1];
-  double a32 = fMat[3][2];
-  double a33 = fMat[3][3];
-
-  double b00 = a00 * a11 - a01 * a10;
-  double b01 = a00 * a12 - a02 * a10;
-  double b02 = a00 * a13 - a03 * a10;
-  double b03 = a01 * a12 - a02 * a11;
-  double b04 = a01 * a13 - a03 * a11;
-  double b05 = a02 * a13 - a03 * a12;
-  double b06 = a20 * a31 - a21 * a30;
-  double b07 = a20 * a32 - a22 * a30;
-  double b08 = a20 * a33 - a23 * a30;
-  double b09 = a21 * a32 - a22 * a31;
-  double b10 = a21 * a33 - a23 * a31;
-  double b11 = a22 * a33 - a23 * a32;
-
-  // Calculate the determinant
-  return b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-static bool is_matrix_finite(const Matrix44& matrix) {
-  SkScalar accumulator = 0;
-  for (int row = 0; row < 4; ++row) {
-    for (int col = 0; col < 4; ++col) {
-      accumulator *= matrix.rc(row, col);
-    }
-  }
-  return accumulator == 0;
-}
-
-bool Matrix44::invert(Matrix44* storage) const {
-  if (this->isIdentity()) {
-    if (storage) {
-      storage->setIdentity();
-    }
+    double inv_det = 1.0 / determinant;
+    double a = matrix_[0][0];
+    double b = matrix_[0][1];
+    double c = matrix_[1][0];
+    double d = matrix_[1][1];
+    double e = matrix_[3][0];
+    double f = matrix_[3][1];
+    result = Matrix44(d * inv_det, -b * inv_det, 0, 0,  // col 0
+                      -c * inv_det, a * inv_det, 0, 0,  // col 1
+                      0, 0, 1, 0,                       // col 2
+                      (c * f - d * e) * inv_det, (b * e - a * f) * inv_det, 0,
+                      1);  // col 3
     return true;
   }
 
-  if (this->isTranslate()) {
-    if (storage) {
-      storage->setTranslate(-fMat[3][0], -fMat[3][1], -fMat[3][2]);
-    }
-    return true;
-  }
+  Double4 c0 = Col(0);
+  Double4 c1 = Col(1);
+  Double4 c2 = Col(2);
+  Double4 c3 = Col(3);
 
-  Matrix44 tmp;
-  // Use storage if it's available and distinct from this matrix.
-  Matrix44* inverse = (storage && storage != this) ? storage : &tmp;
-  if (this->isScaleTranslate()) {
-    if (0 == fMat[0][0] * fMat[1][1] * fMat[2][2]) {
-      return false;
-    }
-
-    double invXScale = 1 / fMat[0][0];
-    double invYScale = 1 / fMat[1][1];
-    double invZScale = 1 / fMat[2][2];
-
-    inverse->fMat[0][0] = SkDoubleToScalar(invXScale);
-    inverse->fMat[0][1] = 0;
-    inverse->fMat[0][2] = 0;
-    inverse->fMat[0][3] = 0;
-
-    inverse->fMat[1][0] = 0;
-    inverse->fMat[1][1] = SkDoubleToScalar(invYScale);
-    inverse->fMat[1][2] = 0;
-    inverse->fMat[1][3] = 0;
-
-    inverse->fMat[2][0] = 0;
-    inverse->fMat[2][1] = 0;
-    inverse->fMat[2][2] = SkDoubleToScalar(invZScale);
-    inverse->fMat[2][3] = 0;
-
-    inverse->fMat[3][0] = SkDoubleToScalar(-fMat[3][0] * invXScale);
-    inverse->fMat[3][1] = SkDoubleToScalar(-fMat[3][1] * invYScale);
-    inverse->fMat[3][2] = SkDoubleToScalar(-fMat[3][2] * invZScale);
-    inverse->fMat[3][3] = 1;
-
-    inverse->setTypeMask(this->getType());
-
-    if (!is_matrix_finite(*inverse)) {
-      return false;
-    }
-    if (storage && inverse != storage) {
-      *storage = *inverse;
-    }
-    return true;
-  }
-
-  double a00 = fMat[0][0];
-  double a01 = fMat[0][1];
-  double a02 = fMat[0][2];
-  double a03 = fMat[0][3];
-  double a10 = fMat[1][0];
-  double a11 = fMat[1][1];
-  double a12 = fMat[1][2];
-  double a13 = fMat[1][3];
-  double a20 = fMat[2][0];
-  double a21 = fMat[2][1];
-  double a22 = fMat[2][2];
-  double a23 = fMat[2][3];
-  double a30 = fMat[3][0];
-  double a31 = fMat[3][1];
-  double a32 = fMat[3][2];
-  double a33 = fMat[3][3];
-
-  if (!(this->getType() & kPerspective_Mask)) {
-    // If we know the matrix has no perspective, then the perspective
-    // component is (0, 0, 0, 1). We can use this information to save a lot
-    // of arithmetic that would otherwise be spent to compute the inverse
-    // of a general matrix.
-
-    SkASSERT(a03 == 0);
-    SkASSERT(a13 == 0);
-    SkASSERT(a23 == 0);
-    SkASSERT(a33 == 1);
-
-    double b00 = a00 * a11 - a01 * a10;
-    double b01 = a00 * a12 - a02 * a10;
-    double b03 = a01 * a12 - a02 * a11;
-    double b06 = a20 * a31 - a21 * a30;
-    double b07 = a20 * a32 - a22 * a30;
-    double b08 = a20;
-    double b09 = a21 * a32 - a22 * a31;
-    double b10 = a21;
-    double b11 = a22;
-
-    // Calculate the determinant
-    double det = b00 * b11 - b01 * b10 + b03 * b08;
-
-    double invdet = sk_ieee_double_divide(1.0, det);
-    // If det is zero, we want to return false. However, we also want to return
-    // false if 1/det overflows to infinity (i.e. det is denormalized). Both of
-    // these are handled by checking that 1/det is finite.
-    if (!sk_float_isfinite(sk_double_to_float(invdet))) {
-      return false;
-    }
-
-    b00 *= invdet;
-    b01 *= invdet;
-    b03 *= invdet;
-    b06 *= invdet;
-    b07 *= invdet;
-    b08 *= invdet;
-    b09 *= invdet;
-    b10 *= invdet;
-    b11 *= invdet;
-
-    inverse->fMat[0][0] = SkDoubleToScalar(a11 * b11 - a12 * b10);
-    inverse->fMat[0][1] = SkDoubleToScalar(a02 * b10 - a01 * b11);
-    inverse->fMat[0][2] = SkDoubleToScalar(b03);
-    inverse->fMat[0][3] = 0;
-    inverse->fMat[1][0] = SkDoubleToScalar(a12 * b08 - a10 * b11);
-    inverse->fMat[1][1] = SkDoubleToScalar(a00 * b11 - a02 * b08);
-    inverse->fMat[1][2] = SkDoubleToScalar(-b01);
-    inverse->fMat[1][3] = 0;
-    inverse->fMat[2][0] = SkDoubleToScalar(a10 * b10 - a11 * b08);
-    inverse->fMat[2][1] = SkDoubleToScalar(a01 * b08 - a00 * b10);
-    inverse->fMat[2][2] = SkDoubleToScalar(b00);
-    inverse->fMat[2][3] = 0;
-    inverse->fMat[3][0] = SkDoubleToScalar(a11 * b07 - a10 * b09 - a12 * b06);
-    inverse->fMat[3][1] = SkDoubleToScalar(a00 * b09 - a01 * b07 + a02 * b06);
-    inverse->fMat[3][2] = SkDoubleToScalar(a31 * b01 - a30 * b03 - a32 * b00);
-    inverse->fMat[3][3] = 1;
-
-    inverse->setTypeMask(this->getType());
-    if (!is_matrix_finite(*inverse)) {
-      return false;
-    }
-    if (storage && inverse != storage) {
-      *storage = *inverse;
-    }
-    return true;
-  }
-
-  double b00 = a00 * a11 - a01 * a10;
-  double b01 = a00 * a12 - a02 * a10;
-  double b02 = a00 * a13 - a03 * a10;
-  double b03 = a01 * a12 - a02 * a11;
-  double b04 = a01 * a13 - a03 * a11;
-  double b05 = a02 * a13 - a03 * a12;
-  double b06 = a20 * a31 - a21 * a30;
-  double b07 = a20 * a32 - a22 * a30;
-  double b08 = a20 * a33 - a23 * a30;
-  double b09 = a21 * a32 - a22 * a31;
-  double b10 = a21 * a33 - a23 * a31;
-  double b11 = a22 * a33 - a23 * a32;
-
-  // Calculate the determinant
-  double det =
-      b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
-
-  double invdet = sk_ieee_double_divide(1.0, det);
-  // If det is zero, we want to return false. However, we also want to return
-  // false if 1/det overflows to infinity (i.e. det is denormalized). Both of
-  // these are handled by checking that 1/det is finite.
-  if (!sk_float_isfinite(sk_double_to_float(invdet))) {
+  if (!InverseWithDouble4Cols(c0, c1, c2, c3))
     return false;
-  }
 
-  b00 *= invdet;
-  b01 *= invdet;
-  b02 *= invdet;
-  b03 *= invdet;
-  b04 *= invdet;
-  b05 *= invdet;
-  b06 *= invdet;
-  b07 *= invdet;
-  b08 *= invdet;
-  b09 *= invdet;
-  b10 *= invdet;
-  b11 *= invdet;
-
-  inverse->fMat[0][0] = SkDoubleToScalar(a11 * b11 - a12 * b10 + a13 * b09);
-  inverse->fMat[0][1] = SkDoubleToScalar(a02 * b10 - a01 * b11 - a03 * b09);
-  inverse->fMat[0][2] = SkDoubleToScalar(a31 * b05 - a32 * b04 + a33 * b03);
-  inverse->fMat[0][3] = SkDoubleToScalar(a22 * b04 - a21 * b05 - a23 * b03);
-  inverse->fMat[1][0] = SkDoubleToScalar(a12 * b08 - a10 * b11 - a13 * b07);
-  inverse->fMat[1][1] = SkDoubleToScalar(a00 * b11 - a02 * b08 + a03 * b07);
-  inverse->fMat[1][2] = SkDoubleToScalar(a32 * b02 - a30 * b05 - a33 * b01);
-  inverse->fMat[1][3] = SkDoubleToScalar(a20 * b05 - a22 * b02 + a23 * b01);
-  inverse->fMat[2][0] = SkDoubleToScalar(a10 * b10 - a11 * b08 + a13 * b06);
-  inverse->fMat[2][1] = SkDoubleToScalar(a01 * b08 - a00 * b10 - a03 * b06);
-  inverse->fMat[2][2] = SkDoubleToScalar(a30 * b04 - a31 * b02 + a33 * b00);
-  inverse->fMat[2][3] = SkDoubleToScalar(a21 * b02 - a20 * b04 - a23 * b00);
-  inverse->fMat[3][0] = SkDoubleToScalar(a11 * b07 - a10 * b09 - a12 * b06);
-  inverse->fMat[3][1] = SkDoubleToScalar(a00 * b09 - a01 * b07 + a02 * b06);
-  inverse->fMat[3][2] = SkDoubleToScalar(a31 * b01 - a30 * b03 - a32 * b00);
-  inverse->fMat[3][3] = SkDoubleToScalar(a20 * b03 - a21 * b01 + a22 * b00);
-  inverse->setTypeMask(this->getType());
-  if (!is_matrix_finite(*inverse)) {
-    return false;
-  }
-  if (storage && inverse != storage) {
-    *storage = *inverse;
-  }
+  result.SetCol(0, c0);
+  result.SetCol(1, c1);
+  result.SetCol(2, c2);
+  result.SetCol(3, c3);
   return true;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-void Matrix44::transpose() {
-  if (!this->isIdentity()) {
-    using std::swap;
-    swap(fMat[0][1], fMat[1][0]);
-    swap(fMat[0][2], fMat[2][0]);
-    swap(fMat[0][3], fMat[3][0]);
-    swap(fMat[1][2], fMat[2][1]);
-    swap(fMat[1][3], fMat[3][1]);
-    swap(fMat[2][3], fMat[3][2]);
-    this->recomputeTypeMask();
-  }
+bool Matrix44::IsInvertible() const {
+  return std::isnormal(static_cast<float>(Determinant()));
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// This is a simplified version of InverseWithDouble4Cols().
+double Matrix44::Determinant() const {
+  if (Is2dTransform())
+    return matrix_[0][0] * matrix_[1][1] - matrix_[0][1] * matrix_[1][0];
 
-void Matrix44::mapScalars(const SkScalar src[4], SkScalar dst[4]) const {
-  SkScalar storage[4];
-  SkScalar* result = (src == dst) ? storage : dst;
+  Double4 c0 = Col(0);
+  Double4 c1 = Col(1);
+  Double4 c2 = Col(2);
+  Double4 c3 = Col(3);
 
-  for (int i = 0; i < 4; i++) {
-    SkScalar value = 0;
-    for (int j = 0; j < 4; j++) {
-      value += fMat[j][i] * src[j];
+  // Note that r1 and r3 have components 2/3 and 0/1 swapped.
+  Double4 r0 = {c0[0], c1[0], c2[0], c3[0]};
+  Double4 r1 = {c2[1], c3[1], c0[1], c1[1]};
+  Double4 r2 = {c0[2], c1[2], c2[2], c3[2]};
+  Double4 r3 = {c2[3], c3[3], c0[3], c1[3]};
+
+  Double4 t = SwapInPairs(r2 * r3);
+  c0 = r1 * t;
+  t = SwapHighLow(t);
+  c0 = r1 * t - c0;
+  t = SwapInPairs(r1 * r2);
+  c0 += r3 * t;
+  t = SwapHighLow(t);
+  c0 -= r3 * t;
+  t = SwapInPairs(SwapHighLow(r1) * r3);
+  r2 = SwapHighLow(r2);
+  c0 += r2 * t;
+  t = SwapHighLow(t);
+  c0 -= r2 * t;
+
+  return Sum(r0 * c0);
+}
+
+void Matrix44::Transpose() {
+  using std::swap;
+  swap(matrix_[0][1], matrix_[1][0]);
+  swap(matrix_[0][2], matrix_[2][0]);
+  swap(matrix_[0][3], matrix_[3][0]);
+  swap(matrix_[1][2], matrix_[2][1]);
+  swap(matrix_[1][3], matrix_[3][1]);
+  swap(matrix_[2][3], matrix_[3][2]);
+}
+
+void Matrix44::Zoom(double zoom_factor) {
+  matrix_[0][3] /= zoom_factor;
+  matrix_[1][3] /= zoom_factor;
+  matrix_[2][3] /= zoom_factor;
+  matrix_[3][0] *= zoom_factor;
+  matrix_[3][1] *= zoom_factor;
+  matrix_[3][2] *= zoom_factor;
+}
+
+double Matrix44::MapVector2(double vec[2]) const {
+  double v0 = vec[0];
+  double v1 = vec[1];
+  double x = v0 * matrix_[0][0] + v1 * matrix_[1][0] + matrix_[3][0];
+  double y = v0 * matrix_[0][1] + v1 * matrix_[1][1] + matrix_[3][1];
+  double w = v0 * matrix_[0][3] + v1 * matrix_[1][3] + matrix_[3][3];
+  vec[0] = x;
+  vec[1] = y;
+  return w;
+}
+
+void Matrix44::MapVector4(double vec[4]) const {
+  Double4 v = LoadDouble4(vec);
+  Double4 r0{matrix_[0][0], matrix_[1][0], matrix_[2][0], matrix_[3][0]};
+  Double4 r1{matrix_[0][1], matrix_[1][1], matrix_[2][1], matrix_[3][1]};
+  Double4 r2{matrix_[0][2], matrix_[1][2], matrix_[2][2], matrix_[3][2]};
+  Double4 r3{matrix_[0][3], matrix_[1][3], matrix_[2][3], matrix_[3][3]};
+  StoreDouble4(Double4{Sum(r0 * v), Sum(r1 * v), Sum(r2 * v), Sum(r3 * v)},
+               vec);
+}
+
+void Matrix44::Flatten() {
+  matrix_[0][2] = 0;
+  matrix_[1][2] = 0;
+  matrix_[3][2] = 0;
+  SetCol(2, Double4{0, 0, 1, 0});
+}
+
+// TODO(crbug.com/1359528): Consider letting this function always succeed.
+absl::optional<DecomposedTransform> Matrix44::Decompose2d() const {
+  DCHECK(Is2dTransform());
+
+  // https://www.w3.org/TR/css-transforms-1/#decomposing-a-2d-matrix.
+  // Decompose a 2D transformation matrix of the form:
+  // [m11 m21 0 m41]
+  // [m12 m22 0 m42]
+  // [ 0   0  1  0 ]
+  // [ 0   0  0  1 ]
+  //
+  // The decomposition is of the form:
+  // M = translate * rotate * skew * scale
+  //     [1 0 0 Tx] [cos(R) -sin(R) 0 0] [1 K 0 0] [Sx 0  0 0]
+  //   = [0 1 0 Ty] [sin(R)  cos(R) 0 0] [0 1 0 0] [0  Sy 0 0]
+  //     [0 0 1 0 ] [  0       0    1 0] [0 0 1 0] [0  0  1 0]
+  //     [0 0 0 1 ] [  0       0    0 1] [0 0 0 1] [0  0  0 1]
+
+  double m11 = matrix_[0][0];
+  double m21 = matrix_[1][0];
+  double m12 = matrix_[0][1];
+  double m22 = matrix_[1][1];
+
+  double determinant = m11 * m22 - m12 * m21;
+  // Test for matrix being singular.
+  if (determinant == 0)
+    return absl::nullopt;
+
+  DecomposedTransform decomp;
+
+  // Translation transform.
+  // [m11 m21 0 m41]    [1 0 0 Tx] [m11 m21 0 0]
+  // [m12 m22 0 m42]  = [0 1 0 Ty] [m12 m22 0 0]
+  // [ 0   0  1  0 ]    [0 0 1 0 ] [ 0   0  1 0]
+  // [ 0   0  0  1 ]    [0 0 0 1 ] [ 0   0  0 1]
+  decomp.translate[0] = matrix_[3][0];
+  decomp.translate[1] = matrix_[3][1];
+
+  // For the remainder of the decomposition process, we can focus on the upper
+  // 2x2 submatrix
+  // [m11 m21] = [cos(R) -sin(R)] [1 K] [Sx 0 ]
+  // [m12 m22]   [sin(R)  cos(R)] [0 1] [0  Sy]
+  //           = [Sx*cos(R) Sy*(K*cos(R) - sin(R))]
+  //             [Sx*sin(R) Sy*(K*sin(R) + cos(R))]
+
+  // Determine sign of the x and y scale.
+  if (determinant < 0) {
+    // If the determinant is negative, we need to flip either the x or y scale.
+    // Flipping both is equivalent to rotating by 180 degrees.
+    if (m11 < m22) {
+      decomp.scale[0] *= -1;
+    } else {
+      decomp.scale[1] *= -1;
     }
-    result[i] = value;
   }
 
-  if (storage == result) {
-    memcpy(dst, storage, sizeof(storage));
-  }
+  // X Scale.
+  // m11^2 + m12^2 = Sx^2*(cos^2(R) + sin^2(R)) = Sx^2.
+  // Sx = +/-sqrt(m11^2 + m22^2)
+  decomp.scale[0] *= sqrt(m11 * m11 + m12 * m12);
+  m11 /= decomp.scale[0];
+  m12 /= decomp.scale[0];
+
+  // Post normalization, the submatrix is now of the form:
+  // [m11 m21] = [cos(R)  Sy*(K*cos(R) - sin(R))]
+  // [m12 m22]   [sin(R)  Sy*(K*sin(R) + cos(R))]
+
+  // XY Shear.
+  // m11 * m21 + m12 * m22 = Sy*K*cos^2(R) - Sy*sin(R)*cos(R) +
+  //                         Sy*K*sin^2(R) + Sy*cos(R)*sin(R)
+  //                       = Sy*K
+  double scaled_shear = m11 * m21 + m12 * m22;
+  m21 -= m11 * scaled_shear;
+  m22 -= m12 * scaled_shear;
+
+  // Post normalization, the submatrix is now of the form:
+  // [m11 m21] = [cos(R)  -Sy*sin(R)]
+  // [m12 m22]   [sin(R)   Sy*cos(R)]
+
+  // Y Scale.
+  // Similar process to determining x-scale.
+  decomp.scale[1] *= sqrt(m21 * m21 + m22 * m22);
+  m21 /= decomp.scale[1];
+  m22 /= decomp.scale[1];
+  decomp.skew[0] = scaled_shear / decomp.scale[1];
+
+  // Rotation transform.
+  // [1-2(yy+zz)  2(xy-zw)    2(xz+yw) ]   [cos(R) -sin(R)  0]
+  // [2(xy+zw)   1-2(xx+zz)   2(yz-xw) ] = [sin(R)  cos(R)  0]
+  // [2(xz-yw)    2*(yz+xw)  1-2(xx+yy)]   [  0       0     1]
+  // Comparing terms, we can conclude that x = y = 0.
+  // [1-2zz   -2zw  0]   [cos(R) -sin(R)  0]
+  // [ 2zw   1-2zz  0] = [sin(R)  cos(R)  0]
+  // [  0     0     1]   [  0       0     1]
+  // cos(R) = 1 - 2*z^2
+  // From the double angle formula: cos(2a) = 1 - 2 sin(a)^2
+  // cos(R) = 1 - 2*sin(R/2)^2 = 1 - 2*z^2 ==> z = sin(R/2)
+  // sin(R) = 2*z*w
+  // But sin(2a) = 2 sin(a) cos(a)
+  // sin(R) = 2 sin(R/2) cos(R/2) = 2*z*w ==> w = cos(R/2)
+  double angle = std::atan2(m12, m11);
+  decomp.quaternion.set_x(0);
+  decomp.quaternion.set_y(0);
+  decomp.quaternion.set_z(std::sin(0.5 * angle));
+  decomp.quaternion.set_w(std::cos(0.5 * angle));
+
+  return decomp;
 }
 
-void Matrix44::FlattenTo2d() {
-  fMat[0][2] = 0;
-  fMat[1][2] = 0;
-  fMat[2][0] = 0;
-  fMat[2][1] = 0;
-  fMat[2][2] = 1;
-  fMat[2][3] = 0;
-  fMat[3][2] = 0;
-  recomputeTypeMask();
+absl::optional<DecomposedTransform> Matrix44::Decompose() const {
+  // See documentation of Transform::Decompose() for why we need the 2d branch.
+  if (Is2dTransform())
+    return Decompose2d();
+
+  // https://www.w3.org/TR/css-transforms-2/#decomposing-a-3d-matrix.
+
+  Double4 c0 = Col(0);
+  Double4 c1 = Col(1);
+  Double4 c2 = Col(2);
+  Double4 c3 = Col(3);
+
+  // Normalize the matrix.
+  if (!std::isnormal(c3[3]))
+    return absl::nullopt;
+
+  double inv_w = 1.0 / c3[3];
+  c0 *= inv_w;
+  c1 *= inv_w;
+  c2 *= inv_w;
+  c3 *= inv_w;
+
+  Double4 perspective = {c0[3], c1[3], c2[3], 1.0};
+  // Clear the perspective partition.
+  c0[3] = c1[3] = c2[3] = 0;
+  c3[3] = 1;
+
+  Double4 inverse_c0 = c0;
+  Double4 inverse_c1 = c1;
+  Double4 inverse_c2 = c2;
+  Double4 inverse_c3 = c3;
+  if (!InverseWithDouble4Cols(inverse_c0, inverse_c1, inverse_c2, inverse_c3))
+    return absl::nullopt;
+
+  DecomposedTransform decomp;
+
+  // First, isolate perspective.
+  if (!AllTrue(perspective == Double4{0, 0, 0, 1})) {
+    // Solve the equation by multiplying perspective by the inverse.
+    decomp.perspective[0] = gfx::Sum(perspective * inverse_c0);
+    decomp.perspective[1] = gfx::Sum(perspective * inverse_c1);
+    decomp.perspective[2] = gfx::Sum(perspective * inverse_c2);
+    decomp.perspective[3] = gfx::Sum(perspective * inverse_c3);
+  }
+
+  // Next take care of translation (easy).
+  decomp.translate[0] = c3[0];
+  c3[0] = 0;
+  decomp.translate[1] = c3[1];
+  c3[1] = 0;
+  decomp.translate[2] = c3[2];
+  c3[2] = 0;
+
+  // Note: Deviating from the spec in terms of variable naming. The matrix is
+  // stored on column major order and not row major. Using the variable 'row'
+  // instead of 'column' in the spec pseudocode has been the source of
+  // confusion, specifically in sorting out rotations.
+
+  // From now on, only the first 3 components of the Double4 column is used.
+  auto sum3 = [](Double4 c) -> double { return c[0] + c[1] + c[2]; };
+  auto extract_scale = [&sum3](Double4& c, double& scale) -> bool {
+    scale = std::sqrt(sum3(c * c));
+    if (!std::isnormal(scale))
+      return false;
+    c *= 1.0 / scale;
+    return true;
+  };
+  auto epsilon_to_zero = [](double d) -> double {
+    return std::abs(d) < std::numeric_limits<float>::epsilon() ? 0 : d;
+  };
+
+  // Compute X scale factor and normalize the first column.
+  if (!extract_scale(c0, decomp.scale[0]))
+    return absl::nullopt;
+
+  // Compute XY shear factor and make 2nd column orthogonal to 1st.
+  decomp.skew[0] = epsilon_to_zero(sum3(c0 * c1));
+  c1 -= c0 * decomp.skew[0];
+
+  // Now, compute Y scale and normalize 2nd column.
+  if (!extract_scale(c1, decomp.scale[1]))
+    return absl::nullopt;
+
+  decomp.skew[0] /= decomp.scale[1];
+
+  // Compute XZ and YZ shears, and orthogonalize the 3rd column.
+  decomp.skew[1] = epsilon_to_zero(sum3(c0 * c2));
+  c2 -= c0 * decomp.skew[1];
+  decomp.skew[2] = epsilon_to_zero(sum3(c1 * c2));
+  c2 -= c1 * decomp.skew[2];
+
+  // Next, get Z scale and normalize the 3rd column.
+  if (!extract_scale(c2, decomp.scale[2]))
+    return absl::nullopt;
+
+  decomp.skew[1] /= decomp.scale[2];
+  decomp.skew[2] /= decomp.scale[2];
+
+  // At this point, the matrix is orthonormal.
+  // Check for a coordinate system flip.  If the determinant is -1, then negate
+  // the matrix and the scaling factors.
+  auto cross3 = [](Double4 a, Double4 b) -> Double4 {
+    return Double4{a[1], a[2], a[0], a[3]} * Double4{b[2], b[0], b[1], b[3]} -
+           Double4{a[2], a[0], a[1], a[3]} * Double4{b[1], b[2], b[0], b[3]};
+  };
+  Double4 pdum3 = cross3(c1, c2);
+  if (sum3(c0 * pdum3) < 0) {
+    // Flip all 3 scaling factors, following the 3d decomposition spec. See
+    // documentation of Transform::Decompose() about the difference between
+    // the 2d spec and and 3d spec about scale flipping.
+    decomp.scale[0] *= -1;
+    decomp.scale[1] *= -1;
+    decomp.scale[2] *= -1;
+    c0 *= -1;
+    c1 *= -1;
+    c2 *= -1;
+  }
+
+  // Lastly, compute the quaternions.
+  // See https://en.wikipedia.org/wiki/Rotation_matrix#Quaternion.
+  // Note: deviating from spec (http://www.w3.org/TR/css3-transforms/)
+  // which has a degenerate case when the trace (t) of the orthonormal matrix
+  // (Q) approaches -1. In the Wikipedia article, Q_ij is indexing on row then
+  // column. Thus, Q_ij = column[j][i].
+
+  // The following are equivalent representations of the rotation matrix:
+  //
+  // Axis-angle form:
+  //
+  //      [ c+(1-c)x^2  (1-c)xy-sz  (1-c)xz+sy ]    c = cos theta
+  // R =  [ (1-c)xy+sz  c+(1-c)y^2  (1-c)yz-sx ]    s = sin theta
+  //      [ (1-c)xz-sy  (1-c)yz+sx  c+(1-c)z^2 ]    [x,y,z] = axis or rotation
+  //
+  // The sum of the diagonal elements (trace) is a simple function of the cosine
+  // of the angle. The w component of the quaternion is cos(theta/2), and we
+  // make use of the double angle formula to directly compute w from the
+  // trace. Differences between pairs of skew symmetric elements in this matrix
+  // isolate the remaining components. Since w can be zero (also numerically
+  // unstable if near zero), we cannot rely solely on this approach to compute
+  // the quaternion components.
+  //
+  // Quaternion form:
+  //
+  //       [ 1-2(y^2+z^2)    2(xy-zw)      2(xz+yw)   ]
+  //  r =  [   2(xy+zw)    1-2(x^2+z^2)    2(yz-xw)   ]    q = (x,y,z,w)
+  //       [   2(xz-yw)      2(yz+xw)    1-2(x^2+y^2) ]
+  //
+  // Different linear combinations of the diagonal elements isolates x, y or z.
+  // Sums or differences between skew symmetric elements isolate the remainder.
+
+  double r, s, t, x, y, z, w;
+
+  t = c0[0] + c1[1] + c2[2];  // trace of Q
+
+  // https://en.wikipedia.org/wiki/Rotation_matrix#Quaternion
+  if (1 + t > 0.001) {
+    // Numerically stable as long as 1+t is not close to zero. Otherwise use the
+    // diagonal element with the greatest value to compute the quaternions.
+    r = std::sqrt(1.0 + t);
+    s = 0.5 / r;
+    w = 0.5 * r;
+    x = (c1[2] - c2[1]) * s;
+    y = (c2[0] - c0[2]) * s;
+    z = (c0[1] - c1[0]) * s;
+  } else if (c0[0] > c1[1] && c0[0] > c2[2]) {
+    // Q_xx is largest.
+    r = std::sqrt(1.0 + c0[0] - c1[1] - c2[2]);
+    s = 0.5 / r;
+    x = 0.5 * r;
+    y = (c1[0] + c0[1]) * s;
+    z = (c2[0] + c0[2]) * s;
+    w = (c1[2] - c2[1]) * s;
+  } else if (c1[1] > c2[2]) {
+    // Q_yy is largest.
+    r = std::sqrt(1.0 - c0[0] + c1[1] - c2[2]);
+    s = 0.5 / r;
+    x = (c1[0] + c0[1]) * s;
+    y = 0.5 * r;
+    z = (c2[1] + c1[2]) * s;
+    w = (c2[0] - c0[2]) * s;
+  } else {
+    // Q_zz is largest.
+    r = std::sqrt(1.0 - c0[0] - c1[1] + c2[2]);
+    s = 0.5 / r;
+    x = (c2[0] + c0[2]) * s;
+    y = (c2[1] + c1[2]) * s;
+    z = 0.5 * r;
+    w = (c0[1] - c1[0]) * s;
+  }
+
+  decomp.quaternion.set_x(x);
+  decomp.quaternion.set_y(y);
+  decomp.quaternion.set_z(z);
+  decomp.quaternion.set_w(w);
+
+  return decomp;
 }
 
 }  // namespace gfx

@@ -194,16 +194,14 @@ class MEDIA_GPU_EXPORT V4L2VideoDecoder
   // DmabufVideoFramePool::Initialize() during Initialize().
   size_t num_output_frames_ = 1;
 
-  // Aspect ratio from config to use for output frames.
-  VideoAspectRatio aspect_ratio_;
-
-  // Callbacks passed from Initialize().
+  // Callback passed from Initialize().
   OutputCB output_cb_;
 
-  // Hold onto profile and color space passed in from Initialize() so that
-  // it is available for InitializeBackend().
+  // Initialize()-passed configuration options.
   VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
+  VideoAspectRatio aspect_ratio_;
   VideoColorSpace color_space_;
+  bool low_delay_;
 
   // V4L2 input and output queue.
   scoped_refptr<V4L2Queue> input_queue_;
@@ -213,14 +211,14 @@ class MEDIA_GPU_EXPORT V4L2VideoDecoder
 
   SEQUENCE_CHECKER(decoder_sequence_checker_);
 
+  // Whether or not our V4L2Queues should be requested with
+  // V4L2_MEMORY_FLAG_NON_COHERENT
+  bool incoherent_ = false;
+
   // |weak_this_for_polling_| must be dereferenced and invalidated on
   // |decoder_task_runner_|.
   base::WeakPtr<V4L2VideoDecoder> weak_this_for_polling_;
   base::WeakPtrFactory<V4L2VideoDecoder> weak_this_for_polling_factory_;
-
-  // Whether or not our V4L2Queues should be requested with
-  // V4L2_MEMORY_FLAG_NON_COHERENT
-  bool incoherent_ = false;
 };
 
 }  // namespace media

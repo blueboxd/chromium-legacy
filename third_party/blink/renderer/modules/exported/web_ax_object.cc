@@ -30,6 +30,7 @@
 
 #include "third_party/blink/public/web/web_ax_object.h"
 
+#include "base/ranges/algorithm.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -223,14 +224,14 @@ bool WebAXObject::SerializeChanges(ui::AXTreeUpdate* update) {
   return private_->AXObjectCache().SerializeChanges(*private_, update);
 }
 
-void WebAXObject::MarkDirty(
+void WebAXObject::MarkAXObjectDirtyWithDetails(
     bool subtree,
     ax::mojom::blink::EventFrom event_from,
     ax::mojom::blink::Action event_from_action,
     std::vector<ui::AXEventIntent> event_intents) const {
   if (IsDetached())
     return;
-  private_->AXObjectCache().MarkAXObjectDirty(
+  private_->AXObjectCache().MarkAXObjectDirtyWithDetails(
       private_.Get(), subtree, event_from, event_from_action, event_intents);
 }
 
@@ -622,8 +623,7 @@ WebVector<WebAXObject> WebAXObject::RadioButtonsInGroup() const {
 
   AXObject::AXObjectVector radio_buttons = private_->RadioButtonsInGroup();
   WebVector<WebAXObject> web_radio_buttons(radio_buttons.size());
-  std::copy(radio_buttons.begin(), radio_buttons.end(),
-            web_radio_buttons.begin());
+  base::ranges::copy(radio_buttons, web_radio_buttons.begin());
   return web_radio_buttons;
 }
 
@@ -685,7 +685,7 @@ void WebAXObject::Selection(bool& is_selection_backward,
   if (IsDetached() || GetDocument().IsNull())
     return;
 
-  WebAXObject focus = FromWebDocumentFocused(GetDocument(), false);
+  WebAXObject focus = FromWebDocumentFocused(GetDocument());
   if (focus.IsDetached())
     return;
 
@@ -806,7 +806,7 @@ WebString WebAXObject::GetName(ax::mojom::NameFrom& out_name_from,
 
   out_name_objects.reserve(name_objects.size());
   out_name_objects.resize(name_objects.size());
-  std::copy(name_objects.begin(), name_objects.end(), out_name_objects.begin());
+  base::ranges::copy(name_objects, out_name_objects.begin());
 
   return result;
 }
@@ -835,8 +835,7 @@ WebString WebAXObject::Description(
 
   out_description_objects.reserve(description_objects.size());
   out_description_objects.resize(description_objects.size());
-  std::copy(description_objects.begin(), description_objects.end(),
-            out_description_objects.begin());
+  base::ranges::copy(description_objects, out_description_objects.begin());
 
   return result;
 }
@@ -989,7 +988,7 @@ void WebAXObject::RowHeaders(
   private_->RowHeaders(headers);
   row_header_elements.reserve(headers.size());
   row_header_elements.resize(headers.size());
-  std::copy(headers.begin(), headers.end(), row_header_elements.begin());
+  base::ranges::copy(headers, row_header_elements.begin());
 }
 
 unsigned WebAXObject::ColumnIndex() const {
@@ -1024,7 +1023,7 @@ void WebAXObject::ColumnHeaders(
   private_->ColumnHeaders(headers);
   column_header_elements.reserve(headers.size());
   column_header_elements.resize(headers.size());
-  std::copy(headers.begin(), headers.end(), column_header_elements.begin());
+  base::ranges::copy(headers, column_header_elements.begin());
 }
 
 unsigned WebAXObject::CellColumnIndex() const {
@@ -1306,20 +1305,18 @@ WebAXObject::operator AXObject*() const {
 // static
 WebAXObject WebAXObject::FromWebNode(const WebNode& web_node) {
   WebDocument web_document = web_node.GetDocument();
-  const Document* doc = web_document.ConstUnwrap<Document>();
-  auto* cache = To<AXObjectCacheImpl>(doc->ExistingAXObjectCache());
+  const Document* document = web_document.ConstUnwrap<Document>();
+  auto* cache = To<AXObjectCacheImpl>(document->ExistingAXObjectCache());
   const Node* node = web_node.ConstUnwrap<Node>();
   return cache ? WebAXObject(cache->Get(node)) : WebAXObject();
 }
 
 // static
 WebAXObject WebAXObject::FromWebDocument(const WebDocument& web_document) {
-  if (!MaybeUpdateLayoutAndCheckValidity(web_document))
-    return WebAXObject();
   const Document* document = web_document.ConstUnwrap<Document>();
   auto* cache = To<AXObjectCacheImpl>(document->ExistingAXObjectCache());
-  return cache ? WebAXObject(cache->GetOrCreate(document->GetLayoutView()))
-               : WebAXObject();
+  DCHECK(cache);
+  return WebAXObject(cache->GetOrCreate(document));
 }
 
 // static
@@ -1332,57 +1329,13 @@ WebAXObject WebAXObject::FromWebDocumentByID(const WebDocument& web_document,
 
 // static
 WebAXObject WebAXObject::FromWebDocumentFocused(
-    const WebDocument& web_document,
-    bool update_layout_if_necessary) {
-  if (update_layout_if_necessary &&
-      !MaybeUpdateLayoutAndCheckValidity(web_document)) {
-    return WebAXObject();
-  }
-  const Document* document = web_document.ConstUnwrap<Document>();
-  auto* cache = To<AXObjectCacheImpl>(document->ExistingAXObjectCache());
-  return cache ? WebAXObject(cache->FocusedObject()) : WebAXObject();
-}
-
-// static
-void WebAXObject::UpdateLayout(const WebDocument& web_document) {
-  const Document* document = web_document.ConstUnwrap<Document>();
-  if (!document || !document->View() || !document->ExistingAXObjectCache())
-    return;
-  if (document->NeedsLayoutTreeUpdate() || document->View()->NeedsLayout() ||
-      document->Lifecycle().GetState() < DocumentLifecycle::kPrePaintClean ||
-      document->ExistingAXObjectCache()->IsDirty()) {
-    document->View()->UpdateAllLifecyclePhasesExceptPaint(
-        DocumentUpdateReason::kAccessibility);
-  }
-}
-
-// static
-bool WebAXObject::MaybeUpdateLayoutAndCheckValidity(
     const WebDocument& web_document) {
   const Document* document = web_document.ConstUnwrap<Document>();
-  if (!document)
-    return false;
-
-  DCHECK(document->defaultView());
-  DCHECK(document->GetFrame());
-  DCHECK(document->View());
-  DCHECK(document->ExistingAXObjectCache());
-
-  if (document->NeedsLayoutTreeUpdate() || document->View()->NeedsLayout() ||
-      document->Lifecycle().GetState() < DocumentLifecycle::kPrePaintClean) {
-    // Note: this always alters the lifecycle, because
-    // RunAccessibilityLifecyclePhase() will be called.
-    if (!document->View()->UpdateAllLifecyclePhasesExceptPaint(
-            DocumentUpdateReason::kAccessibility)) {
-      return false;
-    }
-  } else {
 #if DCHECK_IS_ON()
-    CheckLayoutClean(document);
+  CheckLayoutClean(document);
 #endif
-  }
-
-  return true;
+  auto* cache = To<AXObjectCacheImpl>(document->ExistingAXObjectCache());
+  return cache ? WebAXObject(cache->FocusedObject()) : WebAXObject();
 }
 
 // static

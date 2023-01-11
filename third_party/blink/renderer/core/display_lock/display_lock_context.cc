@@ -12,10 +12,9 @@
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
-#include "third_party/blink/renderer/core/display_lock/content_visibility_auto_state_change_event.h"
+#include "third_party/blink/renderer/core/display_lock/content_visibility_auto_state_changed_event.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
-#include "third_party/blink/renderer/core/document_transition/document_transition_supplement.h"
 #include "third_party/blink/renderer/core/dom/css_toggle.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -34,6 +33,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/pre_paint_tree_walk.h"
 #include "third_party/blink/renderer/core/style/toggle_trigger.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -315,7 +315,7 @@ void DisplayLockContext::Lock() {
   // layout objects, since otherwise they would be hoisted out of our subtree.
   DetachDescendantTopLayerElements();
 
-  // Schedule ContentVisibilityAutoStateChange event if needed.
+  // Schedule ContentVisibilityAutoStateChanged event if needed.
   // TODO(https://crbug.com/1250716): We shouldn't fire this if it was the
   // result of toggle state changing.
   ScheduleStateChangeEventIfNeeded();
@@ -556,10 +556,10 @@ void DisplayLockContext::UpgradeForcedScope(ForcedPhase old_phase,
 
 void DisplayLockContext::ScheduleStateChangeEventIfNeeded() {
   if (state_ == EContentVisibility::kAuto &&
-      RuntimeEnabledFeatures::ContentVisibilityAutoStateChangeEventEnabled()) {
+      RuntimeEnabledFeatures::ContentVisibilityAutoStateChangedEventEnabled()) {
     element_->EnqueueEvent(
-        *ContentVisibilityAutoStateChangeEvent::Create(
-            event_type_names::kContentvisibilityautostatechange, is_locked_),
+        *ContentVisibilityAutoStateChangedEvent::Create(
+            event_type_names::kContentvisibilityautostatechanged, is_locked_),
         TaskType::kMiscPlatformAPI);
   }
 }
@@ -610,7 +610,7 @@ void DisplayLockContext::Unlock() {
   if (AXObjectCache* cache = element_->GetDocument().ExistingAXObjectCache())
     cache->ChildrenChanged(element_);
 
-  // Schedule ContentVisibilityAutoStateChange event if needed.
+  // Schedule ContentVisibilityAutoStateChanged event if needed.
   // TODO(https://crbug.com/1250716): We shouldn't fire this if it was the
   // result of toggle state changing.
   ScheduleStateChangeEventIfNeeded();
@@ -1161,11 +1161,10 @@ void DisplayLockContext::ResetAndDetermineIfAncestorIsSharedElement() {
   if (!ConnectedToView())
     return;
 
-  auto* supplement = DocumentTransitionSupplement::FromIfExists(*document_);
-  if (!supplement)
+  auto* transition = ViewTransitionUtils::GetActiveTransition(*document_);
+  if (!transition)
     return;
 
-  auto* transition = supplement->GetTransition();
   bool has_shared_element_ancestor = false;
   for (auto* candidate = element_.Get(); candidate;
        candidate = FlatTreeTraversal::ParentElement(*candidate)) {

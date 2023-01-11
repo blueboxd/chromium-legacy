@@ -18,7 +18,7 @@ namespace ui {
 
 namespace {
 constexpr uint32_t kMinVersion = 1;
-constexpr uint32_t kMaxVersion = 5;
+constexpr uint32_t kMaxVersion = 8;
 }  // namespace
 
 // static
@@ -38,8 +38,10 @@ void WaylandSeat::Instantiate(WaylandConnection* connection,
     return;
   }
 
-  auto seat =
-      wl::Bind<struct wl_seat>(registry, name, std::min(version, kMaxVersion));
+  auto seat = wl::Bind<struct wl_seat>(
+      registry, name,
+      wl::CalculateBindVersion(version, kMaxVersion,
+                               wl_seat_interface.version));
   if (!seat) {
     LOG(ERROR) << "Failed to bind to wl_seat global";
     return;

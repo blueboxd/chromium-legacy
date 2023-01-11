@@ -25,7 +25,6 @@ import("//third_party/blink/renderer/core/context_features/build.gni")
 import("//third_party/blink/renderer/core/core.gni")
 import("//third_party/blink/renderer/core/css/build.gni")
 import("//third_party/blink/renderer/core/display_lock/build.gni")
-import("//third_party/blink/renderer/core/document_transition/build.gni")
 import("//third_party/blink/renderer/core/dom/build.gni")
 import("//third_party/blink/renderer/core/editing/build.gni")
 import("//third_party/blink/renderer/core/events/build.gni")
@@ -60,6 +59,7 @@ import(
     "//third_party/blink/renderer/core/scheduler_integration_tests/build.gni")
 import("//third_party/blink/renderer/core/script/build.gni")
 import("//third_party/blink/renderer/core/scroll/build.gni")
+import("//third_party/blink/renderer/core/shadow_realm/build.gni")
 import("//third_party/blink/renderer/core/speculation_rules/build.gni")
 import("//third_party/blink/renderer/core/speech/build.gni")
 import("//third_party/blink/renderer/core/streams/build.gni")
@@ -70,6 +70,7 @@ import("//third_party/blink/renderer/core/timing/build.gni")
 import("//third_party/blink/renderer/core/trustedtypes/build.gni")
 import("//third_party/blink/renderer/core/typed_arrays/build.gni")
 import("//third_party/blink/renderer/core/url/build.gni")
+import("//third_party/blink/renderer/core/view_transition/build.gni")
 import("//third_party/blink/renderer/core/workers/build.gni")
 import("//third_party/blink/renderer/core/xml/build.gni")
 import("//third_party/blink/renderer/core/xmlhttprequest/build.gni")
@@ -215,9 +216,8 @@ component("core") {
       rebase_path(blink_core_sources_context_features, "", "context_features")
   sources += rebase_path(blink_core_sources_css, "", "css")
   sources += rebase_path(blink_core_sources_display_lock, "", "display_lock")
-  sources += rebase_path(blink_core_sources_document_transition,
-                         "",
-                         "document_transition")
+  sources +=
+      rebase_path(blink_core_sources_view_transition, "", "view_transition")
   sources += rebase_path(blink_core_sources_dom, "", "dom")
   sources += rebase_path(blink_core_sources_editing, "", "editing")
   sources += rebase_path(blink_core_sources_events, "", "events")
@@ -262,6 +262,7 @@ component("core") {
       rebase_path(blink_core_sources_speculation_rules, "", "speculation_rules")
   sources += rebase_path(blink_core_sources_script, "", "script")
   sources += rebase_path(blink_core_sources_scroll, "", "scroll")
+  sources += rebase_path(blink_core_sources_shadow_realm, "", "shadow_realm")
   sources += rebase_path(blink_core_sources_streams, "", "streams")
   sources += rebase_path(blink_core_sources_style, "", "style")
   sources += rebase_path(blink_core_sources_svg, "", "svg")
@@ -295,6 +296,7 @@ component("core") {
     "//third_party/blink/renderer/core/animation",
     "//third_party/blink/renderer/core/exported",
     "//third_party/blink/renderer/core/probe",
+    "//third_party/blink/renderer/core/url_pattern",
     "//third_party/blink/renderer/core/xml:xpath_generated",
     "//third_party/blink/renderer/platform",
     "//third_party/blink/renderer/platform/wtf",
@@ -318,6 +320,7 @@ component("core") {
     "//components/performance_manager/public/mojom:mojom_blink",
     "//components/power_scheduler",
     "//components/shared_highlighting/core/common",
+    "//components/web_package",
     "//gin",
     "//gpu/config",
     "//mojo/public/cpp/bindings:bindings",
@@ -346,7 +349,7 @@ component("core") {
     deps += [ "//ui/base/mojom" ]
   }
 
-  if (enable_basic_printing) {
+  if (enable_printing) {
     deps += [ "//printing:metafile" ]
   }
 
@@ -356,6 +359,7 @@ component("core") {
     "//third_party/blink/renderer/core/animation",
     "//third_party/blink/renderer/core/exported",
     "//third_party/blink/renderer/core/probe",
+    "//third_party/blink/renderer/core/url_pattern",
     "//third_party/blink/renderer/core/xml:xpath_generated",
   ]
 
@@ -519,7 +523,7 @@ generate_event_interfaces("core_event_interfaces") {
   sources = [
     "css/font_face_set_load_event.idl",
     "css/media_query_list_event.idl",
-    "display_lock/content_visibility_auto_state_change_event.idl",
+    "display_lock/content_visibility_auto_state_changed_event.idl",
     "dom/events/custom_event.idl",
     "dom/events/event.idl",
     "editing/ime/character_bounds_update_event.idl",
@@ -1321,9 +1325,8 @@ source_set("unit_tests") {
       rebase_path(blink_core_tests_content_capture, "", "content_capture")
   sources += rebase_path(blink_core_tests_css, "", "css")
   sources += rebase_path(blink_core_tests_display_lock, "", "display_lock")
-  sources += rebase_path(blink_core_tests_document_transition,
-                         "",
-                         "document_transition")
+  sources +=
+      rebase_path(blink_core_tests_view_transition, "", "view_transition")
   sources += rebase_path(blink_core_tests_dom, "", "dom")
   sources += rebase_path(blink_core_tests_editing, "", "editing")
   sources += rebase_path(blink_core_tests_events, "", "events")

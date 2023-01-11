@@ -4,8 +4,13 @@
 
 #import "ios/chrome/browser/ui/price_notifications/cells/price_notifications_table_view_item.h"
 
+#import "ios/chrome/browser/ui/price_notifications/cells/price_notifications_image_container_view.h"
+#import "ios/chrome/browser/ui/price_notifications/cells/price_notifications_menu_button.h"
+#import "ios/chrome/browser/ui/price_notifications/cells/price_notifications_price_chip_view.h"
 #import "ios/chrome/browser/ui/price_notifications/cells/price_notifications_track_button.h"
+#import "ios/chrome/browser/ui/price_notifications/price_notifications_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -35,6 +40,8 @@ const CGFloat kCellContentSpacing = 14;
 
   tableCell.titleLabel.text = self.title;
   tableCell.URLLabel.text = self.entryURL;
+  [tableCell.priceNotificationsChip setPriceDrop:self.currentPrice
+                                   previousPrice:self.previousPrice];
   tableCell.tracking = self.tracking;
   tableCell.accessibilityTraits |= UIAccessibilityTraitButton;
 }
@@ -53,41 +60,42 @@ const CGFloat kCellContentSpacing = 14;
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
 
   if (self) {
-    // TODO(crbug.com/1368700) Once the PriceNotificationImageContainerView,
-    // PriceNotificationsPriceChipView, and PriceNotificationsMenuItem is
-    // created, instatiate instances of each class and extend the TableViewCell
-    // to stores these instances as properties. In addition, this class will
-    // need to be adapted to integrate the UI elements in to the table cell.
-
     _titleLabel = [[UILabel alloc] init];
-    _URLLabel = [[UILabel alloc] init];
-    _trackButton = [[PriceNotificationsTrackButton alloc] init];
-
     _titleLabel.font =
-        [self preferredFontWithTextStyle:UIFontTextStyleSubheadline
-                                  weight:UIFontWeightSemibold];
+        CreateDynamicFont(UIFontTextStyleSubheadline, UIFontWeightSemibold);
     _titleLabel.adjustsFontForContentSizeCategory = YES;
+    _URLLabel = [[UILabel alloc] init];
     _URLLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     _URLLabel.adjustsFontForContentSizeCategory = YES;
     _URLLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
+    _trackButton = [[PriceNotificationsTrackButton alloc] init];
+    _menuButton = [[PriceNotificationsMenuButton alloc] init];
+    _priceNotificationsChip = [[PriceNotificationsPriceChipView alloc] init];
+    _priceNotificationsChip.translatesAutoresizingMaskIntoConstraints = NO;
+    _priceNotificationsImageContainerView =
+        [[PriceNotificationsImageContainerView alloc] init];
+    _priceNotificationsImageContainerView
+        .translatesAutoresizingMaskIntoConstraints = NO;
 
-    UIStackView* verticalStack = [[UIStackView alloc]
-        initWithArrangedSubviews:@[ self.titleLabel, self.URLLabel ]];
+    // Use stack views to layout the subviews except for the Price Notification
+    // Image.
+    UIStackView* verticalStack =
+        [[UIStackView alloc] initWithArrangedSubviews:@[
+          _titleLabel, _URLLabel, _priceNotificationsChip
+        ]];
     verticalStack.axis = UILayoutConstraintAxisVertical;
     verticalStack.distribution = UIStackViewDistributionEqualSpacing;
     verticalStack.alignment = UIStackViewAlignmentLeading;
 
-    UIStackView* horizontalStack =
-        [[UIStackView alloc] initWithArrangedSubviews:@[
-          verticalStack,
-          self.trackButton,
-        ]];
+    UIStackView* horizontalStack = [[UIStackView alloc]
+        initWithArrangedSubviews:@[ verticalStack, _trackButton, _menuButton ]];
     horizontalStack.axis = UILayoutConstraintAxisHorizontal;
     horizontalStack.spacing = kTableViewHorizontalSpacing;
     horizontalStack.distribution = UIStackViewDistributionEqualSpacing;
     horizontalStack.alignment = UIStackViewAlignmentCenter;
-
     horizontalStack.translatesAutoresizingMaskIntoConstraints = NO;
+
+    [self.contentView addSubview:_priceNotificationsImageContainerView];
     [self.contentView addSubview:horizontalStack];
 
     NSLayoutConstraint* heightConstraint = [self.contentView.heightAnchor
@@ -97,16 +105,26 @@ const CGFloat kCellContentSpacing = 14;
     heightConstraint.priority = UILayoutPriorityRequired - 1;
 
     [NSLayoutConstraint activateConstraints:@[
+      [self.priceNotificationsImageContainerView.leadingAnchor
+          constraintEqualToAnchor:self.contentView.leadingAnchor
+                         constant:kTableViewHorizontalSpacing],
+      [self.priceNotificationsImageContainerView.centerYAnchor
+          constraintEqualToAnchor:self.contentView.centerYAnchor],
+
       // The stack view fills the remaining space, has an intrinsic height, and
       // is centered vertically.
       [horizontalStack.leadingAnchor
-          constraintEqualToAnchor:self.contentView.leadingAnchor],
+          constraintEqualToAnchor:self.priceNotificationsImageContainerView
+                                      .trailingAnchor
+                         constant:kTableViewHorizontalSpacing],
       [horizontalStack.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
                          constant:-kTableViewHorizontalSpacing],
       [horizontalStack.topAnchor
           constraintGreaterThanOrEqualToAnchor:self.contentView.topAnchor
                                       constant:kCellContentSpacing],
+      [horizontalStack.centerYAnchor
+          constraintEqualToAnchor:self.contentView.centerYAnchor],
       [horizontalStack.bottomAnchor
           constraintGreaterThanOrEqualToAnchor:self.contentView.bottomAnchor
                                       constant:-kCellContentSpacing],
@@ -119,24 +137,13 @@ const CGFloat kCellContentSpacing = 14;
 - (void)setTracking:(BOOL)tracking {
   if (tracking) {
     self.trackButton.hidden = YES;
+    self.menuButton.hidden = NO;
     return;
   }
 
   self.trackButton.hidden = NO;
+  self.menuButton.hidden = YES;
   _tracking = tracking;
-}
-
-#pragma mark - Helpers
-
-// Creates a dynamically scablable custom font based on the given parameters.
-- (UIFont*)preferredFontWithTextStyle:(UIFontTextStyle)style
-                               weight:(UIFontWeight)weight {
-  UIFontMetrics* fontMetrics = [[UIFontMetrics alloc] initForTextStyle:style];
-  UIFontDescriptor* fontDescriptor =
-      [UIFontDescriptor preferredFontDescriptorWithTextStyle:style];
-  UIFont* font = [UIFont systemFontOfSize:fontDescriptor.pointSize
-                                   weight:weight];
-  return [fontMetrics scaledFontForFont:font];
 }
 
 @end

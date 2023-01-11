@@ -18,7 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/webui/chromeos/login/check_passwords_against_cryptohome_helper.h"
+#include "chrome/browser/ui/webui/ash/login/check_passwords_against_cryptohome_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -76,6 +76,12 @@ std::string GetHostedDomain(const std::string& gaia_id) {
 InSessionPasswordSyncManager* GetInSessionPasswordSyncManager() {
   Profile* profile = GetActiveUserProfile();
   return InSessionPasswordSyncManagerFactory::GetForProfile(profile);
+}
+
+std::string GetSSOProfile() {
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
+  return connector->GetSSOProfile();
 }
 
 const char kMainElement[] = "$(\'main-element\').";
@@ -198,6 +204,11 @@ void LockScreenReauthHandler::OnSetCookieForLoadGaiaWithPartition(
                                                  : hosted_domain);
     params.Set("doSamlRedirect", force_saml_redirect_for_testing_ ||
                                      ShouldDoSamlRedirect(context.email));
+  }
+
+  const std::string sso_profile(GetSSOProfile());
+  if (!sso_profile.empty()) {
+    params.Set("ssoProfile", sso_profile);
   }
 
   const std::string app_locale = g_browser_process->GetApplicationLocale();

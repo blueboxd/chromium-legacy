@@ -33,7 +33,6 @@
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/elements/form_input_accessory_view.h"
@@ -52,19 +51,9 @@
 
 using base::UmaHistogramEnumeration;
 
-namespace {
-
-// Kill switch guarding a workaround for keyboard flicker, see crbug.com/1253561
-BASE_FEATURE(kFormInputKeyboardReloadInputViews,
-             "FormInputKeyboardReloadInputViews",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-}  // namespace
-
 @interface FormInputAccessoryMediator () <FormActivityObserver,
                                           FormInputAccessoryViewDelegate,
                                           CRWWebStateObserver,
-                                          KeyboardObserverHelperConsumer,
                                           PasswordFetcherDelegate,
                                           PersonalDataManagerObserver,
                                           WebStateListObserving>
@@ -184,8 +173,10 @@ BASE_FEATURE(kFormInputKeyboardReloadInputViews,
                       selector:@selector(applicationDidEnterBackground:)
                           name:UIApplicationDidEnterBackgroundNotification
                         object:nil];
-
-    [[KeyboardObserverHelper sharedKeyboardObserver] addConsumer:self];
+    [defaultCenter addObserver:self
+                      selector:@selector(keyboardWillShow:)
+                          name:UIKeyboardWillShowNotification
+                        object:nil];
 
     // In BVC unit tests the password store doesn't exist. Skip creating the
     // fetcher.
@@ -260,12 +251,10 @@ BASE_FEATURE(kFormInputKeyboardReloadInputViews,
   return _lastSeenParams.field_type == autofill::kPasswordFieldType;
 }
 
-#pragma mark - KeyboardObserverHelperConsumer
+#pragma mark - KeyboardNotification
 
-- (void)keyboardWillChangeToState:(KeyboardState)keyboardState {
-  if (keyboardState.isVisible) {
-    [self updateSuggestionsIfNeeded];
-  }
+- (void)keyboardWillShow:(NSNotification*)notification {
+  [self updateSuggestionsIfNeeded];
 }
 
 #pragma mark - FormActivityObserver
@@ -308,12 +297,6 @@ BASE_FEATURE(kFormInputKeyboardReloadInputViews,
   }
 
   self.validActivityForAccessoryView = YES;
-  static bool form_input_keyboard_reload_input_views_workaround =
-      base::FeatureList::IsEnabled(kFormInputKeyboardReloadInputViews);
-  if (!form_input_keyboard_reload_input_views_workaround) {
-    [GetFirstResponder() reloadInputViews];
-  }
-
   NSString* frameID;
   if (frame) {
     frameID = base::SysUTF8ToNSString(frame->GetFrameId());
@@ -329,8 +312,7 @@ BASE_FEATURE(kFormInputKeyboardReloadInputViews,
     return;
   }
 
-  if (form_input_keyboard_reload_input_views_workaround &&
-      _lastSeenParams.field_type != params.field_type) {
+  if (_lastSeenParams.field_type != params.field_type) {
     [GetFirstResponder() reloadInputViews];
   }
   _lastSeenParams = params;

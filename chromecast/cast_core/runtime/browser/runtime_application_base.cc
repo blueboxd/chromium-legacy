@@ -4,17 +4,15 @@
 
 #include "chromecast/cast_core/runtime/browser/runtime_application_base.h"
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
-#include "base/task/bind_post_task.h"
-#include "chromecast/browser/cast_web_service.h"
-#include "chromecast/browser/cast_web_view_factory.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "chromecast/browser/cast_content_window.h"
+#include "chromecast/browser/cast_web_contents.h"
 #include "chromecast/browser/visibility_types.h"
-#include "chromecast/cast_core/runtime/browser/runtime_application_platform.h"
-#include "chromecast/cast_core/runtime/browser/url_rewrite/url_request_rewrite_type_converters.h"
 #include "chromecast/common/feature_constants.h"
+#include "components/media_control/browser/media_blocker.h"
+#include "content/public/browser/web_contents.h"
 
 namespace chromecast {
 namespace {
@@ -33,28 +31,29 @@ const cast::common::Dictionary::Entry* FindEntry(
 
 }  // namespace
 
+RuntimeApplicationBase::Delegate::~Delegate() = default;
+
 RuntimeApplicationBase::RuntimeApplicationBase(
     std::string cast_session_id,
     cast::common::ApplicationConfig app_config,
-    mojom::RendererType renderer_type_used,
-    CastWebService* web_service,
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    RuntimeApplicationPlatform::Factory runtime_application_factory)
-    : platform_(std::move(runtime_application_factory)
-                    .Run(task_runner, cast_session_id, *this)),
-      cast_session_id_(std::move(cast_session_id)),
+    mojom::RendererType renderer_type,
+    cast_receiver::ApplicationClient& application_client)
+    : cast_session_id_(std::move(cast_session_id)),
       app_config_(std::move(app_config)),
-      renderer_type_(renderer_type_used),
-      web_service_(web_service),
-      task_runner_(std::move(task_runner)) {
-  DCHECK(platform_);
-  DCHECK(web_service_);
+      renderer_type_(renderer_type),
+      task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      application_client_(application_client) {
   DCHECK(task_runner_);
 }
 
 RuntimeApplicationBase::~RuntimeApplicationBase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!is_application_running_);
+}
+
+void RuntimeApplicationBase::SetDelegate(Delegate& delegate) {
+  DCHECK(!delegate_);
+  delegate_ = &delegate;
 }
 
 const std::string& RuntimeApplicationBase::GetDisplayName() const {
@@ -69,55 +68,37 @@ const std::string& RuntimeApplicationBase::GetCastSessionId() const {
   return cast_session_id_;
 }
 
-void RuntimeApplicationBase::Load(cast::runtime::LoadApplicationRequest request,
-                                  RuntimeApplication::StatusCallback callback) {
+void RuntimeApplicationBase::Load(StatusCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  platform_->Load(
-      std::move(request),
-      base::BindOnce(&RuntimeApplicationBase::OnApplicationLoading,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void RuntimeApplicationBase::OnApplicationLoading(
-    RuntimeApplication::StatusCallback callback,
-    cast_receiver::Status success) {
-  if (!success) {
-    // TODO(crbug.com/1360597): Add details of this failure to the new Status
-    // object returned.
-    std::move(callback).Run(false);
-    return;
-  }
+  DCHECK(delegate_->GetWebContents());
 
   is_application_running_ = true;
-  cast_web_view_ = CreateCastWebView();
-
-  LOG(INFO) << "Loaded application" << *this;
-  std::move(callback).Run(true);
-}
-
-void RuntimeApplicationBase::OnApplicationLaunching(
-    RuntimeApplication::StatusCallback callback,
-    cast_receiver::Status success) {
-  std::move(callback).Run(success);
-  if (success) {
-    LOG(INFO) << "Launched application" << *this;
-    OnApplicationLaunched();
+  if (cached_mojom_rules_) {
+    // Apply cached URL rewrite rules before anything is done with the page.
+    auto* cast_web_contents =
+        CastWebContents::FromWebContents(delegate_->GetWebContents());
+    DCHECK(cast_web_contents);
+    cast_web_contents->SetUrlRewriteRules(std::move(cached_mojom_rules_));
   }
+
+  LOG(INFO) << "Loaded application: " << *this;
+  std::move(callback).Run(cast_receiver::OkStatus());
 }
 
-void RuntimeApplicationBase::OnUrlRewriteRulesSet(
-    url_rewrite::mojom::UrlRequestRewriteRulesPtr mojom_rules) {
-  cast_web_contents()->SetUrlRewriteRules(std::move(mojom_rules));
-}
-
-void RuntimeApplicationBase::Launch(
-    cast::runtime::LaunchApplicationRequest request,
-    RuntimeApplication::StatusCallback callback) {
+void RuntimeApplicationBase::Stop(StatusCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  platform_->Launch(
-      std::move(request),
-      base::BindOnce(&RuntimeApplicationBase::OnApplicationLaunching,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  StopApplication(cast::common::StopReason::USER_REQUEST, /*net_error_code=*/0);
+  std::move(callback).Run(cast_receiver::OkStatus());
+}
+
+cast_receiver::ApplicationClient::ApplicationControls*
+RuntimeApplicationBase::GetApplicationControls() {
+  if (!delegate().GetWebContents()) {
+    return nullptr;
+  }
+
+  return &application_client_->GetApplicationControls(
+      *delegate().GetWebContents());
 }
 
 base::Value RuntimeApplicationBase::GetRendererFeatures() const {
@@ -246,9 +227,13 @@ bool RuntimeApplicationBase::GetEnabledForDev() const {
 
 void RuntimeApplicationBase::LoadPage(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(delegate_->GetWebContents());
+  auto* cast_web_contents =
+      CastWebContents::FromWebContents(delegate_->GetWebContents());
+  DCHECK(cast_web_contents);
 
-  cast_web_contents()->AddRendererFeatures(GetRendererFeatures());
-  cast_web_contents()->SetAppProperties(
+  cast_web_contents->AddRendererFeatures(GetRendererFeatures());
+  cast_web_contents->SetAppProperties(
       config().app_id(), GetCastSessionId(), GetIsAudioOnly(), url,
       GetEnforceFeaturePermissions(), GetFeaturePermissions(),
       GetAdditionalFeaturePermissionOrigins());
@@ -257,50 +242,52 @@ void RuntimeApplicationBase::LoadPage(const GURL& url) {
   // created. This way users won't see the progressive UI updates as the page is
   // formed and styles are applied. The actual window will be created in
   // OnApplicationStarted when application is fully launched.
-  cast_web_contents()->LoadUrl(url);
+  cast_web_contents->LoadUrl(url);
 
   // This needs to be called to get the PageState::LOADED event as it's fully
   // loaded.
-  cast_web_contents()->SetWebVisibilityAndPaint(false);
+  SetWebVisibilityAndPaint(false);
 }
 
 void RuntimeApplicationBase::OnPageLoaded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  LOG(INFO) << "Application started: " << *this;
+  DLOG(INFO) << "Page loaded: " << *this;
 
-  cast_web_view_->window()->AddObserver(this);
-  cast_web_view_->window()->EnableTouchInput(touch_input_ ==
-                                             cast::common::TouchInput::ENABLED);
+  auto* window_controls = delegate_->GetContentWindowControls();
+  DCHECK(window_controls);
+  window_controls->AddVisibilityChangeObserver(*this);
+  if (touch_input_ == cast::common::TouchInput::ENABLED) {
+    window_controls->EnableTouchInput();
+  } else {
+    window_controls->DisableTouchInput();
+  }
 
   // Create the window and show the web view.
   if (visibility_ == cast::common::Visibility::FULL_SCREEN) {
-    LOG(INFO) << "Loading application in full screen: " << *this;
-    cast_web_view_->window()->GrantScreenAccess();
-    cast_web_view_->window()->CreateWindow(mojom::ZOrder::APP,
-                                           VisibilityPriority::STICKY_ACTIVITY);
+    LOG(INFO) << "Loading page in full screen: " << *this;
+    window_controls->ShowWindow();
   } else {
-    LOG(INFO) << "Loading application in background: " << *this;
-    cast_web_view_->window()->CreateWindow(mojom::ZOrder::APP,
-                                           VisibilityPriority::HIDDEN);
+    LOG(INFO) << "Loading page in background: " << *this;
+    window_controls->HideWindow();
   }
 
-  platform_->NotifyApplicationStarted();
+  delegate().NotifyApplicationStarted();
 }
 
-CastWebView::Scoped RuntimeApplicationBase::CreateCastWebView() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  mojom::CastWebViewParamsPtr params = mojom::CastWebViewParams::New();
-  params->renderer_type = renderer_type_;
-  params->handle_inner_contents = true;
-  params->session_id = GetCastSessionId();
-  params->is_remote_control_mode = GetIsRemoteControlMode();
-  params->activity_id =
-      params->is_remote_control_mode ? params->session_id : config().app_id();
-  params->enabled_for_dev = GetEnabledForDev();
-  return web_service_->CreateWebViewInternal(std::move(params));
+void RuntimeApplicationBase::SetUrlRewriteRules(
+    url_rewrite::mojom::UrlRequestRewriteRulesPtr mojom_rules) {
+  if (!delegate_->GetWebContents()) {
+    cached_mojom_rules_ = std::move(mojom_rules);
+    return;
+  }
+
+  auto* cast_web_contents =
+      CastWebContents::FromWebContents(delegate_->GetWebContents());
+  DCHECK(cast_web_contents);
+  cast_web_contents->SetUrlRewriteRules(std::move(mojom_rules));
 }
 
-void RuntimeApplicationBase::OnMediaStateSet(
+void RuntimeApplicationBase::SetMediaState(
     cast::common::MediaState::Type media_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (media_state == cast::common::MediaState::UNDEFINED) {
@@ -312,24 +299,28 @@ void RuntimeApplicationBase::OnMediaStateSet(
             << cast::common::MediaState::Type_Name(media_state_) << ", "
             << *this;
 
-  if (!cast_web_view_ || !cast_web_view_->cast_web_contents()) {
+  if (!delegate_->GetWebContents()) {
     return;
   }
 
+  auto* application_controls = GetApplicationControls();
+  DCHECK(application_controls);
+  media_control::MediaBlocker& media_blocker =
+      application_controls->GetMediaBlocker();
   switch (media_state_) {
     case cast::common::MediaState::LOAD_BLOCKED:
-      cast_web_view_->cast_web_contents()->BlockMediaLoading(true);
-      cast_web_view_->cast_web_contents()->BlockMediaStarting(true);
+      media_blocker.BlockMediaLoading(true);
+      // TODO(crbug.com/1359584): Block media starting.
       break;
 
     case cast::common::MediaState::START_BLOCKED:
-      cast_web_view_->cast_web_contents()->BlockMediaLoading(false);
-      cast_web_view_->cast_web_contents()->BlockMediaStarting(true);
+      media_blocker.BlockMediaLoading(false);
+      // TODO(crbug.com/1359584): Block media starting.
       break;
 
     case cast::common::MediaState::UNBLOCKED:
-      cast_web_view_->cast_web_contents()->BlockMediaLoading(false);
-      cast_web_view_->cast_web_contents()->BlockMediaStarting(false);
+      media_blocker.BlockMediaLoading(false);
+      // TODO(crbug.com/1359584): Allow media starting.
       break;
 
     default:
@@ -337,7 +328,7 @@ void RuntimeApplicationBase::OnMediaStateSet(
   }
 }
 
-void RuntimeApplicationBase::OnVisibilitySet(
+void RuntimeApplicationBase::SetVisibility(
     cast::common::Visibility::Type visibility) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (visibility == cast::common::Visibility::UNDEFINED) {
@@ -350,20 +341,18 @@ void RuntimeApplicationBase::OnVisibilitySet(
             << cast::common::Visibility::Type_Name(visibility_) << ", "
             << *this;
 
-  if (!cast_web_view_ || !cast_web_view_->window()) {
+  auto* window_controls = delegate_->GetContentWindowControls();
+  if (!window_controls) {
     return;
   }
 
   switch (visibility_) {
     case cast::common::Visibility::FULL_SCREEN:
-      cast_web_view_->window()->RequestVisibility(
-          VisibilityPriority::STICKY_ACTIVITY);
-      cast_web_view_->window()->GrantScreenAccess();
+      window_controls->ShowWindow();
       break;
 
     case cast::common::Visibility::HIDDEN:
-      cast_web_view_->window()->RequestVisibility(VisibilityPriority::HIDDEN);
-      cast_web_view_->window()->RevokeScreenAccess();
+      window_controls->HideWindow();
       break;
 
     default:
@@ -371,7 +360,7 @@ void RuntimeApplicationBase::OnVisibilitySet(
   }
 }
 
-void RuntimeApplicationBase::OnTouchInputSet(
+void RuntimeApplicationBase::SetTouchInput(
     cast::common::TouchInput::Type touch_input) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (touch_input == cast::common::TouchInput::UNDEFINED) {
@@ -384,16 +373,24 @@ void RuntimeApplicationBase::OnTouchInputSet(
             << cast::common::TouchInput::Type_Name(touch_input_) << ", "
             << *this;
 
-  if (!cast_web_view_ || !cast_web_view_->window()) {
+  auto* window_controls = delegate_->GetContentWindowControls();
+  if (!window_controls) {
     return;
   }
 
-  cast_web_view_->window()->EnableTouchInput(touch_input_ ==
-                                             cast::common::TouchInput::ENABLED);
+  if (touch_input_ == cast::common::TouchInput::ENABLED) {
+    window_controls->EnableTouchInput();
+  } else {
+    window_controls->DisableTouchInput();
+  }
 }
 
-bool RuntimeApplicationBase::IsApplicationRunning() {
+bool RuntimeApplicationBase::IsApplicationRunning() const {
   return is_application_running_;
+}
+
+mojom::RendererType RuntimeApplicationBase::GetRendererType() const {
+  return renderer_type_;
 }
 
 void RuntimeApplicationBase::StopApplication(
@@ -406,36 +403,51 @@ void RuntimeApplicationBase::StopApplication(
   }
   is_application_running_ = false;
 
-  if (cast_web_view_) {
-    cast_web_contents()->ClosePage();
+  if (delegate_->GetWebContents()) {
+    auto* cast_web_contents =
+        CastWebContents::FromWebContents(delegate_->GetWebContents());
+    DCHECK(cast_web_contents);
+    cast_web_contents->ClosePage();
+
     // Check if window is still available as page might have been closed before.
-    if (cast_web_view_->window()) {
-      cast_web_view_->window()->RemoveObserver(this);
+    auto* window_controls = delegate_->GetContentWindowControls();
+    if (window_controls) {
+      window_controls->RemoveVisibilityChangeObserver(*this);
     }
   }
 
-  platform_->NotifyApplicationStopped(stop_reason, net_error_code);
+  delegate().NotifyApplicationStopped(stop_reason, net_error_code);
 
   LOG(INFO) << "Application is stopped: stop_reason="
             << cast::common::StopReason::Type_Name(stop_reason) << ", "
             << *this;
 }
 
-void RuntimeApplicationBase::OnVisibilityChange(
-    VisibilityType visibility_type) {
-  switch (visibility_type) {
-    case VisibilityType::FULL_SCREEN:
-    case VisibilityType::PARTIAL_OUT:
-    case VisibilityType::TRANSIENTLY_HIDDEN:
-      LOG(INFO) << "Application is visible now: " << *this;
-      cast_web_contents()->SetWebVisibilityAndPaint(true);
-      break;
-
-    default:
-      LOG(INFO) << "Application is hidden now: " << *this;
-      cast_web_contents()->SetWebVisibilityAndPaint(false);
-      break;
+void RuntimeApplicationBase::SetWebVisibilityAndPaint(bool is_visible) {
+  auto* web_contents = delegate_->GetWebContents();
+  if (!web_contents) {
+    return;
   }
+
+  if (is_visible) {
+    web_contents->WasShown();
+  } else {
+    web_contents->WasHidden();
+  }
+
+  if (web_contents->GetVisibility() != content::Visibility::VISIBLE) {
+    // Since we are managing the visibility, we need to ensure pages are
+    // unfrozen in the event this occurred while in the background.
+    web_contents->SetPageFrozen(false);
+  }
+}
+
+void RuntimeApplicationBase::OnWindowShown() {
+  SetWebVisibilityAndPaint(true);
+}
+
+void RuntimeApplicationBase::OnWindowHidden() {
+  SetWebVisibilityAndPaint(false);
 }
 
 }  // namespace chromecast

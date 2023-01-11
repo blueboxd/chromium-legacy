@@ -5,6 +5,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
@@ -1013,8 +1014,8 @@ TEST_P(VisualRectMappingTest, ShouldAccountForPreserve3d) {
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   PhysicalRect original_rect(0, 0, 100, 100);
   // Multiply both matrices together before flattening.
-  TransformationMatrix matrix = container->Layer()->CurrentTransform();
-  matrix.FlattenTo2d();
+  gfx::Transform matrix = container->Layer()->CurrentTransform();
+  matrix.Flatten();
   matrix *= target->Layer()->CurrentTransform();
   PhysicalRect output =
       PhysicalRect::EnclosingRect(matrix.MapRect(gfx::RectF(original_rect)));
@@ -1044,7 +1045,7 @@ TEST_P(VisualRectMappingTest, ShouldAccountForPreserve3dNested) {
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   PhysicalRect original_rect(0, 0, 100, 100);
   // Multiply both matrices together before flattening.
-  TransformationMatrix matrix = container->Layer()->CurrentTransform();
+  gfx::Transform matrix = container->Layer()->CurrentTransform();
   matrix *= target->Layer()->CurrentTransform();
   PhysicalRect output =
       PhysicalRect::EnclosingRect(matrix.MapRect(gfx::RectF(original_rect)));
@@ -1071,10 +1072,10 @@ TEST_P(VisualRectMappingTest, ShouldAccountForPerspective) {
   auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   PhysicalRect original_rect(0, 0, 100, 100);
-  TransformationMatrix matrix = container->Layer()->CurrentTransform();
-  matrix.FlattenTo2d();
-  TransformationMatrix target_matrix;
-  // getTransformfromContainter includes transform and perspective matrix
+  gfx::Transform matrix = container->Layer()->CurrentTransform();
+  matrix.Flatten();
+  gfx::Transform target_matrix;
+  // GetTransformfromContainer includes transform and perspective matrix
   // of the container.
   target->GetTransformFromContainer(container, PhysicalOffset(), target_matrix);
   matrix *= target_matrix;
@@ -1105,9 +1106,9 @@ TEST_P(VisualRectMappingTest, ShouldAccountForPerspectiveNested) {
   auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   PhysicalRect original_rect(0, 0, 100, 100);
-  TransformationMatrix matrix = container->Layer()->CurrentTransform();
-  TransformationMatrix target_matrix;
-  // getTransformfromContainter includes transform and perspective matrix
+  gfx::Transform matrix = container->Layer()->CurrentTransform();
+  gfx::Transform target_matrix;
+  // GetTransformfromContainer includes transform and perspective matrix
   // of the container.
   target->GetTransformFromContainer(container, PhysicalOffset(), target_matrix);
   matrix *= target_matrix;
@@ -1146,10 +1147,10 @@ TEST_P(VisualRectMappingTest, PerspectivePlusScroll) {
 
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   PhysicalRect originalRect(0, 0, 100, 100);
-  TransformationMatrix transform;
+  gfx::Transform transform;
   target->GetTransformFromContainer(
       container, target->OffsetFromContainer(container), transform);
-  transform.FlattenTo2d();
+  transform.Flatten();
 
   PhysicalRect output =
       PhysicalRect::EnclosingRect(transform.MapRect(gfx::RectF(originalRect)));
@@ -1385,6 +1386,10 @@ TEST_P(VisualRectMappingTest, AnchorScroll) {
   auto* scrollable_area =
       GetScrollableArea(To<LayoutBlock>(GetLayoutBoxByElementId("scroller")));
   scrollable_area->ScrollToAbsolutePosition(gfx::PointF(400, 0));
+
+  // Simulates a frame to update anchor-scroll snapshots.
+  GetPage().Animator().ServiceScriptedAnimations(
+      GetAnimationClock().CurrentTime() + base::Milliseconds(100));
   UpdateAllLifecyclePhasesForTest();
 
   // #anchored is moved into view and should have a non-empty visual rect

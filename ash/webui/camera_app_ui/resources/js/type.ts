@@ -138,6 +138,7 @@ export enum ViewName {
   DOCUMENT_REVIEW = 'view-document-review',
   EXPERT_SETTINGS = 'view-expert-settings',
   FLASH = 'view-flash',
+  LOW_STORAGE_DIALOG = 'view-low-storage-dialog',
   MESSAGE_DIALOG = 'view-message-dialog',
   OPTION_PANEL = 'view-option-panel',
   PHOTO_ASPECT_RATIO_SETTINGS = 'view-photo-aspect-ratio-settings',
@@ -338,6 +339,7 @@ export interface ErrorInfo {
  */
 export enum ErrorType {
   BROKEN_THUMBNAIL = 'broken-thumbnail',
+  CHECK_COVER_FAILURE = 'check-cover-failed',
   DEVICE_INFO_UPDATE_FAILURE = 'device-info-update-failure',
   DEVICE_NOT_EXIST = 'device-not-exist',
   EMPTY_FILE = 'empty-file',
@@ -434,6 +436,16 @@ export class EmptyThumbnailError extends Error {
  */
 export class NoChunkError extends Error {
   constructor(message = 'No chunk is received during recording session') {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+/**
+ * Throws when the GIF recording is ended with no frame captured.
+ */
+export class NoFrameError extends Error {
+  constructor(message = 'No frames captured during GIF recording') {
     super(message);
     this.name = this.constructor.name;
   }

@@ -13,6 +13,8 @@ import {assert} from 'chrome://resources/js/assert_ts.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {isSelectionEvent} from '../utils.js';
+
 import {getLoadingPlaceholderAnimationDelay} from './utils.js';
 import {getTemplate} from './wallpaper_grid_item_element.html.js';
 
@@ -28,6 +30,33 @@ function getDataIndex(event: Event&{currentTarget: HTMLImageElement}): number {
   const index = parseInt(dataIndex, 10);
   assert(!isNaN(index), `could not parseInt on ${dataIndex}`);
   return index;
+}
+
+function shouldShowPlaceholder(imageStatus: ImageStatus[]): boolean {
+  return imageStatus.length === 0 ||
+      (imageStatus.includes(ImageStatus.LOADING) &&
+       !imageStatus.includes(ImageStatus.ERROR));
+}
+
+const wallpaperGridItemSelectedEventName = 'wallpaper-grid-item-selected';
+
+export class WallpaperGridItemSelectedEvent extends CustomEvent<null> {
+  constructor() {
+    super(
+        wallpaperGridItemSelectedEventName,
+        {
+          bubbles: true,
+          composed: true,
+          detail: null,
+        },
+    );
+  }
+}
+
+declare global {
+  interface HTMLElementEventMap {
+    [wallpaperGridItemSelectedEventName]: WallpaperGridItemSelectedEvent;
+  }
 }
 
 export class WallpaperGridItem extends PolymerElement {
@@ -60,6 +89,12 @@ export class WallpaperGridItem extends PolymerElement {
         observer: 'onSelectedChanged_',
       },
 
+      disabled: {
+        type: Boolean,
+        value: false,
+        observer: 'onDisabledChanged_',
+      },
+
       imageStatus_: {
         type: Array,
         value() {
@@ -72,10 +107,12 @@ export class WallpaperGridItem extends PolymerElement {
 
   /**
    * The source for the image to render for the grid item. Will display a
-   * placeholder loading animation if src is undefined.
-   * If |src| is an array, will display the first two images side by side.
+   * placeholder loading animation if `src` is undefined or null.
+   * `src` will be undefined if the attribute is not set, but can also be
+   * explicitly set to null to force showing a placeholder animation.
+   * If `src` is an array, will display the first two images side by side.
    */
-  src: Url|Url[]|undefined;
+  src: Url|Url[]|null|undefined;
 
   /** The index of the grid item within its parent grid. */
   index: number;
@@ -97,8 +134,35 @@ export class WallpaperGridItem extends PolymerElement {
    */
   selected: boolean|undefined;
 
+  /**
+   * Whether the grid item is currently disabled. Automatically sets the
+   * aria-disabled property.
+   * @default false
+   */
+  disabled: boolean;
+
   // Track if images are loaded, failed, or ready to display.
   private imageStatus_: ImageStatus[];
+
+  override ready() {
+    super.ready();
+    this.addEventListener('click', this.onUserSelection_);
+    this.addEventListener('keydown', this.onUserSelection_);
+  }
+
+  private onUserSelection_(event: MouseEvent|KeyboardEvent) {
+    // Ignore extraneous events and let them continue.
+    // Also ignore click and keydown events if this grid item is disabled.
+    // These events will continue to propagate up in case someone else is
+    // interested that this item was interacted with.
+    if (!isSelectionEvent(event) || this.disabled) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    this.dispatchEvent(new WallpaperGridItemSelectedEvent());
+  }
 
   // Invoked on changes to |imageSrc|.
   private onImageSrcChanged_(
@@ -124,10 +188,12 @@ export class WallpaperGridItem extends PolymerElement {
     }
   }
 
+  private onDisabledChanged_(disabled: boolean) {
+    this.setAttribute('aria-disabled', disabled.toString());
+  }
+
   private onImageStatusChanged_(imageStatus: ImageStatus[]) {
-    if (imageStatus.length === 0 ||
-        (imageStatus.includes(ImageStatus.LOADING) &&
-         !imageStatus.includes(ImageStatus.ERROR))) {
+    if (shouldShowPlaceholder(imageStatus)) {
       this.setAttribute('placeholder', '');
     } else {
       this.removeAttribute('placeholder');
@@ -186,7 +252,11 @@ export class WallpaperGridItem extends PolymerElement {
   }
 
   /** Whether any text is currently visible. */
-  private isTextVisible_() {
+  private isTextVisible_(): boolean {
+    if (shouldShowPlaceholder(this.imageStatus_)) {
+      // Hide text while placeholder is displayed.
+      return false;
+    }
     return this.isSecondaryTextVisible_() || this.isPrimaryTextVisible_();
   }
 }

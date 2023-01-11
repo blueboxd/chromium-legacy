@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -15,24 +16,27 @@ namespace absl {
 class uint128;
 }  // namespace absl
 
+namespace attribution_reporting {
+class AggregatableTriggerData;
+class AggregatableValues;
+class AggregationKeys;
+class FilterData;
+}  // namespace attribution_reporting
+
 namespace content {
 
 class AggregatableHistogramContribution;
 class AggregatableReportRequest;
-class AttributionAggregationKeys;
-class AttributionAggregatableTriggerData;
-class AttributionAggregatableValues;
-class AttributionFilterData;
 class AttributionReport;
 
 // Creates histograms from the specified source and trigger data.
 CONTENT_EXPORT std::vector<AggregatableHistogramContribution>
 CreateAggregatableHistogram(
-    const AttributionFilterData& source_filter_data,
-    const AttributionAggregationKeys& keys,
-    const std::vector<AttributionAggregatableTriggerData>&
-        aggregatable_trigger_data,
-    const AttributionAggregatableValues& aggregatable_values);
+    const attribution_reporting::FilterData& source_filter_data,
+    AttributionSourceType,
+    const attribution_reporting::AggregationKeys& keys,
+    const std::vector<attribution_reporting::AggregatableTriggerData>&,
+    const attribution_reporting::AggregatableValues&);
 
 // Returns a hex string representation of the 128-bit aggregatable key in big
 // endian order.

@@ -4,7 +4,6 @@
 
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 
-#include <algorithm>
 #include <cctype>
 #include <memory>
 #include <ostream>
@@ -54,7 +53,7 @@ absl::optional<StorageKey> StorageKey::Deserialize(base::StringPiece in) {
 
   // More than two encoded attributes (delimited by carets) indicates a
   // malformed input.
-  if (std::count(in.begin(), in.end(), '^') > 2)
+  if (base::ranges::count(in, '^') > 2)
     return absl::nullopt;
 
   size_t pos_first_caret = in.find_first_of('^');
@@ -439,6 +438,17 @@ const absl::optional<net::CookiePartitionKey> StorageKey::ToCookiePartitionKey()
     const {
   return net::CookiePartitionKey::FromStorageKeyComponents(top_level_site_,
                                                            nonce_);
+}
+
+bool StorageKey::MatchesOriginForTrustedStorageDeletion(
+    const url::Origin& origin) const {
+  if (!IsThirdPartyStoragePartitioningEnabled())
+    return origin_ == origin;
+  // TODO(crbug.com/1382138): Address wss:// and https:// resulting in different
+  // SchemefulSites.
+  return (ancestor_chain_bit_ == blink::mojom::AncestorChainBit::kSameSite)
+             ? (origin_ == origin)
+             : (top_level_site_ == net::SchemefulSite(origin));
 }
 
 bool operator==(const StorageKey& lhs, const StorageKey& rhs) {

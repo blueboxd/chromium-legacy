@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/no_destructor.h"
@@ -49,10 +50,13 @@ namespace content {
 
 namespace {
 // Null until/unless the default main message loop is running.
-base::NoDestructor<base::OnceClosure> g_quit_main_message_loop;
+base::OnceClosure& GetMainMessageLoopQuitClosure() {
+  static base::NoDestructor<base::OnceClosure> closure;
+  return *closure;
+}
 
-const int kDefaultTestWindowWidthDip = 800;
-const int kDefaultTestWindowHeightDip = 600;
+constexpr int kDefaultTestWindowWidthDip = 800;
+constexpr int kDefaultTestWindowHeightDip = 600;
 
 // Owning pointer. We can not use unique_ptr as a global. That introduces a
 // static constructor/destructor.
@@ -134,13 +138,14 @@ Shell* Shell::CreateShell(std::unique_ptr<WebContents> web_contents,
 
 // static
 void Shell::SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure) {
-  *g_quit_main_message_loop = std::move(quit_closure);
+  GetMainMessageLoopQuitClosure() = std::move(quit_closure);
 }
 
 // static
 void Shell::QuitMainMessageLoopForTesting() {
-  if (*g_quit_main_message_loop)
-    std::move(*g_quit_main_message_loop).Run();
+  auto& quit_loop = GetMainMessageLoopQuitClosure();
+  if (quit_loop)
+    std::move(quit_loop).Run();
 }
 
 // static
@@ -190,8 +195,9 @@ void Shell::Shutdown() {
        it.Advance()) {
     it.GetCurrentValue()->DisableRefCounts();
   }
-  if (*g_quit_main_message_loop)
-    std::move(*g_quit_main_message_loop).Run();
+  auto& quit_loop = GetMainMessageLoopQuitClosure();
+  if (quit_loop)
+    std::move(quit_loop).Run();
 
   // Pump the message loop to allow window teardown tasks to run.
   base::RunLoop().RunUntilIdle();
@@ -276,8 +282,8 @@ void Shell::LoadDataWithBaseURLInternal(const GURL& url,
     params.url = GURL(data_url_header);
     std::string data_url_as_string = data_url_header + data;
 #if BUILDFLAG(IS_ANDROID)
-    params.data_url_as_string =
-        base::RefCountedString::TakeString(&data_url_as_string);
+    params.data_url_as_string = base::MakeRefCounted<base::RefCountedString>(
+        std::move(data_url_as_string));
 #endif
   } else {
     params.url = GURL(data_url_header + data);
@@ -674,8 +680,7 @@ void Shell::UpdateInspectedWebContentsIfNecessary(
   for (auto* shell_devtools_bindings :
        ShellDevToolsBindings::GetInstancesForWebContents(old_contents)) {
     shell_devtools_bindings->UpdateInspectedWebContents(
-        new_contents, base::BindOnce([](scoped_refptr<PendingCallback>) {},
-                                     pending_callback));
+        new_contents, base::DoNothingWithBoundArgs(pending_callback));
   }
 }
 

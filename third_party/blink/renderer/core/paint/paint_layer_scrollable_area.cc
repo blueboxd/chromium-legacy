@@ -104,6 +104,8 @@
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "ui/base/ui_base_features.h"
@@ -124,7 +126,6 @@ PaintLayerScrollableAreaRareData::PaintLayerScrollableAreaRareData() = default;
 
 void PaintLayerScrollableAreaRareData::Trace(Visitor* visitor) const {
   visitor->Trace(sticky_layers_);
-  visitor->Trace(anchor_positioned_layers_);
 }
 
 const int kResizerControlExpandRatioForTouch = 2;
@@ -236,7 +237,6 @@ void PaintLayerScrollableArea::DisposeImpl() {
     sequencer->DidDisposeScrollableArea(*this);
 
   RunScrollCompleteCallbacks();
-  InvalidateScrollTimeline();
 
   layer_ = nullptr;
 }
@@ -477,7 +477,6 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   // The ScrollOffsetTranslation paint property depends on the scroll offset.
   // (see: PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation).
   GetLayoutBox()->SetNeedsPaintPropertyUpdatePreservingCachedRects();
-  InvalidateScrollTimeline();
 
   if (scroll_type == mojom::blink::ScrollType::kUser ||
       scroll_type == mojom::blink::ScrollType::kCompositor) {
@@ -539,7 +538,6 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
 
 void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange() {
   InvalidatePaintForStickyDescendants();
-  InvalidatePaintForAnchorPositionedLayers();
 
   auto* box = GetLayoutBox();
   auto* frame_view = box->GetFrameView();
@@ -644,7 +642,6 @@ gfx::Vector2d PaintLayerScrollableArea::MaximumScrollOffsetInt() const {
 }
 
 void PaintLayerScrollableArea::VisibleSizeChanged() {
-  InvalidateScrollTimeline();
   ShowNonMacOverlayScrollbars();
 }
 
@@ -702,8 +699,22 @@ gfx::Size PaintLayerScrollableArea::ContentsSize() const {
 
 gfx::Size PaintLayerScrollableArea::PixelSnappedContentsSize(
     const PhysicalOffset& paint_offset) const {
-  return ToPixelSnappedRect(PhysicalRect(paint_offset, overflow_rect_.size))
-      .size();
+  PhysicalSize size = overflow_rect_.size;
+
+  // If we're capturing a transition snapshot, ensure the content size is
+  // considered at least as large as the container. Otherwise, the snapshot
+  // will be clipped by PendingLayer to the content size.
+  if (IsA<LayoutView>(GetLayoutBox())) {
+    if (auto* transition = ViewTransitionUtils::GetActiveTransition(
+            GetLayoutBox()->GetDocument());
+        transition && transition->IsRootTransitioning()) {
+      PhysicalSize container_size(transition->GetSnapshotViewportRect().size());
+      size.width = std::max(container_size.width, size.width);
+      size.height = std::max(container_size.height, size.height);
+    }
+  }
+
+  return ToPixelSnappedRect(PhysicalRect(paint_offset, size)).size();
 }
 
 void PaintLayerScrollableArea::ContentsResized() {
@@ -711,7 +722,6 @@ void PaintLayerScrollableArea::ContentsResized() {
   // Need to update the bounds of the scroll property.
   GetLayoutBox()->SetNeedsPaintPropertyUpdate();
   Layer()->SetNeedsCompositingInputsUpdate();
-  InvalidateScrollTimeline();
 }
 
 gfx::Point PaintLayerScrollableArea::LastKnownMousePosition() const {
@@ -946,7 +956,6 @@ void PaintLayerScrollableArea::SetScrollOffsetUnconditionally(
 
 void PaintLayerScrollableArea::UpdateAfterLayout() {
   InvalidateAllStickyConstraints();
-  InvalidateAllAnchorPositionedLayers();
 
   bool is_horizontal_scrollbar_frozen;
   bool is_vertical_scrollbar_frozen;
@@ -1899,7 +1908,7 @@ void PaintLayerScrollableArea::PositionOverflowControls() {
 
   if (scroll_corner_) {
     LayoutRect rect(ScrollCornerRect());
-    scroll_corner_->SetFrameRect(rect);
+    scroll_corner_->SetOverriddenFrameRect(rect);
     // TODO(crbug.com/1020913): This should be part of PaintPropertyTreeBuilder
     // when we support subpixel layout of overflow controls.
     scroll_corner_->GetMutableForPainting().FirstFragment().SetPaintOffset(
@@ -1908,7 +1917,7 @@ void PaintLayerScrollableArea::PositionOverflowControls() {
 
   if (resizer_) {
     LayoutRect rect(ResizerCornerRect(kResizerForPointer));
-    resizer_->SetFrameRect(rect);
+    resizer_->SetOverriddenFrameRect(rect);
     // TODO(crbug.com/1020913): This should be part of PaintPropertyTreeBuilder
     // when we support subpixel layout of overflow controls.
     resizer_->GetMutableForPainting().FirstFragment().SetPaintOffset(
@@ -1951,8 +1960,10 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
   gfx::Rect resize_control_rect;
   if (GetLayoutBox()->CanResize()) {
     resize_control_rect = ResizerCornerRect(kResizerForPointer);
-    if (resize_control_rect.Contains(local_point))
+    if (resize_control_rect.Contains(local_point)) {
+      result.SetIsOverResizer(true);
       return true;
+    }
   }
   int resize_control_size = max(resize_control_rect.height(), 0);
 
@@ -2084,11 +2095,6 @@ void PaintLayerScrollableArea::AddStickyLayer(PaintLayer* layer) {
   EnsureRareData().sticky_layers_.insert(layer);
 }
 
-void PaintLayerScrollableArea::RemoveStickyLayer(PaintLayer* layer) {
-  if (rare_data_)
-    rare_data_->sticky_layers_.erase(layer);
-}
-
 void PaintLayerScrollableArea::InvalidateAllStickyConstraints() {
   // Don't clear StickyConstraints for each LayoutObject of each layer in
   // sticky_layers_ because sticky_layers_ may contain stale pointers.
@@ -2113,30 +2119,6 @@ void PaintLayerScrollableArea::InvalidatePaintForStickyDescendants() {
       DCHECK(object.StickyConstraints());
       object.StickyConstraints()->ComputeStickyOffset(ScrollPosition());
     }
-  }
-}
-
-bool PaintLayerScrollableArea::AddAnchorPositionedLayer(PaintLayer* layer) {
-  auto add_result = EnsureRareData().anchor_positioned_layers_.insert(layer);
-  return add_result.is_new_entry;
-}
-
-void PaintLayerScrollableArea::InvalidateAllAnchorPositionedLayers() {
-  if (rare_data_)
-    rare_data_->anchor_positioned_layers_.clear();
-}
-
-void PaintLayerScrollableArea::InvalidatePaintForAnchorPositionedLayers() {
-  // If this is called during layout, anchor_positioned_layers_ may contain
-  // stale pointers. Return because we'll InvalidateAllAnchorPositionedLayers(),
-  // and we'll SetNeedsPaintPropertyUpdate() when updating anchor positioned
-  // layers.
-  if (GetLayoutBox()->NeedsLayout())
-    return;
-
-  if (PaintLayerScrollableAreaRareData* d = RareData()) {
-    for (PaintLayer* anchor_positioned_layer : d->anchor_positioned_layers_)
-      anchor_positioned_layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
   }
 }
 

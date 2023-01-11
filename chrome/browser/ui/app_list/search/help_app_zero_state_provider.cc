@@ -83,10 +83,6 @@ HelpAppZeroStateResult::HelpAppZeroStateResult(Profile* profile,
   SetTitle(title);
   if (!details.empty())
     SetDetails(details);
-  // Show this in the first position, in front of any other chips that may be
-  // also claiming the first slot.
-  SetDisplayIndex(DisplayIndex::kFirstIndex);
-  SetPositionPriority(1.0f);
   SetResultType(ResultType::kZeroStateHelpApp);
   SetDisplayType(display_type);
   // Some chips have different metrics types.
@@ -105,6 +101,8 @@ HelpAppZeroStateResult::~HelpAppZeroStateResult() = default;
 void HelpAppZeroStateResult::Open(int event_flags) {
   // Note: event_flags is ignored, LaunchSWA doesn't need it.
   if (id() == kHelpAppDiscoverResult) {
+    StopShowingDiscoverTabSuggestionChip(profile_);
+
     // Launch discover tab suggestion chip.
     ash::SystemAppLaunchParams params;
     params.url = GURL("chrome://help-app/discover");
@@ -112,12 +110,14 @@ void HelpAppZeroStateResult::Open(int event_flags) {
     ash::LaunchSystemWebAppAsync(
         profile_, ash::SystemWebAppType::HELP, params,
         std::make_unique<apps::WindowInfo>(display::kDefaultDisplayId));
-
-    StopShowingDiscoverTabSuggestionChip(profile_);
+    // NOTE: Launching the result may dismiss the app list, which may delete
+    // this result.
   } else if (id() == kHelpAppUpdatesResult) {
     // Launch release notes suggestion chip.
     base::RecordAction(
         base::UserMetricsAction("ReleaseNotes.SuggestionChipLaunched"));
+
+    ash::ReleaseNotesStorage(profile_).StopShowingSuggestionChip();
 
     ash::SystemAppLaunchParams params;
     params.url = GURL("chrome://help-app/updates");
@@ -125,8 +125,8 @@ void HelpAppZeroStateResult::Open(int event_flags) {
     ash::LaunchSystemWebAppAsync(
         profile_, ash::SystemWebAppType::HELP, params,
         std::make_unique<apps::WindowInfo>(display::kDefaultDisplayId));
-
-    ash::ReleaseNotesStorage(profile_).StopShowingSuggestionChip();
+    // NOTE: Launching the result may dismiss the app list, which may delete
+    // this result.
   }
 }
 
@@ -149,17 +149,8 @@ HelpAppZeroStateProvider::~HelpAppZeroStateProvider() {
     notifier_->RemoveObserver(this);
 }
 
-void HelpAppZeroStateProvider::Start(const std::u16string& query) {
-  // TODO(crbug.com/1258415): Remove this when non-categorical search is
-  // removed. With categorical search enabled, `ClearResultsSilently()` is
-  // actually no-op, and the search controller already clears all results
-  // that need to be cleared when search query is updated.
-  ClearResultsSilently();
-}
-
 void HelpAppZeroStateProvider::StartZeroState() {
   SearchProvider::Results search_results;
-  ClearResultsSilently();
 
   if (ShouldShowDiscoverTabSuggestionChip(profile_)) {
     search_results.emplace_back(std::make_unique<HelpAppZeroStateResult>(
@@ -199,10 +190,6 @@ void HelpAppZeroStateProvider::StartZeroState() {
 
 ash::AppListSearchResultType HelpAppZeroStateProvider::ResultType() const {
   return ash::AppListSearchResultType::kZeroStateHelpApp;
-}
-
-bool HelpAppZeroStateProvider::ShouldBlockZeroState() const {
-  return true;
 }
 
 void HelpAppZeroStateProvider::OnAppUpdate(const apps::AppUpdate& update) {

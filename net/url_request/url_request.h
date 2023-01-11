@@ -14,6 +14,7 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_piece.h"
 #include "base/supports_user_data.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -346,11 +347,12 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // This method may only be called before Start().
   void set_initiator(const absl::optional<url::Origin>& initiator);
 
-  // The request method, as an uppercase string.  "GET" is the default value.
-  // The request method may only be changed before Start() is called and
-  // should only be assigned an uppercase value.
+  // The request method.  "GET" is the default value. The request method may
+  // only be changed before Start() is called. Request methods are
+  // case-sensitive, so standard HTTP methods like GET or POST should be
+  // specified in uppercase.
   const std::string& method() const { return method_; }
-  void set_method(const std::string& method);
+  void set_method(base::StringPiece method);
 
 #if BUILDFLAG(ENABLE_REPORTING)
   // Reporting upload nesting depth of this request.
@@ -373,7 +375,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // the request is started. The referrer URL may be suppressed or changed
   // during the course of the request, for example because of a referrer policy
   // set with set_referrer_policy().
-  void SetReferrer(const std::string& referrer);
+  void SetReferrer(base::StringPiece referrer);
 
   // The referrer policy to apply when updating the referrer during redirects.
   // The referrer policy may only be changed before Start() is called. Any
@@ -404,10 +406,10 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // Set or remove a extra request header.  These methods may only be called
   // before Start() is called, or between receiving a redirect and trying to
   // follow it.
-  void SetExtraRequestHeaderByName(const std::string& name,
-                                   const std::string& value,
+  void SetExtraRequestHeaderByName(base::StringPiece name,
+                                   base::StringPiece value,
                                    bool overwrite);
-  void RemoveRequestHeaderByName(const std::string& name);
+  void RemoveRequestHeaderByName(base::StringPiece name);
 
   // Sets all extra request headers.  Any extra request headers set by other
   // methods are overwritten by this method.  This method may only be called
@@ -448,15 +450,13 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // Logs information about the what external object currently blocking the
   // request.  LogUnblocked must be called before resuming the request.  This
   // can be called multiple times in a row either with or without calling
-  // LogUnblocked between calls.  |blocked_by| must not be NULL or have length
-  // 0.
-  void LogBlockedBy(const char* blocked_by);
+  // LogUnblocked between calls.  |blocked_by| must not be empty.
+  void LogBlockedBy(base::StringPiece blocked_by);
 
   // Just like LogBlockedBy, but also makes GetLoadState return source as the
   // |param| in the value returned by GetLoadState.  Calling LogUnblocked or
-  // LogBlockedBy will clear the load param.  |blocked_by| must not be NULL or
-  // have length 0.
-  void LogAndReportBlockedBy(const char* blocked_by);
+  // LogBlockedBy will clear the load param.  |blocked_by| must not be empty.
+  void LogAndReportBlockedBy(base::StringPiece blocked_by);
 
   // Logs that the request is no longer blocked by the last caller to
   // LogBlockedBy.
@@ -471,7 +471,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // that appear more than once in the response are coalesced, with values
   // separated by commas (per RFC 2616). This will not work with cookies since
   // comma can be used in cookie values.
-  void GetResponseHeaderByName(const std::string& name,
+  void GetResponseHeaderByName(base::StringPiece name,
                                std::string* value) const;
 
   // The time when |this| was constructed.
@@ -809,16 +809,13 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
     return expected_response_checksum_;
   }
 
-  void set_expected_response_checksum(const std::string& checksum) {
-    expected_response_checksum_ = checksum;
+  void set_expected_response_checksum(base::StringPiece checksum) {
+    expected_response_checksum_ = std::string(checksum);
   }
 
   static bool DefaultCanUseCookies();
 
   base::WeakPtr<URLRequest> GetWeakPtr();
-
-  bool HasPartitionedCookie() { return has_partitioned_cookie_; }
-  void SetHasPartitionedCookie() { has_partitioned_cookie_ = true; }
 
  protected:
   // Allow the URLRequestJob class to control the is_pending() flag.
@@ -953,7 +950,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   bool force_main_frame_for_same_site_cookies_ = false;
   absl::optional<url::Origin> initiator_;
   GURL delegate_redirect_url_;
-  std::string method_;  // "GET", "POST", etc. Should be all uppercase.
+  std::string method_;  // "GET", "POST", etc. Case-sensitive.
   std::string referrer_;
   ReferrerPolicy referrer_policy_ =
       ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
@@ -1080,11 +1077,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   bool upgrade_if_insecure_ = false;
 
   bool send_client_certs_ = true;
-
-  // This boolean is set to true if the response has a Set-Cookie header with
-  // the Partitioned attribute.
-  // TODO(https://crbug.com/1296161): Delete this field.
-  bool has_partitioned_cookie_ = false;
 
   // Idempotency of the request.
   Idempotency idempotency_ = DEFAULT_IDEMPOTENCY;

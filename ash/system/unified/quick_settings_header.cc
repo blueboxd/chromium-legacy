@@ -14,6 +14,8 @@
 #include "ash/system/channel_indicator/channel_indicator_quick_settings_view.h"
 #include "ash/system/channel_indicator/channel_indicator_utils.h"
 #include "ash/system/model/system_tray_model.h"
+#include "ash/system/unified/buttons.h"
+#include "ash/system/unified/unified_system_tray_controller.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/layout/box_layout.h"
@@ -24,18 +26,29 @@ namespace {
 // The bottom padding is 0 so this view is flush with the feature tiles.
 constexpr auto kHeaderPadding = gfx::Insets::TLBR(16, 16, 0, 16);
 
-constexpr int kBetweenChildSpacing = 8;
+// Horizontal space between header buttons.
+constexpr int kButtonSpacing = 8;
+
+// Header button size when the button is narrow (e.g. two column layout).
+constexpr gfx::Size kNarrowButtonSize(200, 32);
+
+// Header button size when the button is wide (e.g. one column layout).
+constexpr gfx::Size kWideButtonSize(408, 32);
 
 }  // namespace
 
-QuickSettingsHeader::QuickSettingsHeader() {
+QuickSettingsHeader::QuickSettingsHeader(
+    UnifiedSystemTrayController* controller) {
   DCHECK(features::IsQsRevampEnabled());
 
-  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, kHeaderPadding,
-      kBetweenChildSpacing));
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kStretch);
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal, kHeaderPadding,
+      kButtonSpacing));
+
+  enterprise_managed_view_ =
+      AddChildView(std::make_unique<EnterpriseManagedView>(controller));
+
+  supervised_view_ = AddChildView(std::make_unique<SupervisedUserView>());
 
   // If the release track is not "stable" then show the channel indicator UI.
   auto channel = Shell::Get()->shell_delegate()->GetChannel();
@@ -50,16 +63,38 @@ QuickSettingsHeader::QuickSettingsHeader() {
                          ->IsUserFeedbackEnabled()));
   }
 
-  UpdateVisibility();
+  UpdateVisibilityAndLayout();
 }
 
 QuickSettingsHeader::~QuickSettingsHeader() = default;
 
-void QuickSettingsHeader::UpdateVisibility() {
-  // TODO(b/251724754): Update condition when enterprise management view is
-  // added.
-  bool should_show = !!channel_view_;
-  SetVisible(should_show);
+void QuickSettingsHeader::ChildVisibilityChanged(views::View* child) {
+  UpdateVisibilityAndLayout();
+}
+
+void QuickSettingsHeader::UpdateVisibilityAndLayout() {
+  // The managed view and the supervised view are never shown together.
+  DCHECK(!enterprise_managed_view_->GetVisible() ||
+         !supervised_view_->GetVisible());
+
+  // Make `this` view visible if a child is visible.
+  bool managed_view_visible =
+      enterprise_managed_view_->GetVisible() || supervised_view_->GetVisible();
+  bool channel_view_visible = !!channel_view_;
+  SetVisible(managed_view_visible || channel_view_visible);
+
+  // Update button sizes for one column vs. two columns.
+  bool two_columns = managed_view_visible && channel_view_visible;
+  gfx::Size size = two_columns ? kNarrowButtonSize : kWideButtonSize;
+  enterprise_managed_view_->SetPreferredSize(size);
+  supervised_view_->SetPreferredSize(size);
+  if (channel_view_)
+    channel_view_->SetPreferredSize(size);
+
+  // Use custom narrow layouts when two columns are showing.
+  enterprise_managed_view_->SetNarrowLayout(two_columns);
+  if (channel_view_)
+    channel_view_->SetNarrowLayout(two_columns);
 }
 
 BEGIN_METADATA(QuickSettingsHeader, views::View)

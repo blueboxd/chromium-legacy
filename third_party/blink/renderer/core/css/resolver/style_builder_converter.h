@@ -70,6 +70,8 @@ class Font;
 class FontBuilder;
 class RotateTransformOperation;
 class ScaleTransformOperation;
+class ScopedCSSName;
+class ScopedCSSValue;
 class StyleAutoColor;
 class StylePath;
 class StyleResolverState;
@@ -126,7 +128,7 @@ class StyleBuilderConverter {
   static T ConvertFlags(StyleResolverState&, const CSSValue&);
   static FontDescription::FamilyDescription ConvertFontFamily(
       StyleResolverState&,
-      const CSSValue&);
+      const ScopedCSSValue&);
   static scoped_refptr<FontFeatureSettings> ConvertFontFeatureSettings(
       StyleResolverState&,
       const CSSValue&);
@@ -175,16 +177,23 @@ class StyleBuilderConverter {
   template <typename T>
   static T ConvertLineWidth(StyleResolverState&, const CSSValue&);
   static LayoutUnit ConvertBorderWidth(StyleResolverState&, const CSSValue&);
+  static uint16_t ConvertColumnRuleWidth(StyleResolverState&, const CSSValue&);
   static LayoutUnit ConvertLayoutUnit(StyleResolverState&, const CSSValue&);
   static absl::optional<Length> ConvertGapLength(const StyleResolverState&,
                                                  const CSSValue&);
   static Length ConvertLength(const StyleResolverState&, const CSSValue&);
+  static Length ConvertLength(const StyleResolverState&, const ScopedCSSValue&);
   static UnzoomedLength ConvertUnzoomedLength(const StyleResolverState&,
                                               const CSSValue&);
   static float ConvertZoom(const StyleResolverState&, const CSSValue&);
   static Length ConvertLengthOrAuto(const StyleResolverState&, const CSSValue&);
+  static Length ConvertLengthOrAuto(const StyleResolverState&,
+                                    const ScopedCSSValue&);
   static Length ConvertLengthSizing(StyleResolverState&, const CSSValue&);
+  static Length ConvertLengthSizing(StyleResolverState&, const ScopedCSSValue&);
   static Length ConvertLengthMaxSizing(StyleResolverState&, const CSSValue&);
+  static Length ConvertLengthMaxSizing(StyleResolverState&,
+                                       const ScopedCSSValue&);
   static TabSize ConvertLengthOrTabSpaces(StyleResolverState&, const CSSValue&);
   static Length ConvertLineHeight(StyleResolverState&, const CSSValue&);
   static float ConvertNumberOrPercentage(StyleResolverState&, const CSSValue&);
@@ -192,6 +201,8 @@ class StyleBuilderConverter {
                             const CSSValue&);  // clamps to [0,1]
   static AtomicString ConvertNoneOrCustomIdent(StyleResolverState&,
                                                const CSSValue&);
+  static ScopedCSSName* ConvertNoneOrCustomIdent(StyleResolverState&,
+                                                 const ScopedCSSValue&);
   static StyleInitialLetter ConvertInitialLetter(StyleResolverState&,
                                                  const CSSValue&);
   static StyleOffsetRotation ConvertOffsetRotate(StyleResolverState&,
@@ -313,8 +324,8 @@ class StyleBuilderConverter {
       const StyleResolverState&,
       const CSSValue&);
 
-  static AtomicString ConvertPageTransitionTag(StyleResolverState&,
-                                               const CSSValue&);
+  static AtomicString ConvertViewTransitionName(StyleResolverState&,
+                                                const CSSValue&);
 
   // Take a list value for a specified color-scheme, extract flags for known
   // color-schemes and the 'only' modifier, and push the list items into a

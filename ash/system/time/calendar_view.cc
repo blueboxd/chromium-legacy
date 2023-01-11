@@ -20,8 +20,8 @@
 #include "ash/system/time/date_helper.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
-#include "base/bind.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -345,6 +345,9 @@ void CalendarHeaderView::UpdateHeaders(const std::u16string& month,
   header_year_->SetText(year);
 }
 
+BEGIN_METADATA(CalendarHeaderView, views::View)
+END_METADATA
+
 CalendarView::CalendarView(DetailedViewDelegate* delegate,
                            UnifiedSystemTrayController* controller)
     : TrayDetailedView(delegate),
@@ -388,7 +391,7 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
   // `has_separator` in `TrayDetailedView` to false.
   IgnoreSeparator();
 
-  CreateTitleRow(IDS_ASH_CALENDAR_TITLE);
+  CreateTitleRow(IDS_ASH_CALENDAR_TITLE, /*create_back_button=*/false);
 
   // Adds the progress bar to layout when initialization to avoid changing the
   // layout while reading the bounds of it.

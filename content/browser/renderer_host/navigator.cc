@@ -206,7 +206,7 @@ void RecordWebPlatformSecurityMetrics(RenderFrameHostImpl* rfh,
   //   attribute at the beginning of the navigation, as opposed to when the
   //   new document has been created, because it might have changed. Still, it
   //   is good enough, a priori.
-  if (rfh->frame_tree_node()->credentialless()) {
+  if (rfh->frame_tree_node()->Credentialless()) {
     base::UmaHistogramBoolean(
         "Navigation.AnonymousIframeIsSandboxed",
         rfh->active_sandbox_flags() != network::mojom::WebSandboxFlags::kNone);
@@ -720,7 +720,7 @@ void Navigator::Navigate(std::unique_ptr<NavigationRequest> request,
   FrameTreeNode* frame_tree_node = request->frame_tree_node();
   DCHECK_EQ(&(frame_tree_node->frame_tree()), &controller_.frame_tree());
 
-  navigation_data_ = std::make_unique<NavigationMetricsData>(
+  metrics_data_ = std::make_unique<NavigationMetricsData>(
       request->common_params().navigation_start, request->common_params().url,
       frame_tree_node->current_frame_host()->GetPageUkmSourceId(),
       true /* is_browser_initiated_before_unload */);
@@ -1033,13 +1033,14 @@ void Navigator::OnBeginNavigation(
     return;
   }
 
-  NavigationEntryImpl* navigation_entry =
-      GetNavigationEntryForRendererInitiatedNavigation(*common_params,
-                                                       frame_tree_node);
+  // Compute this ahead of creating the NavigationEntry, since it is needed both
+  // there and in CreateRendererInitiated.
   const bool override_user_agent =
       delegate_->ShouldOverrideUserAgentForRendererInitiatedNavigation();
-  if (navigation_entry)
-    navigation_entry->SetIsOverridingUserAgent(override_user_agent);
+
+  NavigationEntryImpl* navigation_entry =
+      GetNavigationEntryForRendererInitiatedNavigation(
+          *common_params, frame_tree_node, override_user_agent);
 
   frame_tree_node->TakeNavigationRequest(
       NavigationRequest::CreateRendererInitiated(
@@ -1052,7 +1053,7 @@ void Navigator::OnBeginNavigation(
           std::move(renderer_cancellation_listener)));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
 
-  navigation_data_ = std::make_unique<NavigationMetricsData>(
+  metrics_data_ = std::make_unique<NavigationMetricsData>(
       navigation_request->common_params().navigation_start,
       navigation_request->common_params().url,
       frame_tree_node->current_frame_host()->GetPageUkmSourceId(),
@@ -1119,14 +1120,15 @@ void Navigator::CancelNavigation(FrameTreeNode* frame_tree_node,
     frame_tree_node->navigation_request()->set_net_error(net::ERR_ABORTED);
   frame_tree_node->ResetNavigationRequest(reason);
   if (frame_tree_node->IsMainFrame())
-    navigation_data_.reset();
+    metrics_data_.reset();
 }
 
 void Navigator::LogCommitNavigationSent() {
-  if (!navigation_data_)
+  if (!metrics_data_) {
     return;
+  }
 
-  navigation_data_->commit_navigation_sent_ = base::TimeTicks::Now();
+  metrics_data_->commit_navigation_sent_ = base::TimeTicks::Now();
 }
 
 void Navigator::LogBeforeUnloadTime(
@@ -1134,8 +1136,9 @@ void Navigator::LogBeforeUnloadTime(
     base::TimeTicks renderer_before_unload_end_time,
     base::TimeTicks before_unload_sent_time,
     bool for_legacy) {
-  if (!navigation_data_)
+  if (!metrics_data_) {
     return;
+  }
 
   // LogBeforeUnloadTime is called once for each cross-process frame. Once all
   // beforeunloads complete, the timestamps in navigation_data will be the
@@ -1158,21 +1161,21 @@ void Navigator::LogBeforeUnloadTime(
     blink::LocalTimeTicks converted_renderer_before_unload_end =
         converter.ToLocalTimeTicks(blink::RemoteTimeTicks::FromTimeTicks(
             renderer_before_unload_end_time));
-    navigation_data_->before_unload_start_ =
+    metrics_data_->before_unload_start_ =
         converted_renderer_before_unload_start.ToTimeTicks();
-    navigation_data_->before_unload_end_ =
+    metrics_data_->before_unload_end_ =
         converted_renderer_before_unload_end.ToTimeTicks();
   } else {
-    navigation_data_->before_unload_start_ = renderer_before_unload_start_time;
-    navigation_data_->before_unload_end_ = renderer_before_unload_end_time;
+    metrics_data_->before_unload_start_ = renderer_before_unload_start_time;
+    metrics_data_->before_unload_end_ = renderer_before_unload_end_time;
   }
-  navigation_data_->before_unload_sent_ = before_unload_sent_time;
+  metrics_data_->before_unload_sent_ = before_unload_sent_time;
 }
 
 void Navigator::LogRendererInitiatedBeforeUnloadTime(
     base::TimeTicks renderer_before_unload_start_time,
     base::TimeTicks renderer_before_unload_end_time) {
-  DCHECK(navigation_data_);
+  DCHECK(metrics_data_);
 
   if (renderer_before_unload_start_time == base::TimeTicks() ||
       renderer_before_unload_end_time == base::TimeTicks())
@@ -1193,14 +1196,14 @@ void Navigator::LogRendererInitiatedBeforeUnloadTime(
     blink::LocalTimeTicks converted_renderer_before_unload_end =
         converter.ToLocalTimeTicks(blink::RemoteTimeTicks::FromTimeTicks(
             renderer_before_unload_end_time));
-    navigation_data_->renderer_before_unload_start_ =
+    metrics_data_->renderer_before_unload_start_ =
         converted_renderer_before_unload_start.ToTimeTicks();
-    navigation_data_->renderer_before_unload_end_ =
+    metrics_data_->renderer_before_unload_end_ =
         converted_renderer_before_unload_end.ToTimeTicks();
   } else {
-    navigation_data_->renderer_before_unload_start_ =
+    metrics_data_->renderer_before_unload_start_ =
         renderer_before_unload_start_time;
-    navigation_data_->renderer_before_unload_end_ =
+    metrics_data_->renderer_before_unload_end_ =
         renderer_before_unload_end_time;
   }
 }
@@ -1212,40 +1215,39 @@ void Navigator::RecordNavigationMetrics(
     const GURL& original_request_url) {
   DCHECK(site_instance->HasProcess());
 
-  if (!details.is_main_frame || !navigation_data_ ||
-      navigation_data_->url_ != original_request_url) {
+  if (!details.is_main_frame || !metrics_data_ ||
+      metrics_data_->url_ != original_request_url) {
     return;
   }
 
-  ukm::builders::Unload builder(navigation_data_->ukm_source_id_);
+  ukm::builders::Unload builder(metrics_data_->ukm_source_id_);
   base::TimeTicks first_before_unload_start_time;
 
-  if (navigation_data_->is_browser_initiated_before_unload_) {
-    if (navigation_data_->before_unload_start_ &&
-        navigation_data_->before_unload_end_) {
+  if (metrics_data_->is_browser_initiated_before_unload_) {
+    if (metrics_data_->before_unload_start_ &&
+        metrics_data_->before_unload_end_) {
       first_before_unload_start_time =
-          navigation_data_->before_unload_start_.value();
+          metrics_data_->before_unload_start_.value();
       builder.SetBeforeUnloadDuration(
-          (navigation_data_->before_unload_end_.value() -
-           navigation_data_->before_unload_start_.value())
+          (metrics_data_->before_unload_end_.value() -
+           metrics_data_->before_unload_start_.value())
               .InMilliseconds());
     }
   } else {
-    if (navigation_data_->renderer_before_unload_start_ &&
-        navigation_data_->renderer_before_unload_end_) {
+    if (metrics_data_->renderer_before_unload_start_ &&
+        metrics_data_->renderer_before_unload_end_) {
       first_before_unload_start_time =
-          navigation_data_->renderer_before_unload_start_.value();
+          metrics_data_->renderer_before_unload_start_.value();
       base::TimeDelta before_unload_duration =
-          navigation_data_->renderer_before_unload_end_.value() -
-          navigation_data_->renderer_before_unload_start_.value();
+          metrics_data_->renderer_before_unload_end_.value() -
+          metrics_data_->renderer_before_unload_start_.value();
 
       // If we had to dispatch beforeunload handlers for OOPIFs from the
       // browser, add those into the beforeunload duration as they contributed
       // to the total beforeunload latency.
-      if (navigation_data_->before_unload_sent_) {
-        before_unload_duration +=
-            navigation_data_->before_unload_end_.value() -
-            navigation_data_->before_unload_start_.value();
+      if (metrics_data_->before_unload_sent_) {
+        before_unload_duration += metrics_data_->before_unload_end_.value() -
+                                  metrics_data_->before_unload_start_.value();
       }
       builder.SetBeforeUnloadDuration(before_unload_duration.InMilliseconds());
     }
@@ -1256,18 +1258,17 @@ void Navigator::RecordNavigationMetrics(
   // renderer or browser initiated navigation and could mean a long queuing time
   // blocked the navigation or a long beforeunload. Records nothing if none were
   // sent.
-  if (navigation_data_->before_unload_sent_) {
+  if (metrics_data_->before_unload_sent_) {
     builder.SetBeforeUnloadQueueingDuration(
-        (navigation_data_->before_unload_start_.value() -
-         navigation_data_->before_unload_sent_.value())
+        (metrics_data_->before_unload_start_.value() -
+         metrics_data_->before_unload_sent_.value())
             .InMilliseconds());
   }
 
   // If this is a same-process navigation and we have timestamps for unload
   // durations, fill those metrics out as well.
   if (params.unload_start && params.unload_end &&
-      params.commit_navigation_end &&
-      navigation_data_->commit_navigation_sent_) {
+      params.commit_navigation_end && metrics_data_->commit_navigation_sent_) {
     base::TimeTicks unload_start = params.unload_start.value();
     base::TimeTicks unload_end = params.unload_end.value();
     // Note: we expect `commit_navigation_end` to be later than `unload_end`.
@@ -1298,30 +1299,31 @@ void Navigator::RecordNavigationMetrics(
     }
     builder.SetUnloadDuration((unload_end - unload_start).InMilliseconds());
     builder.SetUnloadQueueingDuration(
-        (unload_start - navigation_data_->commit_navigation_sent_.value())
+        (unload_start - metrics_data_->commit_navigation_sent_.value())
             .InMilliseconds());
-    if (navigation_data_->commit_navigation_sent_) {
+    if (metrics_data_->commit_navigation_sent_) {
       builder.SetBeforeUnloadToCommit_SameProcess(
           (commit_navigation_end - first_before_unload_start_time)
               .InMilliseconds());
     }
-  } else if (navigation_data_->commit_navigation_sent_) {
+  } else if (metrics_data_->commit_navigation_sent_) {
     // The navigation is cross-process and we don't have unload timings as they
     // are run in the old process and don't block the navigation.
     builder.SetBeforeUnloadToCommit_CrossProcess(
-        (navigation_data_->commit_navigation_sent_.value() -
+        (metrics_data_->commit_navigation_sent_.value() -
          first_before_unload_start_time)
             .InMilliseconds());
   }
 
   builder.Record(ukm::UkmRecorder::Get());
-  navigation_data_.reset();
+  metrics_data_.reset();
 }
 
 NavigationEntryImpl*
 Navigator::GetNavigationEntryForRendererInitiatedNavigation(
     const blink::mojom::CommonNavigationParams& common_params,
-    FrameTreeNode* frame_tree_node) {
+    FrameTreeNode* frame_tree_node,
+    bool override_user_agent) {
   // With MPArch, there may be multiple main frames, but each one has its own
   // NavigationController. Thus, it's correct to check for NavigationEntries for
   // each main frame, even if one is embedded (e.g., a fenced frame).
@@ -1373,6 +1375,7 @@ Navigator::GetNavigationEntryForRendererInitiatedNavigation(
 
   entry->set_reload_type(NavigationRequest::NavigationTypeToReloadType(
       common_params.navigation_type));
+  entry->SetIsOverridingUserAgent(override_user_agent);
 
   controller_.SetPendingEntry(std::move(entry));
   delegate_->NotifyChangedNavigationState(content::INVALIDATE_TYPE_URL);

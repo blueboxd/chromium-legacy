@@ -9,11 +9,12 @@
 
 #include "android_webview/common/aw_features.h"
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/containers/queue.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_local.h"

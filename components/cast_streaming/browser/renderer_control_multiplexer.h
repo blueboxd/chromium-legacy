@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "media/mojo/mojom/renderer.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -29,6 +30,9 @@ class RendererControlMultiplexer : public media::mojom::Renderer {
   // |renderer_remote_|.
   void RegisterController(
       mojo::PendingReceiver<media::mojom::Renderer> controls);
+
+  // Starts playback after a delay, if it has not already started.
+  void TryStartPlayback(base::TimeDelta time_delta);
 
   // media::mojo::Renderer overrides.
   //
@@ -51,6 +55,14 @@ class RendererControlMultiplexer : public media::mojom::Renderer {
 
  private:
   void OnMojoDisconnect();
+
+  void OnFlushComplete(FlushCallback callback);
+
+  // Called by TryStartPlayback after a delay to begin playback, if it has
+  // not yet started.
+  void TryStartPlaybackAfterDelay(base::TimeDelta time_delta);
+
+  bool is_playback_ongoing_ = false;
 
   mojo::Remote<media::mojom::Renderer> renderer_remote_;
   std::vector<std::unique_ptr<mojo::Receiver<media::mojom::Renderer>>>

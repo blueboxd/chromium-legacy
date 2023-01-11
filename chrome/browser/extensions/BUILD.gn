@@ -777,6 +777,7 @@ static_library("extensions") {
     "//chrome/browser:browser_process",
     "//chrome/browser:ntp_background_proto",
     "//chrome/browser:theme_properties",
+    "//chrome/browser/apps/app_service:constants",
     "//chrome/browser/autofill",
     "//chrome/browser/bitmap_fetcher",
     "//chrome/browser/browsing_data:constants",
@@ -834,6 +835,7 @@ static_library("extensions") {
     "//components/feedback",
     "//components/gcm_driver",
     "//components/guest_view/browser",
+    "//components/guest_view/common:mojom",
     "//components/history/core/browser",
     "//components/infobars/content",
     "//components/infobars/core",
@@ -1203,6 +1205,7 @@ static_library("extensions") {
       "//ui/ozone",
       "//ui/views",
     ]
+
     allow_circular_includes_from += [ "//chrome/browser/ash/crosapi" ]
 
     if (is_cfm) {

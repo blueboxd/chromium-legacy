@@ -8,11 +8,11 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/ash/attestation/tpm_challenge_key_result.h"
-#include "chrome/browser/platform_keys/platform_keys.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chromeos/ash/components/attestation/attestation_flow.h"
 #include "chromeos/ash/components/dbus/attestation/attestation_ca.pb.h"
 #include "chromeos/ash/components/dbus/attestation/attestation_client.h"

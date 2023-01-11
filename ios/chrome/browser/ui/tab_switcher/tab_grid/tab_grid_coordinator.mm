@@ -21,7 +21,6 @@
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
-#import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/editor/bookmarks_editor_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -51,6 +50,7 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/recent_tabs/synced_sessions.h"
+#import "ios/chrome/browser/ui/sharing/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_commands.h"
@@ -691,13 +691,11 @@
 
   self.regularTabContextMenuHelper =
       [[TabContextMenuHelper alloc] initWithBrowser:self.regularBrowser
-                                  actionsDataSource:self.regularTabsMediator
                              tabContextMenuDelegate:self];
   self.baseViewController.regularTabsContextMenuProvider =
       self.regularTabContextMenuHelper;
   self.incognitoTabContextMenuHelper =
       [[TabContextMenuHelper alloc] initWithBrowser:self.incognitoBrowser
-                                  actionsDataSource:self.incognitoTabsMediator
                              tabContextMenuDelegate:self];
   self.baseViewController.incognitoTabsContextMenuProvider =
       self.incognitoTabContextMenuHelper;
@@ -947,13 +945,13 @@
       addItemWithTitle:l10n_util::GetNSString(
                            IDS_IOS_TAB_GRID_CLOSE_NON_PINNED_TABS_ONLY)
                 action:^{
-                  [weakTabGridMediator closeNonPinnedItems];
+                  [weakTabGridMediator saveAndCloseNonPinnedItems];
                 }
                  style:UIAlertActionStyleDefault];
   [self.actionSheetCoordinator
       addItemWithTitle:l10n_util::GetNSString(IDS_IOS_TAB_GRID_CLOSE_ALL_TABS)
                 action:^{
-                  [weakTabGridMediator closeAllItems];
+                  [weakTabGridMediator saveAndCloseAllItems];
                 }
                  style:UIAlertActionStyleDestructive];
 

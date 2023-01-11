@@ -12,12 +12,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
@@ -27,15 +26,16 @@
 #include "chrome/browser/lookalikes/lookalike_url_controller_client.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
 #include "chrome/browser/lookalikes/lookalike_url_tab_storage.h"
+#include "chrome/browser/lookalikes/safety_tip_service.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/chrome_no_state_prefetch_contents_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_selections.h"
-#include "chrome/browser/reputation/reputation_service.h"
+#include "chrome/common/channel_info.h"
 #include "components/lookalikes/core/features.h"
 #include "components/lookalikes/core/lookalike_url_ui_util.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
+#include "components/lookalikes/core/safety_tips_config.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
-#include "components/reputation/core/safety_tips_config.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/url_formatter/spoof_checks/top_domains/top500_domains.h"
@@ -115,7 +115,9 @@ void LookalikeUrlNavigationThrottle::PrewarmLookalikeCheckAsync() {
   if (lookup_timer_.IsRunning())
     return;
   lookup_timer_.Start(
-      FROM_HERE, base::TimeDelta(),
+      FROM_HERE,
+      base::Milliseconds(base::GetFieldTrialParamByFeatureAsInt(
+          kPrewarmLookalikeCheck, "delay_before_task_start", 50)),
       base::BindOnce(&LookalikeUrlNavigationThrottle::PrewarmLookalikeCheckSync,
                      base::Unretained(this)));
 }
@@ -452,29 +454,27 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
   ukm::SourceId source_id = ukm::ConvertToSourceId(
       navigation_handle()->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
 
-  if (first_is_lookalike &&
-      ShouldBlockLookalikeUrlNavigation(first_match_type)) {
-    return CheckAndMaybeShowInterstitial(first_suggested_url, first_url,
-                                         source_id, first_match_type,
-                                         first_is_lookalike);
-  }
-
-  if (last_is_lookalike && ShouldBlockLookalikeUrlNavigation(last_match_type)) {
-    return CheckAndMaybeShowInterstitial(last_suggested_url, last_url,
-                                         source_id, last_match_type,
-                                         first_is_lookalike);
-  }
-
   LookalikeUrlMatchType match_type =
       first_is_lookalike ? first_match_type : last_match_type;
-  if (match_type == LookalikeUrlMatchType::kCharacterSwapTop500 ||
-      match_type == LookalikeUrlMatchType::kCharacterSwapSiteEngagement) {
-    // Character Swap is enabled as a safety tip by default. Don't record
-    // metrics here.
-    // TODO(crbug.com/1394808): Replace this with a more generalized check
-    // to decide which UI to show (Safety Tip or interstitial), and reuse it
-    // from the throttle and the safety tips code.
-    return NavigationThrottle::PROCEED;
+  std::string etld_plus_one = first_is_lookalike
+                                  ? GetETLDPlusOne(first_url.host())
+                                  : GetETLDPlusOne(last_url.host());
+  LookalikeActionType action_type =
+      GetActionForMatchType(lookalikes::GetSafetyTipsRemoteConfigProto(),
+                            chrome::GetChannel(), etld_plus_one, match_type);
+
+  if (first_is_lookalike &&
+      action_type == LookalikeActionType::kShowInterstitial) {
+    return CheckAndMaybeShowInterstitial(
+        first_suggested_url, first_url, source_id, first_match_type,
+        /*triggered_by_initial_url=*/first_is_lookalike);
+  }
+
+  if (last_is_lookalike &&
+      action_type == LookalikeActionType::kShowInterstitial) {
+    return CheckAndMaybeShowInterstitial(
+        last_suggested_url, last_url, source_id, last_match_type,
+        /*triggered_by_initial_url=*/first_is_lookalike);
   }
 
   // IMPORTANT: Every time that a new lookalike heuristic is added, before
@@ -483,15 +483,23 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
   // called with `is_new_heuristic=true`. The `lookalike_url` could be first_url
   // or last_url depending on the value of `first_is_lookalike`.
 
+  // Always record UMA for any heuristic match.
+  DCHECK_NE(LookalikeUrlMatchType::kNone, match_type);
+  DCHECK(action_type == LookalikeActionType::kRecordMetrics ||
+         action_type == LookalikeActionType::kShowSafetyTip);
   RecordUMAFromMatchType(match_type);
-  // Interstitial normally records UKM, but still record when it's not shown.
-  RecordUkmForLookalikeUrlBlockingPage(
-      source_id, match_type,
-      LookalikeUrlBlockingPageUserAction::kInterstitialNotShown,
-      first_is_lookalike);
   RecordPerformCheckLatenciesForAllowedNavigation(
       perform_checks_start, is_lookalike_url_duration,
       total_get_domain_info_duration);
+
+  // ...but only record interstitial UKM if we aren't going to show a safety
+  // tip. Otherwise, we'll double record UKM, both here and in safety tips.
+  if (action_type == LookalikeActionType::kRecordMetrics) {
+    RecordUkmForLookalikeUrlBlockingPage(
+        source_id, match_type,
+        LookalikeUrlBlockingPageUserAction::kInterstitialNotShown,
+        first_is_lookalike);
+  }
   return NavigationThrottle::PROCEED;
 }
 
@@ -515,7 +523,7 @@ bool LookalikeUrlNavigationThrottle::IsLookalikeUrl(
   }
 
   // Fetch the component allowlist.
-  const auto* proto = reputation::GetSafetyTipsRemoteConfigProto();
+  const auto* proto = lookalikes::GetSafetyTipsRemoteConfigProto();
 
   // When there's no proto (like at browser start), fail-safe and don't block.
   if (!proto) {
@@ -523,7 +531,7 @@ bool LookalikeUrlNavigationThrottle::IsLookalikeUrl(
   }
 
   // If the URL is in the local temporary allowlist, don't show any warning.
-  if (ReputationService::Get(profile_)->IsIgnored(url)) {
+  if (SafetyTipService::Get(profile_)->IsIgnored(url)) {
     return false;
   }
 
@@ -554,38 +562,15 @@ bool LookalikeUrlNavigationThrottle::IsLookalikeUrl(
 
   const LookalikeTargetAllowlistChecker in_target_allowlist =
       base::BindRepeating(
-          &reputation::IsTargetHostAllowlistedBySafetyTipsComponent, proto);
+          &lookalikes::IsTargetHostAllowlistedBySafetyTipsComponent, proto);
   std::string matched_domain;
   if (GetMatchingDomain(navigated_domain, engaged_sites, in_target_allowlist,
                         proto, &matched_domain, match_type)) {
     DCHECK(!matched_domain.empty());
-
-    // matched_domain can be a top domain or an engaged domain. Simply use its
-    // eTLD+1 as the suggested domain.
-    // 1. If matched_domain is a top domain: Top domain list already contains
-    // eTLD+1s only so this works well.
-    // 2. If matched_domain is an engaged domain and is not an eTLD+1, don't
-    // suggest it. Otherwise, navigating to googlé.com and having engaged with
-    // docs.google.com would suggest docs.google.com.
-    //
-    // When the navigated and matched domains are not eTLD+1s (e.g.
-    // docs.googlé.com and docs.google.com), this will suggest google.com
-    // instead of docs.google.com. This is less than ideal, but has two
-    // benefits:
-    // - Simpler code
-    // - Fewer suggestions to non-existent domains. E.g. When the navigated
-    // domain is nonexistent.googlé.com and the matched domain is
-    // docs.google.com, we will suggest google.com instead of
-    // nonexistent.google.com.
-    std::string suggested_domain = GetETLDPlusOne(matched_domain);
-    DCHECK(!suggested_domain.empty());
-    // Drop everything but the parts of the origin.
-    GURL::Replacements replace_host;
-    replace_host.SetHostStr(suggested_domain);
-    *suggested_url = url.ReplaceComponents(replace_host).GetWithEmptyPath();
+    *suggested_url = GetSuggestedURL(*match_type, url, matched_domain);
 
     // Only flag the URL if its not allowed to spoof the suggested URL.
-    if (!reputation::IsUrlAllowlistedBySafetyTipsComponent(
+    if (!lookalikes::IsUrlAllowlistedBySafetyTipsComponent(
             proto, url.GetWithEmptyPath(), *suggested_url)) {
       return true;
     }
@@ -597,7 +582,7 @@ bool LookalikeUrlNavigationThrottle::IsLookalikeUrl(
 
     // Only flag the URL if its not allowed to spoof itself (which is how we
     // indicate spoof-check-specific allowlisting).
-    if (!reputation::IsUrlAllowlistedBySafetyTipsComponent(
+    if (!lookalikes::IsUrlAllowlistedBySafetyTipsComponent(
             proto, url.GetWithEmptyPath(), url.GetWithEmptyPath())) {
       return true;
     }

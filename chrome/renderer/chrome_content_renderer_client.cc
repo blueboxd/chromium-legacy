@@ -8,10 +8,10 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
@@ -1074,8 +1074,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
                   blink::mojom::PreferredColorScheme::kLight);
             }
           }
-        } else if (info.name ==
-                   ASCIIToUTF16(ChromeContentClient::kPDFExtensionPluginName)) {
+        } else if (info.path.value() ==
+                   ChromeContentClient::kPDFExtensionPluginPath) {
           // Report PDF load metrics. Since the PDF plugin is comprised of an
           // extension that loads a second plugin, avoid double counting by
           // ignoring the creation of the second plugin.
@@ -1106,8 +1106,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         }
 
 #if BUILDFLAG(ENABLE_PDF)
-        if (info.name ==
-            ASCIIToUTF16(ChromeContentClient::kPDFInternalPluginName)) {
+        if (info.path.value() == ChromeContentClient::kPDFInternalPluginPath) {
           return pdf::CreateInternalPlugin(
               std::move(params), render_frame,
               std::make_unique<ChromePdfInternalPluginDelegate>());
@@ -1119,8 +1118,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       case chrome::mojom::PluginStatus::kDisabled: {
         PluginUMAReporter::GetInstance()->ReportPluginDisabled(orig_mime_type,
                                                                url);
-        if (info.name ==
-            ASCIIToUTF16(ChromeContentClient::kPDFExtensionPluginName)) {
+        if (info.path.value() == ChromeContentClient::kPDFExtensionPluginPath) {
           ReportPDFLoadStatus(
               PDFLoadStatus::kShowedDisabledPluginPlaceholderForEmbeddedPdf);
 
@@ -1471,7 +1469,7 @@ bool ChromeContentRendererClient::IsOriginIsolatedPepperPlugin(
     // The kPpapiInProcess switch should only be used by tests.  In particular,
     // we expect that the PDF plugin should always be isolated in the product
     // (and that the switch won't interfere with PDF isolation).
-    CHECK_NE(ChromeContentClient::kPDFPluginPath, plugin_path.value());
+    CHECK_NE(ChromeContentClient::kPDFInternalPluginPath, plugin_path.value());
 
     return false;
   }

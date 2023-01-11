@@ -10,10 +10,10 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
@@ -1007,7 +1007,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadExtensionTest_Open) {
 
   open_function = base::MakeRefCounted<DownloadsOpenFunction>();
   open_function->set_user_gesture(true);
-  base::Value args_list(base::Value::Type::LIST);
+  base::Value::List args_list;
   args_list.Append(static_cast<int>(download_item->GetId()));
   open_function->SetArgs(std::move(args_list));
   open_function->set_extension(extension());

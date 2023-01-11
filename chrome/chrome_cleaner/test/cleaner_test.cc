@@ -8,11 +8,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/ranges/algorithm.h"
@@ -22,6 +22,7 @@
 #include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
+#include "base/win/windows_version.h"
 #include "chrome/chrome_cleaner/buildflags.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/ipc/chrome_prompt_test_util.h"
@@ -549,6 +550,13 @@ TEST_P(CleanerTest, NoPotentialFalsePositivesOnCleanMachine) {
 }
 
 TEST_P(CleanerTest, NoUnsanitizedPaths) {
+  // Fails on Windows7/8/8.1
+  // TODO(crbug/1405033): This is temporary while we disable these tests in
+  // pre-M110 branches.
+  if (base::win::GetVersion() <= base::win::Version::WIN8_1) {
+    return;
+  }
+
   CreateRemovableUwS();
 
   base::CommandLine command_line = BuildCommandLine(kCleanerExecutable);

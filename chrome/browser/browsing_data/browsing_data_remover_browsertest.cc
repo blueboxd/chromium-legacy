@@ -6,9 +6,9 @@
 #include <memory>
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
@@ -278,8 +278,6 @@ class BrowsingDataRemoverBrowserTest
     // it uses the External Clear Key CDM.
     RegisterClearKeyCdm(command_line);
 #endif
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "StorageFoundationAPI");
   }
 };
 
@@ -994,19 +992,19 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverStorageBucketsBrowserTest,
 
   quota_manager_proxy->CreateBucketForTesting(
       storage_key, "drafts", blink::mojom::StorageType::kTemporary,
-      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunner::GetCurrentDefault(),
       base::BindOnce(
           [](storage::QuotaErrorOr<storage::BucketInfo> error_or_bucket_info) {
           }));
   quota_manager_proxy->CreateBucketForTesting(
       storage_key, "inbox", blink::mojom::StorageType::kTemporary,
-      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunner::GetCurrentDefault(),
       base::BindOnce(
           [](storage::QuotaErrorOr<storage::BucketInfo> error_or_bucket_info) {
           }));
   quota_manager_proxy->CreateBucketForTesting(
       storage_key, "attachments", blink::mojom::StorageType::kTemporary,
-      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunner::GetCurrentDefault(),
       base::BindOnce(
           [](storage::QuotaErrorOr<storage::BucketInfo> error_or_bucket_info) {
           }));
@@ -1015,7 +1013,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverStorageBucketsBrowserTest,
 
   quota_manager_proxy->GetBucketsForStorageKey(
       storage_key, blink::mojom::StorageType::kTemporary,
-      /*delete_expired*/ false, base::SequencedTaskRunnerHandle::Get(),
+      /*delete_expired*/ false, base::SequencedTaskRunner::GetCurrentDefault(),
       base::BindOnce([](storage::QuotaErrorOr<std::set<storage::BucketInfo>>
                             error_or_buckets) {
         EXPECT_EQ(1u, error_or_buckets.value().size());
@@ -1188,10 +1186,6 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
                        EmptyFileSystemIncognitoDeletion) {
   UseIncognitoBrowser();
   TestEmptySiteData("FileSystem", GetParam());
-}
-
-IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, NativeIODeletion) {
-  TestSiteData("StorageFoundation", GetParam());
 }
 
 // TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
@@ -1436,10 +1430,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 const std::vector<std::string> kStorageTypes{
-    "Cookie",         "LocalStorage", "FileSystem",
-    "SessionStorage", "IndexedDb",    "WebSql",
-    "ServiceWorker",  "CacheStorage", "StorageFoundation",
-    "MediaLicense"};
+    "Cookie", "LocalStorage",  "FileSystem",   "SessionStorage", "IndexedDb",
+    "WebSql", "ServiceWorker", "CacheStorage", "MediaLicense"};
 
 // Test that storage doesn't leave any traces on disk.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
@@ -1476,12 +1468,11 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
                        PRE_StorageRemovedFromDisk) {
   EXPECT_EQ(1, GetSiteDataCount());
-  // Expect all datatypes from above except SessionStorage, NativeIO, and
-  // possibly MediaLicense. SessionStorage is not supported by the
-  // CookieTreeModel yet. NativeIO is shown as FileSystem in the CookieTree
-  // model. MediaLicense is integrated into the quota node, which is not yet
-  // fully hooked into CookieTreeModel (see crbug.com/1307796).
-  ExpectCookieTreeModelCount(kStorageTypes.size() - 3);
+  // Expect all datatypes from above except SessionStorage and possibly
+  // MediaLicense. SessionStorage is not supported by the CookieTreeModel yet.
+  // MediaLicense is integrated into the quota node, which is not yet fully
+  // hooked into CookieTreeModel (see crbug.com/1307796).
+  ExpectCookieTreeModelCount(kStorageTypes.size() - 2);
   RemoveAndWait(chrome_browsing_data_remover::DATA_TYPE_SITE_DATA |
                 content::BrowsingDataRemover::DATA_TYPE_CACHE |
                 chrome_browsing_data_remover::DATA_TYPE_HISTORY |

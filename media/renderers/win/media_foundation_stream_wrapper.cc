@@ -7,6 +7,7 @@
 #include <mferror.h>
 
 #include "base/bind.h"
+#include "base/task/sequenced_task_runner.h"
 #include "media/base/video_codecs.h"
 #include "media/base/win/mf_helpers.h"
 #include "media/renderers/win/media_foundation_audio_stream.h"
@@ -329,9 +330,20 @@ void MediaFoundationStreamWrapper::ProcessRequestsIfPossible() {
     return;
 
   demuxer_stream_->Read(
-      base::BindOnce(&MediaFoundationStreamWrapper::OnDemuxerStreamRead,
+      1,
+      base::BindOnce(&MediaFoundationStreamWrapper::OnDemuxerStreamReadBuffers,
                      weak_factory_.GetWeakPtr()));
   pending_stream_read_ = true;
+}
+
+void MediaFoundationStreamWrapper::OnDemuxerStreamReadBuffers(
+    DemuxerStream::Status status,
+    DemuxerStream::DecoderBufferVector buffers) {
+  // TODO(crbug.com/1347395): Support batch read.
+  DCHECK_LE(buffers.size(), 1u)
+      << "MediaFoundationStreamWrapper only reads a single-buffer.";
+  OnDemuxerStreamRead(status,
+                      buffers.empty() ? nullptr : std::move(buffers[0]));
 }
 
 HRESULT MediaFoundationStreamWrapper::ServiceSampleRequest(

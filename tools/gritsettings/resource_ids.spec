@@ -292,8 +292,16 @@
     "includes": [1926],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/customize_chrome/resources.grd": {
-    "META": {"sizes": {"includes": [35],}},
+    "META": {"sizes": {"includes": [50],}},
     "includes": [1930],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/history_clusters/resources.grd": {
+    "META": {"sizes": {"includes": [5],}},
+    "includes": [1931],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/reading_list/resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [1932],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/side_panel_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
@@ -451,6 +459,10 @@
   },
   "components/resources/dev_ui_components_resources.grd": {
     "includes": [2560],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/content/browser/resources/aggregation_service/resources.grd": {
+    "META": {"sizes": {"includes": [20]}},
+    "includes": [2563],
   },
   "<(SHARED_INTERMEDIATE_DIR)/content/browser/resources/attribution_reporting/resources.grd": {
     "META": {"sizes": {"includes": [20]}},

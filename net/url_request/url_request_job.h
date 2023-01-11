@@ -22,6 +22,7 @@
 #include "net/base/privacy_mode.h"
 #include "net/base/request_priority.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_setting_override.h"
 #include "net/filter/source_stream.h"
 #include "net/http/http_raw_request_headers.h"
 #include "net/http/http_response_headers.h"

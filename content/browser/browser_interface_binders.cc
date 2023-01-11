@@ -143,7 +143,6 @@
 #include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
-#include "third_party/blink/public/mojom/native_io/native_io.mojom.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_credential.mojom.h"
@@ -293,14 +292,6 @@ void BindQuotaManagerHost(
     mojo::PendingReceiver<blink::mojom::QuotaManagerHost> receiver) {
   host->GetStoragePartition()->GetQuotaContext()->BindQuotaManagerHost(
       host->storage_key(), std::move(receiver));
-}
-
-void BindNativeIOHost(
-    RenderFrameHost* host,
-    mojo::PendingReceiver<blink::mojom::NativeIOHost> receiver) {
-  static_cast<RenderProcessHostImpl*>(host->GetProcess())
-      ->BindNativeIOHost(static_cast<RenderFrameHostImpl*>(host)->storage_key(),
-                         std::move(receiver));
 }
 
 void BindSharedWorkerConnector(
@@ -651,35 +642,6 @@ void BindSocketManager(
           std::move(receiver), frame->GetGlobalId());
 }
 
-void BindGamepadMonitor(
-    RenderFrameHostImpl* frame,
-    mojo::PendingReceiver<device::mojom::GamepadMonitor> receiver) {
-  // TODO(https://crbug.com/1011006): Remove fenced frame specific code when
-  // permission policy implements the Gamepad API support.
-  if (frame->IsNestedWithinFencedFrame()) {
-    bad_message::ReceivedBadMessage(
-        frame->GetProcess(), bad_message::BadMessageReason::
-                                 BIBI_BIND_GAMEPAD_MONITOR_FOR_FENCED_FRAME);
-    return;
-  }
-  device::GamepadMonitor::Create(std::move(receiver));
-}
-
-void BindGamepadHapticsManager(
-    RenderFrameHostImpl* frame,
-    mojo::PendingReceiver<device::mojom::GamepadHapticsManager> receiver) {
-  // TODO(https://crbug.com/1011006): Remove fenced frame specific code when
-  // permission policy implements the Gamepad API support.
-  if (frame->IsNestedWithinFencedFrame()) {
-    bad_message::ReceivedBadMessage(
-        frame->GetProcess(),
-        bad_message::BadMessageReason::
-            BIBI_BIND_GAMEPAD_HAPTICS_MANAGER_FOR_FENCED_FRAME);
-    return;
-  }
-  device::GamepadHapticsManager::Create(std::move(receiver));
-}
-
 }  // namespace
 
 // Documents/frames
@@ -740,7 +702,7 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
   }
 
   map->Add<device::mojom::GamepadHapticsManager>(
-      base::BindRepeating(&BindGamepadHapticsManager, base::Unretained(host)));
+      base::BindRepeating(&device::GamepadHapticsManager::Create));
 
   map->Add<blink::mojom::GeolocationService>(base::BindRepeating(
       &RenderFrameHostImpl::GetGeolocationService, base::Unretained(host)));
@@ -825,9 +787,6 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
   map->Add<blink::mojom::LockManager>(base::BindRepeating(
       &RenderFrameHostImpl::CreateLockManager, base::Unretained(host)));
 
-  map->Add<blink::mojom::NativeIOHost>(
-      base::BindRepeating(&BindNativeIOHost, base::Unretained(host)));
-
   map->Add<blink::mojom::IDBFactory>(base::BindRepeating(
       &RenderFrameHostImpl::CreateIDBFactory, base::Unretained(host)));
 
@@ -844,7 +803,7 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
 
   map->Add<device::mojom::GamepadMonitor>(
-      base::BindRepeating(&BindGamepadMonitor, base::Unretained(host)));
+      base::BindRepeating(&device::GamepadMonitor::Create));
 
   map->Add<device::mojom::SensorProvider>(base::BindRepeating(
       &RenderFrameHostImpl::GetSensorProvider, base::Unretained(host)));
@@ -1264,8 +1223,6 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
   map->Add<blink::mojom::IDBFactory>(
       BindWorkerReceiverForStorageKeyAndRenderFrameHostId(
           &RenderProcessHostImpl::BindIndexedDB, host));
-  map->Add<blink::mojom::NativeIOHost>(BindWorkerReceiverForStorageKey(
-      &RenderProcessHostImpl::BindNativeIOHost, host));
   map->Add<blink::mojom::LockManager>(BindWorkerReceiverForStorageKey(
       &RenderProcessHostImpl::CreateLockManager, host));
   map->Add<blink::mojom::QuotaManagerHost>(BindWorkerReceiverForStorageKey(
@@ -1358,8 +1315,6 @@ void PopulateSharedWorkerBinders(SharedWorkerHost* host, mojo::BinderMap* map) {
   map->Add<blink::mojom::IDBFactory>(
       BindWorkerReceiverForStorageKeyAndRenderFrameHostId(
           &RenderProcessHostImpl::BindIndexedDB, host));
-  map->Add<blink::mojom::NativeIOHost>(BindWorkerReceiverForStorageKey(
-      &RenderProcessHostImpl::BindNativeIOHost, host));
   map->Add<blink::mojom::WebSocketConnector>(BindWorkerReceiverForStorageKey(
       &RenderProcessHostImpl::CreateWebSocketConnector, host));
   map->Add<blink::mojom::LockManager>(BindWorkerReceiverForStorageKey(
@@ -1485,8 +1440,6 @@ void PopulateBinderMapWithContext(
           &RenderProcessHostImpl::CreatePeriodicSyncService, host));
 
   // RenderProcessHost binders taking a storage key
-  map->Add<blink::mojom::NativeIOHost>(BindServiceWorkerReceiverForStorageKey(
-      &RenderProcessHostImpl::BindNativeIOHost, host));
   map->Add<blink::mojom::IDBFactory>(
       BindServiceWorkerReceiverForStorageKeyAndRenderFrameHostId(
           &RenderProcessHostImpl::BindIndexedDB, host));

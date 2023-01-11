@@ -13,13 +13,13 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/check.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -243,8 +243,8 @@ class HistoryService : public KeyedService {
       VisitContentAnnotations::PasswordState password_state);
 
   // Updates the history database with the content model annotations for the
-  // visit.
-  void AddContentModelAnnotationsForVisit(
+  // visit. Virtual for testing.
+  virtual void AddContentModelAnnotationsForVisit(
       const VisitContentModelAnnotations& model_annotations,
       VisitID visit_id);
 
@@ -255,10 +255,10 @@ class HistoryService : public KeyedService {
       VisitID visit_id);
 
   // Updates the history database with the search metadata for a search-like
-  // visit.
-  void AddSearchMetadataForVisit(const GURL& search_normalized_url,
-                                 const std::u16string& search_terms,
-                                 VisitID visit_id);
+  // visit. Virtual for testing.
+  virtual void AddSearchMetadataForVisit(const GURL& search_normalized_url,
+                                         const std::u16string& search_terms,
+                                         VisitID visit_id);
 
   // Updates the history database with additional page metadata.
   void AddPageMetadataForVisit(const std::string& alternative_title,

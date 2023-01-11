@@ -70,6 +70,10 @@ uint8_t CrosAudioConfigImpl::GetOutputVolumePercent() const {
   return CrasAudioHandler::Get()->GetOutputVolumePercent();
 }
 
+uint8_t CrosAudioConfigImpl::GetInputGainPercent() const {
+  return CrasAudioHandler::Get()->GetInputGainPercent();
+}
+
 mojom::MuteState CrosAudioConfigImpl::GetOutputMuteState() const {
   // TODO(crbug.com/1092970): Add kMutedExternally.
   if (CrasAudioHandler::Get()->IsOutputMutedByPolicy())
@@ -115,6 +119,15 @@ mojom::MuteState CrosAudioConfigImpl::GetInputMuteState() const {
   return mojom::MuteState::kNotMuted;
 }
 
+void CrosAudioConfigImpl::SetOutputMuted(bool muted) {
+  CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
+  if (audio_handler->IsOutputMutedByPolicy()) {
+    return;
+  }
+
+  audio_handler->SetOutputMute(muted);
+}
+
 void CrosAudioConfigImpl::SetOutputVolumePercent(int8_t volume) {
   CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
   audio_handler->SetOutputVolumePercent(volume);
@@ -123,6 +136,17 @@ void CrosAudioConfigImpl::SetOutputVolumePercent(int8_t volume) {
   if (audio_handler->IsOutputMuted() &&
       volume > audio_handler->GetOutputDefaultVolumeMuteThreshold()) {
     audio_handler->SetOutputMute(false);
+  }
+}
+
+void CrosAudioConfigImpl::SetInputGainPercent(uint8_t gain) {
+  CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
+  audio_handler->SetInputGainPercent(gain);
+
+  // Unmute if muted.
+  if (audio_handler->IsInputMuted()) {
+    audio_handler->SetInputMute(
+        false, CrasAudioHandler::InputMuteChangeMethod::kOther);
   }
 }
 
@@ -142,8 +166,18 @@ void CrosAudioConfigImpl::SetActiveDevice(uint64_t device_id) {
       CrasAudioHandler::DeviceActivateType::ACTIVATE_BY_USER);
 }
 
+void CrosAudioConfigImpl::SetInputMuted(bool muted) {
+  CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
+  audio_handler->SetMuteForDevice(audio_handler->GetPrimaryActiveInputNode(),
+                                  muted);
+}
+
 void CrosAudioConfigImpl::OnOutputNodeVolumeChanged(uint64_t node_id,
                                                     int volume) {
+  NotifyObserversAudioSystemPropertiesChanged();
+}
+
+void CrosAudioConfigImpl::OnInputNodeGainChanged(uint64_t node_id, int gain) {
   NotifyObserversAudioSystemPropertiesChanged();
 }
 

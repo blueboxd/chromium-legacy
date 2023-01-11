@@ -547,6 +547,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ReinitializeDocumentAssociatedDataForReuseAfterCrash(
       base::PassKey<RenderFrameHostManager>);
 
+  // Immediately reinitializes DocumentUserData for testing a corner case crash
+  // scenario. See usage in
+  // ManifestBrowserTest.GetManifestInterruptedByDestruction.
+  void ReinitializeDocumentAssociatedDataForTesting();
+
   // Determines if a clipboard paste using |data| of type |data_type| is allowed
   // in this renderer frame.  The implementation delegates to
   // RenderFrameHostDelegate::IsClipboardPasteContentAllowed().  See the
@@ -2310,6 +2315,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidChangeBaseURL(const GURL& base_url) override;
   void ReceivedDelegatedCapability(
       blink::mojom::DelegatedCapability delegated_capability) override;
+  void SendFencedFrameReportingBeacon(
+      const std::string& event_data,
+      const std::string& event_type,
+      blink::FencedFrame::ReportingDestination destination) override;
   void CreatePortal(
       mojo::PendingAssociatedReceiver<blink::mojom::Portal> pending_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client,
@@ -3500,12 +3509,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // This function should only be called on swapped out RenderFrameHosts.
   void ResetNavigationsUsingSwappedOutRFHAndAllNavigationsInSubtree();
 
-  // In this RenderFrameHost and its children, removes every:
-  // - Non-pending commit NavigationRequest owned by the FrameTreeNode
-  // - Pending commit NavigationRequest owned by the RenderFrameHost
-  // - Speculative RenderFrameHost (and its pending commit NavigationRequests).
-  void ResetAllNavigationsInSubtreeForFrameDetach();
-
   // Called on an unloading frame when its unload timeout is reached. This
   // immediately deletes the RenderFrameHost.
   void OnUnloadTimeout();
@@ -3702,6 +3705,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Returns the BackForwardCacheImpl for the outermost main frame.
   BackForwardCacheImpl& GetBackForwardCache();
+
+  // Return the FrameTreeNode currently owning this RenderFrameHost. In general,
+  // we don't want the RenderFrameHost to depend on it, because it might change,
+  // or might be missing. An exception is made here during unload. It is invalid
+  // to use this function elsewhere.
+  // In other cases, the use of the RenderFrameHostOwner interface should be
+  // used for communicating with the FrameTreeNode.
+  FrameTreeNode* GetFrameTreeNodeForUnload();
 
   // Stores an override of this document's base URL when it does not match the
   // last committed URL or an inherited value (e.g., if a <base> element is

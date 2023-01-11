@@ -15,9 +15,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/child_process_host.h"
 #include "content/public/common/webplugininfo.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,8 +40,8 @@ class ChromePluginServiceFilterTest : public ChromeRenderViewHostTestHarness {
 
 content::WebPluginInfo GetFakePdfPluginInfo() {
   return content::WebPluginInfo(
-      base::ASCIIToUTF16(ChromeContentClient::kPDFExtensionPluginName),
-      base::FilePath(), u"", u"");
+      u"", base::FilePath(ChromeContentClient::kPDFExtensionPluginPath), u"",
+      u"");
 }
 
 }  // namespace

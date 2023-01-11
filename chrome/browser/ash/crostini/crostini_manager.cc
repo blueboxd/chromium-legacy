@@ -10,12 +10,12 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
@@ -537,9 +537,6 @@ void CrostiniManager::CrostiniRestarter::StartLxdContainerFinished(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   CloseCrostiniUpdateFilesystemView();
-  for (auto& observer : observer_list_) {
-    observer.OnContainerStarted(result);
-  }
   if (ReturnEarlyIfNeeded()) {
     return;
   }
@@ -661,9 +658,6 @@ void CrostiniManager::CrostiniRestarter::ContinueRestart() {
 
 void CrostiniManager::CrostiniRestarter::LoadComponentFinished(
     CrostiniResult result) {
-  for (auto& observer : observer_list_) {
-    observer.OnComponentLoaded(result);
-  }
   if (ReturnEarlyIfNeeded()) {
     return;
   }
@@ -788,9 +782,6 @@ void CrostiniManager::CrostiniRestarter::OnWaylandServerCreated(
 void CrostiniManager::CrostiniRestarter::StartTerminaVmFinished(bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   VLOG(2) << "StartTerminaVmFinished for " << container_id_;
-  for (auto& observer : observer_list_) {
-    observer.OnVmStarted(success);
-  }
   if (ReturnEarlyIfNeeded()) {
     return;
   }
@@ -847,9 +838,6 @@ void CrostiniManager::CrostiniRestarter::SharePathsFinished(
 void CrostiniManager::CrostiniRestarter::StartLxdFinished(
     CrostiniResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  for (auto& observer : observer_list_) {
-    observer.OnLxdStarted(result);
-  }
   if (ReturnEarlyIfNeeded()) {
     return;
   }
@@ -878,9 +866,6 @@ void CrostiniManager::CrostiniRestarter::StartLxdFinished(
 void CrostiniManager::CrostiniRestarter::CreateLxdContainerFinished(
     CrostiniResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  for (auto& observer : observer_list_) {
-    observer.OnContainerCreated(result);
-  }
   if (ReturnEarlyIfNeeded()) {
     return;
   }
@@ -902,9 +887,6 @@ void CrostiniManager::CrostiniRestarter::SetUpLxdContainerUserFinished(
     bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  for (auto& observer : observer_list_) {
-    observer.OnContainerSetup(success);
-  }
   if (ReturnEarlyIfNeeded()) {
     return;
   }
@@ -2312,13 +2294,22 @@ CrostiniManager::RestartId CrostiniManager::RestartCrostiniWithOptions(
     return kUninitializedRestartId;
   }
 
+  // Initialize create_options which contains the stored CreateOptions.
   RestartOptions create_options;
+
+  // Clone flags which we care about from the freshly given options.
   create_options.start_vm_only = options.start_vm_only;
   create_options.stop_after_lxd_available = options.stop_after_lxd_available;
+
   bool obsolete_create_options = true;
   AddNewLxdContainerToPrefs(profile_, container_id);
   RegisterContainer(container_id);
   if (!RegisterCreateOptions(container_id, options)) {
+    // Do the path cloning only if we have to since this is more expensive than
+    // setting a boolean flag.
+    for (auto path : options.share_paths) {
+      create_options.share_paths.emplace_back(path);
+    }
     obsolete_create_options = FetchCreateOptions(container_id, &create_options);
   }
 
@@ -2371,6 +2362,12 @@ void CrostiniManager::CancelRestartCrostini(
 
 bool CrostiniManager::IsRestartPending(RestartId restart_id) {
   return restarters_by_id_.find(restart_id) != restarters_by_id_.end();
+}
+
+bool CrostiniManager::HasRestarterForTesting(
+    const guest_os::GuestId& guest_id) {
+  return restarters_by_container_.find(guest_id) !=
+         restarters_by_container_.end();
 }
 
 void CrostiniManager::AddShutdownContainerCallback(
@@ -4171,69 +4168,69 @@ bool CrostiniManager::IsPendingCreation(const guest_os::GuestId& container_id) {
 
 void CrostiniManager::SetCreateOptionsUsed(
     const guest_os::GuestId& container_id) {
-  const base::Value* create_options = guest_os::GetContainerPrefValue(
+  const base::Value* create_options_val = guest_os::GetContainerPrefValue(
       profile_, container_id, guest_os::prefs::kContainerCreateOptions);
-  if (create_options == nullptr) {
+  if (create_options_val == nullptr) {
     // Should never reach here.
+    LOG(ERROR)
+        << "create_options_val in SetCreateOptionsUsed is pointing to null.";
     return;
   }
-  base::Value mutable_create_options = create_options->Clone();
-  mutable_create_options.SetKey(prefs::kCrostiniCreateOptionsUsedKey,
-                                base::Value(true));
+
+  base::Value::Dict mutable_create_options =
+      create_options_val->GetDict().Clone();
+  mutable_create_options.Set(prefs::kCrostiniCreateOptionsUsedKey,
+                             base::Value(true));
   guest_os::UpdateContainerPref(profile_, container_id,
                                 guest_os::prefs::kContainerCreateOptions,
-                                std::move(mutable_create_options));
+                                base::Value(std::move(mutable_create_options)));
 }
 
 bool CrostiniManager::FetchCreateOptions(const guest_os::GuestId& container_id,
                                          RestartOptions* options) {
   DCHECK(options != nullptr);
 
-  const base::Value* create_options = guest_os::GetContainerPrefValue(
+  const base::Value* create_options_val = guest_os::GetContainerPrefValue(
       profile_, container_id, guest_os::prefs::kContainerCreateOptions);
-  if (create_options == nullptr) {
+  if (create_options_val == nullptr) {
     // Should never reach here. If we somehow do, just restart with the given
     // options.
+    LOG(ERROR)
+        << "create_options_val in FetchCreateOptions is pointing to null.";
     return true;
   }
 
-  for (const auto& path : *create_options->GetDict().FindList(
-           prefs::kCrostiniCreateOptionsSharePathsKey)) {
+  const base::Value::Dict& create_options = create_options_val->GetDict();
+  for (const auto& path :
+       *create_options.FindList(prefs::kCrostiniCreateOptionsSharePathsKey)) {
     options->share_paths.emplace_back(path.GetString());
   }
 
-  if (create_options->GetDict().Find(
-          prefs::kCrostiniCreateOptionsContainerUsernameKey)) {
-    options->container_username = *create_options->GetDict().FindString(
+  if (create_options.Find(prefs::kCrostiniCreateOptionsContainerUsernameKey)) {
+    options->container_username = *create_options.FindString(
         prefs::kCrostiniCreateOptionsContainerUsernameKey);
   }
-  if (create_options->GetDict().Find(
-          prefs::kCrostiniCreateOptionsDiskSizeBytesKey)) {
+  if (create_options.Find(prefs::kCrostiniCreateOptionsDiskSizeBytesKey)) {
     int64_t size;
-    base::StringToInt64(*create_options->GetDict().FindString(
+    base::StringToInt64(*create_options.FindString(
                             prefs::kCrostiniCreateOptionsDiskSizeBytesKey),
                         &size);
     options->disk_size_bytes = size;
   }
-  if (create_options->GetDict().Find(
-          prefs::kCrostiniCreateOptionsImageServerUrlKey)) {
-    options->image_server_url = *create_options->GetDict().FindString(
+  if (create_options.Find(prefs::kCrostiniCreateOptionsImageServerUrlKey)) {
+    options->image_server_url = *create_options.FindString(
         prefs::kCrostiniCreateOptionsImageServerUrlKey);
   }
-  if (create_options->GetDict().Find(
-          prefs::kCrostiniCreateOptionsImageAliasKey)) {
-    options->image_alias = *create_options->GetDict().FindString(
-        prefs::kCrostiniCreateOptionsImageAliasKey);
+  if (create_options.Find(prefs::kCrostiniCreateOptionsImageAliasKey)) {
+    options->image_alias =
+        *create_options.FindString(prefs::kCrostiniCreateOptionsImageAliasKey);
   }
-  if (create_options->GetDict().Find(
-          prefs::kCrostiniCreateOptionsAnsiblePlaybookKey)) {
-    options->ansible_playbook =
-        base::FilePath(*create_options->GetDict().FindString(
-            prefs::kCrostiniCreateOptionsAnsiblePlaybookKey));
+  if (create_options.Find(prefs::kCrostiniCreateOptionsAnsiblePlaybookKey)) {
+    options->ansible_playbook = base::FilePath(*create_options.FindString(
+        prefs::kCrostiniCreateOptionsAnsiblePlaybookKey));
   }
 
-  return *create_options->GetDict().FindBool(
-      prefs::kCrostiniCreateOptionsUsedKey);
+  return *create_options.FindBool(prefs::kCrostiniCreateOptionsUsedKey);
 }
 
 }  // namespace crostini

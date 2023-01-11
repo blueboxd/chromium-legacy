@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/threading/thread_checker.h"
 #include "base/win/atl.h"
 #include "base/win/scoped_gdi_object.h"
@@ -19,6 +19,13 @@
 
 namespace updater {
 namespace ui {
+
+class SilentSplashScreen : public updater::SplashScreen {
+ public:
+  // Overrides for SplashScreen.
+  void Show() override;
+  void Dismiss(base::OnceClosure callback) override;
+};
 
 class SplashScreen : public CAxDialogImpl<SplashScreen>,
                      public CustomDlgColors,

@@ -170,7 +170,6 @@ Solo alguien con tu frase de contraseña puede leer los datos encriptados. Googl
 <translation id="225943865679747347">Código de error: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">Agregar cuenta</translation>
 <translation id="2268044343513325586">Definir mejor</translation>
-<translation id="2271351792809375263">Utiliza en otras apps del dispositivo las contraseñas guardadas en Chrome</translation>
 <translation id="2273327106802955778">Menú Más</translation>
 <translation id="2286505070150039482">Texto resaltado</translation>
 <translation id="2299218006564889602">Las contraseñas se encriptan en tu dispositivo antes de guardarse en el Administrador de contraseñas de Google.</translation>
@@ -286,7 +285,6 @@ Tampoco pueden usar cookies para ver la actividad de navegación en diferentes s
 Consulta las instrucciones de tu motor de búsqueda para borrar el historial de búsqueda (si corresponde).</translation>
 <translation id="3080525922482950719">Puedes guardar páginas para leerlas más tarde o sin conexión.</translation>
 <translation id="3081338492074632642">Asegúrate de que la contraseña que guardes coincida con la de <ph name="WEBSITE" /></translation>
-<translation id="3103603146121354983">Autocompletar contraseñas</translation>
 <translation id="3112556859945124369">Marcar…</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />Consulta lo que puedes sincronizar<ph name="END_LINK" /></translation>
 <translation id="3130863904455712965">Historial y más</translation>
@@ -365,7 +363,6 @@ Consulta las instrucciones de tu motor de búsqueda para borrar el historial de 
 <translation id="3661160521073045932">Perfil de configuración disponible</translation>
 <translation id="3670030362669914947">Número</translation>
 <translation id="3691593122358196899">Se agregó a favoritos en <ph name="FOLDER_TITLE" /></translation>
-<translation id="369349502275246497">Sugerir guardar contraseñas</translation>
 <translation id="3709582977625132201">Marcar como no leído</translation>
 <translation id="371230970611282515">Predice y te advierte sobre eventos peligrosos antes de que ocurran.</translation>
 <translation id="37207012422556617">Tendencias de búsquedas</translation>
@@ -455,6 +452,7 @@ Consulta las instrucciones de tu motor de búsqueda para borrar el historial de 
 <translation id="4420409367264901497">Editar favorito</translation>
 <translation id="4442550905108052454">Abre la <ph name="BEGIN_BOLD" />Configuración<ph name="END_BOLD" />.</translation>
 <translation id="4454246407045105932">Agregar idioma</translation>
+<translation id="4461286950227634995">Ofrecer guardar contraseñas</translation>
 <translation id="4462491365653392320">Realizar seguimiento de precios en las pestañas</translation>
 <translation id="4469418912670346607">Continuar con la configuración</translation>
 <translation id="4474494258097106883">Diseñado para tu iPhone</translation>
@@ -466,11 +464,11 @@ Consulta las instrucciones de tu motor de búsqueda para borrar el historial de 
 <translation id="4508750114462689118">Cerrar promoción de acceso</translation>
 <translation id="4514889972748124117">Sugerir contraseña segura…</translation>
 <translation id="4520798012560649652">Más información sobre el modo Incógnito</translation>
-<translation id="4526249700380860531">Consulta y administra las contraseñas que guardaste en <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />.</translation>
 <translation id="452750746583162491">Revisa tus datos sincronizados</translation>
 <translation id="4536418791685807335">Intenta volver a acceder.</translation>
 <translation id="4540780316273593836">Se produjo un error</translation>
 <translation id="457386861538956877">Más...</translation>
+<translation id="4587589328781138893">Sitios</translation>
 <translation id="4588014171431912783">La configuración de sincronización se restablecerá en función de tu última copia de seguridad. <ph name="BEGIN_LINK" />Consulta lo que puedes sincronizar<ph name="END_LINK" />.</translation>
 <translation id="4592368184551360546">Teclado</translation>
 <translation id="4606247758155004938">Tu organización administra el navegador.</translation>
@@ -554,7 +552,6 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5118764316110575523">No</translation>
 <translation id="5119391094379141756">Selecciona Chrome.</translation>
 <translation id="5132942445612118989">Sincroniza tus contraseñas, historial y más en todos los dispositivos</translation>
-<translation id="5140288047769711648">Chrome recordará esta contraseña para que no tengas que hacerlo tú.</translation>
 <translation id="5149188072385105201">Agregar contraseña...</translation>
 <translation id="5150492518600715772">Enviar al dispositivo</translation>
 <translation id="5168414296986405587">Diseñado para iPadOS</translation>
@@ -881,7 +878,6 @@ Cuando está activado el modo Incógnito, los sitios no pueden usar cookies para
 <translation id="7438481509621345350">Ahora, cuando abras una nueva pestaña, verás historias de <ph name="CHANNEL_NAME" />.</translation>
 <translation id="7454057999980797137">Estado/condado</translation>
 <translation id="7459628154744868585">Se activó la Protección mejorada</translation>
-<translation id="7464701184726199289">Esta opción borra los datos sincronizados en todos los dispositivos. Las opciones de configuración de sitios guardadas no se borrarán y es posible que reflejen tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="746684838091935575">3. Selecciona Chrome.</translation>
 <translation id="7472734401283673885">Nombre de empresa</translation>
 <translation id="7473891865547856676">No, gracias</translation>
@@ -965,7 +961,6 @@ También pueden usar cookies para ver la actividad de navegación en diferentes 
 <translation id="806745655614357130">Mantener mis datos separados</translation>
 <translation id="8073670137947914548">Descarga completa</translation>
 <translation id="8073872304774253879">Mejorar las búsquedas y la navegación</translation>
-<translation id="8076014560081431679">Las opciones de configuración de sitios guardadas no se borrarán y es posible que reflejen tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="8079602123447022758">Esta configuración está administrada; presiona dos veces para obtener más información</translation>
 <translation id="8080028325999236607">Cerrar todas las pestañas</translation>
 <translation id="8084285576995584326">Controla los datos de tu Cuenta de Google.</translation>
@@ -1093,7 +1088,6 @@ También pueden usar cookies para ver la actividad de navegación en diferentes 
 <translation id="9079935439869366234">Marcar todas como no leídas</translation>
 <translation id="9081058212938299310">¿Quieres actualizar la contraseña para <ph name="USERNAME" />?</translation>
 <translation id="9083838294503912307">Para sincronizar diferentes dispositivos y personalizar tu experiencia, activa la sincronización.</translation>
-<translation id="9087108903408689779">Contraseña sugerida de Chrome:</translation>
 <translation id="9093271241977565440">En la parte superior de la pantalla, presiona el ícono de Búsqueda</translation>
 <translation id="9094033019050270033">Actualizar contraseña</translation>
 <translation id="9097506547406246598">No se puede dejar de seguir. Se produjo un error.</translation>

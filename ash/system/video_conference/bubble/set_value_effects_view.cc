@@ -24,6 +24,7 @@ namespace {
 class ValueButtonContainer : public views::View {
  public:
   explicit ValueButtonContainer(const VcHostedEffect* effect) {
+    SetID(BubbleViewID::kSingleSetValueEffectView);
     views::FlexLayout* layout =
         SetLayoutManager(std::make_unique<views::FlexLayout>());
     layout->SetOrientation(views::LayoutOrientation::kVertical);
@@ -34,8 +35,12 @@ class ValueButtonContainer : public views::View {
       AddChildView(std::make_unique<views::Label>(effect->label_text()));
     }
 
+    // `effect` is expected to provide the current state of the effect, and
+    // a `current_state` with no value means it couldn't be obtained.
+    absl::optional<int> current_state = effect->get_state_callback().Run();
+    DCHECK(current_state.has_value());
+
     // Add a button for each state.
-    const int current_state = effect->get_state_callback().Run();
     for (int i = 0; i < effect->GetNumStates(); ++i) {
       const VcEffectState* state = effect->GetState(/*index=*/i);
       std::unique_ptr<views::RadioButton> state_button =
@@ -53,7 +58,7 @@ class ValueButtonContainer : public views::View {
       // Set-value effects require an actual integer state. Mark it checked
       // (selected) if the current state of the effect is this state's value,
       DCHECK(state->state().has_value());
-      state_button->SetChecked(state->state().value() == current_state);
+      state_button->SetChecked(state->state().value() == current_state.value());
 
       AddChildView(std::move(state_button));
     }
@@ -83,6 +88,14 @@ SetValueEffectsView::SetValueEffectsView(
 
   if (controller->effects_manager().HasSetValueEffects()) {
     for (auto* effect : controller->effects_manager().GetSetValueEffects()) {
+      // If the current state of `effect` has no value, it means the state of
+      // the effect cannot be obtained. This can happen if the
+      // `VcEffectsDelegate` hosting `effect` has encountered an error or is
+      // in some bad state. In this case its controls are not presented.
+      if (!effect->get_state_callback().Run().has_value()) {
+        continue;
+      }
+
       AddChildView(std::make_unique<ValueButtonContainer>(effect));
     }
   }

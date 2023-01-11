@@ -8,15 +8,16 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_value_converter.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"

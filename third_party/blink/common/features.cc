@@ -310,6 +310,10 @@ const base::FeatureParam<int>
     kSharedStorageMaxAllowedFencedFrameDepthForSelectURL = {
         &kSharedStorageAPI,
         "SharedStorageMaxAllowedFencedFrameDepthForSelectURL", 1};
+const base::FeatureParam<int>
+    kSharedStorageMaxAllowedSelectURLCallsPerOriginPerPageLoad = {
+        &kSharedStorageAPI,
+        "SharedStorageMaxAllowedSelectURLCallsPerOriginPerPageLoad", 3};
 
 BASE_FEATURE(kSameSiteCrossOriginForSpeculationRulesPrerender,
              "SameSiteCrossOriginForSpeculationRulesPrerender",
@@ -1674,6 +1678,10 @@ BASE_FEATURE(kAllowPageWithIDBConnectionInBFCache,
 BASE_FEATURE(kUseBlinkSchedulerTaskRunnerWithCustomDeleter,
              "UseBlinkSchedulerTaskRunnerWithCustomDeleter",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kExtendScriptResourceLifetime,
+             "ExtendScriptResourceLifetime",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features
 }  // namespace blink

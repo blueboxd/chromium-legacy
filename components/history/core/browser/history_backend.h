@@ -15,15 +15,16 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/lru_cache.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/observer_list.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"

@@ -54,7 +54,6 @@
 #endif
 
 #if HANDLE_WAYLAND_FAILURE
-#include "base/threading/thread_task_runner_handle.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/views/widget/widget_observer.h"
 #endif
@@ -87,7 +86,7 @@ class WidgetActivationWaiterWayland final : public WidgetObserver {
   // true on success. Returns immediately if the widget is already active.
   bool Wait() {
     if (!active_) {
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&WidgetActivationWaiterWayland::OnTimeout,
                          weak_ptr_factory_.GetWeakPtr()),
@@ -494,7 +493,7 @@ ui::test::ActionResult InteractionTestUtilSimulatorViews::SelectDropdownItem(
   // dropdown and selecting individual items.
   if (input_type == InputType::kDontCare) {
     if (combobox) {
-      combobox->SetSelectedRow(index);
+      combobox->MenuSelectionAt(index);
     } else {
       editable_combobox->SetText(model->GetItemAt(index));
     }

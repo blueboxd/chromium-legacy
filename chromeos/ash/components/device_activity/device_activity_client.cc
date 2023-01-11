@@ -481,8 +481,15 @@ void DeviceActivityClient::OnGetLastPingDatesStatusFetched(
               GetUseCasePtr(psm_rlwe::RlweUseCase::CROS_FRESNEL_28DAY_ACTIVE);
           break;
         default:
-          VLOG(1) << "PSM use case is not supported yet.";
+          LOG(ERROR) << "PSM use case is not supported yet.";
           continue;
+      }
+
+      // Crashes may occur due to device_active_use_case_ptr not being defined
+      // at this point.
+      if (device_active_use_case_ptr == nullptr) {
+        LOG(ERROR) << "Device active use case is not defined.";
+        return;
       }
 
       if (!device_active_use_case_ptr->IsLastKnownPingTimestampSet()) {
@@ -671,48 +678,21 @@ void DeviceActivityClient::TransitionOutOfIdle(
       return;
     }
 
-    switch (current_use_case->GetPsmUseCase()) {
-      case psm_rlwe::RlweUseCase::CROS_FRESNEL_DAILY:
-        // Check membership continues when the cached local state pref
-        // is not set. The local state pref may not be set if the device is
-        // new, powerwashed, recovered, RMA, or the local state was corrupted.
-        if (base::FeatureList::IsEnabled(
-                features::kDeviceActiveClientDailyCheckMembership) &&
-            !current_use_case->IsLastKnownPingTimestampSet()) {
-          TransitionToCheckMembershipOprf(current_use_case);
-          return;
-        } else {
-          // |TransitionToCheckIn| if the local state pref is set.
-          TransitionToCheckIn(current_use_case);
-          return;
-        }
-      case psm_rlwe::RlweUseCase::CROS_FRESNEL_28DAY_ACTIVE:
-        // Check membership continues when the cached local state pref
-        // is not set. The local state pref may not be set if the device is
-        // new, powerwashed, recovered, RMA, or the local state was corrupted.
-        if (base::FeatureList::IsEnabled(
-                features::kDeviceActiveClient28DayActiveCheckMembership) &&
-            !current_use_case->IsLastKnownPingTimestampSet()) {
-          TransitionToCheckMembershipOprf(current_use_case);
-          return;
-        }
+    // Check membership continues when the cached local state pref
+    // is not set. The local state pref may not be set if the device is
+    // new, powerwashed, recovered, RMA, or the local state was corrupted.
+    if (current_use_case->IsEnabledCheckMembership() &&
+        !current_use_case->IsLastKnownPingTimestampSet()) {
+      TransitionToCheckMembershipOprf(current_use_case);
+      return;
+    }
 
-        // |TransitionToCheckIn| if the local state pref is set.
-        if (base::FeatureList::IsEnabled(
-                features::kDeviceActiveClient28DayActiveCheckIn)) {
-          // During rollout, we perform CheckIn without CheckMembership for
-          // powerwash, recovery, or RMA devices.
-          TransitionToCheckIn(current_use_case);
-          return;
-        }
-
-        break;
-      default:
-        VLOG(1) << "Use case is not supported yet. "
-                << psm_rlwe::RlweUseCase_Name(
-                       current_use_case->GetPsmUseCase());
-        TransitionToIdle(current_use_case);
-        return;
+    // |TransitionToCheckIn| if the local state pref is set.
+    // During rollout, we perform CheckIn without CheckMembership for
+    // powerwash, recovery, or RMA devices.
+    if (current_use_case->IsEnabledCheckIn()) {
+      TransitionToCheckIn(current_use_case);
+      return;
     }
   }
 

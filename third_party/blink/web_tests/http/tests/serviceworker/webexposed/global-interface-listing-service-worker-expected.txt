@@ -10,6 +10,7 @@ interface AbortPaymentEvent : ExtendableEvent
     method respondWith
 interface AbortSignal : EventTarget
     static method abort
+    static method any
     static method timeout
     attribute @@toStringTag
     getter aborted
@@ -122,10 +123,6 @@ interface CacheStorage
     method open
 interface CanMakePaymentEvent : ExtendableEvent
     attribute @@toStringTag
-    getter methodData
-    getter modifiers
-    getter paymentRequestOrigin
-    getter topOrigin
     method constructor
     method respondWith
 interface CanvasFilter
@@ -930,25 +927,6 @@ interface MojoWatcher
     attribute @@toStringTag
     method cancel
     method constructor
-interface NativeIOFile
-    attribute @@toStringTag
-    method close
-    method constructor
-    method flush
-    method getLength
-    method read
-    method setLength
-    method write
-interface NativeIOFileManager
-    attribute @@toStringTag
-    method constructor
-    method delete
-    method getAll
-    method getRemainingCapacity
-    method open
-    method releaseCapacity
-    method rename
-    method requestCapacity
 interface NavigationPreloadManager
     attribute @@toStringTag
     method constructor
@@ -3096,7 +3074,6 @@ interface WorkerGlobalScope : EventTarget
     getter performance
     getter scheduler
     getter self
-    getter storageFoundation
     getter trustedTypes
     method atob
     method btoa

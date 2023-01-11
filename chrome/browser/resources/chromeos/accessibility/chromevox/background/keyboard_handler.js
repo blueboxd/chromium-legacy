@@ -11,8 +11,9 @@ import {ChromeVoxKbHandler} from '../common/keyboard_handler.js';
 import {QueueMode} from '../common/tts_types.js';
 
 import {ChromeVox} from './chromevox.js';
+import {ChromeVoxRange} from './chromevox_range.js';
 import {ChromeVoxState} from './chromevox_state.js';
-import {EventSourceState} from './event_source.js';
+import {EventSource} from './event_source.js';
 import {MathHandler} from './math_handler.js';
 import {Output} from './output/output.js';
 import {ChromeVoxPrefs} from './prefs.js';
@@ -70,7 +71,7 @@ export class BackgroundKeyboardHandler {
    *     SpokenFeedbackEventRewriterDelegate::HandleKeyboardEvent.
    */
   onKeyDown(evt) {
-    EventSourceState.set(EventSourceType.STANDARD_KEYBOARD);
+    EventSource.set(EventSourceType.STANDARD_KEYBOARD);
     evt.stickyMode = ChromeVoxPrefs.isStickyModeOn();
 
     // If somehow the user gets into a state where there are dangling key downs
@@ -134,7 +135,7 @@ export class BackgroundKeyboardHandler {
     // either eat it here or re-inject it; otherwise, some components, like
     // ARC++ with TalkBack never get it. We only want to re-inject when
     // ChromeVox has no range.
-    if (!ChromeVoxState.instance.currentRange) {
+    if (!ChromeVoxRange.current) {
       return false;
     }
 

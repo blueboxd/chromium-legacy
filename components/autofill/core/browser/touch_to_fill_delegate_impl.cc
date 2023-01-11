@@ -4,8 +4,10 @@
 
 #include "components/autofill/core/browser/touch_to_fill_delegate_impl.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "components/autofill/core/browser/autofill_browser_util.h"
 #include "components/autofill/core/browser/autofill_driver.h"
+#include "components/autofill/core/browser/autofill_suggestion_generator.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -39,34 +41,49 @@ bool TouchToFillDelegateImpl::TryToShowTouchToFill(const FormData& form,
   // Trigger only on supported platforms.
   if (!manager_->client()->IsTouchToFillCreditCardSupported())
     return false;
-  // Trigger only if the client and the form are not insecure.
-  if (IsFormOrClientNonSecure(manager_->client(), form))
-    return false;
+
+  TouchToFillCreditCardTriggerOutcome outcome =
+      TouchToFillCreditCardTriggerOutcome::kShown;
   // Trigger only if not shown before.
-  if (ttf_credit_card_state_ != TouchToFillState::kShouldShow)
-    return false;
+  if (ttf_credit_card_state_ != TouchToFillState::kShouldShow) {
+    outcome = TouchToFillCreditCardTriggerOutcome::kShownBefore;
+  }
+  // Trigger only if the client and the form are not insecure.
+  if (IsFormOrClientNonSecure(manager_->client(), form)) {
+    outcome = TouchToFillCreditCardTriggerOutcome::kFormOrClientNotSecure;
+  }
   // Trigger only on focusable empty field.
-  if (!field.is_focusable || !SanitizedFieldIsEmpty(field.value))
-    return false;
+  if (!field.is_focusable || !SanitizedFieldIsEmpty(field.value)) {
+    outcome = TouchToFillCreditCardTriggerOutcome::kFieldNotEmptyOrNotFocusable;
+  }
   // Trigger only if there is at least 1 complete valid credit card on file.
   // Complete = contains number, expiration date and name on card.
   // Valid = unexpired with valid number format.
   PersonalDataManager* pdm = manager_->client()->GetPersonalDataManager();
   DCHECK(pdm);
-  std::vector<CreditCard*> cards_to_suggest = pdm->GetCreditCardsToSuggest(
-      manager_->client()->AreServerCardsSupported());
+  std::vector<CreditCard*> cards_to_suggest =
+      AutofillSuggestionGenerator::GetOrderedCardsToSuggest(
+          manager_->client(), /*suppress_disused_cards=*/true);
 
   // Not showing the sheet if all the cards are incomplete or invalid.
   if (base::ranges::none_of(cards_to_suggest,
                             &CreditCard::IsCompleteValidCard)) {
-    return false;
+    outcome = TouchToFillCreditCardTriggerOutcome::kNoValidCards;
   }
   // Trigger only if the UI is available.
-  if (!manager_->driver()->CanShowAutofillUi())
-    return false;
-  // Finally try showing the surface.
-  if (!manager_->client()->ShowTouchToFillCreditCard(
+  if (!manager_->driver()->CanShowAutofillUi()) {
+    outcome = TouchToFillCreditCardTriggerOutcome::kCannotShowAutofillUi;
+  }
+  // Finally try showing the surface
+  if (outcome == TouchToFillCreditCardTriggerOutcome::kShown &&
+      !manager_->client()->ShowTouchToFillCreditCard(
           GetWeakPtr(), std::move(cards_to_suggest))) {
+    outcome = TouchToFillCreditCardTriggerOutcome::kFailedToDisplayBottomSheet;
+  }
+  base::UmaHistogramEnumeration(kUmaTouchToFillCreditCardTriggerOutcome,
+                                outcome);
+  // Return if didn't show the sheet
+  if (outcome != TouchToFillCreditCardTriggerOutcome::kShown) {
     return false;
   }
 
@@ -126,6 +143,8 @@ void TouchToFillDelegateImpl::SuggestionSelected(std::string unique_id) {
   CreditCard* card = pdm->GetCreditCardByGUID(unique_id);
   manager_->FillOrPreviewCreditCardForm(mojom::RendererFormDataAction::kFill,
                                         query_form_, query_field_, card);
+  manager_->SetSuggestionOriginMetricState(
+      AutofillSuggestionMethod::KTouchToFillCreditCard);
 }
 
 void TouchToFillDelegateImpl::OnDismissed() {

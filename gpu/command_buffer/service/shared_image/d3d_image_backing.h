@@ -68,7 +68,7 @@ class GPU_GLES2_EXPORT D3DImageBacking
 
   static std::unique_ptr<D3DImageBacking> CreateFromSwapChainBuffer(
       const Mailbox& mailbox,
-      viz::ResourceFormat format,
+      viz::SharedImageFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
@@ -110,7 +110,7 @@ class GPU_GLES2_EXPORT D3DImageBacking
   // SharedImageBacking implementation.
   SharedImageBackingType GetType() const override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
-  bool UploadFromMemory(const SkPixmap& pixmap) override;
+  bool UploadFromMemory(const std::vector<SkPixmap>& pixmaps) override;
   bool ReadbackToMemory(SkPixmap& pixmap) override;
   bool PresentSwapChain() override;
   std::unique_ptr<DawnImageRepresentation> ProduceDawn(

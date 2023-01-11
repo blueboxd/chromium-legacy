@@ -33,6 +33,7 @@ import {AutoScrollHandler} from './auto_scroll_handler.js';
 import {BrailleBackground} from './braille/braille_background.js';
 import {BrailleCaptionsBackground} from './braille/braille_captions_background.js';
 import {ChromeVox} from './chromevox.js';
+import {ChromeVoxRange} from './chromevox_range.js';
 import {ChromeVoxState} from './chromevox_state.js';
 import {ChromeVoxBackground} from './classic_background.js';
 import {ClipboardHandler} from './clipboard_handler.js';
@@ -40,7 +41,7 @@ import {Color} from './color.js';
 import {CommandHandlerInterface} from './command_handler_interface.js';
 import {DesktopAutomationInterface} from './desktop_automation_interface.js';
 import {TypingEcho} from './editing/editable_text_base.js';
-import {EventSourceState} from './event_source.js';
+import {EventSource} from './event_source.js';
 import {GestureInterface} from './gesture_interface.js';
 import {LogStore} from './logging/log_store.js';
 import {Output} from './output/output.js';
@@ -54,6 +55,7 @@ const AutomationNode = chrome.automation.AutomationNode;
 const Dir = constants.Dir;
 const EventType = chrome.automation.EventType;
 const RoleType = chrome.automation.RoleType;
+const SessionType = chrome.chromeosInfoPrivate.SessionType;
 
 /**
  * @typedef {{
@@ -85,27 +87,34 @@ export class CommandHandler extends CommandHandlerInterface {
     this.init_();
   }
 
+  /**
+   * @param {boolean} flagEnabled
+   * @private
+   */
+  updateLanguageLoggingEnabled_(flagEnabled) {
+    this.languageLoggingEnabled_ |= flagEnabled;
+  }
+
+  /**
+   * @param {!SessionType} sessionType
+   * @private
+   */
+  updateIsKioskSession_(sessionType) {
+    this.isKioskSession_ = (sessionType === SessionType.KIOSK);
+  }
+
   /** @private */
   init_() {
     chrome.commandLinePrivate.hasSwitch(
-        'enable-experimental-accessibility-language-detection', enabled => {
-          if (enabled) {
-            this.languageLoggingEnabled_ = true;
-          }
-        });
+        'enable-experimental-accessibility-language-detection',
+        enabled => this.updateLanguageLoggingEnabled_(enabled));
     chrome.commandLinePrivate.hasSwitch(
         'enable-experimental-accessibility-language-detection-dynamic',
-        enabled => {
-          if (enabled) {
-            this.languageLoggingEnabled_ = true;
-          }
-        });
+        enabled => this.updateLanguageLoggingEnabled_(enabled));
 
-    chrome.chromeosInfoPrivate.get(['sessionType'], result => {
-      /** @type {boolean} */
-      this.isKioskSession_ = result['sessionType'] ===
-          chrome.chromeosInfoPrivate.SessionType.KIOSK;
-    });
+    chrome.chromeosInfoPrivate.get(
+        ['sessionType'],
+        result => this.updateIsKioskSession_(result['sessionType']));
   }
 
   /** @override */
@@ -128,7 +137,7 @@ export class CommandHandler extends CommandHandlerInterface {
         chrome.runtime.openOptionsPage();
         break;
       case Command.TOGGLE_STICKY_MODE:
-        this.toggleStickyMode_();
+        SmartStickyMode.instance.toggle();
         return false;
       case Command.PASS_THROUGH_MODE:
         ChromeVox.passThroughMode = true;
@@ -249,7 +258,7 @@ export class CommandHandler extends CommandHandlerInterface {
     }
 
     // The remaining commands require a current range.
-    if (!ChromeVoxState.instance.currentRange) {
+    if (!ChromeVoxRange.current) {
       if (!ChromeVoxState.instance.talkBackEnabled) {
         this.announceNoCurrentRange_();
       }
@@ -261,7 +270,7 @@ export class CommandHandler extends CommandHandlerInterface {
       return false;
     }
 
-    let currentRange = ChromeVoxState.instance.currentRange;
+    let currentRange = ChromeVoxRange.current;
     let node = currentRange.start.node;
 
     // If true, will check if the predicate matches the current node.
@@ -500,7 +509,7 @@ export class CommandHandler extends CommandHandlerInterface {
       case Command.NEXT_OBJECT:
         skipSettingSelection = true;
         didNavigate = true;
-        unit = (EventSourceState.get() === EventSourceType.TOUCH_GESTURE) ?
+        unit = (EventSource.get() === EventSourceType.TOUCH_GESTURE) ?
             CursorUnit.GESTURE_NODE :
             CursorUnit.NODE;
         currentRange = currentRange.move(unit, dir);
@@ -861,7 +870,7 @@ export class CommandHandler extends CommandHandlerInterface {
     }
 
     if (!AutomationUtil.isDescendantOf(
-            ChromeVoxState.instance.currentRange.start.node, this.imageNode_)) {
+            ChromeVoxRange.current.start.node, this.imageNode_)) {
       this.imageNode_.removeEventListener(
           EventType.IMAGE_FRAME_UPDATED, this.onImageFrameUpdated_, false);
       this.imageNode_ = null;
@@ -922,8 +931,7 @@ export class CommandHandler extends CommandHandlerInterface {
     const textEditHandler = DesktopAutomationInterface.instance.textEditHandler;
     if (!textEditHandler ||
         !AutomationUtil.isDescendantOf(
-            ChromeVoxState.instance.currentRange.start.node,
-            textEditHandler.node)) {
+            ChromeVoxRange.current.start.node, textEditHandler.node)) {
       return true;
     }
 
@@ -1053,7 +1061,7 @@ export class CommandHandler extends CommandHandlerInterface {
   announceNoCurrentRange_() {
     new Output()
         .withString(Msgs.getMsg(
-            EventSourceState.get() === EventSourceType.TOUCH_GESTURE ?
+            EventSource.get() === EventSourceType.TOUCH_GESTURE ?
                 'no_focus_touch' :
                 'no_focus'))
         .withQueueMode(QueueMode.FLUSH)
@@ -1090,7 +1098,7 @@ export class CommandHandler extends CommandHandlerInterface {
    * @private
    */
   checkForLossOfFocus_(focusedNode) {
-    const cur = ChromeVoxState.instance.currentRange;
+    const cur = ChromeVoxRange.current;
     if (cur && !cur.isValid() && focusedNode) {
       ChromeVoxState.instance.setCurrentRange(
           CursorRange.fromNode(focusedNode));
@@ -1116,7 +1124,7 @@ export class CommandHandler extends CommandHandlerInterface {
   /** @private */
   cycleTypingEcho_() {
     LocalStorage.set(
-        'typingEcho', TypingEcho.cycle(LocalStorage.get('typingEcho')));
+        'typingEcho', TypingEcho.cycle(LocalStorage.getNumber('typingEcho')));
     let announce = '';
     switch (LocalStorage.get('typingEcho')) {
       case TypingEcho.CHARACTER:
@@ -1182,10 +1190,10 @@ export class CommandHandler extends CommandHandlerInterface {
 
   /** @private */
   forceClickOnCurrentItem_() {
-    if (!ChromeVoxState.instance.currentRange) {
+    if (!ChromeVoxRange.current) {
       return;
     }
-    let actionNode = ChromeVoxState.instance.currentRange.start.node;
+    let actionNode = ChromeVoxRange.current.start.node;
     // Scan for a clickable, which overrides the |actionNode|.
     let clickable = actionNode;
     while (clickable && !clickable.clickable &&
@@ -1197,7 +1205,7 @@ export class CommandHandler extends CommandHandlerInterface {
       return;
     }
 
-    if (EventSourceState.get() === EventSourceType.TOUCH_GESTURE &&
+    if (EventSource.get() === EventSourceType.TOUCH_GESTURE &&
         actionNode.state.editable) {
       // Dispatch a click to ensure the VK gets shown.
       const center = RectUtil.center(actionNode.location);
@@ -1481,7 +1489,7 @@ export class CommandHandler extends CommandHandlerInterface {
 
   /** @private */
   readCurrentTitle_() {
-    let target = ChromeVoxState.instance.currentRange.start.node;
+    let target = ChromeVoxRange.current.start.node;
     const output = new Output();
 
     if (!target) {
@@ -1530,13 +1538,13 @@ export class CommandHandler extends CommandHandlerInterface {
     ChromeVoxState.instance.isReadingContinuously = true;
     const continueReading = () => {
       if (!ChromeVoxState.instance.isReadingContinuously ||
-          !ChromeVoxState.instance.currentRange) {
+          !ChromeVoxRange.current) {
         return;
       }
 
-      const prevRange = ChromeVoxState.instance.currentRange;
-      const newRange = ChromeVoxState.instance.currentRange.move(
-          CursorUnit.NODE, Dir.FORWARD);
+      const prevRange = ChromeVoxRange.current;
+      const newRange =
+          ChromeVoxRange.current.move(CursorUnit.NODE, Dir.FORWARD);
 
       // Stop if we've wrapped back to the document.
       const maybeDoc = newRange.start.node;
@@ -1548,12 +1556,12 @@ export class CommandHandler extends CommandHandlerInterface {
       ChromeVoxState.instance.setCurrentRange(newRange);
       newRange.select();
 
-      const o = new Output()
-                    .withoutHints()
-                    .withRichSpeechAndBraille(
-                        ChromeVoxState.instance.currentRange, prevRange,
-                        OutputCustomEvent.NAVIGATE)
-                    .onSpeechEnd(continueReading);
+      const o =
+          new Output()
+              .withoutHints()
+              .withRichSpeechAndBraille(
+                  ChromeVoxRange.current, prevRange, OutputCustomEvent.NAVIGATE)
+              .onSpeechEnd(continueReading);
 
       if (!o.hasSpeech) {
         continueReading();
@@ -1564,7 +1572,7 @@ export class CommandHandler extends CommandHandlerInterface {
     };
 
     {
-      const startNode = ChromeVoxState.instance.currentRange.start.node;
+      const startNode = ChromeVoxRange.current.start.node;
       const collapsedRange = CursorRange.fromNode(startNode);
       const o =
           new Output()
@@ -1609,7 +1617,7 @@ export class CommandHandler extends CommandHandlerInterface {
    */
   readPhoneticPronunciation_(node) {
     // Get node info.
-    const index = ChromeVoxState.instance.currentRange.start.index;
+    const index = ChromeVoxRange.current.start.index;
     const name = node.name;
     // If there is no text to speak, inform the user and return early.
     if (!name) {
@@ -1760,7 +1768,7 @@ export class CommandHandler extends CommandHandlerInterface {
     LocalStorage.set('brailleTable', LocalStorage.get(brailleTableType));
     LocalStorage.set('brailleTableType', brailleTableType);
     BrailleBackground.instance.getTranslatorManager().refresh(
-        LocalStorage.get(brailleTableType));
+        LocalStorage.getString(brailleTableType));
     new Output().format(output).go();
   }
 
@@ -1803,12 +1811,12 @@ export class CommandHandler extends CommandHandlerInterface {
   toggleSelection_() {
     if (!ChromeVoxState.instance.pageSel) {
       ChromeVox.earcons.playEarcon(EarconId.SELECTION);
-      ChromeVoxState.instance.pageSel = ChromeVoxState.instance.currentRange;
+      ChromeVoxState.instance.pageSel = ChromeVoxRange.current;
       DesktopAutomationInterface.instance.ignoreDocumentSelectionFromAction(
           true);
     } else {
       ChromeVox.earcons.playEarcon(EarconId.SELECTION_REVERSE);
-      const root = ChromeVoxState.instance.currentRange.start.node.root;
+      const root = ChromeVoxRange.current.start.node.root;
       if (root && root.selectionStartObject && root.selectionEndObject &&
           !isNaN(Number(root.selectionStartOffset)) &&
           !isNaN(Number(root.selectionEndOffset))) {
@@ -1831,17 +1839,6 @@ export class CommandHandler extends CommandHandlerInterface {
       return false;
     }
     return true;
-  }
-
-  /** @private */
-  toggleStickyMode_() {
-    ChromeVoxPrefs.instance.setAndAnnounceStickyPref(
-        !ChromeVoxPrefs.isStickyPrefOn);
-
-    if (ChromeVoxState.instance.currentRange) {
-      SmartStickyMode.instance.onStickyModeCommand(
-          ChromeVoxState.instance.currentRange);
-    }
   }
 
   /**

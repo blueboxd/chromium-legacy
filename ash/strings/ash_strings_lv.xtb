@@ -162,6 +162,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="1774796056689732716">Kalendārs, <ph name="CURRENT_MONTH_YEAR" />, pašlaik atlasītais datums ir <ph name="DATE" />.</translation>
 <translation id="1787955149152357925">Izslēgts</translation>
 <translation id="1797271123677381264">Aizmirsta parole</translation>
+<translation id="1807246157184219062">Gaišs</translation>
 <translation id="181103072419391116">Signāla stiprums: <ph name="SIGNAL_STRENGTH" />, pārvalda jūsu administrators</translation>
 <translation id="1812997170047690955">Kas ir redzams ekrānā?</translation>
 <translation id="1816896987747843206">Atļauj piekļuvi kamerai visām lietotnēm un vietnēm, kurām ir kameras atļauja.</translation>
@@ -238,6 +239,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="2224075387478458881">Ja ekrānā ir redzams aizsargāts saturs, ekrāna ierakstīšana ir liegta.</translation>
 <translation id="2227179592712503583">Noņemt ieteikumu</translation>
 <translation id="225680501294068881">Notiek ierīču meklēšana...</translation>
+<translation id="225716114209817872">Maksimāli</translation>
 <translation id="2257486738914982088">Lejupielādējot failu “<ph name="FILENAME" />”, radās kļūda.</translation>
 <translation id="2258734398699965611">Ieteiktie faili</translation>
 <translation id="2268130516524549846">Bluetooth atspējots</translation>
@@ -262,6 +264,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="2354174487190027830">Notiek <ph name="NAME" /> aktivizēšana.</translation>
 <translation id="2359808026110333948">Turpināt</translation>
 <translation id="2367186422933365202">Nevar pierakstīties Chromebook datorā.</translation>
+<translation id="2367972762794486313">Rādīt lietotnes</translation>
 <translation id="2369165858548251131">“Sveiki!” ķīniešu valodā</translation>
 <translation id="2390318262976603432">Lokalizācijas iestatījumi</translation>
 <translation id="240006516586367791">Multivides vadīklas</translation>
@@ -506,6 +509,7 @@ Pievienojiet ierīci barošanas avotam.</translation>
 <translation id="3713734891607377840">Kad gatavs, atvērt</translation>
 <translation id="3726171378575546917">Šajā ierīcē nav lietotņu <ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> un vēl <ph name="UNAVAILABLE_APPS_COUNT" /> lietotnes(-ņu).</translation>
 <translation id="3735740477244556633">Kārtot pēc</translation>
+<translation id="3738664582935948253">Tagad ekrāna ierakstos varat rādīt klikšķus un īsinājumtaustiņus.</translation>
 <translation id="3742055079367172538">Ekrānuzņēmums ir uzņemts</translation>
 <translation id="3765841986579723851">Rediģēts šodien</translation>
 <translation id="3773700760453577392">Administrators ir aizliedzis lietotājam <ph name="USER_EMAIL" /> vairākkārtēju pierakstīšanos. Lai turpinātu, visiem lietotājiem ir jāizrakstās.</translation>
@@ -525,6 +529,7 @@ Pievienojiet ierīci barošanas avotam.</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
 <translation id="385300504083504382">Sākums</translation>
 <translation id="3861651314799684201">Lai ierakstītu visu ekrānu, nospiediet taustiņu Enter</translation>
+<translation id="3871092408932389764">Viszemākais</translation>
 <translation id="3886872229787704059">Atvērts šodien</translation>
 <translation id="3891340733213178823">Lai izrakstītos, divas reizes nospiediet taustiņu kombināciju Ctrl+Shift+Q.</translation>
 <translation id="3893630138897523026">ChromeVox (balss komentāri)</translation>
@@ -1011,6 +1016,7 @@ Pievienojiet ierīci barošanas avotam.</translation>
 <translation id="6537924328260219877">Signāla stiprums: <ph name="SIGNAL_STRENGTH" />, tālruņa akumulatora statuss: <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999">Notiek lejupielādes faila “<ph name="FILENAME" />” pārbaude</translation>
 <translation id="6542521951477560771">Notiek apraide uz ierīci <ph name="RECEIVER_NAME" /></translation>
+<translation id="6548693220024099658">Fona aizmiglojums</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Jauna instalācija</translation>
 <translation id="6559976592393364813">Jautājiet administratoram</translation>
@@ -1417,6 +1423,7 @@ Jauna instalācija</translation>
 <translation id="878215960996152260"><ph name="APP_NAME" />, instalēta lietotne, bloķēta</translation>
 <translation id="8785070478575117577">Savienošana ar ierīci <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">Daudz</translation>
 <translation id="8806053966018712535">Mape <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">“Help” (Palīdzība)</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

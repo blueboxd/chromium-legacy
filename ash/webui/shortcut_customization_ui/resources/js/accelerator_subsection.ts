@@ -105,19 +105,30 @@ export class AcceleratorSubsectionElement extends
     // subsection's accelerators are kept distinct from each other.
     const tempAccelRowData: AcceleratorRowData[] = [];
     layoutInfos!.forEach((layoutInfo) => {
-      const acceleratorInfos = this.lookupManager.getAcceleratorInfos(
-          layoutInfo.source, layoutInfo.action);
-      acceleratorInfos.filter((accel) => {
-        // Hide accelerators that are default and disabled.
-        return !(
-            accel.type === AcceleratorType.kDefault &&
-            accel.state === AcceleratorState.kDisabledByUser);
-      });
-      const accelRowData: AcceleratorRowData = {
-        layoutInfo,
-        acceleratorInfos,
-      };
-      tempAccelRowData.push(accelRowData);
+      if (this.lookupManager.isStandardAccelerator(
+              layoutInfo.source, layoutInfo.action)) {
+        const acceleratorInfos = this.lookupManager.getStandardAcceleratorInfos(
+            layoutInfo.source, layoutInfo.action);
+        acceleratorInfos.filter((accel) => {
+          // Hide accelerators that are default and disabled.
+          // TODO(michaelcheco): Confirm that this is the intended
+          // behavior for accelerators that are default and disabled.
+          return !(
+              accel.type === AcceleratorType.kDefault &&
+              accel.state === AcceleratorState.kDisabledByUser);
+        });
+        const accelRowData: AcceleratorRowData = {
+          layoutInfo,
+          acceleratorInfos,
+        };
+        tempAccelRowData.push(accelRowData);
+      } else {
+        tempAccelRowData.push({
+          layoutInfo,
+          acceleratorInfos: this.lookupManager.getTextAcceleratorInfos(
+              layoutInfo.source, layoutInfo.action),
+        });
+      }
     });
     this.accelRowDataArray = tempAccelRowData;
   }

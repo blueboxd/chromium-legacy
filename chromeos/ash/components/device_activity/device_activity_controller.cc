@@ -7,6 +7,7 @@
 #include "base/check_op.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
@@ -161,6 +162,7 @@ DeviceActivityController::DeviceActivityController(
       DeviceActivityClient::DeviceActivityMethod::
           kDeviceActivityControllerConstructor);
 
+  DCHECK(local_state);
   DCHECK(!g_ash_device_activity_controller);
   g_ash_device_activity_controller = this;
 

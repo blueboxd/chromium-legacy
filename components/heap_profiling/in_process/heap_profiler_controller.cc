@@ -10,9 +10,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/debug/stack_trace.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/clamped_math.h"
@@ -22,7 +22,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/heap_profiling/in_process/heap_profiler_parameters.h"

@@ -5,8 +5,8 @@
 #include "gpu/vulkan/android/vulkan_implementation_android.h"
 
 #include "base/android/android_hardware_buffer_compat.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
@@ -86,6 +86,7 @@ VulkanImplementationAndroid::GetOptionalDeviceExtensions() {
       VK_KHR_SWAPCHAIN_EXTENSION_NAME,
       VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME,
       VK_EXT_QUEUE_FAMILY_FOREIGN_EXTENSION_NAME,
+      VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
   };
 }
 

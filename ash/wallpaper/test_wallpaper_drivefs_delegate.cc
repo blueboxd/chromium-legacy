@@ -4,8 +4,8 @@
 
 #include "ash/wallpaper/test_wallpaper_drivefs_delegate.h"
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "base/notreached.h"
 #include "base/time/time.h"
 #include "components/account_id/account_id.h"
@@ -41,6 +41,13 @@ void TestWallpaperDriveFsDelegate::GetWallpaperModificationTime(
     GetWallpaperModificationTimeCallback callback) {
   NOTIMPLEMENTED_LOG_ONCE();
   std::move(callback).Run(base::Time());
+}
+
+void TestWallpaperDriveFsDelegate::WaitForWallpaperChange(
+    const AccountId& account_id,
+    WaitForWallpaperChangeCallback callback) {
+  NOTIMPLEMENTED_LOG_ONCE();
+  std::move(callback).Run(/*success=*/false);
 }
 
 void TestWallpaperDriveFsDelegate::DownloadAndDecodeWallpaper(

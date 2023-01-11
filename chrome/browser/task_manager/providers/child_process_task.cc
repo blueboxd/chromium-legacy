@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/rtl.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,7 +25,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/common/child_process_host.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/common/process_type.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"

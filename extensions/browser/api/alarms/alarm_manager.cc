@@ -11,11 +11,12 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/json/json_writer.h"
 #include "base/json/values_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -336,6 +337,9 @@ void AlarmManager::ReadFromStorage(const std::string& extension_id,
         AlarmsFromValue(extension_id, is_unpacked, value->GetList());
     for (auto& alarm : alarm_states)
       AddAlarmImpl(extension_id, std::move(alarm));
+
+    base::UmaHistogramCounts1000("Extensions.AlarmManager.AlarmsLoadedCount",
+                                 alarm_states.size());
   }
 
   ReadyQueue& extension_ready_queue = ready_actions_[extension_id];

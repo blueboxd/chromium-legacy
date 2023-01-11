@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 const AutomationNode = chrome.automation.AutomationNode;
-export const SwitchAccessMenuAction =
-    chrome.accessibilityPrivate.SwitchAccessMenuAction;
 
 /** Constants used in Switch Access */
 export const SAConstants = {
@@ -77,6 +75,7 @@ export const SAConstants = {
     NEXT_INVALID: 13,
     PREVIOUS_INVALID: 14,
     INVALID_SELECTION_BOUNDS: 15,
+    UNINITIALIZED: 16,
   },
 
   /**

@@ -360,7 +360,7 @@ class HashTableConstIterator final {
     return position_;
   }
   typename Traits::IteratorConstReferenceType operator*() const {
-    return Traits::GetToReferenceConstConversion(Get());
+    return *Get();
   }
   GetType operator->() const { return Get(); }
 
@@ -501,9 +501,7 @@ class HashTableIterator final {
   // default copy, assignment and destructor are OK
 
   GetType Get() const { return const_cast<GetType>(iterator_.Get()); }
-  typename Traits::IteratorReferenceType operator*() const {
-    return Traits::GetToReferenceConversion(Get());
-  }
+  typename Traits::IteratorReferenceType operator*() const { return *Get(); }
   GetType operator->() const { return Get(); }
 
   iterator& operator++() {
@@ -643,35 +641,6 @@ struct HashTableAddResult final {
   const HashTableType* container_;
   const int64_t container_modifications_;
 #endif
-};
-
-template <typename Value, typename Extractor, typename KeyTraits>
-struct HashTableHelper {
-  template <typename T>
-  struct AddConstToPtrType {
-    using type = T;
-  };
-  template <typename T>
-  struct AddConstToPtrType<T*> {
-    using type = const T*;
-  };
-
-  using Key = typename AddConstToPtrType<typename KeyTraits::TraitType>::type;
-
-  STATIC_ONLY(HashTableHelper);
-  static bool IsEmptyBucket(const Key& key) {
-    return IsHashTraitsEmptyValue<KeyTraits>(key);
-  }
-  static bool IsDeletedBucket(const Key& key) {
-    return KeyTraits::IsDeletedValue(key);
-  }
-  static bool IsEmptyOrDeletedBucketForKey(const Key& key) {
-    return IsEmptyBucket(key) || IsDeletedBucket(key);
-  }
-  static bool IsEmptyOrDeletedBucket(const Value& value) {
-    const Key& key = Extractor::Extract(value);
-    return IsEmptyOrDeletedBucketForKey(key);
-  }
 };
 
 template <typename HashTranslator,
@@ -842,11 +811,11 @@ class HashTable final
     return IsHashTraitsEmptyValue<KeyTraits>(Extractor::Extract(value));
   }
   static bool IsDeletedBucket(const ValueType& value) {
-    return KeyTraits::IsDeletedValue(Extractor::Extract(value));
+    return IsHashTraitsDeletedValue<KeyTraits>(Extractor::Extract(value));
   }
   static bool IsEmptyOrDeletedBucket(const ValueType& value) {
-    return HashTableHelper<ValueType, Extractor,
-                           KeyTraits>::IsEmptyOrDeletedBucket(value);
+    return IsHashTraitsEmptyOrDeletedValue<KeyTraits>(
+        Extractor::Extract(value));
   }
 
   ValueType* Lookup(KeyPeekInType key) {
@@ -940,8 +909,8 @@ class HashTable final
   static void ReinitializeBucket(ValueType& bucket);
   static void DeleteBucket(const ValueType& bucket) {
     bucket.~ValueType();
-    Traits::ConstructDeletedValue(const_cast<ValueType&>(bucket),
-                                  Allocator::kIsGarbageCollected);
+    ConstructHashTraitsDeletedValue<Traits>(const_cast<ValueType&>(bucket),
+                                            Allocator::kIsGarbageCollected);
   }
 
   FullLookupType MakeLookupResult(ValueType* position,
@@ -1275,57 +1244,99 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   }
 }
 
-template <bool emptyValueIsZero>
+template <typename Traits,
+          typename Allocator,
+          typename Value,
+          typename Enable = void>
 struct HashTableBucketInitializer;
 
-template <>
-struct HashTableBucketInitializer<false> {
+template <typename Traits, typename Allocator, typename Value>
+struct HashTableBucketInitializer<
+    Traits,
+    Allocator,
+    Value,
+    std::enable_if_t<!Traits::kEmptyValueIsZero>> {
   STATIC_ONLY(HashTableBucketInitializer);
-  template <typename Traits, typename Allocator, typename Value>
   static void Initialize(Value& bucket) {
     ConstructTraits<Value, Traits, Allocator>::ConstructAndNotifyElement(
         &bucket, Traits::EmptyValue());
+    DCHECK(IsHashTraitsEmptyValue<Traits>(bucket));
   }
 
-  template <typename Traits, typename Allocator, typename Value>
   static void Reinitialize(Value& bucket) {
     // Reinitialize is used when recycling a deleted bucket. For buckets for
     // which empty value is non-zero, this is forbidden during marking. Thus if
     // we get here, marking is not active and we can reuse Initialize.
     DCHECK(Allocator::template CanReuseHashTableDeletedBucket<Traits>());
-    Initialize<Traits, Allocator, Value>(bucket);
+    Initialize(bucket);
+  }
+
+  template <typename HashTable>
+  static Value* AllocateTable(unsigned size, size_t alloc_size) {
+    Value* result =
+        Allocator::template AllocateHashTableBacking<Value, HashTable>(
+            alloc_size);
+    InitializeTable(result, size);
+    return result;
+  }
+
+  static void InitializeTable(Value* table, unsigned size) {
+    for (unsigned i = 0; i < size; i++) {
+      Initialize(table[i]);
+    }
   }
 };
 
-// Specialization when the hash traits for a type indicate that the
-// representation of an empty object is all zeros (independent of whether or not
-// the object's type is considered to be trivially copyable).
-template <>
-struct HashTableBucketInitializer<true> {
+// Specialization when the hash traits for a type have kEmptyValueIsZero = true
+// which indicate that all zero bytes represent an empty object.
+template <typename Traits, typename Allocator, typename Value>
+struct HashTableBucketInitializer<Traits,
+                                  Allocator,
+                                  Value,
+                                  std::enable_if_t<Traits::kEmptyValueIsZero>> {
   STATIC_ONLY(HashTableBucketInitializer);
-  template <typename Traits, typename Allocator, typename Value>
   static void Initialize(Value& bucket) {
-    // This initializes the bucket without copying the empty value.  That
-    // makes it possible to use this with types that don't support copying.
     // The memset to 0 looks like a slow operation but is optimized by the
     // compilers.
     //
     // NOLINTNEXTLINE(bugprone-undefined-memory-manipulation)
     memset(&bucket, 0, sizeof(bucket));
+    CheckEmptyValues(&bucket, 1);
   }
 
-  template <typename Traits, typename Allocator, typename Value>
   static void Reinitialize(Value& bucket) {
-    // This initializes the bucket without copying the empty value.  That
-    // makes it possible to use this with types that don't support copying.
     // The memset to 0 looks like a slow operation but is optimized by the
     // compilers.
     if (!Allocator::kIsGarbageCollected) {
       // NOLINTNEXTLINE(bugprone-undefined-memory-manipulation)
       memset(&bucket, 0, sizeof(bucket));
-      return;
+    } else {
+      AtomicMemzero<sizeof(bucket), alignof(Value)>(&bucket);
     }
-    AtomicMemzero<sizeof(bucket), alignof(Value)>(&bucket);
+    CheckEmptyValues(&bucket, 1);
+  }
+
+  template <typename HashTable>
+  static Value* AllocateTable(unsigned size, size_t alloc_size) {
+    Value* result =
+        Allocator::template AllocateZeroedHashTableBacking<Value, HashTable>(
+            alloc_size);
+    CheckEmptyValues(result, size);
+    return result;
+  }
+
+  static void InitializeTable(Value* table, unsigned size) {
+    AtomicMemzero(table, size * sizeof(Value));
+    CheckEmptyValues(table, size);
+  }
+
+ private:
+  static void CheckEmptyValues(Value* values, unsigned size) {
+#if EXPENSIVE_DCHECKS_ARE_ON()
+    for (unsigned i = 0; i < size; i++) {
+      DCHECK(IsHashTraitsEmptyValue<Traits>(values[i]));
+    }
+#endif
   }
 };
 
@@ -1339,8 +1350,7 @@ template <typename Key,
 inline void
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     InitializeBucket(ValueType& bucket) {
-  HashTableBucketInitializer<Traits::kEmptyValueIsZero>::template Initialize<
-      Traits, Allocator>(bucket);
+  HashTableBucketInitializer<Traits, Allocator, Value>::Initialize(bucket);
 }
 
 template <typename Key,
@@ -1353,8 +1363,7 @@ template <typename Key,
 inline void
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     ReinitializeBucket(ValueType& bucket) {
-  HashTableBucketInitializer<Traits::kEmptyValueIsZero>::template Reinitialize<
-      Traits, Allocator>(bucket);
+  HashTableBucketInitializer<Traits, Allocator, Value>::Reinitialize(bucket);
 }
 
 template <typename Key,
@@ -1691,8 +1700,6 @@ template <typename Key,
 Value*
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     AllocateTable(unsigned size) {
-  size_t alloc_size = base::CheckMul(size, sizeof(ValueType)).ValueOrDie();
-  ValueType* result;
   // Assert that we will not use memset on things with a vtable entry.  The
   // compiler will also check this on some platforms. We would like to check
   // this on the whole value (key-value pair), but std::is_polymorphic will
@@ -1709,17 +1716,10 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
       "Cannot put DISALLOW_NEW objects that "
       "have trace methods into an off-heap HashTable");
 
-  if (Traits::kEmptyValueIsZero) {
-    result = Allocator::template AllocateZeroedHashTableBacking<ValueType,
-                                                                HashTable>(
-        alloc_size);
-  } else {
-    result = Allocator::template AllocateHashTableBacking<ValueType, HashTable>(
-        alloc_size);
-    for (unsigned i = 0; i < size; i++)
-      InitializeBucket(result[i]);
-  }
-  return result;
+  size_t alloc_size = base::CheckMul(size, sizeof(ValueType)).ValueOrDie();
+  return HashTableBucketInitializer<
+      Traits, Allocator, Value>::template AllocateTable<HashTable>(size,
+                                                                   alloc_size);
 }
 
 template <typename Key,
@@ -1822,12 +1822,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
       new_entry = &temporary_table[i];
     if (IsEmptyOrDeletedBucket(table_[i])) {
       DCHECK_NE(&table_[i], entry);
-      if (Traits::kEmptyValueIsZero) {
-        // NOLINTNEXTLINE(bugprone-undefined-memory-manipulation)
-        memset(&temporary_table[i], 0, sizeof(ValueType));
-      } else {
-        InitializeBucket(temporary_table[i]);
-      }
+      InitializeBucket(temporary_table[i]);
     } else {
       Mover<ValueType, Allocator, Traits,
             Traits::template NeedsToForbidGCOnMove<>::value>::
@@ -1838,12 +1833,8 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   table_ = temporary_table;
   Allocator::template BackingWriteBarrier(&table_);
 
-  if (Traits::kEmptyValueIsZero) {
-    AtomicMemzero(original_table, new_table_size * sizeof(ValueType));
-  } else {
-    for (unsigned i = 0; i < new_table_size; i++)
-      InitializeBucket(original_table[i]);
-  }
+  HashTableBucketInitializer<Traits, Allocator, Value>::InitializeTable(
+      original_table, new_table_size);
   new_entry = RehashTo(original_table, new_table_size, new_entry);
 
   return new_entry;
@@ -2260,7 +2251,7 @@ struct HashTableConstIteratorAdapter {
     return const_cast<GetType>(SourceGetType(impl_.Get()));
   }
   typename Traits::IteratorConstReferenceType operator*() const {
-    return Traits::GetToReferenceConstConversion(Get());
+    return *Get();
   }
   GetType operator->() const { return Get(); }
 
@@ -2305,9 +2296,7 @@ struct HashTableIteratorAdapter {
   GetType Get() const {
     return const_cast<GetType>(SourceGetType(impl_.get()));
   }
-  typename Traits::IteratorReferenceType operator*() const {
-    return Traits::GetToReferenceConversion(Get());
-  }
+  typename Traits::IteratorReferenceType operator*() const { return *Get(); }
   GetType operator->() const { return Get(); }
 
   HashTableIteratorAdapter& operator++() {

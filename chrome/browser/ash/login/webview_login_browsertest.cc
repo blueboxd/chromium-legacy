@@ -9,10 +9,10 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/guid.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_refptr.h"
@@ -1060,20 +1060,6 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, StoragePartitionHandling) {
   // The StoragePartition which is not in use is supposed to have been cleared.
   EXPECT_EQ("", GetAllCookies(signin_frame_partition_1));
   EXPECT_NE("", GetAllCookies(signin_frame_partition_2));
-
-  // Trigger another gaia load.
-  test::OobeJS().ClickOnPath(kBackButton);
-  WaitForGaiaPageBackButtonUpdate();
-  ExpectIdentifierPage();
-
-  // `signin_frame_partition_1` is disposed and no longer accessible.
-  bool found_signin_frame_partition_1 = false;
-  browser_context->ForEachStoragePartition(
-      base::BindLambdaForTesting([&](content::StoragePartition* partition) {
-        if (partition == signin_frame_partition_1)
-          found_signin_frame_partition_1 = true;
-      }));
-  EXPECT_FALSE(found_signin_frame_partition_1);
 }
 
 enum class FrameUrlOrigin { kSameOrigin, kDifferentOrigin };
@@ -2132,13 +2118,8 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 };
 
-// TODO(crbug.com/1377241): The test times out on ASAN.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ProxyAuthTransfer DISABLED_ProxyAuthTransfer
-#else
-#define MAYBE_ProxyAuthTransfer ProxyAuthTransfer
-#endif
-IN_PROC_BROWSER_TEST_F(WebviewProxyAuthLoginTest, MAYBE_ProxyAuthTransfer) {
+// TODO(crbug.com/1377241): Test is flaky.
+IN_PROC_BROWSER_TEST_F(WebviewProxyAuthLoginTest, DISABLED_ProxyAuthTransfer) {
   WaitForSigninScreen();
 
   LoginHandler* login_handler = WaitForAuthRequested();

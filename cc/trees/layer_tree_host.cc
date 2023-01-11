@@ -13,10 +13,10 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -25,8 +25,8 @@
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -790,6 +790,12 @@ void LayerTreeHost::SetVisible(bool visible) {
   if (visible_ == visible)
     return;
   visible_ = visible;
+  // If the page becomes invisible, corresponding metrics will be discarded
+  // because they are invalid. The metrics will be measured when the page
+  // becomes visible again.
+  if (!visible_) {
+    ClearEventsMetrics();
+  }
   proxy_->SetVisible(visible);
 }
 
@@ -807,12 +813,11 @@ void LayerTreeHost::LayoutAndUpdateLayers() {
 }
 
 void LayerTreeHost::CompositeForTest(base::TimeTicks frame_begin_time,
-                                     bool raster) {
-  DCHECK(IsSingleThreaded());
-  // This function is only valid when not using the scheduler.
+                                     bool raster,
+                                     base::OnceClosure callback) {
   DCHECK(!settings_.single_thread_proxy_scheduler);
-  SingleThreadProxy* proxy = static_cast<SingleThreadProxy*>(proxy_.get());
-  proxy->CompositeImmediatelyForTest(frame_begin_time, raster);  // IN-TEST
+  proxy_->CompositeImmediatelyForTest(frame_begin_time, raster,  // IN-TEST
+                                      std::move(callback));
 }
 
 bool LayerTreeHost::UpdateLayers() {

@@ -8,7 +8,7 @@
 #import "components/lookalikes/core/features.h"
 #import "components/lookalikes/core/lookalike_url_ui_util.h"
 #import "components/lookalikes/core/lookalike_url_util.h"
-#import "components/reputation/core/safety_tips_config.h"
+#import "components/lookalikes/core/safety_tips_config.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
 #import "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
@@ -75,7 +75,7 @@ void LookalikeUrlTabHelper::ShouldAllowResponse(
   }
 
   // Fetch the component allowlist.
-  const auto* proto = reputation::GetSafetyTipsRemoteConfigProto();
+  const auto* proto = lookalikes::GetSafetyTipsRemoteConfigProto();
   // When there's no proto (like at browser start), fail-safe and don't block.
   if (!proto) {
     std::move(callback).Run(CreateAllowDecision());
@@ -112,7 +112,7 @@ void LookalikeUrlTabHelper::ShouldAllowResponse(
     // If the URL fails a spoof check, and isn't in the component allowlist,
     // then show a spoof check interstitial.
     if (ShouldBlockBySpoofCheckResult(navigated_domain) &&
-        !reputation::IsUrlAllowlistedBySafetyTipsComponent(
+        !lookalikes::IsUrlAllowlistedBySafetyTipsComponent(
             proto, response_url.GetWithEmptyPath(),
             response_url.GetWithEmptyPath())) {
       match_type = LookalikeUrlMatchType::kFailedSpoofChecks;
@@ -140,14 +140,19 @@ void LookalikeUrlTabHelper::ShouldAllowResponse(
       response_url.ReplaceComponents(replace_host).GetWithEmptyPath();
 
   // If the URL is in the component updater allowlist, don't show any warning.
-  if (reputation::IsUrlAllowlistedBySafetyTipsComponent(
+  if (lookalikes::IsUrlAllowlistedBySafetyTipsComponent(
           proto, response_url.GetWithEmptyPath(),
           suggested_url.GetWithEmptyPath())) {
     std::move(callback).Run(CreateAllowDecision());
     return;
   }
 
-  if (!ShouldBlockLookalikeUrlNavigation(match_type)) {
+  // GetActionForMatchType checks gradual rollout which currently only controls
+  // Safety Tips. Since Safety Tips aren't implemented on iOS, ignore gradual
+  // rollout checks by passing null proto and unknown channel.
+  if (GetActionForMatchType(nullptr, version_info::Channel::UNKNOWN,
+                            navigated_domain.domain_and_registry, match_type) ==
+      LookalikeActionType::kRecordMetrics) {
     // Interstitial normally records UKM, but still record when it's not shown.
     RecordUkmForLookalikeUrlBlockingPage(
         ukm::GetSourceIdForWebStateDocument(web_state()), match_type,

@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
@@ -59,6 +60,7 @@
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_test_override.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
@@ -1301,8 +1303,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
   os_hooks_suppress_.reset();
   base::ScopedAllowBlockingForTesting allow_blocking;
 
-  std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
-      registration = ShortcutOverrideForTesting::OverrideForTesting();
+  std::unique_ptr<OsIntegrationTestOverride::BlockingRegistration>
+      registration = OsIntegrationTestOverride::OverrideForTesting();
 
   NavigateToURLAndWait(
       browser(),
@@ -1322,21 +1324,23 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
   base::FilePath shortcut_path;
   auto* provider = WebAppProvider::GetForTest(profile());
   std::vector<SkColor> expected_pixel_colors = {SkColorSetRGB(92, 92, 92)};
+  absl::optional<SkColor> icon_pixel_color = absl::nullopt;
 #if BUILDFLAG(IS_MAC)
-  shortcut_path =
-      registration->shortcut_override->chrome_apps_folder.GetPath().Append(
-          provider->registrar_unsafe().GetAppShortName(app_id) + ".app");
+  icon_pixel_color = registration->test_override->GetShortcutIconTopLeftColor(
+      profile(), registration->test_override->chrome_apps_folder(), app_id,
+      provider->registrar_unsafe().GetAppShortName(app_id));
 #elif BUILDFLAG(IS_WIN)
-  shortcut_path =
-      registration->shortcut_override->application_menu.GetPath().AppendASCII(
-          provider->registrar_unsafe().GetAppShortName(app_id) + ".lnk");
+  icon_pixel_color = registration->test_override->GetShortcutIconTopLeftColor(
+      profile(), registration->test_override->application_menu(), app_id,
+      provider->registrar_unsafe().GetAppShortName(app_id));
   expected_pixel_colors.push_back(SkColorSetRGB(91, 91, 91));
   expected_pixel_colors.push_back(SkColorSetRGB(90, 90, 90));
 #endif
-  SkColor icon_pixel_color = GetIconTopLeftColor(shortcut_path);
-  EXPECT_TRUE(base::Contains(expected_pixel_colors, icon_pixel_color))
+  EXPECT_TRUE(icon_pixel_color.has_value());
+  EXPECT_THAT(expected_pixel_colors,
+              testing::Contains(icon_pixel_color.value()))
       << "Actual color (RGB) is: "
-      << color_utils::SkColorToRgbString(icon_pixel_color);
+      << color_utils::SkColorToRgbString(icon_pixel_color.value());
 
   base::RunLoop run_loop_uninstall;
   provider->install_finalizer().UninstallWebApp(
@@ -1369,8 +1373,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ShortcutMenu, ShortcutsMenuSuccess) {
   os_hooks_suppress_.reset();
   base::ScopedAllowBlockingForTesting allow_blocking;
 
-  std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
-      registration = ShortcutOverrideForTesting::OverrideForTesting();
+  std::unique_ptr<OsIntegrationTestOverride::BlockingRegistration>
+      registration = OsIntegrationTestOverride::OverrideForTesting();
   NavigateToURLAndWait(
       browser(),
       https_server()->GetURL(
@@ -1450,8 +1454,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ShortcutMenu,
   os_hooks_suppress_.reset();
   base::ScopedAllowBlockingForTesting allow_blocking;
 
-  std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
-      registration = ShortcutOverrideForTesting::OverrideForTesting();
+  std::unique_ptr<OsIntegrationTestOverride::BlockingRegistration>
+      registration = OsIntegrationTestOverride::OverrideForTesting();
   NavigateToURLAndWait(
       browser(),
       https_server()->GetURL("/banners/"
@@ -1515,8 +1519,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WebAppCreateAndDeleteShortcut) {
 
   base::ScopedAllowBlockingForTesting allow_blocking;
 
-  std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
-      registration = ShortcutOverrideForTesting::OverrideForTesting();
+  std::unique_ptr<OsIntegrationTestOverride::BlockingRegistration>
+      registration = OsIntegrationTestOverride::OverrideForTesting();
 
   auto* provider = WebAppProvider::GetForTest(profile());
 
@@ -1536,32 +1540,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WebAppCreateAndDeleteShortcut) {
   EXPECT_EQ(provider->registrar_unsafe().GetAppShortName(app_id),
             GetInstallableAppName());
 
-#if BUILDFLAG(IS_WIN)
-  std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-  std::wstring shortcut_filename = converter.from_bytes(
-      provider->registrar_unsafe().GetAppShortName(app_id) + ".lnk");
-  base::FilePath desktop_shortcut_path =
-      registration->shortcut_override->desktop.GetPath().Append(
-          shortcut_filename);
-  base::FilePath app_menu_shortcut_path =
-      registration->shortcut_override->application_menu.GetPath().Append(
-          shortcut_filename);
-  EXPECT_TRUE(base::PathExists(desktop_shortcut_path));
-  EXPECT_TRUE(base::PathExists(app_menu_shortcut_path));
-#elif BUILDFLAG(IS_MAC)
-  std::string shortcut_filename =
-      provider->registrar_unsafe().GetAppShortName(app_id) + ".app";
-  base::FilePath app_shortcut_path =
-      registration->shortcut_override->chrome_apps_folder.GetPath().Append(
-          shortcut_filename);
-  EXPECT_TRUE(base::PathExists(app_shortcut_path));
-#elif BUILDFLAG(IS_LINUX)
-  std::string shortcut_filename = "chrome-" + app_id + "-Default.desktop";
-  base::FilePath desktop_shortcut_path =
-      registration->shortcut_override->desktop.GetPath().Append(
-          shortcut_filename);
-  EXPECT_TRUE(base::PathExists(desktop_shortcut_path));
-#endif
+  EXPECT_TRUE(registration->test_override->IsShortcutCreated(
+      profile(), app_id, provider->registrar_unsafe().GetAppShortName(app_id)));
 
   // Unistall the web app
   base::RunLoop run_loop_uninstall;
@@ -1574,11 +1554,27 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WebAppCreateAndDeleteShortcut) {
   run_loop_uninstall.Run();
 
 #if BUILDFLAG(IS_WIN)
+  base::FilePath desktop_shortcut_path =
+      registration->test_override->GetShortcutPath(
+          profile(), registration->test_override->desktop(), app_id,
+          provider->registrar_unsafe().GetAppShortName(app_id));
+  base::FilePath app_menu_shortcut_path =
+      registration->test_override->GetShortcutPath(
+          profile(), registration->test_override->application_menu(), app_id,
+          provider->registrar_unsafe().GetAppShortName(app_id));
   EXPECT_FALSE(base::PathExists(desktop_shortcut_path));
   EXPECT_FALSE(base::PathExists(app_menu_shortcut_path));
 #elif BUILDFLAG(IS_MAC)
+  base::FilePath app_shortcut_path =
+      registration->test_override->GetShortcutPath(
+          profile(), registration->test_override->chrome_apps_folder(), app_id,
+          provider->registrar_unsafe().GetAppShortName(app_id));
   EXPECT_FALSE(base::PathExists(app_shortcut_path));
 #elif BUILDFLAG(IS_LINUX)
+  base::FilePath desktop_shortcut_path =
+      registration->test_override->GetShortcutPath(
+          profile(), registration->test_override->desktop(), app_id,
+          provider->registrar_unsafe().GetAppShortName(app_id));
   EXPECT_FALSE(base::PathExists(desktop_shortcut_path));
 #endif
 }  // namespace web_app
@@ -1624,9 +1620,9 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTestUpdateShortcutResult, UpdateShortcut) {
       &g_app_shims_allow_update_and_launch_in_tests, true);
 #endif
   base::ScopedAllowBlockingForTesting allow_blocking;
-  std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
-      shortcut_override =
-          ShortcutOverrideForTesting::OverrideForTesting(base::GetHomeDir());
+  std::unique_ptr<OsIntegrationTestOverride::BlockingRegistration>
+      test_override =
+          OsIntegrationTestOverride::OverrideForTesting(base::GetHomeDir());
 
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
 
@@ -2187,9 +2183,9 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::HistogramTester tester;
 
-  std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
+  std::unique_ptr<OsIntegrationTestOverride::BlockingRegistration>
       registration =
-          ShortcutOverrideForTesting::OverrideForTesting(base::GetHomeDir());
+          OsIntegrationTestOverride::OverrideForTesting(base::GetHomeDir());
   std::vector<std::string> expected_extensions{"bar", "baz", "foo", "foobar"};
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -2244,17 +2240,17 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
 #elif BUILDFLAG(IS_MAC)
   for (auto extension : expected_extensions) {
     const base::FilePath test_file_path =
-        registration->shortcut_override->chrome_apps_folder.GetPath()
-            .AppendASCII("test." + extension);
+        registration->test_override->chrome_apps_folder().AppendASCII(
+            "test." + extension);
     const base::File test_file(test_file_path, base::File::FLAG_CREATE_ALWAYS |
                                                    base::File::FLAG_WRITE);
     const GURL test_file_url = net::FilePathToFileURL(test_file_path);
     EXPECT_EQ(u"Manifest with file handlers",
-              shell_integration::GetApplicationNameForProtocol(test_file_url))
+              shell_integration::GetApplicationNameForScheme(test_file_url))
         << "The default app to open the file is wrong. "
         << "File extension: " + extension;
   }
-  ASSERT_TRUE(registration->shortcut_override->chrome_apps_folder.Delete());
+  ASSERT_TRUE(registration->test_override->DeleteChromeAppsDir());
 #endif
 
   // Unistall the web app
@@ -2289,9 +2285,9 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
   os_hooks_suppress_.reset();
   base::ScopedAllowBlockingForTesting allow_blocking;
 
-  std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
+  std::unique_ptr<OsIntegrationTestOverride::BlockingRegistration>
       registration =
-          ShortcutOverrideForTesting::OverrideForTesting(base::GetHomeDir());
+          OsIntegrationTestOverride::OverrideForTesting(base::GetHomeDir());
   std::vector<std::string> expected_extensions{"bar", "baz", "foo", "foobar"};
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -2321,20 +2317,20 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
 
   for (auto extension : expected_extensions) {
     const base::FilePath test_file_path =
-        registration->shortcut_override->chrome_apps_folder.GetPath()
-            .AppendASCII("test." + extension);
+        registration->test_override->chrome_apps_folder().AppendASCII(
+            "test." + extension);
     const base::File test_file(test_file_path, base::File::FLAG_CREATE_ALWAYS |
                                                    base::File::FLAG_WRITE);
     const GURL test_file_url = net::FilePathToFileURL(test_file_path);
     while (u"Manifest with file handlers" ==
-           shell_integration::GetApplicationNameForProtocol(test_file_url)) {
+           shell_integration::GetApplicationNameForScheme(test_file_url)) {
       base::RunLoop delay_loop;
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
           FROM_HERE, delay_loop.QuitClosure(), base::Milliseconds(100));
       delay_loop.Run();
     }
   }
-  ASSERT_TRUE(registration->shortcut_override->chrome_apps_folder.Delete());
+  ASSERT_TRUE(registration->test_override->DeleteChromeAppsDir());
 
   // Unistall the web app
   NavigateToURLAndWait(browser(), GURL(chrome::kChromeUIAppsURL));

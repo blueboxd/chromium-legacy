@@ -12,9 +12,24 @@
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/crosapi/mojom/video_conference.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/test/test_event.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 
 namespace {
+
+crosapi::mojom::VideoConferenceMediaAppInfoPtr CreateFakeMediaApp(
+    bool is_capturing_camera,
+    bool is_capturing_microphone,
+    bool is_capturing_screen,
+    const std::u16string& title,
+    std::string url) {
+  return crosapi::mojom::VideoConferenceMediaAppInfo::New(
+      /*id=*/base::UnguessableToken::Create(),
+      /*last_activity_time=*/base::Time::Now(), is_capturing_camera,
+      is_capturing_microphone, is_capturing_screen, title,
+      /*url=*/GURL(url));
+}
 
 // Verifies the information of `ReturnToAppButton`.
 void VerifyReturnToAppButtonInfo(
@@ -103,6 +118,7 @@ TEST_F(ReturnToAppPanelTest, OneApp) {
 
   auto* app_button =
       static_cast<ReturnToAppButton*>(return_to_app_panel->children().front());
+  EXPECT_FALSE(app_button->expand_button()->GetVisible());
   VerifyReturnToAppButtonInfo(app_button, is_capturing_camera,
                               is_capturing_microphone, is_capturing_screen,
                               kExpectedGoogleMeetDisplayedUrl);
@@ -110,18 +126,14 @@ TEST_F(ReturnToAppPanelTest, OneApp) {
 
 TEST_F(ReturnToAppPanelTest, MultipleApps) {
   controller()->ClearMediaApps();
-  controller()->AddMediaApp(crosapi::mojom::VideoConferenceMediaAppInfo::New(
-      /*id=*/base::UnguessableToken::Create(),
-      /*last_activity_time=*/base::Time::Now(),
+  controller()->AddMediaApp(CreateFakeMediaApp(
       /*is_capturing_camera=*/true, /*is_capturing_microphone=*/false,
       /*is_capturing_screen=*/false, /*title=*/u"Google Meet",
-      /*url=*/GURL(kGoogleMeetTestUrl)));
-  controller()->AddMediaApp(crosapi::mojom::VideoConferenceMediaAppInfo::New(
-      /*id=*/base::UnguessableToken::Create(),
-      /*last_activity_time=*/base::Time::Now(),
+      /*url=*/kGoogleMeetTestUrl));
+  controller()->AddMediaApp(CreateFakeMediaApp(
       /*is_capturing_camera=*/false, /*is_capturing_microphone=*/true,
       /*is_capturing_screen=*/true, /*title=*/u"Zoom",
-      /*url=*/absl::nullopt));
+      /*url=*/""));
 
   // There should be three children, one representing the summary row and two
   // for two running media apps.
@@ -153,6 +165,95 @@ TEST_F(ReturnToAppPanelTest, MultipleApps) {
   VerifyReturnToAppButtonInfo(second_app_row, /*is_capturing_camera=*/false,
                               /*is_capturing_microphone=*/true,
                               /*is_capturing_screen=*/true, u"Zoom");
+}
+
+TEST_F(ReturnToAppPanelTest, ExpandCollapse) {
+  controller()->ClearMediaApps();
+  controller()->AddMediaApp(CreateFakeMediaApp(
+      /*is_capturing_camera=*/true, /*is_capturing_microphone=*/false,
+      /*is_capturing_screen=*/false, /*title=*/u"Google Meet",
+      /*url=*/kGoogleMeetTestUrl));
+  controller()->AddMediaApp(CreateFakeMediaApp(
+      /*is_capturing_camera=*/false, /*is_capturing_microphone=*/true,
+      /*is_capturing_screen=*/true, /*title=*/u"Zoom",
+      /*url=*/""));
+
+  auto return_to_app_panel = std::make_unique<ReturnToAppPanel>();
+  auto* summary_row =
+      static_cast<ReturnToAppButton*>(return_to_app_panel->children().front());
+  EXPECT_TRUE(summary_row->expand_button()->GetVisible());
+
+  auto* first_app_row =
+      static_cast<ReturnToAppButton*>(return_to_app_panel->children()[1]);
+  auto* second_app_row =
+      static_cast<ReturnToAppButton*>(return_to_app_panel->children()[2]);
+
+  // The panel should be collapsed by default.
+  EXPECT_FALSE(summary_row->expanded());
+
+  // Verify the views in collapsed state:
+  EXPECT_TRUE(summary_row->icons_container()->GetVisible());
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_ASH_VIDEO_CONFERENCE_RETURN_TO_APP_SHOW_TOOLTIP),
+            summary_row->expand_button()->GetTooltipText());
+  EXPECT_FALSE(first_app_row->GetVisible());
+  EXPECT_FALSE(second_app_row->GetVisible());
+
+  // Clicking the expand button should expand the panel.
+  summary_row->OnExpandButtonToggled(ui::test::TestEvent());
+  EXPECT_TRUE(summary_row->expanded());
+
+  // Verify the views in expanded state:
+  EXPECT_FALSE(summary_row->icons_container()->GetVisible());
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_ASH_VIDEO_CONFERENCE_RETURN_TO_APP_HIDE_TOOLTIP),
+            summary_row->expand_button()->GetTooltipText());
+  EXPECT_TRUE(first_app_row->GetVisible());
+  EXPECT_TRUE(second_app_row->GetVisible());
+
+  // Click again. Should be in collapsed state.
+  summary_row->OnExpandButtonToggled(ui::test::TestEvent());
+  EXPECT_FALSE(summary_row->expanded());
+}
+
+TEST_F(ReturnToAppPanelTest, MaxCapturingCount) {
+  // Test the panel's `max_capturing_count_` to make sure the buttons are
+  // aligned correctly.
+  controller()->ClearMediaApps();
+  controller()->AddMediaApp(CreateFakeMediaApp(
+      /*is_capturing_camera=*/true, /*is_capturing_microphone=*/false,
+      /*is_capturing_screen=*/false, /*title=*/u"Google Meet",
+      /*url=*/kGoogleMeetTestUrl));
+  controller()->AddMediaApp(CreateFakeMediaApp(
+      /*is_capturing_camera=*/false, /*is_capturing_microphone=*/false,
+      /*is_capturing_screen=*/true, /*title=*/u"Zoom",
+      /*url=*/""));
+  auto return_to_app_panel = std::make_unique<ReturnToAppPanel>();
+  EXPECT_EQ(1, return_to_app_panel->max_capturing_count());
+
+  controller()->ClearMediaApps();
+  controller()->AddMediaApp(CreateFakeMediaApp(
+      /*is_capturing_camera=*/true, /*is_capturing_microphone=*/false,
+      /*is_capturing_screen=*/false, /*title=*/u"Google Meet",
+      /*url=*/kGoogleMeetTestUrl));
+  controller()->AddMediaApp(CreateFakeMediaApp(
+      /*is_capturing_camera=*/false, /*is_capturing_microphone=*/true,
+      /*is_capturing_screen=*/true, /*title=*/u"Zoom",
+      /*url=*/""));
+  return_to_app_panel = std::make_unique<ReturnToAppPanel>();
+  EXPECT_EQ(2, return_to_app_panel->max_capturing_count());
+
+  controller()->ClearMediaApps();
+  controller()->AddMediaApp(CreateFakeMediaApp(
+      /*is_capturing_camera=*/true, /*is_capturing_microphone=*/false,
+      /*is_capturing_screen=*/false, /*title=*/u"Google Meet",
+      /*url=*/kGoogleMeetTestUrl));
+  controller()->AddMediaApp(CreateFakeMediaApp(
+      /*is_capturing_camera=*/true, /*is_capturing_microphone=*/true,
+      /*is_capturing_screen=*/true, /*title=*/u"Zoom",
+      /*url=*/""));
+  return_to_app_panel = std::make_unique<ReturnToAppPanel>();
+  EXPECT_EQ(3, return_to_app_panel->max_capturing_count());
 }
 
 }  // namespace ash::video_conference

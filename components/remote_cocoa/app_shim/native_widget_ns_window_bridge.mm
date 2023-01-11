@@ -4,6 +4,7 @@
 
 #include "base/memory/raw_ptr.h"
 
+#import "base/task/single_thread_task_runner.h"
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 
 #import <objc/runtime.h>
@@ -13,8 +14,8 @@
 #include <cmath>
 #include <memory>
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"

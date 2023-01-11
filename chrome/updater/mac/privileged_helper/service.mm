@@ -5,6 +5,7 @@
 #include "chrome/updater/mac/privileged_helper/service.h"
 
 #include "base/memory/raw_ptr.h"
+#import "base/task/sequenced_task_runner.h"
 
 #import <Foundation/Foundation.h>
 #include <Security/Security.h>
@@ -15,13 +16,13 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
@@ -199,7 +200,8 @@ bool VerifyUpdaterSignature(const base::FilePath& updater_app_bundle) {
     return false;
   }
   if (SecRequirementCreateWithString(
-          CFSTR("identifier \"" MAC_BUNDLE_IDENTIFIER_STRING
+          CFSTR("anchor apple generic and identifier "
+                "\"" MAC_BUNDLE_IDENTIFIER_STRING
                 "\" and certificate leaf[subject.OU] "
                 "= " MAC_TEAM_IDENTIFIER_STRING),
           kSecCSDefaultFlags, requirement.InitializeInto()) != errSecSuccess) {

@@ -12,11 +12,12 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece_forward.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -964,6 +965,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   base::OneShotTimer keepalive_timer_;
   base::TimeTicks keepalive_deadline_;
 #endif
+
+#if BUILDFLAG(IS_MAC)
+  base::FilePath GetChildProcessPath(
+      int child_flags,
+      const base::FilePath& helpers_path) override;
+#endif  // BUILDFLAG(IS_MAC)
 
   base::WeakPtrFactory<ChromeContentBrowserClient> weak_factory_{this};
 };

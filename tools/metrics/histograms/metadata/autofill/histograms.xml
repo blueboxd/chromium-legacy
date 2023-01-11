@@ -278,6 +278,10 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Autofill.Ablation.FillDurationSinceInteraction.{FormType}.{Group}"
     units="ms" expires_after="M108">
+  <expired_intentionally>
+    This is for an ablation study that we may want to reactivate at some points
+    in the future.
+  </expired_intentionally>
   <owner>battre@chromium.org</owner>
   <owner>chrome-autofill-team@google.com</owner>
   <summary>
@@ -293,6 +297,10 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Autofill.Ablation.FormSubmissionAfterInteraction.{FormType}.{Group}"
     enum="Boolean" expires_after="M108">
+  <expired_intentionally>
+    This is for an ablation study that we may want to reactivate at some points
+    in the future.
+  </expired_intentionally>
   <owner>battre@chromium.org</owner>
   <owner>chrome-autofill-team@google.com</owner>
   <summary>
@@ -594,16 +602,6 @@ chromium-metrics-reviews@google.com.
   <owner>battre@chromium.org</owner>
   <owner>chrome-autofill-team@google.com</owner>
   <summary>Whether there is any suggestions for an autocomplete query.</summary>
-</histogram>
-
-<histogram name="Autofill.AutofilledFieldAtSubmission.ByStateSelectionField"
-    enum="AutofillSourceForStateSelectionField" expires_after="2023-01-15">
-  <owner>vidhanj@google.com</owner>
-  <owner>koerber@google.com</owner>
-  <summary>
-    Records the source of filling for the state selection field, emitted when
-    the form is submitted.
-  </summary>
 </histogram>
 
 <histogram name="Autofill.BetterAuth.CardUnmaskDuration.Fido" units="ms"
@@ -1787,7 +1785,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FormForest.GetBrowserFormOfRendererForm.Duration"
-    units="microseconds" expires_after="2023-05-07">
+    units="microseconds" expires_after="2023-07-09">
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -1801,7 +1799,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FormForest.GetRendererFormsOfBrowserForm.Duration"
-    units="microseconds" expires_after="2023-05-07">
+    units="microseconds" expires_after="2023-07-09">
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -1815,7 +1813,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FormForest.UpdateTreeOfRendererForm.Duration"
-    units="microseconds" expires_after="2023-05-07">
+    units="microseconds" expires_after="2023-07-09">
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -1827,7 +1825,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FormForest.UpdateTreeOfRendererForm.Visits"
-    units="node-visits" expires_after="2023-05-07">
+    units="node-visits" expires_after="2023-07-09">
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -2070,7 +2068,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.IsEnabled.PageLoad" enum="BooleanEnabled"
-    expires_after="2023-02-12">
+    expires_after="2023-12-12">
   <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
@@ -3280,7 +3278,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.ProfileImport.UpdateProfileWithRemovedPhoneNumberDecision"
-    enum="AutofillProfileImportDecision" expires_after="2023-05-07">
+    enum="AutofillProfileImportDecision" expires_after="2023-07-09">
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
   <summary>
@@ -3684,7 +3682,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.StoredCreditCardDisusedCount" units="cards"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>battre@chromium.org</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
 <!-- Name completed by histogram_suffixes name="AutofillCreditCardType" -->
@@ -3762,7 +3760,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.StrikeDatabase.CreditCardSaveNotOfferedDueToMaxStrikes"
-    enum="AutofillSaveType" expires_after="2023-05-07">
+    enum="AutofillSaveType" expires_after="2023-07-09">
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -3774,7 +3772,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.StrikeDatabase.LocalCardMigrationNotOfferedDueToMaxStrikes"
-    enum="AutofillSaveType" expires_after="2023-05-07">
+    enum="AutofillSaveType" expires_after="2023-07-09">
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -3879,7 +3877,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.StrikeDatabase.VirtualCardEnrollmentNotOfferedDueToRequiredDelay"
-    enum="AutofillVirtualCardEnrollmentSource" expires_after="2023-02-12">
+    enum="AutofillVirtualCardEnrollmentSource" expires_after="2023-12-12">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
@@ -4050,6 +4048,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Autofill.TouchToFill.CreditCard.TriggerOutcome"
+    enum="TouchToFill.CreditCard.TriggerOutcome" expires_after="2023-06-01">
+  <owner>atsvirhckova@google.com</owner>
+  <owner>izuzic@google.com</owner>
+  <owner>chrome-autofill-team@google.com</owner>
+  <summary>
+    Records the outcome of the attempt to trigger Touch To Fill for credit
+    cards. It is recorded only when the touch to fill feature is enabled and the
+    form is parsed as a credit card form by autofill.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.TranslatedPageLanguage" enum="LanguageName"
     expires_after="2023-12-12">
   <owner>koerber@google.com</owner>
@@ -4095,7 +4105,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.UnmaskPrompt.GetRealPanDuration" units="ms"
-    expires_after="2023-07-02">
+    expires_after="2023-07-09">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <summary>

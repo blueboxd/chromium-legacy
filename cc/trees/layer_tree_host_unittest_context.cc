@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "cc/layers/heads_up_display_layer.h"
@@ -466,8 +466,10 @@ class MultipleCompositeDoesNotCreateLayerTreeFrameSink
   }
 
   void BeginTest() override {
-    layer_tree_host()->CompositeForTest(TicksFromMicroseconds(1), false);
-    layer_tree_host()->CompositeForTest(TicksFromMicroseconds(2), false);
+    layer_tree_host()->CompositeForTest(TicksFromMicroseconds(1), false,
+                                        base::OnceClosure());
+    layer_tree_host()->CompositeForTest(TicksFromMicroseconds(2), false,
+                                        base::OnceClosure());
   }
 
   void DidInitializeLayerTreeFrameSink() override { EXPECT_TRUE(false); }
@@ -508,12 +510,14 @@ class FailedCreateDoesNotCreateExtraLayerTreeFrameSink
 
   void BeginTest() override {
     // First composite tries to create a surface.
-    layer_tree_host()->CompositeForTest(TicksFromMicroseconds(1), false);
+    layer_tree_host()->CompositeForTest(TicksFromMicroseconds(1), false,
+                                        base::OnceClosure());
     EXPECT_EQ(num_requests_, 2);
     EXPECT_TRUE(has_failed_);
 
     // Second composite should not request or fail.
-    layer_tree_host()->CompositeForTest(TicksFromMicroseconds(2), false);
+    layer_tree_host()->CompositeForTest(TicksFromMicroseconds(2), false,
+                                        base::OnceClosure());
     EXPECT_EQ(num_requests_, 2);
     EndTest();
   }
@@ -826,7 +830,7 @@ class LayerTreeHostContextTestDontUseLostResources
   void SetupTree() override {
     gpu::gles2::GLES2Interface* gl = child_context_provider_->ContextGL();
 
-    gpu::Mailbox mailbox = gpu::Mailbox::Generate();
+    gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
 
     gpu::SyncToken sync_token;
     gl->GenSyncTokenCHROMIUM(sync_token.GetData());

@@ -337,9 +337,6 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // tracking metrics in DidFinishNavigation.
   void StopTracking();
 
-  PageEndReason page_end_reason() const { return page_end_reason_; }
-  base::TimeTicks page_end_time() const { return page_end_time_; }
-
   void AddObserver(std::unique_ptr<PageLoadMetricsObserverInterface> observer);
   base::WeakPtr<PageLoadMetricsObserverInterface> FindObserver(
       char const* name);
@@ -535,9 +532,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
 
   // Observer's name pointer to instance map. Can be raw_ptr as the instance is
   // owned `observers` above, and is removed from the map on destruction.
-  base::flat_map<
-      const char*,
-      base::raw_ptr<PageLoadMetricsObserverInterface, DanglingUntriaged>>
+  base::flat_map<const char*, base::raw_ptr<PageLoadMetricsObserverInterface>>
       observers_map_;
 
   PageLoadMetricsUpdateDispatcher metrics_update_dispatcher_;

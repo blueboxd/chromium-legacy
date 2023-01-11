@@ -7,10 +7,11 @@
 #include <memory>
 
 #include "ash/public/cpp/window_properties.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/syslog_logging.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_data.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/profiles/profile.h"

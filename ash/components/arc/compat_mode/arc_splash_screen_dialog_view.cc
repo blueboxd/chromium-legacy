@@ -11,8 +11,8 @@
 #include "ash/components/arc/vector_icons/vector_icons.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "base/auto_reset.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/task/sequenced_task_runner.h"
@@ -151,7 +151,7 @@ ArcSplashScreenDialogView::ArcSplashScreenDialogView(
   SetAnchorView(anchor_);
   SetTitle(l10n_util::GetStringUTF16(IDS_ARC_COMPAT_MODE_SPLASH_SCREEN_TITLE));
   SetShowTitle(false);
-  SetAccessibleRole(ax::mojom::Role::kDialog);
+  SetAccessibleWindowRole(ax::mojom::Role::kDialog);
   // For handling the case when Esc key is pressed.
   SetCancelCallback(
       base::BindOnce(&ArcSplashScreenDialogView::OnCloseButtonClicked,

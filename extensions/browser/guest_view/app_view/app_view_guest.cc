@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/lazy_instance.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "content/public/browser/render_process_host.h"
@@ -246,6 +246,12 @@ void AppViewGuest::CompleteCreateWebContents(
     const Extension* guest_extension,
     std::unique_ptr<GuestViewBase> owned_this,
     WebContentsCreatedCallback callback) {
+  if (!owner_web_contents()) {
+    // The owner was destroyed before getting a response to the embedding
+    // request, so we can't proceed with creating a guest.
+    std::move(callback).Run(std::move(owned_this), nullptr);
+    return;
+  }
   if (!url.is_valid()) {
     std::move(callback).Run(std::move(owned_this), nullptr);
     return;

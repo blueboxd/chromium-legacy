@@ -10,11 +10,11 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
@@ -31,7 +31,6 @@
 #include "components/history/core/browser/top_sites.h"
 #include "components/history/core/browser/top_sites_impl.h"
 #include "components/history/core/browser/top_sites_observer.h"
-#include "components/history/core/common/thumbnail_score.h"
 #include "components/history/core/test/history_client_fake_bookmarks.h"
 #include "components/history/core/test/test_history_database.h"
 #include "components/history/core/test/thumbnail.h"

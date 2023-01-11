@@ -5,10 +5,9 @@
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
 
 #include "ash/public/cpp/network_config_service.h"
-#include "base/bind.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"

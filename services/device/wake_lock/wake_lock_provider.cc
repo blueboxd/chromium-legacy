@@ -8,9 +8,11 @@
 #include <string>
 #include <utility>
 
+#include "base/task/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/device/wake_lock/wake_lock.h"
+#include "services/device/wake_lock/wake_lock_context.h"
 
 namespace device {
 

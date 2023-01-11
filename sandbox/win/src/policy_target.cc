@@ -4,6 +4,7 @@
 
 #include "sandbox/win/src/policy_target.h"
 
+#include <ntstatus.h>
 #include <stddef.h>
 
 #include "sandbox/win/src/crosscall_client.h"
@@ -71,7 +72,7 @@ bool QueryBroker(IpcTag ipc_id, CountedParameterSetBase* params) {
 NTSTATUS WINAPI TargetNtSetInformationThread(
     NtSetInformationThreadFunction orig_SetInformationThread,
     HANDLE thread,
-    NT_THREAD_INFORMATION_CLASS thread_info_class,
+    THREADINFOCLASS thread_info_class,
     PVOID thread_information,
     ULONG thread_information_bytes) {
   do {

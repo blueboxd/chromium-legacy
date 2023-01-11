@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
@@ -259,7 +259,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   auto view =
       views::Builder<internal::SheetView>(
           std::make_unique<internal::SheetView>(
-              primary_button_
+              ShouldAccelerateEnterKey()
                   ? base::BindRepeating(&PaymentRequestSheetController::
                                             PerformPrimaryButtonAction,
                                         weak_ptr_factory_.GetWeakPtr())
@@ -534,12 +534,8 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
 }
 
 views::View* PaymentRequestSheetController::GetFirstFocusedView() {
-  if (primary_button_ && primary_button_->GetEnabled())
-    return primary_button_;
-
-  if (secondary_button_)
-    return secondary_button_;
-
+  // Do not focus either of the buttons, per guidelines in
+  // docs/security/security-considerations-for-browser-ui.md
   DCHECK(content_view_);
   return content_view_;
 }
@@ -550,6 +546,12 @@ bool PaymentRequestSheetController::GetSheetId(DialogViewID* sheet_id) {
 
 bool PaymentRequestSheetController::DisplayDynamicBorderForHiddenContents() {
   return true;
+}
+
+bool PaymentRequestSheetController::ShouldAccelerateEnterKey() {
+  // Subclasses must explicitly opt-into this behavior. Be aware of the risks of
+  // enabling click-jacking of the Enter key; see https://crbug.com/1403539
+  return false;
 }
 
 void PaymentRequestSheetController::CloseButtonPressed() {

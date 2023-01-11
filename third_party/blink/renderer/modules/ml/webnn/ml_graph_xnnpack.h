@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ML_WEBNN_ML_GRAPH_XNNPACK_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ML_WEBNN_ML_GRAPH_XNNPACK_H_
 
+#include "base/task/sequenced_task_runner.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
@@ -19,7 +20,9 @@ namespace {
 class SharedXnnpackContext;
 }
 
+// Map the MLGraph's input or output name to the XNNPACK external Value ID.
 using ExternalValueIdMap = HashMap<String, uint32_t>;
+
 using DataBufferPtr = std::unique_ptr<uint8_t[]>;
 
 class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
@@ -47,14 +50,15 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
   // Return the operators in topological order by searching from the named
   // output operands. It ensures operator 'j' appears before operator 'i' in the
   // result, if 'i' depends on 'j'.
-
+  //
   // The sorted operators will be used by CreateXnnSubgraphAndRuntime() that
   // defines the subgraph Nodes for operators in topological order.
   static HeapVector<Member<const MLOperator>>* GetOperatorsInTopologicalOrder(
       const MLNamedOperands& named_outputs);
 
-  const ExternalValueIdMap& GetInputExternalValueIdMap() const;
-  const ExternalValueIdMap& GetOutputExternalValueIdMap() const;
+  const ExternalValueIdMap& GetInputExternalValueIdMapForTesting() const;
+  const ExternalValueIdMap& GetOutputExternalValueIdMapForTesting() const;
+  const Vector<xnn_external_value>& GetXnnExternalValuesTesting() const;
 
  private:
   // Post the XNNPACK Subgraph and Runtime building to a background thread.
@@ -83,7 +87,7 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
   MLGraph* BuildSyncImpl(const MLNamedOperands& named_outputs,
                          ExceptionState& exception_state) override;
 
-  // Post the XNNPACK Runtime invocation to a background thread.
+  // Post the XNNPACK Runtime object invocation to a background thread.
   void ComputeAsyncImpl(const MLNamedArrayBufferViews& inputs,
                         const MLNamedArrayBufferViews& outputs,
                         ScriptPromiseResolver* resolver) override;
@@ -106,6 +110,36 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
       const HeapVector<Member<const MLOperator>>& toposorted_operators,
       String& error_message);
 
+  // This method creates the xnn_external_value vector from named input and
+  // output array buffer views. The xnn_external_value vector is used to set up
+  // the XNNPACK Runtime object. The returned vector is sorted by
+  // `xnn_external_value::id`, and can be passed to
+  // `NeedToSetupExternalValues()`.
+  Vector<xnn_external_value> CreateExternalValues(
+      const MLNamedArrayBufferViews& inputs,
+      const MLNamedArrayBufferViews& outputs) const;
+
+  // This method checks if any data pointers of the provided
+  // `xnn_external_values` changed against the pointers that has been setup
+  // (stored in `xnn_external_values_`).
+  //
+  // The change may be caused by user providing a different ArrayBufferView that
+  // is backed by a newly allocated or reallocated store.
+  //
+  // The XNNPACK Runtime object setup may be expensive. If the data pointers
+  // haven't changed, there's no need to redo the setup.
+  bool NeedToSetupExternalValues(
+      const Vector<xnn_external_value>& xnn_external_values) const;
+
+  // This method sets up data pointers for XNNPACK external values, performs the
+  // forward pass, then stores the result in the array buffer views provided by
+  // `outputs`.
+  //
+  // This method can be called in the main thread or a background thread.
+  xnn_status InvokeXnnRuntime(const MLNamedArrayBufferViews& inputs,
+                              const MLNamedArrayBufferViews& outputs,
+                              String& error_message);
+
   // The SharedXnnpackContext is shared and reference-counted by all instances
   // of MLGraphXnnpack. It initializes (and also deinitializes) the XNNPACK
   // library for graph building and execution.
@@ -121,6 +155,11 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
   // object for the MLGraph compute.
   ExternalValueIdMap input_external_value_id_map_;
   ExternalValueIdMap output_external_value_id_map_;
+
+  // Used to track external values that have been setup, to avoid unnecessary
+  // xnn_runtime_setup calls (which may be expensive). Sorted by
+  // `xnn_external_value::id`.
+  Vector<xnn_external_value> xnn_external_values_;
 
   // The XNNPACK Runtime object for the accelerated executions.
   std::unique_ptr<xnn_runtime, decltype(&xnn_delete_runtime)> xnn_runtime_{

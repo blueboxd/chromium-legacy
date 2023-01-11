@@ -11,10 +11,10 @@
 #include <memory>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/synchronization/lock.h"
@@ -22,7 +22,6 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
@@ -2722,7 +2721,8 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
 
 // TODO(crbug.com/1292184): Flaky failures.
 // SINGLE_AND_MULTI_THREAD_TEST_F(
-//     LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate);
+//    LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate);
+
 class LayerTreeHostTestDeviceScaleFactorChange : public LayerTreeHostTest {
  public:
   void SetupTree() override {
@@ -7121,7 +7121,8 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
         new TestSwapPromise(&swap_promise_result_[0]));
     layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
         std::move(swap_promise0));
-    layer_tree_host()->CompositeForTest(base::TimeTicks::Now(), raster);
+    layer_tree_host()->CompositeForTest(base::TimeTicks::Now(), raster,
+                                        base::OnceClosure());
 
     // Fail to swap (no damage) if not reclaiming resources from the Display.
     std::unique_ptr<SwapPromise> swap_promise1(
@@ -7129,7 +7130,8 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
     layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
         std::move(swap_promise1));
     layer_tree_host()->SetNeedsCommit();
-    layer_tree_host()->CompositeForTest(base::TimeTicks::Now(), raster);
+    layer_tree_host()->CompositeForTest(base::TimeTicks::Now(), raster,
+                                        base::OnceClosure());
 
     // Fail to draw (not visible).
     std::unique_ptr<SwapPromise> swap_promise2(
@@ -7138,7 +7140,8 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
         std::move(swap_promise2));
     layer_tree_host()->SetNeedsDisplayOnAllLayers();
     layer_tree_host()->SetVisible(false);
-    layer_tree_host()->CompositeForTest(base::TimeTicks::Now(), raster);
+    layer_tree_host()->CompositeForTest(base::TimeTicks::Now(), raster,
+                                        base::OnceClosure());
 
     EndTest();
   }

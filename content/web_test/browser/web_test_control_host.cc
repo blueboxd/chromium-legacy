@@ -32,6 +32,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "build/build_config.h"
@@ -818,20 +819,9 @@ void WebTestControlHost::InitiateCaptureDump(
 
   if (capture_pixels) {
     waiting_for_pixel_results_ = true;
-    auto* rwhv = main_window_->web_contents()->GetRenderWidgetHostView();
-    // If we're running in threaded mode, then the frames will be produced via a
-    // scheduler elsewhere, all we need to do is to ensure that the surface is
-    // synchronized before we copy from it. In single threaded mode, we have to
-    // force each renderer to produce a frame.
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableThreadedCompositing)) {
-      rwhv->EnsureSurfaceSynchronizedForWebTest();
-      EnqueueSurfaceCopyRequest();
-    } else {
-      CompositeAllFramesThen(
-          base::BindOnce(&WebTestControlHost::EnqueueSurfaceCopyRequest,
-                         weak_factory_.GetWeakPtr()));
-    }
+    CompositeAllFramesThen(
+        base::BindOnce(&WebTestControlHost::EnqueueSurfaceCopyRequest,
+                       weak_factory_.GetWeakPtr()));
   }
 
   // Try to report results now, if we aren't waiting for anything.

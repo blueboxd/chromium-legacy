@@ -5,6 +5,7 @@
 /**
  * @fileoverview The ChromeVox panel and menus.
  */
+import {AsyncUtil} from '../../common/async_util.js';
 import {constants} from '../../common/constants.js';
 import {EventGenerator} from '../../common/event_generator.js';
 import {KeyCode} from '../../common/key_code.js';
@@ -25,6 +26,7 @@ import {ALL_PANEL_MENU_NODE_DATA, PanelNodeMenuData, PanelNodeMenuId, PanelNodeM
 import {QueueMode} from '../common/tts_types.js';
 
 import {ISearchUI} from './i_search_ui.js';
+import {MenuManager} from './menu_manager.js';
 import {PanelInterface} from './panel_interface.js';
 import {PanelMenu, PanelNodeMenu, PanelSearchMenu} from './panel_menu.js';
 import {PanelMode, PanelModeInfo} from './panel_mode.js';
@@ -46,11 +48,8 @@ export class Panel extends PanelInterface {
     /** @private {!PanelMode} */
     this.mode_ = PanelMode.COLLAPSED;
 
-    /**
-     * The array of top-level menus.
-     * @private {!Array<PanelMenu>}
-     */
-    this.menus_ = [];
+    /** @private {!MenuManager} */
+    this.menuManager_ = new MenuManager();
 
     /** @private {!Object<!PanelNodeMenuId, !PanelNodeMenu>} */
     this.nodeMenuDictionary_ = {};
@@ -63,9 +62,6 @@ export class Panel extends PanelInterface {
 
     /** @private {?(function(): !Promise)} */
     this.pendingCallback_ = null;
-
-    /** @private {?PanelSearchMenu} */
-    this.searchMenu_ = null;
 
     /** @private {string} */
     this.sessionState_ = '';
@@ -133,20 +129,20 @@ export class Panel extends PanelInterface {
 
   /** Initialize the panel. */
   static async init() {
-    if (Panel.instance_) {
+    if (Panel.instance) {
       throw new Error('Cannot call Panel.init() more than once');
     }
 
     await LocalStorage.init();
     LocaleOutputHelper.init();
 
-    Panel.instance_ = new Panel();
-    PanelInterface.instance = Panel.instance_;
+    Panel.instance = new Panel();
+    PanelInterface.instance = Panel.instance;
 
     Msgs.addTranslatedMessagesToDom(document);
 
     if (location.search.slice(1) === 'tutorial') {
-      Panel.instance_.onTutorial_();
+      Panel.instance.onTutorial_();
     }
   }
 
@@ -227,7 +223,7 @@ export class Panel extends PanelInterface {
         this.onUpdateBraille_(command.data);
         break;
       case PanelCommandType.OPEN_MENUS:
-        this.onOpenMenus_(undefined, command.data);
+        this.onOpenMenus_(undefined, String(command.data));
         break;
       case PanelCommandType.OPEN_MENUS_MOST_RECENT:
         this.onOpenMenus_(undefined, this.lastMenu_);
@@ -298,7 +294,7 @@ export class Panel extends PanelInterface {
   /**
    * Open / show the ChromeVox Menus.
    * @param {Event=} opt_event An optional event that triggered this.
-   * @param {*=} opt_activateMenuTitle Title msg id of menu to open.
+   * @param {string=} opt_activateMenuTitle Title msg id of menu to open.
    * @private
    */
   async onOpenMenus_(opt_event, opt_activateMenuTitle) {
@@ -324,8 +320,8 @@ export class Panel extends PanelInterface {
       this.clearMenus_();
       this.pendingCallback_ = null;
 
-      const eventSourceState = await BackgroundBridge.EventSourceState.get();
-      const touchScreen = (eventSourceState === EventSourceType.TOUCH_GESTURE);
+      const eventSource = await BackgroundBridge.EventSource.get();
+      const touchScreen = (eventSource === EventSourceType.TOUCH_GESTURE);
 
       // Build the top-level menus.
       const searchMenu = this.addSearchMenu_('panel_search_menu');
@@ -339,10 +335,8 @@ export class Panel extends PanelInterface {
 
       // Add a menu item that opens the full list of ChromeBook keyboard
       // shortcuts. We want this to be at the top of the ChromeVox menu.
-      let localizedSlash = await new Promise(
-          resolve =>
-              chrome.accessibilityPrivate.getLocalizedDomKeyStringForKeyCode(
-                  KeyCode.OEM_2, resolve));
+      let localizedSlash =
+          await AsyncUtil.getLocalizedDomKeyStringForKeyCode(KeyCode.OEM_2);
       if (!localizedSlash) {
         localizedSlash = '/';
       }
@@ -479,17 +473,7 @@ export class Panel extends PanelInterface {
 
       if (this.sessionState_ !== 'IN_SESSION') {
         tabsMenu.disable();
-        // Disable commands that contain the property 'denyOOBE'.
-        for (let i = 0; i < this.menus_.length; ++i) {
-          const menu = this.menus_[i];
-          for (let j = 0; j < menu.items.length; ++j) {
-            const item = menu.items[j];
-            if (CommandStore.denySignedOut(
-                    /** @type {!Command} */ (item.element.id))) {
-              item.disable();
-            }
-          }
-        }
+        this.menuManager_.denySignedOut();
       }
 
       // Add a menu item that disables / closes ChromeVox.
@@ -530,15 +514,10 @@ export class Panel extends PanelInterface {
       }
 
       // Activate either the specified menu or the search menu.
-      // Search menu can be null, since it is hidden behind a flag.
-      let selectedMenu = this.searchMenu_ || this.menus_[0];
-      for (let i = 0; i < this.menus_.length; i++) {
-        if (this.menus_[i].menuMsg === opt_activateMenuTitle) {
-          selectedMenu = this.menus_[i];
-        }
-      }
+      const selectedMenu =
+          this.menuManager_.getSelectedMenu(opt_activateMenuTitle);
 
-      const activateFirstItem = (selectedMenu !== this.searchMenu_);
+      const activateFirstItem = (selectedMenu !== this.menuManager_.searchMenu);
       this.activateMenu_(selectedMenu, activateFirstItem);
     };
 
@@ -570,8 +549,8 @@ export class Panel extends PanelInterface {
    * @private
    */
   clearMenus_() {
-    while (this.menus_.length) {
-      const menu = this.menus_.pop();
+    while (this.menuManager_.menus.length) {
+      const menu = this.menuManager_.menus.pop();
       $('menu-bar').removeChild(menu.menuBarItemElement);
       $('menus_background').removeChild(menu.menuContainerElement);
     }
@@ -596,7 +575,7 @@ export class Panel extends PanelInterface {
     menu.menuBarItemElement.addEventListener(
         'mouseup', event => this.onMouseUpOnMenuTitle_(menu, event), false);
     $('menus_background').appendChild(menu.menuContainerElement);
-    this.menus_.push(menu);
+    this.menuManager_.menus.push(menu);
     return menu;
   }
 
@@ -755,7 +734,7 @@ export class Panel extends PanelInterface {
     menu.menuBarItemElement.addEventListener(
         'mouseup', event => this.onMouseUpOnMenuTitle_(menu, event));
     $('menus_background').appendChild(menu.menuContainerElement);
-    this.menus_.push(menu);
+    this.menuManager_.menus.push(menu);
     this.nodeMenuDictionary_[menuData.menuId] = menu;
   }
 
@@ -774,30 +753,34 @@ export class Panel extends PanelInterface {
    * @private
    */
   addSearchMenu_(menuMsg) {
-    this.searchMenu_ = new PanelSearchMenu(menuMsg);
+    this.menuManager_.searchMenu = new PanelSearchMenu(menuMsg);
     // Add event listeners to search bar.
-    this.searchMenu_.searchBar.addEventListener(
+    this.menuManager_.searchMenu.searchBar.addEventListener(
         'input', event => this.onSearchBarQuery_(event), false);
-    this.searchMenu_.searchBar.addEventListener('mouseup', event => {
-      // Clicking in the panel causes us to either activate an item or close the
-      // menus altogether. Prevent that from happening if we click the search
-      // bar.
-      event.preventDefault();
-      event.stopPropagation();
-    }, false);
+    this.menuManager_.searchMenu.searchBar.addEventListener(
+        'mouseup', event => {
+          // Clicking in the panel causes us to either activate an item or close
+          // the menus altogether. Prevent that from happening if we click the
+          // search bar.
+          event.preventDefault();
+          event.stopPropagation();
+        }, false);
 
-    $('menu-bar').appendChild(this.searchMenu_.menuBarItemElement);
-    this.searchMenu_.menuBarItemElement.addEventListener(
+    $('menu-bar').appendChild(this.menuManager_.searchMenu.menuBarItemElement);
+    this.menuManager_.searchMenu.menuBarItemElement.addEventListener(
         'mouseover',
-        () =>
-            this.activateMenu_(this.searchMenu_, false /* activateFirstItem */),
+        () => this.activateMenu_(
+            this.menuManager_.searchMenu, false /* activateFirstItem */),
         false);
-    this.searchMenu_.menuBarItemElement.addEventListener(
-        'mouseup', event => this.onMouseUpOnMenuTitle_(this.searchMenu_, event),
+    this.menuManager_.searchMenu.menuBarItemElement.addEventListener(
+        'mouseup',
+        event =>
+            this.onMouseUpOnMenuTitle_(this.menuManager_.searchMenu, event),
         false);
-    $('menus_background').appendChild(this.searchMenu_.menuContainerElement);
-    this.menus_.push(this.searchMenu_);
-    return this.searchMenu_;
+    $('menus_background')
+        .appendChild(this.menuManager_.searchMenu.menuContainerElement);
+    this.menuManager_.menus.push(this.menuManager_.searchMenu);
+    return this.menuManager_.searchMenu;
   }
 
   /**
@@ -848,8 +831,8 @@ export class Panel extends PanelInterface {
    */
   advanceActiveMenuBy_(delta) {
     let activeIndex = -1;
-    for (let i = 0; i < this.menus_.length; i++) {
-      if (this.activeMenu_ === this.menus_[i]) {
+    for (let i = 0; i < this.menuManager_.menus.length; i++) {
+      if (this.activeMenu_ === this.menuManager_.menus[i]) {
         activeIndex = i;
         break;
       }
@@ -857,12 +840,13 @@ export class Panel extends PanelInterface {
 
     if (activeIndex >= 0) {
       activeIndex += delta;
-      activeIndex = (activeIndex + this.menus_.length) % this.menus_.length;
+      activeIndex = (activeIndex + this.menuManager_.menus.length) %
+          this.menuManager_.menus.length;
     } else {
       if (delta >= 0) {
         activeIndex = 0;
       } else {
-        activeIndex = this.menus_.length - 1;
+        activeIndex = this.menuManager_.menus.length - 1;
       }
     }
 
@@ -871,7 +855,8 @@ export class Panel extends PanelInterface {
       return;
     }
 
-    this.activateMenu_(this.menus_[activeIndex], true /* activateFirstItem */);
+    this.activateMenu_(
+        this.menuManager_.menus[activeIndex], true /* activateFirstItem */);
   }
 
   /**
@@ -882,9 +867,9 @@ export class Panel extends PanelInterface {
    * @private
    */
   findEnabledMenuIndex_(startIndex, delta) {
-    const endIndex = (delta > 0) ? this.menus_.length : -1;
+    const endIndex = (delta > 0) ? this.menuManager_.menus.length : -1;
     while (startIndex !== endIndex) {
-      if (this.menus_[startIndex].enabled) {
+      if (this.menuManager_.menus[startIndex].enabled) {
         return startIndex;
       }
       startIndex += delta;
@@ -971,7 +956,8 @@ export class Panel extends PanelInterface {
     // If left/right arrow are pressed, we should adjust the search bar's
     // cursor. We only want to advance the active menu if we are at the
     // beginning/end of the search bar's contents.
-    if (this.searchMenu_ && event.target === this.searchMenu_.searchBar) {
+    if (this.menuManager_.searchMenu &&
+        event.target === this.menuManager_.searchMenu.searchBar) {
       switch (event.key) {
         case 'ArrowLeft':
         case 'ArrowRight':
@@ -1226,18 +1212,20 @@ export class Panel extends PanelInterface {
    * @private
    */
   onSearchBarQuery_(event) {
-    if (!this.searchMenu_) {
-      throw Error('Panel.instance_.searchMenu_ must be defined');
+    if (!this.menuManager_.searchMenu) {
+      throw Error('MenuManager.searchMenu_ must be defined');
     }
     const query = event.target.value.toLowerCase();
-    this.searchMenu_.clear();
+    this.menuManager_.searchMenu.clear();
     // Show the search results menu.
-    this.activateMenu_(this.searchMenu_, false /* activateFirstItem */);
+    this.activateMenu_(
+        this.menuManager_.searchMenu, false /* activateFirstItem */);
     // Populate.
     if (query) {
-      for (let i = 0; i < this.menus_.length; ++i) {
-        const menu = this.menus_[i];
-        if (menu === this.searchMenu_ || menu instanceof PanelNodeMenu) {
+      for (let i = 0; i < this.menuManager_.menus.length; ++i) {
+        const menu = this.menuManager_.menus[i];
+        if (menu === this.menuManager_.searchMenu ||
+            menu instanceof PanelNodeMenu) {
           continue;
         }
         const items = menu.items;
@@ -1253,17 +1241,17 @@ export class Panel extends PanelInterface {
                Msgs.getMsg('panel_menu_item_none').toLowerCase()) &&
               item.enabled;
           if (match) {
-            this.searchMenu_.copyAndAddMenuItem(item);
+            this.menuManager_.searchMenu.copyAndAddMenuItem(item);
           }
         }
       }
     }
 
-    if (this.searchMenu_.items.length === 0) {
-      this.searchMenu_.addMenuItem(
+    if (this.menuManager_.searchMenu.items.length === 0) {
+      this.menuManager_.searchMenu.addMenuItem(
           Msgs.getMsg('panel_menu_item_none'), '', '', '', function() {});
     }
-    this.searchMenu_.activateItem(0);
+    this.menuManager_.searchMenu.activateItem(0);
   }
 
   /** @private */
@@ -1351,5 +1339,5 @@ function $(id) {
 
 window.addEventListener('load', async () => await Panel.init(), false);
 
-/** @private {Panel} */
-Panel.instance_;
+/** @type {Panel} */
+Panel.instance;

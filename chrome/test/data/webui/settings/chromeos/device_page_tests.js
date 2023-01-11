@@ -521,6 +521,41 @@ suite('SettingsDevicePage', function() {
         isVisible(devicePage.shadowRoot.querySelector('#perDeviceMouseRow')));
   });
 
+  test(
+      'navigate back to device page when per-device-mouse is detached',
+      async function() {
+        // Tests with flag on.
+        setDeviceSplitEnabled(true);
+        webUIListenerCallback('has-mouse-changed', true);
+
+        await init();
+        assertTrue(isVisible(
+            devicePage.shadowRoot.querySelector('#perDeviceMouseRow')));
+
+        webUIListenerCallback('has-mouse-changed', false);
+        await flushTasks();
+        assertFalse(isVisible(
+            devicePage.shadowRoot.querySelector('#perDeviceMouseRow')));
+
+        webUIListenerCallback('has-mouse-changed', true);
+        await flushTasks();
+        assertTrue(isVisible(
+            devicePage.shadowRoot.querySelector('#perDeviceMouseRow')));
+
+        // Tests with flag off.
+        setDeviceSplitEnabled(false);
+        webUIListenerCallback('has-mouse-changed', true);
+
+        await init();
+        assertFalse(isVisible(
+            devicePage.shadowRoot.querySelector('#perDeviceMouseRow')));
+
+        webUIListenerCallback('has-mouse-changed', false);
+        await flushTasks();
+        assertFalse(isVisible(
+            devicePage.shadowRoot.querySelector('#perDeviceMouseRow')));
+      });
+
   test('per-device-touchpad row visibility', async function() {
     setDeviceSplitEnabled(false);
     await init();
@@ -528,12 +563,82 @@ suite('SettingsDevicePage', function() {
         devicePage.shadowRoot.querySelector('#perDeviceTouchpadRow')));
   });
 
+  test(
+      'navigate back to device page when per-device-touchpad is detached',
+      async function() {
+        // Tests with flag on.
+        setDeviceSplitEnabled(true);
+        webUIListenerCallback('has-touchpad-changed', true);
+
+        await init();
+        assertTrue(isVisible(
+            devicePage.shadowRoot.querySelector('#perDeviceTouchpadRow')));
+
+        webUIListenerCallback('has-touchpad-changed', false);
+        await flushTasks();
+        assertFalse(isVisible(
+            devicePage.shadowRoot.querySelector('#perDeviceTouchpadRow')));
+
+        webUIListenerCallback('has-touchpad-changed', true);
+        await flushTasks();
+        assertTrue(isVisible(
+            devicePage.shadowRoot.querySelector('#perDeviceTouchpadRow')));
+
+        // Tests with flag off.
+        setDeviceSplitEnabled(false);
+        webUIListenerCallback('has-touchpad-changed', true);
+
+        await init();
+        assertFalse(isVisible(
+            devicePage.shadowRoot.querySelector('#perDeviceTouchpadRow')));
+
+        webUIListenerCallback('has-touchpad-changed', false);
+        await flushTasks();
+        assertFalse(isVisible(
+            devicePage.shadowRoot.querySelector('#perDeviceTouchpadRow')));
+      });
+
   test('per-device-pointing-stick row visibility', async function() {
     setDeviceSplitEnabled(false);
     await init();
     assertFalse(isVisible(
         devicePage.shadowRoot.querySelector('#perDevicePointingStickRow')));
   });
+
+  test(
+      'navigate back to device page when per-device-pointing-stick is detached',
+      async function() {
+        // Tests with flag on.
+        setDeviceSplitEnabled(true);
+        webUIListenerCallback('has-pointing-stick-changed', true);
+
+        await init();
+        assertTrue(isVisible(
+            devicePage.shadowRoot.querySelector('#perDevicePointingStickRow')));
+
+        webUIListenerCallback('has-pointing-stick-changed', false);
+        await flushTasks();
+        assertFalse(isVisible(
+            devicePage.shadowRoot.querySelector('#perDevicePointingStickRow')));
+
+        webUIListenerCallback('has-pointing-stick-changed', true);
+        await flushTasks();
+        assertTrue(isVisible(
+            devicePage.shadowRoot.querySelector('#perDevicePointingStickRow')));
+
+        // Tests with flag off.
+        setDeviceSplitEnabled(false);
+        webUIListenerCallback('has-pointing-stick-stick-changed', true);
+
+        await init();
+        assertFalse(isVisible(
+            devicePage.shadowRoot.querySelector('#perDevicePointingStickRow')));
+
+        webUIListenerCallback('has-pointing-stick-changed', false);
+        await flushTasks();
+        assertFalse(isVisible(
+            devicePage.shadowRoot.querySelector('#perDevicePointingStickRow')));
+      });
 
   test('per-device-keyboard row visibility', async function() {
     setDeviceSplitEnabled(false);
@@ -808,6 +913,22 @@ suite('SettingsDevicePage', function() {
       inputDevices: [],
     };
 
+    /** @type {!AudioSystemProperties} */
+    const noiseCancellationNotSupportedAudioSystemProperties = {
+      outputVolumePercent: 0,
+
+      /** @type {!MuteState} */
+      outputMuteState: crosAudioConfigMojomWebui.MuteState.kNotMuted,
+
+      /** @type {!Array<!AudioDevice>} */
+      outputDevices: [],
+
+      /** @type {!Array<!AudioDevice>} */
+      inputDevices: [
+        fakeCrosAudioConfig.fakeInternalMicActive,
+      ],
+    };
+
     /**
      * Simuates clicking at a given point on cr-slider element.
      * @param {string} crSliderSelector
@@ -826,7 +947,6 @@ suite('SettingsDevicePage', function() {
       }));
       return await flushTasks();
     }
-
 
     setup(async function() {
       loadTimeData.overrideValues({
@@ -1132,6 +1252,30 @@ suite('SettingsDevicePage', function() {
 
       assertEquals(
           audioPage.audioSystemProperties_.inputVolumePercent, maximumValue);
+    });
+
+    test('simulate noise cancellation', async function() {
+      const noiseCancellationSubsection = audioPage.shadowRoot.querySelector(
+          '#audioInputNoiseCancellationSubsection');
+      const noiseCancellationToggle = audioPage.shadowRoot.querySelector(
+          '#audioInputNoiseCancellationToggle');
+
+      assertTrue(isVisible(noiseCancellationSubsection));
+      assertFalse(noiseCancellationToggle.checked);
+
+      await noiseCancellationToggle.click();
+      await flushTasks();
+
+      assertTrue(isVisible(noiseCancellationSubsection));
+      assertTrue(noiseCancellationToggle.checked);
+
+      crosAudioConfig.setAudioSystemProperties(
+          noiseCancellationNotSupportedAudioSystemProperties);
+      await flushTasks();
+
+      assertFalse(
+          isVisible(noiseCancellationSubsection),
+      );
     });
   });
 

@@ -4,16 +4,15 @@
 
 #include "chrome/browser/component_updater/first_party_sets_component_installer.h"
 
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/callback_helpers.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "chrome/browser/first_party_sets/scoped_mock_first_party_sets_handler.h"
 #include "chrome/common/pref_names.h"

@@ -9,10 +9,11 @@
 #include "base/android/android_hardware_buffer_compat.h"
 #include "base/android/build_info.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/service/display/display_compositor_memory_and_task_controller.h"
@@ -915,7 +916,14 @@ void OverlayProcessorWebView::ProcessForFrameSinkId(
   DCHECK(it != overlays_.end());
   auto& overlay = it->second;
 
-  auto& pass = frame_data->GetRootRenderPassData();
+  const auto& passes = frame_data->GetResolvedPasses();
+  if (passes.empty()) {
+    return;
+  }
+
+  DCHECK_EQ(passes.size(), 1u);
+
+  auto& pass = passes.back();
   if (!pass.draw_quads().empty()) {
     DCHECK_EQ(pass.draw_quads().size(), 1u);
     auto* surface = frame_sink_manager_->surface_manager()->GetSurfaceForId(

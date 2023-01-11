@@ -9,7 +9,7 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -26,6 +26,7 @@
 #include "components/history_clusters/core/file_clustering_backend.h"
 #include "components/history_clusters/core/history_clusters_debug_jsons.h"
 #include "components/history_clusters/core/history_clusters_service_task_get_most_recent_clusters_for_ui.h"
+#include "components/history_clusters/core/history_clusters_service_task_update_cluster_triggerability.h"
 #include "components/history_clusters/core/history_clusters_service_task_update_clusters.h"
 #include "components/history_clusters/core/history_clusters_types.h"
 #include "components/history_clusters/core/history_clusters_util.h"
@@ -179,8 +180,7 @@ HistoryClustersService::QueryClusters(
   }
 
   DCHECK(history_service_);
-  if (GetConfig().persist_clusters_in_history_db &&
-      GetConfig().use_navigation_context_clusters &&
+  if (ShouldUseNavigationContextClustersFromPersistence() &&
       source ==
           HistoryClustersServiceTaskGetMostRecentClusters::Source::kWebUi &&
       !recluster) {
@@ -254,10 +254,18 @@ void HistoryClustersService::UpdateClusters() {
   // Reset the timer.
   update_clusters_timer_ = {};
 
-  update_clusters_task_ =
-      std::make_unique<HistoryClustersServiceTaskUpdateClusters>(
-          weak_ptr_factory_.GetWeakPtr(), incomplete_visit_context_annotations_,
-          backend_.get(), history_service_, base::DoNothing());
+  if (GetConfig().use_navigation_context_clusters) {
+    update_clusters_task_ =
+        std::make_unique<HistoryClustersServiceTaskUpdateClusterTriggerability>(
+            weak_ptr_factory_.GetWeakPtr(), backend_.get(), history_service_,
+            base::DoNothing());
+  } else {
+    update_clusters_task_ =
+        std::make_unique<HistoryClustersServiceTaskUpdateClusters>(
+            weak_ptr_factory_.GetWeakPtr(),
+            incomplete_visit_context_annotations_, backend_.get(),
+            history_service_, base::DoNothing());
+  }
 }
 
 absl::optional<history::ClusterKeywordData>
@@ -347,6 +355,16 @@ void HistoryClustersService::StartKeywordCacheRefresh() {
   if (cache_keyword_query_task_ && !cache_keyword_query_task_->Done())
     return;
 
+  QueryClustersContinuationParams continuation_params;
+  if (ShouldUseNavigationContextClustersFromPersistence()) {
+    // Overwrite this so that queries for unclustered visits are not made.
+    // In the old path, the `GetAnnotatedVisitsToCluster` task would set
+    // the continuation time when it exhausted all unclustered visits, so it
+    // needs to be set here.
+    continuation_params.exhausted_unclustered_visits = true;
+    continuation_params.continuation_time = base::Time::Now();
+  }
+
   // 2 hour threshold chosen arbitrarily for cache refresh time.
   if ((base::Time::Now() - all_keywords_cache_timestamp_) > base::Hours(2)) {
     // Update the timestamp right away, to prevent this from running again.
@@ -356,8 +374,8 @@ void HistoryClustersService::StartKeywordCacheRefresh() {
     NotifyDebugMessage("Starting all_keywords_cache_ generation.");
     cache_keyword_query_task_ = QueryClusters(
         ClusteringRequestSource::kKeywordCacheGeneration,
-        /*begin_time=*/base::Time(),
-        /*continuation_params=*/{}, false,
+        /*begin_time=*/base::Time::Min(), continuation_params,
+        /*recluster=*/false,
         base::BindOnce(&HistoryClustersService::PopulateClusterKeywordCache,
                        weak_ptr_factory_.GetWeakPtr(), base::ElapsedTimer(),
                        /*begin_time=*/base::Time(),
@@ -376,8 +394,8 @@ void HistoryClustersService::StartKeywordCacheRefresh() {
     NotifyDebugMessage("Starting short_keywords_cache_ generation.");
     cache_keyword_query_task_ = QueryClusters(
         ClusteringRequestSource::kKeywordCacheGeneration,
-        /*begin_time=*/all_keywords_cache_timestamp_,
-        /*continuation_params=*/{}, false,
+        /*begin_time=*/all_keywords_cache_timestamp_, continuation_params,
+        /*recluster=*/false,
         base::BindOnce(&HistoryClustersService::PopulateClusterKeywordCache,
                        weak_ptr_factory_.GetWeakPtr(), base::ElapsedTimer(),
                        all_keywords_cache_timestamp_,

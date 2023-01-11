@@ -74,20 +74,20 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
 
   void SetUp() override {
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
-    personal_data_.Init(/*profile_database=*/database_,
-                        /*account_database=*/nullptr,
-                        /*pref_service=*/autofill_client_.GetPrefs(),
-                        /*local_state=*/autofill_client_.GetPrefs(),
-                        /*identity_manager=*/nullptr,
-                        /*history_service=*/nullptr,
-                        /*strike_database=*/nullptr,
-                        /*image_fetcher=*/nullptr,
-                        /*is_off_the_record=*/false);
+    personal_data()->Init(/*profile_database=*/database_,
+                          /*account_database=*/nullptr,
+                          /*pref_service=*/autofill_client_.GetPrefs(),
+                          /*local_state=*/autofill_client_.GetPrefs(),
+                          /*identity_manager=*/nullptr,
+                          /*history_service=*/nullptr,
+                          /*strike_database=*/nullptr,
+                          /*image_fetcher=*/nullptr,
+                          /*is_off_the_record=*/false);
     suggestion_generator_ = std::make_unique<TestAutofillSuggestionGenerator>(
-        &autofill_client_, &personal_data_);
+        &autofill_client_, personal_data());
     autofill_client_.set_autofill_offer_manager(
         std::make_unique<AutofillOfferManager>(
-            &personal_data_,
+            personal_data(),
             /*coupon_service_delegate=*/nullptr));
   }
 
@@ -134,7 +134,9 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
     return suggestion_generator_.get();
   }
 
-  TestPersonalDataManager* personal_data() { return &personal_data_; }
+  TestPersonalDataManager* personal_data() {
+    return autofill_client_.GetPersonalDataManager();
+  }
 
   TestAutofillClient* autofill_client() { return &autofill_client_; }
 
@@ -146,7 +148,6 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
   std::unique_ptr<TestAutofillSuggestionGenerator> suggestion_generator_;
   TestAutofillClient autofill_client_;
   scoped_refptr<AutofillWebDataService> database_;
-  TestPersonalDataManager personal_data_;
 };
 
 TEST_F(AutofillSuggestionGeneratorTest,
@@ -793,16 +794,16 @@ TEST_P(AutofillCreditCardSuggestionContentTest,
           /*card_linked_offer_available=*/false);
 
   if (keyboard_accessory_enabled()) {
-    // For the keyboard accessory, the main text is "Virtual card" and the minor
-    // text is the cardholder name. An example suggestion: "Virtual card  Elvis
-    // Presley".
+    // For the keyboard accessory, the "Virtual card" label is added as a prefix
+    // to the cardholder name, and the label is added as the suffix.
     EXPECT_EQ(virtual_card_name_field_suggestion.main_text.value,
               u"Virtual card");
-    EXPECT_EQ(virtual_card_name_field_suggestion.minor_text.value,
-              u"Elvis Presley");
+    EXPECT_EQ(
+        virtual_card_name_field_suggestion.minor_text.value,
+        base::StrCat({u"Elvis Presley ",
+                      internal::GetObfuscatedStringForCardDigits(u"1111", 2)}));
 
-    // There should be only 1 line of label: obfuscated last 4 digits. The label
-    // is not shown.
+    // There should be only 1 line of label: obfuscated last 4 digits.
     ASSERT_EQ(virtual_card_name_field_suggestion.labels.size(), 1U);
   } else {
     // On other platforms, the cardholder name is shown on the first line.
@@ -824,7 +825,8 @@ TEST_P(AutofillCreditCardSuggestionContentTest,
             internal::GetObfuscatedStringForCardDigits(u"1111", 4));
 #else
   if (keyboard_accessory_enabled()) {
-    // For the keyboard accessory, the label is "..1111".
+    // For the keyboard accessory, the label is "..1111". This label is added as
+    // a suffix to the cardholder name.
     ASSERT_EQ(virtual_card_name_field_suggestion.labels[0].size(), 1U);
     EXPECT_EQ(virtual_card_name_field_suggestion.labels[0][0].value,
               internal::GetObfuscatedStringForCardDigits(u"1111", 2));

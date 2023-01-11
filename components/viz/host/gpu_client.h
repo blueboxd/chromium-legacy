@@ -8,9 +8,10 @@
 #include <map>
 #include <memory>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/chromeos_buildflags.h"
 #include "components/viz/host/gpu_client_delegate.h"
 #include "components/viz/host/gpu_host_impl.h"
@@ -65,8 +66,7 @@ class VIZ_HOST_EXPORT GpuClient : public mojom::GpuMemoryBufferFactory,
       gfx::BufferUsage usage,
       mojom::GpuMemoryBufferFactory::CreateGpuMemoryBufferCallback callback)
       override;
-  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                              const gpu::SyncToken& sync_token) override;
+  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id) override;
   void CopyGpuMemoryBuffer(gfx::GpuMemoryBufferHandle buffer_handle,
                            base::UnsafeSharedMemoryRegion shared_memory,
                            CopyGpuMemoryBufferCallback callback) override;

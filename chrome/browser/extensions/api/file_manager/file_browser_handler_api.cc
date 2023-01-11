@@ -20,8 +20,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/functional/bind.h"
 #include "chrome/browser/extensions/api/file_manager/file_selector_impl.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/ui/browser.h"

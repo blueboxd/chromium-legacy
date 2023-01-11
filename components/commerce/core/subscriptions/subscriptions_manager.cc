@@ -54,12 +54,8 @@ SubscriptionsManager::SubscriptionsManager(
       account_checker_(account_checker),
       observers_(base::ObserverListPolicy::EXISTING_ONLY),
       weak_ptr_factory_(this) {
-// Avoid duplicate server calls on android. Remove this after we integrate
-// android implementation to shopping service.
-#if !BUILDFLAG(IS_ANDROID)
   SyncSubscriptions();
   scoped_identity_manager_observation_.Observe(identity_manager);
-#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 SubscriptionsManager::~SubscriptionsManager() = default;
@@ -156,8 +152,7 @@ void SubscriptionsManager::Unsubscribe(
 void SubscriptionsManager::SyncSubscriptions() {
   last_sync_succeeded_ = false;
   storage_->DeleteAll();
-  if (base::FeatureList::IsEnabled(commerce::kShoppingList) &&
-      account_checker_ && account_checker_->IsSignedIn() &&
+  if (account_checker_ && account_checker_->IsSignedIn() &&
       account_checker_->IsAnonymizedUrlDataCollectionEnabled()) {
     pending_requests_.emplace(
         SubscriptionType::kPriceTrack, AsyncOperation::kSync,

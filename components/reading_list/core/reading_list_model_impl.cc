@@ -4,9 +4,9 @@
 
 #include "components/reading_list/core/reading_list_model_impl.h"
 
-#include "base/bind.h"
 #include "base/check_is_test.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
@@ -60,9 +60,11 @@ void ReadingListModelImpl::ScopedReadingListBatchUpdateImpl::
 
 ReadingListModelImpl::ReadingListModelImpl(
     std::unique_ptr<ReadingListModelStorage> storage_layer,
+    syncer::StorageType sync_storage_type,
     base::Clock* clock)
     : ReadingListModelImpl(
           std::move(storage_layer),
+          sync_storage_type,
           clock,
           std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
               syncer::READING_LIST,
@@ -70,11 +72,12 @@ ReadingListModelImpl::ReadingListModelImpl(
 
 ReadingListModelImpl::ReadingListModelImpl(
     std::unique_ptr<ReadingListModelStorage> storage_layer,
+    syncer::StorageType sync_storage_type,
     base::Clock* clock,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
     : storage_layer_(std::move(storage_layer)),
       clock_(clock),
-      sync_bridge_(clock, std::move(change_processor)) {
+      sync_bridge_(sync_storage_type, clock, std::move(change_processor)) {
   DCHECK(clock_);
   DCHECK(storage_layer_);
 
@@ -305,8 +308,15 @@ void ReadingListModelImpl::RemoveEntryByURLImpl(const GURL& url,
 
   entries_.erase(url);
 
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
+    observer.ReadingListDidRemoveEntry(this, url);
     observer.ReadingListDidApplyChanges(this);
+  }
+}
+
+void ReadingListModelImpl::SyncDeleteAllEntriesAndSyncMetadata() {
+  DeleteAllEntries();
+  storage_layer_->DeleteAllEntriesAndSyncMetadata();
 }
 
 bool ReadingListModelImpl::IsUrlSupported(const GURL& url) {
@@ -536,11 +546,13 @@ ReadingListModelImpl::BeginBatchUpdatesWithSyncMetadata() {
 // static
 std::unique_ptr<ReadingListModelImpl> ReadingListModelImpl::BuildNewForTest(
     std::unique_ptr<ReadingListModelStorage> storage_layer,
+    syncer::StorageType sync_storage_type,
     base::Clock* clock,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor) {
   CHECK_IS_TEST();
-  return base::WrapUnique(new ReadingListModelImpl(
-      std::move(storage_layer), clock, std::move(change_processor)));
+  return base::WrapUnique(
+      new ReadingListModelImpl(std::move(storage_layer), sync_storage_type,
+                               clock, std::move(change_processor)));
 }
 
 ReadingListSyncBridge* ReadingListModelImpl::GetSyncBridgeForTest() {

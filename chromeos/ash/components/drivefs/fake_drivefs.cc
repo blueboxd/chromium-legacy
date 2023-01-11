@@ -8,12 +8,12 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
@@ -25,6 +25,7 @@
 #include "chromeos/ash/components/dbus/cros_disks/fake_cros_disks_client.h"
 #include "chromeos/ash/components/drivefs/drivefs_util.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
+#include "components/drive/file_errors.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -546,6 +547,19 @@ void FakeDriveFs::GetPooledQuotaUsage(
   usage->organization_name = "Test Organization";
 
   std::move(callback).Run(drive::FileError::FILE_ERROR_OK, std::move(usage));
+}
+
+void FakeDriveFs::SetPinnedByStableId(int64_t stable_id,
+                                      bool pinned,
+                                      SetPinnedCallback callback) {
+  for (auto& [key, metadata] : metadata_) {
+    if (metadata.stable_id == stable_id) {
+      metadata.pinned = pinned;
+      std::move(callback).Run(drive::FILE_ERROR_OK);
+      return;
+    }
+  }
+  std::move(callback).Run(drive::FILE_ERROR_NOT_FOUND);
 }
 
 void FakeDriveFs::ToggleMirroring(

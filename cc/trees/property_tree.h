@@ -14,9 +14,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
@@ -300,9 +300,15 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   std::vector<AnchorScrollContainersData> anchor_scroll_containers_data_;
 };
 
-struct AnchorScrollContainersData {
-  int inner_most_scroll_container_id = kInvalidPropertyNodeId;
-  int outer_most_scroll_container_id = kInvalidPropertyNodeId;
+struct CC_EXPORT AnchorScrollContainersData {
+  AnchorScrollContainersData();
+  ~AnchorScrollContainersData();
+  AnchorScrollContainersData(const AnchorScrollContainersData&);
+
+  bool operator==(const AnchorScrollContainersData&) const;
+  bool operator!=(const AnchorScrollContainersData&) const;
+
+  std::vector<ElementId> scroll_container_ids;
   gfx::Vector2d accumulated_scroll_origin;
 };
 

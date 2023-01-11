@@ -67,6 +67,7 @@ try_.orchestrator_builder(
         "ci/fuchsia-arm64-rel",
     ],
     main_list_view = "try",
+    tryjob = try_.job(),
     experiments = {
         "enable_weetbix_queries": 100,
         "weetbix.retry_weak_exonerations": 100,
@@ -189,4 +190,9 @@ try_.builder(
 try_.builder(
     name = "fuchsia-x64-workstation",
     mirrors = ["ci/fuchsia-x64-workstation"],
+)
+
+try_.builder(
+    name = "fuchsia-code-coverage",
+    mirrors = ["ci/fuchsia-code-coverage"],
 )

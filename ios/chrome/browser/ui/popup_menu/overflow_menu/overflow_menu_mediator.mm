@@ -26,7 +26,7 @@
 #import "ios/chrome/browser/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
-#import "ios/chrome/browser/find_in_page/find_tab_helper.h"
+#import "ios/chrome/browser/find_in_page/java_script_find_tab_helper.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/follow/follow_browser_agent.h"
 #import "ios/chrome/browser/follow/follow_menu_updater.h"
@@ -40,8 +40,6 @@
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/reading_list/offline_url_utils.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
-#import "ios/chrome/browser/ui/activity_services/activity_params.h"
-#import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/bookmarks_commands.h"
@@ -62,6 +60,8 @@
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_swift.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_utils.h"
+#import "ios/chrome/browser/ui/sharing/activity_services/activity_params.h"
+#import "ios/chrome/browser/ui/sharing/activity_services/canonical_url_retriever.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/features.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
@@ -515,11 +515,8 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 
   if (UseSymbols()) {
     // Passwords destination.
-    int passwordTitleID = IsPasswordManagerBrandingUpdateEnabled()
-                              ? IDS_IOS_TOOLS_MENU_PASSWORD_MANAGER
-                              : IDS_IOS_TOOLS_MENU_PASSWORDS;
     self.passwordsDestination = [self
-        createOverflowMenuDestination:passwordTitleID
+        createOverflowMenuDestination:IDS_IOS_TOOLS_MENU_PASSWORD_MANAGER
                           destination:overflow_menu::Destination::Passwords
                            symbolName:kPasswordSymbol
                          systemSymbol:NO
@@ -529,11 +526,8 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
                               }];
   } else {
     // Passwords destination.
-    int passwordTitleID = IsPasswordManagerBrandingUpdateEnabled()
-                              ? IDS_IOS_TOOLS_MENU_PASSWORD_MANAGER
-                              : IDS_IOS_TOOLS_MENU_PASSWORDS;
     self.passwordsDestination = [self
-        createOverflowMenuDestination:passwordTitleID
+        createOverflowMenuDestination:IDS_IOS_TOOLS_MENU_PASSWORD_MANAGER
                           destination:overflow_menu::Destination::Passwords
                             imageName:@"overflow_menu_destination_passwords"
                       accessibilityID:kToolsMenuPasswordsId
@@ -1320,7 +1314,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
     return NO;
   }
 
-  auto* helper = FindTabHelper::FromWebState(self.webState);
+  auto* helper = JavaScriptFindTabHelper::FromWebState(self.webState);
   return (helper && helper->CurrentPageSupportsFindInPage() &&
           !helper->IsFindUIActive());
 }
@@ -1850,8 +1844,10 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 // Dismisses the menu and opens What's New.
 - (void)openWhatsNew {
   SetWhatsNewOverflowMenuUsed();
-  self.engagementTracker->NotifyEvent(
-      feature_engagement::events::kViewedWhatsNew);
+  if (self.engagementTracker) {
+    self.engagementTracker->NotifyEvent(
+        feature_engagement::events::kViewedWhatsNew);
+  }
   [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher showWhatsNew];
 }

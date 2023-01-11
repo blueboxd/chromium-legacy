@@ -151,8 +151,9 @@ TEST_F(CalendarUtilsUnitTest, HoursAndMinutesInDifferentLocales) {
 
   for (auto* locale : kLocales) {
     // Skip locales that are tested in "LocalesWithUniqueNumerals".
-    if (kLocalesWithUniqueNumerals.count(locale))
+    if (kLocalesWithUniqueNumerals.count(locale)) {
       continue;
+    }
 
     SetDefaultLocale(locale);
 
@@ -207,8 +208,9 @@ TEST_F(CalendarUtilsUnitTest, LocalesWithUniqueNumerals) {
     } else if (locale == "mr") {
       EXPECT_EQ(u"२३", calendar_utils::GetTwentyFourHourClockHours(time));
       EXPECT_EQ(u"०३", calendar_utils::GetMinutes(time));
-    } else
+    } else {
       EXPECT_TRUE(false) << "Locale '" << locale << "' needs a test case.";
+    }
   }
 
   // Reset locale to English for subsequent tests.
@@ -409,9 +411,8 @@ TEST_F(
   EXPECT_EQ(actual_end, expected_end);
 }
 
-TEST_F(
-    CalendarUtilsUnitTest,
-    GivenAnAllDayEvent_WhenGetStartAndEndTimesIsCalled_ThenReturnDatesAdjustedForLocalMidnight) {
+TEST_F(CalendarUtilsUnitTest,
+       ShouldReturnDatesAdjustedForLocalMidnight_GivenAnAllDayEvent) {
   const char* start_time_string = "22 Nov 2021 00:00 UTC";
   const char* end_time_string = "23 Nov 2021 00:00 UTC";
   // After getting the date, it should have been adjusted to 23:59 local time,
@@ -420,6 +421,8 @@ TEST_F(
   const auto event = CreateEvent(start_time_string, end_time_string, true);
   base::Time expected_start, expected_end;
   ash::system::ScopedTimezoneSettings timezone_settings(u"PST");
+  calendar_test_utils::ScopedLibcTimeZone scoped_libc_timezone("PST");
+  ASSERT_TRUE(scoped_libc_timezone.is_success());
 
   EXPECT_TRUE(base::Time::FromString(start_time_string, &expected_start));
   EXPECT_TRUE(base::Time::FromUTCString(expected_end_string, &expected_end));
@@ -430,6 +433,18 @@ TEST_F(
 
   EXPECT_EQ(actual_start, expected_start);
   EXPECT_EQ(actual_end, expected_end);
+}
+
+// Regression test for b/263270426.
+TEST_F(CalendarUtilsUnitTest, GetYearOfDay) {
+  SetDefaultLocale("es");
+
+  // Create time: Jan 2023 23:03 GMT. Which is on the week year of 2022 with
+  // Spanish locale.
+  base::Time time;
+  ASSERT_TRUE(base::Time::FromString("1 Jan 2023 23:03 GMT", &time));
+
+  EXPECT_EQ(u"2023", calendar_utils::GetYear(time));
 }
 
 }  // namespace ash

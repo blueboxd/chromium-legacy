@@ -11,7 +11,7 @@
 #include "ash/public/cpp/in_session_auth_token_provider.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
@@ -164,15 +164,10 @@ void AuthenticationDialog::ValidateAuthFactor() {
 
   cryptohome::KeyLabel key_label;
 
-  if (features::IsUseAuthFactorsEnabled()) {
-    key_label = user_context_->GetAuthFactorsData()
-                    .FindOnlinePasswordFactor()
-                    ->ref()
-                    .label();
-  } else {
-    key_label =
-        user_context_->GetAuthFactorsData().FindOnlinePasswordKey()->label;
-  }
+  key_label = user_context_->GetAuthFactorsData()
+                  .FindOnlinePasswordFactor()
+                  ->ref()
+                  .label();
 
   // Create a copy of `user_context_` so that we don't lose it to std::move
   // for future auth attempts

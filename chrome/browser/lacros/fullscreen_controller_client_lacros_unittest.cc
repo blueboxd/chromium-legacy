@@ -4,7 +4,7 @@
 
 #include "chrome/browser/lacros/fullscreen_controller_client_lacros.h"
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -116,10 +116,10 @@ class FullscreenControllerClientLacrosTest : public BrowserWithTestWindowTest {
 
   void SetKeepFullscreenWithoutNotificationAllowList(
       const std::string& pattern) {
-    base::Value list(base::Value::Type::LIST);
-    list.Append(base::Value(pattern));
-    profile_->GetPrefs()->Set(
-        prefs::kKeepFullscreenWithoutNotificationUrlAllowList, list);
+    base::Value::List list;
+    list.Append(pattern);
+    profile_->GetPrefs()->SetList(
+        prefs::kKeepFullscreenWithoutNotificationUrlAllowList, std::move(list));
   }
 
   void RunTest(bool expect_should_exit_fullscreen) {
@@ -236,11 +236,11 @@ TEST_P(FullscreenControllerClientLacrosWebContentsTest,
 TEST_P(FullscreenControllerClientLacrosWebContentsTest,
        KeepFullscreenIfMatchingPref) {
   // Set up the URL exempt list with one matching and one non-matching pattern.
-  base::Value list(base::Value::Type::LIST);
-  list.Append(base::Value(kNonMatchingPattern));
-  list.Append(base::Value(kMatchingPattern));
-  profile_->GetPrefs()->Set(
-      prefs::kKeepFullscreenWithoutNotificationUrlAllowList, list);
+  base::Value::List list;
+  list.Append(kNonMatchingPattern);
+  list.Append(kMatchingPattern);
+  profile_->GetPrefs()->SetList(
+      prefs::kKeepFullscreenWithoutNotificationUrlAllowList, std::move(list));
 
   RunTest(/*expect_should_exit_fullscreen=*/false);
 }

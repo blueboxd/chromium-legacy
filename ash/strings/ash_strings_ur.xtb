@@ -162,6 +162,7 @@
 <translation id="1774796056689732716">کیلنڈر، <ph name="CURRENT_MONTH_YEAR" />، فی الحال <ph name="DATE" /> کو منتخب کیا گیا ہے۔</translation>
 <translation id="1787955149152357925">آف</translation>
 <translation id="1797271123677381264">پاس ورڈ بھول گئے</translation>
+<translation id="1807246157184219062">روشنی</translation>
 <translation id="181103072419391116">سگنل کی مضبوطی <ph name="SIGNAL_STRENGTH" />، آپ کے منتظم کے زیر انتظام ہے</translation>
 <translation id="1812997170047690955">میری اسکرین پر کیا ہے؟</translation>
 <translation id="1816896987747843206">اس سے کیمرے کی اجازت کے ساتھ تمام ایپس اور ویب سائٹس کے لیے کیمرے تک رسائی کی اجازت ملتی ہے</translation>
@@ -238,6 +239,7 @@
 <translation id="2224075387478458881">تحفظ یافتہ مواد کے مرئی ہونے پر اسکرین ریکارڈنگ کی اجازت نہیں ہے</translation>
 <translation id="2227179592712503583">تجویز ہٹائیں</translation>
 <translation id="225680501294068881">آلات کیلئے سکیننگ کی جا رہی ہے…</translation>
+<translation id="225716114209817872">زیادہ سے زیادہ</translation>
 <translation id="2257486738914982088"><ph name="FILENAME" /> ڈاؤن لوڈ کرنے کے دوران کچھ غلط ہو گیا</translation>
 <translation id="2258734398699965611">تجویز کردہ فائلز</translation>
 <translation id="2268130516524549846">بلوٹوتھ غیر فعال کر دیا گیا</translation>
@@ -262,6 +264,7 @@
 <translation id="2354174487190027830"><ph name="NAME" /> کو فعال کیا جا رہا ہے</translation>
 <translation id="2359808026110333948">جاری رکھیں</translation>
 <translation id="2367186422933365202">‏اپنے Chromebook میں سائن ان نہیں کر سکتے</translation>
+<translation id="2367972762794486313">ایپس دکھائیں</translation>
 <translation id="2369165858548251131">چینی میں "ہیلو"</translation>
 <translation id="2390318262976603432">مقامی ترتیبات</translation>
 <translation id="240006516586367791">میڈیا کنٹرولز</translation>
@@ -506,6 +509,7 @@
 <translation id="3713734891607377840">مکمل ہونے پر کھولیں</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />، <ph name="UNAVAILABLE_APPS_TWO" />، اور <ph name="UNAVAILABLE_APPS_COUNT" /> مزید اس آلہ پر موجود نہیں ہے۔</translation>
 <translation id="3735740477244556633">ترتیب دیں بلحاظ</translation>
+<translation id="3738664582935948253">اب آپ اسکرین ریکارڈنگز میں کلکس اور کی بورڈ شارٹ کٹس دکھا سکتے ہیں</translation>
 <translation id="3742055079367172538">اسکرین شاٹ لی گئی</translation>
 <translation id="3765841986579723851">آج ترمیم کیا گیا</translation>
 <translation id="3773700760453577392">منتظم نے <ph name="USER_EMAIL" /> کیلئے متعدد سائن ان کی اجازت نہیں دی ہے۔ جاری رکھنے کیلئے تمام صارفین کا سائن آؤٹ کرنا لازمی ہے۔</translation>
@@ -525,6 +529,7 @@
 <translation id="385051799172605136">پیچھے</translation>
 <translation id="385300504083504382">شروعات</translation>
 <translation id="3861651314799684201">فُل اسکرین ریکارڈ کرنے کے لیے اینٹر دبائیں</translation>
+<translation id="3871092408932389764">سب سے نیچے</translation>
 <translation id="3886872229787704059">آج کھولا گیا</translation>
 <translation id="3891340733213178823">‏سائن آؤٹ کرنے کیلئے Ctrl+Shift+Q کو دو بار دبائیں۔</translation>
 <translation id="3893630138897523026">‏ChromeVox (صوتی تاثرات)</translation>
@@ -1011,6 +1016,7 @@
 <translation id="6537924328260219877">سگنل کی مضبوطی <ph name="SIGNAL_STRENGTH" />، فون کی بیٹری <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999">اسکین ہونے والی <ph name="FILENAME" /> کو ڈاؤن لوڈ کریں</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> پر کاسٹ کیا جا رہا ہے</translation>
+<translation id="6548693220024099658">پس منظر کا دھندلا پن</translation>
 <translation id="655633303491376835">نئی انسٹال کردہ <ph name="APP_NAME" /></translation>
 <translation id="6559976592393364813">منتظم سے پوچھیں</translation>
 <translation id="6565007273808762236">‏eSIM کنکشن دستیاب نہیں ہے</translation>
@@ -1416,6 +1422,7 @@
 <translation id="878215960996152260"><ph name="APP_NAME" />، انسٹال کردہ ایپ، مسدود ہے</translation>
 <translation id="8785070478575117577"><ph name="NETWORK_NAME" /> سے منسلک کریں</translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />۔ <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">بہت زیادہ</translation>
 <translation id="8806053966018712535">فولڈر <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">"مدد"</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

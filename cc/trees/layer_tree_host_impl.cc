@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/adapters.h"
@@ -25,6 +24,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
@@ -34,6 +34,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
@@ -199,30 +200,6 @@ void PopulateMetadataContentColorUsage(
     metadata->content_color_usage =
         std::max(metadata->content_color_usage, layer->GetContentColorUsage());
   }
-}
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class SourceIdConsistency : int {
-  kConsistent = 0,
-  kContainsInvalid = 1,
-  kNonUnique = 2,
-  kInvalidAndNonUnique = 3,
-  kMaxValue = kInvalidAndNonUnique,
-};
-
-void RecordSourceIdConsistency(bool all_valid, bool all_unique) {
-  SourceIdConsistency consistency =
-      all_unique ? (all_valid ? SourceIdConsistency::kConsistent
-                              : SourceIdConsistency::kContainsInvalid)
-                 : (all_valid ? SourceIdConsistency::kNonUnique
-                              : SourceIdConsistency::kInvalidAndNonUnique);
-
-  // TODO(crbug.com/1062764): we're sometimes seeing unexpected values for the
-  // ukm::SourceId. We'll use this histogram to track how often it happens so
-  // we can properly (de-)prioritize a fix.
-  UMA_HISTOGRAM_ENUMERATION("Event.LatencyInfo.Debug.SourceIdConsistency",
-                            consistency);
 }
 
 // Dump verbose log with
@@ -1109,6 +1086,11 @@ void LayerTreeHostImpl::StartPageScaleAnimation(const gfx::Point& target_offset,
   gfx::SizeF scrollable_size = active_tree_->ScrollableSize();
   gfx::SizeF viewport_size(
       active_tree_->InnerViewportScrollNode()->container_bounds);
+
+  if (viewport_size.IsEmpty()) {
+    // Avoid divide by zero. Besides nothing should see the animation anyway.
+    return;
+  }
 
   // TODO(miletus) : Pass in ScrollOffset.
   page_scale_animation_ = PageScaleAnimation::Create(
@@ -2752,17 +2734,10 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
 
     ApplyFirstScrollTracking(metadata.latency_info.front(),
                              metadata.frame_token);
-    ukm::SourceId exemplar = metadata.latency_info.front().ukm_source_id();
-    bool all_valid = true;
-    bool all_unique = true;
     for (auto& latency : metadata.latency_info) {
       latency.AddLatencyNumberWithTimestamp(
           ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, draw_time);
-      all_valid &= latency.ukm_source_id() != ukm::kInvalidSourceId;
-      all_unique &= latency.ukm_source_id() == exemplar;
     }
-
-    RecordSourceIdConsistency(all_valid, all_unique);
   }
   ui::LatencyInfo::TraceIntermediateFlowEvents(
       metadata.latency_info,
@@ -3515,7 +3490,17 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
     auto now = base::TimeTicks::Now();
     total_frame_counter_.OnHide(now);
     dropped_frame_counter_.ResetPendingFrames(now);
+
+    // When page is invisible, throw away corresponding EventsMetrics since
+    // these metrics will be incorrect due to duration of page being invisible.
+    active_tree()->TakeEventsMetrics();
+    events_metrics_manager_.TakeSavedEventsMetrics();
+    if (pending_tree()) {
+      pending_tree()->TakeEventsMetrics();
+    }
   }
+  // Notify reporting controller of transition between visible and invisible
+  compositor_frame_reporting_controller_->SetVisible(visible_);
   DidVisibilityChange(this, visible_);
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
 

@@ -7,8 +7,8 @@
 #include <tuple>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/guid.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/plugins/plugin_utils.h"
@@ -113,6 +113,14 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
 
   if (extension_id.empty())
     return;
+
+  // TODO(1205920): Support prerendering of MimeHandlerViews.
+  if (web_contents->IsPrerenderedFrame(frame_tree_node_id_)) {
+    delegate_->CancelWithError(
+        net::Error::ERR_BLOCKED_BY_CLIENT,
+        "MimeHandler prerendering support not implemented.");
+    return;
+  }
 
   // Chrome's PDF Extension does not work properly in the face of a restrictive
   // Content-Security-Policy, and does not currently respect the policy anyway.

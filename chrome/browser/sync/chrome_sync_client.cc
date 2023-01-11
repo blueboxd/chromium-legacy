@@ -8,9 +8,9 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/path_service.h"
 #include "base/syslog_logging.h"
 #include "build/build_config.h"
@@ -147,8 +147,6 @@
 #include "chrome/browser/ash/printing/printers_sync_bridge.h"
 #include "chrome/browser/ash/printing/synced_printers_manager.h"
 #include "chrome/browser/ash/printing/synced_printers_manager_factory.h"
-#include "chrome/browser/ash/sync/app_settings_model_type_controller.h"
-#include "chrome/browser/ash/sync/apps_model_type_controller.h"
 #include "chrome/browser/ash/sync/os_syncable_service_model_type_controller.h"
 #include "chrome/browser/sync/desk_sync_service_factory.h"
 #include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
@@ -219,6 +217,17 @@ bool IsAppSyncEnabled(Profile* profile) {
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   return true;
+}
+
+bool ShouldSyncAppsTypesInTransportMode() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // When apps sync controlled by Ash Sync settings, allow running apps-related
+  // types (WEB_APPS, APPS and APP_SETTINGS) in transport-only mode using the
+  // same `delegate`.
+  return base::FeatureList::IsEnabled(syncer::kSyncChromeOSAppsToggleSharing);
+#else
+  return false;
+#endif
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -416,14 +425,18 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
     // Extension sync is enabled by default.
     controllers.push_back(std::make_unique<ExtensionModelTypeController>(
         syncer::EXTENSIONS, model_type_store_factory,
-        GetSyncableServiceForType(syncer::EXTENSIONS), dump_stack, profile_));
+        GetSyncableServiceForType(syncer::EXTENSIONS), dump_stack,
+        ExtensionModelTypeController::DelegateMode::kFullSyncModeOnly,
+        profile_));
 
     // Extension setting sync is enabled by default.
     controllers.push_back(std::make_unique<ExtensionSettingModelTypeController>(
         syncer::EXTENSION_SETTINGS, model_type_store_factory,
         extensions::settings_sync_util::GetSyncableServiceProvider(
             profile_, syncer::EXTENSION_SETTINGS),
-        dump_stack, profile_));
+        dump_stack,
+        ExtensionSettingModelTypeController::DelegateMode::kFullSyncModeOnly,
+        profile_));
 
     if (IsAppSyncEnabled(profile_)) {
       controllers.push_back(CreateAppsModelTypeController());
@@ -441,7 +454,9 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
     // Theme sync is enabled by default.
     controllers.push_back(std::make_unique<ExtensionModelTypeController>(
         syncer::THEMES, model_type_store_factory,
-        GetSyncableServiceForType(syncer::THEMES), dump_stack, profile_));
+        GetSyncableServiceForType(syncer::THEMES), dump_stack,
+        ExtensionModelTypeController::DelegateMode::kFullSyncModeOnly,
+        profile_));
 
     // Search Engine sync is enabled by default.
     controllers.push_back(
@@ -718,33 +733,32 @@ void ChromeSyncClient::OnLocalSyncTransportDataCleared() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 std::unique_ptr<syncer::ModelTypeController>
 ChromeSyncClient::CreateAppsModelTypeController() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  return AppsModelTypeController::Create(
-      GetModelTypeStoreService()->GetStoreFactory(),
-      GetSyncableServiceForType(syncer::APPS), GetDumpStackClosure(), profile_);
-#else
+  auto delegate_mode =
+      ExtensionModelTypeController::DelegateMode::kFullSyncModeOnly;
+  if (ShouldSyncAppsTypesInTransportMode()) {
+    delegate_mode = ExtensionModelTypeController::DelegateMode::
+        kTransportModeWithSingleModel;
+  }
   return std::make_unique<ExtensionModelTypeController>(
       syncer::APPS, GetModelTypeStoreService()->GetStoreFactory(),
-      GetSyncableServiceForType(syncer::APPS), GetDumpStackClosure(), profile_);
-#endif
+      GetSyncableServiceForType(syncer::APPS), GetDumpStackClosure(),
+      delegate_mode, profile_);
 }
 
 std::unique_ptr<syncer::ModelTypeController>
 ChromeSyncClient::CreateAppSettingsModelTypeController(
     syncer::SyncService* sync_service) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  return std::make_unique<AppSettingsModelTypeController>(
-      GetModelTypeStoreService()->GetStoreFactory(),
-      extensions::settings_sync_util::GetSyncableServiceProvider(
-          profile_, syncer::APP_SETTINGS),
-      GetDumpStackClosure(), profile_, sync_service);
-#else
+  auto delegate_mode =
+      ExtensionSettingModelTypeController::DelegateMode::kFullSyncModeOnly;
+  if (ShouldSyncAppsTypesInTransportMode()) {
+    delegate_mode = ExtensionSettingModelTypeController::DelegateMode::
+        kTransportModeWithSingleModel;
+  }
   return std::make_unique<ExtensionSettingModelTypeController>(
       syncer::APP_SETTINGS, GetModelTypeStoreService()->GetStoreFactory(),
       extensions::settings_sync_util::GetSyncableServiceProvider(
           profile_, syncer::APP_SETTINGS),
-      GetDumpStackClosure(), profile_);
-#endif
+      GetDumpStackClosure(), delegate_mode, profile_);
 }
 
 std::unique_ptr<syncer::ModelTypeController>
@@ -752,25 +766,19 @@ ChromeSyncClient::CreateWebAppsModelTypeController() {
   syncer::ModelTypeControllerDelegate* delegate =
       GetControllerDelegateForModelType(syncer::WEB_APPS).get();
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (base::FeatureList::IsEnabled(syncer::kSyncChromeOSAppsToggleSharing)) {
-    // When apps sync controlled by Ash Sync settings, allow running WEB_APPS in
-    // transport-only mode using the same `delegate`.
-    return std::make_unique<syncer::ModelTypeController>(
-        syncer::WEB_APPS,
-        /*delegate_for_full_sync_mode=*/
+  std::unique_ptr<syncer::ModelTypeControllerDelegate>
+      delegate_for_transport_mode = nullptr;
+  if (ShouldSyncAppsTypesInTransportMode()) {
+    delegate_for_transport_mode =
         std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
-            delegate),
-        /*delegate_for_transport_mode=*/
-        std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
-            delegate));
+            delegate);
   }
-#endif
-
   return std::make_unique<syncer::ModelTypeController>(
       syncer::WEB_APPS,
-      std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
-          delegate));
+      /*delegate_for_full_sync_mode=*/
+      std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(delegate),
+      /*delegate_for_transport_mode=*/
+      std::move(delegate_for_transport_mode));
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 

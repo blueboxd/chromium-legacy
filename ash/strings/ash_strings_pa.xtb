@@ -162,6 +162,7 @@
 <translation id="1774796056689732716"><ph name="CURRENT_MONTH_YEAR" /> ਦੇ ਕੈਲੰਡਰ ਵਿੱਚ ਫ਼ਿਲਹਾਲ <ph name="DATE" /> ਨੂੰ ਚੁਣਿਆ ਗਿਆ ਹੈ।</translation>
 <translation id="1787955149152357925">ਬੰਦ ਹੈ</translation>
 <translation id="1797271123677381264">ਪਾਸਵਰਡ ਭੁੱਲ ਗਏ</translation>
+<translation id="1807246157184219062">ਹਲਕਾ</translation>
 <translation id="181103072419391116">ਸਿਗਨਲ ਦੀ ਤੀਬਰਤਾ <ph name="SIGNAL_STRENGTH" />, ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਪ੍ਰਬੰਧਿਤ ਕੀਤਾ ਜਾਂਦਾ ਹੈ</translation>
 <translation id="1812997170047690955">ਮੇਰੀ ਸਕ੍ਰੀਨ 'ਤੇ ਕਿਹੜੀ ਸਮੱਗਰੀ ਮੌਜੂਦ ਹੈ?</translation>
 <translation id="1816896987747843206">ਇਸ ਨਾਲ ਉਨ੍ਹਾਂ ਸਾਰੀਆਂ ਐਪਾਂ ਅਤੇ ਵੈੱਬਸਾਈਟਾਂ ਨੂੰ ਕੈਮਰੇ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦਿੱਤੀ ਜਾਂਦੀ ਹੈ, ਜਿਨ੍ਹਾਂ ਕੋਲ ਕੈਮਰਾ ਇਜਾਜ਼ਤ ਹੈ</translation>
@@ -238,6 +239,7 @@
 <translation id="2224075387478458881">ਸੁਰੱਖਿਅਤ ਸਮੱਗਰੀ ਦੇ ਦਿਸਣਯੋਗ ਹੋਣ 'ਤੇ ਸਕ੍ਰੀਨ ਰਿਕਾਰਡਿੰਗ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ</translation>
 <translation id="2227179592712503583">ਸੁਝਾਅ ਹਟਾਓ</translation>
 <translation id="225680501294068881">ਡਿਵਾਈਸਾਂ ਲਈ ਸਕੈਨ ਕਰ ਰਿਹਾ ਹੈ...</translation>
+<translation id="225716114209817872">ਅਧਿਕਤਮ</translation>
 <translation id="2257486738914982088"><ph name="FILENAME" /> ਡਾਊਨਲੋਡ ਕਰਨ ਵੇਲੇ ਕੋਈ ਗੜਬੜ ਹੋ ਗਈ</translation>
 <translation id="2258734398699965611">ਸੁਝਾਈਆਂ ਗਈਆਂ ਫ਼ਾਈਲਾਂ</translation>
 <translation id="2268130516524549846">ਬਲੂਟੁੱਥ ਬੰਦ ਹੈ</translation>
@@ -262,6 +264,7 @@
 <translation id="2354174487190027830"><ph name="NAME" /> ਨੂੰ ਐਕਟੀਵੇਟ ਕਰ ਰਿਹਾ ਹੈ</translation>
 <translation id="2359808026110333948">ਜਾਰੀ ਰੱਖੋ</translation>
 <translation id="2367186422933365202">ਤੁਹਾਡੀ Chromebook ਵਿੱਚ ਸਾਈਨ-ਇਨ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ</translation>
+<translation id="2367972762794486313">ਐਪਸ ਦਿਖਾਓ</translation>
 <translation id="2369165858548251131">ਚੀਨੀ ਭਾਸ਼ਾ ਵਿੱਚ "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ"</translation>
 <translation id="2390318262976603432">ਲੋਕੇਲ ਸੈਟਿੰਗਾਂ</translation>
 <translation id="240006516586367791">ਮੀਡੀਆ ਕੰਟਰੋਲ</translation>
@@ -506,6 +509,7 @@
 <translation id="3713734891607377840">ਪੂਰਾ ਹੋਣ 'ਤੇ ਖੁੱਲ੍ਹੇ</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> ਅਤੇ <ph name="UNAVAILABLE_APPS_COUNT" /> ਹੋਰ ਐਪਾਂ ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਉਪਲਬਧ ਨਹੀਂ ਹਨ।</translation>
 <translation id="3735740477244556633">ਇਸ ਮੁਤਾਬਕ ਕ੍ਰਮ-ਬੱਧ ਕਰੋ</translation>
+<translation id="3738664582935948253">ਤੁਸੀਂ ਹੁਣ ਸਕ੍ਰੀਨ ਰਿਕਾਰਡਿੰਗਾਂ ਵਿੱਚ ਕਲਿੱਕਾਂ ਅਤੇ ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟ ਦਿਖਾ ਸਕਦੇ ਹੋ</translation>
 <translation id="3742055079367172538">ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਿਆ ਗਿਆ</translation>
 <translation id="3765841986579723851">ਅੱਜ ਸੰਪਾਦਨ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="3773700760453577392">ਕਿਸੇ ਪ੍ਰਸ਼ਾਸਕ ਨੇ <ph name="USER_EMAIL" /> ਲਈ ਬਹੁ-ਗਿਣਤੀ ਸਾਈਨ-ਇਨ ਨੂੰ ਅਸਵੀਕਾਰ ਕੀਤਾ ਹੈ। ਜਾਰੀ ਰੱਖਣ ਲਈ ਸਾਰੇ ਵਰਤੋਂਕਾਰਾਂ ਦਾ ਸਾਈਨ-ਆਊਟ ਹੋਣਾ ਲਾਜ਼ਮੀ ਹੈ।</translation>
@@ -525,6 +529,7 @@
 <translation id="385051799172605136">ਪਿੱਛੇ</translation>
 <translation id="385300504083504382">ਸ਼ੁਰੂਆਤ</translation>
 <translation id="3861651314799684201">ਪੂਰੀ ਸਕ੍ਰੀਨ ਰਿਕਾਰਡ ਕਰਨ ਲਈ Enter ਦਬਾਓ</translation>
+<translation id="3871092408932389764">ਸਭ ਤੋਂ ਘੱਟ</translation>
 <translation id="3886872229787704059">ਅੱਜ ਖੋਲ੍ਹੀ ਗਈ</translation>
 <translation id="3891340733213178823">ਸਾਈਨ-ਆਊਟ ਕਰਨ ਲਈ ਦੋ ਵਾਰ Ctrl+Shift+Q ਦਬਾਓ।</translation>
 <translation id="3893630138897523026">ChromeVox (ਬੋਲੀ ਪ੍ਰਤੀਕਰਮ)</translation>
@@ -1012,6 +1017,7 @@
 <translation id="6537924328260219877">ਸਿਗਨਲ ਦੀ ਤੀਬਰਤਾ <ph name="SIGNAL_STRENGTH" />, ਫ਼ੋਨ ਦੀ ਬੈਟਰੀ <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999">ਡਾਊਨਲੋਡ ਹੋ ਰਹੀ <ph name="FILENAME" /> ਫ਼ਾਈਲ ਨੂੰ ਸਕੈਨ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> 'ਤੇ ਕਾਸਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ</translation>
+<translation id="6548693220024099658">ਬੈਕਗ੍ਰਾਊਂਡ ਬਲੱਰ</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 ਨਵੀਂ ਸਥਾਪਤ ਕੀਤੀ ਗਈ</translation>
 <translation id="6559976592393364813">ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਪੁੱਛੋ</translation>
@@ -1418,6 +1424,7 @@
 <translation id="878215960996152260"><ph name="APP_NAME" />, ਸਥਾਪਤ ਕੀਤੀ ਗਈ ਐਪ, ਬਲਾਕ ਕੀਤੀ ਗਈ</translation>
 <translation id="8785070478575117577"><ph name="NETWORK_NAME" /> ਨਾਲ ਕਨੈਕਟ ਕਰੋ</translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />। <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">ਭਾਰਾ</translation>
 <translation id="8806053966018712535">ਫੋਲਡਰ <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">"ਮਦਦ"</translation>
 <translation id="8814190375133053267">ਵਾਈ-ਫਾਈ</translation>

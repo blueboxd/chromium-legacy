@@ -99,7 +99,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Launch.HomeScreen" enum="LaunchFromHomeScreen"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>dominickn@chromium.org</owner>
   <owner>hartmanng@chromium.org</owner>
   <owner>peconn@chromium.org</owner>
@@ -109,7 +109,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Launch.HomeScreenSource" enum="LaunchFromHomeScreenSource"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>dominickn@chromium.org</owner>
   <owner>hartmanng@chromium.org</owner>
   <owner>peconn@chromium.org</owner>
@@ -1056,6 +1056,45 @@ chromium-metrics-reviews@google.com.
     Records how many preinstalled web app installations uninstalled and replaced
     an old default app (web app or Chrome app). This corresponds to the
     &quot;uninstall_and_replace&quot; field in preinstalled web app configs.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.ProtocolHandlers.Registration.Result"
+    enum="BooleanSuccess" expires_after="2024-09-10">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the result of registering protocol handlers for PWAs. This is
+    triggered during OS integration synchronization whenever new protocol
+    handlers need to be registered for a recently installed app, when an user
+    allows an app as a protocol handler from chrome://settings/handlers or
+    during a manifest update process when the app previously did not have any
+    protocol handlers defined for it.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.ProtocolHandlers.Unregistration.Result"
+    enum="BooleanSuccess" expires_after="2024-09-10">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the result of unregistering protocol handlers for PWAs. This is
+    triggered during OS integration synchronization whenever an app is being
+    uninstalled, when a manifest update removes the approved protocol handlers
+    from an app or when an user has disallowed the app from its protocol
+    handlers from chrome://settings/handlers.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.ProtocolHandlers.Update.Result" enum="BooleanSuccess"
+    expires_after="2024-09-10">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the result of updating protocol handlers for PWAs. This is triggered
+    during OS integration synchronization whenever the protocol handlers for an
+    existing app needs to be updated as part of the manifest update process or
+    user approval changes from chrome://settings/handlers.
   </summary>
 </histogram>
 

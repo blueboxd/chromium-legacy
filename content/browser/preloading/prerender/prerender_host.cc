@@ -97,20 +97,6 @@ bool AreHttpRequestHeadersCompatible(
   return false;
 }
 
-static_assert(
-    static_cast<int>(PrerenderFinalStatus::kMaxValue) +
-        static_cast<int>(
-            PreloadingFailureReason::kPreloadingFailureReasonCommonEnd) <
-    static_cast<int>(
-        PreloadingFailureReason::kPreloadingFailureReasonContentEnd));
-
-PreloadingFailureReason ToPreloadingFailureReason(PrerenderFinalStatus status) {
-  return static_cast<PreloadingFailureReason>(
-      static_cast<int>(status) +
-      static_cast<int>(
-          PreloadingFailureReason::kPreloadingFailureReasonCommonEnd));
-}
-
 }  // namespace
 
 // static
@@ -188,8 +174,8 @@ PrerenderHost::PrerenderHost(const PrerenderAttributes& attributes,
         PreloadingTriggeringOutcome::kTriggeredButPending);
   }
 
-  scoped_refptr<SiteInstance> site_instance =
-      SiteInstance::Create(web_contents.GetBrowserContext());
+  scoped_refptr<SiteInstanceImpl> site_instance =
+      SiteInstanceImpl::Create(web_contents.GetBrowserContext());
   frame_tree_->Init(site_instance.get(),
                     /*renderer_initiated_creation=*/false,
                     /*main_frame_name=*/"", /*opener_for_origin=*/nullptr,
@@ -309,8 +295,11 @@ bool PrerenderHost::StartPrerendering() {
   // Just use the referrer from attributes, as NoStatePrefetch does.
   load_url_params.referrer = attributes_.referrer;
 
-  // TODO(https://crbug.com/1189034): Should we set `override_user_agent` here?
-  // Things seem to work without it.
+  // TODO(https://crbug.com/1406149, https://crbug.com/1378921): Set
+  // `override_user_agent` for Android. This field is determined on the Java
+  // side based on the URL and we should mimic Java code and set it to the
+  // correct value. After fixing this, we can remove the check for UA headers
+  // upon activation.
 
   // TODO(https://crbug.com/1132746): Set up other fields of `load_url_params`
   // as well, and add tests for them.

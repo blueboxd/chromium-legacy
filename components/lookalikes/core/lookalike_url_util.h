@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
+#include "components/lookalikes/core/safety_tips.pb.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/reputation/core/safety_tips.pb.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/version_info/channel.h"
 #include "url/gurl.h"
@@ -216,10 +216,6 @@ bool IsTopDomain(const DomainInfo& domain_info);
 // which doesn't have a notion of private registries.
 std::string GetETLDPlusOne(const std::string& hostname);
 
-// Returns true if a lookalike interstitial should be shown for the given
-// match type.
-bool ShouldBlockLookalikeUrlNavigation(LookalikeUrlMatchType match_type);
-
 // Returns true if a domain is visually similar to the hostname of |url|. The
 // matching domain can be a top domain or an engaged site. Similarity
 // check is made using both visual skeleton and edit distance comparison.  If
@@ -306,5 +302,32 @@ ComboSquattingType GetComboSquattingType(
 // Returns true if `etld_plus_one` has a TLD that's considered safe for
 // lookalike checks, such as government sites.
 bool IsSafeTLD(const std::string& hostname);
+
+// The action to take for a given lookalike match.
+enum class LookalikeActionType {
+  // No action.
+  kNone,
+  // Only record metrics, don't show any UI warnings.
+  kRecordMetrics,
+  // Show a safety tip.
+  kShowSafetyTip,
+  // Show an interstitial.
+  kShowInterstitial,
+};
+
+// Returns the action to take for the given `etld_plus_one` and lookalike
+// `match_type`. Uses `config` to check whether the heuristic UI is enabled
+// via gradual rollout.
+LookalikeActionType GetActionForMatchType(
+    const reputation::SafetyTipsConfig* config,
+    version_info::Channel channel,
+    const std::string& etld_plus_one,
+    LookalikeUrlMatchType match_type);
+
+// Returns the suggested URL for the given parameters. Returns an https URL for
+// top domain matches because it's more likely for top sites to support https.
+GURL GetSuggestedURL(LookalikeUrlMatchType match_type,
+                     const GURL& navigated_url,
+                     const std::string& matched_hostname);
 
 #endif  // COMPONENTS_LOOKALIKES_CORE_LOOKALIKE_URL_UTIL_H_

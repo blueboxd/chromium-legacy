@@ -12,17 +12,17 @@
 #include <unordered_set>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/cxx17_backports.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/synchronization/condition_variable.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/thread_health_checker.h"

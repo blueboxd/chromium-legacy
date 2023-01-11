@@ -15,7 +15,6 @@
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/append_quads_data.h"
@@ -2804,7 +2803,7 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimation) {
   // at a source scale that the rasterized layer will not be larger than the
   // viewport.
   contents_scale = 0.1f;
-  maximum_animation_scale = 11.f;
+  maximum_animation_scale = 12.f;
 
   SetContentsAndAnimationScalesOnBothLayers(contents_scale, device_scale,
                                             page_scale, maximum_animation_scale,
@@ -2899,7 +2898,7 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimationWideLayer) {
   // at a source scale that the rasterized visible rect will not be larger than
   // the viewport.
   contents_scale = 0.1f;
-  maximum_animation_scale = 11.f;
+  maximum_animation_scale = 12.f;
 
   SetContentsAndAnimationScalesOnBothLayers(contents_scale, device_scale,
                                             page_scale, maximum_animation_scale,

@@ -29,7 +29,7 @@
 #import "ios/chrome/browser/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
-#import "ios/chrome/browser/find_in_page/find_tab_helper.h"
+#import "ios/chrome/browser/find_in_page/java_script_find_tab_helper.h"
 #import "ios/chrome/browser/follow/follow_browser_agent.h"
 #import "ios/chrome/browser/follow/follow_menu_updater.h"
 #import "ios/chrome/browser/follow/follow_tab_helper.h"
@@ -45,7 +45,6 @@
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
-#import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/lens_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
@@ -54,7 +53,6 @@
 #import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/lens/lens_entrypoint.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
-#import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_navigation_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_text_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
@@ -64,6 +62,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notification_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_utils.h"
+#import "ios/chrome/browser/ui/sharing/activity_services/canonical_url_retriever.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
@@ -882,7 +881,7 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 - (BOOL)isFindInPageEnabled {
   if (!self.webState)
     return NO;
-  auto* helper = FindTabHelper::FromWebState(self.webState);
+  auto* helper = JavaScriptFindTabHelper::FromWebState(self.webState);
   return (helper && helper->CurrentPageSupportsFindInPage() &&
           !helper->IsFindUIActive());
 }

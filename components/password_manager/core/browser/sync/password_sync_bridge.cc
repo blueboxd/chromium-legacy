@@ -8,11 +8,11 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
@@ -862,6 +862,8 @@ void PasswordSyncBridge::GetAllDataForDebugging(DataCallback callback) {
 
   auto batch = std::make_unique<syncer::MutableDataBatch>();
   for (const auto& [primary_key, specifics] : key_to_specifics_map) {
+    // TODO(crbug.com/1406388): consider whether the VISIT_SECRET macro in
+    // proto_visitors.h could replace this.
     specifics->set_password_value("<redacted>");
     const std::string storage_key = base::NumberToString(primary_key.value());
     for (sync_pb::PasswordSpecificsData_Notes_Note& note :

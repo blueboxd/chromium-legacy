@@ -13,9 +13,9 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/public/ash_interfaces.h"
 #include "ash/public/cpp/ash_prefs.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -842,8 +842,6 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     const bool enabled = mouse_reverse_scroll_.GetValue();
     if (user_is_active)
       mouse_settings.SetReverseScroll(enabled);
-    ReportBooleanPrefApplication(reason, "Mouse.ReverseScroll.Changed",
-                                 "Mouse.ReverseScroll.Started", enabled);
   }
 
   if (reason != REASON_PREF_CHANGED ||
@@ -943,8 +941,6 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     const bool enabled = mouse_acceleration_.GetValue();
     if (user_is_active)
       mouse_settings.SetAcceleration(enabled);
-    ReportBooleanPrefApplication(reason, "Mouse.Acceleration.Changed",
-                                 "Mouse.Acceleration.Started", enabled);
   }
   if (reason != REASON_PREF_CHANGED ||
       pref_name == ::prefs::kMouseScrollAcceleration) {
@@ -965,8 +961,6 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     const bool enabled = touchpad_acceleration_.GetValue();
     if (user_is_active)
       touchpad_settings.SetAcceleration(enabled);
-    ReportBooleanPrefApplication(reason, "Touchpad.Acceleration.Changed",
-                                 "Touchpad.Acceleration.Started", enabled);
   }
   if (reason != REASON_PREF_CHANGED ||
       pref_name == ::prefs::kTouchpadScrollAcceleration) {

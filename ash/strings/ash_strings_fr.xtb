@@ -28,6 +28,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="1104621072296271835">Vos appareils fonctionnent encore mieux ensemble</translation>
 <translation id="1111021433905331574">Vous pouvez modifier la couleur du rétroéclairage de votre clavier dans Paramètres &gt; <ph name="APP_TITLE" /></translation>
 <translation id="112308213915226829">Masquer automatiquement l'étagère</translation>
+<translation id="1135788167815124787">Éclairage portrait</translation>
 <translation id="1142002900084379065">Photos récentes</translation>
 <translation id="1148499908455722006">Ouvrir la boîte de dialogue d'infos pour <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Agenda</translation>
@@ -162,6 +163,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="1774796056689732716">Agenda, <ph name="CURRENT_MONTH_YEAR" />, le <ph name="DATE" /> est actuellement sélectionné.</translation>
 <translation id="1787955149152357925">Désactivé</translation>
 <translation id="1797271123677381264">Mot de passe oublié</translation>
+<translation id="1807246157184219062">Clair</translation>
 <translation id="181103072419391116">Force du signal : <ph name="SIGNAL_STRENGTH" />, géré par votre administrateur</translation>
 <translation id="1812997170047690955">Éléments affichés à l'écran</translation>
 <translation id="1816896987747843206">L'accès à l'appareil photo est accordé à l'ensemble des sites Web et applis ayant l'autorisation d'y accéder</translation>
@@ -238,6 +240,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="2224075387478458881">L'enregistrement d'écran n'est pas autorisé lorsqu'un contenu protégé est affiché</translation>
 <translation id="2227179592712503583">Supprimer la suggestion</translation>
 <translation id="225680501294068881">Recherche d'appareils…</translation>
+<translation id="225716114209817872">Maximal</translation>
 <translation id="2257486738914982088">Une erreur s'est produite lors du téléchargement de <ph name="FILENAME" /></translation>
 <translation id="2258734398699965611">Fichiers suggérés</translation>
 <translation id="2268130516524549846">Bluetooth désactivé</translation>
@@ -262,6 +265,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="2354174487190027830">Activation du réseau <ph name="NAME" /> en cours…</translation>
 <translation id="2359808026110333948">Continuer</translation>
 <translation id="2367186422933365202">Impossible de se connecter au Chromebook</translation>
+<translation id="2367972762794486313">Afficher les applications</translation>
 <translation id="2369165858548251131">"Bonjour" en chinois</translation>
 <translation id="2390318262976603432">Options des paramètres régionaux</translation>
 <translation id="240006516586367791">Commandes multimédias</translation>
@@ -505,6 +509,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="3713734891607377840">Ouvrir une fois terminé</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> et <ph name="UNAVAILABLE_APPS_COUNT" /> autres applis ne sont pas sur cet appareil.</translation>
 <translation id="3735740477244556633">Trier par</translation>
+<translation id="3738664582935948253">Vous pouvez désormais afficher les clics et les raccourcis clavier dans les enregistrements d'écran</translation>
 <translation id="3742055079367172538">Capture d'écran réalisée</translation>
 <translation id="3765841986579723851">Modifié aujourd'hui</translation>
 <translation id="3773700760453577392">Un administrateur a désactivé la connexion multicompte pour <ph name="USER_EMAIL" />. Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
@@ -524,6 +529,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="385300504083504382">Début</translation>
 <translation id="3861651314799684201">Appuyez sur Entrée pour enregistrer tout l'écran</translation>
+<translation id="3871092408932389764">Le plus grave</translation>
 <translation id="3886872229787704059">Ouvert aujourd'hui</translation>
 <translation id="3891340733213178823">Appuyez deux fois sur Ctrl + Maj + Q pour vous déconnecter.</translation>
 <translation id="3893630138897523026">ChromeVox (commentaires audio)</translation>
@@ -1010,6 +1016,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="6537924328260219877">Force du signal : <ph name="SIGNAL_STRENGTH" />, batterie du téléphone à <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999">Téléchargement en cours d'analyse : <ph name="FILENAME" /></translation>
 <translation id="6542521951477560771">Diffusion vers <ph name="RECEIVER_NAME" />…</translation>
+<translation id="6548693220024099658">Flou d'arrière-plan</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Nouvelle installation</translation>
 <translation id="6559976592393364813">Se renseigner auprès de l'administrateur</translation>
@@ -1415,6 +1422,7 @@ Nouvelle installation</translation>
 <translation id="878215960996152260"><ph name="APP_NAME" />, appli installée, bloquée</translation>
 <translation id="8785070478575117577">Se connecter à <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">Intense</translation>
 <translation id="8806053966018712535">Dossier <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">"Aide"</translation>
 <translation id="8814190375133053267">Wi-Fi </translation>

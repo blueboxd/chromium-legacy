@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -83,7 +83,8 @@ class ChromeWebAuthenticationDelegate
   absl::optional<bool> IsUserVerifyingPlatformAuthenticatorAvailableOverride(
       content::RenderFrameHost* render_frame_host) override;
   content::WebAuthenticationRequestProxy* MaybeGetRequestProxy(
-      content::BrowserContext* browser_context) override;
+      content::BrowserContext* browser_context,
+      const url::Origin& caller_origin) override;
 #endif
 #if BUILDFLAG(IS_WIN)
   void OperationSucceeded(content::BrowserContext* browser_context,

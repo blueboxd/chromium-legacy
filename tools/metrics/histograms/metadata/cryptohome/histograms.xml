@@ -818,7 +818,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TimeToInitPkcs11" units="ms"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>apronin@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -915,16 +915,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cryptohome.UserSubdirHasCorrectGroup" enum="BooleanCorrect"
-    expires_after="2023-01-15">
-  <owner>austinct@chromium.org</owner>
-  <owner>src/ui/file_manager/OWNERS</owner>
-  <summary>
-    Records whether the user's profile directory (/home/chronos/u-{hash}) is
-    owned by group chronos-access. This is recorded once per log-in.
-  </summary>
-</histogram>
-
 <histogram name="Cryptohome.UssExperiment.FetchUssExperimentConfigRetries"
     units="retries" expires_after="2023-07-02">
   <owner>hcyang@google.com</owner>
@@ -965,7 +955,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.VaultKeysetMetric.{VaultKeysetMetric}"
-    units="count" expires_after="2023-02-01">
+    units="count" expires_after="2023-09-01">
   <owner>thomascedeno@google.com</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>

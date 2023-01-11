@@ -12,6 +12,7 @@
 #include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
 #include "base/strings/string_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/arc/input_overlay/db/data_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/db/proto/app_data.pb.h"
@@ -66,10 +67,6 @@ class ArcInputOverlayManager : public KeyedService,
   void OnWindowAddedToRootWindow(aura::Window* window) override;
   void OnWindowRemovingFromRootWindow(aura::Window* window,
                                       aura::Window* new_root) override;
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds,
-                             ui::PropertyChangeReason reason) override;
 
   // KeyedService:
   void Shutdown() override;

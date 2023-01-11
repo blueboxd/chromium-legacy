@@ -15,14 +15,15 @@
 #include <utility>
 
 #include "base/base_switches.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
@@ -51,6 +52,7 @@
 #import "chrome/browser/mac/dock.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/os_integration/icns_encoder.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_test_override.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/common/channel_info.h"
@@ -135,7 +137,7 @@
 // callback that returns a NSRunningApplication, rather than separate launch and
 // termination callbacks.
 void RunAppLaunchCallbacks(
-    base::scoped_nsobject<NSRunningApplication> app,
+    NSRunningApplication* app,
     base::OnceCallback<void(base::Process)> launch_callback,
     base::OnceClosure termination_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -143,8 +145,8 @@ void RunAppLaunchCallbacks(
 
   // If the app doesn't have a valid pid, or if the application has been
   // terminated, then indicate failure in |launch_callback|.
-  base::Process process([app processIdentifier]);
-  if (!process.IsValid() || [app isTerminated]) {
+  base::Process process(app.processIdentifier);
+  if (!process.IsValid() || app.terminated) {
     LOG(ERROR) << "Application has already been terminated.";
     std::move(launch_callback).Run(base::Process());
     return;
@@ -220,7 +222,7 @@ bool AppShimCreationDisabledForTest() {
   // Because shims created in ~/Applications will not be cleaned up.
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kTestType) &&
-         !GetShortcutOverrideForTesting();
+         !GetOsIntegrationTestOverride();
 }
 
 bool AppShimRevealDisabledForTest() {
@@ -401,6 +403,76 @@ base::CommandLine BuildCommandLineForShimLaunch() {
   return command_line;
 }
 
+void LaunchTheFirstShimThatWorksOnFileThread(
+    std::vector<base::FilePath> shim_paths,
+    bool launched_after_rebuild,
+    ShimLaunchedCallback launched_callback,
+    ShimTerminatedCallback terminated_callback) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+
+  // Avoid trying to launch known non-existent paths. This loop might
+  // (technically) be O(n^2) but there will be too few paths for this to matter.
+  while (!shim_paths.empty() && !base::PathExists(shim_paths.front())) {
+    shim_paths.erase(shim_paths.begin());
+  }
+  if (shim_paths.empty()) {
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(launched_callback), base::Process()));
+    return;
+  }
+
+  base::FilePath shim_path = shim_paths.front();
+  shim_paths.erase(shim_paths.begin());
+
+  base::CommandLine command_line = BuildCommandLineForShimLaunch();
+
+  if (launched_after_rebuild) {
+    command_line.AppendSwitch(app_mode::kLaunchedAfterRebuild);
+  }
+
+  // The shim must use the same Mojo implementation as this browser. Since
+  // feature parameters and field trials are otherwise not passed to shim
+  // processes, we use feature override switches to ensure Mojo parity.
+  if (mojo::core::IsMojoIpczEnabled()) {
+    command_line.AppendSwitchASCII(switches::kEnableFeatures,
+                                   mojo::core::kMojoIpcz.name);
+  } else {
+    command_line.AppendSwitchASCII(switches::kDisableFeatures,
+                                   mojo::core::kMojoIpcz.name);
+  }
+
+  base::mac::OpenApplication(
+      shim_path, command_line, /*url_specs=*/{},
+      /*options=*/{.activate = false},
+      base::BindOnce(
+          [](base::FilePath shim_path,
+             std::vector<base::FilePath> remaining_shim_paths,
+             bool launched_after_rebuild,
+             ShimLaunchedCallback launched_callback,
+             ShimTerminatedCallback terminated_callback,
+             base::expected<NSRunningApplication*, NSError*> result) {
+            if (result.has_value()) {
+              RunAppLaunchCallbacks(result.value(),
+                                    std::move(launched_callback),
+                                    std::move(terminated_callback));
+              return;
+            }
+
+            LOG(ERROR) << "Failed to open application with path: " << shim_path;
+
+            internals::GetShortcutIOTaskRunner()->PostTask(
+                FROM_HERE,
+                base::BindOnce(&LaunchTheFirstShimThatWorksOnFileThread,
+                               remaining_shim_paths, launched_after_rebuild,
+                               std::move(launched_callback),
+                               std::move(terminated_callback)));
+          },
+          shim_path, shim_paths, launched_after_rebuild,
+          std::move(launched_callback), std::move(terminated_callback)));
+}
+
 void LaunchShimOnFileThread(LaunchShimUpdateBehavior update_behavior,
                             ShimLaunchedCallback launched_callback,
                             ShimTerminatedCallback terminated_callback,
@@ -436,45 +508,9 @@ void LaunchShimOnFileThread(LaunchShimUpdateBehavior update_behavior,
   }
   LOG_IF(ERROR, !shortcuts_updated) << "Could not write shortcut for app shim.";
 
-  // Attempt to launch the shim.
-  for (const auto& shim_path : shim_paths) {
-    if (!base::PathExists(shim_path))
-      continue;
-
-    base::CommandLine command_line = BuildCommandLineForShimLaunch();
-
-    if (launched_after_rebuild)
-      command_line.AppendSwitch(app_mode::kLaunchedAfterRebuild);
-
-    // The shim must use the same Mojo implementation as this browser. Since
-    // feature parameters and field trials are otherwise not passed to shim
-    // processes, we use feature override switches to ensure Mojo parity.
-    if (mojo::core::IsMojoIpczEnabled()) {
-      command_line.AppendSwitchASCII(switches::kEnableFeatures,
-                                     mojo::core::kMojoIpcz.name);
-    } else {
-      command_line.AppendSwitchASCII(switches::kDisableFeatures,
-                                     mojo::core::kMojoIpcz.name);
-    }
-
-    // Launch without activating (NSWorkspaceLaunchWithoutActivation).
-    base::scoped_nsobject<NSRunningApplication> app(
-        base::mac::OpenApplicationWithPath(
-            shim_path, command_line,
-            NSWorkspaceLaunchDefault | NSWorkspaceLaunchWithoutActivation),
-        base::scoped_policy::RETAIN);
-    if (app) {
-      content::GetUIThreadTaskRunner({})->PostTask(
-          FROM_HERE, base::BindOnce(&RunAppLaunchCallbacks, app,
-                                    std::move(launched_callback),
-                                    std::move(terminated_callback)));
-      return;
-    }
-    LOG(ERROR) << "Failed to open application with path: " << shim_path;
-  }
-
-  content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(std::move(launched_callback), base::Process()));
+  LaunchTheFirstShimThatWorksOnFileThread(shim_paths, launched_after_rebuild,
+                                          std::move(launched_callback),
+                                          std::move(terminated_callback));
 }
 
 base::FilePath GetLocalizableAppShortcutsSubdirName() {
@@ -502,7 +538,7 @@ NSImageRep* OverlayImageRep(NSImage* background, NSImageRep* overlay) {
   NSInteger dimension = [overlay pixelsWide];
   DCHECK_EQ(dimension, [overlay pixelsHigh]);
   base::scoped_nsobject<NSBitmapImageRep> canvas([[NSBitmapImageRep alloc]
-      initWithBitmapDataPlanes:NULL
+      initWithBitmapDataPlanes:nullptr
                     pixelsWide:dimension
                     pixelsHigh:dimension
                  bitsPerSample:8
@@ -534,7 +570,7 @@ NSImageRep* OverlayImageRep(NSImage* background, NSImageRep* overlay) {
             operation:NSCompositingOperationSourceOver
              fraction:1.0
        respectFlipped:NO
-                hints:0];
+                hints:nil];
   [NSGraphicsContext restoreGraphicsState];
   return canvas.autorelease();
 }
@@ -747,10 +783,11 @@ bool AppShimLaunchDisabled() {
 }
 
 base::FilePath GetChromeAppsFolder() {
-  auto override = GetShortcutOverrideForTesting();
+  auto override = GetOsIntegrationTestOverride();
   if (override) {
-    if (override->chrome_apps_folder.IsValid())
-      return override->chrome_apps_folder.GetPath();
+    if (override->IsChromeAppsValid()) {
+      return override->chrome_apps_folder();
+    }
     return base::FilePath();
   }
 
@@ -778,9 +815,10 @@ void WebAppAutoLoginUtil::SetInstanceForTesting(
 
 void WebAppAutoLoginUtil::AddToLoginItems(const base::FilePath& app_bundle_path,
                                           bool hide_on_startup) {
-  auto override = GetShortcutOverrideForTesting();
+  auto override = GetOsIntegrationTestOverride();
   if (override) {
-    override->startup_enabled[app_bundle_path] = true;
+    override->EnableOrDisablePathOnLogin(app_bundle_path,
+                                         /*enabled_on_start=*/true);
   } else {
     base::mac::AddToLoginItems(app_bundle_path, hide_on_startup);
   }
@@ -788,9 +826,10 @@ void WebAppAutoLoginUtil::AddToLoginItems(const base::FilePath& app_bundle_path,
 
 void WebAppAutoLoginUtil::RemoveFromLoginItems(
     const base::FilePath& app_bundle_path) {
-  auto override = GetShortcutOverrideForTesting();
+  auto override = GetOsIntegrationTestOverride();
   if (override) {
-    override->startup_enabled[app_bundle_path] = false;
+    override->EnableOrDisablePathOnLogin(app_bundle_path,
+                                         /*enabled_on_start=*/false);
   } else {
     base::mac::RemoveFromLoginItems(app_bundle_path);
   }
@@ -802,7 +841,7 @@ WebAppShortcutCreator::WebAppShortcutCreator(const base::FilePath& app_data_dir,
   DCHECK(shortcut_info);
 }
 
-WebAppShortcutCreator::~WebAppShortcutCreator() {}
+WebAppShortcutCreator::~WebAppShortcutCreator() = default;
 
 base::FilePath WebAppShortcutCreator::GetApplicationsShortcutPath(
     bool avoid_conflicts) const {
@@ -1243,13 +1282,13 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
       app_mode::kCFBundleURLSchemesKey : handlers
     } ];
   }
-  if (GetShortcutOverrideForTesting()) {  // IN-TEST
+  if (GetOsIntegrationTestOverride()) {  // IN-TEST
     std::vector<std::string> protocol_handlers_vec;
     protocol_handlers_vec.insert(protocol_handlers_vec.end(),
                                  protocol_handlers.begin(),
                                  protocol_handlers.end());
-    GetShortcutOverrideForTesting()  // IN-TEST
-        ->protocol_scheme_registrations.emplace_back(
+    GetOsIntegrationTestOverride()  // IN-TEST
+        ->protocol_scheme_registrations_.emplace_back(
             info_->extension_id, std::move(protocol_handlers_vec));
   }
 
@@ -1443,31 +1482,25 @@ void LaunchShimForTesting(const base::FilePath& shim_path,  // IN-TEST
     url_specs.push_back(url.spec());
   }
 
-  base::scoped_nsobject<NSRunningApplication> app;
-  if (urls.empty()) {
-    app.reset(
-        base::mac::OpenApplicationWithPath(
-            shim_path, command_line,
-            NSWorkspaceLaunchDefault | NSWorkspaceLaunchWithoutActivation),
-        base::scoped_policy::RETAIN);
-  } else {
-    app.reset(
-        base::mac::OpenApplicationWithPathAndURLs(
-            shim_path, command_line, url_specs,
-            NSWorkspaceLaunchDefault | NSWorkspaceLaunchWithoutActivation),
-        base::scoped_policy::RETAIN);
-  }
-  if (app) {
-    content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE, base::BindOnce(&RunAppLaunchCallbacks, app,
-                                  std::move(launched_callback),
-                                  std::move(terminated_callback)));
-    return;
-  }
-  LOG(ERROR) << "Failed to open application with path: " << shim_path;
+  base::mac::OpenApplication(
+      shim_path, command_line, url_specs, /*options=*/{.activate = false},
+      base::BindOnce(
+          [](const base::FilePath& shim_path,
+             ShimLaunchedCallback launched_callback,
+             ShimTerminatedCallback terminated_callback,
+             base::expected<NSRunningApplication*, NSError*> result) {
+            if (!result.has_value()) {
+              LOG(ERROR) << "Failed to open application with path: "
+                         << shim_path;
 
-  content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(std::move(launched_callback), base::Process()));
+              std::move(launched_callback).Run(base::Process());
+              return;
+            }
+            RunAppLaunchCallbacks(result.value(), std::move(launched_callback),
+                                  std::move(terminated_callback));
+          },
+          shim_path, std::move(launched_callback),
+          std::move(terminated_callback)));
 }
 
 void WaitForShimToQuitForTesting(const base::FilePath& shim_path,  // IN-TEST
@@ -1515,8 +1548,8 @@ bool CreatePlatformShortcuts(const base::FilePath& app_data_path,
   // If this is set, then keeping this as a local variable ensures it is not
   // destroyed while we use state from it (retrieved in
   // `GetChromeAppsFolder()`).
-  scoped_refptr<ShortcutOverrideForTesting> shortcut_override =
-      web_app::GetShortcutOverrideForTesting();
+  scoped_refptr<OsIntegrationTestOverride> test_override =
+      web_app::GetOsIntegrationTestOverride();
   if (AppShimCreationDisabledForTest())
     return true;
 
@@ -1531,8 +1564,8 @@ ShortcutLocations GetAppExistingShortCutLocationImpl(
   // If this is set, then keeping this as a local variable ensures it is not
   // destroyed while we use state from it (retrieved in
   // `GetChromeAppsFolder()`).
-  scoped_refptr<ShortcutOverrideForTesting> shortcut_override =
-      web_app::GetShortcutOverrideForTesting();
+  scoped_refptr<OsIntegrationTestOverride> test_override =
+      web_app::GetOsIntegrationTestOverride();
   WebAppShortcutCreator shortcut_creator(
       internals::GetShortcutDataDir(shortcut_info), &shortcut_info);
   ShortcutLocations locations;
@@ -1551,8 +1584,8 @@ void DeletePlatformShortcuts(const base::FilePath& app_data_path,
   // If this is set, then keeping this as a local variable ensures it is not
   // destroyed while we use state from it (retrieved in
   // `GetChromeAppsFolder()`).
-  scoped_refptr<ShortcutOverrideForTesting> shortcut_override =
-      web_app::GetShortcutOverrideForTesting();
+  scoped_refptr<OsIntegrationTestOverride> test_override =
+      web_app::GetOsIntegrationTestOverride();
   const std::string bundle_id = GetBundleIdentifier(shortcut_info.extension_id,
                                                     shortcut_info.profile_path);
   auto bundle_infos = SearchForBundlesById(bundle_id);
@@ -1573,8 +1606,8 @@ void DeleteMultiProfileShortcutsForApp(const std::string& app_id) {
   // If this is set, then keeping this as a local variable ensures it is not
   // destroyed while we use state from it (retrieved in
   // `GetChromeAppsFolder()`).
-  scoped_refptr<ShortcutOverrideForTesting> shortcut_override =
-      web_app::GetShortcutOverrideForTesting();
+  scoped_refptr<OsIntegrationTestOverride> test_override =
+      web_app::GetOsIntegrationTestOverride();
   const std::string bundle_id = GetBundleIdentifier(app_id);
   auto bundle_infos = SearchForBundlesById(bundle_id);
   for (const auto& bundle_info : bundle_infos) {
@@ -1592,8 +1625,8 @@ Result UpdatePlatformShortcuts(const base::FilePath& app_data_path,
   // If this is set, then keeping this as a local variable ensures it is not
   // destroyed while we use state from it (retrieved in
   // `GetChromeAppsFolder()`).
-  scoped_refptr<ShortcutOverrideForTesting> shortcut_override =
-      web_app::GetShortcutOverrideForTesting();
+  scoped_refptr<OsIntegrationTestOverride> test_override =
+      web_app::GetOsIntegrationTestOverride();
   if (AppShimLaunchDisabled())
     return Result::kOk;
 
@@ -1616,8 +1649,8 @@ void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
   // If this is set, then keeping this as a local variable ensures it is not
   // destroyed while we use state from it (retrieved in
   // `GetChromeAppsFolder()`).
-  scoped_refptr<ShortcutOverrideForTesting> shortcut_override =
-      web_app::GetShortcutOverrideForTesting();
+  scoped_refptr<OsIntegrationTestOverride> test_override =
+      web_app::GetOsIntegrationTestOverride();
   std::list<BundleInfoPlist> bundles_info = BundleInfoPlist::GetAllInPath(
       GetChromeAppsFolder(), true /* recursive */);
   for (const auto& info : bundles_info) {

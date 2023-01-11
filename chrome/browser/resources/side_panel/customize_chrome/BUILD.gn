@@ -17,14 +17,15 @@ build_webui("build") {
   # Files holding a Polymer element definition and have an equivalent .html file.
   web_component_files = [
     "app.ts",
+    "appearance.ts",
     "button_label.ts",
     "cards.ts",
-    "shortcuts.ts",
     "categories.ts",
     "check_mark_wrapper.ts",
     "color.ts",
     "colors.ts",
-    "appearance.ts",
+    "hover_button.ts",
+    "shortcuts.ts",
     "themes.ts",
     "theme_snapshot.ts",
   ]
@@ -33,11 +34,6 @@ build_webui("build") {
     "chrome_cart_proxy.ts",
     "customize_chrome_api_proxy.ts",
   ]
-
-  html_files = []
-  foreach(f, web_component_files) {
-    html_files += [ string_replace(f, ".ts", ".html") ]
-  }
 
   mojo_files_deps = [
     "//chrome/browser/cart:mojo_bindings_ts__generator",
@@ -52,6 +48,8 @@ build_webui("build") {
   ts_deps = [
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources:library",
+    "//ui/webui/resources/cr_components/managed_dialog:build_ts",
     "//ui/webui/resources/mojo:library",
   ]
+  ts_definitions = [ "//tools/typescript/definitions/metrics_private.d.ts" ]
 }

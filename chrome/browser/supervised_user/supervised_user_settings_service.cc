@@ -9,7 +9,7 @@
 #include <set>
 #include <utility>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -17,6 +17,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"

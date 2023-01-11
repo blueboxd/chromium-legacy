@@ -17,7 +17,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
@@ -26,6 +25,7 @@
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/guid.h"
 #include "base/hash/hash.h"
 #include "base/i18n/rtl.h"
@@ -60,7 +60,6 @@
 #include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/phone_number.h"
-#include "components/autofill/core/browser/fast_checkout_delegate_impl.h"
 #include "components/autofill/core/browser/field_type_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_data_importer.h"
@@ -111,10 +110,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(IS_IOS)
-#include "components/autofill/core/browser/keyboard_accessory_metrics_logger.h"
-#endif
 
 namespace autofill {
 
@@ -489,7 +484,6 @@ BrowserAutofillManager::BrowserAutofillManager(
                       enable_download_manager),
       external_delegate_(
           std::make_unique<AutofillExternalDelegate>(this, driver)),
-      fast_checkout_delegate_(std::make_unique<FastCheckoutDelegateImpl>(this)),
       touch_to_fill_delegate_(std::make_unique<TouchToFillDelegateImpl>(this)),
       app_locale_(app_locale),
       personal_data_(client->GetPersonalDataManager()),
@@ -535,6 +529,12 @@ BrowserAutofillManager::~BrowserAutofillManager() {
   // SimpleURLLoaders, which would immediately cancel the uploads.
   // As a consequence of this, votes are lost if the user generates blur votes
   // and closes the tab before the votes are sent (due to a navigation).
+
+  // Hides Fast Checkout UI, if required. Needs to use `unsafe_client()` instead
+  // of `client()` because the destructor can be called during prerendering.
+  // This call is also important to communicate the destruction of the
+  // `AutofillDriver` object to `FastCheckoutClient`.
+  unsafe_client()->HideFastCheckout(/*allow_further_runs=*/true);
 }
 
 base::WeakPtr<AutofillManager> BrowserAutofillManager::GetWeakPtr() {
@@ -1179,12 +1179,12 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
   };
 
   auto ShouldShowSuggestion = [&] {
-    if (fast_checkout_delegate_->IsShowingFastCheckoutUI() ||
+    if (client()->IsShowingFastCheckoutUI() ||
         (form_element_was_clicked &&
-         fast_checkout_delegate_->TryToShowFastCheckout(form, field))) {
+         client()->TryToShowFastCheckout(form, field, driver()))) {
       // The Fast Checkout surface is shown, so abort showing regular Autofill
-      // UI. Now the flow is controlled by the `fast_checkout_delegate_` instead
-      // of `external_delegate_`.
+      // UI. Now the flow is controlled by the `FastCheckoutClient` instead of
+      // `external_delegate_`.
       // In principle, TTF and Fast Checkout triggering surfaces are different
       // and the two screens should never coincide.
       return false;
@@ -1527,7 +1527,7 @@ void BrowserAutofillManager::OnHidePopupImpl() {
 
   single_field_form_fill_router_->CancelPendingQueries(this);
   client()->HideAutofillPopup(PopupHidingReason::kRendererEvent);
-  fast_checkout_delegate_->HideFastCheckoutUI();
+  client()->HideFastCheckout(/*allow_further_runs=*/false);
   touch_to_fill_delegate_->HideTouchToFill();
 }
 
@@ -1940,7 +1940,8 @@ void BrowserAutofillManager::UploadVotesAndLogQuality(
     submitted_form->LogQualityMetrics(
         submitted_form->form_parsed_timestamp(), interaction_time,
         submission_time, form_interactions_ukm_logger(), did_show_suggestions_,
-        observed_submission, form_interaction_counts);
+        observed_submission, form_interaction_counts,
+        autofill_suggestion_method_);
 
     if (observed_submission) {
       // Ensure that callbacks for blur votes get sent as well here because
@@ -2027,8 +2028,9 @@ void BrowserAutofillManager::Reset() {
   last_unlocked_credit_card_cvc_.clear();
   credit_card_action_ = mojom::RendererFormDataAction::kPreview;
   initial_interaction_timestamp_ = TimeTicks();
+  autofill_suggestion_method_ = AutofillSuggestionMethod::kUnknown;
   external_delegate_->Reset();
-  fast_checkout_delegate_->Reset();
+  unsafe_client()->HideFastCheckout(/*allow_further_runs=*/true);
   touch_to_fill_delegate_->Reset();
   filling_context_.clear();
 }
@@ -2629,12 +2631,6 @@ void BrowserAutofillManager::OnAfterProcessParsedForms(
       AutofillMetrics::FORMS_LOADED, form_types,
       client()->GetSecurityLevelForUmaHistograms(),
       /*profile_form_bitmask=*/0);
-#if BUILDFLAG(IS_IOS)
-  // Log this from same location as AutofillMetrics::FORMS_LOADED to ensure
-  // that KeyboardAccessoryButtonsIOS and UserHappiness UMA metrics will be
-  // directly comparable.
-  KeyboardAccessoryMetricsLogger::OnFormsLoaded();
-#endif
 }
 
 void BrowserAutofillManager::UpdateInitialInteractionTimestamp(
@@ -3341,6 +3337,11 @@ void BrowserAutofillManager::OnSeePromoCodeOfferDetailsSelected(
     int frontend_id) {
   client()->OpenPromoCodeOfferDetailsURL(offer_details_url);
   OnSingleFieldSuggestionSelected(value, frontend_id);
+}
+
+void BrowserAutofillManager::SetSuggestionOriginMetricState(
+    AutofillSuggestionMethod state) {
+  autofill_suggestion_method_ = state;
 }
 
 void BrowserAutofillManager::ProcessFieldLogEventsInForm(

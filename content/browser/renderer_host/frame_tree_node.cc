@@ -493,7 +493,7 @@ void FrameTreeNode::SetPendingFramePolicy(blink::FramePolicy frame_policy) {
 
 void FrameTreeNode::SetAttributes(
     blink::mojom::IframeAttributesPtr attributes) {
-  if (!credentialless() && attributes->credentialless) {
+  if (!Credentialless() && attributes->credentialless) {
     // Log this only when credentialless is changed to true.
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         parent_, blink::mojom::WebFeature::kAnonymousIframe);
@@ -995,6 +995,15 @@ bool FrameTreeNode::AncestorOrSelfHasCSPEE() const {
   return csp_attribute() || (parent() && parent()->required_csp());
 }
 
+void FrameTreeNode::ResetAllNavigationsForFrameDetach() {
+  NavigationDiscardReason reason = NavigationDiscardReason::kWillRemoveFrame;
+  for (FrameTreeNode* frame : frame_tree().SubtreeNodes(this)) {
+    frame->ResetNavigationRequest(reason);
+    frame->current_frame_host()->ResetOwnedNavigationRequests(reason);
+    frame->GetRenderFrameHostManager().DiscardSpeculativeRFH(reason);
+  }
+}
+
 void FrameTreeNode::RestartNavigationAsCrossDocument(
     std::unique_ptr<NavigationRequest> navigation_request) {
   navigator().RestartNavigationAsCrossDocument(std::move(navigation_request));
@@ -1061,6 +1070,10 @@ void FrameTreeNode::CancelNavigation() {
     navigation_request()->set_net_error(net::ERR_ABORTED);
   }
   ResetNavigationRequest(NavigationDiscardReason::kCancelled);
+}
+
+bool FrameTreeNode::Credentialless() const {
+  return attributes_->credentialless;
 }
 
 }  // namespace content

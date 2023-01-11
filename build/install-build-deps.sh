@@ -5,13 +5,16 @@
 # found in the LICENSE file.
 
 # Script to install everything needed to build chromium (well, ideally, anyway)
+# including items requiring sudo privileges.
 # See https://chromium.googlesource.com/chromium/src/+/main/docs/linux/build_instructions.md
+# and https://chromium.googlesource.com/chromium/src/+/HEAD/docs/android_build_instructions.md
 
 usage() {
   echo "Usage: $0 [--options]"
   echo "Options:"
   echo "--[no-]syms: enable or disable installation of debugging symbols"
   echo "--lib32: enable installation of 32-bit libraries, e.g. for V8 snapshot"
+  echo "--[no-]android: enable or disable installation of android dependencies"
   echo "--[no-]arm: enable or disable installation of arm cross toolchain"
   echo "--[no-]chromeos-fonts: enable or disable installation of Chrome OS"\
        "fonts"
@@ -58,6 +61,7 @@ package_exists() {
 
 do_inst_arm=0
 do_inst_nacl=0
+do_inst_android=0
 
 while [ "$1" != "" ]
 do
@@ -65,6 +69,8 @@ do
   --syms)                    do_inst_syms=1;;
   --no-syms)                 do_inst_syms=0;;
   --lib32)                   do_inst_lib32=1;;
+  --android)                 do_inst_android=1;;
+  --no-android)              do_inst_android=0;;
   --arm)                     do_inst_arm=1;;
   --no-arm)                  do_inst_arm=0;;
   --chromeos-fonts)          do_inst_chromeos_fonts=1;;
@@ -88,6 +94,10 @@ if [ "$do_inst_arm" = "1" ]; then
   do_inst_lib32=1
 fi
 
+if [ "$do_inst_android" = "1" ]; then
+  do_inst_lib32=1
+fi
+
 # Check for lsb_release command in $PATH
 if ! which lsb_release > /dev/null; then
   echo "ERROR: lsb_release not found in \$PATH" >&2
@@ -97,14 +107,12 @@ fi
 
 distro_codename=$(lsb_release --codename --short)
 distro_id=$(lsb_release --id --short)
-# TODO(crbug.com/1199405): Remove 16.04 (xenial).
-supported_codenames="(xenial|bionic|focal|jammy)"
+supported_codenames="(bionic|focal|jammy)"
 supported_ids="(Debian)"
 if [ 0 -eq "${do_unsupported-0}" ] && [ 0 -eq "${do_quick_check-0}" ] ; then
   if [[ ! $distro_codename =~ $supported_codenames &&
         ! $distro_id =~ $supported_ids ]]; then
     echo -e "ERROR: The only supported distros are\n" \
-      "\tUbuntu 16.04 LTS (xenial with EoL April 2024)\n" \
       "\tUbuntu 18.04 LTS (bionic with EoL April 2028)\n" \
       "\tUbuntu 20.04 LTS (focal with EoL April 2030)\n" \
       "\tUbuntu 22.04 LTS (jammy with EoL April 2032)\n" \
@@ -112,6 +120,7 @@ if [ 0 -eq "${do_unsupported-0}" ] && [ 0 -eq "${do_quick_check-0}" ] ; then
     exit 1
   fi
 
+# Check system architecture
   if ! uname -m | egrep -q "i686|x86_64"; then
     echo "Only x86 architectures are currently supported" >&2
     exit
@@ -191,6 +200,7 @@ dev_list="\
   libxss-dev
   libxt-dev
   libxtst-dev
+  lighttpd
   locales
   openbox
   p7zip
@@ -227,6 +237,7 @@ chromeos_lib_list="libpulse0 libbz2-1.0"
 
 # List of required run-time libraries
 common_lib_list="\
+  lib32z1
   libasound2
   libatk1.0-0
   libatspi2.0-0
@@ -235,15 +246,18 @@ common_lib_list="\
   libcap2
   libcups2
   libdrm2
+  libegl1
   libevdev2
   libexpat1
   libfontconfig1
   libfreetype6
   libgbm1
   libglib2.0-0
+  libgl1
   libgtk-3-0
   libpam0g
   libpango-1.0-0
+  libpangocairo-1.0-0
   libpci3
   libpcre3
   libpixman-1-0
@@ -251,6 +265,7 @@ common_lib_list="\
   libstdc++6
   libsqlite3-0
   libuuid1
+  libwayland-egl1
   libwayland-egl1-mesa
   libx11-6
   libx11-xcb1
@@ -267,6 +282,8 @@ common_lib_list="\
   libxrandr2
   libxrender1
   libxtst6
+  x11-utils
+  xvfb
   zlib1g
 "
 
@@ -284,51 +301,34 @@ lib_list="\
   $chromeos_lib_list
 "
 
-# this can be moved into the lib list without a guard when xenial is deprecated
-if package_exists libgl1; then
-  lib_list="${lib_list} libgl1"
-fi
-if package_exists libegl1; then
-  lib_list="${lib_list} libegl1"
-fi
-if package_exists libwayland-egl1; then
-  lib_list="${lib_list} libwayland-egl1"
-fi
-if package_exists libpangocairo-1.0-0; then
-  lib_list="${lib_list} libpangocairo-1.0-0"
-fi
-if package_exists libgl1:i386; then
-  lib_list="${lib_list} libgl1:i386"
-fi
-if package_exists libegl1:i386; then
-  lib_list="${lib_list} libegl1:i386"
-fi
-if package_exists libwayland-egl1:i386; then
-  lib_list="${lib_list} libwayland-egl1:i386"
-fi
-if package_exists libpangocairo-1.0-0:i386; then
-  lib_list="${lib_list} libpangocairo-1.0-0:i386"
-fi
-
 # 32-bit libraries needed e.g. to compile V8 snapshot for Android or armhf
 lib32_list="linux-libc-dev:i386 libpci3:i386"
 
 # 32-bit libraries needed for a 32-bit build
+# includes some 32-bit libraries required by the Android SDK
+# See https://developer.android.com/sdk/installing/index.html?pkg=tools
 lib32_list="$lib32_list
   libasound2:i386
   libatk-bridge2.0-0:i386
   libatk1.0-0:i386
   libatspi2.0-0:i386
   libdbus-1-3:i386
+  libegl1:i386
+  libgl1:i386
   libglib2.0-0:i386
+  libncurses5:i386
   libnss3:i386
   libpango-1.0-0:i386
+  libpangocairo-1.0-0:i386
+  libstdc++6:i386
+  libwayland-egl1:i386
   libx11-xcb1:i386
   libxcomposite1:i386
   libxdamage1:i386
   libxkbcommon0:i386
   libxrandr2:i386
   libxtst6:i386
+  zlib1g:i386
 "
 
 # Packages that have been removed from this script.  Regardless of configuration
@@ -342,6 +342,15 @@ backwards_compatible_list="\
   fonts-thai-tlwg
   fonts-tlwg-garuda
   g++
+  g++-4.8-multilib-arm-linux-gnueabihf
+  gcc-4.8-multilib-arm-linux-gnueabihf
+  g++-9-multilib-arm-linux-gnueabihf
+  gcc-9-multilib-arm-linux-gnueabihf
+  gcc-arm-linux-gnueabihf
+  g++-10-multilib-arm-linux-gnueabihf
+  gcc-10-multilib-arm-linux-gnueabihf
+  g++-10-arm-linux-gnueabihf
+  gcc-10-arm-linux-gnueabihf
   git-svn
   language-pack-da
   language-pack-fr
@@ -358,16 +367,26 @@ backwards_compatible_list="\
   libexif12
   libexif12:i386
   libgbm-dev
+  libgbm-dev-lts-trusty
+  libgbm-dev-lts-xenial
   libgconf-2-4:i386
   libgconf2-dev
   libgl1-mesa-dev
+  libgl1-mesa-dev-lts-trusty
+  libgl1-mesa-dev-lts-xenial
   libgl1-mesa-glx:i386
+  libgl1-mesa-glx-lts-trusty:i386
+  libgl1-mesa-glx-lts-xenial:i386
   libgles2-mesa-dev
+  libgles2-mesa-dev-lts-trusty
+  libgles2-mesa-dev-lts-xenial
   libgtk-3-0:i386
   libgtk2.0-0
   libgtk2.0-0:i386
   libgtk2.0-dev
   mesa-common-dev
+  mesa-common-dev-lts-trusty
+  mesa-common-dev-lts-xenial
   msttcorefonts
   python-dev
   python-setuptools
@@ -429,17 +448,6 @@ else
   backwards_compatible_list="${backwards_compatible_list} php5-cgi libapache2-mod-php5"
 fi
 
-case $distro_codename in
-  xenial)
-    backwards_compatible_list+=" \
-      libgbm-dev-lts-xenial
-      libgl1-mesa-dev-lts-xenial
-      libgl1-mesa-glx-lts-xenial:i386
-      libgles2-mesa-dev-lts-xenial
-      mesa-common-dev-lts-xenial"
-    ;;
-esac
-
 # arm cross toolchain packages needed to build chrome on armhf
 arm_list="libc6-dev-armhf-cross
           linux-libc-dev-armhf-cross
@@ -447,7 +455,7 @@ arm_list="libc6-dev-armhf-cross
 
 # Work around for dependency issue Ubuntu: http://crbug.com/435056
 case $distro_codename in
-  xenial|bionic)
+  bionic)
     arm_list+=" g++-5-multilib-arm-linux-gnueabihf
                 gcc-5-multilib-arm-linux-gnueabihf
                 gcc-arm-linux-gnueabihf"
@@ -653,6 +661,12 @@ if [ "$do_inst_lib32" = "1" ]; then
 else
   echo "Skipping 32-bit libraries."
   lib32_list=
+fi
+
+if [ "$do_inst_android" = "1" ]; then
+  echo "Including Android dependencies."
+else
+  echo "Skipping Android dependencies."
 fi
 
 if [ "$do_inst_arm" = "1" ]; then

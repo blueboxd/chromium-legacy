@@ -39,6 +39,12 @@
           "builder": "ios-simulator-code-coverage",
           "project": "chromium"
         }
+      ],
+      "mirroring_builder_group_and_names": [
+        {
+          "builder": "ios-simulator-code-coverage",
+          "group": "tryserver.chromium.mac"
+        }
       ]
     }
   },
@@ -65,5 +71,5 @@
   },
   "builder_group": "chromium.fyi",
   "recipe": "chromium",
-  "xcode_build_version": "14b47b"
+  "xcode_build_version": "14c18"
 }

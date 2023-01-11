@@ -38,8 +38,8 @@
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/time/time_of_day.h"
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
@@ -63,7 +63,6 @@
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -266,7 +265,7 @@ class FingerprintLabel : public views::Label {
   // views::Label:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     node_data->role = ax::mojom::Role::kStaticText;
-    node_data->SetNameChecked(accessible_name_);
+    node_data->SetNameChecked(GetAccessibleName());
   }
 
   // views::Label:
@@ -277,13 +276,6 @@ class FingerprintLabel : public views::Label {
   }
 
  private:
-  void SetAccessibleName(const std::u16string& name) {
-    accessible_name_ = name;
-    NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
-                             true /*send_native_event*/);
-  }
-
-  std::u16string accessible_name_;
 };
 
 // The content needed to render the disabled auth message view.
@@ -718,10 +710,6 @@ class LoginAuthUserView::DisabledAuthMessageView : public views::View {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
     SetFocusBehavior(FocusBehavior::ALWAYS);
-    // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
-    // able to submit accessibility checks, but this focusable View needs to
-    // add a name so that the screen reader knows what to announce.
-    SetProperty(views::kSkipAccessibilityPaintChecks, true);
 
     // The icon size has to be defined later if the image will be visible.
     message_icon_ = AddChildView(std::make_unique<views::ImageView>());
@@ -797,6 +785,25 @@ class LoginAuthUserView::DisabledAuthMessageView : public views::View {
   void RequestFocus() override { message_title_->RequestFocus(); }
 
   // views::View:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    // Any view which claims to be focusable is expected to have an accessible
+    // name and accessible role so that screen readers know what to present to
+    // the user when it gains focus. In the case of this particular view,
+    // `RequestFocus` gives focus to the `message_title_` label. As a result,
+    // this view is not end-user focusable. However, its official focusability
+    // will cause the accessibility paint checks to fail. Give this view a
+    // container role. If the `message_title_` has text, set the accessible
+    // name to that text; otherwise set the name explicitly empty to prevent
+    // the paint check from failing during tests.
+    node_data->role = ax::mojom::Role::kPane;
+    if (message_title_->GetText().empty()) {
+      node_data->SetNameExplicitlyEmpty();
+    } else {
+      node_data->SetNameChecked(message_title_->GetText());
+    }
+  }
+
+  // views::View:
   void OnThemeChanged() override {
     views::View::OnThemeChanged();
     UpdateColors();
@@ -867,8 +874,7 @@ class LoginAuthUserView::LockedTpmMessageView : public views::View {
       message_warning_->SetText(message_warning);
 
       if (time_left.InMinutes() != prev_time_left_.InMinutes()) {
-        message_warning_->NotifyAccessibilityEvent(
-            ax::mojom::Event::kTextChanged, true);
+        message_warning_->SetAccessibleName(message_warning);
       }
       prev_time_left_ = time_left;
     }

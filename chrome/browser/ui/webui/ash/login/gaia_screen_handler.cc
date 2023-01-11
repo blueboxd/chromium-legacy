@@ -12,13 +12,13 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/guid.h"
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/number_formatting.h"
@@ -330,6 +330,7 @@ bool ShouldPrepareForRecovery(const AccountId& account_id) {
       static_cast<int>(ReauthReason::kSyncFailed),
       static_cast<int>(ReauthReason::kPasswordUpdateSkipped),
       static_cast<int>(ReauthReason::kForgotPassword),
+      static_cast<int>(ReauthReason::kCryptohomeRecovery),
   };
   user_manager::KnownUser known_user(g_browser_process->local_state());
   absl::optional<int> reauth_reason = known_user.FindReauthReason(account_id);
@@ -704,13 +705,6 @@ void GaiaScreenHandler::HandleAuthExtensionLoaded() {
   // used during the current sign-in attempt.
   extension_provided_client_cert_usage_observer_ =
       std::make_unique<LoginClientCertUsageObserver>();
-
-  // Clear old storage partitions after a new sign-in page is loaded. All
-  // reference to the old storage partitions should be cleared.
-  login::SigninPartitionManager* signin_partition_manager =
-      login::SigninPartitionManager::Factory::GetForBrowserContext(
-          Profile::FromWebUI(web_ui()));
-  signin_partition_manager->DisposeOldStoragePartitions();
 }
 
 void GaiaScreenHandler::HandleWebviewLoadAborted(int error_code) {

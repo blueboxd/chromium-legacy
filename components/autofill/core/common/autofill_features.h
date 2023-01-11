@@ -43,8 +43,6 @@ BASE_DECLARE_FEATURE(kAutofillComplementCountryEarly);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillConsiderPhoneNumberSeparatorsValidLabels);
 COMPONENT_EXPORT(AUTOFILL)
-BASE_DECLARE_FEATURE(kAutofillConsiderPlaceholderForParsing);
-COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillDeferSubmissionClassificationAfterAjax);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillDontPreserveAutofillState);
@@ -85,6 +83,11 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<int>
     kAutofillRankingFormulaVirtualCardBoostHalfLife;
 COMPONENT_EXPORT(AUTOFILL)
+BASE_DECLARE_FEATURE(kAutofillEnableRankingFormulaAddressProfiles);
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::FeatureParam<int>
+    kAutofillRankingFormulaAddressProfilesUsageHalfLife;
+COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillEnableSupportForApartmentNumbers);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillEnableLabelPrecedenceForTurkishAddresses);
@@ -119,6 +122,8 @@ BASE_DECLARE_FEATURE(kAutofillParsingPatternProvider);
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<std::string>
     kAutofillParsingPatternActiveSource;
+COMPONENT_EXPORT(AUTOFILL)
+BASE_DECLARE_FEATURE(kAutofillAlwaysParsePlaceholders);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillPreventOverridingPrefilledValues);
 COMPONENT_EXPORT(AUTOFILL)

@@ -332,7 +332,7 @@
       "dcheck_always_on": false,
       "enable_nacl": false,
       "ffmpeg_branding": "ChromeOS",
-      "instrumented_libraries_release": "xenial",
+      "instrumented_libraries_release": "focal",
       "is_component_build": true,
       "is_debug": false,
       "is_msan": true,
@@ -422,18 +422,6 @@
       "use_cfi_icall": true,
       "use_remoteexec": true,
       "use_thin_lto": true
-    }
-  },
-  "Linux ChromiumOS MSan Focal": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "instrumented_libraries_release": "focal",
-      "is_component_build": false,
-      "is_debug": false,
-      "is_msan": true,
-      "msan_track_origins": 2,
-      "target_os": "chromeos",
-      "use_remoteexec": true
     }
   },
   "Linux Viz": {

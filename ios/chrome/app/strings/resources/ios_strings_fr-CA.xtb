@@ -170,7 +170,6 @@ Seule une personne connaissant votre phrase de passe peut lire vos données chif
 <translation id="225943865679747347">Code d'erreur : <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">Ajouter un compte</translation>
 <translation id="2268044343513325586">Affiner</translation>
-<translation id="2271351792809375263">Utilisez les mots de passe enregistrés dans Chrome dans d'autres applications de votre appareil</translation>
 <translation id="2273327106802955778">Menu Plus</translation>
 <translation id="2286505070150039482">Texte mis en évidence</translation>
 <translation id="2299218006564889602">Vos mots de passe sont chiffrés sur votre appareil avant d'être enregistrés dans le gestionnaire de mots de passe Google.</translation>
@@ -286,7 +285,6 @@ Les sites ne peuvent pas utiliser de témoins pour voir votre activité de navig
 Consultez les instructions de votre moteur de recherche pour supprimer votre historique de recherche, le cas échéant.</translation>
 <translation id="3080525922482950719">Vous pouvez enregistrer des pages afin de les lire plus tard ou hors ligne</translation>
 <translation id="3081338492074632642">Assurez-vous que le mot de passe que vous enregistrez correspond à celui pour <ph name="WEBSITE" /></translation>
-<translation id="3103603146121354983">Remplir automatiquement les mots de passe</translation>
 <translation id="3112556859945124369">Marquer…</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />Afficher ce que vous pouvez synchroniser<ph name="END_LINK" /></translation>
 <translation id="3130863904455712965">Historique et plus</translation>
@@ -365,7 +363,6 @@ Consultez les instructions de votre moteur de recherche pour supprimer votre his
 <translation id="3661160521073045932">Profil de configuration proposé</translation>
 <translation id="3670030362669914947">Numéro</translation>
 <translation id="3691593122358196899">Marqué comme favori dans <ph name="FOLDER_TITLE" /></translation>
-<translation id="369349502275246497">Proposer l'enregistrement des mots de passe</translation>
 <translation id="3709582977625132201">Marquer comme non lu</translation>
 <translation id="371230970611282515">Il prédit les événements dangereux et vous en informe avant qu'ils ne surviennent.</translation>
 <translation id="37207012422556617">Recherches tendances</translation>
@@ -466,11 +463,11 @@ Consultez les instructions de votre moteur de recherche pour supprimer votre his
 <translation id="4508750114462689118">Fermer la promotion de connexion</translation>
 <translation id="4514889972748124117">Suggérer un mot de passe fort…</translation>
 <translation id="4520798012560649652">En savoir plus à propos du mode de navigation privée</translation>
-<translation id="4526249700380860531">Afficher et gérer les mots de passe enregistrés à l'adresse <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Examiner vos données synchronisées</translation>
 <translation id="4536418791685807335">Essayez de vous reconnecter.</translation>
 <translation id="4540780316273593836">Un problème est survenu</translation>
 <translation id="457386861538956877">Autres...</translation>
+<translation id="4587589328781138893">Sites</translation>
 <translation id="4588014171431912783">Vos paramètres de synchronisation seront restaurés en fonction de votre dernière sauvegarde. <ph name="BEGIN_LINK" />Afficher ce que vous pouvez synchroniser<ph name="END_LINK" /></translation>
 <translation id="4592368184551360546">Clavier</translation>
 <translation id="4606247758155004938">Votre navigateur est géré par votre organisation.</translation>
@@ -554,7 +551,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5118764316110575523">Désactivé</translation>
 <translation id="5119391094379141756">Sélectionnez Chrome</translation>
 <translation id="5132942445612118989">Synchronisez vos mots de passe, votre historique et plus encore sur tous vos appareils</translation>
-<translation id="5140288047769711648">Chrome mémorisera ce mot de passe pour vous. Vous n'avez pas à le mémoriser.</translation>
 <translation id="5149188072385105201">Ajouter un mot de passe…</translation>
 <translation id="5150492518600715772">Envoyer à votre appareil</translation>
 <translation id="5168414296986405587">Conçu pour iPadOS</translation>
@@ -881,7 +877,6 @@ Lorsque vous êtes en mode de navigation privée, les sites ne peuvent pas utili
 <translation id="7438481509621345350">Vous verrez maintenant des articles de <ph name="CHANNEL_NAME" /> lorsque vous ouvrez un nouvel onglet.</translation>
 <translation id="7454057999980797137">État / Comté</translation>
 <translation id="7459628154744868585">La protection renforcée est activée</translation>
-<translation id="7464701184726199289">Les données synchronisées seront supprimées de tous les appareils. Les paramètres de site sauvegardés ne seront pas supprimés et peuvent donner des indications sur vos habitudes de navigation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="746684838091935575">3. Sélectionnez Chrome</translation>
 <translation id="7472734401283673885">Nom d'entreprise</translation>
 <translation id="7473891865547856676">Non merci</translation>
@@ -965,7 +960,6 @@ Les sites peuvent utiliser des témoins afin de voir votre activité de navigati
 <translation id="806745655614357130">Conserver mes données à part</translation>
 <translation id="8073670137947914548">Téléchargement terminé</translation>
 <translation id="8073872304774253879">Améliorer les recherches et de la navigation</translation>
-<translation id="8076014560081431679">Les paramètres de site sauvegardés ne seront pas supprimés et peuvent donner des indications sur vos habitudes de navigation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="8079602123447022758">Ce paramètre est géré; touchez deux fois pour en savoir plus</translation>
 <translation id="8080028325999236607">Ferm ts onglets</translation>
 <translation id="8084285576995584326">Gérez les données de votre compte Google</translation>
@@ -1093,7 +1087,6 @@ Les sites peuvent utiliser des témoins afin de voir votre activité de navigati
 <translation id="9079935439869366234">Tout marquer comme non lu</translation>
 <translation id="9081058212938299310">Mettre à jour le mot de passe pour <ph name="USERNAME" />?</translation>
 <translation id="9083838294503912307">Pour profiter de la synchronisation et d'une expérience personnalisée sur tous vos appareils, activez la synchronisation.</translation>
-<translation id="9087108903408689779">Mot de passe suggéré par Chrome :</translation>
 <translation id="9093271241977565440">Dans la partie supérieure de l'écran, touchez l'icône de recherche</translation>
 <translation id="9094033019050270033">Mettre à jour le mot de passe</translation>
 <translation id="9097506547406246598">Le désabonnement a échoué. Un problème est survenu.</translation>

@@ -10,8 +10,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -423,15 +423,16 @@ void PaymentsClient::OnSimpleLoaderCompleteInternal(int response_code,
       std::string error_api_error_reason;
       absl::optional<base::Value> message_value = base::JSONReader::Read(data);
       if (message_value && message_value->is_dict()) {
-        const auto* found_error_code = message_value->FindPathOfType(
-            {"error", "code"}, base::Value::Type::STRING);
+        const auto* found_error_code =
+            message_value->GetDict().FindStringByDottedPath("error.code");
         if (found_error_code)
-          error_code = found_error_code->GetString();
+          error_code = *found_error_code;
 
-        const auto* found_error_reason = message_value->FindPathOfType(
-            {"error", "api_error_reason"}, base::Value::Type::STRING);
+        const auto* found_error_reason =
+            message_value->GetDict().FindStringByDottedPath(
+                "error.api_error_reason");
         if (found_error_reason)
-          error_api_error_reason = found_error_reason->GetString();
+          error_api_error_reason = *found_error_reason;
 
         request_->ParseResponse(message_value->GetDict());
       }

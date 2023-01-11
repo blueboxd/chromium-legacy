@@ -12,12 +12,11 @@
 #include <utility>
 
 #include "base/base_paths.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -576,7 +575,10 @@ Browser::~Browser() {
   extension_browser_window_helper_.reset();
 
   // The tab strip should not have any tabs at this point.
-  DCHECK(tab_strip_model_->empty());
+  //
+  // TODO(crbug.com/1393544): Switch to a DCHECK once we are confident that
+  // Browsers aren't deleted when they still contain tabs.
+  CHECK(tab_strip_model_->empty());
 
   // Destroy the BrowserCommandController before removing the browser, so that
   // it doesn't act on any notifications that are sent as a result of removing

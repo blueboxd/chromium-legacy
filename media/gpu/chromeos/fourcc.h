@@ -92,6 +92,17 @@ class MEDIA_GPU_EXPORT Fourcc {
     // Two-plane 10-bit YUV 4:2:0. Each sample is a two-byte little-endian value
     // with the bottom six bits ignored.
     P010 = ComposeFourcc('P', '0', '1', '0'),
+
+    // Single plane 8-bit little-endian ARGB (bytes in reverse B-G-R-A order).
+    AR24 = ComposeFourcc('A', 'R', '2', '4'),
+    // V4L2 proprietary format.
+    // https://linuxtv.org/downloads/v4l-dvb-apis-new/userspace-api/v4l/pixfmt-reserved.html
+    // Opaque format that can only be scanned out as an overlay or composited by
+    // the gpu.
+    // Maps to V4L2_PIX_FMT_QC08C.
+    Q08C = ComposeFourcc('Q', '0', '8', 'C'),
+    // Maps to V4L2_PIX_FMT_QC10C.
+    Q10C = ComposeFourcc('Q', '1', '0', 'C'),
   };
 
   explicit constexpr Fourcc(Fourcc::Value fourcc) : value_(fourcc) {}
@@ -136,7 +147,9 @@ class MEDIA_GPU_EXPORT Fourcc {
 #endif  // BUILDFLAG(USE_VAAPI)
 
   // Returns the single-planar Fourcc of the value. If value is a single-planar,
-  // returns the same Fourcc. Returns nullopt if no mapping is found.
+  // returns the same Fourcc. Returns nullopt if the value is neither
+  // single-planar nor multi-planar or if the value is multi-planar but does not
+  // have a single-planar equivalent.
   absl::optional<Fourcc> ToSinglePlanar() const;
 
   // Returns whether |value_| is multi planar format.

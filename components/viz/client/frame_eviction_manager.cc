@@ -6,13 +6,14 @@
 
 #include <algorithm>
 
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/system/sys_info.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
 

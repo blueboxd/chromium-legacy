@@ -162,6 +162,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="1774796056689732716">Egutegia, <ph name="CURRENT_MONTH_YEAR" />, une honetan <ph name="DATE" /> dago hautatuta.</translation>
 <translation id="1787955149152357925">Desaktibatuta</translation>
 <translation id="1797271123677381264">Pasahitza ahaztu zait</translation>
+<translation id="1807246157184219062">Argia</translation>
 <translation id="181103072419391116">Seinalearen indarra: <ph name="SIGNAL_STRENGTH" />. Administratzaileak kudeatua.</translation>
 <translation id="1812997170047690955">Zer dago pantailan?</translation>
 <translation id="1816896987747843206">Kamera erabiltzeko baimena daukaten aplikazio eta webgune guztiek kamera atzitu ahal izango dute</translation>
@@ -238,6 +239,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="2224075387478458881">Ezin da pantaila grabatu eduki babestua ikusgai dagoenean</translation>
 <translation id="2227179592712503583">Kendu iradokizuna</translation>
 <translation id="225680501294068881">Gailuak bilatzen…</translation>
+<translation id="225716114209817872">Gehienekoa</translation>
 <translation id="2257486738914982088">Arazo bat izan da <ph name="FILENAME" /> deskargatzean</translation>
 <translation id="2258734398699965611">Iradokitako fitxategiak</translation>
 <translation id="2268130516524549846">Bluetootha desgaituta dago</translation>
@@ -262,6 +264,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> aktibatzen</translation>
 <translation id="2359808026110333948">Egin aurrera</translation>
 <translation id="2367186422933365202">Ezin da hasi saioa Chromebook-ean</translation>
+<translation id="2367972762794486313">Erakutsi aplikazioak</translation>
 <translation id="2369165858548251131">Nola esaten da "Kaixo" txineraz</translation>
 <translation id="2390318262976603432">Lurraldeko ezarpenak</translation>
 <translation id="240006516586367791">Multimedia-edukia kontrolatzeko aukerak</translation>
@@ -506,6 +509,7 @@ Konektatu gailua korrontera.</translation>
 <translation id="3713734891607377840">Deskarga amaitzen denean irekiko da</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> eta beste <ph name="UNAVAILABLE_APPS_COUNT" /> ez daude gailuan.</translation>
 <translation id="3735740477244556633">Ordenatzeko irizpidea</translation>
+<translation id="3738664582935948253">Orain, klikak eta lasterbideak bistara ditzakezu pantaila-grabaketetan</translation>
 <translation id="3742055079367172538">Pantaila-argazkia hartu da</translation>
 <translation id="3765841986579723851">Gaur editatu da</translation>
 <translation id="3773700760453577392">Administratzaile batek <ph name="USER_EMAIL" /> erabiltzaileari saio-hasiera anitza desgaitu dio.
@@ -526,6 +530,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="385051799172605136">Atzera</translation>
 <translation id="385300504083504382">Hasiera</translation>
 <translation id="3861651314799684201">Pantaila osoa grabatzeko, sakatu Sartu</translation>
+<translation id="3871092408932389764">Baxuena</translation>
 <translation id="3886872229787704059">Gaur ireki da</translation>
 <translation id="3891340733213178823">Saioa amaitzeko, sakatu Ktrl + Maius + Q bi aldiz.</translation>
 <translation id="3893630138897523026">ChromeVox (ahozko argibideak)</translation>
@@ -1012,6 +1017,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="6537924328260219877">Seinalearen indarra: <ph name="SIGNAL_STRENGTH" />. Telefonoaren bateria: <ph name="BATTERY_STATUS" />.</translation>
 <translation id="6539852571005954999"><ph name="FILENAME" /> eskaneatzen deskargatu ahal izateko</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> gailura igortzen</translation>
+<translation id="6548693220024099658">Atzeko planoa lausotzea</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Berriki instalatu da</translation>
 <translation id="6559976592393364813">Eskatu administratzaileari</translation>
@@ -1417,6 +1423,7 @@ Berriki instalatu da</translation>
 <translation id="878215960996152260"><ph name="APP_NAME" />, instalatutako aplikazioa, blokeatuta</translation>
 <translation id="8785070478575117577">Konektatu <ph name="NETWORK_NAME" /> sarera</translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">Asko</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> karpeta</translation>
 <translation id="880709030178078220">"Laguntza"</translation>
 <translation id="8814190375133053267">Wi-Fi konexioa</translation>

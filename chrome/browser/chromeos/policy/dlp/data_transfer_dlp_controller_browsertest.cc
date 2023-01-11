@@ -11,7 +11,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/types/optional_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -701,13 +700,9 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, MAYBE_CancelWarn) {
   EXPECT_TRUE(!widget || widget->IsClosed());
 }
 
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_ShouldProceedWarn DISABLED_ShouldProceedWarn
-#else
-#define MAYBE_ShouldProceedWarn ShouldProceedWarn
-#endif
+// TODO(b/264865493): Flaky
 IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest,
-                       MAYBE_ShouldProceedWarn) {
+                       DISABLED_ShouldProceedWarn) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));

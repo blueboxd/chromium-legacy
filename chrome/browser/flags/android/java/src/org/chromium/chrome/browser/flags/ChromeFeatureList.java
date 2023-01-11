@@ -270,10 +270,6 @@ public abstract class ChromeFeatureList {
             "ContextualPageActionPriceTracking";
     public static final String CONTEXTUAL_PAGE_ACTION_READER_MODE =
             "ContextualPageActionReaderMode";
-    /** Used only in native code. */
-    public static final String CONTEXTUAL_SEARCH_DEBUG = "ContextualSearchDebug";
-    public static final String CONTEXTUAL_SEARCH_DELAYED_INTELLIGENCE =
-            "ContextualSearchDelayedIntelligence";
     public static final String CONTEXTUAL_SEARCH_DISABLE_ONLINE_DETECTION =
             "ContextualSearchDisableOnlineDetection";
     public static final String CONTEXTUAL_SEARCH_FORCE_CAPTION = "ContextualSearchForceCaption";
@@ -300,7 +296,6 @@ public abstract class ChromeFeatureList {
     public static final String DOWNLOAD_OFFLINE_CONTENT_PROVIDER =
             "UseDownloadOfflineContentProvider";
     public static final String EARLY_LIBRARY_LOAD = "EarlyLibraryLoad";
-    public static final String ENABLE_AUTOMATIC_SNOOZE = "EnableAutomaticSnooze";
     public static final String ENABLE_PASSWORDS_ACCOUNT_STORAGE = "EnablePasswordsAccountStorage";
     public static final String EXPERIMENTS_FOR_AGSA = "ExperimentsForAgsa";
     public static final String EXPLICIT_LANGUAGE_ASK = "ExplicitLanguageAsk";
@@ -450,6 +445,7 @@ public abstract class ChromeFeatureList {
             "RequestDesktopSiteOptInSynthetic";
     public static final String REQUEST_DESKTOP_SITE_OPT_IN_CONTROL_SYNTHETIC =
             "RequestDesktopSiteOptInControlSynthetic";
+    public static final String REQUEST_DESKTOP_SITE_PER_SITE_IPH = "RequestDesktopSitePerSiteIph";
     public static final String SAFE_BROWSING_DELAYED_WARNINGS = "SafeBrowsingDelayedWarnings";
     public static final String SAFE_MODE_FOR_CACHED_FLAGS = "SafeModeForCachedFlags";
     public static final String SCREENSHOTS_FOR_ANDROID_V2 = "ScreenshotsForAndroidV2";
@@ -460,8 +456,7 @@ public abstract class ChromeFeatureList {
     public static final String SHARE_CROW_BUTTON_LAUNCH_TAB = "ShareCrowLaunchTab";
     public static final String SHARED_HIGHLIGHTING_AMP = "SharedHighlightingAmp";
     public static final String SHOPPING_LIST = "ShoppingList";
-    public static final String SHOPPING_LIST_ENABLE_DESYNC_RESOLUTION =
-            "ShoppingListEnableDesyncResolution";
+    public static final String SHOW_EXTENDED_PRELOADING_SETTING = "ShowExtendedPreloadingSetting";
     public static final String SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID = "ShowScrollableMVTOnNTPAndroid";
     public static final String SMART_SUGGESTION_FOR_LARGE_DOWNLOADS =
             "SmartSuggestionForLargeDownloads";
@@ -492,7 +487,6 @@ public abstract class ChromeFeatureList {
     public static final String TAB_GROUPS_FOR_TABLETS = "TabGroupsForTablets";
     public static final String TAB_GRID_LAYOUT_ANDROID = "TabGridLayoutAndroid";
     public static final String TAB_SELECTION_EDITOR_V2 = "TabSelectionEditorV2";
-    public static final String TAB_SWITCHER_ON_RETURN = "TabSwitcherOnReturn";
     public static final String TAB_TO_GTS_ANIMATION = "TabToGTSAnimation";
     public static final String TAB_STRIP_IMPROVEMENTS = "TabStripImprovements";
     public static final String TEST_DEFAULT_DISABLED = "TestDefaultDisabled";

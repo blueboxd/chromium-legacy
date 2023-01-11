@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "chromeos/services/network_config/in_process_instance.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "components/onc/onc_constants.h"
@@ -21,8 +21,9 @@ namespace ash {
 namespace network_diagnostics {
 namespace {
 
-// TODO(https://crbug.com/1164001): remove when migrated to namespace ash.
 namespace mojom = ::chromeos::network_diagnostics::mojom;
+
+// TODO(https://crbug.com/1164001): remove when migrated to namespace ash.
 namespace network_config = ::chromeos::network_config;
 
 // Filters the list of |name_servers| and returns those that are not

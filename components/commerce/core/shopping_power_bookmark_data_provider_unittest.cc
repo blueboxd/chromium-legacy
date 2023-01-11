@@ -9,7 +9,6 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
@@ -37,7 +36,7 @@ class ShoppingPowerBookmarkDataProviderTest : public testing::Test {
     power_bookmark_service_ =
         std::make_unique<power_bookmarks::PowerBookmarkService>(
             bookmark_model_.get(), temp_directory_.GetPath(),
-            backend_task_runner_);
+            task_environment_.GetMainThreadTaskRunner(), backend_task_runner_);
     shopping_service_ = std::make_unique<MockShoppingService>();
 
     data_provider_ = std::make_unique<ShoppingPowerBookmarkDataProvider>(

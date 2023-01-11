@@ -18,14 +18,17 @@
 #include "base/process/launch.h"
 #include "base/process/process_iterator.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/policy/manager.h"
 #include "chrome/updater/policy/service.h"
+#include "chrome/updater/test_scope.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,6 +38,7 @@
 #include <shlobj.h>
 
 #include "base/strings/string_number_conversions_win.h"
+#include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "chrome/test/base/process_inspector_win.h"
 #include "chrome/updater/util/win_util.h"
@@ -129,7 +133,30 @@ bool WaitForProcessesToExit(const base::FilePath::StringType& executable_name,
 
 bool KillProcesses(const base::FilePath::StringType& executable_name,
                    int exit_code) {
-  return base::KillProcesses(executable_name, exit_code, nullptr);
+  bool result = true;
+  for (const base::ProcessEntry& entry :
+       base::NamedProcessIterator(executable_name, nullptr).Snapshot()) {
+    base::Process process = base::Process::Open(entry.pid());
+    if (!process.IsValid()) {
+      PLOG(ERROR) << "Process invalid for PID: " << executable_name << ": "
+                  << entry.pid();
+      result = false;
+      continue;
+    }
+
+    const bool process_terminated = process.Terminate(exit_code, true);
+
+#if BUILDFLAG(IS_WIN)
+    PLOG_IF(ERROR, !process_terminated &&
+                       !::TerminateProcess(process.Handle(),
+                                           static_cast<UINT>(exit_code)))
+        << "::TerminateProcess failed: " << executable_name << ": "
+        << entry.pid();
+#endif  // BUILDFLAG(IS_WIN)
+
+    result &= process_terminated;
+  }
+  return result;
 }
 
 scoped_refptr<PolicyService> CreateTestPolicyService() {
@@ -383,6 +410,14 @@ base::FilePath::StringType PrintProcesses(
   }
 
   return message + demarcation;
+}
+
+EventHolder CreateWaitableEventForTest() {
+  NamedObjectAttributes attr = GetNamedObjectAttributes(
+      base::NumberToWString(::GetCurrentProcessId()).c_str(), GetTestScope());
+  return {base::WaitableEvent(base::win::ScopedHandle(
+              ::CreateEvent(&attr.sa, FALSE, FALSE, attr.name.c_str()))),
+          attr.name};
 }
 
 #endif  // BUILDFLAG(IS_WIN)

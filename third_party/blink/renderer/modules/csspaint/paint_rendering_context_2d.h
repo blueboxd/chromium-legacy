@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_RENDERING_CONTEXT_2D_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_RENDERING_CONTEXT_2D_H_
 
+#include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_paint_rendering_context_2d_settings.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
@@ -56,7 +57,7 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
   int Width() const final;
   int Height() const final;
 
-  bool ParseColorOrCurrentColor(Color&, const String& color_string) const final;
+  Color GetCurrentColor() const final;
 
   cc::PaintCanvas* GetOrCreatePaintCanvas() final { return GetPaintCanvas(); }
   cc::PaintCanvas* GetPaintCanvas() const final;

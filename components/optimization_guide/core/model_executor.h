@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_OPTIMIZATION_GUIDE_CORE_MODEL_EXECUTOR_H_
 #define COMPONENTS_OPTIMIZATION_GUIDE_CORE_MODEL_EXECUTOR_H_
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"

@@ -33,7 +33,6 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/earl_grey/test_switches.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service_constants.h"
 #import "ios/testing/earl_grey/app_launch_configuration.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "net/test/embedded_test_server/embedded_test_server.h"
@@ -234,9 +233,11 @@ void VerifyTheNotificationUI() {
   VerifyThatPoliciesAreNotSet();
 }
 
+// TODO(crbug.com/1404093): Re-enable once we figure out a way to deal with the
+// Sync birthday.
 // Tests that the user policies are loaded from the store when Sync is still ON
 // at startup when the user policies were fetched in the previous session.
-- (void)testThatPoliciesAreLoadedFromStoreAtStartupIfSyncOn {
+- (void)DISABLED_testThatPoliciesAreLoadedFromStoreAtStartupIfSyncOn {
   // Turn on Sync for managed account to fetch user policies.
   FakeSystemIdentity* fakeManagedIdentity = [FakeSystemIdentity
       identityWithEmail:base::SysUTF8ToNSString(GetTestEmail().c_str())

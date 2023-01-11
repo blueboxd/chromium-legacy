@@ -7,10 +7,11 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "chromecast/media/api/cma_backend_factory.h"
 #include "chromecast/media/audio/audio_buildflags.h"

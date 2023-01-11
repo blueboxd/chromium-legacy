@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/input_method/assistive_window_properties.h"
@@ -172,7 +172,7 @@ SuggestionWindowView::SuggestionWindowView(gfx::NativeView parent,
   // AccessibleRole determines whether the content is announced on pop-up.
   // Inner content should not be announced when the window appears since this
   // is handled by AssistiveAccessibilityView to announce a custom string.
-  SetAccessibleRole(ax::mojom::Role::kNone);
+  SetAccessibleWindowRole(ax::mojom::Role::kNone);
   SetButtons(ui::DIALOG_BUTTON_NONE);
   SetCanActivate(false);
   set_parent_window(parent);

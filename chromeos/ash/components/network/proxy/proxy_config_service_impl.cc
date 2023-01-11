@@ -6,11 +6,12 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/values.h"
 #include "chromeos/ash/components/network/network_profile.h"
 #include "chromeos/ash/components/network/network_profile_handler.h"

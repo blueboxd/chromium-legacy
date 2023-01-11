@@ -67,11 +67,11 @@ namespace content {
 // Version number of the database.
 // TODO: remove the active_unattributed_sources_by_site_reporting_origin index
 // during the next DB migration.
-const int AttributionStorageSql::kCurrentVersionNumber = 39;
+const int AttributionStorageSql::kCurrentVersionNumber = 40;
 
 // Earliest version which can use a |kCurrentVersionNumber| database
 // without failing.
-const int AttributionStorageSql::kCompatibleVersionNumber = 39;
+const int AttributionStorageSql::kCompatibleVersionNumber = 40;
 
 // Latest version of the database that cannot be upgraded to
 // |kCurrentVersionNumber| without razing the database.
@@ -157,7 +157,6 @@ constexpr int64_t kUnsetReportId = -1;
   "A.external_report_id,A.failed_send_attempts,A.initial_report_time," \
   "A.aggregation_coordinator "                              \
   "FROM aggregatable_report_metadata A "                               \
-  DCHECK_SQL_INDEXED_BY("aggregate_report_time_idx")                   \
   "JOIN sources I ON A.source_id=I.source_id "
 
 // This query should be reasonably optimized via
@@ -171,7 +170,6 @@ constexpr int64_t kUnsetReportId = -1;
 #define ATTRIBUTION_COUNT_REPORTS_SQL(table) \
   "SELECT COUNT(*)FROM " table " R "         \
   "JOIN sources I "                          \
-  DCHECK_SQL_INDEXED_BY("sources_by_active_destination_site_reporting_origin") \
   "ON I.source_id=R.source_id "              \
   "WHERE I.destination_site=? "              \
   "AND(event_level_active BETWEEN 0 AND 1)"  \
@@ -750,24 +748,40 @@ AttributionStorageSql::MaybeReplaceLowerPriorityEventLevelReport(
   // and uses the greatest trigger_time to break ties. This favors sending
   // reports for report closer to the source time.
   static constexpr char kMinPrioritySql[] =
-      "SELECT priority,report_id "
+      "SELECT priority,trigger_time,report_id "
       "FROM event_level_reports "
-      "WHERE source_id=? AND report_time=? "
-      "ORDER BY priority ASC,trigger_time DESC "
-      "LIMIT 1";
+      "WHERE source_id=? AND report_time=?";
   sql::Statement min_priority_statement(
       db_->GetCachedStatement(SQL_FROM_HERE, kMinPrioritySql));
   min_priority_statement.BindInt64(0, *source.source_id());
   min_priority_statement.BindTime(1, report.report_time());
 
-  const bool has_matching_report = min_priority_statement.Step();
+  absl::optional<AttributionReport::EventLevelData::Id>
+      conversion_id_with_min_priority;
+  int64_t min_priority;
+  base::Time max_trigger_time;
+
+  while (min_priority_statement.Step()) {
+    int64_t priority = min_priority_statement.ColumnInt64(0);
+    base::Time trigger_time = min_priority_statement.ColumnTime(1);
+
+    if (!conversion_id_with_min_priority.has_value() ||
+        priority < min_priority ||
+        (priority == min_priority && trigger_time > max_trigger_time)) {
+      conversion_id_with_min_priority.emplace(
+          min_priority_statement.ColumnInt64(2));
+      min_priority = priority;
+      max_trigger_time = trigger_time;
+    }
+  }
+
   if (!min_priority_statement.Succeeded()) {
     return MaybeReplaceLowerPriorityEventLevelReportResult::kError;
   }
 
   // Deactivate the source at event-level as a new report will never be
   // generated in the future.
-  if (!has_matching_report) {
+  if (!conversion_id_with_min_priority.has_value()) {
     static constexpr char kDeactivateSql[] =
         "UPDATE sources SET event_level_active=0 WHERE source_id=?";
     sql::Statement deactivate_statement(
@@ -779,10 +793,6 @@ AttributionStorageSql::MaybeReplaceLowerPriorityEventLevelReport(
                : MaybeReplaceLowerPriorityEventLevelReportResult::kError;
   }
 
-  int64_t min_priority = min_priority_statement.ColumnInt64(0);
-  AttributionReport::EventLevelData::Id conversion_id_with_min_priority(
-      min_priority_statement.ColumnInt64(1));
-
   // If the new report's priority is less than all existing ones, or if its
   // priority is equal to the minimum existing one and it is more recent, drop
   // it. We could explicitly check the trigger time here, but it would only
@@ -793,13 +803,13 @@ AttributionStorageSql::MaybeReplaceLowerPriorityEventLevelReport(
   }
 
   absl::optional<AttributionReport> replaced =
-      GetReport(conversion_id_with_min_priority);
+      GetReport(*conversion_id_with_min_priority);
   if (!replaced.has_value()) {
     return MaybeReplaceLowerPriorityEventLevelReportResult::kError;
   }
 
   // Otherwise, delete the existing report with the lowest priority.
-  if (!DeleteReportInternal(conversion_id_with_min_priority)) {
+  if (!DeleteReportInternal(*conversion_id_with_min_priority)) {
     return MaybeReplaceLowerPriorityEventLevelReportResult::kError;
   }
 
@@ -893,9 +903,9 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
   absl::optional<StoredSource::Id> source_id_to_attribute;
   std::vector<StoredSource::Id> source_ids_to_delete;
   std::vector<StoredSource::Id> source_ids_to_deactivate;
-  if (!FindMatchingSourceForTrigger(trigger, source_id_to_attribute,
-                                    source_ids_to_delete,
-                                    source_ids_to_deactivate)) {
+  if (!FindMatchingSourceForTrigger(
+          trigger, trigger_time, source_id_to_attribute, source_ids_to_delete,
+          source_ids_to_deactivate)) {
     return assemble_report_result(EventLevelResult::kInternalError,
                                   AggregatableResult::kInternalError);
   }
@@ -1075,6 +1085,7 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
 
 bool AttributionStorageSql::FindMatchingSourceForTrigger(
     const AttributionTrigger& trigger,
+    base::Time trigger_time,
     absl::optional<StoredSource::Id>& source_id_to_attribute,
     std::vector<StoredSource::Id>& source_ids_to_delete,
     std::vector<StoredSource::Id>& source_ids_to_deactivate) {
@@ -1089,7 +1100,6 @@ bool AttributionStorageSql::FindMatchingSourceForTrigger(
   static constexpr char kGetMatchingSourcesSql[] =
       "SELECT source_id,num_attributions,aggregatable_budget_consumed "
       "FROM sources "
-      DCHECK_SQL_INDEXED_BY("sources_by_active_destination_site_reporting_origin")
       "WHERE destination_site=? AND reporting_origin=? "
       "AND(event_level_active=1 OR aggregatable_active=1)"
       "AND expiry_time>? "
@@ -1099,7 +1109,7 @@ bool AttributionStorageSql::FindMatchingSourceForTrigger(
       db_->GetCachedStatement(SQL_FROM_HERE, kGetMatchingSourcesSql));
   statement.BindString(0, net::SchemefulSite(destination_origin).Serialize());
   statement.BindString(1, reporting_origin.Serialize());
-  statement.BindTime(2, base::Time::Now());
+  statement.BindTime(2, trigger_time);
 
   // If there are no matching sources, return early.
   if (!statement.Step()) {
@@ -1584,14 +1594,11 @@ bool AttributionStorageSql::DeleteExpiredSources() {
   // their expiry time. Optimized by |kImpressionExpiryIndexSql|.
   static constexpr char kSelectExpiredSourcesSql[] =
       "SELECT source_id FROM sources "
-      DCHECK_SQL_INDEXED_BY("sources_by_expiry_time")
       "WHERE expiry_time<=? AND "
       "source_id NOT IN("
       "SELECT source_id FROM event_level_reports"
-      DCHECK_SQL_INDEXED_BY("event_level_reports_by_source_id")
       ")AND source_id NOT IN("
       "SELECT source_id FROM aggregatable_report_metadata"
-      DCHECK_SQL_INDEXED_BY("aggregate_source_id_idx")
       ")LIMIT ?";
   sql::Statement select_expired_statement(
       db_->GetCachedStatement(SQL_FROM_HERE, kSelectExpiredSourcesSql));
@@ -1607,14 +1614,11 @@ bool AttributionStorageSql::DeleteExpiredSources() {
   // Optimized by |kConversionDestinationIndexSql|.
   static constexpr char kSelectInactiveSourcesSql[] =
       "SELECT source_id FROM sources "
-      DCHECK_SQL_INDEXED_BY("sources_by_active_destination_site_reporting_origin")
       "WHERE event_level_active=0 AND aggregatable_active=0 AND "
       "source_id NOT IN("
       "SELECT source_id FROM event_level_reports"
-      DCHECK_SQL_INDEXED_BY("event_level_reports_by_source_id")
       ")AND source_id NOT IN("
       "SELECT source_id FROM aggregatable_report_metadata"
-      DCHECK_SQL_INDEXED_BY("aggregate_source_id_idx")
       ")LIMIT ?";
   sql::Statement select_inactive_statement(
       db_->GetCachedStatement(SQL_FROM_HERE, kSelectInactiveSourcesSql));
@@ -1756,6 +1760,14 @@ void AttributionStorageSql::ClearData(
   // the above histogram.
   SCOPED_UMA_HISTOGRAM_TIMER("Conversions.Storage.ClearDataWithFilterDuration");
 
+  // Delete the data in a transaction to avoid cases where the source part
+  // of a report is deleted without deleting the associated report, or
+  // vice versa.
+  sql::Transaction transaction(db_.get());
+  if (!transaction.Begin()) {
+    return;
+  }
+
   // TODO(csharrison, johnidel): This query can be split up and optimized by
   // adding indexes on the time and trigger_time columns.
   // See this comment for more information:
@@ -1802,14 +1814,6 @@ void AttributionStorageSql::ClearData(
   // TODO(csharrison, johnidel): Should we consider poisoning the DB if some of
   // the delete operations fail?
   if (!statement.Succeeded()) {
-    return;
-  }
-
-  // Delete the data in a transaction to avoid cases where the source part
-  // of a report is deleted without deleting the associated report, or
-  // vice versa.
-  sql::Transaction transaction(db_.get());
-  if (!transaction.Begin()) {
     return;
   }
 
@@ -1949,7 +1953,6 @@ bool AttributionStorageSql::HasCapacityForStoringSource(
   static constexpr char kCountSourcesSql[] =
       // clang-format off
       "SELECT COUNT(*)FROM sources "
-      DCHECK_SQL_INDEXED_BY("active_sources_by_source_origin")
       "WHERE source_origin=? "
       "AND(event_level_active=1 OR aggregatable_active=1)";  // clang-format on
 
@@ -2460,26 +2463,20 @@ bool AttributionStorageSql::CreateSchema() {
   // All columns in this table are const.
   // `aggregation_id` is the primary key of a row in the
   // [aggregatable_report_metadata] table.
+  // `contribution_id` is an arbitrary integer that distinguishes rows with the
+  // same `aggregation_id`.
   // `key_high_bits` and `key_low_bits` represent the histogram bucket key that
   // is a 128-bit unsigned integer.
   // `value` is the histogram value.
   static constexpr char kAggregatableContributionsTableSql[] =
       "CREATE TABLE aggregatable_contributions("
-      "contribution_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
       "aggregation_id INTEGER NOT NULL,"
+      "contribution_id INTEGER NOT NULL,"
       "key_high_bits INTEGER NOT NULL,"
       "key_low_bits INTEGER NOT NULL,"
-      "value INTEGER NOT NULL)";
+      "value INTEGER NOT NULL,"
+      "PRIMARY KEY(aggregation_id,contribution_id))WITHOUT ROWID";
   if (!db_->Execute(kAggregatableContributionsTableSql)) {
-    return false;
-  }
-
-  // Optimizes contribution look up by aggregation id during calls to
-  // `DeleteAggregatableContributions()`.
-  static constexpr char kContributionAggregationIdIndexSql[] =
-      "CREATE INDEX contribution_aggregation_id_idx "
-      "ON aggregatable_contributions(aggregation_id)";
-  if (!db_->Execute(kContributionAggregationIdIndexSql)) {
     return false;
   }
 
@@ -2587,7 +2584,6 @@ int AttributionStorageSql::ClearAggregatableAttributionsForOriginsInRange(
       "SELECT I.source_origin,I.destination_origin,I.reporting_origin,"
       "I.source_id,A.aggregation_id "
       "FROM sources I LEFT JOIN aggregatable_report_metadata A "
-      DCHECK_SQL_INDEXED_BY("aggregate_trigger_time_idx")
       "ON A.source_id=I.source_id WHERE"
       "(I.source_time BETWEEN ?1 AND ?2)OR"
       "(A.trigger_time BETWEEN ?1 AND ?2)";
@@ -2650,10 +2646,7 @@ bool AttributionStorageSql::DeleteReportInternal(
 bool AttributionStorageSql::DeleteAggregatableContributions(
     AttributionReport::AggregatableAttributionData::Id aggregation_id) {
   static constexpr char kDeleteContributionsSql[] =
-      // clang-format off
-      "DELETE FROM aggregatable_contributions "
-      DCHECK_SQL_INDEXED_BY("contribution_aggregation_id_idx")
-      "WHERE aggregation_id=?";  // clang-format on
+      "DELETE FROM aggregatable_contributions WHERE aggregation_id=?";
   sql::Statement statement(
       db_->GetCachedStatement(SQL_FROM_HERE, kDeleteContributionsSql));
   statement.BindInt64(0, *aggregation_id);
@@ -2669,7 +2662,6 @@ int AttributionStorageSql::ClearAggregatableAttributionsForSourceIds(
 
   static constexpr char kDeleteAggregationsSql[] =
       "DELETE FROM aggregatable_report_metadata "
-      DCHECK_SQL_INDEXED_BY("aggregate_source_id_idx")
       "WHERE source_id=? "
       "RETURNING aggregation_id";
   sql::Statement statement(
@@ -2934,23 +2926,26 @@ bool AttributionStorageSql::StoreAggregatableAttributionReport(
 
   static constexpr char kInsertContributionsSql[] =
       "INSERT INTO aggregatable_contributions"
-      "(aggregation_id,key_high_bits,key_low_bits,value)"
-      "VALUES(?,?,?,?)";
+      "(aggregation_id,contribution_id,key_high_bits,key_low_bits,value)"
+      "VALUES(?,?,?,?,?)";
   sql::Statement insert_contributions_statement(
       db_->GetCachedStatement(SQL_FROM_HERE, kInsertContributionsSql));
 
+  int contribution_id = 0;
   for (const auto& contribution : aggregatable_attribution->contributions) {
     insert_contributions_statement.Reset(/*clear_bound_vars=*/true);
     insert_contributions_statement.BindInt64(0, *aggregatable_attribution->id);
+    insert_contributions_statement.BindInt(1, contribution_id);
     insert_contributions_statement.BindInt64(
-        1, SerializeUint64(absl::Uint128High64(contribution.key())));
+        2, SerializeUint64(absl::Uint128High64(contribution.key())));
     insert_contributions_statement.BindInt64(
-        2, SerializeUint64(absl::Uint128Low64(contribution.key())));
+        3, SerializeUint64(absl::Uint128Low64(contribution.key())));
     insert_contributions_statement.BindInt64(
-        3, static_cast<int64_t>(contribution.value()));
+        4, static_cast<int64_t>(contribution.value()));
     if (!insert_contributions_statement.Run()) {
       return false;
     }
+    ++contribution_id;
   }
 
   return transaction.Commit();

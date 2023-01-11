@@ -24,6 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -6417,7 +6418,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplCredentiallessIframeBrowserTest,
   EXPECT_FALSE(main_rfh->storage_key().nonce().has_value());
 
   EXPECT_EQ(1U, main_rfh->child_count());
-  EXPECT_TRUE(main_rfh->child_at(0)->credentialless());
+  EXPECT_TRUE(main_rfh->child_at(0)->Credentialless());
   EXPECT_FALSE(main_rfh->child_at(0)->current_frame_host()->IsCredentialless());
   EXPECT_EQ(true, EvalJs(main_rfh->child_at(0)->current_frame_host(),
                          "window.credentialless"));

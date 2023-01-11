@@ -16,7 +16,51 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/webapps/browser/install_result_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
+#include "url/origin.h"
+
+namespace {
+
+// Maximum size of the manifest file. 1MB.
+constexpr int kMaxManifestSizeInBytes = 1024 * 1024;
+
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("app_preload_service_web_installer", R"(
+      semantics {
+        sender: "App Preload Service"
+        description:
+          "Sends a request to a Google server to retrieve app installation"
+          "information."
+        trigger:
+          "Requests are sent after the App Preload Service has performed an"
+          "initial request to get a list of apps to install."
+        data: "None"
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        cookies_allowed: NO
+        setting: "This feature cannot be disabled by settings."
+        policy_exception_justification:
+          "This feature is required to deliver core user experiences and "
+          "cannot be disabled by policy."
+      }
+    )");
+
+int GetResponseCode(network::SimpleURLLoader* simple_loader) {
+  if (simple_loader->ResponseInfo() && simple_loader->ResponseInfo()->headers) {
+    return simple_loader->ResponseInfo()->headers->response_code();
+  } else {
+    return -1;
+  }
+}
+
+}  // namespace
 
 namespace apps {
 
@@ -126,30 +170,117 @@ void WebAppPreloadInstaller::InstallApp(
                      weak_ptr_factory_.GetWeakPtr(), app, std::move(callback)));
 }
 
-// TODO(b/263437253): fix up once supporting libraries are in place.
 std::string WebAppPreloadInstaller::GetAppId(
     const PreloadAppDefinition& app) const {
   // The app's "Web app manifest ID" is the equivalent of the unhashed app ID.
-  // return web_app::GenerateAppIdFromUnhashed(app.GetWebAppManifestId());
-  return "";
+  return web_app::GenerateAppIdFromUnhashed(app.GetWebAppManifestId().spec());
 }
 
 void WebAppPreloadInstaller::InstallAppImpl(
     PreloadAppDefinition app,
     WebAppPreloadInstalledCallback callback) {
+  // Retrieve web manifest
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GURL(app.GetWebAppManifestUrl());
+
+  if (!resource_request->url.is_valid()) {
+    LOG(ERROR) << "Manifest URL for " << app.GetName()
+               << "is invalid: " << resource_request->url;
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+
+  resource_request->method = "GET";
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+
+  std::unique_ptr<network::SimpleURLLoader> simple_loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       kTrafficAnnotation);
+
+  auto* loader_ptr = simple_loader.get();
+
+  loader_ptr->DownloadToString(
+      profile_->GetURLLoaderFactory().get(),
+      base::BindOnce(&WebAppPreloadInstaller::OnManifestRetrieved,
+                     weak_ptr_factory_.GetWeakPtr(), app, std::move(callback),
+                     std::move(simple_loader)),
+      kMaxManifestSizeInBytes);
+}
+
+void WebAppPreloadInstaller::OnManifestRetrieved(
+    PreloadAppDefinition app,
+    WebAppPreloadInstalledCallback callback,
+    std::unique_ptr<network::SimpleURLLoader> url_loader,
+    std::unique_ptr<std::string> response) {
+  if (url_loader->NetError() != net::OK || response->empty()) {
+    LOG(ERROR) << "Downloading manifest failed for " << app.GetName()
+               << " with error code: " << GetResponseCode(url_loader.get());
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      *response,
+      base::BindOnce(&WebAppPreloadInstaller::OnManifestParsed,
+                     weak_ptr_factory_.GetWeakPtr(), app, std::move(callback)));
+}
+
+void WebAppPreloadInstaller::OnManifestParsed(
+    PreloadAppDefinition app,
+    WebAppPreloadInstalledCallback callback,
+    data_decoder::DataDecoder::ValueOrError parsing_result) {
+  if (!parsing_result.has_value() || !parsing_result->is_dict()) {
+    LOG(ERROR) << "Parsing the manifest for " << app.GetName()
+               << " has failed. Parsing error: " << parsing_result.error();
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+
+  std::unique_ptr<WebAppInstallInfo> install_info = ManifestToWebAppInstallInfo(
+      GURL(app.GetWebAppManifestId()), app.GetWebAppOriginalManifestUrl(),
+      parsing_result->GetDict());
+
+  if (!install_info) {
+    LOG(ERROR)
+        << "Failed to convert parsed manifest into WebAppInstallInfo for app "
+        << app.GetName();
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+
+  std::string local_manifest_id = web_app::GenerateAppIdUnhashed(
+      install_info->manifest_id, install_info->start_url);
+  if (app.GetWebAppManifestId() != local_manifest_id) {
+    // The data parsing has some inconsistencies with the server definition, so
+    // don't install the app.
+    LOG(ERROR) << app.GetName()
+               << " failed to install due to inconsistent manifest ID.";
+    LOG(ERROR) << "Server generated manifest ID: " << app.GetWebAppManifestId();
+    LOG(ERROR) << "Locally generated manifest ID: " << local_manifest_id;
+
+    // TODO(b/264493427): Add logging to record when this happens.
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+
+  SendInstallCommand(std::move(callback), std::move(install_info));
+}
+
+void WebAppPreloadInstaller::SendInstallCommand(
+    WebAppPreloadInstalledCallback callback,
+    std::unique_ptr<WebAppInstallInfo> install_info) {
   web_app::WebAppInstallParams params;
   params.add_to_quick_launch_bar = false;
 
   auto* provider = web_app::WebAppProvider::GetForWebApps(profile_);
 
-  std::unique_ptr<WebAppInstallInfo> info = nullptr;
-  if (!info) {
+  if (!install_info) {
     std::move(callback).Run(/*success=*/false);
     return;
   }
 
   provider->scheduler().InstallFromInfoWithParams(
-      std::move(info),
+      std::move(install_info),
       /*overwrite_existing_manifest_fields=*/false,
       webapps::WebappInstallSource::PRELOADED_OEM,
       base::BindOnce(&WebAppPreloadInstaller::OnAppInstalled,

@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -2159,6 +2159,55 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsOnUpdatedSplit) {
     EXPECT_TRUE(tabs_listener.WaitUntilSatisfied());
     EXPECT_EQ(R"(["chrome://about/"])", tabs_listener.message());
   }
+}
+
+// Test extension with OnInstalled listener can be successfully updated when,
+// 1) Was allowed in incognito.
+// 2) An incognito window was open.
+// 3) Toggle the allow in incognito switch to off
+// Regression test for crbug.com/1394588
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       DisallowIncognitoWithOnInstalledListener) {
+  ResultCatcher catcher;
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+
+  base::FilePath pem_path = test_data_dir_.AppendASCII("service_worker")
+                                .AppendASCII("update_incognito_mode")
+                                .AppendASCII("service_worker.pem");
+
+  base::FilePath path_v1 =
+      PackExtensionWithOptions(test_data_dir_.AppendASCII("service_worker")
+                                   .AppendASCII("update_incognito_mode")
+                                   .AppendASCII("v1"),
+                               scoped_temp_dir.GetPath().AppendASCII("v1.crx"),
+                               pem_path, base::FilePath());
+  base::FilePath path_v2 =
+      PackExtensionWithOptions(test_data_dir_.AppendASCII("service_worker")
+                                   .AppendASCII("update_incognito_mode")
+                                   .AppendASCII("v2"),
+                               scoped_temp_dir.GetPath().AppendASCII("v2.crx"),
+                               pem_path, base::FilePath());
+
+  // Allow in incognito.
+  const Extension* extension =
+      LoadExtension(path_v1, {.allow_in_incognito = true});
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  // Open an incognito window.
+  GURL url(url::kAboutBlankURL);
+  OpenURLOffTheRecord(profile(), url);
+
+  // Disallow in incognito.
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile());
+  extension_prefs->SetIsIncognitoEnabled(extension->id(), false);
+
+  // Should successfully update.
+  const Extension* extension2 = UpdateExtension(extension->id(), path_v2, 0);
+  EXPECT_TRUE(extension2);
+  ASSERT_TRUE(catcher.GetNextResult());
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,

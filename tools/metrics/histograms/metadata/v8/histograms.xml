@@ -110,7 +110,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.CompileLazyMicroSeconds" units="microseconds"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>hablich@chromium.org</owner>
   <summary>
     Aggregated time spent compiling functions lazily during a single script
@@ -371,7 +371,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.ExecuteMicroSeconds" units="microseconds"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>cbruni@chromium.org</owner>
   <owner>v8-runtime@google.com</owner>
   <summary>
@@ -1589,7 +1589,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.UnhandledExceptionCountInMainThread"
-    units="BooleanOccurred" expires_after="2023-05-07">
+    units="BooleanOccurred" expires_after="2023-07-09">
   <owner>chikamune@chromium.org</owner>
   <owner>sisidovski@chromium.org</owner>
   <owner>hiroshige@chromium.org</owner>
@@ -1604,7 +1604,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.UnhandledExceptionCountInWorker" units="BooleanOccurred"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>chikamune@chromium.org</owner>
   <owner>sisidovski@chromium.org</owner>
   <owner>hiroshige@chromium.org</owner>
@@ -1650,6 +1650,18 @@ chromium-metrics-reviews@google.com.
     The result of a Wasm code cache lookup. Recorded once per Wasm streaming
     compilation at the time where we try to get the compiled Wasm module from
     the code cache.
+  </summary>
+</histogram>
+
+<histogram name="V8.WasmCompilationMethod" enum="WasmCompilationMethod"
+    expires_after="2023-08-01">
+  <owner>ahaas@chromium.org</owner>
+  <owner>ecmziegler@chromium.org</owner>
+  <owner>wasm-v8@google.com</owner>
+  <summary>
+    WebAssembly JS API function that triggers compilation. Recorded when
+    WebAssembly compilation gets triggered, independently of the compilation
+    results, i.e. whether compilation succeeds or fails.
   </summary>
 </histogram>
 

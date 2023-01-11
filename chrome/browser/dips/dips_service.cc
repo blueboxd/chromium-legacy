@@ -12,6 +12,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -187,8 +188,7 @@ void DIPSService::GotState(std::vector<DIPSRedirectInfoPtr> redirects,
 
   DIPSRedirectInfo* redirect = redirects[index].get();
   // If there's any user interaction recorded in the DIPS DB, that's engagement.
-  redirect->has_interaction =
-      url_state.user_interaction_times().last.has_value();
+  redirect->has_interaction = url_state.user_interaction_times().has_value();
   HandleRedirect(
       *redirect, *chain,
       base::BindRepeating(&DIPSService::RecordBounce, base::Unretained(this)));

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/memory_pressure/user_level_memory_pressure_signal_generator.h"
+#include "base/task/sequenced_task_runner.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include <ctype.h>
@@ -22,11 +23,11 @@
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "content/browser/child_process_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/child_process_data.h"
 
@@ -173,8 +174,9 @@ void UserLevelMemoryPressureSignalGenerator::OnTimerFired() {
 void UserLevelMemoryPressureSignalGenerator::StartPeriodicTimer(
     base::TimeDelta interval) {
   // Don't try to start the timer in tests that don't support it.
-  if (!base::SequencedTaskRunnerHandle::IsSet())
+  if (!base::SequencedTaskRunner::HasCurrentDefault()) {
     return;
+  }
   periodic_measuring_timer_.Start(
       FROM_HERE, interval,
       base::BindOnce(&UserLevelMemoryPressureSignalGenerator::OnTimerFired,

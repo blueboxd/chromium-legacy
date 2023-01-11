@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "base/callback.h"
 #include "base/callback_list.h"
+#include "base/functional/callback.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "components/sync/test/mock_model_type_change_processor.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -102,6 +102,7 @@ class FakeWebAppProvider : public WebAppProvider {
   AbstractWebAppDatabaseFactory& GetDatabaseFactory() const;
   WebAppUiManager& GetUiManager() const;
   WebAppInstallManager& GetInstallManager() const;
+  OsIntegrationManager& GetOsIntegrationManager() const;
 
   // Starts this WebAppProvider and its subsystems. It does not wait for systems
   // to be ready.

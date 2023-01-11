@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_forward.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
@@ -165,8 +165,8 @@ SidePanelCoordinator::SidePanelCoordinator(BrowserView* browser_view)
   combobox_model_ = std::make_unique<SidePanelComboboxModel>();
 
   auto global_registry = std::make_unique<SidePanelRegistry>();
-  global_registry->AddObserver(this);
   global_registry_ = global_registry.get();
+  registry_observations_.AddObservation(global_registry_);
   browser_view->browser()->SetUserData(kGlobalSidePanelRegistryKey,
                                        std::move(global_registry));
 
@@ -665,7 +665,7 @@ void SidePanelCoordinator::OnTabStripModelChanged(
   auto* old_contextual_registry =
       SidePanelRegistry::Get(selection.old_contents);
   if (old_contextual_registry) {
-    old_contextual_registry->RemoveObserver(this);
+    registry_observations_.RemoveObservation(old_contextual_registry);
     std::vector<SidePanelEntry::Key> contextual_keys_to_remove;
 
     // Only remove the previous tab's contextual entries from the combobox if
@@ -683,7 +683,7 @@ void SidePanelCoordinator::OnTabStripModelChanged(
   auto* new_contextual_registry =
       SidePanelRegistry::Get(selection.new_contents);
   if (new_contextual_registry) {
-    new_contextual_registry->AddObserver(this);
+    registry_observations_.AddObservation(new_contextual_registry);
     combobox_model_->AddItems(new_contextual_registry->entries());
   }
 

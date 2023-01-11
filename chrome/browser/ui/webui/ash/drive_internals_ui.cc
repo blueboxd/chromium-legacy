@@ -17,11 +17,11 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -626,15 +626,12 @@ class DriveInternalsWebUIHandler
 
     base::Value::Dict setup_progress;
     setup_progress.Set("stage", ToString(progress.stage));
-    setup_progress.Set("setupError", ToString(progress.error));
-    setup_progress.Set(
-        "availableDiskSpace",
-        ToString(HumanReadableSize(progress.available_disk_space)));
-    setup_progress.Set(
-        "requiredDiskSpace",
-        ToString(HumanReadableSize(progress.required_disk_space)));
+    setup_progress.Set("availableDiskSpace",
+                       ToString(HumanReadableSize(progress.free_space)));
+    setup_progress.Set("requiredDiskSpace",
+                       ToString(HumanReadableSize(progress.total_bytes)));
     setup_progress.Set("pinnedDiskSpace",
-                       ToString(HumanReadableSize(progress.pinned_disk_space)));
+                       ToString(HumanReadableSize(progress.transferred_bytes)));
     MaybeCallJavascript("onBulkPinningProgress",
                         base::Value(std::move(setup_progress)));
   }

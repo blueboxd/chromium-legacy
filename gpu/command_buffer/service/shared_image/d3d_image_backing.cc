@@ -6,8 +6,8 @@
 
 #include <d3d11_3.h>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -212,7 +212,7 @@ D3DImageBacking::DawnExternalImageState::operator=(DawnExternalImageState&&) =
 // static
 std::unique_ptr<D3DImageBacking> D3DImageBacking::CreateFromSwapChainBuffer(
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
@@ -221,16 +221,16 @@ std::unique_ptr<D3DImageBacking> D3DImageBacking::CreateFromSwapChainBuffer(
     Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
     Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain,
     bool is_back_buffer) {
-  auto si_format = viz::SharedImageFormat::SinglePlane(format);
-  auto gl_texture = CreateGLTexture(
-      si_format, size, color_space, d3d11_texture, GL_TEXTURE_2D,
-      /*array_slice=*/0u, /*plane_index=*/0u, swap_chain);
+  DCHECK(format.is_single_plane());
+  auto gl_texture =
+      CreateGLTexture(format, size, color_space, d3d11_texture, GL_TEXTURE_2D,
+                      /*array_slice=*/0u, /*plane_index=*/0u, swap_chain);
   if (!gl_texture) {
     LOG(ERROR) << "Failed to create GL texture";
     return nullptr;
   }
   return base::WrapUnique(new D3DImageBacking(
-      mailbox, si_format, size, color_space, surface_origin, alpha_type, usage,
+      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
       std::move(d3d11_texture), std::move(gl_texture),
       /*dxgi_shared_handle_state=*/nullptr, GL_TEXTURE_2D, /*array_slice=*/0u,
       /*plane_index=*/0u, std::move(swap_chain), is_back_buffer));
@@ -457,7 +457,10 @@ void D3DImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   // which are synonymous with D3D textures, and no explicit update is needed.
 }
 
-bool D3DImageBacking::UploadFromMemory(const SkPixmap& pixmap) {
+bool D3DImageBacking::UploadFromMemory(const std::vector<SkPixmap>& pixmaps) {
+  DCHECK_EQ(pixmaps.size(), 1u);
+  auto& pixmap = pixmaps[0];
+
   const uint8_t* source_memory = static_cast<const uint8_t*>(pixmap.addr());
   const size_t source_stride = pixmap.info().minRowBytes();
 

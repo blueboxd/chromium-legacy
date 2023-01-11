@@ -13,10 +13,10 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/user_metrics.h"
@@ -502,9 +502,9 @@ static void JNI_WebsitePreferenceBridge_RevokeObjectPermission(
     const JavaParamRef<jstring>& jobject) {
   GURL origin(ConvertJavaStringToUTF8(env, jorigin));
   DCHECK(origin.is_valid());
-  std::unique_ptr<base::DictionaryValue> object = base::DictionaryValue::From(
-      base::JSONReader::ReadDeprecated(ConvertJavaStringToUTF8(env, jobject)));
-  DCHECK(object);
+  std::unique_ptr<base::Value> object =
+      base::JSONReader::ReadDeprecated(ConvertJavaStringToUTF8(env, jobject));
+  DCHECK(object && object->is_dict());
   permissions::ObjectPermissionContextBase* context = GetChooserContext(
       jbrowser_context_handle,
       static_cast<ContentSettingsType>(content_settings_type));

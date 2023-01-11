@@ -10,9 +10,6 @@
 namespace feature_engagement {
 
 // Features used by the In-Product Help system.
-BASE_FEATURE(kEnableAutomaticSnooze,
-             "EnableAutomaticSnooze",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHDemoMode, "IPH_DemoMode", base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHSnooze, "IPH_Snooze", base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kEnableIPH, "EnableIPH", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -412,9 +409,6 @@ BASE_FEATURE(kIPHDiscoverFeedHeaderFeature,
 BASE_FEATURE(kIPHDefaultSiteViewFeature,
              "IPH_DefaultSiteView",
              base::FEATURE_ENABLED_BY_DEFAULT);
-BASE_FEATURE(kIPHPasswordSuggestionsFeature,
-             "IPH_PasswordSuggestions",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHFollowWhileBrowsingFeature,
              "IPH_FollowWhileBrowsing",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -434,5 +428,11 @@ BASE_FEATURE(kIPHAutofillVirtualCardSuggestionFeature,
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) ||
         // BUILDFLAG(IS_FUCHSIA)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+BASE_FEATURE(kIPHGoogleOneOfferNotificationFeature,
+             "IPH_GoogleOneOfferNotification",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 }  // namespace feature_engagement

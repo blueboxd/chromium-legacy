@@ -7,16 +7,15 @@
 #include <fuchsia/sys/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/fuchsia/process_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_provider_impl.h"
+#include "base/functional/bind.h"
 #include "base/process/process.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"

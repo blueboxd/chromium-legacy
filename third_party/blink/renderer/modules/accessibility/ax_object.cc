@@ -245,12 +245,8 @@ bool IsValidRole(ax::mojom::blink::Role role) {
 }
 #endif
 
-struct RoleHashTraits : HashTraits<ax::mojom::blink::Role> {
-  static const bool kEmptyValueIsZero = true;
-  static ax::mojom::blink::Role EmptyValue() {
-    return ax::mojom::blink::Role::kUnknown;
-  }
-};
+using RoleHashTraits =
+    EnumHashTraits<ax::mojom::blink::Role, ax::mojom::blink::Role::kUnknown>;
 
 constexpr wtf_size_t kNumRoles =
     static_cast<wtf_size_t>(ax::mojom::blink::Role::kMaxValue) + 1;
@@ -1691,6 +1687,12 @@ void AXObject::SerializeScreenReaderAttributes(ui::AXNodeData* node_data) {
             display_style);
       }
     }
+
+    // Whether it has ARIA attributes at all.
+    if (HasAriaAttribute()) {
+      node_data->AddBoolAttribute(
+          ax::mojom::blink::BoolAttribute::kHasAriaAttribute, true);
+    }
   }
 
   if (KeyboardShortcut().length() &&
@@ -1705,19 +1707,6 @@ void AXObject::SerializeScreenReaderAttributes(ui::AXNodeData* node_data) {
     node_data->AddIntAttribute(
         ax::mojom::blink::IntAttribute::kActivedescendantId,
         active_descendant->AXObjectID());
-  }
-
-  if (Node* node = GetNode()) {
-    if (node->IsElementNode()) {
-      Element* element = To<Element>(node);
-      if (element->IsHTMLWithTagName("input")) {
-        String type = element->getAttribute("type");
-        if (type.empty())
-          type = "text";
-        TruncateAndAddStringAttribute(
-            node_data, ax::mojom::blink::StringAttribute::kInputType, type);
-      }
-    }
   }
 }
 
@@ -2187,14 +2176,6 @@ void AXObject::SerializeUnignoredAttributes(ui::AXNodeData* node_data,
     SerializeTableAttributes(node_data);
   }
 
-  if (accessibility_mode.has_mode(ui::AXMode::kScreenReader)) {
-    // Whether it has ARIA attributes at all.
-    if (HasAriaAttribute()) {
-      node_data->AddBoolAttribute(
-          ax::mojom::blink::BoolAttribute::kHasAriaAttribute, true);
-    }
-  }
-
   if (accessibility_mode.has_mode(ui::AXMode::kPDF)) {
     // Return early. None of the following attributes are needed for PDFs.
     return;
@@ -2229,6 +2210,15 @@ void AXObject::SerializeUnignoredAttributes(ui::AXNodeData* node_data,
     TruncateAndAddStringAttribute(node_data,
                                   ax::mojom::blink::StringAttribute::kValue,
                                   GetValueForControl());
+
+    if (IsA<HTMLInputElement>(element)) {
+      String type = element->getAttribute("type");
+      if (type.empty()) {
+        type = "text";
+      }
+      TruncateAndAddStringAttribute(
+          node_data, ax::mojom::blink::StringAttribute::kInputType, type);
+    }
 
     if (IsAtomicTextField()) {
       // Selection offsets are only used for plain text controls, (input of a

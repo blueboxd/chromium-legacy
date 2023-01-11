@@ -8,12 +8,13 @@
 #import <Foundation/Foundation.h>
 #include <Security/Security.h>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
+#import "base/task/sequenced_task_runner.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"

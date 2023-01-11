@@ -1447,12 +1447,42 @@ Style notes:
         Scanning
       </message>
 
-       <!-- Video Conference tray-->
+       <!-- Video Conference tray/bubble  -->
       <message name="IDS_ASH_VIDEO_CONFERENCE_TOGGLE_BUBBLE_BUTTON_TOOLTIP" desc="The tooltip for the toggle bubble button in the video conference tray.">
         Camera and audio controls
       </message>
       <message name="IDS_ASH_VIDEO_CONFERENCE_RETURN_TO_APP_SUMMARY_TEXT" desc="The summary text in the return to app panel of the video conference panel, specifying how many video conferencing apps are in used.">
         Used by <ph name="APP_COUNT">$1<ex>2</ex></ph> apps
+      </message>
+      <message name="IDS_ASH_VIDEO_CONFERENCE_RETURN_TO_APP_SHOW_TOOLTIP" desc="The tooltip text for the expand button (when in collapsed state) of the return to app panel.">
+        Show apps
+      </message>
+      <message name="IDS_ASH_VIDEO_CONFERENCE_RETURN_TO_APP_HIDE_TOOLTIP" desc="The tooltip text for the expand button (when in expanded state) of the return to app panel.">
+        Hide apps
+      </message>
+      <message name="IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_NAME" desc="Text for name of the background blur effect in the VC bubble.">
+        Background Blur
+      </message>
+      <message name="IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_OFF" desc="Text for background blur 'off' setting, in the VC bubble.">
+        Off
+      </message>
+      <message name="IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_LOWEST" desc="Text for background blur 'lowest' setting, in the VC bubble.">
+        Lowest
+      </message>
+      <message name="IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_LIGHT" desc="Text for background blur 'light' setting, in the VC bubble.">
+        Light
+      </message>
+      <message name="IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_MEDIUM" desc="Text for background blur 'medium' setting, in the VC bubble.">
+        Medium
+      </message>
+      <message name="IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_HEAVY" desc="Text for background blur 'heavy' setting, in the VC bubble.">
+        Heavy
+      </message>
+      <message name="IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_MAXIMUM" desc="Text for background blur 'maximum' setting, in the VC bubble.">
+        Maximum
+      </message>
+      <message name="IDS_ASH_VIDEO_CONFERENCE_BUBBLE_PORTRAIT_RELIGHT_NAME" desc="Text for name of the portrait relight effect in the VC bubble.">
+        Portrait Relighting
       </message>
 
       <!-- Phone Hub tray-->
@@ -2611,6 +2641,9 @@ Connect your device to power.
       <message name="IDS_ASH_STATUS_TRAY_LIVE_CAPTION" desc="The label used in the accessibility menu of the system tray to toggle on/off Live Caption feature.">
         Live Caption
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_LIVE_CAPTION_OFF" desc="The label used in the accessibility menu of the system tray when Live Caption is turned off.">
+        Off
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_LIVE_CAPTION_TOGGLE_TOOLTIP" desc="The tooltip text used for the button in the status tray to toggle the Live Caption feature on or off.">
         Toggle Live Caption. <ph name="STATE_TEXT">$1<ex>Live Caption is on.</ex></ph>
       </message>
@@ -2645,6 +2678,9 @@ Connect your device to power.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_AUDIO" desc="The label used in audio detailed page bottom header of ash tray pop up.">
         Audio settings
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_QS_REVAMP" desc="The label used in audio detailed page bottom header of ash tray pop up.">
+        Audio
       </message>
       <message name="IDS_ASH_STATUS_TRAY_AUDIO_OUTPUT" desc="The label used in audio detailed page for audio output section of ash tray pop up.">
         Output
@@ -5118,8 +5154,8 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_SCREEN_CAPTURE_SAVE_TO_SELECT_FOLDER" desc="The label of the menu item button for selecting a folder to store the captured images and videos.">
         Select folder...
       </message>
-      <message name="IDS_ASH_SCREEN_CAPTURE_DEMO_TOOLS_SHOW_KEYS_AND_CLICKS" desc="The label of the menu item toggle button to show keyboard shortcut and clicks during video recording.">
-        Show keys and clicks
+      <message name="IDS_ASH_SCREEN_CAPTURE_DEMO_TOOLS_SHOW_CLICKS_AND_KEYS" desc="The label of the menu item toggle button to show clicks and keyboard shortcuts during video recording.">
+        Show clicks and keys
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_A11Y_TITLE" desc="The label of window hosting the screen capture toolbar that will be read by ChromeVox when prompted for title.">
         Screen capture, tools to take screenshots and screen recordings
@@ -5946,6 +5982,14 @@ New install
       </message>
       <message name="IDS_ASH_DO_NOT_DISTURB_NOTIFICATION_TURN_OFF" desc="Label for a button on the 'Do not disturb' notification that turns off 'Do not disturb' mode.">
         Turn off
+      </message>
+
+      <!-- security curtain -->
+      <message name="IDS_ASH_CURTAIN_TITLE" desc="Title text displayed to inform the user a remote admin has taken control of the ChromeOs device.">
+        Your administrator is controlling your device
+      </message>
+      <message name="IDS_ASH_CURTAIN_DESCRIPTION" desc="Detailed description displayed to inform the user a remote admin has taken control of the ChromeOs device.">
+        Your administrator has logged in to look into an issue. You can continue to use the device after the administrator gives the control back to you.
       </message>
     </messages>
   </release>

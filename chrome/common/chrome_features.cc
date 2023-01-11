@@ -167,11 +167,6 @@ BASE_FEATURE(kCrostiniArcSideload,
              "CrostiniArcSideload",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables custom UI for forcibly closing unresponsive windows.
-BASE_FEATURE(kCrostiniForceClose,
-             "CrostiniForceClose",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables distributed model for TPM1.2, i.e., using tpm_managerd and
 // attestationd.
 BASE_FEATURE(kCryptohomeDistributedModel,
@@ -413,12 +408,6 @@ BASE_FEATURE(kExtensionDeferredIndividualSettings,
              "ExtensionDeferredIndividualSettings",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
-
-// Controls whether the user justification text field is visible on the
-// extension request dialog.
-BASE_FEATURE(kExtensionWorkflowJustification,
-             "ExtensionWorkflowJustification",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, this feature's |kExternalInstallDefaultButtonKey| field trial
 // parameter value controls which |ExternalInstallBubbleAlert| button is the

@@ -10,8 +10,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -526,8 +526,8 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
   std::unique_ptr<TestModelTypeSyncBridge> bridge_;
   sync_pb::ModelTypeState model_type_state_;
 
-  // This sets SequencedTaskRunnerHandle on the current thread, which the type
-  // processor will pick up as the sync task runner.
+  // This sets SequencedTaskRunner::CurrentDefaultHandle on the current thread,
+  // which the type processor will pick up as the sync task runner.
   base::test::SingleThreadTaskEnvironment task_environment_;
 
   // This run loop is used to wait for OnReadyToConnect is called.

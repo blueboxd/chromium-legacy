@@ -31,7 +31,7 @@ TCPReadableStreamWrapper::TCPReadableStreamWrapper(
     ScriptState* script_state,
     CloseOnceCallback on_close,
     mojo::ScopedDataPipeConsumerHandle handle)
-    : ReadableStreamWrapper(script_state),
+    : ReadableStreamDefaultWrapper(script_state),
       on_close_(std::move(on_close)),
       data_pipe_(std::move(handle)),
       read_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
@@ -48,15 +48,21 @@ TCPReadableStreamWrapper::TCPReadableStreamWrapper(
       WTF::BindRepeating(&TCPReadableStreamWrapper::OnHandleReset,
                          WrapWeakPersistent(this)));
 
+  ScriptState::Scope scope(script_state);
+
+  auto* source =
+      ReadableStreamDefaultWrapper::MakeForwardingUnderlyingSource(this);
+  SetSource(source);
+
   // Set queuing strategy of default behavior with a high water mark of 0.
-  InitSourceAndReadable(
-      /*source=*/MakeGarbageCollected<UnderlyingSource>(script_state, this),
-      /*high_water_mark=*/0);
+  auto* readable = ReadableStream::CreateWithCountQueueingStrategy(
+      script_state, source, /*high_water_mark=*/0);
+  SetReadable(readable);
 }
 
 void TCPReadableStreamWrapper::Trace(Visitor* visitor) const {
   visitor->Trace(pending_exception_);
-  ReadableStreamWrapper::Trace(visitor);
+  ReadableStreamDefaultWrapper::Trace(visitor);
 }
 
 void TCPReadableStreamWrapper::OnHandleReady(MojoResult result,
@@ -81,16 +87,16 @@ void TCPReadableStreamWrapper::Pull() {
 
   DCHECK(data_pipe_);
 
-  const void* buffer = nullptr;
-  uint32_t buffer_num_bytes = 0;
-  auto result = data_pipe_->BeginReadData(&buffer, &buffer_num_bytes,
+  const void* data_buffer = nullptr;
+  uint32_t data_length = 0;
+  auto result = data_pipe_->BeginReadData(&data_buffer, &data_length,
                                           MOJO_BEGIN_READ_DATA_FLAG_NONE);
   switch (result) {
     case MOJO_RESULT_OK: {
-      Push(base::make_span(static_cast<const uint8_t*>(buffer),
-                           buffer_num_bytes),
-           {});
-      result = data_pipe_->EndReadData(buffer_num_bytes);
+      auto* buffer = DOMUint8Array::Create(
+          static_cast<const uint8_t*>(data_buffer), data_length);
+      Controller()->Enqueue(buffer);
+      result = data_pipe_->EndReadData(data_length);
       DCHECK_EQ(result, MOJO_RESULT_OK);
 
       break;
@@ -108,14 +114,6 @@ void TCPReadableStreamWrapper::Pull() {
       NOTREACHED() << "Unexpected result: " << result;
       return;
   }
-}
-
-bool TCPReadableStreamWrapper::Push(base::span<const uint8_t> data,
-                                    const absl::optional<net::IPEndPoint>&) {
-  auto* buffer = DOMUint8Array::Create(data.data(), data.size_bytes());
-  Controller()->Enqueue(buffer);
-
-  return true;
 }
 
 void TCPReadableStreamWrapper::CloseStream() {

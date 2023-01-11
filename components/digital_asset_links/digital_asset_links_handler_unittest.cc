@@ -4,13 +4,12 @@
 
 #include "components/digital_asset_links/digital_asset_links_handler.h"
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/base/net_errors.h"

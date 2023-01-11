@@ -10,7 +10,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "build/buildflag.h"
@@ -186,6 +186,7 @@ std::string AssistantOptInDialog::GetDialogArgs() const {
 }
 
 void AssistantOptInDialog::OnDialogShown(content::WebUI* webui) {
+  SystemWebDialogDelegate::OnDialogShown(webui);
   assistant_ui_ = static_cast<AssistantOptInUI*>(webui->GetController());
 }
 

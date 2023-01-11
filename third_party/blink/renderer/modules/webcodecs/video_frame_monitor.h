@@ -12,6 +12,7 @@
 #include "media/base/video_frame.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/allow_discouraged_type.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 
@@ -108,7 +109,6 @@ class MODULES_EXPORT VideoFrameMonitor {
   struct VideoFrameIDHashTraits
       : WTF::GenericHashTraits<media::VideoFrame::ID> {
     static const bool kEmptyValueIsZero = false;
-    static const bool kHasIsEmptyValueFunction = false;
 
     static media::VideoFrame::ID EmptyValue() {
       return media::VideoFrame::ID();
@@ -130,7 +130,8 @@ class MODULES_EXPORT VideoFrameMonitor {
   // key: ID of the source of the frames.
   // value: References to frames associated to that source.
   // Using std::map because HashMap does not directly support std::string.
-  using SourceMap = std::map<std::string, FrameMap>;
+  using SourceMap ALLOW_DISCOURAGED_TYPE("TODO(crbug.com/1404327)") =
+      std::map<std::string, FrameMap>;
 
   base::Lock lock_;
   // Contains all data for VideoFrameMonitor.

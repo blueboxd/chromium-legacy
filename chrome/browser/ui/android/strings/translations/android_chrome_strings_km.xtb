@@ -139,7 +139,6 @@
 <translation id="1718835860248848330">មួយម៉ោងមុន</translation>
 <translation id="1724977129262658800">ដោះសោ ដើម្បីកែពាក្យ​សម្ងាត់របស់អ្នក</translation>
 <translation id="1726477445370128854">អ្នកអាចរុករក និងស្វែងរក​បានកាន់តែរហ័ស នៅពេល Chrome ផ្ទុកទំព័រជាមុន​ដែលវាគិតថា​អ្នកប្រហែលជាចូលមើល</translation>
-<translation id="1736419249208073774">រុករក</translation>
 <translation id="1749561566933687563">ធ្វើសមកាលកម្មចំណាំរបស់អ្នក</translation>
 <translation id="1750259112639922169">ក្រុមផ្ទាំង - <ph name="TAB_COUNT" /> ផ្ទាំង</translation>
 <translation id="17513872634828108">បើកផ្ទាំង</translation>
@@ -197,6 +196,7 @@
 <translation id="2067805253194386918">អត្ថបទ</translation>
 <translation id="2068748236079642969">មើលវីដេអូបន្ទាប់</translation>
 <translation id="2074143993849053708">បានបិទ ui នៃ​ការយល់ព្រម​ឱ្យប្រើជំនួយការ​សម្រាប់​ការស្វែងរក​តាមសំឡេង</translation>
+<translation id="2079545284768500474">ត្រឡប់វិញ</translation>
 <translation id="2082238445998314030">លទ្ធផល <ph name="RESULT_NUMBER" /> នៃ <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">ធ្វើសមកាលកម្ម និង​កំណត់​ផ្ទាល់​ខ្លួន​នៅលើ​ឧបករណ៍​ផ្សេងៗ</translation>
 <translation id="2100273922101894616">ចូលស្វ័យប្រវត្តិ</translation>
@@ -238,7 +238,6 @@
 <translation id="2328985652426384049">មិនអាចចូលបានទេ</translation>
 <translation id="234265804618409743">មិនអាចបើក​កាមេរ៉ា​របស់អ្នក​បានទេ។ មានអ្វីមួយខុសប្រក្រតី។</translation>
 <translation id="2349710944427398404">ទិន្នន័យសរុបដែលបានប្រើដោយ Chrome ដោយរាប់បញ្ចូលទាំងគណនី ចំណាំ និងការកំណត់ដែលបានរក្សាទុក</translation>
-<translation id="2353636109065292463">កំពុងពិនិត្យមើល​ការតភ្ជាប់អ៊ីនធឺណិត​របស់អ្នក</translation>
 <translation id="235789365079050412">គោលការណ៍ឯកជនភាព Google</translation>
 <translation id="2359808026110333948">បន្ត</translation>
 <translation id="2386938421315164605">លាក់ និងឈប់លាក់​ប្រធានបទ</translation>
@@ -423,7 +422,6 @@
 <translation id="3280562213547448728">ស្វែងរក​តាម​សំឡេង</translation>
 <translation id="3282568296779691940">ចូលទៅ Chrome</translation>
 <translation id="3285080554353377245">វីដេអូអំពីរបៀបប្រើប្រាស់ Chrome</translation>
-<translation id="3288003805934695103">ដំណើរការទំព័រឡើងវិញ</translation>
 <translation id="3290249595466894471">ក៏បញ្ជូន​គំរូមួយចំនួនតូចនៃទំព័រ ការទាញយក សកម្មភាពកម្មវិធីបន្ថែម និងព័ត៌មាន​ប្រព័ន្ធ ដើម្បីជួយរកមើល​ការគំរាមកំហែងថ្មីផងដែរ</translation>
 <translation id="3297344142967351106">ជំនួយជាសំឡេង</translation>
 <translation id="3303414029551471755">បន្តដើម្បីទាញយកមាតិកានេះ?</translation>
@@ -521,7 +519,6 @@
 <translation id="3894427358181296146">បន្ថែមថតឯកសារ</translation>
 <translation id="3899682235662194879">បិទ​ផ្ទាំងឯកជន​ទាំងអស់</translation>
 <translation id="3908308510347173149">ដំឡើងកំណែ <ph name="PRODUCT_NAME" /></translation>
-<translation id="3912508018559818924">កំពុង​ស្វែងរក​អ្វីដែលល្អបំផុត​ពីបណ្ដាញ…</translation>
 <translation id="3924911262913579434"><ph name="SAFE_BROWSING_MODE" /> ត្រូវបាន​បើក</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">រួមបញ្ចូលទិន្នន័យរបស់ខ្ញុំ</translation>
@@ -775,7 +772,6 @@
 <translation id="5233638681132016545">ផ្ទាំងថ្មី</translation>
 <translation id="5235196193381275927">មានអ្វីមួយ​ខុសប្រក្រតី អំឡុងពេល​ចូលគណនី</translation>
 <translation id="5246093389635966745">កែផ្លូវកាត់​របារឧបករណ៍</translation>
-<translation id="526421993248218238">មិនអាចផ្ទុកទំព័រនេះបានទេ</translation>
 <translation id="5271967389191913893">ឧបករណ៍មិនអាចបើកមាតិកានេះដើម្បីទាញយកបានទេ។</translation>
 <translation id="5274286919938458946">បានភ្ជាប់​ជាមួយ <ph name="CARD_DETAIL" /></translation>
 <translation id="5292796745632149097">ផ្ញើ​ទៅ</translation>
@@ -887,6 +883,7 @@
 <translation id="5865733239029070421">ផ្ញើស្ថិតិប្រើប្រាស់ និងរបាយការណ៍អំពីការគាំងទៅ Google ដោយស្វ័យប្រវត្តិ</translation>
 <translation id="5869522115854928033">ពាក្យសម្ងាត់ដែលបានរក្សាទុក</translation>
 <translation id="5869789175361934029">បន្តពីឧបករណ៍មួយផ្សេងទៀត</translation>
+<translation id="5876496397064130037">បាន​បន្ត​កិច្ចការ</translation>
 <translation id="587735546353481577">ដើម្បីតាមដានគេហទំព័រណាមួយ សូមចូលទៅកាន់គេហទំព័រនោះ រួចបើកម៉ឺនុយ Chrome បន្ទាប់មកចុច "តាមដាន"។</translation>
 <translation id="5879072387416556377">ទទួល​បាន​ការណែនាំ​ប្រសើរជាងមុន</translation>
 <translation id="5906513782029855931">ការស្គាល់ URL របស់គេហទំព័រអាចឱ្យ Google Assistant ជួយអ្នកក្នុងការបំពេញកិច្ចការ។ អ្នក​អាចបិទ Assistant នៅក្នុងការកំណត់ Chrome។</translation>
@@ -929,7 +926,6 @@
 <translation id="6138832295072039549">ផ្លាស់ប្ដូរ​ការកំណត់​គេហទំព័រ​របស់អ្នក​នៅទីនេះ</translation>
 <translation id="6140709049082532940">ការការពារ​ដែលប្រសើរជាងមុន៖</translation>
 <translation id="6140912465461743537">ប្រទេស/តំបន់៖</translation>
-<translation id="614940544461990577">សាកល្បង៖</translation>
 <translation id="6150320133806434356">បាន​រក្សាទុក​ចំណាំ</translation>
 <translation id="6154478581116148741">បើកការ​ចាក់សោ​អេក្រង់​នៅក្នុង​ការកំណត់ ដើម្បី​នាំពាក្យ​សម្ងាត់​របស់អ្នកចេញ​ពី​ឧបករណ៍​នេះ</translation>
 <translation id="6159729262978459665">សម្អាតប្រវត្តិពីឧបករណ៍ដែលបានធ្វើសមកាលកម្មទាំងអស់។</translation>
@@ -1166,6 +1162,7 @@
 <translation id="7379900596734708416">អាចប្រើ​រចនាប័ទ្ម​ងងឹត​សម្រាប់គេហទំព័របាន</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">បទពិសោធន៍​ដំណើរការ​ដំបូងរបស់ Chrome</translation>
+<translation id="7411224099004328643">អ្នកប្រើប្រាស់គណនី Google</translation>
 <translation id="741204030948306876">បាទ/ចាស ខ្ញុំយល់ព្រម</translation>
 <translation id="7419565702166471774">ប្រើ​ការតភ្ជាប់​ដែលមាន​សុវត្ថិភាព​ជានិច្ច</translation>
 <translation id="7431991332293347422">គ្រប់គ្រង​របៀបដែល​ប្រវត្តិរុករក​របស់អ្នក​ត្រូវបាន​ប្រើប្រាស់ ដើម្បីកំណត់ឱ្យ​ការស្វែងរក​ និងអ្វី​ៗ​ជាច្រើន​ទៀតស្របនឹង​អ្នក</translation>

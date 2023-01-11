@@ -78,6 +78,8 @@ FeatureTile::FeatureTile(base::RepeatingCallback<void()> callback,
   CreateChildViews();
 }
 
+FeatureTile::~FeatureTile() = default;
+
 void FeatureTile::CreateChildViews() {
   const bool is_compact = type_ == TileType::kCompact;
 
@@ -164,6 +166,12 @@ void FeatureTile::CreateDrillInButton(base::RepeatingCallback<void()> callback,
 
   drill_in_button_ = AddChildView(std::move(drill_in_button));
   drill_in_button_->AddChildView(std::move(drill_in_arrow));
+
+  enabled_changed_subscription_ = AddEnabledChangedCallback(base::BindRepeating(
+      [](FeatureTile* feature_tile) {
+        feature_tile->drill_in_button_->SetEnabled(feature_tile->GetEnabled());
+      },
+      base::Unretained(this)));
 }
 
 void FeatureTile::UpdateColors() {
@@ -194,6 +202,10 @@ void FeatureTile::SetVectorIcon(const gfx::VectorIcon& icon) {
       icon, cros_tokens::kCrosSysOnSurface, kIconSize));
 }
 
+void FeatureTile::SetImage(gfx::ImageSkia image) {
+  icon_->SetImage(ui::ImageModel::FromImageSkia(image));
+}
+
 void FeatureTile::SetLabel(const std::u16string& label) {
   label_->SetText(label);
 }
@@ -203,6 +215,8 @@ void FeatureTile::SetSubLabel(const std::u16string& sub_label) {
 }
 
 void FeatureTile::SetSubLabelVisibility(bool visible) {
+  // Only primary tiles have a sub-label.
+  DCHECK(sub_label_);
   sub_label_->SetVisible(visible);
 }
 

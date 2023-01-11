@@ -14,6 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
@@ -6207,8 +6208,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 // Tests that a <select>'s visibility is correctly computed and thus shows the
 // popup when clicked.
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CASTOS)
+// TODO(crbug.com/1405317): Test is flaky on every platform.
 IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
-                       ScrolledMainFrameSelectInLongIframe) {
+                       DISABLED_ScrolledMainFrameSelectInLongIframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_tall_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

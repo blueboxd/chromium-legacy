@@ -6,8 +6,8 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/ranges/algorithm.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -249,38 +249,6 @@ IN_PROC_BROWSER_TEST_F(FeaturePromoDialogTest, InvokeUi_IPH_ProfileSwitch) {
 
 IN_PROC_BROWSER_TEST_F(FeaturePromoDialogTest, InvokeUi_IPH_ReopenTab) {
   set_baseline("2936082");
-  ShowAndVerifyUi();
-}
-
-// Need a separate fixture to override the feature flag.
-class FeaturePromoDialogSideSearchTest : public FeaturePromoDialogTest {
- public:
-  FeaturePromoDialogSideSearchTest() {
-    // Currently the IPH is only supported for the Google ChromeOS
-    // configuration.
-    feature_list_.InitWithFeatures({features::kSideSearch},
-                                   {features::kSideSearchDSESupport});
-  }
-
-  void SetUpOnMainThread() override {
-    FeaturePromoDialogTest::SetUpOnMainThread();
-  }
-
-  ~FeaturePromoDialogSideSearchTest() override = default;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(FeaturePromoDialogSideSearchTest,
-                       InvokeUi_IPH_SideSearch) {
-  BrowserView::GetBrowserViewForBrowser(browser())
-      ->toolbar()
-      ->left_side_panel_button()
-      ->SetVisible(true);
-  RunScheduledLayouts();
-
-  set_baseline("3187662");
   ShowAndVerifyUi();
 }
 

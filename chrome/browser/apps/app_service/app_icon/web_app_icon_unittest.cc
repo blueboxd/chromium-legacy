@@ -7,12 +7,12 @@
 #include <vector>
 
 #include "base/barrier_callback.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -433,7 +433,7 @@ TEST_F(WebAppIconFactoryTest, LoadMaskableIcon) {
   gfx::ImageSkia src_image_skia;
   gfx::ImageSkia dst_image_skia;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   ASSERT_TRUE(
       icon_manager().HasIcons(app_id, IconPurpose::MASKABLE, {kIconSize2}));
 
@@ -479,7 +479,7 @@ TEST_F(WebAppIconFactoryTest, LoadMaskableCompressedIcon) {
   apps::IconEffects icon_effect = apps::IconEffects::kRoundCorners;
   apps::IconValuePtr icon;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   icon_effect |= apps::IconEffects::kCrOsStandardBackground |
                  apps::IconEffects::kCrOsStandardMask;
   ASSERT_TRUE(

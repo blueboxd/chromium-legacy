@@ -47,7 +47,6 @@
 <translation id="1041263367839475438">उपलब्ध डिभाइस</translation>
 <translation id="1042174272890264476">तपाइँको कम्प्युटर <ph name="SHORT_PRODUCT_NAME" /> को RLZ अन्तरनिर्मित पुस्तकालयसँग पनि आउँछ। एक विशेष वृद्धि जनक अभियानद्वारा चालू भएको खोजीहरू र <ph name="SHORT_PRODUCT_NAME" /> प्रयोगहरू नाप्नको लागि RLZ ले एउटा अद्वितीय नभएको, व्यक्तिगत नभएको ठम्याउन सकिने ट्याग तोक्छ। यी लेबुलहरू कहिलेकाही <ph name="PRODUCT_NAME" /> मा Google खोजी क्वेरीहरूमका देखा पर्छन्।</translation>
 <translation id="1043505821207197890">केही चिज गडबड भयो। Linux आंशिक रूपमा मात्र अपग्रेड गरिएको हुन सक्छ। तपाईं यस सम्बन्धमा थप जानकारी प्राप्त गर्न चाहनुहुन्छ भने लगहरू हेर्नुहोस्। लगहरू "फाइलहरू &gt; मेरा फाइलहरू &gt; <ph name="LOG_FILE" />" मा सेभ गरिएको छ</translation>
-<translation id="1043818413152647937">यी अनुप्रयोगहरूका डेटा पनि खाली गर्ने हो?</translation>
 <translation id="104419033123549300">किम्यापको शैली</translation>
 <translation id="104710386808485638">Linux पुनः सुरु गर्ने हो?</translation>
 <translation id="1047431265488717055">लिंक पाठ प्रतिलिपि गर्नुहोस्</translation>
@@ -1235,6 +1234,7 @@
 <translation id="2105809836724866556"><ph name="MODULE_TITLE" /> वटा कन्सोल म्यासेज लुकाइएका छन्</translation>
 <translation id="2108349519800154983">{COUNT,plural, =1{फोन नम्बर}other{# वटा फोन नम्बर}}</translation>
 <translation id="2110941575868943054">ब्लुटुथ डिभाइसहरू खोज्ने अनुमति दिइएका साइटहरू</translation>
+<translation id="2111158890826137380">माफ गर्नुहोला, केही चिज गडबड भयो। कृपया वर्णनमा #bruschetta समावेश गरी प्रतिक्रिया पठाउनुहोस्। त्रुटिको कोड <ph name="ERROR" /> हो</translation>
 <translation id="211144231511833662">प्रकारहरू हटाउनुहोस्</translation>
 <translation id="2111670510994270194">दायाँपट्टि नयाँ ट्याब</translation>
 <translation id="2112554630428445878">स्वागत छ, <ph name="USERNAME" /></translation>
@@ -1398,6 +1398,7 @@
 <translation id="2255077166240162850">यो डिभाइस अर्कै डोमेन वा मोडमा लक गरिएको छ।</translation>
 <translation id="2255317897038918278">Microsoft समय मुद्रांकन</translation>
 <translation id="2256115617011615191">अब फेरि सुरु गर्नुहोस्</translation>
+<translation id="225614027745146050">स्वागत छ</translation>
 <translation id="2257053455312861282">विद्यालयको खाता थप्दा विद्यार्थी सजिलैसँग वेबसाइट, एक्स्टेन्सन र एपहरूमा साइन गर्न सक्छन् भने अभिभावकीय नियन्त्रणहरू पनि लागू भइरहन्छन्।</translation>
 <translation id="2261323523305321874">तपाईंको प्रशासकले गर्नुभएको प्रणालीव्यापी परिवर्तनले केही पुराना प्रोफाइलहरूलाई असक्षम पार्छ।</translation>
 <translation id="22614517036276112">यो डकुमेन्ट वा तपाईंको डिभाइसले तपाईंको सङ्गठनका सुरक्षासम्बन्धी केही नीतिहरूको पालना गरेको छैन। आफ्ना एड्मिनलाई सम्पर्क गरेर कुन कुन समस्या समाधान गर्नु पर्छ भन्ने कुरा थाहा पाउनुहोस्।</translation>
@@ -1775,6 +1776,7 @@
 <translation id="2575713839157415345">{YEARS,plural, =1{यो डिभाइससम्बन्धी जानकारी १ वर्षका लागि सेभ गरिने छ र तपाईं अर्को पटक कोड प्रयोग नगरिकन कनेक्ट गर्न सक्नुहुन्छ। तपाईंका एड्मिनले यो सेटिङ तय गर्नुहुन्छ।}other{यो डिभाइससम्बन्धी जानकारी {YEARS} वर्षका लागि सेभ गरिने छ र तपाईं अर्को पटक कोड प्रयोग नगरिकन कनेक्ट गर्न सक्नुहुन्छ। तपाईंका एड्मिनले यो सेटिङ तय गर्नुहुन्छ।}}</translation>
 <translation id="257779572837908839">बैठकहरूका लागि क्रोमबक्सको रूपमा सेटअप गर्नुहोस्‌</translation>
 <translation id="2579309488038515659">हटस्पट अन गर्ने टगल</translation>
+<translation id="2579596474754516455">स्क्रिन रिडरको प्रयोजनका लागि आवश्यक परेका अवस्थामा फोटोलाई रूपान्तरण गरी टेक्स्ट बनाइयोस्</translation>
 <translation id="2580889980133367162"><ph name="HOST" /> लाई धेरै फाइलहरू डाउनलोड गर्ने अनुमति सँधै दिनुहोस्</translation>
 <translation id="258095186877893873">लामो</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (मञ्च <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -2007,7 +2009,6 @@
 <translation id="2785267875302712148">पासवर्ड जाँच</translation>
 <translation id="2785873697295365461">फाइल डेस्क्रिप्टरहरू</translation>
 <translation id="2785975315093449168">GTK</translation>
-<translation id="2787022501752539710">लोकल ब्राउजिङ डेटा (बुकमार्क, पासवर्ड, इतिहास आदि) सेभ गरियोस्</translation>
 <translation id="2787354132612937472">—</translation>
 <translation id="2788135150614412178">+</translation>
 <translation id="2789486458103222910">ठिक छ</translation>
@@ -2729,6 +2730,7 @@
 <translation id="3469583217479686109">चयन गर्ने टुल</translation>
 <translation id="3470392222765168737">साइट फलो गर्नुहोस्</translation>
 <translation id="3471876058939596279">भिडियोसम्बन्धी प्रयोजनका लागि HDMI र USB Type-C पोर्टहरू एकै समयमा प्रयोग गर्न मिल्दैन। कुनै अर्को भिडियो पोर्ट प्रयोग गर्नुहोस्।</translation>
+<translation id="3472469028191701821">नयाँ ट्याबमा खुल्छ</translation>
 <translation id="3473241910002674503">ट्याब्लेट मोडमा हुँदा बटनहरूको प्रयोग गरी गृह स्क्रिनमा जानुहोस्, पछाडि फर्कनुहोस् र एउटा अनुप्रयोगबाट अर्को एपमा जानुहोस्।</translation>
 <translation id="3473479545200714844">स्क्रिन म्याग्निफायर</translation>
 <translation id="3474218480460386727">नयाँ शब्द लेख्न ९९ वा सोभन्दा कम अक्षर प्रयोग गर्नुहोस्</translation>
@@ -2877,6 +2879,7 @@
 <translation id="3616113530831147358">अडियो</translation>
 <translation id="3616741288025931835">&amp;ब्राउजिङ लगत खालि गर्नुहोस्...</translation>
 <translation id="3617891479562106823">पृष्ठभूमिहरू उपलब्ध छैनन्। पछि फेरि प्रयास गर्नुहोस्।</translation>
+<translation id="3618286417582819036">माफ गर्नुहोला, कुनै त्रुटि भयो</translation>
 <translation id="3619115746895587757">कापाचिनो</translation>
 <translation id="3620136223548713675">भूस्थान</translation>
 <translation id="362023940451053340">तपाईंको Google खातामा <ph name="ACCOUNT" /> को पासवर्ड</translation>
@@ -3115,6 +3118,7 @@
 <translation id="3820749202859700794">SECG अण्डाकार कर्भ secp521r1 (NIST P-521 पनि भनिन्छ)</translation>
 <translation id="3821074617718452587">फोन हबसम्बन्धी सूचनाहरू</translation>
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{एउटा एक्स्टेन्सन स्वीकार गरिएको छ}other{# वटा एक्स्टेन्सन स्वीकार गरिएको छ}}</translation>
+<translation id="3823019343150397277">IBAN</translation>
 <translation id="3823310065043511710">Linux प्रयोग गर्न कम्तीमा पनि <ph name="INSTALL_SIZE" /> ठाउँ खाली राख्न सिफारिस गरिन्छ।</translation>
 <translation id="3824621460022590830">यन्त्र दर्ता गर्न प्रयोग गरिने टोकन अवैध छ। कृपया आफ्नो डिभाइसका मालिक वा एड्मिनसँग सम्पर्क गर्नुहोस्। त्रुटिको कोड: <ph name="ERROR_CODE" />।</translation>
 <translation id="3825041664272812989">{FILE_TYPE_COUNT,plural, =1{यो प्रकारको फाइलका हकमा मेरो रोजाइ याद राखियोस्: <ph name="FILE_TYPES" />}other{यी प्रकारका फाइलका हकमा मेरो रोजाइ याद राखियोस्: <ph name="FILE_TYPES" />}}</translation>
@@ -3845,7 +3849,6 @@
 <translation id="4513872120116766993">पूर्वानुमानयुक्त लेखन</translation>
 <translation id="4513946894732546136">पृष्ठपोषण</translation>
 <translation id="451407183922382411"><ph name="COMPANY_NAME" /> द्वारा संचालित</translation>
-<translation id="4514610446763173167">भिडियो प्ले वा पज गर्न टगल गर्नुहोस्‌</translation>
 <translation id="451515744433878153">हटाउनुहोस्</translation>
 <translation id="4515872537870654449">मर्मतका लागि Dell मा सम्पर्क गर्नुहोस्। पङ्खाले काम गरिरहेको छैन भने डक बन्द हुने छ।</translation>
 <translation id="4518840066030486079">सिफ्ट की मोडको शैली</translation>
@@ -4032,6 +4035,7 @@
 <translation id="4675828034887792601">साइटहरूमा भएका कुरा खोज्नका निम्ति सर्टकट बनाउनुहोस् र आफ्नो सर्च इन्जिन व्यवस्थापन गर्नुहोस्</translation>
 <translation id="4676595058027112862">फोन हब, थप जान्नुहोस्</translation>
 <translation id="4677772697204437347">GPU स्मृति</translation>
+<translation id="4678848110205818817">क्रेडिट/डेबिट कार्ड</translation>
 <translation id="4680105648806843642">यस पृष्ठमा आवाज म्युट गरियो</translation>
 <translation id="4680112532510845139">कुनै फोटो ड्रयाग गरेर यहाँ ड्रप गर्नुहोस्</translation>
 <translation id="4681453295291708042">नजिकैका डिभाइससँग सेयर गर्ने सुविधा असक्षम पार्नुहोस्</translation>
@@ -6295,7 +6299,7 @@
 <translation id="6811332638216701903">DHCP होस्टनेम</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> लाई रूटको रूपमा चलाउन सकिन्न।</translation>
 <translation id="6812841287760418429">परिवर्तनहरू राख्नुहोस्</translation>
-<translation id="6813907279658683733">पूर्ण स्क्रिन</translation>
+<translation id="6813907279658683733">सबै स्क्रिन</translation>
 <translation id="6815376457351236663">जे भए पनि खोल्नुहोस्</translation>
 <translation id="6817174620439930047">कुनै साइटले MIDI यन्त्रहरूमाथि पहुँच गर्नका लागि प्रणालीका विशिष्ट सन्देशहरू प्रयोग गर्न खोज्दा सोध्नुहोस् (सिफारिस गरिएको)</translation>
 <translation id="6818198425579322765">अनुवाद गरिनु पर्ने पृष्ठको भाषा</translation>
@@ -6665,6 +6669,7 @@
 <translation id="7149839598364933473">यो डिभाइसमा <ph name="DEVICE_OS" /> चलाउनुहोस्।</translation>
 <translation id="7149893636342594995">पछिल्ला २४ घन्टा</translation>
 <translation id="7152478047064750137">यस विस्तारलाई कुनै विशेष अनुमति चाहिँदैन</translation>
+<translation id="7153309176431047193">फोटोलाई रूपान्तरण गरी टेक्स्ट बनाइयोस्</translation>
 <translation id="7154130902455071009">आफ्नो सुरुवात पृष्ठलाई यसमा परिवर्तन गर्नुहोस्: <ph name="START_PAGE" /></translation>
 <translation id="7156231244155528270">फोटो रूपान्तरण गरेर टेक्स्ट बनाउनुहोस्</translation>
 <translation id="7159953856712257647">स्वतः इन्स्टल गरिएको</translation>
@@ -6903,7 +6908,7 @@
 <translation id="7392118418926456391">भाइरस स्क्यान असफल भयो</translation>
 <translation id="7392915005464253525">बन्द विण्डोलाई पुन: खो&amp;ल्नुहोस्</translation>
 <translation id="7393073300870882456">{COUNT,plural, =1{एउटा वस्तु कपी गरियो}other{{COUNT} वटा वस्तु कपी गरिए}}</translation>
-<translation id="7395774987022469191">पूर्ण स्क्रिन</translation>
+<translation id="7395774987022469191">सबै स्क्रिन</translation>
 <translation id="7396017167185131589">आदान प्रदान गरिएका फोल्डरहरू यहाँ देखिने छन्</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> सिस्टम स्टार्टअपमा लन्च हुनेछ र तपाईंले अन्य सबै <ph name="PRODUCT_NAME" /> विन्डोहरू बन्द गरिसक्नुभएपछि समेत पृष्ठभूमिमा चल्न जारी राख्नेछ।</translation>
 <translation id="7399045143794278225">सिंक आफू अनुकूल पार्नुहोस्</translation>

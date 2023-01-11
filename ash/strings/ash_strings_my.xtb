@@ -28,6 +28,7 @@
 <translation id="1104621072296271835">သင်၏စက်ပစ္စည်းများကို အတူတကွအသုံးပြုလျှင် ပိုမိုကောင်းမွန်ပါသည်</translation>
 <translation id="1111021433905331574">သင့်ကီးဘုတ်နောက်ခံမီးရောင်ကို ဆက်တင်များ &gt; <ph name="APP_TITLE" /> တွင် ပြောင်းနိုင်သည်</translation>
 <translation id="112308213915226829">အလိုအလျောက် ဝှက်သည့် စင်</translation>
+<translation id="1135788167815124787">ဒေါင်လိုက် အလင်းပြန်ဖြည့်ခြင်း</translation>
 <translation id="1142002900084379065">လတ်တလော ဓာတ်ပုံများ</translation>
 <translation id="1148499908455722006"><ph name="USER_NAME" /> အတွက် အချက်အလက်ဒိုင်ယာလော့ ဖွင့်ပါ</translation>
 <translation id="1150989369772528668">ပြက္ခဒိန်</translation>
@@ -162,6 +163,7 @@
 <translation id="1774796056689732716">ပြက္ခဒိန်၊ <ph name="CURRENT_MONTH_YEAR" />၊ လက်ရှိ <ph name="DATE" /> ကိုရွေးထားသည်။</translation>
 <translation id="1787955149152357925">ပိတ်ထားသည်</translation>
 <translation id="1797271123677381264">စကားဝှက် မေ့နေသည်</translation>
+<translation id="1807246157184219062">အလင်း</translation>
 <translation id="181103072419391116">လိုင်းဆွဲအား <ph name="SIGNAL_STRENGTH" />၊ သင့် 'ကြီးကြပ်သူ' က စီမံထားပါသည်</translation>
 <translation id="1812997170047690955">ကျွန်ုပ်၏ ဖန်သားပြင်ပေါ်တွင် မည်သည့်အရာများ ရှိပါသလဲ။</translation>
 <translation id="1816896987747843206">၎င်းက ကင်မရာခွင့်ပြုချက်ပါသည့် အက်ပ်နှင့် ဝဘ်ဆိုက်အားလုံးကို ကင်မရာသုံးခွင့်ပြုသည်</translation>
@@ -238,6 +240,7 @@
 <translation id="2224075387478458881">ကာကွယ်ထားသော အကြောင်းအရာများကို မြင်နိုင်ချိန်တွင် ဖန်သားပြင်ရိုက်ကူးခြင်းကို ခွင့်မပြုပါ</translation>
 <translation id="2227179592712503583">အကြံပြုချက် ဖယ်ရှားရန်</translation>
 <translation id="225680501294068881">စက်ပစ္စည်းများ ရှာဖွေနေ...</translation>
+<translation id="225716114209817872">အများဆုံး</translation>
 <translation id="2257486738914982088"><ph name="FILENAME" /> ဒေါင်းလုဒ်လုပ်နေစဉ် တစ်ခုခု မှားသွားသည်</translation>
 <translation id="2258734398699965611">အကြံပြုထားသော ဖိုင်များ</translation>
 <translation id="2268130516524549846">ဘလူးတုရှ် ပိတ်ထား</translation>
@@ -262,6 +265,7 @@
 <translation id="2354174487190027830"><ph name="NAME" />ကို ဖွင့်သုံးနေ</translation>
 <translation id="2359808026110333948">ဆက်လုပ်ရန်</translation>
 <translation id="2367186422933365202">သင့် Chromebook သို့ လက်မှတ်ထိုးဝင်၍ မရပါ</translation>
+<translation id="2367972762794486313">အက်ပ်များကို ပြပေးရန်</translation>
 <translation id="2369165858548251131">"Hello" ကို တရုတ်လို ဘယ်လိုပြောလဲ</translation>
 <translation id="2390318262976603432">ဘာသာစကား ဆက်တင်များ</translation>
 <translation id="240006516586367791">မီဒီယာ ထိန်းချုပ်မှုများ</translation>
@@ -506,6 +510,7 @@
 <translation id="3713734891607377840">ပြီးသွားပါက ဖွင့်မည်</translation>
 <translation id="3726171378575546917">ဤစက်တွင် <ph name="UNAVAILABLE_APPS_ONE" />၊<ph name="UNAVAILABLE_APPS_TWO" /> နှင့် အခြားအက်ပ်<ph name="UNAVAILABLE_APPS_COUNT" /> ခု မရှိပါ။</translation>
 <translation id="3735740477244556633">အောက်ပါအတိုင်းစီရန်</translation>
+<translation id="3738664582935948253">ဖန်သားပြင်ရိုက်ကူးမှုများတွင် ကလစ်နှင့် လက်ကွက်ဖြတ်လမ်းများကို ယခုပြနိုင်ပါပြီ</translation>
 <translation id="3742055079367172538">မျက်နှာပြင်ပုံရိပ် ရယူပြီး</translation>
 <translation id="3765841986579723851">ယနေ့ ပြင်ဆင်ထားသည်</translation>
 <translation id="3773700760453577392">စီမံခန့်ခွဲသူသည် <ph name="USER_EMAIL" /> အတွက် အကောင့်များစွာ လက်မှတ်ထိုးဝင်ခွင့်ကို ပိတ်ထားသည်။ ရှေ့ဆက်နိုင်ရန်အတွက် အသုံးပြုသူများအားလုံး ထွက်ရပါမည်။</translation>
@@ -525,6 +530,7 @@
 <translation id="385051799172605136">နောက်သို့</translation>
 <translation id="385300504083504382">အစ</translation>
 <translation id="3861651314799684201">ဖန်သားပြင်အပြည့် ရိုက်ကူးရန် Enter နှိပ်ပါ</translation>
+<translation id="3871092408932389764">အနိမ့်ဆုံး</translation>
 <translation id="3886872229787704059">ယနေ့ ဖွင့်ထားသည်</translation>
 <translation id="3891340733213178823">ထွက်ခွာရန် Ctrl+Shift+Q ကို နှစ်ကြိမ် နှိပ်ပါ။</translation>
 <translation id="3893630138897523026">ChromeVox (နှုတ်ပြော အကြံပြုချက်)</translation>
@@ -691,6 +697,7 @@
 <translation id="4740516757091333363">သိမ်းထားသောမျက်နှာပြင်ကို ဖျက်မလား။</translation>
 <translation id="4752784485658729358">သိမ်းထားသည့် မျက်နှာပြင် ၆ ခုသာ ခွင့်ပြုထားသည်။ မျက်နှာပြင်အသစ် ဖွင့်ရန် တစ်ခုကို ဖယ်ရှားပါ။</translation>
 <translation id="4759238208242260848">ဒေါင်းလုဒ်များ</translation>
+<translation id="4762573482154983647">အက်ပ်များဖျောက်ထားရန်</translation>
 <translation id="4774338217796918551">မနက်ဖြန် <ph name="COME_BACK_TIME" /> တွင် ပြန်လာပါ။</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" />အတွက် စကားဝှက်</translation>
 <translation id="4777825441726637019">Play စတိုး</translation>
@@ -1011,6 +1018,7 @@
 <translation id="6537924328260219877">လိုင်းဆွဲအား <ph name="SIGNAL_STRENGTH" />၊ ဖုန်းဘက်ထရီ <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999"><ph name="FILENAME" /> ဒေါင်းလုဒ်ဖိုင်ကို စစ်ဆေးနေသည်</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> သို့ ကာစ် လုပ်နေသည်</translation>
+<translation id="6548693220024099658">နောက်ခံမှုန်ဝါးမှု</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 အသစ်ထည့်သွင်းမှု</translation>
 <translation id="6559976592393364813">စီမံခန့်ခွဲသူကို မေးရန်</translation>
@@ -1417,6 +1425,7 @@
 <translation id="878215960996152260"><ph name="APP_NAME" />၊ ထည့်သွင်းထားသည့် အက်ပ်၊ ပိတ်ထားသည်</translation>
 <translation id="8785070478575117577"><ph name="NETWORK_NAME" /> သို့ ချိတ်ဆက်ရန်</translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />။ <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">များ</translation>
 <translation id="8806053966018712535">ဖိုလ်ဒါ <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">"အကူအညီယူရန်"</translation>
 <translation id="8814190375133053267">ကြိုးမဲ့</translation>

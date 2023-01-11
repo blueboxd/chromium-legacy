@@ -40,16 +40,18 @@ SimpleToggleEffect::SimpleToggleEffect(
       base::BindRepeating(&SimpleToggleEffect::OnEffectControlActivated,
                           weak_factory_.GetWeakPtr(),
                           /*effect_id=*/VcEffectState::kUnusedId,
-                          /*value=*/0));
+                          /*value=*/absl::nullopt));
   effect->AddState(std::move(state));
   AddEffect(std::move(effect));
 }
 
-int SimpleToggleEffect::GetEffectState(int effect_id) {
+absl::optional<int> SimpleToggleEffect::GetEffectState(int effect_id) {
+  // Fake effects are always "off."
   return VcHostedEffect::kOff;
 }
 
-void SimpleToggleEffect::OnEffectControlActivated(int effect_id, int value) {
+void SimpleToggleEffect::OnEffectControlActivated(absl::optional<int> effect_id,
+                                                  absl::optional<int> state) {
   ++num_activations_for_testing_;
 }
 
@@ -110,13 +112,16 @@ ShaggyFurEffect::ShaggyFurEffect() {
 
 ShaggyFurEffect::~ShaggyFurEffect() = default;
 
-int ShaggyFurEffect::GetEffectState(int effect_id) {
+absl::optional<int> ShaggyFurEffect::GetEffectState(int effect_id) {
   return static_cast<int>(FurShagginess::kBuzzcut);
 }
 
-void ShaggyFurEffect::OnEffectControlActivated(int effect_id, int value) {
-  DCHECK(value >= 0 && value < static_cast<int>(FurShagginess::kMaxNumValues));
-  ++num_activations_for_testing_[value];
+void ShaggyFurEffect::OnEffectControlActivated(absl::optional<int> effect_id,
+                                               absl::optional<int> state) {
+  DCHECK(state.has_value());
+  DCHECK(state.value() >= 0 &&
+         state.value() < static_cast<int>(FurShagginess::kMaxNumValues));
+  ++num_activations_for_testing_[state.value()];
 }
 
 int ShaggyFurEffect::GetNumActivationsForTesting(int value) {
@@ -169,18 +174,25 @@ SuperCutnessEffect::SuperCutnessEffect() {
 
 SuperCutnessEffect::~SuperCutnessEffect() = default;
 
-int SuperCutnessEffect::GetEffectState(int effect_id) {
+absl::optional<int> SuperCutnessEffect::GetEffectState(int effect_id) {
+  if (has_invalid_effect_state_for_testing_) {
+    return absl::nullopt;
+  }
+
   return static_cast<int>(HowCute::kTeddyBear);
 }
 
-void SuperCutnessEffect::OnEffectControlActivated(int effect_id, int value) {
-  DCHECK(value >= 0 && value < static_cast<int>(HowCute::kMaxNumValues));
-  ++num_activations_for_testing_[value];
+void SuperCutnessEffect::OnEffectControlActivated(absl::optional<int> effect_id,
+                                                  absl::optional<int> state) {
+  DCHECK(state.has_value());
+  DCHECK(state.value() >= 0 &&
+         state.value() < static_cast<int>(HowCute::kMaxNumValues));
+  ++num_activations_for_testing_[state.value()];
 }
 
-int SuperCutnessEffect::GetNumActivationsForTesting(int value) {
-  DCHECK(value >= 0 && value < static_cast<int>(HowCute::kMaxNumValues));
-  return num_activations_for_testing_[value];
+int SuperCutnessEffect::GetNumActivationsForTesting(int state) {
+  DCHECK(state >= 0 && state < static_cast<int>(HowCute::kMaxNumValues));
+  return num_activations_for_testing_[state];
 }
 
 void SuperCutnessEffect::AddStateToEffect(VcHostedEffect* effect,

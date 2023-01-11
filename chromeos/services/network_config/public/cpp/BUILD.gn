@@ -13,6 +13,7 @@ source_set("cpp") {
   ]
 
   deps = [
+    "//ash/constants",
     "//chromeos/services/network_config/public/mojom",
     "//components/onc",
     "//services/network/public/cpp:ip_address_mojom_support",
@@ -27,6 +28,8 @@ source_set("test_support") {
     "cros_network_config_test_helper.h",
     "cros_network_config_test_observer.cc",
     "cros_network_config_test_observer.h",
+    "fake_cros_network_config.cc",
+    "fake_cros_network_config.h",
   ]
 
   public_deps = [

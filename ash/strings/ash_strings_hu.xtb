@@ -28,6 +28,7 @@
 <translation id="1104621072296271835">Eszközei együtt még jobban működnek</translation>
 <translation id="1111021433905331574">Lehetősége van a billentyűzet háttérvilágítása színének módosítására, amelyet a következő pontban tehet meg: Beállítások &gt; <ph name="APP_TITLE" /></translation>
 <translation id="112308213915226829">Polc automatikus elrejtése</translation>
+<translation id="1135788167815124787">Portré újbóli megvilágítása</translation>
 <translation id="1142002900084379065">Nemrégiben feltöltött fotók</translation>
 <translation id="1148499908455722006">Információs párbeszédpanel, <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Naptár</translation>
@@ -162,6 +163,7 @@
 <translation id="1774796056689732716">Naptár, <ph name="CURRENT_MONTH_YEAR" />, jelenleg kijelölt dátum: <ph name="DATE" /></translation>
 <translation id="1787955149152357925">Ki</translation>
 <translation id="1797271123677381264">Elfelejtett jelszó</translation>
+<translation id="1807246157184219062">Világos</translation>
 <translation id="181103072419391116">Jelerősség: <ph name="SIGNAL_STRENGTH" />, a rendszergazdája kezeli</translation>
 <translation id="1812997170047690955">Mi van a képernyőn?</translation>
 <translation id="1816896987747843206">Ezzel engedélyezi a kamerához való hozzáférést a kamerahasználati engedéllyel rendelkező összes alkalmazás és webhely számára</translation>
@@ -238,6 +240,7 @@
 <translation id="2224075387478458881">Nem engedélyezett felvétel készítése a képernyőről, ha védett tartalom látható rajta</translation>
 <translation id="2227179592712503583">Javaslat eltávolítása</translation>
 <translation id="225680501294068881">Eszközök keresése...</translation>
+<translation id="225716114209817872">Maximum</translation>
 <translation id="2257486738914982088">Hiba történt a következő fájl letöltésekor: <ph name="FILENAME" /></translation>
 <translation id="2258734398699965611">Javasolt fájlok</translation>
 <translation id="2268130516524549846">Bluetooth letiltva</translation>
@@ -262,6 +265,7 @@
 <translation id="2354174487190027830"><ph name="NAME" /> aktiválása</translation>
 <translation id="2359808026110333948">Tovább</translation>
 <translation id="2367186422933365202">Nem lehet bejelentkezni a Chromebookra</translation>
+<translation id="2367972762794486313">Alkalmazások megjelenítése</translation>
 <translation id="2369165858548251131">„Helló” kínai nyelven</translation>
 <translation id="2390318262976603432">Nyelv- és országkód beállításai</translation>
 <translation id="240006516586367791">Médiaelemek vezérlője</translation>
@@ -506,6 +510,7 @@ Csatlakoztassa az eszközt áramforráshoz.</translation>
 <translation id="3713734891607377840">Megnyitás, ha kész</translation>
 <translation id="3726171378575546917">A(z) <ph name="UNAVAILABLE_APPS_ONE" />, a(z) <ph name="UNAVAILABLE_APPS_TWO" /> és <ph name="UNAVAILABLE_APPS_COUNT" /> további alkalmazás nincs telepítve erre az eszközre.</translation>
 <translation id="3735740477244556633">Rendezés</translation>
+<translation id="3738664582935948253">Mostantól megjelenítheti a kattintásokat és a billentyűparancsokat a képernyőfelvételeken</translation>
 <translation id="3742055079367172538">Képernyőkép elkészítve</translation>
 <translation id="3765841986579723851">Ma szerkesztette</translation>
 <translation id="3773700760453577392">Egy rendszergazda letiltotta a többfiókos bejelentkezést <ph name="USER_EMAIL" /> számára.
@@ -526,6 +531,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="385051799172605136">Vissza</translation>
 <translation id="385300504083504382">A legelejére</translation>
 <translation id="3861651314799684201">Nyomja le az Entert a teljes képernyő tartalmának rögzítéséhez</translation>
+<translation id="3871092408932389764">Legalacsonyabb</translation>
 <translation id="3886872229787704059">Ma nyitotta meg</translation>
 <translation id="3891340733213178823">Nyomja meg a Ctrl+Shift+Q billentyűkombinációt kétszer a kijelentkezéshez.</translation>
 <translation id="3893630138897523026">ChromeVox (beszélt visszajelzés)</translation>
@@ -1012,6 +1018,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="6537924328260219877">Jelerősség: <ph name="SIGNAL_STRENGTH" />, telefon akkumulátora: <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999">Folyamatban van a következő letöltés ellenőrzése: <ph name="FILENAME" /></translation>
 <translation id="6542521951477560771">Küldés ide: <ph name="RECEIVER_NAME" /></translation>
+<translation id="6548693220024099658">Háttér homályosítása</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Frissen telepítve</translation>
 <translation id="6559976592393364813">Érdeklődjön a rendszergazdánál</translation>
@@ -1418,6 +1425,7 @@ Frissen telepítve</translation>
 <translation id="878215960996152260"><ph name="APP_NAME" />, telepített alkalmazás, letiltva</translation>
 <translation id="8785070478575117577">Csatlakozás a következőhöz: <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">Erős</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> mappa</translation>
 <translation id="880709030178078220">„Help” (Segítség)</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

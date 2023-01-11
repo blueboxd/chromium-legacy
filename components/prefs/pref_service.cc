@@ -9,11 +9,11 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/json/values_util.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -23,7 +23,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
 #include "components/prefs/default_pref_store.h"

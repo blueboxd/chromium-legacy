@@ -6,10 +6,13 @@
 
 #include "ash/accelerators/debug_commands.h"
 #include "ash/shell.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_multitask_cue.h"
 #include "ash/wm/tablet_mode/tablet_mode_multitask_menu.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "chromeos/ui/frame/multitask_menu/multitask_menu_metrics.h"
 #include "ui/events/event.h"
 #include "ui/events/event_target.h"
@@ -38,6 +41,16 @@ void TabletModeMultitaskMenuEventHandler::MaybeCreateMultitaskMenu(
   if (!multitask_menu_) {
     multitask_menu_ =
         std::make_unique<TabletModeMultitaskMenu>(this, active_window);
+
+    // TODO(hewer): Remove this and add the cue as a class variable.
+    auto* multitask_cue = Shell::Get()
+                              ->tablet_mode_controller()
+                              ->tablet_mode_window_manager()
+                              ->tablet_mode_multitask_cue();
+
+    if (multitask_cue) {
+      multitask_cue->DismissCue();
+    }
   }
 }
 
@@ -124,10 +137,10 @@ void TabletModeMultitaskMenuEventHandler::OnGestureEvent(
       }
       if (!multitask_menu_ && details.scroll_y_hint() > 0) {
         MaybeCreateMultitaskMenu(active_window);
-        multitask_menu_->BeginDrag(window_location.y(), /*show=*/true);
+        multitask_menu_->BeginDrag(window_location.y(), /*down=*/true);
         event->SetHandled();
       } else if (multitask_menu_ && details.scroll_y_hint() < 0) {
-        multitask_menu_->BeginDrag(window_location.y(), /*show=*/false);
+        multitask_menu_->BeginDrag(window_location.y(), /*down=*/false);
         event->SetHandled();
       }
       break;
@@ -137,13 +150,13 @@ void TabletModeMultitaskMenuEventHandler::OnGestureEvent(
       // menu open. If we are scrolling up, we only handle events inside the
       // menu to avoid consuming them before `OnWidgetActivationChanged()`.
       if (multitask_menu_ && details.scroll_y() > 0) {
-        multitask_menu_->UpdateDrag(window_location.y(), /*show=*/true);
+        multitask_menu_->UpdateDrag(window_location.y(), /*down=*/true);
         event->SetHandled();
       } else if (multitask_menu_ && details.scroll_y() < 0 &&
                  gfx::RectF(
                      multitask_menu_->widget()->GetWindowBoundsInScreen())
                      .Contains(screen_location)) {
-        multitask_menu_->UpdateDrag(window_location.y(), /*show=*/false);
+        multitask_menu_->UpdateDrag(window_location.y(), /*down=*/false);
         event->SetHandled();
       }
       break;

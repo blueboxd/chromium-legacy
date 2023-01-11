@@ -9,11 +9,11 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_samples.h"
@@ -401,9 +401,9 @@ TEST_P(JsonPrefStoreTest, PreserveEmptyValues) {
   // Check values.
   const Value* result = nullptr;
   EXPECT_TRUE(pref_store->GetValue("list", &result));
-  EXPECT_EQ(ListValue(), *result);
+  EXPECT_EQ(Value::List(), *result);
   EXPECT_TRUE(pref_store->GetValue("dict", &result));
-  EXPECT_EQ(DictionaryValue(), *result);
+  EXPECT_EQ(Value::Dict(), *result);
 }
 
 // This test is just documenting some potentially non-obvious behavior. It

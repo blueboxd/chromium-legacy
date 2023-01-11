@@ -85,7 +85,7 @@ BASE_FEATURE(kAutofillEnableManualFallbackForVirtualCards,
 // out.
 BASE_FEATURE(kAutofillEnableMerchantOptOutErrorDialog,
              "AutofillEnableMerchantOptOutErrorDialog",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, a notification will be displayed on page navigation if the
 // domain has an eligible merchant promo code offer or reward.
@@ -166,7 +166,7 @@ BASE_FEATURE(kAutofillFillIbanFields,
 // fields when data is available.
 BASE_FEATURE(kAutofillFillMerchantPromoCodeFields,
              "AutofillFillMerchantPromoCodeFields",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, Autofill will offer saving a card to the users when the Chrome
 // detects a card number with the last 4 digits that matches an existing server
@@ -220,6 +220,13 @@ const base::FeatureParam<int> kAutofillSaveCardUiExperimentSelectorInNumber{
 // will be shown in the manual filling view.
 BASE_FEATURE(kAutofillShowUnmaskedCachedCardInManualFillingView,
              "AutofillShowUnmaskedCachedCardInManualFillingView",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, Autofill suggestions that consist of a local and server
+// version of the same card will attempt to fill the server card upon selection
+// instead of the local card.
+BASE_FEATURE(kAutofillSuggestServerCardInsteadOfLocalCard,
+             "AutofillSuggestServerCardInsteadOfLocalCard",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls offering credit card upload to Google Payments. Cannot ever be

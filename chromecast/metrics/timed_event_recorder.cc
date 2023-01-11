@@ -4,11 +4,10 @@
 
 #include "chromecast/metrics/timed_event_recorder.h"
 
-#include "base/bind.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "chromecast/metrics/cast_event_builder.h"
 #include "chromecast/metrics/metrics_recorder.h"
 
@@ -24,7 +23,7 @@ namespace chromecast {
 
 TimedEventRecorder::TimedEventRecorder(MetricsRecorder* metrics_recorder)
     : metrics_recorder_(metrics_recorder),
-      task_runner_(base::SequencedTaskRunnerHandle::Get()) {
+      task_runner_(base::SequencedTaskRunner::GetCurrentDefault()) {
   DCHECK(metrics_recorder_);
 }
 

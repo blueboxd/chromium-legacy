@@ -262,6 +262,7 @@ after discussions on the right group.
       <annotation id="nearby_share_contacts"/>
       <annotation id="nearby_share_list_public_certificates"/>
       <annotation id="managed_acccount_signin_restrictions_secure_connect_chromeos"/>
+      <annotation id="fenced_frame_reporting_beacon"/>
       <annotation id="ntp_custom_background"/>
       <annotation id="iwa_policy_update_manifest"/>
       <annotation id="iwa_policy_signed_web_bundle"/>
@@ -279,6 +280,9 @@ after discussions on the right group.
       <annotation id="chromeos_emoji_picker_categories_fetcher"/>
       <annotation id="chromeos_emoji_picker_featured_fetcher"/>
       <annotation id="chromeos_emoji_picker_search_fetcher"/>
+      <annotation id="app_preload_service_web_installer"/>
+      <annotation id="network_diagnostics_stun"/>
+      <annotation id="network_diagnostics_tls"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">

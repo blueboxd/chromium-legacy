@@ -244,7 +244,7 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/linux.linux-rel-cft.browser_tests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux.linux-rel-cft.browser_tests.filter;../../testing/buildbot/filters/linux.linux-rel-cft.interactive_ui_tests.filter"
         ],
         "isolate_profile_data": true,
         "merge": {
@@ -2091,7 +2091,9 @@
       },
       {
         "args": [
-          "--extra-browser-args=--enable-crashpad"
+          "--extra-browser-args=--enable-crashpad",
+          "--xvfb",
+          "--jobs=1"
         ],
         "isolate_name": "telemetry_perf_unittests",
         "isolate_profile_data": true,
@@ -2531,7 +2533,7 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel-cft.browser_tests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel-cft.browser_tests.filter;../../testing/buildbot/filters/mac.mac-rel-cft.interactive_ui_tests.filter"
         ],
         "isolate_profile_data": true,
         "merge": {
@@ -4203,7 +4205,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4222,7 +4224,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4241,7 +4243,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4261,7 +4263,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4280,7 +4282,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4299,7 +4301,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4318,7 +4320,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4337,7 +4339,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4356,7 +4358,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4375,7 +4377,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4395,7 +4397,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4414,7 +4416,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4433,7 +4435,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4443,7 +4445,7 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/win.win-rel-cft.browser_tests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/win.win-rel-cft.browser_tests.filter;../../testing/buildbot/filters/win.win-rel-cft.interactive_ui_tests.filter"
         ],
         "isolate_profile_data": true,
         "merge": {
@@ -4455,7 +4457,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -4487,7 +4489,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4509,7 +4511,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4528,7 +4530,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4547,7 +4549,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4566,7 +4568,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4585,7 +4587,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4604,7 +4606,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4623,7 +4625,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4642,7 +4644,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4661,7 +4663,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4680,7 +4682,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4699,7 +4701,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4718,7 +4720,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -4738,7 +4740,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4757,7 +4759,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4776,7 +4778,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4795,7 +4797,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4814,7 +4816,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4833,7 +4835,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4852,7 +4854,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4871,7 +4873,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4890,7 +4892,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4909,7 +4911,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4928,7 +4930,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4947,7 +4949,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4966,7 +4968,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4985,7 +4987,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5004,7 +5006,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5023,7 +5025,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5042,7 +5044,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5061,7 +5063,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5080,7 +5082,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5099,7 +5101,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5118,7 +5120,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5137,7 +5139,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5156,7 +5158,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5175,7 +5177,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5195,7 +5197,7 @@
             {
               "cpu": "x86-64",
               "integrity": "high",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5214,7 +5216,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -5246,7 +5248,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5265,7 +5267,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5284,7 +5286,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5303,7 +5305,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5322,7 +5324,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5341,7 +5343,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5360,7 +5362,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5379,7 +5381,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5398,7 +5400,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5417,7 +5419,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5436,7 +5438,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5455,7 +5457,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5474,7 +5476,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5493,7 +5495,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5512,7 +5514,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5531,7 +5533,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5550,7 +5552,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5569,7 +5571,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5588,7 +5590,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5608,7 +5610,7 @@
             {
               "cpu": "x86-64",
               "integrity": "high",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5627,7 +5629,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5646,7 +5648,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5665,7 +5667,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5684,7 +5686,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5704,7 +5706,7 @@
             {
               "cpu": "x86-64",
               "integrity": "high",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5723,7 +5725,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5742,7 +5744,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5761,7 +5763,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5780,7 +5782,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5799,7 +5801,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5818,7 +5820,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5837,7 +5839,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5856,7 +5858,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5875,7 +5877,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5894,7 +5896,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5913,7 +5915,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5932,7 +5934,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5959,7 +5961,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5978,7 +5980,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5997,7 +5999,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6016,7 +6018,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6035,7 +6037,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6054,7 +6056,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6073,7 +6075,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6092,7 +6094,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6111,7 +6113,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6137,7 +6139,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6174,7 +6176,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -6212,7 +6214,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -6240,7 +6242,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6260,7 +6262,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6285,7 +6287,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6309,7 +6311,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6333,7 +6335,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6356,7 +6358,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6377,7 +6379,7 @@
             {
               "cpu": "x86-64",
               "integrity": "high",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6400,7 +6402,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6421,7 +6423,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6451,7 +6453,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6474,7 +6476,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "idempotent": false,
@@ -6501,7 +6503,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "idempotent": false,
@@ -6530,7 +6532,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "idempotent": false,
@@ -6557,7 +6559,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042"
+              "os": "Windows-10-19042|Windows-10-19045"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"

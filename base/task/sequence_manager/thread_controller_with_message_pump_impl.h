@@ -23,7 +23,6 @@
 #include "base/threading/hang_watcher.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_map.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -158,7 +157,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   // represents the time it took to execute the current batch in the looper.
   WorkDetails DoWorkImpl(LazyNow* continuation_lazy_now);
 
-  void InitializeThreadTaskRunnerHandle()
+  void InitializeSingleThreadTaskRunnerCurrentDefaultHandle()
       EXCLUSIVE_LOCKS_REQUIRED(task_runner_lock_);
 
   // Returns the rate at which the thread controller should alternate between

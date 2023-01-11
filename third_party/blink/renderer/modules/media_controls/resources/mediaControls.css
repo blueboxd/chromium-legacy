@@ -72,36 +72,53 @@ video::-webkit-media-controls-panel.transparent {
   transition: opacity 1s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
+video::-webkit-media-controls {
+  --gradient-steps:
+    hsla(0, 0%, 0%, 0) 0%,
+    hsla(0, 0%, 0%, 0.013) 8.1%,
+    hsla(0, 0%, 0%, 0.049) 15.5%,
+    hsla(0, 0%, 0%, 0.104) 22.5%,
+    hsla(0, 0%, 0%, 0.175) 29%,
+    hsla(0, 0%, 0%, 0.259) 35.3%,
+    hsla(0, 0%, 0%, 0.352) 41.2%,
+    hsla(0, 0%, 0%, 0.45) 47.1%,
+    hsla(0, 0%, 0%, 0.55) 52.9%,
+    hsla(0, 0%, 0%, 0.648) 58.8%,
+    hsla(0, 0%, 0%, 0.741) 64.7%,
+    hsla(0, 0%, 0%, 0.825) 71%,
+    hsla(0, 0%, 0%, 0.896) 77.5%,
+    hsla(0, 0%, 0%, 0.951) 84.5%,
+    hsla(0, 0%, 0%, 0.987) 91.9%,
+    hsl(0, 0%, 0%) 100%;
+}
+
 video::-webkit-media-controls:not(.audio-only) div[pseudo="-webkit-media-controls-panel" i] {
   background:
-    -webkit-image-set(url('default_100_percent/gradient_bg.png') 1x)
-    repeat-x bottom left;
+    linear-gradient(to bottom, var(--gradient-steps)) repeat-x bottom left;
 }
 
 video::-webkit-media-controls.sizing-small div[pseudo="-webkit-media-controls-panel" i] {
-  background-size: auto 92px;
+  background-size: auto 112px;
 }
 
 video::-webkit-media-controls.sizing-large div[pseudo="-webkit-media-controls-panel" i] {
-  background-size: auto 200px;
+  background-size: auto 222px;
 }
 
 /* Need dark gradient at the top of the video when the scrubbing message is
  * shown */
 video::-webkit-media-controls:not(.audio-only) div[pseudo="-webkit-media-controls-panel" i].scrubbing-message {
   background:
-    -webkit-image-set(url('default_100_percent/top_gradient_bg.png') 1x)
-    repeat-x top left,
-    -webkit-image-set(url('default_100_percent/gradient_bg.png') 1x)
-    repeat-x bottom left;
+    linear-gradient(to top, var(--gradient-steps)) repeat-x top left,
+    linear-gradient(to bottom, var(--gradient-steps)) repeat-x bottom left;
 }
 
 video::-webkit-media-controls.sizing-small div[pseudo="-webkit-media-controls-panel" i].scrubbing-message {
-  background-size: auto 120px, auto 92px;
+  background-size: auto 120px, auto 112px;
 }
 
 video::-webkit-media-controls.sizing-large div[pseudo="-webkit-media-controls-panel" i].scrubbing-message {
-  background-size: auto 120px, auto 200px;
+  background-size: auto 120px, auto 220px;
 }
 
 audio::-internal-media-controls-button-panel,
@@ -1378,123 +1395,6 @@ video::-internal-media-controls-text-track-list-kind-subtitles {
     height: 18px;
     width: 18px;
     vertical-align: middle;
-}
-
-/**
- * VR styling.
- */
-video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i],
-video::-webkit-media-controls.immersive-mode div[pseudo="-internal-media-controls-button-panel" i] {
-  padding-left: 32px;
-  padding-right: 32px;
-}
-
-/* Timeline sizing does not include padding in max width. */
-video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i] {
-  width: calc(100% - 64px);
-  max-width: 471px;
-  height: 5px;
-  margin-bottom: 20px;
-  padding-top: 19px;
-  padding-bottom: 19px;
-}
-
-/* Button panel sizing does include padding in max width. */
-video::-webkit-media-controls.immersive-mode div[pseudo="-internal-media-controls-button-panel" i] {
-  max-width: 535px; /* 471px + 64px padding. */
-}
-
-video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-panel" i] {
-  /* Centering the button panel and timeline within the controls. */
-  align-items: center;
-
-  /* Taller scrim. */
-  background:
-    -webkit-image-set(url('default_100_percent/vr_gradient_bg.png') 1x)
-    repeat-x bottom left;
-}
-
-video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before,
-video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after,
-video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-background {
-  height: 5px;
-}
-
-video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb {
-  width: 16px;
-  height: 16px;
-  border-radius: 8px;
-  margin-top: -5px;
-}
-
-video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-overlay-play-button" i] {
-  margin-left: -52px /* (play button width / 2) + 20px Padding */;
-  margin-top: -64px /* (play button width + timeline height + padding-bottom) / 2 + padding */
-}
-
-video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
-  width: 64px;
-  height: 64px;
-  border-radius: 32px;
-  background-size: 36px;
-}
-
-video::-webkit-media-controls.immersive-mode div[pseudo="-internal-media-controls-loading-panel" i]::-internal-media-controls-loading-panel-spinner-frame {
-  width: 64px; /* play button width */
-  height: 64px; /* play button width */
-  margin-top: -44px; /* (play button width + timeline height + padding-bottom) / -2 */
-  margin-left: -32px; /* play button width / -2 */
-}
-
-video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-volume-control-container" i],
-video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-volume-control-container" i] {
-  height: 43px;
-}
-
-video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-volume-control-container" i].closed,
-video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-volume-control-container" i].closed {
-  min-width: 43px;
-}
-
-video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-mute-button" i],
-video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-fullscreen-button" i],
-video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-controls-overflow-button" i] {
-  width: 43px;
-  height: 43px;
-  min-width: 43px;
-  margin-left: 5px;
-  background-size: 24px;
-}
-
-video::-webkit-media-controls.immersive-mode div[pseudo="-internal-media-controls-button-panel" i] {
-  height: 43px;
-  line-height: 43px;
-}
-
-video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-current-time-display" i],
-video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-time-remaining-display" i] {
-  font-size: 16px;
-}
-
-/* Hover highlighting. */
-video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-mute-button" i]:hover,
-video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-fullscreen-button" i]:hover,
-video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-controls-overflow-button" i]:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-}
-
-/* Hide hover background */
-video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-play-button" i]::-internal-media-controls-button-hover-background,
-video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-fullscreen-button" i]::-internal-media-controls-button-hover-background,
-video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-controls-overflow-button" i]::-internal-media-controls-button-hover-background {
-  display: none;
-}
-
-video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-panel" i] {
-  background:
-    -webkit-image-set(url('default_200_percent/vr_gradient_bg.png') 1x)
-    repeat-x bottom left auto 198px;
 }
 
 /**

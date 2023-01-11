@@ -8,8 +8,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lookalikes/safety_tip_ui_helper.h"
 #include "chrome/browser/page_info/page_info_features.h"
-#include "chrome/browser/reputation/safety_tip_ui_helper.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/page_info/chrome_page_info_ui_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -646,6 +646,14 @@ PageInfoMainView::CreateAdPersonalizationSection() {
   ads_personalization_section
       ->SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical);
+  const auto header_id =
+      base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)
+          ? IDS_PAGE_INFO_AD_PRIVACY_HEADER
+          : IDS_PAGE_INFO_AD_PERSONALIZATION_HEADER;
+  const auto tooltip_id =
+      base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)
+          ? IDS_PAGE_INFO_AD_PRIVACY_TOOLTIP
+          : IDS_PAGE_INFO_AD_PERSONALIZATION_TOOLTIP;
   ads_personalization_section
       ->AddChildView(std::make_unique<RichHoverButton>(
           base::BindRepeating(
@@ -654,10 +662,9 @@ PageInfoMainView::CreateAdPersonalizationSection() {
               },
               this),
           PageInfoViewFactory::GetAdPersonalizationIcon(),
-          l10n_util::GetStringUTF16(IDS_PAGE_INFO_AD_PERSONALIZATION_HEADER),
-          std::u16string(),
-          l10n_util::GetStringUTF16(IDS_PAGE_INFO_AD_PERSONALIZATION_TOOLTIP),
-          std::u16string(), PageInfoViewFactory::GetOpenSubpageIcon()))
+          l10n_util::GetStringUTF16(header_id), std::u16string(),
+          l10n_util::GetStringUTF16(tooltip_id), std::u16string(),
+          PageInfoViewFactory::GetOpenSubpageIcon()))
       ->SetID(PageInfoViewFactory::VIEW_ID_PAGE_INFO_AD_PERSONALIZATION_BUTTON);
 
   return ads_personalization_section;

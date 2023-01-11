@@ -7,12 +7,12 @@
 #include <memory>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -27,7 +27,6 @@
 #include "base/test/bind.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"

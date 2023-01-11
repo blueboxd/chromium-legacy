@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history_clusters/core/category_cluster_finalizer.h"
@@ -424,7 +423,9 @@ void OnDeviceClusteringBackend::DispatchGetClustersForUIToBackgroundThread(
       FROM_HERE,
       base::BindOnce(
           &OnDeviceClusteringBackend::GetClustersForUIOnBackgroundThread,
-          std::move(clusters), base::OwnedRef(std::move(entity_metadata_map))),
+          engagement_score_provider_ != nullptr, std::move(clusters),
+          base::OwnedRef(std::move(entity_metadata_map)),
+          /*calculate_triggerability=*/true),
       std::move(callback));
 }
 
@@ -466,7 +467,8 @@ OnDeviceClusteringBackend::ClusterVisitsOnBackgroundThread(
   // 2. Determine how the clusters should be displayed.
   base::ElapsedThreadTimer compute_clusters_for_ui_timer;
   clusters = GetClustersForUIOnBackgroundThread(
-      std::move(clusters), entity_id_to_entity_metadata_map);
+      engagement_score_provider_is_valid, std::move(clusters),
+      entity_id_to_entity_metadata_map, /*calculate_triggerability=*/false);
   base::UmaHistogramTimes(
       "History.Clusters.Backend.ComputeClustersForUI.ThreadTime",
       compute_clusters_for_ui_timer.Elapsed());
@@ -489,9 +491,11 @@ OnDeviceClusteringBackend::ClusterVisitsOnBackgroundThread(
 // static
 std::vector<history::Cluster>
 OnDeviceClusteringBackend::GetClustersForUIOnBackgroundThread(
+    bool engagement_score_provider_is_valid,
     std::vector<history::Cluster> clusters,
     base::flat_map<std::string, optimization_guide::EntityMetadata>&
-        entity_id_to_entity_metadata_map) {
+        entity_id_to_entity_metadata_map,
+    bool calculate_triggerability) {
   // The cluster processors to be run.
   std::vector<std::unique_ptr<ClusterProcessor>> cluster_processors;
   cluster_processors.push_back(
@@ -524,7 +528,11 @@ OnDeviceClusteringBackend::GetClustersForUIOnBackgroundThread(
     }
   }
 
-  return clusters;
+  return calculate_triggerability
+             ? GetClusterTriggerabilityOnBackgroundThread(
+                   engagement_score_provider_is_valid, std::move(clusters),
+                   entity_id_to_entity_metadata_map)
+             : clusters;
 }
 
 // static

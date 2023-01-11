@@ -19,10 +19,10 @@
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -31,7 +31,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
@@ -1118,10 +1117,9 @@ void WizardController::ShowGuestTosScreen() {
 }
 
 void WizardController::ShowCryptohomeRecoveryScreen(
-    const AccountId& account_id) {
+    std::unique_ptr<UserContext> user_context) {
   DCHECK(features::IsCryptohomeRecoveryFlowUIEnabled());
-  CryptohomeRecoveryScreen* screen = GetScreen<CryptohomeRecoveryScreen>();
-  screen->Configure(account_id);
+  wizard_context_->user_context = std::move(user_context);
   SetCurrentScreen(GetScreen(CryptohomeRecoveryScreenView::kScreenId));
 }
 
@@ -1392,8 +1390,30 @@ void WizardController::OnThemeSelectionScreenExit(
   ShowMarketingOptInScreen();
 }
 
-void WizardController::OnCryptohomeRecoveryScreenExit() {
-  NOTREACHED();
+void WizardController::OnCryptohomeRecoveryScreenExit(
+    CryptohomeRecoveryScreen::Result result) {
+  OnScreenExit(CryptohomeRecoveryScreenView::kScreenId,
+               CryptohomeRecoveryScreen::GetResultString(result));
+  switch (result) {
+    case CryptohomeRecoveryScreen::Result::kSucceeded:
+      ash::LoginDisplayHost::default_host()
+          ->GetExistingUserController()
+          ->LoginAuthenticated(std::move(wizard_context_->user_context));
+      break;
+    case CryptohomeRecoveryScreen::Result::kGaiaLogin:
+    case CryptohomeRecoveryScreen::Result::kRetry:
+      // TODO(b/257073746): We probably want to differentiate between retry with
+      // or without login.
+      GetScreen<GaiaScreen>()->LoadOnline(
+          wizard_context_->user_context->GetAccountId());
+      AdvanceToScreen(GaiaView::kScreenId);
+      break;
+    case CryptohomeRecoveryScreen::Result::kManualRecovery:
+    case CryptohomeRecoveryScreen::Result::kNoRecoveryFactor:
+      ShowGaiaPasswordChangedScreen(
+          wizard_context_->user_context->GetAccountId(), false /*has_error*/);
+      break;
+  }
 }
 
 void WizardController::OnChoobeScreenExit(ChoobeScreen::Result result) {

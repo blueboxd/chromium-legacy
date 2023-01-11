@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -427,7 +427,6 @@ class TestMetricsReporter : public MetricsReporter {
                   const ContentStats& content_stats) override;
   void OnBackgroundRefresh(const StreamType& stream_type,
                            LoadStreamStatus final_status) override;
-  void OnClearAll(base::TimeDelta since_last_clear) override;
   void OnUploadActions(UploadActionsStatus status) override;
 
   struct StreamMetrics {
@@ -447,7 +446,6 @@ class TestMetricsReporter : public MetricsReporter {
   absl::optional<SurfaceId> load_more_surface_id;
   absl::optional<LoadStreamStatus> load_more_status;
   absl::optional<LoadStreamStatus> background_refresh_status;
-  absl::optional<base::TimeDelta> time_since_last_clear;
   absl::optional<UploadActionsStatus> upload_action_status;
 
   StreamMetrics web_feed;

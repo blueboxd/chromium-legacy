@@ -10,11 +10,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase_vector.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/raw_ptr.h"
@@ -34,12 +34,12 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/child_process_host.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api/activity_log/web_request_constants.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"

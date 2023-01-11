@@ -626,6 +626,9 @@
           'io_timeout': 3600,
           'shards': 10,
         },
+        'args': [
+          '--tast-retries=1',
+        ],
         'mixins': [
           'has_native_resultdb_integration',
         ],
@@ -1114,6 +1117,54 @@
     },
 
     'chromium_junit_tests_scripts': {
+      'android_webview_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
+        'remove_mixins': [
+          'emulator-4-cores',
+          'nougat-x86-emulator',
+        ],
+        'use_isolated_scripts_api': True,
+      },
+      'base_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
+        'remove_mixins': [
+          'emulator-4-cores',
+          'nougat-x86-emulator',
+        ],
+        'use_isolated_scripts_api': True,
+      },
+      'build_junit_tests':{
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
+        'remove_mixins': [
+          'emulator-4-cores',
+          'nougat-x86-emulator',
+        ],
+        'use_isolated_scripts_api': True,
+      },
+      'chrome_java_test_pagecontroller_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
+        'remove_mixins': [
+          'emulator-4-cores',
+          'nougat-x86-emulator',
+        ],
+        'use_isolated_scripts_api': True,
+      },
       'chrome_junit_tests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.nougat-x86-rel.chrome_junit_tests.filter',
@@ -1129,114 +1180,197 @@
         ],
         'use_isolated_scripts_api': True,
       },
-    },
-
-    # TODO(crbug.com/1320434): remove this once all junit tests are migrated
-    'chromium_junit_tests_some_swarming': {
-      'android_webview_junit_tests': {
-        'remove_mixins': [
-          'nougat-x86-emulator',
-        ],
-      },
-      'base_junit_tests': {
-        'remove_mixins': [
-          'nougat-x86-emulator',
-        ],
-      },
-      'build_junit_tests':{
-        'remove_mixins': [
-          'nougat-x86-emulator',
-        ],
-      },
-      'chrome_java_test_pagecontroller_junit_tests': {
-        'remove_mixins': [
-          'nougat-x86-emulator',
-        ],
-      },
       'components_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'content_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'device_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'junit_unit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
-      },
-      'keyboard_accessory_junit_tests': {
-        'remove_mixins': [
-          'nougat-x86-emulator',
-        ],
+        'use_isolated_scripts_api': True,
       },
       'media_base_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'module_installer_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'net_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'paint_preview_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'password_check_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'password_manager_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'services_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'touch_to_fill_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'ui_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'webapk_client_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'webapk_shell_apk_h2o_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'webapk_shell_apk_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
     },
 
@@ -4085,7 +4219,7 @@
         ],
         'test': 'browser_tests',
         'swarming': {
-          'shards': 4,
+          'shards': 8,
         },
       },
     },
@@ -4920,6 +5054,12 @@
           ]
         },
       },
+    },
+
+    # TODO(crbug.com/1381588): remove this test definition once
+    # crbug.com/1394839 is resolved.
+    'updater_gtests_mac_user': {
+      'updater_tests': {},
     },
 
     'updater_gtests_win': {
@@ -6480,12 +6620,12 @@
     'gpu_angle_ios_gtests': {
       'gpu_angle_ios_end2end_gtests': {
         'variants': [
-          'SIM_IPHONE_X_16_1',
+          'SIM_IPHONE_X_16_2',
         ],
       },
       'gpu_angle_ios_white_box_gtests': {
         'variants': [
-          'SIM_IPHONE_X_16_1',
+          'SIM_IPHONE_X_16_2',
         ],
       },
     },
@@ -6719,7 +6859,7 @@
       'ios_common_tests': {
         'variants': [
           'SIM_IPHONE_6S_15_5',
-          'SIM_IPHONE_8_16_1',
+          'SIM_IPHONE_8_16_2',
         ],
       },
       'ios_eg2_cq_tests': {
@@ -6728,11 +6868,11 @@
           'SIM_IPHONE_6S_15_5',
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_8_16_1',
-          'SIM_IPHONE_X_16_1',
-          'SIM_IPAD_AIR_3RD_GEN_16_1',
+          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_X_16_2',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_1',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ],
       },
       'ios_eg2_tests': {
@@ -6741,11 +6881,11 @@
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
           'SIM_IPHONE_X_15_5',
-          'SIM_IPHONE_8_16_1',
-          'SIM_IPAD_AIR_3RD_GEN_16_1',
-          'SIM_IPHONE_X_16_1',
+          'SIM_IPHONE_8_16_2',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
+          'SIM_IPHONE_X_16_2',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_1',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ],
       },
       'ios_screen_size_dependent_tests': {
@@ -6754,12 +6894,12 @@
           'SIM_IPHONE_6S_15_5',
           'SIM_IPHONE_SE_1ST_GEN_15_5',
           'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_8_PLUS_16_1',
-          'SIM_IPHONE_8_16_1',
-          'SIM_IPHONE_SE_3RD_GEN_16_1',
-          'SIM_IPAD_AIR_3RD_GEN_16_1',
+          'SIM_IPHONE_8_PLUS_16_2',
+          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_SE_3RD_GEN_16_2',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_1',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ],
       },
     },
@@ -6821,11 +6961,11 @@
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
           'SIM_IPHONE_X_15_5',
-          'SIM_IPHONE_8_16_1',
-          'SIM_IPHONE_X_16_1',
-          'SIM_IPAD_AIR_3RD_GEN_16_1',
+          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_X_16_2',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_1',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ]
       },
       'ios_eg2_cq_tests': {
@@ -6834,8 +6974,8 @@
           'SIM_IPHONE_6S_15_5',
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_8_16_1',
-          'SIM_IPAD_AIR_3RD_GEN_16_1',
+          'SIM_IPHONE_8_16_2',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
         ]
       },
@@ -6888,7 +7028,7 @@
           'SIM_IPHONE_7_14_5',
           'SIM_IPAD_AIR_2_14_5',
           'SIM_IPHONE_X_14_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_1',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ]
       },
       'ios_eg2_cq_tests': {
@@ -6922,22 +7062,22 @@
     'ios_simulator_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_8_16_1',
+          'SIM_IPHONE_8_16_2',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_8_16_1',
+          'SIM_IPHONE_8_16_2',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_8_16_1',
-          'SIM_IPHONE_X_16_1',
-          'SIM_IPAD_AIR_3RD_GEN_16_1',
-          'SIM_IPHONE_SE_3RD_GEN_16_1',
-          'SIM_IPAD_PRO_3RD_GEN_16_1',
+          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_X_16_2',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
+          'SIM_IPHONE_SE_3RD_GEN_16_2',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ]
       }
     },

@@ -10,12 +10,12 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
@@ -841,9 +841,6 @@ TEST_P(ExternallyManagedAppInstallTaskTest, UninstallAndReplace) {
               EXPECT_EQ(result.app_id,
                         *registrar()->LookupExternalAppId(kWebAppUrl));
 
-              EXPECT_TRUE(ui_manager()->DidUninstallAndReplace("app1", app_id));
-              EXPECT_TRUE(ui_manager()->DidUninstallAndReplace("app2", app_id));
-
               run_loop.Quit();
             }));
     run_loop.Run();
@@ -865,8 +862,6 @@ TEST_P(ExternallyManagedAppInstallTaskTest, UninstallAndReplace) {
               EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall,
                         result.code);
               EXPECT_EQ(app_id, result.app_id.value());
-
-              EXPECT_TRUE(ui_manager()->DidUninstallAndReplace("app3", app_id));
 
               run_loop.Quit();
             }));

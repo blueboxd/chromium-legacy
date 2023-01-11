@@ -8,8 +8,8 @@
 #include <ostream>
 #include <string>
 
-#include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/callback_forward.h"
 #include "components/performance_manager/public/freezing/freezing.h"
 #include "components/performance_manager/public/graph/node.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
@@ -218,6 +218,8 @@ class PageNode : public Node {
   virtual PageState GetPageState() const = 0;
 
   virtual uint64_t EstimateResidentSetSize() const = 0;
+
+  virtual uint64_t EstimatePrivateFootprintSize() const = 0;
 };
 
 // Pure virtual observer interface. Derive from this if you want to be forced to

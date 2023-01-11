@@ -19,13 +19,14 @@
 #include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/color_util.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -38,7 +39,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -141,8 +141,6 @@ constexpr base::TimeDelta kClearPasswordAfterDelay = base::Seconds(30);
 // Delay after which the password gets back to hidden state, for security.
 constexpr base::TimeDelta kHidePasswordAfterDelay = base::Seconds(5);
 
-constexpr const char kLoginPasswordViewName[] = "LoginPasswordView";
-
 struct FrameParams {
   FrameParams(int duration_in_ms, float opacity_param)
       : duration(base::Milliseconds(duration_in_ms)), opacity(opacity_param) {}
@@ -235,11 +233,6 @@ class LoginPasswordView::LoginTextfield : public views::Textfield {
     set_placeholder_font_list(font_list_visible_);
     SetObscuredGlyphSpacing(kPasswordGlyphSpacing);
     SetBorder(nullptr);
-
-    // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
-    // able to submit accessibility checks, but this focusable View needs to
-    // add a name so that the screen reader knows what to announce.
-    SetProperty(views::kSkipAccessibilityPaintChecks, true);
   }
   LoginTextfield(const LoginTextfield&) = delete;
   LoginTextfield& operator=(const LoginTextfield&) = delete;
@@ -731,8 +724,9 @@ void LoginPasswordView::SetEasyUnlockIcon(
   HandleLeftIconsVisibilities(false /*handling_capslock*/);
 }
 
-void LoginPasswordView::SetAccessibleName(const std::u16string& name) {
-  textfield_->SetAccessibleName(name);
+void LoginPasswordView::OnAccessibleNameChanged(
+    const std::u16string& new_name) {
+  textfield_->SetAccessibleName(new_name);
 }
 
 void LoginPasswordView::SetFocusEnabledForTextfield(bool enable) {
@@ -794,10 +788,6 @@ void LoginPasswordView::SetReadOnly(bool read_only) {
 
 bool LoginPasswordView::IsReadOnly() const {
   return textfield_->GetReadOnly();
-}
-
-const char* LoginPasswordView::GetClassName() const {
-  return kLoginPasswordViewName;
 }
 
 gfx::Size LoginPasswordView::CalculatePreferredSize() const {
@@ -966,5 +956,8 @@ void LoginPasswordView::SetCapsLockHighlighted(bool highlight) {
       kLockScreenCapsLockIcon, highlight ? kColorAshIconColorPrimary
                                          : kColorAshIconPrimaryDisabledColor));
 }
+
+BEGIN_METADATA(LoginPasswordView, views::View)
+END_METADATA
 
 }  // namespace ash

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -50,6 +51,7 @@ class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice {
   void AllocateAndStart(const media::VideoCaptureParams& params,
                         std::unique_ptr<Client> client) override;
   void StopAndDeAllocate() override;
+  void RequestRefreshFrame() override;
 
   // Set the platform-dependent window id for the notification window.
   void SetNotificationWindowId(gfx::NativeViewId window_id);

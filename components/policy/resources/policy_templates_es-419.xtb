@@ -1008,6 +1008,11 @@ Esta política no tiene efecto si la opción para conservar los datos de navegac
 <translation id="1962864958436828230">Establecer el límite de tamaño mínimo para los datos del portapapeles mediante la restricción destinada a evitar la filtración de datos</translation>
 <translation id="1964634611280150550">Modo incógnito inhabilitado</translation>
 <translation id="1964802606569741174">Esta política no tiene efecto en la app de YouTube de Android. Si se debe aplicar el modo de seguridad en YouTube, se debe inhabilitar la instalación de la app de YouTube de Android.</translation>
+<translation id="1964985353230379667">Especifica la configuración sugerida de <ph name="KRB5_CONFIG" /> para los nuevos tickets creados manualmente.
+
+      Si habilitas la política "KerberosUseCustomPrefilledConfig", su valor se aplicará como la configuración sugerida y se mostrará en la sección "Configuración avanzada" del diálogo de autenticación de Kerberos. Si estableces esta política como una string vacía o no la estableces, se borrará la configuración recomendada de <ph name="PRODUCT_OS_NAME" />.
+
+      Si inhabilitas la política "KerberosUseCustomPrefilledConfig", no se usará su valor.</translation>
 <translation id="1969212217917526199">Anula las políticas en compilaciones de depuración del host de acceso remoto.
 
           El valor se analiza como un diccionario JSON de asignaciones de nombre de política a valor de política.</translation>
@@ -2832,19 +2837,6 @@ Si no se establece, se usará el comportamiento nuevo al igual que en el resto d
 <translation id="3591584750136265240">Configurar el comportamiento de autenticación en el acceso</translation>
 <translation id="3593905652755912452">Usar el comportamiento anterior de envío de eventos en los controles de formularios inhabilitados</translation>
 <translation id="3596112486106491038">Habilitar el acceso a la línea de comandos de la máquina virtual</translation>
-<translation id="3596335476793146071">Lista de respuestas para ejecutar cuando se alcanza el tiempo de espera de la política <ph name="IDLE_TIMEOUT_POLICY_NAME" />.
-
-      Si no estableces la política <ph name="IDLE_TIMEOUT_POLICY_NAME" />, esta política no tendrá efecto.
-
-      Cuando se alcanza el tiempo de espera de la política <ph name="IDLE_TIMEOUT_POLICY_NAME" />, <ph name="PRODUCT_NAME" /> ejecuta las respuestas configuradas en esta política.
-
-      Si la dejas vacía o no la estableces, la política <ph name="IDLE_TIMEOUT_POLICY_NAME" /> no tendrá efecto.
-
-      Se admiten las siguientes respuestas:
-
-      "<ph name="CLOSE_BROWSERS_ACTION" />": cierra todas las ventanas del navegador y las AWPs de este perfil.
-
-      "<ph name="SHOW_PROFILE_PICKER_ACTION" />": muestra la ventana del Selector de perfiles.</translation>
 <translation id="3603469950773500315">Habilita las mitigaciones de comprobación de <ph name="CORS" /> en la nueva implementación de <ph name="CORS" />, lo que permite que las extensiones mantengan su compatibilidad y que <ph name="PRODUCT_NAME" /> envíe encabezados específicos sin las comprobaciones de <ph name="CORS" />.
 
       Si esta lista se deja vacía, <ph name="PRODUCT_NAME" /> intentará ejecutar las extensiones de forma compatible y no introducirá cambios de <ph name="API" /> para <ph name="PRODUCT_NAME" /> 79, como se explica en el <ph name="WEB_REQUEST_API_MANUAL" />.
@@ -3857,9 +3849,9 @@ Para obtener información detallada sobre los patrones válidos de <ph name="URL
 
       * Si <ph name="FILTER_PLACEHOLDER" /> incluye las secciones <ph name="ISSUER_STRING_VALUE" /> y <ph name="SUBJECT_STRING_VALUE" />, solo se seleccionarán certificados de cliente que cumplan con ambas condiciones.
 
-      * Si <ph name="FILTER_PLACEHOLDER" /> incluye la sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATION" />, el certificado deberá contar con al menos una unidad organizacional que coincida con el valor indicado para ser elegido.
+      * Si <ph name="FILTER_PLACEHOLDER" /> incluye la sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATION" />, el certificado deberá contar con al menos una unidad organizativa que coincida con el valor indicado para ser elegido.
 
-      * Si <ph name="FILTER_PLACEHOLDER" /> incluye una sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, el certificado deberá contar con al menos una unidad organizacional que coincida con el valor indicado para ser elegido.
+      * Si <ph name="FILTER_PLACEHOLDER" /> incluye una sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, el certificado deberá contar con al menos una unidad organizativa que coincida con el valor indicado para ser elegido.
 
       * Si estableces <ph name="FILTER_PLACEHOLDER" /> como <ph name="EMPTY_DICTIONARY" />, no se aplicarán restricciones adicionales a la selección de certificados de cliente. Ten en cuenta que se seguirán aplicando los filtros que proporciona el servidor web.
 
@@ -4408,6 +4400,19 @@ Si inhabilitas esta política o no la estableces, la API de window.webkitStorage
 <translation id="519247340330463721">Configura las políticas relacionadas con la Navegación segura.</translation>
 <translation id="5194683382395300627">Permitir el uso de <ph name="ASSISTANT_PRODUCT_NAME" /> en la Web, p. ej., para habilitar el cambio automático de contraseñas</translation>
 <translation id="5196630732055960309">Permitir la API de File Handling en esas aplicaciones web</translation>
+<translation id="5198660575318473544">Controla si se pueden usar extensiones de Manifest V2 en la pantalla de acceso de <ph name="PRODUCT_OS_NAME" />.
+
+La compatibilidad con extensiones de Manifest V2 dejará de estar disponible y todas las extensiones deberán
+migrar a V3 en el futuro. Para obtener más información y el cronograma de
+migración, consulta https://developer.chrome.com/docs/extensions/mv3/mv2-sunset/.
+
+Si estableces la política como <ph name="DEFAULT" /> (0) o no la estableces, el dispositivo determinará las cargas de las extensiones de V2, de acuerdo con el cronograma que se indica más arriba.
+Si estableces la política como <ph name="DISABLE" /> (1), se bloqueará la instalación de extensiones de V2 y se inhabilitarán las extensiones existentes. La opción se tratará de la misma manera que si no estableces la política después de que la compatibilidad con V2 se desactive de forma predeterminada.
+Si estableces la política como <ph name="ENABLE" /> (2), se permitirán las extensiones de V2. La opción se tratará de la misma manera que si no estableces la política antes de que la compatibilidad con V2 se desactive de forma predeterminada.
+Si estableces la política como <ph name="ENABLE_FOR_FORCED_EXTENSIONS" /> (3), se permitirán las extensiones de V2 instaladas de manera automática. Esto incluye las extensiones que aparecen en la lista de <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> o de <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> con <ph name="INSTALLATION_MODE" /> "force_installed" o "normal_installed". Todas las demás extensiones de V2 están inhabilitadas. La opción se tratará de la misma manera que si no estableces la política antes de que la compatibilidad con V2 se desactive de forma predeterminada.
+
+
+La disponibilidad de las extensiones aún se controla mediante otras políticas.</translation>
 <translation id="5206454085187851382">Si eliges <ph name="PRINTERS_ALLOWLIST" /> para <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME" />, la configuración de <ph name="PRINTERS_BULK_ALLOWLIST_POLICY_NAME" /> especificará las impresoras que podrán utilizar los usuarios. El usuario solo podrá acceder a las impresoras cuyos ID coincidan con los valores en esta política. Los ID deben coincidir con los valores de los campos <ph name="ID_FIELD" /> o <ph name="GUID_FIELD" /> en el archivo que se especifica en <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />.</translation>
 <translation id="5207543664699568887">Configura si <ph name="PRODUCT_NAME" /> en Linux usará notificaciones del sistema.
 
@@ -4857,6 +4862,7 @@ Si no estableces la política, ningún dominio podrá acceder a las URLs de file
 <translation id="5599461642204007579">Configuración de la administración de <ph name="MS_AD_NAME" /></translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5607021831414604820">Habilitar los informes de estado del almacenamiento del dispositivo</translation>
+<translation id="5608114828230655271">Comportamiento predeterminado del dispositivo</translation>
 <translation id="5614865701790130558">Registra eventos para las instalaciones de extensiones basadas en políticas</translation>
 <translation id="5618398258385745432">La configuración asociada se usó antes de implementar la reautenticación para ver contraseñas. A partir de ese momento, la configuración y, por lo tanto, esta política no tienen efecto en el comportamiento de Chrome. El comportamiento actual de Chrome es como si la política se hubiera establecido para no ver las contraseñas en texto claro en las páginas de configuración del administrador de contraseñas. Esto significa que la página de configuración contiene solo un marcador de posición y Chrome mostrará la contraseña después de que el usuario haga clic en "Mostrar" (e implemente la reautenticación, si corresponde). A continuación, se muestra la descripción original de la política.
 
@@ -7880,7 +7886,7 @@ del dispositivo durante el acceso del usuario.</translation>
       Advertencia: No se recomienda configurar restricciones de la versión, ya que pueden impedir que los usuarios reciban actualizaciones de software y correcciones de seguridad muy importantes. La restricción de las actualizaciones a un prefijo de una versión específica puede poner en riesgo a los usuarios.</translation>
 <translation id="8508489378025029342">Habilitar los informes de tiempo de actividad del dispositivo</translation>
 <translation id="8511192250554640451">Permitir que los usuarios configuren la limitación de los temporizadores de JavaScript en segundo plano y que la controle la lógica de Chrome</translation>
-<translation id="8511708772548158302">Revierte el dispositivo a la versión de destino si la versión actual del SO es más reciente que la de destino. El dispositivo usa Powerwash, pero la configuración de red de todo el dispositivo sin certificados se conserva y este se vuelve a inscribir automáticamente.
+<translation id="8511708772548158302">Revierte el dispositivo a la versión de destino si la versión actual del SO es más reciente que la de destino. Powerwash se usa en el dispositivo, pero la configuración de red de todo el dispositivo sin certificados se conserva y este se vuelve a inscribir automáticamente.
 No se admite la reversión a la versión 106 de <ph name="PRODUCT_OS_NAME" /> ni a versiones anteriores.</translation>
 <translation id="8519264904050090490">Direcciones URL de excepción manual de usuario administrado</translation>
 <translation id="8519516251436131647">Habilita las combinaciones de teclas para las funciones de accesibilidad.
@@ -8470,9 +8476,9 @@ Si no se establece, se usará el comportamiento nuevo al igual que en el resto d
 
       * Si <ph name="FILTER_PLACEHOLDER" /> incluye las secciones <ph name="ISSUER_STRING_VALUE" /> y <ph name="SUBJECT_STRING_VALUE" />, solo se seleccionarán certificados de cliente que cumplan con ambas condiciones.
 
-      * Si <ph name="FILTER_PLACEHOLDER" /> incluye la sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATION" />, el certificado deberá contar con al menos una unidad organizacional que coincida con el valor indicado para ser elegido.
+      * Si <ph name="FILTER_PLACEHOLDER" /> incluye la sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATION" />, el certificado deberá contar con al menos una unidad organizativa que coincida con el valor indicado para ser elegido.
 
-      * Si <ph name="FILTER_PLACEHOLDER" /> incluye una sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, el certificado deberá contar con al menos una unidad organizacional que coincida con el valor indicado para ser elegido.
+      * Si <ph name="FILTER_PLACEHOLDER" /> incluye una sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, el certificado deberá contar con al menos una unidad organizativa que coincida con el valor indicado para ser elegido.
 
       * Si estableces <ph name="FILTER_PLACEHOLDER" /> como <ph name="EMPTY_DICTIONARY" />, no se aplicarán restricciones adicionales a la selección de certificados de cliente. Ten en cuenta que se seguirán aplicando los filtros que proporciona el servidor web.
 

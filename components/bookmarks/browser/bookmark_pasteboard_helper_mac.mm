@@ -163,6 +163,8 @@ bool ReadWebURLsWithTitlesPboardType(
   return true;
 }
 
+// Transforms a list of bookmark nodes into an `NSArray` of `NSDictionaries`
+// encoding them.
 NSArray* GetNSArrayForBookmarkList(
     const std::vector<BookmarkNodeData::Element>& elements) {
   NSMutableArray* array = [NSMutableArray array];
@@ -263,6 +265,7 @@ NSPasteboardItem* PasteboardItemFromBookmarks(
   [item setString:base::SysUTF8ToNSString(profile_path.value())
           forType:kUTTypeChromiumProfilePath];
   return item.autorelease();
+
 }
 
 }  // namespace

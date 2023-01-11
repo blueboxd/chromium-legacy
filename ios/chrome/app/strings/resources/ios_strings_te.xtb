@@ -170,7 +170,6 @@
 <translation id="225943865679747347">ఎర్రర్ కోడ్: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">ఖాతాను జోడించండి</translation>
 <translation id="2268044343513325586">మరింత మెరుగుపరచండి</translation>
-<translation id="2271351792809375263">మీరు మీ పరికరంలోని ఇతర యాప్‌లలో Chromeలో సేవ్ చేసిన పాస్‌వర్డ్‌లను ఉపయోగించండి</translation>
 <translation id="2273327106802955778">మరిన్ని మెనూ</translation>
 <translation id="2286505070150039482">హైలైట్ చేయబడిన టెక్స్ట్</translation>
 <translation id="2299218006564889602">మీ పాస్‌వర్డ్‌లు Google Password Managerలో సేవ్ కావడానికి ముందు, అవి మీ పరికరంలో ఎన్‌క్రిప్ట్ చేయబడ్డాయి.</translation>
@@ -286,7 +285,6 @@
 వర్తిస్తే, మీ సెర్చ్ హిస్టరీని తొలగించడానికి మీ సెర్చ్ ఇంజిన్ సూచనలను చూడండి.</translation>
 <translation id="3080525922482950719">తర్వాత చదవడానికి లేదా ఆఫ్‌లైన్‌లో చదవడానికి మీరు పేజీలను సేవ్ చేయవచ్చు</translation>
 <translation id="3081338492074632642">మీరు సేవ్ చేస్తున్న పాస్‌వర్డ్ మీ <ph name="WEBSITE" /> పాస్‌వర్డ్‌తో మ్యాచ్ అవుతుందని నిర్ధారించుకోండి</translation>
-<translation id="3103603146121354983">పాస్‌వర్డ్‌లను ఆటోఫిల్ చేయండి</translation>
 <translation id="3112556859945124369">గుర్తు పెట్టు…</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />మీరు వేటిని సింక్ చేయగలరో చూడండి<ph name="END_LINK" /></translation>
 <translation id="3130863904455712965">హిస్టరీ, ఇంకా మరెన్నో</translation>
@@ -365,7 +363,6 @@
 <translation id="3661160521073045932">కాన్ఫిగరేషన్ ప్రొఫైల్ అందుబాటులో ఉంది</translation>
 <translation id="3670030362669914947">నంబర్</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" />కి బుక్‌మార్క్ చేయబడింది</translation>
-<translation id="369349502275246497">పాస్‌వర్డ్‌లను సేవ్ చేయమని అడగండి</translation>
 <translation id="3709582977625132201">చదవనిదిగా గుర్తు పెట్టు</translation>
 <translation id="371230970611282515">ప్రమాదకరమైన సంఘటనలు జరగడానికి ముందే, వాటిని గుర్తించి, మిమ్మల్ని హెచ్చరిస్తుంది.</translation>
 <translation id="37207012422556617">ట్రెండింగ్ సెర్చ్‌లు</translation>
@@ -455,6 +452,7 @@
 <translation id="4420409367264901497">బుక్‌మార్క్‌ను ఎడిట్ చేయండి</translation>
 <translation id="4442550905108052454"><ph name="BEGIN_BOLD" />సెట్టింగ్‌ల<ph name="END_BOLD" />ను తెరవండి</translation>
 <translation id="4454246407045105932">భాషను జోడించండి</translation>
+<translation id="4461286950227634995">పాస్‌వర్డ్‌లను సేవ్ చేయమని అడగండి</translation>
 <translation id="4462491365653392320">ధరలను ట్యాబ్‌లలో ట్రాక్ చేయండి</translation>
 <translation id="4469418912670346607">సెటప్‌ను కొనసాగించండి</translation>
 <translation id="4474494258097106883">మీ iPhone కోసం రూపొందించబడింది</translation>
@@ -466,11 +464,11 @@
 <translation id="4508750114462689118">సైన్ ఇన్ ప్రోమోను మూసివేయండి</translation>
 <translation id="4514889972748124117">శక్తివంతమైన పాస్‌వర్డ్‌ను సూచించండి...</translation>
 <translation id="4520798012560649652">అజ్ఞాత మోడ్ గురించి మరింత తెలుసుకోండి</translation>
-<translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />లో సేవ్ చేసిన పాస్‌వర్డ్‌లను చూడండి. నిర్వహించండి</translation>
 <translation id="452750746583162491">సింక్ చేసిన మీ డేటాను రివ్యూ చేయండి</translation>
 <translation id="4536418791685807335">మళ్లీ సైన్ ఇన్ చేయడానికి ప్రయత్నించండి.</translation>
 <translation id="4540780316273593836">ఏదో తప్పు జరిగింది</translation>
 <translation id="457386861538956877">మరిన్ని...</translation>
+<translation id="4587589328781138893">సైట్‌లు</translation>
 <translation id="4588014171431912783">మీ చివరి బ్యాకప్ ఆధారంగా మీ సింక్ సెట్టింగ్‌లు రీస్టోర్ చేయబడతాయి. <ph name="BEGIN_LINK" />మీరు వేటినీ సింక్ చేయగలరో చూడండి<ph name="END_LINK" /></translation>
 <translation id="4592368184551360546">కీబోర్డ్</translation>
 <translation id="4606247758155004938">మీ బ్రౌజర్‌ను మీ సంస్థ మేనేజ్ చేస్తోంది.</translation>
@@ -532,6 +530,7 @@
 <translation id="4916679969857390442">లెన్స్</translation>
 <translation id="4922154083994158612">మరింత సెక్యూరిటీ కావాలా?</translation>
 <translation id="4930714375720679147">ఆన్ చేయి</translation>
+<translation id="4938338714234463591">ఇది వెబ్‌సైట్‌లలోని నిర్దిష్ట ఫీచర్‌లతో మీ వాయిస్‌ను ఉపయోగించడానికి మిమ్మల్ని అనుమతిస్తుంది.</translation>
 <translation id="4941089862236492464">క్షమించండి, మీ అంశాన్ని భాగస్వామ్యం చేయడంలో సమస్య ఉంది.</translation>
 <translation id="4944543191714094452">పేజీలో కనుగొనండి…</translation>
 <translation id="4945756290001680296">పాస్‌వర్డ్ సెట్టింగ్‌లను యాక్సెస్ చేయండి</translation>
@@ -554,7 +553,6 @@
 <translation id="5118764316110575523">ఆఫ్ చేయబడి ఉంది</translation>
 <translation id="5119391094379141756">Chromeను ఎంచుకోండి</translation>
 <translation id="5132942445612118989">అన్ని పరికరాల్లో మీ పాస్‌వర్డ్‌లు, హిస్టరీ, మరిన్నింటిని సింక్ చేయండి</translation>
-<translation id="5140288047769711648">Chrome మీకు సంబంధించి ఈ పాస్‌వర్డ్‌ను గుర్తుంచుకుంటుంది. మీరు గుర్తుంచుకోనవసరం లేదు.</translation>
 <translation id="5149188072385105201">పాస్‌వర్డ్‌ను జోడించండి...</translation>
 <translation id="5150492518600715772">మీ పరికరానికి పంపండి</translation>
 <translation id="5168414296986405587">iPadOS కోసం బిల్డ్ చేయబడింది</translation>
@@ -881,7 +879,6 @@
 <translation id="7438481509621345350">మీరు కొత్త ట్యాబ్‌ను తెరిచినప్పుడు మీకు ఇప్పుడు <ph name="CHANNEL_NAME" /> నుండి స్టోరీలు కనిపిస్తాయి.</translation>
 <translation id="7454057999980797137">రాష్ట్రం / దేశం</translation>
 <translation id="7459628154744868585">మెరుగైన రక్షణ ఆన్‌లో ఉంది</translation>
-<translation id="7464701184726199289">ఇది అన్ని పరికరాల నుండి సింక్ చేయబడిన డేటాను తీసివేస్తుంది. సేవ్ చేసిన సైట్ సెట్టింగ్‌లు తొలగించబడవు, ఇవి మీ బ్రౌజింగ్ అలవాట్లను ప్రదర్శించవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="746684838091935575">3. Chromeను ఎంచుకోండి</translation>
 <translation id="7472734401283673885">కంపెనీ పేరు</translation>
 <translation id="7473891865547856676">వద్దు, ధన్యవాదాలు</translation>
@@ -905,6 +902,7 @@
 <translation id="7649070708921625228">సహాయం</translation>
 <translation id="7658239707568436148">రద్దు చేయండి</translation>
 <translation id="7671141431838911305">ఇన్‌స్టాల్ చేయి</translation>
+<translation id="7679915578945954324">సైట్ అడ్రస్‌లు కాపీ చేయబడ్డాయి</translation>
 <translation id="7687508192620387263">క్యాలెండర్ ఫైల్ అందుబాటులో ఉంది</translation>
 <translation id="7701040980221191251">ఏదీ లేదు</translation>
 <translation id="7720410380936703141">మళ్లీ ట్రై చేయండి</translation>
@@ -965,7 +963,6 @@
 <translation id="806745655614357130">నా డేటాను విడిగా ఉంచండి</translation>
 <translation id="8073670137947914548">డౌన్‌లోడ్ పూర్తయింది</translation>
 <translation id="8073872304774253879">సెర్చ్‌లను, బ్రౌజింగ్‌ను మెరుగుపరచండి</translation>
-<translation id="8076014560081431679">సేవ్ చేసిన సైట్ సెట్టింగ్‌లు తొలగించబడవు, ఇవి మీ బ్రౌజింగ్ అలవాట్లను ప్రదర్శించవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="8079602123447022758">ఈ సెట్టింగ్ మేనేజ్ చేయబడుతుంది, మరింత సమాచారం కోసం రెండుసార్లు నొక్కండి</translation>
 <translation id="8080028325999236607">అన్ని ట్యాబ్‌లను మూసివేయి</translation>
 <translation id="8084285576995584326">మీ Google ఖాతా డేటాను కంట్రోల్ చేయండి</translation>
@@ -1093,7 +1090,6 @@
 <translation id="9079935439869366234">అన్నీ చదవనట్లు గుర్తు పెట్టు</translation>
 <translation id="9081058212938299310"><ph name="USERNAME" /> పాస్‌వర్డ్‌ని అప్‌డేట్ చేయాలా?</translation>
 <translation id="9083838294503912307">మీ అన్ని పరికరాలలోనూ సింక్‌ మరియు వ్యక్తిగతీకరణ చేయడం కోసం, సింక్‌ను ఆన్ చేయండి.</translation>
-<translation id="9087108903408689779">Chrome సూచిత పాస్‌వర్డ్:</translation>
 <translation id="9093271241977565440">స్క్రీన్ ఎగువున, సెర్చ్ చిహ్నాన్ని ట్యాప్ చేయండి</translation>
 <translation id="9094033019050270033">పాస్‌వర్డ్‌ను అప్‌డేట్ చేయి</translation>
 <translation id="9097506547406246598">అన్-ఫాలో చేయడం సాధ్యం కాదు. ఏదో తప్పు జరిగింది.</translation>

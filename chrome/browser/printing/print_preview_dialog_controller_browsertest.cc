@@ -6,10 +6,10 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -59,7 +59,7 @@ void PluginsLoadedCallback(
 
 void CheckPdfPluginForRenderFrame(content::RenderFrameHost* frame) {
   static const base::FilePath kPdfInternalPluginPath(
-      ChromeContentClient::kPDFPluginPath);
+      ChromeContentClient::kPDFInternalPluginPath);
 
   content::WebPluginInfo pdf_internal_plugin_info;
   ASSERT_TRUE(content::PluginService::GetInstance()->GetPluginInfoByPath(
@@ -248,8 +248,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   // Get the PDF plugin info.
   content::WebPluginInfo pdf_external_plugin_info;
   ASSERT_TRUE(content::PluginService::GetInstance()->GetPluginInfoByPath(
-      base::FilePath(FILE_PATH_LITERAL(
-          "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/")),
+      base::FilePath(ChromeContentClient::kPDFExtensionPluginPath),
       &pdf_external_plugin_info));
 
   // Disable the PDF plugin.

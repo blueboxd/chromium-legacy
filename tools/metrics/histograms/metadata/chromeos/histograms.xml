@@ -545,7 +545,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.CertProvisioning.CsrSignTime" units="ms"
-    expires_after="2023-02-01">
+    expires_after="2024-02-01">
   <owner>miersh@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
@@ -555,7 +555,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.CertProvisioning.Event" enum="CertProvisioningEvent"
-    expires_after="2023-02-01">
+    expires_after="2024-02-01">
   <owner>miersh@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
@@ -565,7 +565,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.CertProvisioning.KeypairGenerationTime" units="ms"
-    expires_after="2023-02-01">
+    expires_after="2024-02-01">
   <owner>miersh@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
@@ -575,7 +575,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.CertProvisioning.Result"
-    enum="CertProvisioningWorkerState" expires_after="2023-02-01">
+    enum="CertProvisioningWorkerState" expires_after="2024-02-01">
   <owner>miersh@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
@@ -586,7 +586,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.CertProvisioning.VaTime" units="ms"
-    expires_after="2023-02-01">
+    expires_after="2024-02-01">
   <owner>miersh@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
@@ -1290,7 +1290,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Intents.LinkCapturingEvent2"
-    enum="LinkCapturingEvent" expires_after="2023-07-02">
+    enum="LinkCapturingEvent" expires_after="2023-07-09">
   <owner>vpao@google.com</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -1849,7 +1849,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SAML.Scraping.PasswordCountAll" units="passwords"
-    expires_after="2023-03-26">
+    expires_after="2023-07-09">
   <owner>mslus@chromium.org</owner>
   <owner>emaxx@chromium.org</owner>
   <summary>
@@ -1910,8 +1910,8 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
     Writable+executable mount events are checked every thirty seconds, but each
     anomalous event is reported only once per boot. Memfd anomaly events are
-    checked and reported every 30 seconds, but memfd_create events are capped at
-    10 per boot.
+    checked and reported every 30 seconds, but memfd_create events are only
+    reported once per boot.
   </summary>
 </histogram>
 
@@ -1934,7 +1934,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.AppCount2.{AppType}" units="apps"
-    expires_after="2023-02-19">
+    expires_after="2023-08-19">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>
@@ -1952,7 +1952,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.CopyToClipboard.FormFactor"
-    enum="ChromeOSSharesheetFormFactor" expires_after="2023-02-19">
+    enum="ChromeOSSharesheetFormFactor" expires_after="2023-08-19">
   <owner>melzhang@chromium.org</owner>
   <owner>vpao@google.com</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
@@ -1963,7 +1963,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.FileCount" units="files"
-    expires_after="2023-02-19">
+    expires_after="2023-08-19">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>
@@ -1973,14 +1973,14 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.FormFactor"
-    enum="ChromeOSSharesheetFormFactor" expires_after="2023-02-19">
+    enum="ChromeOSSharesheetFormFactor" expires_after="2023-08-19">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>Records the form factor when the Sharesheet is invoked.</summary>
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.IsDriveFolder" enum="Boolean"
-    expires_after="2023-02-19">
+    expires_after="2023-08-19">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>
@@ -1990,7 +1990,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.IsImagePreviewPressed"
-    enum="BooleanSelected" expires_after="2023-02-19">
+    enum="BooleanSelected" expires_after="2023-08-19">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>
@@ -2011,7 +2011,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.ShareActionCount"
-    enum="ChromeOSSharesheetAction" expires_after="2023-02-19">
+    enum="ChromeOSSharesheetAction" expires_after="2023-08-19">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>
@@ -2029,7 +2029,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.{Location}.MimeType"
-    enum="ChromeOSSharesheetMimeType" expires_after="2023-02-19">
+    enum="ChromeOSSharesheetMimeType" expires_after="2023-08-19">
   <owner>melzhang@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -2049,7 +2049,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sync.PreferencesMigrated" enum="BooleanMigrated"
-    expires_after="2023-04-16">
+    expires_after="2023-07-09">
   <owner>rsorokin@chromium.org</owner>
   <owner>jamescook@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
@@ -2232,7 +2232,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SystemTray.ToggleExpanded"
-    enum="CrosSystemTrayToggleExpanded" expires_after="2023-05-10">
+    enum="CrosSystemTrayToggleExpanded" expires_after="2023-07-09">
   <owner>amehfooz@chromium.org</owner>
   <owner>cros-status-area@google.com</owner>
   <summary>

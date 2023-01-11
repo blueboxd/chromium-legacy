@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/ranges/algorithm.h"
@@ -498,7 +498,7 @@ class InlineLoginHelperBrowserTest : public DialogBrowserTest {
     // possible values of access_point=, reason=.
     GURL url("chrome://chrome-signin/?access_point=0&reason=5");
     // MockSyncStarterInlineSigninHelper will delete itself when done using
-    // base::ThreadTaskRunnerHandle::DeleteSoon(), so need to delete here.  But
+    // base::SingleThreadTaskRunner::DeleteSoon(), so need to delete here.  But
     // do need the RunUntilIdle() at the end.
     MockSyncStarterInlineSigninHelper* helper =
         new MockSyncStarterInlineSigninHelper(
@@ -560,7 +560,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   // possible values of access_point=, reason=.
   GURL url("chrome://chrome-signin/?access_point=0&reason=5");
   // MockSyncStarterInlineSigninHelper will delete itself when done using
-  // base::ThreadTaskRunnerHandle::DeleteSoon(), so need to delete here.  But
+  // base::SingleThreadTaskRunner::DeleteSoon(), so need to delete here.  But
   // do need the RunUntilIdle() at the end.
   MockSyncStarterInlineSigninHelper* helper =
       new MockSyncStarterInlineSigninHelper(
@@ -598,7 +598,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   // possible values of access_point=, reason=.
   const GURL url("chrome://chrome-signin/?access_point=0&reason=5");
   // MockSyncStarterInlineSigninHelper will delete itself when done using
-  // base::ThreadTaskRunnerHandle::DeleteSoon(), so need to delete here.  But
+  // base::SingleThreadTaskRunner::DeleteSoon(), so need to delete here.  But
   // do need the RunUntilIdle() at the end.
   MockSyncStarterInlineSigninHelper* helper =
       new MockSyncStarterInlineSigninHelper(
@@ -621,7 +621,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   // possible values of access_point=, reason=.
   GURL url("chrome://chrome-signin/?access_point=0&reason=5");
   // MockSyncStarterInlineSigninHelper will delete itself when done using
-  // base::ThreadTaskRunnerHandle::DeleteSoon(), so need to delete here.  But
+  // base::SingleThreadTaskRunner::DeleteSoon(), so need to delete here.  But
   // do need the RunUntilIdle() at the end.
   MockSyncStarterInlineSigninHelper* helper =
       new MockSyncStarterInlineSigninHelper(
@@ -646,7 +646,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   // possible values of access_point=, reason=.
   GURL url("chrome://chrome-signin/?access_point=0&reason=5");
   // MockSyncStarterInlineSigninHelper will delete itself when done using
-  // base::ThreadTaskRunnerHandle::DeleteSoon(), so need to delete here.  But
+  // base::SingleThreadTaskRunner::DeleteSoon(), so need to delete here.  But
   // do need the RunUntilIdle() at the end.
   MockSyncStarterInlineSigninHelper* helper =
       new MockSyncStarterInlineSigninHelper(
@@ -674,7 +674,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   // possible values of access_point=, reason=.
   const GURL url("chrome://chrome-signin/?access_point=3&reason=5");
   // MockSyncStarterInlineSigninHelper will delete itself when done using
-  // base::ThreadTaskRunnerHandle::DeleteSoon(), so need to delete here.  But
+  // base::SingleThreadTaskRunner::DeleteSoon(), so need to delete here.  But
   // do need the RunUntilIdle() at the end.
   MockSyncStarterInlineSigninHelper* helper =
       new MockSyncStarterInlineSigninHelper(
@@ -697,7 +697,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   InlineLoginHandlerImpl handler;
   GURL url("chrome://chrome-signin/?access_point=0&reason=5");
   // MockSyncStarterInlineSigninHelper will delete itself when done using
-  // base::ThreadTaskRunnerHandle::DeleteSoon(), so need to delete here.  But
+  // base::SingleThreadTaskRunner::DeleteSoon(), so need to delete here.  But
   // do need the RunUntilIdle() at the end.
   MockSyncStarterInlineSigninHelper* helper =
       new MockSyncStarterInlineSigninHelper(

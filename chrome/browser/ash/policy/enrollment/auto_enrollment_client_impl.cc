@@ -8,9 +8,9 @@
 #include <memory>
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -691,6 +691,11 @@ class AutoEnrollmentClientImpl::ServerStateRetriever {
 
     if (parsed_response.license_type.has_value())
       state.Set(kDeviceStateLicenseType, *parsed_response.license_type);
+
+    if (parsed_response.assigned_upgrade_type.has_value()) {
+      state.Set(kDeviceStateAssignedUpgradeType,
+                *parsed_response.assigned_upgrade_type);
+    }
 
     // Store the enrollment state obtained from the server to local state.
     // Depending on the value, this can be used later to trigger enrollment or

@@ -4,12 +4,13 @@
 
 #include "extensions/browser/zipfile_installer.h"
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/services/unzip/content/unzip_service.h"
 #include "components/services/unzip/public/cpp/unzip.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"

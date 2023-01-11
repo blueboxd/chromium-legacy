@@ -9,13 +9,15 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/queue.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/features.h"

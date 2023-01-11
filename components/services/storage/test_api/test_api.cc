@@ -4,8 +4,8 @@
 
 #include "components/services/storage/test_api/test_api.h"
 
-#include "base/bind.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
 #include "base/immediate_crash.h"
 #include "base/no_destructor.h"
 #include "base/task/sequenced_task_runner.h"
@@ -67,7 +67,7 @@ class TestApiImpl : public mojom::TestApi {
       ForceLeveldbDatabaseCompactionCallback callback) override {
     // Note that we post to a SequencedTaskRunner because the task will use Mojo
     // bindings, and by default Mojo bindings assume there is a current
-    // SequencedTaskRunnerHandle they can use for scheduling.
+    // SequencedTaskRunner::CurrentDefaultHandle they can use for scheduling.
     base::ThreadPool::CreateSequencedTaskRunner(
         {base::MayBlock(), base::WithBaseSyncPrimitives()})
         ->PostTask(

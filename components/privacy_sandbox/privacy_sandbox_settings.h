@@ -236,13 +236,50 @@ class PrivacySandboxSettings : public KeyedService {
   void SetTopicsDataAccessibleFromNow() const;
 
  private:
+  friend class PrivacySandboxSettingsM1Test;
+
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class Status {
+    kAllowed,
+    kRestricted,
+    kIncognitoProfile,
+    kApisDisabled,
+    kSiteDataAccessBlocked,
+    kMaxValue = kSiteDataAccessBlocked,
+  };
+
+  static bool IsAllowed(Status status);
+
   // Whether the site associated with the URL is allowed to access privacy
   // sandbox APIs within the context of |top_frame_origin|.
-  bool IsAccessAllowed(const url::Origin& top_frame_origin,
-                       const GURL& url) const;
+  Status GetSiteAccessAllowedStatus(const url::Origin& top_frame_origin,
+                                    const GURL& url) const;
+
+  // Whether the privacy sandbox APIs can be allowed given the current
+  // environment. For example, the privacy sandbox is always disabled in
+  // Incognito and for restricted accounts.
+  Status GetPrivacySandboxAllowedStatus() const;
+
   // Whether the privacy sandbox associated with  the |pref_name| is enabled.
-  // For individual sites, check as well with IsSiteDataAllowed.
-  bool IsM1PrivacySandboxApiEnabled(const std::string& pref_name) const;
+  // For individual sites, check as well with GetSiteAccessAllowedStatus.
+  Status GetM1PrivacySandboxApiEnabledStatus(
+      const std::string& pref_name) const;
+
+  // Whether the Topics API can be allowed given the current
+  // environment or the reason why it is not allowed.
+  Status GetM1TopicAllowedStatus() const;
+
+  // Whether Attribution Reporting API can be allowed given the current
+  // environment or the reason why it is not allowed.
+  Status GetM1AttributionReportingAllowedStatus(
+      const url::Origin& top_frame_origin,
+      const url::Origin& reporting_origin) const;
+
+  // Whether Fledge can be allowed given the current environment or the reason
+  // why it is not allowed.
+  Status GetM1FledgeAllowedStatus(const url::Origin& top_frame_origin,
+                                  const url::Origin& accessing_origin) const;
 
   base::ObserverList<Observer>::Unchecked observers_;
 

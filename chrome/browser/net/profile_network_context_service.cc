@@ -6,13 +6,13 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
@@ -234,6 +234,26 @@ void UpdateStorageAccessSettings(Profile* profile) {
            content::StoragePartition* storage_partition) {
           storage_partition->GetCookieManagerForBrowserProcess()
               ->SetStorageAccessGrantSettings(settings, base::DoNothing());
+        },
+        settings));
+  }
+}
+
+void UpdateTopLevelStorageAccessSettings(Profile* profile) {
+  // TODO(crbug.com/1385156): Switch to an independent feature flag.
+  if (base::FeatureList::IsEnabled(net::features::kStorageAccessAPI) &&
+      base::FeatureList::IsEnabled(
+          blink::features::kStorageAccessAPIForOriginExtension)) {
+    ContentSettingsForOneType settings;
+    HostContentSettingsMapFactory::GetForProfile(profile)
+        ->GetSettingsForOneType(ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS,
+                                &settings);
+
+    profile->ForEachStoragePartition(base::BindRepeating(
+        [](ContentSettingsForOneType settings,
+           content::StoragePartition* storage_partition) {
+          storage_partition->GetCookieManagerForBrowserProcess()
+              ->SetTopLevelStorageAccessSettings(settings, base::DoNothing());
         },
         settings));
   }
@@ -598,6 +618,18 @@ ProfileNetworkContextService::CreateCookieManagerParams(
         ContentSettingsType::STORAGE_ACCESS, &settings_for_storage_access);
   }
   out->settings_for_storage_access = std::move(settings_for_storage_access);
+
+  ContentSettingsForOneType settings_for_top_level_storage_access;
+  // TODO(crbug.com/1385156): Separate the two flags entirely.
+  if (base::FeatureList::IsEnabled(net::features::kStorageAccessAPI) &&
+      base::FeatureList::IsEnabled(
+          blink::features::kStorageAccessAPIForOriginExtension)) {
+    host_content_settings_map->GetSettingsForOneType(
+        ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS,
+        &settings_for_top_level_storage_access);
+  }
+  out->settings_for_top_level_storage_access =
+      std::move(settings_for_top_level_storage_access);
 
   out->cookie_access_delegate_type =
       network::mojom::CookieAccessDelegateType::USE_CONTENT_SETTINGS;
@@ -1056,10 +1088,14 @@ void ProfileNetworkContextService::OnContentSettingChanged(
     case ContentSettingsType::STORAGE_ACCESS:
       UpdateStorageAccessSettings(profile_);
       break;
+    case ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS:
+      UpdateTopLevelStorageAccessSettings(profile_);
+      break;
     case ContentSettingsType::DEFAULT:
       UpdateCookieSettings(profile_);
       UpdateLegacyCookieSettings(profile_);
       UpdateStorageAccessSettings(profile_);
+      UpdateTopLevelStorageAccessSettings(profile_);
       break;
     default:
       return;

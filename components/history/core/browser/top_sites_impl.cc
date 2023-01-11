@@ -9,11 +9,11 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase_vector.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/hash/md5.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
@@ -22,6 +22,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_runner.h"
 #include "base/values.h"

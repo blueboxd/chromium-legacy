@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/allocator/partition_alloc_support.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/power_monitor/power_monitor_buildflags.h"
@@ -61,7 +61,7 @@
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(__GLIBC__) && (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 #include <gnu/libc-version.h>
 
 #include "base/linux_util.h"
@@ -278,7 +278,7 @@ void RecordLinuxDistro() {
 void RecordLinuxGlibcVersion() {
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(__GLIBC__) && (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
   base::Version version(gnu_get_libc_version());
 
   UMALinuxGlibcVersion glibc_version_result = UMA_LINUX_GLIBC_NOT_PARSEABLE;
@@ -425,9 +425,6 @@ void RecordIsPinnedToTaskbarHistogram() {
 // here:
 // https://blogs.blackberry.com/en/2017/10/windows-10-parallel-loading-breakdown.
 bool IsParallelDllLoadingEnabled() {
-  // Parallel DLL loading is only available on Windows 10 and above.
-  if (base::win::GetVersion() < base::win::Version::WIN10)
-    return false;
   base::FilePath exe_path;
   if (!base::PathService::Get(base::FILE_EXE, &exe_path))
     return false;

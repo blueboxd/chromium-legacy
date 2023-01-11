@@ -1176,7 +1176,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.TimeToScrollUpdateSwapBegin2"
-    units="microseconds" expires_after="2023-05-07">
+    units="microseconds" expires_after="2023-07-09">
   <owner>nzolghadr@chromium.org</owner>
   <summary>
     NOTE: This metric is deprecated in favor of
@@ -1593,19 +1593,6 @@ chromium-metrics-reviews@google.com.
     will cause this metric to have an abnormal distribution. When considering
     revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
     solution.
-  </summary>
-</histogram>
-
-<histogram name="Event.LatencyInfo.Debug.SourceIdConsistency"
-    enum="SourceIdConsistency" expires_after="2020-09-01">
-  <owner>tommckee@chromium.org</owner>
-  <owner>speed-metrics-dev@chromium.org</owner>
-  <summary>
-    When tracking input event latency, we expect to associate some number of
-    latency records (instances of ui::LatencyInfo) with a CompositorFrame. Each
-    record is associated to a particular navigation through its ukm::SourceId
-    property. This histogram tracks how often the records of an individual frame
-    have varying or invalid source ids. See crbug.com/1062764.
   </summary>
 </histogram>
 

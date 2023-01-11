@@ -408,6 +408,12 @@ public final class TabImpl extends ITab.Stub {
         return mId;
     }
 
+    @Override
+    public String getUri() {
+        StrictModeWorkaround.apply();
+        return mWebContents.getVisibleUrl().getSpec();
+    }
+
     /**
      * Called when this TabImpl is attached to the BrowserViewController.
      */
@@ -809,7 +815,8 @@ public final class TabImpl extends ITab.Stub {
             return true;
         }
 
-        SelectionPopupController popup = SelectionPopupController.fromWebContents(mWebContents);
+        SelectionPopupController popup =
+                SelectionPopupController.fromWebContentsNoCreate(mWebContents);
         if (popup != null && popup.isSelectActionBarShowing()) {
             popup.clearSelection();
             return true;

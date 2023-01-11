@@ -12,17 +12,15 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/containers/queue.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/printing/printing_service.h"
 #include "chrome/services/printing/public/mojom/pdf_to_emf_converter.mojom.h"
 #include "chrome/services/printing/public/mojom/printing_service.mojom.h"

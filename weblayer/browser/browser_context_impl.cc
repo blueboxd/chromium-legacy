@@ -17,7 +17,6 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/language/core/browser/language_prefs.h"
 #include "components/origin_trials/browser/origin_trials.h"
-#include "components/origin_trials/browser/prefservice_persistence_provider.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/permissions/permission_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -322,6 +321,8 @@ void BrowserContextImpl::RegisterPrefs(
   blink::web_pref::WebPreferences pref_defaults;
   pref_registry->RegisterBooleanPref(browser_ui::prefs::kWebKitForceEnableZoom,
                                      pref_defaults.force_enable_zoom);
+  pref_registry->SetDefaultPrefValue(::prefs::kSafeBrowsingEnhanced,
+                                     base::Value(true));
 #endif
 
   BrowserContextDependencyManager::GetInstance()

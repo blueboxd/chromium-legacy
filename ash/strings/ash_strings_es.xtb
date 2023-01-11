@@ -162,6 +162,7 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="1774796056689732716">Calendario, <ph name="CURRENT_MONTH_YEAR" />, actualmente está seleccionado el <ph name="DATE" />.</translation>
 <translation id="1787955149152357925">No</translation>
 <translation id="1797271123677381264">He olvidado la contraseña</translation>
+<translation id="1807246157184219062">Claro</translation>
 <translation id="181103072419391116">Intensidad de la señal: <ph name="SIGNAL_STRENGTH" />, gestionada por el administrador</translation>
 <translation id="1812997170047690955">¿Qué hay en mi pantalla?</translation>
 <translation id="1816896987747843206">Esto permite que accedan a la cámara todas las aplicaciones y sitios web con el permiso de cámara</translation>
@@ -238,6 +239,7 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="2224075387478458881">La grabación de pantalla no está permitida cuando se muestra contenido protegido</translation>
 <translation id="2227179592712503583">Eliminar sugerencia</translation>
 <translation id="225680501294068881">Buscando dispositivos...</translation>
+<translation id="225716114209817872">Máximo</translation>
 <translation id="2257486738914982088">No se ha podido descargar <ph name="FILENAME" /></translation>
 <translation id="2258734398699965611">Archivos sugeridos</translation>
 <translation id="2268130516524549846">Bluetooth inhabilitado</translation>
@@ -262,6 +264,7 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="2354174487190027830">Activación de <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2367186422933365202">No se puede iniciar sesión en tu Chromebook</translation>
+<translation id="2367972762794486313">Mostrar aplicaciones</translation>
 <translation id="2369165858548251131">"Hola" en chino</translation>
 <translation id="2390318262976603432">Configuración regional</translation>
 <translation id="240006516586367791">Controles multimedia</translation>
@@ -506,6 +509,7 @@ Conecta tu dispositivo a la corriente.</translation>
 <translation id="3713734891607377840">Abrir al terminar</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> y <ph name="UNAVAILABLE_APPS_COUNT" /> más no están en este dispositivo.</translation>
 <translation id="3735740477244556633">Ordenar por</translation>
+<translation id="3738664582935948253">Ahora puedes mostrar clics y combinaciones de teclas en las grabaciones de pantalla</translation>
 <translation id="3742055079367172538">Captura de pantalla hecha</translation>
 <translation id="3765841986579723851">Editado hoy</translation>
 <translation id="3773700760453577392">Un administrador ha inhabilitado el inicio de sesión múltiple para <ph name="USER_EMAIL" />.
@@ -526,6 +530,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="385051799172605136">Volver</translation>
 <translation id="385300504083504382">Principio</translation>
 <translation id="3861651314799684201">Pulsa Intro para grabar toda la pantalla</translation>
+<translation id="3871092408932389764">El más bajo</translation>
 <translation id="3886872229787704059">Abierto hoy</translation>
 <translation id="3891340733213178823">Pulsa Ctrl+Mayús+Q dos veces para cerrar sesión.</translation>
 <translation id="3893630138897523026">ChromeVox (conversión de texto a voz)</translation>
@@ -1012,6 +1017,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6537924328260219877">Intensidad de la señal: <ph name="SIGNAL_STRENGTH" />, batería del teléfono: <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999">Analizando <ph name="FILENAME" /> para descargar</translation>
 <translation id="6542521951477560771">Enviando contenido a <ph name="RECEIVER_NAME" /></translation>
+<translation id="6548693220024099658">Difuminado del fondo</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Nueva instalación</translation>
 <translation id="6559976592393364813">Pregunta al administrador</translation>
@@ -1418,6 +1424,7 @@ Nueva instalación</translation>
 <translation id="878215960996152260"><ph name="APP_NAME" />, aplicación instalada, bloqueada</translation>
 <translation id="8785070478575117577">Conectar a <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">Intenso</translation>
 <translation id="8806053966018712535">Carpeta <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">"Ayuda"</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

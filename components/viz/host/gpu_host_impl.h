@@ -11,13 +11,14 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "build/build_config.h"

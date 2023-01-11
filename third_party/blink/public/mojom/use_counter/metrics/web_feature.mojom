@@ -3124,13 +3124,13 @@ enum WebFeature {
   kSanitizerAPIFromString = 3819,
   kSanitizerAPIFromDocument = 3820,
   kSanitizerAPIFromFragment = 3821,
-  kStorageFoundationOpen = 3822,
-  kStorageFoundationRead = 3823,
-  kStorageFoundationReadSync = 3824,
-  kStorageFoundationWrite = 3825,
-  kStorageFoundationWriteSync = 3826,
-  kStorageFoundationFlush = 3827,
-  kStorageFoundationFlushSync = 3828,
+  kOBSOLETE_StorageFoundationOpen = 3822,
+  kOBSOLETE_StorageFoundationRead = 3823,
+  kOBSOLETE_StorageFoundationReadSync = 3824,
+  kOBSOLETE_StorageFoundationWrite = 3825,
+  kOBSOLETE_StorageFoundationWriteSync = 3826,
+  kOBSOLETE_StorageFoundationFlush = 3827,
+  kOBSOLETE_StorageFoundationFlushSync = 3828,
   kUnrestrictedSharedArrayBuffer = 3829,
   // The items above roughly this point are available in the M90 branch.
 
@@ -3769,6 +3769,15 @@ enum WebFeature {
   kIDNA2008DeviationCharacterInHostnameOfIFrame = 4428,
   kWindowOpenPopupOnMobile = 4429,
   kWindowOpenedAsPopupOnMobile = 4430,
+  kPrivateNetworkAccessIgnoredCrossOriginPreflightError = 4431,
+  kPrivateNetworkAccessIgnoredCrossSitePreflightError = 4432,
+  kLinkRelPrerenderSameOrigin = 4433,
+  kLinkRelPrerenderSameSiteCrossOrigin = 4434,
+  kLinkRelPrerenderCrossSite = 4435,
+  kCSSBackgroundClipBorder = 4436,
+  kCSSBackgroundClipContent = 4437,
+  kCSSBackgroundClipPadding = 4438,
+  kDisableThirdPartySessionStoragePartitioningAfterGeneralPartitioning = 4439,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

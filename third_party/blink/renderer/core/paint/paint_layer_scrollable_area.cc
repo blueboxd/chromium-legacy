@@ -113,15 +113,6 @@
 
 namespace blink {
 
-namespace {
-
-// Default value is set to 15 as the default
-// minimum size used by firefox is 15x15.
-static const int kDefaultMinimumWidthForResizing = 15;
-static const int kDefaultMinimumHeightForResizing = 15;
-
-}  // namespace
-
 PaintLayerScrollableAreaRareData::PaintLayerScrollableAreaRareData() = default;
 
 void PaintLayerScrollableAreaRareData::Trace(Visitor* visitor) const {
@@ -2171,20 +2162,6 @@ gfx::Vector2d PaintLayerScrollableArea::OffsetFromResizeCorner(
                        local_point.y() - element_size.height());
 }
 
-LayoutSize PaintLayerScrollableArea::MinimumSizeForResizing(float zoom_factor) {
-  LayoutUnit min_width =
-      MinimumValueForLength(GetLayoutBox()->StyleRef().MinWidth(),
-                            GetLayoutBox()->ContainingBlock()->Size().Width());
-  LayoutUnit min_height =
-      MinimumValueForLength(GetLayoutBox()->StyleRef().MinHeight(),
-                            GetLayoutBox()->ContainingBlock()->Size().Height());
-  min_width = std::max(LayoutUnit(min_width / zoom_factor),
-                       LayoutUnit(kDefaultMinimumWidthForResizing));
-  min_height = std::max(LayoutUnit(min_height / zoom_factor),
-                        LayoutUnit(kDefaultMinimumHeightForResizing));
-  return LayoutSize(min_width, min_height);
-}
-
 void PaintLayerScrollableArea::Resize(const gfx::Point& pos,
                                       const LayoutSize& old_offset) {
   // FIXME: This should be possible on generated content but is not right now.
@@ -2213,10 +2190,15 @@ void PaintLayerScrollableArea::Resize(const gfx::Point& pos,
     adjusted_old_offset.SetWidth(-adjusted_old_offset.Width());
   }
 
-  LayoutSize difference(
-      (current_size + LayoutSize(new_offset) - adjusted_old_offset)
-          .ExpandedTo(MinimumSizeForResizing(zoom_factor)) -
-      current_size);
+  LayoutSize new_size(current_size + LayoutSize(new_offset) -
+                      adjusted_old_offset);
+
+  // Ensure the new size is at least as large as the resize corner.
+  gfx::SizeF corner_rect(CornerRect().size());
+  corner_rect.InvScale(zoom_factor);
+  new_size.ClampToMinimumSize(LayoutSize(corner_rect));
+
+  LayoutSize difference(new_size - current_size);
 
   bool is_box_sizing_border =
       GetLayoutBox()->StyleRef().BoxSizing() == EBoxSizing::kBorderBox;

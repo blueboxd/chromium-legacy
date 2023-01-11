@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/test/fake_server.h"
@@ -32,7 +33,7 @@ CreateFakeServerHttpPostProviderFactoryHelper(
 
 syncer::CreateHttpPostProviderFactory CreateFakeServerHttpPostProviderFactory(
     const base::WeakPtr<FakeServer>& fake_server) {
-  // TODO(treib): Switch to SequencedTaskRunnerHandler.
+  // TODO(treib): Switch to SequencedTaskRunner::CurrentDefaultHandle.
   return base::BindRepeating(&CreateFakeServerHttpPostProviderFactoryHelper,
                              fake_server,
                              base::SingleThreadTaskRunner::GetCurrentDefault());

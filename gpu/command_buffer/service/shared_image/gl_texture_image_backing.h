@@ -35,7 +35,6 @@ class GLTextureImageBacking : public ClearTrackingSharedImageBacking {
 
   void InitializeGLTexture(
       const GLCommonImageBackingFactory::FormatInfo& format_info,
-      bool is_cleared,
       bool framebuffer_attachment_angle);
   void SetCompatibilitySwizzle(
       const gles2::Texture::CompatibilitySwizzle* swizzle);
@@ -47,7 +46,6 @@ class GLTextureImageBacking : public ClearTrackingSharedImageBacking {
  private:
   // SharedImageBacking:
   SharedImageBackingType GetType() const override;
-  gfx::Rect ClearedRect() const final;
   void SetClearedRect(const gfx::Rect& cleared_rect) final;
   std::unique_ptr<GLTextureImageRepresentation> ProduceGLTexture(
       SharedImageManager* manager,
@@ -66,7 +64,7 @@ class GLTextureImageBacking : public ClearTrackingSharedImageBacking {
       MemoryTypeTracker* tracker,
       scoped_refptr<SharedContextState> context_state) override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
-  bool UploadFromMemory(const SkPixmap& pixmap) override;
+  bool UploadFromMemory(const std::vector<SkPixmap>& pixmaps) override;
   bool ReadbackToMemory(SkPixmap& pixmap) override;
 
   bool IsPassthrough() const { return is_passthrough_; }

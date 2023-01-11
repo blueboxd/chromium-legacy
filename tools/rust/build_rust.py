@@ -35,6 +35,7 @@ TODO(https://crbug.com/1245714): Do a proper 3-stage build
 import argparse
 import collections
 import hashlib
+import platform
 import os
 import pipes
 import shutil
@@ -49,7 +50,7 @@ sys.path.append(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'clang',
                  'scripts'))
 
-from build import (AddCMakeToPath, RunCommand)
+from build import (AddCMakeToPath, AddZlibToPath, GetLibXml2Dirs, RunCommand)
 from update import (CLANG_REVISION, CLANG_SUB_REVISION, LLVM_BUILD_DIR,
                     GetDefaultHostOs, RmTree, UpdatePackage)
 import build
@@ -76,6 +77,11 @@ RUST_TOOLCHAIN_SRC_DIST_VENDOR_DIR = os.path.join(RUST_TOOLCHAIN_SRC_DIST_DIR,
 RUST_CONFIG_TEMPLATE_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), 'config.toml.template')
 RUST_SRC_VENDOR_DIR = os.path.join(RUST_SRC_DIR, 'vendor')
+
+if sys.platform == 'win32':
+    LD_PATH_FLAG = '/LIBPATH:'
+else:
+    LD_PATH_FLAG = '-L'
 
 # Desired tools and libraries in our Rust toolchain.
 DISTRIBUTION_ARTIFACTS = [
@@ -126,7 +132,8 @@ def Configure(llvm_libs_root):
 
     subs = {}
     subs['INSTALL_DIR'] = quote_string(str(RUST_TOOLCHAIN_OUT_DIR))
-    subs['LLVM_ROOT'] = quote_string(str(llvm_libs_root))
+    subs['LLVM_LIB_ROOT'] = quote_string(str(llvm_libs_root))
+    subs['LLVM_BIN'] = quote_string(str(os.path.join(LLVM_BUILD_DIR, 'bin')))
     subs['PACKAGE_VERSION'] = GetPackageVersionForBuild()
 
     # ...and apply substitutions, writing to config.toml in Rust tree.
@@ -134,48 +141,81 @@ def Configure(llvm_libs_root):
         output.write(template.substitute(subs))
 
 
-def RunXPy(sub, args, gcc_toolchain_path, verbose):
+def RunXPy(sub, args, zlib_path, libxml2_dirs, build_mac_arm,
+           gcc_toolchain_path, verbose):
     ''' Run x.py, Rust's build script'''
+    # We append to these flags, make sure they exist.
+    ENV_FLAGS = [
+        'CFLAGS',
+        'CXXFLAGS',
+        'LDFLAGS',
+        'RUSTFLAGS_BOOTSTRAP',
+        'RUSTFLAGS_NOT_BOOTSTRAP',
+    ]
+
     RUSTENV = collections.defaultdict(str, os.environ)
+    for f in ENV_FLAGS:
+        RUSTENV.setdefault(f, '')
 
-    ##### For C/C++ compilation steps #####
-    # The Rust toolchain does include some C/C++ code, and these env vars
-    # control the compilation and library making for that code.
-
-    clang_path = os.path.join(LLVM_BUILD_DIR, 'bin')
+    # The TARGET is consumed by the cc crate for building C/C++ sources, the
+    # CARGO_BUILD_TARGET is used for building Rust sources.
     if sys.platform == 'win32':
-        # The Rust toolchain build requires the use of link.exe already (it is
-        # the well-lit path, and we don't override the Rust linker when building
-        # the toolchain here), so we could use it for linking the small bits of
-        # C/C++ inside the Rust build too.
-        #
-        # That said, the `config.toml.template` file can override the linker for
-        # the Rust toolchain build.
-        #
-        # The `cc` crate wants to use link.exe by default for making static
-        # libs (the `AR` env var) but if clang-cl is being used to compile,
-        # then it wants to use llvm-lib.
-        #
-        # It's not totally clear if we ship llvm-lib, but it seems in practice
-        # that we have it available on the LLVM toolchain builders. Otherwise,
-        # we would need to use `lld-link /lib` and that doesn't work
-        # at the moment as the `cc` crate doesn't consume `ARFLAGS`:
-        # https://github.com/rust-lang/cc-rs/issues/762
-        #
-        # So, since we're using clang-cl, we point to `llvm-lib`, though we
-        # could equally let the `cc` crate find it (it looks in the same path
-        # as the compiler on Windows as of the time of this writing).
-        #
-        # We don't set a final linker with `LD`, as either the default works,
-        # or there are C executables or shared libs compiled during the Rust
-        # toolchain build.
-        RUSTENV['AR'] = os.path.join(clang_path, 'llvm-lib')
-        RUSTENV['CC'] = os.path.join(clang_path, 'clang-cl')
-        RUSTENV['CXX'] = os.path.join(clang_path, 'clang-cl')
+        RUSTENV['TARGET'] = 'x86_64-pc-windows-msvc'
+        RUSTENV['CARGO_BUILD_TARGET'] = 'x86_64-pc-windows-msvc'
+    elif sys.platform == 'darwin':
+        if build_mac_arm or platform.machine() == 'arm64':
+            RUSTENV['TARGET'] = 'arm64-apple-darwin'
+            RUSTENV['CARGO_BUILD_TARGET'] = 'arm64-apple-darwin'
+        else:
+            RUSTENV['TARGET'] = 'amd64-apple-darwin'
+            RUSTENV['CARGO_BUILD_TARGET'] = 'amd64-apple-darwin'
     else:
-        RUSTENV['AR'] = os.path.join(clang_path, 'llvm-ar')
-        RUSTENV['CC'] = os.path.join(clang_path, 'clang')
-        RUSTENV['CXX'] = os.path.join(clang_path, 'clang++')
+        RUSTENV['TARGET'] = 'x86_64-unknown-linux-gnu'
+        RUSTENV['CARGO_BUILD_TARGET'] = 'x86_64-unknown-linux-gnu'
+
+    # The AR, CC, CXX flags control the C/C++ compiler used through the `cc`
+    # crate. There are also C/C++ targets that are part of the Rust toolchain
+    # build for which the tool is controlled from `config.toml`, so these must
+    # be duplicated there.
+
+    clang_bin = os.path.join(LLVM_BUILD_DIR, 'bin')
+    if sys.platform == 'win32':
+        RUSTENV['AR'] = os.path.join(clang_bin, 'llvm-lib.exe')
+        RUSTENV['CC'] = os.path.join(clang_bin, 'clang-cl.exe')
+        RUSTENV['CXX'] = os.path.join(clang_bin, 'clang-cl.exe')
+    else:
+        RUSTENV['AR'] = os.path.join(clang_bin, 'llvm-ar')
+        RUSTENV['CC'] = os.path.join(clang_bin, 'clang')
+        RUSTENV['CXX'] = os.path.join(clang_bin, 'clang++')
+
+    if RUSTENV['CARGO_BUILD_TARGET'].endswith('apple-darwin'):
+        # The system/xcode compiler would find system headers correctly, but
+        # the Clang we've built does not. See
+        # https://github.com/llvm/llvm-project/issues/45225
+        sdk_path = subprocess.check_output(['xcrun', '--show-sdk-path'],
+                                           text=True).rstrip()
+        RUSTENV['CFLAGS'] += f' -isysroot {sdk_path}'
+        RUSTENV['CXXFLAGS'] += f' -isysroot {sdk_path}'
+
+    if zlib_path:
+        RUSTENV['CFLAGS'] += f' -I{zlib_path}'
+        RUSTENV['CXXFLAGS'] += f' -I{zlib_path}'
+        RUSTENV['LDFLAGS'] += f' {LD_PATH_FLAG}{zlib_path}'
+        RUSTENV['RUSTFLAGS_BOOTSTRAP'] += (f' -Clink-arg='
+                                           f'{LD_PATH_FLAG}{zlib_path}')
+        RUSTENV['RUSTFLAGS_NOT_BOOTSTRAP'] += (f' -Clink-arg='
+                                               f'{LD_PATH_FLAG}{zlib_path}')
+
+    if libxml2_dirs:
+        RUSTENV['CFLAGS'] += f' -I{libxml2_dirs.include_dir}'
+        RUSTENV['CXXFLAGS'] += f' -I{libxml2_dirs.include_dir}'
+        RUSTENV['LDFLAGS'] += f' {LD_PATH_FLAG}{libxml2_dirs.lib_dir}'
+        RUSTENV['RUSTFLAGS_BOOTSTRAP'] += (
+            f' -Clink-arg='
+            f'{LD_PATH_FLAG}{libxml2_dirs.lib_dir}')
+        RUSTENV['RUSTFLAGS_NOT_BOOTSTRAP'] += (
+            f' -Clink-arg='
+            f'{LD_PATH_FLAG}{libxml2_dirs.lib_dir}')
 
     if gcc_toolchain_path:
         # We use these flags to avoid linking with the system libstdc++.
@@ -183,21 +223,14 @@ def RunXPy(sub, args, gcc_toolchain_path, verbose):
         RUSTENV['CFLAGS'] += f' {gcc_toolchain_flag}'
         RUSTENV['CXXFLAGS'] += f' {gcc_toolchain_flag}'
         RUSTENV['LDFLAGS'] += f' {gcc_toolchain_flag}'
-
-    ##### For Rust compilation steps #####
-    # These env vars set arguments passed to the rust compiler when building
-    # Rust target.
-    #
-    # A `-Clink-arg=<foo>` arg passes `foo`` to the linker invovation.
-
-    RUSTENV['RUSTFLAGS_BOOTSTRAP'] = ''
-    if gcc_toolchain_path:
-        RUSTENV['RUSTFLAGS_BOOTSTRAP'] += f' -Clink-arg={gcc_toolchain_flag} '
+        # A `-Clink-arg=<foo>` arg passes `foo`` to the linker invovation.
+        RUSTENV['RUSTFLAGS_BOOTSTRAP'] += f' -Clink-arg={gcc_toolchain_flag}'
+        RUSTENV[
+            'RUSTFLAGS_NOT_BOOTSTRAP'] += f' -Clink-arg={gcc_toolchain_flag}'
         RUSTENV['RUSTFLAGS_BOOTSTRAP'] += (
             f' -L native={gcc_toolchain_path}/lib64')
-    RUSTENV['RUSTFLAGS_NOT_BOOTSTRAP'] = RUSTENV['RUSTFLAGS_BOOTSTRAP']
-
-    ##### Do the build now #####
+        RUSTENV['RUSTFLAGS_NOT_BOOTSTRAP'] += (
+            f' -L native={gcc_toolchain_path}/lib64')
 
     # Cargo normally stores files in $HOME. Override this.
     RUSTENV['CARGO_HOME'] = CARGO_HOME_DIR
@@ -237,6 +270,9 @@ def main():
                         '--verbose',
                         action='count',
                         help='run subcommands with verbosity')
+    parser.add_argument('--build-mac-arm',
+                        action='store_true',
+                        help='Build arm binaries. Only valid on macOS.')
     parser.add_argument(
         '--verify-stage0-hash',
         action='store_true',
@@ -271,6 +307,13 @@ def main():
         'variables nor update config.toml')
     args, rest = parser.parse_known_args()
 
+    if args.build_mac_arm and sys.platform != 'darwin':
+        print('--build-mac-arm only valid on macOS')
+        return 1
+    if args.build_mac_arm and platform.machine() == 'arm64':
+        print('--build-mac-arm only valid on intel to cross-build arm')
+        return 1
+
     # Get the LLVM root for libs. We use LLVM_BUILD_DIR tools either way.
     #
     # TODO(https://crbug.com/1245714): use LTO libs from LLVM_BUILD_DIR for
@@ -302,22 +345,37 @@ def main():
 
     AddCMakeToPath()
 
+    # Require zlib compression.
+    if sys.platform == 'win32':
+        zlib_path = AddZlibToPath()
+    else:
+        zlib_path = None
+
+    # libxml2 is built when building LLVM, so we use that.
+    if sys.platform == 'win32':
+        libxml2_dirs = GetLibXml2Dirs()
+    else:
+        libxml2_dirs = None
+
     if args.run_xpy:
         if rest[0] == '--':
             rest = rest[1:]
-        RunXPy(rest[0], rest[1:], args.gcc_toolchain, args.verbose)
+        RunXPy(rest[0], rest[1:], zlib_path, libxml2_dirs, args.build_mac_arm,
+               args.gcc_toolchain, args.verbose)
         return 0
     else:
         assert not rest
 
     if not args.skip_clean:
         print('Cleaning build artifacts...')
-        RunXPy('clean', [], args.gcc_toolchain, args.verbose)
+        RunXPy('clean', [], zlib_path, libxml2_dirs, args.build_mac_arm,
+               args.gcc_toolchain, args.verbose)
 
     if not args.skip_test:
         print('Running stage 2 tests...')
         # Run a subset of tests. Tell x.py to keep the rustc we already built.
-        RunXPy('test', GetTestArgs(), args.gcc_toolchain, args.verbose)
+        RunXPy('test', GetTestArgs(), zlib_path, libxml2_dirs,
+               args.build_mac_arm, args.gcc_toolchain, args.verbose)
 
     targets = [
         'library/proc_macro', 'library/std', 'src/tools/cargo',
@@ -327,8 +385,8 @@ def main():
     # Build stage 2 compiler, tools, and libraries. This should reuse earlier
     # stages from the test command (if run).
     print('Building stage 2 artifacts...')
-    RunXPy('build', ['--stage', '2'] + targets, args.gcc_toolchain,
-           args.verbose)
+    RunXPy('build', ['--stage', '2'] + targets, zlib_path, libxml2_dirs,
+           args.build_mac_arm, args.gcc_toolchain, args.verbose)
 
     if args.skip_install:
         # Rust is fully built. We can quit.
@@ -339,7 +397,8 @@ def main():
     if os.path.exists(RUST_TOOLCHAIN_OUT_DIR):
         shutil.rmtree(RUST_TOOLCHAIN_OUT_DIR)
 
-    RunXPy('install', DISTRIBUTION_ARTIFACTS, args.gcc_toolchain, args.verbose)
+    RunXPy('install', DISTRIBUTION_ARTIFACTS, zlib_path, libxml2_dirs,
+           args.gcc_toolchain, args.verbose)
 
     with open(VERSION_STAMP_PATH, 'w') as stamp:
         stamp.write(GetVersionStamp())

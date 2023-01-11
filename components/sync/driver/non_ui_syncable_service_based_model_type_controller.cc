@@ -7,8 +7,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/client_tag_based_model_type_processor.h"
 #include "components/sync/model/forwarding_model_type_controller_delegate.h"
@@ -138,7 +139,7 @@ NonUiSyncableServiceBasedModelTypeController::
         SyncableServiceProvider syncable_service_provider,
         const base::RepeatingClosure& dump_stack,
         scoped_refptr<base::SequencedTaskRunner> task_runner,
-        bool allow_transport_mode)
+        DelegateMode delegate_mode)
     : ModelTypeController(type) {
   auto full_sync_mode_delegate =
       std::make_unique<ProxyModelTypeControllerDelegate>(
@@ -150,7 +151,7 @@ NonUiSyncableServiceBasedModelTypeController::
   // the same thread-proxying delegate, which shares the BridgeBuilder, which
   // shares the underlying ModelTypeSyncBridge.
   auto transport_mode_delegate =
-      allow_transport_mode
+      delegate_mode == DelegateMode::kTransportModeWithSingleModel
           ? std::make_unique<ForwardingModelTypeControllerDelegate>(
                 full_sync_mode_delegate.get())
           : nullptr;

@@ -2795,19 +2795,6 @@ Als je dit beleid niet instelt, worden er geen beperkingen toegepast.</translati
 <translation id="3591584750136265240">Het verificatiegedrag voor inloggen configureren</translation>
 <translation id="3593905652755912452">Het oude gedrag voor de verzending van gebeurtenissen voor uitgezette bedieningselementen op formulieren wordt gebruikt.</translation>
 <translation id="3596112486106491038">Opdrachtregeltoegang tot virtuele machines aanzetten</translation>
-<translation id="3596335476793146071">Lijst met acties die moeten worden uitgevoerd als de time-out van het beleid <ph name="IDLE_TIMEOUT_POLICY_NAME" /> is bereikt.
-
-      Als het beleid <ph name="IDLE_TIMEOUT_POLICY_NAME" /> niet is ingesteld, heeft dit beleid geen effect.
-
-      Als de time-out van het beleid <ph name="IDLE_TIMEOUT_POLICY_NAME" /> is bereikt, voert <ph name="PRODUCT_NAME" /> de acties uit die in dit beleid zijn geconfigureerd.
-
-      Als je dit beleid leeg laat of niet instelt, heeft het beleid <ph name="IDLE_TIMEOUT_POLICY_NAME" /> geen effect.
-
-      Deze acties worden ondersteund:
-
-<ph name="CLOSE_BROWSERS_ACTION" />: alle browservensters en PWA's voor dit profiel sluiten.
-
-      <ph name="SHOW_PROFILE_PICKER_ACTION" />: het profielkiezervenster tonen.</translation>
 <translation id="3603469950773500315">Zet <ph name="CORS" />-controlebeperkingen voor de nieuwe <ph name="CORS" />-implementatie aan, waardoor extensies geschikt gedrag kunnen behouden en <ph name="PRODUCT_NAME" /> toestemming heeft om opgegeven headers te sturen zonder <ph name="CORS" />-controle.
 
       Als deze lijst leeg is, probeert <ph name="PRODUCT_NAME" /> extensies op geschikte manieren uit te voeren en worden er geen <ph name="API" />-wijzingen geïntroduceerd voor <ph name="PRODUCT_NAME" /> 79, zoals uitgelegd in <ph name="WEB_REQUEST_API_MANUAL" />.
@@ -4311,6 +4298,17 @@ Als je dit beleid niet toepast of niet instelt, is de API window.webkitStorageIn
 <translation id="519247340330463721">Beleid met betrekking tot Safe Browsing configureren.</translation>
 <translation id="5194683382395300627">Toestaan dat <ph name="ASSISTANT_PRODUCT_NAME" /> wordt gebruikt op internet, bijvoorbeeld om wachtwoorden automatisch te wijzigen</translation>
 <translation id="5196630732055960309">De File Handling API toestaan voor deze web-apps</translation>
+<translation id="5198660575318473544">Bepaal of Manifest v2-extensies kunnen worden gebruikt op het <ph name="PRODUCT_OS_NAME" />-inlogscherm.
+
+Ondersteuning voor Manifest v2-extensies wordt beëindigd en alle extensies moeten in de toekomst worden overgezet naar v3. Je kunt meer informatie en een tijdlijn van de migratie vinden op https://developer.chrome.com/docs/extensions/mv3/mv2-sunset/.
+
+Als je het beleid instelt op <ph name="DEFAULT" /> (0) of niet instelt, wordt het laden van v2-extensies bepaald door het apparaat op basis van de bovenstaande tijdlijn.
+Als je het beleid instelt op <ph name="DISABLE" /> (1), wordt de installatie van v2-extensies geblokkeerd. Bestaande extensies worden uitgezet. De optie wordt op dezelfde manier behandeld als wanneer het beleid niet is ingesteld nadat de v2-ondersteuning standaard is uitgezet.
+Als je het beleid instelt op <ph name="ENABLE" /> (2), zijn v2-extensies toegestaan. De optie wordt op dezelfde manier behandeld als wanneer het beleid niet is ingesteld voordat de v2-ondersteuning standaard wordt uitgezet.
+Als je het beleid instelt op <ph name="ENABLE_FOR_FORCED_EXTENSIONS" /> (3), zijn afgedwongen geïnstalleerde v2-extensies toegestaan. Dit omvat extensies die worden vermeld in <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> of <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> met <ph name="INSTALLATION_MODE" /> force_installed of normal_installed. Alle andere v2-extensies staan uit. De optie wordt op dezelfde manier behandeld als wanneer het beleid niet is ingesteld voordat de v2-ondersteuning standaard wordt uitgezet.
+
+
+De beschikbaarheid van extensies wordt nog steeds beheerd door andere beleidsregels.</translation>
 <translation id="5206454085187851382">Als <ph name="PRINTERS_ALLOWLIST" /> wordt gekozen voor <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME" />, kun je door <ph name="PRINTERS_BULK_ALLOWLIST_POLICY_NAME" /> in te stellen aangeven welke printers gebruikers kunnen gebruiken. Alleen printers waarvan de ID's overeenkomen met de waarden in dit beleid, zijn beschikbaar voor de gebruiker. De ID's moeten overeenkomen met het veld <ph name="ID_FIELD" /> of <ph name="GUID_FIELD" /> in het bestand dat is opgegeven in <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />.</translation>
 <translation id="5207543664699568887">Bepaalt of <ph name="PRODUCT_NAME" /> op Linux systeemmeldingen gebruikt.
 
@@ -4758,6 +4756,7 @@ Als je het beleid niet instelt, hebben alle domeinen geen toegang tot file://-UR
 <translation id="5599461642204007579">Beheerinstellingen voor <ph name="MS_AD_NAME" /></translation>
 <translation id="5601503069213153581">Pincode</translation>
 <translation id="5607021831414604820">Rapportage van opslagstatus van apparaat aanzetten</translation>
+<translation id="5608114828230655271">Standaard apparaatgedrag</translation>
 <translation id="5614865701790130558">Gebeurtenissen voor op beleid gebaseerde installaties van extensies registreren</translation>
 <translation id="5618398258385745432">De bijbehorende instelling werd gebruikt voordat hernieuwde verificatie voor de weergave van wachtwoorden is geïntroduceerd. Sindsdien hebben de instelling en dit beleid geen invloed gehad op het gedrag van Chrome. Het huidige gedrag van Chrome is nu hetzelfde alsof het beleid was ingesteld om wachtwoorden niet als leesbare tekst te tonen op de pagina met instellingen voor Wachtwoordmanager. Dat betekent dat de pagina met instellingen alleen een tijdelijke aanduiding bevat. Chrome laat het wachtwoord alleen zien als de gebruiker op Tonen klikt (en zo nodig de hernieuwde verificatie uitvoert). De oorspronkelijke beschrijving van het beleid volgt hieronder.
 

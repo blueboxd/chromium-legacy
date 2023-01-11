@@ -35,6 +35,7 @@
 
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/command_line.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "third_party/blink/public/common/features.h"
@@ -54,8 +55,6 @@
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/display_cutout_client_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/html/parser/atomic_html_token.h"
-#include "third_party/blink/renderer/core/html/parser/literal_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/disk_data_allocator.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -103,18 +102,6 @@ class EndOfTaskRunner : public Thread::TaskObserver {
     V8Initializer::ReportRejectedPromisesOnMainThread();
   }
 };
-
-// See description of `g_literal_buffer_create_string_with_encoding` in
-// LiteralBuffer as to what this controls.
-BASE_FEATURE(kLiteralBufferCreateStringWithEncoding,
-             "LiteralBufferCreateStringWithEncoding",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// See description of `g_use_html_attribute_name_lookup` in AtomicHTMLToken as
-// to what this controls.
-BASE_FEATURE(kUseHtmlAttributeNameLookup,
-             "UseHtmlAttributeNameLookup",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 Thread::TaskObserver* g_end_of_task_runner = nullptr;
 
@@ -170,12 +157,6 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
 
   // Initialize performance manager.
   RendererResourceCoordinatorImpl::MaybeInitialize();
-
-  g_literal_buffer_create_string_with_encoding =
-      base::FeatureList::IsEnabled(kLiteralBufferCreateStringWithEncoding);
-
-  g_use_html_attribute_name_lookup =
-      base::FeatureList::IsEnabled(kUseHtmlAttributeNameLookup);
 }
 
 }  // namespace

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ash/file_manager/fusebox_daemon.h"
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "chrome/browser/ash/fusebox/fusebox_server.h"
 
@@ -75,7 +75,11 @@ void FuseBoxDaemon::AttachStorage(const std::string& subdir,
 }
 
 void FuseBoxDaemon::DetachStorage(const std::string& subdir) {
-  pending_attach_storage_calls_.erase(subdir);
+  if (!mounted_) {
+    VLOG(1) << "Fusebox is not mounted, removing queued AttachStorage call";
+    pending_attach_storage_calls_.erase(subdir);
+    return;
+  }
 
   if (auto* fusebox_server = fusebox::Server::GetInstance()) {
     fusebox_server->UnregisterFSURLPrefix(subdir);

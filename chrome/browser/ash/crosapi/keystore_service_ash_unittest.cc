@@ -7,7 +7,7 @@
 #include <initializer_list>
 
 #include "base/base64.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
@@ -20,7 +20,7 @@
 #include "chrome/browser/ash/attestation/tpm_challenge_key_result.h"
 #include "chrome/browser/ash/platform_keys/key_permissions/mock_key_permissions_service.h"
 #include "chrome/browser/ash/platform_keys/mock_platform_keys_service.h"
-#include "chrome/browser/platform_keys/platform_keys.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chromeos/crosapi/cpp/keystore_service_util.h"
 #include "chromeos/crosapi/mojom/keystore_error.mojom.h"
 #include "chromeos/crosapi/mojom/keystore_service.mojom.h"

@@ -10,11 +10,12 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/bind_post_task.h"
+#import "base/task/sequenced_task_runner.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/common/notifications/notification_constants.h"
 #include "chrome/common/notifications/notification_operation.h"

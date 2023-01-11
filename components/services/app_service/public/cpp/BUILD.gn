@@ -272,18 +272,6 @@ source_set("preferred_apps") {
   ]
 }
 
-source_set("publisher") {
-  sources = [
-    "publisher_base.cc",
-    "publisher_base.h",
-  ]
-
-  deps = [
-    ":app_types",
-    "//components/services/app_service/public/mojom",
-  ]
-}
-
 source_set("test_support") {
   testonly = true
 
@@ -317,14 +305,6 @@ source_set("crosapi_utils") {
   deps = [ "//components/services/app_service/public/mojom" ]
 }
 
-source_set("permission_utils") {
-  sources = [
-    "permission_utils.cc",
-    "permission_utils.h",
-  ]
-  deps = [ "//components/services/app_service/public/mojom" ]
-}
-
 source_set("unit_tests") {
   testonly = true
 
@@ -351,7 +331,6 @@ source_set("unit_tests") {
     ":intents",
     ":preferred_app",
     ":preferred_apps",
-    ":publisher",
     ":run_on_os_login",
     ":test_support",
     ":types",

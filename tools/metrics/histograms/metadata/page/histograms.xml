@@ -477,7 +477,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.AMP.InteractiveTiming.NumInteractions.Subframe"
-    units="Count" expires_after="2023-03-24">
+    units="Count" expires_after="2023-07-09">
   <owner>sullivan@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
@@ -672,7 +672,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.AMP.PaintTiming.InputToLargestContentfulPaint.Subframe.FullNavigation"
-    units="ms" expires_after="2022-12-11">
+    units="ms" expires_after="2023-06-18">
   <owner>bmcquade@chromium.org</owner>
   <owner>sullivan@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
@@ -685,7 +685,7 @@ chromium-metrics-reviews@google.com.
     image paint. See http://bit.ly/fcp_plus_plus for details.
 
     This histogram has incomplete data. It expired after M78 and was re-added in
-    M90.
+    M90, and also after 2022-12-11 until M111.
   </summary>
 </histogram>
 
@@ -1057,6 +1057,58 @@ chromium-metrics-reviews@google.com.
 -->
 
   <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+</histogram>
+
+<histogram name="PageLoad.Clients.SameOrigin.FirstContentfulPaint" units="ms"
+    expires_after="2023-07-10">
+  <owner>ksakamoto@chromium.org</owner>
+  <owner>blink-network-dev@chromium.org</owner>
+  <summary>
+    PageLoad.PaintTiming.NavigationToFirstContentfulPaint, but recorded only for
+    same-origin navigations.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Clients.SameOrigin.InteractiveTiming.FirstInputDelay"
+    units="ms" expires_after="2023-07-10">
+  <owner>ksakamoto@chromium.org</owner>
+  <owner>blink-network-dev@chromium.org</owner>
+  <summary>
+    PageLoad.InteractiveTiming.FirstInputDelay4, but recorded only for
+    same-origin navigations.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Clients.SameOrigin.LargestContentfulPaint" units="ms"
+    expires_after="2023-07-10">
+  <owner>ksakamoto@chromium.org</owner>
+  <owner>blink-network-dev@chromium.org</owner>
+  <summary>
+    PageLoad.PaintTiming.NavigationToLargestContentfulPaint2, but recorded only
+    for same-origin navigations.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.Clients.SameOrigin.LayoutInstability.CumulativeShiftScore"
+    units="ms" expires_after="2023-07-10">
+  <owner>ksakamoto@chromium.org</owner>
+  <owner>blink-network-dev@chromium.org</owner>
+  <summary>
+    PageLoad.LayoutInstability.CumulativeShiftScore, but recorded only for
+    same-origin navigations.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.Clients.SameOrigin.LayoutInstability.CumulativeShiftScore.MainFrame"
+    units="ms" expires_after="2023-07-10">
+  <owner>ksakamoto@chromium.org</owner>
+  <owner>blink-network-dev@chromium.org</owner>
+  <summary>
+    PageLoad.LayoutInstability.CumulativeShiftScore.MainFrame, but recorded only
+    for same-origin navigations.
+  </summary>
 </histogram>
 
 <histogram name="PageLoad.Clients.Scheme.HTTP.PaintTiming.UnderStat"
@@ -1546,7 +1598,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Experimental.InputTiming.InputToNavigationStart.FromLinkClick"
-    units="ms" expires_after="2023-04-16">
+    units="ms" expires_after="2023-07-09">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
   <summary>
@@ -1557,7 +1609,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Experimental.InputTiming.InputToNavigationStart.FromOmnibox"
-    units="ms" expires_after="2023-04-16">
+    units="ms" expires_after="2023-07-09">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
   <summary>
@@ -1751,7 +1803,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Experimental.NavigationTiming.NavigationStartToFirstLoaderCallback"
-    units="ms" expires_after="2023-05-07">
+    units="ms" expires_after="2023-07-09">
   <owner>nhiroki@chromium.org</owner>
   <owner>chrome-loading@google.com</owner>
   <summary>
@@ -2175,7 +2227,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.InteractiveTiming.ProcessingTime" units="ms"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
@@ -2188,7 +2240,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.InteractiveTiming.TimeToNextPaint" units="ms"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
@@ -2241,7 +2293,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.Internal.ErrorCode" enum="InternalErrorLoadEvent"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>csharrison@chromium.org</owner>
   <owner>bmcquade@chromium.org</owner>
   <summary>
@@ -2292,8 +2344,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Internal.PaintTiming.LargestContentfulPaint.ContentType"
-    enum="LargestContentType" expires_after="2023-01-15">
-  <owner>npm@chromium.org</owner>
+    enum="LargestContentType" expires_after="2023-07-03">
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     Measures whether the largest contentful paint, whose timestamp is measured
@@ -2306,7 +2358,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="PageLoad.Internal.PaintTiming.LargestContentfulPaint.MainFrame.ContentType"
     enum="LargestContentType" expires_after="2023-07-03">
-  <owner>npm@chromium.org</owner>
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     Measures whether the largest contentful paint in the main frame, whose
@@ -2375,7 +2427,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.Internal.SuppressedEventsCountBeforePaint"
-    units="count" expires_after="2023-05-07">
+    units="count" expires_after="2023-07-09">
   <owner>mehdika@chromium.org</owner>
   <owner>blink-interactions-team@google.com</owner>
   <summary>
@@ -2392,7 +2444,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.Internal.SuppressedEventsTimingBeforePaint"
-    units="ms" expires_after="2023-05-07">
+    units="ms" expires_after="2023-07-09">
   <owner>mehdika@chromium.org</owner>
   <owner>blink-interactions-team@google.com</owner>
   <summary>
@@ -2599,7 +2651,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.PageTiming.ForegroundDuration" units="ms"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>bmcquade@chromium.org</owner>
   <summary>
     For page loads that start in the foreground, measures the duration of time
@@ -2762,7 +2814,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.PaintTiming.NavigationToLargestContentfulPaint2.CrossSiteSubFrame"
-    units="ms" expires_after="2023-05-07">
+    units="ms" expires_after="2023-07-09">
   <owner>sisidovski@google.com</owner>
   <owner>kouhei@chromium.org</owner>
   <summary>

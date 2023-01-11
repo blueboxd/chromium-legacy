@@ -2,14 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Size} from 'chrome://resources/mojo/ui/gfx/geometry/mojom/geometry.mojom-webui.js';
+import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
+
 export interface CategoryData {
   name: string;
   icon: string;
   active: boolean;
 }
 
+// string is defined in Emoji only when Emoji is of type Emoji, Emoticon or
+// Symbol. string represents the Emoji to be inserted in string form, e.g. "😂".
+// visualContent is defined in Emoji only when Emoji is of type GIF.
+// visualContent represents the information needed to display visual content
+// such as GIF (see VisualContent interface below).
 export interface Emoji {
-  string: string;
+  string?: string;
+  visualContent?: VisualContent;
   name: string;
   keywords?: string[];
 }
@@ -28,9 +37,15 @@ export interface EmojiGroup {
 
 export type EmojiGroupData = EmojiGroup[];
 
+export interface VisualContent {
+  id: string;
+  url: {full: Url, preview: Url};
+  previewSize: Size;
+}
+
 export interface StoredItem {
   base: string;
-  alternates: string[];
+  alternates: Emoji[];
   name: string;
 }
 

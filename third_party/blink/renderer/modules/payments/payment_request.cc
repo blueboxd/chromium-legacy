@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
@@ -881,14 +882,6 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state,
             mojom::blink::ConsoleMessageSource::kJavaScript,
             mojom::blink::ConsoleMessageLevel::kWarning, message));
     exception_state.ThrowSecurityError(message);
-    return ScriptPromise();
-  }
-
-  // TODO(crbug.com/779126): add support for handling payment requests in
-  // immersive mode.
-  if (local_frame->GetSettings()->GetImmersiveModeEnabled()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Page popups are suppressed");
     return ScriptPromise();
   }
 

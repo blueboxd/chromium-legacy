@@ -13,9 +13,10 @@ import {EventSourceType} from '../common/event_source_type.js';
 import {GestureCommandData, GestureGranularity} from '../common/gesture_command_data.js';
 import {QueueMode} from '../common/tts_types.js';
 
+import {ChromeVoxRange} from './chromevox_range.js';
 import {ChromeVoxState} from './chromevox_state.js';
 import {CommandHandlerInterface} from './command_handler_interface.js';
-import {EventSourceState} from './event_source.js';
+import {EventSource} from './event_source.js';
 import {GestureInterface} from './gesture_interface.js';
 import {Output} from './output/output.js';
 import {PointerHandler} from './pointer_handler.js';
@@ -47,7 +48,7 @@ export class GestureCommandHandler {
   }
 
   static init() {
-    GestureCommandHandler.instance_ = new GestureCommandHandler();
+    GestureCommandHandler.instance = new GestureCommandHandler();
 
     BridgeHelper.registerHandler(
         BridgeConstants.GestureCommandHandler.TARGET,
@@ -57,12 +58,12 @@ export class GestureCommandHandler {
 
   /** @return {boolean} */
   static getEnabled() {
-    return GestureCommandHandler.instance_.enabled_;
+    return GestureCommandHandler.instance.enabled_;
   }
 
   /** @param {boolean} state */
   static setEnabled(state) {
-    GestureCommandHandler.instance_.enabled_ = state;
+    GestureCommandHandler.instance.enabled_ = state;
   }
 
 
@@ -79,7 +80,7 @@ export class GestureCommandHandler {
       return;
     }
 
-    EventSourceState.set(EventSourceType.TOUCH_GESTURE);
+    EventSource.set(EventSourceType.TOUCH_GESTURE);
 
     const monitor = UserActionMonitor.instance;
     if (gesture !== Gesture.SWIPE_LEFT2 && monitor &&
@@ -118,7 +119,7 @@ export class GestureCommandHandler {
     // Handle gestures mapped to keys. Global keys are handled in place of
     // commands, and menu key overrides are handled only in menus.
     let key;
-    const range = ChromeVoxState.instance.currentRange;
+    const range = ChromeVoxRange.current;
     if (range && range.start && range.start.node) {
       let inMenu = false;
       let node = range.start.node;
@@ -152,5 +153,5 @@ export class GestureCommandHandler {
   }
 }
 
-/** @private {GestureCommandHandler} */
-GestureCommandHandler.instance_;
+/** @type {GestureCommandHandler} */
+GestureCommandHandler.instance;

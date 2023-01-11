@@ -4,11 +4,11 @@
 
 #include "components/autofill/core/browser/autofill_manager.h"
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/thread_pool.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -487,11 +487,11 @@ void AutofillManager::OnAskForValuesToFill(
   NotifyObservers(&Observer::OnBeforeAskForValuesToFill);
   if (!base::FeatureList::IsEnabled(features::kAutofillParseAsync)
 #if BUILDFLAG(IS_ANDROID)
-      // TODO(crbug.com/1379149) Asynchronous parsing breaks Touch To Fill's the
+      // TODO(crbug.com/1379149) Asynchronous parsing breaks Touch To Fill's
       // keyboard suppression mechanism. Fast Checkout uses the same mechanism.
       // Also see crbug.com/1375966.
-      || client_->IsTouchToFillCreditCardSupported() ||
-      client_->IsFastCheckoutSupported()
+      || client()->IsTouchToFillCreditCardSupported() ||
+      client()->IsFastCheckoutSupported()
 #endif
   ) {
     OnAskForValuesToFillImpl(form, field, bounding_box,

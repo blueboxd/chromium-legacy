@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros_local.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/google/core/common/google_util.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
@@ -21,15 +22,12 @@
 #include "components/omnibox/browser/search_suggestion_parser.h"
 #include "components/optimization_guide/content/browser/page_content_annotations_validator.h"
 #include "components/optimization_guide/core/entity_metadata.h"
-#include "components/optimization_guide/core/local_page_entities_metadata_provider.h"
 #include "components/optimization_guide/core/noisy_metrics_recorder.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_logger.h"
 #include "components/optimization_guide/core/optimization_guide_model_provider.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -80,6 +78,13 @@ void LogPageContentAnnotationsStorageStatus(
       status);
 }
 
+void LogRelatedSearchesExtracted(bool success) {
+  base::UmaHistogramBoolean(
+      "OptimizationGuide.PageContentAnnotationsService."
+      "RelatedSearchesExtracted",
+      success);
+}
+
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
 // Record the visibility score of the provided visit as a RAPPOR-style record to
 // UKM.
@@ -87,6 +92,11 @@ void MaybeRecordVisibilityUKM(
     const HistoryVisit& visit,
     const absl::optional<history::VisitContentModelAnnotations>&
         content_annotations) {
+  if (visit.visit_id) {
+    // This is for a remote visit not tied to a navigation.
+    return;
+  }
+
   if (!content_annotations)
     return;
 
@@ -162,13 +172,6 @@ PageContentAnnotationsService::PageContentAnnotationsService(
     annotation_types_to_execute_.push_back(AnnotationType::kPageEntities);
   }
 #endif
-
-  if (features::UseLocalPageEntitiesMetadataProvider()) {
-    local_page_entities_metadata_provider_ =
-        std::make_unique<LocalPageEntitiesMetadataProvider>();
-    local_page_entities_metadata_provider_->Initialize(
-        database_provider, database_dir, background_task_runner);
-  }
 
   validator_ =
       PageContentAnnotationsValidator::MaybeCreateAndStartTimer(annotator_);
@@ -419,7 +422,8 @@ void PageContentAnnotationsService::OnPageContentAnnotated(
     annotated_text_cache_.Put(*visit.text_to_annotate, *content_annotations);
   }
 
-  if (is_new_entry) {
+  // Only log entities for new entries for local visits.
+  if (is_new_entry && !visit.visit_id) {
     for (const auto& entity : content_annotations->entities) {
       // Skip low weight entities.
       if (entity.weight < 50)
@@ -438,11 +442,18 @@ void PageContentAnnotationsService::OnPageContentAnnotated(
   if (!features::ShouldWriteContentAnnotationsToHistoryService())
     return;
 
-  QueryURL(visit,
-           base::BindOnce(
-               &history::HistoryService::AddContentModelAnnotationsForVisit,
-               history_service_->AsWeakPtr(), *content_annotations),
-           PageContentAnnotationsType::kModelAnnotations);
+  if (visit.visit_id) {
+    // If the visit ID is known, directly add the annotations for that visit
+    // rather than querying history for the closest match.
+    history_service_->AddContentModelAnnotationsForVisit(*content_annotations,
+                                                         *visit.visit_id);
+  } else {
+    QueryURL(visit,
+             base::BindOnce(
+                 &history::HistoryService::AddContentModelAnnotationsForVisit,
+                 history_service_->AsWeakPtr(), *content_annotations),
+             PageContentAnnotationsType::kModelAnnotations);
+  }
 }
 #endif
 
@@ -475,7 +486,10 @@ void PageContentAnnotationsService::
     ExtractRelatedSearchesFromZeroSuggestResponse(
         const ZeroSuggestCacheService::CacheEntry& response,
         history::QueryURLResult url_result) {
-  if (url_result.visits.empty()) {
+  if (!url_result.success || url_result.visits.empty()) {
+    LogPageContentAnnotationsStorageStatus(
+        PageContentAnnotationsStorageStatus::kNoVisitsForUrl,
+        PageContentAnnotationsType::kRelatedSearches);
     return;
   }
 
@@ -497,11 +511,18 @@ void PageContentAnnotationsService::
   }
 
   if (related_searches.empty()) {
+    LogRelatedSearchesExtracted(false);
     return;
   }
 
+  LogRelatedSearchesExtracted(true);
+
   auto visit_id = url_result.visits.front().visit_id;
   history_service_->AddRelatedSearchesForVisit(related_searches, visit_id);
+
+  LogPageContentAnnotationsStorageStatus(
+      PageContentAnnotationsStorageStatus::kSuccess,
+      PageContentAnnotationsType::kRelatedSearches);
 }
 
 void PageContentAnnotationsService::OnRelatedSearchesExtracted(
@@ -510,10 +531,7 @@ void PageContentAnnotationsService::OnRelatedSearchesExtracted(
     continuous_search::mojom::CategoryResultsPtr results) {
   const bool success =
       status == continuous_search::SearchResultExtractorClientStatus::kSuccess;
-  base::UmaHistogramBoolean(
-      "OptimizationGuide.PageContentAnnotationsService."
-      "RelatedSearchesExtracted",
-      success);
+  LogRelatedSearchesExtracted(success);
 
   if (!success) {
     return;
@@ -608,17 +626,20 @@ void PageContentAnnotationsService::OnURLQueried(
 void PageContentAnnotationsService::GetMetadataForEntityId(
     const std::string& entity_id,
     EntityMetadataRetrievedCallback callback) {
-  if (features::UseLocalPageEntitiesMetadataProvider()) {
-    DCHECK(local_page_entities_metadata_provider_);
-    local_page_entities_metadata_provider_->GetMetadataForEntityId(
-        entity_id, std::move(callback));
-    return;
-  }
-
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
   model_manager_->GetMetadataForEntityId(entity_id, std::move(callback));
 #else
   std::move(callback).Run(absl::nullopt);
+#endif
+}
+
+void PageContentAnnotationsService::GetMetadataForEntityIds(
+    const base::flat_set<std::string>& entity_ids,
+    BatchEntityMetadataRetrievedCallback callback) {
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+  model_manager_->GetMetadataForEntityIds(entity_ids, std::move(callback));
+#else
+  std::move(callback).Run({});
 #endif
 }
 
@@ -628,21 +649,35 @@ void PageContentAnnotationsService::OnURLVisited(
     const history::VisitRow& visit_row) {
   DCHECK_EQ(history_service, history_service_);
 
-  if (!template_url_service_) {
-    // `template_url_service_` is only nullptr in unit tests.
-    return;
-  }
+  // By default, annotate the title.
+  HistoryVisit history_visit(visit_row.visit_id);
+  history_visit.text_to_annotate = base::UTF16ToUTF8(url_row.title());
 
-  if (optimization_guide::features::
-          ShouldPersistSearchMetadataForNonGoogleSearches() ||
-      google_util::IsGoogleSearchUrl(url_row.url())) {
+  if (template_url_service_ &&
+      (optimization_guide::features::
+           ShouldPersistSearchMetadataForNonGoogleSearches() ||
+       google_util::IsGoogleSearchUrl(url_row.url()))) {
     auto search_metadata =
         template_url_service_->ExtractSearchMetadata(url_row.url());
     if (search_metadata) {
       history_service_->AddSearchMetadataForVisit(
           search_metadata->normalized_url, search_metadata->search_terms,
           visit_row.visit_id);
+
+      // If there's search metadata, annotate search terms instead.
+      history_visit.text_to_annotate =
+          base::UTF16ToUTF8(search_metadata->search_terms);
     }
+  }
+
+  // Annotate remote visits with the text that was determined above.
+  if (!visit_row.originator_cache_guid.empty()) {
+    if (switches::ShouldLogPageContentAnnotationsInput()) {
+      LOG(ERROR) << "Annotating remote visit " << visit_row.visit_id << ":\n"
+                 << "URL: " << url_row.url() << "\n"
+                 << "Text: " << *(history_visit.text_to_annotate);
+    }
+    Annotate(history_visit);
   }
 }
 
@@ -725,16 +760,6 @@ void PageContentAnnotationsService::OnEntityMetadataRetrieved(
   }
 }
 
-// static
-HistoryVisit PageContentAnnotationsService::CreateHistoryVisitFromWebContents(
-    content::WebContents* web_contents,
-    int64_t navigation_id) {
-  HistoryVisit visit(
-      web_contents->GetController().GetLastCommittedEntry()->GetTimestamp(),
-      web_contents->GetLastCommittedURL(), navigation_id);
-  return visit;
-}
-
 HistoryVisit::HistoryVisit() = default;
 
 HistoryVisit::HistoryVisit(base::Time nav_entry_timestamp,
@@ -743,6 +768,10 @@ HistoryVisit::HistoryVisit(base::Time nav_entry_timestamp,
   this->nav_entry_timestamp = nav_entry_timestamp;
   this->url = url;
   this->navigation_id = navigation_id;
+}
+
+HistoryVisit::HistoryVisit(history::VisitID visit_id) {
+  this->visit_id = visit_id;
 }
 
 HistoryVisit::~HistoryVisit() = default;

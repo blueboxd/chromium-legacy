@@ -311,11 +311,6 @@ BASE_FEATURE(kEarlyEstablishGpuChannel,
              "EarlyEstablishGpuChannel",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enable Early Hints subresource preloads for navigation.
-BASE_FEATURE(kEarlyHintsPreloadForNavigation,
-             "EarlyHintsPreloadForNavigation",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Requires documents embedded via <iframe>, etc, to explicitly opt-into the
 // embedding: https://github.com/mikewest/embedding-requires-opt-in.
 BASE_FEATURE(kEmbeddingRequiresOptIn,
@@ -545,12 +540,6 @@ BASE_FEATURE(kInstalledApp, "InstalledApp", base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kInstalledAppProvider,
              "InstalledAppProvider",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Show warning about clearing data from installed apps in the clear browsing
-// data flow. The warning will be shown in a second dialog.
-BASE_FEATURE(kInstalledAppsInCbd,
-             "InstalledAppsInCbd",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable support for isolated web apps. This will guard features like serving
 // isolated web apps via the isolated-app:// scheme, and other advanced isolated
@@ -1269,25 +1258,10 @@ BASE_FEATURE(kWebAssemblyBaseline,
              "WebAssemblyBaseline",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enable memory protection for code JITed for WebAssembly.
-BASE_FEATURE(kWebAssemblyCodeProtection,
-             "WebAssemblyCodeProtection",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && defined(ARCH_CPU_X86_64)
-// Use memory protection keys in userspace (PKU) (if available) to protect code
-// JITed for WebAssembly. Fall back to traditional memory protection if
-// WebAssemblyCodeProtection is also enabled.
-BASE_FEATURE(kWebAssemblyCodeProtectionPku,
-             "WebAssemblyCodeProtectionPku",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif  // (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) &&
-        // defined(ARCH_CPU_X86_64)
-
-// Enable WebAssembly stack switching.
+// Enable WebAssembly JSPI.
 #if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
-BASE_FEATURE(kEnableExperimentalWebAssemblyStackSwitching,
-             "WebAssemblyExperimentalStackSwitching",
+BASE_FEATURE(kEnableExperimentalWebAssemblyJSPI,
+             "WebAssemblyExperimentalJSPI",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
 
@@ -1432,7 +1406,7 @@ BASE_FEATURE(kBindingManagerConnectionLimit,
 // use a not perceptible binding for background renderers on Android Q+.
 BASE_FEATURE(kBindingManagerUseNotPerceptibleBinding,
              "BindingManagerUseNotPerceptibleBinding",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Reduce the priority of GPU process when in background so it is more likely
 // to be killed first if the OS needs more memory.
@@ -1491,6 +1465,11 @@ BASE_FEATURE(kDeviceMonitorMac,
 BASE_FEATURE(kIOSurfaceCapturer,
              "IOSurfaceCapturer",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables backgrounding hidden renderers on Mac.
+BASE_FEATURE(kMacAllowBackgroundingRenderProcesses,
+             "MacAllowBackgroundingRenderProcesses",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kMacSyscallSandbox,
              "MacSyscallSandbox",

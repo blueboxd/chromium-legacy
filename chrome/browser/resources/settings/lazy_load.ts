@@ -15,6 +15,7 @@ import './autofill_page/passwords_section.js';
 import './autofill_page/payments_section.js';
 import './clear_browsing_data_dialog/clear_browsing_data_dialog.js';
 import './search_engines_page/search_engines_page.js';
+import './privacy_page/preloading_page.js';
 import './privacy_page/privacy_guide/privacy_guide_description_item.js';
 import './privacy_page/privacy_guide/privacy_guide_dialog.js';
 import './privacy_page/privacy_guide/privacy_guide_history_sync_fragment.js';
@@ -119,7 +120,7 @@ export {ChromeCleanerScannerResults, ChromeCleanupFilePath, ChromeCleanupIdleRea
 export {ChromeCleanupProxy, ChromeCleanupProxyImpl} from './chrome_cleanup_page/chrome_cleanup_proxy.js';
 export {CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW, ItemsToRemoveListElement} from './chrome_cleanup_page/items_to_remove_list.js';
 // </if>
-export {ClearBrowsingDataBrowserProxy, ClearBrowsingDataBrowserProxyImpl, ClearBrowsingDataResult, InstalledApp, UpdateSyncStateEvent} from './clear_browsing_data_dialog/clear_browsing_data_browser_proxy.js';
+export {ClearBrowsingDataBrowserProxy, ClearBrowsingDataBrowserProxyImpl, ClearBrowsingDataResult, UpdateSyncStateEvent} from './clear_browsing_data_dialog/clear_browsing_data_browser_proxy.js';
 export {SettingsClearBrowsingDataDialogElement} from './clear_browsing_data_dialog/clear_browsing_data_dialog.js';
 export {SettingsHistoryDeletionDialogElement} from './clear_browsing_data_dialog/history_deletion_dialog.js';
 export {SettingsPasswordsDeletionDialogElement} from './clear_browsing_data_dialog/passwords_deletion_dialog.js';
@@ -158,9 +159,10 @@ export {SettingsSyncControlsElement} from './people_page/sync_controls.js';
 export {SettingsSyncEncryptionOptionsElement} from './people_page/sync_encryption_options.js';
 export {SettingsSyncPageElement} from './people_page/sync_page.js';
 export {SettingsCollapseRadioButtonElement} from './privacy_page/collapse_radio_button.js';
-export {SettingsCookiesPageElement} from './privacy_page/cookies_page.js';
+export {NetworkPredictionOptions, SettingsCookiesPageElement} from './privacy_page/cookies_page.js';
 export {SettingsDoNotTrackToggleElement} from './privacy_page/do_not_track_toggle.js';
 export {SettingsPersonalizationOptionsElement} from './privacy_page/personalization_options.js';
+export {PreloadingPageElement} from './privacy_page/preloading_page.js';
 export {PrivacyGuideStep} from './privacy_page/privacy_guide/constants.js';
 export {PrivacyGuideCompletionFragmentElement} from './privacy_page/privacy_guide/privacy_guide_completion_fragment.js';
 export {PrivacyGuideCookiesFragmentElement} from './privacy_page/privacy_guide/privacy_guide_cookies_fragment.js';

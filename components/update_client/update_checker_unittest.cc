@@ -12,15 +12,14 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"

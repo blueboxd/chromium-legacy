@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {AsyncUtil} from '../common/async_util.js';
 import {AutomationUtil} from '../common/automation_util.js';
 import {EventGenerator} from '../common/event_generator.js';
 import {EventHandler} from '../common/event_handler.js';
@@ -15,7 +16,7 @@ import {FocusRingManager} from './focus_ring_manager.js';
 import {FocusData, FocusHistory} from './history.js';
 import {MenuManager} from './menu_manager.js';
 import {Navigator} from './navigator.js';
-import {ItemNavigatorInterface} from './navigator_interface.js';
+import {ItemNavigatorInterface} from './navigator_interfaces.js';
 import {BackButtonNode} from './nodes/back_button_node.js';
 import {BasicNode, BasicRootNode} from './nodes/basic_node.js';
 import {DesktopNode} from './nodes/desktop_node.js';
@@ -123,8 +124,7 @@ export class ItemScanManager extends ItemNavigatorInterface {
       this.exitGroup_();
     }
 
-    const focus =
-        await new Promise(resolve => chrome.automation.getFocus(resolve));
+    const focus = await AsyncUtil.getFocus();
     // First, try to move back to the focused node.
     if (focus) {
       this.moveTo_(focus);
@@ -157,13 +157,12 @@ export class ItemScanManager extends ItemNavigatorInterface {
   }
 
   /** @override */
-  jumpToSwitchAccessMenu() {
-    const menuNode = MenuManager.menuAutomationNode;
-    if (!menuNode) {
+  jumpTo(automationNode) {
+    if (!automationNode) {
       return;
     }
-    const menu = BasicRootNode.buildTree(menuNode);
-    this.jumpTo_(menu, false /* shouldExitMenu */);
+    const node = BasicRootNode.buildTree(automationNode);
+    this.jumpTo_(node, false /* shouldExitMenu */);
   }
 
   /** @override */

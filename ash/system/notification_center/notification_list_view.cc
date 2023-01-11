@@ -19,9 +19,9 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "base/auto_reset.h"
-#include "base/callback_forward.h"
-#include "base/callback_helpers.h"
 #include "base/containers/adapters.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -694,14 +694,12 @@ message_center::MessageView*
 NotificationListView::GetMessageViewForNotificationId(const std::string& id) {
   auto it = base::ranges::find(children(), id, [](auto* child) {
     DCHECK(child->GetClassName() == kMessageViewContainerClassName);
-    return static_cast<MessageViewContainer*>(child)
-        ->message_view()
-        ->notification_id();
+    return AsMVC(child)->message_view()->notification_id();
   });
 
   if (it == children().end())
     return nullptr;
-  return static_cast<MessageViewContainer*>(*it)->message_view();
+  return AsMVC(*it)->message_view();
 }
 
 void NotificationListView::ConvertNotificationViewToGroupedNotificationView(

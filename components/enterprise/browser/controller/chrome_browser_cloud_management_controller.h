@@ -8,11 +8,12 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/enterprise/browser/device_trust/device_trust_key_manager.h"

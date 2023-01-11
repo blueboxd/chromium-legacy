@@ -41,6 +41,11 @@ extern const char kAutofillEnableNewCardUnmaskPromptViewDescription[];
 extern const char kAutofillEnableRankingFormulaName[];
 extern const char kAutofillEnableRankingFormulaDescription[];
 
+// Title and description for the flag to control the new autofill suggestion
+// ranking formula for address profiles.
+extern const char kAutofillEnableRankingFormulaAddressProfilesName[];
+extern const char kAutofillEnableRankingFormulaAddressProfilesDescription[];
+
 // Title and description for the flag that controls whether the remade Autofill
 // Downstream metrics are enabled.
 extern const char kAutofillEnableRemadeDownstreamMetricsName[];
@@ -89,6 +94,11 @@ extern const char kAutofillPruneSuggestionsDescription[];
 extern const char kAutofillSaveCardDismissOnNavigationName[];
 extern const char kAutofillSaveCardDismissOnNavigationDescription[];
 
+// Title and description for the flag to suggest Server card instead of a
+// deduped Local card.
+extern const char kAutofillSuggestServerCardInsteadOfLocalCardName[];
+extern const char kAutofillSuggestServerCardInsteadOfLocalCardDescription[];
+
 // Title and description for the flag to control allowing credit card upload
 // save for accounts from common email providers.
 extern const char kAutofillUpstreamAllowAdditionalEmailDomainsName[];
@@ -114,11 +124,6 @@ extern const char kAutofillUseRendererIDsDescription[];
 // reports is delayed.
 extern const char kBreakpadNoDelayInitialUploadName[];
 extern const char kBreakpadNoDelayInitialUploadDescription[];
-
-// Title and description for the flag to enable the rich iph experiment on
-// bubble views.
-extern const char kBubbleRichIPHName[];
-extern const char kBubbleRichIPHDescription[];
 
 // Title and description for the flag to enable experience kit calendar events.
 extern const char kCalendarExperienceKitName[];
@@ -364,11 +369,6 @@ extern const char kInProductHelpDemoModeDescription[];
 extern const char kIOS3PIntentsInIncognitoName[];
 extern const char kIOS3PIntentsInIncognitoDescription[];
 
-// Title and description for the flag to enable updated password manager
-// branding.
-extern const char kIOSEnablePasswordManagerBrandingUpdateName[];
-extern const char kIOSEnablePasswordManagerBrandingUpdateDescription[];
-
 // Title and description for the flag to enable force translate when language
 // detection failed.
 extern const char kIOSForceTranslateEnabledName[];
@@ -444,6 +444,11 @@ extern const char kModernTabStripDescription[];
 extern const char kMostVisitedTilesName[];
 extern const char kMostVisitedTilesDescription[];
 
+// Title and description of the flag to enable the native Find in Page API
+// for iOS 16 and later.
+extern const char kNativeFindInPageName[];
+extern const char kNativeFindInPageDescription[];
+
 // Title and description for the flag to use the new MICe FRE.
 extern const char kNewMobileIdentityConsistencyFREName[];
 extern const char kNewMobileIdentityConsistencyFREDescription[];
@@ -462,6 +467,16 @@ extern const char kNewOverflowMenuAlternateIPHDescription[];
 extern const char kNTPViewHierarchyRepairName[];
 extern const char kNTPViewHierarchyRepairDescription[];
 
+// Title and description for the flag to fetch contextual zero-prefix
+// suggestions related to current page (on normal web pages).
+extern const char kOmniboxFocusTriggersContextualWebZeroSuggestName[];
+extern const char kOmniboxFocusTriggersContextualWebZeroSuggestDescription[];
+
+// Title and description for the flag to fetch contextual zero-prefix
+// suggestions on search results page.
+extern const char kOmniboxFocusTriggersSRPZeroSuggestName[];
+extern const char kOmniboxFocusTriggersSRPZeroSuggestDescription[];
+
 // Title and description for fuzzy URL suggestions feature.
 extern const char kOmniboxFuzzyUrlSuggestionsName[];
 extern const char kOmniboxFuzzyUrlSuggestionsDescription[];
@@ -476,15 +491,28 @@ extern const char kOmniboxHttpsUpgradesDescription[];
 extern const char kOmniboxKeyboardPasteButtonName[];
 extern const char kOmniboxKeyboardPasteButtonDescription[];
 
-// Title and description for the flag to change the max number of autocomplete
-// matches in the omnibox popup.
-extern const char kOmniboxUIMaxAutocompleteMatchesName[];
-extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
+// Title and description for local history zero-prefix suggestions beyond NTP.
+extern const char kOmniboxLocalHistoryZeroSuggestBeyondNTPName[];
+extern const char kOmniboxLocalHistoryZeroSuggestBeyondNTPDescription[];
+
+// Title and description for the maximum number of URL matches.
+extern const char kOmniboxMaxURLMatchesName[];
+extern const char kOmniboxMaxURLMatchesDescription[];
 
 // Title and description for the flag to change the max number of ZPS
 // matches in the omnibox popup.
 extern const char kOmniboxMaxZPSMatchesName[];
 extern const char kOmniboxMaxZPSMatchesDescription[];
+
+// Title and description for the flag to inscrease the maximum number of lines
+// for search suggestions.
+extern const char kOmniboxMultilineSearchSuggestName[];
+extern const char kOmniboxMultilineSearchSuggestDescription[];
+
+// Title and description for the flag to swap Omnibox Textfield implementation
+// to a new experimental one.
+extern const char kOmniboxNewImplementationName[];
+extern const char kOmniboxNewImplementationDescription[];
 
 // Title and description for the flag to enable Omnibox On Device Head
 // suggestions (incognito).
@@ -496,32 +524,22 @@ extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[];
 extern const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoName[];
 extern const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription[];
 
+// Title and description for omnibox on device tail suggest.
+extern const char kOmniboxOnDeviceTailSuggestionsName[];
+extern const char kOmniboxOnDeviceTailSuggestionsDescription[];
+
 // Title and description for the flag to control Omnibox on-focus suggestions.
 extern const char kOmniboxOnFocusSuggestionsName[];
 extern const char kOmniboxOnFocusSuggestionsDescription[];
 
-// Title and description for the maximum number of URL matches.
-extern const char kOmniboxMaxURLMatchesName[];
-extern const char kOmniboxMaxURLMatchesDescription[];
+// Title and description for the flag to change the max number of autocomplete
+// matches in the omnibox popup.
+extern const char kOmniboxUIMaxAutocompleteMatchesName[];
+extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
 
-// Title and description for the flag to swap Omnibox Textfield implementation
-// to a new experimental one.
-extern const char kOmniboxNewImplementationName[];
-extern const char kOmniboxNewImplementationDescription[];
-
-// Title and description for the flag to fetch contextual zero-prefix
-// suggestions related to current page (on normal web pages).
-extern const char kOmniboxFocusTriggersContextualWebZeroSuggestName[];
-extern const char kOmniboxFocusTriggersContextualWebZeroSuggestDescription[];
-
-// Title and description for the flag to fetch contextual zero-prefix
-// suggestions on search results page.
-extern const char kOmniboxFocusTriggersSRPZeroSuggestName[];
-extern const char kOmniboxFocusTriggersSRPZeroSuggestDescription[];
-
-// Title and description for local history zero-prefix suggestions beyond NTP.
-extern const char kOmniboxLocalHistoryZeroSuggestBeyondNTPName[];
-extern const char kOmniboxLocalHistoryZeroSuggestBeyondNTPDescription[];
+// Title and description for the use of in-memory zero-suggest caching.
+extern const char kOmniboxZeroSuggestInMemoryCachingName[];
+extern const char kOmniboxZeroSuggestInMemoryCachingDescription[];
 
 // Title and description for the zero-suggest prefetching on the New Tab Page.
 extern const char kOmniboxZeroSuggestPrefetchingName[];
@@ -535,14 +553,6 @@ extern const char kOmniboxZeroSuggestPrefetchingOnSRPDescription[];
 // Title and description for the zero-suggest prefetching on any Web Page.
 extern const char kOmniboxZeroSuggestPrefetchingOnWebName[];
 extern const char kOmniboxZeroSuggestPrefetchingOnWebDescription[];
-
-// Title and description for the use of in-memory zero-suggest caching.
-extern const char kOmniboxZeroSuggestInMemoryCachingName[];
-extern const char kOmniboxZeroSuggestInMemoryCachingDescription[];
-
-// Title and description for omnibox on device tail suggest.
-extern const char kOmniboxOnDeviceTailSuggestionsName[];
-extern const char kOmniboxOnDeviceTailSuggestionsDescription[];
 
 // Title and description for the flag to enable Optimization Guide debug logs.
 extern const char kOptimizationGuideDebugLogsName[];
@@ -627,6 +637,11 @@ extern const char kShowAutofillTypePredictionsDescription[];
 // menu.
 extern const char kSmartSortingNewOverflowMenuName[];
 extern const char kSmartSortingNewOverflowMenuDescription[];
+
+// Title and description for the flag to add the Price Tracking destination
+// (with Smart Sorting) to the new overflow menu.
+extern const char kSmartSortingPriceTrackingDestinationName[];
+extern const char kSmartSortingPriceTrackingDestinationDescription[];
 
 // Title and description for the flag to enable the Share Chrome App action
 // in the new overflow menu.

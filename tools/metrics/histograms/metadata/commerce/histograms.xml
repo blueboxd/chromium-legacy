@@ -222,7 +222,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 </histogram>
 
 <histogram name="Commerce.PDPStateOnNavigation" enum="ShoppingPDPState"
-    expires_after="2023-02-01">
+    expires_after="2023-06-01">
   <owner>ayman@chromium.org</owner>
   <owner>mdjones@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -264,6 +264,9 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 
 <histogram name="Commerce.PowerBookmarks.ShoppingDataProvider.IsProductPage"
     enum="Boolean" expires_after="2023-01-01">
+  <obsolete>
+    Deprecated 12/2022. Replaced by Commerce.PDPStateOnNavigation.
+  </obsolete>
   <owner>ayman@chromium.org</owner>
   <owner>mdjones@chromium.org</owner>
   <summary>
@@ -275,6 +278,10 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 
 <histogram name="Commerce.PowerBookmarks.SubscriptionValidationResult"
     enum="CommerceSubscriptionValidationResult" expires_after="2023-04-09">
+  <obsolete>
+    Deprecated in 11/2022. The validation logic became unnecessary with the new
+    subscriptions manager implementation.
+  </obsolete>
   <owner>ayman@chromium.org</owner>
   <owner>mdjones@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -454,6 +461,29 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
   </summary>
 </histogram>
 
+<histogram name="Commerce.PriceTracking.Untrack.BookmarkFound" enum="Boolean"
+    expires_after="2024-01-03">
+  <owner>ayman@chromium.org</owner>
+  <owner>davidjm@chromium.org</owner>
+  <summary>
+    Records whether a bookmark is found when untracking a site in price drop
+    notifications upon receiving a price drop notification. It is expected that
+    a bookmark should be present if a notification has been received. This
+    metric is being recorded to confirm that assumption is valid.
+  </summary>
+</histogram>
+
+<histogram name="Commerce.PriceTracking.Untrack.Success" enum="Boolean"
+    expires_after="2024-01-03">
+  <owner>ayman@chromium.org</owner>
+  <owner>davidjm@chromium.org</owner>
+  <summary>
+    Records whether untracking price drops for a site was successful or not
+    after selecting 'Untrack' from the long press menu upon receiving a price
+    drop notification.
+  </summary>
+</histogram>
+
 <histogram name="Commerce.ShoppingService.ProductInfo.FallbackDataContent"
     enum="ShoppingDataProviderFallback" expires_after="2023-06-01">
   <owner>ayman@chromium.org</owner>
@@ -494,6 +524,9 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 
 <histogram name="Commerce.SignIn.AccountWaaStatus"
     enum="AccountWaaStatusForCommerce" expires_after="2023-06-25">
+  <obsolete>
+    Deprecated in 01/2023. It's no longer needed.
+  </obsolete>
   <owner>zhiyuancai@chromium.org</owner>
   <owner>ayman@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -542,6 +575,10 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 
 <histogram name="Commerce.Subscriptions.{ManagementType}.Count"
     units="subscriptions" expires_after="2023-04-25">
+  <obsolete>
+    Deprecated in 01/2023. Replaced by
+    Commerce.PriceTracking.PriceTrackedProductCount.
+  </obsolete>
   <owner>zhiyuancai@chromium.org</owner>
   <owner>ayman@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>

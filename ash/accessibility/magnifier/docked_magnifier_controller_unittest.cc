@@ -34,10 +34,8 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
-#include "ui/accessibility/accessibility_features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -426,10 +424,8 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreas) {
   gfx::Rect disp_1_confine_bounds(
       0, disp_1_magnifier_height, disp_1_bounds.width(),
       disp_1_bounds.height() - disp_1_magnifier_height);
-  if (::features::IsDockedMagnifierResizingEnabled()) {
-    disp_1_confine_bounds.Inset(
-        gfx::Insets().set_top(-DockedMagnifierController::kSeparatorHeight));
-  }
+  disp_1_confine_bounds.Inset(
+      gfx::Insets().set_top(-DockedMagnifierController::kSeparatorHeight));
   EXPECT_EQ(host1->GetLastCursorConfineBoundsInPixels(), disp_1_confine_bounds);
 
   // The second display should remain unaffected.
@@ -464,10 +460,8 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreas) {
   gfx::Rect disp_2_confine_bounds(
       0, disp_2_magnifier_height, disp_2_bounds.width(),
       disp_2_bounds.height() - disp_2_magnifier_height);
-  if (::features::IsDockedMagnifierResizingEnabled()) {
-    disp_2_confine_bounds.Inset(
-        gfx::Insets().set_top(-DockedMagnifierController::kSeparatorHeight));
-  }
+  disp_2_confine_bounds.Inset(
+      gfx::Insets().set_top(-DockedMagnifierController::kSeparatorHeight));
   EXPECT_EQ(host2->GetLastCursorConfineBoundsInPixels(), disp_2_confine_bounds);
 
   // Now, disable the magnifier, and expect both displays to return back to
@@ -832,9 +826,6 @@ TEST_F(DockedMagnifierTest, TransformSimple) {
 
 // Tests resizing docked magnifier by dragging the separator.
 TEST_F(DockedMagnifierTest, ResizeDockedMagnifier) {
-  base::test::ScopedFeatureList features;
-  features.InitWithFeatures({::features::kDockedMagnifierResizing}, {});
-
   UpdateDisplay("800x600");
   const auto root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(1u, root_windows.size());
@@ -851,24 +842,50 @@ TEST_F(DockedMagnifierTest, ResizeDockedMagnifier) {
   EXPECT_EQ(gfx::Rect(0, 0, 800, viewport_height),
             viewport_widget->GetWindowBoundsInScreen());
 
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
+  EXPECT_NE(ui::mojom::CursorType::kNorthSouthResize,
+            cursor_manager->GetCursor().type());
+  EXPECT_FALSE(cursor_manager->IsCursorLocked());
+
   // Move cursor over docked magnifier separator (to drag for resizing).
   gfx::Point mouse_location(400, viewport_height);
   GetEventGenerator()->MoveMouseTo(mouse_location);
+  EXPECT_EQ(ui::mojom::CursorType::kNorthSouthResize,
+            cursor_manager->GetCursor().type());
+  EXPECT_TRUE(cursor_manager->IsCursorLocked());
 
   // Drag separator 100 pixels down.
   mouse_location = gfx::Point(400, viewport_height + 100);
   GetEventGenerator()->DragMouseTo(mouse_location);
+  EXPECT_EQ(ui::mojom::CursorType::kNorthSouthResize,
+            cursor_manager->GetCursor().type());
+  EXPECT_TRUE(cursor_manager->IsCursorLocked());
 
   // Assert docked magnifier viewport is now taller.
   EXPECT_EQ(gfx::Rect(0, 0, 800, viewport_height + 100),
             viewport_widget->GetWindowBoundsInScreen());
+
+  // Move off of the separator. The cursor should reset.
+  GetEventGenerator()->MoveMouseTo(400, viewport_height + 200);
+  EXPECT_NE(ui::mojom::CursorType::kNorthSouthResize,
+            cursor_manager->GetCursor().type());
+  EXPECT_FALSE(cursor_manager->IsCursorLocked());
+
+  // Drag again, but turn off docked magnifier during drag (simulating keyboard
+  // shortcut). The cursor should reset.
+  GetEventGenerator()->MoveMouseTo(400, viewport_height + 100);
+  GetEventGenerator()->DragMouseTo(gfx::Point(400, viewport_height));
+  EXPECT_EQ(ui::mojom::CursorType::kNorthSouthResize,
+            cursor_manager->GetCursor().type());
+  EXPECT_TRUE(cursor_manager->IsCursorLocked());
+  controller()->SetEnabled(false);
+  EXPECT_NE(ui::mojom::CursorType::kNorthSouthResize,
+            cursor_manager->GetCursor().type());
+  EXPECT_FALSE(cursor_manager->IsCursorLocked());
 }
 
 // Tests to verify dragging above separator does not resize docked magnifier.
 TEST_F(DockedMagnifierTest, DragAboveSeparatorDoesNotResizeDockedMagnifier) {
-  base::test::ScopedFeatureList features;
-  features.InitWithFeatures({::features::kDockedMagnifierResizing}, {});
-
   UpdateDisplay("800x600");
   const auto root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(1u, root_windows.size());
@@ -902,9 +919,6 @@ TEST_F(DockedMagnifierTest, DragAboveSeparatorDoesNotResizeDockedMagnifier) {
 // Tests to verify hovering and resizing the docked magnifier moves the cursor
 // in front of the viewport.
 TEST_F(DockedMagnifierTest, HoverAndResizeDockedMagnifierMovesCursorInFront) {
-  base::test::ScopedFeatureList scoped_feature;
-  scoped_feature.InitAndEnableFeature(::features::kDockedMagnifierResizing);
-
   UpdateDisplay("800x600");
   const auto root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(1u, root_windows.size());

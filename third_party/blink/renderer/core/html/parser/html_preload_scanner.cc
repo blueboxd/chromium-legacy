@@ -29,6 +29,7 @@
 
 #include <memory>
 
+#include "base/task/sequenced_task_runner.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
@@ -203,7 +204,7 @@ class TokenPreloadScanner::StartTagScanner {
       return;
     for (const HTMLToken::Attribute& html_token_attribute : attributes) {
       AtomicString attribute_name(html_token_attribute.GetName());
-      String attribute_value = html_token_attribute.Value8BitIfNecessary();
+      String attribute_value = html_token_attribute.Value();
       ProcessAttribute(attribute_name, attribute_value);
     }
     PostProcessAfterAttributes();
@@ -1051,8 +1052,8 @@ void TokenPreloadScanner::UpdatePredictedBaseURL(const HTMLToken& token) {
   DCHECK(predicted_base_element_url_.IsEmpty());
   if (const HTMLToken::Attribute* href_attribute =
           token.GetAttributeItem(html_names::kHrefAttr)) {
-    KURL url(document_url_, StripLeadingAndTrailingHTMLSpaces(
-                                href_attribute->Value8BitIfNecessary()));
+    KURL url(document_url_,
+             StripLeadingAndTrailingHTMLSpaces(href_attribute->Value()));
     bool is_valid_base_url =
         url.IsValid() && !url.ProtocolIsData() && !url.ProtocolIsJavaScript();
     predicted_base_element_url_ = is_valid_base_url ? url : KURL();

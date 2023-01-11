@@ -13,11 +13,11 @@
 #include <vector>
 
 #include "base/base_switches.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/dcheck_is_on.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/i18n/base_i18n_switches.h"
 #include "base/i18n/character_encoding.h"
 #include "base/memory/raw_ptr.h"
@@ -31,6 +31,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/types/expected.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -45,6 +46,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_topics/browsing_topics_service_factory.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
+#include "chrome/browser/child_process_host_flags.h"
 #include "chrome/browser/chrome_content_browser_client_binder_policies.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -398,6 +400,7 @@
 #include "chrome/browser/speech/tts_chromeos.h"
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chromeos/ash/services/network_health/public/cpp/network_health_helper.h"
 #include "chromeos/crosapi/cpp/lacros_startup_state.h"
 #include "components/crash/core/app/breakpad_linux.h"
 #include "components/user_manager/user.h"
@@ -454,7 +457,6 @@
 #include "chrome/browser/policy/networking/policy_cert_service.h"
 #include "chrome/browser/policy/networking/policy_cert_service_factory.h"
 #include "chrome/common/chromeos/extensions/chromeos_system_extension_info.h"
-#include "chromeos/services/network_health/public/cpp/network_health_helper.h"
 #include "components/crash/core/app/breakpad_linux.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #endif
@@ -3004,7 +3006,7 @@ bool ChromeContentBrowserClient::IsDataSaverEnabled(
   if (!browser_context || browser_context->IsOffTheRecord())
     return false;
 
-  return data_saver::IsDataSaverEnabled(browser_context);
+  return data_saver::IsDataSaverEnabled();
 }
 
 void ChromeContentBrowserClient::UpdateRendererPreferencesForWorker(
@@ -3283,13 +3285,13 @@ bool ChromeContentBrowserClient::IsInterestGroupAPIAllowed(
   if (operation == InterestGroupApiOperation::kJoin) {
     content_settings::PageSpecificContentSettings::InterestGroupJoined(
         render_frame_host, api_origin, !allowed);
+    content_settings::PageSpecificContentSettings::BrowsingDataAccessed(
+        render_frame_host,
+        content::InterestGroupManager::InterestGroupDataKey{api_origin,
+                                                            top_frame_origin},
+        BrowsingDataModel::StorageType::kInterestGroup, !allowed);
   }
 
-  content_settings::PageSpecificContentSettings::BrowsingDataAccessed(
-      render_frame_host,
-      content::InterestGroupManager::InterestGroupDataKey{api_origin,
-                                                          top_frame_origin},
-      BrowsingDataModel::StorageType::kInterestGroup, !allowed);
   return allowed;
 }
 
@@ -7363,3 +7365,20 @@ bool ChromeContentBrowserClient::IsFileSystemURLNavigationAllowed(
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   return false;
 }
+
+#if BUILDFLAG(IS_MAC)
+base::FilePath ChromeContentBrowserClient::GetChildProcessPath(
+    int child_flags,
+    const base::FilePath& helpers_path) {
+  std::string helper_name(chrome::kHelperProcessExecutableName);
+  if (child_flags == chrome::kChildProcessHelperAlerts) {
+    helper_name += chrome::kMacHelperSuffixAlerts;
+    return helpers_path.Append(helper_name + ".app")
+        .Append("Contents")
+        .Append("MacOS")
+        .Append(helper_name);
+  }
+  NOTREACHED() << "Unsupported child process flags!";
+  return {};
+}
+#endif  // BUILDFLAG(IS_MAC)

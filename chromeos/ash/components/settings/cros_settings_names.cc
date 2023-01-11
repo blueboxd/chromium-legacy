@@ -483,10 +483,6 @@ const char kDeviceUnaffiliatedCrostiniAllowed[] =
 // device.
 const char kPluginVmAllowed[] = "cros.device.plugin_vm_allowed";
 
-// A boolean pref that indicates whether Borealis is allowed to run on this
-// device.
-const char kBorealisAllowedForDevice[] = "cros.device.borealis_allowed";
-
 // An enum pref specifying the case when device needs to reboot on user sign
 // out.
 const char kDeviceRebootOnUserSignout[] = "cros.device.reboot_on_user_signout";
@@ -575,5 +571,11 @@ const char kDeviceEncryptedReportingPipelineEnabled[] =
 
 // A boolean pref that indicates whether reporting XDR events is enabled or not.
 const char kDeviceReportXDREvents[] = "cros.device.device_report_xdr_events";
+
+// String representing a template for the 'client-name' member of the
+// 'client-info' IPP attribute that will be sent to IPP printers in case they
+// support it. Maps to the `DevicePrintingClientNameTemplate` policy.
+const char kDevicePrintingClientNameTemplate[] =
+    "cros.device.printing.client_name_template";
 
 }  // namespace ash

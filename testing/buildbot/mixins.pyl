@@ -614,18 +614,6 @@
       },
     },
   },
-  'ios_runtime_cache_16_1': {
-    '$mixin_append': {
-      'swarming': {
-        'named_caches': [
-          {
-            'name': 'runtime_ios_16_1',
-            'path': 'Runtime-ios-16.1',
-          },
-        ],
-      },
-    },
-  },
   'ios_runtime_cache_16_2': {
     '$mixin_append': {
       'swarming': {
@@ -1263,6 +1251,13 @@
   'win10': {
     'swarming': {
       'dimensions': {
+        'os': 'Windows-10-19042|Windows-10-19045',
+      },
+    },
+  },
+  'win10-20h2': {
+    'swarming': {
+      'dimensions': {
         'os': 'Windows-10-19042',
       },
     },
@@ -1364,20 +1359,6 @@
       },
     },
   },
-  'win7': {
-    'swarming': {
-      'dimensions': {
-        'os': 'Windows-7-SP1',
-      },
-    },
-  },
-  'x86-32': {
-    'swarming': {
-      'dimensions': {
-        'cpu': 'x86-32',
-      },
-    },
-  },
   'x86-64': {
     'swarming': {
       'dimensions': {
@@ -1407,13 +1388,13 @@
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '14b47b'
+        '14c18'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_14b47b',
+          'name': 'xcode_ios_14c18',
           'path': 'Xcode.app',
         },
       ],

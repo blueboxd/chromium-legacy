@@ -11,19 +11,15 @@
 #include <set>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/fuchsia/startup_context.h"
+#include "base/functional/callback.h"
 #include "fuchsia_web/runners/cast/cast_component.h"
 #include "fuchsia_web/runners/cast/fidl/fidl/chromium/cast/cpp/fidl.h"
 #include "fuchsia_web/runners/cast/pending_cast_component.h"
 #include "fuchsia_web/runners/common/web_content_runner.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-
-namespace base {
-class FilteredServiceDirectory;
-}
 
 class WebInstanceHost;
 
@@ -138,10 +134,7 @@ class CastRunner final : public fuchsia::component::runner::ComponentRunner,
   // Holds the main fuchsia.web.Context used to host CastComponents.
   // Note that although |main_context_| is actually a WebContentRunner, that is
   // only being used to maintain the Context for the hosted components.
-  const std::unique_ptr<base::FilteredServiceDirectory> main_services_;
   const std::unique_ptr<WebContentRunner> main_context_;
-
-  const std::unique_ptr<base::FilteredServiceDirectory> isolated_services_;
 
   // Holds `fuchsia.web.Context`s used to host isolated components.
   base::flat_set<std::unique_ptr<WebContentRunner>, base::UniquePtrComparator>

@@ -6,6 +6,7 @@
  * @fileoverview Handles logic for the ChromeVox panel that requires state from
  * the background context.
  */
+import {AsyncUtil} from '../../../common/async_util.js';
 import {constants} from '../../../common/constants.js';
 import {CursorRange} from '../../../common/cursors/range.js';
 import {BridgeConstants} from '../../common/bridge_constants.js';
@@ -15,7 +16,8 @@ import {PanelBridge} from '../../common/panel_bridge.js';
 import {ALL_PANEL_MENU_NODE_DATA} from '../../common/panel_menu_data.js';
 import {QueueMode} from '../../common/tts_types.js';
 import {ChromeVox} from '../chromevox.js';
-import {ChromeVoxState, ChromeVoxStateObserver} from '../chromevox_state.js';
+import {ChromeVoxRange, ChromeVoxRangeObserver} from '../chromevox_range.js';
+import {ChromeVoxState} from '../chromevox_state.js';
 import {Output} from '../output/output.js';
 import {OutputCustomEvent} from '../output/output_types.js';
 
@@ -45,8 +47,8 @@ export class PanelBackground {
       throw 'Trying to create two copies of singleton PanelBackground';
     }
     PanelBackground.instance = new PanelBackground();
-    PanelBackground.stateObserver_ = new PanelStateObserver();
-    ChromeVoxState.addObserver(PanelBackground.stateObserver_);
+    PanelBackground.rangeObserver_ = new PanelRangeObserver();
+    ChromeVoxRange.addObserver(PanelBackground.rangeObserver_);
 
     BridgeHelper.registerHandler(
         TARGET, Action.CLEAR_SAVED_NODE,
@@ -131,11 +133,10 @@ export class PanelBackground {
     }
     // TODO(accessibility): not sure if this actually works anymore since all
     // the refactoring.
-    if (!ChromeVoxState.instance.currentRange ||
-        !ChromeVoxState.instance.currentRange.start) {
+    if (!ChromeVoxRange.current || !ChromeVoxRange.current.start) {
       return;
     }
-    this.iSearch_ = new ISearch(ChromeVoxState.instance.currentRange.start);
+    this.iSearch_ = new ISearch(ChromeVoxRange.current.start);
     this.iSearch_.handler = this;
   }
 
@@ -267,8 +268,7 @@ export class PanelBackground {
    * @private
    */
   async setPanelCollapseWatcher_() {
-    const desktop =
-        await new Promise((resolve) => chrome.automation.getDesktop(resolve));
+    const desktop = await AsyncUtil.getDesktop();
     let notifyPanelCollapsed;
     this.resolvePanelCollapsed_ = new Promise(resolve => {
       notifyPanelCollapsed = resolve;
@@ -297,8 +297,8 @@ export class PanelBackground {
 
   /** @private */
   saveCurrentNode_() {
-    if (ChromeVoxState.instance.currentRange) {
-      this.savedNode_ = ChromeVoxState.instance.currentRange.start.node;
+    if (ChromeVoxRange.current) {
+      this.savedNode_ = ChromeVoxRange.current.start.node;
     }
   }
 
@@ -314,11 +314,11 @@ export class PanelBackground {
 /** @type {PanelBackground} */
 PanelBackground.instance;
 
-/** @private {PanelStateObserver} */
-PanelBackground.stateObserver_;
+/** @private {PanelRangeObserver} */
+PanelBackground.rangeObserver_;
 
-/** @implements {ChromeVoxStateObserver} */
-class PanelStateObserver {
+/** @implements {ChromeVoxRangeObserver} */
+class PanelRangeObserver {
   /** @override */
   onCurrentRangeChanged(range, opt_fromEditing) {
     PanelBridge.onCurrentRangeChanged();

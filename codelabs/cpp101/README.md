@@ -19,12 +19,11 @@ This tutorial does not assume you have read any of the above,
 though you should feel free to peruse them when necessary.
 This tutorial will cover information across all of those guides.
 
-Exercise solutions are available in the [codelabs/cpp101/](
-https://source.chromium.org/chromium/chromium/src/+/main:codelabs/cpp101/)
+Exercise solutions are available in the [codelabs/cpp101/solutions](
+https://source.chromium.org/chromium/chromium/src/+/main:codelabs/cpp101/solutions)
 directory of the Chromium source code. Build all of the example solutions with
-`autoninja -C out/Default codelabs`. You are encouraged to create a new
-`base/cpp101/` directory locally if you want to try implementing these
-exercises yourself.
+`autoninja -C out/Default codelabs_cpp101`. You are encouraged to implement these
+exercises yourself in the `codelabs/cpp101` directory.
 
 ### Prerequisite: Getting the Code
 
@@ -37,18 +36,18 @@ This exercise demonstrates the use of the [ninja](https://ninja-build.org/)
 build system to build a simple C++ binary and demonstrates how typical C++
 builds are organized within Chromium.
 
-Create a new target in `base/BUILD.gn` for a new executable
-named `codelab_hello_world`. Then write the classic "Hello, world!" program in
+Create a new target in `codelabs/cpp101/BUILD.gn` for a new executable
+named `codelab_cpp101_hello_world`. Then write the classic "Hello, world!" program in
 C++. You should be able to build it with
-`autoninja -C out/Default codelab_hello_world` and execute it directly by
+`autoninja -C out/Default codelab_cpp101_hello_world` and execute it directly by
 finding the binary within `out/Default`.
 
 Sample execution:
 ```shell
 $ cd /path/to/chromium/src
 $ gclient runhooks
-$ autoninja -C out/Default codelab_hello_world
-$ out/Default/codelab_hello_world
+$ autoninja -C out/Default codelab_cpp101_hello_world
+$ out/Default/codelab_cpp101_hello_world
 Hello, world!
 [0923/185218.645640:INFO:hello_world.cc(27)] Hello, world!
 ```
@@ -63,7 +62,7 @@ and [Git Cookbook](https://chromium.googlesource.com/chromium/src.git/+/main/doc
 
 ## Part 1: Using command-line arguments
 
-We will augment our `codelab_hello_world` binary to parse command-line flags and
+We will augment our `codelab_cpp101_hello_world` binary to parse command-line flags and
 use those values to print messages to the user.
 
 Command-line arguments within Chromium are processed by the
@@ -90,7 +89,7 @@ use `GetSwitchValueASCII()` and friends to retrieve values passed in.
 
 ### Exercise 1: Using command-line arguments
 
-Change `codelab_hello_world` to take a `--greeting` and a `--name` switch.
+Change `codelab_cpp101_hello_world` to take a `--greeting` and a `--name` switch.
 The greeting, if not specified, should default to "Hello",
 and the name, if not specified, should default to "World".
 
@@ -170,8 +169,8 @@ for details.
 ### Important Include Files
 
 ```cpp
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 ```
 
 ### More Information
@@ -214,7 +213,7 @@ those tasks.
 used abstraction which handles running tasks (which are instances
 of `base::OnceClosure`) in sequential order. These tasks are not guaranteed to
 run on the same thread. The preferred way of posting to the current (virtual)
-thread is `base::SequencedTaskRunnerHandle::Get()`.
+thread is `base::SequencedTaskRunner::GetCurrentDefault()`.
 
 A task that can run on any thread and doesn’t have ordering or mutual exclusion
 requirements with other tasks should be posted using one of the
@@ -261,7 +260,7 @@ int main(int argc, char* argv[]) {
 ### Exercise 3a: Sleep
 
 Implement the Unix command-line utility `sleep` using only
-a `base::SequencedTaskRunnerHandle` (i.e., without using the `sleep` function
+a `base::SequencedTaskRunner::CurrentDefaultHandle` (i.e., without using the `sleep` function
 or `base::PlatformThread::Sleep`).
 Hint: You will need to use `base::RunLoop` to prevent the main function from
 exiting prematurely.

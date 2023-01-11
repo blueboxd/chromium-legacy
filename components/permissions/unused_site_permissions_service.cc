@@ -4,8 +4,8 @@
 
 #include "components/permissions/unused_site_permissions_service.h"
 
-#include "base/bind.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial_params.h"
@@ -172,6 +172,19 @@ void UnusedSitePermissionsService::RegrantPermissionsForOrigin(
   hcsm_->SetWebsiteSettingCustomScope(
       info.primary_pattern, info.secondary_pattern,
       ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS, {});
+}
+
+void UnusedSitePermissionsService::ClearRevokedPermissionsList() {
+  ContentSettingsForOneType settings;
+  hcsm_->GetSettingsForOneType(
+      ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS, &settings);
+
+  for (const auto& revoked_permissions : settings) {
+    hcsm_->SetWebsiteSettingCustomScope(
+        revoked_permissions.primary_pattern,
+        revoked_permissions.secondary_pattern,
+        ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS, {});
+  }
 }
 
 void UnusedSitePermissionsService::UpdateUnusedPermissionsAsync(

@@ -317,44 +317,6 @@ crbug.com/2345 [ win ] foo/test [ RetryOnFailure ]
     with open(self.filename) as f:
       self.assertEqual(f.read(), expected_contents)
 
-  def testNestedBlockComments(self) -> None:
-    """Tests that nested disable block comments throw exceptions."""
-    contents = self.header + """
-# finder:disable-general
-# finder:disable-general
-crbug.com/1234 [ win ] foo/test [ Failure ]
-# finder:enable-general
-# finder:enable-general
-"""
-    with open(self.filename, 'w') as f:
-      f.write(contents)
-    with self.assertRaises(RuntimeError):
-      self.instance.RemoveExpectationsFromFile([], self.filename,
-                                               expectations.RemovalType.STALE)
-
-    contents = self.header + """
-# finder:disable-general
-# finder:disable-stale
-crbug.com/1234 [ win ] foo/test [ Failure ]
-# finder:enable-stale
-# finder:enable-genearl
-"""
-    with open(self.filename, 'w') as f:
-      f.write(contents)
-    with self.assertRaises(RuntimeError):
-      self.instance.RemoveExpectationsFromFile([], self.filename,
-                                               expectations.RemovalType.STALE)
-
-    contents = self.header + """
-# finder:enable-general
-crbug.com/1234 [ win ] foo/test [ Failure ]
-"""
-    with open(self.filename, 'w') as f:
-      f.write(contents)
-    with self.assertRaises(RuntimeError):
-      self.instance.RemoveExpectationsFromFile([], self.filename,
-                                               expectations.RemovalType.STALE)
-
   def testGeneralBlockComments(self) -> None:
     """Tests that expectations in a disable block comment are not removed."""
     contents = self.header + """
@@ -906,6 +868,127 @@ crbug.com/2345 [ win ] foo/test [ RetryOnFailure ]
     self.assertEqual(group_name, 'group name')
 
 
+class GetDisableAnnotatedExpectationsFromFileUnittest(unittest.TestCase):
+  def setUp(self) -> None:
+    self.instance = uu.CreateGenericExpectations()
+
+  def testNestedBlockComments(self) -> None:
+    """Tests that nested disable block comments throw exceptions."""
+    contents = """
+# finder:disable-general
+# finder:disable-general
+crbug.com/1234 [ win ] foo/test [ Failure ]
+# finder:enable-general
+# finder:enable-general
+"""
+    with self.assertRaises(RuntimeError):
+      self.instance._GetDisableAnnotatedExpectationsFromFile(
+          'expectation_file', contents)
+
+    contents = """
+# finder:disable-general
+# finder:disable-stale
+crbug.com/1234 [ win ] foo/test [ Failure ]
+# finder:enable-stale
+# finder:enable-general
+"""
+    with self.assertRaises(RuntimeError):
+      self.instance._GetDisableAnnotatedExpectationsFromFile(
+          'expectation_file', contents)
+
+    contents = """
+# finder:enable-general
+crbug.com/1234 [ win ] foo/test [ Failure ]
+"""
+    with self.assertRaises(RuntimeError):
+      self.instance._GetDisableAnnotatedExpectationsFromFile(
+          'expectation_file', contents)
+
+  def testBlockComments(self) -> None:
+    """Tests that disable block comments are properly parsed."""
+    contents = """
+# finder:disable-general general-reason
+crbug.com/1234 [ win ] foo/test [ Failure ]
+# finder:enable-general
+
+# finder:disable-stale
+crbug.com/1234 [ mac ] foo/test [ Failure ]
+# finder:enable-stale
+
+# finder:disable-unused unused reason
+crbug.com/1234 [ linux ] foo/test [ Failure ]
+# finder:enable-unused
+
+# finder:disable-narrowing
+crbug.com/1234 [ win ] bar/test [ Failure ]
+# finder:enable-narrowing
+
+crbug.com/1234 [ mac ] bar/test [ Failure ]
+"""
+    annotated_expectations = (
+        self.instance._GetDisableAnnotatedExpectationsFromFile(
+            'expectation_file', contents))
+    self.assertEqual(len(annotated_expectations), 4)
+    self.assertEqual(
+        annotated_expectations[data_types.Expectation('foo/test', ['win'],
+                                                      'Failure',
+                                                      'crbug.com/1234')],
+        ('-general', 'general-reason'))
+    self.assertEqual(
+        annotated_expectations[data_types.Expectation('foo/test', ['mac'],
+                                                      'Failure',
+                                                      'crbug.com/1234')],
+        ('-stale', ''))
+    self.assertEqual(
+        annotated_expectations[data_types.Expectation('foo/test', ['linux'],
+                                                      'Failure',
+                                                      'crbug.com/1234')],
+        ('-unused', 'unused reason'))
+    self.assertEqual(
+        annotated_expectations[data_types.Expectation('bar/test', ['win'],
+                                                      'Failure',
+                                                      'crbug.com/1234')],
+        ('-narrowing', ''))
+
+  def testInlineComments(self) -> None:
+    """Tests that inline disable comments are properly parsed."""
+    contents = """
+crbug.com/1234 [ win ] foo/test [ Failure ]  # finder:disable-general general-reason
+
+crbug.com/1234 [ mac ] foo/test [ Failure ]  # finder:disable-stale
+
+crbug.com/1234 [ linux ] foo/test [ Failure ]  # finder:disable-unused unused reason
+
+crbug.com/1234 [ win ] bar/test [ Failure ]  # finder:disable-narrowing
+
+crbug.com/1234 [ mac ] bar/test [ Failure ]
+"""
+    annotated_expectations = (
+        self.instance._GetDisableAnnotatedExpectationsFromFile(
+            'expectation_file', contents))
+    self.assertEqual(len(annotated_expectations), 4)
+    self.assertEqual(
+        annotated_expectations[data_types.Expectation('foo/test', ['win'],
+                                                      'Failure',
+                                                      'crbug.com/1234')],
+        ('-general', 'general-reason'))
+    self.assertEqual(
+        annotated_expectations[data_types.Expectation('foo/test', ['mac'],
+                                                      'Failure',
+                                                      'crbug.com/1234')],
+        ('-stale', ''))
+    self.assertEqual(
+        annotated_expectations[data_types.Expectation('foo/test', ['linux'],
+                                                      'Failure',
+                                                      'crbug.com/1234')],
+        ('-unused', 'unused reason'))
+    self.assertEqual(
+        annotated_expectations[data_types.Expectation('bar/test', ['win'],
+                                                      'Failure',
+                                                      'crbug.com/1234')],
+        ('-narrowing', ''))
+
+
 class GetExpectationLineUnittest(unittest.TestCase):
   def setUp(self) -> None:
     self.instance = uu.CreateGenericExpectations()
@@ -1214,6 +1297,50 @@ class NarrowSemiStaleExpectationScopeUnittest(fake_filesystem_unittest.TestCase
       self.assertEqual(infile.read(),
                        FAKE_EXPECTATION_FILE_CONTENTS_WITH_COMPLEX_TAGS)
 
+  def testWildcard(self) -> None:
+    """Regression test to ensure that wildcards are modified correctly."""
+    file_contents = """\
+# tags: [ win ]
+# tags: [ amd intel ]
+# results: [ Failure ]
+
+crbug.com/1234 [ win ] foo/bar* [ Failure ]
+"""
+    with open(self.filename, 'w') as f:
+      f.write(file_contents)
+
+    amd_stats = data_types.BuildStats()
+    amd_stats.AddPassedBuild(frozenset(['win', 'amd']))
+    intel_stats = data_types.BuildStats()
+    intel_stats.AddFailedBuild('1', frozenset(['win', 'intel']))
+    # yapf: disable
+    test_expectation_map = data_types.TestExpectationMap({
+        self.filename:
+        data_types.ExpectationBuilderMap({
+            data_types.Expectation(
+                'foo/bar*', ['win'], 'Failure', 'crbug.com/1234'):
+            data_types.BuilderStepMap({
+                'win_builder':
+                data_types.StepBuildStatsMap({
+                    'amd': amd_stats,
+                    'intel': intel_stats,
+                }),
+            }),
+        }),
+    })
+    # yap: enable
+    urls = self.instance.NarrowSemiStaleExpectationScope(test_expectation_map)
+    expected_contents = """\
+# tags: [ win ]
+# tags: [ amd intel ]
+# results: [ Failure ]
+
+crbug.com/1234 [ intel win ] foo/bar* [ Failure ]
+"""
+    with open(self.filename) as infile:
+      self.assertEqual(infile.read(), expected_contents)
+    self.assertEqual(urls, {'crbug.com/1234'})
+
   def testMultipleSteps(self) -> None:
     """Tests that scope narrowing works across multiple steps."""
     amd_stats = data_types.BuildStats()
@@ -1483,6 +1610,46 @@ crbug.com/2345 [ linux ] foo/test [ RetryOnFailure ]
       self.assertEqual(infile.read(),
                        FAKE_EXPECTATION_FILE_CONTENTS_WITH_COMPLEX_TAGS)
     self.assertEqual(urls, set())
+
+  def testRemoveCommonTags(self) -> None:
+    """Tests that scope narrowing removes common/redundant tags."""
+    amd_stats = data_types.BuildStats()
+    amd_stats.AddPassedBuild(frozenset(['win', 'amd', 'desktop']))
+    intel_stats = data_types.BuildStats()
+    intel_stats.AddFailedBuild('1', frozenset(['win', 'intel', 'desktop']))
+    # yapf: disable
+    test_expectation_map = data_types.TestExpectationMap({
+        self.filename:
+        data_types.ExpectationBuilderMap({
+            data_types.Expectation(
+                'foo/test', ['win'], 'Failure', 'crbug.com/1234'):
+            data_types.BuilderStepMap({
+                'win_builder':
+                data_types.StepBuildStatsMap({
+                    'amd': amd_stats,
+                    'intel': intel_stats,
+                }),
+            }),
+        }),
+    })
+    # yapf: enable
+    urls = self.instance.NarrowSemiStaleExpectationScope(test_expectation_map)
+    expected_contents = """\
+# tags: [ win win10
+#         linux
+#         mac ]
+# tags: [ nvidia nvidia-0x1111
+#         intel intel-0x2222
+#         amd amd-0x3333]
+# tags: [ release debug ]
+# results: [ Failure RetryOnFailure ]
+
+crbug.com/1234 [ intel win ] foo/test [ Failure ]
+crbug.com/2345 [ linux ] foo/test [ RetryOnFailure ]
+"""
+    with open(self.filename) as infile:
+      self.assertEqual(infile.read(), expected_contents)
+    self.assertEqual(urls, {'crbug.com/1234'})
 
   def testConsolidateKnownOverlappingTags(self) -> None:
     """Tests that scope narrowing consolidates known overlapping tags."""
@@ -1799,7 +1966,123 @@ crbug.com/1234 foo/test [ Failure ]
 crbug.com/1234 [ mac ] foo/test [ Failure ]
 """
     with open(self.filename) as infile:
-      self.assertIn(infile.read(), expected_contents)
+      self.assertEqual(infile.read(), expected_contents)
+    self.assertEqual(urls, set(['crbug.com/1234']))
+
+  def testBlockDisableAnnotation(self) -> None:
+    """Tests that narrowing is skipped if block annotations are present."""
+    original_contents = """\
+# tags: [ mac ]
+# tags: [ amd intel ]
+# results: [ Failure ]
+
+crbug.com/1234 [ mac ] foo/test [ Failure ]
+# finder:disable-narrowing
+crbug.com/2345 [ mac ] bar/test [ Failure ]
+# finder:enable-narrowing
+"""
+    with open(self.filename, 'w') as outfile:
+      outfile.write(original_contents)
+
+    amd_stats = data_types.BuildStats()
+    amd_stats.AddPassedBuild(frozenset(['mac', 'amd']))
+    intel_stats = data_types.BuildStats()
+    intel_stats.AddFailedBuild('1', frozenset(['mac', 'intel']))
+
+    # yapf: disable
+    test_expectation_map = data_types.TestExpectationMap({
+        self.filename:
+        data_types.ExpectationBuilderMap({
+            data_types.Expectation(
+                'foo/test', ['mac'], 'Failure', 'crbug.com/1234'):
+            data_types.BuilderStepMap({
+                'mac_builder':
+                data_types.StepBuildStatsMap({
+                    'amd': amd_stats,
+                    'intel': intel_stats,
+                }),
+            }),
+            data_types.Expectation(
+                'bar/test', ['mac'], 'Failure', 'crbug.com/2345'):
+            data_types.BuilderStepMap({
+                'mac_builder':
+                data_types.StepBuildStatsMap({
+                    'amd': amd_stats,
+                    'intel': intel_stats,
+                }),
+            }),
+        }),
+    })
+    # yapf: enable
+    urls = self.instance.NarrowSemiStaleExpectationScope(test_expectation_map)
+    expected_contents = """\
+# tags: [ mac ]
+# tags: [ amd intel ]
+# results: [ Failure ]
+
+crbug.com/1234 [ intel mac ] foo/test [ Failure ]
+# finder:disable-narrowing
+crbug.com/2345 [ mac ] bar/test [ Failure ]
+# finder:enable-narrowing
+"""
+    with open(self.filename) as infile:
+      self.assertEqual(infile.read(), expected_contents)
+    self.assertEqual(urls, set(['crbug.com/1234']))
+
+  def testInlineDisableAnnotation(self) -> None:
+    """Tests that narrowing is skipped if inline annotations are present."""
+    original_contents = """\
+# tags: [ mac ]
+# tags: [ amd intel ]
+# results: [ Failure ]
+
+crbug.com/1234 [ mac ] foo/test [ Failure ]
+crbug.com/2345 [ mac ] bar/test [ Failure ]  # finder:disable-narrowing
+"""
+    with open(self.filename, 'w') as outfile:
+      outfile.write(original_contents)
+
+    amd_stats = data_types.BuildStats()
+    amd_stats.AddPassedBuild(frozenset(['mac', 'amd']))
+    intel_stats = data_types.BuildStats()
+    intel_stats.AddFailedBuild('1', frozenset(['mac', 'intel']))
+
+    # yapf: disable
+    test_expectation_map = data_types.TestExpectationMap({
+        self.filename:
+        data_types.ExpectationBuilderMap({
+            data_types.Expectation(
+                'foo/test', ['mac'], 'Failure', 'crbug.com/1234'):
+            data_types.BuilderStepMap({
+                'mac_builder':
+                data_types.StepBuildStatsMap({
+                    'amd': amd_stats,
+                    'intel': intel_stats,
+                }),
+            }),
+            data_types.Expectation(
+                'bar/test', ['mac'], 'Failure', 'crbug.com/2345'):
+            data_types.BuilderStepMap({
+                'mac_builder':
+                data_types.StepBuildStatsMap({
+                    'amd': amd_stats,
+                    'intel': intel_stats,
+                }),
+            }),
+        }),
+    })
+    # yapf: enable
+    urls = self.instance.NarrowSemiStaleExpectationScope(test_expectation_map)
+    expected_contents = """\
+# tags: [ mac ]
+# tags: [ amd intel ]
+# results: [ Failure ]
+
+crbug.com/1234 [ intel mac ] foo/test [ Failure ]
+crbug.com/2345 [ mac ] bar/test [ Failure ]  # finder:disable-narrowing
+"""
+    with open(self.filename) as infile:
+      self.assertEqual(infile.read(), expected_contents)
     self.assertEqual(urls, set(['crbug.com/1234']))
 
 

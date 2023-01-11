@@ -170,7 +170,6 @@
 <translation id="225943865679747347">एरर कोड: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">खाते जोडा</translation>
 <translation id="2268044343513325586">सुधारित करा</translation>
-<translation id="2271351792809375263">तुम्ही Chrome मध्ये सेव्‍ह केलेले पासवर्ड तुमच्‍या डिव्हाइसवरील इतर ॲप्‍समध्ये वापरा</translation>
 <translation id="2273327106802955778">अधिक मेनू</translation>
 <translation id="2286505070150039482">हायलाइट केलेला मजकूर</translation>
 <translation id="2299218006564889602">तुमचे पासवर्ड हे Google पासवर्ड व्यवस्थापक यामध्ये सेव्ह केले जाण्यापूर्वी ते तुमच्या डिव्हाइसवर एंक्रिप्ट केले जातात.</translation>
@@ -286,7 +285,6 @@
 लागू असल्यास, तुमचा शोध इतिहास हटवण्यासाठी, तुमच्या शोध इंजीनच्या सूचना पहा.</translation>
 <translation id="3080525922482950719">तुम्‍ही नंतर किंवा ऑफलाइन वाचण्यासाठी पेज सेव्‍ह करू शकता</translation>
 <translation id="3081338492074632642">तुम्ही सेव्ह करत असलेला पासवर्ड तुमच्या <ph name="WEBSITE" /> च्या पासवर्डशी जुळत असल्याची खात्री करा</translation>
-<translation id="3103603146121354983">पासवर्ड ऑटोफिल करा</translation>
 <translation id="3112556859945124369">चिन्हांकित करा…</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />तुम्ही काय सिंक करू शकता ते पहा<ph name="END_LINK" /></translation>
 <translation id="3130863904455712965">इतिहास आणि आणखी बरेच काही</translation>
@@ -365,7 +363,6 @@
 <translation id="3661160521073045932">प्रोफाइल कॉंफिगरेशन उपलब्ध आहे</translation>
 <translation id="3670030362669914947">नंबर</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> मध्ये बुकमार्क केले</translation>
-<translation id="369349502275246497">पासवर्ड सेव्ह करायचे आहेत का हे विचारा</translation>
 <translation id="3709582977625132201">न वाचलेले म्हणून मार्क करा</translation>
 <translation id="371230970611282515">धोकादायक घटना घडण्याआधी त्यांचे पूर्वानुमान करतो आणि त्यांबद्दल तुम्हाला चेतावणी देतो.</translation>
 <translation id="37207012422556617">ट्रेंडिंग शोध</translation>
@@ -455,6 +452,7 @@
 <translation id="4420409367264901497">बुकमार्क संपादित करा</translation>
 <translation id="4442550905108052454"><ph name="BEGIN_BOLD" />सेटिंग्ज<ph name="END_BOLD" /> उघडा</translation>
 <translation id="4454246407045105932">भाषा जोडा</translation>
+<translation id="4461286950227634995">पासवर्ड सेव्ह करायचे आहेत का हे विचारा</translation>
 <translation id="4462491365653392320">टॅब यावर किमती ट्रॅक करा</translation>
 <translation id="4469418912670346607">सेटअप सुरू ठेवा</translation>
 <translation id="4474494258097106883">तुमच्या iPhone साठी तयार केलेले</translation>
@@ -466,12 +464,11 @@
 <translation id="4508750114462689118">साइन-इन प्रोमो बंद करा</translation>
 <translation id="4514889972748124117">क्लिष्ट पासवर्ड सुचवा...</translation>
 <translation id="4520798012560649652">गुप्त मोडबद्दल अधिक जाणून घ्‍या</translation>
-<translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />
-वर सेव्ह केलेले पासवर्ड पहा आणि व्यवस्थापित करा</translation>
 <translation id="452750746583162491">तुमच्या सिंक केलेल्या डेटाचे पुनरावलोकन करा</translation>
 <translation id="4536418791685807335">पुन्हा साइन इन करण्याचा प्रयत्न करा.</translation>
 <translation id="4540780316273593836">काहीतरी चूक झाली</translation>
 <translation id="457386861538956877">अधिक...</translation>
+<translation id="4587589328781138893">Sites</translation>
 <translation id="4588014171431912783">तुमच्या शेवटच्या बॅकअपच्या आधारावर तुमची सिंक सेटिंग्ज रिस्टोअर केली जातील. <ph name="BEGIN_LINK" />तुम्ही काय सिंक करू शकता ते पहा<ph name="END_LINK" /></translation>
 <translation id="4592368184551360546">कीबोर्ड</translation>
 <translation id="4606247758155004938">तुमचा ब्राउझर तुमच्या संस्थेद्वारे व्यवस्थापित केला जातो.</translation>
@@ -555,7 +552,6 @@
 <translation id="5118764316110575523">बंद</translation>
 <translation id="5119391094379141756">Chrome निवडा</translation>
 <translation id="5132942445612118989">सर्व डिव्हाइसवर तुमचे पासवर्ड, इतिहास आणि बरेच काही सिंक करा</translation>
-<translation id="5140288047769711648">Chrome तुमच्यासाठी हा पासवर्ड लक्षात ठेवेल. तुम्हाला तो लक्षात ठेवण्याची गरज नाही.</translation>
 <translation id="5149188072385105201">पासवर्ड जोडा…</translation>
 <translation id="5150492518600715772">तुमच्या डिव्हाइसवर पाठवा</translation>
 <translation id="5168414296986405587">iPadOS साठी बिल्ड केले आहे</translation>
@@ -883,7 +879,6 @@
 <translation id="7438481509621345350">आता, तुम्ही नवीन टॅब उघडल्यानंतर तुम्हाला <ph name="CHANNEL_NAME" /> वरील स्टोरी दिसतील.</translation>
 <translation id="7454057999980797137">राज्य / विभाग</translation>
 <translation id="7459628154744868585">वर्धित संरक्षण सुरू आहे</translation>
-<translation id="7464701184726199289">हे सर्व डिव्हाइसेसवरून संकालित केलेला डेटा साफ करेल. सेव्ह केलेल्या साइट सेटिंग्ज हटविल्या जाणार नाहीत आणि कदाचित आपल्या ब्राउझिंग सवयी दर्शवेल. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="746684838091935575">३. Chrome निवडा</translation>
 <translation id="7472734401283673885">कंपनीचे नाव</translation>
 <translation id="7473891865547856676">नाही, नको</translation>
@@ -967,7 +962,6 @@
 <translation id="806745655614357130">माझा डेटा स्वतंत्र ठेवा</translation>
 <translation id="8073670137947914548">डाउनलोड पूर्ण झाले</translation>
 <translation id="8073872304774253879">शोध आणि ब्राउझ करणे उत्तम बनवा</translation>
-<translation id="8076014560081431679">सेव्ह केलेल्या साइट सेटिंग्ज हटविल्या जाणार नाहीत आणि कदाचित आपल्या ब्राउझिंग सवयी दर्शवेल. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="8079602123447022758">हे सेटिंग व्यवस्थापित केले, अधिक माहितीसाठी दोनदा टॅप करा</translation>
 <translation id="8080028325999236607">सर्व टॅब बंद करा</translation>
 <translation id="8084285576995584326">तुमच्या Google खाते चा डेटा नियंत्रित करा</translation>
@@ -1095,7 +1089,6 @@
 <translation id="9079935439869366234">सर्व न वाचलेले चिन्हांकित करा</translation>
 <translation id="9081058212938299310"><ph name="USERNAME" /> साठी पासवर्ड अपडेट करायचा?</translation>
 <translation id="9083838294503912307">सर्व डिव्हाइसवर सिंक आणि पर्सनलाइझ करण्यासाठी, सिंक सुरू करा.</translation>
-<translation id="9087108903408689779">Chrome ने सुचवलेला पासवर्ड:</translation>
 <translation id="9093271241977565440">स्क्रीन च्या सर्वात वरती, शोध आयकन वर टॅप करा</translation>
 <translation id="9094033019050270033">पासवर्ड अपडेट करा</translation>
 <translation id="9097506547406246598">अनफॉलो करू शकत नाही. काहीतरी चूक झाली.</translation>

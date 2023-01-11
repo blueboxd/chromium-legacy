@@ -11,10 +11,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/callback_list.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -31,8 +31,8 @@
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/push_messaging_service.h"
-#include "content/public/common/child_process_host.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-forward.h"
 

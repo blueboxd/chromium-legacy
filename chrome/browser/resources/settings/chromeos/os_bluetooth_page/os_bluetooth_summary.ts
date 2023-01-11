@@ -16,14 +16,15 @@ import {getDeviceName} from 'chrome://resources/ash/common/bluetooth/bluetooth_u
 import {getBluetoothConfig} from 'chrome://resources/ash/common/bluetooth/cros_bluetooth_config.js';
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {BluetoothSystemProperties, BluetoothSystemState, DeviceConnectionState, PairedBluetoothDeviceProperties} from 'chrome://resources/mojo/chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {loadTimeData} from '../../i18n_setup.js';
 import {routes} from '../os_route.js';
 import {RouteOriginMixin} from '../route_origin_mixin.js';
 import {Route, Router} from '../router.js';
 
+import {OsBluetoothDevicesSubpageBrowserProxy, OsBluetoothDevicesSubpageBrowserProxyImpl} from './os_bluetooth_devices_subpage_browser_proxy.js';
 import {getTemplate} from './os_bluetooth_summary.html.js';
 
 /**
@@ -99,6 +100,7 @@ class SettingsBluetoothSummaryElement extends
   /* eslint-disable-next-line @typescript-eslint/naming-convention */
   LabelType: LabelType;
   systemProperties: BluetoothSystemProperties;
+  private browserProxy_: OsBluetoothDevicesSubpageBrowserProxy;
   private isBluetoothToggleOn_: boolean;
   private isSecondaryUser_: boolean;
   private primaryUserEmail_: string;
@@ -109,12 +111,24 @@ class SettingsBluetoothSummaryElement extends
 
     /** RouteOriginMixin override */
     this.route_ = routes.BASIC;
+    this.browserProxy_ =
+        OsBluetoothDevicesSubpageBrowserProxyImpl.getInstance();
   }
 
   override ready(): void {
     super.ready();
 
     this.addFocusConfig(routes.BLUETOOTH_DEVICES, '.subpage-arrow');
+  }
+
+  /**
+   * RouteOriginMixinInterface override
+   */
+  override currentRouteChanged(route: Route, oldRoute?: Route): void {
+    super.currentRouteChanged(route, oldRoute);
+    if (route === routes.BLUETOOTH) {
+      this.browserProxy_.showBluetoothRevampHatsSurvey();
+    }
   }
 
   private onSystemPropertiesChanged_(): void {
@@ -251,10 +265,12 @@ class SettingsBluetoothSummaryElement extends
     }));
   }
 
-  private annouceBluetoothStateChange_(): void {
+  private onBluetoothToggleChange_(): void {
     getAnnouncerInstance().announce(
         this.isBluetoothToggleOn_ ? this.i18n('bluetoothEnabledA11YLabel') :
                                     this.i18n('bluetoothDisabledA11YLabel'));
+
+    this.browserProxy_.showBluetoothRevampHatsSurvey();
   }
 }
 

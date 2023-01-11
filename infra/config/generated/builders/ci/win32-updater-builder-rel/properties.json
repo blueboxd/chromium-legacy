@@ -6,6 +6,34 @@
           {
             "builder_id": {
               "bucket": "ci",
+              "builder": "win10-32-on-64-updater-tester-rel",
+              "project": "chromium"
+            },
+            "builder_spec": {
+              "builder_group": "chromium.updater",
+              "execution_mode": "TEST",
+              "legacy_chromium_config": {
+                "apply_configs": [
+                  "mb"
+                ],
+                "build_config": "Release",
+                "config": "chromium",
+                "target_bits": 32,
+                "target_platform": "win"
+              },
+              "legacy_gclient_config": {
+                "config": "chromium"
+              },
+              "parent": {
+                "bucket": "ci",
+                "builder": "win32-updater-builder-rel",
+                "project": "chromium"
+              }
+            }
+          },
+          {
+            "builder_id": {
+              "bucket": "ci",
               "builder": "win32-updater-builder-rel",
               "project": "chromium"
             },
@@ -25,34 +53,6 @@
                 "config": "chromium"
               }
             }
-          },
-          {
-            "builder_id": {
-              "bucket": "ci",
-              "builder": "win7(32)-updater-tester-rel",
-              "project": "chromium"
-            },
-            "builder_spec": {
-              "builder_group": "chromium.updater",
-              "execution_mode": "TEST",
-              "legacy_chromium_config": {
-                "apply_configs": [
-                  "mb"
-                ],
-                "build_config": "Release",
-                "config": "chromium",
-                "target_bits": 64,
-                "target_platform": "win"
-              },
-              "legacy_gclient_config": {
-                "config": "chromium"
-              },
-              "parent": {
-                "bucket": "ci",
-                "builder": "win32-updater-builder-rel",
-                "project": "chromium"
-              }
-            }
           }
         ]
       },
@@ -66,7 +66,7 @@
       "builder_ids_in_scope_for_testing": [
         {
           "bucket": "ci",
-          "builder": "win7(32)-updater-tester-rel",
+          "builder": "win10-32-on-64-updater-tester-rel",
           "project": "chromium"
         }
       ]

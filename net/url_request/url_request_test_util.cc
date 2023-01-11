@@ -18,6 +18,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/do_nothing_ct_verifier.h"
+#include "net/cookies/cookie_setting_override.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_response_headers.h"
@@ -498,7 +499,6 @@ void TestNetworkDelegate::OnURLRequestDestroyed(URLRequest* request) {
 bool TestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
     const URLRequest& request,
     const net::FirstPartySetMetadata& first_party_set_metadata,
-    CookieSettingOverrides overrides,
     net::CookieAccessResultList& maybe_included_cookies,
     net::CookieAccessResultList& excluded_cookies) {
   bool allow = true;
@@ -515,10 +515,7 @@ bool TestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
 }
 
 NetworkDelegate::PrivacySetting TestNetworkDelegate::OnForcePrivacyMode(
-    const GURL& url,
-    const SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin,
-    CookieSettingOverrides overrides) const {
+    const URLRequest& request) const {
   return NetworkDelegate::PrivacySetting::kStateAllowed;
 }
 
@@ -587,24 +584,19 @@ bool FilteringTestNetworkDelegate::OnCanSetCookie(
 
 NetworkDelegate::PrivacySetting
 FilteringTestNetworkDelegate::OnForcePrivacyMode(
-    const GURL& url,
-    const SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin,
-    CookieSettingOverrides overrides) const {
+    const URLRequest& request) const {
   if (force_privacy_mode_) {
     return partitioned_state_allowed_
                ? NetworkDelegate::PrivacySetting::kPartitionedStateAllowedOnly
                : NetworkDelegate::PrivacySetting::kStateDisallowed;
   }
 
-  return TestNetworkDelegate::OnForcePrivacyMode(url, site_for_cookies,
-                                                 top_frame_origin, overrides);
+  return TestNetworkDelegate::OnForcePrivacyMode(request);
 }
 
 bool FilteringTestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
     const URLRequest& request,
     const net::FirstPartySetMetadata& first_party_set_metadata,
-    CookieSettingOverrides overrides,
     net::CookieAccessResultList& maybe_included_cookies,
     net::CookieAccessResultList& excluded_cookies) {
   // Filter out cookies if |block_annotate_cookies_| is set and
@@ -638,8 +630,8 @@ bool FilteringTestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
 
   // Call the nested delegate's method first to avoid a short circuit.
   return TestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
-             request, first_party_set_metadata, overrides,
-             maybe_included_cookies, excluded_cookies) &&
+             request, first_party_set_metadata, maybe_included_cookies,
+             excluded_cookies) &&
          allowed;
 }
 

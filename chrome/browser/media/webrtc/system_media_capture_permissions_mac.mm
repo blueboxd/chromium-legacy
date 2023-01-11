@@ -6,14 +6,15 @@
 
 #import <AVFoundation/AVFoundation.h>
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/no_destructor.h"
+#import "base/task/sequenced_task_runner.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/media/webrtc/media_authorization_wrapper_mac.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_stats_mac.h"

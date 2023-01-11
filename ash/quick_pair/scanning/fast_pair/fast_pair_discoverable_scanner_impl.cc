@@ -15,10 +15,10 @@
 #include "ash/quick_pair/common/pair_failure.h"
 #include "ash/quick_pair/common/protocol.h"
 #include "ash/quick_pair/repository/fast_pair_repository.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_util.h"
 #include "chromeos/ash/components/network/network_handler.h"
@@ -233,7 +233,7 @@ void FastPairDiscoverableScannerImpl::NotifyDeviceFound(
   }
 
   device::BluetoothDevice* ble_device =
-      adapter_->GetDevice(device->ble_address);
+      adapter_->GetDevice(device->ble_address());
 
   if (ble_device && ble_device->IsPaired()) {
     QP_LOG(ERROR) << __func__
@@ -247,7 +247,7 @@ void FastPairDiscoverableScannerImpl::NotifyDeviceFound(
   // on the pairing state of the Classic device.
 
   QP_LOG(INFO) << __func__ << ": Running found callback";
-  notified_devices_[device->ble_address] = device;
+  notified_devices_[device->ble_address()] = device;
   found_callback_.Run(device);
 }
 

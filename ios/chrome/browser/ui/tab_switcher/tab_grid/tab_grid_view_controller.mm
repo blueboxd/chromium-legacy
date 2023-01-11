@@ -33,10 +33,10 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/features.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_commands.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions/suggested_actions_delegate.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_collection_commands.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_context_menu_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_bottom_toolbar.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_constants.h"
@@ -2503,21 +2503,41 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       [self.incognitoTabsDelegate closeAllItems];
       break;
     case TabGridPageRegularTabs:
-      DCHECK_EQ(self.undoCloseAllAvailable,
-                self.regularTabsViewController.gridEmpty);
-      if (self.undoCloseAllAvailable) {
-        [self.regularTabsDelegate undoCloseAllItems];
-        self.undoCloseAllAvailable = NO;
-      } else {
-        [self.regularTabsDelegate saveAndCloseAllItems];
-        self.undoCloseAllAvailable = YES;
-      }
-      [self configureCloseAllButtonForCurrentPageAndUndoAvailability];
+      [self handleCloseAllButtonForRegularTabsWithAnchor:sender];
       break;
     case TabGridPageRemoteTabs:
       NOTREACHED() << "It is invalid to call close all tabs on remote tabs.";
       break;
   }
+}
+
+- (void)handleCloseAllButtonForRegularTabsWithAnchor:(UIBarButtonItem*)anchor {
+  DCHECK_EQ(self.undoCloseAllAvailable,
+            self.regularTabsViewController.gridEmpty);
+  if (self.undoCloseAllAvailable) {
+    [self undoCloseAllItemsForRegularTabs];
+  } else if (IsPinnedTabsEnabled()) {
+    [self confirmCloseAllItemsForRegularTabs:anchor];
+  } else {
+    [self saveAndCloseAllItemsForRegularTabs];
+  }
+}
+
+- (void)confirmCloseAllItemsForRegularTabs:(UIBarButtonItem*)anchor {
+  [self.regularTabsDelegate
+      showCloseAllItemsConfirmationActionSheetWithAnchor:anchor];
+}
+
+- (void)undoCloseAllItemsForRegularTabs {
+  [self.regularTabsDelegate undoCloseAllItems];
+  self.undoCloseAllAvailable = NO;
+  [self configureCloseAllButtonForCurrentPageAndUndoAvailability];
+}
+
+- (void)saveAndCloseAllItemsForRegularTabs {
+  [self.regularTabsDelegate saveAndCloseAllItems];
+  self.undoCloseAllAvailable = YES;
+  [self configureCloseAllButtonForCurrentPageAndUndoAvailability];
 }
 
 - (void)searchButtonTapped:(id)sender {

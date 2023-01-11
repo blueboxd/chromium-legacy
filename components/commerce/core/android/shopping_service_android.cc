@@ -6,7 +6,7 @@
 
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "components/commerce/core/shopping_service_jni_headers/ShoppingService_jni.h"
 #include "components/commerce/core/subscriptions/commerce_subscription.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -229,6 +229,14 @@ ShoppingServiceAndroid::ConvertSubscriptionsToJavaList(
         ConvertUTF8ToJavaString(env, sub.id));
   }
   return j_subs;
+}
+
+bool ShoppingServiceAndroid::IsShoppingListEligible(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  CHECK(shopping_service_);
+
+  return shopping_service_->IsShoppingListEligible();
 }
 
 }  // namespace commerce

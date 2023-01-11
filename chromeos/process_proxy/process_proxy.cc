@@ -11,10 +11,10 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_descriptor_posix.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -22,9 +22,9 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 
 namespace {

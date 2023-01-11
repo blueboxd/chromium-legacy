@@ -198,7 +198,6 @@ class ShapeCache {
 
   struct SmallStringKeyHashTraits : WTF::SimpleClassHashTraits<SmallStringKey> {
     STATIC_ONLY(SmallStringKeyHashTraits);
-    static const bool kHasIsEmptyValueFunction = true;
     static const bool kEmptyValueIsZero = false;
     static bool IsEmptyValue(const SmallStringKey& key) {
       return key.IsHashTableEmptyValue();
@@ -216,7 +215,7 @@ class ShapeCache {
   typedef HashMap<uint32_t,
                   ShapeCacheEntry,
                   DefaultHash<uint32_t>,
-                  WTF::UnsignedWithZeroKeyHashTraits<uint32_t>>
+                  IntWithZeroKeyHashTraits<uint32_t>>
       SingleCharMap;
 
   // Hard limit to guard against pathological growth. The expected number of

@@ -458,17 +458,6 @@ try_.builder(
 )
 
 try_.builder(
-    name = "linux_chromium_chromeos_msan_focal",
-    mirrors = [
-        "ci/Linux ChromiumOS MSan Focal",
-    ],
-    os = os.LINUX_FOCAL,
-    execution_timeout = 16 * time.hour,
-    goma_backend = None,
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
-)
-
-try_.builder(
     name = "linux_chromium_chromeos_msan_rel_ng",
     mirrors = [
         "ci/Linux ChromiumOS MSan Builder",
@@ -478,6 +467,7 @@ try_.builder(
     ssd = True,
     goma_backend = None,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
+    os = os.LINUX_FOCAL,
 )
 
 try_.builder(
@@ -768,6 +758,26 @@ try_.gpu.optional_tests_builder(
             cq.location_filter(path_regexp = "ui/gl/.+"),
         ],
     ),
+)
+
+try_.builder(
+    name = "linux-code-coverage",
+    mirrors = ["ci/linux-code-coverage"],
+)
+
+try_.builder(
+    name = "linux-chromeos-code-coverage",
+    mirrors = ["ci/linux-chromeos-code-coverage"],
+)
+
+try_.builder(
+    name = "linux-lacros-code-coverage",
+    mirrors = ["ci/linux-lacros-code-coverage"],
+)
+
+try_.builder(
+    name = "linux-js-code-coverage",
+    mirrors = ["ci/linux-js-code-coverage"],
 )
 
 # RTS builders

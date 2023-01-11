@@ -10,6 +10,7 @@
 #include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 
@@ -101,7 +102,7 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
   handle_.Set(CreatePowerRequest(RequestType(), description_));
   // See comment on instance variable above
   if (type_ == mojom::WakeLockType::kPreventDisplaySleep &&
-      base::win::GetVersion() <= base::win::Version::WIN10) {
+      base::win::GetVersion() < base::win::Version::WIN11) {
     system_sleep_prevention_handle_.Set(
         CreatePowerRequest(PowerRequestSystemRequired, description_));
   }

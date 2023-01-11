@@ -7,13 +7,36 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "base/environment.h"
 #include "base/i18n/time_formatting.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "google_apis/calendar/calendar_api_response_types.h"
 
 namespace ash {
 
 namespace calendar_test_utils {
+
+ScopedLibcTimeZone::ScopedLibcTimeZone(const std::string& timezone) {
+  auto env = base::Environment::Create();
+  std::string old_timezone_value;
+  if (env->GetVar(kTimeZoneEnvVarName, &old_timezone_value)) {
+    old_timezone_ = old_timezone_value;
+  }
+  if (!env->SetVar(kTimeZoneEnvVarName, timezone)) {
+    success_ = false;
+  }
+  tzset();
+}
+
+ScopedLibcTimeZone::~ScopedLibcTimeZone() {
+  auto env = base::Environment::Create();
+  if (old_timezone_.has_value()) {
+    CHECK(env->SetVar(kTimeZoneEnvVarName, old_timezone_.value()));
+  } else {
+    CHECK(env->UnSetVar(kTimeZoneEnvVarName));
+  }
+}
 
 std::unique_ptr<google_apis::calendar::CalendarEvent> CreateEvent(
     const char* id,

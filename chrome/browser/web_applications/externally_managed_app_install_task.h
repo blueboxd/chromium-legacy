@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTERNALLY_MANAGED_APP_INSTALL_TASK_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTERNALLY_MANAGED_APP_INSTALL_TASK_H_
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/external_install_options.h"
@@ -93,25 +93,6 @@ class ExternallyManagedAppInstallTask {
                           ResultCallback result_callback,
                           absl::optional<AppId> app_id);
 
-  void FetchCustomIcon(const GURL& url,
-                       content::WebContents* web_contents,
-                       int retries_left,
-                       ResultCallback callback);
-
-  void OnCustomIconFetched(int retries_left,
-                           content::WebContents* web_contents,
-                           ResultCallback callback,
-                           int id,
-                           int http_status_code,
-                           const GURL& image_url,
-                           const std::vector<SkBitmap>& bitmaps,
-                           const std::vector<gfx::Size>& sizes);
-
-  void FinalizePlaceholderInstall(
-      ResultCallback callback,
-      absl::optional<std::reference_wrapper<const std::vector<SkBitmap>>>
-          bitmaps);
-
   void UninstallPlaceholderApp(content::WebContents* web_contents,
                                ResultCallback result_callback,
                                absl::optional<AppId> app_id);
@@ -120,17 +101,14 @@ class ExternallyManagedAppInstallTask {
                                 webapps::UninstallResultCode code);
   void ContinueWebAppInstall(content::WebContents* web_contents,
                              ResultCallback result_callback);
-  void OnWebAppInstalled(bool is_placeholder,
-                         bool offline_install,
-                         ResultCallback result_callback,
-                         const AppId& app_id,
-                         webapps::InstallResultCode code);
-  void OnWebAppInstalledWithHooksErrors(bool is_placeholder,
-                                        bool offline_install,
-                                        ResultCallback result_callback,
-                                        const AppId& app_id,
-                                        webapps::InstallResultCode code,
-                                        OsHooksErrors os_hooks_errors);
+  void OnWebAppInstalledAndReplaced(bool is_placeholder,
+                                    bool offline_install,
+                                    ResultCallback result_callback,
+                                    const AppId& app_id,
+                                    webapps::InstallResultCode code,
+                                    bool did_uninstall_and_replace);
+
+  void OnUninstallAndReplaced(bool uninstall_and_replace_triggered);
   void TryAppInfoFactoryOnFailure(
       ResultCallback result_callback,
       ExternallyManagedAppManager::InstallResult result);

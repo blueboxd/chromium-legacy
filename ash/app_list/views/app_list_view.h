@@ -14,7 +14,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/metrics_util.h"
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -146,9 +146,6 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   // Initializes this view's widget.
   void InitWidget(gfx::NativeView parent);
 
-  // Initializes the SearchBox's widget.
-  void InitChildWidget();
-
   // Sets the state of all child views to be re-shown, then shows the view.
   // |preferred_state| - The initial app list view state.
   void Show(AppListViewState preferred_state);
@@ -187,9 +184,6 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   void OnScrollEvent(ui::ScrollEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-
-  // Called when the wallpaper colors change.
-  void OnWallpaperColorsChanged();
 
   // Handles scroll events from various sources.
   bool HandleScroll(const gfx::Point& location,

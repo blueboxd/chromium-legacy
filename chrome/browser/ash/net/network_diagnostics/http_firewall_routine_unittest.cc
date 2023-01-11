@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
+#include "base/functional/callback_helpers.h"
 #include "chrome/browser/ash/net/network_diagnostics/fake_host_resolver.h"
 #include "chrome/browser/ash/net/network_diagnostics/fake_network_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -21,7 +21,6 @@ namespace network_diagnostics {
 
 namespace {
 
-// TODO(https://crbug.com/1164001): remove when migrated to namespace ash.
 namespace mojom = ::chromeos::network_diagnostics::mojom;
 
 // The number of hosts the the routine tries to open socket connections to (if

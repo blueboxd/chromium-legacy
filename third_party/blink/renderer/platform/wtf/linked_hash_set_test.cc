@@ -223,13 +223,7 @@ TEST(LinkedHashSetTest, MoveConstructAndAssignString) {
   EXPECT_EQ(counter3, 4);
 }
 
-struct CustomHashTraitsForInt : public HashTraits<int> {
-  static const bool kEmptyValueIsZero = false;
-  static int EmptyValue() { return INT_MAX; }
-
-  static void ConstructDeletedValue(int& slot, bool) { slot = INT_MIN; }
-  static bool IsDeletedValue(const int& value) { return value == INT_MIN; }
-};
+struct CustomHashTraitsForInt : public IntHashTraits<int, INT_MAX, INT_MIN> {};
 
 TEST(LinkedHashSetTest, Iterator) {
   using Set = LinkedHashSet<int, CustomHashTraitsForInt>;
@@ -823,14 +817,9 @@ struct Complicated {
 };
 
 struct ComplicatedHashTraits : GenericHashTraits<Complicated> {
-  static const bool kEmptyValueIsZero = false;
-  static const Complicated EmptyValue() { return static_cast<Complicated>(0); }
-  static void ConstructDeletedValue(Complicated& slot, bool) {
-    slot = static_cast<Complicated>(-1);
-  }
-  static bool IsDeletedValue(const Complicated value) {
-    return value == static_cast<Complicated>(-1);
-  }
+  static constexpr bool kEmptyValueIsZero = false;
+  static Complicated EmptyValue() { return static_cast<Complicated>(0); }
+  static Complicated DeletedValue() { return static_cast<Complicated>(-1); }
 };
 
 struct ComplicatedHashFunctions {

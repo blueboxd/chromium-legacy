@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/chromeos_buildflags.h"
@@ -72,6 +72,8 @@ struct IntentLaunchInfo {
 // lock screen apps profile, but not for the signin profile.
 //
 // See components/services/app_service/README.md.
+//
+// TODO(crbug.com/1402872): Inherit from a common AppServiceProxy interface.
 class AppServiceProxyLacros : public KeyedService,
                               public apps::IconLoader,
                               public crosapi::mojom::AppServiceSubscriber {

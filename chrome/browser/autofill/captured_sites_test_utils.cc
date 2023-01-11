@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/base_switches.h"
-#include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
@@ -23,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"

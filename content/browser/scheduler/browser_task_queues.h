@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/sequence_manager/task_queue.h"
+#include "base/task/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -104,7 +105,7 @@ class CONTENT_EXPORT BrowserTaskQueues {
     REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
 
     // Returns the task runner that should be returned by
-    // ThreadTaskRunnerHandle::Get().
+    // SingleThreadTaskRunner::GetCurrentDefault().
     const scoped_refptr<base::SingleThreadTaskRunner>& GetDefaultTaskRunner() {
       return default_task_runner_;
     }
@@ -206,9 +207,9 @@ class CONTENT_EXPORT BrowserTaskQueues {
   scoped_refptr<base::sequence_manager::TaskQueue> control_queue_;
 
   // Queue that backs the default TaskRunner registered with SequenceManager.
-  // This will be the one returned by ThreadTaskRunnerHandle::Get(). Note this
-  // is different from QueueType:kDefault as this queue needs to be enabled from
-  // the beginning.
+  // This will be the one returned by
+  // SingleThreadTaskRunner::GetCurrentDefault(). Note this is different from
+  // QueueType:kDefault as this queue needs to be enabled from the beginning.
   scoped_refptr<base::sequence_manager::TaskQueue> default_task_queue_;
 
   // Helper queue to run all pending tasks.

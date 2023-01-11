@@ -3366,7 +3366,7 @@ String AXNodeObject::TextAlternative(
       recursive, aria_label_or_description_root, visited, name_from,
       related_objects, name_sources, &found_text_alternative);
   if (found_text_alternative && !name_sources)
-    return text_alternative;
+    return MaybeAppendFileDescriptionToName(text_alternative);
 
   // Step 2D from: http://www.w3.org/TR/accname-aam-1.1  -- native markup.
   text_alternative =
@@ -3376,7 +3376,7 @@ String AXNodeObject::TextAlternative(
       !text_alternative.empty() ||
       name_from == ax::mojom::blink::NameFrom::kAttributeExplicitlyEmpty;
   if (has_text_alternative && !name_sources)
-    return text_alternative;
+    return MaybeAppendFileDescriptionToName(text_alternative);
 
   // Step 2F / 2G from: http://www.w3.org/TR/accname-aam-1.1 -- from content.
   if (aria_label_or_description_root || SupportsNameFromContents(recursive)) {
@@ -3402,7 +3402,7 @@ String AXNodeObject::TextAlternative(
           found_text_alternative = true;
           name_sources->back().text = text_alternative;
         } else {
-          return text_alternative;
+          return MaybeAppendFileDescriptionToName(text_alternative);
         }
       }
     }
@@ -3750,19 +3750,22 @@ bool AXNodeObject::HasValidHTMLTableStructureAndLayout() const {
   //   so that no content is lost.
   // See comments in AddTableChildren() for more information about valid tables.
   auto* table = To<HTMLTableElement>(GetNode());
+  auto* thead = table->tHead();
+  auto* tfoot = table->tFoot();
   for (Element* child = ElementTraversal::FirstChild(*GetElement()); child;
        child = ElementTraversal::NextSibling(*child)) {
-    if (child->HasTagName(html_names::kColgroupTag)) {
+    if (child == thead || child == tfoot) {
+      // Only 1 thead and 1 tfoot are allowed.
       continue;
     }
-    if (child->HasTagName(html_names::kTbodyTag)) {
+    if (IsA<HTMLTableSectionElement>(child) &&
+        child->HasTagName(html_names::kTbodyTag)) {
+      // Multiple <tbody>s are valid, but only 1 thead or tfoot.
       continue;
     }
-    if (child->HasTagName(html_names::kTheadTag) && child == table->tHead()) {
-      continue;  // Only one <thead> is valid.
-    }
-    if (child->HasTagName(html_names::kTfootTag) && child == table->tFoot()) {
-      continue;  // Only one <tfoot> is valid.
+    if (!child->GetLayoutObject() &&
+        child->HasTagName(html_names::kColgroupTag)) {
+      continue;
     }
     if (IsA<HTMLTableCaptionElement>(child) && child == table->caption()) {
       continue;  // Only one caption is valid.
@@ -4050,22 +4053,6 @@ void AXNodeObject::AddPopupChildren() {
   }
 }
 
-#if DCHECK_IS_ON()
-#define CHECK_NO_OTHER_PARENT_FOR(child)                                \
-  AXObject* ax_preexisting = AXObjectCache().Get(child);                \
-  DCHECK(!ax_preexisting || !ax_preexisting->CachedParentObject() ||    \
-         ax_preexisting->CachedParentObject() == this)                  \
-      << "Newly added child can't have a different preexisting parent:" \
-      << "\nChild = " << ax_preexisting->ToString(true, true)           \
-      << "\nChild DOM node: " << ax_preexisting->GetNode()              \
-      << "\nChild layout object: " << ax_preexisting->GetLayoutObject() \
-      << "\nNew parent = " << ToString(true, true)                      \
-      << "\nPreexisting parent = "                                      \
-      << ax_preexisting->CachedParentObject()->ToString(true, true);
-#else
-#define CHECK_NO_OTHER_PARENT_FOR(child) (void(0))
-#endif
-
 void AXNodeObject::AddPseudoElementChildrenFromLayoutTree() {
   // Children are added this way only for pseudo-element subtrees.
   // See AXObject::ShouldUseLayoutObjectTraversalForChildren().
@@ -4076,7 +4063,6 @@ void AXNodeObject::AddPseudoElementChildrenFromLayoutTree() {
   }
   LayoutObject* child = GetLayoutObject()->SlowFirstChild();
   while (child) {
-    CHECK_NO_OTHER_PARENT_FOR(child);
     // All added pseudo element descendants are included in the tree.
     if (AXObject* ax_child = AXObjectCache().GetOrCreate(child, this)) {
       DCHECK(AXObjectCacheImpl::IsRelevantPseudoElementDescendant(*child));
@@ -4111,7 +4097,6 @@ void AXNodeObject::AddAccessibleNodeChildren() {
     return;
 
   for (const auto& child : accessible_node->GetChildren()) {
-    CHECK_NO_OTHER_PARENT_FOR(child);
     AddChildAndCheckIncluded(AXObjectCache().GetOrCreate(child, this));
   }
 }
@@ -5106,31 +5091,6 @@ String AXNodeObject::NativeTextAlternative(
     }
   }
 
-  // Input type=file. Not part of the spec, but Blink implements it
-  // as a single control that has both a button ("Choose file...") and
-  // some text showing the filename, and we need to concatenate both into
-  // the name of the button.
-  if (input_element && input_element->type() == input_type_names::kFile) {
-    name_from = ax::mojom::blink::NameFrom::kValue;
-
-    String displayed_file_path = GetValueForControl();
-    String upload_button_text = input_element->UploadButton()->Value();
-    if (!displayed_file_path.empty()) {
-      text_alternative = displayed_file_path + ", " + upload_button_text;
-    } else {
-      text_alternative = upload_button_text;
-    }
-    *found_text_alternative = true;
-
-    if (name_sources) {
-      name_sources->push_back(NameSource(true, kValueAttr));
-      name_sources->back().type = name_from;
-      name_sources->back().text = text_alternative;
-    } else {
-      return text_alternative;
-    }
-  }
-
   // Also check for aria-placeholder.
   if (IsTextField()) {
     name_from = ax::mojom::blink::NameFrom::kPlaceholder;
@@ -5387,6 +5347,28 @@ String AXNodeObject::NativeTextAlternative(
   }
 
   return text_alternative;
+}
+
+// This is not part of the spec, but we think it's a worthy addition: if the
+// labelled input is of type="file", we append the chosen file name to it. We do
+// this because this type of input is actually exposed as a button, and buttons
+// may not have a "value" field. An unlabelled input is manager later in this
+// function, it's named with the default text in the button, 'Choose File', plus
+// the file name.
+String AXNodeObject::MaybeAppendFileDescriptionToName(
+    const String& name) const {
+  const auto* input_element = DynamicTo<HTMLInputElement>(GetNode());
+  if (!input_element || input_element->type() != input_type_names::kFile)
+    return name;
+
+  String displayed_file_path = GetValueForControl();
+  if (!displayed_file_path.empty()) {
+    if (GetTextDirection() == ax::mojom::blink::WritingDirection::kRtl)
+      return name + " :" + displayed_file_path;
+    else
+      return name + ": " + displayed_file_path;
+  }
+  return name;
 }
 
 String AXNodeObject::Description(

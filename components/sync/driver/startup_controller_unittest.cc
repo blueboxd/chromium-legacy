@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/test/task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +25,6 @@ class StartupControllerTest : public testing::Test {
                             base::Unretained(this)),
         base::BindRepeating(&StartupControllerTest::FakeStartBackend,
                             base::Unretained(this)));
-    controller_->Reset();
   }
 
   void SetPreferredDataTypes(const ModelTypeSet& types) {

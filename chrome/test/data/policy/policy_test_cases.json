@@ -1379,33 +1379,7 @@
     ]
   },
   "DevicePrintingClientNameTemplate": {
-    "os": [
-      "chromeos_ash"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "note": "Check unset policy",
-        "policies": {},
-        "prefs": {
-          "printing.client_name_template": {
-            "default_value": "",
-            "location": "local_state"
-          }
-        }
-      },
-      {
-        "note": "Check simple policy",
-        "policies": {
-          "DevicePrintingClientNameTemplate": "test"
-        },
-        "prefs": {
-          "printing.client_name_template": {
-            "value": "test",
-            "location": "local_state"
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Maps into CrosSettings"
   },
   "LocalDiscoveryEnabled": {
     "reason_for_missing_test": "Policy was removed"
@@ -13073,7 +13047,7 @@
         "policies": {},
         "prefs": {
           "borealis.allowed_for_user": {
-            "default_value": true
+            "value": false
           }
         }
       },
@@ -13144,7 +13118,8 @@
       "mac",
       "android",
       "chromeos_ash",
-      "chromeos_lacros"
+      "chromeos_lacros",
+      "fuchsia"
     ],
     "policy_pref_mapping_tests": [
       {
@@ -15855,6 +15830,37 @@
             ]
           }
         }
+      },
+      {
+        "note": "Simple value with dynamic protocol",
+        "policies": {
+          "RequiredClientCertificateForUser": [
+            {
+              "name": "Certificate Profile 1",
+              "cert_profile_id": "cert_profile_id_1",
+              "key_algorithm": "rsa",
+              "renewal_period_seconds": 2592000,
+              "policy_version": "some_hash",
+              "enable_remote_attestation_check": true,
+	      "protocol_version": 2
+            }
+          ]
+        },
+        "prefs": {
+          "required_client_certificate_for_user": {
+            "value": [
+              {
+                "name": "Certificate Profile 1",
+                "cert_profile_id": "cert_profile_id_1",
+                "key_algorithm": "rsa",
+                "renewal_period_seconds": 2592000,
+                "policy_version": "some_hash",
+                "enable_remote_attestation_check": true,
+	        "protocol_version": 2
+              }
+            ]
+          }
+        }
       }
     ]
   },
@@ -15899,6 +15905,37 @@
               }
             ],
             "location": "local_state"
+          }
+        }
+      },
+      {
+        "note": "Simple value with dynamic protocol",
+        "policies": {
+          "RequiredClientCertificateForUser": [
+            {
+              "name": "Certificate Profile 1",
+              "cert_profile_id": "cert_profile_id_1",
+              "key_algorithm": "rsa",
+              "renewal_period_seconds": 2592000,
+              "policy_version": "some_hash",
+              "enable_remote_attestation_check": true,
+	      "protocol_version": 2
+            }
+          ]
+        },
+        "prefs": {
+          "required_client_certificate_for_user": {
+            "value": [
+              {
+                "name": "Certificate Profile 1",
+                "cert_profile_id": "cert_profile_id_1",
+                "key_algorithm": "rsa",
+                "renewal_period_seconds": 2592000,
+                "policy_version": "some_hash",
+                "enable_remote_attestation_check": true,
+	        "protocol_version": 2
+              }
+            ]
           }
         }
       }
@@ -15946,7 +15983,7 @@
     ]
   },
   "DeviceBorealisAllowed": {
-    "reason_for_missing_test": "Maps into CrosSettings"
+    "reason_for_missing_test": "Policy was removed"
   },
   "DeviceAllowedBluetoothServices": {
     "reason_for_missing_test": "Maps into CrosSettings"
@@ -21031,7 +21068,8 @@
       "mac",
       "chromeos_ash",
       "chromeos_lacros",
-      "android"
+      "android",
+      "fuchsia"
     ],
     "policy_pref_mapping_tests": [
       {
@@ -21236,7 +21274,8 @@
       "mac",
       "android",
       "chromeos_ash",
-      "chromeos_lacros"
+      "chromeos_lacros",
+      "fuchsia"
     ],
     "policy_pref_mapping_tests": [
       {
@@ -21272,7 +21311,8 @@
       "mac",
       "android",
       "chromeos_ash",
-      "chromeos_lacros"
+      "chromeos_lacros",
+      "fuchsia"
     ],
     "policy_pref_mapping_tests": [
       {

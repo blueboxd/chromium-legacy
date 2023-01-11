@@ -10,11 +10,10 @@
 #include "base/auto_reset.h"
 #include "base/barrier_callback.h"
 #include "base/barrier_closure.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/web_applications/os_integration/protocol_handling_sub_manager.h"
 #include "chrome/browser/web_applications/os_integration/run_on_os_login_sub_manager.h"
 #include "chrome/browser/web_applications/os_integration/shortcut_sub_manager.h"
+#include "chrome/browser/web_applications/os_integration/uninstallation_via_os_settings_sub_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
 #include "chrome/browser/web_applications/os_integration/web_app_uninstallation_via_os_settings_registration.h"
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
@@ -43,10 +43,6 @@
 
 #if BUILDFLAG(IS_MAC)
 #include "chrome/browser/web_applications/app_shim_registry_mac.h"
-#endif
-
-#if BUILDFLAG(IS_WIN)
-#include "base/win/windows_version.h"
 #endif
 
 namespace {
@@ -184,16 +180,20 @@ void OsIntegrationManager::SetSubsystems(WebAppSyncBridge* sync_bridge,
     url_handler_manager_->SetSubsystems(registrar);
 
   sub_managers_.clear();
-  auto shortcut_handling_sub_manager = std::make_unique<ShortcutSubManager>(
+
+  auto shortcut_sub_manager = std::make_unique<ShortcutSubManager>(
       *profile_, *icon_manager, *registrar);
   auto protocol_handling_sub_manager =
-      std::make_unique<ProtocolHandlingSubManager>(*registrar);
-
+      std::make_unique<ProtocolHandlingSubManager>(profile_, *registrar);
   auto run_on_os_login_sub_manager =
       std::make_unique<RunOnOsLoginSubManager>(*registrar);
-  sub_managers_.push_back(std::move(shortcut_handling_sub_manager));
+  auto uninstallation_via_os_settings_sub_manager =
+      std::make_unique<UninstallationViaOsSettingsSubManager>(*registrar);
+  sub_managers_.push_back(std::move(shortcut_sub_manager));
   sub_managers_.push_back(std::move(protocol_handling_sub_manager));
   sub_managers_.push_back(std::move(run_on_os_login_sub_manager));
+  sub_managers_.push_back(
+      std::move(uninstallation_via_os_settings_sub_manager));
 }
 
 void OsIntegrationManager::Start() {
@@ -516,16 +516,6 @@ void OsIntegrationManager::RegisterFileHandlers(const AppId& app_id,
 
 void OsIntegrationManager::RegisterProtocolHandlers(const AppId& app_id,
                                                     ResultCallback callback) {
-  // Disable protocol handler unregistration on Win7 due to bad interactions
-  // between preinstalled app scenarios and the need for elevation to unregister
-  // protocol handlers on that platform. See crbug.com/1224327 for context.
-#if BUILDFLAG(IS_WIN)
-  if (base::win::GetVersion() == base::win::Version::WIN7) {
-    std::move(callback).Run(Result::kOk);
-    return;
-  }
-#endif  // BUILDFLAG(IS_WIN)
-
   if (!protocol_handler_manager_) {
     std::move(callback).Run(Result::kOk);
     return;
@@ -677,16 +667,6 @@ void OsIntegrationManager::UnregisterFileHandlers(const AppId& app_id,
 
 void OsIntegrationManager::UnregisterProtocolHandlers(const AppId& app_id,
                                                       ResultCallback callback) {
-  // Disable protocol handler unregistration on Win7 due to bad interactions
-  // between preinstalled app scenarios and the need for elevation to unregister
-  // protocol handlers on that platform. See crbug.com/1224327 for context.
-#if BUILDFLAG(IS_WIN)
-  if (base::win::GetVersion() == base::win::Version::WIN7) {
-    std::move(callback).Run(Result::kOk);
-    return;
-  }
-#endif  // BUILDFLAG(IS_WIN)
-
   if (!protocol_handler_manager_) {
     std::move(callback).Run(Result::kOk);
     return;
@@ -818,20 +798,19 @@ void OsIntegrationManager::UpdateProtocolHandlers(
     const AppId& app_id,
     bool force_shortcut_updates_if_needed,
     base::OnceClosure callback) {
+  // If the "Execute" step is enabled for sub-managers, then the 'old' os
+  // integration path needs to be turned off so that os integration doesn't get
+  // done twice.
+  if (AreSubManagersExecuteEnabled()) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(callback));
+    return;
+  }
+
   if (!protocol_handler_manager_) {
     std::move(callback).Run();
     return;
   }
-
-  // Disable protocol handler unregistration on Win7 due to bad interactions
-  // between preinstalled app scenarios and the need for elevation to unregister
-  // protocol handlers on that platform. See crbug.com/1224327 for context.
-#if BUILDFLAG(IS_WIN)
-  if (base::win::GetVersion() == base::win::Version::WIN7) {
-    std::move(callback).Run();
-    return;
-  }
-#endif  // BUILDFLAG(IS_WIN)
 
   auto shortcuts_callback = base::BindOnce(
       &OsIntegrationManager::OnShortcutsUpdatedForProtocolHandlers,

@@ -4,9 +4,9 @@
 
 #include "components/content_settings/core/browser/cookie_settings.h"
 
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
@@ -216,6 +216,18 @@ ContentSetting CookieSettings::GetCookieSettingInternal(
 
     if (host_setting == CONTENT_SETTING_ALLOW) {
       block = false;
+      FireStorageAccessHistogram(net::cookie_util::StorageAccessResult::
+                                     ACCESS_ALLOWED_STORAGE_ACCESS_GRANT);
+    }
+  }
+
+  if (block && ShouldConsiderTopLevelStorageAccessGrants(query_reason)) {
+    ContentSetting host_setting = host_content_settings_map_->GetContentSetting(
+        url, first_party_url, ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS);
+
+    if (host_setting == CONTENT_SETTING_ALLOW) {
+      block = false;
+      // TODO(crbug.com/1385156): Move to separate metric names.
       FireStorageAccessHistogram(net::cookie_util::StorageAccessResult::
                                      ACCESS_ALLOWED_STORAGE_ACCESS_GRANT);
     }

@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 
 namespace base {
 
@@ -152,9 +151,10 @@ bool PostTaskAndReplyImpl::PostTaskAndReply(const Location& from_here,
                                   ? SequencedTaskRunner::GetCurrentDefault()
                                   : nullptr)));
 
-  // PostTaskAndReply() requires a SequencedTaskRunnerHandle to post the reply.
-  // Having no SequencedTaskRunnerHandle is allowed when posting the task fails,
-  // to simplify calls during shutdown (https://crbug.com/922938).
+  // PostTaskAndReply() requires a SequencedTaskRunner::CurrentDefaultHandle to
+  // post the reply.  Having no SequencedTaskRunner::CurrentDefaultHandle is
+  // allowed when posting the task fails, to simplify calls during shutdown
+  // (https://crbug.com/922938).
   CHECK(has_sequenced_context || !post_task_success);
 
   return post_task_success;

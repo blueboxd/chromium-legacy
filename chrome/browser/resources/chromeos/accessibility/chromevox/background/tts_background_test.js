@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['../testing/chromevox_next_e2e_test_base.js']);
+GEN_INCLUDE(['../testing/chromevox_e2e_test_base.js']);
 
 // E2E tests for PrimaryTts.
 
 /** Test fixture. */
-ChromeVoxBackgroundTtsTest = class extends ChromeVoxNextE2ETest {
+ChromeVoxBackgroundTtsTest = class extends ChromeVoxE2ETest {
   /** @override */
   async setUpDeferred() {
     await super.setUpDeferred();
@@ -17,7 +17,7 @@ ChromeVoxBackgroundTtsTest = class extends ChromeVoxNextE2ETest {
     await importModule(
         'CommandHandlerInterface',
         '/chromevox/background/command_handler_interface.js');
-    await importModule('PrimaryTts', '/chromevox/background/tts_background.js');
+    await importModule('PrimaryTts', '/chromevox/background/primary_tts.js');
     await importModule(
         ['QueueMode', 'TtsSpeechProperties'], '/chromevox/common/tts_types.js');
     await importModule('LocalStorage', '/common/local_storage.js');

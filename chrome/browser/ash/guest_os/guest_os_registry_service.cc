@@ -8,9 +8,9 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -25,6 +25,7 @@
 #include "chrome/browser/ash/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ash/borealis/borealis_features.h"
 #include "chrome/browser/ash/borealis/borealis_service.h"
+#include "chrome/browser/ash/bruschetta/bruschetta_util.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
@@ -617,7 +618,7 @@ void GuestOsRegistryService::LoadIcon(const std::string& app_id,
     }
   }
 
-  if (icon_key.resource_id != apps::mojom::IconKey::kInvalidResourceId) {
+  if (icon_key.resource_id != apps::IconKey::kInvalidResourceId) {
     // The icon is a resource built into the Chrome OS binary.
     constexpr bool is_placeholder_icon = false;
     apps::LoadIconFromResource(
@@ -727,7 +728,7 @@ void GuestOsRegistryService::OnLoadIconFromVM(
     apps::LoadIconCallback callback,
     std::string compressed_icon_data) {
   if (compressed_icon_data.empty()) {
-    if (fallback_icon_resource_id != apps::mojom::IconKey::kInvalidResourceId) {
+    if (fallback_icon_resource_id != apps::IconKey::kInvalidResourceId) {
       // We load the fallback icon, but we tell AppsService that this is not
       // a placeholder to avoid endless repeat calls since we don't expect to
       // find a better icon than this any time soon.
@@ -809,6 +810,12 @@ void GuestOsRegistryService::ClearApplicationList(
 void GuestOsRegistryService::UpdateApplicationList(
     const vm_tools::apps::ApplicationList& app_list) {
   VLOG(3) << "Received ApplicationList : " << ToString(app_list);
+  // TODO(b/247636749): Special-case Bruschetta VMs until cicerone is updated to
+  // use the correct vm_type.
+  vm_tools::apps::VmType vm_type = app_list.vm_type();
+  if (app_list.vm_name() == bruschetta::kBruschettaVmName) {
+    vm_type = vm_tools::apps::VmType::BRUSCHETTA;
+  }
 
   if (app_list.vm_name().empty()) {
     LOG(WARNING) << "Received app list with missing VM name";
@@ -850,7 +857,7 @@ void GuestOsRegistryService::UpdateApplicationList(
 
       base::Value::Dict pref_registration;
       PopulatePrefRegistrationFromApp(
-          pref_registration, app_list.vm_type(), app_list.vm_name(),
+          pref_registration, vm_type, app_list.vm_name(),
           app_list.container_name(), app, std::move(name));
 
       base::Value::Dict* old_app = apps.FindDict(app_id);
@@ -924,7 +931,7 @@ void GuestOsRegistryService::UpdateApplicationList(
   }
 
   for (Observer& obs : observers_) {
-    obs.OnRegistryUpdated(this, app_list.vm_type(), updated_apps, removed_apps,
+    obs.OnRegistryUpdated(this, vm_type, updated_apps, removed_apps,
                           inserted_apps);
   }
 }

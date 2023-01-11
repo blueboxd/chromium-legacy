@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/time/time.h"
@@ -19,7 +19,7 @@
 #include "chrome/browser/ash/platform_keys/key_permissions/key_permissions_manager_impl.h"
 #include "chrome/browser/ash/platform_keys/key_permissions/mock_key_permissions_manager.h"
 #include "chrome/browser/ash/platform_keys/key_permissions/user_private_token_kpm_service_factory.h"
-#include "chrome/browser/platform_keys/platform_keys.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"

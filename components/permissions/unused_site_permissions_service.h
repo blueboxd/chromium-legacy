@@ -7,7 +7,7 @@
 
 #include <list>
 #include <map>
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -85,6 +85,10 @@ class UnusedSitePermissionsService
   // Re-grants permissions that are auto-revoked ones and removes the origin
   // from revoked permissions list.
   void RegrantPermissionsForOrigin(const url::Origin& origin);
+
+  // Clear the list of revoked permissions so they will no longer be shown to
+  // the user. Does not change permissions themselves.
+  void ClearRevokedPermissionsList();
 
   // Test support:
   void SetClockForTesting(base::Clock* clock);

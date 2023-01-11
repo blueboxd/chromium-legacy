@@ -37,6 +37,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/cpp/request_mode.h"
@@ -941,6 +942,20 @@ absl::optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
 
   if (!params.Url().IsValid())
     return ResourceRequestBlockedReason::kOther;
+
+  // data: URL is not supported in SVGUseElement.
+  if (RuntimeEnabledFeatures::RemoveDataUrlInSvgUseEnabled() &&
+      options.initiator_info.name == AtomicString("use") &&
+      params.Url().ProtocolIsData()) {
+    String message = "Unsafe attempt to load URL " +
+                     params.Url().ElidedString() + " from origin " +
+                     resource_request.RequestorOrigin()->ToString() +
+                     ". Domains, protocols and ports must match.\n";
+    console_logger_->AddConsoleMessage(
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError, message);
+    return ResourceRequestBlockedReason::kOrigin;
+  }
 
   ResourceLoadPriority computed_load_priority = resource_request.Priority();
   // We should only compute the priority for ResourceRequests whose priority has
@@ -2504,7 +2519,10 @@ void ResourceFetcher::RevalidateStaleResource(Resource* stale_resource) {
   // requests.
   ResourceRequest request;
   request.CopyHeadFrom(stale_resource->GetResourceRequest());
-  FetchParameters params(std::move(request), nullptr /* world */);
+  // TODO(https://crbug.com/1405800): investigate whether it's correct to use a
+  // null `world` in the ResourceLoaderOptions below.
+  FetchParameters params(std::move(request),
+                         ResourceLoaderOptions(/*world=*/nullptr));
   params.SetStaleRevalidation(true);
   params.MutableResourceRequest().SetSkipServiceWorker(true);
   // Stale revalidation resource requests should be very low regardless of

@@ -4,15 +4,42 @@
     --footer-margin: 24px;
     --tangible-sync-dialog-illustration-url:
         url(./images/tangible_sync_dialog_illustration.svg);
+    --tangible-sync-window-illustration-width: 17vw;
     --tangible-sync-window-left-illustration-url:
         url(./images/tangible_sync_window_left_illustration.svg);
     --tangible-sync-window-right-illustration-url:
         url(./images/tangible_sync_window_right_illustration.svg);
     --sync-benefits-list-color: var(--google-grey-50);
     --sync-benefit-icon-color: var(--google-blue-600);
-    --sync-info-title-color: var(--google-grey-800);
     color: var(--cr-primary-text-color);
     display: block;
+  }
+
+  @keyframes left-illustration-slide-animation {
+    0% {
+      transform: translateX(calc(-1 * var(--tangible-sync-window-illustration-width)));
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes right-illustration-slide-animation {
+    0% {
+      transform: translateX(var(--tangible-sync-window-illustration-width));
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes fade-in-animation {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 100%;
+    }
   }
 
   .secondary {
@@ -226,6 +253,7 @@
   }
 
   #tangible-sync-button-container cr-button {
+    font-family: 'Google Sans', arial, sans-serif;
     font-size: 0.75rem;
     min-width: 111px;
   }
@@ -338,7 +366,7 @@
   }
 
   #syncInfoTitle {
-    color: var(--sync-info-title-color);
+    color: var(--cr-secondary-text-color);
     font-size: 1.25rem;
     line-height: 24px;
   }
@@ -399,20 +427,31 @@
   }
 
   #tangible-sync-window-left-illustration {
+    animation-duration: 500ms;
+    animation-name: left-illustration-slide-animation, fade-in-animation;
     content: var(--tangible-sync-window-left-illustration-url);
     left: 0;
+    transition-timing-function: ease-in-out;
   }
 
   #tangible-sync-window-right-illustration {
+    animation-duration: 500ms;
+    animation-name: right-illustration-slide-animation, fade-in-animation;
     content: var(--tangible-sync-window-right-illustration-url);
     right: 0;
+    transition-timing-function: ease-in-out;
   }
 
-  .tangible-sync-window-illustration {
+  #tangible-sync-window-left-illustration,
+  #tangible-sync-window-right-illustration {
     max-width: 320px;
     position: absolute;
     top: 0;
-    width: 17vw;
+    width: var(--tangible-sync-window-illustration-width)
+  }
+
+  .fade-in {
+    animation: 500ms ease-in-out fade-in-animation;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -425,7 +464,6 @@
           url(./images/tangible_sync_window_right_illustration_dark.svg);
       --sync-benefits-list-color: var(--google-grey-800);
       --sync-benefit-icon-color: var(--google-blue-300);
-      --sync-info-title-color: var(--google-grey-500);
     }
 
     /* Modal dialog design */
@@ -451,6 +489,18 @@
 
     .signin-intercept-design .work-badge {
       border-color: var(--google-grey-500);
+    }
+  }
+
+  @media screen and ((max-width: 780px) or (max-height: 600px)) {
+    .window-main-container.tangible-sync #syncConfirmationHeading {
+      font-size: 1.5rem;
+      line-height: 32px;
+    }
+
+    .window-main-container.tangible-sync #syncInfoTitle {
+      font-size: 0.94rem;
+      line-height: 22px;
     }
   }
 </style>
@@ -583,11 +633,9 @@
 <template is="dom-if" if="[[isTangibleSync_]]">
   <div class$="tangible-sync [[getMainContainerClass_()]]">
     <img id="tangible-sync-dialog-illustration" hidden="[[!isModalDialog_]]">
-    <img id="tangible-sync-window-left-illustration"
-      class="tangible-sync-window-illustration" hidden="[[isModalDialog_]]">
-    <img id="tangible-sync-window-right-illustration"
-      class="tangible-sync-window-illustration" hidden="[[isModalDialog_]]">
-    <div id="contentContainer">
+    <img id="tangible-sync-window-left-illustration" hidden="[[isModalDialog_]]">
+    <img id="tangible-sync-window-right-illustration" hidden="[[isModalDialog_]]">
+    <div id="contentContainer" class$="[[getAnimationClass_()]]">
       <div id="avatarContainer">
         <img id="avatar" alt="" src="[[accountImageSrc_]]">
         <div class="work-badge" id="badge" hidden="[[!showEnterpriseBadge_]]">
@@ -616,7 +664,7 @@
       </div>
     </div>
   </div>
-  <div class="action-row tangible-sync">
+  <div class$="action-row tangible-sync [[getAnimationClass_()]]">
     <paper-spinner-lite active="[[anyButtonClicked_]]"></paper-spinner-lite>
     <div id="tangible-sync-button-container"
         class$="action-container [[getButtonContainerClass_()]]">

@@ -117,6 +117,7 @@ try_.orchestrator_builder(
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
+    use_clang_coverage = True,
 )
 
 try_.orchestrator_builder(
@@ -137,6 +138,7 @@ try_.orchestrator_builder(
         "chromium_rts.inverted_rts_bail_early": 100,
     },
     use_orchestrator_pool = True,
+    use_clang_coverage = True,
 )
 
 try_.compilator_builder(
@@ -766,4 +768,14 @@ try_.gpu.optional_tests_builder(
             cq.location_filter(path_regexp = "ui/gl/.+"),
         ],
     ),
+)
+
+try_.builder(
+    name = "android-code-coverage",
+    mirrors = ["ci/android-code-coverage"],
+)
+
+try_.builder(
+    name = "android-code-coverage-native",
+    mirrors = ["ci/android-code-coverage-native"],
 )

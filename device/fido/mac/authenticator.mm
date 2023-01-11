@@ -6,11 +6,12 @@
 
 #include <algorithm>
 
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
+#import "base/task/sequenced_task_runner.h"
 #include "base/task/sequenced_task_runner.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/base/features.h"

@@ -127,7 +127,6 @@
       # Disabling MSan tests since linux-chromeos chrome crashes on MSan build.
       # TODO(crbug.com/1376064): Re-enable.
       'Linux ChromiumOS MSan Tests',
-      'Linux ChromiumOS MSan Focal',
     ]
   },
   'aura_unittests amd64-generic': {
@@ -165,10 +164,6 @@
         ],
       },
     },
-    'remove_from': [
-      # TODO(crbug.com/1379748): Add the test back after it's fixed.
-      'chromeos-octopus-chrome',
-    ],
   },
   'bf_cache_content_browsertests': {
     'modifications': {
@@ -282,6 +277,7 @@
             },
           ],
           'shards': 12,
+          'inverse_quickrun_shards': 24,
         },
       },
       'Mac12 Tests (dbg)': {
@@ -361,7 +357,8 @@
           'Release_x64',
         ],
         'swarming': {
-          "shards": 12
+          "shards": 12,
+          "inverse_quickrun_shards": 24,
         },
       },
       'Win10 Tests x64 (dbg)': {
@@ -603,6 +600,7 @@
             },
           ],
           'shards': 18,
+          'inverse_quickrun_shards': 36,
         },
       },
       'Mac12 Tests (dbg)': {
@@ -682,7 +680,8 @@
           'Release_x64',
         ],
         'swarming': {
-          "shards": 18
+          "shards": 18,
+          "inverse_quickrun_shards": 36,
         },
       },
       'Win10 Tests x64 (dbg)': {
@@ -901,22 +900,12 @@
           'shards': 60,
         },
       },
-      'Linux ChromiumOS MSan Focal': {
-        # These are very slow on the Chrome OS MSAN trybot for some reason.
-        # crbug.com/865455
-        'swarming': {
-          'shards': 40,
-        },
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.msan.browser_tests.oobe_negative.filter',
-        ],
-      },
       'Linux ChromiumOS MSan Tests': {
         # These are very slow on the Chrome OS MSAN trybot, most likely because browser_tests on cros has ~40% more tests. Also, these tests
         # run on ash, which means every test starts and shuts down ash, which most likely explains why it takes longer than on other platforms.
         # crbug.com/865455
         'swarming': {
-          'shards': 48,
+          'shards': 64,
         },
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.msan.browser_tests.oobe_negative.filter',
@@ -999,6 +988,11 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel.browser_tests.filter',
         ],
+      },
+      'ToTLinuxMSan': {
+        'swarming': {
+          'shards': 24,
+        },
       },
       'ToTWin(dbg)': {
         'swarming': {
@@ -1084,7 +1078,7 @@
       },
       'linux-rel-cft': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux.linux-rel-cft.browser_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux.linux-rel-cft.browser_tests.filter;../../testing/buildbot/filters/linux.linux-rel-cft.interactive_ui_tests.filter',
         ],
       },
       'mac-code-coverage': {
@@ -1099,7 +1093,7 @@
       },
       'mac-rel-cft': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel-cft.browser_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel-cft.browser_tests.filter;../../testing/buildbot/filters/mac.mac-rel-cft.interactive_ui_tests.filter',
         ],
       },
       'mac11-arm64-rel-tests': {
@@ -1135,7 +1129,7 @@
       },
       'win-rel-cft': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/win.win-rel-cft.browser_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/win.win-rel-cft.browser_tests.filter;../../testing/buildbot/filters/win.win-rel-cft.interactive_ui_tests.filter',
         ],
       },
       'win10-rel-no-external-ip': {
@@ -1211,7 +1205,6 @@
         'args': [
           # This bot sets symbol_level=2, which doesn't fit inside a normal VM.
           '--strip-chrome',
-          '--tast-retries=1',
         ],
       },
       'chromeos-betty-pi-arc-chrome': {
@@ -1220,9 +1213,6 @@
         },
       },
       'chromeos-eve-chrome': {
-        'args':[
-          '--tast-retries=1',
-        ],
         'swarming': {
           # Increased timeout to 2 hours due to shard timeout.
           'hard_timeout': 7200,
@@ -1240,10 +1230,6 @@
         }
       },
     },
-    # TODO(b/248270560): Restore if the DUT pool is ever stabilized.
-    'remove_from': [
-      'chromeos-octopus-chrome',
-    ],
   },
   'chrome_java_test_pagecontroller_tests': {
     'modifications': {
@@ -1568,6 +1554,16 @@
           'shards': 2,
         },
       },
+      'Mac12 Tests': {
+        'swarming': {
+          'inverse_quickrun_shards': 2,
+        },
+      },
+      'Win10 Tests x64': {
+        'swarming': {
+          'inverse_quickrun_shards': 2,
+        },
+      },
       'android-11-x86-rel': {
         'args': [
           # TODO(crbug.com/1192348): Fix the test failure
@@ -1579,6 +1575,11 @@
           # TODO(crbug.com/1192348): Fix the test failure
           '--gtest_filter=-FieldFormatterTest.DifferentLocales',
         ],
+      },
+      'android-nougat-x86-rel': {
+        'swarming': {
+          'inverse_quickrun_shards': 12,
+        },
       },
       'win-asan': {
         # With a single shard seems to hit time limit.
@@ -1644,6 +1645,7 @@
       'Mac12 Tests': {
         'swarming': {
           'shards': 12,
+          'inverse_quickrun_shards': 24,
         },
       },
       'Mac12 Tests (dbg)': { # https://crbug.com/1279504
@@ -1745,6 +1747,9 @@
         ],
       },
       'android-pie-arm64-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64.content_browsertests_coverage.filter',
+        ],
         'swarming': {
           'quickrun_shards': 40
         },
@@ -1793,7 +1798,7 @@
       },
       'linux-chromeos-rel': {
         'swarming': {
-          'shards': 3,
+          'shards': 6,
         },
       },
       'linux-code-coverage': {
@@ -1878,6 +1883,9 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.content_shell_test_apk.filter',
         ],
+        'swarming': {
+          'inverse_quickrun_shards': 6,
+        },
       },
       'android-nougat-x86-rel': {
         'args': [
@@ -2016,12 +2024,6 @@
         ],
       },
     },
-  },
-  'disk_usage_tast_test': {
-    'remove_from': [
-      # TODO(crbug.com/1379748): Add the test back after it's fixed.
-      'chromeos-octopus-chrome',
-    ],
   },
   'exo_unittests': {
     'modifications': {
@@ -2290,7 +2292,6 @@
       # Can't run on MSAN because gl_unittests_ozone uses the hardware driver,
       # which isn't instrumented.
       'Linux ChromiumOS MSan Tests',
-      'Linux ChromiumOS MSan Focal',
     ],
   },
   'gold_common_pytype': {
@@ -2447,13 +2448,6 @@
           'quickrun_shards': 12,
         },
       },
-      'Linux ChromiumOS MSan Focal': {
-        # These are very slow on the Chrome OS MSAN trybot for some reason.
-        # crbug.com/865455
-        'swarming': {
-          'shards': 5,
-        },
-      },
       'Linux ChromiumOS MSan Tests': {
         # These are very slow on the Chrome OS MSAN trybot for some reason.
         # crbug.com/865455
@@ -2484,6 +2478,7 @@
       'Mac12 Tests': {
         'swarming': {
           'shards': 6,
+          'inverse_quickrun_shards': 12,
         },
       },
       'Mac12 Tests (dbg)': { # https://crbug.com/1265051
@@ -2520,6 +2515,11 @@
           'shards': 6,
         },
       },
+      'linux-chromeos-rel': {
+        'swarming': {
+          'shards': 5,
+        },
+      },
       'linux-code-coverage': {
         'swarming': {
           'shards': 10,
@@ -2552,16 +2552,6 @@
   },
   'ipc_tests': {
     'modifications': {
-      'Linux ChromiumOS MSan Tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'x86-64',
-              'os': 'Ubuntu-18.04',
-            },
-          ],
-        },
-      },
       'android-asan': {
         'swarming': {
           'shards': 2,
@@ -2838,6 +2828,11 @@
         'swarming': {
           'shards': 4,
         }
+      },
+      'android-12-x64-rel': {
+        'swarming': {
+          'inverse_quickrun_shards': 6,
+        },
       },
       'android-cronet-x86-dbg-10-tests': {
         'args': [
@@ -3200,7 +3195,6 @@
       # The face and barcode detection tests fail on the Mac Pros.
       'Mac Pro FYI Release (AMD)',
       'Linux ChromiumOS MSan Tests',  # https://crbug.com/831676
-      'Linux ChromiumOS MSan Focal',
       'Linux MSan Tests',  # https://crbug.com/831676
     ],
     'replacements': {
@@ -3241,6 +3235,7 @@
         ],
         'swarming': {
           'shards': 2,
+          'inverse_quickrun_shards': 4,
         },
       },
       'fuchsia-code-coverage': {
@@ -3316,6 +3311,11 @@
       'linux-chromeos-code-coverage': {
         'swarming': {
           'shards': 4,
+        },
+      },
+      'linux-chromeos-rel': {
+        'swarming': {
+          'shards': 2,
         },
       },
       'linux-code-coverage': {
@@ -3410,6 +3410,12 @@
         # TODO(crbug.com/1182948): Remove the experiment.
         # TODO(b/188822176): Restore to 100% when we have additional capacity.
         'experiment_percentage': 0,
+      },
+      'linux-rel-cft': {
+        'args': [
+          '--xvfb',
+          '--jobs=1',
+        ],
       },
       'linux-rel-no-external-ip': {
         'args': [
@@ -3511,6 +3517,11 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.unit_tests_wayland.filter',
         ],
+      },
+      'Mac12 Tests': {
+        'swarming': {
+          'inverse_quickrun_shards': 2,
+        },
       },
       'Mac12 Tests (dbg)': {
         'swarming': {
@@ -3931,6 +3942,8 @@
       'Dawn Android arm Release (Pixel 4)',
       'Dawn Mac x64 DEPS Release (AMD)',
       'Dawn Mac x64 Release (AMD)',
+      'Dawn Win10 x64 DEPS Release (Intel)',
+      'Dawn Win10 x64 Release (Intel)',
     ],
   },
   'webgpu_cts_tests': {
@@ -3953,6 +3966,10 @@
       'Dawn Android arm Release (Pixel 4)',
       'Dawn Mac x64 DEPS Release (AMD)',
       'Dawn Mac x64 Release (AMD)',
+      'Dawn Win10 x64 DEPS Release (Intel)',
+      'Dawn Win10 x64 Release (Intel)',
+      'Dawn Win10 x86 DEPS Release (Intel)',
+      'Dawn Win10 x86 Release (Intel)',
     ],
     'modifications': {
       # ci_only for bots where capacity is constrained.
@@ -3969,6 +3986,10 @@
     'remove_from': [
       'Dawn Mac x64 DEPS Release (AMD)',
       'Dawn Mac x64 Release (AMD)',
+      'Dawn Win10 x64 DEPS Release (Intel)',
+      'Dawn Win10 x64 Release (Intel)',
+      'Dawn Win10 x86 DEPS Release (Intel)',
+      'Dawn Win10 x86 Release (Intel)',
     ],
     'modifications': {
       # ci_only for bots where capacity is constrained.
@@ -3994,11 +4015,19 @@
           'shards': 2,
         },
       },
+      'android-nougat-x86-rel': {
+        'swarming': {
+          'inverse_quickrun_shards': 12,
+        },
+      },
     },
   },
   'webview_64_cts_tests': {
     'modifications': {
       'android-pie-arm64-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.webview_cts_tests_coverage.filter',
+        ],
         # TODO(crbug.com/1111436): Move this back to walleye if/when additional
         # capacity has been deployed.
         'swarming': {
@@ -4016,7 +4045,7 @@
       'android-nougat-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.webview_cts_tests.filter',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.webview_cts_tests_coverage.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.webview_cts_tests_coverage.filter',
         ],
       },
       'android-pie-arm64-rel': {
@@ -4053,6 +4082,11 @@
           # TODO(crbug.com/1189746) Enable this test once the issue is fixed.
           '--gtest_filter=-org.chromium.net.NetworkChangeNotifierTest.testNetworkChangeNotifierJavaObservers',
         ],
+      },
+      'android-12-x64-rel': {
+        'swarming': {
+          'inverse_quickrun_shards': 14,
+        },
       },
       'android-nougat-x86-rel': {
         'args': [

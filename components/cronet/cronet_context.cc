@@ -15,19 +15,19 @@
 #include <utility>
 
 #include "base/base64.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -123,7 +123,6 @@ class BasicNetworkDelegate : public net::NetworkDelegateImpl {
   bool OnAnnotateAndMoveUserBlockedCookies(
       const net::URLRequest& request,
       const net::FirstPartySetMetadata& first_party_set_metadata,
-      net::CookieSettingOverrides overrides,
       net::CookieAccessResultList& maybe_included_cookies,
       net::CookieAccessResultList& excluded_cookies) override {
     // Disallow sending cookies by default.

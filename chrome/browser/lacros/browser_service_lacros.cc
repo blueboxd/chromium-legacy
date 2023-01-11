@@ -4,12 +4,12 @@
 
 #include "chrome/browser/lacros/browser_service_lacros.h"
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/statistics_recorder.h"
@@ -421,7 +421,7 @@ void BrowserServiceLacros::OpenForFullRestore(bool skip_crash_restore) {
 void BrowserServiceLacros::OnSystemInformationReady(
     GetFeedbackDataCallback callback,
     std::unique_ptr<system_logs::SystemLogsResponse> sys_info) {
-  base::Value system_log_entries(base::Value::Type::DICTIONARY);
+  base::Value::Dict system_log_entries;
   if (sys_info) {
     std::string user_email = feedback_util::GetSignedInUserEmail();
     const bool google_email = gaia::IsGoogleInternalAccountEmail(user_email);
@@ -433,14 +433,13 @@ void BrowserServiceLacros::OnSystemInformationReady(
       // also stripped later on in the feedback processing for other code paths
       // that don't go through this.
       if (FeedbackCommon::IncludeInSystemLogs(it.first, google_email)) {
-        system_log_entries.SetStringKey(std::move(it.first),
-                                        std::move(it.second));
+        system_log_entries.Set(it.first, std::move(it.second));
       }
     }
   }
 
   DCHECK(!callback.is_null());
-  std::move(callback).Run(std::move(system_log_entries));
+  std::move(callback).Run(base::Value(std::move(system_log_entries)));
 }
 
 void BrowserServiceLacros::OnGetCompressedHistograms(

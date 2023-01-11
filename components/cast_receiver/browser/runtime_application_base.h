@@ -9,9 +9,10 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/values.h"
 #include "components/cast_receiver/browser/application_client.h"
 #include "components/cast_receiver/browser/public/application_config.h"

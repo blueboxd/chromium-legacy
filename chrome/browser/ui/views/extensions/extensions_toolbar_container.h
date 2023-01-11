@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ui/extensions/extensions_container.h"
@@ -147,6 +147,7 @@ class ExtensionsToolbarContainer
   ToolbarActionViewController* GetPoppedOutAction() const override;
   void OnContextMenuShown(ToolbarActionViewController* extension) override;
   void OnContextMenuClosed(ToolbarActionViewController* extension) override;
+  bool CanShowActionsInToolbar() const override;
   bool IsActionVisibleOnToolbar(
       const ToolbarActionViewController* action) const override;
   extensions::ExtensionContextMenuModel::ButtonVisibility GetActionVisibility(
@@ -169,7 +170,6 @@ class ExtensionsToolbarContainer
 
   // ToolbarActionView::Delegate:
   content::WebContents* GetCurrentWebContents() override;
-  bool CanShowIconInToolbar() const override;
   views::LabelButton* GetOverflowReferenceView() const override;
   gfx::Size GetToolbarActionSize() override;
   void WriteDragDataForView(View* sender,

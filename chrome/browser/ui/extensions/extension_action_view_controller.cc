@@ -8,9 +8,9 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
@@ -322,7 +322,7 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu(
   // Reconstruct the menu every time because the menu's contents are dynamic.
   context_menu_model_ = std::make_unique<extensions::ExtensionContextMenuModel>(
       extension(), browser_, visibility, this,
-      view_delegate_->CanShowIconInToolbar(), context_menu_source);
+      extensions_container_->CanShowActionsInToolbar(), context_menu_source);
   return context_menu_model_.get();
 }
 

@@ -4,12 +4,13 @@
 
 #include "chrome/browser/ash/app_mode/kiosk_external_updater.h"
 
-#include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/version.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/notifications/kiosk_external_update_notification.h"

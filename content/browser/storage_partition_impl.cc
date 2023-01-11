@@ -78,7 +78,6 @@
 #include "content/browser/interest_group/interest_group_manager_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/locks/lock_manager.h"
-#include "content/browser/native_io/native_io_context_impl.h"
 #include "content/browser/navigation_or_document_handle.h"
 #include "content/browser/network_context_client_base_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
@@ -864,10 +863,6 @@ storage::QuotaClientTypes StoragePartitionImpl::GenerateQuotaClientTypes(
 
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS) {
     quota_client_types.insert(storage::QuotaClientType::kFileSystem);
-
-    // TODO(crbug.com/1137788): Add a removal mask for NativeIO after adopting a
-    // more inclusive name.
-    quota_client_types.insert(storage::QuotaClientType::kNativeIO);
   }
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_WEBSQL)
     quota_client_types.insert(storage::QuotaClientType::kDatabase);
@@ -1269,10 +1264,6 @@ void StoragePartitionImpl::Initialize(
   service_worker_context_->set_storage_partition(this);
 
   dedicated_worker_service_ = std::make_unique<DedicatedWorkerServiceImpl>();
-
-  native_io_context_ = base::MakeRefCounted<NativeIOContextImpl>();
-  native_io_context_->Initialize(
-      path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy);
 
   shared_worker_service_ =
       std::make_unique<SharedWorkerServiceImpl>(this, service_worker_context_);
@@ -1731,11 +1722,6 @@ ContentIndexContextImpl* StoragePartitionImpl::GetContentIndexContext() {
   return content_index_context_.get();
 }
 
-NativeIOContext* StoragePartitionImpl::GetNativeIOContext() {
-  DCHECK(initialized_);
-  return native_io_context_.get();
-}
-
 AggregationService* StoragePartitionImpl::GetAggregationService() {
   DCHECK(initialized_);
   return aggregation_service_.get();
@@ -1850,15 +1836,16 @@ void StoragePartitionImpl::OnAuthRequired(
             is_primary_main_frame =
                 render_frame_host_impl->IsInPrimaryMainFrame();
           }
-        } else {
+        } else if (NavigationRequest* ongoing_navigation =
+                       container_host->GetOngoingNavigationRequestBeforeCommit(
+                           base::PassKey<StoragePartitionImpl>())) {
+          // This auth request is for an ongoing navigation controlled
+          // by service worker. The navigation request can be nullptr if user
+          // has closed the WebContents.
           // Overwrite the context; set `type` to kNavigationRequestContext.
           // TODO(https://crbug.com/1239554): Optimize locating logic.
-          int frame_tree_node_id =
-              container_host->GetFrameTreeNodeIdForOngoingNavigation(
-                  base::PassKey<StoragePartitionImpl>());
-          context = URLLoaderNetworkContext::CreateForNavigation(
-              *(FrameTreeNode::GloballyFindByID(frame_tree_node_id)
-                    ->navigation_request()));
+          context =
+              URLLoaderNetworkContext::CreateForNavigation(*ongoing_navigation);
         }
       }
     }
@@ -1934,15 +1921,20 @@ void StoragePartitionImpl::OnCertificateRequested(
               container_host->GetRenderFrameHostId();
           context = URLLoaderNetworkContext::CreateForRenderFrameHost(
               render_frame_host_id);
-        } else {
+        } else if (NavigationRequest* ongoing_navigation =
+                       container_host->GetOngoingNavigationRequestBeforeCommit(
+                           base::PassKey<StoragePartitionImpl>())) {
+          // This certification request is for an ongoing navigation.
           // Overwrite the context; set `type` to kNavigationRequestContext.
           // TODO(https://crbug.com/1239554): Optimize locating logic.
-          int frame_tree_node_id =
-              container_host->GetFrameTreeNodeIdForOngoingNavigation(
-                  base::PassKey<StoragePartitionImpl>());
-          context = URLLoaderNetworkContext::CreateForNavigation(
-              *(FrameTreeNode::GloballyFindByID(frame_tree_node_id)
-                    ->navigation_request()));
+          context =
+              URLLoaderNetworkContext::CreateForNavigation(*ongoing_navigation);
+        } else {
+          // The navigation request was canceled since the WebContents was
+          // discarded, so it is meaningless to continue the certification
+          // request.
+          CallCancelRequest(std::move(cert_responder));
+          return;
         }
       }
     }
@@ -2161,6 +2153,7 @@ void StoragePartitionImpl::OnTrustAnchorUsed() {
 }
 #endif
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
 void StoragePartitionImpl::OnCanSendSCTAuditingReport(
     OnCanSendSCTAuditingReportCallback callback) {
   bool allowed =
@@ -2171,6 +2164,7 @@ void StoragePartitionImpl::OnCanSendSCTAuditingReport(
 void StoragePartitionImpl::OnNewSCTAuditingReportSent() {
   GetContentClient()->browser()->OnNewSCTAuditingReportSent(browser_context_);
 }
+#endif
 
 void StoragePartitionImpl::ClearDataImpl(
     uint32_t remove_mask,
@@ -2648,7 +2642,7 @@ void StoragePartitionImpl::ClearDataForBuckets(
       base::BarrierCallback<blink::mojom::QuotaStatusCode>(
           storage_buckets.size(),
           BindPostTask(
-              base::SequencedTaskRunnerHandle::Get(),
+              base::SequencedTaskRunner::GetCurrentDefault(),
               base::BindOnce(&StoragePartitionImpl::ClearDataForBucketsDone,
                              base::Unretained(this), storage_key,
                              storage_buckets, std::move(callback))));
@@ -2656,9 +2650,9 @@ void StoragePartitionImpl::ClearDataForBuckets(
   storage::QuotaManagerProxy* quota_manager_proxy = GetQuotaManagerProxy();
 
   for (const auto& bucket : storage_buckets) {
-    quota_manager_proxy->DeleteBucket(storage_key, bucket,
-                                      base::SequencedTaskRunnerHandle::Get(),
-                                      remove_buckets_done);
+    quota_manager_proxy->DeleteBucket(
+        storage_key, bucket, base::SequencedTaskRunner::GetCurrentDefault(),
+        remove_buckets_done);
   }
 }
 

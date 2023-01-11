@@ -13,10 +13,10 @@
 #include <vector>
 
 #include "base/base_switches.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -46,10 +46,10 @@
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"

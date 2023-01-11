@@ -1845,8 +1845,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       kContentAreaGuide,
       kPrimaryToolbarGuide,
       kOmniboxGuide,
-      kOmniboxLeadingImageGuide,
-      kOmniboxTextFieldGuide,
       kSecondaryToolbarGuide,
     ];
     AddNamedGuidesToView(guideNames, self.view);
@@ -3056,9 +3054,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   return _mainContentUIUpdater.state;
 }
 
-#pragma mark - ToolbarCoordinatorDelegate (Public)
+#pragma mark - OmniboxFocusDelegate (Public)
 
-- (void)locationBarDidBecomeFirstResponder {
+- (void)omniboxDidBecomeFirstResponder {
   if (self.isNTPActiveForCurrentWebState) {
     [self.ntpCoordinator locationBarDidBecomeFirstResponder];
   }
@@ -3079,7 +3077,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self.primaryToolbarCoordinator transitionToLocationBarFocusedState:YES];
 }
 
-- (void)locationBarDidResignFirstResponder {
+- (void)omniboxDidResignFirstResponder {
   [_sideSwipeController setEnabled:YES];
 
   [self.ntpCoordinator locationBarDidResignFirstResponder];

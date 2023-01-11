@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_util.h"
@@ -29,6 +29,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/grit/chrome_unscaled_resources.h"
 #include "components/account_id/account_id.h"
 #include "components/app_constants/constants.h"
 #include "components/app_restore/full_restore_save_handler.h"
@@ -200,17 +201,25 @@ void AppServiceProxyAsh::Uninstall(const std::string& app_id,
 void AppServiceProxyAsh::OnApps(std::vector<AppPtr> deltas,
                                 AppType app_type,
                                 bool should_notify_initialized) {
+  if (base::FeatureList::IsEnabled(kUnifiedAppServiceIconLoading)) {
+    // Delete app icon folders for uninstalled apps.
+    std::vector<std::string> app_ids;
+    for (const auto& delta : deltas) {
+      if (delta->readiness != Readiness::kUnknown &&
+          !apps_util::IsInstalled(delta->readiness)) {
+        app_ids.push_back(delta->app_id);
+      }
+    }
+
+    if (!app_ids.empty()) {
+      ScheduleIconFoldersDeletion(profile_->GetPath(), app_ids);
+    }
+  }
+
   if (crosapi_subscriber_) {
     crosapi_subscriber_->OnApps(deltas, app_type, should_notify_initialized);
   }
 
-  AppServiceProxyBase::OnApps(std::move(deltas), app_type,
-                              should_notify_initialized);
-}
-
-void AppServiceProxyAsh::OnApps(std::vector<apps::mojom::AppPtr> deltas,
-                                apps::mojom::AppType app_type,
-                                bool should_notify_initialized) {
   AppServiceProxyBase::OnApps(std::move(deltas), app_type,
                               should_notify_initialized);
 }
@@ -727,22 +736,26 @@ void AppServiceProxyAsh::OnIconRead(AppType app_type,
     icon_writer_.InstallIcon(
         publisher, app_id, size_in_dip,
         base::BindOnce(&AppServiceProxyAsh::OnIconInstalled,
-                       weak_ptr_factory_.GetWeakPtr(), app_id, size_in_dip,
-                       icon_effects, icon_type, std::move(callback)));
+                       weak_ptr_factory_.GetWeakPtr(), app_type, app_id,
+                       size_in_dip, icon_effects, icon_type,
+                       std::move(callback)));
     return;
   }
 
   std::move(callback).Run(std::move(iv));
 }
 
-void AppServiceProxyAsh::OnIconInstalled(const std::string& app_id,
+void AppServiceProxyAsh::OnIconInstalled(AppType app_type,
+                                         const std::string& app_id,
                                          int32_t size_in_dip,
                                          IconEffects icon_effects,
                                          IconType icon_type,
                                          LoadIconCallback callback,
                                          bool install_success) {
   if (!install_success) {
-    LoadIconFromResource(icon_type, size_in_dip, IDR_APP_DEFAULT_ICON,
+    int resource_id = app_type == AppType::kCrostini ? IDR_LOGO_CROSTINI_DEFAULT
+                                                     : IDR_APP_DEFAULT_ICON;
+    LoadIconFromResource(icon_type, size_in_dip, resource_id,
                          /*is_placeholder_icon=*/false, icon_effects,
                          std::move(callback));
     return;

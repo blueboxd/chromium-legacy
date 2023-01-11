@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -89,6 +90,16 @@ namespace blink {
 // context is unable to be restored after 4 attempts, we discard the backing
 // storage of the context and allocate a new one.
 static const unsigned kMaxTryRestoreContextAttempts = 4;
+
+static mojom::blink::ColorScheme GetColorSchemeFromCanvas(
+    HTMLCanvasElement* canvas) {
+  if (canvas && canvas->isConnected()) {
+    if (auto* style = canvas->GetComputedStyle()) {
+      return style->UsedColorScheme();
+    }
+  }
+  return mojom::blink::ColorScheme::kLight;
+}
 
 // Drawing methods need to use this instead of SkAutoCanvasRestore in case
 // overdraw detection substitutes the recording canvas (to discard overdrawn
@@ -694,10 +705,14 @@ ExecutionContext* CanvasRenderingContext2D::GetTopExecutionContext() const {
   return Host()->GetTopExecutionContext();
 }
 
-bool CanvasRenderingContext2D::ParseColorOrCurrentColor(
-    Color& color,
-    const String& color_string) const {
-  return ::blink::ParseColorOrCurrentColor(color, color_string, canvas());
+Color CanvasRenderingContext2D::GetCurrentColor() const {
+  if (!canvas() || !canvas()->isConnected() || !canvas()->InlineStyle()) {
+    return Color::kBlack;
+  }
+  Color color = Color::kBlack;
+  CSSParser::ParseColor(
+      color, canvas()->InlineStyle()->GetPropertyValue(CSSPropertyID::kColor));
+  return color;
 }
 
 static inline TextDirection ToTextDirection(
@@ -1012,7 +1027,6 @@ void CanvasRenderingContext2D::DrawTextInternal(
   DCHECK(font_data);
   if (!font_data)
     return;
-  const FontMetrics& font_metrics = font_data->GetFontMetrics();
 
   // FIXME: Need to turn off font smoothing.
 
@@ -1029,7 +1043,8 @@ void CanvasRenderingContext2D::DrawTextInternal(
   // Draw the item text at the correct point.
   gfx::PointF location(ClampTo<float>(x),
                        ClampTo<float>(y + GetFontBaseline(*font_data)));
-  double font_width = font.Width(text_run);
+  gfx::RectF bounds;
+  double font_width = font.Width(text_run, nullptr, &bounds);
 
   bool use_max_width = (max_width && *max_width < font_width);
   double width = use_max_width ? *max_width : font_width;
@@ -1051,11 +1066,6 @@ void CanvasRenderingContext2D::DrawTextInternal(
       break;
   }
 
-  gfx::RectF bounds(
-      location.x() - font_metrics.Height() / 2,
-      location.y() - font_metrics.Ascent() - font_metrics.LineGap(),
-      ClampTo<float>(width + font_metrics.Height()),
-      font_metrics.LineSpacing());
   if (paint_type == CanvasRenderingContext2DState::kStrokePaintType)
     InflateStrokeRect(bounds);
 
@@ -1069,6 +1079,8 @@ void CanvasRenderingContext2D::DrawTextInternal(
     c->scale(ClampTo<float>(width / font_width), 1);
     location.set_x(location.x() / ClampTo<float>(width / font_width));
   }
+
+  bounds.Offset(location.x(), location.y());
 
   Draw<OverdrawOp::kNone>(
       [this, text = std::move(text), direction, bidi_override, location](
@@ -1245,6 +1257,10 @@ bool CanvasRenderingContext2D::IsCanvas2DBufferValid() const {
     return canvas()->GetCanvas2DLayerBridge()->IsValid();
   }
   return false;
+}
+
+void CanvasRenderingContext2D::ColorSchemeMayHaveChanged() {
+  SetColorScheme(GetColorSchemeFromCanvas(canvas()));
 }
 
 RespectImageOrientationEnum CanvasRenderingContext2D::RespectImageOrientation()

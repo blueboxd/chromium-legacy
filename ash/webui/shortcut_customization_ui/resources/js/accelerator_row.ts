@@ -9,13 +9,14 @@ import '../css/shortcut_customization_shared.css.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './accelerator_row.html.js';
 import {getShortcutProvider} from './mojo_interface_provider.js';
-import {AcceleratorInfo, AcceleratorSource, LayoutStyle, ShortcutProviderInterface} from './shortcut_types.js';
-import {isCustomizationDisabled} from './shortcut_utils.js';
+import {AcceleratorInfo, AcceleratorSource, LayoutStyle, ShortcutProviderInterface, TextAcceleratorPart} from './shortcut_types.js';
+import {isCustomizationDisabled, isTextAcceleratorInfo} from './shortcut_utils.js';
 
 export type ShowEditDialogEvent = CustomEvent<{
   description: string,
@@ -53,11 +54,6 @@ export class AcceleratorRowElement extends PolymerElement {
         value: () => [],
       },
 
-      acceleratorText: {
-        type: String,
-        value: '',
-      },
-
       layoutStyle: {
         type: Object,
       },
@@ -82,8 +78,6 @@ export class AcceleratorRowElement extends PolymerElement {
 
   description: string;
   acceleratorInfos: AcceleratorInfo[];
-  /** The text to display when layoutStyle == kText. */
-  acceleratorText?: string;
   layoutStyle: LayoutStyle;
   action: number;
   source: AcceleratorSource;
@@ -96,6 +90,14 @@ export class AcceleratorRowElement extends PolymerElement {
     if (!this.isLocked) {
       this.removeEventListener('click', () => this.showDialog());
     }
+  }
+
+  override ready(): void {
+    super.ready();
+    const numberOfAccelerators = this.layoutStyle == LayoutStyle.kDefault ?
+        this.acceleratorInfos.length :
+        1;
+    this.updateStyles({'--accelerator-row-num-accels': numberOfAccelerators});
   }
 
   protected onSourceChanged(): void {
@@ -116,14 +118,6 @@ export class AcceleratorRowElement extends PolymerElement {
     return this.layoutStyle === LayoutStyle.kText;
   }
 
-  private shouldShowLockIcon(): boolean {
-    if (isCustomizationDisabled()) {
-      return false;
-    }
-
-    return this.isLocked;
-  }
-
   private showDialog(): void {
     if (isCustomizationDisabled()) {
       return;
@@ -142,6 +136,16 @@ export class AcceleratorRowElement extends PolymerElement {
           },
         },
         ));
+  }
+
+  protected getTextAcceleratorParts(info: AcceleratorInfo[]):
+      TextAcceleratorPart[] {
+    // For text based layout accelerators, we always expect this to be an array
+    // with a single element.
+    assert(info.length === 1);
+    const textAcceleratorInfo = info[0];
+    assert(isTextAcceleratorInfo(textAcceleratorInfo));
+    return textAcceleratorInfo.layoutProperties.textAccelerator.textAccelerator;
   }
 
   static get template(): HTMLTemplateElement {

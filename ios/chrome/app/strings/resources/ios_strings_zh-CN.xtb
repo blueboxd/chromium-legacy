@@ -170,7 +170,6 @@
 <translation id="225943865679747347">错误代码：<ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">添加帐号</translation>
 <translation id="2268044343513325586">优化</translation>
-<translation id="2271351792809375263">在设备上的其他应用内使用已保存到 Chrome 中的密码</translation>
 <translation id="2273327106802955778">“更多”菜单</translation>
 <translation id="2286505070150039482">突出显示的文字</translation>
 <translation id="2299218006564889602">系统会先在设备上对您的密码进行加密，然后再将其保存到 Google 密码管理器中。</translation>
@@ -286,7 +285,6 @@
 请查看您所用搜索引擎的相关说明，了解如何删除您的搜索记录（若适用）。</translation>
 <translation id="3080525922482950719">您可保存网页以供日后阅读或离线阅读</translation>
 <translation id="3081338492074632642">请确保您要保存的密码与您用来登录 <ph name="WEBSITE" /> 的密码相符</translation>
-<translation id="3103603146121354983">自动填充密码</translation>
 <translation id="3112556859945124369">标为…</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />查看您可同步的内容<ph name="END_LINK" /></translation>
 <translation id="3130863904455712965">历史记录和其他内容</translation>
@@ -365,7 +363,6 @@
 <translation id="3661160521073045932">有可用的配置文件</translation>
 <translation id="3670030362669914947">卡号</translation>
 <translation id="3691593122358196899">已将书签添加到“<ph name="FOLDER_TITLE" />”</translation>
-<translation id="369349502275246497">提示保存密码</translation>
 <translation id="3709582977625132201">标记为未读</translation>
 <translation id="371230970611282515">预测危险事件并在此类事件发生前向您发出警告。</translation>
 <translation id="37207012422556617">热搜字词</translation>
@@ -455,6 +452,7 @@
 <translation id="4420409367264901497">修改书签</translation>
 <translation id="4442550905108052454">打开<ph name="BEGIN_BOLD" />设置<ph name="END_BOLD" /></translation>
 <translation id="4454246407045105932">添加语言</translation>
+<translation id="4461286950227634995">提示保存密码</translation>
 <translation id="4462491365653392320">跟踪各个标签页上的价格</translation>
 <translation id="4469418912670346607">继续设置</translation>
 <translation id="4474494258097106883">专为 iPhone 打造</translation>
@@ -466,11 +464,11 @@
 <translation id="4508750114462689118">关闭登录推广元素</translation>
 <translation id="4514889972748124117">建议一个安全系数高的密码…</translation>
 <translation id="4520798012560649652">详细了解无痕模式</translation>
-<translation id="4526249700380860531">通过 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看和管理已保存的密码</translation>
 <translation id="452750746583162491">查看您已同步的数据</translation>
 <translation id="4536418791685807335">请尝试重新登录。</translation>
 <translation id="4540780316273593836">出了点问题</translation>
 <translation id="457386861538956877">更多...</translation>
+<translation id="4587589328781138893">网站</translation>
 <translation id="4588014171431912783">系统将根据上次备份来恢复您的同步设置。<ph name="BEGIN_LINK" />查看您可同步的内容<ph name="END_LINK" /></translation>
 <translation id="4592368184551360546">键盘</translation>
 <translation id="4606247758155004938">您的浏览器由贵单位管理。</translation>
@@ -532,6 +530,7 @@
 <translation id="4916679969857390442">镜头</translation>
 <translation id="4922154083994158612">想提升安全性？</translation>
 <translation id="4930714375720679147">开启</translation>
+<translation id="4938338714234463591">这样，您就可以通过语音在网站上使用某些功能。</translation>
 <translation id="4941089862236492464">很抱歉，分享您的信息时出现问题。</translation>
 <translation id="4944543191714094452">在网页中查找…</translation>
 <translation id="4945756290001680296">访问密码设置</translation>
@@ -554,7 +553,6 @@
 <translation id="5118764316110575523">已关闭</translation>
 <translation id="5119391094379141756">选择“Chrome”</translation>
 <translation id="5132942445612118989">将您的密码、历史记录等信息同步到所有设备上</translation>
-<translation id="5140288047769711648">Chrome 将为您记住此密码，因此，您不必记住它。</translation>
 <translation id="5149188072385105201">添加密码…</translation>
 <translation id="5150492518600715772">发送到您的设备</translation>
 <translation id="5168414296986405587">专为 iPadOS 打造</translation>
@@ -881,7 +879,6 @@
 <translation id="7438481509621345350">现在，当打开新标签页时，您会看到来自 <ph name="CHANNEL_NAME" /> 的故事。</translation>
 <translation id="7454057999980797137">省/区/县</translation>
 <translation id="7459628154744868585">已开启增强型保护</translation>
-<translation id="7464701184726199289">这将清除所有设备上的已同步数据。已保存的网站设置将不会遭到删除，并且可能会反映您的浏览习惯。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="746684838091935575">3. 选择“Chrome”</translation>
 <translation id="7472734401283673885">公司名称</translation>
 <translation id="7473891865547856676">不，谢谢</translation>
@@ -905,6 +902,7 @@
 <translation id="7649070708921625228">帮助</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7671141431838911305">安装</translation>
+<translation id="7679915578945954324">已复制网址</translation>
 <translation id="7687508192620387263">有可用的日历文件</translation>
 <translation id="7701040980221191251">无</translation>
 <translation id="7720410380936703141">重试</translation>
@@ -965,7 +963,6 @@
 <translation id="806745655614357130">单独保存我的数据</translation>
 <translation id="8073670137947914548">已下载完毕</translation>
 <translation id="8073872304774253879">改善搜索和浏览体验</translation>
-<translation id="8076014560081431679">已保存的网站设置将不会遭到删除，并且可能会反映您的浏览习惯。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="8079602123447022758">此设置处于受管状态，点按两次可了解详情</translation>
 <translation id="8080028325999236607">关闭所有标签页</translation>
 <translation id="8084285576995584326">控制您的 Google 帐号数据</translation>
@@ -1093,7 +1090,6 @@
 <translation id="9079935439869366234">全部标为未读</translation>
 <translation id="9081058212938299310">更新 <ph name="USERNAME" /> 的密码？</translation>
 <translation id="9083838294503912307">要在您的所有设备上保持同步并获享个性化体验，请开启同步功能。</translation>
-<translation id="9087108903408689779">Chrome 建议的密码：</translation>
 <translation id="9093271241977565440">点按屏幕顶部的“搜索”图标</translation>
 <translation id="9094033019050270033">更新密码</translation>
 <translation id="9097506547406246598">无法取消关注。出了点问题。</translation>

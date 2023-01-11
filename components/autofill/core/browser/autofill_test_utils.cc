@@ -765,7 +765,8 @@ AutofillWalletUsageData GetAutofillWalletUsageDataForVirtualCard() {
   VirtualCardUsageData virtual_card_usage_data;
   virtual_card_usage_data.instrument_id =
       VirtualCardUsageData::InstrumentId(12345);
-  virtual_card_usage_data.virtual_card_last_four = "1234";
+  virtual_card_usage_data.virtual_card_last_four =
+      VirtualCardUsageData::VirtualCardLastFour("1234");
   virtual_card_usage_data.merchant_origin =
       url::Origin::Create(GURL("https://www.google.com"));
   virtual_card_usage_data.merchant_app_package = "google";
@@ -777,27 +778,25 @@ std::vector<CardUnmaskChallengeOption> GetCardUnmaskChallengeOptions(
     const std::vector<CardUnmaskChallengeOptionType>& types) {
   std::vector<CardUnmaskChallengeOption> challenge_options;
   for (CardUnmaskChallengeOptionType type : types) {
-    CardUnmaskChallengeOption card_unmask_challenge_option{.type = type};
-
     switch (type) {
       case CardUnmaskChallengeOptionType::kSmsOtp:
-        card_unmask_challenge_option.id = "123";
-        card_unmask_challenge_option.challenge_info = u"xxx-xxx-3547";
-        card_unmask_challenge_option.challenge_input_length = 6U;
+        challenge_options.emplace_back(CardUnmaskChallengeOption(
+            CardUnmaskChallengeOption::ChallengeOptionId("123"), type,
+            /*challenge_info=*/u"xxx-xxx-3547",
+            /*challenge_input_length=*/6U));
         break;
       case CardUnmaskChallengeOptionType::kCvc:
-        card_unmask_challenge_option.id = "234";
-        card_unmask_challenge_option.challenge_info =
-            u"3 digit security code on the back of your card";
-        card_unmask_challenge_option.cvc_position = CvcPosition::kBackOfCard;
-        card_unmask_challenge_option.challenge_input_length = 3U;
+        challenge_options.emplace_back(CardUnmaskChallengeOption(
+            CardUnmaskChallengeOption::ChallengeOptionId("234"), type,
+            /*challenge_info=*/
+            u"3 digit security code on the back of your card",
+            /*challenge_input_length=*/3U,
+            /*cvc_position=*/CvcPosition::kBackOfCard));
         break;
       default:
         NOTREACHED();
         break;
     }
-
-    challenge_options.push_back(card_unmask_challenge_option);
   }
   return challenge_options;
 }

@@ -4,12 +4,13 @@
 
 #include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"
 
-#include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "components/gcm_driver/gcm_client.h"
 

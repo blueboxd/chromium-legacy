@@ -9,10 +9,10 @@
 #include <thread>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_forward.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"  // For CHECK macros.
@@ -23,7 +23,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system/sys_info.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
@@ -208,6 +208,7 @@ base::Value::Dict CreateCapabilities(Session* session,
   // See https://w3c.github.io/webauthn/#sctn-automation-webdriver-capability
   caps.Set("webauthn:virtualAuthenticators", !capabilities.IsAndroid());
   caps.Set("webauthn:extension:largeBlob", !capabilities.IsAndroid());
+  caps.Set("webauthn:extension:minPinLength", !capabilities.IsAndroid());
   caps.Set("webauthn:extension:credBlob", !capabilities.IsAndroid());
 
   // Chrome-specific extensions.
@@ -378,7 +379,23 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
       return status;
     }
 
-    status = web_view->StartBidiServer(kMapperScript);
+    base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+    base::FilePath bidi_mapper_path =
+        cmd_line->GetSwitchValuePath("bidi-mapper-path");
+
+    std::string mapper_script = kMapperScript;
+
+    if (!bidi_mapper_path.empty()) {
+      VLOG(0) << "Custom BiDi mapper path specified: " << bidi_mapper_path;
+
+      if (!base::ReadFileToString(bidi_mapper_path, &mapper_script)) {
+        return Status(StatusCode::kUnknownError,
+                      "Failed to read the specified BiDi mapper path: " +
+                          bidi_mapper_path.AsUTF8Unsafe());
+      }
+    }
+
+    status = web_view->StartBidiServer(mapper_script);
     if (status.IsError()) {
       return status;
     }

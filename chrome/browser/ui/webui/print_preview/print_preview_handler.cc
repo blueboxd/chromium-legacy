@@ -12,11 +12,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/number_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
@@ -928,7 +928,10 @@ void PrintPreviewHandler::SendInitialSettings(
   initial_settings.Set(kIsDriveMounted,
                        drive_service && drive_service->IsMounted());
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (drive_integration_service_) {
+  // The "Save to Google Drive" option is only allowed for the primary profile
+  // in the Lacros browser.
+  if (Profile::FromWebUI(web_ui())->IsMainProfile() &&
+      drive_integration_service_) {
     drive_integration_service_->GetMountPointPath(base::BindOnce(
         &PrintPreviewHandler::OnDrivePathReady, weak_factory_.GetWeakPtr(),
         std::move(initial_settings), callback_id));

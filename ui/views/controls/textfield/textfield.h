@@ -181,6 +181,11 @@ class VIEWS_EXPORT Textfield : public View,
   // of text that overflows its display area.
   void SelectAll(bool reversed);
 
+  // Selects the word at which the cursor is currently positioned. If there is a
+  // non-empty selection, the selection bounds are extended to their nearest
+  // word boundaries.
+  void SelectWord();
+
   // A convenience method to select the word closest to |point|.
   void SelectWordAt(const gfx::Point& point);
 
@@ -297,11 +302,6 @@ class VIEWS_EXPORT Textfield : public View,
 
   // Clears Edit history.
   void ClearEditHistory();
-
-  // Get/Set the accessible name of the text field. If the textfield has a
-  // visible label, use SetAssociatedLabel() instead.
-  std::u16string GetAccessibleName() const;
-  void SetAccessibleName(const std::u16string& name);
 
   // If the accessible name should be the same as the labelling view's text,
   // use this. It will set the accessible label relationship and copy the
@@ -712,9 +712,6 @@ class VIEWS_EXPORT Textfield : public View,
   // such.
   bool invalid_ = false;
 
-  // The accessible name of the text field.
-  std::u16string accessible_name_;
-
   // The input type of this text field.
   ui::TextInputType text_input_type_ = ui::TEXT_INPUT_TYPE_TEXT;
 
@@ -804,7 +801,6 @@ class VIEWS_EXPORT Textfield : public View,
 };
 
 BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Textfield, View)
-VIEW_BUILDER_PROPERTY(std::u16string, AccessibleName)
 VIEW_BUILDER_PROPERTY(SkColor, BackgroundColor)
 VIEW_BUILDER_PROPERTY(TextfieldController*, Controller)
 VIEW_BUILDER_PROPERTY(bool, CursorEnabled)

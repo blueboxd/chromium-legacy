@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/controls/rich_hover_button.h"
 #include "chrome/browser/ui/views/page_info/page_info_view_factory.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/border.h"
@@ -32,20 +33,26 @@ PageInfoAdPersonalizationContentView::PageInfoAdPersonalizationContentView(
       views::BoxLayout::Orientation::kVertical));
 
   AddChildView(PageInfoViewFactory::CreateSeparator());
-  // TODO(olesiamarukhno): Use correct strings.
+  const auto manage_button_id =
+      base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)
+          ? IDS_PAGE_INFO_AD_PRIVACY_SUBPAGE_MANAGE_BUTTON
+          : IDS_PAGE_INFO_AD_PERSONALIZATION_SUBPAGE_MANAGE_BUTTON;
   AddChildView(std::make_unique<RichHoverButton>(
       base::BindRepeating(
           [](PageInfoAdPersonalizationContentView* view) {
             view->presenter_->RecordPageInfoAction(
                 PageInfo::PageInfoAction::
                     PAGE_INFO_AD_PERSONALIZATION_SETTINGS_OPENED);
-            view->ui_delegate_->ShowPrivacySandboxAdPersonalization();
+            if (base::FeatureList::IsEnabled(
+                    privacy_sandbox::kPrivacySandboxSettings4)) {
+              view->ui_delegate_->ShowPrivacySandboxSettings();
+            } else {
+              view->ui_delegate_->ShowPrivacySandboxAdPersonalization();
+            }
           },
           this),
       PageInfoViewFactory::GetSiteSettingsIcon(),
-      l10n_util::GetStringUTF16(
-          IDS_PAGE_INFO_AD_PERSONALIZATION_SUBPAGE_MANAGE_BUTTON),
-      std::u16string(),
+      l10n_util::GetStringUTF16(manage_button_id), std::u16string(),
       /*tooltip_text=*/std::u16string(), std::u16string(),
       PageInfoViewFactory::GetLaunchIcon()));
 
@@ -63,15 +70,22 @@ void PageInfoAdPersonalizationContentView::SetAdPersonalizationInfo(
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   const auto button_insets =
       layout_provider->GetInsetsMetric(INSETS_PAGE_INFO_HOVER_BUTTON);
-
   int message_id;
   if (info.has_joined_user_to_interest_group && !info.accessed_topics.empty()) {
     message_id =
-        IDS_PAGE_INFO_AD_PERSONALIZATION_TOPICS_AND_INTEREST_GROUP_DESCRIPTION;
+        base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)
+            ? IDS_PAGE_INFO_AD_PRIVACY_TOPICS_AND_FLEDGE_DESCRIPTION
+            : IDS_PAGE_INFO_AD_PERSONALIZATION_TOPICS_AND_INTEREST_GROUP_DESCRIPTION;
   } else if (info.has_joined_user_to_interest_group) {
-    message_id = IDS_PAGE_INFO_AD_PERSONALIZATION_INTEREST_GROUP_DESCRIPTION;
+    message_id =
+        base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)
+            ? IDS_PAGE_INFO_AD_PRIVACY_FLEDGE_DESCRIPTION
+            : IDS_PAGE_INFO_AD_PERSONALIZATION_INTEREST_GROUP_DESCRIPTION;
   } else {
-    message_id = IDS_PAGE_INFO_AD_PERSONALIZATION_TOPICS_DESCRIPTION;
+    message_id =
+        base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)
+            ? IDS_PAGE_INFO_AD_PRIVACY_TOPICS_DESCRIPTION
+            : IDS_PAGE_INFO_AD_PERSONALIZATION_TOPICS_DESCRIPTION;
   }
   auto* description_label =
       info_container_->AddChildView(std::make_unique<views::Label>(

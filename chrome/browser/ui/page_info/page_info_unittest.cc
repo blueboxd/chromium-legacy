@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/at_exit.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -1400,6 +1400,26 @@ TEST_F(PageInfoTest, SubresourceFilterSetting_MatchesActivation) {
 
   page_info();
   EXPECT_TRUE(showing_setting(last_permission_info_list()));
+}
+
+TEST_F(PageInfoTest, IsolatedWebAppStatus) {
+  EXPECT_CALL(*mock_ui(), SetPermissionInfoStub());
+  EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
+  /*
+    SetIdentityInfo() is expected to be called 3 times:
+    1. PageInfo::InitializeUiState() inside page_info()
+    2. page_info()->SetIsolatedWebAppNameForTesting()
+    3. page_info()->UpdateSecurityState()
+  */
+  EXPECT_CALL(*mock_ui(), SetIdentityInfo(_)).Times(3);
+
+  page_info()->SetIsolatedWebAppNameForTesting(std::u16string());
+  page_info()->UpdateSecurityState();
+
+  EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_ISOLATED_WEB_APP,
+            page_info()->site_connection_status());
+  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_ISOLATED_WEB_APP,
+            page_info()->site_identity_status());
 }
 
 #if !BUILDFLAG(IS_ANDROID)

@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "ash/public/cpp/app_menu_constants.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/metrics/user_metrics.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
@@ -31,7 +31,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
-#include "components/services/app_service/public/cpp/permission_utils.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "ui/base/l10n/l10n_util.h"

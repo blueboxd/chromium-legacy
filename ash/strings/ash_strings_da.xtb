@@ -28,6 +28,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="1104621072296271835">Dine enheder fungerer endnu bedre sammen</translation>
 <translation id="1111021433905331574">Du kan skifte farve på tastaturlyset i Indstillinger &gt; <ph name="APP_TITLE" /></translation>
 <translation id="112308213915226829">Skjul hylde automatisk</translation>
+<translation id="1135788167815124787">Korrigering af portrætlys</translation>
 <translation id="1142002900084379065">Seneste billeder</translation>
 <translation id="1148499908455722006">Åbn dialogboks med oplysninger om <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Kalender</translation>
@@ -162,6 +163,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="1774796056689732716">Kalender for <ph name="CURRENT_MONTH_YEAR" /> – <ph name="DATE" /> er valgt.</translation>
 <translation id="1787955149152357925">Fra</translation>
 <translation id="1797271123677381264">Glemt adgangskode</translation>
+<translation id="1807246157184219062">Lys</translation>
 <translation id="181103072419391116">Signalstyrke <ph name="SIGNAL_STRENGTH" />, administreret af din administrator</translation>
 <translation id="1812997170047690955">Hvad vises der på min skærm?</translation>
 <translation id="1816896987747843206">Dette giver alle apps og websites med kameratilladelse adgang til kameraet</translation>
@@ -238,6 +240,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="2224075387478458881">Skærmoptagelse er ikke tilladt, når beskyttet indhold er synligt</translation>
 <translation id="2227179592712503583">Fjern forslag</translation>
 <translation id="225680501294068881">Søger efter enheder...</translation>
+<translation id="225716114209817872">Maksimal</translation>
 <translation id="2257486738914982088">Noget gik galt under download af <ph name="FILENAME" /></translation>
 <translation id="2258734398699965611">Foreslåede filer</translation>
 <translation id="2268130516524549846">Bluetooth er deaktiveret</translation>
@@ -262,6 +265,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="2354174487190027830">Aktiverer <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Fortsæt</translation>
 <translation id="2367186422933365202">Det lykkedes ikke at logge ind på din Chromebook</translation>
+<translation id="2367972762794486313">Vis apps</translation>
 <translation id="2369165858548251131">"Hej" på kinesisk</translation>
 <translation id="2390318262976603432">Lokale indstillinger</translation>
 <translation id="240006516586367791">Mediestyring</translation>
@@ -506,6 +510,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="3713734891607377840">Åbn efter download</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> og <ph name="UNAVAILABLE_APPS_COUNT" /> mere er ikke på denne enhed.</translation>
 <translation id="3735740477244556633">Sortér efter</translation>
+<translation id="3738664582935948253">Du kan nu vise klik og tastaturgenveje i skærmoptagelser</translation>
 <translation id="3742055079367172538">Screenshottet blev gemt</translation>
 <translation id="3765841986579723851">Redigeret i dag</translation>
 <translation id="3773700760453577392">En administrator har afvist samlet login fra flere konti for <ph name="USER_EMAIL" />. Alle brugere skal logge ud for at fortsætte.</translation>
@@ -525,6 +530,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="385300504083504382">Begyndelsen</translation>
 <translation id="3861651314799684201">Tryk på Enter for at optage fuld skærm</translation>
+<translation id="3871092408932389764">Laveste</translation>
 <translation id="3886872229787704059">Åbnet i dag</translation>
 <translation id="3891340733213178823">Tryk på Ctrl+Shift+Q to gange for at logge ud.</translation>
 <translation id="3893630138897523026">ChromeVox (talefeedback)</translation>
@@ -882,7 +888,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="5805809050170488595">Klik for at aktivere <ph name="NETWORK_NAME" /></translation>
 <translation id="5825969630400862129">Indstillinger for tilsluttede enheder</translation>
 <translation id="5837036133683224804">Stop <ph name="ROUTE_TITLE" /> på <ph name="RECEIVER_NAME" /></translation>
-<translation id="584525477304726060">Hold fingeren nede på vinduet for at maksimere det</translation>
+<translation id="584525477304726060">Hold fingeren på vinduet for at maksimere det</translation>
 <translation id="5856638668464565213"><ph name="NETWORK_NAME" /> er ikke aktiveret.</translation>
 <translation id="5860033963881614850">Fra</translation>
 <translation id="5860491529813859533">Aktivér</translation>
@@ -1011,6 +1017,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="6537924328260219877">Signalstyrke <ph name="SIGNAL_STRENGTH" />, telefonbatteri <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999">Downloaden scannes: <ph name="FILENAME" /></translation>
 <translation id="6542521951477560771">Caster til <ph name="RECEIVER_NAME" /></translation>
+<translation id="6548693220024099658">Baggrundssløring</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Installeret for nylig</translation>
 <translation id="6559976592393364813">Spørg din administrator</translation>
@@ -1417,6 +1424,7 @@ Installeret for nylig</translation>
 <translation id="878215960996152260"><ph name="APP_NAME" />, installeret app, blokeret</translation>
 <translation id="8785070478575117577">Opret forbindelse til <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">Markant</translation>
 <translation id="8806053966018712535">Mappen <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">"Hjælp"</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

@@ -294,7 +294,6 @@ void SearchBoxView::OnActiveAppListModelsChanged(AppListModel* model,
 
   ResetForShow();
   UpdateSearchIcon();
-  OnWallpaperColorsChanged();
   ShowAssistantChanged();
 }
 
@@ -458,7 +457,12 @@ void SearchBoxView::OnThemeChanged() {
         GetColorProvider()->GetColor(ui::kColorAshFocusRing));
   }
 
-  OnWallpaperColorsChanged();
+  UpdateSearchIcon();
+  UpdatePlaceholderTextStyle();
+  UpdateTextColor();
+
+  UpdateBackgroundColor(GetBackgroundColorForState(current_app_list_state_));
+  SchedulePaint();
 }
 
 void SearchBoxView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -466,12 +470,9 @@ void SearchBoxView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     focus_ring_layer_->SetBounds(bounds());
 }
 
-// static
-int SearchBoxView::GetFocusRingSpacing() {
-  return kSearchBoxFocusRingWidth + kSearchBoxFocusRingPadding;
-}
-
-void SearchBoxView::MaybeCreateFocusRing() {
+void SearchBoxView::AddedToWidget() {
+  // Creating the search box focus ring relies on its parent layer which only
+  // exists after widget initialization.
   if (!is_app_list_bubble_) {
     focus_ring_layer_ = std::make_unique<FocusRingLayer>();
     focus_ring_layer_->SetColor(
@@ -480,6 +481,11 @@ void SearchBoxView::MaybeCreateFocusRing() {
     layer()->parent()->StackAtBottom(focus_ring_layer_.get());
     UpdateSearchBoxFocusPaint();
   }
+}
+
+// static
+int SearchBoxView::GetFocusRingSpacing() {
+  return kSearchBoxFocusRingWidth + kSearchBoxFocusRingPadding;
 }
 
 void SearchBoxView::RecordSearchBoxActivationHistogram(
@@ -652,16 +658,6 @@ SkColor SearchBoxView::GetBackgroundColorForState(AppListState state) const {
 
   return app_list_widget->GetColorProvider()->GetColor(
       kColorAshShieldAndBase80);
-}
-
-void SearchBoxView::OnWallpaperColorsChanged() {
-  UpdateSearchIcon();
-  UpdatePlaceholderTextStyle();
-  UpdateTextColor();
-
-  UpdateBackgroundColor(GetBackgroundColorForState(current_app_list_state_));
-
-  SchedulePaint();
 }
 
 void SearchBoxView::ProcessAutocomplete(

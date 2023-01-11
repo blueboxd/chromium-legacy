@@ -47,7 +47,6 @@
 <translation id="1041263367839475438">Kullanılabilir cihazlar</translation>
 <translation id="1042174272890264476">Bilgisayarınızda aynı zamanda yerleşik <ph name="SHORT_PRODUCT_NAME" /> RLZ kitaplığı da bulunur. RLZ, aramaları ve belirli bir promosyon kampanyasının sağladığı <ph name="SHORT_PRODUCT_NAME" /> kullanımını ölçmek için benzersiz olmayan ve kimlik bilgileri içermeyen bir etiket atar. Bu etiketler bazen <ph name="PRODUCT_NAME" /> içindeki Google Arama sorgularında görünür.</translation>
 <translation id="1043505821207197890">Bir sorun oldu. Linux yalnızca kısmen yeni sürüme geçirilebilir. Daha fazla bilgi için günlükleri inceleyin. Günlükler, Dosyalar &gt; Dosyalarım &gt; <ph name="LOG_FILE" /> dosyasına kaydedildi.</translation>
-<translation id="1043818413152647937">Ayrıca veriler bu uygulamalardan da temizlensin mi?</translation>
 <translation id="104419033123549300">Tuş Eşleme Stili</translation>
 <translation id="104710386808485638">Linux yeniden başlatılsın mı?</translation>
 <translation id="1047431265488717055">&amp;Bağlantı Metnini Kopyala</translation>
@@ -1237,6 +1236,7 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2105809836724866556">Gösterilmiyor: <ph name="MODULE_TITLE" /></translation>
 <translation id="2108349519800154983">{COUNT,plural, =1{Telefon numarası}other{# telefon numarası}}</translation>
 <translation id="2110941575868943054">Bluetooth cihazları aramasına izin verilen siteler</translation>
+<translation id="2111158890826137380">Maalesef bir hata oluştu. Lütfen açıklama bölümüne #bruschetta ifadesini ekleyerek geri bildirim gönderin. Hata kodu: <ph name="ERROR" /></translation>
 <translation id="211144231511833662">Türleri Temizle</translation>
 <translation id="2111670510994270194">Sağa yeni sekme</translation>
 <translation id="2112554630428445878">Hoş geldiniz <ph name="USERNAME" /></translation>
@@ -1400,6 +1400,7 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2255077166240162850">Bu cihaz farklı bir alan adı veya mod için kilitlendi.</translation>
 <translation id="2255317897038918278">Microsoft Zaman Damgası</translation>
 <translation id="2256115617011615191">Şimdi yeniden başlat</translation>
+<translation id="225614027745146050">Hoş Geldiniz</translation>
 <translation id="2257053455312861282">Okul hesabı eklemek, ebeveyn denetimleri altında çalışırken web sitelerinde, uzantılarda ve uygulamalarda öğrenci olarak kolayca oturum açmayı sağlar.</translation>
 <translation id="2261323523305321874">Yöneticiniz, bazı eski profilleri devre dışı bırakan, sistem çapında bir değişiklik yaptı.</translation>
 <translation id="22614517036276112">Bu doküman veya cihazınız, kuruluşunuzun güvenlik politikalarından bazılarına uymuyor. Neyin düzeltilmesi gerektiğini öğrenmek için yöneticinize danışın.</translation>
@@ -1776,6 +1777,7 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2575713839157415345">{YEARS,plural, =1{Bu cihaz 1 yıl boyunca kaydedilecek olup bir dahaki sefere kod kullanmadan bağlanabilirsiniz. Bu ayar, yöneticiniz tarafından yapılmıştır.}other{Bu cihaz {YEARS} yıl boyunca kaydedilecek olup bir dahaki sefere kod kullanmadan bağlanabilirsiniz. Bu ayar, yöneticiniz tarafından yapılmıştır.}}</translation>
 <translation id="257779572837908839">Chromebox video konferansı olarak kurun</translation>
 <translation id="2579309488038515659">Hotspot'u etkinleştir</translation>
+<translation id="2579596474754516455">Gerektiğinde PDF resimleri tarayarak metinleri ekran okuyucu için dönüştürün</translation>
 <translation id="2580889980133367162"><ph name="HOST" /> ana makinesinin birden fazla dosya indirmesine her zaman izin ver</translation>
 <translation id="258095186877893873">Uzun</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Platform: <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -2008,7 +2010,6 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2785267875302712148">Şifre Güvenliği</translation>
 <translation id="2785873697295365461">Dosya açıklayıcıları</translation>
 <translation id="2785975315093449168">GTK</translation>
-<translation id="2787022501752539710">Yerel tarama verilerini (yer işaretleri, şifreler, geçmiş vb.) sakla</translation>
 <translation id="2787354132612937472">—</translation>
 <translation id="2788135150614412178">+</translation>
 <translation id="2789486458103222910">Tamam</translation>
@@ -2729,6 +2730,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3469583217479686109">Seçim Aracı</translation>
 <translation id="3470392222765168737">Siteyi takip et</translation>
 <translation id="3471876058939596279">HDMI ve USB Type-C bağlantı noktası video için aynı anda kullanılamaz. Farklı bir video bağlantı noktası kullanın.</translation>
+<translation id="3472469028191701821">Yeni sekmede açılır</translation>
 <translation id="3473241910002674503">Tablet modunda düğmelerle ana ekrana gidin, geri dönün ve uygulamalar arasında geçiş yapın.</translation>
 <translation id="3473479545200714844">Ekran büyüteci</translation>
 <translation id="3474218480460386727">Yeni kelimeler için 99 veya daha az harf kullanın</translation>
@@ -2877,6 +2879,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3616113530831147358">Ses</translation>
 <translation id="3616741288025931835">Tarama Verilerini &amp;Temizle...</translation>
 <translation id="3617891479562106823">Arka planlar kullanılamıyor. Daha sonra tekrar deneyin.</translation>
+<translation id="3618286417582819036">Maalesef, bir hata oluştu</translation>
 <translation id="3619115746895587757">Kapuçino</translation>
 <translation id="3620136223548713675">Coğrafi konum</translation>
 <translation id="362023940451053340"><ph name="ACCOUNT" /> için, Google Hesabınızda</translation>
@@ -3115,6 +3118,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3820749202859700794">SECG eliptik eğri secp521r1 (önceki adı NIST P-521)</translation>
 <translation id="3821074617718452587">Telefon Merkezi bildirimleri</translation>
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{Bir uzantı onaylandı}other{# uzantı onaylandı}}</translation>
+<translation id="3823019343150397277">IBAN</translation>
 <translation id="3823310065043511710">Linux için en az <ph name="INSTALL_SIZE" /> alan olması önerilir.</translation>
 <translation id="3824621460022590830">Cihaz kaydı jetonu geçersiz. Lütfen cihaz sahibiyle ya da yöneticisiyle iletişime geçin. Hata kodu: <ph name="ERROR_CODE" />.</translation>
 <translation id="3825041664272812989">{FILE_TYPE_COUNT,plural, =1{Bu dosya türü için seçimimi hatırla: <ph name="FILE_TYPES" />}other{Bu dosya türleri için seçimimi hatırla: <ph name="FILE_TYPES" />}}</translation>
@@ -3201,6 +3205,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3898233949376129212">Cihazın dili</translation>
 <translation id="3898327728850887246"><ph name="SITE_NAME" /> şunu yapmak istiyor: <ph name="FIRST_PERMISSION" /> ve <ph name="SECOND_PERMISSION" /></translation>
 <translation id="3898743717925399322"><ph name="WEBSITE" /> şifreniz hem bu cihazda hem de Google Hesabınızda kayıtlı. Hangisini silmek istiyorsunuz?</translation>
+<translation id="3898768766145818464">Videoyu oynatır veya duraklatır</translation>
 <translation id="389901847090970821">Klavye seçin</translation>
 <translation id="3900966090527141178">Şifreleri dışa aktarın</translation>
 <translation id="3902789559055749153"><ph name="APP_NAME" /> için şifre anahtarını nasıl oluşturmak istediğinizi seçin</translation>
@@ -3846,7 +3851,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4513872120116766993">Tahmine dayalı yazım</translation>
 <translation id="4513946894732546136">Geri Bildirim</translation>
 <translation id="451407183922382411"><ph name="COMPANY_NAME" /> tarafından destekleniyor</translation>
-<translation id="4514610446763173167">Oynatmak veya duraklatmak için videoyu aç/kapat</translation>
 <translation id="451515744433878153">Kaldır</translation>
 <translation id="4515872537870654449">Servis için Dell ile iletişime geçin. Fan çalışmıyorsa yuva kapanır.</translation>
 <translation id="4518840066030486079">Üst Karakter Tuşu Mod Stili</translation>
@@ -4033,6 +4037,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4675828034887792601">Sitelerde arama yapmak ve arama motorunuzu yönetmek için kısayollar oluşturun</translation>
 <translation id="4676595058027112862">Telefon Merkezi, Daha Fazla Bilgi</translation>
 <translation id="4677772697204437347">GPU belleği</translation>
+<translation id="4678848110205818817">Kredi/Banka Kartı</translation>
 <translation id="4680105648806843642">Bu sayfada ses kapalı</translation>
 <translation id="4680112532510845139">Buraya bir görsel bırakın</translation>
 <translation id="4681453295291708042">Yakındakilerle Paylaş'ı devre dışı bırak</translation>
@@ -6668,6 +6673,7 @@ Güvenliği ihlal edilmiş # şifreniz daha var. Google Şifre Yöneticisi bu ş
 <translation id="7149839598364933473">Bu cihazı <ph name="DEVICE_OS" /> cihazına dönüştürün.</translation>
 <translation id="7149893636342594995">Son 24 saat</translation>
 <translation id="7152478047064750137">Bu uzantı herhangi bir özel izin gerektirmiyor</translation>
+<translation id="7153309176431047193">Resimleri metne dönüştürün</translation>
 <translation id="7154130902455071009">Başlangıç sayfanızı <ph name="START_PAGE" /> olarak değiştirme</translation>
 <translation id="7156231244155528270">Resmi metne dönüştürün</translation>
 <translation id="7159953856712257647">Varsayılan olarak yüklenir</translation>

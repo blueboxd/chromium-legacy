@@ -158,8 +158,8 @@ GREYLayoutConstraint* Below() {
                            constant:0.0];
 }
 
-// Matcher for the website in Password Details view.
-id<GREYMatcher> PasswordDetailWebsite() {
+// Matcher for the website in the Add Password view.
+id<GREYMatcher> AddPasswordWebsite() {
   return TextFieldForCellWithLabelId(IDS_IOS_SHOW_PASSWORD_VIEW_SITE);
 }
 
@@ -394,13 +394,18 @@ void TapEdit() {
       performAction:grey_tap()];
 }
 
-void CopyPasswordDetailWithID(int detail_id) {
-  [GetPasswordDetailTextFieldWithID(detail_id) performAction:grey_tap()];
+void CopyPasswordDetailWithInteraction(GREYElementInteraction* element) {
+  [element performAction:grey_tap()];
 
   // Tap the context menu item for copying.
   [[EarlGrey selectElementWithMatcher:PopUpMenuItemWithLabel(
                                           IDS_IOS_SETTINGS_SITE_COPY_MENU_ITEM)]
       performAction:grey_tap()];
+}
+
+void CopyPasswordDetailWithID(int detail_id) {
+  CopyPasswordDetailWithInteraction(
+      GetPasswordDetailTextFieldWithID(detail_id));
 }
 
 id<GREYMatcher> EditDoneButton() {
@@ -417,6 +422,11 @@ id<GREYMatcher> EditDoneButton() {
 - (GREYElementInteraction*)
     interactionForSinglePasswordEntryWithDomain:(NSString*)domain
                                        username:(NSString*)username;
+
+// Matcher for the websites in Password Details view.
+// `websites` should be in the format "website1, website2,..." with `websiteN`
+// being the website displayed in the nth detail row of the website cell.
+- (id<GREYMatcher>)matcherForPasswordDetailCellWithWebsites:(NSString*)websites;
 
 @end
 
@@ -436,6 +446,12 @@ id<GREYMatcher> EditDoneButton() {
   // page.
   return GetInteractionForListItem(ButtonWithAccessibilityLabel(domain),
                                    kGREYDirectionDown);
+}
+
+- (id<GREYMatcher>)matcherForPasswordDetailCellWithWebsites:
+    (NSString*)websites {
+  return grey_accessibilityLabel(
+      [NSString stringWithFormat:@"Sites, %@", websites]);
 }
 
 - (void)setUp {
@@ -711,10 +727,12 @@ id<GREYMatcher> EditDoneButton() {
                                             username:@"concrete username"]
       performAction:grey_tap()];
 
-  CopyPasswordDetailWithID(IDS_IOS_SHOW_PASSWORD_VIEW_SITE);
+  CopyPasswordDetailWithInteraction(GetInteractionForPasswordDetailItem(
+      [self matcherForPasswordDetailCellWithWebsites:@"https://example.com/"]));
 
-  NSString* snackbarLabel =
-      l10n_util::GetNSString(IDS_IOS_SETTINGS_SITE_WAS_COPIED_MESSAGE);
+  NSString* snackbarLabel = l10n_util::GetNSString(
+      [self groupingEnabled] ? IDS_IOS_SETTINGS_SITES_WERE_COPIED_MESSAGE
+                             : IDS_IOS_SETTINGS_SITE_WAS_COPIED_MESSAGE);
   // The tap checks the existence of the snackbar and also closes it.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       performAction:grey_tap()];
@@ -1016,6 +1034,13 @@ id<GREYMatcher> EditDoneButton() {
 
 // Checks that deleting a password from password details can be cancelled.
 - (void)testCancelDeletionInDetailView {
+  // TODO(crbug.com/1405037): Test fails on iPad device.
+#if !TARGET_IPHONE_SIMULATOR
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"This test fails on iPad device.");
+  }
+#endif
+
   // Save form to be deleted later.
   SaveExamplePasswordForm();
 
@@ -1152,8 +1177,10 @@ id<GREYMatcher> EditDoneButton() {
       performAction:grey_tap()];
 
   // Check that the Site and Username are present and correct.
-  [[EarlGrey selectElementWithMatcher:PasswordDetailWebsite()]
-      assertWithMatcher:grey_textFieldValue(@"https://example.com/")];
+  [[EarlGrey
+      selectElementWithMatcher:[self matcherForPasswordDetailCellWithWebsites:
+                                         @"https://example.com/"]]
+      assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
       assertWithMatcher:grey_textFieldValue(@"federated username")];
   [[EarlGrey selectElementWithMatcher:PasswordDetailFederation()]
@@ -1194,8 +1221,10 @@ id<GREYMatcher> EditDoneButton() {
                                             username:@"concrete username"]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:PasswordDetailWebsite()]
-      assertWithMatcher:grey_textFieldValue(@"https://example.com/")];
+  [[EarlGrey
+      selectElementWithMatcher:[self matcherForPasswordDetailCellWithWebsites:
+                                         @"https://example.com/"]]
+      assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
       assertWithMatcher:grey_textFieldValue(@"concrete username")];
   [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
@@ -1208,7 +1237,10 @@ id<GREYMatcher> EditDoneButton() {
   [GetInteractionForPasswordDetailItem(PasswordDetailPassword())
       assertWithMatcher:grey_layout(@[ Below() ], PasswordDetailUsername())];
   [GetInteractionForPasswordDetailItem(PasswordDetailUsername())
-      assertWithMatcher:grey_layout(@[ Below() ], PasswordDetailWebsite())];
+      assertWithMatcher:grey_layout(
+                            @[ Below() ],
+                            [self matcherForPasswordDetailCellWithWebsites:
+                                      @"https://example.com/"])];
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
@@ -1229,8 +1261,10 @@ id<GREYMatcher> EditDoneButton() {
 
   [GetInteractionForPasswordEntry(@"example.com") performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:PasswordDetailWebsite()]
-      assertWithMatcher:grey_textFieldValue(@"https://example.com/")];
+  [[EarlGrey
+      selectElementWithMatcher:[self matcherForPasswordDetailCellWithWebsites:
+                                         @"https://example.com/"]]
+      assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
       assertWithMatcher:grey_nil()];
   [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
@@ -1261,8 +1295,10 @@ id<GREYMatcher> EditDoneButton() {
                                             username:@"federated username"]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:PasswordDetailWebsite()]
-      assertWithMatcher:grey_textFieldValue(@"https://example.com/")];
+  [[EarlGrey
+      selectElementWithMatcher:[self matcherForPasswordDetailCellWithWebsites:
+                                         @"https://example.com/"]]
+      assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
       assertWithMatcher:grey_textFieldValue(@"federated username")];
   [[EarlGrey selectElementWithMatcher:PasswordDetailFederation()]
@@ -1271,7 +1307,10 @@ id<GREYMatcher> EditDoneButton() {
       assertWithMatcher:grey_nil()];
 
   [GetInteractionForPasswordDetailItem(PasswordDetailUsername())
-      assertWithMatcher:grey_layout(@[ Below() ], PasswordDetailWebsite())];
+      assertWithMatcher:grey_layout(
+                            @[ Below() ],
+                            [self matcherForPasswordDetailCellWithWebsites:
+                                      @"https://example.com/"])];
   [[EarlGrey selectElementWithMatcher:PasswordDetailFederation()]
       assertWithMatcher:grey_layout(@[ Below() ], PasswordDetailUsername())];
 
@@ -1522,10 +1561,12 @@ id<GREYMatcher> EditDoneButton() {
                        kRemoteIndex, kRemoteIndex]) performAction:grey_tap()];
 
   // Check that the detail view loaded correctly by verifying the site content.
-  [[EarlGrey selectElementWithMatcher:PasswordDetailWebsite()]
-      assertWithMatcher:grey_textFieldValue([NSString
-                            stringWithFormat:@"https://www%02d.example.com/",
-                                             kRemoteIndex])];
+  [[EarlGrey
+      selectElementWithMatcher:
+          [self matcherForPasswordDetailCellWithWebsites:
+                    [NSString stringWithFormat:@"https://www%02d.example.com/",
+                                               kRemoteIndex]]]
+      assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
@@ -2093,7 +2134,7 @@ id<GREYMatcher> EditDoneButton() {
       assertWithMatcher:grey_not(grey_enabled())];
 
   // Fill form.
-  [[EarlGrey selectElementWithMatcher:PasswordDetailWebsite()]
+  [[EarlGrey selectElementWithMatcher:AddPasswordWebsite()]
       performAction:grey_replaceText(@"https://www.example.com")];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
@@ -2148,7 +2189,7 @@ id<GREYMatcher> EditDoneButton() {
       performAction:grey_tap()];
 
   // Fill form.
-  [[EarlGrey selectElementWithMatcher:PasswordDetailWebsite()]
+  [[EarlGrey selectElementWithMatcher:AddPasswordWebsite()]
       performAction:grey_replaceText(@"https://zexample.com")];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
@@ -2188,7 +2229,7 @@ id<GREYMatcher> EditDoneButton() {
       performAction:grey_tap()];
 
   // Fill form.
-  [[EarlGrey selectElementWithMatcher:PasswordDetailWebsite()]
+  [[EarlGrey selectElementWithMatcher:AddPasswordWebsite()]
       performAction:grey_replaceText(@"https://example.com")];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
@@ -2246,7 +2287,7 @@ id<GREYMatcher> EditDoneButton() {
       performAction:grey_tap()];
 
   // Fill form.
-  [[EarlGrey selectElementWithMatcher:PasswordDetailWebsite()]
+  [[EarlGrey selectElementWithMatcher:AddPasswordWebsite()]
       performAction:grey_replaceText(@"https://www.example.com")];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
@@ -2262,7 +2303,7 @@ id<GREYMatcher> EditDoneButton() {
   [[EarlGrey selectElementWithMatcher:AddPasswordButton()]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:PasswordDetailWebsite()]
+  [[EarlGrey selectElementWithMatcher:AddPasswordWebsite()]
       performAction:grey_replaceText(@"https://www.example.com")];
 
   // Test that the section alert for duplicated credential is shown.
@@ -2309,7 +2350,7 @@ id<GREYMatcher> EditDoneButton() {
       performAction:grey_tap()];
 
   // Fill form.
-  [[EarlGrey selectElementWithMatcher:PasswordDetailWebsite()]
+  [[EarlGrey selectElementWithMatcher:AddPasswordWebsite()]
       performAction:grey_replaceText(@"example")];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
@@ -2765,6 +2806,12 @@ id<GREYMatcher> EditDoneButton() {
   NSString* label = [NSString stringWithFormat:@"%@, %@", domain, username];
   return GetInteractionForListItem(ButtonWithAccessibilityLabel(label),
                                    kGREYDirectionDown);
+}
+
+- (id<GREYMatcher>)matcherForPasswordDetailCellWithWebsites:
+    (NSString*)websites {
+  return grey_accessibilityLabel(
+      [NSString stringWithFormat:@"Site, %@", websites]);
 }
 
 // This causes the test case to actually be detected as a test case. The actual

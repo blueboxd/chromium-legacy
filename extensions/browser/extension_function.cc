@@ -9,8 +9,8 @@
 #include <tuple>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/dcheck_is_on.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
@@ -19,6 +19,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -547,10 +548,9 @@ void ExtensionFunction::OnQuotaExceeded(std::string violation_error) {
   RespondWithError(std::move(violation_error));
 }
 
-void ExtensionFunction::SetArgs(base::Value args) {
-  DCHECK(args.is_list());
+void ExtensionFunction::SetArgs(base::Value::List args) {
   DCHECK(!args_.has_value());
-  args_ = std::move(args).TakeList();
+  args_ = std::move(args);
 }
 
 const base::Value::List* ExtensionFunction::GetResultListForTest() const {

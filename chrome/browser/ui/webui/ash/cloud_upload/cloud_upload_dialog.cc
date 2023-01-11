@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -267,6 +267,7 @@ bool CloudUploadDialog::Show(
 
 void CloudUploadDialog::OnDialogShown(content::WebUI* webui) {
   DCHECK(dialog_args_);
+  SystemWebDialogDelegate::OnDialogShown(webui);
   static_cast<CloudUploadUI*>(webui->GetController())
       ->SetDialogArgs(std::move(dialog_args_));
 }

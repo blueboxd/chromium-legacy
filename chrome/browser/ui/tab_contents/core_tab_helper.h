@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
@@ -118,6 +118,7 @@ class CoreTabHelper : public content::WebContentsObserver,
       const GURL& src_url,
       const std::string& additional_query_params,
       bool use_side_panel,
+      const std::string& thumbnail_content_type,
       const std::vector<uint8_t>& thumbnail_data,
       const gfx::Size& original_size,
       const std::string& image_extension,

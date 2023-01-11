@@ -9,15 +9,14 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "chrome/browser/share/core/share_targets.h"
 #include "components/component_updater/component_updater_paths.h"

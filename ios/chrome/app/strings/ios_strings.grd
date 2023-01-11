@@ -231,12 +231,6 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_SHOW_ALL_PASSWORDS" desc="Button title in the keyboard accessory bar to open the list of all saved passwords. [Length: 20em] [iOS only]">
         Show All...
       </message>
-      <message name="IDS_IOS_SUGGESTED_PASSWORD" desc="Text that shows a suggested generated password at user's request [Length: unlimited] [iOS only]">
-        Chrome Suggested Password:
-      </message>
-      <message name="IDS_IOS_SUGGESTED_PASSWORD_HINT" desc="Text shown alongside a suggested password to tell user that generated passwords are recorded by chrome. [Length: unlimited] [iOS only]">
-        Chrome will remember this password for you. You don't have to remember it.
-      </message>
       <message name="IDS_IOS_SUGGESTED_STRONG_PASSWORD" desc="Text that shows a suggested generated password at user's request [Length: unlimited] [iOS only]">
         Use Strong Password:
       </message>
@@ -578,12 +572,6 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_UNKOWN_DSE_SIGNED_OUT" desc="Footer message in the settings to clear browsing data that informs the user that they will need to look up instructions to delete their search history from a DSE that is not well known to Google.">
         See your search engine’s instructions for deleting your search history, if applicable.
-      </message>
-      <message name="IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_CLEAR_SYNC_AND_SAVED_SITE_DATA" desc="Footer message in the settings to clear browsing data that informs the user the synced data will be cleared on all devices and that saved site settings will not be deleted.">
-        This clears synced data from all devices. Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
-      </message>
-      <message name="IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_SAVED_SITE_DATA" desc="Footer message in the settings to clear browsing data that informs the user that saved site settings will not be deleted.">
-        Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
       <message name="IDS_IOS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK_BUTTON" desc="Title of a button that closes the dialog informing the user to open the Google My Activity. [Length: 15em]">
         Ok, got it
@@ -1949,6 +1937,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SAFE_BROWSING_STANDARD_PROTECTION_LEAK_CHECK_TITLE" desc="Title for the switch toggling whether Chrome should check that entered credentials have been part of a leak.">
         Warn You if Passwords Are Exposed in a Data Breach
       </message>
+      <message name="IDS_IOS_SPEECH_RECOGNITION_USAGE_DESCRIPTION" desc="Specifies the reason for sending user data to Apple's speech recognition servers.">
+        This will let you use your voice with certain features on websites.
+      </message>
       <message name="IDS_IOS_TABLE_VIEW_INFO_BUTTON_ITEM_ACCESSIBILITY_TAP" desc="Accessibility hint for info button items that have a tap functionality.">
         Button
       </message>
@@ -2514,9 +2505,6 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SETTINGS_SELECT_CHROME_STEP" desc="Text of the row indicating the third step of setting the default browser.">
         3. Select Chrome
       </message>
-      <message name="IDS_IOS_SAVE_PASSWORDS_MANAGE_ACCOUNT" desc="Header text with link for the view in Settings for managing saved passwords. [Length: unlimited] [iOS only]">
-        View and manage saved passwords at <ph name="BEGIN_LINK">BEGIN_LINK</ph>passwords.google.com<ph name="END_LINK">END_LINK</ph>
-      </message>
       <message name="IDS_IOS_SAVE_PASSWORDS_MANAGE_ACCOUNT_HEADER" desc="Header text with link for the view in Settings for managing saved passwords. [Length: unlimited] [iOS only]">
         Create, save, and manage your passwords so you can easily sign in to sites and apps. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
@@ -2660,9 +2648,6 @@ Try to use a unique password for every site.
       <message name="IDS_IOS_SETTINGS_PASSWORDS_IN_OTHER_APPS_STEP_3_IOS16" desc="Text of the row indicating the third step of full instruction of of turning on iOS auto-fill from Chrome password manager on iOS 16 and above [iOS only]">
         3. Tap Password Options
       </message>
-      <message name="IDS_IOS_SETTINGS_PASSWORDS_IN_OTHER_APPS_SUBTITLE" desc="The subtitle of the view that teaches users to turn on iOS auto-fill from Chrome password manager">
-        Use the passwords you saved to Chrome in other apps on your device
-      </message>
       <message name="IDS_IOS_SETTINGS_PASSWORDS_IN_OTHER_APPS_SUBTITLE_SYNCING_ENABLED" desc="The subtitle of the view that teaches password-syncing users they can access passwords from their other devices">
         You can also use saved passwords on your other devices.
       </message>
@@ -2767,6 +2752,9 @@ Try to use a unique password for every site.
       </message>
       <message name="IDS_IOS_SETTINGS_SITE_WAS_COPIED_MESSAGE" desc="Confirmation that the site URL of a saved credential was copied. This is shown alone in an infobar at the bottom of the screen. [Length: one line]">
         Site address copied
+      </message>
+      <message name="IDS_IOS_SETTINGS_SITES_WERE_COPIED_MESSAGE" desc="Confirmation that the sites URL's of a saved credential was copied. This is shown alone in an infobar at the bottom of the screen. [Length: one line]">
+        Site addresses copied
       </message>
       <message name="IDS_IOS_SETTINGS_USERNAME_WAS_COPIED_MESSAGE" desc="Confirmation that the username was copied. This is shown alone in an infobar at the bottom of the screen. [Length: one line]">
         Username copied
@@ -2920,6 +2908,9 @@ Try to use a unique password for every site.
       </message>
       <message name="IDS_IOS_SHOW_PASSWORD_VIEW_SITE" desc="Label indicating that the text displayed below is the site on which the associated password was saved. The password is displayed in the same view, but under a different label. [Length: 20em] [iOS only]">
         Site
+      </message>
+      <message name="IDS_IOS_SHOW_PASSWORD_VIEW_SITES" desc="Label indicating that the texts displayed next to it are the sites on which the associated password was saved. The password is displayed in the same view, but under a different label. [Length: 20em] [iOS only]">
+        Sites
       </message>
       <message name="IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME" desc="Label indicating that the text displayed below is the username to which a saved password corresponds. The password is displayed in the same view, but under a different label. [Length: 20em] [iOS only]">
         Username
@@ -3594,9 +3585,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TOOLS_MENU_PASSWORD_MANAGER" desc="The iOS menu item for opening the passwords list [iOS only]">
         Password Manager
       </message>
-      <message name="IDS_IOS_TOOLS_MENU_PASSWORDS" desc="The iOS menu item for opening the passwords list [iOS only]">
-        Passwords
-      </message>
       <message name="IDS_IOS_TOOLS_MENU_PASTE_AND_GO" desc="The iOS menu item for pasting a URL or text in the omnibox and navigating to the page or searching for the text">
         Paste and Go
       </message>
@@ -3919,9 +3907,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       </message>
       <message name="IDS_IOS_IPH_BUBBLE_SNOOZE" desc="Label of a button that appears in an in-product help Tip. Pressing this button will dismiss the Tip, the user will be reminded of the same Tip later on. Used as a button title in an info bubble." meaning="Used as a button title in an info bubble.">
         Remind Me Later
-      </message>
-      <message name="IDS_IOS_PASSWORD_SUGGESTIONS_TIP_TITLE" desc="The title of the tip explaining to the user they can tap on Autofill password suggestions. Used as a title in an info bubble." meaning="Used as a title in an info bubble.">
-        Autofill Passwords
       </message>
       <message name="IDS_IOS_KEYBOARD_ACCESSORY_VIEW_PASTE_SEARCH" desc="Accessibility label for a button that starts a Paste and Search [iOS only]">
         Paste and Search

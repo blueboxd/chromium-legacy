@@ -6,16 +6,15 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/system/sys_info.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/segmentation_platform/internal/constants.h"
@@ -96,19 +95,8 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
           &SegmentationPlatformServiceImpl::OnModelRefreshNeeded,
           weak_ptr_factory_.GetWeakPtr()));
 
-  std::map<std::string, std::unique_ptr<SegmentResultProvider>>
-      result_providers;
-  for (const auto& config : configs_) {
-    result_providers[config->segmentation_key] = SegmentResultProvider::Create(
-        storage_service_->segment_info_database(),
-        storage_service_->signal_storage_config(),
-        storage_service_->default_model_manager(), &execution_service_, clock_,
-        platform_options_.force_refresh_results);
-  }
-
   // Central class to delegate the client requests.
-  request_dispatcher_ = std::make_unique<RequestDispatcher>(
-      configs_, std::move(result_providers));
+  request_dispatcher_ = std::make_unique<RequestDispatcher>(configs_);
 
   for (const auto& config : configs_) {
     segment_selectors_[config->segmentation_key] =
@@ -254,7 +242,18 @@ void SegmentationPlatformServiceImpl::OnDatabaseInitialized(bool success) {
     selector.second->OnPlatformInitialized(&execution_service_);
   }
 
-  request_dispatcher_->OnPlatformInitialized(success);
+  std::map<std::string, std::unique_ptr<SegmentResultProvider>>
+      result_providers;
+  for (const auto& config : configs_) {
+    result_providers[config->segmentation_key] = SegmentResultProvider::Create(
+        storage_service_->segment_info_database(),
+        storage_service_->signal_storage_config(),
+        storage_service_->default_model_manager(), &execution_service_, clock_,
+        platform_options_.force_refresh_results);
+  }
+
+  request_dispatcher_->OnPlatformInitialized(success, &execution_service_,
+                                             std::move(result_providers));
 
   // Run any method calls that were received during initialization.
   while (!pending_actions_.empty()) {

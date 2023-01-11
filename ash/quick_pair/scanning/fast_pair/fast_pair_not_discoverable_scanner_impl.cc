@@ -19,11 +19,11 @@
 #include "ash/quick_pair/repository/fast_pair/device_metadata.h"
 #include "ash/quick_pair/repository/fast_pair/pairing_metadata.h"
 #include "ash/quick_pair/repository/fast_pair_repository.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -247,7 +247,7 @@ void FastPairNotDiscoverableScannerImpl::OnAccountKeyFilterCheckResult(
   device->set_version(metadata->device_metadata->InferFastPairVersion());
 
   device::BluetoothDevice* ble_device =
-      adapter_->GetDevice(device->ble_address);
+      adapter_->GetDevice(device->ble_address());
 
   if (ble_device && ble_device->IsPaired()) {
     QP_LOG(ERROR) << __func__
@@ -257,7 +257,7 @@ void FastPairNotDiscoverableScannerImpl::OnAccountKeyFilterCheckResult(
   }
 
   QP_LOG(INFO) << __func__ << ": Running found callback";
-  notified_devices_[device->ble_address] = device;
+  notified_devices_[device->ble_address()] = device;
   found_callback_.Run(device);
 }
 

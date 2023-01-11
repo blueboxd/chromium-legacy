@@ -8,6 +8,7 @@
 #import "base/check_op.h"
 #import "base/ios/block_types.h"
 #import "base/notreached.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_switch.h"
@@ -18,6 +19,7 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/constants.h"
 #import "ios/chrome/browser/signin/system_identity.h"
+#import "ios/chrome/browser/signin/system_identity_manager.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow_performer.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/signin_error_api.h"
@@ -295,27 +297,16 @@ enum AuthenticationState {
     case CHECK_MERGE_CASE: {
       DCHECK_EQ(SHOULD_CLEAR_DATA_USER_CHOICE, self.localDataClearingStrategy);
       __weak AuthenticationFlow* weakSelf = self;
-      ios::CapabilitiesCallback callback =
-          ^(SystemIdentityCapabilityResult result) {
-            if (result == SystemIdentityCapabilityResult::kTrue) {
-              [weakSelf didChooseClearDataPolicy:SHOULD_CLEAR_DATA_CLEAR_DATA];
-              return;
-            }
-            switch (weakSelf.postSignInAction) {
-              case POST_SIGNIN_ACTION_COMMIT_SYNC:
-                [weakSelf checkMergeCaseForUnsupervisedAccounts];
-                break;
-              case POST_SIGNIN_ACTION_NONE:
-                [weakSelf continueSignin];
-                break;
-            }
-          };
-      ios::ChromeIdentityService* identity_service =
-          ios::GetChromeBrowserProvider().GetChromeIdentityService();
-      identity_service->IsSubjectToParentalControls(_identityToSignIn,
-                                                    callback);
+      GetApplicationContext()
+          ->GetSystemIdentityManager()
+          ->IsSubjectToParentalControls(
+              _identityToSignIn,
+              base::BindOnce(^(SystemIdentityCapabilityResult result) {
+                [weakSelf isSubjectToParentalControlCapabilityFetched:result];
+              }));
       return;
     }
+
     case SHOW_MANAGED_CONFIRMATION:
       [_performer
           showManagedConfirmationForHostedDomain:_identityToSignInHostedDomain
@@ -379,6 +370,22 @@ enum AuthenticationState {
       return;
   }
   NOTREACHED();
+}
+
+- (void)isSubjectToParentalControlCapabilityFetched:
+    (SystemIdentityCapabilityResult)result {
+  if (result == SystemIdentityCapabilityResult::kTrue) {
+    [self didChooseClearDataPolicy:SHOULD_CLEAR_DATA_CLEAR_DATA];
+    return;
+  }
+  switch (self.postSignInAction) {
+    case POST_SIGNIN_ACTION_COMMIT_SYNC:
+      [self checkMergeCaseForUnsupervisedAccounts];
+      break;
+    case POST_SIGNIN_ACTION_NONE:
+      [self continueSignin];
+      break;
+  }
 }
 
 - (void)checkMergeCaseForUnsupervisedAccounts {

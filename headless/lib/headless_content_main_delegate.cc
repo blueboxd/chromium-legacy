@@ -158,16 +158,7 @@ void InitApplicationLocale(const base::CommandLine& command_line) {
 HeadlessContentMainDelegate::HeadlessContentMainDelegate(
     std::unique_ptr<HeadlessBrowserImpl> browser)
     : browser_(std::move(browser)) {
-  Init();
-}
-
-HeadlessContentMainDelegate::HeadlessContentMainDelegate(
-    HeadlessBrowser::Options options)
-    : options_(std::make_unique<HeadlessBrowser::Options>(std::move(options))) {
-  Init();
-}
-
-void HeadlessContentMainDelegate::Init() {
+  DCHECK(browser_);
   DCHECK(!g_current_headless_content_main_delegate);
   g_current_headless_content_main_delegate = this;
 }
@@ -184,30 +175,20 @@ absl::optional<int> HeadlessContentMainDelegate::BasicStartupComplete() {
   if (!command_line->HasSwitch(::switches::kHeadless))
     command_line->AppendSwitch(::switches::kHeadless);
 
-  if (options()->single_process_mode)
-    command_line->AppendSwitch(::switches::kSingleProcess);
-
-  if (options()->disable_sandbox)
-    command_line->AppendSwitch(sandbox::policy::switches::kNoSandbox);
-
-  if (!options()->enable_resource_scheduler)
-    command_line->AppendSwitch(::switches::kDisableResourceScheduler);
-
+  // Use software rendering by default, but don't mess with gl and angle
+  // switches if user is overriding them.
+  if (!command_line->HasSwitch(switches::kUseGL) &&
+      !command_line->HasSwitch(switches::kUseANGLE)) {
+    command_line->AppendSwitchASCII(::switches::kUseGL,
+                                    gl::kGLImplementationANGLEName);
+    command_line->AppendSwitchASCII(
+        ::switches::kUseANGLE, gl::kANGLEImplementationSwiftShaderForWebGLName);
+  }
 #if BUILDFLAG(IS_OZONE)
   // The headless backend is automatically chosen for a headless build, but also
   // adding it here allows us to run in a non-headless build too.
   command_line->AppendSwitchASCII(::switches::kOzonePlatform, "headless");
 #endif
-
-  if (!command_line->HasSwitch(::switches::kUseGL) &&
-      !options()->gl_implementation.empty()) {
-    command_line->AppendSwitchASCII(::switches::kUseGL,
-                                    options()->gl_implementation);
-    if (!options()->angle_implementation.empty()) {
-      command_line->AppendSwitchASCII(::switches::kUseANGLE,
-                                      options()->angle_implementation);
-    }
-  }
 
   // When running headless there is no need to suppress input until content
   // is ready for display (because it isn't displayed to users). Nor is it
@@ -440,9 +421,7 @@ HeadlessContentMainDelegate* HeadlessContentMainDelegate::GetInstance() {
 }
 
 HeadlessBrowser::Options* HeadlessContentMainDelegate::options() {
-  if (browser_)
-    return browser_->options();
-  return options_.get();
+  return browser_->options();
 }
 
 content::ContentClient* HeadlessContentMainDelegate::CreateContentClient() {
@@ -464,8 +443,7 @@ HeadlessContentMainDelegate::CreateContentRendererClient() {
 
 content::ContentUtilityClient*
 HeadlessContentMainDelegate::CreateContentUtilityClient() {
-  utility_client_ =
-      std::make_unique<HeadlessContentUtilityClient>(options()->user_agent);
+  utility_client_ = std::make_unique<HeadlessContentUtilityClient>();
   return utility_client_.get();
 }
 

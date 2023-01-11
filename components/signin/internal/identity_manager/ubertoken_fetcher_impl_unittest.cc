@@ -6,10 +6,9 @@
 
 #include <memory>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"

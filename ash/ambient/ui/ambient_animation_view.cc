@@ -30,8 +30,8 @@
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "base/bind.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/task/sequenced_task_runner.h"
@@ -430,6 +430,10 @@ void AmbientAnimationView::ApplyJitter() {
   animated_image_view_->SetAdditionalTranslation(jitter);
   glanceable_info_container_->SetBorder(CreateGlanceableInfoBorder(jitter));
   media_string_container_->SetBorder(CreateMediaStringBorder(jitter));
+}
+
+JitterCalculator* AmbientAnimationView::GetJitterCalculatorForTesting() {
+  return &animation_jitter_calculator_;
 }
 
 BEGIN_METADATA(AmbientAnimationView, views::View)

@@ -9,9 +9,9 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_reader.h"
@@ -90,9 +90,6 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
                  gfx::NativeWindow parent_window) override;
   void OnApps(std::vector<AppPtr> deltas,
               AppType app_type,
-              bool should_notify_initialized) override;
-  void OnApps(std::vector<apps::mojom::AppPtr> deltas,
-              apps::mojom::AppType app_type,
               bool should_notify_initialized) override;
 
   // Pauses apps. |pause_data|'s key is the app_id. |pause_data|'s PauseData
@@ -266,7 +263,8 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
                   IconValuePtr iv);
 
   // Invoked after writing icon image files to the local disk.
-  void OnIconInstalled(const std::string& app_id,
+  void OnIconInstalled(AppType app_type,
+                       const std::string& app_id,
                        int32_t size_in_dip,
                        IconEffects icon_effects,
                        IconType icon_type,

@@ -7,7 +7,7 @@
 <translation id="1034259925032978114">視窗已開啟</translation>
 <translation id="1036348656032585052">停用</translation>
 <translation id="1045899828449635435">要一併清除這些網站的資料嗎？</translation>
-<translation id="1049743911850919806">無痕模式</translation>
+<translation id="1049743911850919806">無痕</translation>
 <translation id="10614374240317010">永不儲存</translation>
 <translation id="1062628064301375934">協助我們建立更私密的網絡</translation>
 <translation id="107147699690128016">如果變更副檔名，此檔案可能會在其他應用程式中開啟，並可能對裝置造成損害。</translation>
@@ -139,18 +139,17 @@
 <translation id="1718835860248848330">過去一小時</translation>
 <translation id="1724977129262658800">解鎖後即可編輯密碼</translation>
 <translation id="1726477445370128854">Chrome 會預先載入您可能瀏覽的網頁，加快瀏覽及搜尋速度</translation>
-<translation id="1736419249208073774">探索</translation>
 <translation id="1749561566933687563">同步您的書籤</translation>
 <translation id="1750259112639922169">分頁群組 - <ph name="TAB_COUNT" /> 個分頁</translation>
 <translation id="17513872634828108">開啟分頁</translation>
 <translation id="1754404134430936718">已複製文字</translation>
 <translation id="1778457539567749232">標示為未讀取</translation>
 <translation id="1779766957982586368">關閉視窗</translation>
-<translation id="1791662854739702043">安裝位置</translation>
+<translation id="1791662854739702043">已安裝</translation>
 <translation id="1792959175193046959">隨時變更預設的下載位置</translation>
 <translation id="1807246157184219062">淺色</translation>
 <translation id="1810845389119482123">未完成初始同步處理設定</translation>
-<translation id="1829244130665387512">在網頁中尋找</translation>
+<translation id="1829244130665387512">喺網頁度搵</translation>
 <translation id="1832459821645506983">是，我同意使用</translation>
 <translation id="1849863543394887018">您可前往設定以停用通知</translation>
 <translation id="1854311313115643875">在試用期間，「廣告評估」允許您瀏覽的網站向 Chrome 要求資料，以便評估廣告的效益。「廣告評估」會透過盡量減少在網站之間傳送的資料，從而限制跨網站追蹤功能。
@@ -197,6 +196,7 @@
 <translation id="2067805253194386918">文字</translation>
 <translation id="2068748236079642969">觀看下一段影片</translation>
 <translation id="2074143993849053708">「Google 助理」語音搜尋的同意使用者介面</translation>
+<translation id="2079545284768500474">復原</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 項結果 (共 <ph name="TOTAL_RESULTS" /> 項)</translation>
 <translation id="2096012225669085171">在不同裝置上同步與個人化</translation>
 <translation id="2100273922101894616">自動登入</translation>
@@ -238,7 +238,6 @@
 <translation id="2328985652426384049">無法登入</translation>
 <translation id="234265804618409743">無法開啟攝錄機。發生錯誤。</translation>
 <translation id="2349710944427398404">Chrome 使用的資料總量，包括帳戶、書籤和已儲存的設定</translation>
-<translation id="2353636109065292463">檢查互聯網連線</translation>
 <translation id="235789365079050412">Google 私隱權政策</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2386938421315164605">隱藏和取消隱藏主題</translation>
@@ -423,7 +422,6 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="3280562213547448728">語音搜尋</translation>
 <translation id="3282568296779691940">登入 Chrome</translation>
 <translation id="3285080554353377245">關於如何使用 Chrome 的影片</translation>
-<translation id="3288003805934695103">重新載入網頁</translation>
 <translation id="3290249595466894471">同時傳送網頁、下載檔案、擴充程式活動及系統資料的少量抽樣資料，以協助發現新威脅</translation>
 <translation id="3297344142967351106">語音助手</translation>
 <translation id="3303414029551471755">繼續下載內容？</translation>
@@ -464,7 +462,7 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="3524334353996115845">讓 <ph name="ORIGIN" /> 驗證您的身份</translation>
 <translation id="3527085408025491307">資料夾</translation>
 <translation id="3542235761944717775">可用空間：<ph name="KILOBYTES" /> KB</translation>
-<translation id="3549657413697417275">搜尋你的記錄</translation>
+<translation id="3549657413697417275">搜尋您的記錄</translation>
 <translation id="3557336313807607643">新增至通訊錄</translation>
 <translation id="3560491354538957576">網站可以定義興趣</translation>
 <translation id="3563767357928833671">顯示咗剪貼簿嘅內容</translation>
@@ -521,7 +519,6 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="3894427358181296146">新增資料夾</translation>
 <translation id="3899682235662194879">關閉所有無痕式分頁</translation>
 <translation id="3908308510347173149">更新 <ph name="PRODUCT_NAME" /></translation>
-<translation id="3912508018559818924">正在網上搜尋最佳結果…</translation>
 <translation id="3924911262913579434">已開啟「<ph name="SAFE_BROWSING_MODE" />」</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">合併我的資料</translation>
@@ -720,7 +717,7 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="49268022542405662">系統會匯出您的密碼並下載為文字檔案。任何能存取目的地資料夾的使用者和應用程式都可看到您的密碼。</translation>
 <translation id="4932247056774066048">您即將登出由 <ph name="DOMAIN_NAME" /> 管理的帳戶，因此您的 Chrome 資料亦會從此裝置上刪除，但仍會保留在您的 Google 帳戶中。</translation>
 <translation id="4943703118917034429">虛擬實境</translation>
-<translation id="4943872375798546930">沒有結果</translation>
+<translation id="4943872375798546930">搵唔到結果</translation>
 <translation id="4950924971025849764">登入同一個 Google 帳戶後，其他裝置便可使用此手機作為安全密鑰。</translation>
 <translation id="4957722034734105353">瞭解詳情…</translation>
 <translation id="4961107849584082341">將此網頁翻譯成任何語言</translation>
@@ -775,7 +772,6 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="5233638681132016545">新分頁</translation>
 <translation id="5235196193381275927">登入時發生問題</translation>
 <translation id="5246093389635966745">編輯工具列捷徑</translation>
-<translation id="526421993248218238">無法載入此網頁</translation>
 <translation id="5271967389191913893">裝置無法開啟下載的檔案。</translation>
 <translation id="5274286919938458946">已連結「<ph name="CARD_DETAIL" />」</translation>
 <translation id="5292796745632149097">傳送至</translation>
@@ -887,6 +883,7 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="5865733239029070421">自動將使用情況統計和當機報告傳送給 Google</translation>
 <translation id="5869522115854928033">已儲存的密碼</translation>
 <translation id="5869789175361934029">透過其他裝置繼續瀏覽</translation>
+<translation id="5876496397064130037">工作階段已重新啟用</translation>
 <translation id="587735546353481577">如要追蹤網站，只要前往該網站並開啟 Chrome 選單，然後輕按 [追蹤] 即可。</translation>
 <translation id="5879072387416556377">取得更切題的建議</translation>
 <translation id="5906513782029855931">如果「Google 助理」知道網站的網址，便能夠助您完成工作。您可在 Chrome 設定中關閉「Google 助理」。</translation>
@@ -929,7 +926,6 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="6138832295072039549">在此變更網站設定</translation>
 <translation id="6140709049082532940">強化保護功能：</translation>
 <translation id="6140912465461743537">國家/地區</translation>
-<translation id="614940544461990577">建議做法：</translation>
 <translation id="6150320133806434356">已儲存書籤</translation>
 <translation id="6154478581116148741">在「設定」中開啟螢幕鎖定功能，即可從此裝置匯出您的密碼</translation>
 <translation id="6159729262978459665">清除所有已同步裝置上的記錄。</translation>
@@ -1166,6 +1162,7 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="7379900596734708416">現已推出網站的深色主題背景</translation>
 <translation id="7400418766976504921">網址</translation>
 <translation id="7403691278183511381">Chrome 初次使用體驗</translation>
+<translation id="7411224099004328643">Google 帳戶使用者</translation>
 <translation id="741204030948306876">確認</translation>
 <translation id="7419565702166471774">一律使用安全連線</translation>
 <translation id="7431991332293347422">控制系統如何使用您的瀏覽記錄，為您提供個人化的搜尋內容和其他服務</translation>
@@ -1294,7 +1291,7 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="804335162455518893">找不到 SD 卡</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> 個無痕式分頁}other{<ph name="TAB_COUNT_NORMAL" /> 個無痕式分頁}}</translation>
 <translation id="8048728378294435881">將資料備份，並在任何裝置上使用</translation>
-<translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 可用空間</translation>
+<translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 可用</translation>
 <translation id="8058655154417507695">到期年份</translation>
 <translation id="8058746566562539958">在 Chrome 新分頁中開啟</translation>
 <translation id="8062594758852531064">延伸預先載入模式：</translation>
@@ -1429,7 +1426,7 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="8773160212632396039">正在處理要求</translation>
 <translation id="8788265440806329501">導覽記錄閂咗</translation>
 <translation id="8788968922598763114">重新開啟最近關閉的分頁</translation>
-<translation id="8798449543960971550">讀取</translation>
+<translation id="8798449543960971550">已讀</translation>
 <translation id="8803526663383843427">開啟時</translation>
 <translation id="8805097383171548551">如要掃瞄 QR 碼，請使用有攝錄機的裝置。</translation>
 <translation id="8812260976093120287">在部分網站上，您可以透過裝置使用上述支援的付款應用程式付款。</translation>

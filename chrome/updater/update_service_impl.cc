@@ -11,14 +11,14 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
@@ -530,7 +530,8 @@ void UpdateServiceImpl::RunInstaller(const std::string& app_id,
                        : base::FilePath());
 
   // Create a thread runner that:
-  //   1) has SequencedTaskRunnerHandle set, to run `state_update` callback.
+  //   1) has SequencedTaskRunner::CurrentDefaultHandle set, to run
+  //      `state_update` callback.
   //   2) may block, since `RunApplicationInstaller` blocks.
   //   3) has `base::WithBaseSyncPrimitives()`, since `RunApplicationInstaller`
   //      waits on process.

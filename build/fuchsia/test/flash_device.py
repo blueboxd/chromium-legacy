@@ -33,7 +33,7 @@ def _get_system_info(target: Optional[str]) -> Tuple[str, str]:
     if running_unattended():
         with ScopedFfxConfig('discovery.zedboot.enabled', 'true'):
             run_ffx_command(('target', 'reboot'), target_id=target)
-        run_ffx_command(('target', 'wait'), target)
+        run_ffx_command(('target', 'wait', '-t', '180'), target)
 
     info_cmd = run_ffx_command(('target', 'show', '--json'),
                                target_id=target,
@@ -168,9 +168,14 @@ def update(system_image_dir: str,
             if running_unattended():
                 assert target, ('Target ID must be specified on swarming when'
                                 ' paving.')
-                run_ffx_command(('target', 'reboot', '-r'), target)
+                # TODO(crbug.com/1405525): We should check the device state
+                # before and after rebooting it to avoid unnecessary reboot or
+                # undesired state.
+                run_ffx_command(('target', 'reboot', '-r'),
+                                target,
+                                check=False)
             pave(system_image_dir, target)
-            time.sleep(120)
+            time.sleep(180)
         else:
             flash(system_image_dir, target, serial_num)
 

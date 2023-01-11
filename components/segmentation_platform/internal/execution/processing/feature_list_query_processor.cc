@@ -4,10 +4,9 @@
 
 #include "components/segmentation_platform/internal/execution/processing/feature_list_query_processor.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/segmentation_platform/internal/database/storage_service.h"
 #include "components/segmentation_platform/internal/database/ukm_types.h"
 #include "components/segmentation_platform/internal/execution/processing/custom_input_processor.h"

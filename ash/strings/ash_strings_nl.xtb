@@ -28,6 +28,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="1104621072296271835">Je apparaten werken samen nog beter</translation>
 <translation id="1111021433905331574">Je kunt de kleur van de achtergrondverlichting van je toetsenbord wijzigen in Instellingen &gt; <ph name="APP_TITLE" /></translation>
 <translation id="112308213915226829">Plank automatisch verbergen</translation>
+<translation id="1135788167815124787">Portretbelichting</translation>
 <translation id="1142002900084379065">Recente foto's</translation>
 <translation id="1148499908455722006">Dialoogvenster met informatie openen voor <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Agenda</translation>
@@ -162,6 +163,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="1774796056689732716">Agenda, <ph name="CURRENT_MONTH_YEAR" />, momenteel is <ph name="DATE" /> geselecteerd.</translation>
 <translation id="1787955149152357925">Uit</translation>
 <translation id="1797271123677381264">Wachtwoord vergeten</translation>
+<translation id="1807246157184219062">Licht</translation>
 <translation id="181103072419391116">Signaalsterkte <ph name="SIGNAL_STRENGTH" />, beheerd door je beheerder</translation>
 <translation id="1812997170047690955">Wat wordt er op mijn scherm getoond?</translation>
 <translation id="1816896987747843206">Hiermee geef je alle apps en websites met camerarechten toegang tot de camera</translation>
@@ -238,6 +240,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="2224075387478458881">Schermopname is niet toegestaan als er beschermde content zichtbaar is</translation>
 <translation id="2227179592712503583">Suggestie verwijderen</translation>
 <translation id="225680501294068881">Zoeken naar apparaten...</translation>
+<translation id="225716114209817872">Maximum</translation>
 <translation id="2257486738914982088">Er is iets misgegaan tijdens het downloaden van <ph name="FILENAME" /></translation>
 <translation id="2258734398699965611">Voorgestelde bestanden</translation>
 <translation id="2268130516524549846">Bluetooth staat uit</translation>
@@ -262,6 +265,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="2354174487190027830"><ph name="NAME" /> activeren</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
 <translation id="2367186422933365202">Kan niet inloggen op je Chromebook</translation>
+<translation id="2367972762794486313">Apps bekijken</translation>
 <translation id="2369165858548251131">Chinees voor 'hallo'</translation>
 <translation id="2390318262976603432">Landinstellingen</translation>
 <translation id="240006516586367791">Mediabediening</translation>
@@ -506,6 +510,7 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="3713734891607377840">Openen na afronding</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> en nog <ph name="UNAVAILABLE_APPS_COUNT" /> staan niet op dit apparaat.</translation>
 <translation id="3735740477244556633">Sorteren op</translation>
+<translation id="3738664582935948253">Je kunt nu klikken en sneltoetsen tonen in schermopnamen</translation>
 <translation id="3742055079367172538">Screenshot gemaakt</translation>
 <translation id="3765841986579723851">Vandaag bewerkt</translation>
 <translation id="3773700760453577392">Een beheerder heeft geen toestemming gegeven voor toegang tot meerdere accounts voor <ph name="USER_EMAIL" />. Alle gebruikers moeten uitloggen om door te gaan.</translation>
@@ -525,6 +530,7 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="385051799172605136">Terug</translation>
 <translation id="385300504083504382">Begin</translation>
 <translation id="3861651314799684201">Druk op Enter om het volledige scherm op te nemen</translation>
+<translation id="3871092408932389764">Laagste</translation>
 <translation id="3886872229787704059">Vandaag geopend</translation>
 <translation id="3891340733213178823">Druk twee keer op Ctrl+Shift+Q om uit te loggen.</translation>
 <translation id="3893630138897523026">ChromeVox (gesproken feedback)</translation>
@@ -1011,6 +1017,7 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="6537924328260219877">Signaalsterkte <ph name="SIGNAL_STRENGTH" />, telefoonbatterij <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999"><ph name="FILENAME" /> scannen voor downloaden</translation>
 <translation id="6542521951477560771">Er wordt gecast naar <ph name="RECEIVER_NAME" /></translation>
+<translation id="6548693220024099658">Achtergrondvervaging</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Nieuwe installatie</translation>
 <translation id="6559976592393364813">Vraag het de beheerder</translation>
@@ -1414,6 +1421,7 @@ Nieuwe installatie</translation>
 <translation id="878215960996152260"><ph name="APP_NAME" />, geïnstalleerde app, geblokkeerd</translation>
 <translation id="8785070478575117577">Verbinding maken met <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">Zwaar</translation>
 <translation id="8806053966018712535">Map <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">'Hulp'</translation>
 <translation id="8814190375133053267">Wifi</translation>

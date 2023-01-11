@@ -162,6 +162,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="1774796056689732716">Kalendář, <ph name="CURRENT_MONTH_YEAR" />, je vybráno datum <ph name="DATE" />.</translation>
 <translation id="1787955149152357925">Vyp</translation>
 <translation id="1797271123677381264">Zapomenuté heslo</translation>
+<translation id="1807246157184219062">Světlé</translation>
 <translation id="181103072419391116">Síla signálu: <ph name="SIGNAL_STRENGTH" />, spravováno vaším administrátorem</translation>
 <translation id="1812997170047690955">Co je na obrazovce?</translation>
 <translation id="1816896987747843206">Umožňuje přístup k fotoaparátu všem aplikacím a webům s příslušným oprávněním</translation>
@@ -238,6 +239,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="2224075387478458881">Když je viditelný chráněný obsah, nahrávání obrazovky je zakázáno</translation>
 <translation id="2227179592712503583">Odebrat návrh</translation>
 <translation id="225680501294068881">Vyhledávání zařízení…</translation>
+<translation id="225716114209817872">Maximální</translation>
 <translation id="2257486738914982088">Při stahování souboru <ph name="FILENAME" /> se něco pokazilo</translation>
 <translation id="2258734398699965611">Navrhované soubory</translation>
 <translation id="2268130516524549846">Rozhraní Bluetooth deaktivováno</translation>
@@ -262,6 +264,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="2354174487190027830">Aktivace sítě <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Pokračovat</translation>
 <translation id="2367186422933365202">Přihlášení do Chromebooku se nezdařilo</translation>
+<translation id="2367972762794486313">Zobrazit aplikace</translation>
 <translation id="2369165858548251131">„Ahoj“ čínsky</translation>
 <translation id="2390318262976603432">Nastavení národního prostředí</translation>
 <translation id="240006516586367791">Ovládání médií</translation>
@@ -506,6 +509,7 @@ Připojte zařízení k napájení.</translation>
 <translation id="3713734891607377840">Po dokončení otevřít</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> a další aplikace (<ph name="UNAVAILABLE_APPS_COUNT" />) na tomto zařízení nejsou.</translation>
 <translation id="3735740477244556633">Seřadit podle</translation>
+<translation id="3738664582935948253">V nahrávkách obrazovky teď lze zobrazovat kliknutí a klávesové zkratky</translation>
 <translation id="3742055079367172538">Byl vytvořen snímek obrazovky</translation>
 <translation id="3765841986579723851">Upraveno dnes</translation>
 <translation id="3773700760453577392">Administrátor zakázal vícenásobné přihlášení pro účet <ph name="USER_EMAIL" />. Všichni uživatelé se před pokračováním musejí odhlásit.</translation>
@@ -525,6 +529,7 @@ Připojte zařízení k napájení.</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="385300504083504382">Začátek</translation>
 <translation id="3861651314799684201">Stisknutím klávesy Enter spustíte nahrávání celé obrazovky</translation>
+<translation id="3871092408932389764">Nejnižší</translation>
 <translation id="3886872229787704059">Otevřeno dnes</translation>
 <translation id="3891340733213178823">Odhlaste se dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
 <translation id="3893630138897523026">ChromeVox (hlasová odezva)</translation>
@@ -691,6 +696,7 @@ Připojte zařízení k napájení.</translation>
 <translation id="4740516757091333363">Smazat uloženou plochu?</translation>
 <translation id="4752784485658729358">Je povoleno pouze 6 uložených ploch. Pokud chcete uložit novou, některou odstraňte.</translation>
 <translation id="4759238208242260848">Stažené soubory</translation>
+<translation id="4762573482154983647">Skrýt aplikace</translation>
 <translation id="4774338217796918551">Vrať se v <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Heslo pro účet <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Obchod Play</translation>
@@ -1011,6 +1017,7 @@ Připojte zařízení k napájení.</translation>
 <translation id="6537924328260219877">Síla signálu: <ph name="SIGNAL_STRENGTH" />, baterie telefonu: <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999">Skenování staženého souboru <ph name="FILENAME" /></translation>
 <translation id="6542521951477560771">Odesílání do zařízení <ph name="RECEIVER_NAME" /></translation>
+<translation id="6548693220024099658">Rozmazání pozadí</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Nová instalace</translation>
 <translation id="6559976592393364813">Zeptejte se administrátora</translation>
@@ -1416,6 +1423,7 @@ Nová instalace</translation>
 <translation id="878215960996152260"><ph name="APP_NAME" />, instalovaná aplikace, blokováno</translation>
 <translation id="8785070478575117577">Připojit k síti <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">Silné</translation>
 <translation id="8806053966018712535">Složka <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">„Nápověda“</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

@@ -1954,6 +1954,12 @@ void AutofillMetrics::LogAutofillPerfectFilling(bool is_address,
   }
 }
 
+void AutofillMetrics::LogTouchToFillCreditCardPerfectFilling(
+    bool perfect_filling) {
+  base::UmaHistogramBoolean("Autofill.TouchToFill.CreditCard.PerfectFilling",
+                            perfect_filling);
+}
+
 AutofillMetrics::CreditCardSeamlessness::CreditCardSeamlessness(
     const ServerFieldTypeSet& filled_types)
     : name_(filled_types.contains(CREDIT_CARD_NAME_FULL) ||
@@ -3129,15 +3135,6 @@ void AutofillMetrics::LogImageFetchResult(bool succeeded) {
 void AutofillMetrics::LogImageFetcherRequestLatency(
     const base::TimeDelta& duration) {
   base::UmaHistogramLongTimes("Autofill.ImageFetcher.RequestLatency", duration);
-}
-
-// static
-void AutofillMetrics::LogAutofillingSourceForStateSelectionFieldAtSubmission(
-    AutofilledSourceMetricForStateSelectionField
-        autofilled_source_metric_for_state_selection_field) {
-  base::UmaHistogramEnumeration(
-      "Autofill.AutofilledFieldAtSubmission.ByStateSelectionField",
-      autofilled_source_metric_for_state_selection_field);
 }
 
 // static

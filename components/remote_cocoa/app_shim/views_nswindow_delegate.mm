@@ -4,9 +4,10 @@
 
 #import "components/remote_cocoa/app_shim/views_nswindow_delegate.h"
 
-#include "base/bind.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
 #include "base/mac/mac_util.h"
+#import "base/task/single_thread_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #import "components/remote_cocoa/app_shim/bridged_content_view.h"
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"

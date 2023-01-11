@@ -6,12 +6,11 @@
 
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 
 namespace ash {

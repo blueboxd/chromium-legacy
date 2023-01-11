@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/quick_pair/common/pair_failure.h"
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -19,7 +19,7 @@ class BluetoothAdapter;
 namespace ash {
 namespace quick_pair {
 
-struct Device;
+class Device;
 class FastPairDataEncryptor;
 class FastPairGattServiceClient;
 

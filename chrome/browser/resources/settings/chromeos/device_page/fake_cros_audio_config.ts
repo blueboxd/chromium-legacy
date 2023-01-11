@@ -75,11 +75,18 @@ export const fakeBluetoothMic: AudioDevice = {
   noiseCancellationState: AudioEffectState.NOT_SUPPORTED,
 };
 
+export const fakeInternalMicActive: AudioDevice = {
+  id: BigInt(7),
+  displayName: 'Internal Mic',
+  isActive: true,
+  deviceType: AudioDeviceType.kInternalMic,
+  noiseCancellationState: AudioEffectState.NOT_SUPPORTED,
+};
+
 // TODO(b/260277007): Remove type alias and unused types when mojo updated to
 // handle audio input.
 export interface FakeAudioSystemProperties extends AudioSystemPropertiesMojom {
   inputDevices: AudioDevice[];
-  inputVolumePercent: number;
 }
 
 export type AudioSystemProperties =
@@ -92,10 +99,10 @@ export interface FakePropertiesObserverInterface {
 export const defaultFakeAudioSystemProperties: AudioSystemProperties = {
   outputDevices: [defaultFakeSpeaker, defaultFakeMicJack],
   outputVolumePercent: 75,
+  inputGainPercent: 87,
   outputMuteState: MuteState.kNotMuted,
   inputDevices: [fakeInternalFrontMic, fakeBluetoothMic],
   inputMuteState: MuteState.kNotMuted,
-  inputVolumePercent: 57,
 };
 
 /** Creates an audio device based on provided device and isActive override. */
@@ -106,9 +113,7 @@ export function createAudioDevice(
 }
 
 export interface FakeCrosAudioConfigInterface extends CrosAudioConfigInterface {
-  setOutputMuted(muted: boolean): void;
-  setInputMuted(muted: boolean): void;
-  setInputVolumePercent(percent: number): void;
+  setInputGainPercent(percent: number): void;
   setNoiseCancellationEnabled(enabled: boolean): void;
 }
 
@@ -196,12 +201,12 @@ export class FakeCrosAudioConfig implements FakeCrosAudioConfigInterface {
   }
 
   /**
-   * Sets the `inputVolumePercent` to the desired volume and notifies
+   * Sets the `inputGainPercent` to the desired volume and notifies
    * observers.
    */
-  setInputVolumePercent(volume: number): void {
-    assert(volume >= 0 && volume <= 100);
-    this.audioSystemProperties.inputVolumePercent = volume;
+  setInputGainPercent(gain: number): void {
+    assert(gain >= 0 && gain <= 100);
+    this.audioSystemProperties.inputGainPercent = gain;
     this.notifyAudioSystemPropertiesUpdated();
   }
 

@@ -746,6 +746,81 @@ TEST_P(AutofillPerfectFillingMetricsTest,
       BucketsAre(test_case.credit_card_buckets));
 }
 
+struct SuggestionOriginPerfectFillingTestCase {
+  std::string description;
+  std::vector<Field> fields;
+  bool expected_metric_value;
+};
+
+class SuggestionOriginPerfectFillingMetricsTest
+    : public AutofillMetricsTest,
+      public ::testing::WithParamInterface<
+          SuggestionOriginPerfectFillingTestCase> {
+ public:
+  std::vector<test::FieldDescription> GetFields(std::vector<Field> fields) {
+    std::vector<test::FieldDescription> fields_to_return;
+    for (const auto& field : fields) {
+      test::FieldDescription f;
+      if (field.value) {
+        f.value = field.value;
+      } else if (field.field_type == CREDIT_CARD_NAME_FULL) {
+        f.value = u"Elvis Aaron Presley";
+      } else if (field.field_type == CREDIT_CARD_NUMBER) {
+        f.value = u"01230123012399";
+      } else {
+        NOTREACHED();
+      }
+      f.role = field.field_type;
+      f.is_autofilled = field.is_autofilled;
+      fields_to_return.push_back(f);
+    }
+    return fields_to_return;
+  }
+};
+
+TEST_P(SuggestionOriginPerfectFillingMetricsTest,
+       PerfectFilling_TouchToFill_CreditCards) {
+  SuggestionOriginPerfectFillingTestCase test_case = GetParam();
+  std::vector<Field> fields{{CREDIT_CARD_NAME_FULL}, {CREDIT_CARD_NUMBER}};
+  FormData form =
+      test::GetFormData({.description_for_logging = test_case.description,
+                         .fields = GetFields(test_case.fields),
+                         .unique_renderer_id = test::MakeFormRendererId(),
+                         .main_frame_origin = url::Origin::Create(
+                             autofill_client_->form_origin())});
+
+  std::vector<ServerFieldType> field_types;
+  for (const auto& f : test_case.fields) {
+    field_types.push_back(f.field_type);
+  }
+
+  autofill_manager().AddSeenForm(form, field_types);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager().SetSuggestionOriginMetricState(
+      AutofillSuggestionMethod::KTouchToFillCreditCard);
+  SubmitForm(form);
+  EXPECT_EQ(histogram_tester.GetBucketCount(
+                "Autofill.TouchToFill.CreditCard.PerfectFilling",
+                test_case.expected_metric_value),
+            1);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AutofillMetricsTest,
+    SuggestionOriginPerfectFillingMetricsTest,
+    testing::Values(
+        // Test that we log the perfect filling metric correctly for an address
+        // form in which every field is autofilled.
+        SuggestionOriginPerfectFillingTestCase{
+            "PerfectFillingForCreditCardForm_AutofilledFromTTF",
+            {{CREDIT_CARD_NAME_FULL}, {CREDIT_CARD_NUMBER}},
+            true},
+        SuggestionOriginPerfectFillingTestCase{
+            "PerfectFillingForCreditCardForm_NotAllAutofilledFromTTF",
+            {{CREDIT_CARD_NAME_FULL}, {CREDIT_CARD_NUMBER, false}},
+            false}));
+
 // Test the emission of collisions between NUMERIC_QUANTITY and server
 // predictions as well as the potential false positives.
 TEST_F(AutofillMetricsTest, NumericQuantityCollision) {
@@ -757,7 +832,7 @@ TEST_F(AutofillMetricsTest, NumericQuantityCollision) {
 
   // Set up our form data.
   test::FormDescription form_description = {
-      .description_for_logging = "AutofilledStateFieldSource",
+      .description_for_logging = "NumericQuantityCollision",
       .fields = {{.server_type = NO_SERVER_DATA,
                   .heuristic_type = NUMERIC_QUANTITY,
                   .is_autofilled = false},
@@ -9952,43 +10027,6 @@ TEST_F(AutofillMetricsTest, PageLanguageMetricsInvalidLanguage) {
       "Autofill.ParsedFieldTypesWasPageTranslated", true, 1);
 }
 
-// Validate that the source of the autofilled state field is logged on form
-// submission.
-TEST_F(AutofillMetricsTest, AutofilledStateFieldSource) {
-  RecreateProfile(false);
-  // Set up our form data.
-  FormData form = test::GetFormData(
-      {.description_for_logging = "AutofilledStateFieldSource",
-       .fields = {{.role = NAME_FULL},
-                  {.role = ADDRESS_HOME_LINE1},
-                  {.role = ADDRESS_HOME_CITY},
-                  {.role = PHONE_HOME_NUMBER},
-                  {.role = ADDRESS_HOME_STATE,
-                   .value = u"TN",
-                   .form_control_type = "select-one",
-                   .is_autofilled = true,
-                   .select_options = {{u"TN", u"TN"}, {u"CA", u"CA"}}},
-                  {.role = ADDRESS_HOME_ZIP},
-                  {.role = ADDRESS_HOME_COUNTRY}}});
-
-  std::vector<ServerFieldType> field_types = {
-      NAME_FULL,           ADDRESS_HOME_LINE1,
-      ADDRESS_HOME_CITY,   PHONE_HOME_CITY_AND_NUMBER,
-      ADDRESS_HOME_STATE,  ADDRESS_HOME_ZIP,
-      ADDRESS_HOME_COUNTRY};
-
-  autofill_manager().AddSeenForm(form, field_types);
-
-  base::HistogramTester histogram_tester;
-  SubmitForm(form);
-
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.AutofilledFieldAtSubmission.ByStateSelectionField",
-      AutofillMetrics::AutofilledSourceMetricForStateSelectionField::
-          AUTOFILL_BY_VALUE,
-      1);
-}
-
 // Tests the following 4 cases when |kAutofillPreventOverridingPrefilledValues|
 // is enabled:
 // 1. The field is not autofilled since it has an initial value but the value
@@ -10016,7 +10054,8 @@ TEST_F(AutofillMetricsTest,
   RecreateProfile(false);
 
   FormData form = test::GetFormData(
-      {.description_for_logging = "AutofilledStateFieldSource",
+      {.description_for_logging =
+           "IsValueNotAutofilledOverExistingValueSameAsSubmittedValue",
        .fields = {
            {.role = NAME_FULL},
            {.role = ADDRESS_HOME_CITY,

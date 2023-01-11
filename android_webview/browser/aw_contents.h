@@ -23,7 +23,7 @@
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "components/js_injection/browser/js_communication_host.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -298,8 +298,6 @@ class AwContents : public FindHelper::Listener,
   void RendererResponsive(content::RenderProcessHost* render_process_host);
 
   // content::WebContentsObserver overrides
-  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
-                              content::RenderFrameHost* new_host) override;
   void PrimaryPageChanged(content::Page& page) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;

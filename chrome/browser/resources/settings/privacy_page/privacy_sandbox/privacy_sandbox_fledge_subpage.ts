@@ -28,6 +28,8 @@ export interface SettingsPrivacySandboxFledgeSubpageElement {
   };
 }
 
+const maxFledgeSitesCount: number = 15;
+
 const SettingsPrivacySandboxFledgeSubpageElementBase =
     I18nMixin(PrefsMixin(PolymerElement));
 
@@ -52,6 +54,29 @@ export class SettingsPrivacySandboxFledgeSubpageElement extends
       },
 
       sitesList_: {
+        type: Array,
+        observer: 'onSitesListChanged_',
+        value() {
+          return [];
+        },
+      },
+
+      /**
+       * Helper list used to display the main sites in the current sites
+       * section, above the "See all sites" expand button.
+       */
+      mainSitesList_: {
+        type: Array,
+        value() {
+          return [];
+        },
+      },
+
+      /**
+       * Helper list used to display the remaining sites in the current sites
+       * section that are inside the "See all sites" expandable section.
+       */
+      remainingSitesList_: {
         type: Array,
         value() {
           return [];
@@ -82,6 +107,12 @@ export class SettingsPrivacySandboxFledgeSubpageElement extends
         value: false,
       },
 
+      seeAllSitesExpanded_: {
+        type: Boolean,
+        value: false,
+        observer: 'onSeeAllSitesExpanded_',
+      },
+
       blockedSitesExpanded_: {
         type: Boolean,
         value: false,
@@ -90,10 +121,17 @@ export class SettingsPrivacySandboxFledgeSubpageElement extends
     };
   }
 
+  static get maxFledgeSites() {
+    return maxFledgeSitesCount;
+  }
+
   private sitesList_: PrivacySandboxInterest[];
+  private mainSitesList_: PrivacySandboxInterest[];
+  private remainingSitesList_: PrivacySandboxInterest[];
   private blockedSitesList_: PrivacySandboxInterest[];
   private isSitesListLoaded_: boolean;
   private isLearnMoreDialogOpen_: boolean;
+  private seeAllSitesExpanded_: boolean;
   private blockedSitesExpanded_: boolean;
   private privacySandboxBrowserProxy_: PrivacySandboxBrowserProxy =
       PrivacySandboxBrowserProxyImpl.getInstance();
@@ -107,6 +145,16 @@ export class SettingsPrivacySandboxFledgeSubpageElement extends
         state => this.onFledgeStateChanged_(state));
   }
 
+  private isFledgePrefManaged_(): boolean {
+    const fledgeEnabledPref = this.getPref('privacy_sandbox.m1.fledge_enabled');
+    if (fledgeEnabledPref.enforcement ===
+        chrome.settingsPrivate.Enforcement.ENFORCED) {
+      assert(!fledgeEnabledPref.value);
+      return true;
+    }
+    return false;
+  }
+
   private onFledgeStateChanged_(state: FledgeState) {
     this.sitesList_ = state.joiningSites.map(site => {
       return {site, removed: false};
@@ -117,6 +165,12 @@ export class SettingsPrivacySandboxFledgeSubpageElement extends
     this.isSitesListLoaded_ = true;
   }
 
+  private onSitesListChanged_() {
+    this.mainSitesList_ = this.sitesList_.slice(0, maxFledgeSitesCount);
+    this.remainingSitesList_ = this.sitesList_.slice(maxFledgeSitesCount);
+  }
+
+
   private isFledgeEnabledAndLoaded_(): boolean {
     return this.getPref('privacy_sandbox.m1.fledge_enabled').value &&
         this.isSitesListLoaded_;
@@ -124,6 +178,10 @@ export class SettingsPrivacySandboxFledgeSubpageElement extends
 
   private isSitesListEmpty_(): boolean {
     return this.sitesList_.length === 0;
+  }
+
+  private isRemainingSitesListEmpty_(): boolean {
+    return this.remainingSitesList_.length === 0;
   }
 
   private computeBlockedSitesDescription_(): string {
@@ -158,12 +216,34 @@ export class SettingsPrivacySandboxFledgeSubpageElement extends
   private onInterestChanged_(e: CustomEvent<PrivacySandboxInterest>) {
     const interest = e.detail;
     assert(!interest.topic);
-    // TODO(b/254412955): Implement the logic required to correctly move or
-    // remove entries as the user block and unblocks them.
+    if (interest.removed) {
+      this.blockedSitesList_.splice(
+          this.blockedSitesList_.indexOf(interest), 1);
+    } else {
+      this.sitesList_.splice(this.sitesList_.indexOf(interest), 1);
+      // Move the removed site automatically to the removed section.
+      this.blockedSitesList_.push({site: interest.site, removed: true});
+      this.blockedSitesList_.sort(
+          (first, second) => (first.site! < second.site!) ? -1 : 1);
+    }
+    this.sitesList_ = this.sitesList_.slice();
+    this.blockedSitesList_ = this.blockedSitesList_.slice();
+    // If the interest was previously removed, set it to allowed, and vice
+    // versa.
+    this.privacySandboxBrowserProxy_.setFledgeJoiningAllowed(
+        interest.site!, /*allowed=*/ interest.removed);
+
+    this.metricsBrowserProxy_.recordAction(
+        interest.removed ? 'Settings.PrivacySandbox.Fledge.SiteAdded' :
+                           'Settings.PrivacySandbox.Fledge.SiteRemoved');
   }
 
-  // TODO(crbug.com/1378703): Record metrics when blocking/unblocking sites.
-  // Record a metric when expanding "More sites" section.
+  private onSeeAllSitesExpanded_() {
+    if (this.seeAllSitesExpanded_) {
+      this.metricsBrowserProxy_.recordAction(
+          'Settings.PrivacySandbox.Fledge.AllSitesOpened');
+    }
+  }
 
   private onBlockedSitesExpanded_() {
     if (this.blockedSitesExpanded_) {

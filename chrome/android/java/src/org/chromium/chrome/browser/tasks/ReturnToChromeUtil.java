@@ -18,7 +18,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.IntentUtils;
-import org.chromium.base.Log;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -33,8 +32,8 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.feed.FeedFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.homepage.HomepageManager;
+import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -83,19 +82,6 @@ public final class ReturnToChromeUtil {
     private static final String START_SEGMENTATION_PLATFORM_KEY = "chrome_start_android";
     private static final String START_V2_SEGMENTATION_PLATFORM_KEY = "chrome_start_android_v2";
 
-    @VisibleForTesting
-    public static final String TAB_SWITCHER_ON_RETURN_MS_PARAM = "tab_switcher_on_return_time_ms";
-    public static final IntCachedFieldTrialParameter TAB_SWITCHER_ON_RETURN_MS =
-            new IntCachedFieldTrialParameter(ChromeFeatureList.TAB_SWITCHER_ON_RETURN,
-                    TAB_SWITCHER_ON_RETURN_MS_PARAM, 28800000); // 8 hours
-
-    @VisibleForTesting
-    static final String UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT =
-            "Startup.Android.TimeToGTSFirstMeaningfulPaint";
-
-    private static final String UMA_THUMBNAIL_FETCHED_FOR_GTS_FIRST_MEANINGFUL_PAINT =
-            "Startup.Android.ThumbnailFetchedForGTSFirstMeaningfulPaint";
-
     private static boolean sGTSFirstMeaningfulPaintRecorded;
 
     private ReturnToChromeUtil() {}
@@ -134,7 +120,9 @@ public final class ReturnToChromeUtil {
         @Override
         public void handleBackPress() {
             Tab tab = mActivityTabProvider.get();
-            assert tab != null && !tab.canGoBack();
+            assert tab != null
+                    && !tab.canGoBack()
+                : String.format("tab %s; back press state %s", tab, tab != null && tab.canGoBack());
             mOnBackPressedCallback.run();
         }
 
@@ -161,22 +149,18 @@ public final class ReturnToChromeUtil {
      * @return true if past threshold, false if not past threshold or experiment cannot be loaded.
      */
     public static boolean shouldShowTabSwitcher(final long lastBackgroundedTimeMillis) {
-        long tabSwitcherAfterMillis = TAB_SWITCHER_ON_RETURN_MS.getValue();
+        long tabSwitcherAfterMillis =
+                StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS.getValue()
+                * DateUtils.SECOND_IN_MILLIS;
         if (ChromeFeatureList.sStartSurfaceReturnTime.isEnabled()
-                && TAB_SWITCHER_ON_RETURN_MS.getValue() != 0) {
-            if (!StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_USE_MODEL.getValue()) {
-                tabSwitcherAfterMillis =
-                        START_SURFACE_RETURN_TIME_SECONDS.getValue() * DateUtils.SECOND_IN_MILLIS;
-            } else {
-                tabSwitcherAfterMillis = getReturnTimeFromSegmentation();
-            }
+                && StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS.getValue() != 0
+                && StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_USE_MODEL.getValue()) {
+            tabSwitcherAfterMillis = getReturnTimeFromSegmentation();
         }
 
         if (lastBackgroundedTimeMillis == -1) {
             // No last background timestamp set, use control behavior unless "immediate" was set.
-            // Even when {@link ChromeFeatureList.START_SURFACE_RETURN_TIME} is enabled, we still
-            // check the value of "enable-tab-switcher-on-return".
-            return TAB_SWITCHER_ON_RETURN_MS.getValue() == 0 || tabSwitcherAfterMillis == 0;
+            return tabSwitcherAfterMillis == 0;
         }
 
         if (tabSwitcherAfterMillis < 0) {
@@ -200,55 +184,6 @@ public final class ReturnToChromeUtil {
         return SharedPreferencesManager.getInstance().readLong(
                 ChromePreferenceKeys.START_RETURN_TIME_SEGMENTATION_RESULT_MS,
                 START_SURFACE_RETURN_TIME_SECONDS.getDefaultValue());
-    }
-
-    /**
-     * Record the elapsed time from activity creation to first meaningful paint of Grid Tab
-     * Switcher.
-     * @param elapsedMs Elapsed time in ms.
-     * @param numOfThumbnails Number of thumbnails fetched for the Grid Tab Switcher.
-     */
-    public static void recordTimeToGTSFirstMeaningfulPaint(long elapsedMs, int numOfThumbnails) {
-        Log.i(TAG,
-                UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
-                        + coldStartBucketName(!sGTSFirstMeaningfulPaintRecorded)
-                        + numThumbnailsBucketName(numOfThumbnails) + ": " + numOfThumbnails
-                        + " thumbnails " + elapsedMs + "ms");
-        RecordHistogram.recordTimesHistogram(UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
-                        + coldStartBucketName(!sGTSFirstMeaningfulPaintRecorded)
-                        + numThumbnailsBucketName(numOfThumbnails),
-                elapsedMs);
-        RecordHistogram.recordTimesHistogram(UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
-                        + coldStartBucketName(!sGTSFirstMeaningfulPaintRecorded),
-                elapsedMs);
-        RecordHistogram.recordTimesHistogram(UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT, elapsedMs);
-        RecordHistogram.recordCount100Histogram(
-                UMA_THUMBNAIL_FETCHED_FOR_GTS_FIRST_MEANINGFUL_PAINT, numOfThumbnails);
-        sGTSFirstMeaningfulPaintRecorded = true;
-    }
-
-    @VisibleForTesting
-    static String coldStartBucketName(boolean isColdStart) {
-        if (isColdStart) return ".Cold";
-        return ".Warm";
-    }
-
-    @VisibleForTesting
-    static String numThumbnailsBucketName(int numOfThumbnails) {
-        return "." + numThumbnailsBucket(numOfThumbnails) + "thumbnails";
-    }
-
-    /**
-     * On Pixel 3 XL, at most 10 cards are fetched. Multi-thumbnail cards can have up to 4
-     * thumbnails, so the maximum should be 40.
-     */
-    private static String numThumbnailsBucket(int numOfThumbnails) {
-        if (numOfThumbnails == 0) return "0";
-        if (numOfThumbnails <= 2) return "1~2";
-        if (numOfThumbnails <= 5) return "3~5";
-        if (numOfThumbnails <= 10) return "6~10";
-        if (numOfThumbnails <= 20) return "11~20";
-        return "20+";
     }
 
     /**
@@ -402,11 +337,13 @@ public final class ReturnToChromeUtil {
      * NTP or Start though. If checking whether to show Start as homepage, use
      * {@link ReturnToChromeUtil#shouldShowStartSurfaceAsTheHomePage(Context)} instead.
      */
-    private static boolean useChromeHomepage() {
+    @VisibleForTesting
+    public static boolean useChromeHomepage() {
         String homePageUrl = HomepageManager.getHomepageUri();
         return HomepageManager.isHomepageEnabled()
-                && (TextUtils.isEmpty(homePageUrl)
-                        || UrlUtilities.isCanonicalizedNTPUrl(homePageUrl));
+                && (HomepagePolicyManager.isInitializedWithNative()
+                        && (TextUtils.isEmpty(homePageUrl)
+                                || UrlUtilities.isCanonicalizedNTPUrl(homePageUrl)));
     }
 
     /**
@@ -510,9 +447,11 @@ public final class ReturnToChromeUtil {
         // However, if NTP is used as homepage, we show Start when there isn't any tab. See
         // https://crbug.com/1368224.
         if (IntentUtils.isMainIntentFromLauncher(intent)
-                && ReturnToChromeUtil.getTotalTabCount(tabModelSelector) <= 0
-                && useChromeHomepage()) {
-            return true;
+                && ReturnToChromeUtil.getTotalTabCount(tabModelSelector) <= 0) {
+            boolean initialized = HomepagePolicyManager.isInitializedWithNative();
+            RecordHistogram.recordBooleanHistogram(
+                    "Startup.Android.IsHomepagePolicyManagerInitialized", initialized);
+            if (initialized && useChromeHomepage()) return true;
         }
 
         // Checks whether to show the Start surface due to feature flag TAB_SWITCHER_ON_RETURN_MS.
@@ -746,7 +685,9 @@ public final class ReturnToChromeUtil {
 
     @VisibleForTesting
     public static void cacheReturnTimeFromSegmentationImpl(SegmentSelectionResult result) {
-        long returnTimeMs = TAB_SWITCHER_ON_RETURN_MS.getDefaultValue();
+        long returnTimeMs =
+                StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS.getDefaultValue()
+                * DateUtils.SECOND_IN_MILLIS;
         if (result.isReady) {
             if (result.selectedSegment
                     != SegmentId.OPTIMIZATION_TARGET_SEGMENTATION_CHROME_START_ANDROID_V2) {

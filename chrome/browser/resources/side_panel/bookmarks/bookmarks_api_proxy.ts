@@ -30,6 +30,7 @@ export interface BookmarksApiProxy {
   renameBookmark(id: string, title: string): void;
   showContextMenu(id: string, x: number, y: number, source: ActionSource): void;
   showUi(): void;
+  undo(): void;
 }
 
 export class BookmarksApiProxyImpl implements BookmarksApiProxy {
@@ -82,9 +83,7 @@ export class BookmarksApiProxyImpl implements BookmarksApiProxy {
   }
 
   copyBookmark(id: string) {
-    return new Promise<void>(resolve => {
-      chrome.bookmarkManagerPrivate.copy([id], resolve);
-    });
+    return chrome.bookmarkManagerPrivate.copy([id]);
   }
 
   createFolder(parentId: string, title: string) {
@@ -92,9 +91,7 @@ export class BookmarksApiProxyImpl implements BookmarksApiProxy {
   }
 
   deleteBookmarks(ids: string[]) {
-    return new Promise<void>(resolve => {
-      chrome.bookmarkManagerPrivate.removeTrees(ids, resolve);
-    });
+    return chrome.bookmarkManagerPrivate.removeTrees(ids);
   }
 
   getActiveUrl() {
@@ -107,14 +104,12 @@ export class BookmarksApiProxyImpl implements BookmarksApiProxy {
   }
 
   getFolders() {
-    return new Promise<chrome.bookmarks.BookmarkTreeNode[]>(
-        resolve => chrome.bookmarks.getTree(results => {
-          if (results[0] && results[0].children) {
-            resolve(results[0].children);
-            return;
-          }
-          resolve([]);
-        }));
+    return chrome.bookmarks.getTree().then(results => {
+      if (results[0] && results[0].children) {
+        return results[0].children;
+      }
+      return [];
+    });
   }
 
   openBookmark(
@@ -125,9 +120,7 @@ export class BookmarksApiProxyImpl implements BookmarksApiProxy {
 
   pasteToBookmark(parentId: string, destinationId?: string) {
     const destination = destinationId ? [destinationId] : [];
-    return new Promise<void>(resolve => {
-      chrome.bookmarkManagerPrivate.paste(parentId, destination, resolve);
-    });
+    return chrome.bookmarkManagerPrivate.paste(parentId, destination);
   }
 
   renameBookmark(id: string, title: string) {
@@ -140,6 +133,10 @@ export class BookmarksApiProxyImpl implements BookmarksApiProxy {
 
   showUi() {
     this.handler.showUI();
+  }
+
+  undo() {
+    chrome.bookmarkManagerPrivate.undo();
   }
 
   static getInstance(): BookmarksApiProxy {

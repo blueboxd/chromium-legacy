@@ -8,11 +8,12 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
@@ -311,9 +312,9 @@ void DeviceMediaAsyncFileUtil::CreateOrOpen(
     CreateOrOpenCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // Returns an error if any unsupported flag is found.
-  if (file_flags & ~(base::File::FLAG_OPEN |
-                     base::File::FLAG_READ |
-                     base::File::FLAG_WRITE_ATTRIBUTES)) {
+  if (file_flags &
+      ~(base::File::FLAG_OPEN | base::File::FLAG_READ |
+        base::File::FLAG_WRITE_ATTRIBUTES | base::File::FLAG_WIN_NO_EXECUTE)) {
     std::move(callback).Run(base::File(base::File::FILE_ERROR_SECURITY),
                             base::OnceClosure());
     return;

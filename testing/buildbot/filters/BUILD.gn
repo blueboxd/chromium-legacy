@@ -288,8 +288,11 @@ source_set("interactive_ui_tests_filters") {
   data = [
     "//testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter",
     "//testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
+    "//testing/buildbot/filters/linux.linux-rel-cft.interactive_ui_tests.filter",
+    "//testing/buildbot/filters/mac.mac-rel-cft.interactive_ui_tests.filter",
     "//testing/buildbot/filters/ozone-linux.interactive_ui_tests_wayland.filter",
     "//testing/buildbot/filters/pixel_tests.filter",
+    "//testing/buildbot/filters/win.win-rel-cft.interactive_ui_tests.filter",
   ]
 }
 
@@ -364,7 +367,7 @@ source_set("webview_cts_tests_filters") {
 
   data = [
     "//testing/buildbot/filters/android.emulator.webview_cts_tests.filter",
-    "//testing/buildbot/filters/android.emulator.webview_cts_tests_coverage.filter",
+    "//testing/buildbot/filters/android.webview_cts_tests_coverage.filter",
   ]
 }
 

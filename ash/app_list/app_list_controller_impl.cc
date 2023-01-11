@@ -56,12 +56,12 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/callback_list.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -851,15 +851,6 @@ void AppListControllerImpl::OnTabletModeEnded() {
   DismissAppList();
 }
 
-void AppListControllerImpl::OnWallpaperColorsChanged() {
-  // Clamshell doesn't use wallpaper prominent color.
-  if (IsVisible(last_visible_display_id_) && IsTabletMode()) {
-    AppListView* app_list_view = fullscreen_presenter_->GetView();
-    DCHECK(app_list_view);
-    app_list_view->OnWallpaperColorsChanged();
-  }
-}
-
 void AppListControllerImpl::OnWallpaperPreviewStarted() {
   in_wallpaper_preview_ = true;
   UpdateHomeScreenVisibility();
@@ -1194,10 +1185,6 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
       NOTREACHED();
       break;
   }
-
-  UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultOpenDisplayType",
-                            result->display_type(),
-                            SearchResultDisplayType::kLast);
 
   // Suggestion chips are not represented to the user as search results, so do
   // not record search result metrics for them.

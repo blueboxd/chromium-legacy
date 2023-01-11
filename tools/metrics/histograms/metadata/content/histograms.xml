@@ -182,54 +182,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="ContentSettings.ExceptionScheme" enum="ContentSettingScheme"
-    expires_after="M94">
-  <owner>alexmos@chromium.org</owner>
-  <owner>engedy@chromium.org</owner>
-  <summary>
-    Records the schemes of content setting exceptions at browser start. Each
-    exception provides one sample.
-  </summary>
-</histogram>
-
-<histogram name="ContentSettings.ExceptionSchemeFile.HasPath"
-    enum="BooleanHasPath" expires_after="M94">
-  <owner>alexmos@chromium.org</owner>
-  <owner>engedy@chromium.org</owner>
-  <summary>
-    Records how often a content settings exception for the file: scheme has a
-    non-empty path. Recorded once per exception at browser start.
-  </summary>
-</histogram>
-
-<histogram name="ContentSettings.ExceptionSchemeFile.Type.WithoutPath"
-    enum="ContentType" expires_after="M94">
-  <owner>alexmos@chromium.org</owner>
-  <owner>engedy@chromium.org</owner>
-  <summary>
-    Count of how often a specific content type has a content settings exception
-    defined for a file: scheme with no path (i.e., wildcard path). Recorded once
-    per exception at browser start.
-
-    Note: The values of this metric collected for Chrome 49 (early 2016) are
-    innacurate and should not be trusted. crbug.com/589255.
-  </summary>
-</histogram>
-
-<histogram name="ContentSettings.ExceptionSchemeFile.Type.WithPath"
-    enum="ContentType" expires_after="M94">
-  <owner>alexmos@chromium.org</owner>
-  <owner>engedy@chromium.org</owner>
-  <summary>
-    Count of how often a specific content type has a content settings exception
-    defined for a file: scheme with a valid, non-empty path. Recorded once per
-    exception at browser start.
-
-    Note: The values of this metric collected for Chrome 49 (early 2016) are
-    innacurate and should not be trusted. crbug.com/589255.
-  </summary>
-</histogram>
-
 <histogram name="ContentSettings.ExtensionEmbeddedSettingSet"
     enum="ContentType" expires_after="2023-05-01">
   <owner>engedy@chromium.org</owner>
@@ -370,7 +322,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.Popups.StrongBlockerActions"
-    enum="StrongPopupBlockerAction" expires_after="2023-05-07">
+    enum="StrongPopupBlockerAction" expires_after="2023-07-09">
   <owner>csharrison@chromium.org</owner>
   <summary>
     Counts of various events related to the strong popup blocker (aka abusive
@@ -1253,7 +1205,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Network.TokenFetchStatus"
-    enum="GoogleServiceAuthError" expires_after="2023-04-30">
+    enum="GoogleServiceAuthError" expires_after="2023-07-09">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1423,19 +1375,6 @@ chromium-metrics-reviews@google.com.
     When the Feed scheduler receives a refresh request, the scheduler will
     decide to refresh or not depending on the scheduler status. Recorded when
     the Feed scheduler receives the request.
-  </summary>
-</histogram>
-
-<histogram name="ContentSuggestions.Feed.Scheduler.TimeSinceLastFetchOnClear"
-    units="ms" expires_after="2020-10-01">
-  <owner>carlosk@chromium.org</owner>
-  <owner>harringtond@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    When the previous last fetch attempt time is cleared, log the time since the
-    last fetch attempt. This typically occurs when suggestions are cleared. A
-    client that has never made a successful fetch (at least since it was last
-    cleared) will report the time since epoch.
   </summary>
 </histogram>
 
@@ -1617,7 +1556,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UploadVisibilityLog" enum="Boolean"
-    expires_after="2023-07-02">
+    expires_after="2023-07-09">
   <owner>freedjm@google.com</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1662,7 +1601,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserJourney.GetMore.FailureDuration"
-    units="ms" expires_after="2023-05-07">
+    units="ms" expires_after="2023-07-09">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1673,7 +1612,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserJourney.GetMore.SuccessDuration"
-    units="ms" expires_after="2023-05-07">
+    units="ms" expires_after="2023-07-09">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1814,7 +1753,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.WebFeed.FollowCount.Engaged"
-    units="follows" expires_after="2023-07-02">
+    units="follows" expires_after="2023-07-09">
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1993,7 +1932,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.WebFeed.UnfollowResult"
-    enum="WebFeedSubscriptionRequestStatus" expires_after="2023-05-07">
+    enum="WebFeedSubscriptionRequestStatus" expires_after="2023-07-09">
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>

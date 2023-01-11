@@ -21,13 +21,13 @@
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
+#import "ios/chrome/browser/ui/main/layout_guide_util.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_util.h"
@@ -43,6 +43,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
 #import "ios/chrome/browser/ui/omnibox/popup/pedal_section_extractor.h"
 #import "ios/chrome/browser/ui/omnibox/popup/popup_debug_info_view_controller.h"
+#import "ios/chrome/browser/ui/sharing/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -134,6 +135,8 @@
   self.popupViewController.largeIconService = largeIconService;
   self.popupViewController.largeIconCache = cache;
   self.popupViewController.carouselMenuProvider = self.mediator;
+  self.popupViewController.layoutGuideCenter =
+      LayoutGuideCenterForBrowser(self.browser);
 
   self.mediator.consumer = self.popupViewController;
   self.popupViewController.matchPreviewDelegate =

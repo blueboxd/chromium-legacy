@@ -6,7 +6,8 @@
 
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/vr/audio_delegate.h"
 #include "chrome/browser/vr/browser_renderer.h"
 #include "chrome/browser/vr/content_input_delegate.h"

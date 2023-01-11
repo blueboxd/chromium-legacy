@@ -12,10 +12,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -25,7 +25,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
 #include "components/offline_pages/core/background/offliner_stub.h"
@@ -262,12 +261,13 @@ class DownloadUIAdapterTest : public testing::Test,
  private:
   std::unique_ptr<RequestCoordinatorStubTaco> request_coordinator_taco_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
+  base::SingleThreadTaskRunner::CurrentDefaultHandle
+      task_runner_current_default_handle_;
 };
 
 DownloadUIAdapterTest::DownloadUIAdapterTest()
     : task_runner_(new base::TestMockTimeTaskRunner),
-      task_runner_handle_(task_runner_) {}
+      task_runner_current_default_handle_(task_runner_) {}
 
 DownloadUIAdapterTest::~DownloadUIAdapterTest() {}
 

@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/atomic_sequence_num.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
@@ -280,6 +280,9 @@ BrowserContext* EventRouter::GetIncognitoContextIfAccessible(
     return nullptr;
   if (!IncognitoInfo::IsSplitMode(extension))
     return nullptr;
+  if (!util::IsIncognitoEnabled(extension_id, browser_context_)) {
+    return nullptr;
+  }
 
   return GetIncognitoContext();
 }

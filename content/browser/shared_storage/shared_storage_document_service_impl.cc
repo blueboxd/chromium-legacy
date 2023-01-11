@@ -46,6 +46,9 @@ const char kSharedStorageAddModuleDisabledMessage[] =
     "is disabled or both sharedStorage.selectURL and privateAggregation are "
     "disabled";
 
+const char kSharedStorageSelectURLLimitReachedMessage[] =
+    "sharedStorage.selectURL limit has been reached";
+
 // static
 bool& SharedStorageDocumentServiceImpl::
     GetBypassIsSharedStorageAllowedForTesting() {
@@ -173,10 +176,21 @@ void SharedStorageDocumentServiceImpl::RunURLSelectionOperationOnWorklet(
                                 std::move(reporting_metadata));
   }
 
-  if (!IsSharedStorageSelectURLAllowed()) {
+  if (!IsSharedStorageAllowed()) {
     std::move(callback).Run(
         /*success=*/false,
-        /*error_message=*/kSharedStorageSelectURLDisabledMessage, GURL());
+        /*error_message=*/kSharedStorageSelectURLDisabledMessage,
+        /*result_config=*/absl::nullopt);
+    return;
+  }
+
+  if (!static_cast<PageImpl&>(
+           render_frame_host().GetOutermostMainFrame()->GetPage())
+           .IsSelectURLAllowed(render_frame_host().GetLastCommittedOrigin())) {
+    std::move(callback).Run(
+        /*success=*/false,
+        /*error_message=*/kSharedStorageSelectURLLimitReachedMessage,
+        /*result_config=*/absl::nullopt);
     return;
   }
 
@@ -197,7 +211,7 @@ void SharedStorageDocumentServiceImpl::RunURLSelectionOperationOnWorklet(
              base::NumberToString(fenced_frame_depth),
              ") exceeding the maximum allowed number (",
              base::NumberToString(max_allowed_fenced_frame_depth), ")."}),
-        GURL());
+        /*result_config=*/absl::nullopt);
     return;
   }
 

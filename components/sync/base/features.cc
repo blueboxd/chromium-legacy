@@ -12,6 +12,10 @@ BASE_FEATURE(kCacheBaseEntitySpecificsInMetadata,
              "CacheBaseEntitySpecificsInMetadata",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kDeferredSyncStartupCustomDelay,
+             "DeferredSyncStartupCustomDelay",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kIgnoreSyncEncryptionKeysLongMissing,
              "IgnoreSyncEncryptionKeysLongMissing",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -51,10 +55,6 @@ BASE_FEATURE(kSyncResetPollIntervalOnStart,
 BASE_FEATURE(kSyncSegmentationDataType,
              "SyncSegmentationDataType",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSyncSendInterestedDataTypes,
-             "SyncSendInterestedDataTypes",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_CHROMEOS)
 BASE_FEATURE(kSyncSettingsShowLacrosSideBySideWarning,

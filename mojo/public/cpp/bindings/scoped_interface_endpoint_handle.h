@@ -7,9 +7,8 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/disconnect_reason.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"

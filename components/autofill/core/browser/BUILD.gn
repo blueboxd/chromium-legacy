@@ -165,9 +165,6 @@ static_library("browser") {
     "data_model/phone_number.h",
     "data_model/test_data_creator.cc",
     "data_model/test_data_creator.h",
-    "fast_checkout_delegate.h",
-    "fast_checkout_delegate_impl.cc",
-    "fast_checkout_delegate_impl.h",
     "field_filler.cc",
     "field_filler.h",
     "field_type_utils.cc",
@@ -300,6 +297,7 @@ static_library("browser") {
     "payments/autofill_offer_manager.h",
     "payments/autofill_wallet_model_type_controller.cc",
     "payments/autofill_wallet_model_type_controller.h",
+    "payments/card_unmask_challenge_option.cc",
     "payments/card_unmask_challenge_option.h",
     "payments/card_unmask_delegate.cc",
     "payments/card_unmask_delegate.h",
@@ -476,8 +474,6 @@ static_library("browser") {
     sources += [
       "autofill_save_update_address_profile_delegate_ios.cc",
       "autofill_save_update_address_profile_delegate_ios.h",
-      "keyboard_accessory_metrics_logger.h",
-      "keyboard_accessory_metrics_logger.mm",
     ]
   }
 
@@ -857,7 +853,6 @@ source_set("unit_tests") {
     "data_model/credit_card_unittest.cc",
     "data_model/iban_unittest.cc",
     "data_model/phone_number_unittest.cc",
-    "fast_checkout_delegate_impl_unittest.cc",
     "field_filler_unittest.cc",
     "field_type_utils_unittest.cc",
     "field_types_unittest.cc",

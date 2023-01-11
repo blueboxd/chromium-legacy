@@ -4,11 +4,12 @@
 
 #include <string>
 
-#include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/path_service.h"
 #include "base/ranges/algorithm.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"

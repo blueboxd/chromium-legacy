@@ -170,7 +170,6 @@
 <translation id="225943865679747347">Код помилки: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">Додати обліковий запис</translation>
 <translation id="2268044343513325586">Уточнити</translation>
-<translation id="2271351792809375263">Використовуйте паролі, які зберегли в Chrome, в інших додатках на своєму пристрої</translation>
 <translation id="2273327106802955778">Більше опцій</translation>
 <translation id="2286505070150039482">Виділений текст</translation>
 <translation id="2299218006564889602">Ваші паролі шифруються на пристрої, перш ніж зберегтися в Менеджері паролів Google.</translation>
@@ -286,7 +285,6 @@
 Перегляньте вказівки пошукової системи щодо того, як видалити історію пошуку (якщо вона є).</translation>
 <translation id="3080525922482950719">Зберігайте сторінки, щоб читати їх пізніше або в режимі офлайн</translation>
 <translation id="3081338492074632642">Переконайтеся, що новий пароль збігається з паролем для веб-сайту <ph name="WEBSITE" /></translation>
-<translation id="3103603146121354983">Автозаповнення паролів</translation>
 <translation id="3112556859945124369">Позначити…</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />Які дані можна синхронізувати<ph name="END_LINK" /></translation>
 <translation id="3130863904455712965">Історія та інші переваги</translation>
@@ -365,7 +363,6 @@
 <translation id="3661160521073045932">Доступний профіль конфігурації</translation>
 <translation id="3670030362669914947">Номер</translation>
 <translation id="3691593122358196899">Закладку збережено в папці "<ph name="FOLDER_TITLE" />"</translation>
-<translation id="369349502275246497">Пропонувати зберігати паролі</translation>
 <translation id="3709582977625132201">Позначити як непрочитане</translation>
 <translation id="371230970611282515">Передбачає небезпечні події та повідомляє про них ще до того, як вони відбудуться.</translation>
 <translation id="37207012422556617">Популярні запити</translation>
@@ -455,6 +452,7 @@
 <translation id="4420409367264901497">Редагувати закладку</translation>
 <translation id="4442550905108052454">Відкрийте <ph name="BEGIN_BOLD" />Налаштування<ph name="END_BOLD" /></translation>
 <translation id="4454246407045105932">Додати мову</translation>
+<translation id="4461286950227634995">Пропонувати зберігати паролі</translation>
 <translation id="4462491365653392320">Відстежувати ціни на вкладках</translation>
 <translation id="4469418912670346607">Продовжити налаштування</translation>
 <translation id="4474494258097106883">Створено для iPhone</translation>
@@ -466,11 +464,11 @@
 <translation id="4508750114462689118">Закрити заклик до входу</translation>
 <translation id="4514889972748124117">Запропонувати надійний пароль…</translation>
 <translation id="4520798012560649652">Докладніше про режим анонімного перегляду</translation>
-<translation id="4526249700380860531">Переглядайте збережені паролі та керуйте ними на сторінці <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Переглянути синхронізовані дані</translation>
 <translation id="4536418791685807335">Спробуйте ввійти ще раз.</translation>
 <translation id="4540780316273593836">Сталася помилка</translation>
 <translation id="457386861538956877">Інші...</translation>
+<translation id="4587589328781138893">Сайти</translation>
 <translation id="4588014171431912783">Налаштування синхронізації буде відновлено на основі даних останньої резервної копії. <ph name="BEGIN_LINK" />Дізнайтесь, які дані можна синхронізувати.<ph name="END_LINK" /></translation>
 <translation id="4592368184551360546">Клавіатура</translation>
 <translation id="4606247758155004938">Веб-переглядачем керує ваша організація.</translation>
@@ -554,7 +552,6 @@
 <translation id="5118764316110575523">Вимк.</translation>
 <translation id="5119391094379141756">Виберіть Chrome</translation>
 <translation id="5132942445612118989">Синхронізуйте свої паролі, історію тощо на всіх пристроях</translation>
-<translation id="5140288047769711648">Chrome збереже цей пароль. Вам не потрібно його запам’ятовувати.</translation>
 <translation id="5149188072385105201">Додати пароль…</translation>
 <translation id="5150492518600715772">Надіслати на ваш пристрій</translation>
 <translation id="5168414296986405587">Створено для iPadOS</translation>
@@ -881,7 +878,6 @@
 <translation id="7438481509621345350">Тепер, відкривши нову вкладку, ви будете бачити історії із сайту <ph name="CHANNEL_NAME" />.</translation>
 <translation id="7454057999980797137">Область</translation>
 <translation id="7459628154744868585">Покращений захист увімкнено</translation>
-<translation id="7464701184726199289">Синхронізовані дані буде видалено з усіх пристроїв. Збережені налаштування, які можуть стосуватися ваших зацікавлень в Інтернеті, не буде видалено. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="746684838091935575">3. Виберіть Chrome</translation>
 <translation id="7472734401283673885">Назва компанії</translation>
 <translation id="7473891865547856676">Ні, дякую</translation>
@@ -965,7 +961,6 @@
 <translation id="806745655614357130">Зберігати мої дані окремо</translation>
 <translation id="8073670137947914548">Завантаження завершено</translation>
 <translation id="8073872304774253879">Покращувати пошук і веб-перегляд</translation>
-<translation id="8076014560081431679">Збережені налаштування, які можуть стосуватися ваших зацікавлень в Інтернеті, не буде видалено. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="8079602123447022758">Цим налаштуванням керує адміністратор. Двічі торкніться, щоб дізнатися більше.</translation>
 <translation id="8080028325999236607">Закрити всі вкладки</translation>
 <translation id="8084285576995584326">Керуйте даними свого облікового запису Google</translation>
@@ -1093,7 +1088,6 @@
 <translation id="9079935439869366234">Позначити всі як непрочитані</translation>
 <translation id="9081058212938299310">Оновити пароль для <ph name="USERNAME" />?</translation>
 <translation id="9083838294503912307">Щоб синхронізувати й персоналізувати дані на всіх своїх пристроях, увімкніть синхронізацію.</translation>
-<translation id="9087108903408689779">Запропонований пароль від Chrome:</translation>
 <translation id="9093271241977565440">Угорі екрана натисніть значок пошуку</translation>
 <translation id="9094033019050270033">Оновити пароль</translation>
 <translation id="9097506547406246598">Не вдалося скасувати підписку.</translation>

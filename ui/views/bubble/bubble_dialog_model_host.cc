@@ -420,6 +420,10 @@ BubbleDialogModelHost::BubbleDialogModelHost(
 
   SetTitle(model_->title(GetPassKey()));
 
+  if (!model_->accessible_title(GetPassKey()).empty()) {
+    SetAccessibleTitle(model_->accessible_title(GetPassKey()));
+  }
+
   SetSubtitle(model_->subtitle(GetPassKey()));
 
   if (!model_->main_image(GetPassKey()).IsEmpty())
@@ -445,9 +449,9 @@ BubbleDialogModelHost::BubbleDialogModelHost(
     // TODO(accessibility): review the role mappings for alerts and dialogs,
     // making sure they are translated to the best candidate in each flatform
     // without resorting to hacks like this.
-    SetAccessibleRole(ax::mojom::Role::kAlert);
+    SetAccessibleWindowRole(ax::mojom::Role::kAlert);
 #else
-    SetAccessibleRole(ax::mojom::Role::kAlertDialog);
+    SetAccessibleWindowRole(ax::mojom::Role::kAlertDialog);
 #endif
   }
 

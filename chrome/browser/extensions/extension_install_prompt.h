@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -65,7 +65,7 @@ class ExtensionInstallPrompt {
     REPAIR_PROMPT = 9,
     DELEGATED_PERMISSIONS_PROMPT = 10,
     // DELEGATED_BUNDLE_PERMISSIONS_PROMPT_DEPRECATED = 11,
-    WEBSTORE_WIDGET_PROMPT = 12,
+    // WEBSTORE_WIDGET_PROMPT_DEPRECATED = 12,
     EXTENSION_REQUEST_PROMPT = 13,
     EXTENSION_PENDING_REQUEST_PROMPT = 14,
     NUM_PROMPT_TYPES = 15,

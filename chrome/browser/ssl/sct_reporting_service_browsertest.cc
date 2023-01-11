@@ -6,9 +6,9 @@
 #include <tuple>
 
 #include "base/base64.h"
-#include "base/callback.h"
 #include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
+#include "base/functional/callback.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
@@ -129,8 +129,7 @@ class SCTReportingServiceBrowserTest : public CertVerifierBrowserTest {
     // Set sampling rate to 1.0 to ensure deterministic behavior.
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{features::kSCTAuditing,
-          {{features::kSCTAuditingSamplingRate.name, "1.0"}}},
-         {network::features::kSCTAuditingRetryReports, {}}},
+          {{features::kSCTAuditingSamplingRate.name, "1.0"}}}},
         {});
     SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
         true);
@@ -1082,21 +1081,7 @@ class ReportPersistenceWaiter {
   std::unique_ptr<base::FilePathWatcher> watcher2_;
 };
 
-// Subclass to force-enable kSCTAuditingPersistReports. Parent class will handle
-// enabling the other required features and setup.
-class SCTReportingServiceWithPersistenceBrowserTest
-    : public SCTReportingServiceBrowserTest {
- public:
-  SCTReportingServiceWithPersistenceBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        network::features::kSCTAuditingPersistReports);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(SCTReportingServiceWithPersistenceBrowserTest,
+IN_PROC_BROWSER_TEST_F(SCTReportingServiceBrowserTest,
                        PersistedReportClearedOnClearBrowsingHistory) {
   // Set a long retry delay so that retries don't occur immediately.
   {

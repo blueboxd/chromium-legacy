@@ -21,12 +21,16 @@
 namespace ash::audio_config {
 
 constexpr uint8_t kTestOutputVolumePercent = 80u;
+constexpr uint8_t kTestInputGainPercent = 37u;
 constexpr uint8_t kTestUnderMuteThreshholdVolumePercent = 0u;
 constexpr uint8_t kTestOverMaxOutputVolumePercent = 105u;
 constexpr int8_t kTestUnderMinOutputVolumePercent = -5;
 
 constexpr int8_t kDefaultOutputVolumePercent =
     AudioDevicesPrefHandler::kDefaultOutputVolumePercent;
+
+constexpr int8_t kDefaultInputGainPercent =
+    AudioDevicesPrefHandler::kDefaultInputGainPercent;
 
 constexpr uint64_t kInternalSpeakerId = 10001;
 constexpr uint64_t kMicJackId = 10010;
@@ -116,13 +120,38 @@ class CrosAudioConfigImplTest : public testing::Test {
     return fake_observer;
   }
 
+  bool GetDeviceMuted(const uint64_t id) {
+    return cras_audio_handler_->IsOutputMutedForDevice(id);
+  }
+
   void SimulateSetActiveDevice(const uint64_t& device_id) {
     remote_->SetActiveDevice(device_id);
     base::RunLoop().RunUntilIdle();
   }
 
+  void SimulateSetOutputMuted(bool muted) {
+    remote_->SetOutputMuted(muted);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SimulateSetInputMuted(bool muted) {
+    remote_->SetInputMuted(muted);
+    base::RunLoop().RunUntilIdle();
+  }
+
   void SetOutputVolumePercent(uint8_t volume_percent) {
     remote_->SetOutputVolumePercent(volume_percent);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SetInputGainPercent(int gain_percent) {
+    cras_audio_handler_->SetInputGainPercent(gain_percent);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SetInputGainPercentFromFrontEnd(int gain_percent) {
+    // TODO(swifton): Replace RunUntilIdle with Run and QuitClosure.
+    remote_->SetInputGainPercent(gain_percent);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -230,6 +259,24 @@ class CrosAudioConfigImplTest : public testing::Test {
   FakeCrasAudioClient* fake_cras_audio_client_;
 };
 
+TEST_F(CrosAudioConfigImplTest, HandleExternalInputGainUpdate) {
+  std::unique_ptr<FakeAudioSystemPropertiesObserver> fake_observer = Observe();
+  // |fake_observer| count is first incremented in Observe() method.
+  ASSERT_EQ(1u, fake_observer->num_properties_updated_calls_);
+  ASSERT_TRUE(fake_observer->last_audio_system_properties_.has_value());
+  ASSERT_EQ(
+      kDefaultInputGainPercent,
+      fake_observer->last_audio_system_properties_.value()->input_gain_percent);
+
+  SetInputGainPercent(kTestInputGainPercent);
+
+  ASSERT_EQ(2u, fake_observer->num_properties_updated_calls_);
+  ASSERT_TRUE(fake_observer->last_audio_system_properties_.has_value());
+  ASSERT_EQ(
+      kTestInputGainPercent,
+      fake_observer->last_audio_system_properties_.value()->input_gain_percent);
+}
+
 TEST_F(CrosAudioConfigImplTest, GetSetOutputVolumePercent) {
   std::unique_ptr<FakeAudioSystemPropertiesObserver> fake_observer = Observe();
   // |fake_observer| count is first incremented in Observe() method.
@@ -244,6 +291,26 @@ TEST_F(CrosAudioConfigImplTest, GetSetOutputVolumePercent) {
   EXPECT_EQ(kTestOutputVolumePercent,
             fake_observer->last_audio_system_properties_.value()
                 ->output_volume_percent);
+}
+
+TEST_F(CrosAudioConfigImplTest, SetInputGainPercent) {
+  std::unique_ptr<FakeAudioSystemPropertiesObserver> fake_observer = Observe();
+  // |fake_observer| count is first incremented in Observe() method.
+  ASSERT_EQ(1u, fake_observer->num_properties_updated_calls_);
+  ASSERT_TRUE(fake_observer->last_audio_system_properties_.has_value());
+  ASSERT_EQ(
+      kDefaultInputGainPercent,
+      fake_observer->last_audio_system_properties_.value()->input_gain_percent);
+
+  SetInputGainPercentFromFrontEnd(kTestInputGainPercent);
+
+  // This check relies on the fact that when CrasAudioHandler receives a call to
+  // change the input gain, it will notify all observers, one of which is
+  // |fake_observer|.
+  ASSERT_EQ(2u, fake_observer->num_properties_updated_calls_);
+  EXPECT_EQ(
+      kTestInputGainPercent,
+      fake_observer->last_audio_system_properties_.value()->input_gain_percent);
 }
 
 TEST_F(CrosAudioConfigImplTest, GetSetOutputVolumePercentMuteThresholdTest) {
@@ -292,6 +359,36 @@ TEST_F(CrosAudioConfigImplTest, GetSetOutputVolumePercentMuteThresholdTest) {
                 ->output_volume_percent);
 }
 
+TEST_F(CrosAudioConfigImplTest, SetInputGainPercentWhileMuted) {
+  std::unique_ptr<FakeAudioSystemPropertiesObserver> fake_observer = Observe();
+
+  // |fake_observer| count is first incremented in Observe() method.
+  ASSERT_EQ(1u, fake_observer->num_properties_updated_calls_);
+  ASSERT_TRUE(fake_observer->last_audio_system_properties_.has_value());
+  ASSERT_EQ(
+      kDefaultInputGainPercent,
+      fake_observer->last_audio_system_properties_.value()->input_gain_percent);
+
+  // Test setting gain when muted.
+  SetInputMuteState(mojom::MuteState::kMutedByUser);
+  ASSERT_EQ(2u, fake_observer->num_properties_updated_calls_);
+  EXPECT_EQ(
+      mojom::MuteState::kMutedByUser,
+      fake_observer->last_audio_system_properties_.value()->input_mute_state);
+
+  SetInputGainPercentFromFrontEnd(kDefaultInputGainPercent);
+
+  // |fake_observer| should be notified twice due to mute state changing when
+  // setting gain.
+  ASSERT_EQ(4u, fake_observer->num_properties_updated_calls_);
+  EXPECT_EQ(
+      mojom::MuteState::kNotMuted,
+      fake_observer->last_audio_system_properties_.value()->input_mute_state);
+  EXPECT_EQ(
+      kDefaultInputGainPercent,
+      fake_observer->last_audio_system_properties_.value()->input_gain_percent);
+}
+
 TEST_F(CrosAudioConfigImplTest, GetSetOutputVolumePercentVolumeBoundariesTest) {
   std::unique_ptr<FakeAudioSystemPropertiesObserver> fake_observer = Observe();
 
@@ -336,9 +433,18 @@ TEST_F(CrosAudioConfigImplTest, GetOutputMuteState) {
       fake_observer->last_audio_system_properties_.value()->output_mute_state);
 }
 
-TEST_F(CrosAudioConfigImplTest, GetOutputMuteStateMutedByPolicy) {
+TEST_F(CrosAudioConfigImplTest, HandleOutputMuteStateMutedByPolicy) {
   SetOutputMuteState(mojom::MuteState::kMutedByPolicy);
   std::unique_ptr<FakeAudioSystemPropertiesObserver> fake_observer = Observe();
+  ASSERT_EQ(1u, fake_observer->num_properties_updated_calls_);
+  ASSERT_TRUE(fake_observer->last_audio_system_properties_.has_value());
+  EXPECT_EQ(
+      mojom::MuteState::kMutedByPolicy,
+      fake_observer->last_audio_system_properties_.value()->output_mute_state);
+
+  // Simulate attempting to change mute state while policy is enabled.
+  SimulateSetOutputMuted(/*muted=*/true);
+  SimulateSetOutputMuted(/*muted=*/false);
   ASSERT_EQ(1u, fake_observer->num_properties_updated_calls_);
   ASSERT_TRUE(fake_observer->last_audio_system_properties_.has_value());
   EXPECT_EQ(
@@ -573,6 +679,65 @@ TEST_F(CrosAudioConfigImplTest, HandleInputMuteState) {
   SetInputMuteState(mojom::MuteState::kMutedExternally, false);
   ASSERT_EQ(
       mojom::MuteState::kNotMuted,
+      fake_observer->last_audio_system_properties_.value()->input_mute_state);
+}
+
+TEST_F(CrosAudioConfigImplTest, SetOutputMuted) {
+  std::unique_ptr<FakeAudioSystemPropertiesObserver> fake_observer = Observe();
+
+  // Test default audio node list.
+  SetAudioNodes({kInternalSpeaker, kHDMIOutput});
+  SetActiveOutputNodes({kInternalSpeakerId});
+  EXPECT_EQ(
+      mojom::MuteState::kNotMuted,
+      fake_observer->last_audio_system_properties_.value()->output_mute_state);
+  EXPECT_FALSE(GetDeviceMuted(kInternalSpeakerId));
+  EXPECT_FALSE(GetDeviceMuted(kHDMIOutputId));
+
+  SimulateSetOutputMuted(/*muted=*/true);
+  EXPECT_EQ(
+      mojom::MuteState::kMutedByUser,
+      fake_observer->last_audio_system_properties_.value()->output_mute_state);
+  EXPECT_TRUE(GetDeviceMuted(kInternalSpeakerId));
+  EXPECT_FALSE(GetDeviceMuted(kHDMIOutputId));
+
+  SimulateSetOutputMuted(/*muted=*/false);
+  EXPECT_EQ(
+      mojom::MuteState::kNotMuted,
+      fake_observer->last_audio_system_properties_.value()->output_mute_state);
+  EXPECT_FALSE(GetDeviceMuted(kInternalSpeakerId));
+  EXPECT_FALSE(GetDeviceMuted(kHDMIOutputId));
+}
+
+TEST_F(CrosAudioConfigImplTest, SetInputMuted) {
+  std::unique_ptr<FakeAudioSystemPropertiesObserver> fake_observer = Observe();
+  SetAudioNodes({kInternalSpeaker, kMicJack});
+  ASSERT_EQ(
+      mojom::MuteState::kNotMuted,
+      fake_observer->last_audio_system_properties_.value()->input_mute_state);
+
+  SimulateSetInputMuted(/*muted=*/true);
+  ASSERT_EQ(
+      mojom::MuteState::kMutedByUser,
+      fake_observer->last_audio_system_properties_.value()->input_mute_state);
+
+  SimulateSetInputMuted(/*muted=*/false);
+  ASSERT_EQ(
+      mojom::MuteState::kNotMuted,
+      fake_observer->last_audio_system_properties_.value()->input_mute_state);
+
+  // Simulate turning physical switch on.
+  SetInputMuteState(mojom::MuteState::kMutedExternally, /*switch_on=*/true);
+
+  // Simulate changing mute state while physical switch on.
+  SimulateSetInputMuted(/*muted=*/true);
+  ASSERT_EQ(
+      mojom::MuteState::kMutedExternally,
+      fake_observer->last_audio_system_properties_.value()->input_mute_state);
+
+  SimulateSetInputMuted(/*muted=*/false);
+  ASSERT_EQ(
+      mojom::MuteState::kMutedExternally,
       fake_observer->last_audio_system_properties_.value()->input_mute_state);
 }
 

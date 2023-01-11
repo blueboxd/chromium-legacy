@@ -965,6 +965,11 @@ const base::FeatureParam<int> kDocumentProviderMaxLowQualitySuggestions(
     "DocumentProviderMaxLowQualitySuggestions",
     100);
 
+const base::FeatureParam<bool> kDomainSuggestionsCounterfactual(
+    &omnibox::kDomainSuggestions,
+    "DomainSuggestionsCounterfactual",
+    false);
+
 const base::FeatureParam<int> kDomainSuggestionsTypedUrlsThreshold(
     &omnibox::kDomainSuggestions,
     "DomainSuggestionsTypedUrlsThreshold",
@@ -1004,6 +1009,11 @@ const base::FeatureParam<double> kDomainSuggestionsScoreFactor(
     &omnibox::kDomainSuggestions,
     "DomainSuggestionsScoreFactor",
     1);
+
+const base::FeatureParam<bool> kDomainSuggestionsAlternativeScoring(
+    &omnibox::kDomainSuggestions,
+    "DomainSuggestionsAlternativeScoring",
+    false);
 
 bool IsLogUrlScoringSignalsEnabled() {
   static bool enabled =

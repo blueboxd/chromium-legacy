@@ -7,8 +7,7 @@
 #include <algorithm>
 #include <string>
 
-#include "build/build_config.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/stringprintf.h"
@@ -442,7 +441,7 @@ TEST(PaintOpBufferTest, SaveDrawRestore_SingleOpRecordWithSingleNonDrawOp) {
 TEST(PaintOpBufferTest, SaveLayerRestore_DrawColor) {
   PaintOpBuffer buffer;
   float alpha = 0.4f;
-  SkColor original = SkColorSetA(50, SK_ColorRED);
+  SkColor original = SkColorSetA(SK_ColorRED, 50);
 
   buffer.push<SaveLayerAlphaOp>(alpha);
   buffer.push<DrawColorOp>(SkColor4f::FromColor(original),
@@ -454,8 +453,9 @@ TEST(PaintOpBufferTest, SaveLayerRestore_DrawColor) {
   EXPECT_EQ(canvas.save_count_, 0);
   EXPECT_EQ(canvas.restore_count_, 0);
 
-  uint8_t expected_alpha = SkMulDiv255Round(alpha, SkColorGetA(original));
-  EXPECT_EQ(canvas.paint_.getColor(), SkColorSetA(original, expected_alpha));
+  // original alpha of 50 * layer alpha of 0.4 == 20
+  SkColor expected_color = SkColorSetA(SK_ColorRED, 20);
+  EXPECT_EQ(canvas.paint_.getColor(), expected_color);
 }
 
 TEST(PaintOpBufferTest, DiscardableImagesTracking_EmptyBuffer) {
@@ -2391,16 +2391,14 @@ TEST(PaintOpBufferTest, PaintOpDeserialize) {
 // Test that deserializing invalid paint ops fails silently. Skia release
 // asserts on invalid values in several places so these are not safe to pass
 // them to the SkCanvas API.
-// TODO(crbug.com/1404840): Crashes on MSAN.
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
-#define MAYBE_ValidateRects DISABLED_ValidateRects
-#else
-#define MAYBE_ValidateRects ValidateRects
-#endif
-TEST(PaintOpBufferTest, MAYBE_ValidateRects) {
+TEST(PaintOpBufferTest, ValidateRects) {
   size_t buffer_size = kBufferBytesPerOp;
   auto serialized = AllocateBuffer(buffer_size);
   auto deserialized = AllocateBuffer(buffer_size);
+  // We may read uninitialized gaps in this test. Initialize the buffer with a
+  // special value to avoid MSAN errors.
+  memset(serialized.get(), 0xA5, buffer_size);
+  memset(deserialized.get(), 0x5A, buffer_size);
 
   float rect_size = 0x8.765432p1;
   SkRect rect = SkRect::MakeWH(rect_size, rect_size);

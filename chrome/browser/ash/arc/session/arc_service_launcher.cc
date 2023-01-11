@@ -42,9 +42,10 @@
 #include "ash/components/arc/volume_mounter/arc_volume_mounter_bridge.h"
 #include "ash/components/arc/wake_lock/arc_wake_lock_bridge.h"
 #include "ash/constants/ash_features.h"
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/apps/app_service/publishers/arc_apps_factory.h"
 #include "chrome/browser/ash/app_list/arc/arc_usb_host_permission_manager.h"
 #include "chrome/browser/ash/app_restore/app_restore_arc_task_handler.h"
@@ -81,7 +82,6 @@
 #include "chrome/browser/ash/arc/privacy_items/arc_privacy_items_bridge.h"
 #include "chrome/browser/ash/arc/process/arc_process_service.h"
 #include "chrome/browser/ash/arc/screen_capture/arc_screen_capture_bridge.h"
-#include "chrome/browser/ash/arc/session/arc_demo_mode_preference_handler.h"
 #include "chrome/browser/ash/arc/session/arc_disk_space_monitor.h"
 #include "chrome/browser/ash/arc/session/arc_initial_optin_notifier.h"
 #include "chrome/browser/ash/arc/session/arc_play_store_enabled_preference_handler.h"
@@ -146,11 +146,6 @@ ArcServiceLauncher::ArcServiceLauncher(
       scheduler_configuration_manager_(scheduler_configuration_manager) {
   DCHECK(g_arc_service_launcher == nullptr);
   g_arc_service_launcher = this;
-
-  if (!ash::StartupUtils::IsOobeCompleted()) {
-    arc_demo_mode_preference_handler_ =
-        ArcDemoModePreferenceHandler::Create(arc_session_manager_.get());
-  }
 
   if (base::FeatureList::IsEnabled(kEnableVirtioBlkForData))
     arc_disk_space_monitor_ = std::make_unique<ArcDiskSpaceMonitor>();

@@ -99,13 +99,6 @@ BASE_FEATURE(kSideSearchFeedback,
              "SideSearchFeedback",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Controls whether the Side Search feature is configured to support any
-// participating Chrome search engine. This should always be enabled with
-// kSideSearch on non-ChromeOS platforms.
-BASE_FEATURE(kSideSearchDSESupport,
-             "SideSearchDSESupport",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Displays right-click search results of a highlighted text in side panel,
 // So users are not forced to switch to a new tab to view the search results
 BASE_FEATURE(kSearchWebInSidePanel,
@@ -144,6 +137,10 @@ BASE_FEATURE(kSidePanelWebView,
 
 BASE_FEATURE(kSidePanelJourneysQueryless,
              "SidePanelJourneysQueryless",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSidePanelSearchCompanion,
+             "SidePanelSearchCompanion",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables tabs to scroll in the tabstrip. https://crbug.com/951078

@@ -183,7 +183,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.DownloadRequestDuration" units="ms"
-    expires_after="2023-07-02">
+    expires_after="2023-07-09">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <owner>mattm@chromium.org</owner>
@@ -641,7 +641,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.ClassificationStart" enum="BooleanHit"
-    expires_after="2023-05-08">
+    expires_after="2023-07-09">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -655,7 +655,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.Classifier.Event"
-    enum="SBPhishingClassifierEvent" expires_after="2023-05-07">
+    enum="SBPhishingClassifierEvent" expires_after="2023-07-09">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -776,7 +776,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.PhishingDetectionDuration" units="ms"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -841,6 +841,19 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records if the phishing request was sent with a GAIA-tied OAuth2 token. This
     token is sent only for signed-in Enhanced Safe Browsing users.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.RTLookupForceRequest"
+    enum="BooleanForceRequest" expires_after="2023-11-28">
+  <owner>andysjlim@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Records if the RTUrlLookupResponse contains FORCE_REQUEST in
+    client_side_detection_type, which forces the Client Side Detection -
+    Phishing ping to be sent to the server if the user also has Enhanced Safe
+    Browsing or Safe Browsing Extended Reporting opt-in. This histogram is
+    logged once on every successful classification.
   </summary>
 </histogram>
 

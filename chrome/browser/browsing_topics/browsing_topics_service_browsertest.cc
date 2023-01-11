@@ -6,6 +6,7 @@
 #include "base/json/values_util.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browsing_topics/browsing_topics_service_factory.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -27,6 +28,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/optimization_guide/content/browser/page_content_annotations_service.h"
+#include "components/optimization_guide/content/browser/test_page_content_annotations_service.h"
 #include "components/optimization_guide/content/browser/test_page_content_annotator.h"
 #include "components/optimization_guide/core/test_model_info_builder.h"
 #include "components/optimization_guide/core/test_optimization_guide_model_provider.h"
@@ -422,11 +424,9 @@ class BrowsingTopicsBrowserTest : public BrowsingTopicsBrowserTestBase {
                      optimization_guide::TestOptimizationGuideModelProvider>());
 
     auto page_content_annotations_service =
-        std::make_unique<optimization_guide::PageContentAnnotationsService>(
-            nullptr, "en-US",
+        optimization_guide::TestPageContentAnnotationsService::Create(
             optimization_guide_model_providers_.at(profile).get(),
-            history_service, nullptr, nullptr, nullptr, base::FilePath(),
-            nullptr, nullptr);
+            history_service);
 
     page_content_annotations_service->OverridePageContentAnnotatorForTesting(
         &test_page_content_annotator_);

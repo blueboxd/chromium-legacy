@@ -176,7 +176,6 @@ static_library("browser") {
     "omnibox_client.h",
     "omnibox_controller.cc",
     "omnibox_controller.h",
-    "omnibox_edit_controller.cc",
     "omnibox_edit_controller.h",
     "omnibox_edit_model.cc",
     "omnibox_edit_model.h",
@@ -257,6 +256,12 @@ static_library("browser") {
   ]
   if (build_with_tflite_lib) {
     sources += [
+      "autocomplete_scoring_model_executor.cc",
+      "autocomplete_scoring_model_executor.h",
+      "autocomplete_scoring_model_handler.cc",
+      "autocomplete_scoring_model_handler.h",
+      "autocomplete_scoring_model_service.cc",
+      "autocomplete_scoring_model_service.h",
       "on_device_tail_model_executor.cc",
       "on_device_tail_model_executor.h",
     ]
@@ -615,6 +620,7 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/omnibox/Shortcuts.no_fill_into_edit.sql",
     "//components/test/data/omnibox/Shortcuts.v0.sql",
     "//components/test/data/omnibox/Shortcuts.v1.sql",
+    "//components/test/data/omnibox/adder.tflite",
     "//components/test/data/omnibox/in_memory_url_index_test.sql",
     "//components/test/data/omnibox/in_memory_url_index_test_limited.sql",
     "//components/test/data/omnibox/on_device_head_test_model_index.bin",
@@ -691,7 +697,10 @@ source_set("unit_tests") {
     sources += [ "location_bar_model_util_unittest.cc" ]
   }
   if (build_with_tflite_lib) {
-    sources += [ "on_device_tail_model_executor_unittest.cc" ]
+    sources += [
+      "autocomplete_scoring_model_executor_unittest.cc",
+      "on_device_tail_model_executor_unittest.cc",
+    ]
   }
 
   deps = [

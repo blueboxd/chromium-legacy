@@ -4,7 +4,7 @@
 
 #include "components/viz/service/frame_sinks/gpu_vsync_begin_frame_source.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/service/display/output_surface.h"
 
@@ -91,5 +91,11 @@ void GpuVSyncBeginFrameSource::OnNeedsBeginFrames(bool needs_begin_frames) {
   skip_next_vsync_ = false;
   output_surface_->SetGpuVSyncEnabled(needs_begin_frames);
 }
+
+#if BUILDFLAG(IS_MAC)
+void GpuVSyncBeginFrameSource::SetVSyncDisplayID(int64_t display_id) {
+  // TODO (crbug/1404797): Use this Display id for VCDisplayLink
+}
+#endif
 
 }  // namespace viz

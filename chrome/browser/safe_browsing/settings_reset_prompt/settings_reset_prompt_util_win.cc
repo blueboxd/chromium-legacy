@@ -7,9 +7,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/time/time.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
@@ -72,8 +72,6 @@ void MaybeShowSettingsResetPrompt(
 
   auto model = std::make_unique<SettingsResetPromptModel>(
       profile, std::move(config), std::make_unique<ProfileResetter>(profile));
-
-  model->ReportUmaMetrics();
 
   if (!model->ShouldPromptForReset())
     return;

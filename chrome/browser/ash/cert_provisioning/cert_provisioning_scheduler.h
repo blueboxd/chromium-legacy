@@ -19,7 +19,7 @@
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_invalidator.h"
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_platform_keys_helpers.h"
 #include "chrome/browser/ash/platform_keys/platform_keys_service.h"
-#include "chrome/browser/platform_keys/platform_keys.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -36,6 +36,7 @@ class NetworkStateHandler;
 
 namespace cert_provisioning {
 
+class CertProvisioningClient;
 class CertProvisioningWorker;
 
 using WorkerMap =
@@ -118,7 +119,7 @@ class CertProvisioningSchedulerImpl
       CertScope cert_scope,
       Profile* profile,
       PrefService* pref_service,
-      policy::CloudPolicyClient* cloud_policy_client,
+      std::unique_ptr<CertProvisioningClient> cert_provisioning_client,
       platform_keys::PlatformKeysService* platform_keys_service,
       NetworkStateHandler* network_state_handler,
       std::unique_ptr<CertProvisioningInvalidatorFactory> invalidator_factory);
@@ -221,7 +222,7 @@ class CertProvisioningSchedulerImpl
   Profile* profile_ = nullptr;
   PrefService* pref_service_ = nullptr;
   const char* pref_name_ = nullptr;
-  policy::CloudPolicyClient* cloud_policy_client_ = nullptr;
+  std::unique_ptr<CertProvisioningClient> cert_provisioning_client_;
   // |platform_keys_service_| can be nullptr if it has been shut down.
   platform_keys::PlatformKeysService* platform_keys_service_ = nullptr;
   NetworkStateHandler* network_state_handler_ = nullptr;

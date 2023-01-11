@@ -48,7 +48,6 @@ if (optimize_webui) {
     ]
     excludes = [
       "chrome://resources/cr_components/app_management/app_management.mojom-webui.js",
-      "chrome://resources/cr_components/app_management/types.mojom-webui.js",
       "chrome://resources/ash/common/bluetooth/cros_bluetooth_config.js",
       "chrome://resources/ash/common/cellular_setup/mojo_interface_provider.js",
       "chrome://resources/ash/common/hotspot/cros_hotspot_config.js",
@@ -90,6 +89,8 @@ ts_library("build_ts") {
     "//ui/webui/resources:library",
     "//ui/webui/resources/cr_components/app_management:build_ts",
     "//ui/webui/resources/cr_components/color_change_listener:build_ts",
+    "//ui/webui/resources/cr_components/localized_link:build_ts",
+    "//ui/webui/resources/cr_components/managed_footnote:build_ts",
     "//ui/webui/resources/mojo:library",
   ]
   extra_deps = [

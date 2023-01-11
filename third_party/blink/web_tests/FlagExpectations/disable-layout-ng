@@ -13,8 +13,8 @@
 # Tests that fail in legacy but pass in NG
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/webcodecs/videoFrame-serialization.crossAgentCluster.https.html [ Timeout ]
 crbug.com/626703 virtual/idna-2008/external/wpt/url/url-setters-a-area.window.html?include=mailto [ Crash Failure ]
-crbug.com/626703 external/wpt/webcodecs/videoFrame-serialization.crossAgentCluster.html [ Timeout ]
 crbug.com/626703 virtual/idna-2008/external/wpt/url/a-element-xhtml.xhtml?exclude=(file|javascript|mailto) [ Crash Failure ]
 crbug.com/626703 external/wpt/css/css-text/bidi/bidi-tab-001.html [ Failure ]
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/resource-timing/response-status-code.html [ Timeout ]
@@ -361,6 +361,8 @@ crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-099.html 
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-105.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-106.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-109.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-114.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-115.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflow-clip-000.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflow-clip-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflow-clip-010.html [ Failure ]
@@ -421,6 +423,7 @@ crbug.com/1078927 external/wpt/css/css-break/table/table-collapsed-borders-paint
 crbug.com/1078927 external/wpt/css/css-break/table/table-parts-offsetheight.html [ Failure ]
 crbug.com/1078927 external/wpt/css/css-break/table/table-row-paint-vlr-rtl.html [ Failure ]
 crbug.com/1078927 external/wpt/css/css-break/table/table-row-paint-vrl-rtl.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/table-rowspan-001.html [ Failure ]
 crbug.com/1078927 external/wpt/css/css-break/table/table-section-paint-vrl-rtl.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/tall-content-inside-constrained-block-000.tentative.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/tall-content-inside-constrained-block-001.tentative.html [ Failure ]
@@ -1626,7 +1629,6 @@ crbug.com/958381 external/wpt/css/css-pseudo/selection-input-011.html [ Failure 
 crbug.com/958381 external/wpt/css/css-pseudo/selection-textarea-011.html [ Failure ]
 crbug.com/958381 external/wpt/css/css-text/white-space/tab-bidi-001.html [ Failure ]
 crbug.com/958381 external/wpt/css/css-text/word-break/break-boundary-2-chars-001.html [ Failure ]
-crbug.com/958381 wpt_internal/webcodecs/avc_encoder_config.https.any.html [ Failure ]
 crbug.com/958381 external/wpt/css/css-tables/border-writing-mode-dynamic-001.html [ Failure ]
 crbug.com/958381 tables/mozilla/bugs/bug137388-3.html [ Failure ]
 
@@ -2132,6 +2134,7 @@ crbug.com/1121942 printing/fixed-positioned-overflow-scroll.html [ Pass ]
 crbug.com/1121942 printing/fixedpos-in-multicol.html [ Failure ]
 crbug.com/1121942 printing/flexbox-with-overflow-in-bottom-aligned-fixedpos.html [ Pass ]
 crbug.com/1121942 printing/multi-page-background.html [ Failure ]
+crbug.com/1121942 printing/oof-in-clipped-container-006.html [ Failure ]
 crbug.com/1121942 printing/page-break-avoid.html [ Failure ]
 crbug.com/1121942 printing/width-overflow.html [ Pass ]
 crbug.com/1147859 virtual/css-highlight-inheritance/external/wpt/css/css-highlight-api/painting/custom-highlight-painting-001.html [ Failure ]

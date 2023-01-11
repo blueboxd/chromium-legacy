@@ -5,11 +5,15 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_IMAGE_FACTORY_NATIVE_PIXMAP_H_
 #define GPU_COMMAND_BUFFER_SERVICE_IMAGE_FACTORY_NATIVE_PIXMAP_H_
 
+#include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/gpu_gles2_export.h"
+#include "gpu/ipc/common/surface_handle.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace gl {
-class GLImage;
+class GLImageNativePixmap;
 }
 
 namespace gpu {
@@ -23,14 +27,20 @@ class GPU_GLES2_EXPORT ImageFactoryNativePixmap : public ImageFactory {
 
   ~ImageFactoryNativePixmap() override;
 
+  // Create an anonymous GLImage backed by a GpuMemoryBuffer that doesn't have a
+  // client_id. It can't be passed to other processes. Used only by validating
+  // command decoder to support NaCL swap chain.
+  bool SupportsCreateAnonymousImage() const;
+  scoped_refptr<gl::GLImageNativePixmap> CreateAnonymousImage(
+      const gfx::Size& size,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage,
+      SurfaceHandle surface_handle,
+      bool* is_cleared);
+
   // Overridden from ImageFactory:
-  bool SupportsCreateAnonymousImage() const override;
-  scoped_refptr<gl::GLImage> CreateAnonymousImage(const gfx::Size& size,
-                                                  gfx::BufferFormat format,
-                                                  gfx::BufferUsage usage,
-                                                  SurfaceHandle surface_handle,
-                                                  bool* is_cleared) override;
   unsigned RequiredTextureType() override;
+  ImageFactoryNativePixmap* AsImageFactoryNativePixmap() override;
 };
 
 }  // namespace gpu

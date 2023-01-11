@@ -17,6 +17,8 @@ using common assumptions about how builders are configured.
 These builders must pass before a CL may land that affects files outside of
 //docs and //infra/config.
 
+* [linux-chromeos-compile-chrome](https://ci.chromium.org/p/chrome/builders/try/linux-chromeos-compile-chrome) ([definition](https://source.corp.google.com/search?q=+file:/try/.*\.star$+""linux-chromeos-compile-chrome""))
+
 * [android-12-x64-rel](https://ci.chromium.org/p/chromium/builders/try/android-12-x64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-12-x64-rel""))
 
 * [android-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/android-arm64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-arm64-rel""))
@@ -36,6 +38,8 @@ These builders must pass before a CL may land that affects files outside of
 * [chromeos-arm-generic-rel](https://ci.chromium.org/p/chromium/builders/try/chromeos-arm-generic-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""chromeos-arm-generic-rel""))
 
 * [chromium_presubmit](https://ci.chromium.org/p/chromium/builders/try/chromium_presubmit) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""chromium_presubmit""))
+
+* [fuchsia-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/fuchsia-arm64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia-arm64-rel""))
 
 * [fuchsia-binary-size](https://ci.chromium.org/p/chromium/builders/try/fuchsia-binary-size) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia-binary-size""))
 
@@ -478,9 +482,6 @@ as required builders.
 
   Location filters:
   * [`//third_party/nearby/README.chromium`](https://cs.chromium.org/search?q=+file:third_party/nearby/README.chromium)
-
-* [linux-chromeos-compile-chrome](https://ci.chromium.org/p/chrome/builders/try/linux-chromeos-compile-chrome) ([definition](https://source.corp.google.com/search?q=+file:/try/.*\.star$+""linux-chromeos-compile-chrome""))
-  * Experiment percentage: 100.0
 
 * [android-pie-arm64-coverage-experimental-rel](https://ci.chromium.org/p/chromium/builders/try/android-pie-arm64-coverage-experimental-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-pie-arm64-coverage-experimental-rel""))
   * Experiment percentage: 3.0

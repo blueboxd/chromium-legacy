@@ -6,9 +6,10 @@
 #define CHROME_BROWSER_ASH_ARC_NEARBY_SHARE_NEARBY_SHARE_SESSION_IMPL_H_
 
 #include "ash/components/arc/mojom/nearby_share.mojom.h"
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/arc/nearby_share/share_info_file_handler.h"
 #include "chrome/browser/ash/fusebox/fusebox_moniker.h"

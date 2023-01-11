@@ -194,6 +194,9 @@ std::string FederatedAuthRequestResultToProtocol(
     case FederatedAuthRequestResult::kErrorFetchingWellKnownInvalidResponse: {
       return FederatedAuthRequestIssueReasonEnum::WellKnownInvalidResponse;
     }
+    case FederatedAuthRequestResult::kErrorFetchingWellKnownListEmpty: {
+      return FederatedAuthRequestIssueReasonEnum::WellKnownListEmpty;
+    }
     case FederatedAuthRequestResult::kErrorConfigNotInWellKnown: {
       return FederatedAuthRequestIssueReasonEnum::ConfigNotInWellKnown;
     }
@@ -227,6 +230,9 @@ std::string FederatedAuthRequestResultToProtocol(
     }
     case FederatedAuthRequestResult::kErrorFetchingAccountsInvalidResponse: {
       return FederatedAuthRequestIssueReasonEnum::AccountsInvalidResponse;
+    }
+    case FederatedAuthRequestResult::kErrorFetchingAccountsListEmpty: {
+      return FederatedAuthRequestIssueReasonEnum::AccountsListEmpty;
     }
     case FederatedAuthRequestResult::kErrorFetchingIdTokenHttpNotFound: {
       return FederatedAuthRequestIssueReasonEnum::IdTokenHttpNotFound;
@@ -1383,7 +1389,7 @@ void ReportBrowserInitiatedIssue(RenderFrameHostImpl* frame,
   if (!ftn)
     return;
 
-  AddIssueToIssueStorage(frame, issue->clone());
+  AddIssueToIssueStorage(frame, issue->Clone());
   DispatchToAgents(ftn, &protocol::AuditsHandler::OnIssueAdded, issue);
 }
 

@@ -6,8 +6,8 @@
 
 #include <algorithm>
 
-#include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/fileapi/external_file_resolver.h"
@@ -17,9 +17,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/child_process_host.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "mojo/public/c/system/types.h"

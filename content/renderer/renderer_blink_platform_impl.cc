@@ -29,7 +29,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/trees/raster_context_provider_wrapper.h"
@@ -478,7 +477,7 @@ std::unique_ptr<WebAudioDevice> RendererBlinkPlatformImpl::CreateAudioDevice(
     const WebAudioSinkDescriptor& sink_descriptor,
     unsigned number_of_output_channels,
     const blink::WebAudioLatencyHint& latency_hint,
-    WebAudioDevice::RenderCallback* callback) {
+    media::AudioRendererSink::RenderCallback* callback) {
   // The `number_of_output_channels` does not manifest the actual channel
   // layout of the audio output device. We use the best guess to the channel
   // layout based on the number of channels.

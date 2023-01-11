@@ -10,9 +10,9 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/escape.h"
@@ -625,7 +625,7 @@ TEST_F(FileManagerFileTaskPreferencesTest,
 TEST_F(FileManagerFileTaskPreferencesTest,
        ChooseAndSetDefault_MatchesWithAlternateAppServiceTaskDescriptorForm) {
   base::test::ScopedFeatureList scoped_feature_list{
-      ash::features::kArcAndGuestOsFileTasksUseAppService};
+      ash::features::kArcFileTasksUseAppService};
 
   std::string package = "com.example.gallery";
   std::string activity = "com.example.gallery.OpenActivity";
@@ -670,7 +670,7 @@ TEST_F(FileManagerFileTaskPreferencesTest,
 TEST_F(FileManagerFileTaskPreferencesTest,
        UpdateDefaultTask_ConvertsArcAppServiceTaskDescriptorToStandardTaskId) {
   base::test::ScopedFeatureList scoped_feature_list{
-      ash::features::kArcAndGuestOsFileTasksUseAppService};
+      ash::features::kArcFileTasksUseAppService};
 
   std::string package = "com.example.gallery";
   std::string activity = "com.example.gallery.OpenActivity";
@@ -798,6 +798,12 @@ class FileManagerFileTasksCrostiniTest
         crostini_folder_(util::GetCrostiniMountDirectory(test_profile_.get())) {
     ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
 
+    // Disable kGuestOsFileTasksUseAppService for these tests which run on code
+    // from guest_os_file_tasks.cc. When the flag is enabled, these test cases
+    // get covered in app_service_file_tasks_unittest.cc.
+    feature_list_.InitAndDisableFeature(
+        ash::features::kGuestOsFileTasksUseAppService);
+
     vm_tools::apps::App text_app =
         crostini::CrostiniTestHelper::BasicApp("text_app");
     *text_app.add_mime_types() = "text/plain";
@@ -837,6 +843,7 @@ class FileManagerFileTasksCrostiniTest
         ->UpdateMimeTypes(mime_types_list);
   }
   ~FileManagerFileTasksCrostiniTest() override {
+    feature_list_.Reset();
     crostini_test_helper_.reset();
     test_profile_.reset();
     ash::ConciergeClient::Shutdown();
@@ -861,6 +868,7 @@ class FileManagerFileTasksCrostiniTest
     return GURL("filesystem:chrome-extension://id/external/" + virtual_path);
   }
 
+  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<crostini::CrostiniTestHelper> crostini_test_helper_;
   base::FilePath crostini_folder_;
   std::string text_app_id_;

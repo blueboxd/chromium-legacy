@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TEST_VIEW_EVENT_TEST_BASE_H_
 
 #include "base/memory/raw_ptr.h"
+#include "base/task/single_thread_task_runner.h"
 
 // We only want to use ViewEventTestBase in test targets which properly
 // isolate each test case by running each test in a separate process.
@@ -16,8 +17,8 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"

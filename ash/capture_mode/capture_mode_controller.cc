@@ -27,18 +27,19 @@
 #include "ash/system/message_center/message_view_factory.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/auto_reset.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/current_thread.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
@@ -1507,6 +1508,8 @@ void CaptureModeController::BeginVideoRecording(
       capture_params.window, capture_params.bounds,
       base::BindOnce(&CaptureModeController::InterruptVideoRecording,
                      weak_ptr_factory_.GetWeakPtr()));
+
+  RecordRecordingStartsWithDemoTools(enable_demo_tools_, for_projector);
 }
 
 void CaptureModeController::InterruptVideoRecording() {

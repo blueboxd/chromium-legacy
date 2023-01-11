@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_test_override.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -385,6 +386,10 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
                                 const std::string& name,
                                 const AppId& id);
 
+  bool DoIconColorsMatch(Profile* profile,
+                         const std::string& name,
+                         const AppId& id);
+
   bool IsFileHandledBySite(Site site, FileExtension file_extension);
   void SetFileHandlingEnabled(Site site, bool enabled);
   void LaunchFile(Site site, FilesOptions files_options);
@@ -450,7 +455,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   base::ScopedObservation<web_app::WebAppInstallManager,
                           web_app::WebAppInstallManagerObserver>
       observation_{this};
-  std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
+  std::unique_ptr<OsIntegrationTestOverride::BlockingRegistration>
       override_registration_;
 
   std::unique_ptr<base::RunLoop> window_controls_overlay_callback_for_testing_ =

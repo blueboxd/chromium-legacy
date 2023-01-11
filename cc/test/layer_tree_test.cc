@@ -7,13 +7,14 @@
 #include <memory>
 #include <string>
 
-#include "base/bind.h"
 #include "base/cfi_buildflags.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -1115,8 +1116,10 @@ void LayerTreeTest::DispatchSetNeedsCommitWithForcedRedraw() {
 
 void LayerTreeTest::DispatchCompositeImmediately() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (layer_tree_host_)
-    layer_tree_host_->CompositeForTest(base::TimeTicks::Now(), true);
+  if (layer_tree_host_) {
+    layer_tree_host_->CompositeForTest(base::TimeTicks::Now(), true,
+                                       base::OnceClosure());
+  }
 }
 
 void LayerTreeTest::DispatchNextCommitWaitsForActivation() {

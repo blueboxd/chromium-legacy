@@ -20,12 +20,11 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/work_area_insets.h"
-#include "base/bind.h"
 #include "base/cxx17_backports.h"
+#include "base/functional/bind.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "ui/accessibility/accessibility_features.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/layer.h"
@@ -273,9 +272,7 @@ void DockedMagnifierController::OnSigninScreenPrefServiceInitialized(
 
 void DockedMagnifierController::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(GetEnabled());
-  if (::features::IsDockedMagnifierResizingEnabled())
-    MaybePerformViewportResizing(event);
-
+  MaybePerformViewportResizing(event);
   CenterOnPoint(GetCursorScreenPoint());
 }
 
@@ -439,11 +436,8 @@ void DockedMagnifierController::MaybePerformViewportResizing(
     cursor_manager->LockCursor();
     cursor_window_controller->OnDockedMagnifierResizingStateChanged(true);
     is_cursor_locked_ = true;
-  } else if (!cursor_is_over_resizer && is_cursor_locked_ && !is_resizing_) {
-    MaybeSetCursorSize(ui::CursorSize::kNormal);
-    cursor_manager->UnlockCursor();
-    cursor_window_controller->OnDockedMagnifierResizingStateChanged(false);
-    is_cursor_locked_ = false;
+  } else if (!cursor_is_over_resizer && !is_resizing_) {
+    MaybeResetResizingCursor();
   }
 
   // If user releases left mouse button, or any other mouse button is pressed,
@@ -483,6 +477,20 @@ void DockedMagnifierController::MaybePerformViewportResizing(
     default:
       break;
   }
+}
+
+void DockedMagnifierController::MaybeResetResizingCursor() {
+  if (!is_cursor_locked_) {
+    return;
+  }
+
+  MaybeSetCursorSize(ui::CursorSize::kNormal);
+  Shell::Get()->cursor_manager()->UnlockCursor();
+  Shell::Get()
+      ->window_tree_host_manager()
+      ->cursor_window_controller()
+      ->OnDockedMagnifierResizingStateChanged(false);
+  is_cursor_locked_ = false;
 }
 
 void DockedMagnifierController::SwitchCurrentSourceRootWindowIfNeeded(
@@ -601,6 +609,7 @@ void DockedMagnifierController::OnEnabledPrefChanged() {
   } else {
     shell->window_tree_host_manager()->RemoveObserver(this);
     shell->RemoveAccessibilityEventHandler(this);
+    MaybeResetResizingCursor();
 
     // Setting the current root window to |nullptr| will remove the viewport and
     // all its associated layers.
@@ -665,9 +674,7 @@ void DockedMagnifierController::CreateMagnifierViewport() {
   separator_layer_->SetBounds(
       SeparatorBoundsFromViewportBounds(viewport_bounds));
   aura::Window* const separator_parent =
-      ::features::IsDockedMagnifierResizingEnabled()
-          ? GetViewportParentContainerForDivider(current_source_root_window_)
-          : viewport_parent;
+      GetViewportParentContainerForDivider(current_source_root_window_);
   separator_parent->layer()->Add(separator_layer_.get());
 
   // 3- Create a background layer that will show a dark gray color behind the
@@ -802,9 +809,7 @@ void DockedMagnifierController::ConfineMouseCursorOutsideViewport() {
       current_source_root_window_->GetBoundsInRootWindow();
   const auto viewport_bounds = magnifier_utils::GetViewportWidgetBoundsInRoot(
       current_source_root_window_, GetScreenHeightDivisor());
-  const int docked_height = ::features::IsDockedMagnifierResizingEnabled()
-                                ? viewport_bounds.height()
-                                : separator_layer_->bounds().bottom();
+  const int docked_height = viewport_bounds.height();
   confine_bounds.Offset(0, docked_height);
   confine_bounds.set_height(confine_bounds.height() - docked_height);
   RootWindowController::ForWindow(current_source_root_window_)

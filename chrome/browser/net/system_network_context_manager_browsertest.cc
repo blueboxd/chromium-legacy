@@ -12,7 +12,6 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/values_test_util.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -196,12 +195,11 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
   EXPECT_TRUE(dynamic_params->patterns_allowed_to_use_all_schemes.empty());
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
-  base::Value patterns_allowed_to_use_all_schemes(base::Value::Type::LIST);
-  patterns_allowed_to_use_all_schemes.Append(
-      base::Value("*.allowed.google.com"));
-  patterns_allowed_to_use_all_schemes.Append(base::Value("*.youtube.com"));
-  local_state->Set(prefs::kAllHttpAuthSchemesAllowedForOrigins,
-                   std::move(patterns_allowed_to_use_all_schemes));
+  base::Value::List patterns_allowed_to_use_all_schemes;
+  patterns_allowed_to_use_all_schemes.Append("*.allowed.google.com");
+  patterns_allowed_to_use_all_schemes.Append("*.youtube.com");
+  local_state->SetList(prefs::kAllHttpAuthSchemesAllowedForOrigins,
+                       std::move(patterns_allowed_to_use_all_schemes));
   dynamic_params =
       SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting();
 

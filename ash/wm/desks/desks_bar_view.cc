@@ -42,9 +42,9 @@
 #include "ash/wm/overview/overview_types.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/ranges/algorithm.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
@@ -558,6 +558,7 @@ DesksBarView::DesksBarView(OverviewGrid* overview_grid)
             this, &kDesksNewDeskButtonIcon,
             l10n_util::GetStringUTF16(IDS_ASH_DESKS_NEW_DESK_BUTTON),
             cros_tokens::kCrosSysOnPrimary, cros_tokens::kCrosSysPrimary,
+            /*initially_enabled=*/DesksController::Get()->CanCreateDesks(),
             base::BindRepeating(&DesksBarView::OnNewDeskButtonPressed,
                                 base::Unretained(this),
                                 DesksCreationRemovalSource::kButton)));
@@ -594,6 +595,7 @@ DesksBarView::DesksBarView(OverviewGrid* overview_grid)
               l10n_util::GetStringUTF16(button_text_id),
               cros_tokens::kCrosSysOnPrimaryContainer,
               cros_tokens::kCrosSysSystemPrimaryContainer,
+              /*initially_enabled=*/true,
               base::BindRepeating(&DesksBarView::OnLibraryButtonPressed,
                                   base::Unretained(this))));
     } else {
@@ -996,12 +998,25 @@ void DesksBarView::OnGestureEvent(ui::GestureEvent* event) {
 
 void DesksBarView::OnDeskAdded(const Desk* desk) {
   DeskNameView::CommitChanges(GetWidget());
-  const bool is_expanding_bar_view = zero_state_new_desk_button_->GetVisible();
-  UpdateNewMiniViews(/*initializing_bar_view=*/false, is_expanding_bar_view);
-  MaybeUpdateCombineDesksTooltips();
 
-  if (!DesksController::Get()->CanCreateDesks())
-    expanded_state_new_desk_button_->SetButtonState(/*enabled=*/false);
+  if (features::IsJellyrollEnabled()) {
+    const bool is_expanding_bar_view =
+        new_desk_button_->state() == CrOSNextDeskIconButton::State::kZero;
+    UpdateNewMiniViews(/*initializing_bar_view=*/false, is_expanding_bar_view);
+    MaybeUpdateCombineDesksTooltips();
+    if (!DesksController::Get()->CanCreateDesks()) {
+      new_desk_button_->SetEnabled(/*enabled=*/false);
+    }
+  } else {
+    const bool is_expanding_bar_view =
+        zero_state_new_desk_button_->GetVisible();
+    UpdateNewMiniViews(/*initializing_bar_view=*/false, is_expanding_bar_view);
+    MaybeUpdateCombineDesksTooltips();
+
+    if (!DesksController::Get()->CanCreateDesks()) {
+      expanded_state_new_desk_button_->SetButtonState(/*enabled=*/false);
+    }
+  }
 }
 
 void DesksBarView::OnDeskRemoved(const Desk* desk) {
@@ -1027,7 +1042,11 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
   highlight_controller->OnViewDestroyingOrDisabling((*iter)->desk_name_view());
   highlight_controller->OnViewDestroyingOrDisabling((*iter)->desk_preview());
 
-  expanded_state_new_desk_button_->SetButtonState(/*enabled=*/true);
+  if (features::IsJellyrollEnabled()) {
+    new_desk_button_->SetEnabled(/*enabled=*/true);
+  } else {
+    expanded_state_new_desk_button_->SetButtonState(/*enabled=*/true);
+  }
 
   for (auto* mini_view : mini_views_)
     mini_view->UpdateDeskButtonVisibility();
@@ -1055,7 +1074,6 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
       this, removed_mini_view,
       std::vector<DeskMiniView*>(mini_views_.begin(), partition_iter),
       std::vector<DeskMiniView*>(partition_iter, mini_views_.end()),
-      expanded_state_new_desk_button_, expanded_state_library_button_,
       begin_x - GetFirstMiniViewXOffset());
 
   MaybeUpdateCombineDesksTooltips();
@@ -1121,7 +1139,11 @@ void DesksBarView::UpdateNewMiniViews(bool initializing_bar_view,
 
   if (expanding_bar_view) {
     UpdateDeskButtonsVisibility();
-    PerformZeroStateToExpandedStateMiniViewAnimation(this);
+    if (features::IsJellyrollEnabled()) {
+      PerformZeroStateToExpandedStateMiniViewAnimationCrOSNext(this);
+    } else {
+      PerformZeroStateToExpandedStateMiniViewAnimation(this);
+    }
     return;
   }
 
@@ -1144,10 +1166,9 @@ void DesksBarView::UpdateNewMiniViews(bool initializing_bar_view,
                                     right_partition_iter) == new_mini_views);
 
   PerformNewDeskMiniViewAnimation(
-      new_mini_views,
+      this, new_mini_views,
       std::vector<DeskMiniView*>(mini_views_.begin(), left_partition_iter),
       std::vector<DeskMiniView*>(right_partition_iter, mini_views_.end()),
-      expanded_state_new_desk_button_, expanded_state_library_button_,
       begin_x - GetFirstMiniViewXOffset());
 }
 
@@ -1182,9 +1203,16 @@ void DesksBarView::UpdateButtonsForSavedDeskGrid() {
 
   FindMiniViewForDesk(Shell::Get()->desks_controller()->active_desk())
       ->UpdateFocusColor();
-  expanded_state_library_button_->set_active(
-      overview_grid_->IsShowingSavedDeskLibrary());
-  expanded_state_library_button_->UpdateFocusColor();
+
+  if (features::IsJellyrollEnabled()) {
+    library_button_->set_paint_as_active(
+        overview_grid_->IsShowingSavedDeskLibrary());
+    library_button_->UpdateFocusState();
+  } else {
+    expanded_state_library_button_->set_active(
+        overview_grid_->IsShowingSavedDeskLibrary());
+    expanded_state_library_button_->UpdateFocusColor();
+  }
 }
 
 void DesksBarView::UpdateDeskButtonsVisibility() {
@@ -1318,7 +1346,12 @@ void DesksBarView::SwitchToZeroState() {
   // Keep current layout until the animation is completed since the animation
   // for going back to zero state is based on the expanded bar's current
   // layout.
-  PerformExpandedStateToZeroStateMiniViewAnimation(this, removed_mini_views);
+  if (features::IsJellyrollEnabled()) {
+    PerformExpandedStateToZeroStateMiniViewAnimationCrOSNext(
+        this, removed_mini_views);
+  } else {
+    PerformExpandedStateToZeroStateMiniViewAnimation(this, removed_mini_views);
+  }
 }
 
 int DesksBarView::DetermineMoveIndex(int location_screen_x) const {

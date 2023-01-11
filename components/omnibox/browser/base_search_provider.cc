@@ -10,9 +10,9 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/bind.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -148,11 +148,7 @@ void SuggestionDeletionHandler::OnURLLoadComplete(
 
 BaseSearchProvider::BaseSearchProvider(AutocompleteProvider::Type type,
                                        AutocompleteProviderClient* client)
-    : AutocompleteProvider(type),
-      client_(client),
-      field_trial_triggered_(false),
-      field_trial_triggered_in_session_(false) {
-}
+    : AutocompleteProvider(type), client_(client) {}
 
 // static
 bool BaseSearchProvider::ShouldPrefetch(const AutocompleteMatch& match) {
@@ -180,9 +176,9 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   if (!template_url)
     return match;
   match.keyword = template_url->keyword();
-  match.image_dominant_color = suggestion.image_dominant_color();
-  match.image_url = suggestion.image_url();
-  match.entity_id = suggestion.entity_id();
+  match.image_dominant_color = suggestion.entity_info().dominant_color();
+  match.image_url = GURL(suggestion.entity_info().image_url());
+  match.entity_id = suggestion.entity_info().entity_id();
   match.contents = suggestion.match_contents();
   match.contents_class = suggestion.match_contents_class();
   match.suggestion_group_id = suggestion.suggestion_group_id();
@@ -244,7 +240,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   match.search_terms_args->original_query = original_query;
   match.search_terms_args->accepted_suggestion = accepted_suggestion;
   match.search_terms_args->additional_query_params =
-      suggestion.additional_query_params();
+      suggestion.entity_info().suggest_search_parameters();
   match.search_terms_args->append_extra_query_params_from_command_line =
       append_extra_query_params_from_command_line;
   // Must be set for deduplication and navigation. AutocompleteController will
@@ -436,16 +432,6 @@ void BaseSearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
   metrics::OmniboxEventProto_ProviderInfo& new_entry = provider_info->back();
   new_entry.set_provider(AsOmniboxEventProviderType());
   new_entry.set_provider_done(done_);
-  std::vector<uint32_t> field_trial_hashes;
-  OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(&field_trial_hashes);
-  for (size_t i = 0; i < field_trial_hashes.size(); ++i) {
-    if (field_trial_triggered_)
-      new_entry.mutable_field_trial_triggered()->Add(field_trial_hashes[i]);
-    if (field_trial_triggered_in_session_) {
-      new_entry.mutable_field_trial_triggered_in_session()->Add(
-          field_trial_hashes[i]);
-    }
-  }
 }
 
 // static

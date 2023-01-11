@@ -4,11 +4,10 @@
 
 #include "extensions/browser/path_util.h"
 
-#include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "ui/base/l10n/l10n_util.h"

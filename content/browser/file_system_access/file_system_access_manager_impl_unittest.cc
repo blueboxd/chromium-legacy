@@ -9,12 +9,14 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
@@ -23,6 +25,7 @@
 #include "components/services/storage/public/cpp/buckets/bucket_id.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "components/services/storage/public/cpp/buckets/constants.h"
+#include "content/browser/file_system_access/features.h"
 #include "content/browser/file_system_access/file_system_access_data_transfer_token_impl.h"
 #include "content/browser/file_system_access/file_system_access_directory_handle_impl.h"
 #include "content/browser/file_system_access/file_system_access_file_handle_impl.h"
@@ -249,16 +252,19 @@ class FileSystemAccessManagerImplTest : public testing::Test {
         path_type, file_path, kBindingContext.process_id(),
         token_remote.InitWithNewPipeAndPassReceiver());
 
-    EXPECT_CALL(
-        permission_context_,
-        ConfirmSensitiveEntryAccess_(
-            kTestStorageKey.origin(),
-            FileSystemAccessPermissionContext::PathType::kLocal, file_path,
-            FileSystemAccessPermissionContext::HandleType::kFile,
-            FileSystemAccessPermissionContext::UserAction::kDragAndDrop,
-            kFrameId, testing::_))
-        .WillOnce(RunOnceCallback<6>(
-            FileSystemAccessPermissionContext::SensitiveEntryResult::kAllowed));
+    if (base::FeatureList::IsEnabled(
+            features::kFileSystemAccessDragAndDropCheckBlocklist)) {
+      EXPECT_CALL(
+          permission_context_,
+          ConfirmSensitiveEntryAccess_(
+              kTestStorageKey.origin(),
+              FileSystemAccessPermissionContext::PathType::kLocal, file_path,
+              FileSystemAccessPermissionContext::HandleType::kFile,
+              FileSystemAccessPermissionContext::UserAction::kDragAndDrop,
+              kFrameId, testing::_))
+          .WillOnce(RunOnceCallback<6>(FileSystemAccessPermissionContext::
+                                           SensitiveEntryResult::kAllowed));
+    }
 
     // Expect permission requests when the token is sent to be redeemed.
     EXPECT_CALL(
@@ -307,16 +313,19 @@ class FileSystemAccessManagerImplTest : public testing::Test {
         path_type, dir_path, kBindingContext.process_id(),
         token_remote.InitWithNewPipeAndPassReceiver());
 
-    EXPECT_CALL(
-        permission_context_,
-        ConfirmSensitiveEntryAccess_(
-            kTestStorageKey.origin(),
-            FileSystemAccessPermissionContext::PathType::kLocal, dir_path,
-            FileSystemAccessPermissionContext::HandleType::kDirectory,
-            FileSystemAccessPermissionContext::UserAction::kDragAndDrop,
-            kFrameId, testing::_))
-        .WillOnce(RunOnceCallback<6>(
-            FileSystemAccessPermissionContext::SensitiveEntryResult::kAllowed));
+    if (base::FeatureList::IsEnabled(
+            features::kFileSystemAccessDragAndDropCheckBlocklist)) {
+      EXPECT_CALL(
+          permission_context_,
+          ConfirmSensitiveEntryAccess_(
+              kTestStorageKey.origin(),
+              FileSystemAccessPermissionContext::PathType::kLocal, dir_path,
+              FileSystemAccessPermissionContext::HandleType::kDirectory,
+              FileSystemAccessPermissionContext::UserAction::kDragAndDrop,
+              kFrameId, testing::_))
+          .WillOnce(RunOnceCallback<6>(FileSystemAccessPermissionContext::
+                                           SensitiveEntryResult::kAllowed));
+    }
 
     // Expect permission requests when the token is sent to be redeemed.
     EXPECT_CALL(
@@ -1285,6 +1294,11 @@ TEST_F(FileSystemAccessManagerImplTest,
 
 TEST_F(FileSystemAccessManagerImplTest,
        GetEntryFromDataTransferToken_File_SensitivePath) {
+  if (!base::FeatureList::IsEnabled(
+          features::kFileSystemAccessDragAndDropCheckBlocklist)) {
+    return;
+  }
+
   base::FilePath file_path = dir_.GetPath().AppendASCII("mr_file");
   ASSERT_TRUE(base::CreateTemporaryFile(&file_path));
 
@@ -1320,6 +1334,11 @@ TEST_F(FileSystemAccessManagerImplTest,
 
 TEST_F(FileSystemAccessManagerImplTest,
        GetEntryFromDataTransferToken_Directory_SensitivePath) {
+  if (!base::FeatureList::IsEnabled(
+          features::kFileSystemAccessDragAndDropCheckBlocklist)) {
+    return;
+  }
+
   const base::FilePath& kDirPath = dir_.GetPath().AppendASCII("mr_directory");
   ASSERT_TRUE(base::CreateDirectory(kDirPath));
 

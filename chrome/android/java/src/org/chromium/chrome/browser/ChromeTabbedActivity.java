@@ -350,6 +350,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private long mIntentHandlingTimeMs;
 
     /**
+     * Whether the Start surface should be shown when Chrome is launched.
+     */
+    private Boolean mShouldShowOverviewOnStart;
+
+    /**
      * Whether the StartSurface is shown when Chrome is launched.
      */
     private boolean mOverviewShownOnStart;
@@ -893,13 +898,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         // create start surface.
         createTabSwitcherOrStartSurface(compositorViewHolder, containerView);
-        if (isStartSurfaceRefactorEnabled() && mTabSwitcherSupplier.hasValue()) {
-            mTabSwitcherSupplier.get().getController().enableRecordingFirstMeaningfulPaint(
-                    getOnCreateTimestampMs());
-        } else if (mStartSurfaceSupplier.hasValue()) {
-            mStartSurfaceSupplier.get().enableRecordingFirstMeaningfulPaint(
-                    getOnCreateTimestampMs());
-        }
         RecordHistogram.recordTimesHistogram(
                 TAB_SWITCHER_CREATION_TIME, SystemClock.uptimeMillis() - startTimeMs);
         return containerView;
@@ -1226,13 +1224,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                         TAB_COUNT_ON_RETURN, getCurrentTabModel().getCount());
             }
 
-            if (isStartSurfaceRefactorEnabled() && mTabSwitcherSupplier.hasValue()) {
-                mTabSwitcherSupplier.get().getController().enableRecordingFirstMeaningfulPaint(
-                        getOnCreateTimestampMs());
-            } else if (mStartSurfaceSupplier.hasValue()) {
-                mStartSurfaceSupplier.get().enableRecordingFirstMeaningfulPaint(
-                        getOnCreateTimestampMs());
-            }
             mOverviewShownOnStart = true;
             // Cancel recording cold startup metrics if an overview is shown as they expect a tab to
             // be the first thing shown after startup.
@@ -2325,7 +2316,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         }
 
         if (getToolbarManager().back()) {
-            BackPressManager.record(BackPressHandler.Type.TOOLBAR_TAB_CONTROLLER);
+            BackPressManager.record(BackPressHandler.Type.TAB_HISTORY);
             return true;
         }
 
@@ -2883,10 +2874,15 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     @Override
     public boolean shouldShowOverviewPageOnStart() {
+        if (mShouldShowOverviewOnStart != null) {
+            return mShouldShowOverviewOnStart;
+        }
+
         assert mInactivityTracker != null;
         assert getTabModelSelector() != null;
-        return ReturnToChromeUtil.shouldShowOverviewPageOnStart(
+        mShouldShowOverviewOnStart = ReturnToChromeUtil.shouldShowOverviewPageOnStart(
                 this, getIntent(), getTabModelSelector(), mInactivityTracker, isTablet());
+        return mShouldShowOverviewOnStart;
     }
 
     @Override

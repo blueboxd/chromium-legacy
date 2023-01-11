@@ -11,17 +11,15 @@
 #include <utility>
 
 #include "base/base64.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/syslog_logging.h"
-#include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
 

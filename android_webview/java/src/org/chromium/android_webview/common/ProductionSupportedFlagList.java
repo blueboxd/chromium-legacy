@@ -21,7 +21,6 @@ import org.chromium.content_public.common.ContentFeatures;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.gpu.config.GpuFeatures;
 import org.chromium.gpu.config.GpuSwitches;
-import org.chromium.net.NetFeatures;
 import org.chromium.services.network.NetworkServiceFeatures;
 import org.chromium.ui.accessibility.AccessibilityFeatures;
 
@@ -178,7 +177,7 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_RATIONALIZE_STREET_ADDRESS_AND_HOUSE_NUMBER,
                     "Rationalizes (street address, house number) field sequences to "
                             + "(street name, house number)."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_CONSIDER_PLACEHOLDER_FOR_PARSING,
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_ALWAYS_PARSE_PLACEHOLDERS,
                     "When enabled, Autofill local heuristics consider the placeholder attribute "
                             + "for determining field types."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_IMPROVED_LABEL_FOR_INFERENCE,
@@ -217,8 +216,7 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AwFeatures.WEBVIEW_USE_METRICS_UPLOAD_SERVICE,
                     "Upload UMA metrics logs through MetricsUploadService not via GMS-core"
                             + " directly."),
-            Flag.baseFeature(NetFeatures.OPTIMIZE_NETWORK_BUFFERS,
-                    "Optimizes buffer size for reading from the network or InputStream."),
+            Flag.baseFeature("OptimizeNetworkBuffers2"),
             Flag.baseFeature(BlinkFeatures.SET_TIMEOUT_WITHOUT_CLAMP,
                     "Enables faster setTimeout(,0) by removing the 1 ms clamping."),
             Flag.baseFeature(BlinkFeatures.PAINT_HOLDING_CROSS_ORIGIN,
@@ -305,6 +303,9 @@ public final class ProductionSupportedFlagList {
                     "If enabled, CSS will be tokenized in a background thread when possible."),
             Flag.baseFeature(BlinkFeatures.VIEW_TRANSITION,
                     "Enables the experimental View Transitions API."
+                            + " See https://github.com/WICG/view-transitions/blob/main/explainer.md."),
+            Flag.baseFeature(BlinkFeatures.VIEW_TRANSITION_ON_NAVIGATION,
+                    "Enables the experimental View Transitions API for navigations."
                             + " See https://github.com/WICG/view-transitions/blob/main/explainer.md."),
             Flag.baseFeature(BlinkFeatures.CSS_OVERFLOW_FOR_REPLACED_ELEMENTS,
                     "Enables respecting the CSS overflow property on replaced elements."

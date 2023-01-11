@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/network_config_service.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
@@ -850,8 +850,6 @@ void CupsPrintersManager::RegisterProfilePrefs(
 // static
 void CupsPrintersManager::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(prefs::kPrintingClientNameTemplate,
-                               std::string());
   PrintServersProvider::RegisterLocalStatePrefs(registry);
   printing::oauth2::ClientIdsDatabase::RegisterLocalStatePrefs(registry);
 }

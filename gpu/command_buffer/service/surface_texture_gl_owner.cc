@@ -7,15 +7,14 @@
 #include <memory>
 
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "ui/gl/scoped_binders.h"

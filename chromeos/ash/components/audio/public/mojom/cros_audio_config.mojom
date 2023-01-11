@@ -68,6 +68,9 @@ struct AudioSystemProperties {
   // The volume of the active output device.
   uint8 output_volume_percent;
 
+  // The gain of the active input device.
+  uint8 input_gain_percent;
+
   // The mute state of the active output device.
   MuteState output_mute_state;
 
@@ -98,11 +101,22 @@ interface CrosAudioConfig {
   ObserveAudioSystemProperties(
     pending_remote<AudioSystemPropertiesObserver> observer);
 
+  // Sets the mute state of the active output device to |muted|. Ignored if
+  // device is muted by policy.
+  SetOutputMuted(bool muted);
+
   // Sets the volume of the active output device. If |volume| is above a
   // threshold and the device is muted, it's unmuted.
   SetOutputVolumePercent(int8 volume);
 
+  // Sets the gain of the active input device.
+  SetInputGainPercent(uint8 gain);
+
   // Updates active output or input device based on the audio device ID
   // provided.
   SetActiveDevice(uint64 device);
+
+  // Sets mute state for primary input device if device is not muted by physical
+  // switch.
+  SetInputMuted(bool muted);
 };

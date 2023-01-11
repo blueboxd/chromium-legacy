@@ -5,10 +5,9 @@
 #ifndef COMPONENTS_CAST_STREAMING_RENDERER_FRAME_INJECTING_DEMUXER_H_
 #define COMPONENTS_CAST_STREAMING_RENDERER_FRAME_INJECTING_DEMUXER_H_
 
+#include "base/task/sequenced_task_runner.h"
 #include "components/cast_streaming/public/mojom/demuxer_connector.mojom.h"
 #include "media/base/demuxer.h"
-#include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace cast_streaming {

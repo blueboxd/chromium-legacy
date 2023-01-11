@@ -10,12 +10,12 @@
 #include <vector>
 
 #include "base/base_paths.h"
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/hash/hash.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -28,6 +28,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -1008,8 +1009,7 @@ class PDFExtensionJSTest : public PDFExtensionTest {
         pak_path, ui::kScaleFactorNone);
 
     // Register the chrome://webui-test data source.
-    content::WebUIDataSource::Add(browser()->profile(),
-                                  webui::CreateWebUITestDataSource());
+    webui::CreateAndAddWebUITestDataSource(browser()->profile());
   }
 
   void RunTestsInJsModule(const std::string& filename,
@@ -2256,16 +2256,18 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibility) {
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityEnableLater) {
   // In this test, load the PDF file first, with accessibility off.
-  WebContents* guest_contents = LoadPdfGetGuestContents(
+  MimeHandlerViewGuest* guest = LoadPdfGetMimeHandlerView(
       embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
-  ASSERT_TRUE(guest_contents);
+  ASSERT_TRUE(guest);
 
-  // Now enable accessibility globally, and assert that the PDF accessibility
-  // tree loads.
-  EnableAccessibilityForWebContents(guest_contents);
-  WaitForAccessibilityTreeToContainNodeWithName(guest_contents,
+  // Now enable accessibility globally, and assert that the PDF
+  // accessibility tree loads.
+  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+
+  WebContents* contents = GetActiveWebContents();
+  WaitForAccessibilityTreeToContainNodeWithName(contents,
                                                 "1 First Section\r\n");
-  ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshotForPdf(guest_contents);
+  ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshotForPdf(contents);
   std::string ax_tree_dump = DumpPdfAccessibilityTree(ax_tree);
   ASSERT_MULTILINE_STREQ(kExpectedPDFAXTree, ax_tree_dump);
 }
@@ -2340,20 +2342,21 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityWordBoundaries) {
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilitySelection) {
-  WebContents* guest_contents = LoadPdfGetGuestContents(
+  MimeHandlerViewGuest* guest = LoadPdfGetMimeHandlerView(
       embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
-  ASSERT_TRUE(guest_contents);
+  ASSERT_TRUE(guest);
 
+  WebContents* contents = GetActiveWebContents();
   ASSERT_TRUE(content::ExecuteScript(
-      GetActiveWebContents(),
+      contents,
       "document.getElementsByTagName('embed')[0].postMessage("
       "{type: 'selectAll'});"));
 
-  EnableAccessibilityForWebContents(guest_contents);
-  WaitForAccessibilityTreeToContainNodeWithName(guest_contents,
+  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+  WaitForAccessibilityTreeToContainNodeWithName(contents,
                                                 "1 First Section\r\n");
   ui::AXTreeUpdate ax_tree_update =
-      GetAccessibilityTreeSnapshotForPdf(guest_contents);
+      GetAccessibilityTreeSnapshotForPdf(contents);
   ui::AXTree ax_tree(ax_tree_update);
 
   // Ensure that the selection spans the beginning of the first text
@@ -2398,28 +2401,29 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityContextMenuAction) {
       "2 Second Section\n"
       "3";
 
-  WebContents* guest_contents = LoadPdfGetGuestContents(
+  MimeHandlerViewGuest* guest = LoadPdfGetMimeHandlerView(
       embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
-  ASSERT_TRUE(guest_contents);
+  ASSERT_TRUE(guest);
 
+  WebContents* contents = GetActiveWebContents();
   ASSERT_TRUE(content::ExecuteScript(
-      GetActiveWebContents(),
+      contents,
       "document.getElementsByTagName('embed')[0].postMessage("
       "{type: 'selectAll'});"));
 
-  EnableAccessibilityForWebContents(guest_contents);
-  WaitForAccessibilityTreeToContainNodeWithName(guest_contents,
+  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+  WaitForAccessibilityTreeToContainNodeWithName(contents,
                                                 "1 First Section\r\n");
 
   // Find pdfRoot node in the accessibility tree.
   content::FindAccessibilityNodeCriteria find_criteria;
   find_criteria.role = ax::mojom::Role::kPdfRoot;
   ui::AXPlatformNodeDelegate* pdf_root =
-      content::FindAccessibilityNode(guest_contents, find_criteria);
+      content::FindAccessibilityNode(contents, find_criteria);
   ASSERT_TRUE(pdf_root);
 
   content::ContextMenuInterceptor context_menu_interceptor(
-      GetPluginFrame(guest_contents));
+      GetPluginFrame(guest));
 
   ContextMenuWaiter menu_waiter;
   // Invoke kShowContextMenu accessibility action on the node with the kPdfRoot
@@ -4429,6 +4433,13 @@ class PDFExtensionPrerenderTest : public PDFExtensionTest {
   }
 
  protected:
+  void PrerenderAndExpectCancellation(const GURL& prerender_url) {
+    content::test::PrerenderHostObserver observer(*GetActiveWebContents(),
+                                                  prerender_url);
+    prerender_helper().AddPrerenderAsync(prerender_url);
+    observer.WaitForDestroyed();
+  }
+
   content::test::PrerenderTestHelper& prerender_helper() {
     return *prerender_helper_;
   }
@@ -4437,11 +4448,10 @@ class PDFExtensionPrerenderTest : public PDFExtensionTest {
   std::unique_ptr<content::test::PrerenderTestHelper> prerender_helper_;
 };
 
-// TODO(1206312, 1205920): As of writing this test, we can attempt to prerender
-// the PDF viewer without crashing, however the viewer itself fails to load a
-// PDF. This test should be extended once that works.
-IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderTest,
-                       LoadPdfWhilePrerenderedDoesNotCrash) {
+// TODO(1205920): The PDF viewer cannot currently be prerendered correctly. This
+// tests that prerendering is cancelled. Once we're able to support this, this
+// test should be replaced with one that prerenders the PDF viewer.
+IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderTest, CancelPrerender) {
   const GURL initial_url =
       embedded_test_server()->GetURL("a.test", "/empty.html");
   const GURL pdf_url =
@@ -4449,14 +4459,59 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderTest,
   WebContents* web_contents = GetActiveWebContents();
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
 
-  const int host_id = prerender_helper().AddPrerender(pdf_url);
-  content::RenderFrameHost* prerendered_render_frame_host =
-      prerender_helper().GetPrerenderedMainFrameHost(host_id);
-  ASSERT_TRUE(prerendered_render_frame_host);
-  ASSERT_EQ(web_contents->GetLastCommittedURL(), initial_url);
+  PrerenderAndExpectCancellation(pdf_url);
+  EXPECT_EQ(0U, GetGuestViewManager()->num_guests_created());
 
   prerender_helper().NavigatePrimaryPage(pdf_url);
   ASSERT_EQ(web_contents->GetLastCommittedURL(), pdf_url);
+  EXPECT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(web_contents));
+}
+
+// TODO(1205920): The PDF viewer cannot currently be prerendered correctly. This
+// tests that prerendering is cancelled if a PDF is embedded in a prerendered
+// page. Once we're able to support this, this test should be replaced with one
+// that prerenders the PDF viewer.
+IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderTest,
+                       CancelPrerenderWithEmbeddedPdf) {
+  const GURL initial_url =
+      embedded_test_server()->GetURL("a.test", "/empty.html");
+  const GURL pdf_url =
+      embedded_test_server()->GetURL("a.test", "/pdf/test-iframe.html");
+  WebContents* web_contents = GetActiveWebContents();
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
+
+  PrerenderAndExpectCancellation(pdf_url);
+  EXPECT_EQ(0U, GetGuestViewManager()->num_guests_created());
+
+  prerender_helper().NavigatePrimaryPage(pdf_url);
+  ASSERT_EQ(web_contents->GetLastCommittedURL(), pdf_url);
+  EXPECT_TRUE(GetGuestViewManager()->WaitForSingleGuestViewCreated());
+}
+
+// Cross-origin subframe navigations are deferred during prerendering, which
+// means that an embedded cross-site PDF will not cause the PDF viewer to be
+// created until prerender activation.
+IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderTest,
+                       PrerenderWithCrossSiteEmbeddedPdf) {
+  const GURL initial_url =
+      embedded_test_server()->GetURL("a.test", "/empty.html");
+  const GURL pdf_url = embedded_test_server()->GetURL(
+      "a.test", "/pdf/test-cross-site-iframe.html");
+  WebContents* web_contents = GetActiveWebContents();
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
+
+  content::test::PrerenderHostRegistryObserver registry_observer(*web_contents);
+  prerender_helper().AddPrerenderAsync(pdf_url);
+  registry_observer.WaitForTrigger(pdf_url);
+  const auto host_id = prerender_helper().GetHostForUrl(pdf_url);
+  EXPECT_NE(host_id, content::RenderFrameHost::kNoFrameTreeNodeId);
+
+  content::test::PrerenderHostObserver prerender_observer(*web_contents,
+                                                          host_id);
+  prerender_helper().NavigatePrimaryPage(pdf_url);
+  prerender_observer.WaitForActivation();
+  ASSERT_EQ(web_contents->GetLastCommittedURL(), pdf_url);
+  EXPECT_TRUE(GetGuestViewManager()->WaitForSingleGuestViewCreated());
 }
 
 class PDFExtensionSubmitFormTest : public PDFExtensionTest {
@@ -4546,8 +4601,10 @@ class PDFExtensionPrerenderAndFencedFrameTest : public PDFExtensionTest {
   std::unique_ptr<content::test::FencedFrameTestHelper> fenced_frame_helper_;
 };
 
+// TODO(1205920): The PDF viewer cannot currently be prerendered correctly. Once
+// this is supported, this test should be re-enabled.
 IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderAndFencedFrameTest,
-                       LoadPDFInPrerender) {
+                       DISABLED_LoadPDFInPrerender) {
   GURL url = embedded_test_server()->GetURL("/empty.html");
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), url));
 

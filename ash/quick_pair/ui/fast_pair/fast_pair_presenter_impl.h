@@ -12,7 +12,7 @@
 #include "ash/quick_pair/ui/actions.h"
 #include "ash/quick_pair/ui/fast_pair/fast_pair_notification_controller.h"
 #include "ash/quick_pair/ui/fast_pair/fast_pair_presenter.h"
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -23,7 +23,7 @@ class MessageCenter;
 namespace ash {
 namespace quick_pair {
 
-struct Device;
+class Device;
 class DeviceMetadata;
 
 using DiscoveryCallback = base::RepeatingCallback<void(DiscoveryAction)>;

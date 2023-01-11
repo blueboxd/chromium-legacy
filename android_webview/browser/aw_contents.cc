@@ -45,11 +45,11 @@
 #include "base/android/locale_utils.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/atomicops.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
@@ -1448,20 +1448,6 @@ void JNI_AwContents_SetShouldDownloadFavicons(JNIEnv* env) {
   g_should_download_favicons = true;
 }
 
-void AwContents::RenderFrameHostChanged(content::RenderFrameHost* old_host,
-                                        content::RenderFrameHost* new_host) {
-  DCHECK(new_host);
-  if (!new_host->IsInPrimaryMainFrame())
-    return;
-
-  // At this point, the current RenderFrameHost may or may not contain a
-  // compositor. So compositor_ may be nullptr, in which case
-  // BrowserViewRenderer::DidInitializeCompositor() callback is time when the
-  // new compositor is constructed.
-  browser_view_renderer_.SetActiveFrameSinkId(
-      new_host->GetRenderWidgetHost()->GetFrameSinkId());
-}
-
 void AwContents::PrimaryPageChanged(content::Page& page) {
   std::string scheme = page.GetMainDocument().GetLastCommittedURL().scheme();
   const url::Origin& origin = page.GetMainDocument().GetLastCommittedOrigin();
@@ -1489,6 +1475,13 @@ void AwContents::PrimaryPageChanged(content::Page& page) {
       Java_AwContents_logSiteVisit(env, j_ref, j_etld_plus1_hash);
     }
   }
+
+  // At this point, the current RenderFrameHost may or may not contain a
+  // compositor. So compositor_ may be nullptr, in which case
+  // BrowserViewRenderer::DidInitializeCompositor() callback is time when the
+  // new compositor is constructed.
+  browser_view_renderer_.SetActiveFrameSinkId(
+      page.GetMainDocument().GetRenderWidgetHost()->GetFrameSinkId());
 }
 
 void AwContents::DidFinishNavigation(

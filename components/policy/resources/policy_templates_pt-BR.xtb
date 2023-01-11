@@ -2835,19 +2835,6 @@ Quando a política é deixada sem definição, o novo comportamento é usado, as
 <translation id="3591584750136265240">Configura o comportamento de autenticação de login</translation>
 <translation id="3593905652755912452">O comportamento antigo para envio de eventos em controles de formulário desativados vai ser usado.</translation>
 <translation id="3596112486106491038">Ativar o acesso à linha de comando de máquinas virtuais</translation>
-<translation id="3596335476793146071">Lista de ações a serem executadas quando o tempo limite da política <ph name="IDLE_TIMEOUT_POLICY_NAME" /> for atingido.
-
-      Se a <ph name="IDLE_TIMEOUT_POLICY_NAME" /> não for definida, esta política não terá efeito.
-
-      Quando o tempo limite da <ph name="IDLE_TIMEOUT_POLICY_NAME" /> é atingido, o <ph name="PRODUCT_NAME" /> executa as ações configuradas nesta política.
-
-      Se esta política for deixada em branco ou sem definição, a <ph name="IDLE_TIMEOUT_POLICY_NAME" /> não vai ter efeito.
-
-      As ações com suporte são:
-
-      "<ph name="CLOSE_BROWSERS_ACTION" />": fechar todas as janelas e PWAs do navegador deste perfil.
-
-      "<ph name="SHOW_PROFILE_PICKER_ACTION" />": mostrar a janela do seletor de perfil.</translation>
 <translation id="3603469950773500315">Ative as mitigações de verificação de <ph name="CORS" /> na nova implementação de <ph name="CORS" />, permitindo que as extensões mantenham um comportamento compatível e permitindo que o <ph name="PRODUCT_NAME" /> envie cabeçalhos especificados sem verificações de <ph name="CORS" />.
 
       Se esta lista for definida como vazia, o <ph name="PRODUCT_NAME" /> tentará executar extensões de maneiras compatíveis e não introduzirá mudanças de <ph name="API" /> para o <ph name="PRODUCT_NAME" /> 79, conforme explicado em <ph name="WEB_REQUEST_API_MANUAL" />.
@@ -4288,6 +4275,7 @@ da versão do ChromeOS ou do dispositivo) serão sempre exibidas ou ocultas na t
       Se ela for definida como "Desativada", o <ph name="PRODUCT_NAME" /> não enviará essas consultas.</translation>
 <translation id="5033070732967197381">Permitir solicitações da API WebAuthn em sites com certificados TLS corrompidos.</translation>
 <translation id="5034504101537897433">Ativar relatórios de erros do dispositivo</translation>
+<translation id="5036013147560568855">Versão do protocolo de provisionamento de certificado. O valor padrão é 1, que é o protocolo "estático". 2 é o protocolo "dinâmico".</translation>
 <translation id="5039110755072335605">Suporte a cabeçalhos de solicitação de CORS sem caractere curinga</translation>
 <translation id="504116558738617678">Mostrar alertas de pouco espaço no disco apenas quando o dispositivo não tiver gerenciamento ou quando houver apenas um usuário</translation>
 <translation id="5055474681190962362">Dia do mês [1-31] em que a reinicialização acontecerá, interpretado no fuso horário local do dispositivo. Usado apenas quando "frequency" for definido como "MONTHLY". Caso seja maior que o número máximo de dias de um mês específico, o último dia do mês será usado.</translation>
@@ -4415,6 +4403,19 @@ da versão do ChromeOS ou do dispositivo) serão sempre exibidas ou ocultas na t
 <translation id="519247340330463721">Configura as políticas relacionadas ao Safe Browsing.</translation>
 <translation id="5194683382395300627">Permitir o uso do <ph name="ASSISTANT_PRODUCT_NAME" /> na Web, por exemplo, para autorizar a mudança automática de senhas</translation>
 <translation id="5196630732055960309">Permitir a API File Handling nesses apps da Web</translation>
+<translation id="5198660575318473544">Controle se as extensões do Manifest v2 podem ser usadas na tela de login do <ph name="PRODUCT_OS_NAME" />.
+
+O suporte a elas vai ser descontinuado, e todas as extensões precisarão
+ser migradas para a v3. Confira outras informações e o cronograma da
+migração em https://developer.chrome.com/docs/extensions/mv3/mv2-sunset/.
+
+Se a política for definida como <ph name="DEFAULT" /> (0) ou for deixada sem definição, o carregamento das extensões da v2 vai ser decidido pelo dispositivo, seguindo o cronograma acima.
+Se definida como <ph name="DISABLE" /> (1), a instalação de extensões da v2 será bloqueada, e as atuais, desativadas. A opção vai ser tratada da mesma forma que seria se a política não fosse definida após a desativação do suporte à v2 por padrão.
+Se a política for definida como <ph name="ENABLE" /> (2), as extensões da v2 serão permitidas. A opção vai ser tratada da mesma forma que seria se a política não fosse definida antes da desativação do suporte à v2 por padrão.
+Se a política for definida como <ph name="ENABLE_FOR_FORCED_EXTENSIONS" /> (3), as extensões da v2 instaladas serão permitidas. Isso inclui extensões listadas pela <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> ou <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> com <ph name="INSTALLATION_MODE" /> "force_installed" ou "normal_installed". Todas as outras extensões v2 são desativadas. A opção vai ser tratada da mesma forma que seria se a política não fosse definida antes da desativação do suporte à v2 por padrão.
+
+
+A disponibilidade das extensões ainda é controlada por outras políticas.</translation>
 <translation id="5206454085187851382">Se <ph name="PRINTERS_ALLOWLIST" /> for escolhida para <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME" />, a definição de <ph name="PRINTERS_BULK_ALLOWLIST_POLICY_NAME" /> especificará quais impressoras os usuários não podem usar. Apenas as impressoras com IDs correspondentes aos valores desta política estão disponíveis para o usuário. Os IDs precisam corresponder aos campos <ph name="ID_FIELD" /> ou <ph name="GUID_FIELD" /> no arquivo especificado na <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />.</translation>
 <translation id="5207543664699568887">Configura se o <ph name="PRODUCT_NAME" /> no Linux usará notificações do sistema.
 
@@ -4861,6 +4862,7 @@ Se a política for deixada sem definição, nenhum domínio poderá acessar os U
 <translation id="5599461642204007579">Configurações de gerenciamento do <ph name="MS_AD_NAME" /></translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5607021831414604820">Ativar relatórios de status do armazenamento do dispositivo</translation>
+<translation id="5608114828230655271">Comportamento padrão do dispositivo</translation>
 <translation id="5614865701790130558">Registros de eventos para instalações de extensão com base em políticas</translation>
 <translation id="5618398258385745432">A configuração associada foi usada antes de a reautenticação na visualização de senhas ter sido introduzida. Desde então, a configuração e, consequentemente, esta política não têm efeito no comportamento do Chrome. O comportamento atual do Chrome agora é o mesmo que seria se a política tivesse sido definida para desativar a visualização de senhas em texto não criptografado na página de configurações do gerenciador de senhas. Isso quer dizer que a página de configurações contém apenas um marcador, e o Chrome só mostrará a senha depois que o usuário clicar em "Mostrar" (e reautenticar, se aplicável). A descrição original da política é a mostrada a seguir.
 

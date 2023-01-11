@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DLP_DLP_DATA_TRANSFER_NOTIFIER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DLP_DLP_DATA_TRANSFER_NOTIFIER_H_
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/unique_widget_ptr.h"
@@ -38,7 +38,7 @@ class DlpDataTransferNotifier : public views::WidgetObserver {
       const std::u16string& text,
       base::RepeatingCallback<void(views::Widget*)> proceed_cb,
       base::RepeatingCallback<void(views::Widget*)> cancel_cb);
-  virtual void CloseWidget(views::Widget* widget,
+  virtual void CloseWidget(MayBeDangling<views::Widget> widget,
                            views::Widget::ClosedReason reason);
   virtual void SetPasteCallback(base::OnceCallback<void(bool)> paste_cb);
   virtual void RunPasteCallback();

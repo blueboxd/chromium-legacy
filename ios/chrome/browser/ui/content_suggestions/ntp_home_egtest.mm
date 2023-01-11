@@ -148,8 +148,6 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 - (void)setUp {
   [super setUp];
-  [NewTabPageAppInterface setUpService];
-  [NewTabPageAppInterface makeSuggestionsAvailable];
   [ChromeEarlGreyAppInterface
       setBoolValue:YES
        forUserPref:base::SysUTF8ToNSString(prefs::kArticlesForYouEnabled)];
@@ -262,6 +260,14 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:grey_sufficientlyVisible()];
+}
+// Tests that the Search Widget URL loads the NTP with the Omnibox focused.
+- (void)testOpenSearchWidget {
+  [ChromeEarlGrey sceneOpenURL:GURL("chromewidgetkit://search-widget/search")];
+  [ChromeEarlGrey
+      waitForSufficientlyVisibleElementWithMatcher:chrome_test_util::Omnibox()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+      assertWithMatcher:grey_notVisible()];
 }
 
 // Tests that the fake omnibox width is correctly updated after a rotation.
@@ -521,10 +527,6 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 - (void)DISABLED_testPositionRestored {
   [self addMostVisitedTile];
 
-  // Add suggestions to be able to scroll on iPad.
-  [NewTabPageAppInterface addNumberOfSuggestions:15
-                        additionalSuggestionsURL:nil];
-
   // Scroll to have a position to restored.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
@@ -552,11 +554,6 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 // is selected.
 - (void)testPositionRestoredWithShiftingOffset {
   [self addMostVisitedTile];
-
-  // Add suggestions to be able to scroll on iPad.
-  [NewTabPageAppInterface addNumberOfSuggestions:15
-                        additionalSuggestionsURL:nil];
-
   // Scroll to have a position to restored.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
       performAction:grey_scrollInDirection(kGREYDirectionDown, 50)];
@@ -590,10 +587,6 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 - (void)DISABLED_testPositionRestoredWithoutShiftingOffset {
   [self addMostVisitedTile];
 
-  // Add suggestions to be able to scroll on iPad.
-  [NewTabPageAppInterface addNumberOfSuggestions:15
-                        additionalSuggestionsURL:nil];
-
   // Scroll enough to naturally pin the omnibox to the top.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
@@ -624,8 +617,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 }
 
 // Tests that tapping the fake omnibox focuses the real omnibox.
-// TODO(crbug.com/1315304): Reenable.
-- (void)DISABLED_testTapFakeOmnibox {
+- (void)testTapFakeOmnibox {
   // Setup the server.
   self.testServer->RegisterRequestHandler(
       base::BindRepeating(&StandardResponse));
@@ -636,6 +628,12 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   // Tap the fake omnibox, type the URL in the real omnibox and navigate to the
   // page.
   [self focusFakebox];
+
+  // Check the fake omnibox is not visible.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+      assertWithMatcher:grey_notVisible()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText([URL stringByAppendingString:@"\n"])];
@@ -674,6 +672,47 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   GREYAssertEqual(
       origin.y, collectionView.contentOffset.y,
       @"The collection is not scrolled back to its previous position");
+}
+
+// Tests that tapping the fake omnibox and then scrolling defocuses the the
+// omnibox.
+- (void)testTapFakeOmniboxAndScrollDefocuses {
+  // Get the collection and its layout.
+  UICollectionView* collectionView = [NewTabPageAppInterface collectionView];
+
+  // Offset before the tap.
+  CGPoint origin = collectionView.contentOffset;
+
+  // Tap the omnibox to focus it.
+  [self focusFakebox];
+
+  // Offset after the fake omnibox has been tapped.
+  CGPoint offsetAfterTap = collectionView.contentOffset;
+
+  // Make sure the fake omnibox has been hidden and the collection has moved.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+      assertWithMatcher:grey_notVisible()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  GREYAssertTrue(offsetAfterTap.y >= origin.y,
+                 @"The collection has not moved.");
+
+  // Scroll up.
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    // iPad needs more scrolling to see entire fake omnibox since it appears
+    // from under the toolbar.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
+        performAction:grey_scrollInDirection(kGREYDirectionUp, 100)];
+  } else {
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
+        performAction:grey_scrollInDirection(kGREYDirectionUp, 50)];
+  }
+
+  // Check the fake omnibox is displayed again.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:grey_notVisible()];
 }
 
 // Tests that tapping the fake omnibox then unfocusing it moves the collection
@@ -1000,14 +1039,6 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"New Search is only available in phone layout.");
   }
-
-  // Disable Discover Feed Top Sync promo because it causes the NTP content
-  // offset to be wrong in EG tests.
-  // TODO(crbug.com/1403077): Reenable the discover feed sync promo feature
-  AppLaunchConfiguration config = [self appConfigurationForTestCase];
-  config.relaunch_policy = ForceRelaunchByCleanShutdown;
-  config.features_disabled.push_back(kEnableDiscoverFeedTopSyncPromo);
-  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
   [ChromeEarlGreyUI openNewTabMenu];
   [[EarlGrey
@@ -1400,8 +1431,10 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI
-      tapSettingsMenuButton:chrome_test_util::PrimarySignInButton()];
+  [[[EarlGrey selectElementWithMatcher:chrome_test_util::PrimarySignInButton()]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionUp, 150)
+      onElementWithMatcher:chrome_test_util::SettingsCollectionView()]
+      performAction:grey_tap()];
   [SigninEarlGreyUI tapSigninConfirmationDialog];
   [ChromeEarlGrey waitForMatcher:chrome_test_util::SettingsAccountButton()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]

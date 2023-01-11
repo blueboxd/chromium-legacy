@@ -13,12 +13,12 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_tree.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/notreached.h"
@@ -27,6 +27,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -442,6 +443,29 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     GetProvider().scheduler().FetchManifestAndInstall(
         webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
+        browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
+        /*bypass_service_worker_check=*/false,
+        base::BindOnce(test::TestAcceptDialogCallback),
+        base::BindLambdaForTesting(
+            [&](const AppId& new_app_id, webapps::InstallResultCode code) {
+              EXPECT_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
+              app_id = new_app_id;
+              run_loop.Quit();
+            }),
+        /*use_fallback=*/true);
+
+    run_loop.Run();
+    return app_id;
+  }
+
+  AppId InstallOemWebApp() {
+    const GURL app_url = GetAppURL();
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), app_url));
+
+    AppId app_id;
+    base::RunLoop run_loop;
+    GetProvider().scheduler().FetchManifestAndInstall(
+        webapps::WebappInstallSource::PRELOADED_OEM,
         browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
         /*bypass_service_worker_check=*/false,
         base::BindOnce(test::TestAcceptDialogCallback),
@@ -2943,6 +2967,52 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                       SK_ColorBLUE);
           }));
   run_loop.Run();
+}
+
+// TODO(crbug.com/1402886) Currently disabled due to bug in the code.
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+                       DISABLED_CheckIconChangeForOemInstallation) {
+  constexpr char kNewName[] = "New app name";
+  constexpr char kManifest[] = R"(
+    {
+      "name": "$1",
+      "start_url": ".",
+      "scope": "/",
+      "display": "standalone",
+      "icons": [
+        {
+          "src": "/web_apps/basic-192.png?ignore",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  )";
+  OverrideManifest(kManifest, {kNewName, kInstallableIconList});
+  AppId app_id = InstallOemWebApp();
+
+  // Replace the contents of basic-192.png with blue-192.png without changing
+  // the URL.
+  content::URLLoaderInterceptor url_interceptor(base::BindLambdaForTesting(
+      [this](content::URLLoaderInterceptor::RequestParams* params)
+          -> bool /*intercepted*/ {
+        if (params->url_request.url ==
+            http_server_.GetURL("/web_apps/basic-192.png?ignore")) {
+          content::URLLoaderInterceptor::WriteResponse(
+              "chrome/test/data/web_apps/blue-192.png", params->client.get());
+          return true;
+        }
+        return false;
+      }));
+
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL()),
+            ManifestUpdateResult::kAppUpdated);
+  EXPECT_EQ(kNewName, GetProvider().registrar_unsafe().GetAppShortName(app_id));
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpdated, 1);
+
+  // Check that the installed icon is now blue.
+  EXPECT_EQ(ReadAppIconPixel(app_id, /*size=*/192), SK_ColorBLUE);
 }
 
 IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_UpdateDialog,

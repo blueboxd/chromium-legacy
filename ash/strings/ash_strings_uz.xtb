@@ -28,6 +28,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="1104621072296271835">Qurilmalaringiz birgalikda yaxshiroq ishlaydi</translation>
 <translation id="1111021433905331574">Klaviatura orqa chirogʻi rangini Sozlamalar &gt; <ph name="APP_TITLE" /> sahifasidan oʻzgartirish mumkin</translation>
 <translation id="112308213915226829">Javonni avtomatik yashirish</translation>
+<translation id="1135788167815124787">Portretni qayta yoritish</translation>
 <translation id="1142002900084379065">Yaqinda olingan suratlar</translation>
 <translation id="1148499908455722006"><ph name="USER_NAME" /> axborot oynasini ochish</translation>
 <translation id="1150989369772528668">Taqvim</translation>
@@ -162,6 +163,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="1774796056689732716">Taqvim, <ph name="CURRENT_MONTH_YEAR" />, hozir <ph name="DATE" /> tanlangan.</translation>
 <translation id="1787955149152357925">Yoqilmagan</translation>
 <translation id="1797271123677381264">Parolni unutdim</translation>
+<translation id="1807246157184219062">Yorqin</translation>
 <translation id="181103072419391116">Signal darajasi: <ph name="SIGNAL_STRENGTH" />, Administrator boshqaruvida</translation>
 <translation id="1812997170047690955">Ekranda nimalar bor?</translation>
 <translation id="1816896987747843206">Bunda kameraga ruxsat beriladi. Barcha ilovalar va saytlar kameradan foydalana oladi</translation>
@@ -238,6 +240,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="2224075387478458881">Himoyalangan kontent chiqqan vaqtda ekranni yozib olishga ruxsat berilmaydi</translation>
 <translation id="2227179592712503583">Taklifni olib tashlash</translation>
 <translation id="225680501294068881">Qurilma qidirilmoqda...</translation>
+<translation id="225716114209817872">Maksimum</translation>
 <translation id="2257486738914982088"><ph name="FILENAME" /> yuklab olinayotganda xatolik yuz berdi</translation>
 <translation id="2258734398699965611">Takfil qilingan fayllar</translation>
 <translation id="2268130516524549846">Bluetooth o‘chirildi</translation>
@@ -262,6 +265,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> faollashtirilmoqda</translation>
 <translation id="2359808026110333948">Davom etish</translation>
 <translation id="2367186422933365202">Chromebook hisobiga kirilmadi</translation>
+<translation id="2367972762794486313">Ilovalarni ko‘rsatish</translation>
 <translation id="2369165858548251131">Xitoy tilida “Salom”</translation>
 <translation id="2390318262976603432">Mahalliy sozlamalar</translation>
 <translation id="240006516586367791">Media boshqaruvi</translation>
@@ -506,6 +510,7 @@ Qurilmani quvvat manbaiga ulang.</translation>
 <translation id="3713734891607377840">Yuklab olinganda ochish</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> va yana <ph name="UNAVAILABLE_APPS_COUNT" /> ta ilova bu qurilmada emas.</translation>
 <translation id="3735740477244556633">Saralash tartibi</translation>
+<translation id="3738664582935948253">Endi ekran yozuvlarida kliklar va tezkor tugmalarni koʻrsatishingiz mumkin</translation>
 <translation id="3742055079367172538">Ekran suratga olindi</translation>
 <translation id="3765841986579723851">Bugun tahrirlangan</translation>
 <translation id="3773700760453577392">Administrator <ph name="USER_EMAIL" /> hisobi uchun bir multi-kirish imkoniyatini o‘chirib qo‘ydi. Hisobga kirishingizdan avval barcha foydalanuvchilar hisobdan chiqishi kerak.</translation>
@@ -525,6 +530,7 @@ Qurilmani quvvat manbaiga ulang.</translation>
 <translation id="385051799172605136">Orqaga</translation>
 <translation id="385300504083504382">Boshi</translation>
 <translation id="3861651314799684201">Butun ekranni yozib olish uchun Enter tugmasini bosing</translation>
+<translation id="3871092408932389764">Eng past</translation>
 <translation id="3886872229787704059">Bugun ochilgan</translation>
 <translation id="3891340733213178823">Chiqish uchun “Control+Shift+Q” tugmalarini ikki marta bosing.</translation>
 <translation id="3893630138897523026">ChromeVox (ovozli ta’rif)</translation>
@@ -691,6 +697,7 @@ Qurilmani quvvat manbaiga ulang.</translation>
 <translation id="4740516757091333363">Saqlangan ish stoli oʻchirilsinmi?</translation>
 <translation id="4752784485658729358">Faqat 6 tagacha ish stolini saqlash mumkin. Yangisini saqlash uchun eskilarini oʻchiring.</translation>
 <translation id="4759238208242260848">Yuklanmalar</translation>
+<translation id="4762573482154983647">Ilovalarni berkitish</translation>
 <translation id="4774338217796918551">Ertaga soat <ph name="COME_BACK_TIME" /> da qayting.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> e-pochtasi paroli</translation>
 <translation id="4777825441726637019">Play Market</translation>
@@ -1011,6 +1018,7 @@ Qurilmani quvvat manbaiga ulang.</translation>
 <translation id="6537924328260219877">Signal darajasi: <ph name="SIGNAL_STRENGTH" />, Telefon quvvati: <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999"><ph name="FILENAME" /> yuklanmasi tekshirilmoqda</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> qurilmasiga translatsiya qilinmoqda</translation>
+<translation id="6548693220024099658">Orqa fonni xiralashtirish</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 yangi oʻrnatilgan</translation>
 <translation id="6559976592393364813">Administratorga murojaat qiling</translation>
@@ -1417,6 +1425,7 @@ yangi oʻrnatilgan</translation>
 <translation id="878215960996152260"><ph name="APP_NAME" />, Ilova oʻrnatildi, Bloklandi</translation>
 <translation id="8785070478575117577">Bunga ulanish: <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">Ogʻir</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> jildi</translation>
 <translation id="880709030178078220">“Yordam”</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,7 +18,6 @@
 #include "base/test/bind.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/test/test_timeouts.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -152,10 +151,8 @@ class WebAppFileHandlerRegistrationWinTest : public testing::Test {
       const std::string& sanitized_app_name) {
     base::FilePath app_specific_launcher_filepath(
         base::ASCIIToWide(sanitized_app_name));
-    if (base::win::GetVersion() > base::win::Version::WIN7) {
-      app_specific_launcher_filepath =
-          app_specific_launcher_filepath.AddExtension(L"exe");
-    }
+    app_specific_launcher_filepath =
+        app_specific_launcher_filepath.AddExtension(L"exe");
     return app_specific_launcher_filepath;
   }
 

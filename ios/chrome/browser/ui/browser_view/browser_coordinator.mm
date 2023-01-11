@@ -28,7 +28,7 @@
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/feature_engagement/tracker_util.h"
-#import "ios/chrome/browser/find_in_page/find_tab_helper.h"
+#import "ios/chrome/browser/find_in_page/java_script_find_tab_helper.h"
 #import "ios/chrome/browser/follow/follow_browser_agent.h"
 #import "ios/chrome/browser/follow/follow_tab_helper.h"
 #import "ios/chrome/browser/follow/followed_web_site.h"
@@ -48,8 +48,6 @@
 #import "ios/chrome/browser/sync/sync_error_browser_agent.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
-#import "ios/chrome/browser/ui/activity_services/activity_params.h"
-#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/app_store_rating/features.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_prompt/enterprise_prompt_coordinator.h"
@@ -130,7 +128,6 @@
 #import "ios/chrome/browser/ui/price_notifications/price_notifications_view_coordinator.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/promos_manager/promos_manager_coordinator.h"
-#import "ios/chrome/browser/ui/qr_generator/qr_generator_coordinator.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
@@ -140,6 +137,8 @@
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_coordinator_delegate.h"
+#import "ios/chrome/browser/ui/sharing/activity_services/activity_params.h"
+#import "ios/chrome/browser/ui/sharing/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/spotlight_debugger/spotlight_debugger_coordinator.h"
@@ -1537,9 +1536,10 @@ enum class ToolbarKind {
       self.browser->GetWebStateList()->GetActiveWebState();
 
   if (currentWebState) {
-    FindTabHelper* findTabHelper = FindTabHelper::FromWebState(currentWebState);
-    if (findTabHelper->IsFindUIActive()) {
-      findTabHelper->StopFinding();
+    JavaScriptFindTabHelper* helper =
+        JavaScriptFindTabHelper::FromWebState(currentWebState);
+    if (helper->IsFindUIActive()) {
+      helper->StopFinding();
     } else {
       [self.findBarCoordinator stop];
       self.findBarCoordinator = nil;
@@ -1550,7 +1550,7 @@ enum class ToolbarKind {
 - (void)showFindUIIfActive {
   web::WebState* currentWebState =
       self.browser->GetWebStateList()->GetActiveWebState();
-  auto* findHelper = FindTabHelper::FromWebState(currentWebState);
+  auto* findHelper = JavaScriptFindTabHelper::FromWebState(currentWebState);
   if (findHelper && findHelper->IsFindUIActive() &&
       !_toolbarAccessoryPresenter.isPresenting) {
     DCHECK(!self.findBarCoordinator);
@@ -1572,7 +1572,8 @@ enum class ToolbarKind {
   web::WebState* currentWebState =
       self.browser->GetWebStateList()->GetActiveWebState();
   DCHECK(currentWebState);
-  FindTabHelper* helper = FindTabHelper::FromWebState(currentWebState);
+  JavaScriptFindTabHelper* helper =
+      JavaScriptFindTabHelper::FromWebState(currentWebState);
   helper->StartFinding([self.findBarCoordinator.findBarController searchTerm]);
 
   if (!self.browser->GetBrowserState()->IsOffTheRecord())
@@ -1584,8 +1585,8 @@ enum class ToolbarKind {
       self.browser->GetWebStateList()->GetActiveWebState();
   DCHECK(currentWebState);
   // TODO(crbug.com/603524): Reshow find bar if necessary.
-  FindTabHelper::FromWebState(currentWebState)
-      ->ContinueFinding(FindTabHelper::FORWARD);
+  JavaScriptFindTabHelper::FromWebState(currentWebState)
+      ->ContinueFinding(JavaScriptFindTabHelper::FORWARD);
 }
 
 - (void)findPreviousStringInPage {
@@ -1593,8 +1594,8 @@ enum class ToolbarKind {
       self.browser->GetWebStateList()->GetActiveWebState();
   DCHECK(currentWebState);
   // TODO(crbug.com/603524): Reshow find bar if necessary.
-  FindTabHelper::FromWebState(currentWebState)
-      ->ContinueFinding(FindTabHelper::REVERSE);
+  JavaScriptFindTabHelper::FromWebState(currentWebState)
+      ->ContinueFinding(JavaScriptFindTabHelper::REVERSE);
 }
 
 #pragma mark - FindInPageCommands Helpers
@@ -1606,7 +1607,7 @@ enum class ToolbarKind {
     return NO;
   }
 
-  auto* helper = FindTabHelper::FromWebState(currentWebState);
+  auto* helper = JavaScriptFindTabHelper::FromWebState(currentWebState);
   return (helper && helper->CurrentPageSupportsFindInPage() &&
           !helper->IsFindUIActive());
 }

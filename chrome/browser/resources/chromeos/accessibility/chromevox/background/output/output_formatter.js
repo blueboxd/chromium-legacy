@@ -12,7 +12,9 @@ import {Cursor, CURSOR_NODE_INDEX} from '../../../common/cursors/cursor.js';
 import {CursorRange} from '../../../common/cursors/range.js';
 import {LocalStorage} from '../../../common/local_storage.js';
 import {AutomationTreeWalker} from '../../../common/tree_walker.js';
+import {EarconId} from '../../common/earcon_id.js';
 import {Msgs} from '../../common/msgs.js';
+import {PhoneticData} from '../phonetic_data.js';
 
 import {OutputFormatParserObserver} from './output_format_parser.js';
 import {OutputFormatTree} from './output_format_tree.js';
@@ -108,13 +110,13 @@ export class OutputFormatter {
     } else if (outputTypes.OUTPUT_STATE_INFO[token]) {
       this.formatAsStateValue_(this.params_, token, options);
     } else if (token === 'phoneticReading') {
-      this.output_.formatPhoneticReading_(this.params_);
+      this.formatPhoneticReading_(this.params_);
     } else if (token === 'listNestedLevel') {
-      this.output_.formatListNestedLevel_(this.params_);
+      this.formatListNestedLevel_(this.params_);
     } else if (token === 'precedingBullet') {
-      this.output_.formatPrecedingBullet_(this.params_);
+      this.formatPrecedingBullet_(this.params_);
     } else if (tree.firstChild) {
-      this.output_.formatCustomFunction_(this.params_, token, tree, options);
+      this.formatCustomFunction_(this.params_, token, tree, options);
     }
   }
 
@@ -289,6 +291,74 @@ export class OutputFormatter {
         outputBuffer: buff,
         outputFormatLogger: formatLog,
       });
+    }
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @param {!OutputFormatTree} tree
+   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
+   * @private
+   */
+  formatCustomFunction_(data, token, tree, options) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const formatLog = data.outputFormatLogger;
+
+    // Custom functions.
+    if (token === 'if') {
+      formatLog.writeToken(token);
+      const cond = tree.firstChild;
+      const attrib = cond.value.slice(1);
+      if (AutomationUtil.isTruthy(node, attrib)) {
+        formatLog.write(attrib + '==true => ');
+        this.output_.format_({
+          node,
+          outputFormat: cond.nextSibling || '',
+          outputBuffer: buff,
+          outputFormatLogger: formatLog,
+        });
+      } else if (AutomationUtil.isFalsey(node, attrib)) {
+        formatLog.write(attrib + '==false => ');
+        this.output_.format_({
+          node,
+          outputFormat: cond.nextSibling.nextSibling || '',
+          outputBuffer: buff,
+          outputFormatLogger: formatLog,
+        });
+      }
+    } else if (token === 'nif') {
+      formatLog.writeToken(token);
+      const cond = tree.firstChild;
+      const attrib = cond.value.slice(1);
+      if (AutomationUtil.isFalsey(node, attrib)) {
+        formatLog.write(attrib + '==false => ');
+        this.output_.format_({
+          node,
+          outputFormat: cond.nextSibling || '',
+          outputBuffer: buff,
+          outputFormatLogger: formatLog,
+        });
+      } else if (AutomationUtil.isTruthy(node, attrib)) {
+        formatLog.write(attrib + '==true => ');
+        this.output_.format_({
+          node,
+          outputFormat: cond.nextSibling.nextSibling || '',
+          outputBuffer: buff,
+          outputFormatLogger: formatLog,
+        });
+      }
+    } else if (token === 'earcon') {
+      // Ignore unless we're generating speech output.
+      if (!this.output_.formatAsSpeech) {
+        return;
+      }
+
+      options.annotation.push(new outputTypes.OutputEarconAction(
+          EarconId[tree.firstChild.value], node.location || undefined));
+      this.output_.append_(buff, '', options);
+      formatLog.writeTokenWithValue(token, tree.firstChild.value);
     }
   }
 
@@ -477,6 +547,25 @@ export class OutputFormatter {
 
   /**
    * @param {!outputTypes.OutputFormattingData} data
+   * @private
+   */
+  formatListNestedLevel_(data) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+
+    let level = 0;
+    let current = node;
+    while (current) {
+      if (current.role === RoleType.LIST) {
+        level += 1;
+      }
+      current = current.parent;
+    }
+    this.output_.append_(buff, level.toString());
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
    * @param {string} token
    * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
    */
@@ -610,6 +699,40 @@ export class OutputFormatter {
       this.output_.formatNode(
           related, related, outputTypes.OutputCustomEvent.NAVIGATE, buff,
           formatLog);
+    }
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @private
+   */
+  formatPhoneticReading_(data) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+
+    const text =
+        PhoneticData.forText(node.name || '', chrome.i18n.getUILanguage());
+    this.output_.append_(buff, text);
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @private
+   */
+  formatPrecedingBullet_(data) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+
+    let current = node;
+    if (current.role === RoleType.INLINE_TEXT_BOX) {
+      current = current.parent;
+    }
+    if (!current || current.role !== RoleType.STATIC_TEXT) {
+      return;
+    }
+    current = current.previousSibling;
+    if (current && current.role === RoleType.LIST_MARKER) {
+      this.output_.append_(buff, current.name || '');
     }
   }
 

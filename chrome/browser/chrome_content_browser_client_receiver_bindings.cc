@@ -6,8 +6,9 @@
 
 #include "chrome/browser/chrome_content_browser_client.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"

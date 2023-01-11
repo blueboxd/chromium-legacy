@@ -13,6 +13,7 @@ import {assert} from 'chrome://resources/js/assert_ts.js';
 import {AppInfo, PageCallbackRouter, RunOnOsLoginMode} from './app_home.mojom-webui.js';
 import {getTemplate} from './app_list.html.js';
 import {BrowserProxy} from './browser_proxy.js';
+import {UserDisplayMode} from './user_display_mode.mojom-webui.js';
 
 export interface ActionMenuModel {
   appInfo: AppInfo;
@@ -46,7 +47,7 @@ export class AppListElement extends PolymerElement {
         },
       },
 
-      actionMenuModel_: Object,
+      selectedActionMenuModel_: Object,
     };
   }
 
@@ -88,17 +89,17 @@ export class AppListElement extends PolymerElement {
     this.listenerIds_ = [];
   }
 
-  private addApp_(data: AppInfo) {
-    const index = this.apps_.findIndex(app => app.id === data.id);
+  private addApp_(appInfo: AppInfo) {
+    const index = this.apps_.findIndex(app => app.id === appInfo.id);
     if (index !== -1) {
-      this.set(`apps_.${index}`, data);
+      this.set(`apps_.${index}`, appInfo);
     } else {
-      this.push('apps_', data);
+      this.push('apps_', appInfo);
     }
   }
 
-  private removeApp_(data: AppInfo) {
-    const index = this.apps_.findIndex(app => app.id === data.id);
+  private removeApp_(appInfo: AppInfo) {
+    const index = this.apps_.findIndex(app => app.id === appInfo.id);
     // We gracefully handle item not found case because:
     // 1.if the async getApps() returns later than an uninstall event,
     // it should gracefully handles that and ignores that uninstall event,
@@ -112,7 +113,17 @@ export class AppListElement extends PolymerElement {
   }
 
   private onOpenInWindowItemClick_() {
-    this.$.menu.close();
+    if (this.selectedActionMenuModel_) {
+      const appInfo = this.selectedActionMenuModel_.appInfo;
+      if (appInfo.openInWindow) {
+        BrowserProxy.getInstance().handler.setUserDisplayMode(
+            appInfo.id, UserDisplayMode.kBrowser);
+      } else {
+        BrowserProxy.getInstance().handler.setUserDisplayMode(
+            appInfo.id, UserDisplayMode.kStandalone);
+      }
+    }
+    this.closeMenu_();
   }
 
   // Changing the app's launch mode.

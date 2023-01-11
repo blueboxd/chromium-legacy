@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
@@ -19,10 +19,12 @@
 
 namespace ash {
 namespace network_diagnostics {
+
 namespace {
 
-// TODO(https://crbug.com/1164001): remove when migrated to namespace ash.
 namespace mojom = ::chromeos::network_diagnostics::mojom;
+
+// TODO(https://crbug.com/1164001): remove when migrated to namespace ash.
 namespace network_config = ::chromeos::network_config;
 
 using chromeos::network_config::mojom::CrosNetworkConfig;

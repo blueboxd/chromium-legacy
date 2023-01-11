@@ -10,19 +10,17 @@
 #include <utility>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/bit_cast.h"
+#include "base/functional/bind.h"
 #include "base/strings/stringprintf.h"
-#include "media/media_buildflags.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/task/thread_pool.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/libavif/src/include/avif/avif.h"
-
-// If the AV1 decoder library supports the bit depth 12, define
-// HAVE_AVIF_BIT_DEPTH_12_SUPPORT.
-#if BUILDFLAG(ENABLE_DAV1D_DECODER)
-#define HAVE_AVIF_BIT_DEPTH_12_SUPPORT
-#endif
 
 #define FIXME_SUPPORT_ICC_PROFILE_NO_TRANSFORM 0
 #define FIXME_SUPPORT_ICC_PROFILE_TRANSFORM 0
@@ -696,10 +694,6 @@ void TestYUVRed(const char* file_name,
                 const gfx::Size& expected_uv_size,
                 SkColorType color_type = kGray_8_SkColorType,
                 int bit_depth = 8) {
-#if !defined(HAVE_AVIF_BIT_DEPTH_12_SUPPORT)
-  if (bit_depth == 12)
-    return;
-#endif
   SCOPED_TRACE(base::StringPrintf("file_name=%s, color_type=%d", file_name,
                                   int{color_type}));
 
@@ -726,6 +720,24 @@ void TestYUVRed(const char* file_name,
   EXPECT_NEAR(decoded_pixel.z(), 0, kMinError);  // B
 }
 
+void DecodeTask(const SharedBuffer* data, base::RepeatingClosure* done) {
+  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
+
+  scoped_refptr<SharedBuffer> data_copy = SharedBuffer::Create();
+  data_copy->Append(*data);
+  decoder->SetData(std::move(data_copy), true);
+
+  EXPECT_TRUE(decoder->IsSizeAvailable());
+  EXPECT_FALSE(decoder->Failed());
+  EXPECT_EQ(decoder->FrameCount(), 1u);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
+  EXPECT_FALSE(decoder->Failed());
+
+  done->Run();
+}
+
 }  // namespace
 
 TEST(AnimatedAVIFTests, ValidImages) {
@@ -746,7 +758,6 @@ TEST(AnimatedAVIFTests, ValidImages) {
       &CreateAVIFDecoder,
       "/images/resources/avif/star-animated-10bpc-with-alpha.avif", 5u,
       kAnimationLoopInfinite);
-#if defined(HAVE_AVIF_BIT_DEPTH_12_SUPPORT)
   TestByteByByteDecode(&CreateAVIFDecoder,
                        "/images/resources/avif/star-animated-12bpc.avif", 5u,
                        0);
@@ -754,7 +765,6 @@ TEST(AnimatedAVIFTests, ValidImages) {
       &CreateAVIFDecoder,
       "/images/resources/avif/star-animated-12bpc-with-alpha.avif", 5u,
       kAnimationLoopInfinite);
-#endif
   // TODO(ryoh): Add animated avif files with EditListBox.
 }
 
@@ -838,12 +848,10 @@ TEST(StaticAVIFTests, ValidImages) {
       &CreateAVIFDecoder,
       "/images/resources/avif/red-at-12-oclock-with-color-profile-10bpc.avif",
       1, kAnimationNone);
-#if defined(HAVE_AVIF_BIT_DEPTH_12_SUPPORT)
   TestByteByByteDecode(
       &CreateAVIFDecoder,
       "/images/resources/avif/red-at-12-oclock-with-color-profile-12bpc.avif",
       1, kAnimationNone);
-#endif
   TestByteByByteDecode(&CreateAVIFDecoder,
                        "/images/resources/avif/tiger_3layer_1res.avif", 1,
                        kAnimationNone);
@@ -856,12 +864,10 @@ TEST(StaticAVIFTests, ValidImages) {
   TestByteByByteDecode(&CreateAVIFDecoder,
                        "/images/resources/avif/dice_444_10b_grid4x3.avif", 1,
                        kAnimationNone);
-#if defined(HAVE_AVIF_BIT_DEPTH_12_SUPPORT)
   TestByteByByteDecode(
       &CreateAVIFDecoder,
       "/images/resources/avif/gracehopper_422_12b_grid2x4.avif", 1,
       kAnimationNone);
-#endif
 }
 
 TEST(StaticAVIFTests, YUV) {
@@ -1030,6 +1036,43 @@ TEST(StaticAVIFTests, IncrementalDecoding) {
   }
 }
 
+// Reproduces crbug.com/1402841. Decodes a large AVIF image 104 times in
+// parallel from base::ThreadPool. Should not cause temporary deadlock of
+// base::ThreadPool.
+TEST(StaticAVIFTests, ParallelDecoding) {
+  // The base::test::TaskEnvironment constructor creates a base::ThreadPool
+  // instance with 4 foreground threads. The number 4 comes from the
+  // test::TaskEnvironment::kNumForegroundThreadPoolThreads constant.
+  base::test::TaskEnvironment task_environment;
+
+  // This test image is fast to decode (all neutral gray pixels) and its
+  // allocation size is large enough to cause
+  // media::PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels() to pick
+  // n_tasks > 1 if AVIFImageDecoder did not pass disable_threading=true to it.
+  scoped_refptr<SharedBuffer> data =
+      ReadFile("/images/resources/avif/gray1024x704.avif");
+  ASSERT_TRUE(data.get());
+
+  // Task timeout in tests is 30 seconds (see https://crrev.com/c/1949028).
+  // Four blocking tasks cause a temporary deadlock (1.2 seconds) of
+  // base::ThreadPool, so we need at least 30 / 1.2 * 4 = 100 decodes for the
+  // test to time out without the bug fix. We add a margin of 4 decodes, i.e.,
+  // (30 / 1.2 + 1) * 4 = 104.
+  const size_t n_decodes = 104;
+  base::WaitableEvent event;
+  base::RepeatingClosure barrier = base::BarrierClosure(
+      n_decodes,
+      base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&event)));
+
+  for (size_t i = 0; i < n_decodes; ++i) {
+    base::ThreadPool::PostTask(
+        FROM_HERE,
+        base::BindOnce(DecodeTask, base::Unretained(data.get()), &barrier));
+  }
+
+  event.Wait();
+}
+
 TEST(StaticAVIFTests, AlphaHasNoIspeProperty) {
   std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
   decoder->SetData(ReadFile("/images/resources/avif/green-no-alpha-ispe.avif"),
@@ -1054,10 +1097,6 @@ INSTANTIATE_TEST_SUITE_P(Parameterized,
 
 TEST_P(StaticAVIFColorTests, InspectImage) {
   const StaticColorCheckParam& param = GetParam();
-#if !defined(HAVE_AVIF_BIT_DEPTH_12_SUPPORT)
-  if (param.bit_depth == 12)
-    return;
-#endif
   // TODO(ryoh): Add tests with ImageDecoder::kHighBitDepthToHalfFloat
   std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoderWithOptions(
       param.alpha_option, ImageDecoder::kDefaultBitDepth, param.color_behavior,

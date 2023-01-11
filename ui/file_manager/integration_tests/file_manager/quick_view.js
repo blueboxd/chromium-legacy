@@ -1404,8 +1404,13 @@ testcase.openQuickViewAudio = async () => {
   const backgroundColor = await remoteCall.executeJsInPreviewTag(
       appId, preview, getBackgroundStyle);
 
-  // Check: the preview body backgroundColor should be transparent black.
-  chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+  if (await isDarkModeEnabled()) {
+    // Check: the preview body backgroundColor should be black.
+    chrome.test.assertEq('rgb(0, 0, 0)', backgroundColor[0]);
+  } else {
+    // Check: the preview body backgroundColor should be transparent black.
+    chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+  }
 
   // Check: the correct mimeType should be displayed.
   const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
@@ -1453,8 +1458,13 @@ testcase.openQuickViewAudioOnDrive = async () => {
   const backgroundColor = await remoteCall.executeJsInPreviewTag(
       appId, preview, getBackgroundStyle);
 
-  // Check: the preview body backgroundColor should be transparent black.
-  chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+  if (await isDarkModeEnabled()) {
+    // Check: the preview body backgroundColor should be black.
+    chrome.test.assertEq('rgb(0, 0, 0)', backgroundColor[0]);
+  } else {
+    // Check: the preview body backgroundColor should be transparent black.
+    chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+  }
 };
 
 /**
@@ -1557,8 +1567,13 @@ testcase.openQuickViewImageJpg = async () => {
   const backgroundColor = await remoteCall.executeJsInPreviewTag(
       appId, preview, getBackgroundStyle);
 
-  // Check: the preview body backgroundColor should be transparent black.
-  chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+  if (await isDarkModeEnabled()) {
+    // Check: the preview body backgroundColor should be black.
+    chrome.test.assertEq('rgb(0, 0, 0)', backgroundColor[0]);
+  } else {
+    // Check: the preview body backgroundColor should be transparent black.
+    chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+  }
 
   // Check: the correct mimeType should be displayed.
   const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
@@ -1606,8 +1621,13 @@ testcase.openQuickViewImageJpeg = async () => {
   const backgroundColor = await remoteCall.executeJsInPreviewTag(
       appId, preview, getBackgroundStyle);
 
-  // Check: the preview body backgroundColor should be transparent black.
-  chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+  if (await isDarkModeEnabled()) {
+    // Check: the preview body backgroundColor should be black.
+    chrome.test.assertEq('rgb(0, 0, 0)', backgroundColor[0]);
+  } else {
+    // Check: the preview body backgroundColor should be transparent black.
+    chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+  }
 
   // Check: the correct mimeType should be displayed.
   const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
@@ -1972,8 +1992,13 @@ testcase.openQuickViewVideo = async () => {
   const backgroundColor = await remoteCall.executeJsInPreviewTag(
       appId, preview, getBackgroundStyle);
 
-  // Check: the preview body backgroundColor should be transparent black.
-  chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+  if (await isDarkModeEnabled()) {
+    // Check: the preview body backgroundColor should be black.
+    chrome.test.assertEq('rgb(0, 0, 0)', backgroundColor[0]);
+  } else {
+    // Check: the preview body backgroundColor should be transparent black.
+    chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+  }
 
   // Check: the correct mimeType should be displayed.
   const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
@@ -2028,8 +2053,13 @@ testcase.openQuickViewVideoOnDrive = async () => {
   const backgroundColor = await remoteCall.executeJsInPreviewTag(
       appId, preview, getBackgroundStyle);
 
-  // Check: the preview body backgroundColor should be transparent black.
-  chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+  if (await isDarkModeEnabled()) {
+    // Check: the preview body backgroundColor should be black.
+    chrome.test.assertEq('rgb(0, 0, 0)', backgroundColor[0]);
+  } else {
+    // Check: the preview body backgroundColor should be transparent black.
+    chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+  }
 
   // Check: the correct mimeType should be displayed.
   const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');

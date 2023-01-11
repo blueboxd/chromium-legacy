@@ -12,8 +12,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/containers/adapters.h"
+#include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
@@ -37,10 +37,10 @@
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
+#include "components/lookalikes/core/safety_tip_test_utils.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/test_location_bar_model.h"
 #include "components/omnibox/common/omnibox_features.h"
-#include "components/reputation/core/safety_tip_test_utils.h"
 #include "content/public/browser/focused_node_details.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_navigation_handle.h"
@@ -279,6 +279,9 @@ class TestingOmniboxEditController : public ChromeOmniboxEditController {
   const LocationBarModel* GetLocationBarModel() const override {
     return location_bar_model_;
   }
+  void OnChanged() override {}
+  void OnPopupVisibilityChanged() override {}
+
   content::WebContents* GetWebContents() override { return nullptr; }
   void UpdateWithoutTabRestore() override {
     // This is a minimal amount of what LocationBarView does. Not all tests

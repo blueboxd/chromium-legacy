@@ -37,7 +37,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
-#if defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
+#if PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 #include "base/allocator/partition_allocator/partition_tag_types.h"
 #endif
 
@@ -58,7 +58,7 @@ static_assert(sizeof(raw_ptr<std::string>) == sizeof(std::string*),
               "raw_ptr shouldn't add memory overhead");
 
 #if !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && \
-    !BUILDFLAG(USE_ASAN_UNOWNED_PTR)
+    !BUILDFLAG(USE_ASAN_UNOWNED_PTR) && !BUILDFLAG(USE_HOOKABLE_RAW_PTR)
 // |is_trivially_copyable| assertion means that arrays/vectors of raw_ptr can
 // be copied by memcpy.
 static_assert(std::is_trivially_copyable<raw_ptr<void>>::value,
@@ -87,7 +87,8 @@ static_assert(std::is_trivially_default_constructible<raw_ptr<int>>::value,
 static_assert(
     std::is_trivially_default_constructible<raw_ptr<std::string>>::value,
     "raw_ptr should be trivially default constructible");
-#endif  // !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
+#endif  // !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) &&
+        // !BUILDFLAG(USE_ASAN_UNOWNED_PTR) && !BUILDFLAG(USE_HOOKABLE_RAW_PTR)
 
 // Don't use base::internal for testing raw_ptr API, to test if code outside
 // this namespace calls the correct functions from this namespace.
@@ -1246,7 +1247,8 @@ TEST_F(RawPtrTest, TrivialRelocability) {
       vector.emplace_back(&x);
     number_of_capacity_changes++;
   } while (number_of_capacity_changes < 10);
-#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) || BUILDFLAG(USE_ASAN_UNOWNED_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) || \
+    BUILDFLAG(USE_ASAN_UNOWNED_PTR) || BUILDFLAG(USE_HOOKABLE_RAW_PTR)
   // TODO(lukasza): In the future (once C++ language and std library
   // support custom trivially relocatable objects) this #if branch can
   // be removed (keeping only the right long-term expectation from the
@@ -1276,7 +1278,8 @@ TEST_F(RawPtrTest, TrivialRelocability) {
   RawPtrCountingImpl::ClearCounters();
   size_t number_of_cleared_elements = vector.size();
   vector.clear();
-#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) || BUILDFLAG(USE_ASAN_UNOWNED_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) || \
+    BUILDFLAG(USE_ASAN_UNOWNED_PTR) || BUILDFLAG(USE_HOOKABLE_RAW_PTR)
 
   EXPECT_EQ((int)number_of_cleared_elements,
             RawPtrCountingImpl::release_wrapped_ptr_cnt);
@@ -1537,7 +1540,7 @@ void RunBackupRefPtrImplAdvanceTest(
   // end-of-allocation address should not cause an error immediately, but it may
   // result in the pointer being poisoned.
   protected_ptr = protected_ptr + requested_size / 2;
-#if defined(PA_USE_OOB_POISON)
+#if PA_CONFIG(USE_OOB_POISON)
   EXPECT_DEATH_IF_SUPPORTED(*protected_ptr = ' ', "");
   protected_ptr -= 1;  // This brings the pointer back within
                        // bounds, which causes the poison to be removed.
@@ -1708,7 +1711,7 @@ TEST_F(BackupRefPtrTest, Bind) {
   EXPECT_TRUE(IsQuarantineEmpty(allocator_));
 }
 
-#if defined(PA_REF_COUNT_CHECK_COOKIE)
+#if PA_CONFIG(REF_COUNT_CHECK_COOKIE)
 TEST_F(BackupRefPtrTest, ReinterpretCast) {
   void* ptr = allocator_.root()->Alloc(16, "");
   allocator_.root()->Free(ptr);
@@ -1905,7 +1908,7 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
   CountingRawPtr<int> protected_ptr = ptr;
   CountingRawPtr<int> protected_ptr_end = protected_ptr + requested_elements;
 
-#if defined(PA_USE_OOB_POISON)
+#if PA_CONFIG(USE_OOB_POISON)
   EXPECT_DEATH_IF_SUPPORTED(*protected_ptr_end = 1, "");
 #endif
 
@@ -1983,7 +1986,7 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
   allocator_.root()->Free(ptr);
 }
 
-#if defined(PA_USE_OOB_POISON)
+#if PA_CONFIG(USE_OOB_POISON)
 TEST_F(BackupRefPtrTest, Duplicate) {
   size_t requested_size = allocator_.root()->AdjustSizeForExtrasSubtract(512);
   char* ptr = static_cast<char*>(allocator_.root()->Alloc(requested_size, ""));
@@ -2431,7 +2434,7 @@ TEST_F(AsanBackupRefPtrTest, AccessOnThreadPoolThread) {
 
 #endif  // BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
 
-#if defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
+#if PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
 static constexpr size_t kTagOffsetForTest = 2;
 
@@ -2657,7 +2660,136 @@ TEST(MTECheckedPtrImpl, PointerBeyondAllocationCanBeExtracted) {
 #endif  // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR) &&
         // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
-#endif  // defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
+#endif  // PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
+
+#if BUILDFLAG(USE_HOOKABLE_RAW_PTR)
+class CountingHooks {
+ public:
+  MOCK_METHOD(void, WrapPtr, ());
+  MOCK_METHOD(void, ReleaseWrappedPtr, ());
+  MOCK_METHOD(void, SafelyUnwrapForDereference, ());
+  MOCK_METHOD(void, SafelyUnwrapForExtraction, ());
+  MOCK_METHOD(void, UnsafelyUnwrapForComparison, ());
+  MOCK_METHOD(void, Advance, ());
+  MOCK_METHOD(void, Duplicate, ());
+};
+
+CountingHooks* g_counting_hooks = nullptr;
+constexpr RawPtrHooks raw_ptr_hooks{
+    .wrap_ptr =
+        [](uintptr_t) {
+          if (g_counting_hooks) {
+            g_counting_hooks->WrapPtr();
+          }
+        },
+    .release_wrapped_ptr =
+        [](uintptr_t) {
+          if (g_counting_hooks) {
+            g_counting_hooks->ReleaseWrappedPtr();
+          }
+        },
+    .safely_unwrap_for_dereference =
+        [](uintptr_t) {
+          if (g_counting_hooks) {
+            g_counting_hooks->SafelyUnwrapForDereference();
+          }
+        },
+    .safely_unwrap_for_extraction =
+        [](uintptr_t) {
+          if (g_counting_hooks) {
+            g_counting_hooks->SafelyUnwrapForExtraction();
+          }
+        },
+    .unsafely_unwrap_for_comparison =
+        [](uintptr_t) {
+          if (g_counting_hooks) {
+            g_counting_hooks->UnsafelyUnwrapForComparison();
+          }
+        },
+    .advance =
+        [](uintptr_t, uintptr_t) {
+          if (g_counting_hooks) {
+            g_counting_hooks->Advance();
+          }
+        },
+    .duplicate =
+        [](uintptr_t) {
+          if (g_counting_hooks) {
+            g_counting_hooks->Duplicate();
+          }
+        },
+};
+
+class HookableRawPtrImplTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    g_counting_hooks = &hooks_;
+    InstallRawPtrHooks(&raw_ptr_hooks);
+  }
+
+  void TearDown() override {
+    ResetRawPtrHooks();
+    g_counting_hooks = nullptr;
+  }
+
+  testing::NiceMock<CountingHooks> hooks_;
+};
+
+TEST_F(HookableRawPtrImplTest, WrapPtr) {
+  EXPECT_CALL(hooks_, WrapPtr).Times(1);
+  int* ptr = new int;
+  [[maybe_unused]] raw_ptr<int> interesting_ptr = ptr;
+  delete ptr;
+}
+
+TEST_F(HookableRawPtrImplTest, ReleaseWrappedPtr) {
+  EXPECT_CALL(hooks_, ReleaseWrappedPtr).Times(1);
+  int* ptr = new int;
+  [[maybe_unused]] raw_ptr<int> interesting_ptr = ptr;
+  delete ptr;
+}
+
+TEST_F(HookableRawPtrImplTest, SafelyUnwrapForDereference) {
+  EXPECT_CALL(hooks_, SafelyUnwrapForDereference).Times(1);
+  int* ptr = new int;
+  raw_ptr<int> interesting_ptr = ptr;
+  *interesting_ptr = 1;
+  delete ptr;
+}
+
+TEST_F(HookableRawPtrImplTest, SafelyUnwrapForExtraction) {
+  EXPECT_CALL(hooks_, SafelyUnwrapForExtraction).Times(1);
+  int* ptr = new int;
+  raw_ptr<int> interesting_ptr = ptr;
+  ptr = interesting_ptr;
+  delete ptr;
+}
+
+TEST_F(HookableRawPtrImplTest, UnsafelyUnwrapForComparison) {
+  EXPECT_CALL(hooks_, UnsafelyUnwrapForComparison).Times(1);
+  int* ptr = new int;
+  raw_ptr<int> interesting_ptr = ptr;
+  EXPECT_EQ(interesting_ptr, ptr);
+  delete ptr;
+}
+
+TEST_F(HookableRawPtrImplTest, Advance) {
+  EXPECT_CALL(hooks_, Advance).Times(1);
+  int* ptr = new int[10];
+  raw_ptr<int> interesting_ptr = ptr;
+  interesting_ptr += 1;
+  delete[] ptr;
+}
+
+TEST_F(HookableRawPtrImplTest, Duplicate) {
+  EXPECT_CALL(hooks_, Duplicate).Times(1);
+  int* ptr = new int;
+  raw_ptr<int> interesting_ptr = ptr;
+  raw_ptr<int> interesting_ptr2 = interesting_ptr;
+  delete ptr;
+}
+
+#endif  // BUILDFLAG(USE_HOOKABLE_RAW_PTR)
 
 }  // namespace internal
 }  // namespace base

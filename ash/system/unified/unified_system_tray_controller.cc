@@ -67,8 +67,8 @@
 #include "ash/system/unified/user_chooser_detailed_view_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "base/bind.h"
 #include "base/cxx17_backports.h"
+#include "base/functional/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -664,6 +664,8 @@ void UnifiedSystemTrayController::InitFeatureTiles() {
         controllers.push_back(std::move(controller));
       };
 
+  create_tile(std::make_unique<NetworkFeaturePodController>(this),
+              feature_pod_controllers_, tiles);
   create_tile(std::make_unique<BluetoothFeaturePodController>(this),
               feature_pod_controllers_, tiles);
   create_tile(std::make_unique<CaptureModeFeaturePodController>(this),
@@ -674,8 +676,18 @@ void UnifiedSystemTrayController::InitFeatureTiles() {
               feature_pod_controllers_, tiles);
   create_tile(std::make_unique<CastFeaturePodController>(this),
               feature_pod_controllers_, tiles);
+  create_tile(std::make_unique<RotationLockFeaturePodController>(),
+              feature_pod_controllers_, tiles);
+  create_tile(std::make_unique<IMEFeaturePodController>(this),
+              feature_pod_controllers_, tiles);
   create_tile(std::make_unique<VPNFeaturePodController>(this),
               feature_pod_controllers_, tiles);
+  create_tile(std::make_unique<LocaleFeaturePodController>(this),
+              feature_pod_controllers_, tiles);
+  if (base::FeatureList::IsEnabled(features::kShelfParty)) {
+    create_tile(std::make_unique<ShelfPartyFeaturePodController>(),
+                feature_pod_controllers_, tiles);
+  }
 
   // More placeholder tiles.
   while (tiles.size() < 10) {

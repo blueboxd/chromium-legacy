@@ -19,6 +19,7 @@
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/app_list_search_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
@@ -26,7 +27,6 @@
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/continue_section_view.h"
 #include "ash/app_list/views/paged_apps_grid_view.h"
-#include "ash/app_list/views/productivity_launcher_search_view.h"
 #include "ash/app_list/views/recent_apps_view.h"
 #include "ash/app_list/views/remove_query_confirmation_dialog.h"
 #include "ash/app_list/views/result_selection_controller.h"
@@ -71,8 +71,8 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller_test_api.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/callback_helpers.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
@@ -161,8 +161,7 @@ void SanityCheckSearchResultsAnchoredDialogBounds(
   };
 
   const gfx::Rect dialog_bounds = dialog->GetWindowBoundsInScreen();
-  const gfx::Rect search_box_bounds =
-      search_box_view->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds = search_box_view->GetBoundsInScreen();
   // The dialog should be horizontally centered within the search box.
   EXPECT_EQ(0, horizontal_center_offset(dialog_bounds, search_box_bounds));
   // Verify the confirmation dialog is positioned with the top within search
@@ -276,7 +275,7 @@ class AppListPresenterTest : public AshTestBase,
 
   SearchResultContainerView* GetDefaultSearchResultListView() {
     return search_result_page()
-        ->productivity_launcher_search_view_for_test()
+        ->search_view_for_test()
         ->result_container_views_for_test()[kBestMatchContainerIndex];
   }
 
@@ -296,22 +295,6 @@ class AppListPresenterTest : public AshTestBase,
                               base::TimeTicks::Now(),
                               ui::PointerDetails(ui::EventPointerType::kTouch));
     GetEventGenerator()->Dispatch(&long_press);
-  }
-
-  views::DialogDelegate* GetSearchResultPageAnchoredDialog() {
-    return search_result_page()
-        ->dialog_for_test()
-        ->widget()
-        ->widget_delegate()
-        ->AsDialogDelegate();
-  }
-
-  // Returns the |dialog| vertical offset from the top of the search box bounds.
-  int GetSearchResultsAnchoredDialogTopOffset(const views::Widget* dialog) {
-    const gfx::Rect dialog_bounds = dialog->GetWindowBoundsInScreen();
-    const gfx::Rect search_box_bounds =
-        GetSearchBoxView()->GetWidget()->GetWindowBoundsInScreen();
-    return dialog_bounds.y() - search_box_bounds.y();
   }
 };
 
@@ -412,23 +395,23 @@ class AppListBubbleAndTabletTestBase : public AshTestBase {
   SearchResultContainerView* GetDefaultSearchResultListView() {
     if (should_show_bubble_launcher()) {
       return GetAppListTestHelper()
-          ->GetProductivityLauncherSearchView()
+          ->GetBubbleAppListSearchView()
           ->result_container_views_for_test()[kBestMatchContainerIndex];
     }
     return GetFullscreenSearchPage()
-        ->productivity_launcher_search_view_for_test()
+        ->search_view_for_test()
         ->result_container_views_for_test()[kBestMatchContainerIndex];
   }
 
   ResultSelectionController* GetResultSelectionController() {
     if (should_show_bubble_launcher()) {
       return GetAppListTestHelper()
-          ->GetProductivityLauncherSearchView()
+          ->GetBubbleAppListSearchView()
           ->result_selection_controller_for_test();
     }
 
     return GetFullscreenSearchPage()
-        ->productivity_launcher_search_view_for_test()
+        ->search_view_for_test()
         ->result_selection_controller_for_test();
   }
 
@@ -2891,20 +2874,14 @@ TEST_F(AppListPresenterTest, AppListBoundsChangeForDisplayChange) {
 
   const gfx::Rect app_list_bounds =
       GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
-  const gfx::Rect search_box_bounds = GetAppListView()
-                                          ->search_box_view()
-                                          ->GetWidget()
-                                          ->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds = GetSearchBoxView()->GetBoundsInScreen();
 
   UpdateDisplay("800x600");
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   const gfx::Rect app_list_bounds2 =
       GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
-  const gfx::Rect search_box_bounds2 = GetAppListView()
-                                           ->search_box_view()
-                                           ->GetWidget()
-                                           ->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds2 = GetSearchBoxView()->GetBoundsInScreen();
   EXPECT_GT(app_list_bounds.size().GetArea(),
             app_list_bounds2.size().GetArea());
   EXPECT_NE(search_box_bounds, search_box_bounds2);
@@ -2922,20 +2899,14 @@ TEST_F(AppListPresenterTest, AppListBoundsChangeForDisplayChangeFullscreen) {
 
   const gfx::Rect app_list_bounds =
       GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
-  const gfx::Rect search_box_bounds = GetAppListView()
-                                          ->search_box_view()
-                                          ->GetWidget()
-                                          ->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds = GetSearchBoxView()->GetBoundsInScreen();
 
   UpdateDisplay("800x600");
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   const gfx::Rect app_list_bounds2 =
       GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
-  const gfx::Rect search_box_bounds2 = GetAppListView()
-                                           ->search_box_view()
-                                           ->GetWidget()
-                                           ->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds2 = GetSearchBoxView()->GetBoundsInScreen();
   EXPECT_GT(app_list_bounds.size().GetArea(),
             app_list_bounds2.size().GetArea());
   EXPECT_NE(search_box_bounds, search_box_bounds2);
@@ -2955,20 +2926,14 @@ TEST_F(AppListPresenterTest,
 
   const gfx::Rect app_list_bounds =
       GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
-  const gfx::Rect search_box_bounds = GetAppListView()
-                                          ->search_box_view()
-                                          ->GetWidget()
-                                          ->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds = GetSearchBoxView()->GetBoundsInScreen();
 
   UpdateDisplay("800x600");
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   const gfx::Rect app_list_bounds2 =
       GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
-  const gfx::Rect search_box_bounds2 = GetAppListView()
-                                           ->search_box_view()
-                                           ->GetWidget()
-                                           ->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds2 = GetSearchBoxView()->GetBoundsInScreen();
   EXPECT_GT(app_list_bounds.size().GetArea(),
             app_list_bounds2.size().GetArea());
   EXPECT_NE(search_box_bounds, search_box_bounds2);

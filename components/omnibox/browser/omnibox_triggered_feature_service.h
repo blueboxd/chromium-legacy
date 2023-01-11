@@ -23,7 +23,13 @@ class OmniboxTriggeredFeatureService {
     kShortBookmarkSuggestionsByTotalInputLength = 2,
     kFuzzyUrlSuggestions = 3,
     kHistoryClusterSuggestion = 4,
-    kMaxValue = kHistoryClusterSuggestion,
+    kDomainSuggestions = 5,
+    // Whether the `SearchProvider` response included:
+    // '"google:fieldtrialtriggered":true'.
+    kRemoteSearchFeature = 6,
+    // Like `kRemoteSearchFeature`, but for the `ZeroSearchProvider`.
+    kRemoteZeroSuggestFeature = 7,
+    kMaxValue = kRemoteZeroSuggestFeature,
   };
   using Features = std::set<Feature>;
 
@@ -43,6 +49,10 @@ class OmniboxTriggeredFeatureService {
   // `kRichAutocompletion`.
   void RichAutocompletionTypeTriggered(
       AutocompleteMatch::RichAutocompletionType rich_autocompletion_type);
+
+  // Returns whether `FeatureTriggered()` was called with `feature` since the
+  // last `ResetSession()`.
+  bool GetFeatureTriggered(Feature feature) const;
 
   // Invoked when a new omnibox session starts. Clears `features_` and
   // `rich_autocompletion_types_`.

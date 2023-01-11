@@ -28,6 +28,7 @@
 <translation id="1104621072296271835">നിങ്ങളുടെ ഉപകരണങ്ങൾ 'ഒരുമിച്ചും' നന്നായി പ്രവർത്തിക്കും</translation>
 <translation id="1111021433905331574">ക്രമീകരണം &gt; <ph name="APP_TITLE" /> എന്നതിൽ നിങ്ങൾക്ക് കീബോർഡ് ബാക്ക്‌ലൈറ്റിന്റെ നിറം മാറ്റാനാകും</translation>
 <translation id="112308213915226829">ഷെൽഫ് സ്വയമേവ മറയ്‌ക്കുക</translation>
+<translation id="1135788167815124787">പോർട്രെയ്‌റ്റ് റീലൈറ്റിംഗ്</translation>
 <translation id="1142002900084379065">പുതിയ ഫോട്ടോകൾ</translation>
 <translation id="1148499908455722006"><ph name="USER_NAME" /> എന്നതിനുള്ള വിവരങ്ങളുടെ ഡയലോഗ് തുറക്കുക</translation>
 <translation id="1150989369772528668">കലണ്ടർ</translation>
@@ -162,6 +163,7 @@
 <translation id="1774796056689732716">കലണ്ടർ, <ph name="CURRENT_MONTH_YEAR" />, നിലവിൽ <ph name="DATE" /> തിരഞ്ഞെടുത്തിരിക്കുന്നു.</translation>
 <translation id="1787955149152357925">ഓഫാണ്</translation>
 <translation id="1797271123677381264">പാസ്‌വേഡ് മറന്നു</translation>
+<translation id="1807246157184219062">ലൈറ്റ്</translation>
 <translation id="181103072419391116">സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />, നിങ്ങളുടെ അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നത്</translation>
 <translation id="1812997170047690955">എന്റെ സ്‌ക്രീനിൽ എന്താണുള്ളത്?</translation>
 <translation id="1816896987747843206">ക്യാമറ ആക്‌സസ് ചെയ്യാൻ അനുമതിയുള്ള എല്ലാ ആപ്പുകൾക്കും വെബ്സൈറ്റുകൾക്കും ഇത് ക്യാമറയിലേക്ക് ആക്‌സസ് അനുവദിക്കുന്നു</translation>
@@ -238,6 +240,7 @@
 <translation id="2224075387478458881">പരിരക്ഷിത ഉള്ളടക്കം ദൃശ്യമായിരിക്കുമ്പോൾ സ്ക്രീൻ റെക്കോർഡിംഗ് അനുവദനീയമല്ല</translation>
 <translation id="2227179592712503583">നിർദ്ദേശം നീക്കം ചെയ്യുക</translation>
 <translation id="225680501294068881">ഉപകരണങ്ങൾക്കായി സ്‌കാൻ ചെയ്യുന്നു...</translation>
+<translation id="225716114209817872">പരമാവധി</translation>
 <translation id="2257486738914982088"><ph name="FILENAME" /> ഡൗൺലോഡ് ചെയ്യുന്നതിനിടെ എന്തോ കുഴപ്പം സംഭവിച്ചു</translation>
 <translation id="2258734398699965611">നിർദ്ദേശിച്ച ഫയലുകൾ</translation>
 <translation id="2268130516524549846">Bluetooth അപ്രാപ്‌തമാക്കി</translation>
@@ -262,6 +265,7 @@
 <translation id="2354174487190027830"><ph name="NAME" /> സജീവമാക്കുന്നു</translation>
 <translation id="2359808026110333948">തുടരുക</translation>
 <translation id="2367186422933365202">നിങ്ങളുടെ Chromebook-ലേക്ക് സൈൻ ഇൻ ചെയ്യാനാകുന്നില്ല</translation>
+<translation id="2367972762794486313">അപ്ലിക്കേഷനുകൾ കാണിക്കുക</translation>
 <translation id="2369165858548251131">"ഹലോ" എന്നത് ചൈനീസിൽ</translation>
 <translation id="2390318262976603432">ഭാഷാ ക്രമീകരണം</translation>
 <translation id="240006516586367791">മീഡിയാ നിയന്ത്രണങ്ങൾ</translation>
@@ -506,6 +510,7 @@
 <translation id="3713734891607377840">പൂർത്തിയാകുമ്പോൾ തുറക്കുക</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> എന്നിവയും മറ്റ് <ph name="UNAVAILABLE_APPS_COUNT" /> എണ്ണവും ഈ ഉപകരണത്തിൽ ലഭ്യമല്ല.</translation>
 <translation id="3735740477244556633">ഇപ്രകാരം അടുക്കുക</translation>
+<translation id="3738664582935948253">ഇപ്പോൾ നിങ്ങൾക്ക് സ്‌ക്രീൻ റെക്കോർഡിംഗുകളിൽ ക്ലിക്ക്, കീബോർഡ് കുറുക്കുവഴികൾ കാണിക്കാനാകും</translation>
 <translation id="3742055079367172538">സ്‌ക്രീൻഷോട്ട് എടുത്തു</translation>
 <translation id="3765841986579723851">ഇന്ന് എഡിറ്റ് ചെയ്തത്</translation>
 <translation id="3773700760453577392"><ph name="USER_EMAIL" /> എന്ന ഇമെയിലിലേക്ക് ഒന്നിലധികം പേർ സൈൻ ഇൻ ചെയ്യുന്നത് ഒരു അഡ്‌മിനിസ്‌ട്രേറ്റർ വിലക്കിയിരിക്കുന്നു. തുടരാൻ, എല്ലാ ഉപയോക്താക്കളും സൈൻ ഔട്ട് ചെയ്യണം.</translation>
@@ -525,6 +530,7 @@
 <translation id="385051799172605136">പിന്നോട്ട്</translation>
 <translation id="385300504083504382">ആരംഭം</translation>
 <translation id="3861651314799684201">പൂർണ്ണ സ്ക്രീൻ റെക്കോർഡ് ചെയ്യാൻ Enter അമർത്തുക</translation>
+<translation id="3871092408932389764">ഏറ്റവും കുറഞ്ഞത്</translation>
 <translation id="3886872229787704059">ഇന്ന് തുറന്നത്</translation>
 <translation id="3891340733213178823">സൈൻ ഔട്ട് ചെയ്യുന്നതിന് രണ്ടു‌തവണ Ctrl+Shift+Q അമർത്തുക.</translation>
 <translation id="3893630138897523026">ChromeVox (സ്‌പോക്കൺ ഫീഡ്‌ബാക്ക്)</translation>
@@ -691,6 +697,7 @@
 <translation id="4740516757091333363">സംരക്ഷിച്ച ഡെസ്‌ക് ഇല്ലാതാക്കണോ?</translation>
 <translation id="4752784485658729358">സംരക്ഷിച്ച 6 ഡെസ്ക്കുകൾ മാത്രമേ അനുവദിക്കൂ. പുതിയൊരെണ്ണം സംരക്ഷിക്കാൻ ഒരു ഡെസ്‌ക് നീക്കം ചെയ്യുക.</translation>
 <translation id="4759238208242260848">ഡൌണ്‍ലോഡുകള്‍</translation>
+<translation id="4762573482154983647">ആപ്പുകൾ മറയ്ക്കുക</translation>
 <translation id="4774338217796918551">നാളെ <ph name="COME_BACK_TIME" />-ന് തിരികെ വരിക.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> എന്നതിനായുള്ള പാസ്‌വേഡ്</translation>
 <translation id="4777825441726637019">Play Store</translation>
@@ -1011,6 +1018,7 @@
 <translation id="6537924328260219877">സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />, ഫോൺ ബാറ്ററി <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999">ഡൗൺലോഡ് സ്‌കാൻ ചെയ്യുന്നു <ph name="FILENAME" /></translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> ഉപകരണത്തിലേക്ക് കാസ്‌റ്റ് ചെയ്യുന്നു</translation>
+<translation id="6548693220024099658">പശ്ചാത്തലം മങ്ങിക്കൽ</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 പുതിയ ഇൻസ്റ്റാൾ</translation>
 <translation id="6559976592393364813">അഡ്‌മിനിസ്‌ട്രേറ്ററോട് ചോദിക്കുക</translation>
@@ -1417,6 +1425,7 @@
 <translation id="878215960996152260"><ph name="APP_NAME" />, ഇൻസ്‌റ്റാൾ ചെയ്‌ത ആപ്പ്, ബ്ലോക്ക് ചെയ്‌തിരിക്കുന്നു</translation>
 <translation id="8785070478575117577"><ph name="NETWORK_NAME" /> എന്നതിലേക്ക് കണക്‌റ്റ് ചെയ്യുക</translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">ഹെവി</translation>
 <translation id="8806053966018712535">ഫോൾഡർ <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">"സഹായം"</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

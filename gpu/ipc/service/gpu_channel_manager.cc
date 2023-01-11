@@ -8,16 +8,17 @@
 #include <memory>
 #include <utility>
 
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_WIN)
 #include <dxgi1_3.h>
 #endif
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
@@ -539,26 +540,11 @@ void GpuChannelManager::OnDiskCacheHandleDestoyed(
   }
 }
 
-void GpuChannelManager::InternalDestroyGpuMemoryBuffer(
-    gfx::GpuMemoryBufferId id,
-    int client_id) {
+void GpuChannelManager::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                                               int client_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   gpu_memory_buffer_factory_->DestroyGpuMemoryBuffer(id, client_id);
-}
-
-void GpuChannelManager::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                                               int client_id,
-                                               const SyncToken& sync_token) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (!sync_point_manager_->WaitOutOfOrder(
-          sync_token,
-          base::BindOnce(&GpuChannelManager::InternalDestroyGpuMemoryBuffer,
-                         base::Unretained(this), id, client_id))) {
-    // No sync token or invalid sync token, destroy immediately.
-    InternalDestroyGpuMemoryBuffer(id, client_id);
-  }
 }
 
 void GpuChannelManager::PopulateCache(const gpu::GpuDiskCacheHandle& handle,

@@ -369,7 +369,6 @@
       'Linux Builder (j-500) (reclient)': 'gpu_tests_release_bot_reclient',
       'Linux Builder (reclient compare)': 'gpu_tests_release_bot_reclient',
       'Linux CFI (reclient shadow)': 'cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on_reclient',
-      'Linux ChromiumOS MSan Focal': 'chromeos_msan_focal_release_bot_reclient',
       'Linux Viz': 'release_trybot_minimal_symbols_reclient',
       # TODO(crbug.com/1260232): remove this after the migration.
       'Mac Builder (reclient compare)': 'gpu_tests_release_bot_minimal_symbols_reclient',
@@ -627,7 +626,7 @@
       'Linux ASan LSan Builder': 'asan_lsan_release_trybot_reclient',
       'Linux CFI': 'cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on_reclient',
       'Linux Chromium OS ASan LSan Builder': 'asan_lsan_chromeos_release_bot_dcheck_always_on_reclient',
-      'Linux ChromiumOS MSan Builder': 'chromeos_msan_release_bot_reclient',
+      'Linux ChromiumOS MSan Builder': 'chromeos_msan_focal_release_bot_reclient',
       'Linux MSan Builder': 'msan_focal_release_bot_reclient',
       'Linux TSan Builder': 'tsan_disable_nacl_release_bot_reclient',
       'Mac ASan 64 Builder': 'asan_minimal_symbols_disable_nacl_release_bot_dcheck_always_on_reclient',
@@ -684,14 +683,6 @@
       'Comparison Linux (reclient vs reclient remote links)': {
         'build1': 'gpu_tests_release_bot_reclient',
         'build2': 'gpu_tests_release_bot_remote_links_reclient',
-      },
-      'Comparison Linux (reclient vs reclient remote links)(large)': {
-        'build1': 'gpu_tests_release_bot_no_nacl_reclient',
-        'build2': 'gpu_tests_release_bot_remote_links_large_reclient',
-      },
-      'Comparison Linux (reclient vs reclient remote links)(medium)': {
-        'build1': 'gpu_tests_release_bot_no_nacl_reclient',
-        'build2': 'gpu_tests_release_bot_remote_links_medium_reclient',
       },
       'Comparison Linux (reclient vs reclient remote links)(small)': {
         'build1': 'gpu_tests_release_bot_no_nacl_reclient',
@@ -758,7 +749,6 @@
     'chromium.webkit': {
       'WebKit Linux Trusty ASAN': 'asan_lsan_release_bot',
       'WebKit Linux Trusty Leak': 'release_bot',
-      'WebKit Linux Trusty MSAN': 'msan_release_bot',
       'WebKit Mac Builder': 'release_bot',
       'WebKit Win Builder': 'release_bot_x86_minimal_symbols',
     },
@@ -982,12 +972,14 @@
       'android-12-x64-rel': 'android_release_trybot_x64_fastbuild_webview_trichrome_reclient',
       'android-12l-x64-dbg': 'android_debug_trybot_x64_webview_trichrome_webview_shell',
       'android-arm64-all-targets-dbg': 'android_debug_trybot_compile_only_arm64_fastbuild_reclient',
-      'android-arm64-rel': 'android_release_trybot_arm64_webview_monochrome_expectations_fastbuild_reclient',
-      'android-arm64-rel-inverse-fyi': 'android_release_trybot_arm64_webview_monochrome_expectations_fastbuild',
+      'android-arm64-rel': 'android_release_trybot_arm64_webview_monochrome_expectations_fastbuild_native_coverage_reclient',
+      'android-arm64-rel-inverse-fyi': 'android_release_trybot_arm64_webview_monochrome_expectations_fastbuild_native_coverage',
       'android-asan': 'android_clang_asan_release_trybot_reclient',
       'android-bfcache-rel': 'android_release_trybot_x86_fastbuild_webview_monochrome_reclient',
       'android-binary-size': 'android_binary_size_reclient',
       'android-chrome-pie-x86-wpt-fyi-rel': 'android_release_trybot_x86_fastbuild_webview_monochrome',
+      'android-code-coverage': 'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild_java_coverage_reclient',
+      'android-code-coverage-native': 'gpu_tests_android_release_bot_no_symbols_arm64_fastbuild_native_coverage_reclient',
       # TODO(crbug/597596): Switch this back to debug_trybot when cronet's
       # shared library loading is fixed.
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon_reclient',
@@ -1136,6 +1128,7 @@
       'fuchsia-arm64-rel': 'release_trybot_fuchsia_arm64',
       'fuchsia-arm64-rel-orchestrator': 'release_trybot_fuchsia_arm64',
       'fuchsia-binary-size': 'release_fuchsia_arm64_binary_size_reclient',
+      'fuchsia-code-coverage': 'fuchsia_clang_code_coverage_reclient',
       'fuchsia-compile-x64-dbg': 'debug_bot_fuchsia_compile_only_reclient',
       'fuchsia-deterministic-dbg': 'debug_bot_fuchsia_reclient',
       'fuchsia-fyi-arm64-dbg': 'debug_bot_fuchsia_arm64_reclient',
@@ -1168,13 +1161,17 @@
       'linux-bfcache-rel': 'release_bot_blink_reclient',
       'linux-blink-heap-concurrent-marking-tsan-rel': 'release_trybot_tsan',
       'linux-blink-heap-verification-try': 'release_trybot_enable_blink_heap_verification_reclient',
+      'linux-chromeos-code-coverage': 'chromeos_with_codecs_release_bot_coverage_reclient',
+      'linux-code-coverage': 'clang_code_coverage_reclient',
       'linux-dcheck-off-rel': 'release_trybot_dcheck_off',
       'linux-extended-tracing-rel': 'release_trybot_extended_tracing_reclient',
       'linux-fieldtrial-rel': 'release_bot_minimal_symbols',
       'linux-gcc-rel': 'release_bot_minimal_symbols_no_clang',
       'linux-headless-shell-rel': 'headless_shell_release_bot_reclient',
       'linux-inverse-fieldtrials-fyi-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_invert_fieldtrials',
+      'linux-js-code-coverage': 'clang_code_coverage_with_js_coverage',
       'linux-lacros-asan-lsan-rel': 'asan_lsan_lacros_release_bot_dcheck_always_on_reclient',
+      'linux-lacros-code-coverage': 'lacros_on_linux_clang_code_coverage_reclient',
       'linux-lacros-fyi-rel': 'lacros_on_linux_release_trybot_reclient',
       'linux-lacros-version-skew-fyi': 'lacros_on_linux_release_not_build_ash_bot_reclient',
       'linux-layout-tests-edit-ng': 'release_trybot',
@@ -1201,8 +1198,7 @@
       'linux_chromium_asan_rel_ng': 'asan_lsan_release_trybot_reclient',
       'linux_chromium_cfi_rel_ng': 'cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on_reclient',
       'linux_chromium_chromeos_asan_rel_ng': 'asan_lsan_chromeos_release_bot_dcheck_always_on_reclient',
-      'linux_chromium_chromeos_msan_focal': 'chromeos_msan_focal_release_bot_reclient',
-      'linux_chromium_chromeos_msan_rel_ng': 'chromeos_msan_release_bot_reclient',
+      'linux_chromium_chromeos_msan_rel_ng': 'chromeos_msan_focal_release_bot_reclient',
       'linux_chromium_clobber_deterministic': 'release_trybot',
       'linux_chromium_clobber_rel_ng': 'release_trybot',
       'linux_chromium_compile_dbg_ng': 'debug_bot_reclient',
@@ -1250,6 +1246,7 @@
       'ios-m1-simulator': 'ios_simulator_debug_static_bot_xctest_arm64',
       'ios-m1-simulator-cronet': 'ios_cronet_xctest_arm64',
       'ios-simulator': 'ios_simulator_code_coverage_partial_instrumentation_xctest',
+      'ios-simulator-code-coverage': 'clang_code_coverage_ios_xctest',
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot_xctest',
       'ios-simulator-cronet': 'ios_cronet_xctest',
       'ios-simulator-full-configs': 'ios_simulator_code_coverage_partial_instrumentation_xctest',
@@ -1263,6 +1260,7 @@
       'ios16-sdk-simulator': 'ios_simulator_debug_static_bot_xctest',
       'mac-arm64-on-arm64-rel': 'mac_arm64_release_trybot',
       'mac-builder-next-rel': 'mac_arm64_gpu_tests_release_bot_minimal_symbols_no_nacl',
+      'mac-code-coverage': 'clang_code_coverage',
       'mac-fieldtrial-tester': 'mac_arm64_gpu_tests_release_bot_minimal_symbols_no_nacl',
       'mac-inverse-fieldtrials-fyi-rel': 'gpu_tests_release_trybot_invert_fieldtrials',
       'mac-osxbeta-rel': 'gpu_tests_debug_trybot',
@@ -1359,6 +1357,7 @@
       'win-libfuzzer-asan-rel': 'libfuzzer_windows_asan_release_trybot_reclient',
       'win-perfetto-rel': 'perfetto_release_trybot',
       'win-rel': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage',
+      'win10-code-coverage': 'clang_code_coverage_reclient',
       'win10-wpt-content-shell-fyi-rel': 'release_trybot',
       'win10_chromium_inverse_fieldtrials_x64_fyi_rel_ng': 'gpu_tests_release_trybot_resource_allowlisting_invert_fieldtrials',
       'win10_chromium_x64_dbg_ng': 'gpu_tests_debug_bot_reclient',
@@ -1682,10 +1681,16 @@
       'webview_monochrome',
     ],
 
-    'android_release_trybot_arm64_webview_monochrome_expectations_fastbuild': [
+    'android_release_trybot_arm64_webview_monochrome_expectations_fastbuild_native_coverage': [
       'android', 'release_trybot', 'arm64', 'strip_debug_info',
       'android_fastbuild', 'webview_monochrome', 'fail_on_android_expectations',
-      'no_secondary_abi',
+      'no_secondary_abi', 'use_clang_coverage', 'partial_code_coverage_instrumentation',
+    ],
+
+    'android_release_trybot_arm64_webview_monochrome_expectations_fastbuild_native_coverage_reclient': [
+      'android', 'release_trybot_reclient', 'arm64', 'strip_debug_info',
+      'android_fastbuild', 'webview_monochrome', 'fail_on_android_expectations',
+      'no_secondary_abi', 'use_clang_coverage', 'partial_code_coverage_instrumentation',
     ],
 
     'android_release_trybot_arm64_webview_monochrome_expectations_fastbuild_reclient': [
@@ -2234,10 +2239,6 @@
       'chromeos', 'msan_focal', 'release_bot_reclient',
     ],
 
-    'chromeos_msan_release_bot_reclient': [
-      'chromeos', 'msan', 'release_bot_reclient',
-    ],
-
     'chromeos_octopus_dchecks': [
       'chromeos_octopus', 'dcheck_always_on',
     ],
@@ -2301,6 +2302,14 @@
       'chromeos_with_codecs', 'release_bot_reclient', 'also_build_lacros_chrome'
     ],
 
+    'clang_code_coverage': [
+      'release_bot', 'clang', 'use_clang_coverage', 'no_symbols', 'chrome_with_codecs',
+    ],
+
+    'clang_code_coverage_ios_xctest': [
+        'debug_static_bot', 'ios', 'ios_simulator', 'ios_cpu_x64', 'xctest', 'use_clang_coverage',
+    ],
+
     'clang_code_coverage_ios_xctest_reclient': [
       'use_clang_coverage', 'debug_static_bot_reclient', 'x64', 'ios', 'xctest',
     ],
@@ -2348,7 +2357,7 @@
     ],
 
     'clang_tot_msan_release': [
-      'clang_tot', 'msan', 'release',
+      'clang_tot', 'msan_focal', 'release',
     ],
 
     'clang_tot_official': [
@@ -2745,14 +2754,6 @@
       'gpu_tests', 'release_bot_reclient',
     ],
 
-    'gpu_tests_release_bot_remote_links_large_reclient': [
-      'gpu_tests', 'release_bot_reclient', 'use_remoteexec_links_large', 'disable_nacl',
-    ],
-
-    'gpu_tests_release_bot_remote_links_medium_reclient': [
-      'gpu_tests', 'release_bot_reclient', 'use_remoteexec_links_medium', 'disable_nacl',
-    ],
-
     'gpu_tests_release_bot_remote_links_reclient': [
       'gpu_tests', 'release_bot_reclient', 'use_remoteexec_links',
     ],
@@ -3099,11 +3100,11 @@
     ],
 
     'libfuzzer_msan_release_bot': [
-      'libfuzzer', 'msan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus',
+      'libfuzzer', 'msan_focal', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus',
     ],
 
     'libfuzzer_msan_release_bot_reclient': [
-      'libfuzzer', 'msan', 'shared_release_bot_reclient', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus',
+      'libfuzzer', 'msan_focal', 'shared_release_bot_reclient', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus',
     ],
 
     'libfuzzer_ubsan_release_bot': [
@@ -3184,10 +3185,6 @@
 
     'msan_no_origins_release_bot_reclient': [
       'msan_no_origins', 'release_bot_reclient',
-    ],
-
-    'msan_release_bot': [
-      'msan', 'release_bot',
     ],
 
     'msan_release_bot_blink_reclient': [
@@ -4226,7 +4223,7 @@
     },
 
     'fuchsia_include_sd_images': {
-      'gn_args': 'fuchsia_additional_boot_images=["//third_party/fuchsia-sdk/images-internal/astro-release/","//third_party/fuchsia-sdk/images-internal/sherlock-release/"]',
+      'gn_args': 'fuchsia_additional_boot_images=["//third_party/fuchsia-sdk/images-internal/astro-release/","//third_party/fuchsia-sdk/images-internal/sherlock-release/","//third_party/fuchsia-sdk/images-internal/nelson-release/"]',
     },
 
     # TODO(crbug/1336775): Remove when --ram-size-mb is added in new scripts
@@ -4758,16 +4755,6 @@
 
     'use_remoteexec_links': {
       'gn_args': 'use_remoteexec_links=true',
-    },
-
-    # Temporary configuration for testing remote linking on different worker sizes
-    'use_remoteexec_links_large': {
-      'gn_args': 'use_remoteexec_links=true rbe_link_cfg_file="../../buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux_link_large.cfg" concurrent_links=50',
-    },
-
-    # Temporary configuration for testing remote linking on different worker sizes
-    'use_remoteexec_links_medium': {
-      'gn_args': 'use_remoteexec_links=true rbe_link_cfg_file="../../buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux_link_medium.cfg" concurrent_links=50',
     },
 
     # Temporary configuration for testing remote linking on different worker sizes

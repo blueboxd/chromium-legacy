@@ -27,6 +27,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -529,7 +530,7 @@ int64_t CalculateSideDataPadding(
       base::Time::FromInternalValue(response->response_time());
 
   return storage::ComputeStableResponsePadding(
-      bucket_locator.storage_key.origin(), url, response_time,
+      bucket_locator.storage_key, url, response_time,
       response->request_method(), side_data_size);
 }
 

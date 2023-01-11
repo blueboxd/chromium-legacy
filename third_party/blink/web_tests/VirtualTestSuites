@@ -713,6 +713,13 @@
     "expires": "Jul 1, 2023"
   },
   {
+    "prefix": "payment-request-csp-violation",
+    "platforms": ["Linux"],
+    "bases": ["http/tests/inspector-protocol/issues/payment-request-csp-violation-issue.js"],
+    "args": ["--enable-blink-features=IgnoreCSPInWebPaymentAPI"],
+    "expires": "May 30, 2023"
+  },
+  {
     "prefix": "payment-request-mandatory-total",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/payments/payment-request-app-store-billing-mandatory-total.html"],
@@ -1414,14 +1421,6 @@
     ],
     "expires": "Jul 1, 2023"
   },
-  {
-    "prefix": "document-pip",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [],
-    "args": ["--enable-features=DocumentPictureInPictureAPI",
-             "--enable-blink-features=DocumentPictureInPictureAPI"],
-    "expires": "Jul 1, 2023"
-  },
 
   "Tests URL processing in IDNA 2008 Transitional Mode. Explicitly disables ",
   "the Non-Transitional Mode feature flag to do so.",
@@ -1694,6 +1693,31 @@
       "external/wpt/html/infrastructure/safe-passing-of-structured-data/cross-origin-transfer-resizable-arraybuffer.html"
     ],
     "args": ["--js-flags=--harmony-rab-gsab"],
+    "expires": "Jul 1, 2023"
+  },
+
+  "This individual test must be run separately from others, because it makes a",
+  "huge memory allocation that often causes OOM if other tests have run in the",
+  "same content_shell harness. For this reason this virtual test suite must",
+  "never expire. Virtual test suites require command line args so pick one",
+  "which is effectively a no-op.",
+  {
+    "prefix": "webgl-oversized-printing",
+    "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
+    "bases": [
+      "printing/webgl-oversized-printing.html"
+    ],
+    "args": ["--enable-webgl-developer-extensions"],
+    "expires": "never"
+  },
+  {
+    "prefix": "extend-script-resource-lifetime",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "http/tests/cache/script-keepalive.html"
+    ],
+    "exclusive_tests": "ALL",
+    "args": ["--enable-features=ExtendScriptResourceLifetime"],
     "expires": "Jul 1, 2023"
   }
 ]

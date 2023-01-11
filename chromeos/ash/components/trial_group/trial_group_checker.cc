@@ -4,7 +4,7 @@
 
 #include "chromeos/ash/components/trial_group/trial_group_checker.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
@@ -79,8 +79,8 @@ TrialGroupChecker::Status TrialGroupChecker::LookUpMembership(
 
   std::string upload_data;
   {
-    base::DictionaryValue request;
-    request.SetIntKey("group", static_cast<int>(group_id_));
+    base::Value::Dict request;
+    request.Set("group", static_cast<int>(group_id_));
     base::JSONWriter::Write(request, &upload_data);
   }
 

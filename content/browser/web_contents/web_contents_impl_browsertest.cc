@@ -23,6 +23,7 @@
 #include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -5829,7 +5830,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsFencedFrameBrowserTest,
     test_recorder_.ExpectEntryMetric(entry, UkmEntry::kIsTopFrameName, false);
 }
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_CONFIG(ALLOW_PCSCAN)
 
 namespace {
 
@@ -5954,6 +5955,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplStarScanPrerenderBrowserTest,
   EXPECT_TRUE(partition_alloc::internal::PCScan::IsEnabled());
 }
 
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_CONFIG(ALLOW_PCSCAN)
 
 }  // namespace content

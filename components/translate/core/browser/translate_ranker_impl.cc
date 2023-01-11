@@ -9,16 +9,15 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/string_util.h"
 #include "base/task/task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/assist_ranker/proto/ranker_model.pb.h"
 #include "components/assist_ranker/proto/translate_ranker_model.pb.h"

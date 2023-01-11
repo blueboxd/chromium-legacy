@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -79,7 +79,7 @@ class IconLoader {
 
  protected:
   // A struct containing the arguments (other than the callback) to
-  // Loader::LoadIconFromIconKey, including a flattened apps::mojom::IconKey.
+  // Loader::LoadIconFromIconKey, including a flattened apps::IconKey.
   //
   // It implements operator<, so that it can be the "K" in a "map<K, V>".
   //

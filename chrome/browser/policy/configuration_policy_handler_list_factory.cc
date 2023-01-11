@@ -11,8 +11,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
@@ -1379,9 +1379,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDevicePowerAdaptiveChargingEnabled,
     ash::prefs::kPowerAdaptiveChargingEnabled,
     base::Value::Type::BOOLEAN },
-  { key::kDevicePrintingClientNameTemplate,
-    prefs::kPrintingClientNameTemplate,
-    base::Value::Type::STRING },
   { key::kCalendarIntegrationEnabled,
     ash::prefs::kCalendarIntegrationEnabled,
     base::Value::Type::BOOLEAN },

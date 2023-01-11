@@ -20,6 +20,7 @@
 #include "base/memory/raw_ref.h"
 #include "base/numerics/checked_math.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
@@ -444,6 +445,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   std::vector<std::string> force_enabled_toggles_;
   std::vector<std::string> force_disabled_toggles_;
   bool allow_unsafe_apis_;
+  bool tiered_adapter_limits_;
 
   // Isolation key that is necessary for device requests. Optional to
   // differentiate between an empty isolation key, and an unset one.
@@ -1113,6 +1115,11 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
   allow_unsafe_apis_ =
       base::Contains(force_disabled_toggles_, "disallow_unsafe_apis");
 
+  // Force adapters to report their limits in predetermined tiers unless the
+  // adapter_limit_tiers toggle is explicitly disabled.
+  tiered_adapter_limits_ =
+      !base::Contains(force_disabled_toggles_, "tiered_adapter_limits");
+
   DawnProcTable wire_procs = dawn::native::GetProcs();
   wire_procs.createInstance =
       [](const WGPUInstanceDescriptor*) -> WGPUInstance {
@@ -1548,7 +1555,7 @@ void WebGPUDecoderImpl::DiscoverAdapters() {
 
   std::vector<dawn::native::Adapter> adapters = dawn_instance_->GetAdapters();
   for (dawn::native::Adapter& adapter : adapters) {
-    adapter.SetUseTieredLimits(true);
+    adapter.SetUseTieredLimits(tiered_adapter_limits_);
 
     WGPUAdapterProperties adapterProperties = {};
     adapter.GetProperties(&adapterProperties);

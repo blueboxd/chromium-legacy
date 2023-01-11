@@ -7,9 +7,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
+#include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -440,6 +440,5 @@ bool BrowserFrame::RegenerateFrameOnThemeChange(
 }
 
 bool BrowserFrame::ShouldUseDarkTheme() const {
-  return browser_view_->browser()->profile()->IsIncognitoProfile() ||
-         browser_view_->GetIsPictureInPictureType();
+  return browser_view_->browser()->profile()->IsIncognitoProfile();
 }

@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
 #include "gpu/config/gpu_preferences.h"
 #include "ui/gl/gl_gl_api_implementation.h"
+#include "ui/gl/gl_implementation.h"
 #include "ui/gl/progress_reporter.h"
 
 namespace gpu {
@@ -132,6 +133,17 @@ bool GLTextureImageBackingFactory::IsSupported(
     return false;
   }
 
+  if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
+      gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal) {
+    constexpr uint32_t kMetalInvalidUsages =
+        SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_SCANOUT |
+        SHARED_IMAGE_USAGE_VIDEO_DECODE | SHARED_IMAGE_USAGE_GLES2 |
+        SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT | SHARED_IMAGE_USAGE_WEBGPU;
+    if (usage & kMetalInvalidUsages) {
+      return false;
+    }
+  }
+
   // Doesn't support contexts other than GL for OOPR Canvas
   if (gr_context_type != GrContextType::kGL &&
       ((usage & SHARED_IMAGE_USAGE_DISPLAY_READ) ||
@@ -170,7 +182,6 @@ GLTextureImageBackingFactory::CreateSharedImageInternal(
   const FormatInfo& format_info = GetFormatInfo(format);
   GLenum target = GL_TEXTURE_2D;
 
-  const bool is_cleared = !pixel_data.empty();
   const bool for_framebuffer_attachment =
       (usage & (SHARED_IMAGE_USAGE_RASTER |
                 SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT)) != 0;
@@ -180,8 +191,7 @@ GLTextureImageBackingFactory::CreateSharedImageInternal(
   auto result = std::make_unique<GLTextureImageBacking>(
       mailbox, format, size, color_space, surface_origin, alpha_type, usage,
       use_passthrough_);
-  result->InitializeGLTexture(format_info, is_cleared,
-                              framebuffer_attachment_angle);
+  result->InitializeGLTexture(format_info, framebuffer_attachment_angle);
 
   gl::GLApi* api = gl::g_current_gl_context;
   ScopedRestoreTexture scoped_restore(api, target);
@@ -215,6 +225,10 @@ GLTextureImageBackingFactory::CreateSharedImageInternal(
                         size.width(), size.height(), 0,
                         format_info.adjusted_format, format_info.gl_type,
                         pixel_data.data());
+  }
+
+  if (!pixel_data.empty()) {
+    result->SetCleared();
   }
 
   if (gl::g_current_gl_driver->ext.b_GL_KHR_debug) {

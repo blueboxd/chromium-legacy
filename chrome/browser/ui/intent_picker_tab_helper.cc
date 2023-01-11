@@ -7,8 +7,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -36,20 +36,20 @@
 
 namespace {
 
-apps::mojom::AppType GetAppType(apps::PickerEntryType picker_entry_type) {
-  apps::mojom::AppType app_type = apps::mojom::AppType::kUnknown;
+apps::AppType GetAppType(apps::PickerEntryType picker_entry_type) {
+  apps::AppType app_type = apps::AppType::kUnknown;
   switch (picker_entry_type) {
     case apps::PickerEntryType::kUnknown:
     case apps::PickerEntryType::kDevice:
       break;
     case apps::PickerEntryType::kArc:
-      app_type = apps::mojom::AppType::kArc;
+      app_type = apps::AppType::kArc;
       break;
     case apps::PickerEntryType::kWeb:
-      app_type = apps::mojom::AppType::kWeb;
+      app_type = apps::AppType::kWeb;
       break;
     case apps::PickerEntryType::kMacOs:
-      app_type = apps::mojom::AppType::kMacOs;
+      app_type = apps::AppType::kMacOs;
       break;
   }
   return app_type;
@@ -72,14 +72,13 @@ web_app::WebAppInstallManager* MaybeGetWebAppInstallManager(
 }
 
 void LoadSingleAppIcon(Profile* profile,
-                       apps::mojom::AppType app_type,
+                       apps::AppType app_type,
                        const std::string& app_id,
                        int size_in_dip,
                        base::OnceCallback<void(apps::IconValuePtr)> callback) {
   apps::AppServiceProxyFactory::GetForProfile(profile)->LoadIcon(
-      apps::ConvertMojomAppTypToAppType(app_type), app_id,
-      apps::IconType::kStandard, size_in_dip, /*allow_placeholder_icon=*/false,
-      std::move(callback));
+      app_type, app_id, apps::IconType::kStandard, size_in_dip,
+      /*allow_placeholder_icon=*/false, std::move(callback));
 }
 
 bool IsNavigatingToNewSite(content::NavigationHandle* navigation_handle) {

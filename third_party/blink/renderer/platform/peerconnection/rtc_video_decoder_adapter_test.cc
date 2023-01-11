@@ -12,6 +12,7 @@
 #include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
@@ -363,7 +364,7 @@ class RTCVideoDecoderAdapterTest : public ::testing::TestWithParam<bool> {
   void FinishDecodeOnMediaThread(uint32_t timestamp) {
     DCHECK(media_thread_.task_runner()->BelongsToCurrentThread());
     gpu::MailboxHolder mailbox_holders[media::VideoFrame::kMaxPlanes];
-    mailbox_holders[0].mailbox = gpu::Mailbox::Generate();
+    mailbox_holders[0].mailbox = gpu::Mailbox::GenerateForSharedImage();
     scoped_refptr<media::VideoFrame> frame =
         media::VideoFrame::WrapNativeTextures(
             media::PIXEL_FORMAT_ARGB, mailbox_holders,

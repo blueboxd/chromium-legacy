@@ -21,6 +21,7 @@
 #include "base/memory/safe_ref.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation_traits.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -72,7 +73,6 @@
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-forward.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-forward.h"
-#include "third_party/blink/public/mojom/native_io/native_io.mojom-forward.h"
 #include "third_party/blink/public/mojom/plugins/plugin_registry.mojom-forward.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-forward.h"
 #include "third_party/blink/public/mojom/webdatabase/web_database.mojom-forward.h"
@@ -593,12 +593,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const storage::BucketLocator& bucket_locator,
       blink::mojom::FileSystemAccessManager::GetSandboxedFileSystemCallback
           callback) override;
-
-  // Binds |receiver| to a NativeIOHost instance indirectly owned by the
-  // StoragePartition. Used by frames and workers via BrowserInterfaceBroker.
-  void BindNativeIOHost(
-      const blink::StorageKey& storage_key,
-      mojo::PendingReceiver<blink::mojom::NativeIOHost> receiver);
 
   FileSystemManagerImpl* GetFileSystemManagerForTesting() {
     return file_system_manager_impl_.get();

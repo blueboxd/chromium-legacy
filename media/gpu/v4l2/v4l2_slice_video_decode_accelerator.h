@@ -18,6 +18,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "media/gpu/chromeos/fourcc.h"
@@ -454,6 +455,9 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
 
   // Codec-specific software decoder in use.
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;
+
+  // The visible rect of the frames in the output queue.
+  gfx::Rect visible_rect_;
 
   // Surfaces queued to device to keep references to them while decoded.
   std::queue<scoped_refptr<V4L2DecodeSurface>> surfaces_at_device_;

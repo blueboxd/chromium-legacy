@@ -303,9 +303,8 @@ extern const char kChromeUIDeviceEmulatorHost[];
 extern const char kChromeUIDiagnosticsAppURL[];
 extern const char kChromeUIEmojiPickerURL[];
 extern const char kChromeUIEmojiPickerHost[];
-extern const char kChromeUIFirmwareUpdatesAppURL[];
-extern const char kChromeUIIntenetConfigDialogURL[];
-extern const char kChromeUIIntenetDetailDialogURL[];
+extern const char kChromeUIInternetConfigDialogURL[];
+extern const char kChromeUIInternetDetailDialogURL[];
 extern const char kChromeUIInternetConfigDialogHost[];
 extern const char kChromeUIInternetDetailDialogHost[];
 extern const char kChromeUIBorealisCreditsHost[];
@@ -504,6 +503,7 @@ extern const char kCfmNetworkSettingsURL[];
 
 // Settings sub-pages.
 extern const char kAccessibilitySubPage[];
+extern const char kAdPrivacySubPage[];
 extern const char kAddressesSubPage[];
 extern const char kAppearanceSubPage[];
 extern const char kAutofillSubPage[];
@@ -535,6 +535,8 @@ extern const char kSearchEnginesSubPage[];
 extern const char kSignOutSubPage[];
 extern const char kSyncSetupSubPage[];
 extern const char kTriggeredResetProfileSettingsSubPage[];
+// TODO(crbug.com/1378703): Remove these constants after the feature is
+// launched.
 extern const char kPrivacySandboxAdPersonalizationSubPage[];
 extern const char kPrivacySandboxLearnMoreSubPage[];
 extern const char kPrivacySandboxSubPage[];

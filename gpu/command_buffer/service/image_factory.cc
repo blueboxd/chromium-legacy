@@ -4,27 +4,13 @@
 
 #include "gpu/command_buffer/service/image_factory.h"
 
-#include "ui/gl/gl_image.h"
+#include "base/notreached.h"
 
 namespace gpu {
 
 ImageFactory::ImageFactory() = default;
 
 ImageFactory::~ImageFactory() = default;
-
-bool ImageFactory::SupportsCreateAnonymousImage() const {
-  return false;
-}
-
-scoped_refptr<gl::GLImage> ImageFactory::CreateAnonymousImage(
-    const gfx::Size& size,
-    gfx::BufferFormat format,
-    gfx::BufferUsage usage,
-    SurfaceHandle surface_handle,
-    bool* is_cleared) {
-  NOTREACHED();
-  return nullptr;
-}
 
 unsigned ImageFactory::RequiredTextureType() {
   NOTIMPLEMENTED();
@@ -33,6 +19,10 @@ unsigned ImageFactory::RequiredTextureType() {
 
 bool ImageFactory::SupportsFormatRGB() {
   return true;
+}
+
+ImageFactoryNativePixmap* ImageFactory::AsImageFactoryNativePixmap() {
+  return nullptr;
 }
 
 }  // namespace gpu

@@ -78,10 +78,10 @@ BASE_DECLARE_FEATURE(kSidePanelImprovedClobbering);
 BASE_DECLARE_FEATURE(kSidePanelWebView);
 
 BASE_DECLARE_FEATURE(kSidePanelJourneysQueryless);
+BASE_DECLARE_FEATURE(kSidePanelSearchCompanion);
 
 BASE_DECLARE_FEATURE(kSideSearch);
 BASE_DECLARE_FEATURE(kSideSearchFeedback);
-BASE_DECLARE_FEATURE(kSideSearchDSESupport);
 BASE_DECLARE_FEATURE(kSearchWebInSidePanel);
 BASE_DECLARE_FEATURE(kClobberAllSideSearchSidePanels);
 

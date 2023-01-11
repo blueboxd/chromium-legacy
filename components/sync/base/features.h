@@ -15,6 +15,13 @@ namespace syncer {
 // (introduced later).
 BASE_DECLARE_FEATURE(kCacheBaseEntitySpecificsInMetadata);
 
+// Customizes the delay of a deferred sync startup.
+BASE_DECLARE_FEATURE(kDeferredSyncStartupCustomDelay);
+inline constexpr base::FeatureParam<int>
+    kDeferredSyncStartupCustomDelayInSeconds{
+        &kDeferredSyncStartupCustomDelay,
+        "DeferredSyncStartupCustomDelayInSeconds", 1};
+
 // Causes Sync to ignore updates encrypted with keys that have been missing for
 // too long from this client; Sync will proceed normally as if those updates
 // didn't exist.
@@ -67,10 +74,6 @@ BASE_DECLARE_FEATURE(kSyncResetPollIntervalOnStart);
 
 // If enabled, Segmentation data type will be synced.
 BASE_DECLARE_FEATURE(kSyncSegmentationDataType);
-
-// If enabled, interested data types, excluding Wallet and Offer, will be sent
-// to the Sync Server as part of DeviceInfo.
-BASE_DECLARE_FEATURE(kSyncSendInterestedDataTypes);
 
 #if BUILDFLAG(IS_CHROMEOS)
 // Whether warning should be shown in sync settings page when lacros

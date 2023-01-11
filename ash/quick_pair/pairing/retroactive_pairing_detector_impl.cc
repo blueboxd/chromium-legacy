@@ -14,10 +14,10 @@
 #include "ash/quick_pair/repository/fast_pair_repository.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -198,6 +198,19 @@ void RetroactivePairingDetectorImpl::DevicePairedChanged(
 void RetroactivePairingDetectorImpl::AttemptRetroactivePairing(
     const std::string& classic_address,
     bool is_device_saved_to_account) {
+  // This check handles the case where the request for checked if the device is
+  // saved takes longer than expected. We register `AttemptRetroactivePairing`
+  // as a callback for when this request completes, but it gets called after
+  // we get the call to `OnDevicePaired`, which removes the device information.
+  // If the device is removed via `OnDevicePaired`, this indicated a Fast Pair
+  // pairing event, in which case we will never show a retroactive pairing
+  // notification, so we can stop the flow here for this device.
+  if (!base::Contains(potential_retroactive_addresses_, classic_address)) {
+    QP_LOG(VERBOSE) << __func__ << ": device at " << classic_address
+                    << ": was removed before call to Footprints completed";
+    return;
+  }
+
   if (is_device_saved_to_account) {
     QP_LOG(INFO) << __func__ << ": device already saved to user's account";
     RemoveDeviceInformation(classic_address);
@@ -234,10 +247,12 @@ void RetroactivePairingDetectorImpl::OnMessageStreamConnected(
 void RetroactivePairingDetectorImpl::AddDevicePairingInformation(
     const std::string& device_address) {
   QP_LOG(VERBOSE) << __func__;
-  DCHECK(device_pairing_information_.find(device_address) ==
-         device_pairing_information_.end());
-  RetroactivePairingInformation info;
-  device_pairing_information_[device_address] = info;
+
+  // There is potential for the device at |device_address| to already be in
+  // the map (in the case of repairing for example). If it is already in the
+  // map, update the timeout with the new timestamp. If it isn't already in
+  // the map, create a value with default empty values, and add the expiry
+  // timeout.
   device_pairing_information_[device_address].expiry_timestamp =
       base::Time::Now() + kRetroactiveDevicePairingTimeout;
 
@@ -499,8 +514,7 @@ void RetroactivePairingDetectorImpl::
   for (auto it = device_pairing_information_.begin();
        it != device_pairing_information_.end(); ++it) {
     if (base::Time::Now() >= it->second.expiry_timestamp) {
-      const std::string device_address = it->first;
-      QP_LOG(VERBOSE) << __func__ << "Removing device at " << device_address
+      QP_LOG(VERBOSE) << __func__ << ": Removing device at " << it->first
                       << "that has exceeded the time allotted for detecting "
                          "retroactive scenario.";
       RemoveDeviceInformationHelper(it->first);

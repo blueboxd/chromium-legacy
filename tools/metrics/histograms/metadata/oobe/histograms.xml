@@ -384,12 +384,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.HidDetectionScreen.BluetoothPairing.Result"
-    enum="BooleanSuccess" expires_after="2023-05-06">
+    enum="HidDetectionBluetoothPairingResult" expires_after="2023-07-09">
   <owner>gordonseto@google.com</owner>
   <owner>cros-connectivity@google.com</owner>
   <summary>
-    Records success or failure of a pairing attempt (initiated automatically by
-    the OOBE HID detection screen) to a HID.
+    Records if a HID pairing attempt (initiated automatically by the OOBE HID
+    detection screen) paired successfully via Bluetooth or did not pair
+    successfully via Bluetooth. This is expected to fail most of the time
+    because of it being initiated in a loop automatically while the OOBE HID
+    Detection screen is open.
   </summary>
 </histogram>
 
@@ -404,7 +407,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.HidDetectionScreen.BluetoothPairingAttempts"
-    units="attempts" expires_after="2023-05-06">
+    units="attempts" expires_after="2023-07-09">
   <owner>gordonseto@google.com</owner>
   <owner>cros-connectivity@google.com</owner>
   <summary>
@@ -440,7 +443,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.HidDetectionScreen.InitialHidsMissing" enum="HidsMissing"
-    expires_after="2023-05-06">
+    expires_after="2023-07-09">
   <owner>gordonseto@google.com</owner>
   <owner>cros-connectivity@google.com</owner>
   <summary>
@@ -616,18 +619,6 @@ chromium-metrics-reviews@google.com.
   <token key="OOBEScreenName_ExitReason" variants="OOBEScreenName_ExitReason"/>
 </histogram>
 
-<histogram name="OOBE.StepShownStatus.Multidevice-setup-screen.Skipped"
-    enum="OobeMultideviceScreenSkippedReason" expires_after="2023-11-01">
-  <owner>bhartmire@google.com</owner>
-  <owner>chromeos-cross-device-eng@google.com</owner>
-  <summary>
-    The reason why the Multidevice setup screen is skipped in OOBE. Recorded
-    when determining that the screen should be skipped. This metric breaks down
-    the &quot;Not shown&quot; bucket of
-    &quot;OOBE.StepShownStatus.Multidevice-setup-screen&quot;.
-  </summary>
-</histogram>
-
 <histogram name="OOBE.StepShownStatus.{OOBELegacyScreenName}"
     enum="BooleanShown" expires_after="never">
 <!-- expires-never: Core metric for monitoring OOBE flow regressions. -->
@@ -767,7 +758,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.WebUI.LoadTime.FirstRun" units="ms"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>rsorokin@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>

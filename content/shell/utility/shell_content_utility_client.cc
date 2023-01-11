@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/span.h"
+#include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
@@ -18,10 +19,12 @@
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/process/process.h"
 #include "base/ranges/algorithm.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "components/services/storage/test_api/test_api.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/pseudonymization_util.h"
 #include "content/public/test/test_service.mojom.h"
 #include "content/public/utility/utility_thread.h"
 #include "content/shell/common/power_monitor_test_impl.h"
@@ -121,6 +124,17 @@ class TestUtilityServiceImpl : public mojom::TestService {
 
   void IsProcessSandboxed(IsProcessSandboxedCallback callback) override {
     std::move(callback).Run(sandbox::policy::Sandbox::IsProcessSandboxed());
+  }
+
+  void PseudonymizeString(const std::string& value,
+                          PseudonymizeStringCallback callback) override {
+    std::move(callback).Run(
+        PseudonymizationUtil::PseudonymizeStringForTesting(value));
+  }
+
+  void PassWriteableFile(base::File file,
+                         PassWriteableFileCallback callback) override {
+    std::move(callback).Run();
   }
 
  private:

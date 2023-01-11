@@ -21,13 +21,14 @@
 #include <string>
 #include <unordered_set>
 
-#include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string_piece.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "components/safe_browsing/core/common/proto/client_model.pb.h"

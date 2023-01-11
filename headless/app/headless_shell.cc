@@ -233,9 +233,6 @@ int RunContentMain(
   params.argv = options.argv;
 #endif
 
-  // TODO(skyostil): Implement custom message pumps.
-  DCHECK(!options.message_pump);
-
   auto browser = std::make_unique<HeadlessBrowserImpl>(
       std::move(on_browser_start_callback), std::move(options));
   HeadlessContentMainDelegate delegate(std::move(browser));
@@ -262,13 +259,6 @@ void RunChildProcessIfNeeded(int argc, const char** argv) {
 
   if (!command_line.HasSwitch(::switches::kProcessType))
     return;
-
-  if (command_line.HasSwitch(switches::kUserAgent)) {
-    std::string user_agent =
-        command_line.GetSwitchValueASCII(switches::kUserAgent);
-    if (net::HttpUtil::IsValidHeaderValue(user_agent))
-      builder.SetUserAgent(user_agent);
-  }
 
   int rc = RunContentMain(builder.Build(),
                           base::OnceCallback<void(HeadlessBrowser*)>());

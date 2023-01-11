@@ -77,6 +77,7 @@ enum class InputKey {
   kAdMeasurementReportingOrigin = 4,
   kAdMeasurementSourceOrigin = 5,
   kAdMeasurementDestinationOrigin = 6,
+  kAccessingOrigin = 7,
 };
 
 // Defines the expected output of the functions under test, when the profile is
@@ -87,6 +88,17 @@ enum class OutputKey {
   kIsFledgeAllowed = 3,
   kIsAttributionReportingAllowed = 4,
   kMaySendAttributionReport = 5,
+  kIsSharedStorageAllowed = 6,
+  kIsSharedStorageSelectURLAllowed = 7,
+  kIsPrivateAggregationAllowed = 8,
+  kIsTopicsAllowedMetric = 9,
+  kIsTopicsAllowedForContextMetric = 10,
+  kIsFledgeAllowedMetric = 11,
+  kIsAttributionReportingAllowedMetric = 12,
+  kMaySendAttributionReportMetric = 13,
+  kIsSharedStorageAllowedMetric = 14,
+  kIsSharedStorageSelectURLAllowedMetric = 15,
+  kIsPrivateAggregationAllowedMetric = 16,
 };
 
 // To allow multiple input keys to map to the same value, without having to
@@ -116,7 +128,8 @@ using TestCaseItemValue = absl::variant<bool,
                                         GURL,
                                         content_settings::CookieControlsMode,
                                         SiteDataExceptions,
-                                        ContentSetting>;
+                                        ContentSetting,
+                                        int>;
 
 using TestState = std::map<TestKey<StateKey>, TestCaseItemValue>;
 using TestInput = std::map<TestKey<InputKey>, TestCaseItemValue>;

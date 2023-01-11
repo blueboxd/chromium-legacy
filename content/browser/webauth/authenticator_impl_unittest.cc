@@ -30,6 +30,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_command_line.h"
@@ -1528,7 +1529,9 @@ class TestWebAuthenticationRequestProxy : public WebAuthenticationRequestProxy {
 
   Observations& observations() { return observations_; }
 
-  bool IsActive() override { return config_.is_active; }
+  bool IsActive(const url::Origin& caller_origin) override {
+    return config_.is_active;
+  }
 
   RequestId SignalCreateRequest(
       const PublicKeyCredentialCreationOptionsPtr& options,
@@ -1685,8 +1688,11 @@ class TestWebAuthenticationDelegate : public WebAuthenticationDelegate {
 #endif
 
   WebAuthenticationRequestProxy* MaybeGetRequestProxy(
-      content::BrowserContext* browser_context) override {
-    return request_proxy.get();
+      content::BrowserContext* browser_context,
+      const url::Origin& caller_origin) override {
+    return request_proxy && request_proxy->IsActive(caller_origin)
+               ? request_proxy.get()
+               : nullptr;
   }
 
   bool OriginMayUseRemoteDesktopClientOverride(
@@ -5822,6 +5828,54 @@ TEST_F(PINAuthenticatorImplTest, MakeCredUvNotRqdAndAlwaysUv) {
   }
 }
 
+TEST_F(PINAuthenticatorImplTest, MakeCredentialHMACSecret) {
+  // uv=preferred is more preferred when hmac-secret is in use so that the
+  // PRF is consistent. (Security keys have two PRFs per credential: one for
+  // UV and one for non-UV assertions.)
+  struct TestCase {
+    device::UserVerificationRequirement uv;
+    bool hmac_secret;
+    bool should_configure_uv;
+  };
+
+  constexpr TestCase kTests[] = {
+      {device::UserVerificationRequirement::kDiscouraged, false, false},
+      {device::UserVerificationRequirement::kPreferred, false, false},
+      {device::UserVerificationRequirement::kRequired, false, true},
+      {device::UserVerificationRequirement::kDiscouraged, true, false},
+      {device::UserVerificationRequirement::kPreferred, true, true},
+      {device::UserVerificationRequirement::kRequired, true, true},
+  };
+
+  NavigateAndCommit(GURL(kTestOrigin1));
+  unsigned index = 0;
+  for (const TestCase& test : kTests) {
+    SCOPED_TRACE(index++);
+
+    ResetVirtualDevice();
+    device::VirtualCtap2Device::Config config;
+    config.hmac_secret_support = true;
+    config.pin_support = true;
+    config.pin_uv_auth_token_support = true;
+    config.allow_non_resident_credential_creation_without_uv = true;
+    config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
+    virtual_device_factory_->SetCtap2Config(config);
+
+    if (test.should_configure_uv) {
+      test_client_.expected = {{PINReason::kSet, kTestPIN16,
+                                device::kMaxPinRetries, device::kMinPinLength}};
+    } else {
+      test_client_.expected.clear();
+    }
+
+    auto options = make_credential_options(test.uv);
+    options->hmac_create_secret = test.hmac_secret;
+    MakeCredentialResult result =
+        AuthenticatorMakeCredential(std::move(options));
+    EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+  }
+}
+
 TEST_F(PINAuthenticatorImplTest, GetAssertion) {
   typedef int Expectations[3][3];
   // kExpectedWithUISupport enumerates the expected behaviour when the embedder
@@ -9176,9 +9230,9 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, MakeCredentialOriginAndRpIds) {
 
     NavigateAndCommit(GURL(test_case.origin));
     BrowserContext* context = main_rfh()->GetBrowserContext();
-    ASSERT_TRUE(test_client_.GetWebAuthenticationDelegate()
-                    ->MaybeGetRequestProxy(context)
-                    ->IsActive());
+    ASSERT_TRUE(
+        test_client_.GetWebAuthenticationDelegate()->MaybeGetRequestProxy(
+            context, url::Origin::Create(GURL(test_case.origin))));
 
     PublicKeyCredentialCreationOptionsPtr options =
         GetTestPublicKeyCredentialCreationOptions();
@@ -9218,9 +9272,9 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, AppId) {
                  std::string(test_case.claimed_authority));
 
     BrowserContext* context = main_rfh()->GetBrowserContext();
-    ASSERT_TRUE(test_client_.GetWebAuthenticationDelegate()
-                    ->MaybeGetRequestProxy(context)
-                    ->IsActive());
+    ASSERT_TRUE(
+        test_client_.GetWebAuthenticationDelegate()->MaybeGetRequestProxy(
+            context, url::Origin::Create(GURL(test_case.origin))));
 
     EXPECT_EQ(TryAuthenticationWithAppId(test_case.origin,
                                          test_case.claimed_authority),
@@ -9248,9 +9302,9 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, AppId) {
     }
 
     BrowserContext* context = main_rfh()->GetBrowserContext();
-    ASSERT_TRUE(test_client_.GetWebAuthenticationDelegate()
-                    ->MaybeGetRequestProxy(context)
-                    ->IsActive());
+    ASSERT_TRUE(
+        test_client_.GetWebAuthenticationDelegate()->MaybeGetRequestProxy(
+            context, url::Origin::Create(GURL(test_case.origin))));
 
     AuthenticatorStatus test_status = TryAuthenticationWithAppId(
         test_case.origin, test_case.claimed_authority);
@@ -9351,9 +9405,9 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, GetAssertionOriginAndRpIds) {
 
     NavigateAndCommit(GURL(test_case.origin));
     BrowserContext* context = main_rfh()->GetBrowserContext();
-    ASSERT_TRUE(test_client_.GetWebAuthenticationDelegate()
-                    ->MaybeGetRequestProxy(context)
-                    ->IsActive());
+    ASSERT_TRUE(
+        test_client_.GetWebAuthenticationDelegate()->MaybeGetRequestProxy(
+            context, url::Origin::Create(GURL(test_case.origin))));
 
     PublicKeyCredentialRequestOptionsPtr options =
         GetTestPublicKeyCredentialRequestOptions();

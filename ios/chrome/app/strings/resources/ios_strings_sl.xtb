@@ -170,7 +170,6 @@ Vaše šifrirane podatke lahko bere samo oseba, ki ima vaše geslo. Geslo ni pos
 <translation id="225943865679747347">Koda napake: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">Dodaj račun</translation>
 <translation id="2268044343513325586">Izboljšaj iskanje</translation>
-<translation id="2271351792809375263">Gesla, ki ste jih shranili v Chromu, lahko uporabljate v drugih aplikacijah v napravi.</translation>
 <translation id="2273327106802955778">More menu</translation>
 <translation id="2286505070150039482">Označeno besedilo</translation>
 <translation id="2299218006564889602">Gesla se šifrirajo v napravi, preden se shranijo v Google Upravitelju gesel.</translation>
@@ -286,7 +285,6 @@ Spletna mesta ne smejo uporabljati piškotkov za ogled dejavnosti brskanja na ra
 Oglejte si navodila iskalnika za brisanje zgodovine iskanja, če je na voljo.</translation>
 <translation id="3080525922482950719">Strani lahko shranite, če želite brati pozneje ali brez povezave</translation>
 <translation id="3081338492074632642">Geslo, ki ga želite shraniti, se mora ujemati z geslom za <ph name="WEBSITE" />.</translation>
-<translation id="3103603146121354983">Samodejno izpolnjevanje gesel</translation>
 <translation id="3112556859945124369">Označi …</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />Oglejte si, kaj lahko sinhronizirate.<ph name="END_LINK" /></translation>
 <translation id="3130863904455712965">Zgodovina in drugo</translation>
@@ -365,7 +363,6 @@ Oglejte si navodila iskalnika za brisanje zgodovine iskanja, če je na voljo.</t
 <translation id="3661160521073045932">Profil konfiguracije je na voljo</translation>
 <translation id="3670030362669914947">Številka</translation>
 <translation id="3691593122358196899">Zaznamek ustvarjen v mapi <ph name="FOLDER_TITLE" /></translation>
-<translation id="369349502275246497">Ponudi shranjevanje gesel</translation>
 <translation id="3709582977625132201">Označi kot neprebrano</translation>
 <translation id="371230970611282515">Predvideva nevarne dogodke, preden se zgodijo, in vas opozarja nanje.</translation>
 <translation id="37207012422556617">Iskanja v trendu</translation>
@@ -455,6 +452,7 @@ Oglejte si navodila iskalnika za brisanje zgodovine iskanja, če je na voljo.</t
 <translation id="4420409367264901497">Urejanje zaznamka</translation>
 <translation id="4442550905108052454">Odprite <ph name="BEGIN_BOLD" />Nastavitve<ph name="END_BOLD" /></translation>
 <translation id="4454246407045105932">Dodajanje jezika</translation>
+<translation id="4461286950227634995">Ponudba za shranjevanje gesel</translation>
 <translation id="4462491365653392320">Spremljanje cen na zavihkih</translation>
 <translation id="4469418912670346607">Nadaljuj nastavitev</translation>
 <translation id="4474494258097106883">Ustvarjeno za vaš iPhone</translation>
@@ -466,11 +464,11 @@ Oglejte si navodila iskalnika za brisanje zgodovine iskanja, če je na voljo.</t
 <translation id="4508750114462689118">Zapri predstavitev prijave</translation>
 <translation id="4514889972748124117">Predlagaj zapleteno geslo ...</translation>
 <translation id="4520798012560649652">Preberite več o anonimnem načinu</translation>
-<translation id="4526249700380860531">Dostopajte do shranjenih gesel in jih upravljajte na <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Pregled sinhroniziranih podatkov</translation>
 <translation id="4536418791685807335">Try signing in again.</translation>
 <translation id="4540780316273593836">Prišlo je do napake</translation>
 <translation id="457386861538956877">Več ...</translation>
+<translation id="4587589328781138893">Spletna mesta</translation>
 <translation id="4588014171431912783">Nastavitve sinhronizacije bodo obnovljene na podlagi zadnjega varnostnega kopiranja. <ph name="BEGIN_LINK" />Oglejte si, kaj lahko sinhronizirate.<ph name="END_LINK" /></translation>
 <translation id="4592368184551360546">Tipkovnica</translation>
 <translation id="4606247758155004938">Vaš brskalnik upravlja organizacija.</translation>
@@ -554,7 +552,6 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="5118764316110575523">Izklopljeno</translation>
 <translation id="5119391094379141756">Izberite Chrome.</translation>
 <translation id="5132942445612118989">Sinhronizirajte gesla, zgodovino in drugo v vseh napravah</translation>
-<translation id="5140288047769711648">Chrome si bo zapomnil to geslo namesto vas. Ni si vam ga treba zapomniti.</translation>
 <translation id="5149188072385105201">Dodaj geslo …</translation>
 <translation id="5150492518600715772">Pošlji v napravo</translation>
 <translation id="5168414296986405587">Ustvarjeno za iPadOS</translation>
@@ -881,7 +878,6 @@ Ko uporabljate anonimni način, spletna mesta ne smejo uporabljati piškotkov za
 <translation id="7438481509621345350">Poslej bodo prikazane novice s spletnega mesta <ph name="CHANNEL_NAME" />, ko boste odprli nov zavihek.</translation>
 <translation id="7454057999980797137">Regija</translation>
 <translation id="7459628154744868585">Izboljšana zaščita je vklopljena</translation>
-<translation id="7464701184726199289">S tem bodo sinhronizirani podatki izbrisani iz vseh naprav. Shranjene nastavitve spletnih mest ne bodo izbrisane in morda odražajo vaše brskalne navade. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="746684838091935575">3. Izberite Chrome.</translation>
 <translation id="7472734401283673885">Ime podjetja</translation>
 <translation id="7473891865547856676">Ne, hvala</translation>
@@ -965,7 +961,6 @@ Spletna mesta lahko uporabljajo piškotke za ogled dejavnosti brskanja na razli�
 <translation id="806745655614357130">Podatki naj bodo ločeni</translation>
 <translation id="8073670137947914548">Prenos je končan</translation>
 <translation id="8073872304774253879">Izboljšanje iskanja in brskanja</translation>
-<translation id="8076014560081431679">Shranjene nastavitve spletnih mest ne bodo izbrisane in morda odražajo vaše brskalne navade. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="8079602123447022758">Ta nastavitev je upravljana; dvakrat se dotaknite, če želite več informacij.</translation>
 <translation id="8080028325999236607">Zapri vse zavihke</translation>
 <translation id="8084285576995584326">Nadziranje podatkov v računu Google.</translation>
@@ -1093,7 +1088,6 @@ Spletna mesta lahko uporabljajo piškotke za ogled dejavnosti brskanja na razli�
 <translation id="9079935439869366234">Označi vse kot neprebrano</translation>
 <translation id="9081058212938299310">Želite posodobiti geslo za <ph name="USERNAME" />?</translation>
 <translation id="9083838294503912307">Če želite sinhronizirati in prilagajati v vseh napravah, vklopite sinhronizacijo.</translation>
-<translation id="9087108903408689779">Geslo, ki ga predlaga Chrome:</translation>
 <translation id="9093271241977565440">Na vrhu zaslona se dotaknite ikone za iskanje.</translation>
 <translation id="9094033019050270033">Posodobi geslo</translation>
 <translation id="9097506547406246598">Spremljanja ni mogoče preklicati. Prišlo je do napake.</translation>

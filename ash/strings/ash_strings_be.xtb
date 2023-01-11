@@ -162,6 +162,7 @@
 <translation id="1774796056689732716">Каляндар, <ph name="CURRENT_MONTH_YEAR" />, дата, якая цяпер выбрана, – <ph name="DATE" />.</translation>
 <translation id="1787955149152357925">Выключана</translation>
 <translation id="1797271123677381264">Не помню пароль</translation>
+<translation id="1807246157184219062">Светлая</translation>
 <translation id="181103072419391116">Магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />; сетка знаходзіцца пад кіраваннем адміністратара</translation>
 <translation id="1812997170047690955">Што на маім экране?</translation>
 <translation id="1816896987747843206">Доступ да камеры атрымаюць усе праграмы і вэб-сайты, якія маюць дазвол выкарыстоўваць камеру</translation>
@@ -238,6 +239,7 @@
 <translation id="2224075387478458881">Запіс экрана забаронены, калі на ім ёсць абароненае змесціва</translation>
 <translation id="2227179592712503583">Выдаліць прапанову</translation>
 <translation id="225680501294068881">Ідзе пошук прылад…</translation>
+<translation id="225716114209817872">Максімальнае</translation>
 <translation id="2257486738914982088">Не ўдалося спампаваць файл "<ph name="FILENAME" />"</translation>
 <translation id="2258734398699965611">Прапанаваныя файлы</translation>
 <translation id="2268130516524549846">Bluetooth выключаны</translation>
@@ -262,6 +264,7 @@
 <translation id="2354174487190027830">Ідзе актывацыя сеткі <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Працягнуць</translation>
 <translation id="2367186422933365202">Не ўдаецца выканаць уваход на прыладзе Chromebook</translation>
+<translation id="2367972762794486313">Паказаць праграмы</translation>
 <translation id="2369165858548251131">"Вітаю" па-кітайску</translation>
 <translation id="2390318262976603432">Рэгіянальныя налады</translation>
 <translation id="240006516586367791">Элементы кіравання мультымедыя</translation>
@@ -506,6 +509,7 @@
 <translation id="3713734891607377840">Адкрыць пасля завяршэння</translation>
 <translation id="3726171378575546917">На гэтай прыладзе няма праграм "<ph name="UNAVAILABLE_APPS_ONE" />", "<ph name="UNAVAILABLE_APPS_TWO" />" і яшчэ <ph name="UNAVAILABLE_APPS_COUNT" />.</translation>
 <translation id="3735740477244556633">Парадак сартавання</translation>
+<translation id="3738664582935948253">Цяпер у відэа, створаным пры запісе экрана, можна дэманстраваць выкарыстаныя спалучэнні клавіш і націсканні мышшу</translation>
 <translation id="3742055079367172538">Здымак экрана зроблены</translation>
 <translation id="3765841986579723851">Зменена сёння</translation>
 <translation id="3773700760453577392">Адміністратар забараніў уваход у некалькі ўліковых запісаў для карыстальніка <ph name="USER_EMAIL" />. Каб працягнуць, усе карыстальнікі павінны выйсці.</translation>
@@ -525,6 +529,7 @@
 <translation id="385051799172605136">Назад</translation>
 <translation id="385300504083504382">У пачатак</translation>
 <translation id="3861651314799684201">Каб запісаць увесь экран, націсніце Увод</translation>
+<translation id="3871092408932389764">Самы нізкі</translation>
 <translation id="3886872229787704059">Адкрывалася сёння</translation>
 <translation id="3891340733213178823">Каб выйсці з уліковага запісу, двойчы націсніце "Ctrl+Shift+Q".</translation>
 <translation id="3893630138897523026">ChromeVox (галасавая зваротная сувязь)</translation>
@@ -925,6 +930,7 @@
 <translation id="6040143037577758943">Закрыць</translation>
 <translation id="6043212731627905357">Гэты манітор не падыходзіць да прылады <ph name="DEVICE_TYPE" /> (манітор не падтрымліваецца).</translation>
 <translation id="6043994281159824495">Выйсці</translation>
+<translation id="6045629311476491587">Выкарыстоўваюцца <ph name="APP_COUNT" /> праграмамі</translation>
 <translation id="6047696787498798094">Пры пераключэнні на іншага карыстальніка абагульванне экрана перастане працаваць. Працягнуць?</translation>
 <translation id="6054305421211936131">Увайсці з дапамогай разумнай карткі</translation>
 <translation id="6059276912018042191">Нядаўна адкрытыя ўкладкі Chrome</translation>
@@ -1010,6 +1016,7 @@
 <translation id="6537924328260219877">Магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />, зарад акумулятара тэлефона – <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999">Ідзе праверка спампаванага файла "<ph name="FILENAME" />"</translation>
 <translation id="6542521951477560771">Вядзецца трансляцыя на прыладу "<ph name="RECEIVER_NAME" />"</translation>
+<translation id="6548693220024099658">Размыванне фону</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Усталявана нядаўна</translation>
 <translation id="6559976592393364813">Спытайце адміністратара</translation>
@@ -1416,6 +1423,7 @@
 <translation id="878215960996152260"><ph name="APP_NAME" />, усталяваная праграма, заблакіравана</translation>
 <translation id="8785070478575117577">Падключыцца да сеткі <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">Вялікае</translation>
 <translation id="8806053966018712535">Папка "<ph name="FOLDER_NAME" />"</translation>
 <translation id="880709030178078220">"Даведка"</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

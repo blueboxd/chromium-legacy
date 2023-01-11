@@ -41,7 +41,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.CachedFeedVisibilityConsistency"
-    enum="BooleanConsistent" expires_after="2023-05-07">
+    enum="BooleanConsistent" expires_after="2023-07-09">
   <owner>hanxi@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <summary>
@@ -210,7 +210,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.DurationSinceLastBackgroundTime" units="ms"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>hanxi@chromium.org</owner>
   <summary>
     Android: The elapsed time from the last time when Chrome goes to background
@@ -220,7 +220,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Startup.Android.FeedContentFirstLoadedTime"
-    units="ms" expires_after="2023-02-26">
+    units="ms" expires_after="2023-06-30">
 <!-- Name completed by histogram_suffixes name="JavaStartMode" -->
 
   <owner>hanxi@chromium.org</owner>
@@ -246,7 +246,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Startup.Android.FeedStreamCreatedTime" units="ms"
-    expires_after="2023-02-12">
+    expires_after="2023-06-30">
 <!-- Name completed by histogram_suffixes name="JavaStartMode" -->
 
   <owner>hanxi@chromium.org</owner>
@@ -259,7 +259,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Startup.Android.FirstDrawCompletedTime" units="ms"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
 <!-- Name completed by histogram_suffixes name="JavaStartMode" -->
 
   <owner>hanxi@chromium.org</owner>
@@ -279,8 +279,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Startup.Android.IsHomepagePolicyManagerInitialized"
+    enum="Boolean" expires_after="2023-06-30">
+  <owner>hanxi@chromium.org</owner>
+  <owner>xinyiji@chromium.org</owner>
+  <summary>
+    Records whether the HompagePolicyManager is initialized with native in
+    startup when the check of whether to show Start surface when there isn't any
+    Tab happens. The histogram is recorded only on startup when Chrome is
+    launched from app icon and there isn't any Tab to restore.
+  </summary>
+</histogram>
+
 <histogram name="Startup.Android.IsLastBackgroundTimeLogged" enum="Boolean"
-    expires_after="2023-03-05">
+    expires_after="2023-06-30">
   <owner>hanxi@chromium.org</owner>
   <owner>xinyiji@chromium.org</owner>
   <summary>
@@ -291,7 +303,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.LastVisitedTabIsSRPWhenOverviewShownAtLaunch"
-    enum="Boolean" expires_after="2023-02-12">
+    enum="Boolean" expires_after="2023-06-30">
   <owner>hanxi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
@@ -303,7 +315,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.NewInstance.LaunchedFromDraggedLinkViewIntent"
-    enum="Boolean" expires_after="2023-05-07">
+    enum="Boolean" expires_after="2023-07-09">
   <owner>twellington@chromium.org</owner>
   <owner>aishwaryarj@google.com</owner>
   <summary>
@@ -328,7 +340,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Startup.Android.ShowChromeStartSegmentationResultComparison"
     enum="ShowChromeStartSegmentationResultComparison"
-    expires_after="2023-02-26">
+    expires_after="2023-06-30">
   <owner>hanxi@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <summary>
@@ -338,7 +350,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Startup.Android.SingleTabTitleAvailableTime"
-    units="ms" expires_after="2023-02-19">
+    units="ms" expires_after="2023-06-30">
 <!-- Name completed by histogram_suffixes name="JavaStartMode" -->
 
   <owner>hanxi@chromium.org</owner>
@@ -359,57 +371,6 @@ chromium-metrics-reviews@google.com.
     Records whether the Start surface homepage is showing at a cold startup when
     the Start surface is enabled. This histogram is recorded in a deferred
     startup task after Chrome is launched.
-  </summary>
-</histogram>
-
-<histogram name="Startup.Android.ThumbnailFetchedForGTSFirstMeaningfulPaint"
-    units="thumbnails" expires_after="2020-08-02">
-  <owner>yusufo@chromium.org</owner>
-  <owner>yfriedman@chromium.org</owner>
-  <summary>
-    Android: The number of thumbnails fetched for the first meaningful paint of
-    the Grid Tab Switcher. First meaningful paint is defined as having all the
-    thumbnails shown. This is recorded at most once per activity lifecycle. This
-    is gated by feature &quot;TabSwitcherOnReturn&quot;.
-  </summary>
-</histogram>
-
-<histogram name="Startup.Android.TimeToGTSFirstMeaningfulPaint" units="ms"
-    expires_after="2021-12-26">
-  <owner>yusufo@chromium.org</owner>
-  <owner>yfriedman@chromium.org</owner>
-  <summary>
-    Android: The elapsed time from the activity creation point to the first
-    meaningful paint of the Grid Tab Switcher. First meaningful paint is defined
-    as having all the thumbnails shown. This is recorded at most once per
-    activity lifecycle. This is gated by feature
-    &quot;TabSwitcherOnReturn&quot;.
-  </summary>
-</histogram>
-
-<histogram name="Startup.Android.TimeToGTSFirstMeaningfulPaint.Cold" units="ms"
-    expires_after="2023-06-25">
-  <owner>yusufo@chromium.org</owner>
-  <owner>yfriedman@chromium.org</owner>
-  <summary>
-    Android: The elapsed time from the activity creation point to the first
-    meaningful paint of the Grid Tab Switcher. First meaningful paint is defined
-    as having all the thumbnails shown. This is recorded at most once per
-    activity lifecycle. This is gated by feature
-    &quot;TabSwitcherOnReturn&quot;. It's only recorded on cold startup.
-  </summary>
-</histogram>
-
-<histogram name="Startup.Android.TimeToGTSFirstMeaningfulPaint.Warm" units="ms"
-    expires_after="2021-12-26">
-  <owner>yusufo@chromium.org</owner>
-  <owner>yfriedman@chromium.org</owner>
-  <summary>
-    Android: The elapsed time from the activity creation point to the first
-    meaningful paint of the Grid Tab Switcher. First meaningful paint is defined
-    as having all the thumbnails shown. This is recorded at most once per
-    activity lifecycle. This is gated by feature
-    &quot;TabSwitcherOnReturn&quot;. It's only recorded on warm startup.
   </summary>
 </histogram>
 
@@ -434,7 +395,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.BrowserMainRunnerImplInitializeLongTime" units="ms"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>robliao@chromium.org</owner>
   <summary>
     The amount of time that elapsed during BrowserMainRunnerImpl::Initialize.
@@ -918,7 +879,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Temperature" enum="StartupTemperature"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
 <!-- expires-after: Diagnosis metric for changes in StartupTemperature suffix.
      Shouldn't truly expire but kColdStartHardFaultCountThreshold should be
      surveyed yearly. -->

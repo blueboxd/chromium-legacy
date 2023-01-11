@@ -28,6 +28,7 @@
 <translation id="1104621072296271835">तपाईंका यन्त्रहरूलाई सँगै प्रयोग गरेमा तिनले अझ राम्रो काम गर्छन्</translation>
 <translation id="1111021433905331574">तपाईं सेटिङ &gt; <ph name="APP_TITLE" /> मा गई आफ्नो किबोर्डको ब्याकलाइटको रङ बदल्न सक्नुहुन्छ</translation>
 <translation id="112308213915226829">तखता स्वत: लुकाउनुहोस्</translation>
+<translation id="1135788167815124787">पोर्ट्रेट रिलाइटिङ</translation>
 <translation id="1142002900084379065">हालसालै खिचिएका फोटोहरू</translation>
 <translation id="1148499908455722006"><ph name="USER_NAME" /> को जानकारीको डायलग खोल्नुहोस्</translation>
 <translation id="1150989369772528668">पात्रो</translation>
@@ -162,6 +163,7 @@
 <translation id="1774796056689732716">पात्रो, <ph name="CURRENT_MONTH_YEAR" />, हाल चयन गरिएको मिति: <ph name="DATE" />।</translation>
 <translation id="1787955149152357925">अफ छ</translation>
 <translation id="1797271123677381264">पासवर्ड बिर्सनुभयो</translation>
+<translation id="1807246157184219062">हल्का</translation>
 <translation id="181103072419391116">सिग्नलको क्षमता <ph name="SIGNAL_STRENGTH" />, तपाईंका प्रशासकले व्यवस्थित गर्नुभएको छ</translation>
 <translation id="1812997170047690955">मेरो स्क्रिनमा के छ?</translation>
 <translation id="1816896987747843206">यसले क्यामेरा प्रयोग गर्ने अनुमति भएका सबै एप तथा वेबसाइटहरूलाई क्यामेरा प्रयोग गर्ने अनुमति दिन्छ</translation>
@@ -238,6 +240,7 @@
 <translation id="2224075387478458881">स्क्रिनमा संरक्षित सामग्री देखिएका बेला स्क्रिन रेकर्ड गर्न मिल्दैन</translation>
 <translation id="2227179592712503583">सुझाव हटाउनुहोस्</translation>
 <translation id="225680501294068881">उपकरणहरूको लागि स्क्यान गर्दै ...</translation>
+<translation id="225716114209817872">अधिकतम</translation>
 <translation id="2257486738914982088"><ph name="FILENAME" /> डाउनलोड गर्ने क्रममा केही चिज गडबड भयो</translation>
 <translation id="2258734398699965611">सिफारिस गरिएका फाइलहरू</translation>
 <translation id="2268130516524549846">ब्लुतुथ असक्षम गरियो</translation>
@@ -262,6 +265,7 @@
 <translation id="2354174487190027830"><ph name="NAME" /> लाई सक्रिय बनाउँदै</translation>
 <translation id="2359808026110333948">जारी राख्नुहोस्</translation>
 <translation id="2367186422933365202">तपाईंको Chromebook मा साइन इन गर्न सकिएन</translation>
+<translation id="2367972762794486313">एप्स देखाउनुहोस्</translation>
 <translation id="2369165858548251131">चिनियाँ भाषामा "नमस्ते" कसरी भनिन्छ</translation>
 <translation id="2390318262976603432">भाषिक भेदका सेटिङहरू</translation>
 <translation id="240006516586367791">मिडियासम्बन्धी नियन्त्रणहरू</translation>
@@ -506,6 +510,7 @@
 <translation id="3713734891607377840">डाउनलोड भएपछि खुल्ने छ</translation>
 <translation id="3726171378575546917">यो डिभाइसमा <ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> र <ph name="UNAVAILABLE_APPS_COUNT" /> उपलब्ध छैनन्।</translation>
 <translation id="3735740477244556633">यसअनुसार क्रमबद्ध गर्नुहोस्</translation>
+<translation id="3738664582935948253">तपाईं अब स्क्रिन रेकर्डिङमा क्लिक तथा किबोर्डका सर्टकटहरू देखाउन सक्नुहुन्छ</translation>
 <translation id="3742055079367172538">स्क्रिनसट लिइयो</translation>
 <translation id="3765841986579723851">आज सम्पादन गरिएको</translation>
 <translation id="3773700760453577392">कुनै प्रशासकले <ph name="USER_EMAIL" /> बाट एकभन्दा बढी साइन इन गर्ने अनुमति दिनुभएको छैन। जारी राख्न सबै प्रयोगकर्ताहरूले अनिवार्य रूपमा साइन आउट गर्नु पर्छ।</translation>
@@ -525,6 +530,7 @@
 <translation id="385051799172605136">पछाडि जानुहोस्</translation>
 <translation id="385300504083504382">पाठको सुरुवातमा जानुहोस्</translation>
 <translation id="3861651314799684201">पूरा स्क्रिन रेकर्ड गर्न इन्टर थिच्नुहोस्</translation>
+<translation id="3871092408932389764">सबैभन्दा न्यून</translation>
 <translation id="3886872229787704059">आज खोलिएको</translation>
 <translation id="3891340733213178823">साइन आउट गर्न Ctrl+Shift+Q लाई दुईपटक थिच्नुहोस्।</translation>
 <translation id="3893630138897523026">ChromeVox (बोली पृष्ठपोषण)</translation>
@@ -1011,6 +1017,7 @@
 <translation id="6537924328260219877">सिग्नलको क्षमता <ph name="SIGNAL_STRENGTH" />, <ph name="BATTERY_STATUS" /> फोनको ब्याट्री</translation>
 <translation id="6539852571005954999"><ph name="FILENAME" /> स्क्यान गरेर डाउनलोड गर्नुहोस्</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> मा Cast गर्दै</translation>
+<translation id="6548693220024099658">ब्याकग्राउन्ड ब्लर</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 भर्खरै इन्स्टल गरिएको छ</translation>
 <translation id="6559976592393364813">प्रशासकलाई सोध्नुहोस्</translation>
@@ -1417,6 +1424,7 @@
 <translation id="878215960996152260"><ph name="APP_NAME" />, इन्स्टल गरिएको एप, रोक लगाइएको</translation>
 <translation id="8785070478575117577"><ph name="NETWORK_NAME" /> मा जोड्नुहोस्</translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />। <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">अत्यन्त धेरै</translation>
 <translation id="8806053966018712535">फोल्डर <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">"मद्दत गर"</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

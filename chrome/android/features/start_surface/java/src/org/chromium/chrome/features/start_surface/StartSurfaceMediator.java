@@ -392,7 +392,6 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
             mUrlFocusChangeListener = new UrlFocusChangeListener() {
                 @Override
                 public void onUrlFocusChange(boolean hasFocus) {
-                    assert !mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE);
                     if (hasFakeSearchBox()) {
                         setFakeBoxVisibility(!hasFocus);
                         // TODO(crbug.com/1365694): We should call setLogoVisibility(!hasFocus)
@@ -897,10 +896,6 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
     @Override
     public ObservableSupplier<Boolean> getHandleBackPressChangedSupplier() {
         return mBackPressChangedSupplier;
-    }
-
-    void enableRecordingFirstMeaningfulPaint(long activityCreateTimeMs) {
-        mController.enableRecordingFirstMeaningfulPaint(activityCreateTimeMs);
     }
 
     void onOverviewShownAtLaunch(long activityCreationTimeMs) {

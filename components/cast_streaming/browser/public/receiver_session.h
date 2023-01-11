@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/time/time.h"
 #include "components/cast_streaming/public/mojom/demuxer_connector.mojom.h"
 #include "components/cast_streaming/public/mojom/renderer_controller.mojom.h"
@@ -58,13 +58,6 @@ class ReceiverSession {
 
     // Returns true if calls may be made to this object.
     virtual bool IsValid() const = 0;
-
-    // Starts rendering from |time|. May only be called if this object is valid.
-    virtual void StartPlayingFrom(base::TimeDelta time) = 0;
-
-    // Updates the current playback rate. The default playback rate should be 0.
-    // May only be called if this object is valid.
-    virtual void SetPlaybackRate(double playback_rate) = 0;
 
     // Sets the output volume. The default volume should be 1. May only be
     // called if this object is valid.

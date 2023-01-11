@@ -1562,6 +1562,30 @@ TEST_F(AppsGridViewTest, ItemViewsDontHaveLayer) {
     EXPECT_FALSE(GetItemViewInTopLevelGrid(i)->layer());
 }
 
+TEST_P(AppsGridViewDragTest, AppAndFolderIconProxyShouldHaveSameShadowSizes) {
+  model_->CreateAndPopulateFolderWithApps(2);
+  model_->PopulateApps(1);
+  UpdateLayout();
+  InitiateDragForItemAtCurrentPageAt(AppsGridView::MOUSE, 0, 0,
+                                     apps_grid_view_);
+  ASSERT_TRUE(apps_grid_view_->app_drag_icon_proxy_for_test());
+  const gfx::Rect dragged_folder_shadow_bounds =
+      apps_grid_view_->app_drag_icon_proxy_for_test()
+          ->shadow_bounds_for_testing();
+  EndDrag();
+
+  InitiateDragForItemAtCurrentPageAt(AppsGridView::MOUSE, 0, 1,
+                                     apps_grid_view_);
+  ASSERT_TRUE(apps_grid_view_->app_drag_icon_proxy_for_test());
+  const gfx::Rect dragged_app_shadow_bounds =
+      apps_grid_view_->app_drag_icon_proxy_for_test()
+          ->shadow_bounds_for_testing();
+  EndDrag();
+
+  EXPECT_EQ(dragged_folder_shadow_bounds.size(),
+            dragged_app_shadow_bounds.size());
+}
+
 TEST_P(AppsGridViewDragTest, DismissWhileDraggingDoesNotCrash) {
   model_->PopulateApps(2);
   UpdateLayout();
@@ -4586,7 +4610,7 @@ TEST_P(AppsGridViewTabletTest, EnsureBlurAfterScrollingWithoutTransition) {
                                           ->contents_view()
                                           ->apps_container_view()
                                           ->scrollable_container_for_test();
-  ASSERT_FALSE(scrollable_container->layer()->layer_mask_layer());
+  ASSERT_TRUE(scrollable_container->layer()->gradient_mask().IsEmpty());
 
   // On the first page drag upwards, there should not be a page switch and the
   // layer mask should make the folder lose blur.
@@ -4597,7 +4621,7 @@ TEST_P(AppsGridViewTabletTest, EnsureBlurAfterScrollingWithoutTransition) {
   EXPECT_TRUE(scroll_update_upwards.handled());
 
   ASSERT_EQ(0, GetPaginationModel()->selected_page());
-  ASSERT_TRUE(scrollable_container->layer()->layer_mask_layer());
+  ASSERT_FALSE(scrollable_container->layer()->gradient_mask().IsEmpty());
 
   // Continue drag, now switching directions and release. There shouldn't be
   // any transition and the mask layer should've been reset.
@@ -4607,7 +4631,7 @@ TEST_P(AppsGridViewTabletTest, EnsureBlurAfterScrollingWithoutTransition) {
   EXPECT_TRUE(scroll_end.handled());
 
   EXPECT_FALSE(GetPaginationModel()->has_transition());
-  EXPECT_FALSE(scrollable_container->layer()->layer_mask_layer());
+  EXPECT_TRUE(scrollable_container->layer()->gradient_mask().IsEmpty());
 }
 
 TEST_P(AppsGridViewClamshellAndTabletTest, PopulateAppsGridWithTwoApps) {

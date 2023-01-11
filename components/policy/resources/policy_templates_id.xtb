@@ -1009,6 +1009,11 @@ Kebijakan ini tidak akan berpengaruh jika opsi untuk menyimpan data penjelajahan
 <translation id="1962864958436828230">Menyetel batas ukuran minimal untuk batasan papan klip pencegahan kebocoran data</translation>
 <translation id="1964634611280150550">Mode samaran dinonaktifkan</translation>
 <translation id="1964802606569741174">Kebijakan ini tidak memengaruhi aplikasi YouTube Android. Jika Mode Perlindungan di YouTube harus diterapkan, pemasangan aplikasi YouTube Android harus dilarang.</translation>
+<translation id="1964985353230379667">Menentukan konfigurasi <ph name="KRB5_CONFIG" /> yang disarankan untuk tiket baru yang dibuat secara manual.
+
+      Jika kebijakan 'KerberosUseCustomPrefilledConfig' disetel ke aktif, nilai kebijakan akan diterapkan sebagai konfigurasi yang disarankan dan akan ditampilkan di bagian "Lanjutan" pada dialog autentikasi Kerberos. Jika kebijakan ini disetel ke string kosong atau tidak disetel, konfigurasi <ph name="PRODUCT_OS_NAME" /> yang direkomendasikan akan dihapus.
+
+      Jika kebijakan 'KerberosUseCustomPrefilledConfig' disetel ke nonaktif, nilai kebijakan ini tidak akan digunakan.</translation>
 <translation id="1969212217917526199">Menggantikan kebijakan pada versi Debug untuk host akses jarak jauh.
 
           Nilainya diuraikan dalam bentuk kamus nama kebijakan JSON untuk pemetaan nilai kebijakan.</translation>
@@ -2838,19 +2843,6 @@ Jika kebijakan ini tidak disetel, perilaku baru akan digunakan seperti pengguna 
 <translation id="3591584750136265240">Mengonfigurasi perilaku autentikasi proses masuk</translation>
 <translation id="3593905652755912452">Perilaku lama pengiriman peristiwa pada kontrol formulir yang dinonaktifkan akan digunakan.</translation>
 <translation id="3596112486106491038">Aktifkan akses command line mesin virtual</translation>
-<translation id="3596335476793146071">Daftar tindakan yang akan dijalankan saat waktu tunggu dari kebijakan <ph name="IDLE_TIMEOUT_POLICY_NAME" /> tercapai.
-
-      Jika kebijakan <ph name="IDLE_TIMEOUT_POLICY_NAME" /> tidak disetel, kebijakan ini tidak akan berpengaruh.
-
-      Saat waktu tunggu dari kebijakan <ph name="IDLE_TIMEOUT_POLICY_NAME" /> tercapai, <ph name="PRODUCT_NAME" /> akan menjalankan tindakan yang dikonfigurasi di kebijakan ini.
-
-      Jika kebijakan ini disetel ke kosong atau tidak disetel, kebijakan <ph name="IDLE_TIMEOUT_POLICY_NAME" /> tidak akan berpengaruh.
-
-      Tindakan yang didukung adalah:
-
-      '<ph name="CLOSE_BROWSERS_ACTION" />': menutup semua jendela browser dan PWA untuk profil ini.
-
-      '<ph name="SHOW_PROFILE_PICKER_ACTION" />': menampilkan jendela Pemilih Profil.</translation>
 <translation id="3603469950773500315">Mengaktifkan mitigasi pemeriksaan <ph name="CORS" /> dalam implementasi <ph name="CORS" /> baru, sehingga memungkinkan Ekstensi tetap kompatibel dan mengizinkan <ph name="PRODUCT_NAME" /> mengirim header tertentu tanpa pemeriksaan <ph name="CORS" />.
 
       Jika daftar ini dibiarkan kosong, <ph name="PRODUCT_NAME" /> akan mencoba menjalankan Ekstensi secara kompatibel, dan tidak menerapkan perubahan <ph name="API" /> untuk <ph name="PRODUCT_NAME" /> 79 seperti yang dijelaskan dalam <ph name="WEB_REQUEST_API_MANUAL" />.
@@ -4422,6 +4414,19 @@ Jika kebijakan ini disetel ke Nonaktif atau tidak disetel, window.webkitStorageI
 <translation id="519247340330463721">Mengonfigurasi kebijakan terkait Safe Browsing.</translation>
 <translation id="5194683382395300627">Mengizinkan penggunaan <ph name="ASSISTANT_PRODUCT_NAME" /> di web, misalnya untuk mengaktifkan perubahan sandi secara otomatis</translation>
 <translation id="5196630732055960309">Mengizinkan File Handling API di aplikasi web ini</translation>
+<translation id="5198660575318473544">Mengontrol apakah ekstensi Manifes v2 dapat digunakan di layar login <ph name="PRODUCT_OS_NAME" />.
+
+Dukungan ekstensi Manifes v2 tidak akan digunakan lagi dan semua ekstensi harus
+dimigrasikan ke v3 pada masa mendatang. Informasi selengkapnya dan linimasa migrasi
+dapat ditemukan di https://developer.chrome.com/docs/extensions/mv3/mv2-sunset/.
+
+Jika kebijakan disetel ke <ph name="DEFAULT" /> (0) atau tidak disetel, pemuatan ekstensi v2 akan ditentukan oleh perangkat, mengikuti linimasa di atas.
+Jika kebijakan disetel ke <ph name="DISABLE" /> (1), penginstalan ekstensi v2 akan diblokir dan ekstensi yang ada akan dinonaktifkan. Opsi ini akan diperlakukan sama seperti jika kebijakan tidak disetel setelah dukungan v2 dinonaktifkan secara default.
+Jika kebijakan disetel ke <ph name="ENABLE" /> (2), ekstensi v2 akan diizinkan. Opsi ini akan diperlakukan sama seperti jika kebijakan tidak disetel sebelum dukungan v2 dinonaktifkan secara default.
+Jika kebijakan disetel ke <ph name="ENABLE_FOR_FORCED_EXTENSIONS" /> (3), ekstensi v2 yang diinstal otomatis akan diizinkan. Ini termasuk ekstensi yang dicantumkan oleh <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> atau <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> dengan <ph name="INSTALLATION_MODE" /> "force_installed" atau "normal_installed". Semua ekstensi v2 lainnya akan dinonaktifkan. Opsi ini akan diperlakukan sama seperti jika kebijakan tidak disetel sebelum dukungan v2 dinonaktifkan secara default.
+
+
+Ketersediaan ekstensi masih dikontrol oleh kebijakan lainnya.</translation>
 <translation id="5206454085187851382">Jika <ph name="PRINTERS_ALLOWLIST" /> dipilih untuk <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME" />, menyetel <ph name="PRINTERS_BULK_ALLOWLIST_POLICY_NAME" /> akan menentukan printer yang dapat digunakan oleh pengguna. Hanya printer dengan ID yang cocok dengan nilai dalam kebijakan ini yang akan tersedia bagi pengguna. ID harus sesuai dengan kolom <ph name="ID_FIELD" /> atau <ph name="GUID_FIELD" /> dalam file yang ditentukan di <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />.</translation>
 <translation id="5207543664699568887">Mengonfigurasi apakah <ph name="PRODUCT_NAME" /> di Linux akan menggunakan notifikasi sistem.
 
@@ -4868,6 +4873,7 @@ Jika kebijakan ini tidak disetel, semua domain tidak akan dapat mengakses URL fi
 <translation id="5599461642204007579">Setelan pengelolaan <ph name="MS_AD_NAME" /></translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5607021831414604820">Aktifkan pelaporan status penyimpanan perangkat</translation>
+<translation id="5608114828230655271">Perilaku default perangkat</translation>
 <translation id="5614865701790130558">Membuat log peristiwa penginstalan ekstensi berdasarkan kebijakan</translation>
 <translation id="5618398258385745432">Setelan terkait digunakan sebelum autentikasi ulang saat melihat sandi diperkenalkan. Sejak saat itu, setelan dan kebijakan ini tidak berpengaruh pada perilaku Chrome. Perilaku Chrome saat ini sama seperti saat kebijakan ini ditetapkan untuk tidak menampilkan sandi dalam teks jelas di halaman setelan pengelola sandi. Artinya, halaman setelan hanya memuat placeholder, dan Chrome hanya akan menampilkan sandi setelah pengguna mengklik "Tampilkan" (dan mengautentikasi ulang, jika berlaku). Deskripsi asli untuk kebijakan ini tercantum di bawah.
 

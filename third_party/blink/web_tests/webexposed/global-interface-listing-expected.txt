@@ -10,6 +10,7 @@ interface AbortController
     method constructor
 interface AbortSignal : EventTarget
     static method abort
+    static method any
     static method timeout
     attribute @@toStringTag
     getter aborted
@@ -3189,9 +3190,9 @@ interface HTMLButtonElement : HTMLElement
     getter formTarget
     getter labels
     getter name
-    getter popoverHideTarget
-    getter popoverShowTarget
-    getter popoverToggleTarget
+    getter popoverHideTargetElement
+    getter popoverShowTargetElement
+    getter popoverToggleTargetElement
     getter type
     getter validationMessage
     getter validity
@@ -3208,9 +3209,9 @@ interface HTMLButtonElement : HTMLElement
     setter formNoValidate
     setter formTarget
     setter name
-    setter popoverHideTarget
-    setter popoverShowTarget
-    setter popoverToggleTarget
+    setter popoverHideTargetElement
+    setter popoverShowTargetElement
+    setter popoverToggleTargetElement
     setter type
     setter value
 interface HTMLCanvasElement : HTMLElement
@@ -3858,9 +3859,9 @@ interface HTMLInputElement : HTMLElement
     getter name
     getter pattern
     getter placeholder
-    getter popoverHideTarget
-    getter popoverShowTarget
-    getter popoverToggleTarget
+    getter popoverHideTargetElement
+    getter popoverShowTargetElement
+    getter popoverToggleTargetElement
     getter readOnly
     getter required
     getter selectionDirection
@@ -3916,9 +3917,9 @@ interface HTMLInputElement : HTMLElement
     setter name
     setter pattern
     setter placeholder
-    setter popoverHideTarget
-    setter popoverShowTarget
-    setter popoverToggleTarget
+    setter popoverHideTargetElement
+    setter popoverShowTargetElement
+    setter popoverToggleTargetElement
     setter readOnly
     setter required
     setter selectionDirection
@@ -5956,25 +5957,6 @@ interface NamedNodeMap
     method removeNamedItemNS
     method setNamedItem
     method setNamedItemNS
-interface NativeIOFile
-    attribute @@toStringTag
-    method close
-    method constructor
-    method flush
-    method getLength
-    method read
-    method setLength
-    method write
-interface NativeIOFileManager
-    attribute @@toStringTag
-    method constructor
-    method delete
-    method getAll
-    method getRemainingCapacity
-    method open
-    method releaseCapacity
-    method rename
-    method requestCapacity
 interface NavigateEvent : Event
     attribute @@toStringTag
     getter canIntercept
@@ -12061,7 +12043,6 @@ namespace CSS
     getter speechSynthesis
     getter status
     getter statusbar
-    getter storageFoundation
     getter styleMedia
     getter toolbar
     getter top

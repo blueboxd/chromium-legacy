@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/aoa/android_accessory_device.h"
@@ -19,7 +18,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 
 // See https://source.android.com/devices/accessories/aoa for details on the
 // protocol used to talk to apps on the phone here.

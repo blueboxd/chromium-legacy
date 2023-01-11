@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/callback.h"
 #include "base/containers/contains.h"
+#include "base/functional/callback.h"
 #include "base/hash/sha1.h"
 #include "base/i18n/char_iterator.h"
 #include "base/metrics/histogram_macros.h"
@@ -21,7 +21,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/reputation/core/safety_tips_config.h"
+#include "components/lookalikes/core/safety_tips_config.h"
 #include "components/security_interstitials/core/pref_names.h"
 #include "components/url_formatter/spoof_checks/common_words/common_words_util.h"
 #include "components/url_formatter/spoof_checks/top_domains/top500_domains.h"
@@ -464,7 +464,7 @@ bool UsesCommonWord(const reputation::SafetyTipsConfig* config_proto,
   }
 
   // Search for words in the component-provided word list.
-  if (reputation::IsCommonWordInConfigProto(config_proto,
+  if (lookalikes::IsCommonWordInConfigProto(config_proto,
                                             domain.domain_without_registry)) {
     return true;
   }
@@ -940,25 +940,6 @@ bool IsTopDomain(const DomainInfo& domain_info) {
     }
   }
   return false;
-}
-
-bool ShouldBlockLookalikeUrlNavigation(LookalikeUrlMatchType match_type) {
-  if (match_type == LookalikeUrlMatchType::kSkeletonMatchSiteEngagement) {
-    return true;
-  }
-  if (match_type == LookalikeUrlMatchType::kTargetEmbedding) {
-#if BUILDFLAG(IS_IOS)
-    // TODO(crbug.com/1104384): Only enable target embedding on iOS once we can
-    //    check engaged sites. Otherwise, false positives are too high.
-    return false;
-#else
-    return true;
-#endif
-  }
-  if (match_type == LookalikeUrlMatchType::kFailedSpoofChecks) {
-    return true;
-  }
-  return match_type == LookalikeUrlMatchType::kSkeletonMatchTop500;
 }
 
 bool GetMatchingDomain(
@@ -1460,4 +1441,113 @@ bool IsSafeTLD(const std::string& hostname) {
   // This is intentionally kept simple and currently ignores hostnames with
   // ccTLDs (e.g. gov.in).
   return base::EndsWith(hostname, ".gov") || base::EndsWith(hostname, ".mil");
+}
+
+LookalikeActionType GetActionForMatchType(
+    const reputation::SafetyTipsConfig* config,
+    version_info::Channel channel,
+    const std::string& etld_plus_one,
+    LookalikeUrlMatchType match_type) {
+  switch (match_type) {
+    case LookalikeUrlMatchType::kEditDistance:
+      // Edit distance is too noisy, just record metrics.
+      return LookalikeActionType::kRecordMetrics;
+
+    case LookalikeUrlMatchType::kEditDistanceSiteEngagement:
+      return LookalikeActionType::kShowSafetyTip;
+
+    case LookalikeUrlMatchType::kTargetEmbedding:
+#if BUILDFLAG(IS_IOS)
+      // TODO(crbug.com/1104384): Only enable target embedding on iOS once we
+      // can
+      //    check engaged sites. Otherwise, false positives are too high.
+      return LookalikeActionType::kRecordMetrics;
+#else
+      return LookalikeActionType::kShowInterstitial;
+#endif
+
+    case LookalikeUrlMatchType::kTargetEmbeddingForSafetyTips:
+      return LookalikeActionType::kShowSafetyTip;
+
+    case LookalikeUrlMatchType::kSkeletonMatchTop5k:
+      return LookalikeActionType::kShowSafetyTip;
+
+    case LookalikeUrlMatchType::kFailedSpoofChecks:
+      return LookalikeActionType::kShowInterstitial;
+
+    case LookalikeUrlMatchType::kSkeletonMatchSiteEngagement:
+    case LookalikeUrlMatchType::kSkeletonMatchTop500:
+      return LookalikeActionType::kShowInterstitial;
+
+    case LookalikeUrlMatchType::kCharacterSwapSiteEngagement:
+    case LookalikeUrlMatchType::kCharacterSwapTop500:
+      return LookalikeActionType::kShowSafetyTip;
+
+    case LookalikeUrlMatchType::kComboSquatting:
+      return IsHeuristicEnabledForHostname(
+                 config,
+                 reputation::HeuristicLaunchConfig::
+                     HEURISTIC_COMBO_SQUATTING_TOP_DOMAINS,
+                 etld_plus_one, channel)
+                 ? LookalikeActionType::kShowSafetyTip
+                 : LookalikeActionType::kRecordMetrics;
+
+    case LookalikeUrlMatchType::kComboSquattingSiteEngagement:
+      return IsHeuristicEnabledForHostname(
+                 config,
+                 reputation::HeuristicLaunchConfig::
+                     HEURISTIC_COMBO_SQUATTING_ENGAGED_SITES,
+                 etld_plus_one, channel)
+                 ? LookalikeActionType::kShowSafetyTip
+                 : LookalikeActionType::kRecordMetrics;
+
+    case LookalikeUrlMatchType::kNone:
+      NOTREACHED();
+  }
+
+  NOTREACHED();
+  return LookalikeActionType::kNone;
+}
+
+GURL GetSuggestedURL(LookalikeUrlMatchType match_type,
+                     const GURL& navigated_url,
+                     const std::string& matched_hostname) {
+  // matched_hostname can be a top domain or an engaged domain. Simply use its
+  // eTLD+1 as the suggested domain.
+  // 1. If matched_hostname is a top domain: Top domain list already contains
+  // eTLD+1s only so this works well.
+  // 2. If matched_hostname is an engaged domain and is not an eTLD+1, don't
+  // suggest it. Otherwise, navigating to googlé.com and having engaged with
+  // docs.google.com would suggest docs.google.com.
+  //
+  // When the navigated and matched domains are not eTLD+1s (e.g.
+  // docs.googlé.com and docs.google.com), this will suggest google.com
+  // instead of docs.google.com. This is less than ideal, but has two
+  // benefits:
+  // - Simpler code
+  // - Fewer suggestions to non-existent domains. E.g. When the navigated
+  // domain is nonexistent.googlé.com and the matched domain is
+  // docs.google.com, we will suggest google.com instead of
+  // nonexistent.google.com.
+  std::string suggested_domain = GetETLDPlusOne(matched_hostname);
+  DCHECK(!suggested_domain.empty());
+  // Drop everything but the parts of the origin.
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr(suggested_domain);
+  GURL suggested_url =
+      navigated_url.ReplaceComponents(replace_host).GetWithEmptyPath();
+
+  // Use https for top domain matches.
+  // TODO(crbug.com/1190309): If the match is against an engaged site, use the
+  // scheme of the engaged site instead.
+  if (suggested_url.SchemeIs(url::kHttpScheme) &&
+      suggested_url.IntPort() == url::PORT_UNSPECIFIED &&
+      (match_type == LookalikeUrlMatchType::kEditDistance ||
+       match_type == LookalikeUrlMatchType::kSkeletonMatchTop500 ||
+       match_type == LookalikeUrlMatchType::kSkeletonMatchTop5k)) {
+    GURL::Replacements replace_scheme;
+    replace_scheme.SetSchemeStr(url::kHttpsScheme);
+    suggested_url = suggested_url.ReplaceComponents(replace_scheme);
+  }
+  return suggested_url;
 }

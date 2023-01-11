@@ -47,7 +47,6 @@
 <translation id="1041263367839475438">उपलब्ध डिवाइस</translation>
 <translation id="1042174272890264476">आपके कंप्यूटर में पहले से ही <ph name="SHORT_PRODUCT_NAME" /> की RLZ लाइब्रेरी होती है. किसी खास प्रचार कैंपेन में इस्तेमाल हुई खोजों और <ph name="SHORT_PRODUCT_NAME" /> के इस्तेमाल को मापने के लिए, RLZ एक बिना-विशिष्ट, बिना निजी तौर वाला टैग तय करता है. कभी-कभी ये लेबल <ph name="PRODUCT_NAME" /> में 'Google सर्च' क्वेरी में दिखाई देते हैं.</translation>
 <translation id="1043505821207197890">कोई गड़बड़ी हुई. हो सकता है कि Linux पूरी तरह से अपग्रेड न हुआ हो. ज़्यादा जानकारी के लिए लॉग देखें. लॉग को फ़ाइल &gt; मेरी फ़ाइलें &gt; <ph name="LOG_FILE" /> में सेव किया गया है</translation>
-<translation id="1043818413152647937">क्या आप इन ऐप्लिकेशन से डेटा भी मिटाना चाहते हैं?</translation>
 <translation id="104419033123549300">कीमैप स्टाइल</translation>
 <translation id="104710386808485638">क्या आप Linux को रीस्टार्ट करना चाहते हैं?</translation>
 <translation id="1047431265488717055">लिंक ले&amp;ख को कॉपी करें</translation>
@@ -1251,6 +1250,7 @@
 <translation id="2105809836724866556"><ph name="MODULE_TITLE" /> छिपा दिया गया है</translation>
 <translation id="2108349519800154983">{COUNT,plural, =1{फ़ोन नंबर}one{# फ़ोन नंबर}other{# फ़ोन नंबर}}</translation>
 <translation id="2110941575868943054">ब्लूटूथ डिवाइसों को खोजने की अनुमति है</translation>
+<translation id="2111158890826137380">माफ़ करें, कोई गड़बड़ी हुई. कृपया जानकारी में #bruschetta शामिल करके, इसकी शिकायत करें. गड़बड़ी कोड <ph name="ERROR" /> है</translation>
 <translation id="211144231511833662">डिवाइस के प्रकार के लिए चेकबॉक्स से सही का निशान हटाएं</translation>
 <translation id="2111670510994270194">दाईं ओर नया टैब खोलें</translation>
 <translation id="2112554630428445878">आपका स्वागत है, <ph name="USERNAME" /></translation>
@@ -1414,6 +1414,7 @@
 <translation id="2255077166240162850">यह डिवाइस अलग डोमेन या मोड में लॉक किया गया था.</translation>
 <translation id="2255317897038918278">Microsoft Time Stamping</translation>
 <translation id="2256115617011615191">अभी पुनः प्रारंभ करें</translation>
+<translation id="225614027745146050">आपका स्वागत है</translation>
 <translation id="2257053455312861282">स्कूल वाला खाता जोड़ने से वेबसाइटों, एक्सटेंशन, और ऐप्लिकेशन में एक छात्र/छात्रा के तौर पर साइन-इन करने में आसानी होगी. हालांकि, वे अब भी इन्हें 'माता-पिता का कंट्रोल' सुविधा की मदद से ही इस्तेमाल कर सकेंगे.</translation>
 <translation id="2261323523305321874">आपके एडमिन ने पूरे सिस्टम में ऐसा बदलाव किया है जो कुछ पुरानी प्रोफ़ाइल बंद कर देता है.</translation>
 <translation id="22614517036276112">यह दस्तावेज़ या आपका डिवाइस, आपके संगठन की कुछ सुरक्षा नीतियों का पालन नहीं करता. किन समस्याओं को ठीक करना है, इसके बारे में अपने एडमिन से संपर्क करें.</translation>
@@ -1794,6 +1795,7 @@
 <translation id="2575713839157415345">{YEARS,plural, =1{इस डिवाइस की पहचान को 1 साल के लिए सेव किया जाएगा और इस दौरान, इसे बिना कोड के कनेक्ट किया जा सकता है. इसे आपका एडमिन सेट करता है.}one{इस डिवाइस की पहचान को {YEARS} साल के लिए सेव किया जाएगा और इस दौरान, इसे बिना कोड के कनेक्ट किया जा सकता है. इसे आपका एडमिन सेट करता है.}other{इस डिवाइस की पहचान को {YEARS} साल के लिए सेव किया जाएगा और इस दौरान, इसे बिना कोड के कनेक्ट किया जा सकता है. इसे आपका एडमिन सेट करता है.}}</translation>
 <translation id="257779572837908839">मीटिंग के लिए Chromebox के रूप में सेट अप करें</translation>
 <translation id="2579309488038515659">हॉटस्पॉट चालू करें</translation>
+<translation id="2579596474754516455">PDF इमेज को स्क्रीन रीडर के लिए स्कैन करें, ताकि ज़रूरत पड़ने पर, इमेज से टेक्स्ट निकाला जा सके</translation>
 <translation id="2580889980133367162"><ph name="HOST" /> को एकाधिक फ़ाइलें हमेशा डाउनलोड करने दें</translation>
 <translation id="258095186877893873">लंबा</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (प्‍लेटफ़ॉर्म <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -2026,7 +2028,6 @@
 <translation id="2785267875302712148">पासवर्ड चेकअप</translation>
 <translation id="2785873697295365461">फ़ाइल वर्णनकर्ता</translation>
 <translation id="2785975315093449168">GTK</translation>
-<translation id="2787022501752539710">लोकल ब्राउज़िंग डेटा (बुकमार्क, पासवर्ड, इतिहास, वगैरह) सेव करें</translation>
 <translation id="2787354132612937472">—</translation>
 <translation id="2788135150614412178">+</translation>
 <translation id="2789486458103222910">ठीक है</translation>
@@ -2747,6 +2748,7 @@
 <translation id="3469583217479686109">कोई खास हिस्सा चुनने का टूल</translation>
 <translation id="3470392222765168737">साइट को फ़ॉलो करें</translation>
 <translation id="3471876058939596279">वीडियो के लिए एचडीएमआई पोर्ट और यूएसबी टाइप-सी पोर्ट को एक ही समय में इस्तेमाल नहीं किया जा सकता. कोई अलग पोर्ट इस्तेमाल करें.</translation>
+<translation id="3472469028191701821">लिंक नए टैब में खुलेगा</translation>
 <translation id="3473241910002674503">टैबलेट मोड में बटन की मदद से, होम पेज पर जाएं, वापस जाएं, और एक ऐप्लिकेशन से दूसरे पर जाएं.</translation>
 <translation id="3473479545200714844">स्क्रीन पर मौजूद कॉन्टेंट को बड़ा करके दिखाने की सुविधा</translation>
 <translation id="3474218480460386727">नए शब्दों के लिए 99 अक्षरों या उससे कम का इस्तेमाल करें</translation>
@@ -2895,6 +2897,7 @@
 <translation id="3616113530831147358">ऑडियो</translation>
 <translation id="3616741288025931835">ब्राउज़िंग डेटा &amp;साफ़ करें...</translation>
 <translation id="3617891479562106823">बैकग्राउंड उपलब्ध नहीं हैं. बाद में फिर से कोशिश करें.</translation>
+<translation id="3618286417582819036">माफ़ करें, कोई गड़बड़ी हुई</translation>
 <translation id="3619115746895587757">कैपुचिनो</translation>
 <translation id="3620136223548713675">भौगोलिक स्थान</translation>
 <translation id="362023940451053340"><ph name="ACCOUNT" /> के लिए, आपके Google खाते में</translation>
@@ -3133,6 +3136,7 @@
 <translation id="3820749202859700794">SECG अंडाकार वक्र secp521r1 (अर्थात NIST P-521)</translation>
 <translation id="3821074617718452587">फ़ोन हब से जुड़ी सूचनाएं</translation>
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{एक्सटेंशन को मंज़ूरी दी गई}one{# एक्सटेंशन को मंज़ूरी दी गई}other{# एक्सटेंशन को मंज़ूरी दी गई}}</translation>
+<translation id="3823019343150397277">IBAN</translation>
 <translation id="3823310065043511710">Linux के लिए कम से कम <ph name="INSTALL_SIZE" /> खाली जगह होनी चाहिए.</translation>
 <translation id="3824621460022590830">डिवाइस का नाम दर्ज करने वाला टोकन अमान्य है. कृपया डिवाइस के मालिक या एडमिन से संपर्क करें. गड़बड़ी कोड: <ph name="ERROR_CODE" />.</translation>
 <translation id="3825041664272812989">{FILE_TYPE_COUNT,plural, =1{इस फ़ाइल टाइप के लिए मेरी पसंद याद रखें: <ph name="FILE_TYPES" />}one{इस फ़ाइल टाइप के लिए मेरी पसंद याद रखें: <ph name="FILE_TYPES" />}other{इन फ़ाइल टाइप के लिए मेरी पसंद याद रखें: <ph name="FILE_TYPES" />}}</translation>
@@ -3219,6 +3223,7 @@
 <translation id="3898233949376129212">डिवाइस की भाषा</translation>
 <translation id="3898327728850887246"><ph name="SITE_NAME" /> इनके लिए अनुमति चाहता है: <ph name="FIRST_PERMISSION" /> और <ph name="SECOND_PERMISSION" /></translation>
 <translation id="3898743717925399322"><ph name="WEBSITE" /> के लिए आपका पासवर्ड, इस डिवाइस पर और आपके Google खाते में सेव है. आपको इनमें से किससे अपना पासवर्ड मिटाना है?</translation>
+<translation id="3898768766145818464">वीडियो चलाएं या रोकें</translation>
 <translation id="389901847090970821">कीबोर्ड चुनें</translation>
 <translation id="3900966090527141178">पासवर्ड निर्यात करें</translation>
 <translation id="3902789559055749153"><ph name="APP_NAME" /> के लिए पासकी सेट करने का तरीका चुनें</translation>
@@ -3864,7 +3869,6 @@
 <translation id="4513872120116766993">टाइप करने पर, शब्दों का अनुमान दिखाने की सुविधा</translation>
 <translation id="4513946894732546136">सुझाव/राय दें</translation>
 <translation id="451407183922382411"><ph name="COMPANY_NAME" /> के उपयोग से</translation>
-<translation id="4514610446763173167">वीडियो को 'चलाएं' या 'रोकें' पर टॉगल करें</translation>
 <translation id="451515744433878153">हटाएं</translation>
 <translation id="4515872537870654449">मरम्मत के लिए Dell से संपर्क करें. अगर पंखा काम नहीं कर रहा है, तो डॉक बंद हो जाएगा.</translation>
 <translation id="4518840066030486079">Shift बटन मोड स्टाइल</translation>
@@ -4051,6 +4055,7 @@
 <translation id="4675828034887792601">साइट खोजने के लिए शॉर्टकट बनाएं और अपने सर्च इंजन को मैनेज करें</translation>
 <translation id="4676595058027112862">फ़ोन हब, ज़्यादा जानें</translation>
 <translation id="4677772697204437347">GPU मेमोरी</translation>
+<translation id="4678848110205818817">क्रेडिट/डेबिट कार्ड</translation>
 <translation id="4680105648806843642">इस पेज पर आवाज़ बंद कर दी गई थी</translation>
 <translation id="4680112532510845139">यहां कोई इमेज खींचें और छोड़ें</translation>
 <translation id="4681453295291708042">आस-पास शेयर करने की सुविधा बंद करें</translation>
@@ -6687,6 +6692,7 @@
 <translation id="7149839598364933473">इस डिवाइस को <ph name="DEVICE_OS" /> डिवाइस में बदलें.</translation>
 <translation id="7149893636342594995">पिछले 24 घंटे</translation>
 <translation id="7152478047064750137">इस एक्‍सटेंशन को कोई खास अनुमति नहीं चाहिए</translation>
+<translation id="7153309176431047193">इमेज से टेक्स्ट निकालें</translation>
 <translation id="7154130902455071009">अपना आरंभ पेज इसमें बदलें: <ph name="START_PAGE" /></translation>
 <translation id="7156231244155528270">इमेज को टेक्स्ट में बदलें</translation>
 <translation id="7159953856712257647">डिफ़ॉल्ट रूप से इंस्टॉल किया गया</translation>

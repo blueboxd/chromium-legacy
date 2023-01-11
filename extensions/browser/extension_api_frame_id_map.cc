@@ -7,16 +7,16 @@
 #include <tuple>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
 #include "base/task/sequenced_task_runner.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/child_process_host.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/constants.h"
 

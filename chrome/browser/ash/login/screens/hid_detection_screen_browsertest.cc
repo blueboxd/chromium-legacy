@@ -4,8 +4,8 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
@@ -46,6 +46,8 @@ using ::testing::_;
 using HidType = hid_detection::HidType;
 using HidsMissing = hid_detection::HidsMissing;
 using InputState = hid_detection::HidDetectionManager::InputState;
+using HidDetectionBluetoothPairingResult =
+    hid_detection::HidDetectionBluetoothPairingResult;
 
 const uint32_t kTestBluetoothClass = 1337u;
 const char kTestBluetoothName[] = "testName";
@@ -172,7 +174,10 @@ class HIDDetectionScreenChromeboxTest
                       success ? "Success" : "Failure"}),
         count);
     histogram_tester_.ExpectBucketCount(
-        "OOBE.HidDetectionScreen.BluetoothPairing.Result", success, count);
+        "OOBE.HidDetectionScreen.BluetoothPairing.Result",
+        success ? HidDetectionBluetoothPairingResult::kPaired
+                : HidDetectionBluetoothPairingResult::kNotPaired,
+        count);
   }
 
   void AssertInitialHidsMissingCount(HidsMissing hids_missing, int count) {

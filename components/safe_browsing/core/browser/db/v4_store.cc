@@ -8,15 +8,16 @@
 #include <utility>
 
 #include "base/base64.h"
-#include "base/bind.h"
 #include "base/cpu_reduction_experiment.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/safe_browsing/core/browser/db/prefix_iterator.h"
 #include "components/safe_browsing/core/browser/db/v4_rice.h"

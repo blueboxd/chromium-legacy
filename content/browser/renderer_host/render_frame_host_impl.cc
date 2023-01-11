@@ -214,6 +214,7 @@
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/cpp/not_implemented_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/trust_token_operation_authorization.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -385,6 +386,53 @@ class RenderFrameHostOrProxy {
 };
 
 namespace {
+
+constexpr net::NetworkTrafficAnnotationTag kReportingBeaconNetworkTag =
+    net::DefineNetworkTrafficAnnotation("fenced_frame_reporting_beacon",
+                                        R"(
+        semantics {
+          sender: "Fenced frame reportEvent API"
+          description:
+            "This request sends out reporting beacon data in an HTTP POST "
+            "request. This is initiated by window.fence.reportEvent API."
+          trigger:
+            "When there are events such as impressions, user interactions and "
+            "clicks, fenced frames can invoke window.fence.reportEvent API. It "
+            "tells the browser to send a beacon with event data to a URL "
+            "registered by the worklet in registerAdBeacon. Please see "
+            "https://github.com/WICG/turtledove/blob/main/Fenced_Frames_Ads_Reporting.md#reportevent"
+          data:
+            "Event data given by fenced frame reportEvent API. Please see "
+            "https://github.com/WICG/turtledove/blob/main/Fenced_Frames_Ads_Reporting.md#parameters"
+          destination: OTHER
+          destination_other: "The reporting destination given by FLEDGE's "
+                             "registerAdBeacon API or selectURL's inputs."
+        }
+        policy {
+          cookies_allowed: NO
+          setting: "To use reportEvent API, users need to enable selectURL, "
+          "FLEDGE and FencedFrames features by enabling the Privacy Sandbox "
+          "Ads APIs experiment flag at "
+          "chrome://flags/#privacy-sandbox-ads-apis "
+          policy_exception_justification: "This beacon is sent by fenced frame "
+          "calling window.fence.reportEvent when there are events like user "
+          "interactions."
+        }
+      )");
+
+base::StringPiece ReportingDestinationAsString(
+    const blink::FencedFrame::ReportingDestination& destination) {
+  switch (destination) {
+    case blink::FencedFrame::ReportingDestination::kBuyer:
+      return "Buyer";
+    case blink::FencedFrame::ReportingDestination::kSeller:
+      return "Seller";
+    case blink::FencedFrame::ReportingDestination::kComponentSeller:
+      return "ComponentSeller";
+    case blink::FencedFrame::ReportingDestination::kSharedStorageSelectUrl:
+      return "SharedStorageSelectUrl";
+  }
+}
 
 constexpr int kSubframeProcessShutdownDelayInMSec = 2 * 1000;
 static_assert(kSubframeProcessShutdownDelayInMSec +
@@ -2979,7 +3027,7 @@ void RenderFrameHostImpl::InitializePolicyContainerHost(
 
   // The initial empty document's credentialless bit was inherited from the
   // parent document. The frame's credentialless bit can also turn it on.
-  if (frame_tree_node_->credentialless()) {
+  if (owner_->Credentialless()) {
     policy_container_host_->SetIsCredentialless();
   }
 }
@@ -4225,7 +4273,7 @@ void RenderFrameHostImpl::Detach() {
   // happens, delete the frame and both the new and old documents. Unload
   // handlers aren't guaranteed to run here.
   if (is_waiting_for_unload_ack_) {
-    parent_->RemoveChild(frame_tree_node_);
+    parent_->RemoveChild(GetFrameTreeNodeForUnload());
     return;
   }
 
@@ -4256,7 +4304,7 @@ void RenderFrameHostImpl::Detach() {
   // descendant frames to execute unload handlers. Start executing those
   // handlers now.
   StartPendingDeletionOnSubtree(PendingDeletionReason::kFrameDetach);
-  frame_tree()->FrameUnloading(frame_tree_node_);
+  frame_tree()->FrameUnloading(GetFrameTreeNodeForUnload());
 
   // Some children with no unload handler may be eligible for immediate
   // deletion. Cut the dead branches now. This is a performance optimization.
@@ -4779,7 +4827,7 @@ void RenderFrameHostImpl::DetachFromProxy() {
   // Start pending deletion on this frame and its children.
   DeleteRenderFrame(mojom::FrameDeleteIntention::kNotMainFrame);
   StartPendingDeletionOnSubtree(PendingDeletionReason::kFrameDetach);
-  frame_tree()->FrameUnloading(frame_tree_node_);
+  frame_tree()->FrameUnloading(GetFrameTreeNodeForUnload());
 
   // Some children with no unload handler may be eligible for immediate
   // deletion. Cut the dead branches now. This is a performance optimization.
@@ -5024,7 +5072,8 @@ void RenderFrameHostImpl::OnUnloaded() {
   }
 
   bool deleted =
-      frame_tree_node_->render_manager()->DeleteFromPendingList(this);
+      GetFrameTreeNodeForUnload()->render_manager()->DeleteFromPendingList(
+          this);
   CHECK(deleted);
 }
 
@@ -7497,6 +7546,101 @@ void RenderFrameHostImpl::CreateNewWindow(
   new_main_rfh->render_view_host()->RenderViewCreated(new_main_rfh);
 }
 
+// TODO(crbug.com/1400992): Move SendFencedFrameReportingBeacon into a separate
+// refcounted class.
+void RenderFrameHostImpl::SendFencedFrameReportingBeacon(
+    const std::string& event_data,
+    const std::string& event_type,
+    blink::FencedFrame::ReportingDestination destination) {
+  // Get the reporting metadata associated with the fenced frame.
+  const absl::optional<FencedFrameProperties>& fenced_frame_properties =
+      frame_tree_node_->GetFencedFrameProperties();
+  if (!fenced_frame_properties.has_value() ||
+      !fenced_frame_properties->reporting_metadata_.has_value() ||
+      fenced_frame_properties->reporting_metadata_->GetValueIgnoringVisibility()
+          .metadata.empty()) {
+    // No associated reporting metadata or empty reporting metadata associated
+    // with the fenced frame.
+    // For no associated reporting metadata case, it should have been captured
+    // in the renderer process at `Fence::reportEvent`.
+    // Both cases imply there is an inconsistency between the browser and the
+    // renderer.
+    mojo::ReportBadMessage(
+        "This frame had reporting metadata registered in its renderer process "
+        "but not in its browser process. The reporting metadata should be "
+        "consistent between the two.");
+    return;
+  }
+
+  const blink::FencedFrame::FencedFrameReporting& fenced_frame_reporting =
+      fenced_frame_properties->reporting_metadata_
+          ->GetValueIgnoringVisibility();
+
+  // Check metadata registration for given destination.
+  const auto metadata_iter = fenced_frame_reporting.metadata.find(destination);
+  if (metadata_iter == fenced_frame_reporting.metadata.end()) {
+    AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kError,
+        base::StrCat(
+            {"This frame did not register reporting metadata for destination '",
+             ReportingDestinationAsString(destination), "'."}));
+    return;
+  }
+
+  // Check reporting url registration for given destination and event type.
+  const auto url_iter = metadata_iter->second.find(event_type);
+  if (url_iter == metadata_iter->second.end()) {
+    AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kError,
+        base::StrCat(
+            {"This frame did not register reporting url for destination '",
+             ReportingDestinationAsString(destination), "' and event_type '",
+             event_type, "'."}));
+    return;
+  }
+
+  // Validate the reporting url.
+  GURL url = url_iter->second;
+  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS()) {
+    AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kError,
+        base::StrCat(
+            {"This frame registered invalid reporting url for destination '",
+             ReportingDestinationAsString(destination), "' and event_type '",
+             event_type, "'."}));
+    return;
+  }
+
+  // Construct the resource request.
+  auto request = std::make_unique<network::ResourceRequest>();
+
+  request->url = url;
+  request->mode = network::mojom::RequestMode::kCors;
+  request->request_initiator = GetLastCommittedOrigin();
+  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  request->method = net::HttpRequestHeaders::kPostMethod;
+  request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                             "text/plain;charset=UTF-8");
+  request->trusted_params = network::ResourceRequest::TrustedParams();
+  request->trusted_params->isolation_info =
+      net::IsolationInfo::CreateTransient();
+
+  // Obtain the `SimpleURLLoader` instance.
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
+      network::SimpleURLLoader::Create(std::move(request),
+                                       kReportingBeaconNetworkTag);
+  simple_url_loader->AttachStringForUpload(event_data);
+
+  network::SimpleURLLoader* simple_url_loader_ptr = simple_url_loader.get();
+  auto* shared_url_loader_factory =
+      GetStoragePartition()->GetURLLoaderFactoryForBrowserProcess().get();
+
+  // Send out the reporting beacon.
+  simple_url_loader_ptr->DownloadHeadersOnly(
+      shared_url_loader_factory,
+      base::DoNothingWithBoundArgs(std::move(simple_url_loader)));
+}
+
 void RenderFrameHostImpl::CreatePortal(
     mojo::PendingAssociatedReceiver<blink::mojom::Portal> pending_receiver,
     mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client,
@@ -7680,8 +7824,8 @@ void RenderFrameHostImpl::CreateFencedFrame(
     return;
   }
 
-  fenced_frames_.push_back(
-      std::make_unique<FencedFrame>(weak_ptr_factory_.GetSafeRef(), mode));
+  fenced_frames_.push_back(std::make_unique<FencedFrame>(
+      weak_ptr_factory_.GetSafeRef(), mode, was_discarded_));
   FencedFrame* fenced_frame = fenced_frames_.back().get();
   RenderFrameProxyHost* proxy_host =
       fenced_frame->InitInnerFrameTreeAndReturnProxyToOuterFrameTree(
@@ -7848,9 +7992,9 @@ void RenderFrameHostImpl::BeginNavigation(
     return;
   }
 
-  // If the request is bearing Trust Tokens parameters:
+  // If the request is bearing Private State Tokens parameters:
   // - it must not be a main-frame navigation, and
-  // - for certain Trust Tokens operations, the frame's parent needs the
+  // - for certain Private State Tokens operations, the frame's parent needs the
   // trust-token-redemption Permissions Policy feature.
   if (begin_params->trust_token_params) {
     // For Fenced Frame trust_token_params shouldn't be populated since that is
@@ -7860,11 +8004,13 @@ void RenderFrameHostImpl::BeginNavigation(
     // TODO(crbug.com/1254770): For portals implemented with mparch, we'll have
     // a similar problem with `GetParent()` calls as with Fenced Frame.
     if (IsFencedFrameRoot()) {
-      mojo::ReportBadMessage("RFHI: Trust Token params in fenced frame nav");
+      mojo::ReportBadMessage(
+          "RFHI: Private State Token params in fenced frame nav");
       return;
     }
     if (!GetParent()) {
-      mojo::ReportBadMessage("RFHI: Trust Token params in main frame nav");
+      mojo::ReportBadMessage(
+          "RFHI: Private State Token params in main frame nav");
       return;
     }
     if (ParentNeedsTrustTokenPermissionsPolicy(*begin_params)) {
@@ -7872,8 +8018,8 @@ void RenderFrameHostImpl::BeginNavigation(
       if (!parent->IsFeatureEnabled(
               blink::mojom::PermissionsPolicyFeature::kTrustTokenRedemption)) {
         mojo::ReportBadMessage(
-            "RFHI: Mandatory Trust Tokens Permissions Policy feature is "
-            "absent");
+            "RFHI: Mandatory Private State Tokens Permissions Policy feature "
+            "is absent");
         return;
       }
     }
@@ -8594,7 +8740,7 @@ void RenderFrameHostImpl::StartPendingDeletionOnSubtree(
     // Reset navigations only when entering "pending deletion" state due to
     // frame detach if the kStopCancellingNavigationsOnCommitAndNewNavigation
     // flag is enabled, or for all pending deletion cases otherwise.
-    ResetAllNavigationsInSubtreeForFrameDetach();
+    frame_tree_node_->ResetAllNavigationsForFrameDetach();
   } else {
     CHECK(
         pending_deletion_reason == PendingDeletionReason::kSwappedOut ||
@@ -8645,7 +8791,7 @@ void RenderFrameHostImpl::PendingDeletionCheckCompleted() {
       OnUnloaded();  // Delete |this|.
       // Do not add code after this.
     } else {
-      parent_->RemoveChild(frame_tree_node_);
+      parent_->RemoveChild(GetFrameTreeNodeForUnload());
     }
   }
 }
@@ -8692,10 +8838,11 @@ void RenderFrameHostImpl::
   // intend to use the current RFH.
   ResetOwnedNavigationRequests(
       NavigationDiscardReason::kRenderFrameHostDestruction);
-  if (frame_tree_node_->navigation_request() &&
-      frame_tree_node_->navigation_request()->state() >=
-          NavigationRequest::WILL_PROCESS_RESPONSE &&
-      frame_tree_node_->navigation_request()->GetRenderFrameHost() == this) {
+  const NavigationRequest* navigation_request =
+      frame_tree_node_->navigation_request();
+  if (navigation_request &&
+      navigation_request->state() >= NavigationRequest::WILL_PROCESS_RESPONSE &&
+      navigation_request->GetRenderFrameHost() == this) {
     // It's possible for a RenderFrameHost to already have been picked for a
     // navigation but the NavigationRequest's ownership hasn't been moved to the
     // RenderFrameHost yet, if the navigation is deferred by a
@@ -8706,28 +8853,17 @@ void RenderFrameHostImpl::
         NavigationDiscardReason::kRenderFrameHostDestruction);
   }
 
-  // For the child frames, we should delete all ongoing navigations instead of
-  // just the one using the current RFH, because the child frames will be
-  // deleted when this RFH gets unloaded.
-  for (auto& child : children_) {
-    child->current_frame_host()->ResetAllNavigationsInSubtreeForFrameDetach();
+  // For the child frames, we should delete all ongoing navigations,
+  // unconditionally, because the child frames will be deleted when this RFH
+  // gets unloaded.
+  for (auto& subframe : children_) {
+    subframe->ResetAllNavigationsForFrameDetach();
   }
-}
-
-void RenderFrameHostImpl::ResetAllNavigationsInSubtreeForFrameDetach() {
-  for (auto& child : children_) {
-    child->current_frame_host()->ResetAllNavigationsInSubtreeForFrameDetach();
-  }
-  ResetOwnedNavigationRequests(NavigationDiscardReason::kWillRemoveFrame);
-  frame_tree_node_->ResetNavigationRequest(
-      NavigationDiscardReason::kWillRemoveFrame);
-  frame_tree_node_->render_manager()->DiscardSpeculativeRFH(
-      NavigationDiscardReason::kWillRemoveFrame);
 }
 
 void RenderFrameHostImpl::OnUnloadTimeout() {
   DCHECK(IsPendingDeletion());
-  parent_->RemoveChild(frame_tree_node_);
+  parent_->RemoveChild(GetFrameTreeNodeForUnload());
 }
 
 void RenderFrameHostImpl::SetFocusedFrame() {
@@ -12577,24 +12713,25 @@ RenderWidgetHostImpl* RenderFrameHostImpl::GetLocalRenderWidgetHost() const {
 }
 
 void RenderFrameHostImpl::EnsureDescendantsAreUnloading() {
-  std::vector<RenderFrameHostImpl*> parents_to_be_checked = {this};
-  std::vector<RenderFrameHostImpl*> rfhs_to_be_checked;
-  while (!parents_to_be_checked.empty()) {
-    RenderFrameHostImpl* document = parents_to_be_checked.back();
-    parents_to_be_checked.pop_back();
+  std::vector<FrameTreeNode*> frame_to_remove;
+  std::vector<RenderFrameHostImpl*> rfh_to_be_checked = {this};
+  while (!rfh_to_be_checked.empty()) {
+    RenderFrameHostImpl* document = rfh_to_be_checked.back();
+    rfh_to_be_checked.pop_back();
 
-    for (auto& subframe : document->children_) {
-      RenderFrameHostImpl* child = subframe->current_frame_host();
-      // Every child is expected to be pending deletion. If it isn't the
-      // case, their FrameTreeNode is immediately removed from the tree.
-      if (!child->IsPendingDeletion())
-        rfhs_to_be_checked.push_back(child);
-      else
-        parents_to_be_checked.push_back(child);
+    // Every child is expected to be pending deletion. If it isn't the case,
+    // their FrameTreeNode is immediately removed from the tree.
+    for (auto& iframe : document->children_) {
+      if (iframe->current_frame_host()->IsPendingDeletion()) {
+        rfh_to_be_checked.push_back(iframe->current_frame_host());
+      } else {
+        frame_to_remove.push_back(iframe.get());
+      }
     }
   }
-  for (RenderFrameHostImpl* document : rfhs_to_be_checked)
-    document->parent_->RemoveChild(document->frame_tree_node());
+  for (FrameTreeNode* child : frame_to_remove) {
+    child->parent()->RemoveChild(child);
+  }
 }
 
 void RenderFrameHostImpl::AddMessageToConsoleImpl(
@@ -13408,6 +13545,11 @@ BackForwardCacheImpl& RenderFrameHostImpl::GetBackForwardCache() {
       .GetBackForwardCache();
 }
 
+FrameTreeNode* RenderFrameHostImpl::GetFrameTreeNodeForUnload() {
+  DCHECK(IsPendingDeletion());
+  return frame_tree_node_;
+}
+
 void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
   if (!IsInBackForwardCache())
     return;
@@ -13709,6 +13851,10 @@ void RenderFrameHostImpl::ReinitializeDocumentAssociatedDataForReuseAfterCrash(
   // ensure:
   // - a) the new state set in RenderFrameCreated doesn't get deleted.
   // - b) the old state is not leaked to a new RenderFrameHost.
+  document_associated_data_.emplace(*this, blink::DocumentToken());
+}
+
+void RenderFrameHostImpl::ReinitializeDocumentAssociatedDataForTesting() {
   document_associated_data_.emplace(*this, blink::DocumentToken());
 }
 

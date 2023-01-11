@@ -28,6 +28,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="1104621072296271835">Dispozitivele funcționează și mai bine împreună</translation>
 <translation id="1111021433905331574">Poți să schimbi culoarea pentru retroiluminarea tastaturii în Setări &gt; <ph name="APP_TITLE" /></translation>
 <translation id="112308213915226829">Ascundeți automat raftul</translation>
+<translation id="1135788167815124787">Portrait Relighting</translation>
 <translation id="1142002900084379065">Fotografii recente</translation>
 <translation id="1148499908455722006">Deschide fereastra de dialog cu informații pentru <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Calendar</translation>
@@ -162,6 +163,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="1774796056689732716">Calendar, <ph name="CURRENT_MONTH_YEAR" />, momentan s-a selectat <ph name="DATE" />.</translation>
 <translation id="1787955149152357925">Dezactivată</translation>
 <translation id="1797271123677381264">Am uitat parola</translation>
+<translation id="1807246157184219062">Luminos</translation>
 <translation id="181103072419391116">Puterea semnalului: <ph name="SIGNAL_STRENGTH" />, gestionată de administratorul tău</translation>
 <translation id="1812997170047690955">Ce este pe ecranul meu?</translation>
 <translation id="1816896987747843206">Astfel, accesul la cameră este permis pentru toate aplicațiile și site-urile care au permisiunea adecvată</translation>
@@ -238,6 +240,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="2224075387478458881">Înregistrarea ecranului nu este permisă atunci când se afișează conținut protejat</translation>
 <translation id="2227179592712503583">Elimină sugestia</translation>
 <translation id="225680501294068881">Se caută gadgeturi...</translation>
+<translation id="225716114209817872">Maxim</translation>
 <translation id="2257486738914982088">A apărut o eroare în timpul descărcării <ph name="FILENAME" /></translation>
 <translation id="2258734398699965611">Fișiere sugerate</translation>
 <translation id="2268130516524549846">Bluetooth dezactivat</translation>
@@ -262,6 +265,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="2354174487190027830">Se activează <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Continuă</translation>
 <translation id="2367186422933365202">Nu te poți conecta la Chromebook</translation>
+<translation id="2367972762794486313">Afișați aplicații</translation>
 <translation id="2369165858548251131">„Bună” în chineză</translation>
 <translation id="2390318262976603432">Setări de limbă</translation>
 <translation id="240006516586367791">Comenzi media</translation>
@@ -506,6 +510,7 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="3713734891607377840">Deschide după finalizare</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> și încă <ph name="UNAVAILABLE_APPS_COUNT" /> nu sunt disponibile pe acest dispozitiv.</translation>
 <translation id="3735740477244556633">Sortează după</translation>
+<translation id="3738664582935948253">Acum poți afișa clicurile și comenzile rapide de la tastatură în înregistrările ecranului</translation>
 <translation id="3742055079367172538">Captură de ecran efectuată</translation>
 <translation id="3765841986579723851">Editat astăzi</translation>
 <translation id="3773700760453577392">Un administrator a interzis conectarea multiplă pentru <ph name="USER_EMAIL" />. Toți utilizatorii trebuie să se deconecteze pentru a continua.</translation>
@@ -525,6 +530,7 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="385051799172605136">Înapoi</translation>
 <translation id="385300504083504382">Început</translation>
 <translation id="3861651314799684201">Apasă pe Enter pentru a înregistra ecranul complet</translation>
+<translation id="3871092408932389764">Cea mai scăzută</translation>
 <translation id="3886872229787704059">Deschis astăzi</translation>
 <translation id="3891340733213178823">Apăsați de două ori Ctrl+Shift+Q pentru a vă deconecta.</translation>
 <translation id="3893630138897523026">ChromeVox (feedback rostit)</translation>
@@ -1011,6 +1017,7 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="6537924328260219877">Puterea semnalului: <ph name="SIGNAL_STRENGTH" />, bateria telefonului: <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999">Se scanează <ph name="FILENAME" /> pentru descărcare</translation>
 <translation id="6542521951477560771">Se proiectează conținut la <ph name="RECEIVER_NAME" /></translation>
+<translation id="6548693220024099658">Încețoșare fundal</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Instalare nouă</translation>
 <translation id="6559976592393364813">Întreabă administratorul</translation>
@@ -1417,6 +1424,7 @@ Instalare nouă</translation>
 <translation id="878215960996152260"><ph name="APP_NAME" />, aplicație instalată, blocată</translation>
 <translation id="8785070478575117577">Conectează-te la <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">Intens</translation>
 <translation id="8806053966018712535">Dosarul <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">Ajutor</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

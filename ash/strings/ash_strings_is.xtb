@@ -162,6 +162,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="1774796056689732716">Dagatal, <ph name="CURRENT_MONTH_YEAR" />, núverandi val er <ph name="DATE" />.</translation>
 <translation id="1787955149152357925">Slökkt</translation>
 <translation id="1797271123677381264">Gleymt aðgangsorð</translation>
+<translation id="1807246157184219062">Ljóst</translation>
 <translation id="181103072419391116"><ph name="SIGNAL_STRENGTH" /> sendistyrkur, stjórnað af kerfisstjóra</translation>
 <translation id="1812997170047690955">Hvað er á skjánum mínum?</translation>
 <translation id="1816896987747843206">Þetta veitir öllum forritum og vefsvæðum með myndavélarheimild aðgang að myndavél</translation>
@@ -238,6 +239,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="2224075387478458881">Skjáupptaka er óheimil á meðan varið efni er sýnilegt</translation>
 <translation id="2227179592712503583">Fjarlægja tillögu</translation>
 <translation id="225680501294068881">Leitar að tækjum...</translation>
+<translation id="225716114209817872">Hámark</translation>
 <translation id="2257486738914982088">Eitthvað fór úrskeiðis við að sækja <ph name="FILENAME" /></translation>
 <translation id="2258734398699965611">Skráatillögur</translation>
 <translation id="2268130516524549846">Slökkt á Bluetooth</translation>
@@ -262,6 +264,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="2354174487190027830">Virkjar <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Halda áfram</translation>
 <translation id="2367186422933365202">Ekki tókst að skrá þig inn á Chromebook</translation>
+<translation id="2367972762794486313">Sýna forrit</translation>
 <translation id="2369165858548251131">„Halló“ á kínversku</translation>
 <translation id="2390318262976603432">Stillingar tungumálskóða</translation>
 <translation id="240006516586367791">Efnisstýringar</translation>
@@ -506,6 +509,7 @@ Tengdu tækið við rafmagn.</translation>
 <translation id="3713734891607377840">Opna þegar niðurhali lýkur</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> og <ph name="UNAVAILABLE_APPS_COUNT" /> í viðbót eru ekki í þessu tæki.</translation>
 <translation id="3735740477244556633">Raða eftir</translation>
+<translation id="3738664582935948253">Nú geturðu sýnt smelli og flýtilykla á skjáupptökum</translation>
 <translation id="3742055079367172538">Skjámynd tekin</translation>
 <translation id="3765841986579723851">Breytt í dag</translation>
 <translation id="3773700760453577392">Stjórnandi hefur lokað á innskráningu fleiri en eins notanda fyrir <ph name="USER_EMAIL" />. Allir notendur verða að skrá sig út til að halda áfram.</translation>
@@ -525,6 +529,7 @@ Tengdu tækið við rafmagn.</translation>
 <translation id="385051799172605136">Til baka</translation>
 <translation id="385300504083504382">Byrjun</translation>
 <translation id="3861651314799684201">Ýttu á Enter til að taka upp allan skjáinn</translation>
+<translation id="3871092408932389764">Mjög lítil</translation>
 <translation id="3886872229787704059">Opnað í dag</translation>
 <translation id="3891340733213178823">Ýttu tvisvar á Ctrl+Shift+Q til að skrá þig út.</translation>
 <translation id="3893630138897523026">ChromeVox (raddsvörun)</translation>
@@ -1011,6 +1016,7 @@ Tengdu tækið við rafmagn.</translation>
 <translation id="6537924328260219877"><ph name="SIGNAL_STRENGTH" /> sendistyrkur, <ph name="BATTERY_STATUS" /> hleðsla á rafhlöðu símans</translation>
 <translation id="6539852571005954999">Niðurhal skannar <ph name="FILENAME" /></translation>
 <translation id="6542521951477560771">Sendir út til <ph name="RECEIVER_NAME" /></translation>
+<translation id="6548693220024099658">Óskýr bakgrunnur</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Ný uppsetning</translation>
 <translation id="6559976592393364813">Spyrja kerfisstjóra</translation>
@@ -1417,6 +1423,7 @@ Ný uppsetning</translation>
 <translation id="878215960996152260"><ph name="APP_NAME" />, uppsett forrit, útilokað</translation>
 <translation id="8785070478575117577">Tengjast <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">Mikið</translation>
 <translation id="8806053966018712535">Mappan <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">„Hjálp“</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

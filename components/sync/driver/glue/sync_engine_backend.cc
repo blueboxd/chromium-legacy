@@ -6,13 +6,12 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/sync/base/features.h"
@@ -450,8 +449,7 @@ void SyncEngineBackend::DoOnStandaloneInvalidationReceived(
     const std::string& payload,
     const ModelTypeSet& interested_data_types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::FeatureList::IsEnabled(kSyncSendInterestedDataTypes) &&
-         base::FeatureList::IsEnabled(kUseSyncInvalidations));
+  DCHECK(base::FeatureList::IsEnabled(kUseSyncInvalidations));
   const IncomingInvalidationStatus status =
       DoOnStandaloneInvalidationReceivedImpl(payload, interested_data_types);
   RecordIncomingInvalidationStatus(status);

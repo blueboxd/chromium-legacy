@@ -7,11 +7,10 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/guid.h"
 #include "base/rand_util.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/query_tiles/internal/proto_conversion.h"
 #include "components/query_tiles/internal/tile_config.h"
 

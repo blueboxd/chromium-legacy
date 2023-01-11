@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/functional/callback_forward.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -42,6 +42,7 @@ class SidePanelEntry final {
     kAssistant,
     kAboutThisSite,
     kCustomizeChrome,
+    kSearchCompanion,
     // Extensions (nothing more should be added below here)
     kExtension
   };

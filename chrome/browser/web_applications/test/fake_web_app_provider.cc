@@ -8,9 +8,9 @@
 #include <ostream>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/one_shot_event.h"
 #include "chrome/browser/profiles/profile.h"
@@ -202,6 +202,11 @@ WebAppUiManager& FakeWebAppProvider::GetUiManager() const {
 WebAppInstallManager& FakeWebAppProvider::GetInstallManager() const {
   DCHECK(install_manager_);
   return *install_manager_;
+}
+
+OsIntegrationManager& FakeWebAppProvider::GetOsIntegrationManager() const {
+  DCHECK(os_integration_manager_);
+  return *os_integration_manager_;
 }
 
 void FakeWebAppProvider::StartWithSubsystems() {

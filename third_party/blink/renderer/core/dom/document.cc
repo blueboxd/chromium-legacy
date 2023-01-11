@@ -39,6 +39,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_timeline.h"
@@ -6401,13 +6402,6 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
 
 FragmentDirective& Document::fragmentDirective() const {
   return *fragment_directive_;
-}
-
-ScriptPromise Document::hasTrustToken(ScriptState* script_state,
-                                      const String& issuer,
-                                      ExceptionState& exception_state) {
-  return hasPrivateToken(script_state, issuer, "private-state-token",
-                         exception_state);
 }
 
 ScriptPromise Document::hasPrivateToken(ScriptState* script_state,

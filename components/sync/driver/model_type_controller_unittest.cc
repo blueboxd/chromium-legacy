@@ -6,10 +6,10 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/test/gmock_move_support.h"
@@ -17,7 +17,6 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/features.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/engine/commit_queue.h"

@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observation.h"
@@ -100,9 +100,6 @@ class WebstoreStandaloneInstaller
   // Should a new tab be opened after installation to show the newly installed
   // extension's icon?
   virtual bool ShouldShowPostInstallUI() const = 0;
-
-  // Should pop up an "App installed" bubble after installation?
-  virtual bool ShouldShowAppInstalledBubble() const = 0;
 
   // In the very least this should return a dummy WebContents (required
   // by some calls even when no prompt or other UI is shown). A non-dummy

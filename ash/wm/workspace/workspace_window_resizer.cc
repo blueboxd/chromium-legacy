@@ -34,8 +34,8 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/ranges/algorithm.h"
@@ -974,11 +974,13 @@ void WorkspaceWindowResizer::CompleteDrag() {
     return;
   }
 
-  // Update the restore bounds of a floated window in case it has changed
-  // displays.
   if (window_state()->IsFloated()) {
-    window_state()->SetRestoreBoundsInParent(
-        details().restore_bounds_in_parent);
+    // Update the restore bounds of a floated window in case it has changed
+    // displays.
+    if (!details().restore_bounds_in_parent.IsEmpty()) {
+      window_state()->SetRestoreBoundsInParent(
+          details().restore_bounds_in_parent);
+    }
     return;
   }
 

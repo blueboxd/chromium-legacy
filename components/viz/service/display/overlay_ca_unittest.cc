@@ -7,9 +7,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
@@ -76,8 +76,8 @@ static ResourceId CreateResourceInLayerTree(
     const gfx::Size& size,
     bool is_overlay_candidate) {
   auto resource = TransferableResource::MakeGpu(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
-      size, RGBA_8888, is_overlay_candidate);
+      gpu::Mailbox::GenerateForSharedImage(), GL_LINEAR, GL_TEXTURE_2D,
+      gpu::SyncToken(), size, RGBA_8888, is_overlay_candidate);
 
   ResourceId resource_id =
       child_resource_provider->ImportResource(resource, base::DoNothing());

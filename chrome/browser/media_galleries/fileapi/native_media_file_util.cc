@@ -7,11 +7,11 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
@@ -234,9 +234,9 @@ void NativeMediaFileUtil::CreateOrOpen(
     CreateOrOpenCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // Returns an error if any unsupported flag is found.
-  if (file_flags & ~(base::File::FLAG_OPEN |
-                     base::File::FLAG_READ |
-                     base::File::FLAG_WRITE_ATTRIBUTES)) {
+  if (file_flags &
+      ~(base::File::FLAG_OPEN | base::File::FLAG_READ |
+        base::File::FLAG_WRITE_ATTRIBUTES | base::File::FLAG_WIN_NO_EXECUTE)) {
     std::move(callback).Run(base::File(base::File::FILE_ERROR_SECURITY),
                             base::OnceClosure());
     return;

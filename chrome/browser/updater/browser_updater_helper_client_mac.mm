@@ -6,8 +6,8 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
@@ -15,6 +15,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/bind_post_task.h"
+#import "base/task/sequenced_task_runner.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/updater/browser_updater_client_util.h"
 #include "chrome/updater/mac/privileged_helper/service_protocol.h"

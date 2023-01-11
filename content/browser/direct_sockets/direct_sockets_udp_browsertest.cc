@@ -7,7 +7,6 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/direct_sockets/direct_sockets_service_impl.h"
 #include "content/browser/direct_sockets/direct_sockets_test_utils.h"
 #include "content/public/browser/browser_context.h"
@@ -317,10 +316,16 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsUdpBrowserTest, ReadWriteUdpOnSendError) {
   const std::string async_read = "readWriteUdpOnError(socket);";
   auto future = GetAsyncJsRunner()->RunScript(async_read);
 
+  // Next attempt to write to the socket will result in ERR_UNEXPECTED and close
+  // the writable stream.
+  mock_network_context.get_udp_socket()->SetNextSendResult(net::ERR_UNEXPECTED);
+
   // MockNetworkContext owns the MockUDPSocket and therefore outlives it.
   mock_network_context.get_udp_socket()->SetAdditionalSendCallback(
       base::BindOnce(
           [](content::test::MockNetworkContext* context) {
+            // Next read from the socket will receive ERR_UNEXPECTED and close
+            // the readable stream.
             context->get_udp_socket()->MockSend(net::ERR_UNEXPECTED);
           },
           &mock_network_context));
@@ -335,10 +340,15 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsUdpBrowserTest, ReadWriteUdpOnSocketError) {
 
   ConnectJsSocket();
 
+  // Next attempt to write to the socket will result in ERR_UNEXPECTED and close
+  // the writable stream.
+  mock_network_context.get_udp_socket()->SetNextSendResult(net::ERR_UNEXPECTED);
+
   // MockNetworkContext owns the MockUDPSocket and therefore outlives it.
   mock_network_context.get_udp_socket()->SetAdditionalSendCallback(
       base::BindOnce(
           [](content::test::MockNetworkContext* context) {
+            // This will break the receiver pipe and close the readable stream.
             context->get_udp_socket()->get_listener().reset();
           },
           &mock_network_context));

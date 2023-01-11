@@ -6,14 +6,13 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback_forward.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
 #include "base/system/sys_info.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "chromeos/ash/services/assistant/public/cpp/features.h"
 #include "chromeos/ash/services/libassistant/callback_utils.h"
 #include "chromeos/ash/services/libassistant/grpc/assistant_client_v1.h"

@@ -6,13 +6,12 @@
 #include <tuple>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/test/test_switches.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/base/completion_event.h"
 #include "cc/paint/display_item_list.h"
@@ -45,6 +44,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/core/SkYUVAInfo.h"
+#include "third_party/skia/include/gpu/GpuTypes.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -1753,7 +1753,7 @@ class OopTextBlobPixelTest
         UseLcdText() ? skia::LegacyDisplayGlobals::GetSkSurfaceProps(0)
                      : SkSurfaceProps(0, kUnknown_SkPixelGeometry);
     auto surface = SkSurface::MakeRenderTarget(
-        context_state->gr_context(), SkBudgeted::kNo, image_info, 0,
+        context_state->gr_context(), skgpu::Budgeted::kNo, image_info, 0,
         kTopLeft_GrSurfaceOrigin, &surface_props);
 
     SkCanvas* canvas = surface->getCanvas();

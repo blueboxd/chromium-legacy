@@ -11,15 +11,15 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/containers/queue.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_types.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/platform_keys/key_permissions/arc_key_permissions_manager_delegate.h"
 #include "chrome/browser/ash/platform_keys/key_permissions/key_permissions_manager.h"
-#include "chrome/browser/platform_keys/platform_keys.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefRegistrySimple;

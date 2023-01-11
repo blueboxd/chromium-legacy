@@ -1510,6 +1510,19 @@ void HTMLElement::HidePopoverInternal(HidePopoverFocusBehavior focus_behavior,
 
   GetPopoverData()->setInvoker(nullptr);
 
+  if (force_hide) {
+    // Stop matching `:open` now:
+    GetPopoverData()->setVisibilityState(
+        PopoverVisibilityState::kTransitioning);
+    PseudoStateChanged(CSSSelector::kPseudoOpen);
+
+    // Note that a `beforetoggle` event is not fired in the case that the
+    // popover is being hidden because it has been removed from the document.
+
+    // Immediately finish the hide process.
+    return PopoverHideFinishIfNeeded();
+  }
+
   // Fire the "closing" beforetoggle event.
   auto* event = BeforeToggleEvent::CreateBubble(
       event_type_names::kBeforetoggle, Event::Cancelable::kNo,
@@ -1519,18 +1532,6 @@ void HTMLElement::HidePopoverInternal(HidePopoverFocusBehavior focus_behavior,
   DCHECK_EQ(event->currentState(), "open");
   DCHECK_EQ(event->newState(), "closed");
   event->SetTarget(this);
-  if (force_hide) {
-    // Stop matching `:open` now:
-    GetPopoverData()->setVisibilityState(
-        PopoverVisibilityState::kTransitioning);
-    PseudoStateChanged(CSSSelector::kPseudoOpen);
-
-    // We will be force-hidden when the popover element is being removed from
-    // the document, during which event dispatch is prohibited.
-    GetDocument().EnqueueAnimationFrameEvent(event);
-    // Immediately finish the hide process.
-    return PopoverHideFinishIfNeeded();
-  }
   auto result = DispatchEvent(*event);
   DCHECK_EQ(result, DispatchEventResult::kNotCanceled);
 
@@ -1570,7 +1571,10 @@ void HTMLElement::HidePopoverInternal(HidePopoverFocusBehavior focus_behavior,
     if (focus_behavior == HidePopoverFocusBehavior::kFocusPreviousElement) {
       FocusOptions* focus_options = FocusOptions::Create();
       focus_options->setPreventScroll(true);
-      previously_focused_element->Focus(focus_options);
+      previously_focused_element->Focus(FocusParams(
+          SelectionBehaviorOnFocus::kRestore, mojom::blink::FocusType::kScript,
+          /*capabilities=*/nullptr, focus_options,
+          /*gate_on_user_activation=*/true));
     }
   }
 }
@@ -1605,7 +1609,7 @@ void HTMLElement::SetPopoverFocusOnShow() {
     return;
 
   // 3. Run the focusing steps for control.
-  control->Focus();
+  control->Focus(FocusParams(/*gate_on_user_activation=*/true));
 
   // 4. Let topDocument be the active document of control's node document's
   // browsing context's top-level browsing context.
@@ -1651,7 +1655,10 @@ const HTMLElement* NearestInclusiveTargetPopoverForInvoker(const Node* node) {
   return NearestInclusiveMatchingAncestor(node, [](const Node* test_node) {
     auto* form_element = DynamicTo<HTMLFormControlElement>(test_node);
     auto target_popover =
-        form_element ? form_element->popoverTargetElement().popover : nullptr;
+        form_element ? const_cast<HTMLFormControlElement*>(form_element)
+                           ->popoverTargetElement()
+                           .popover
+                     : nullptr;
     return (target_popover && target_popover->popoverOpen() &&
             target_popover->PopoverType() != PopoverValueType::kManual)
                ? target_popover.Get()

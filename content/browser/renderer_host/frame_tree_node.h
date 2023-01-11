@@ -275,7 +275,6 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   const network::mojom::ContentSecurityPolicy* csp_attribute() const {
     return attributes_->parsed_csp_attribute.get();
   }
-  bool credentialless() const { return attributes_->credentialless; }
   const std::string& html_id() const { return attributes_->id; }
   // This tracks iframe's 'name' attribute instead of window.name, which is
   // tracked in FrameReplicationState. See the comment for frame_name() for
@@ -574,6 +573,16 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // it can't get on its own.
   bool AncestorOrSelfHasCSPEE() const;
 
+  // Reset every navigation in this frame, and its descendants. This is called
+  // after the <iframe> element has been removed, or after the document owning
+  // this frame has been navigated away.
+  //
+  // This takes into account:
+  // - Non-pending commit NavigationRequest owned by the FrameTreeNode
+  // - Pending commit NavigationRequest owned by the current RenderFrameHost
+  // - Speculative RenderFrameHost and its pending commit NavigationRequests.
+  void ResetAllNavigationsForFrameDetach();
+
   // RenderFrameHostOwner implementation:
   void DidStartLoading(bool should_show_loading_ui,
                        bool was_previously_loading) override;
@@ -622,6 +631,7 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
           subresource_web_bundle_navigation_info,
       int http_response_code) override;
   void CancelNavigation() override;
+  bool Credentialless() const override;
 
  private:
   friend class CSPEmbeddedEnforcementUnitTest;

@@ -9,16 +9,17 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/escape.h"
 #include "base/strings/string_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
@@ -39,7 +40,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_popup_view_views.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "chrome/grit/generated_resources.h"
@@ -221,8 +222,8 @@ void OmniboxViewViews::Init() {
 
   if (location_bar_view_) {
     // Initialize the popup view using the same font.
-    popup_view_ = std::make_unique<OmniboxPopupContentsView>(
-        this, model(), location_bar_view_);
+    popup_view_ = std::make_unique<OmniboxPopupViewViews>(this, model(),
+                                                          location_bar_view_);
 
     // Set whether the text should be used to improve typing suggestions.
     SetShouldDoLearning(!location_bar_view_->profile()->IsOffTheRecord());

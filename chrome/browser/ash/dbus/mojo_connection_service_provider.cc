@@ -7,9 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/files/scoped_file.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/functional/bind.h"
 #include "chrome/browser/ash/net/rollback_network_config/rollback_network_config_service.h"
 #include "chromeos/ash/services/rollback_network_config/public/mojom/rollback_network_config.mojom.h"
 #include "chromeos/components/sensors/ash/sensor_hal_dispatcher.h"

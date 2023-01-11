@@ -4,18 +4,19 @@
 
 #include "chrome/browser/device_reauth/win/biometric_authenticator_win.h"
 
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/device_reauth/chrome_biometric_authenticator_factory.h"
 
 #include <memory>
 #include <string>
 #include <utility>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
-#include "base/task/sequenced_task_runner.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/device_reauth/biometric_authenticator.h"

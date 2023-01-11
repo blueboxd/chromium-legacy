@@ -28,6 +28,7 @@
 <translation id="1104621072296271835">Құрылғылар бірігіп жақсы жұмыс істейді</translation>
 <translation id="1111021433905331574">Пернетақта жарығының түсін "Параметрлер &gt; <ph name="APP_TITLE" />" бөлімінен өзгерте аласыз.</translation>
 <translation id="112308213915226829">Сөрені автоматты жасыру</translation>
+<translation id="1135788167815124787">Портретті қайта жарықтандыру</translation>
 <translation id="1142002900084379065">Жақында түскен фотосуреттер</translation>
 <translation id="1148499908455722006"><ph name="USER_NAME" /> аккаунты туралы ақпарат диалогтік терезесін ашу</translation>
 <translation id="1150989369772528668">Күнтізбе</translation>
@@ -162,6 +163,7 @@
 <translation id="1774796056689732716">Күнтізбе, <ph name="CURRENT_MONTH_YEAR" />, ағымдағы <ph name="DATE" /> таңдалды.</translation>
 <translation id="1787955149152357925">Өшірулі</translation>
 <translation id="1797271123677381264">Құпия сөзді ұмытып қалдым</translation>
+<translation id="1807246157184219062">Ашық</translation>
 <translation id="181103072419391116">Сигнал күші – <ph name="SIGNAL_STRENGTH" />, Әкімші басқарады</translation>
 <translation id="1812997170047690955">Экранда не бар?</translation>
 <translation id="1816896987747843206">Бұл — камера рұқсаты бар барлық қолданба мен веб-сайт үшін камераны пайдалануға мүмкіндік береді.</translation>
@@ -238,6 +240,7 @@
 <translation id="2224075387478458881">Қорғалған контент көрініп тұрғанда, экранды жазуға болмайды.</translation>
 <translation id="2227179592712503583">Ұсынысты өшіру</translation>
 <translation id="225680501294068881">Құрылғылар ізделуде…</translation>
+<translation id="225716114209817872">Максимум</translation>
 <translation id="2257486738914982088"><ph name="FILENAME" /> файлын жүктеп алу кезінде бірдеңе дұрыс болмады.</translation>
 <translation id="2258734398699965611">Ұсынылған файлдар</translation>
 <translation id="2268130516524549846">Bluetooth өшірілген</translation>
@@ -262,6 +265,7 @@
 <translation id="2354174487190027830"><ph name="NAME" /> белсендіру</translation>
 <translation id="2359808026110333948">Жалғастыру</translation>
 <translation id="2367186422933365202">Chromebook құрылғысына кіру мүмкін емес.</translation>
+<translation id="2367972762794486313">Қолданбаларды көрсету</translation>
 <translation id="2369165858548251131">Қытай тілінде "Сәлем" қалай болады?</translation>
 <translation id="2390318262976603432">Тіл параметрлері</translation>
 <translation id="240006516586367791">Мультимедианы басқару элементтері</translation>
@@ -506,6 +510,7 @@
 <translation id="3713734891607377840">Жүктеп алынған соң ашу</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> және тағы <ph name="UNAVAILABLE_APPS_COUNT" /> қолданба бұл құрылғыда жоқ.</translation>
 <translation id="3735740477244556633">Сұрыптау шарты</translation>
+<translation id="3738664582935948253">Енді экран жазбаларында басулар мен пернелер тіркесімдерін көрсете аласыз</translation>
 <translation id="3742055079367172538">Скриншот түсірілді</translation>
 <translation id="3765841986579723851">Бүгін өзгертілді.</translation>
 <translation id="3773700760453577392">Әкімшінің шешімі бойынша енді <ph name="USER_EMAIL" /> электрондық поштасына бір уақытта бірнеше пайдаланушы кіре алмайды. Жалғастыру үшін пайдаланушылардың барлығы аккаунттан шығуы керек.</translation>
@@ -525,6 +530,7 @@
 <translation id="385051799172605136">Артқа</translation>
 <translation id="385300504083504382">Басына өту</translation>
 <translation id="3861651314799684201">Толық экранды жазу үшін "Enter" пернесін басыңыз</translation>
+<translation id="3871092408932389764">Ең төмен</translation>
 <translation id="3886872229787704059">Бүгін ашылды.</translation>
 <translation id="3891340733213178823">Шығу үшін Ctrl+Shift+Q тіркесімін екі рет басыңыз.</translation>
 <translation id="3893630138897523026">ChromeVox (дауыстық көмек)</translation>
@@ -691,6 +697,7 @@
 <translation id="4740516757091333363">Сақталған жұмыс үстелін жою керек пе?</translation>
 <translation id="4752784485658729358">Тек сақталған 6 жұмыс үстеліне рұқсат етіледі. Жаңа жұмыс үстелін сақтау үшін олардың бірін өшіріңіз.</translation>
 <translation id="4759238208242260848">Жүктеп алынғандар</translation>
+<translation id="4762573482154983647">Қолданбаларды жасыру</translation>
 <translation id="4774338217796918551">Ертең сағат <ph name="COME_BACK_TIME" /> шамасында қайта қолдануыңызға болады.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> құпия сөзі</translation>
 <translation id="4777825441726637019">Play Store</translation>
@@ -1011,6 +1018,7 @@
 <translation id="6537924328260219877">Сигнал күші: <ph name="SIGNAL_STRENGTH" />, телефон батареясы: <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999">Жүктеп алынған <ph name="FILENAME" /> файлы сканерленіп жатыр</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> құрылғысына трансляциялануда</translation>
+<translation id="6548693220024099658">Фонды бұлдырату</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Жаңадан орнатылды</translation>
 <translation id="6559976592393364813">Әкімшіден сұраңыз.</translation>
@@ -1417,6 +1425,7 @@
 <translation id="878215960996152260"><ph name="APP_NAME" />, қолданба орнатылған, бөгелген</translation>
 <translation id="8785070478575117577"><ph name="NETWORK_NAME" /> желісіне қосылу</translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">Көп</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> қалтасы</translation>
 <translation id="880709030178078220">"Анықтама"</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

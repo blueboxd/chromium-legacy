@@ -35,7 +35,7 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
@@ -170,6 +170,7 @@ class ImeTitleView : public views::BoxLayoutView {
     SetOrientation(views::BoxLayout::Orientation::kHorizontal);
     SetInsideBorderInsets(kTitleViewPadding);
     SetMinimumCrossAxisSize(kTrayPopupItemMinHeight);
+    SetCrossAxisAlignment(views::BoxLayout::CrossAxisAlignment::kCenter);
 
     auto* title_label = AddChildView(std::make_unique<views::Label>(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME)));

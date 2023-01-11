@@ -8,15 +8,14 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -183,8 +182,8 @@ SyncServiceImpl::SyncServiceImpl(InitParams init_params)
                           base::Unretained(this)),
       base::BindRepeating(&SyncServiceImpl::IsEngineAllowedToRun,
                           base::Unretained(this)),
-      base::BindRepeating(&SyncServiceImpl::StartUpSlowEngineComponents,
-                          base::Unretained(this)));
+      base::BindOnce(&SyncServiceImpl::StartUpSlowEngineComponents,
+                     base::Unretained(this)));
 
   sync_stopped_reporter_ = std::make_unique<SyncStoppedReporter>(
       sync_service_url_, MakeUserAgentForSync(channel_), url_loader_factory_);
@@ -220,17 +219,12 @@ void SyncServiceImpl::Initialize() {
   if (!IsLocalSyncEnabled()) {
     auth_manager_->RegisterForAuthNotifications();
 
-    SyncInvalidationsService* sync_invalidations_service =
-        sync_client_->GetSyncInvalidationsService();
-    if (sync_invalidations_service) {
       // Trigger a refresh when additional data types get enabled for
       // invalidations. This is needed to get the latest data after subscribing
       // for the updates.
-      sync_invalidations_service
-          ->SetCommittedAdditionalInterestedDataTypesCallback(
-              base::BindRepeating(&SyncServiceImpl::TriggerRefresh,
-                                  weak_factory_.GetWeakPtr()));
-    }
+    sync_client_->GetSyncInvalidationsService()
+        ->SetCommittedAdditionalInterestedDataTypesCallback(base::BindRepeating(
+            &SyncServiceImpl::TriggerRefresh, weak_factory_.GetWeakPtr()));
   }
 
   // If sync is disabled permanently, clean up old data that may be around (e.g.
@@ -504,26 +498,18 @@ void SyncServiceImpl::ResetEngine(ShutdownReason shutdown_reason,
   }
 
   base::UmaHistogramEnumeration("Sync.ResetEngineReason", reset_reason);
-  SyncInvalidationsService* sync_invalidations_service =
-      sync_client_->GetSyncInvalidationsService();
   switch (shutdown_reason) {
     case ShutdownReason::STOP_SYNC_AND_KEEP_DATA:
-      if (sync_invalidations_service) {
-        sync_invalidations_service->StopListening();
-      }
+      sync_client_->GetSyncInvalidationsService()->StopListening();
       RemoveClientFromServer();
       break;
     case ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA: {
-      if (sync_invalidations_service) {
-        sync_invalidations_service->StopListeningPermanently();
-      }
+      sync_client_->GetSyncInvalidationsService()->StopListeningPermanently();
       RemoveClientFromServer();
       break;
     }
     case ShutdownReason::BROWSER_SHUTDOWN_AND_KEEP_DATA:
-      if (sync_invalidations_service) {
-        sync_invalidations_service->StopListening();
-      }
+      sync_client_->GetSyncInvalidationsService()->StopListening();
       break;
   }
 
@@ -559,7 +545,13 @@ void SyncServiceImpl::ResetEngine(ShutdownReason shutdown_reason,
 
   sync_enabled_weak_factory_.InvalidateWeakPtrs();
 
-  startup_controller_->Reset();
+  startup_controller_ = std::make_unique<StartupController>(
+      base::BindRepeating(&SyncServiceImpl::GetPreferredDataTypes,
+                          base::Unretained(this)),
+      base::BindRepeating(&SyncServiceImpl::IsEngineAllowedToRun,
+                          base::Unretained(this)),
+      base::BindOnce(&SyncServiceImpl::StartUpSlowEngineComponents,
+                     base::Unretained(this)));
 
   // Clear various state.
   crypto_.Reset();
@@ -943,15 +935,11 @@ void SyncServiceImpl::OnConfigureDone(
   // be handled immediately after StartListening() call.
   UpdateDataTypesForInvalidations();
   engine_->StartHandlingInvalidations();
-  SyncInvalidationsService* invalidations_service =
-      sync_client_->GetSyncInvalidationsService();
-  if (invalidations_service) {
-    // Do not start listening for invalidations since they are not supported for
-    // local sync.
-    if (!IsLocalSyncEnabled() ||
-        base::FeatureList::IsEnabled(kListenForInvalidationsInLocalSync)) {
-      invalidations_service->StartListening();
-    }
+  // Do not start listening for invalidations since they are not supported for
+  // local sync.
+  if (!IsLocalSyncEnabled() ||
+      base::FeatureList::IsEnabled(kListenForInvalidationsInLocalSync)) {
+    sync_client_->GetSyncInvalidationsService()->StartListening();
   }
 
   if (migrator_.get() && migrator_->state() != BackendMigrator::IDLE) {
@@ -1290,12 +1278,6 @@ ModelTypeSet SyncServiceImpl::GetDataTypesToConfigure() const {
 }
 
 void SyncServiceImpl::UpdateDataTypesForInvalidations() {
-  SyncInvalidationsService* invalidations_service =
-      sync_client_->GetSyncInvalidationsService();
-  if (!invalidations_service) {
-    return;
-  }
-
   // Wait for configuring data types. This is needed to consider proxy types
   // which become known during configuration.
   if (!data_type_manager_ ||
@@ -1323,7 +1305,7 @@ void SyncServiceImpl::UpdateDataTypesForInvalidations() {
 
   types.RemoveAll(data_type_manager_->GetActiveProxyDataTypes());
 
-  invalidations_service->SetInterestedDataTypes(types);
+  sync_client_->GetSyncInvalidationsService()->SetInterestedDataTypes(types);
 }
 
 SyncCycleSnapshot SyncServiceImpl::GetLastCycleSnapshotForDebugging() const {

@@ -13,10 +13,10 @@
 
 #include "base/base64.h"
 #include "base/base64url.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_string_value_serializer.h"
@@ -2323,13 +2323,12 @@ base::Value::Dict SerializeDeepScanDebugData(const std::string& token,
 
 SafeBrowsingUI::SafeBrowsingUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
-  // Set up the chrome://safe-browsing source.
-
-  content::WebUIDataSource* html_source = content::WebUIDataSource::Create(
-      safe_browsing::kChromeUISafeBrowsingHost);
-
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
+  // Set up the chrome://safe-browsing source.
+  content::WebUIDataSource* html_source =
+      content::WebUIDataSource::CreateAndAdd(
+          browser_context, safe_browsing::kChromeUISafeBrowsingHost);
 
   // Register callback handler.
   // Handles messages from JavaScript to C++ via chrome.send().
@@ -2345,8 +2344,6 @@ SafeBrowsingUI::SafeBrowsingUI(content::WebUI* web_ui)
   html_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::TrustedTypes,
       "trusted-types static-types;");
-
-  content::WebUIDataSource::Add(browser_context, html_source);
 }
 
 SafeBrowsingUI::~SafeBrowsingUI() {}

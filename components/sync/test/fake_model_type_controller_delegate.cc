@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/run_loop.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/type_entities_count.h"
@@ -112,6 +112,10 @@ FakeModelTypeControllerDelegate::MakeActivationResponse() const {
   response->skip_engine_connection =
       activation_response_.skip_engine_connection;
   return response;
+}
+
+void FakeModelTypeControllerDelegate::ClearMetadataWhileStopped() {
+  ++clear_metadata_call_count_;
 }
 
 }  // namespace syncer

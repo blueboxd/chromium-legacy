@@ -50,11 +50,17 @@ BASE_DECLARE_FEATURE(kContextualPageActionPriceTracking);
 // Feature flag for enabling reader mode action feature.
 BASE_DECLARE_FEATURE(kContextualPageActionReaderMode);
 
+// Feature flag for enabling reader mode action feature.
+BASE_DECLARE_FEATURE(kContextualPageActionShareModel);
+
 // Feature flag for enabling shopping user segment feature.
 BASE_DECLARE_FEATURE(kShoppingUserSegmentFeature);
 
 // Feature flag for enabling `SegmentInfoCache` for `SegmentInfoDatabase`.
 BASE_DECLARE_FEATURE(kSegmentationPlatformSegmentInfoCache);
+
+// Feature flag for enabling default reporting segments.
+BASE_DECLARE_FEATURE(kSegmentationDefaultReportingSegments);
 
 }  // namespace segmentation_platform::features
 

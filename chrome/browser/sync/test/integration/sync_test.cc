@@ -6,17 +6,16 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
-#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -30,7 +29,6 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -45,12 +43,10 @@
 #include "chrome/browser/sync/test/integration/fake_sync_gcm_driver_for_instance_id.h"
 #include "chrome/browser/sync/test/integration/invalidations/fake_sync_instance_id_driver.h"
 #include "chrome/browser/sync/test/integration/session_hierarchy_match_checker.h"
-#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_disabled_checker.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
-#include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -74,7 +70,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/sync/base/command_line_switches.h"
-#include "components/sync/base/features.h"
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/glue/sync_transport_data_prefs.h"
@@ -603,7 +598,7 @@ bool SyncTest::SetupClients() {
 
   auto* cl = base::CommandLine::ForCurrentProcess();
   if (!cl->HasSwitch(syncer::kSyncDeferredStartupTimeoutSeconds)) {
-    cl->AppendSwitchASCII(syncer::kSyncDeferredStartupTimeoutSeconds, "1");
+    cl->AppendSwitchASCII(syncer::kSyncDeferredStartupTimeoutSeconds, "0");
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -691,6 +686,17 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
     sync_service_impl->OverrideNetworkForTest(
         fake_server::CreateFakeServerHttpPostProviderFactory(
             GetFakeServer()->AsWeakPtr()));
+    // TODO(crbug.com/1331206): use GCM driver directly to deliver
+    // invalidations.
+    syncer::SyncInvalidationsServiceImpl* sync_invalidations_service =
+        static_cast<syncer::SyncInvalidationsServiceImpl*>(
+            SyncInvalidationsServiceFactory::GetForProfile(profile));
+    if (sync_invalidations_service) {
+      profile_to_fcm_handler_map_[profile] =
+          sync_invalidations_service->GetFCMHandlerForTesting();
+      fake_server_sync_invalidation_sender_->AddFCMHandler(
+          sync_invalidations_service->GetFCMHandlerForTesting());
+    }
   }
 
   SyncServiceImplHarness::SigninType signin_type =
@@ -972,9 +978,6 @@ void SyncTest::OnWillCreateBrowserContextServices(
           context,
           base::BindRepeating(&SyncTest::CreateProfileInvalidationProvider,
                               &profile_to_fcm_network_handler_map_));
-  SyncInvalidationsServiceFactory::GetInstance()->SetTestingFactory(
-      context, base::BindRepeating(&SyncTest::CreateSyncInvalidationsService,
-                                   base::Unretained(this)));
   gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactory(
       context, base::BindRepeating(&FakeSyncGCMDriver::Build));
 
@@ -1022,40 +1025,6 @@ std::unique_ptr<KeyedService> SyncTest::CreateProfileInvalidationProvider(
               -> std::unique_ptr<invalidation::InvalidationService> {
             return std::make_unique<invalidation::FakeInvalidationService>();
           }));
-}
-
-std::unique_ptr<KeyedService> SyncTest::CreateSyncInvalidationsService(
-    content::BrowserContext* context) {
-  if (!base::FeatureList::IsEnabled(syncer::kSyncSendInterestedDataTypes)) {
-    return nullptr;
-  }
-
-  Profile* profile = Profile::FromBrowserContext(context);
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
-  if (profile->GetPath() == ProfileManager::GetSystemProfilePath())
-    return nullptr;
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
-
-  gcm::GCMDriver* gcm_driver =
-      gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver();
-  instance_id::InstanceIDDriver* instance_id_driver =
-      instance_id::InstanceIDProfileServiceFactory::GetForProfile(profile)
-          ->driver();
-  auto service = std::make_unique<syncer::SyncInvalidationsServiceImpl>(
-      gcm_driver, instance_id_driver);
-
-  // If |fake_server_sync_invalidation_sender_| hasn't been created yet, it's
-  // likely for the profile which is used only on Android. Created FCM
-  // handlers will be added later once |fake_server_sync_invalidation_sender_|
-  // is initialized.
-  profile_to_fcm_handler_map_[profile] = service->GetFCMHandlerForTesting();
-  if (fake_server_sync_invalidation_sender_) {
-    fake_server_sync_invalidation_sender_->AddFCMHandler(
-        service->GetFCMHandlerForTesting());
-  }
-
-  return std::move(service);
 }
 
 void SyncTest::ResetSyncForPrimaryAccount() {

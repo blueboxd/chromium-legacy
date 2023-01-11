@@ -19,10 +19,11 @@ import {EventSourceType} from '../../common/event_source_type.js';
 import {Spannable} from '../../common/spannable.js';
 import {QueueMode} from '../../common/tts_types.js';
 import {ChromeVox} from '../chromevox.js';
+import {ChromeVoxRange} from '../chromevox_range.js';
 import {ChromeVoxState} from '../chromevox_state.js';
 import {CommandHandlerInterface} from '../command_handler_interface.js';
 import {DesktopAutomationInterface} from '../desktop_automation_interface.js';
-import {EventSourceState} from '../event_source.js';
+import {EventSource} from '../event_source.js';
 import {Output} from '../output/output.js';
 import {OutputNodeSpan, OutputSelectionSpan} from '../output/output_types.js';
 import {ChromeVoxPrefs} from '../prefs.js';
@@ -65,7 +66,7 @@ export class BrailleCommandHandler {
       return true;
     }
 
-    EventSourceState.set(EventSourceType.BRAILLE_KEYBOARD);
+    EventSource.set(EventSourceType.BRAILLE_KEYBOARD);
 
     // Try to restore to the last valid range.
     ChromeVoxState.instance.restoreLastValidRangeIfNeeded();
@@ -198,7 +199,7 @@ export class BrailleCommandHandler {
    * @private
    */
   static onEditCommand_(command) {
-    const current = ChromeVoxState.instance.currentRange;
+    const current = ChromeVoxRange.current;
     if (ChromeVoxPrefs.isStickyModeOn() || !current || !current.start ||
         !current.start.node || !current.start.node.state[StateType.EDITABLE]) {
       return true;

@@ -48,6 +48,8 @@ group("resources") {
       "side_panel:resources",
       "side_panel/bookmarks:resources",
       "side_panel/customize_chrome:resources",
+      "side_panel/history_clusters:resources",
+      "side_panel/reading_list:resources",
       "signin:resources",
       "support_tool:resources",
       "tab_search:resources",
@@ -144,7 +146,6 @@ if (enable_js_type_check) {
     if (is_android) {
       deps += [
         "explore_sites_internals:closure_compile",
-        "internals/notifications:closure_compile",
         "video_tutorials:closure_compile",
       ]
     }

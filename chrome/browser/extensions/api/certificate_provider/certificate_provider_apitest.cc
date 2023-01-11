@@ -10,13 +10,13 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/hash/sha1.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
@@ -225,13 +225,13 @@ class CertificateProviderApiTest : public extensions::ExtensionApiTest {
     // certificate selection dialog.
     const std::string autoselect_pattern = R"({"pattern": "*", "filter": {}})";
 
-    base::Value autoselect_policy(base::Value::Type::LIST);
+    base::Value::List autoselect_policy;
     autoselect_policy.Append(autoselect_pattern);
 
     policy_map_.Set(policy::key::kAutoSelectCertificateForUrls,
                     policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                    policy::POLICY_SOURCE_CLOUD, std::move(autoselect_policy),
-                    nullptr);
+                    policy::POLICY_SOURCE_CLOUD,
+                    base::Value(std::move(autoselect_policy)), nullptr);
     provider_.UpdateChromePolicy(policy_map_);
 
     content::RunAllPendingInMessageLoop();

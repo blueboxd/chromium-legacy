@@ -8,9 +8,9 @@
 #include <tuple>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/json/json_writer.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
@@ -25,9 +25,9 @@
 #include "chrome/common/extensions/api/chrome_web_view_internal.h"
 #include "chrome/common/extensions/api/context_menus.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/child_process_host.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"

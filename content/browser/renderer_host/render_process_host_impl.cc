@@ -85,6 +85,7 @@
 #include "content/browser/browser_context_impl.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/buckets/bucket_manager.h"
+#include "content/browser/child_process_host_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -101,7 +102,6 @@
 #include "content/browser/media/media_internals.h"
 #include "content/browser/metrics/histogram_controller.h"
 #include "content/browser/mime_registry_impl.h"
-#include "content/browser/native_io/native_io_context_impl.h"
 #include "content/browser/network_service_instance_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_app_context_impl.h"
@@ -124,12 +124,10 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/theme_helper.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
-#include "content/browser/v8_snapshot_files.h"
 #include "content/browser/web_database/web_database_host_impl.h"
 #include "content/browser/websockets/websocket_connector_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/child_process.mojom.h"
-#include "content/common/child_process_host_impl.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/in_process_child_thread_params.h"
@@ -138,6 +136,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_or_resource_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/network_service_instance.h"
@@ -154,7 +153,6 @@
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/weak_document_ptr.h"
 #include "content/public/browser/webrtc_log.h"
-#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -236,6 +234,10 @@
 
 #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID)
 #include "services/tracing/public/cpp/system_tracing_service.h"
+#endif
+
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
+#include "content/browser/v8_snapshot_files.h"
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -1196,6 +1198,11 @@ void InvokeBadMojoMessageCallbackForTesting(int render_process_id,
     callback.Run(render_process_id, error);
 }
 
+// Kill-switch for the new CHECKs from https://crrev.com/c/4134809.
+BASE_FEATURE(kCheckNoNewRefCountsWhenRphDeletingSoon,
+             "CheckNoNewRefCountsWhenRphDeletingSoon",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 }  // namespace
 
 // A RenderProcessHostImpl's IO thread implementation of the
@@ -1799,7 +1806,7 @@ bool RenderProcessHostImpl::Init() {
 #endif
 
     auto file_data = std::make_unique<ChildProcessLauncherFileData>();
-#if BUILDFLAG(IS_POSIX)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
     file_data->files_to_preload = GetV8SnapshotFilesToPreload();
 #endif
 
@@ -2015,15 +2022,6 @@ void RenderProcessHostImpl::GetSandboxedFileSystemForBucket(
           // the Quarantine Service.
           bucket.storage_key.origin().GetURL(), GetID()),
       bucket, std::move(callback));
-}
-
-void RenderProcessHostImpl::BindNativeIOHost(
-    const blink::StorageKey& storage_key,
-    mojo::PendingReceiver<blink::mojom::NativeIOHost> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* native_io_context = static_cast<NativeIOContextImpl*>(
-      storage_partition_impl_->GetNativeIOContext());
-  native_io_context->BindReceiver(storage_key, std::move(receiver));
 }
 
 void RenderProcessHostImpl::BindRestrictedCookieManagerForServiceWorker(
@@ -2675,7 +2673,9 @@ bool RenderProcessHostImpl::IsProcessBackgrounded() {
 void RenderProcessHostImpl::IncrementKeepAliveRefCount(uint64_t handle_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!are_ref_counts_disabled_);
-  CHECK(!deleting_soon_);
+  if (base::FeatureList::IsEnabled(kCheckNoNewRefCountsWhenRphDeletingSoon)) {
+    CHECK(!deleting_soon_);
+  }
   ++keep_alive_ref_count_;
   DCHECK(!keep_alive_start_times_.contains(handle_id));
   keep_alive_start_times_[handle_id] = base::Time::Now();
@@ -2751,7 +2751,9 @@ void RenderProcessHostImpl::UnregisterRenderFrameHost(
 void RenderProcessHostImpl::IncrementWorkerRefCount() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!are_ref_counts_disabled_);
-  CHECK(!deleting_soon_);
+  if (base::FeatureList::IsEnabled(kCheckNoNewRefCountsWhenRphDeletingSoon)) {
+    CHECK(!deleting_soon_);
+  }
   ++worker_ref_count_;
 }
 
@@ -2847,7 +2849,9 @@ void RenderProcessHostImpl::AddRoute(int32_t routing_id,
                                   ->set_render_process_host_listener_changed();
                 proto->set_routing_id(routing_id);
               });
-  CHECK(!deleting_soon_);
+  if (base::FeatureList::IsEnabled(kCheckNoNewRefCountsWhenRphDeletingSoon)) {
+    CHECK(!deleting_soon_);
+  }
   CHECK(!listeners_.Lookup(routing_id))
       << "Found Routing ID Conflict: " << routing_id;
   listeners_.AddWithID(listener, routing_id);
@@ -4331,11 +4335,6 @@ bool RenderProcessHostImpl::IsSuitableHost(
     }
   }
 
-  if (!GetContentClient()->browser()->IsSuitableHost(host,
-                                                     site_info.site_url())) {
-    return false;
-  }
-
   // If this site_info is going to require a dedicated process, then check
   // whether this process has a pending navigation to a URL for which
   // SiteInstance does not assign site URLs.  If this is the case, it is not
@@ -4353,7 +4352,11 @@ bool RenderProcessHostImpl::IsSuitableHost(
       return false;
   }
 
-  return true;
+  // Finally, let the embedder decide if there are any last reasons to consider
+  // this process unsuitable. This check is last so that it cannot override any
+  // of the earlier reasons.
+  return GetContentClient()->browser()->IsSuitableHost(host,
+                                                       site_info.site_url());
 }
 
 // static
@@ -5006,6 +5009,12 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
     DCHECK(!child_process_launcher_->IsStarting());
 #if BUILDFLAG(IS_ANDROID)
     child_process_launcher_->SetRenderProcessPriority(priority_);
+#elif BUILDFLAG(IS_MAC)
+    if (base::FeatureList::IsEnabled(
+            features::kMacAllowBackgroundingRenderProcesses)) {
+      child_process_launcher_->SetProcessBackgrounded(
+          priority_.is_background());
+    }
 #else
     child_process_launcher_->SetProcessBackgrounded(priority_.is_background());
 #endif
@@ -5385,6 +5394,8 @@ void RenderProcessHostImpl::ProvideSwapFileForRenderer() {
 
         int flags = base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_READ |
                     base::File::FLAG_WRITE | base::File::FLAG_DELETE_ON_CLOSE;
+        // This File is being passed to an untrusted renderer process.
+        flags = base::File::AddFlagsForPassingToUntrustedProcess(flags);
         return base::File(base::FilePath(path), flags);
       }),
       base::BindOnce(

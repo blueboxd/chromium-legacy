@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {AsyncUtil} from '../../common/async_util.js';
 import {AutomationPredicate} from '../../common/automation_predicate.js';
 import {AutomationUtil} from '../../common/automation_util.js';
 import {constants} from '../../common/constants.js';
 import {CursorRange} from '../../common/cursors/range.js';
 import {InstanceChecker} from '../../common/instance_checker.js';
 import {LocalStorage} from '../../common/local_storage.js';
-import {AbstractEarcons} from '../common/abstract_earcons.js';
 import {NavBraille} from '../common/braille/nav_braille.js';
 import {ContentScriptBridge} from '../common/content_script_bridge.js';
 import {LocaleOutputHelper} from '../common/locale_output_helper.js';
@@ -17,10 +17,12 @@ import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
 import {QueueMode, TtsSpeechProperties} from '../common/tts_types.js';
 import {JaPhoneticMap} from '../third_party/tamachiyomi/ja_phonetic_map.js';
 
+import {AbstractEarcons} from './abstract_earcons.js';
 import {AutoScrollHandler} from './auto_scroll_handler.js';
 import {BrailleBackground} from './braille/braille_background.js';
 import {BrailleCommandHandler} from './braille/braille_command_handler.js';
 import {ChromeVox} from './chromevox.js';
+import {ChromeVoxRange} from './chromevox_range.js';
 import {ChromeVoxState} from './chromevox_state.js';
 import {ChromeVoxBackground} from './classic_background.js';
 import {ClipboardHandler} from './clipboard_handler.js';
@@ -29,6 +31,7 @@ import {DesktopAutomationHandler} from './desktop_automation_handler.js';
 import {DesktopAutomationInterface} from './desktop_automation_interface.js';
 import {DownloadHandler} from './download_handler.js';
 import {Earcons} from './earcons.js';
+import {EventSource} from './event_source.js';
 import {FindHandler} from './find_handler.js';
 import {FocusAutomationHandler} from './focus_automation_handler.js';
 import {FocusBounds} from './focus_bounds.js';
@@ -52,10 +55,10 @@ import {TtsBackground} from './tts_background.js';
  * @fileoverview The entry point for all ChromeVox related code for the
  * background page.
  */
-
 const Dir = constants.Dir;
 const RoleType = chrome.automation.RoleType;
 const StateType = chrome.automation.StateType;
+
 /** ChromeVox background page. */
 export class Background extends ChromeVoxState {
   constructor() {
@@ -124,6 +127,7 @@ export class Background extends ChromeVoxState {
     ClipboardHandler.init();
     CommandHandler.init();
     DownloadHandler.init();
+    EventSource.init();
     FindHandler.init();
     FocusAutomationHandler.init();
     GestureCommandHandler.init();
@@ -194,8 +198,8 @@ export class Background extends ChromeVoxState {
     this.previousRange_ = this.currentRange_;
     this.currentRange_ = newRange;
 
-    ChromeVoxState.ready().then(ChromeVoxState.observers.forEach(
-        observer => observer.onCurrentRangeChanged(newRange, opt_fromEditing)));
+    ChromeVoxState.ready().then(
+        ChromeVoxRange.onCurrentRangeChanged(newRange, opt_fromEditing));
 
     if (!this.currentRange_) {
       FocusBounds.set([]);
@@ -351,8 +355,7 @@ export class Background extends ChromeVoxState {
 
   /** @private */
   async setCurrentRangeToFocus_() {
-    const focus =
-        await new Promise(resolve => chrome.automation.getFocus(resolve));
+    const focus = await AsyncUtil.getFocus();
     if (focus) {
       this.setCurrentRange(CursorRange.fromNode(focus));
     } else {

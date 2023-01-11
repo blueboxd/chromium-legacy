@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/network/cellular_connection_handler.h"
 #include "chromeos/ash/components/network/cellular_esim_installer.h"
@@ -122,7 +123,7 @@ void Euicc::InstallProfileFromActivationCode(
 
   esim_manager_->cellular_esim_installer()->InstallProfileFromActivationCode(
       activation_code, confirmation_code, path_,
-      /*new_shill_properties=*/base::DictionaryValue(),
+      /*new_shill_properties=*/base::Value(base::Value::Dict()),
       base::BindOnce(&Euicc::OnESimInstallProfileResult,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
       /*is_initial_install=*/true, is_install_via_qr_code);

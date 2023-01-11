@@ -37,6 +37,7 @@
 #include "chrome/browser/history_clusters/history_clusters_tab_helper.h"
 #include "chrome/browser/image_fetcher/image_fetcher_service_factory.h"
 #include "chrome/browser/login_detection/login_detection_tab_helper.h"
+#include "chrome/browser/lookalikes/safety_tip_web_contents_observer.h"
 #include "chrome/browser/media/history/media_history_contents_observer.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_observer.h"
@@ -60,7 +61,6 @@
 #include "chrome/browser/preloading/prefetch/prefetch_proxy/prefetch_proxy_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
-#include "chrome/browser/reputation/reputation_web_contents_observer.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/safe_browsing/chrome_safe_browsing_tab_observer_delegate.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
@@ -80,6 +80,7 @@
 #include "chrome/browser/sync/sync_encryption_keys_tab_helper.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
+#include "chrome/browser/ui/ash/google_one_offer_iph_tab_helper.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/focus_tab_after_navigation_helper.h"
@@ -109,6 +110,7 @@
 #include "components/client_hints/browser/client_hints_web_contents_observer.h"
 #include "components/commerce/content/browser/commerce_tab_helper.h"
 #include "components/commerce/core/commerce_feature_list.h"
+#include "components/commerce/core/shopping_service.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/download/content/factory/navigation_monitor_factory.h"
@@ -419,7 +421,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       std::make_unique<safe_browsing::ChromeSafeBrowsingTabObserverDelegate>());
   safe_browsing::TriggerCreator::MaybeCreateTriggersForWebContents(
       profile, web_contents);
-  ReputationWebContentsObserver::CreateForWebContents(web_contents);
+  SafetyTipWebContentsObserver::CreateForWebContents(web_contents);
   SearchEngineTabHelper::CreateForWebContents(web_contents);
   SecurityStateTabHelper::CreateForWebContents(web_contents);
   if (site_engagement::SiteEngagementService::IsEnabled()) {
@@ -523,6 +525,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   app_list::CrOSActionRecorderTabTracker::CreateForWebContents(web_contents);
+  GoogleOneOfferIphTabHelper::CreateForWebContents(web_contents);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -552,11 +555,15 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   if (user_notes::IsUserNotesEnabled() && !profile->IsOffTheRecord()) {
     user_notes::UserNotesTabHelper::CreateForWebContents(web_contents);
   }
-  if (base::FeatureList::IsEnabled(commerce::kShoppingList)) {
+
+  commerce::ShoppingService* shopping_service =
+      commerce::ShoppingServiceFactory::GetInstance()->GetForBrowserContext(
+          profile);
+  // The shopping service can be null in tests and is critical for the tab
+  // helper to be functional. If there's no service, don't create the helper.
+  if (shopping_service) {
     commerce::ShoppingListUiTabHelper::CreateForWebContents(
-        web_contents,
-        commerce::ShoppingServiceFactory::GetInstance()->GetForBrowserContext(
-            profile),
+        web_contents, shopping_service,
         ImageFetcherServiceFactory::GetForKey(profile->GetProfileKey()),
         profile->GetPrefs());
   }

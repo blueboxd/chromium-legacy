@@ -15,14 +15,14 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/containers/adapters.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/hash/hash.h"
 #include "base/logging.h"
@@ -37,6 +37,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner.h"
 #include "base/task/thread_pool.h"
 #include "components/reporting/compression/compression_module.h"

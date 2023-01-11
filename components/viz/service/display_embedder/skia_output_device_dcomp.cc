@@ -7,9 +7,9 @@
 #include <tuple>
 #include <utility>
 
-#include "base/callback_helpers.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/debug/alias.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/viz/common/gpu/context_lost_reason.h"
 #include "components/viz/service/display/dc_layer_overlay.h"
@@ -143,8 +143,7 @@ SkiaOutputDeviceDComp::SkiaOutputDeviceDComp(
 
   // SRGB
   constexpr SkColorType kSrgbColorType = kRGBA_8888_SkColorType;
-  // TODO(tangm): switch to kRGB_888x_SkColorType
-  constexpr SkColorType kSrgbColorTypeOpaque = kRGBA_8888_SkColorType;
+  constexpr SkColorType kSrgbColorTypeOpaque = kRGB_888x_SkColorType;
   capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBA_8888)] =
       kSrgbColorType;
   capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBX_8888)] =

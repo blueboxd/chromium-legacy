@@ -12,10 +12,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_memory.h"
@@ -1589,11 +1589,8 @@ bool TabsUpdateFunction::UpdateURL(const std::string& url_string,
     return false;
   }
 
-  const bool is_javascript_scheme = url.SchemeIs(url::kJavaScriptScheme);
-  UMA_HISTOGRAM_BOOLEAN("Extensions.ApiTabUpdateJavascript",
-                        is_javascript_scheme);
   // JavaScript URLs are forbidden in chrome.tabs.update().
-  if (is_javascript_scheme) {
+  if (url.SchemeIs(url::kJavaScriptScheme)) {
     *error = tabs_constants::kJavaScriptUrlsNotAllowedInTabsUpdate;
     return false;
   }

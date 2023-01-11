@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "ash/public/cpp/new_window_delegate.h"
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
@@ -26,6 +25,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/file_utils.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"

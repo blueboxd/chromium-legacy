@@ -5,6 +5,7 @@
 #include "chrome/browser/startup_data.h"
 
 #include "base/files/file_path.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
@@ -19,8 +20,8 @@
 #include "third_party/metrics_proto/system_profile.pb.h"
 
 #if BUILDFLAG(IS_ANDROID)
-#include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/path_service.h"
 #include "chrome/browser/android/profile_key_startup_accessor.h"
 #include "chrome/browser/policy/profile_policy_connector.h"

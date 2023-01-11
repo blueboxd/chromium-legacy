@@ -7,8 +7,8 @@
 #include <sys/stat.h>
 #include <utility>
 
-#include "base/callback.h"
 #include "base/files/file_util.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -232,7 +232,7 @@ void RunCreateCallback(
       storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED;
 
   auto outer_callback = base::BindPostTask(
-      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunner::GetCurrentDefault(),
       base::BindOnce(&RunCreateAndThenStatCallback, std::move(callback),
                      fs_context, read_only, fuse_handle,
                      std::move(on_failure)));
@@ -511,8 +511,18 @@ bool Server::ReadDir2MapEntry::Reply(uint64_t cookie,
 
   if (posix_error_code_ != 0) {
     response_.set_posix_error_code(posix_error_code_);
-  } else {
-    response_.set_cookie(has_more_ ? cookie : 0);
+  } else if (has_more_) {
+    if (response_.entries().empty()) {
+      // If we have nothing of interest to say (has_more_ is true but we have
+      // no entries yet) other than a non-zero cookie, there's no need to send
+      // a response. Otherwise, a non-zero cookie means that the RPC client
+      // will just immediately send another request, and we'll immediately send
+      // another empty response, and they'll immediately send another request,
+      // etc., burning CPU bouncing back and forth until we finally have some
+      // entries to send (or hit an error, or has_more_ becomes false).
+      return false;
+    }
+    response_.set_cookie(cookie);
   }
   std::move(callback_).Run(std::move(response_));
   response_ = ReadDir2ResponseProto();
@@ -708,7 +718,7 @@ void Server::Create(const CreateRequestProto& request_proto,
                                    weak_ptr_factory_.GetWeakPtr(), fuse_handle);
 
   auto outer_callback = base::BindPostTask(
-      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunner::GetCurrentDefault(),
       base::BindOnce(&RunCreateCallback, std::move(callback), common.fs_context,
                      common.fs_url, common.read_only, fuse_handle,
                      std::move(on_failure)));

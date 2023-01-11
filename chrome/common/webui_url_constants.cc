@@ -330,10 +330,9 @@ const char kChromeUICryptohomeHost[] = "cryptohome";
 const char kChromeUICryptohomeURL[] = "chrome://cryptohome";
 const char kChromeUIDeviceEmulatorHost[] = "device-emulator";
 const char kChromeUIDiagnosticsAppURL[] = "chrome://diagnostics";
-const char kChromeUIFirmwareUpdatesAppURL[] = "chrome://accessory-update";
-const char kChromeUIIntenetConfigDialogURL[] =
+const char kChromeUIInternetConfigDialogURL[] =
     "chrome://internet-config-dialog/";
-const char kChromeUIIntenetDetailDialogURL[] =
+const char kChromeUIInternetDetailDialogURL[] =
     "chrome://internet-detail-dialog/";
 const char kChromeUIInternetConfigDialogHost[] = "internet-config-dialog";
 const char kChromeUIInternetDetailDialogHost[] = "internet-detail-dialog";
@@ -578,6 +577,7 @@ const char kChromeUIWebRtcLogsHost[] = "webrtc-logs";
 // AutocompleteProvider.
 
 const char kAccessibilitySubPage[] = "accessibility";
+const char kAdPrivacySubPage[] = "adPrivacy";
 const char kAddressesSubPage[] = "addresses";
 const char kAppearanceSubPage[] = "appearance";
 const char kAutofillSubPage[] = "autofill";

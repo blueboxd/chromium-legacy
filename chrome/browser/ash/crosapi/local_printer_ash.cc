@@ -10,14 +10,15 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "chrome/browser/ash/printing/cups_print_job.h"
 #include "chrome/browser/ash/printing/cups_print_job_manager.h"
@@ -620,6 +621,14 @@ void LocalPrinterAsh::GetOAuthAccessToken(
   authenticator_ptr->ObtainAccessTokenIfNeeded(
       base::BindOnce(OnOAuthAccessTokenObtained, std::move(authenticator),
                      std::move(callback)));
+}
+
+void LocalPrinterAsh::GetIppClientInfo(const std::string& printer_id,
+                                       GetIppClientInfoCallback callback) {
+  // TODO(ust): Return 2 client-info values: one with OS info and
+  // another one with admin-configured client-name field.
+  NOTIMPLEMENTED_LOG_ONCE();
+  std::move(callback).Run({});
 }
 
 scoped_refptr<chromeos::PpdProvider> LocalPrinterAsh::CreatePpdProvider(

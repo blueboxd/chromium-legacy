@@ -9,20 +9,19 @@
 #include <string>
 #include <vector>
 
+#include "ash/accelerators/accelerator_alias_converter.h"
 #include "ash/accelerators/accelerator_layout_table.h"
 #include "ash/accelerators/ash_accelerator_configuration.h"
-#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/accelerators_util.h"
 #include "ash/public/mojom/accelerator_info.mojom-shared.h"
-#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom.h"
+#include "base/check.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/containers/flat_map.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
-#include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/clone_traits.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -174,13 +173,40 @@ mojom::AcceleratorLayoutInfoPtr LayoutInfoToMojom(
   return layout_info;
 }
 
-bool TopRowKeysAreFunctionKeys() {
-  const PrefService* pref_service =
-      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
-  if (!pref_service) {
-    return false;
+mojom::AcceleratorType GetAcceleratorType(ui::Accelerator accelerator) {
+  // TODO(longbowei): Add and handle more Accelerator types in the future.
+  if (Shell::Get()->ash_accelerator_configuration()->IsDeprecated(
+          accelerator)) {
+    return mojom::AcceleratorType::kDeprecated;
   }
-  return pref_service->GetBoolean(prefs::kSendFunctionKeys);
+  return mojom::AcceleratorType::kDefault;
+}
+
+// Create accelerator info using accelerator and extra properties.
+mojom::AcceleratorInfoPtr CreateStandardAcceleratorInfo(
+    const ui::Accelerator& accelerator,
+    bool locked,
+    mojom::AcceleratorType type,
+    mojom::AcceleratorState state) {
+  mojom::AcceleratorInfoPtr info_mojom = mojom::AcceleratorInfo::New();
+  info_mojom->locked = locked;
+  info_mojom->type = type;
+  info_mojom->state = state;
+  info_mojom->layout_properties =
+      mojom::LayoutStyleProperties::NewStandardAccelerator(
+          CreateStandardAcceleratorProps(accelerator));
+
+  return info_mojom;
+}
+
+// Create base accelerator info using accelerator.
+mojom::AcceleratorInfoPtr CreateBaseAcceleratorInfo(
+    const ui::Accelerator& accelerator) {
+  // TODO(longbowei): Some accelerators should not be locked when customization
+  // is allowed.
+  return CreateStandardAcceleratorInfo(accelerator, /*locked=*/true,
+                                       GetAcceleratorType(accelerator),
+                                       mojom::AcceleratorState::kEnabled);
 }
 
 }  // namespace
@@ -196,13 +222,16 @@ AcceleratorConfigurationProvider::AcceleratorConfigurationProvider()
   // Observe keyboard input method changes.
   input_method::InputMethodManager::Get()->AddObserver(this);
 
+  // Observe top row keys are f-keys preference changes.
+  Shell::Get()->keyboard_capability()->AddObserver(this);
+
   ash_accelerator_configuration_->AddAcceleratorsUpdatedCallback(
       base::BindRepeating(
           &AcceleratorConfigurationProvider::OnAcceleratorsUpdated,
           weak_ptr_factory_.GetWeakPtr()));
 
   UpdateKeyboards();
-  InitializeNonConfigurableAccelerators(GetTextDetailsMap());
+  InitializeNonConfigurableAccelerators(GetNonConfigurableActionsMap());
 
   // Create LayoutInfos from kAcceleratorLayouts. LayoutInfos are static
   // data that provides additional details for the app for styling.
@@ -217,6 +246,7 @@ AcceleratorConfigurationProvider::~AcceleratorConfigurationProvider() {
 
   ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
   input_method::InputMethodManager::Get()->RemoveObserver(this);
+  Shell::Get()->keyboard_capability()->RemoveObserver(this);
 }
 
 void AcceleratorConfigurationProvider::IsMutable(
@@ -261,6 +291,10 @@ void AcceleratorConfigurationProvider::InputMethodChanged(
   NotifyAcceleratorsUpdated();
 }
 
+void AcceleratorConfigurationProvider::OnTopRowKeysAreFKeysChanged() {
+  NotifyAcceleratorsUpdated();
+}
+
 void AcceleratorConfigurationProvider::GetAcceleratorLayoutInfos(
     GetAcceleratorLayoutInfosCallback callback) {
   std::move(callback).Run(mojo::Clone(layout_infos_));
@@ -274,15 +308,6 @@ void AcceleratorConfigurationProvider::BindInterface(
   receiver_.Bind(std::move(receiver));
 }
 
-mojom::AcceleratorType AcceleratorConfigurationProvider::GetAcceleratorType(
-    ui::Accelerator accelerator) const {
-  // TODO(longbowei): Add and handle more Accelerator types in the future.
-  if (ash_accelerator_configuration_->IsDeprecated(accelerator)) {
-    return mojom::AcceleratorType::kDeprecated;
-  }
-  return mojom::AcceleratorType::kDefault;
-}
-
 void AcceleratorConfigurationProvider::UpdateKeyboards() {
   ui::DeviceDataManager* device_data_manager =
       ui::DeviceDataManager::GetInstance();
@@ -293,7 +318,7 @@ void AcceleratorConfigurationProvider::UpdateKeyboards() {
 }
 
 void AcceleratorConfigurationProvider::InitializeNonConfigurableAccelerators(
-    NonConfigurableActionsTextDetailsMap mapping) {
+    NonConfigurableActionsMap mapping) {
   non_configurable_actions_mapping_ = std::move(mapping);
   NotifyAcceleratorsUpdated();
 }
@@ -312,31 +337,50 @@ void AcceleratorConfigurationProvider::NotifyAcceleratorsUpdated() {
   }
 }
 
+std::vector<mojom::AcceleratorInfoPtr>
+AcceleratorConfigurationProvider::CreateAcceleratorInfos(
+    const std::vector<ui::Accelerator>& accelerators) const {
+  std::vector<mojom::AcceleratorInfoPtr> infos_mojom;
+  for (const auto& accelerator : accelerators) {
+    // Get the alias accelerators by doing F-Keys remapping and
+    // six-pack-keys remapping if applicable.
+    std::vector<ui::Accelerator> accelerator_aliases =
+        accelerator_alias_converter_.CreateAcceleratorAlias(accelerator);
+    for (const auto& accelerator_alias : accelerator_aliases) {
+      infos_mojom.push_back(CreateBaseAcceleratorInfo(accelerator_alias));
+    }
+  }
+  return infos_mojom;
+}
+
 mojom::TextAcceleratorPropertiesPtr
 AcceleratorConfigurationProvider::CreateTextAcceleratorProperties(
-    const AcceleratorTextDetails& details) {
+    const NonConfigurableAcceleratorDetails& details) {
+  DCHECK(details.replacements.has_value());
+  DCHECK(details.message_id.has_value());
   // Contains the start points of the replaced strings.
   std::vector<size_t> offsets;
   const std::vector<std::u16string> empty_string_replacements(
-      details.replacements.size());
+      details.replacements.value().size());
   // Pass an array of empty strings to get the offsets of the replacements. The
   // return string has the placeholders removed.
   const auto replaced_string = l10n_util::GetStringFUTF16(
-      details.message_id, empty_string_replacements, &offsets);
+      details.message_id.value(), empty_string_replacements, &offsets);
 
   // Sort the offsets and split the string on the offsets.
   sort(offsets.begin(), offsets.end());
   const auto plain_text_parts = SplitStringOnOffsets(replaced_string, offsets);
 
   auto text_accelerator_parts = GenerateTextAcceleratorParts(
-      plain_text_parts, details.replacements, offsets, replaced_string.size());
+      plain_text_parts, details.replacements.value(), offsets,
+      replaced_string.size());
   return mojom::TextAcceleratorProperties::New(
       std::move(text_accelerator_parts));
 }
 
 mojom::AcceleratorInfoPtr
 AcceleratorConfigurationProvider::CreateTextAcceleratorInfo(
-    const AcceleratorTextDetails& details) {
+    const NonConfigurableAcceleratorDetails& details) {
   mojom::AcceleratorInfoPtr info_mojom = mojom::AcceleratorInfo::New();
   info_mojom->locked = true;
   info_mojom->type = mojom::AcceleratorType::kDefault;
@@ -347,116 +391,6 @@ AcceleratorConfigurationProvider::CreateTextAcceleratorInfo(
   return info_mojom;
 }
 
-mojom::AcceleratorInfoPtr
-AcceleratorConfigurationProvider::CreateStandardAcceleratorInfo(
-    const ui::Accelerator& accelerator,
-    bool locked,
-    mojom::AcceleratorType type,
-    mojom::AcceleratorState state) const {
-  mojom::AcceleratorInfoPtr info_mojom = mojom::AcceleratorInfo::New();
-  info_mojom->locked = locked;
-  info_mojom->type = type;
-  info_mojom->state = state;
-  info_mojom->layout_properties =
-      mojom::LayoutStyleProperties::NewStandardAccelerator(
-          CreateStandardAcceleratorProps(accelerator));
-
-  return info_mojom;
-}
-
-mojom::AcceleratorInfoPtr
-AcceleratorConfigurationProvider::CreateBaseAcceleratorInfo(
-    const ui::Accelerator& accelerator) const {
-  // TODO(longbowei): Some accelerators should not be locked when customization
-  // is allowed.
-  return CreateStandardAcceleratorInfo(accelerator, /*locked=*/true,
-                                       GetAcceleratorType(accelerator),
-                                       mojom::AcceleratorState::kEnabled);
-}
-
-mojom::AcceleratorInfoPtr
-AcceleratorConfigurationProvider::CreateRemappedTopRowAcceleratorInfo(
-    const ui::Accelerator& accelerator) const {
-  // Avoid remapping if [Search] is part of original accelerator.
-  if (accelerator.IsCmdDown() || !TopRowKeysAreFunctionKeys() ||
-      !ui::kLayout2TopRowKeyToFKeyMap.contains(accelerator.key_code())) {
-    // No remapping is done.
-    return nullptr;
-  }
-  // If top row keys are function keys, top row shortcut will become
-  // [Fkey] + [search] + [modifiers]
-  ui::Accelerator updated_accelerator(
-      ui::kLayout2TopRowKeyToFKeyMap.at(accelerator.key_code()),
-      accelerator.modifiers() | ui::EF_COMMAND_DOWN, accelerator.key_state());
-  return CreateBaseAcceleratorInfo(updated_accelerator);
-}
-
-mojom::AcceleratorInfoPtr
-AcceleratorConfigurationProvider::CreateRemappedSixPackAcceleratorInfo(
-    const ui::Accelerator& accelerator) const {
-  // For all six-pack-keys, avoid remapping if [Search] is part of
-  // original accelerator.
-  if (accelerator.IsCmdDown() ||
-      !::features::IsImprovedKeyboardShortcutsEnabled() ||
-      !ui::kSixPackKeyToSystemKeyMap.contains(accelerator.key_code())) {
-    return nullptr;
-  }
-  // Edge cases:
-  // 1. [Shift] + [Delete] should not be remapped to [Shift] + [Search] +
-  // [Back] (aka, Insert).
-  // 2. For [Insert], avoid remapping if [Shift] is part of original
-  // accelerator.
-  if (accelerator.IsShiftDown() &&
-      (accelerator.key_code() == ui::KeyboardCode::VKEY_DELETE ||
-       accelerator.key_code() == ui::KeyboardCode::VKEY_INSERT)) {
-    return nullptr;
-  }
-  // For Insert: [modifiers] = [Search] + [Shift] + [original_modifiers].
-  // For other six-pack-keys: [modifiers] = [Search] + [original_modifiers].
-  int updated_modifiers =
-      accelerator.key_code() == ui::KeyboardCode::VKEY_INSERT
-          ? accelerator.modifiers() | ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN
-          : accelerator.modifiers() | ui::EF_COMMAND_DOWN;
-  ui::Accelerator updated_accelerator =
-      ui::Accelerator(ui::kSixPackKeyToSystemKeyMap.at(accelerator.key_code()),
-                      updated_modifiers, accelerator.key_state());
-
-  return CreateBaseAcceleratorInfo(updated_accelerator);
-}
-
-std::vector<mojom::AcceleratorInfoPtr>
-AcceleratorConfigurationProvider::CreateAcceleratorInfoVariants(
-    const ui::Accelerator& accelerator) const {
-  std::vector<mojom::AcceleratorInfoPtr> alias_infos;
-
-  if (Shell::Get()->keyboard_capability()->IsTopRowKey(
-          accelerator.key_code())) {
-    // For |top_row_key|, replace the base accelerator info with top-row
-    // remapped accelerator info if remapping is done. Otherwise, only show base
-    // accelerator info.
-    if (auto result_ptr = CreateRemappedTopRowAcceleratorInfo(accelerator);
-        result_ptr) {
-      alias_infos.push_back(std::move(result_ptr));
-      return alias_infos;
-    }
-  }
-
-  if (Shell::Get()->keyboard_capability()->IsSixPackKey(
-          accelerator.key_code())) {
-    // For |six_pack_key|, show both the base accelerator info and the six-pack
-    // remapped accelerator info if remapping is done. Otherwise, only show base
-    // accelerator info.
-    if (auto result_ptr = CreateRemappedSixPackAcceleratorInfo(accelerator);
-        result_ptr) {
-      alias_infos.push_back(std::move(result_ptr));
-    }
-  }
-
-  // Add base accelerator info.
-  alias_infos.push_back(CreateBaseAcceleratorInfo(accelerator));
-  return alias_infos;
-}
-
 AcceleratorConfigurationProvider::AcceleratorConfigurationMap
 AcceleratorConfigurationProvider::CreateConfigurationMap() {
   AcceleratorConfigurationMap accelerator_config;
@@ -465,35 +399,37 @@ AcceleratorConfigurationProvider::CreateConfigurationMap() {
     base::flat_map<AcceleratorActionId, std::vector<mojom::AcceleratorInfoPtr>>
         accelerators_mojom;
     for (const auto& [action_id, accelerators] : id_to_accelerators) {
-      std::vector<mojom::AcceleratorInfoPtr> infos_mojom;
-      for (const auto& accelerator : accelerators) {
-        // Get the alias acceleratorInfos by doing F-keys remapping and
-        // six-pack-keys remapping if applicable.
-        std::vector<mojom::AcceleratorInfoPtr> infos =
-            CreateAcceleratorInfoVariants(accelerator);
-        for (auto& info : infos) {
-          infos_mojom.push_back(std::move(info));
-        }
-      }
-      accelerators_mojom.emplace(action_id, std::move(infos_mojom));
+      accelerators_mojom.emplace(action_id,
+                                 CreateAcceleratorInfos(accelerators));
     }
     accelerator_config.emplace(source, std::move(accelerators_mojom));
   }
 
   // Add non-configuarable accelerators.
-  for (const auto& [ambient_action_id, accelerator_text_details] :
+  ActionIdToAcceleratorsInfoMap non_configurable_accelerators;
+  for (const auto& [ambient_action_id, accelerators_details] :
        non_configurable_actions_mapping_) {
-    ActionIdToAcceleratorsInfoMap non_configurable_accelerators;
-    // For text based layout accelerators, we always expect this to be a vector
-    // with a single element.
-    std::vector<mojom::AcceleratorInfoPtr> text_accelerators_info;
-    text_accelerators_info.push_back(
-        CreateTextAcceleratorInfo(accelerator_text_details));
-    non_configurable_accelerators.emplace(ambient_action_id,
-                                          std::move(text_accelerators_info));
-    accelerator_config.emplace(mojom::AcceleratorSource::kAmbient,
-                               std::move(non_configurable_accelerators));
+    if (accelerators_details.IsStandardAccelerator()) {
+      // These properties should only be set for text based layout accelerators
+      DCHECK(!accelerators_details.replacements.has_value());
+      DCHECK(!accelerators_details.message_id.has_value());
+      non_configurable_accelerators.emplace(
+          ambient_action_id,
+          CreateAcceleratorInfos(accelerators_details.accelerators.value()));
+    } else {
+      // This property should only be set for standard accelerators
+      DCHECK(!accelerators_details.accelerators.has_value());
+      // For text-based layout accelerators, we always expect this to be a
+      // vector with a single element.
+      std::vector<mojom::AcceleratorInfoPtr> text_accelerators_info;
+      text_accelerators_info.push_back(
+          CreateTextAcceleratorInfo(accelerators_details));
+      non_configurable_accelerators.emplace(ambient_action_id,
+                                            std::move(text_accelerators_info));
+    }
   }
+  accelerator_config.emplace(mojom::AcceleratorSource::kAmbient,
+                             std::move(non_configurable_accelerators));
   return accelerator_config;
 }
 

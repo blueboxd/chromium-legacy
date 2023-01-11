@@ -4,19 +4,22 @@
 
 // Include test fixture.
 GEN_INCLUDE([
-  '../testing/chromevox_next_e2e_test_base.js',
+  '../testing/chromevox_e2e_test_base.js',
 ]);
 
 /**
  * Test fixture for ChromeVox Learn Mode page.
  */
-ChromeVoxLearnModeTest = class extends ChromeVoxNextE2ETest {
+ChromeVoxLearnModeTest = class extends ChromeVoxE2ETest {
   constructor() {
     super();
-    window.doKeyDown = this.doKeyDown.bind(this);
-    window.doKeyUp = this.doKeyUp.bind(this);
-    window.doLearnModeGesture = this.doLearnModeGesture.bind(this);
-    window.doBrailleKeyEvent = this.doBrailleKeyEvent.bind(this);
+    globalThis.EventType = chrome.automation.EventType;
+    globalThis.Gesture = chrome.accessibilityPrivate.Gesture;
+
+    globalThis.doKeyDown = this.doKeyDown.bind(this);
+    globalThis.doKeyUp = this.doKeyUp.bind(this);
+    globalThis.doLearnModeGesture = this.doLearnModeGesture.bind(this);
+    globalThis.doBrailleKeyEvent = this.doBrailleKeyEvent.bind(this);
   }
 
   /** @override */

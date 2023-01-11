@@ -1113,7 +1113,14 @@ message DeviceLoginScreenExtensionsProto {
 
 // A boolean indicate if manifest v2 extension is available.
 message LoginScreenExtensionManifestV2AvailabilityProto {
-  optional bool login_screen_extension_manifest_v2_availability = 1;
+  enum Availability {
+    DEFAULT = 0;
+    DISABLE = 1;
+    ENABLE = 2;
+    ENABLE_FOR_FORCED_EXTENSIONS = 3;
+  }
+
+  optional Availability login_screen_extension_manifest_v2_availability = 1;
 }
 
 // A list of allowed locales on the login screen.
@@ -1671,7 +1678,7 @@ message DevicePciPeripheralDataAccessEnabledProtoV2 {
 }
 
 // Setting that controls whether Borealis will be allowed on the device.
-message DeviceBorealisAllowedProto {
+message OBSOLETE_DeviceBorealisAllowedProto {
   optional bool allowed = 1 [default = true];
 }
 
@@ -1885,7 +1892,8 @@ message ChromeDeviceSettingsProto {
       device_system_wide_tracing_enabled = 117;
   optional DevicePciPeripheralDataAccessEnabledProto
       device_pci_peripheral_data_access_enabled = 118;
-  optional DeviceBorealisAllowedProto device_borealis_allowed = 119;
+  optional OBSOLETE_DeviceBorealisAllowedProto device_borealis_allowed = 119
+      [deprecated = true];
   optional DeviceAllowedBluetoothServicesProto
       device_allowed_bluetooth_services = 120;
   optional DeviceDebugPacketCaptureAllowedProto

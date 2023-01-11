@@ -104,11 +104,6 @@ BASE_FEATURE(kAutofillConsiderPhoneNumberSeparatorsValidLabels,
              "AutofillConsiderPhoneNumberSeparatorsValidLabels",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, local heuristics fall back to the fields placeholder attribute.
-BASE_FEATURE(kAutofillConsiderPlaceholderForParsing,
-             "AutofillConsiderPlaceholderForParsing",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // If enabled, three address profiles are created for testing.
 BASE_FEATURE(kAutofillCreateDataForTest,
              "AutofillCreateDataForTest",
@@ -180,6 +175,17 @@ const base::FeatureParam<int> kAutofillRankingFormulaVirtualCardBoost{
 const base::FeatureParam<int> kAutofillRankingFormulaVirtualCardBoostHalfLife{
     &kAutofillEnableRankingFormula,
     "autofill_ranking_formula_virtual_card_boost_half_life", 15};
+
+// When enabled, autofill will use the new ranking algorithm for address profile
+// autofill suggestions.
+BASE_FEATURE(kAutofillEnableRankingFormulaAddressProfiles,
+             "AutofillEnableRankingFormulaAddressProfiles",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+// The half life applied to the use count of profiles in the ranking formula.
+const base::FeatureParam<int>
+    kAutofillRankingFormulaAddressProfilesUsageHalfLife{
+        &kAutofillEnableRankingFormulaAddressProfiles,
+        "autofill_ranking_formula_address_profiles_usage_half_life", 20};
 
 // Controls if the heuristic field parsing utilizes shared labels.
 // TODO(crbug.com/1165780): Remove once shared labels are launched.
@@ -390,6 +396,16 @@ BASE_FEATURE(kAutofillParseAsync,
 // TODO(crbug.com/1345879) Remove once launched.
 BASE_FEATURE(kAutofillParseNameAsAutocompleteType,
              "AutofillParseNameAsAutocompleteType",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, the placeholder is not used as a fallback during label inference.
+// Instead, local heuristics treat it as a separate source in addition to the
+// label. The placeholder is matched against the same regex as the label.
+// Since placeholders are often used as example values, this should allow us to
+// extract a more appropriate label instead.
+// TODO(crbug.com/1317961): Remove once launched.
+BASE_FEATURE(kAutofillAlwaysParsePlaceholders,
+             "AutofillAlwaysParsePlaceholders",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If the feature is enabled, FormTracker's probable-form-submission detection

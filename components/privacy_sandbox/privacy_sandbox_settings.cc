@@ -7,6 +7,7 @@
 
 #include "base/feature_list.h"
 #include "base/json/values_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
@@ -60,6 +61,11 @@ base::Value CreateBlockedTopicEntry(const CanonicalTopic& topic) {
 
 }  // namespace
 
+// static
+bool PrivacySandboxSettings::IsAllowed(Status status) {
+  return status == Status::kAllowed;
+}
+
 PrivacySandboxSettings::PrivacySandboxSettings(
     std::unique_ptr<Delegate> delegate,
     HostContentSettingsMap* host_content_settings_map,
@@ -94,10 +100,18 @@ PrivacySandboxSettings::PrivacySandboxSettings(
 
 PrivacySandboxSettings::~PrivacySandboxSettings() = default;
 
+PrivacySandboxSettings::Status PrivacySandboxSettings::GetM1TopicAllowedStatus()
+    const {
+  return GetM1PrivacySandboxApiEnabledStatus(
+      prefs::kPrivacySandboxM1TopicsEnabled);
+}
+
 bool PrivacySandboxSettings::IsTopicsAllowed() const {
   // M1 specific
   if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
-    return IsM1PrivacySandboxApiEnabled(prefs::kPrivacySandboxM1TopicsEnabled);
+    Status status = GetM1TopicAllowedStatus();
+    base::UmaHistogramEnumeration("PrivacySandbox.IsTopicsAllowed", status);
+    return IsAllowed(status);
   }
 
   // Topics API calculation should be prevented if the user has blocked 3PC
@@ -120,7 +134,13 @@ bool PrivacySandboxSettings::IsTopicsAllowedForContext(
     const GURL& url) const {
   // M1 specific
   if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
-    return IsTopicsAllowed() && IsAccessAllowed(top_frame_origin, url);
+    Status status = GetM1TopicAllowedStatus();
+    if (IsAllowed(status)) {
+      status = GetSiteAccessAllowedStatus(top_frame_origin, url);
+    }
+    base::UmaHistogramEnumeration("PrivacySandbox.IsTopicsAllowedForContext",
+                                  status);
+    return IsAllowed(status);
   }
 
   // If the Topics API is disabled completely, it is not available in any
@@ -198,14 +218,30 @@ base::Time PrivacySandboxSettings::TopicsDataAccessibleSince() const {
       prefs::kPrivacySandboxTopicsDataAccessibleSince);
 }
 
+PrivacySandboxSettings::Status
+PrivacySandboxSettings::GetM1AttributionReportingAllowedStatus(
+    const url::Origin& top_frame_origin,
+    const url::Origin& reporting_origin) const {
+  Status status = GetM1PrivacySandboxApiEnabledStatus(
+      prefs::kPrivacySandboxM1AdMeasurementEnabled);
+  if (!IsAllowed(status)) {
+    return status;
+  }
+
+  return GetSiteAccessAllowedStatus(top_frame_origin,
+                                    reporting_origin.GetURL());
+}
+
 bool PrivacySandboxSettings::IsAttributionReportingAllowed(
     const url::Origin& top_frame_origin,
     const url::Origin& reporting_origin) const {
   // M1 specific
   if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
-    return IsM1PrivacySandboxApiEnabled(
-               prefs::kPrivacySandboxM1AdMeasurementEnabled) &&
-           IsAccessAllowed(top_frame_origin, reporting_origin.GetURL());
+    Status status = GetM1AttributionReportingAllowedStatus(top_frame_origin,
+                                                           reporting_origin);
+    base::UmaHistogramEnumeration(
+        "PrivacySandbox.IsAttributionReportingAllowed", status);
+    return IsAllowed(status);
   }
 
   return IsPrivacySandboxEnabledForContext(top_frame_origin,
@@ -218,12 +254,17 @@ bool PrivacySandboxSettings::MaySendAttributionReport(
     const url::Origin& reporting_origin) const {
   // M1 specific
   if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
-    return IsAttributionReportingAllowed(
-               /*top_frame_origin=*/source_origin,
-               /*reporting_origin=*/reporting_origin) &&
-           IsAttributionReportingAllowed(
-               /*top_frame_origin=*/destination_origin,
-               /*reporting_origin=*/reporting_origin);
+    Status status = GetM1AttributionReportingAllowedStatus(
+        /*top_frame_origin=*/source_origin,
+        /*reporting_origin=*/reporting_origin);
+    if (IsAllowed(status)) {
+      status = GetM1AttributionReportingAllowedStatus(
+          /*top_frame_origin=*/destination_origin,
+          /*reporting_origin=*/reporting_origin);
+    }
+    base::UmaHistogramEnumeration("PrivacySandbox.MaySendAttributionReport",
+                                  status);
+    return IsAllowed(status);
   }
 
   // The |reporting_origin| needs to have been accessible in both source
@@ -326,13 +367,25 @@ bool PrivacySandboxSettings::IsFledgeJoiningAllowed(
   return true;
 }
 
+PrivacySandboxSettings::Status PrivacySandboxSettings::GetM1FledgeAllowedStatus(
+    const url::Origin& top_frame_origin,
+    const url::Origin& auction_party) const {
+  Status status = GetM1PrivacySandboxApiEnabledStatus(
+      prefs::kPrivacySandboxM1FledgeEnabled);
+  if (!IsAllowed(status)) {
+    return status;
+  }
+
+  return GetSiteAccessAllowedStatus(top_frame_origin, auction_party.GetURL());
+}
+
 bool PrivacySandboxSettings::IsFledgeAllowed(
     const url::Origin& top_frame_origin,
     const url::Origin& auction_party) const {
   if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
-    return IsM1PrivacySandboxApiEnabled(
-               prefs::kPrivacySandboxM1FledgeEnabled) &&
-           IsAccessAllowed(top_frame_origin, auction_party.GetURL());
+    Status status = GetM1FledgeAllowedStatus(top_frame_origin, auction_party);
+    base::UmaHistogramEnumeration("PrivacySandbox.IsFledgeAllowed", status);
+    return IsAllowed(status);
   }
 
   return IsPrivacySandboxEnabledForContext(top_frame_origin,
@@ -342,6 +395,17 @@ bool PrivacySandboxSettings::IsFledgeAllowed(
 bool PrivacySandboxSettings::IsSharedStorageAllowed(
     const url::Origin& top_frame_origin,
     const url::Origin& accessing_origin) const {
+  if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
+    Status status = GetPrivacySandboxAllowedStatus();
+    if (IsAllowed(status)) {
+      status = GetSiteAccessAllowedStatus(top_frame_origin,
+                                          accessing_origin.GetURL());
+    }
+    base::UmaHistogramEnumeration("PrivacySandbox.IsSharedStorageAllowed",
+                                  status);
+    return IsAllowed(status);
+  }
+
   // Ensures that Shared Storage is only allowed if both Privacy Sandbox is
   // enabled and full cookie access is enabled for this context.
   return IsPrivacySandboxEnabledForContext(top_frame_origin,
@@ -351,25 +415,35 @@ bool PrivacySandboxSettings::IsSharedStorageAllowed(
 bool PrivacySandboxSettings::IsSharedStorageSelectURLAllowed(
     const url::Origin& top_frame_origin,
     const url::Origin& accessing_origin) const {
-  // TODO(crbug.com/1378703): Respect appropriate M1 pref and site data settings
-  // when release 4 is enabled.
+  if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
+    Status status =
+        GetM1FledgeAllowedStatus(top_frame_origin, accessing_origin);
+    base::UmaHistogramEnumeration(
+        "PrivacySandbox.IsSharedStorageSelectURLAllowed", status);
+    return IsAllowed(status);
+  }
+
   return IsSharedStorageAllowed(top_frame_origin, accessing_origin);
 }
 
 bool PrivacySandboxSettings::IsPrivateAggregationAllowed(
     const url::Origin& top_frame_origin,
     const url::Origin& reporting_origin) const {
+  if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
+    Status status = GetM1AttributionReportingAllowedStatus(top_frame_origin,
+                                                           reporting_origin);
+    base::UmaHistogramEnumeration("PrivacySandbox.IsPrivateAggregationAllowed",
+                                  status);
+    return IsAllowed(status);
+  }
+
   return IsPrivacySandboxEnabledForContext(top_frame_origin,
                                            reporting_origin.GetURL());
 }
 
 bool PrivacySandboxSettings::IsPrivacySandboxEnabled() const {
-  // If the delegate is restricting access the Privacy Sandbox is disabled.
-  if (delegate_->IsPrivacySandboxRestricted()) {
-    return false;
-  }
-
-  if (delegate_->IsIncognitoProfile()) {
+  PrivacySandboxSettings::Status status = GetPrivacySandboxAllowedStatus();
+  if (!IsAllowed(status)) {
     return false;
   }
 
@@ -477,7 +551,8 @@ void PrivacySandboxSettings::SetTopicsDataAccessibleFromNow() const {
   }
 }
 
-bool PrivacySandboxSettings::IsAccessAllowed(
+PrivacySandboxSettings::Status
+PrivacySandboxSettings::GetSiteAccessAllowedStatus(
     const url::Origin& top_frame_origin,
     const GURL& url) const {
   // Relying on |host_content_settings_map_| instead of |cookie_settings_|
@@ -485,22 +560,35 @@ bool PrivacySandboxSettings::IsAccessAllowed(
   // access Site data (aka ContentSettingsType::COOKIES) without considering any
   // 3P cookie blocking setting.
   return content_settings::CookieSettingsBase::IsAllowed(
-      host_content_settings_map_->GetContentSetting(
-          url, top_frame_origin.GetURL(), ContentSettingsType::COOKIES));
+             host_content_settings_map_->GetContentSetting(
+                 url, top_frame_origin.GetURL(), ContentSettingsType::COOKIES))
+             ? Status::kAllowed
+             : Status::kSiteDataAccessBlocked;
 }
 
-bool PrivacySandboxSettings::IsM1PrivacySandboxApiEnabled(
+PrivacySandboxSettings::Status
+PrivacySandboxSettings::GetPrivacySandboxAllowedStatus() const {
+  if (delegate_->IsIncognitoProfile()) {
+    return Status::kIncognitoProfile;
+  }
+
+  if (IsPrivacySandboxRestricted()) {
+    return Status::kRestricted;
+  }
+
+  return Status::kAllowed;
+}
+
+PrivacySandboxSettings::Status
+PrivacySandboxSettings::GetM1PrivacySandboxApiEnabledStatus(
     const std::string& pref_name) const {
   DCHECK(pref_name == prefs::kPrivacySandboxM1TopicsEnabled ||
          pref_name == prefs::kPrivacySandboxM1FledgeEnabled ||
          pref_name == prefs::kPrivacySandboxM1AdMeasurementEnabled);
 
-  if (delegate_->IsIncognitoProfile()) {
-    return false;
-  }
-
-  if (IsPrivacySandboxRestricted()) {
-    return false;
+  PrivacySandboxSettings::Status status = GetPrivacySandboxAllowedStatus();
+  if (!IsAllowed(status)) {
+    return status;
   }
 
   // For Measurement and Relevance APIs, we explicitly do not require the
@@ -508,10 +596,12 @@ bool PrivacySandboxSettings::IsM1PrivacySandboxApiEnabled(
   // allow for local testing.
   if (base::FeatureList::IsEnabled(
           privacy_sandbox::kOverridePrivacySandboxSettingsLocalTesting)) {
-    return true;
+    return Status::kAllowed;
   }
 
-  return pref_service_->GetBoolean(pref_name);
+  status = (pref_service_->GetBoolean(pref_name)) ? Status::kAllowed
+                                                  : Status::kApisDisabled;
+  return status;
 }
 
 }  // namespace privacy_sandbox

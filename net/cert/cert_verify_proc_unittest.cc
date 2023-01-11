@@ -4652,6 +4652,75 @@ TEST_P(CertVerifyProcConstraintsTest, PolicyConstraints0Leaf) {
   }
 }
 
+TEST_P(CertVerifyProcConstraintsTest, InhibitPolicyMapping0Root) {
+  static const char kPolicy1[] = "1.2.3.4";
+  static const char kPolicy2[] = "1.2.3.5";
+
+  // Root inhibits policy mapping immediately.
+  chain_[3]->SetPolicyConstraints(
+      /*require_explicit_policy=*/absl::nullopt,
+      /*inhibit_policy_mapping=*/0);
+
+  // Policy constraints are specified on an intermediate so that an explicit
+  // policy will be required regardless if root constraints are applied.
+  chain_[2]->SetPolicyConstraints(
+      /*require_explicit_policy=*/0,
+      /*inhibit_policy_mapping=*/absl::nullopt);
+
+  // Intermediate uses policy mappings. This should not be allowed if the root
+  // constraints were enforced.
+  chain_[2]->SetCertificatePolicies({kPolicy1});
+  chain_[2]->SetPolicyMappings({{kPolicy1, kPolicy2}});
+
+  // Children require the policy mapping to have a valid policy.
+  chain_[1]->SetCertificatePolicies({kPolicy2});
+  chain_[0]->SetCertificatePolicies({kPolicy2});
+
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(Verify(), IsOk());
+    // TODO(https://crbug.com/1072083): enforce this:
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+  } else if (verify_proc_type() == CERT_VERIFY_PROC_MAC ||
+             verify_proc_type() == CERT_VERIFY_PROC_IOS ||
+             verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+    EXPECT_THAT(Verify(), IsOk());
+  } else {
+    // Windows enforces inhibitPolicyMapping on the root.
+    EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+  }
+}
+
+TEST_P(CertVerifyProcConstraintsTest, InhibitPolicyMapping1Root) {
+  static const char kPolicy1[] = "1.2.3.4";
+  static const char kPolicy2[] = "1.2.3.5";
+
+  // Root inhibits policy mapping after 1 cert.
+  chain_[3]->SetPolicyConstraints(
+      /*require_explicit_policy=*/absl::nullopt,
+      /*inhibit_policy_mapping=*/1);
+
+  // Policy constraints are specified on an intermediate so that an explicit
+  // policy will be required regardless if root constraints are applied.
+  chain_[2]->SetPolicyConstraints(
+      /*require_explicit_policy=*/0,
+      /*inhibit_policy_mapping=*/absl::nullopt);
+
+  // Intermediate uses policy mappings. This should be allowed even if the root
+  // constraints were enforced, since policy mapping was allowed for 1 cert
+  // following the root.
+  chain_[2]->SetCertificatePolicies({kPolicy1});
+  chain_[2]->SetPolicyMappings({{kPolicy1, kPolicy2}});
+
+  // Children require the policy mapping to have a valid policy.
+  chain_[1]->SetCertificatePolicies({kPolicy2});
+  chain_[0]->SetCertificatePolicies({kPolicy2});
+
+  EXPECT_THAT(Verify(), IsOk());
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+  }
+}
+
 TEST_P(CertVerifyProcConstraintsTest, InhibitAnyPolicy0Root) {
   static const char kAnyPolicy[] = "2.5.29.32.0";
   static const char kPolicy1[] = "1.2.3.4";
@@ -4781,6 +4850,60 @@ TEST_P(CertVerifyProcConstraintsTest, PoliciesRoot) {
     } else {
       if (VerifyProcTypeIsBuiltin()) {
         EXPECT_THAT(Verify(), IsOk());
+        EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+      } else if (verify_proc_type() == CERT_VERIFY_PROC_MAC ||
+                 verify_proc_type() == CERT_VERIFY_PROC_IOS ||
+                 verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+        EXPECT_THAT(Verify(), IsOk());
+      } else {
+        EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+      }
+    }
+  }
+}
+
+TEST_P(CertVerifyProcConstraintsTest, PolicyMappingsRoot) {
+  static const char kPolicy1[] = "1.2.3.4";
+  static const char kPolicy2[] = "1.2.3.5";
+  static const char kPolicy3[] = "1.2.3.6";
+
+  for (bool root_has_matching_policy : {false, true}) {
+    SCOPED_TRACE(root_has_matching_policy);
+
+    chain_[3]->SetCertificatePolicies({kPolicy1});
+    if (root_has_matching_policy) {
+      // This chain should be valid if the policies and policy mapping on the
+      // root are processed, or if neither is processed. It will not be valid
+      // if the policies were processed and the policyMappings were not.
+      chain_[3]->SetPolicyMappings({{kPolicy1, kPolicy2}});
+    } else {
+      // This chain should not be valid if the policies on the root were
+      // processed, regardless if the policyMappings were processed.
+      chain_[3]->SetPolicyMappings({{kPolicy1, kPolicy3}});
+    }
+
+    // Policy constraints are specified on an intermediate so that an explicit
+    // policy will be required regardless if root constraints are applied.
+    chain_[2]->SetPolicyConstraints(
+        /*require_explicit_policy=*/0,
+        /*inhibit_policy_mapping=*/absl::nullopt);
+
+    chain_[2]->SetCertificatePolicies({kPolicy2});
+    chain_[1]->SetCertificatePolicies({kPolicy2});
+    chain_[0]->SetCertificatePolicies({kPolicy2});
+
+    if (root_has_matching_policy) {
+      EXPECT_THAT(Verify(), IsOk());
+      if (VerifyProcTypeIsBuiltin()) {
+        // TODO(https://crbug.com/1072083): policyMapping and policyConstraints
+        // on root not yet implemented.
+        EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+      }
+    } else {
+      if (VerifyProcTypeIsBuiltin()) {
+        EXPECT_THAT(Verify(), IsOk());
+        // TODO(https://crbug.com/1072083): policies on root not yet
+        // implemented.
         EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
       } else if (verify_proc_type() == CERT_VERIFY_PROC_MAC ||
                  verify_proc_type() == CERT_VERIFY_PROC_IOS ||

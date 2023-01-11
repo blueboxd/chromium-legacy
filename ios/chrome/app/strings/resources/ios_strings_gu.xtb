@@ -170,7 +170,6 @@
 <translation id="225943865679747347">ભૂલ કોડ: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">એકાઉન્ટ ઉમેરો</translation>
 <translation id="2268044343513325586">સુધારો</translation>
-<translation id="2271351792809375263">તમે Chromeમાં સાચવેલા પાસવર્ડનો તમારા ડિવાઇસની અન્ય ઍપમાં ઉપયોગ કરો</translation>
 <translation id="2273327106802955778">વધુ મેનૂ</translation>
 <translation id="2286505070150039482">હાઇલાઇટ કરેલી ટેક્સ્ટ</translation>
 <translation id="2299218006564889602">તમારા પાસવર્ડને Google પાસવર્ડ મેનેજરમાં સાચવવામાં આવે એ પહેલાં તેમને તમારા ડિવાઇસમાં એન્ક્રિપ્ટ કરવામાં આવે છે.</translation>
@@ -286,7 +285,6 @@
 જો લાગુ થતી હોય, તો તમારા શોધ ઇતિહાસને ડિલીટ કરવા માટે, તમારા શોધ એન્જિનની સૂચનાઓ જુઓ.</translation>
 <translation id="3080525922482950719">તમે પછીથી અથવા ઑફલાઇન વાંચવા માટે પેજ સાચવી શકો છો</translation>
 <translation id="3081338492074632642"><ph name="WEBSITE" /> માટેના તમારા પાસવર્ડ સાથે, તમે સાચવી રહ્યાં છો તે પાસવર્ડ મેળ ખાતો હોવાની ખાતરી કરો</translation>
-<translation id="3103603146121354983">ઑટોમૅટિક રીતે પાસવર્ડ ભરો</translation>
 <translation id="3112556859945124369">ચિહ્નિત કરો…</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />તમે શું સિંક કરી શકો, તે જાણો<ph name="END_LINK" /></translation>
 <translation id="3130863904455712965">ઇતિહાસ અને વધુ</translation>
@@ -365,7 +363,6 @@
 <translation id="3661160521073045932">કન્ફિગ્યુરેશન પ્રોફાઇલ ઉપલબ્ધ છે</translation>
 <translation id="3670030362669914947">નંબર</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> પર બુકમાર્ક કર્યું</translation>
-<translation id="369349502275246497">પાસવર્ડ સાચવવાની સુવિધા ઑફર કરો</translation>
 <translation id="3709582977625132201">વાંચ્યા વગરનું તરીકે માર્ક કરો</translation>
 <translation id="371230970611282515">જોખમકારક ઇવેન્ટ થાય તે પહેલાં તેનું અનુમાન લગાવીને તેના વિશે તમને ચેતવણી આપે છે.</translation>
 <translation id="37207012422556617">વલણમાં છે એવી શોધો</translation>
@@ -455,6 +452,7 @@
 <translation id="4420409367264901497">બુકમાર્કમાં ફેરફાર કરો</translation>
 <translation id="4442550905108052454"><ph name="BEGIN_BOLD" />સેટિંગ <ph name="END_BOLD" />ખોલો</translation>
 <translation id="4454246407045105932">ભાષા ઉમેરો</translation>
+<translation id="4461286950227634995">પાસવર્ડ સાચવવાની સુવિધા ઑફર કરો</translation>
 <translation id="4462491365653392320">ટૅબ પર કિંમત ટ્રૅક કરો</translation>
 <translation id="4469418912670346607">સેટઅપ ચાલુ રાખો</translation>
 <translation id="4474494258097106883">તમારા iPhone માટે બનાવાયેલું</translation>
@@ -466,11 +464,11 @@
 <translation id="4508750114462689118">સાઇન-ઇન પ્રોમો બંધ કરો</translation>
 <translation id="4514889972748124117">સશક્ત પાસવર્ડ સૂચવો...</translation>
 <translation id="4520798012560649652">છૂપા મોડ વિશે વધુ જાણો</translation>
-<translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> પર સાચવેલા પાસવર્ડ જુઓ અને મેનેજ કરો</translation>
 <translation id="452750746583162491">તમારા સિંક કરેલા ડેટાનો રિવ્યૂ કરો</translation>
 <translation id="4536418791685807335">ફરીથી સાઇન ઇન કરવાનો પ્રયાસ કરો.</translation>
 <translation id="4540780316273593836">કંઈક ખોટું થયું હતું</translation>
 <translation id="457386861538956877">વધુ...</translation>
+<translation id="4587589328781138893">સાઇટ</translation>
 <translation id="4588014171431912783">તમારા છેલ્લા બૅકઅપના આધારે તમારા સિંક કરેલા સેટિંગ રિસ્ટોર કરવામાં આવશે. <ph name="BEGIN_LINK" />તમે શું સિંક કરી શકો, તે જાણો<ph name="END_LINK" /></translation>
 <translation id="4592368184551360546">કીબોર્ડ</translation>
 <translation id="4606247758155004938">તમારી સંસ્થા દ્વારા તમારું બ્રાઉઝર મેનેજ કરવામાં આવે છે.</translation>
@@ -532,6 +530,7 @@
 <translation id="4916679969857390442">લેન્સ</translation>
 <translation id="4922154083994158612">વધુ સુરક્ષાની જરૂર છે?</translation>
 <translation id="4930714375720679147">ચાલુ કરો</translation>
+<translation id="4938338714234463591">આ તમને વેબસાઇટ પર અમુક ચોક્કસ સુવિધાઓ સાથે તમારા વૉઇસનો ઉપયોગ કરવા દેશે.</translation>
 <translation id="4941089862236492464">માફ કરશો, તમારી આઇટમને શેર કરવામાં સમસ્યા આવી હતી.</translation>
 <translation id="4944543191714094452">પેજમાં શોધો…</translation>
 <translation id="4945756290001680296">પાસવર્ડના સેટિંગને ઍક્સેસ કરો</translation>
@@ -554,7 +553,6 @@
 <translation id="5118764316110575523">બંધ</translation>
 <translation id="5119391094379141756">Chrome પસંદ કરો</translation>
 <translation id="5132942445612118989">બધા ડિવાઇસ પર તમારા પાસવર્ડ, ઇતિહાસ અને વધુ સિંક કરો</translation>
-<translation id="5140288047769711648">Chrome તમારા માટે આ પાસવર્ડ યાદ રાખશે. તમારે તેને યાદ રાખવાની જરૂર નથી.</translation>
 <translation id="5149188072385105201">પાસવર્ડ ઉમેરો...</translation>
 <translation id="5150492518600715772">તમારા ડિવાઇસ પર મોકલો</translation>
 <translation id="5168414296986405587">iPadOS માટે બનાવવામાં આવેલું</translation>
@@ -881,7 +879,6 @@
 <translation id="7438481509621345350">જ્યારે તમે કોઈ નવી ટૅબ ખોલશો, ત્યારે તમને <ph name="CHANNEL_NAME" /> પરથી હવે સ્ટોરી દેખાશે.</translation>
 <translation id="7454057999980797137">રાજ્ય / કાઉન્ટી</translation>
 <translation id="7459628154744868585">વધારેલું સંરક્ષણ ચાલુ છે</translation>
-<translation id="7464701184726199289">આનાથી તમામ ડિવાઇસમાંથી સિંક ડેટા સાફ થાય છે. સાચવેલા સાઇટ સેટિંગ ડિલીટ કરવામાં આવશે નહીં અને તે તમારી બ્રાઉઝિંગ ટેવોને પ્રતિબિંબિત કરી શકે છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="746684838091935575">3. Chrome પસંદ કરો</translation>
 <translation id="7472734401283673885">કંપનીનું નામ</translation>
 <translation id="7473891865547856676">નહીં આભાર</translation>
@@ -905,6 +902,7 @@
 <translation id="7649070708921625228">સહાય</translation>
 <translation id="7658239707568436148">રદ કરો</translation>
 <translation id="7671141431838911305">ઇન્સ્ટોલ કરો</translation>
+<translation id="7679915578945954324">સાઇટના ઍડ્રેસ કૉપિ કર્યા</translation>
 <translation id="7687508192620387263">કૅલેન્ડર ફાઇલ ઉપલબ્ધ છે</translation>
 <translation id="7701040980221191251">કોઈ નથી</translation>
 <translation id="7720410380936703141">ફરી પ્રયાસ કરો</translation>
@@ -965,7 +963,6 @@
 <translation id="806745655614357130">મારા ડેટાને અલગ રાખો</translation>
 <translation id="8073670137947914548">ડાઉનલોડ સમાપ્ત</translation>
 <translation id="8073872304774253879">શોધ અને બ્રાઉઝિંગ વધુ સારું બનાવો</translation>
-<translation id="8076014560081431679">સાચવેલા સાઇટ સેટિંગ ડિલીટ કરવામાં આવશે નહીં અને તે તમારી બ્રાઉઝિંગ ટેવોને પ્રતિબિંબિત કરી શકે છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="8079602123447022758">આ સેટિંગ મેનેજ કરવામાં આવે છે, વધુ માહિતી માટે બે વાર ટૅપ કરો</translation>
 <translation id="8080028325999236607">બધા ટૅબ્સ બંધ કરો</translation>
 <translation id="8084285576995584326">તમારા Google એકાઉન્ટનો ડેટા નિયંત્રિત કરો</translation>
@@ -1093,7 +1090,6 @@
 <translation id="9079935439869366234">તમામને વાંચ્યા વગરની તરીકે ચિહ્નિત કરો</translation>
 <translation id="9081058212938299310"><ph name="USERNAME" /> માટેનો પાસવર્ડ અપડેટ કરીએ?</translation>
 <translation id="9083838294503912307">એકથી વધુ ડિવાઇસને સિંક અને વ્યક્તિગત કરવા માટે સિંક ચાલુ કરો.</translation>
-<translation id="9087108903408689779">Chrome દ્વારા સૂચિત પાસવર્ડ:</translation>
 <translation id="9093271241977565440">સ્ક્રીનની સૌથી ઉપર, શોધો આઇકન પર ટૅપ કરો</translation>
 <translation id="9094033019050270033">પાસવર્ડ અપડેટ કરો</translation>
 <translation id="9097506547406246598">અનફૉલો કરી શકતા નથી. કંઈક ખોટું થયું.</translation>

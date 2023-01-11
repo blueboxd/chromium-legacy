@@ -42,7 +42,6 @@
 <translation id="3503014945441706099">이 Chrome 프로필에 향상된 세이프 브라우징도 사용해 보세요.</translation>
 <translation id="3522659714780527202">Chrome을 사용하는 어느 곳에서나 탭을 확인하려면 동기화를 사용 설정하세요.</translation>
 <translation id="3533694711092285624">저장된 비밀번호가 없습니다. 비밀번호를 저장하면 Chrome에서 확인할 수 있습니다.</translation>
-<translation id="3641179212828090796">Chrome에 저장한 비밀번호를 사용하여 더 빠르게 로그인하세요</translation>
 <translation id="3655656110921623717">Chrome에서 모바일 사이트를 매번 요청함을 의미합니다</translation>
 <translation id="3706101708757577809">이제 언제든 메시지, 문서 및 다른 앱에서 링크를 탭하여 Chrome을 사용할 수 있습니다.</translation>
 <translation id="3720541637541300822">Chrome 종료 시 시크릿 탭 잠금</translation>
@@ -59,7 +58,6 @@
 <translation id="4633328489441962921">Chrome에서 업데이트를 확인할 수 없습니다.</translation>
 <translation id="4636900170638246267">이 사이트 및 Chrome에 로그인하세요.</translation>
 <translation id="4698415050768537821">Chrome에서 일부 비밀번호를 확인할 수 없습니다. 내일 다시 시도하거나 <ph name="BEGIN_LINK" />Google 계정에서 비밀번호를 확인<ph name="END_LINK" />하세요.</translation>
-<translation id="4802922164792993118">Chrome 도움말입니다. 키보드 상단에서 저장된 비밀번호를 선택하여 더 빠르게 로그인하세요.</translation>
 <translation id="4819268619367838612">앱 개선을 위해 Chrome에서 사용 통계 및 비정상 종료 데이터를 Google에 전송합니다. <ph name="BEGIN_LINK" />관리<ph name="END_LINK" /></translation>
 <translation id="484033449593719797">Chrome 베타에서는 지원되지 않습니다.</translation>
 <translation id="5030102366287574140">Chrome에서는 정보 유출, 안전하지 않은 웹사이트 등으로부터 사용자를 보호합니다</translation>
@@ -83,7 +81,6 @@
 <translation id="6238746320622508509">Chrome에서 시크릿 탭을 잠그도록 허용합니다.</translation>
 <translation id="6412673304250309937">Chrome에 저장된 안전하지 않은 사이트 목록을 사용하여 URL을 검사합니다. 사이트에서 사용자의 비밀번호를 도용하려고 하거나 사용자가 유해한 파일을 다운로드하는 경우, Chrome에서 페이지 콘텐츠 일부를 비롯한 URL을 세이프 브라우징 서비스에 보낼 수 있습니다.</translation>
 <translation id="6427126399757991875">조직에서 Chrome을 설정하는 중...</translation>
-<translation id="651403856614361404">비밀번호가 정보 유출로 인해 노출된 것으로 확인됩니다. 지금 바로 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="6600954340915313787">Chrome에 복사됨</translation>
 <translation id="6632661856876686289">Chrome 한층 더 활용하기</translation>
 <translation id="6634107063912726160">로그아웃하면 Chrome에서 더 이상 새로운 데이터를 내 Google 계정에 동기화하지 않습니다. 이전에 동기화된 데이터는 계정에 그대로 유지됩니다.</translation>

@@ -2824,19 +2824,6 @@ Jede Regel hat folgende Bestandteile:
 <translation id="3591584750136265240">Verhalten der Log-in-Authentifizierung konfigurieren</translation>
 <translation id="3593905652755912452">Bei deaktivierten Formularsteuerelementen wird die alte Ereignisweiterleitung verwendet.</translation>
 <translation id="3596112486106491038">Befehlszeilenzugriff auf virtuellen Maschinen aktivieren</translation>
-<translation id="3596335476793146071">Liste der Aktionen, die ausgeführt werden sollen, wenn das Zeitlimit in der Richtlinie <ph name="IDLE_TIMEOUT_POLICY_NAME" /> erreicht ist.
-
-      Wenn die Richtlinie <ph name="IDLE_TIMEOUT_POLICY_NAME" /> nicht konfiguriert ist, hat diese Richtlinie keine Auswirkungen.
-
-      Wird das Zeitlimit in der Richtlinie <ph name="IDLE_TIMEOUT_POLICY_NAME" /> erreicht, führt <ph name="PRODUCT_NAME" /> die in dieser Richtlinie konfigurierten Aktionen aus.
-
-      Wenn diese Richtlinie leer oder nicht konfiguriert ist, hat die Richtlinie <ph name="IDLE_TIMEOUT_POLICY_NAME" /> keine Auswirkungen.
-
-      Unterstützte Aktionen:
-
-      „<ph name="CLOSE_BROWSERS_ACTION" />“: Alle Browserfenster und PWAs für dieses Profil werden geschlossen.
-
-      „<ph name="SHOW_PROFILE_PICKER_ACTION" />“: Das Fenster mit der Profilauswahl wird angezeigt.</translation>
 <translation id="3603469950773500315">Einschränkungen von <ph name="CORS" />-Prüfungen in der neuen <ph name="CORS" />-Implementierung erlauben, wodurch Erweiterungen kompatibles Verhalten beibehalten können und <ph name="PRODUCT_NAME" /> angegebene Header ohne <ph name="CORS" />-Prüfungen senden kann.
 
       Wird diese Liste leergelassen, versucht <ph name="PRODUCT_NAME" />, Erweiterungen auf kompatible Weise auszuführen und setzt keine <ph name="API" />-Änderungen für Version 79 von <ph name="PRODUCT_NAME" /> um, wie unter <ph name="WEB_REQUEST_API_MANUAL" /> erläutert.
@@ -4341,6 +4328,17 @@ Wenn diese Richtlinie deaktiviert oder nicht konfiguriert ist, ist die window.we
 <translation id="519247340330463721">Hiermit werden die Safe Browsing-Richtlinien konfiguriert.</translation>
 <translation id="5194683382395300627">Verwendung von <ph name="ASSISTANT_PRODUCT_NAME" /> im Web zulassen, z. B. um das automatische Ändern von Passwörtern zu ermöglichen</translation>
 <translation id="5196630732055960309">File Handling API bei diesen Webanwendungen erlauben</translation>
+<translation id="5198660575318473544">Mit dieser Richtlinie kann festgelegt werden, ob Manifest V2-Erweiterungen auf dem <ph name="PRODUCT_OS_NAME" />-Anmeldebildschirm verwendet werden können.
+
+Die Unterstützung für Manifest V2-Erweiterungen wird eingestellt. Alle Erweiterungen müssen dann zu V3 migriert werden. Weitere Informationen und den Zeitplan für die Migration findest du unter https://developer.chrome.com/docs/extensions/mv3/mv2-sunset/.
+
+Wenn die Richtlinie auf „<ph name="DEFAULT" />“ (0) gesetzt oder nicht konfiguriert ist, werden V2-Erweiterungen abhängig vom Gerät und gemäß dem obigen Zeitplan geladen.
+Ist die Richtlinie auf „<ph name="DISABLE" />“ (1) gesetzt, wird das Installieren von V2-Erweiterungen blockiert und vorhandene V2-Erweiterungen werden deaktiviert. Nachdem die V2-Unterstützung standardmäßig deaktiviert wurde, wird die Option so behandelt, als wäre die Richtlinie nicht konfiguriert.
+Ist die Richtlinie auf „<ph name="ENABLE" />“ (2) gesetzt, sind V2-Erweiterungen zulässig. Bevor die V2-Unterstützung standardmäßig deaktiviert wird, wird die Option so behandelt, als wäre die Richtlinie nicht konfiguriert.
+Wenn die Richtlinie auf „<ph name="ENABLE_FOR_FORCED_EXTENSIONS" />“ (3) gesetzt ist, sind V2-Erweiterungen mit erzwungener Installation zulässig. Dazu gehören Erweiterungen, die in „<ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />“ oder „<ph name="EXTENSION_SETTINGS_POLICY_NAME" />“ mit „<ph name="INSTALLATION_MODE" />“ auf „force_installed“ oder „normal_installed“ aufgeführt sind. Alle anderen V2-Erweiterungen werden deaktiviert. Bevor die V2-Unterstützung standardmäßig deaktiviert wird, wird die Option so behandelt, als wäre die Richtlinie nicht konfiguriert.
+
+
+Die Verfügbarkeit von Erweiterungen wird weiterhin über andere Richtlinien festgelegt.</translation>
 <translation id="5206454085187851382">Wenn <ph name="PRINTERS_ALLOWLIST" /> für <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME" /> ausgewählt ist, wird durch Festlegen von <ph name="PRINTERS_BULK_ALLOWLIST_POLICY_NAME" /> angegeben, welche Drucker die Nutzer verwenden können. Den Nutzern stehen nur die Drucker zur Verfügung, deren IDs mit den Werten in dieser Richtlinie übereinstimmen. Die IDs müssen dem Feld <ph name="ID_FIELD" /> oder dem Feld <ph name="GUID_FIELD" /> in der Datei entsprechen, die in <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" /> angegeben ist.</translation>
 <translation id="5207543664699568887">Mit der Richtlinie wird konfiguriert, ob <ph name="PRODUCT_NAME" /> unter Linux Systembenachrichtigungen verwendet.
 
@@ -4787,6 +4785,7 @@ Wenn die Richtlinie nicht konfiguriert ist, können keine Domains auf „file://
 <translation id="5599461642204007579"><ph name="MS_AD_NAME" />-Verwaltungseinstellungen</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5607021831414604820">Melden des Speicherstatus auf Geräten aktivieren</translation>
+<translation id="5608114828230655271">Standardverhalten des Geräts</translation>
 <translation id="5614865701790130558">Ereignisse für richtlinienbasierte Erweiterungsinstallationen protokollieren</translation>
 <translation id="5618398258385745432">Die entsprechende Einstellung wurde verwendet, bevor die erneute Authentifizierung bei der Ansicht von Passwörtern aktiviert wurde. Seither haben die Einstellung und folglich auch diese Richtlinie keinen Einfluss auf das Verhalten von Chrome. Aktuell werden Passwörter auf der Einstellungsseite des Passwortmanagers nicht als Klartext angezeigt. Dies bedeutet, dass die Einstellungsseite nur einen Platzhalter enthält und das Passwort in Chrome nur dann angezeigt wird, wenn der Nutzer auf "Anzeigen" klickt und sich gegebenenfalls noch einmal authentifiziert. Die ursprüngliche Beschreibung der Richtlinie findest du unten.
 

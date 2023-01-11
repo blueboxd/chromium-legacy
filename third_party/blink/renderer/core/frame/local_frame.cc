@@ -35,6 +35,7 @@
 #include <utility>
 
 #include "base/metrics/histogram_functions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -2504,8 +2505,9 @@ bool LocalFrame::SwapIn() {
 
   // First, check if there's a previous main frame to be used for a main frame
   // LocalFrame <-> LocalFrame swap.
-  if (Frame* previous_local_main_frame =
-          GetPage()->TakePreviousMainFrameForLocalSwap()) {
+  Frame* previous_local_main_frame =
+      GetPage()->TakePreviousMainFrameForLocalSwap();
+  if (previous_local_main_frame && !previous_local_main_frame->IsDetached()) {
     // We're about to do a LocalFrame <-> LocalFrame swap for a provisional
     // main frame, where the previous main frame and the provisional main frame
     // are in different Pages. The provisional frame's owner is set to the

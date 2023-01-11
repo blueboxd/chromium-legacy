@@ -15,12 +15,12 @@ namespace ui {
 inline constexpr auto kLayout2TopRowKeyToFKeyMap =
     base::MakeFixedFlatMap<KeyboardCode, KeyboardCode>({
         {KeyboardCode::VKEY_BROWSER_BACK, KeyboardCode::VKEY_F1},
-        {KeyboardCode::VKEY_BROWSER_FORWARD, KeyboardCode::VKEY_F2},
-        {KeyboardCode::VKEY_BROWSER_REFRESH, KeyboardCode::VKEY_F3},
-        {KeyboardCode::VKEY_ZOOM, KeyboardCode::VKEY_F4},
-        {KeyboardCode::VKEY_MEDIA_LAUNCH_APP1, KeyboardCode::VKEY_F5},
-        {KeyboardCode::VKEY_BRIGHTNESS_DOWN, KeyboardCode::VKEY_F6},
-        {KeyboardCode::VKEY_BRIGHTNESS_UP, KeyboardCode::VKEY_F7},
+        {KeyboardCode::VKEY_BROWSER_REFRESH, KeyboardCode::VKEY_F2},
+        {KeyboardCode::VKEY_ZOOM, KeyboardCode::VKEY_F3},
+        {KeyboardCode::VKEY_MEDIA_LAUNCH_APP1, KeyboardCode::VKEY_F4},
+        {KeyboardCode::VKEY_BRIGHTNESS_DOWN, KeyboardCode::VKEY_F5},
+        {KeyboardCode::VKEY_BRIGHTNESS_UP, KeyboardCode::VKEY_F6},
+        {KeyboardCode::VKEY_MEDIA_PLAY_PAUSE, KeyboardCode::VKEY_F7},
         {KeyboardCode::VKEY_VOLUME_MUTE, KeyboardCode::VKEY_F8},
         {KeyboardCode::VKEY_VOLUME_DOWN, KeyboardCode::VKEY_F9},
         {KeyboardCode::VKEY_VOLUME_UP, KeyboardCode::VKEY_F10},
@@ -72,10 +72,47 @@ class KeyboardCapability {
     kKbdTopRowLayoutMax = kKbdTopRowLayoutCustom
   };
 
-  KeyboardCapability() = default;
+  class Observer {
+   public:
+    virtual ~Observer() = default;
+
+    // Called when the top_row_keys_are_fKeys prefs has changed.
+    virtual void OnTopRowKeysAreFKeysChanged() = 0;
+  };
+
+  class Delegate {
+   public:
+    Delegate() = default;
+    Delegate(const Delegate&) = delete;
+    Delegate& operator=(const Delegate&) = delete;
+    virtual ~Delegate() = default;
+
+    virtual void AddObserver(Observer* observer) = 0;
+
+    virtual void RemoveObserver(Observer* observer) = 0;
+
+    virtual bool TopRowKeysAreFKeys() const = 0;
+
+    virtual void SetTopRowKeysAsFKeysEnabledForTesting(bool enabled) = 0;
+  };
+
+  explicit KeyboardCapability(std::unique_ptr<Delegate> delegate);
   KeyboardCapability(const KeyboardCapability&) = delete;
   KeyboardCapability& operator=(const KeyboardCapability&) = delete;
-  ~KeyboardCapability() = default;
+  ~KeyboardCapability();
+
+  void AddObserver(Observer* observer);
+
+  void RemoveObserver(Observer* observer);
+
+  // Returns true if the target would prefer to receive raw
+  // function keys instead of having them rewritten into back, forward,
+  // brightness, volume, etc. or if the user has specified that they desire
+  // top-row keys to be treated as function keys globally.
+  bool TopRowKeysAreFKeys() const;
+
+  // Enable or disable top row keys as F-Keys.
+  void SetTopRowKeysAsFKeysEnabledForTesting(bool enabled) const;
 
   // Check if a key code is one of the six pack keys.
   static bool IsSixPackKey(const KeyboardCode& key_code);
@@ -83,6 +120,9 @@ class KeyboardCapability {
   // Check if a key code is one of the top row keys.
   // TODO(zhangwenyu): Support all 4 legacy layouts and custom vivaldi layouts.
   bool IsTopRowKey(const ui::KeyboardCode& key_code) const;
+
+ private:
+  std::unique_ptr<Delegate> delegate_;
 };
 
 }  // namespace ui

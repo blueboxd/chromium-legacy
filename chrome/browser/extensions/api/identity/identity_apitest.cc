@@ -8,9 +8,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
@@ -152,7 +152,7 @@ class AsyncFunctionRunner {
     response_delegate_ =
         std::make_unique<api_test_utils::SendResponseHelper>(function);
     function->preserve_results_for_testing();
-    absl::optional<base::Value> parsed_args(utils::ParseList(args));
+    absl::optional<base::Value::List> parsed_args(utils::ParseList(args));
     ASSERT_TRUE(parsed_args)
         << "Could not parse extension function arguments: " << args;
     function->SetArgs(std::move(*parsed_args));

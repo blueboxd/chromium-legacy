@@ -6,7 +6,7 @@
 #define ASH_QUICK_PAIR_UI_FAST_PAIR_FAST_PAIR_PRESENTER_H_
 
 #include "ash/quick_pair/ui/actions.h"
-#include "base/callback.h"
+#include "base/functional/callback.h"
 
 namespace message_center {
 class MessageCenter;
@@ -15,7 +15,7 @@ class MessageCenter;
 namespace ash {
 namespace quick_pair {
 
-struct Device;
+class Device;
 class DeviceMetadata;
 
 using DiscoveryCallback = base::RepeatingCallback<void(DiscoveryAction)>;

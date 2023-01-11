@@ -97,12 +97,6 @@ config("config") {
   defines = [ "BLINK_CORE_IMPLEMENTATION=1" ]
 
   if (is_clang && clang_use_chrome_plugins) {
-    cflags += [
-      "-Xclang",
-      "-plugin-arg-find-bad-constructs",
-      "-Xclang",
-      "check-blink-data-member-type",
-    ]
     if (use_layout_plugin) {
       cflags += [
         "-Xclang",
@@ -391,8 +385,16 @@ blink_core_sources("core_hot") {
   # TODO(ajwong) this is of mirror
   # https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/renderer/core/core.gni;l=26
   # to undo the configs which is fragile. Find a better way.
-  if (!is_debug && optimize_for_size) {
-    configs -= [ "//build/config/compiler:default_optimization" ]
+  #
+  # 'Hot' code should always be compiled for speed in non-debug builds.
+  if (!is_debug) {
+    # Only attempt to remove the 'default_optimization' label if it is already
+    # present in 'configs'.
+    if (filter_include(configs,
+                       [ "//build/config/compiler:default_optimization" ]) !=
+        []) {
+      configs -= [ "//build/config/compiler:default_optimization" ]
+    }
     configs += [ "//build/config/compiler:optimize_speed" ]
   }
 
@@ -1173,6 +1175,7 @@ targets_generating_sources = [
   ":make_core_generated_event_names",
   ":make_core_generated_event_target_names",
   ":make_core_generated_event_type_names",
+  ":make_core_generated_html_attribute_name_lookup_trie",
   ":make_core_generated_html_element_factory",
   ":make_core_generated_html_element_lookup_trie",
   ":make_core_generated_html_element_type_helpers",
@@ -1200,11 +1203,6 @@ targets_generating_sources = [
   ":make_core_generated_xml_names",
   ":make_core_generated_xml_ns_names",
 ]
-
-if (!is_android) {
-  targets_generating_sources +=
-      [ ":make_core_generated_html_attribute_name_lookup_trie" ]
-}
 
 group("all_generators") {
   public_deps = targets_generating_sources

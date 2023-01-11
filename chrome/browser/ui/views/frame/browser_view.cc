@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
@@ -943,19 +942,6 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   left_aligned_side_panel_separator_ =
       AddChildView(std::make_unique<ContentsSeparator>());
   side_panel_coordinator_ = std::make_unique<SidePanelCoordinator>(this);
-
-  if (side_search::IsEnabledForBrowser(browser_.get()) &&
-      !side_search::ShouldUseUnifiedSidePanel()) {
-    bool dse_support =
-        base::FeatureList::IsEnabled(features::kSideSearchDSESupport);
-    side_search_side_panel_ = AddChildView(std::make_unique<SidePanel>(
-        this, dse_support ? SidePanel::HorizontalAlignment::kAlignRight
-                          : SidePanel::HorizontalAlignment::kAlignLeft));
-    left_aligned_side_panel_separator_ =
-        AddChildView(std::make_unique<ContentsSeparator>());
-    side_search_controller_ = std::make_unique<SideSearchBrowserController>(
-        side_search_side_panel_, this);
-  }
 
   // InfoBarContainer needs to be added as a child here for drop-shadow, but
   // needs to come after toolbar in focus order (see EnsureFocusOrder()).
@@ -3625,8 +3611,7 @@ bool BrowserView::CloseOpenRightAlignedSidePanel(bool exclude_side_search) {
   // Ensure all side panels are closed. Close contextual panels first.
 
   // Hide side search panel if it's right aligned.
-  if (!exclude_side_search && side_search_controller_ &&
-      base::FeatureList::IsEnabled(features::kSideSearchDSESupport)) {
+  if (!exclude_side_search && side_search_controller_) {
     side_search_controller_->CloseSidePanel();
   }
 
@@ -3636,8 +3621,7 @@ bool BrowserView::CloseOpenRightAlignedSidePanel(bool exclude_side_search) {
 }
 
 void BrowserView::MaybeClobberAllSideSearchSidePanels() {
-  if (!base::FeatureList::IsEnabled(features::kSideSearchDSESupport) ||
-      !base::FeatureList::IsEnabled(
+  if (!base::FeatureList::IsEnabled(
           features::kClobberAllSideSearchSidePanels)) {
     return;
   }
@@ -3888,8 +3872,7 @@ void BrowserView::AddedToWidget() {
     std::vector<View*> panels;
     if (unified_side_panel_)
       panels.push_back(unified_side_panel_);
-    if (base::FeatureList::IsEnabled(features::kSideSearchDSESupport) &&
-        side_search_side_panel_) {
+    if (side_search_side_panel_) {
       panels.push_back(side_search_side_panel_);
     }
     side_panel_button_highlighter_ =

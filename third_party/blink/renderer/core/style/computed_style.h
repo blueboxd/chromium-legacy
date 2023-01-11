@@ -2700,7 +2700,6 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   ComputedStyleBuilder& operator=(ComputedStyleBuilder&&) = default;
 
   // TODO(crbug.com/1377295): Eventually remove these functions.
-  ComputedStyle* MutableInternalStyle() const { return style_.get(); }
   const ComputedStyle* InternalStyle() const { return style_.get(); }
 
   scoped_refptr<ComputedStyle> TakeStyle() { return std::move(style_); }
@@ -3271,6 +3270,11 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   const StyleInheritedVariables* InheritedVariables() const {
     return InheritedVariablesInternal().get();
   }
+  const StyleNonInheritedVariables* NonInheritedVariables() const {
+    return NonInheritedVariablesInternal().get();
+  }
+  CSSVariableData* GetVariableData(const AtomicString&,
+                                   bool is_inherited_property) const;
   CORE_EXPORT StyleInheritedVariables& MutableInheritedVariables();
   CORE_EXPORT StyleNonInheritedVariables& MutableNonInheritedVariables();
   CORE_EXPORT void SetVariableData(const AtomicString& name,

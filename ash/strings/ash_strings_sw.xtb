@@ -162,6 +162,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="1774796056689732716">Kalenda, <ph name="CURRENT_MONTH_YEAR" />, kwa sasa umechagua <ph name="DATE" />.</translation>
 <translation id="1787955149152357925">Yamezimwa</translation>
 <translation id="1797271123677381264">Umesahau nenosiri</translation>
+<translation id="1807246157184219062">Mwangaza</translation>
 <translation id="181103072419391116">Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" />, Unadhibitiwa na Msimamizi wako</translation>
 <translation id="1812997170047690955">Kuna nini kwenye skrini yangu?</translation>
 <translation id="1816896987747843206">Hatua hii huruhusu ufikiaji wa kamera katika programu na tovuti zote zilizo na ruhusa ya kufikia kamera</translation>
@@ -238,6 +239,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="2224075387478458881">Huruhusiwi kurekodi skrini wakati maudhui yanayolindwa yanaonekana</translation>
 <translation id="2227179592712503583">Ondoa pendekezo</translation>
 <translation id="225680501294068881">Inatambazaa vifaa...</translation>
+<translation id="225716114209817872">Kiwango cha juu zaidi</translation>
 <translation id="2257486738914982088">Hitilafu fulani imetokea wakati wa kupakua <ph name="FILENAME" /></translation>
 <translation id="2258734398699965611">Faili zinazopendekezwa</translation>
 <translation id="2268130516524549846">Bluetooth imelemazwa</translation>
@@ -262,6 +264,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="2354174487190027830">Inaanza kutumia <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Endelea</translation>
 <translation id="2367186422933365202">Imeshindwa kuingia katika akaunti kwenye Chromebook yako</translation>
+<translation id="2367972762794486313">Onyesha programu</translation>
 <translation id="2369165858548251131">"Hujambo" kwa Kichina</translation>
 <translation id="2390318262976603432">Mipangilio ya Lugha</translation>
 <translation id="240006516586367791">Vidhibiti vya maudhui</translation>
@@ -506,6 +509,7 @@ Chomeka kifaa chako kwenye umeme.</translation>
 <translation id="3713734891607377840">Ifungue ikimaliza kupakuliwa</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> na zingine <ph name="UNAVAILABLE_APPS_COUNT" /> hazipo kwenye kifaa hiki.</translation>
 <translation id="3735740477244556633">Panga kwa</translation>
+<translation id="3738664582935948253">Sasa unaweza kuonyesha mibofyo na mikato ya kibodi katika rekodi za skrini</translation>
 <translation id="3742055079367172538">Picha ya skrini imepigwa</translation>
 <translation id="3765841986579723851">Imebadilishwa leo</translation>
 <translation id="3773700760453577392">Msimamizi ameondoa uwezo wa <ph name="USER_EMAIL" /> wa kuingia katika akaunti nyingi kwa wakati mmoja. Watumiaji wote lazima waondoke katika akaunti ili waendelee.</translation>
@@ -525,6 +529,7 @@ Chomeka kifaa chako kwenye umeme.</translation>
 <translation id="385051799172605136">Rudi nyuma</translation>
 <translation id="385300504083504382">Mwanzo</translation>
 <translation id="3861651314799684201">Bonyeza enter ili urekodi skrini nzima</translation>
+<translation id="3871092408932389764">Chini kabisa</translation>
 <translation id="3886872229787704059">Imefunguliwa leo</translation>
 <translation id="3891340733213178823">Bonyeza Ctrl+Shift+Q mara mbili ili kuondoka katika akaunti.</translation>
 <translation id="3893630138897523026">ChromeVox (maoni yaliyotamkwa)</translation>
@@ -1011,6 +1016,7 @@ Chomeka kifaa chako kwenye umeme.</translation>
 <translation id="6537924328260219877">Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" />, Betri ya Simu <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999">Inakagua kipakuliwa <ph name="FILENAME" /></translation>
 <translation id="6542521951477560771">Tuma kwenye <ph name="RECEIVER_NAME" /></translation>
+<translation id="6548693220024099658">Ukungu wa Mandharinyuma</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Imesakinishwa hivi karibuni</translation>
 <translation id="6559976592393364813">Mwulize Msimamizi</translation>
@@ -1418,6 +1424,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="878215960996152260"><ph name="APP_NAME" />, Programu Iliyosakinishwa, Imezuiwa</translation>
 <translation id="8785070478575117577">Unganisha kwenye <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
+<translation id="8790998409862094015">Nzito</translation>
 <translation id="8806053966018712535">Folda ya <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">"Usaidizi"</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

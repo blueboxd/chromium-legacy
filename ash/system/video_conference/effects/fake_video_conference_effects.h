@@ -40,8 +40,9 @@ class SimpleToggleEffect : public VcEffectsDelegate {
   ~SimpleToggleEffect() override;
 
   // VcEffectsDelegate:
-  int GetEffectState(int effect_id) override;
-  void OnEffectControlActivated(int effect_id, int value) override;
+  absl::optional<int> GetEffectState(int effect_id) override;
+  void OnEffectControlActivated(absl::optional<int> effect_id,
+                                absl::optional<int> state) override;
 
   int num_activations_for_testing() { return num_activations_for_testing_; }
 
@@ -144,12 +145,12 @@ class ASH_EXPORT ShaggyFurEffect : public VcEffectsDelegate {
   ~ShaggyFurEffect() override;
 
   // VcEffectsDelegate:
-  int GetEffectState(int effect_id) override;
-  void OnEffectControlActivated(int effect_id, int value) override;
+  absl::optional<int> GetEffectState(int effect_id) override;
+  void OnEffectControlActivated(absl::optional<int> effect_id,
+                                absl::optional<int> state) override;
 
-  // Returns the number of times the button/state for `value` has been
-  // activated.
-  int GetNumActivationsForTesting(int value);
+  // Returns the number of times the button for `state` has been activated.
+  int GetNumActivationsForTesting(int state);
 
  private:
   // Adds a `std::unique_ptr<VcEffectState>` to `effect`.
@@ -182,12 +183,19 @@ class ASH_EXPORT SuperCutnessEffect : public VcEffectsDelegate {
   ~SuperCutnessEffect() override;
 
   // VcEffectsDelegate:
-  int GetEffectState(int effect_id) override;
-  void OnEffectControlActivated(int effect_id, int value) override;
+  absl::optional<int> GetEffectState(int effect_id) override;
+  void OnEffectControlActivated(absl::optional<int> effect_id,
+                                absl::optional<int> state) override;
 
-  // Returns the number of times the button/state for `value` has been
-  // activated.
-  int GetNumActivationsForTesting(int value);
+  // Returns the number of times the button for `state` has been activated.
+  int GetNumActivationsForTesting(int state);
+
+  void set_has_invalid_effect_state_for_testing(bool has_invalid_state) {
+    has_invalid_effect_state_for_testing_ = has_invalid_state;
+  }
+  bool has_invalid_effect_state_for_testing() {
+    return has_invalid_effect_state_for_testing_;
+  }
 
  private:
   // Adds a `std::unique_ptr<VcEffectState>` to `effect`.
@@ -198,6 +206,10 @@ class ASH_EXPORT SuperCutnessEffect : public VcEffectsDelegate {
   // Number of times each value has been clicked, one count for each value in
   // `HowCute`.
   std::vector<int> num_activations_for_testing_;
+
+  // Set to 'true' for testing the case where a valid effect state cannot be
+  // obtained.
+  bool has_invalid_effect_state_for_testing_;
 
   base::WeakPtrFactory<SuperCutnessEffect> weak_factory_{this};
 };

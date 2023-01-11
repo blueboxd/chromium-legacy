@@ -18,6 +18,7 @@
 #include "base/supports_user_data.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "base/types/pass_key.h"
 #include "net/base/auth.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/idempotency.h"
@@ -34,6 +35,7 @@
 #include "net/base/request_priority.h"
 #include "net/base/upload_progress.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_setting_override.h"
 #include "net/cookies/site_for_cookies.h"
 #include "net/dns/public/secure_dns_policy.h"
 #include "net/filter/source_stream.h"
@@ -205,6 +207,16 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
     virtual ~Delegate() = default;
   };
 
+  // URLRequests are always created by calling URLRequestContext::CreateRequest.
+  URLRequest(base::PassKey<URLRequestContext> pass_key,
+             const GURL& url,
+             RequestPriority priority,
+             Delegate* delegate,
+             const URLRequestContext* context,
+             NetworkTrafficAnnotationTag traffic_annotation,
+             bool is_for_websockets,
+             absl::optional<net::NetLogSource> net_log_source);
+
   URLRequest(const URLRequest&) = delete;
   URLRequest& operator=(const URLRequest&) = delete;
 
@@ -312,6 +324,15 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   }
   void set_force_main_frame_for_same_site_cookies(bool value) {
     force_main_frame_for_same_site_cookies_ = value;
+  }
+
+  // Overrides pertaining to cookie settings for this particular request.
+  CookieSettingOverrides cookie_setting_overrides() const {
+    return cookie_setting_overrides_;
+  }
+
+  void set_cookie_setting_overrides(CookieSettingOverrides value) {
+    cookie_setting_overrides_ = value;
   }
 
   // The first-party URL policy to apply when updating the first party URL
@@ -851,20 +872,10 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
  private:
   friend class URLRequestJob;
-  friend class URLRequestContext;
 
   // For testing purposes.
   // TODO(maksims): Remove this.
   friend class TestNetworkDelegate;
-
-  // URLRequests are always created by calling URLRequestContext::CreateRequest.
-  URLRequest(const GURL& url,
-             RequestPriority priority,
-             Delegate* delegate,
-             const URLRequestContext* context,
-             NetworkTrafficAnnotationTag traffic_annotation,
-             bool is_for_websockets,
-             absl::optional<net::NetLogSource> net_log_source);
 
   // Resumes or blocks a request paused by the NetworkDelegate::OnBeforeRequest
   // handler. If |blocked| is true, the request is blocked and an error page is
@@ -954,6 +965,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   bool force_ignore_site_for_cookies_ = false;
   bool force_ignore_top_frame_party_for_cookies_ = false;
   bool force_main_frame_for_same_site_cookies_ = false;
+  CookieSettingOverrides cookie_setting_overrides_;
+
   absl::optional<url::Origin> initiator_;
   GURL delegate_redirect_url_;
   std::string method_;  // "GET", "POST", etc. Case-sensitive.

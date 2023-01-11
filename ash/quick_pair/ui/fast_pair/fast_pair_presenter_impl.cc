@@ -23,10 +23,10 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -92,7 +92,7 @@ FastPairPresenterImpl::~FastPairPresenterImpl() = default;
 void FastPairPresenterImpl::ShowDiscovery(scoped_refptr<Device> device,
                                           DiscoveryCallback callback) {
   DCHECK(device);
-  const auto metadata_id = device->metadata_id;
+  const auto metadata_id = device->metadata_id();
   FastPairRepository::Get()->GetDeviceMetadata(
       metadata_id, base::BindRepeating(
                        &FastPairPresenterImpl::OnDiscoveryMetadataRetrieved,
@@ -109,7 +109,7 @@ void FastPairPresenterImpl::OnDiscoveryMetadataRetrieved(
 
   device->set_version(device_metadata->InferFastPairVersion());
 
-  if (device->protocol == Protocol::kFastPairSubsequent) {
+  if (device->protocol() == Protocol::kFastPairSubsequent) {
     ShowSubsequentDiscoveryNotification(device, callback, device_metadata);
     return;
   }
@@ -268,7 +268,7 @@ void FastPairPresenterImpl::OnDiscoveryLearnMoreClicked(
 }
 
 void FastPairPresenterImpl::ShowPairing(scoped_refptr<Device> device) {
-  const auto metadata_id = device->metadata_id;
+  const auto metadata_id = device->metadata_id();
   FastPairRepository::Get()->GetDeviceMetadata(
       metadata_id,
       base::BindOnce(&FastPairPresenterImpl::OnPairingMetadataRetrieved,
@@ -290,7 +290,7 @@ void FastPairPresenterImpl::OnPairingMetadataRetrieved(
 
 void FastPairPresenterImpl::ShowPairingFailed(scoped_refptr<Device> device,
                                               PairingFailedCallback callback) {
-  const auto metadata_id = device->metadata_id;
+  const auto metadata_id = device->metadata_id();
   FastPairRepository::Get()->GetDeviceMetadata(
       metadata_id,
       base::BindOnce(&FastPairPresenterImpl::OnPairingFailedMetadataRetrieved,
@@ -354,7 +354,7 @@ void FastPairPresenterImpl::ShowAssociateAccount(
     AssociateAccountCallback callback) {
   RecordRetroactiveSuccessFunnelFlow(
       FastPairRetroactiveSuccessFunnelEvent::kNotificationDisplayed);
-  const auto metadata_id = device->metadata_id;
+  const auto metadata_id = device->metadata_id();
   FastPairRepository::Get()->GetDeviceMetadata(
       metadata_id,
       base::BindOnce(

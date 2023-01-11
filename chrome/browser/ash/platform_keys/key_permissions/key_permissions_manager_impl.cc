@@ -10,9 +10,9 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/queue.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list_types.h"
@@ -25,8 +25,8 @@
 #include "chrome/browser/ash/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/platform_keys/extension_key_permissions_service.h"
-#include "chrome/browser/platform_keys/platform_keys.h"
+#include "chrome/browser/chromeos/platform_keys/extension_key_permissions_service.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"

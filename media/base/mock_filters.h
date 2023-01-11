@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "media/base/audio_decoder.h"
@@ -207,7 +208,7 @@ class MockDemuxerStream : public DemuxerStream {
   // DemuxerStream implementation.
   Type type() const override;
   StreamLiveness liveness() const override;
-  void Read(ReadCB read_cb) override { OnRead(read_cb); }
+  void Read(uint32_t count, ReadCB read_cb) override { OnRead(read_cb); }
   MOCK_METHOD1(OnRead, void(ReadCB& read_cb));
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;

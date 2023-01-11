@@ -65,6 +65,10 @@ class SettingsAudioElement extends SettingsAudioElementBase {
         observer:
             SettingsAudioElement.prototype.onNoiseCancellationEnabledChanged,
       },
+
+      isNoiseCancellationSupported_: {
+        type: Boolean,
+      },
     };
   }
 
@@ -75,6 +79,7 @@ class SettingsAudioElement extends SettingsAudioElementBase {
   private isOutputMuted_: boolean;
   private isInputMuted_: boolean;
   private isNoiseCancellationEnabled_: boolean;
+  private isNoiseCancellationSupported_: boolean;
 
   constructor() {
     super();
@@ -107,6 +112,9 @@ class SettingsAudioElement extends SettingsAudioElementBase {
     this.isNoiseCancellationEnabled_ =
         (activeInputDevice?.noiseCancellationState ===
          AudioEffectState.ENABLED);
+    this.isNoiseCancellationSupported_ =
+        !(activeInputDevice?.noiseCancellationState ===
+          AudioEffectState.NOT_SUPPORTED);
   }
 
   getIsOutputMutedForTest(): boolean {
@@ -173,16 +181,10 @@ class SettingsAudioElement extends SettingsAudioElementBase {
    * Handles the event where the input volume slider is being changed.
    */
   protected onInputVolumeSliderChanged(): void {
-    // TODO(b/260277007): Remove condition when setInputVolumePercent added to
-    // mojo definition.
-    if (!this.crosAudioConfig_.setInputVolumePercent) {
-      return;
-    }
-
     const sliderValue = this.shadowRoot!
                             .querySelector<CrSliderElement>(
                                 '#audioInputGainVolumeSlider')!.value;
-    this.crosAudioConfig_.setInputVolumePercent(clampPercent(sliderValue));
+    this.crosAudioConfig_.setInputGainPercent(clampPercent(sliderValue));
   }
 
   /**
@@ -221,7 +223,7 @@ class SettingsAudioElement extends SettingsAudioElementBase {
 
   override currentRouteChanged(route: Route) {
     // Does not apply to this page.
-    // TODO(crbug.com/1092970): Add DeepLinkingBehavior and attempt deep link.
+    // TODO(crbug.com/1092970): Add DeepLinkingMixin and attempt deep link.
     if (route !== routes.AUDIO) {
       return;
     }

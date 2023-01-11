@@ -7,8 +7,9 @@
 
 #include "ios/chrome/browser/ui/omnibox/web_omnibox_edit_controller.h"
 
-@protocol LocationBarDelegate;
 @protocol LocationBarURLLoader;
+@protocol OmniboxControllerDelegate;
+@protocol OmniboxFocusDelegate;
 
 // A minimal implementation of WebOmniboxEditController. Designed to work with
 // LocationBarMediator and LocationBarCoordinator.
@@ -17,7 +18,8 @@
 // it.
 class WebOmniboxEditControllerImpl : public WebOmniboxEditController {
  public:
-  WebOmniboxEditControllerImpl(id<LocationBarDelegate> delegate);
+  WebOmniboxEditControllerImpl(id<OmniboxControllerDelegate> delegate,
+                               id<OmniboxFocusDelegate> focus_delegate);
   ~WebOmniboxEditControllerImpl() override;
 
   void SetURLLoader(id<LocationBarURLLoader> URLLoader) {
@@ -42,12 +44,15 @@ class WebOmniboxEditControllerImpl : public WebOmniboxEditController {
       const AutocompleteMatch& match,
       const AutocompleteMatch& alternative_nav_match,
       IDNA2008DeviationCharacter deviation_char_in_hostname) override;
+  void OnInputInProgress(bool in_progress) override {}
   void OnChanged() override;
+  void OnPopupVisibilityChanged() override {}
   LocationBarModel* GetLocationBarModel() override;
   const LocationBarModel* GetLocationBarModel() const override;
 
  private:
-  __weak id<LocationBarDelegate> delegate_;
+  __weak id<OmniboxControllerDelegate> delegate_;
+  __weak id<OmniboxFocusDelegate> focus_delegate_;
   __weak id<LocationBarURLLoader> URLLoader_;
 };
 

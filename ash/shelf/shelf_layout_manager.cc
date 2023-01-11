@@ -56,11 +56,12 @@
 #include "ash/wm/workspace/workspace_types.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/single_thread_task_runner.h"
 #include "components/prefs/pref_service.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -3042,7 +3043,8 @@ void ShelfLayoutManager::OnShelfTrayBubbleVisibilityChanged(bool bubble_shown) {
   // status area tray bubble is set, which is before the tray bubble is
   // created/destructed. Meanwhile, we rely on the state of tray bubble to
   // calculate the auto-hide state.
-  // Use ThreadTaskRunnerHandle to specify that the task runs on the UI thread.
+  // Use SingleThreadTaskRunner::CurrentDefaultHandle to specify that the task
+  // runs on the UI thread.
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, visibility_update_for_tray_callback_.callback());
 }

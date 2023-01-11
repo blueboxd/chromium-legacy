@@ -60,6 +60,7 @@ constexpr auto kAdMeasurementSourceOrigin =
     InputKey::kAdMeasurementSourceOrigin;
 constexpr auto kAdMeasurementDestinationOrigin =
     InputKey::kAdMeasurementDestinationOrigin;
+constexpr auto kAccessingOrigin = InputKey::kAccessingOrigin;
 
 // using enum privacy_sandbox_test_util::TestOutput;
 using privacy_sandbox_test_util::OutputKey;
@@ -70,6 +71,26 @@ constexpr auto kIsFledgeAllowed = OutputKey::kIsFledgeAllowed;
 constexpr auto kIsAttributionReportingAllowed =
     OutputKey::kIsAttributionReportingAllowed;
 constexpr auto kMaySendAttributionReport = OutputKey::kMaySendAttributionReport;
+constexpr auto kIsSharedStorageAllowed = OutputKey::kIsSharedStorageAllowed;
+constexpr auto kIsSharedStorageSelectURLAllowed =
+    OutputKey::kIsSharedStorageSelectURLAllowed;
+constexpr auto kIsPrivateAggregationAllowed =
+    OutputKey::kIsPrivateAggregationAllowed;
+
+constexpr auto kIsTopicsAllowedMetric = OutputKey::kIsTopicsAllowedMetric;
+constexpr auto kIsTopicsAllowedForContextMetric =
+    OutputKey::kIsTopicsAllowedForContextMetric;
+constexpr auto kIsFledgeAllowedMetric = OutputKey::kIsFledgeAllowedMetric;
+constexpr auto kIsAttributionReportingAllowedMetric =
+    OutputKey::kIsAttributionReportingAllowedMetric;
+constexpr auto kMaySendAttributionReportMetric =
+    OutputKey::kMaySendAttributionReportMetric;
+constexpr auto kIsSharedStorageAllowedMetric =
+    OutputKey::kIsSharedStorageAllowedMetric;
+constexpr auto kIsSharedStorageSelectURLAllowedMetric =
+    OutputKey::kIsSharedStorageSelectURLAllowedMetric;
+constexpr auto kIsPrivateAggregationAllowedMetric =
+    OutputKey::kIsPrivateAggregationAllowedMetric;
 
 // using enum ContentSetting;
 constexpr auto CONTENT_SETTING_ALLOW = ContentSetting::CONTENT_SETTING_ALLOW;
@@ -982,6 +1003,8 @@ class PrivacySandboxSettingsM1Test : public PrivacySandboxSettingsTest {
   }
 
  protected:
+  using Status = PrivacySandboxSettings::Status;
+
   void RunTestCase(const TestState& test_state,
                    const TestInput& test_input,
                    const TestOutput& test_output) {
@@ -1021,17 +1044,26 @@ TEST_F(PrivacySandboxSettingsM1Test, ApiPreferenceEnabled) {
           {kTopFrameOrigin, url::Origin::Create(GURL("https://top-frame.com"))},
           {kTopicsURL, GURL("https://embedded.com")},
           {MultipleInputKeys{kFledgeAuctionPartyOrigin,
-                             kAdMeasurementReportingOrigin},
+                             kAdMeasurementReportingOrigin, kAccessingOrigin},
            url::Origin::Create(GURL("https://embedded.com"))},
           {kAdMeasurementSourceOrigin,
            url::Origin::Create(GURL("https://source-origin.com"))},
           {kAdMeasurementDestinationOrigin,
            url::Origin::Create(GURL("https://dest-origin.com"))}},
       TestOutput{
-          {MultipleOutputKeys{kIsTopicsAllowed, kIsTopicsAllowedForContext,
-                              kIsFledgeAllowed, kIsAttributionReportingAllowed,
-                              kMaySendAttributionReport},
-           true}});
+          {MultipleOutputKeys{
+               kIsTopicsAllowed, kIsTopicsAllowedForContext, kIsFledgeAllowed,
+               kIsAttributionReportingAllowed, kMaySendAttributionReport,
+               kIsSharedStorageAllowed, kIsSharedStorageSelectURLAllowed,
+               kIsPrivateAggregationAllowed},
+           true},
+          {MultipleOutputKeys{
+               kIsTopicsAllowedMetric, kIsTopicsAllowedForContextMetric,
+               kIsFledgeAllowedMetric, kIsAttributionReportingAllowedMetric,
+               kMaySendAttributionReportMetric, kIsSharedStorageAllowedMetric,
+               kIsSharedStorageSelectURLAllowedMetric,
+               kIsPrivateAggregationAllowedMetric},
+           static_cast<int>(Status::kAllowed)}});
 }
 
 TEST_F(PrivacySandboxSettingsM1Test, ApiPreferenceDisabled) {
@@ -1045,18 +1077,27 @@ TEST_F(PrivacySandboxSettingsM1Test, ApiPreferenceDisabled) {
           {kTopFrameOrigin, url::Origin::Create(GURL("https://top-frame.com"))},
           {kTopicsURL, GURL("https://embedded.com")},
           {MultipleInputKeys{kFledgeAuctionPartyOrigin,
-                             kAdMeasurementReportingOrigin},
+                             kAdMeasurementReportingOrigin, kAccessingOrigin},
            url::Origin::Create(GURL("https://embedded.com"))},
           {kAdMeasurementSourceOrigin,
            url::Origin::Create(GURL("https://source-origin.com"))},
           {kAdMeasurementDestinationOrigin,
-           url::Origin::Create(GURL("https://dest-origin.com"))},
-      },
+           url::Origin::Create(GURL("https://dest-origin.com"))}},
       TestOutput{
-          {MultipleOutputKeys{kIsTopicsAllowed, kIsTopicsAllowedForContext,
-                              kIsFledgeAllowed, kIsAttributionReportingAllowed,
-                              kMaySendAttributionReport},
-           false}});
+          {MultipleOutputKeys{
+               kIsTopicsAllowed, kIsTopicsAllowedForContext, kIsFledgeAllowed,
+               kIsAttributionReportingAllowed, kMaySendAttributionReport,
+               kIsSharedStorageSelectURLAllowed, kIsPrivateAggregationAllowed},
+           false},
+          {kIsSharedStorageAllowed, true},
+          {MultipleOutputKeys{
+               kIsTopicsAllowedMetric, kIsTopicsAllowedForContextMetric,
+               kIsFledgeAllowedMetric, kIsAttributionReportingAllowedMetric,
+               kMaySendAttributionReportMetric,
+               kIsSharedStorageSelectURLAllowedMetric,
+               kIsPrivateAggregationAllowedMetric},
+           static_cast<int>(Status::kApisDisabled)},
+          {kIsSharedStorageAllowedMetric, static_cast<int>(Status::kAllowed)}});
 }
 
 TEST_F(PrivacySandboxSettingsM1Test, CookieControlsModeHasNoEffect) {
@@ -1071,17 +1112,26 @@ TEST_F(PrivacySandboxSettingsM1Test, CookieControlsModeHasNoEffect) {
           {kTopFrameOrigin, url::Origin::Create(GURL("https://top-frame.com"))},
           {kTopicsURL, GURL("https://embedded.com")},
           {MultipleInputKeys{kFledgeAuctionPartyOrigin,
-                             kAdMeasurementReportingOrigin},
+                             kAdMeasurementReportingOrigin, kAccessingOrigin},
            url::Origin::Create(GURL("https://embedded.com"))},
           {kAdMeasurementSourceOrigin,
            url::Origin::Create(GURL("https://source-origin.com"))},
           {kAdMeasurementDestinationOrigin,
            url::Origin::Create(GURL("https://dest-origin.com"))}},
       TestOutput{
-          {MultipleOutputKeys{kIsTopicsAllowed, kIsTopicsAllowedForContext,
-                              kIsFledgeAllowed, kIsAttributionReportingAllowed,
-                              kMaySendAttributionReport},
-           true}});
+          {MultipleOutputKeys{
+               kIsTopicsAllowed, kIsTopicsAllowedForContext, kIsFledgeAllowed,
+               kIsAttributionReportingAllowed, kMaySendAttributionReport,
+               kIsSharedStorageAllowed, kIsSharedStorageSelectURLAllowed,
+               kIsPrivateAggregationAllowed},
+           true},
+          {MultipleOutputKeys{
+               kIsTopicsAllowedMetric, kIsTopicsAllowedForContextMetric,
+               kIsFledgeAllowedMetric, kIsAttributionReportingAllowedMetric,
+               kMaySendAttributionReportMetric, kIsSharedStorageAllowedMetric,
+               kIsSharedStorageSelectURLAllowedMetric,
+               kIsPrivateAggregationAllowedMetric},
+           static_cast<int>(Status::kAllowed)}});
 }
 
 TEST_F(PrivacySandboxSettingsM1Test, SiteDataBlockApplies) {
@@ -1099,7 +1149,7 @@ TEST_F(PrivacySandboxSettingsM1Test, SiteDataBlockApplies) {
           {kTopFrameOrigin, url::Origin::Create(GURL("https://top-frame.com"))},
           {kTopicsURL, GURL("https://embedded.com")},
           {MultipleInputKeys{kFledgeAuctionPartyOrigin,
-                             kAdMeasurementReportingOrigin},
+                             kAdMeasurementReportingOrigin, kAccessingOrigin},
            url::Origin::Create(GURL("https://embedded.com"))},
           {kAdMeasurementSourceOrigin,
            url::Origin::Create(GURL("https://source-origin.com"))},
@@ -1107,10 +1157,20 @@ TEST_F(PrivacySandboxSettingsM1Test, SiteDataBlockApplies) {
            url::Origin::Create(GURL("https://dest-origin.com"))}},
       TestOutput{
           {kIsTopicsAllowed, true},
-          {MultipleOutputKeys{kIsTopicsAllowedForContext, kIsFledgeAllowed,
-                              kIsAttributionReportingAllowed,
-                              kMaySendAttributionReport},
-           false}});
+          {MultipleOutputKeys{
+               kIsTopicsAllowedForContext, kIsFledgeAllowed,
+               kIsAttributionReportingAllowed, kMaySendAttributionReport,
+               kIsSharedStorageAllowed, kIsSharedStorageSelectURLAllowed,
+               kIsPrivateAggregationAllowed},
+           false},
+          {kIsTopicsAllowedMetric, static_cast<int>(Status::kAllowed)},
+          {MultipleOutputKeys{
+               kIsTopicsAllowedForContextMetric, kIsFledgeAllowedMetric,
+               kIsAttributionReportingAllowedMetric,
+               kMaySendAttributionReportMetric, kIsSharedStorageAllowedMetric,
+               kIsSharedStorageSelectURLAllowedMetric,
+               kIsPrivateAggregationAllowedMetric},
+           static_cast<int>(Status::kSiteDataAccessBlocked)}});
 }
 
 TEST_F(PrivacySandboxSettingsM1Test, SiteDataAllowDoesntOverridePref) {
@@ -1130,18 +1190,27 @@ TEST_F(PrivacySandboxSettingsM1Test, SiteDataAllowDoesntOverridePref) {
           {kTopFrameOrigin, url::Origin::Create(GURL("https://top-frame.com"))},
           {kTopicsURL, GURL("https://embedded.com")},
           {MultipleInputKeys{kFledgeAuctionPartyOrigin,
-                             kAdMeasurementReportingOrigin},
+                             kAdMeasurementReportingOrigin, kAccessingOrigin},
            url::Origin::Create(GURL("https://embedded.com"))},
           {kAdMeasurementSourceOrigin,
            url::Origin::Create(GURL("https://source-origin.com"))},
           {kAdMeasurementDestinationOrigin,
            url::Origin::Create(GURL("https://dest-origin.com"))}},
       TestOutput{
-          {kIsTopicsAllowed, false},
-          {MultipleOutputKeys{kIsTopicsAllowedForContext, kIsFledgeAllowed,
-                              kIsAttributionReportingAllowed,
-                              kMaySendAttributionReport},
-           false}});
+          {kIsSharedStorageAllowed, true},
+          {MultipleOutputKeys{
+               kIsTopicsAllowed, kIsTopicsAllowedForContext, kIsFledgeAllowed,
+               kIsAttributionReportingAllowed, kMaySendAttributionReport,
+               kIsSharedStorageSelectURLAllowed, kIsPrivateAggregationAllowed},
+           false},
+          {kIsSharedStorageAllowedMetric, static_cast<int>(Status::kAllowed)},
+          {MultipleOutputKeys{
+               kIsTopicsAllowedMetric, kIsTopicsAllowedForContextMetric,
+               kIsFledgeAllowedMetric, kIsAttributionReportingAllowedMetric,
+               kMaySendAttributionReportMetric,
+               kIsSharedStorageSelectURLAllowedMetric,
+               kIsPrivateAggregationAllowedMetric},
+           static_cast<int>(Status::kApisDisabled)}});
 }
 
 TEST_F(PrivacySandboxSettingsM1Test, SiteDataAllowExceptions) {
@@ -1159,17 +1228,26 @@ TEST_F(PrivacySandboxSettingsM1Test, SiteDataAllowExceptions) {
           {kTopFrameOrigin, url::Origin::Create(GURL("https://top-frame.com"))},
           {kTopicsURL, GURL("https://embedded.com")},
           {MultipleInputKeys{kFledgeAuctionPartyOrigin,
-                             kAdMeasurementReportingOrigin},
+                             kAdMeasurementReportingOrigin, kAccessingOrigin},
            url::Origin::Create(GURL("https://embedded.com"))},
           {kAdMeasurementSourceOrigin,
            url::Origin::Create(GURL("https://source-origin.com"))},
           {kAdMeasurementDestinationOrigin,
            url::Origin::Create(GURL("https://dest-origin.com"))}},
       TestOutput{
-          {MultipleOutputKeys{kIsTopicsAllowed, kIsTopicsAllowedForContext,
-                              kIsFledgeAllowed, kIsAttributionReportingAllowed,
-                              kMaySendAttributionReport},
-           true}});
+          {MultipleOutputKeys{
+               kIsTopicsAllowed, kIsTopicsAllowedForContext, kIsFledgeAllowed,
+               kIsAttributionReportingAllowed, kMaySendAttributionReport,
+               kIsSharedStorageAllowed, kIsSharedStorageSelectURLAllowed,
+               kIsPrivateAggregationAllowed},
+           true},
+          {MultipleOutputKeys{
+               kIsTopicsAllowedMetric, kIsTopicsAllowedForContextMetric,
+               kIsFledgeAllowedMetric, kIsAttributionReportingAllowedMetric,
+               kMaySendAttributionReportMetric, kIsSharedStorageAllowedMetric,
+               kIsSharedStorageSelectURLAllowedMetric,
+               kIsPrivateAggregationAllowedMetric},
+           static_cast<int>(Status::kAllowed)}});
 }
 
 TEST_F(PrivacySandboxSettingsM1Test, UnrelatedSiteDataBlock) {
@@ -1187,17 +1265,26 @@ TEST_F(PrivacySandboxSettingsM1Test, UnrelatedSiteDataBlock) {
           {kTopFrameOrigin, url::Origin::Create(GURL("https://top-frame.com"))},
           {kTopicsURL, GURL("https://embedded.com")},
           {MultipleInputKeys{kFledgeAuctionPartyOrigin,
-                             kAdMeasurementReportingOrigin},
+                             kAdMeasurementReportingOrigin, kAccessingOrigin},
            url::Origin::Create(GURL("https://embedded.com"))},
           {kAdMeasurementSourceOrigin,
            url::Origin::Create(GURL("https://source-origin.com"))},
           {kAdMeasurementDestinationOrigin,
            url::Origin::Create(GURL("https://dest-origin.com"))}},
       TestOutput{
-          {MultipleOutputKeys{kIsTopicsAllowed, kIsTopicsAllowedForContext,
-                              kIsFledgeAllowed, kIsAttributionReportingAllowed,
-                              kMaySendAttributionReport},
-           true}});
+          {MultipleOutputKeys{
+               kIsTopicsAllowed, kIsTopicsAllowedForContext, kIsFledgeAllowed,
+               kIsAttributionReportingAllowed, kMaySendAttributionReport,
+               kIsSharedStorageAllowed, kIsSharedStorageSelectURLAllowed,
+               kIsPrivateAggregationAllowed},
+           true},
+          {MultipleOutputKeys{
+               kIsTopicsAllowedMetric, kIsTopicsAllowedForContextMetric,
+               kIsFledgeAllowedMetric, kIsAttributionReportingAllowedMetric,
+               kMaySendAttributionReportMetric, kIsSharedStorageAllowedMetric,
+               kIsSharedStorageSelectURLAllowedMetric,
+               kIsPrivateAggregationAllowedMetric},
+           static_cast<int>(Status::kAllowed)}});
 }
 
 TEST_F(PrivacySandboxSettingsM1Test, UnrelatedSiteDataAllow) {
@@ -1215,7 +1302,7 @@ TEST_F(PrivacySandboxSettingsM1Test, UnrelatedSiteDataAllow) {
           {kTopFrameOrigin, url::Origin::Create(GURL("https://top-frame.com"))},
           {kTopicsURL, GURL("https://embedded.com")},
           {MultipleInputKeys{kFledgeAuctionPartyOrigin,
-                             kAdMeasurementReportingOrigin},
+                             kAdMeasurementReportingOrigin, kAccessingOrigin},
            url::Origin::Create(GURL("https://embedded.com"))},
           {kAdMeasurementSourceOrigin,
            url::Origin::Create(GURL("https://source-origin.com"))},
@@ -1223,10 +1310,20 @@ TEST_F(PrivacySandboxSettingsM1Test, UnrelatedSiteDataAllow) {
            url::Origin::Create(GURL("https://dest-origin.com"))}},
       TestOutput{
           {kIsTopicsAllowed, true},
-          {MultipleOutputKeys{kIsTopicsAllowedForContext, kIsFledgeAllowed,
-                              kIsAttributionReportingAllowed,
-                              kMaySendAttributionReport},
-           false}});
+          {MultipleOutputKeys{
+               kIsTopicsAllowedForContext, kIsFledgeAllowed,
+               kIsAttributionReportingAllowed, kMaySendAttributionReport,
+               kIsSharedStorageAllowed, kIsSharedStorageSelectURLAllowed,
+               kIsPrivateAggregationAllowed},
+           false},
+          {kIsTopicsAllowedMetric, static_cast<int>(Status::kAllowed)},
+          {MultipleOutputKeys{
+               kIsTopicsAllowedForContextMetric, kIsFledgeAllowedMetric,
+               kIsAttributionReportingAllowedMetric,
+               kMaySendAttributionReportMetric, kIsSharedStorageAllowedMetric,
+               kIsSharedStorageSelectURLAllowedMetric,
+               kIsPrivateAggregationAllowedMetric},
+           static_cast<int>(Status::kSiteDataAccessBlocked)}});
 }
 
 TEST_F(PrivacySandboxSettingsM1Test, ApisAreOffInIncognito) {
@@ -1240,17 +1337,26 @@ TEST_F(PrivacySandboxSettingsM1Test, ApisAreOffInIncognito) {
           {kTopFrameOrigin, url::Origin::Create(GURL("https://top-frame.com"))},
           {kTopicsURL, GURL("https://embedded.com")},
           {MultipleInputKeys{kFledgeAuctionPartyOrigin,
-                             kAdMeasurementReportingOrigin},
+                             kAdMeasurementReportingOrigin, kAccessingOrigin},
            url::Origin::Create(GURL("https://embedded.com"))},
           {kAdMeasurementSourceOrigin,
            url::Origin::Create(GURL("https://source-origin.com"))},
           {kAdMeasurementDestinationOrigin,
            url::Origin::Create(GURL("https://dest-origin.com"))}},
       TestOutput{
-          {MultipleOutputKeys{kIsTopicsAllowed, kIsTopicsAllowedForContext,
-                              kIsFledgeAllowed, kIsAttributionReportingAllowed,
-                              kMaySendAttributionReport},
-           false}});
+          {MultipleOutputKeys{
+               kIsTopicsAllowed, kIsTopicsAllowedForContext, kIsFledgeAllowed,
+               kIsAttributionReportingAllowed, kMaySendAttributionReport,
+               kIsSharedStorageAllowed, kIsSharedStorageSelectURLAllowed,
+               kIsPrivateAggregationAllowed},
+           false},
+          {MultipleOutputKeys{
+               kIsTopicsAllowedMetric, kIsTopicsAllowedForContextMetric,
+               kIsFledgeAllowedMetric, kIsAttributionReportingAllowedMetric,
+               kMaySendAttributionReportMetric, kIsSharedStorageAllowedMetric,
+               kIsSharedStorageSelectURLAllowedMetric,
+               kIsPrivateAggregationAllowedMetric},
+           static_cast<int>(Status::kIncognitoProfile)}});
 }
 
 TEST_F(PrivacySandboxSettingsM1Test, ApisAreOffForRestrictedAccounts) {
@@ -1264,16 +1370,66 @@ TEST_F(PrivacySandboxSettingsM1Test, ApisAreOffForRestrictedAccounts) {
           {kTopFrameOrigin, url::Origin::Create(GURL("https://top-frame.com"))},
           {kTopicsURL, GURL("https://embedded.com")},
           {MultipleInputKeys{kFledgeAuctionPartyOrigin,
-                             kAdMeasurementReportingOrigin},
+                             kAdMeasurementReportingOrigin, kAccessingOrigin},
            url::Origin::Create(GURL("https://embedded.com"))},
           {kAdMeasurementSourceOrigin,
            url::Origin::Create(GURL("https://source-origin.com"))},
           {kAdMeasurementDestinationOrigin,
            url::Origin::Create(GURL("https://dest-origin.com"))}},
       TestOutput{
-          {MultipleOutputKeys{kIsTopicsAllowed, kIsTopicsAllowedForContext,
-                              kIsFledgeAllowed, kIsAttributionReportingAllowed,
-                              kMaySendAttributionReport},
-           false}});
+          {MultipleOutputKeys{
+               kIsTopicsAllowed, kIsTopicsAllowedForContext, kIsFledgeAllowed,
+               kIsAttributionReportingAllowed, kMaySendAttributionReport,
+               kIsSharedStorageAllowed, kIsSharedStorageSelectURLAllowed,
+               kIsPrivateAggregationAllowed},
+           false},
+          {MultipleOutputKeys{
+               kIsTopicsAllowedMetric, kIsTopicsAllowedForContextMetric,
+               kIsFledgeAllowedMetric, kIsAttributionReportingAllowedMetric,
+               kMaySendAttributionReportMetric, kIsSharedStorageAllowedMetric,
+               kIsSharedStorageSelectURLAllowedMetric,
+               kIsPrivateAggregationAllowedMetric},
+           static_cast<int>(Status::kRestricted)}});
 }
+
+TEST_F(PrivacySandboxSettingsM1Test,
+       CheckFledgeDependentApi_FledgeOn_OtherApiOn) {
+  RunTestCase(TestState{{kM1FledgeEnabledUserPrefValue, true}},
+              TestInput{{kTopFrameOrigin,
+                         url::Origin::Create(GURL("https://top-frame.com"))},
+                        {kAccessingOrigin,
+                         url::Origin::Create(GURL("https://embedded.com"))}},
+              TestOutput{{kIsSharedStorageSelectURLAllowed, true}});
+}
+
+TEST_F(PrivacySandboxSettingsM1Test,
+       CheckFledgeDependentApi_FledgeOff_OtherApiOff) {
+  RunTestCase(TestState{{kM1FledgeEnabledUserPrefValue, false}},
+              TestInput{{kTopFrameOrigin,
+                         url::Origin::Create(GURL("https://top-frame.com"))},
+                        {kAccessingOrigin,
+                         url::Origin::Create(GURL("https://embedded.com"))}},
+              TestOutput{{kIsSharedStorageSelectURLAllowed, false}});
+}
+
+TEST_F(PrivacySandboxSettingsM1Test,
+       CheckAdMeasurementDependentApi_AdMeasurementOn_OtherApiOn) {
+  RunTestCase(TestState{{kM1AdMeasurementEnabledUserPrefValue, true}},
+              TestInput{{kTopFrameOrigin,
+                         url::Origin::Create(GURL("https://top-frame.com"))},
+                        {kAdMeasurementReportingOrigin,
+                         url::Origin::Create(GURL("https://embedded.com"))}},
+              TestOutput{{kIsPrivateAggregationAllowed, true}});
+}
+
+TEST_F(PrivacySandboxSettingsM1Test,
+       CheckAdMeasurementDependentApi_AdMeasurementOff_OtherApiOff) {
+  RunTestCase(TestState{{kM1AdMeasurementEnabledUserPrefValue, false}},
+              TestInput{{kTopFrameOrigin,
+                         url::Origin::Create(GURL("https://top-frame.com"))},
+                        {kAdMeasurementReportingOrigin,
+                         url::Origin::Create(GURL("https://embedded.com"))}},
+              TestOutput{{kIsPrivateAggregationAllowed, false}});
+}
+
 }  // namespace privacy_sandbox

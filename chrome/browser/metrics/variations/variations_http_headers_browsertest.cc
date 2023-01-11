@@ -7,15 +7,14 @@
 #include <map>
 #include <memory>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"

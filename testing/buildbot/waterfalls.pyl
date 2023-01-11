@@ -115,9 +115,10 @@
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_device_gtests',
-        },
+        # TODO(crbug.com/1342987): All DUTs are dead.
+        # 'test_suites': {
+        #  'gtest_tests': 'chromeos_device_gtests',
+        #},
         'swarming': {
           'dimension_sets': [
             {
@@ -152,9 +153,10 @@
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_device_gtests',
-        },
+        # TODO(crbug.com/1342987): All DUTs are dead.
+        # 'test_suites': {
+        #   'gtest_tests': 'chromeos_device_gtests',
+        # },
         'swarming': {
           'dimension_sets': [
             {
@@ -943,7 +945,6 @@
         'os_type': 'android',
         'test_suites': {
           'gtest_tests': 'android_nougat_emulator_gtests',
-          'junit_tests': 'chromium_junit_tests_some_swarming',
           'isolated_scripts': 'nougat_isolated_scripts',
           'scripts': 'chromium_android_scripts',
         },
@@ -1741,7 +1742,7 @@
       },
       'ToTLinuxMSan': {
         'mixins': [
-          'linux-bionic',
+          'linux-focal',
         ],
         'additional_compile_targets': [
           'all',
@@ -2798,22 +2799,6 @@
           'gtest_tests': 'chromium_linux_and_gl_gtests',
         },
       },
-      'Linux ChromiumOS MSan Focal': {
-        'mixins': [
-          'linux-focal',
-          'x86-64',
-        ],
-        'swarming': {
-          'expiration': 10800,
-          'hard_timeout': 7200,
-        },
-        'test_suites': {
-          'gtest_tests': 'linux_chromeos_gtests_oobe',
-        },
-        'args': [
-          '--test-launcher-print-test-stdio=always',
-        ],
-      },
       'Linux Viz': {
         'mixins': [
           'linux-bionic',
@@ -3035,7 +3020,7 @@
       },
 
       'android-perfetto-rel': {
-        'additional_compile_targets': [ 'all' ],
+        'additional_compile_targets': [ 'chrome_public_apk' ],
         'mixins': [
           '12-x64-emulator',
           'emulator-8-cores',
@@ -3120,6 +3105,7 @@
       },
       'ios-fieldtrial-rel': {
         'mixins': [
+          'finch-chromium-swarming-pool',
           'has_native_resultdb_integration',
           'mac_12_arm64',
           'mac_toolchain',
@@ -3608,6 +3594,7 @@
       },
       'mac-fieldtrial-tester': {
         'mixins': [
+          'finch-chromium-swarming-pool',
           'mac_12_arm64',
         ],
         'test_suites': {
@@ -3687,7 +3674,7 @@
       },
       'win-fieldtrial-rel': {
         'mixins': [
-            'win10',
+            'win10-20h2',
             'finch-chromium-swarming-pool',
         ],
         'test_suites': {
@@ -3721,7 +3708,7 @@
       'win10-rel-no-external-ip': {
         'mixins': [
           'x86-64',
-          'win10',
+          'win10-20h2',
           'isolate_profile_data',
         ],
         'swarming': {
@@ -5119,7 +5106,7 @@
       },
       'Linux ChromiumOS MSan Tests': {
         'mixins': [
-          'linux-xenial',
+          'linux-focal',
           'x86-64',
         ],
         'test_suites': {
@@ -5281,22 +5268,6 @@
     'mixins': ['chromium-tester-service-account'],
     'machines': {
       'Comparison Linux (reclient vs reclient remote links)': {
-        'mixins': [
-          'isolate_profile_data',
-        ],
-        'additional_compile_targets': [
-          'all'
-        ],
-      },
-      'Comparison Linux (reclient vs reclient remote links)(large)': {
-        'mixins': [
-          'isolate_profile_data',
-        ],
-        'additional_compile_targets': [
-          'all'
-        ],
-      },
-      'Comparison Linux (reclient vs reclient remote links)(medium)': {
         'mixins': [
           'isolate_profile_data',
         ],
@@ -5686,6 +5657,21 @@
     'name': 'chromium.updater',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
+      'mac-updater-builder-arm64-dbg': {
+        'additional_compile_targets': ['chrome/updater:all'],
+      },
+      'mac-updater-builder-arm64-rel': {
+        'additional_compile_targets': ['chrome/updater:all'],
+      },
+      'mac-updater-builder-asan-dbg': {
+        'additional_compile_targets': ['chrome/updater:all'],
+      },
+      'mac-updater-builder-dbg': {
+        'additional_compile_targets': ['chrome/updater:all'],
+      },
+      'mac-updater-builder-rel': {
+        'additional_compile_targets': ['chrome/updater:all'],
+      },
       'mac10.13-updater-tester-dbg': {
         'test_suites': {
           'gtest_tests': 'updater_gtests_mac',
@@ -5764,7 +5750,7 @@
           ]
         },
       },
-      'mac11.0-arm64-updater-tester-dbg': {
+      'mac11-arm64-updater-tester-dbg': {
         'swarming': {
           'dimension_sets': [
             {
@@ -5777,7 +5763,7 @@
           'gtest_tests': 'updater_gtests_mac',
         },
       },
-      'mac11.0-arm64-updater-tester-rel': {
+      'mac11-arm64-updater-tester-rel': {
         'swarming': {
           'dimension_sets': [
             {
@@ -5790,9 +5776,7 @@
           'gtest_tests': 'updater_gtests_mac',
         },
       },
-      # TODO(crbug.com/1381588): move to macOS 12 once crbug.com/1394839 is
-      # resolved.
-      'mac11.0-updater-tester-asan-dbg': {
+      'mac11-x64-updater-tester-dbg': {
         'test_suites': {
           'gtest_tests': 'updater_gtests_mac',
         },
@@ -5805,7 +5789,7 @@
           ]
         },
       },
-      'mac11.0-updater-tester-dbg': {
+      'mac11-x64-updater-tester-rel': {
         'test_suites': {
           'gtest_tests': 'updater_gtests_mac',
         },
@@ -5818,20 +5802,77 @@
           ]
         },
       },
-      'mac11.0-updater-tester-rel': {
+
+      # TODO(crbug.com/1381588, crbug.com/1405483): replace
+      # `updater_gtests_mac_user` with `updater_gtests_mac` once
+      # crbug.com/1394839 is resolved.
+      'mac12-x64-updater-tester-asan-dbg': {
         'test_suites': {
-          'gtest_tests': 'updater_gtests_mac',
+          'gtest_tests': 'updater_gtests_mac_user',
         },
         'swarming': {
           'dimension_sets': [
             {
               'cpu': 'x86-64',
-              'os': 'Mac-11',
+              'os': 'Mac-12',
             }
           ]
         },
+      },
+      # TODO(crbug.com/1405483): replace `updater_gtests_mac_user` with
+      # `updater_gtests_mac` once crbug.com/1394839 is resolved.
+      'mac13-arm64-updater-tester-dbg': {
+        'test_suites': {
+          'gtest_tests': 'updater_gtests_mac_user',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cpu': 'arm-64',
+              'os': 'Mac-13',
+            }
+          ]
+        },
+      },
+      # TODO(crbug.com/1405483): replace `updater_gtests_mac_user` with
+      # `updater_gtests_mac` once crbug.com/1394839 is resolved.
+      'mac13-x64-updater-tester-rel': {
+        'test_suites': {
+          'gtest_tests': 'updater_gtests_mac_user',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cpu': 'x86-64',
+              'os': 'Mac-13',
+            }
+          ]
+        },
+      },
+      'win-updater-builder-dbg': {
+        'additional_compile_targets': ['chrome/updater:all'],
+      },
+      'win-updater-builder-rel': {
+        'additional_compile_targets': ['chrome/updater:all'],
       },
       'win10-32-on-64-updater-tester-dbg': {
+        'mixins': [
+          'win10',
+          'x86-64',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests_win',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'integrity': 'high',
+              'pool': 'chromium.tests',
+            }
+          ]
+        },
+      },
+      'win10-32-on-64-updater-tester-rel': {
         'mixins': [
           'win10',
           'x86-64',
@@ -5931,37 +5972,11 @@
           ]
         },
       },
-      'win7(32)-updater-tester-rel': {
-        'mixins': [
-          'win7',
-          'x86-32'
-        ],
-        'test_suites': {
-          'gtest_tests': 'updater_gtests_win',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'integrity': 'high',
-            }
-          ]
-        },
+      'win32-updater-builder-dbg': {
+        'additional_compile_targets': ['chrome/updater:all'],
       },
-      'win7-updater-tester-rel': {
-        'mixins': [
-          'win7',
-          'x86-64'
-        ],
-        'test_suites': {
-          'gtest_tests': 'updater_gtests_win',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'integrity': 'high',
-            }
-          ]
-        },
+      'win32-updater-builder-rel': {
+        'additional_compile_targets': ['chrome/updater:all'],
       },
     }
   },

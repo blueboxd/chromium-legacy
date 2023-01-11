@@ -8,11 +8,12 @@
 #include <utility>
 
 #include "base/base64.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/android/download_open_source.h"
 #include "chrome/browser/download/android/download_utils.h"

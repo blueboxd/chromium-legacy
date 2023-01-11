@@ -325,7 +325,7 @@ PseudoId GetPseudoId(const Element& element, ElementRuleCollector* collector) {
 
 void UseCountLegacyOverlapping(Document& document,
                                const ComputedStyle& a,
-                               const ComputedStyle& b) {
+                               const ComputedStyleBuilder& b) {
   if (a.PerspectiveOrigin() != b.PerspectiveOrigin()) {
     document.CountUse(WebFeature::kCSSLegacyPerspectiveOrigin);
   }
@@ -335,10 +335,11 @@ void UseCountLegacyOverlapping(Document& document,
   if (a.BorderImage() != b.BorderImage()) {
     document.CountUse(WebFeature::kCSSLegacyBorderImage);
   }
-  if ((a.BorderTopWidth() != b.BorderTopWidth()) ||
-      (a.BorderRightWidth() != b.BorderRightWidth()) ||
-      (a.BorderBottomWidth() != b.BorderBottomWidth()) ||
-      (a.BorderLeftWidth() != b.BorderLeftWidth())) {
+  const ComputedStyle& b_style = *b.InternalStyle();
+  if ((a.BorderTopWidth() != b_style.BorderTopWidth()) ||
+      (a.BorderRightWidth() != b_style.BorderRightWidth()) ||
+      (a.BorderBottomWidth() != b_style.BorderBottomWidth()) ||
+      (a.BorderLeftWidth() != b_style.BorderLeftWidth())) {
     document.CountUse(WebFeature::kCSSLegacyBorderImageWidth);
   }
 }
@@ -1028,18 +1029,18 @@ scoped_refptr<ComputedStyle> StyleResolver::ResolveStyle(
     SetAnimationUpdateIfNeeded(style_recalc_context, state, *animating_element);
   }
 
-  GetDocument().AddViewportUnitFlags(state.Style()->ViewportUnitFlags());
+  GetDocument().AddViewportUnitFlags(state.StyleBuilder().ViewportUnitFlags());
 
-  if (state.Style()->HasRootFontRelativeUnits()) {
+  if (state.StyleBuilder().HasRootFontRelativeUnits()) {
     GetDocument().GetStyleEngine().SetUsesRootFontRelativeUnits(true);
   }
 
-  if (state.Style()->HasGlyphRelativeUnits()) {
+  if (state.StyleBuilder().HasGlyphRelativeUnits()) {
     GetDocument().GetStyleEngine().SetUsesGlyphRelativeUnits(true);
     UseCounter::Count(GetDocument(), WebFeature::kHasGlyphRelativeUnits);
   }
 
-  if (state.Style()->HasLineHeightRelativeUnits()) {
+  if (state.StyleBuilder().HasLineHeightRelativeUnits()) {
     GetDocument().GetStyleEngine().SetUsesLineHeightUnits(true);
   }
 
@@ -1107,7 +1108,8 @@ void StyleResolver::InitStyleAndApplyInheritance(
     ApplyInheritance(element, style_request, state);
   } else {
     state.SetStyle(InitialStyleForElement());
-    state.SetParentStyle(ComputedStyle::Clone(*state.Style()));
+    state.SetParentStyle(
+        ComputedStyle::Clone(*state.StyleBuilder().InternalStyle()));
     state.SetLayoutParentStyle(state.ParentStyle());
     if (!style_request.IsPseudoStyleRequest() &&
         element != GetDocument().documentElement()) {
@@ -1527,7 +1529,7 @@ void StyleResolver::ApplyBaseStyle(
 
 #if DCHECK_IS_ON()
     // Verify that we got the right answer.
-    scoped_refptr<ComputedStyle> incremental_style = state.TakeStyle();
+    scoped_refptr<const ComputedStyle> incremental_style = state.TakeStyle();
     ApplyBaseStyleNoCache(element, style_recalc_context, style_request, state,
                           cascade);
 
@@ -1547,8 +1549,10 @@ void StyleResolver::ApplyBaseStyle(
         state.StyleBuilder().ViewportUnitFlags() |
         incremental_style->ViewportUnitFlags());
 
+    scoped_refptr<const ComputedStyle> style_snapshot =
+        state.StyleBuilder().CloneStyle();
     DCHECK_EQ(g_null_atom, ComputeBaseComputedStyleDiff(incremental_style.get(),
-                                                        *state.Style()));
+                                                        *style_snapshot));
     // The incremental style must not contain BaseData, otherwise we'd risk
     // creating an infinite chain of BaseData/ComputedStyle in
     // ApplyAnimatedStyle.
@@ -2057,10 +2061,11 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
     }
     state.UpdateFont();
   }
-  // This is needed because pseudo_argument is copied to the state.Style() as
-  // part of a raredata field when copying non-inherited values from the cached
-  // result. The argument isn't a style property per se, it represents the
-  // argument to the matching element which should remain unchanged.
+  // This is needed because pseudo_argument is copied to the
+  // state.StyleBuilder() as part of a raredata field when copying
+  // non-inherited values from the cached result. The argument isn't a style
+  // property per se, it represents the argument to the matching element which
+  // should remain unchanged.
   state.StyleBuilder().SetPseudoArgument(pseudo_argument);
 
   return CacheSuccess(is_inherited_cache_hit, is_non_inherited_cache_hit, key,
@@ -2281,7 +2286,8 @@ void StyleResolver::CascadeAndApplyMatchedProperties(StyleResolverState& state,
         state.StyleBuilder().CloneStyle();
     // Re-apply all overlapping properties (both legacy and non-legacy).
     apply(CascadeFilter(CSSProperty::kOverlapping, false));
-    UseCountLegacyOverlapping(GetDocument(), *non_legacy_style, *state.Style());
+    UseCountLegacyOverlapping(GetDocument(), *non_legacy_style,
+                              state.StyleBuilder());
   }
 
   // NOTE: This flag (and the length conversion flags) need to be set before the
@@ -2699,7 +2705,6 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForFormattedText(
   // Set up our initial style properties based on either the `default_font` or
   // `parent_style`.
   ComputedStyleBuilder builder = CreateComputedStyleBuilder();
-  ComputedStyle* style = builder.MutableInternalStyle();
   if (default_font) {
     builder.SetFontDescription(*default_font);
   } else {  // parent_style
@@ -2707,27 +2712,30 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForFormattedText(
   }
   builder.SetDisplay(is_text_run ? EDisplay::kInline : EDisplay::kBlock);
 
-  // Apply any properties in the `css_property_value_set`.
-  if (css_property_value_set) {
-    // Use a dummy/disconnected element when resolving the styles so that we
-    // don't inherit anything from existing elements.
-    StyleResolverState state(
-        GetDocument(), EnsureElementForFormattedText(),
-        nullptr /* StyleRecalcContext */,
-        StyleRequest{parent_style ? parent_style : &InitialStyle()});
-    state.SetStyle(style);
-
-    // Use StyleCascade to apply inheritance in the correct order.
-    STACK_UNINITIALIZED StyleCascade cascade(state);
-    cascade.MutableMatchResult().AddMatchedProperties(
-        css_property_value_set,
-        AddMatchedPropertiesOptions::Builder().SetIsInlineStyle(true).Build());
-    cascade.Apply();
-
-    StyleAdjuster::AdjustComputedStyle(state, nullptr);
+  if (!css_property_value_set) {
+    return builder.TakeStyle();
   }
 
-  return builder.TakeStyle();
+  // Apply any properties in the `css_property_value_set`.
+
+  // Use a dummy/disconnected element when resolving the styles so that we
+  // don't inherit anything from existing elements.
+  StyleResolverState state(
+      GetDocument(), EnsureElementForFormattedText(),
+      nullptr /* StyleRecalcContext */,
+      StyleRequest{parent_style ? parent_style : &InitialStyle()});
+  state.SetStyle(builder.TakeStyle());
+
+  // Use StyleCascade to apply inheritance in the correct order.
+  STACK_UNINITIALIZED StyleCascade cascade(state);
+  cascade.MutableMatchResult().AddMatchedProperties(
+      css_property_value_set,
+      AddMatchedPropertiesOptions::Builder().SetIsInlineStyle(true).Build());
+  cascade.Apply();
+
+  StyleAdjuster::AdjustComputedStyle(state, nullptr);
+
+  return state.TakeStyle();
 }
 
 static Font ComputeInitialLetterFont(const ComputedStyle& style,

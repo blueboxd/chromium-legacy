@@ -23,7 +23,7 @@ namespace {
 // third_party/blink/public/common/features_generated.h, or the .h file (for
 // Android only features).
 const base::Feature* const kFeaturesExposedToJava[] = {
-    &::blink::features::kClearIdentityInCanMakePaymentEvent,
+    &::blink::features::kAddIdentityInCanMakePaymentEvent,
     &::features::kSecurePaymentConfirmation,
     &::features::kServiceWorkerPaymentApps,
     &::features::kWebPayments,
@@ -41,8 +41,9 @@ const base::Feature* const kFeaturesExposedToJava[] = {
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
   for (const base::Feature* feature : kFeaturesExposedToJava) {
-    if (feature->name == feature_name)
+    if (feature->name == feature_name) {
       return feature;
+    }
   }
   NOTREACHED() << "Queried feature cannot be found in PaymentsFeatureList: "
                << feature_name;

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -179,11 +179,12 @@ class ChromeAutofillClient
       AddressProfileSavePromptCallback callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
+  bool TryToShowFastCheckout(const FormData& form,
+                             const FormFieldData& field,
+                             AutofillDriver* driver) override;
+  void HideFastCheckout(bool allow_further_runs) override;
   bool IsFastCheckoutSupported() override;
-  bool IsFastCheckoutTriggerForm(const FormData& form,
-                                 const FormFieldData& field) override;
-  bool ShowFastCheckout(base::WeakPtr<FastCheckoutDelegate> delegate) override;
-  void HideFastCheckout() override;
+  bool IsShowingFastCheckoutUI() override;
   bool IsTouchToFillCreditCardSupported() override;
   bool ShowTouchToFillCreditCard(
       base::WeakPtr<TouchToFillDelegate> delegate,

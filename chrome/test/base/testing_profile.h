@@ -14,6 +14,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -28,7 +29,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/permission_controller_delegate.h"
 #include "extensions/buildflags/buildflags.h"
-#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

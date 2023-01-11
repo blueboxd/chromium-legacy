@@ -44,6 +44,12 @@ const char kAutofillEnableRankingFormulaDescription[] =
     "When enabled, Autofill will use a new ranking formula to rank Autofill "
     "data model suggestions such as credit cards or profiles";
 
+const char kAutofillEnableRankingFormulaAddressProfilesName[] =
+    "Enable new Autofill suggestion ranking formula for address profiles";
+const char kAutofillEnableRankingFormulaAddressProfilesDescription[] =
+    "When enabled, Autofill will use a new ranking formula to rank Autofill "
+    "address profile suggestions.";
+
 const char kAutofillEnableRemadeDownstreamMetricsName[] =
     "Enable remade Autofill Downstream metrics logging";
 const char kAutofillEnableRemadeDownstreamMetricsDescription[] =
@@ -103,6 +109,13 @@ const char kAutofillSaveCardDismissOnNavigationDescription[] =
     "Dismisses the Save Card Infobar on a user initiated Navigation, other "
     "than one caused by submitted form.";
 
+const char kAutofillSuggestServerCardInsteadOfLocalCardName[] =
+    "Suggest Server card instead of Local card for deduped cards";
+const char kAutofillSuggestServerCardInsteadOfLocalCardDescription[] =
+    "When enabled, Autofill suggestions that consist of a local and server "
+    "version of the same card will attempt to fill the server card upon "
+    "selection instead of the local card.";
+
 const char kAutofillUpstreamAllowAdditionalEmailDomainsName[] =
     "Allow Autofill credit card upload save for select non-Google-based "
     "accounts";
@@ -134,13 +147,6 @@ const char kBreakpadNoDelayInitialUploadDescription[] =
     "When enabled, the initial crash uploading will not be delayed. When "
     "disabled, initial upload is delayed until deferred initialization. This "
     "does not affect recovery mode.";
-
-const char kBubbleRichIPHName[] = "Bubble rich IPH";
-const char kBubbleRichIPHDescription[] =
-    "When enabled, displays a rich description (ex: title, image, etc..) of "
-    "the feature presented in the bubble. Also enables password suggestion "
-    "highlight IPH. When enabled with no option, uses the default bubble "
-    "style.";
 
 extern const char kCalendarExperienceKitName[] = "Experience Kit Calendar";
 extern const char kCalendarExperienceKitDescription[] =
@@ -412,11 +418,6 @@ const char kIOS3PIntentsInIncognitoDescription[] =
     "When enabled, an additional setting lets the user open links from other "
     "apps in Incognito.";
 
-const char kIOSEnablePasswordManagerBrandingUpdateName[] =
-    "Enable new Google Password Manager branding";
-const char kIOSEnablePasswordManagerBrandingUpdateDescription[] =
-    "Updates icons, strings, and views for Google Password Manager.";
-
 const char kIOSForceTranslateEnabledName[] = "Allow force translate on iOS.";
 const char kIOSForceTranslateEnabledDescription[] =
     "Enable the translate feature when language detection failed.";
@@ -491,6 +492,12 @@ const char kMostVisitedTilesDescription[] =
     "websites in a tile format when the user focuses the omnibox on a search "
     "result page (SRP) or on web.";
 
+const char kNativeFindInPageName[] = "Native Find in Page";
+const char kNativeFindInPageDescription[] =
+    "When enabled, the JavaScript implementation of the Find in Page feature "
+    "is replaced with a native implementation which also enables searching "
+    "text in PDF files. Available for iOS 16 or later.";
+
 const char kNewMobileIdentityConsistencyFREName[] = "New MICE FRE";
 const char kNewMobileIdentityConsistencyFREDescription[] =
     "New Mobile Identity Consistency FRE";
@@ -507,59 +514,6 @@ const char kNTPViewHierarchyRepairName[] = "NTP View Hierarchy Repair";
 const char kNTPViewHierarchyRepairDescription[] =
     "Checks if NTP view hierarchy is broken and fixes it if necessary.";
 
-const char kOmniboxFuzzyUrlSuggestionsName[] = "Omnibox Fuzzy URL Suggestions";
-const char kOmniboxFuzzyUrlSuggestionsDescription[] =
-    "Enables URL suggestions for inputs that may contain typos.";
-
-const char kOmniboxHttpsUpgradesName[] = "Omnibox HTTPS upgrades";
-const char kOmniboxHttpsUpgradesDescription[] =
-    "Enables HTTPS upgrades for omnibox navigations typed without a scheme";
-
-const char kOmniboxKeyboardPasteButtonName[] = "Omnibox keyboard paste button";
-const char kOmniboxKeyboardPasteButtonDescription[] =
-    "Enables paste button in the omnibox's keyboard accessory. Only available "
-    "from iOS 16 onward.";
-
-const char kOmniboxUIMaxAutocompleteMatchesName[] =
-    "Omnibox UI Max Autocomplete Matches";
-const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
-    "Changes the maximum number of autocomplete matches displayed in the "
-    "Omnibox UI.";
-
-const char kOmniboxMaxZPSMatchesName[] = "Omnibox Max ZPS Matches";
-const char kOmniboxMaxZPSMatchesDescription[] =
-    "Changes the maximum number of autocomplete matches displayed in the "
-    "zero-prefix state in the omnibox (e.g. on NTP when tapped on OB).";
-
-const char kOmniboxOnDeviceHeadSuggestionsIncognitoName[] =
-    "Omnibox on device head suggestions (incognito only)";
-const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[] =
-    "Shows Google head non personalized search suggestions provided by a "
-    "compact on device model for incognito";
-
-const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoName[] =
-    "Omnibox on device head suggestions (non-incognito only)";
-const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription[] =
-    "Shows Google head non personalized search suggestions provided by a "
-    "compact on device model for non-incognito";
-
-const char kOmniboxOnFocusSuggestionsName[] = "Omnibox on-focus suggestions";
-const char kOmniboxOnFocusSuggestionsDescription[] =
-    "Configures Omnibox on-focus suggestions - suggestions displayed on-focus "
-    "before the user has typed any input. This provides overrides for the "
-    "default suggestion locations.";
-
-const char kOmniboxMaxURLMatchesName[] = "Omnibox Max URL matches";
-const char kOmniboxMaxURLMatchesDescription[] =
-    "Limit the number of URL suggestions in the omnibox. The omnibox will "
-    "still display more than MaxURLMatches if there are no non-URL suggestions "
-    "to replace them.";
-
-const char kOmniboxNewImplementationName[] =
-    "Use experimental omnibox textfield";
-const char kOmniboxNewImplementationDescription[] =
-    "Uses a textfield implementation that doesn't use UILabels internally";
-
 const char kOmniboxFocusTriggersContextualWebZeroSuggestName[] =
     "Omnibox on-focus suggestions for the contextual Web";
 const char kOmniboxFocusTriggersContextualWebZeroSuggestDescription[] =
@@ -574,11 +528,80 @@ const char kOmniboxFocusTriggersSRPZeroSuggestDescription[] =
     "on-focus suggestions for the contextual web to be enabled. Will only work "
     "if user is signed-in and syncing.";
 
+const char kOmniboxFuzzyUrlSuggestionsName[] = "Omnibox Fuzzy URL Suggestions";
+const char kOmniboxFuzzyUrlSuggestionsDescription[] =
+    "Enables URL suggestions for inputs that may contain typos.";
+
+const char kOmniboxHttpsUpgradesName[] = "Omnibox HTTPS upgrades";
+const char kOmniboxHttpsUpgradesDescription[] =
+    "Enables HTTPS upgrades for omnibox navigations typed without a scheme";
+
+const char kOmniboxKeyboardPasteButtonName[] = "Omnibox keyboard paste button";
+const char kOmniboxKeyboardPasteButtonDescription[] =
+    "Enables paste button in the omnibox's keyboard accessory. Only available "
+    "from iOS 16 onward.";
+
 const char kOmniboxLocalHistoryZeroSuggestBeyondNTPName[] =
     "Allow local history zero-prefix suggestions beyond NTP";
 const char kOmniboxLocalHistoryZeroSuggestBeyondNTPDescription[] =
     "Enables local history zero-prefix suggestions in every context in which "
     "the remote zero-prefix suggestions are enabled.";
+
+const char kOmniboxMaxURLMatchesName[] = "Omnibox Max URL matches";
+const char kOmniboxMaxURLMatchesDescription[] =
+    "Limit the number of URL suggestions in the omnibox. The omnibox will "
+    "still display more than MaxURLMatches if there are no non-URL suggestions "
+    "to replace them.";
+
+const char kOmniboxMaxZPSMatchesName[] = "Omnibox Max ZPS Matches";
+const char kOmniboxMaxZPSMatchesDescription[] =
+    "Changes the maximum number of autocomplete matches displayed in the "
+    "zero-prefix state in the omnibox (e.g. on NTP when tapped on OB).";
+
+const char kOmniboxMultilineSearchSuggestName[] =
+    "Omnibox Multiline Search Suggestion";
+const char kOmniboxMultilineSearchSuggestDescription[] =
+    "Change the maximum number of line displayed for a search suggestion";
+
+const char kOmniboxNewImplementationName[] =
+    "Use experimental omnibox textfield";
+const char kOmniboxNewImplementationDescription[] =
+    "Uses a textfield implementation that doesn't use UILabels internally";
+
+const char kOmniboxOnDeviceHeadSuggestionsIncognitoName[] =
+    "Omnibox on device head suggestions (incognito only)";
+const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[] =
+    "Shows Google head non personalized search suggestions provided by a "
+    "compact on device model for incognito";
+
+const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoName[] =
+    "Omnibox on device head suggestions (non-incognito only)";
+const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription[] =
+    "Shows Google head non personalized search suggestions provided by a "
+    "compact on device model for non-incognito";
+
+const char kOmniboxOnDeviceTailSuggestionsName[] =
+    "Omnibox on device tail suggestions";
+const char kOmniboxOnDeviceTailSuggestionsDescription[] =
+    "Google tail non personalized search suggestions provided by a compact on "
+    "device model.";
+
+const char kOmniboxOnFocusSuggestionsName[] = "Omnibox on-focus suggestions";
+const char kOmniboxOnFocusSuggestionsDescription[] =
+    "Configures Omnibox on-focus suggestions - suggestions displayed on-focus "
+    "before the user has typed any input. This provides overrides for the "
+    "default suggestion locations.";
+
+const char kOmniboxUIMaxAutocompleteMatchesName[] =
+    "Omnibox UI Max Autocomplete Matches";
+const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
+    "Changes the maximum number of autocomplete matches displayed in the "
+    "Omnibox UI.";
+
+const char kOmniboxZeroSuggestInMemoryCachingName[] =
+    "Omnibox Zero Prefix Suggestion in-memory caching";
+const char kOmniboxZeroSuggestInMemoryCachingDescription[] =
+    "Enables in-memory caching of zero prefix suggestions.";
 
 const char kOmniboxZeroSuggestPrefetchingName[] =
     "Omnibox Zero Prefix Suggestion Prefetching on NTP";
@@ -597,17 +620,6 @@ const char kOmniboxZeroSuggestPrefetchingOnWebName[] =
 const char kOmniboxZeroSuggestPrefetchingOnWebDescription[] =
     "Enables prefetching of the zero prefix suggestions for eligible users "
     "on the Web (i.e. non-NTP and non-SRP URLs).";
-
-const char kOmniboxZeroSuggestInMemoryCachingName[] =
-    "Omnibox Zero Prefix Suggestion in-memory caching";
-const char kOmniboxZeroSuggestInMemoryCachingDescription[] =
-    "Enables in-memory caching of zero prefix suggestions.";
-
-const char kOmniboxOnDeviceTailSuggestionsName[] =
-    "Omnibox on device tail suggestions";
-const char kOmniboxOnDeviceTailSuggestionsDescription[] =
-    "Google tail non personalized search suggestions provided by a compact on "
-    "device model.";
 
 const char kOptimizationGuideDebugLogsName[] =
     "Enable optimization guide debug logs";
@@ -704,6 +716,12 @@ const char kSmartSortingNewOverflowMenuName[] =
     "Smart Sorting the new Overflow Menu";
 const char kSmartSortingNewOverflowMenuDescription[] =
     "Enables smart sorting the new overflow menu carousel by frecency.";
+
+const char kSmartSortingPriceTrackingDestinationName[] =
+    "Price Tracking destination (with Smart Sorting)";
+const char kSmartSortingPriceTrackingDestinationDescription[] =
+    "Adds the Price Tracking destination (with Smart Sorting) to the "
+    "new overflow menu.";
 
 const char kNewOverflowMenuShareChromeActionName[] =
     "Share Chrome App action in the new overflow menu";

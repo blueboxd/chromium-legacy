@@ -4,10 +4,9 @@
 
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

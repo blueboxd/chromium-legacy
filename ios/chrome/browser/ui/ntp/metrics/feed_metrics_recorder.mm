@@ -330,7 +330,7 @@ using feed::FeedUserActionType;
   base::UmaHistogramSparse(kDiscoverFeedUserActionCommandHistogram, commandID);
 }
 
-- (void)recordCardShownAtIndex:(int)index {
+- (void)recordCardShownAtIndex:(NSUInteger)index {
   switch ([self.feedControlDelegate selectedFeed]) {
     case FeedTypeDiscover:
       UMA_HISTOGRAM_EXACT_LINEAR(kDiscoverFeedCardShownAtIndex, index,
@@ -342,16 +342,9 @@ using feed::FeedUserActionType;
   }
 }
 
-- (void)recordCardTappedAtIndex:(int)index {
-  switch ([self.feedControlDelegate selectedFeed]) {
-    case FeedTypeDiscover:
-      UMA_HISTOGRAM_EXACT_LINEAR(kDiscoverFeedCardOpenedAtIndex, index,
-                                 kMaxCardsInFeed);
-      break;
-    case FeedTypeFollowing:
-      UMA_HISTOGRAM_EXACT_LINEAR(kFollowingFeedCardOpenedAtIndex, index,
-                                 kMaxCardsInFeed);
-  }
+- (void)recordCardTappedAtIndex:(NSUInteger)index {
+  // TODO(crbug.com/1174088): No-op since this function gets called multiple
+  // times for a tap. Log index when this is fixed.
 }
 
 - (void)recordNoticeCardShown:(BOOL)shown {
@@ -461,7 +454,8 @@ using feed::FeedUserActionType;
   base::RecordAction(base::UserMetricsAction(kFeedWillRefresh));
 }
 
-- (void)recordFeedSelected:(FeedType)feedType {
+- (void)recordFeedSelected:(FeedType)feedType
+    fromPreviousFeedPosition:(NSUInteger)index {
   DCHECK(self.followDelegate);
   switch (feedType) {
     case FeedTypeDiscover:
@@ -469,12 +463,16 @@ using feed::FeedUserActionType;
                                                       kDiscoverFeedSelected
                                     asInteraction:NO];
       base::RecordAction(base::UserMetricsAction(kDiscoverFeedSelected));
+      UMA_HISTOGRAM_EXACT_LINEAR(kFollowingIndexWhenSwitchingFeed, index,
+                                 kMaxCardsInFeed);
       break;
     case FeedTypeFollowing:
       [self recordDiscoverFeedUserActionHistogram:FeedUserActionType::
                                                       kFollowingFeedSelected
                                     asInteraction:NO];
       base::RecordAction(base::UserMetricsAction(kFollowingFeedSelected));
+      UMA_HISTOGRAM_EXACT_LINEAR(kDiscoverIndexWhenSwitchingFeed, index,
+                                 kMaxCardsInFeed);
       NSUInteger followCount = [self.followDelegate followedPublisherCount];
       if (followCount > 0 &&
           [self.followDelegate doesFollowingFeedHaveContent]) {
@@ -997,8 +995,13 @@ using feed::FeedUserActionType;
                               IOSContentSuggestionsActionType::kFeedCard);
   }
 
-  // TODO(crbug.com/1174088): Add card Index and the max number of suggestions.
-  UMA_HISTOGRAM_EXACT_LINEAR(kDiscoverFeedURLOpened, 0, 1);
+  switch ([self.feedControlDelegate selectedFeed]) {
+    case FeedTypeDiscover:
+      UMA_HISTOGRAM_EXACT_LINEAR(kDiscoverFeedURLOpened, 0, 1);
+      break;
+    case FeedTypeFollowing:
+      UMA_HISTOGRAM_EXACT_LINEAR(kFollowingFeedURLOpened, 0, 1);
+  }
 }
 
 #pragma mark - Converters

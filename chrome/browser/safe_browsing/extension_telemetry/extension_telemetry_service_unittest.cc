@@ -6,13 +6,10 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/path_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_uploader.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/tabs_execute_script_signal.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/features.h"
@@ -27,7 +24,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_id.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -204,6 +200,20 @@ TEST_F(ExtensionTelemetryServiceTest, ProcessesSignal) {
   EXPECT_EQ(info->version(), kExtensionVersion);
   EXPECT_EQ(info->install_timestamp_msec(),
             extension_prefs_->GetInstallTime(kExtensionId[0]).ToJavaTime());
+}
+
+TEST_F(ExtensionTelemetryServiceTest, DiscardsInvalidSignal) {
+  // Verify that service is enabled.
+  EXPECT_TRUE(IsTelemetryServiceEnabled());
+
+  // Add a tabs.executeScript API invocation signal to the telemetry service
+  // with an invalid extension id.
+  auto signal = std::make_unique<TabsExecuteScriptSignal>("", kScriptCode);
+  telemetry_service_->AddSignal(std::move(signal));
+
+  // Verify that the signal was not processed by checking that the extension
+  // store is empty.
+  EXPECT_TRUE(IsExtensionStoreEmpty());
 }
 
 TEST_F(ExtensionTelemetryServiceTest, GeneratesReportAtProperIntervals) {
@@ -429,14 +439,14 @@ TEST_F(ExtensionTelemetryServiceTest, TestExtensionInfoProtoConstruction) {
   }
 }
 
-TEST_F(ExtensionTelemetryServiceTest, PersistsReportsOnShutdown) {
+TEST_F(ExtensionTelemetryServiceTest,
+       PersistsReportsOnShutdownWithSignalDataPresent) {
   // Setting up the persister and signals.
   telemetry_service_->SetEnabled(false);
   scoped_feature_list.InitAndEnableFeature(kExtensionTelemetryPersistence);
   telemetry_service_->SetEnabled(true);
   PrimeTelemetryServiceWithSignal();
   task_environment_.RunUntilIdle();
-  std::unique_ptr<TelemetryReport> telemetry_report_pb = GetTelemetryReport();
   // After a shutdown, the persister should create a file of persisted data.
   telemetry_service_->Shutdown();
   base::FilePath persisted_dir = profile_.GetPath();
@@ -449,6 +459,66 @@ TEST_F(ExtensionTelemetryServiceTest, PersistsReportsOnShutdown) {
   telemetry_service_->SetEnabled(false);
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(base::PathExists(persisted_dir));
+}
+
+TEST_F(ExtensionTelemetryServiceTest,
+       DoesNotPersistsReportsOnShutdownWithNoSignalDataPresent) {
+  // Setting up the persister and signals.
+  telemetry_service_->SetEnabled(false);
+  scoped_feature_list.InitAndEnableFeature(kExtensionTelemetryPersistence);
+  telemetry_service_->SetEnabled(true);
+  task_environment_.RunUntilIdle();
+  // After a shutdown, the persister should not persist a file. There are
+  // extensions installed but there is no signal data present.
+  telemetry_service_->Shutdown();
+  base::FilePath persisted_dir = profile_.GetPath();
+  persisted_dir = persisted_dir.AppendASCII("CRXTelemetry");
+  base::FilePath persisted_file = persisted_dir.AppendASCII("CRXTelemetry_0");
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(base::PathExists(persisted_file));
+}
+
+TEST_F(ExtensionTelemetryServiceTest, PersistsReportOnFailedUpload) {
+  // Setting up the persister, signals, upload/write intervals, and the
+  // uploader itself.
+  telemetry_service_->SetEnabled(false);
+  scoped_feature_list.InitAndEnableFeature(kExtensionTelemetryPersistence);
+  telemetry_service_->SetEnabled(true);
+  base::TimeDelta interval = telemetry_service_->current_reporting_interval();
+  profile_.GetPrefs()->SetTime(prefs::kExtensionTelemetryLastUploadTime,
+                               base::Time::NowFromSystemTime());
+  test_url_loader_factory_.AddResponse(
+      ExtensionTelemetryUploader::GetUploadURLForTest(), "Dummy",
+      net::HTTP_BAD_REQUEST);
+  // Fast forward a reporting interval, there should be one file after the
+  // failed upload.
+  task_environment_.FastForwardBy(interval);
+  task_environment_.RunUntilIdle();
+  base::FilePath persisted_dir = profile_.GetPath();
+  persisted_dir = persisted_dir.AppendASCII("CRXTelemetry");
+  EXPECT_TRUE(base::PathExists(persisted_dir.AppendASCII("CRXTelemetry_0")));
+}
+
+TEST_F(ExtensionTelemetryServiceTest, NoReportPersistedIfUploadSucceeds) {
+  // With the default NumberWritesInInterval=1, the persisting interval is the
+  // same as the reporting interval. At each interval, the in-memory data
+  // is used to create a report which is then uploaded. If the upload succeeds,
+  // there is no need to persist anything.
+  telemetry_service_->SetEnabled(false);
+  scoped_feature_list.InitAndEnableFeature(kExtensionTelemetryPersistence);
+  telemetry_service_->SetEnabled(true);
+  base::TimeDelta interval = telemetry_service_->current_reporting_interval();
+  profile_.GetPrefs()->SetTime(prefs::kExtensionTelemetryLastUploadTime,
+                               base::Time::NowFromSystemTime());
+  test_url_loader_factory_.AddResponse(
+      ExtensionTelemetryUploader::GetUploadURLForTest(), "Dummy", net::HTTP_OK);
+  // Fast forward a reporting interval, there should be no files persisted after
+  // the upload.
+  task_environment_.FastForwardBy(interval);
+  task_environment_.RunUntilIdle();
+  base::FilePath persisted_dir = profile_.GetPath();
+  persisted_dir = persisted_dir.AppendASCII("CRXTelemetry");
+  EXPECT_FALSE(base::PathExists(persisted_dir.AppendASCII("CRXTelemetry_0")));
 }
 
 TEST_F(ExtensionTelemetryServiceTest, PersistsReportsOnInterval) {

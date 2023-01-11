@@ -336,6 +336,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                 TabList currentTabModelFilter =
                         mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
                 mContainerViewModel.set(IS_INCOGNITO, currentTabModelFilter.isIncognito());
+                notifyBackPressStateChangedInternal();
                 if (mTabGridDialogController != null) {
                     mTabGridDialogController.hideDialog(false);
                 }
@@ -526,6 +527,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
             }
         };
         mMultiWindowModeStateDispatcher.addObserver(mMultiWindowModeObserver);
+        notifyBackPressStateChangedInternal();
     }
 
     /**
@@ -920,14 +922,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     @Override
     public ObservableSupplier<Boolean> isDialogVisibleSupplier() {
         return mIsDialogVisibleSupplier;
-    }
-
-    @Override
-    public void showTabSelectionEditor(List<Tab> tabs) {
-        if (mTabSelectionEditorController == null) {
-            return;
-        }
-        mTabSelectionEditorController.show(tabs);
     }
 
     @Override

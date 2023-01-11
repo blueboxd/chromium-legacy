@@ -906,6 +906,12 @@ void DesksController::AddVisibleOnAllDesksWindow(aura::Window* window) {
   // added.
   if (!visible_on_all_desks_windows_.emplace(window).second)
     return;
+
+  if (features::IsPerDeskZOrderEnabled()) {
+    for (auto& desk : desks_)
+      desk->AddAllDeskWindow(window);
+  }
+
   wm::AnimateWindow(window, wm::WINDOW_ANIMATION_TYPE_BOUNCE);
   NotifyAllDesksForContentChanged();
   Shell::Get()
@@ -916,6 +922,11 @@ void DesksController::AddVisibleOnAllDesksWindow(aura::Window* window) {
 
 void DesksController::MaybeRemoveVisibleOnAllDesksWindow(aura::Window* window) {
   if (visible_on_all_desks_windows_.erase(window)) {
+    if (features::IsPerDeskZOrderEnabled()) {
+      for (auto& desk : desks_)
+        desk->RemoveAllDeskWindow(window);
+    }
+
     wm::AnimateWindow(window, wm::WINDOW_ANIMATION_TYPE_BOUNCE);
     NotifyAllDesksForContentChanged();
     Shell::Get()
@@ -933,7 +944,13 @@ void DesksController::NotifyAllDesksForContentChanged() {
 
 void DesksController::NotifyDeskNameChanged(const Desk* desk,
                                             const std::u16string& new_name) {
-  MaybeReportCustomDeskNames();
+  // We only want metrics for users with two or more desks.
+  if (desks_.size() > 1) {
+    ReportCustomDeskNames();
+    base::UmaHistogramBoolean(kCustomNameCreatedHistogramName,
+                              desk->is_name_set_by_user());
+  }
+
   for (auto& observer : observers_)
     observer.OnDeskNameChanged(desk, new_name);
 }
@@ -1480,6 +1497,10 @@ void DesksController::ActivateDeskInternal(const Desk* desk,
   // `old_active` desk do not activate other windows on the same desk. See
   // `ash::AshFocusRules::GetNextActivatableWindow()`.
   Desk* old_active = active_desk_;
+
+  if (features::IsPerDeskZOrderEnabled())
+    old_active->BuildAllDeskStackingData();
+
   MoveVisibleOnAllDesksWindowsFromActiveDeskTo(const_cast<Desk*>(desk));
   active_desk_ = const_cast<Desk*>(desk);
   RestackVisibleOnAllDesksWindowsOnActiveDesk();
@@ -1686,7 +1707,6 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
 
   UMA_HISTOGRAM_ENUMERATION(kRemoveDeskHistogramName, source);
   UMA_HISTOGRAM_ENUMERATION(kRemoveDeskTypeHistogramName, close_type);
-  MaybeReportCustomDeskNames();
 
   // We should only announce desks are being merged if we are combining desks.
   if (close_type == DeskCloseType::kCombineDesks) {
@@ -1771,6 +1791,9 @@ void DesksController::FinalizeDeskRemoval(RemovedDeskData* removed_desk_data) {
   ReportDesksCountHistogram();
   ReportNumberOfWindowsPerDeskHistogram();
 
+  // Record the number and percentage of desks with custom names.
+  ReportCustomDeskNames();
+
   // We need to ensure there are no app windows in the desk before destruction.
   // During a combine desks operation, the windows would have already been
   // moved, so in that case this would be a no-op.
@@ -1819,10 +1842,13 @@ void DesksController::FinalizeDeskRemoval(RemovedDeskData* removed_desk_data) {
               removed_desk);
     }
 
+    // When windows are being closed, they do so asynchronously. So, to free up
+    // the desk container while the windows are being closed, we want to move
+    // those windows to the container `kShellWindowId_UnparentedContainer`.
     if (window != floated_window) {
-      aura::Window* removed_desk_container =
-          removed_desk->GetDeskContainerForRoot(window->GetRootWindow());
-      removed_desk_container->RemoveChild(window);
+      window->GetRootWindow()
+          ->GetChildById(kShellWindowId_UnparentedContainer)
+          ->AddChild(window);
     }
   }
 
@@ -1915,6 +1941,11 @@ void DesksController::NotifyFullScreenStateChangedAcrossDesksIfNeeded(
 }
 
 void DesksController::RestackVisibleOnAllDesksWindowsOnActiveDesk() {
+  if (features::IsPerDeskZOrderEnabled()) {
+    active_desk_->RestackAllDeskWindows();
+    return;
+  }
+
   auto mru_windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   for (auto* visible_on_all_desks_window : visible_on_all_desks_windows_) {
@@ -2025,11 +2056,7 @@ void DesksController::ReportClosedWindowsCountPerSourceHistogram(
     base::UmaHistogramCounts100(desk_removal_source_histogram, windows_closed);
 }
 
-void DesksController::MaybeReportCustomDeskNames() const {
-  // We only want metrics for users with two or more desks.
-  if (desks_.size() < 2)
-    return;
-
+void DesksController::ReportCustomDeskNames() const {
   int custom_names_count =
       base::ranges::count(desks_, true, &Desk::is_name_set_by_user);
 

@@ -175,6 +175,7 @@
 <translation id="1862380676329487333">Жаңыртуу жана чыгуу</translation>
 <translation id="1864454756846565995">USB-C түзмөгү (арткы оюкча)</translation>
 <translation id="1869497990620230175">Ыкчам ачылуучу файлдар</translation>
+<translation id="1871703283152909317">Экөөнү тең колдонууга уруксат берүү</translation>
 <translation id="1879018240766558464">Жашыруун терезелер учурда колдоого алынбайт. Башка колдонмолор сакталат.</translation>
 <translation id="1882814835921407042">Мобилдик Интернет жок</translation>
 <translation id="1882897271359938046">Төмөнкүгө чагылыштыруу <ph name="DISPLAY_NAME" /></translation>
@@ -352,6 +353,7 @@
 <translation id="2960314608273155470">Сүрөткө тартуу режими, демейки шартта: <ph name="SOURCE" /> <ph name="TYPE" />. Өтүү үчүн баскычтоптогу "Tab" баскычын басыңыз.</translation>
 <translation id="2961963223658824723">Бир жерден ката кетти. Бир нече секунддан кийин кайталап көрүңүз.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2965227184985674128">Микрофонду пайдалануу мүмкүнчүлүгүн күйгүзөсүзбү?</translation>
 <translation id="296762781903199866"><ph name="LANGUAGE" /> тилиндеги кеп файлдары жүктөлүп алынган жок</translation>
 <translation id="2970920913501714344">Колдонмолорду, кеңейтүүлөрдү жана темаларды жүктөп алат</translation>
 <translation id="2977598380246111477">Кийинки номер</translation>
@@ -430,6 +432,7 @@
 <translation id="3386978599540877378">толук экран режиминдеги лупа</translation>
 <translation id="3387527074123400161">ChromiumOS</translation>
 <translation id="3400357268283240774">Кошумча жөндөөлөр</translation>
+<translation id="3405101454990027959">Микрофонду пайдалануу мүмкүнчүлүгүн өчүрүү</translation>
 <translation id="3410336247007142655">Караңгы теманын жөндөөлөрүн көрсөтүү</translation>
 <translation id="3413817803639110246">Азырынча бир да эскертме жок</translation>
 <translation id="3428447136709161042"><ph name="NETWORK_NAME" /> тармагынан ажыратуу</translation>
@@ -516,6 +519,7 @@
 <translation id="385051799172605136">Артка</translation>
 <translation id="385300504083504382">Киришүү</translation>
 <translation id="3861651314799684201">Толук экранды жаздыруу үчүн "Enter" баскычын басыңыз</translation>
+<translation id="3885531177412808398">Микрофонго уруксаты бар колдонмолордун жана вебсайттардын баарына микрофонду пайдалануу мүмкүнчүлүгү берилет</translation>
 <translation id="3886872229787704059">Бүгүн ачылды</translation>
 <translation id="3891340733213178823">Чыгуу үчүн эки ирет Ctrl+Shift+Q басыңыз.</translation>
 <translation id="3893630138897523026">ChromeVox (айтылуучу жооп пикир)</translation>
@@ -920,6 +924,7 @@
 <translation id="6095008505822982596">Кеп ылдамдыгы</translation>
 <translation id="6099678161144790572">Мурунку айда түзөтүлгөн</translation>
 <translation id="6103838137565245112">тутум</translation>
+<translation id="6107292179555508368">Бул түзмөктө микрофон менен камераны колдонуу мүмкүндүгү өчүк</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> тилиндеги кеп файлдары жүктөлүп алынды</translation>
 <translation id="6116825164611323644">Бул түзмөктө камераны колдонуу мүмкүндүгү өчүк</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
@@ -948,6 +953,7 @@
 <translation id="6259254695169772643">Стилус менен тандаңыз</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Жандырылууда…</translation>
 <translation id="6274202259872570803">Скринкаст</translation>
+<translation id="6282694724099204652">Бул түзмөктөгү микрофонду(-дорду) жана камераны(-ларды) колдонууга уруксат берилген колдонмолор жана веб-баракчалар үчүн колдонуу параметрин иштетиңиз.</translation>
 <translation id="6283712521836204486">"Тынчымды алба" режими өчүк.</translation>
 <translation id="6284232397434400372">Дааналыгы өзгөртүлдү</translation>
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> ата-эненин уруксаты менен кайра кошууга болот.</translation>
@@ -1185,7 +1191,7 @@
 <translation id="7634648064048557203">Камера төмөнкү оң бурчка кадалды</translation>
 <translation id="7641938616688887143">Жаздыруу</translation>
 <translation id="7642106959537987271">түстөрдү инверсиялоо режими</translation>
-<translation id="7642647758716480637"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /> тармагынын жөндөөлөрүн ачуу</translation>
+<translation id="7642647758716480637"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /> тармагынын параметрлерин ачуу</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ээси)</translation>
 <translation id="7647488630410863958">Эскертмелериңизди көрүү үчүн түзмөгүңүздү бөгөттөн чыгарыңыз</translation>
 <translation id="7649070708921625228">Жардам</translation>
@@ -1375,6 +1381,7 @@
 <translation id="8666856788528804727">Түзмөгүңүздү жөндөө үчүн <ph name="NAME" /> колдонмосун ачыңыз</translation>
 <translation id="8676770494376880701">Кубаты төмөн кубаттагыч туташтырылды</translation>
 <translation id="8683506306463609433">Майнаптуулукка көз салуу жигердүү</translation>
+<translation id="8684405646663021166">Микрофонго уруксаты бар колдонмолордун жана вебсайттардын баарына жана <ph name="APP_NAME" /> колдонмосуна микрофонду пайдалануу мүмкүнчүлүгү берилет</translation>
 <translation id="8685326675965865247">Түзмөктөн, колдонмолордон, жөндөөлөрдөн жана Интернеттен издеңиз. Колдонмолоруңузда чабыттоо үчүн жебе баскычтарын пайдаланыңыз.</translation>
 <translation id="8703634754197148428">Жаздырып баштаңыз. Жаздыруу башталгандан кийин Alt + Shift + L баскычтарынын айкалышын колдонуп, текчеге өтүп, жаздырууну токтотуу баскычын издеңиз</translation>
 <translation id="8721053961083920564">Үндү өчүрүү/күйгүзүү. <ph name="STATE_TEXT" /></translation>
@@ -1435,7 +1442,7 @@
 <translation id="9029736946581028033">Түзмөктүн батареясы бир аздан кийин отурат</translation>
 <translation id="9030319654231318877">Күн батканга чейин өчүк</translation>
 <translation id="9034924485347205037">Linux файлдары</translation>
-<translation id="9047624247355796468"><ph name="NETWORK_NAME" /> тармагынын жөндөөлөрүн ачуу</translation>
+<translation id="9047624247355796468"><ph name="NETWORK_NAME" /> тармагынын параметрлерин ачуу</translation>
 <translation id="9059834730836941392">Эскертмени жыйыштыруу</translation>
 <translation id="9065203028668620118">Түзөтүү</translation>
 <translation id="9070640332319875144">Жардамчынын жөндөөлөрү</translation>

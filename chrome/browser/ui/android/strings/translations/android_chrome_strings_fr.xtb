@@ -12,6 +12,7 @@
 <translation id="1062628064301375934">Aidez-nous à créer un Web plus respectueux de la confidentialité</translation>
 <translation id="107147699690128016">Si vous modifiez l'extension du fichier, celui-ci pourrait s'ouvrir dans une application différente et potentiellement endommager votre appareil.</translation>
 <translation id="1089606299949659462">Examen terminé</translation>
+<translation id="1091604859693995976">Actualiser pour afficher</translation>
 <translation id="1095761715416917775">Veillez à toujours avoir accès à vos données synchronisées</translation>
 <translation id="1100066534610197918">Dans nouvel onglet dans groupe</translation>
 <translation id="1103142993930332957">Aider à améliorer Chrome ?</translation>
@@ -211,7 +212,7 @@ Lorsque vous supprimez votre historique de navigation (entièrement ou pour un s
 <translation id="2111511281910874386">Accéder à la page</translation>
 <translation id="2122601567107267586">Impossible d'ouvrir l'application</translation>
 <translation id="2132122640199389833">Supprimer tous les appareils associés</translation>
-<translation id="213279576345780926">L'onglet "<ph name="TAB_TITLE" />" a été fermé.</translation>
+<translation id="213279576345780926">Onglet "<ph name="TAB_TITLE" />" fermé</translation>
 <translation id="2134927169889348449">En utilisant Chrome, vous acceptez les <ph name="BEGIN_TOS_LINK" />Conditions d'utilisation de Google<ph name="END_TOS_LINK" /> et les <ph name="BEGIN_ATOS_LINK" />Conditions d'utilisation supplémentaires de Google Chrome et Chrome OS<ph name="END_ATOS_LINK" />.</translation>
 <translation id="2139186145475833000">Ajouter à l'écran d'accueil</translation>
 <translation id="2141396931810938595">D'après votre utilisation</translation>
@@ -787,8 +788,8 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5308380583665731573">Connexion</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5319359161174645648">Google recommande Chrome</translation>
-<translation id="5321849971085220133">Chrome trouve de nouvelles façons de réduire le suivi et de renforcer encore votre sécurité lorsque vous naviguez sur le Web. De plus, Chrome <ph name="BEGIN_LINK" />estime vos centres d'intérêt<ph name="END_LINK" /> et vous permet de les gérer. Les sites que vous consultez peuvent ensuite les demander à Chrome afin de vous proposer des annonces.</translation>
-<translation id="5324858694974489420">Paramètres parentaux</translation>
+<translation id="5321849971085220133">Chrome travaille à trouver de nouvelles façons de réduire le suivi et d'encore mieux vous protéger lorsque vous naviguez. De plus, il <ph name="BEGIN_LINK" />évalue quels sont vos centres d'intérêt<ph name="END_LINK" /> et vous permet de les gérer. Ensuite, les sites que vous consultez peuvent les lui demander afin de vous montrer des annonces.</translation>
+<translation id="5324858694974489420">Paramètres de contrôle parental</translation>
 <translation id="5326921373682845375">Étant donné que les pages préchargées sont chiffrées et que le site lié aux pages est un site Google, les serveurs de Google ne reçoivent pas de nouvelles informations lors du préchargement de ces pages en mode privé.</translation>
 <translation id="5329858041417644019">Votre navigateur n'est pas géré</translation>
 <translation id="5339031667684712858">Sites que vous avez supprimés</translation>
@@ -1259,7 +1260,7 @@ Les jetons de confiance améliorent la confidentialité sur le Web et ne peuvent
 <translation id="7786595606756654269">L'Assistant Google propose une fonctionnalité améliorée pour effectuer des recherches vocales sur le Web et interagir avec les sites que vous consultez. Il recevra l'URL et le contenu des sites sur lesquels vous faites appel à lui.</translation>
 <translation id="7791543448312431591">Ajouter</translation>
 <translation id="7798392620021911922"><ph name="TAB_COUNT" /> onglets sont restaurés</translation>
-<translation id="780301667611848630">Non merci</translation>
+<translation id="780301667611848630">Non, merci</translation>
 <translation id="7805768142964895445">État</translation>
 <translation id="7808889146555843082">La suppression de ce mot de passe n'entraînera pas la suppression de votre compte sur <ph name="SITE" />. Modifiez votre mot de passe ou supprimez votre compte sur <ph name="SITE" /> pour le protéger des autres utilisateurs.</translation>
 <translation id="7810647596859435254">Ouvrir avec…</translation>

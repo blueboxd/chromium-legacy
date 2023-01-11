@@ -115,7 +115,12 @@ public abstract class TabSelectionEditorAction {
         /**
          * Hides the selection editor.
          */
-        void hide();
+        void hideByAction();
+
+        /**
+         * Sync position of the client {@link TabListCoordinator}'s RecyclerView with the editor's.
+         */
+        void syncRecyclerViewPosition();
     }
 
     private ObserverList<ActionObserver> mObsevers = new ObserverList<>();
@@ -154,13 +159,10 @@ public abstract class TabSelectionEditorAction {
                                 ColorStateList.valueOf(Color.TRANSPARENT))
                         .with(TabSelectionEditorActionProperties.ICON_TINT,
                                 ColorStateList.valueOf(Color.TRANSPARENT))
-                        .with(TabSelectionEditorActionProperties.SKIP_ICON_TINT, false)
                         .with(TabSelectionEditorActionProperties.ON_CLICK_LISTENER, this::perform)
                         .with(TabSelectionEditorActionProperties.SHOULD_DISMISS_MENU, true)
                         .with(TabSelectionEditorActionProperties.ON_SELECTION_STATE_CHANGE,
                                 this::onSelectionStateChange)
-                        .with(TabSelectionEditorActionProperties.ON_SHOWN_IN_MENU,
-                                this::onShownInMenu)
                         .build();
 
         if (contentDescriptionResourceId == null) return;
@@ -193,8 +195,6 @@ public abstract class TabSelectionEditorAction {
     public boolean shouldNotifyObserversOfAction() {
         return true;
     }
-
-    public void onShownInMenu() {}
 
     /**
      * @return Whether the TabSelectionEditor supports applying the actions to related tabs.
@@ -241,11 +241,18 @@ public abstract class TabSelectionEditorAction {
                 obs.preProcessSelectedTabs(tabs);
             }
         }
+        // When hiding by action it is expected that syncRecyclerViewPosition() is called before the
+        // action occurs. This is because an action may remove tabs so it needs to sync position
+        // before the removal of items occurs to ensure the positions match correctly for
+        // animations.
+        if (shouldHideEditorAfterAction()) {
+            mActionDelegate.syncRecyclerViewPosition();
+        }
         if (!performAction(tabs)) {
             return false;
         };
         if (shouldHideEditorAfterAction()) {
-            mActionDelegate.hide();
+            mActionDelegate.hideByAction();
             RecordUserAction.record("TabMultiSelectV2.ClosedAutomatically");
         }
         return true;

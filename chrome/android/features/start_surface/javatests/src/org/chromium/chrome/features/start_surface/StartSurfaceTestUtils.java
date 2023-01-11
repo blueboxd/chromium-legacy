@@ -322,7 +322,7 @@ public class StartSurfaceTestUtils {
         // Drag the Feed header title to scroll the toolbar to the top.
         int toY = -cta.getResources().getDimensionPixelOffset(R.dimen.toolbar_height_no_shadow);
         TestTouchUtils.dragCompleteView(InstrumentationRegistry.getInstrumentation(),
-                cta.findViewById(R.id.header_title), 0, 0, 0, toY, 1);
+                cta.findViewById(R.id.header_title), 0, 0, 0, toY, 10);
 
         // The start surface toolbar should be scrolled up and not be displayed.
         CriteriaHelper.pollInstrumentationThread(

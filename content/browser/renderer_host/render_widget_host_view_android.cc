@@ -113,7 +113,7 @@ namespace {
 static const char kAsyncReadBackString[] = "Compositing.CopyFromSurfaceTime";
 static const base::TimeDelta kClickCountInterval = base::Seconds(0.5);
 static const float kClickCountRadiusSquaredDIP = 25;
-static const base::TimeDelta kRotationTimeout = base::Milliseconds(100);
+static const base::TimeDelta kThrottleTimeout = base::Milliseconds(200);
 
 std::unique_ptr<ui::TouchSelectionController> CreateSelectionController(
     ui::TouchSelectionControllerClient* client,
@@ -281,6 +281,14 @@ void RenderWidgetHostViewAndroid::ScreenStateChangeHandler::
   BeginScreenStateChange();
   pending_screen_state_.is_fullscreen = true;
   HandleScreenStateChanges(cc::DeadlinePolicy::UseDefaultDeadline());
+
+  if (throttle_timeout_.IsRunning())
+    throttle_timeout_.Stop();
+  throttle_timeout_.Start(
+      FROM_HERE, kThrottleTimeout,
+      base::BindOnce(
+          &RenderWidgetHostViewAndroid::ScreenStateChangeHandler::Unthrottle,
+          base::Unretained(this)));
 }
 
 void RenderWidgetHostViewAndroid::ScreenStateChangeHandler::
@@ -336,6 +344,26 @@ void RenderWidgetHostViewAndroid::ScreenStateChangeHandler::
   // Picture-in-Picture mode. Will need better determination of when we have
   // completed entering/exiting.
   pending_screen_state_.any_non_rotation_size_changed = true;
+  HandleScreenStateChanges(cc::DeadlinePolicy::UseDefaultDeadline());
+}
+
+void RenderWidgetHostViewAndroid::ScreenStateChangeHandler::WasEvicted() {
+  if (!IsFullscreenSurfaceSyncSupported())
+    return;
+  // Reset the world upon eviction. We will re-esatblish the world when we next
+  // become visible and begin embedding content again. This should not call
+  // HandleScreenStateChanges, as we explicitly to not want to do any syncing
+  // when we are evicted.
+  BeginScreenStateChange();
+}
+
+void RenderWidgetHostViewAndroid::ScreenStateChangeHandler::
+    WasShownAfterEviction() {
+  if (!IsFullscreenSurfaceSyncSupported())
+    return;
+  // The screen state can change while we were evicted. Reset the world for
+  // future changes.
+  BeginScreenStateChange();
   HandleScreenStateChanges(cc::DeadlinePolicy::UseDefaultDeadline());
 }
 
@@ -485,13 +513,11 @@ bool RenderWidgetHostViewAndroid::ScreenStateChangeHandler::
       // physical backing and screen info updates. So only process the pending
       // state once.
       pending_screen_state_.on_sync_display_properties_changed_received = true;
-      if (ScreenState::IsRotation(
-              pending_screen_state_.screen_info_size,
-              current_screen_state_.physical_backing_size)) {
-        start_rotation = true;
-      } else {
-        sync_needed = true;
-      }
+      // ScreenInfo explicitly lists an orientation, we always start a rotation
+      // when requested. It is possible in split-screen for
+      // `physical_backing_size` to become in a mixed orientation states, so we
+      // do not compare to them.
+      start_rotation = true;
     }
   }
 
@@ -502,6 +528,13 @@ bool RenderWidgetHostViewAndroid::ScreenStateChangeHandler::
     rwhva_->BeginRotationBatching();
     return true;
   } else if (end_rotation) {
+    // The rotation timeout is intended to catch edge-cases where Android::View
+    // code does not give us some aspects of re-layouts. However on slower
+    // devices the timeout may fire before the final signals arrive. In these
+    // cases call BeginRotationBatching to properly enqueue the rotation, before
+    // immediately embedding the new content.
+    if (!rwhva_->in_rotation_)
+      rwhva_->BeginRotationBatching();
     rwhva_->EndRotationAndSyncIfNecessary();
   } else if (sync_needed) {
     rwhva_->SynchronizeVisualProperties(deadline_policy, absl::nullopt);
@@ -530,6 +563,11 @@ bool RenderWidgetHostViewAndroid::ScreenStateChangeHandler::
   }
 
   return true;
+}
+
+void RenderWidgetHostViewAndroid::ScreenStateChangeHandler::Unthrottle() {
+  pending_screen_state_.any_non_rotation_size_changed = true;
+  HandleScreenStateChanges(cc::DeadlinePolicy::UseDefaultDeadline());
 }
 
 RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
@@ -1614,7 +1652,7 @@ void RenderWidgetHostViewAndroid::UpdateWebViewBackgroundColorIfNecessary() {
 
 void RenderWidgetHostViewAndroid::ClearFallbackSurfaceForCommitPending() {
   delegated_frame_host_->ClearFallbackSurfaceForCommitPending();
-  local_surface_id_allocator_.Invalidate();
+  EvictInternal();
 }
 
 void RenderWidgetHostViewAndroid::ResetFallbackToFirstNavigationSurface() {
@@ -2842,7 +2880,7 @@ void RenderWidgetHostViewAndroid::DidNavigate() {
     // Navigating while hidden should not allocate a new LocalSurfaceID. Once
     // sizes are ready, or we begin to Show, we can then allocate the new
     // LocalSurfaceId.
-    local_surface_id_allocator_.Invalidate();
+    EvictInternal();
     navigation_while_hidden_ = true;
   } else {
     // TODO(jonross): This was a legacy optimization to not perform too many
@@ -2969,16 +3007,18 @@ void RenderWidgetHostViewAndroid::NotifyHostAndDelegateOnWasShown(
   // Whether evicted or not, we stop batching for rotation in order to get
   // content ready for the new orientation.
   bool rotation_override = in_rotation_;
-  base::AutoReset<bool> in_rotation(&in_rotation_, false);
+  in_rotation_ = false;
 
   view_.GetLayer()->SetHideLayerAndSubtree(false);
 
   if (overscroll_controller_)
     overscroll_controller_->Enable();
 
+  bool was_evicted = false;
   if ((delegated_frame_host_ &&
        delegated_frame_host_->IsPrimarySurfaceEvicted()) ||
       !local_surface_id_allocator_.HasValidLocalSurfaceId()) {
+    was_evicted = true;
     ui::WindowAndroidCompositor* compositor =
         view_.GetWindowAndroid() ? view_.GetWindowAndroid()->GetCompositor()
                                  : nullptr;
@@ -3049,7 +3089,20 @@ void RenderWidgetHostViewAndroid::NotifyHostAndDelegateOnWasShown(
     EndRotationBatching();
     rotation_metrics_.begin()->first = base::TimeTicks::Now();
     BeginRotationEmbed();
+  } else if (!rotation_metrics_.empty()) {
+    // If we have enqueued `rotation_metrics` but are not completing a rotation,
+    // then a timeout fired while we were hidden. As no synchronizing has
+    // previously occurred, set now to be the start of the rotation time.
+    rotation_metrics_.begin()->first = base::TimeTicks::Now();
   }
+
+  // TODO(crbug.com/1385146): Ideally we would do no synchronizing at all when
+  // hidden. We should just amass all the new blink::VisualProperties and send
+  // them once when becoming visible. However the refactor would be difficult
+  // right now. We will revisit this once we are satisfied with the rollout of
+  // content::kSurfaceSyncFullscreenKillswitch.
+  if (was_evicted)
+    screen_state_change_handler_.WasShownAfterEviction();
 }
 
 void RenderWidgetHostViewAndroid::RequestPresentationTimeFromHostOrDelegate(
@@ -3164,7 +3217,7 @@ void RenderWidgetHostViewAndroid::WasEvicted() {
         cc::DeadlinePolicy::UseExistingDeadline(),
         local_surface_id_allocator_.GetCurrentLocalSurfaceId());
   } else {
-    local_surface_id_allocator_.Invalidate();
+    EvictInternal();
   }
 }
 
@@ -3208,7 +3261,7 @@ void RenderWidgetHostViewAndroid::BeginRotationBatching() {
   if (rotation_timeout_.IsRunning())
     rotation_timeout_.Stop();
   rotation_timeout_.Start(
-      FROM_HERE, kRotationTimeout,
+      FROM_HERE, kThrottleTimeout,
       base::BindOnce(
           &RenderWidgetHostViewAndroid::EndRotationAndSyncIfNecessary,
           base::Unretained(this)));
@@ -3250,14 +3303,27 @@ void RenderWidgetHostViewAndroid::BeginRotationEmbed() {
 }
 
 void RenderWidgetHostViewAndroid::EndRotationAndSyncIfNecessary() {
-  if (!in_rotation_ || !is_showing_)
+  if (!in_rotation_)
     return;
   EndRotationBatching();
-  SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                              absl::nullopt,
-                              /*reuse_current_local_surface_id=*/false,
-                              /*ignore_ack=*/true);
+
+  if (is_showing_) {
+    SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                                absl::nullopt,
+                                /*reuse_current_local_surface_id=*/false,
+                                /*ignore_ack=*/true);
+  } else {
+    // If hidden, generate a new viz::LocalSurfaceId to represent the new set of
+    // blink::VisualProperties. However do not synchronize them to perform
+    // layout. The subsequent Show will lead to embedding (crbug.com/1383446)
+    local_surface_id_allocator_.GenerateId();
+  }
   BeginRotationEmbed();
+}
+
+void RenderWidgetHostViewAndroid::EvictInternal() {
+  screen_state_change_handler_.WasEvicted();
+  local_surface_id_allocator_.Invalidate();
 }
 
 }  // namespace content

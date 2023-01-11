@@ -394,8 +394,8 @@ static_library("browser") {
     "dips/dips_bounce_detector.h",
     "dips/dips_database.cc",
     "dips/dips_database.h",
-    "dips/dips_helper.cc",
-    "dips/dips_helper.h",
+    "dips/dips_features.cc",
+    "dips/dips_features.h",
     "dips/dips_service.cc",
     "dips/dips_service.h",
     "dips/dips_service_factory.cc",
@@ -1993,6 +1993,7 @@ static_library("browser") {
     "//chrome/browser/browsing_data:constants",
     "//chrome/browser/chrome_for_testing:buildflags",
     "//chrome/browser/devtools",
+    "//chrome/browser/enterprise/identifiers",
     "//chrome/browser/enterprise/platform_auth:features",
     "//chrome/browser/favicon",
     "//chrome/browser/feature_guide/notifications:public",
@@ -2356,8 +2357,6 @@ static_library("browser") {
     "//components/url_formatter/spoof_checks/top_domains:top500_domains",
     "//components/url_formatter/spoof_checks/top_domains:top500_domains_header",
     "//components/url_matcher",
-    "//components/url_param_filter/content",
-    "//components/url_param_filter/core",
     "//components/user_manager",
     "//components/user_prefs",
     "//components/variations",
@@ -3450,7 +3449,6 @@ static_library("browser") {
       "//components/translate/core/language_detection",
       "//components/ukm/android:ukm_recorder",
       "//components/ukm/content",
-      "//components/url_param_filter/core",
       "//components/viz/common",
       "//components/webapk:proto",
       "//components/webauthn/android",
@@ -6436,6 +6434,7 @@ static_library("browser") {
 
     if (is_win) {
       deps += [
+        "//chrome/browser/enterprise/connectors/device_trust/signals/decorators/browser/win",
         "//components/device_signals/core/browser/win",
         "//components/device_signals/core/common/win",
       ]

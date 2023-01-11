@@ -87,6 +87,7 @@
 <translation id="1545749641540134597">QR കോഡ് സ്‌കാൻ ചെയ്യുക</translation>
 <translation id="1552525382687785070">നിങ്ങളുടെ അഡ്‌മിൻ സമന്വയം പ്രവർത്തനരഹിതമാക്കി</translation>
 <translation id="1554477036522844996">പുതിയ വിന്‍ഡോ</translation>
+<translation id="1565371473877914088">പുതിയ അദൃശ്യ ടാബ്</translation>
 <translation id="1580715474678097352">അപകടകരമായ വെബ്‌സൈറ്റുകളിൽ നിന്ന് പരിരക്ഷിതമായി തുടരുക</translation>
 <translation id="1580783302095112590">മെയിൽ അയച്ചു.</translation>
 <translation id="1582732959743469162">ഇത്, നിലവിലെ ഡൗൺലോഡിന്റെ എല്ലാ പുരോഗതിയും നിർത്തും.</translation>
@@ -133,6 +134,7 @@
 <translation id="1981118202195772574">മൊബൈൽ</translation>
 <translation id="1989112275319619282">ബ്രൗസ് ചെയ്യുക</translation>
 <translation id="199425419756152024">പാസ്‌വേഡ് കാണുക</translation>
+<translation id="2010008505735295285">റീലോഡ് ചെയ്യുക</translation>
 <translation id="2015722694326466240">പാസ്‍വേഡുകൾ കാണാൻ, ആദ്യം നിങ്ങളുടെ ഉപകരണത്തിൽ പാസ്‌കോഡ് സജ്ജീകരിക്കുക.</translation>
 <translation id="2021670401941426298">ബാധകമെങ്കിൽ, നിങ്ങളുടെ തിരയൽ ചരിത്രം ഇല്ലാതാക്കാനുള്ള തിരയൽ യന്ത്രത്തിന്റെ നിർദ്ദേശങ്ങൾ കാണുക.</translation>
 <translation id="202292859882676807">മൈക്രോഫോൺ ആക്‌സസ് അനുവദിച്ചിരിക്കുന്നു</translation>
@@ -232,6 +234,7 @@
 <translation id="2815198996063984598">2. ഡിഫോൾട്ട് ബ്രൗസർ ആപ്പ് ടാപ്പ് ചെയ്യുക</translation>
 <translation id="2820289420301699633">നിങ്ങളുടെ അഡ്‌മിൻ ആണ് Chrome നിയന്ത്രിക്കുന്നത്, അവർക്ക് അതിന്റെ ഡാറ്റ ആക്‌സസ് ചെയ്യാനാകും</translation>
 <translation id="2830972654601096923">വിലാസങ്ങൾ മാനേജ് ചെയ്യുക...</translation>
+<translation id="2834399722155632105">3. പാസ്‌വേഡ് ഓപ്ഷനുകൾ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">വിവർത്തന ക്രമീകരണം റീസെറ്റ് ചെയ്യുക</translation>
 <translation id="2848086008667475748">ക്രമീകരണത്തിൽ ഡിഫോൾട്ട് ആക്കുക…</translation>
@@ -280,6 +283,7 @@
 <translation id="3153862085237805241">കാർഡ് സംരക്ഷിക്കുക</translation>
 <translation id="3157387275655328056">വായന ലിസ്റ്റിൽ ചേർക്കുക</translation>
 <translation id="3157684681743766797">എല്ലാം അടയാളപ്പെടുത്തുക…</translation>
+<translation id="315778507796115851">ചരിത്രം</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174662312949010067">സംരക്ഷിച്ച പാസ്‌വേഡുകൾ നിങ്ങളുടെ മറ്റ് ഉപകരണങ്ങളിലും ഉപയോഗിക്കാനാകും.</translation>
 <translation id="3175081911749765310">വെബ് സേവനങ്ങൾ</translation>
@@ -298,6 +302,7 @@
 <translation id="3272527697863656322">റദ്ദാക്കുക</translation>
 <translation id="3277021493514034324">സൈറ്റ് വിലാസം പകർത്തി</translation>
 <translation id="3285962946108803577">പേജ് പങ്കിടുക...</translation>
+<translation id="3289505634533552500">ശബ്ദ തിരയൽ</translation>
 <translation id="3290875554372353449">ഒരു അക്കൗണ്ട് തിരഞ്ഞെടുക്കൂ</translation>
 <translation id="3305294846493618482">കൂടുതൽ</translation>
 <translation id="3311748811247479259">ഓഫാണ്</translation>
@@ -370,6 +375,7 @@
 <translation id="3861486700625780712">പിന്തുടരുന്നത് ഒഴിവാക്കുക</translation>
 <translation id="3863769054730344136">നിങ്ങളുടെ ഉപകരണങ്ങളിലേക്ക് അയയ്ക്കുക</translation>
 <translation id="387280738075653372">ഇവിടെ Chrome ഡൗൺലോഡ് ചെയ്യുക.</translation>
+<translation id="3888863481921783344">നിങ്ങളുടെ ഇവന്റിലേക്ക് ക്ഷണിക്കപ്പെടാൻ സാധ്യതയുള്ള ആളുകളെ കാണിക്കാൻ ഇത് ഉപയോഗിക്കും.</translation>
 <translation id="3892144330757387737">നിങ്ങളുടെ ചരിത്രം ഇവിടെ കാണാം</translation>
 <translation id="3897092660631435901">മെനു</translation>
 <translation id="3904829425754749514">നിങ്ങളുടെ സ്ഥാപനം സമന്വയം ഓഫാക്കി. ഈ ഉപകരണത്തിലെ നിങ്ങളുടെ ബുക്ക്‌മാർക്കുകളും ചരിത്രവും പാസ്‌വേഡുകളും മറ്റ് ക്രമീകരണവും നിങ്ങൾക്ക് തുടർന്നും കാണാം. മാറ്റങ്ങൾ വരുത്തിയാൽ, അവ നിങ്ങളുടെ അക്കൗണ്ടിൽ സമന്വയിപ്പിക്കില്ല.</translation>
@@ -567,10 +573,12 @@
 <translation id="5439599923922718668">പതിവായി സന്ദർശിക്കുന്നവ</translation>
 <translation id="54401264925851789">പേജ് സുരക്ഷാ വിവരങ്ങൾ</translation>
 <translation id="5443952882982198570">ക്രെഡിറ്റ് കാർഡുകൾ</translation>
+<translation id="5444892875087332195">ബുക്ക്‌മാർക്കുകൾ</translation>
 <translation id="5457226814769348910">ഓഫ്‌ലെെൻ പതിപ്പ് തുറക്കുക</translation>
 <translation id="5489208564673669003">എല്ലാ സൈറ്റുകൾക്കുമുള്ള കുക്കികൾ മാനേജ് ചെയ്യാൻ, <ph name="BEGIN_LINK" />കുക്കി ക്രമീകരണം<ph name="END_LINK" /> കാണുക.</translation>
 <translation id="5490005495580364134">എല്ലാ കുക്കികളും ബ്ലോക്ക് ചെയ്യുക (ശുപാർശ ചെയ്യുന്നില്ല)</translation>
 <translation id="5513681519188741830"><ph name="TIME" /> മണിക്കൂർ മുമ്പ്</translation>
+<translation id="5520466080178053306">Password Manager ടാപ്പ് ചെയ്ത ശേഷം, ചേർക്കുക ടാപ്പ് ചെയ്യുക</translation>
 <translation id="5525095647255982834">ഈ ടാബ് മറ്റൊരു ഉപകരണത്തിലേക്ക് അയയ്‌ക്കാൻ, അതിലെ Chrome-ൽ സൈൻ ഇൻ ചെയ്യുക.</translation>
 <translation id="5525269841082836315">പാസ്‌ഫ്രെയ്‌സ് സൃഷ്‌ടിക്കുക</translation>
 <translation id="5542540507657872337"><ph name="COUNT" /> എണ്ണം കണ്ടെത്തി</translation>
@@ -630,6 +638,7 @@
 <translation id="5899314093904173337">സമീപമുള്ള ആളുകളുമായി പങ്കിടുന്നതിന്, അവരുടെ ക്യാമറയോ QR സ്‌കാനർ ആപ്പോ ഉപയോഗിച്ച് ഈ QR കോഡ് സ്‌കാൻ ചെയ്യാൻ അവരെ അനുവദിക്കുക</translation>
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5913600720976431809">പേജ് വിവർത്തനം ചെയ്യാനുള്ള ഓപ്ഷനുകൾ</translation>
+<translation id="5933515656458364246">എല്ലാ ഉപകരണങ്ങളിലും നിങ്ങളുടെ ഡാറ്റ സമന്വയിപ്പിക്കുക.</translation>
 <translation id="5938160824633642847">ഉപകരണത്തിന്റെ സ്‌റ്റോറേജ് ഏകദേശം നിറഞ്ഞു. കുറച്ച് ഇടം സൃഷ്ടിച്ച ശേഷം വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="5948291296578561264">നിങ്ങളുടെ ഫോട്ടോ ലൈബ്രറിയിലേക്ക് ഫോട്ടോകൾ സംരക്ഷിക്കാൻ അനുവദിക്കുന്നു.</translation>
 <translation id="5951816930277761335">ലിങ്ക് പങ്കിടുക</translation>
@@ -642,6 +651,7 @@
 <translation id="5984222099446776634">സമീപകാലത്ത് സന്ദർശിച്ചത്</translation>
 <translation id="5988097621740394599">നിങ്ങളുടെ ടാബുകളിൽ വിലയിടിവുകൾ കാണൂ.</translation>
 <translation id="5988851877894965432">Chrome-ൽ URL-കൾ തുറക്കുക</translation>
+<translation id="6006672969046233841">പുതിയ ടാബ്</translation>
 <translation id="6012140227487808125">എൻക്രിപ്റ്റുചെയ്യുന്നു...</translation>
 <translation id="6021332621416007159">ഇതിൽ തുറക്കുക...</translation>
 <translation id="6027945736510816438"><ph name="WEBSITE" /> ആണോ നിങ്ങൾ ഉദ്ദേശിച്ചത്?</translation>
@@ -711,6 +721,7 @@
 
 <ph name="TIME" />-ന് നിങ്ങളുടെ സമന്വയ പാസ്‌ഫ്രെയ്‌സ് ഉപയോഗിച്ച് ഡാറ്റ എൻക്രിപ്‌റ്റ് ചെയ്‌തു. സമന്വയം ആരംഭിക്കുന്നതിന് പാസ്ഫ്രേസ് നൽകുക.</translation>
 <translation id="6418346271604475326">PDF തയ്യാറാക്കുന്നു</translation>
+<translation id="6429213933892582367">പാസ്‌വേഡ് ഓപ്ഷനുകൾ തുറക്കുക</translation>
 <translation id="6434591244308415567">ഒരു പിശകുണ്ടായി. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="6435236283694032571">വായിക്കാനുള്ളവയുടെ ലിസ്‌റ്റിൽ ചേർക്കുക</translation>
 <translation id="6439338047467462846">എല്ലാം അനുവദിക്കുക</translation>
@@ -826,6 +837,8 @@
 <translation id="7203585745079012652">മറുപടിയായി ഉത്തരങ്ങൾ പറയുക</translation>
 <translation id="7207023858769244910">നിങ്ങളുടെ താൽപ്പര്യങ്ങൾ അടിസ്ഥാനമാക്കിയുള്ള ഉള്ളടക്കം നേടാൻ സമന്വയിപ്പിക്കൂ.</translation>
 <translation id="721597782417389033">കാർഡിന്റെ വിളിപ്പേര് അസാധുവാണ്</translation>
+<translation id="7221173315674413369">പുതിയത് എന്തൊക്കെ എന്നതിൽ പുതിയ ഫീച്ചറുകളും നുറുങ്ങുകളും അടുത്തറിയുക</translation>
+<translation id="7223102419539744003">ടാബ് അടയ്‌ക്കുക</translation>
 <translation id="722454870747268814">പുതിയ ആൾമാറാട്ട ടാബ്</translation>
 <translation id="7265758999917665941">ഈ സൈറ്റിൻ്റെ പാസ്‌വേഡ് ഓർക്കേണ്ടതില്ല</translation>
 <translation id="7272437679830969316">നിങ്ങളുടെ ഐഡന്റിറ്റി പരിശോധിച്ചുറപ്പിക്കാനാകില്ല. പാസ്‍വേഡ് പകർത്തിയില്ല.</translation>
@@ -859,6 +872,7 @@
 <translation id="7514365320538308">ഡൗൺലോഡ് ചെയ്യുക</translation>
 <translation id="7531345132340165516">നിലവിലെ സൈറ്റ്</translation>
 <translation id="7537586195939242955">ക്ഷമിക്കണം, നിങ്ങളുടെ പാസ് ഈ സമയം പാസ്‌ബുക്കിൽ ഇൻസ്റ്റാൾ ചെയ്യാൻ കഴിയില്ല.</translation>
+<translation id="7553234618121028547">ഓഫാക്കാൻ, <ph name="BEGIN_LINK" />ക്രമീകരണം<ph name="END_LINK" /> തുറന്ന് പാസ്‌വേഡ് ഓപ്ഷനുകളിലേക്ക് പോകുക.</translation>
 <translation id="7554791636758816595">പുതിയ ടാബ്</translation>
 <translation id="7561196759112975576">എല്ലായ്പ്പോഴും</translation>
 <translation id="7583004045319035904">നിങ്ങളുടെ അദൃശ്യ ടാബുകൾ അൺലോക്ക് ചെയ്യാൻ <ph name="BIOMETRIC_AUTHENITCATION_TYPE" /> ഉപയോഗിക്കുക.</translation>
@@ -878,6 +892,7 @@
 <translation id="7726702057919861819">മെനു → ചരിത്രം → ബ്രൗസിംഗ് ഡാറ്റ മായ്ക്കുക</translation>
 <translation id="7738120385185846461">പ്രശ്നം റിപ്പോർട്ട് ചെയ്യുക…</translation>
 <translation id="7741325291586284254">പുതിയ അദൃശ്യ ടാബ് പേജ്</translation>
+<translation id="7744394900930577716">മറ്റ് ആപ്പുകളിലെ പാസ്‌വേഡുകൾ</translation>
 <translation id="7756478488453921771">മെനു → ക്രമീകരണം → പേയ്മെന്റ് രീതികൾ</translation>
 <translation id="7765158879357617694">നീക്കുക</translation>
 <translation id="7772032839648071052">പാസ്ഫ്രേസ് സ്ഥിരീകരിക്കുക</translation>
@@ -939,7 +954,9 @@
 <translation id="8101409298456377967">സൈറ്റുകളിലേക്കും ആപ്പുകളിലേക്കും എളുപ്പത്തിൽ സൈൻ ഇൻ ചെയ്യുന്നതിന് നിങ്ങളുടെ പാസ്‌വേഡുകൾ സൃഷ്‌ടിക്കുക, സംരക്ഷിക്കുക, മാനേജ് ചെയ്യുക. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="8105368624971345109">ഓഫാക്കുക</translation>
 <translation id="8114753159095730575">ഫയൽ ഡൗൺലോഡ് ചെയ്യൽ ലഭ്യമാണ്. സ്ക്രീനിന്റെ ചുവടെ ഓപ്ഷനുകളുണ്ട്.</translation>
+<translation id="81313319706244542">2. പാസ്‌വേഡുകൾ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="8132598642024322408">ഇപ്പോൾ <ph name="PRICE" />, മുമ്പത്തെ വില <ph name="PREVIOUS_PRICE" />.</translation>
+<translation id="8136856065410661948">Chrome, Google Lens എന്നിവയിൽ നിന്ന് Apple കലണ്ടറിൽ ഇവന്റുകൾ സൃഷ്ടിക്കാൻ ഇത് ഉപയോഗിക്കും.</translation>
 <translation id="8156478151976189188">പാസ്‌വേഡ് സമന്വയം പ്രവർത്തിക്കുന്നില്ല</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> അക്കൗണ്ടുകൾ</translation>
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />നിങ്ങളുടെ ഉപകരണങ്ങൾ<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
@@ -960,6 +977,7 @@
 <translation id="8319076807703933069">പുതിയ തിരയൽ</translation>
 <translation id="8323906514956095947">കൂടുതൽ ടാബ് ഓപ്‌ഷനുകൾക്കായി സ്‌പർശിച്ച് പിടിക്കുക</translation>
 <translation id="8328777765163860529">എല്ലാം അടയ്‌ക്കുക</translation>
+<translation id="8343993175958086504">നിങ്ങളുടെ ഡാറ്റ ബാക്കപ്പ് ചെയ്‌ത് ഏത് ഉപകരണത്തിലും ഉപയോഗിക്കുക.</translation>
 <translation id="8378714024927312812">നിങ്ങളുടെ സ്ഥാപനം മാനേജ് ചെയ്യുന്നത്</translation>
 <translation id="8386068868580335421">റീസെറ്റ് ചെയ്യുക</translation>
 <translation id="8407669440184693619">ഈ സൈറ്റിനുള്ള പാസ്‍വേഡുകളൊന്നും കണ്ടെത്തിയില്ല</translation>
@@ -1016,6 +1034,7 @@
 <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="8810413591309742901">ഡിഫോൾട്ട് സൈറ്റ് കാഴ്‌ച</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
+<translation id="882557203579758546">പേജിൽ കണ്ടെത്തുക…</translation>
 <translation id="8840513115188359703">നിങ്ങൾ Google അക്കൗണ്ടിൽ നിന്ന് സൈൻ ഔട്ട് ആകില്ല.</translation>
 <translation id="8843129975935593190">നിങ്ങൾക്ക് സമന്വയിപ്പിക്കാവുന്ന തരങ്ങൾ സ്ഥാപനം പരിമിതപ്പെടുത്തിയിരിക്കുന്നു.</translation>
 <translation id="8849001918648564819">മറച്ചിരിക്കുന്നു</translation>
@@ -1054,6 +1073,7 @@
 <translation id="9081058212938299310"><ph name="USERNAME" /> എന്നയാളുടെ പാസ്‌വേഡ് അപ്‌ഡേറ്റ് ചെയ്യണോ?</translation>
 <translation id="9083838294503912307">ഉപകരണങ്ങളിൽ ഉടനീളം സമന്വയിപ്പിക്കാനും വ്യക്തിപരമാക്കാനും, സമന്വയിപ്പിക്കൽ ഓണാക്കുക.</translation>
 <translation id="9087108903408689779">Chrome നിർദ്ദേശിക്കുന്ന പാസ്‌വേഡ്:</translation>
+<translation id="9093271241977565440">സ്‌ക്രീനിന്റെ മുകളിലുള്ള തിരയൽ ഐക്കൺ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="9094033019050270033">പാസ്‌വേഡ് അപ്‌ഡേറ്റ് ചെയ്യുക</translation>
 <translation id="9097506547406246598">പിന്തുടരുന്നത് ഒഴിവാക്കാനാകുന്നില്ല. എന്തോ കുഴപ്പമുണ്ടായി.</translation>
 <translation id="9100610230175265781">പാസ്‌ഫ്രെയ്‌സ് ആവശ്യമാണ്</translation>

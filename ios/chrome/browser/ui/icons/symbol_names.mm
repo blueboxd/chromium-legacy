@@ -42,6 +42,7 @@ NSString* const kShieldSymbol = @"shield";
 
 // Custom symbol names which can be configured with a color palette.
 NSString* const kIncognitoCircleFillSymbol = @"incognito_circle_fill";
+NSString* const kNewTabSymbol = @"plus_circle_fill";
 
 // Default symbol names.
 NSString* const kSyncEnabledSymbol = @"arrow.triangle.2.circlepath";
@@ -108,7 +109,7 @@ NSString* const kSortSymbol = @"arrow.up.arrow.down";
 NSString* const kBackSymbol = @"arrow.backward";
 NSString* const kForwardSymbol = @"arrow.forward";
 NSString* const kPersonFillSymbol = @"person.fill";
-NSString* const kMailFillSymbol = @"envelop.fill";
+NSString* const kMailFillSymbol = @"envelope.fill";
 NSString* const kPhoneFillSymbol = @"phone.fill";
 NSString* const kDownloadPromptFillSymbol = @"arrow.down.to.line.circle.fill";
 NSString* const kDownloadPromptFilliOS14Symbol = @"arrow.down.circle.fill";

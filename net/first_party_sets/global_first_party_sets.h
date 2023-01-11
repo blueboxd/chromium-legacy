@@ -39,10 +39,6 @@ class NET_EXPORT GlobalFirstPartySets {
   GlobalFirstPartySets(
       base::flat_map<SchemefulSite, FirstPartySetEntry> entries,
       base::flat_map<SchemefulSite, SchemefulSite> aliases);
-  GlobalFirstPartySets(
-      base::flat_map<SchemefulSite, FirstPartySetEntry> entries,
-      base::flat_map<SchemefulSite, SchemefulSite> aliases,
-      FirstPartySetsContextConfig manual_config);
 
   GlobalFirstPartySets(GlobalFirstPartySets&&);
   GlobalFirstPartySets& operator=(GlobalFirstPartySets&&);
@@ -55,9 +51,8 @@ class NET_EXPORT GlobalFirstPartySets {
   // Creates a clone of this instance.
   GlobalFirstPartySets Clone() const;
 
-  // Returns a FirstPartySetsContextConfig suitable for passing into
-  // FindEntries, in order to respect the overrides given by `replacement_sets`
-  // and `addition_sets`.
+  // Returns a FirstPartySetsContextConfig that respects the overrides given by
+  // `replacement_sets` and `addition_sets`, relative to this instance's state.
   //
   // Preconditions: sets defined by `replacement_sets` and
   // `addition_sets` must be disjoint.
@@ -103,6 +98,17 @@ class NET_EXPORT GlobalFirstPartySets {
       base::FunctionRef<bool(const SchemefulSite&, const FirstPartySetEntry&)>
           f) const;
 
+  // Synchronously iterate over all the effective entries (i.e. anything that
+  // could be returned by `FindEntry` using this instance and `config`,
+  // including the manual set, policy sets, and aliases). Returns early if any
+  // of the iterations returns false. Returns false if iteration was incomplete;
+  // true if all iterations returned true. No guarantees are made re: iteration
+  // order.
+  bool ForEachEffectiveSetEntry(
+      const FirstPartySetsContextConfig& config,
+      base::FunctionRef<bool(const SchemefulSite&, const FirstPartySetEntry&)>
+          f) const;
+
   // Whether the global sets are empty.
   bool empty() const { return entries_.empty() && manual_config_.empty(); }
 
@@ -117,6 +123,12 @@ class NET_EXPORT GlobalFirstPartySets {
 
   friend NET_EXPORT std::ostream& operator<<(std::ostream& os,
                                              const GlobalFirstPartySets& sets);
+
+  GlobalFirstPartySets(
+      base::flat_map<SchemefulSite, FirstPartySetEntry> entries,
+      base::flat_map<SchemefulSite, SchemefulSite> aliases,
+      base::flat_map<SchemefulSite, FirstPartySetEntry> manual_sets,
+      FirstPartySetsContextConfig manual_config);
 
   // Same as the public version of FindEntry, but is allowed to omit the
   // `config` argument (i.e. pass nullptr instead of a reference).
@@ -145,6 +157,13 @@ class NET_EXPORT GlobalFirstPartySets {
       const std::set<SchemefulSite>& party_context,
       const FirstPartySetsContextConfig& fps_context_config) const;
 
+  // Same as the public version of ForEachEffectiveSetEntry, but is allowed to
+  // omit the `config` argument (i.e. pass nullptr instead of a reference).
+  bool ForEachEffectiveSetEntry(
+      const FirstPartySetsContextConfig* config,
+      base::FunctionRef<bool(const SchemefulSite&, const FirstPartySetEntry&)>
+          f) const;
+
   const base::flat_map<SchemefulSite, FirstPartySetEntry>& entries() const {
     return entries_;
   }
@@ -165,13 +184,13 @@ class NET_EXPORT GlobalFirstPartySets {
   // canonical representative, before looking it up in `entries_`.
   base::flat_map<SchemefulSite, SchemefulSite> aliases_;
 
-  // Stores the customizations induced by the manually-specified set. May be
-  // empty if no switch was provided.
-  FirstPartySetsContextConfig manual_config_;
-
   // A map representing the manually-specified sets. Contains entries for
   // aliases as well as canonical sites.
   base::flat_map<SchemefulSite, FirstPartySetEntry> manual_sets_;
+
+  // Stores the customizations induced by the manually-specified set. May be
+  // empty if no switch was provided.
+  FirstPartySetsContextConfig manual_config_;
 };
 
 NET_EXPORT std::ostream& operator<<(std::ostream& os,

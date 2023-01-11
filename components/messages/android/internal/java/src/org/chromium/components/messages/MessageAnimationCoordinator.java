@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * Coordinator for toggling animation when message is about to show or hide.
  */
-public class MessageAnimationCoordinator {
+public class MessageAnimationCoordinator implements SwipeAnimationHandler {
     private static final String TAG = MessageQueueManager.TAG;
     // Animation start delay for the back message for MessageBannerMediator.ENTER_DURATION_MS amount
     // of time, required to show the front message from Position.INVISIBLE to Position.FRONT.
@@ -88,6 +88,9 @@ public class MessageAnimationCoordinator {
 
                     mAnimatorSet = new AnimatorSet();
                     mAnimatorSet.play(animator);
+                    mAnimatorSet.addListener(
+                            new MessageAnimationListener(mMessageQueueDelegate::onAnimationEnd));
+                    mMessageQueueDelegate.onAnimationStart();
                     mAnimatorStartCallback.onResult(mAnimatorSet);
                 });
                 mLastShownMessage = mCurrentDisplayedMessage;
@@ -96,6 +99,7 @@ public class MessageAnimationCoordinator {
         } else {
             Runnable runnable = () -> {
                 mMessageQueueDelegate.onFinishHiding();
+                mMessageQueueDelegate.onAnimationEnd();
                 mCurrentDisplayedMessage = mLastShownMessage = null;
                 onFinished.run();
             };
@@ -113,6 +117,7 @@ public class MessageAnimationCoordinator {
             } else {
                 mAnimatorSet = new AnimatorSet();
                 mAnimatorSet.play(animator);
+                mMessageQueueDelegate.onAnimationStart();
                 mAnimatorSet.addListener(new MessageAnimationListener(runnable));
                 mAnimatorStartCallback.onResult(mAnimatorSet);
             }
@@ -247,37 +252,65 @@ public class MessageAnimationCoordinator {
 
         if (currentFront == null) {
             // No message is being displayed now: trigger #onStartShowing.
+            mCurrentDisplayedMessages = new ArrayList<>(candidates);
             mMessageQueueDelegate.onStartShowing(
                     () -> { triggerStackingAnimation(candidates, onFinished); });
         } else if (nextFront == null) {
             // All messages will be hidden: trigger #onFinishHiding.
             Runnable runnable = () -> {
                 mMessageQueueDelegate.onFinishHiding();
-                mCurrentDisplayedMessage = mLastShownMessage = null;
+                mCurrentDisplayedMessages = new ArrayList<>(candidates);
                 onFinished.run();
             };
             triggerStackingAnimation(candidates, runnable);
         } else {
+            mCurrentDisplayedMessages = new ArrayList<>(candidates);
             triggerStackingAnimation(candidates, onFinished);
         }
     }
 
     private void triggerStackingAnimation(List<MessageState> candidates, Runnable onFinished) {
-        mCurrentDisplayedMessages = new ArrayList<>(candidates);
         Runnable runnable = () -> {
             mAnimatorSet.cancel();
             mAnimatorSet.removeAllListeners();
             mAnimatorSet = new AnimatorSet();
             mAnimatorSet.play(mFrontAnimator);
             mAnimatorSet.play(mBackAnimator);
-            mAnimatorSet.addListener(new MessageAnimationListener(onFinished));
+            mAnimatorSet.addListener(new MessageAnimationListener(() -> {
+                mMessageQueueDelegate.onAnimationEnd();
+                onFinished.run();
+            }));
             mAnimatorStartCallback.onResult(mAnimatorSet);
+            mMessageQueueDelegate.onAnimationStart();
         };
         if (candidates.get(0) == null) {
             runnable.run();
         } else {
             mContainer.runAfterInitialMessageLayout(runnable);
         }
+    }
+
+    @Override
+    public void onSwipeStart() {
+        // Message shouldn't consume swipe for now because animation is running, e.g.:
+        // the front message should not be swiped when back message is running showing animation.
+        assert isSwipeEnabled();
+        mMessageQueueDelegate.onAnimationStart();
+    }
+
+    @Override
+    public boolean isSwipeEnabled() {
+        return !mAnimatorSet.isStarted();
+    }
+
+    @Override
+    public void onSwipeEnd(@Nullable Animator animator) {
+        if (animator == null) {
+            mMessageQueueDelegate.onAnimationEnd();
+            return;
+        }
+        animator.addListener(new MessageAnimationListener(mMessageQueueDelegate::onAnimationEnd));
+        mAnimatorStartCallback.onResult(animator);
     }
 
     void setMessageQueueDelegate(MessageQueueDelegate delegate) {

@@ -175,6 +175,7 @@
 <translation id="1862380676329487333">به‌روزرسانی و خروج از سیستم</translation>
 <translation id="1864454756846565995">‏دستگاه USB-C (درگاه عقب)</translation>
 <translation id="1869497990620230175">فایل‌های سریع</translation>
+<translation id="1871703283152909317">روشن کردن هردو دسترسی</translation>
 <translation id="1879018240766558464">درحال‌حاضر از پنجره‌های «ناشناس» پشتیبانی نمی‌شود. برنامه‌های دیگر ذخیره خواهد شد.</translation>
 <translation id="1882814835921407042">عدم وجود شبکه تلفن همراه</translation>
 <translation id="1882897271359938046">بازتاب به <ph name="DISPLAY_NAME" /></translation>
@@ -352,6 +353,7 @@
 <translation id="2960314608273155470">«حالت ضبط»، پیش‌فرض <ph name="SOURCE" /> <ph name="TYPE" /> است. برای پیمایش با صفحه‌کلید، کلید جهش را فشار دهید.</translation>
 <translation id="2961963223658824723">مشکلی پیش آمد. چند ثانیه دیگر دوباره امتحان کنید.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2965227184985674128">دسترسی به میکروفون روشن شود؟</translation>
 <translation id="296762781903199866">فایل‌های گفتار <ph name="LANGUAGE" /> بارگیری نشد</translation>
 <translation id="2970920913501714344">نصب برنامه‌ها، افزونه‌ها و طرح‌های زمینه</translation>
 <translation id="2977598380246111477">عدد بعدی</translation>
@@ -430,6 +432,7 @@
 <translation id="3386978599540877378">ذره‌بین تمام‌صفحه</translation>
 <translation id="3387527074123400161">ChromiumOS</translation>
 <translation id="3400357268283240774">تنظیمات بیشتر</translation>
+<translation id="3405101454990027959">روشن کردن دسترسی به میکروفون</translation>
 <translation id="3410336247007142655">نمایش تنظیمات زمینه تیره</translation>
 <translation id="3413817803639110246">هنوز چیزی برای دیدن وجود ندارد</translation>
 <translation id="3428447136709161042">قطع ارتباط از <ph name="NETWORK_NAME" /></translation>
@@ -515,6 +518,7 @@
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="385300504083504382">آغاز</translation>
 <translation id="3861651314799684201">برای ضبط تمام صفحه، کلید «ورود» را فشار دهید</translation>
+<translation id="3885531177412808398">دسترسی به میکروفون را برای همه برنامه‌ها و وب‌سایت‌های دارای اجازه میکروفون مجاز می‌کند</translation>
 <translation id="3886872229787704059">امروز باز شده است</translation>
 <translation id="3891340733213178823">‏برای خروج از سیستم Ctrl+Shift+Q را دو بار فشار دهید.</translation>
 <translation id="3893630138897523026">‏ChromeVox (بازخورد گفتاری)</translation>
@@ -919,6 +923,7 @@
 <translation id="6095008505822982596">سرعت گفتار</translation>
 <translation id="6099678161144790572">ماه گذشته ویرایش شده است</translation>
 <translation id="6103838137565245112">سیستم</translation>
+<translation id="6107292179555508368">دسترسی میکروفون و دوربین در این دستگاه خاموش است</translation>
 <translation id="6114505516289286752">فایل‌های گفتار <ph name="LANGUAGE" /> بارگیری شد</translation>
 <translation id="6116825164611323644">دسترسی به دوربین در این دستگاه خاموش است</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
@@ -947,6 +952,7 @@
 <translation id="6259254695169772643">برای انتخاب از قلم استفاده کنید</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: در حال فعال‌سازی…</translation>
 <translation id="6274202259872570803">ضبط ویدیویی از صفحه</translation>
+<translation id="6282694724099204652">این دسترسی‌ها را روشن کنید تا برنامه‌ها و صفحه‌های وب دارای اجازه بتوانند از میکروفون‌(ها) و دوربین‌(های) این دستگاه استفاده کنند.</translation>
 <translation id="6283712521836204486">«مزاحم نشوید» خاموش است.</translation>
 <translation id="6284232397434400372">وضوح تغییر کرد</translation>
 <translation id="6288235558961782912">بعداً می‌توانید <ph name="USER_EMAIL_ADDRESS" /> را با اجازه ولی دوباره اضافه کنید.</translation>
@@ -1374,6 +1380,7 @@
 <translation id="8666856788528804727">برای راه‌اندازی دستگاه، <ph name="NAME" /> را باز کنید</translation>
 <translation id="8676770494376880701">شارژر برق متصل شده ضعیف است</translation>
 <translation id="8683506306463609433">ردیابی عملکرد فعال است</translation>
+<translation id="8684405646663021166">دسترسی به میکروفون را برای <ph name="APP_NAME" /> و همه برنامه‌ها و وب‌سایت‌های دارای اجازه میکروفون مجاز می‌کند</translation>
 <translation id="8685326675965865247">دستگاه، برنامه‌ها، تنظیمات، و وب را جستجو کنید. با کلیدهای پیکانی، برنامه‌هایتان را پیمایش کنید.</translation>
 <translation id="8703634754197148428">شروع ضبط. هروقت ضبط شروع شد، بااستفاده از کلیدهای «دگرساز + تبدیل + م» به قفسه پیمایش کنید و دکمه متوقف کردن ضبط را پیدا کنید</translation>
 <translation id="8721053961083920564">تغییر وضعیت میزان صدا. <ph name="STATE_TEXT" /></translation>

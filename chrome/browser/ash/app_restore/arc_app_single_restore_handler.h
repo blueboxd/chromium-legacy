@@ -47,12 +47,15 @@ class ArcAppSingleRestoreHandler
   void OnAppStatesUpdate(const std::string& app_id,
                          bool ready,
                          bool need_fixup) override;
+  void OnGhostWindowHandlerDestroy() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ArcAppSingleRestoreHandlerTest,
                            NotLaunchIfShelfNotReady);
   FRIEND_TEST_ALL_PREFIXES(ArcAppSingleRestoreHandlerTest,
                            PendingLaunchIfShelfHasReady);
+  FRIEND_TEST_ALL_PREFIXES(ArcAppSingleRestoreHandlerTest,
+                           NullBoundsNotCauseCrash);
 
   // Called when ARC app has ready. It's expected only called once.
   void SendAppLaunchRequestToARC();

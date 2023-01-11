@@ -305,6 +305,7 @@
 <translation id="4044093238444069296">No se puede establecer contacto con la puerta de enlace</translation>
 <translation id="4046123991198612571">Siguiente pista</translation>
 <translation id="404928562651467259">ADVERTENCIA</translation>
+<translation id="4060260348856573701">APN nuevo</translation>
 <translation id="4093865285251893588">Imagen de perfil</translation>
 <translation id="409427325554347132">Guardar los detalles de la prueba</translation>
 <translation id="4110686435123617899">Seleccionar álbum <ph name="TITLE" /> <ph name="DESC" /></translation>
@@ -606,6 +607,7 @@ Intenta presionar el micrófono para hacerme una pregunta.</translation>
 <translation id="6766275201586212568">Resoluciones DNS con error</translation>
 <translation id="6768237774506518020">Tasa alta de errores para la resolución de DNS</translation>
 <translation id="6791471867139427246">color de la luz del teclado</translation>
+<translation id="6793680441750437230">Presiona cualquier tecla en tu teclado. Puedes presionar hasta 4 teclas a la vez. Presiona Alt + Esc para cerrar el cuadro de diálogo.</translation>
 <translation id="680983167891198932">Clave</translation>
 <translation id="6816797338148849397">Información disponible sobre el texto seleccionado. Utiliza la flecha hacia arriba para acceder.</translation>
 <translation id="6853312040151791195">Velocidad de descarga</translation>
@@ -665,7 +667,7 @@ Intenta presionar el micrófono para hacerme una pregunta.</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{Se completó el escaneo. Se escaneó 1 página}other{Se completó el escaneo. Se escanearon {NUMBER_OF_PAGES} páginas}}</translation>
 <translation id="7469648432129124067">Se detectó un portal</translation>
-<translation id="7481312909269577407">Reenviar</translation>
+<translation id="7481312909269577407">Adelante</translation>
 <translation id="7487067081878637334">Tecnología</translation>
 <translation id="7490813197707563893">Dirección MAC</translation>
 <translation id="7497215489070763236">Certificado de CA del servidor</translation>

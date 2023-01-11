@@ -121,15 +121,19 @@ void CardUnmaskAuthenticationSelectionDialogViews::AddHeaderText() {
 void CardUnmaskAuthenticationSelectionDialogViews::AddChallengeOptionsViews() {
   auto* challenge_options_section =
       AddChildView(std::make_unique<views::View>());
+  int horizontal_column_padding =
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
   challenge_options_section
       ->SetLayoutManager(std::make_unique<views::TableLayout>())
-      ->AddColumn(views::LayoutAlignment::kStart,
-                  views::LayoutAlignment::kCenter,
-                  views::TableLayout::kFixedSize,
-                  views::TableLayout::ColumnSize::kUsePreferred, 0, 0)
+      ->AddPaddingColumn(views::TableLayout::kFixedSize,
+                         horizontal_column_padding)
+      .AddColumn(views::LayoutAlignment::kStart,
+                 views::LayoutAlignment::kCenter,
+                 views::TableLayout::kFixedSize,
+                 views::TableLayout::ColumnSize::kUsePreferred, 0, 0)
       .AddPaddingColumn(views::TableLayout::kFixedSize,
-                        ChromeLayoutProvider::Get()->GetDistanceMetric(
-                            views::DISTANCE_RELATED_CONTROL_HORIZONTAL))
+                        horizontal_column_padding)
       .AddColumn(views::LayoutAlignment::kStart,
                  views::LayoutAlignment::kCenter,
                  views::TableLayout::kFixedSize,
@@ -226,10 +230,11 @@ std::unique_ptr<views::RadioButton>
 CardUnmaskAuthenticationSelectionDialogViews::CreateChallengeOptionRadioButton(
     CardUnmaskChallengeOption challenge_option) {
   auto radio_button = std::make_unique<views::RadioButton>();
-  radio_button->SetCallback(
-      base::BindRepeating(&CardUnmaskAuthenticationSelectionDialogController::
-                              SetSelectedChallengeOptionId,
-                          base::Unretained(controller_), challenge_option.id));
+  radio_button_checked_changed_subscriptions_.push_back(
+      radio_button->AddCheckedChangedCallback(base::BindRepeating(
+          &CardUnmaskAuthenticationSelectionDialogController::
+              SetSelectedChallengeOptionId,
+          base::Unretained(controller_), challenge_option.id)));
   radio_button->SetAccessibleName(
       controller_->GetAuthenticationModeLabel(challenge_option) + u". " +
       challenge_option.challenge_info);

@@ -175,6 +175,7 @@
 <translation id="1862380676329487333">Актуализиране и излизане от профила</translation>
 <translation id="1864454756846565995">USB-C устройство (задният порт)</translation>
 <translation id="1869497990620230175">Бърз достъп до файловете</translation>
+<translation id="1871703283152909317">Включване на достъпа и до двете устройства</translation>
 <translation id="1879018240766558464">Понастоящем не се поддържат прозорци в режим „инкогнито“. Другите приложения ще бъдат запазени.</translation>
 <translation id="1882814835921407042">Няма мобилна мрежа</translation>
 <translation id="1882897271359938046">Дублира се на „<ph name="DISPLAY_NAME" />“</translation>
@@ -352,6 +353,7 @@
 <translation id="2960314608273155470">Стандартната опция за режима на заснемане е <ph name="SOURCE" /> <ph name="TYPE" />. Натиснете Tab за навигиране с клавиатурата.</translation>
 <translation id="2961963223658824723">Нещо се обърка. Опитайте отново след няколко секунди.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2965227184985674128">Да се включи ли достъпът до микрофона?</translation>
 <translation id="296762781903199866">Файловете за говор на <ph name="LANGUAGE" /> не бяха изтеглени</translation>
 <translation id="2970920913501714344">да инсталира приложения, разширения и теми;</translation>
 <translation id="2977598380246111477">Следваща цифра</translation>
@@ -430,6 +432,7 @@
 <translation id="3386978599540877378">Лупата за увеличаване на целия екран</translation>
 <translation id="3387527074123400161">Chromium OS</translation>
 <translation id="3400357268283240774">Допълнителни настройки</translation>
+<translation id="3405101454990027959">Включване на достъпа до микрофона</translation>
 <translation id="3410336247007142655">Показване на настройките за тъмната тема</translation>
 <translation id="3413817803639110246">Тук още няма нищо</translation>
 <translation id="3428447136709161042">Прекратяване на връзката със: <ph name="NETWORK_NAME" /></translation>
@@ -516,6 +519,7 @@
 <translation id="385051799172605136">Назад</translation>
 <translation id="385300504083504382">Началото</translation>
 <translation id="3861651314799684201">Натиснете Enter за записване на целия екран</translation>
+<translation id="3885531177412808398">Разрешава достъп до микрофона за всички приложения и уебсайтове, които имат съответното разрешение</translation>
 <translation id="3886872229787704059">Отваряно днес</translation>
 <translation id="3891340733213178823">Натиснете два пъти „Ctrl+Shift+Q“ за изход.</translation>
 <translation id="3893630138897523026">ChromeVox (обратна връзка с говор)</translation>
@@ -920,6 +924,7 @@
 <translation id="6095008505822982596">Скорост на говора</translation>
 <translation id="6099678161144790572">Редактирано през миналия месец</translation>
 <translation id="6103838137565245112">система</translation>
+<translation id="6107292179555508368">Достъпът до микрофона и камерата е изключен на това устройство</translation>
 <translation id="6114505516289286752">Файловете за говор на <ph name="LANGUAGE" /> бяха изтеглени</translation>
 <translation id="6116825164611323644">Достъпът до камерата е изключен на това устройство</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
@@ -948,6 +953,7 @@
 <translation id="6259254695169772643">Използвайте писалката за избиране</translation>
 <translation id="6267036997247669271">„<ph name="NAME" />“: Активира се...</translation>
 <translation id="6274202259872570803">Screencast</translation>
+<translation id="6282694724099204652">Включете достъпа, за да позволите на приложенията и уеб страниците със съответното разрешение да използват микрофоните и камерите на това устройство.</translation>
 <translation id="6283712521836204486">Режимът „Не безпокойте“ е изключен.</translation>
 <translation id="6284232397434400372">Разделителната способност е променена</translation>
 <translation id="6288235558961782912">Имейл адресът <ph name="USER_EMAIL_ADDRESS" /> може да бъде добавен отново по-късно с разрешение от родител.</translation>
@@ -1375,6 +1381,7 @@
 <translation id="8666856788528804727">За да настроите устройството си, отворете <ph name="NAME" /></translation>
 <translation id="8676770494376880701">Свързано е зарядно устройство с малка мощност</translation>
 <translation id="8683506306463609433">Проследяването на ефективността е активно</translation>
+<translation id="8684405646663021166">Разрешава достъп до микрофона за <ph name="APP_NAME" /> и всички приложения и уебсайтове, които имат съответното разрешение</translation>
 <translation id="8685326675965865247">Търсете в устройството, приложенията, настройките и мрежата. Използвайте клавишите със стрелки, за да се придвижвате в приложенията.</translation>
 <translation id="8703634754197148428">Стартиране на записването. След като то започне, използвайте Alt + Shift + L, за да се придвижите до лавицата, където ще намерите бутона за спирането му</translation>
 <translation id="8721053961083920564">Превключване на звука. <ph name="STATE_TEXT" /></translation>

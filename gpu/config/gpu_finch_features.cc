@@ -179,6 +179,10 @@ BASE_FEATURE(kGpuProcessHighPriorityWin,
 BASE_FEATURE(kDisableVideoOverlayIfMoving,
              "DisableVideoOverlayIfMoving",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kNoUndamagedOverlayPromotion,
+             "NoUndamagedOverlayPromotion",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 #if BUILDFLAG(IS_MAC)
@@ -284,7 +288,8 @@ const base::FeatureParam<std::string> kVulkanBlockListByAndroidBuildFP{
 const base::FeatureParam<std::string> kDrDcBlockListByDevice{
     &kEnableDrDc, "BlockListByDevice",
     "LF9810_2GB|amber|chopin|secret|a03|SO-51B|on7xelte|j7xelte|F41B|doha|"
-    "rk322x_box|a20s"};
+    "rk322x_box|a20s|HWMAR|HWSTK-HF|HWPOT-H|b2q|channel|galahad|a32|ellis|"
+    "dandelion|tonga|RMX3231"};
 
 // crbug.com/1340059, crbug.com/1340064
 const base::FeatureParam<std::string> kDrDcBlockListByModel{

@@ -360,8 +360,12 @@ const CGFloat kSymbolSearchImagePointSize = 22;
 
 - (void)setupViews {
   self.translatesAutoresizingMaskIntoConstraints = NO;
-  self.barStyle = UIBarStyleBlack;
-  self.translucent = YES;
+  if (UseSymbols()) {
+    self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+  } else {
+    self.barStyle = UIBarStyleBlack;
+    self.translucent = YES;
+  }
   self.delegate = self;
   [self setShadowImage:[[UIImage alloc] init]
       forToolbarPosition:UIBarPositionAny];

@@ -77,7 +77,7 @@
           'shards': 2,
           'dimension_sets': [
             {
-              'machine_type': 'e2-standard-8', # crbug/1292221
+              'cores': '8', # crbug.com/1292221
             },
           ],
         },
@@ -1253,12 +1253,6 @@
           'shards': 5,
         }
       },
-      'chromeos-kevin-rel': {
-        'swarming': {
-          # Reducing parallelism due to DUT shortage (b/238271231)
-          'shards': 5,
-        }
-      },
     },
     # TODO(b/248270560): Restore if the DUT pool is ever stabilized.
     'remove_from': [
@@ -1373,7 +1367,8 @@
           'shards': 50,
           'dimension_sets': [
             {
-              'machine_type': 'e2-standard-8', # use 8-core to shorten runtime
+              # use 8-core to shorten runtime
+              'cores': '8',
             },
           ],
         },
@@ -1729,7 +1724,8 @@
           'shards': 30,
           'dimension_sets': [
             {
-              'machine_type': 'e2-standard-8', # use 8-core to shorten runtime
+              # use 8-core to shorten runtime
+              'cores': '8',
             },
           ],
         },
@@ -1763,7 +1759,8 @@
           'shards': 50,
           'dimension_sets': [
             {
-              'machine_type': 'e2-standard-8', # use 8-core to shorten runtime
+              # use 8-core to shorten runtime
+              'cores': '8',
             },
           ],
         },
@@ -1867,7 +1864,8 @@
           'shards': 25,
           'dimension_sets': [
             {
-              'machine_type': 'e2-standard-8', # copying android-nougat-x86-rel
+              # copying android-nougat-x86-rel
+              'cores': '8',
             },
           ],
         },
@@ -1910,7 +1908,8 @@
           'shards': 6,
           'dimension_sets': [
             {
-              'machine_type': 'e2-standard-8', # use 8-core to shorten runtime
+              # use 8-core to shorten runtime
+              'cores': '8',
             },
           ],
         },
@@ -2038,8 +2037,6 @@
   },
   'disk_usage_tast_test': {
     'remove_from': [
-      # TODO(crbug.com/1077659): Add the test back after it's fixed.
-      'chromeos-kevin-rel',
       # TODO(crbug.com/1379748): Add the test back after it's fixed.
       'chromeos-octopus-chrome',
     ],
@@ -3398,11 +3395,6 @@
           '--skip=benchmarks.benchmark_smoke_unittest.BenchmarkSmokeTest.wasmpspdfkit',
         ],
       },
-      'chromeos-kevin-chrome': {
-        # TODO(crbug.com/1182948): Remove the experiment.
-        # TODO(b/188822176): Restore to 100% when we have additional capacity.
-        'experiment_percentage': 0,
-      },
       'linux-rel-no-external-ip': {
         'args': [
           '--xvfb',
@@ -3439,7 +3431,6 @@
       # TODO(crbug.com/1141234): Restore when there's more DUTs
       'chromeos-eve-chrome',
       'chromeos-kevin-chrome',
-      'chromeos-kevin-rel',
 
       'Win10 Tests x64',
       'Win11 Tests x64',
@@ -4036,6 +4027,9 @@
         ],
       },
       'android-nougat-x86-rel': {
+        'args': [
+          '--use-persistent-shell',
+        ],
         'swarming': {
           'shards': 27,
         },

@@ -12,6 +12,7 @@
 #import "base/time/time.h"
 #import "components/autofill/core/browser/autofill_test_utils.h"
 #import "components/autofill/core/browser/browser_autofill_manager.h"
+#import "components/autofill/core/browser/data_model/credit_card.h"
 #import "components/autofill/core/browser/test_personal_data_manager.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #import "components/autofill/ios/browser/autofill_driver_ios.h"
@@ -53,6 +54,7 @@ class FakeResultDelegate
       const std::u16string& cvc) override {}
 
   void OnFullCardRequestFailed(
+      autofill::CreditCard::RecordType /* card_type */,
       autofill::payments::FullCardRequest::FailureType /* failure_type */)
       override {}
 
@@ -76,7 +78,7 @@ class PaymentRequestFullCardRequesterTest : public PlatformTest {
     web_state_.SetBrowserState(chrome_browser_state_.get());
     personal_data_manager_.SetPrefService(chrome_browser_state_->GetPrefs());
 
-    AddCreditCard(autofill::test::GetCreditCard());  // Visa.
+    AddCreditCard(autofill::test::GetMaskedServerCard());  // Mastercard.
 
     auto frames_manager = std::make_unique<web::FakeWebFramesManager>();
     auto main_frame = web::FakeWebFrame::CreateMainWebFrame(

@@ -246,6 +246,17 @@ prefs when the profile is loaded.  -->
   </summary>
 </histogram>
 
+<histogram name="Signin.AndroidIsFREStudyGroupConsistent"
+    enum="BooleanConsistent" expires_after="2023-05-20">
+  <owner>bsazonov@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Whether the persisted name of the FREMobileIdentityConsistencyStudy is
+    consistent with the current value of low entropy source. Recorded on startup
+    when the trial is registered.
+  </summary>
+</histogram>
+
 <histogram name="Signin.AndroidNumberOfDeviceAccounts" units="accounts"
     expires_after="2023-04-23">
   <owner>triploblastic@chromium.org</owner>
@@ -666,6 +677,16 @@ the browser and content area. -->
   <owner>tju@google.com</owner>
   <owner>chrome-kids-eng@google.com</owner>
   <summary>Tracks the latency of calls to the Kids Management API.</summary>
+</histogram>
+
+<histogram name="Signin.ListFamilyMembersRequest.LegacyNoError.Latency"
+    units="ms" expires_after="2023-11-01">
+  <owner>tju@google.com</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <summary>
+    Latency of the legacy calls to the Kids Management API that resulted with
+    success.
+  </summary>
 </histogram>
 
 <histogram name="Signin.ListFamilyMembersRequest.Status"

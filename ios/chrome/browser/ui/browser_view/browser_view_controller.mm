@@ -3206,15 +3206,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   NewTabPageTabHelper* NTPHelper =
       NewTabPageTabHelper::FromWebState(newWebState);
   if (NTPHelper && NTPHelper->IsActive()) {
-    // If a new web state is inserted, the user has opened a new NTP. Since we
-    // share the NTP coordinator across web states, the feed type could be
-    // different from default, so we reset it.
-    // TODO(crbug.com/1352935): Use NTPHelper in NTPCoordinator.
-    FeedType defaultFeedType = NTPHelper->DefaultFeedType();
-    if (reason == ActiveWebStateChangeReason::Inserted &&
-        self.ntpCoordinator.selectedFeed != defaultFeedType) {
-      [self.ntpCoordinator selectFeedType:defaultFeedType];
-    }
     [self.ntpCoordinator ntpDidChangeVisibility:YES];
   }
 
@@ -3267,6 +3258,16 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (SessionRestorationBrowserAgent::FromBrowser(self.browser)
           ->IsRestoringSession()) {
     return;
+  }
+
+  // Since we share the NTP coordinator across web states, the feed type could
+  // be different from default, so we reset it.
+  NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
+  if (NTPHelper && NTPHelper->IsActive()) {
+    FeedType defaultFeedType = NTPHelper->DefaultFeedType();
+    if (self.ntpCoordinator.selectedFeed != defaultFeedType) {
+      [self.ntpCoordinator selectFeedType:defaultFeedType];
+    }
   }
 
   BOOL inBackground =
@@ -3665,6 +3666,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         NTPHelper->GetNextNTPScrolledToFeed();
   } else {
     [self.ntpCoordinator ntpDidChangeVisibility:NO];
+    // This set needs to come after ntpDidChangeVisibility: so that the previous
+    // state can be cleaned up (e.g. if moving away from the Start surface).
     self.ntpCoordinator.webState = nullptr;
     [self stopNTPIfNeeded];
   }

@@ -268,11 +268,17 @@ PerformanceEntryVector Performance::getEntries() {
   if (first_contentful_paint_timing_)
     entries.push_back(first_contentful_paint_timing_);
 
-  if (RuntimeEnabledFeatures::NavigationIdEnabled())
+  if (RuntimeEnabledFeatures::NavigationIdEnabled(GetExecutionContext())) {
     entries.AppendVector(back_forward_cache_restoration_buffer_);
+  }
 
-  if (RuntimeEnabledFeatures::SoftNavigationHeuristicsEnabled())
+  if (RuntimeEnabledFeatures::SoftNavigationHeuristicsEnabled(
+          GetExecutionContext()) &&
+      soft_navigation_buffer_.size()) {
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kSoftNavigationHeuristics);
     entries.AppendVector(soft_navigation_buffer_);
+  }
 
   std::sort(entries.begin(), entries.end(),
             PerformanceEntry::StartTimeCompareLessThan);
@@ -292,11 +298,12 @@ PerformanceEntryVector Performance::getEntriesByType(
       PerformanceEntry::ToEntryTypeEnum(entry_type);
   if (!PerformanceEntry::IsValidTimelineEntryType(type)) {
     PerformanceEntryVector empty_entries;
-    String message = "Deprecated API for given entry type.";
-    GetExecutionContext()->AddConsoleMessage(
-        MakeGarbageCollected<ConsoleMessage>(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kWarning, message));
+    if (ExecutionContext* execution_context = GetExecutionContext()) {
+      String message = "Deprecated API for given entry type.";
+      execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning, message));
+    }
     return empty_entries;
   }
   return getEntriesByTypeInternal(type);
@@ -377,13 +384,17 @@ PerformanceEntryVector Performance::getEntriesByTypeInternal(
       return visibility_state_buffer_;
 
     case PerformanceEntry::kBackForwardCacheRestoration:
-      if (RuntimeEnabledFeatures::NavigationIdEnabled())
+      if (RuntimeEnabledFeatures::NavigationIdEnabled(GetExecutionContext()))
         return back_forward_cache_restoration_buffer_;
       break;
 
     case PerformanceEntry::kSoftNavigation:
-      if (RuntimeEnabledFeatures::SoftNavigationHeuristicsEnabled())
+      if (RuntimeEnabledFeatures::SoftNavigationHeuristicsEnabled(
+              GetExecutionContext())) {
+        UseCounter::Count(GetExecutionContext(),
+                          WebFeature::kSoftNavigationHeuristics);
         return soft_navigation_buffer_;
+      }
       break;
 
     case PerformanceEntry::kInvalid:

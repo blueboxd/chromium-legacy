@@ -1043,12 +1043,10 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
           kGpuStreamPriorityMedia);
 
   const bool enable_video_decode_accelerator =
-
 #if BUILDFLAG(IS_LINUX)
       base::FeatureList::IsEnabled(media::kVaapiVideoDecodeLinux) &&
-#else
-      !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode) &&
 #endif  // BUILDFLAG(IS_LINUX)
+      !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode) &&
       (gpu_channel_host->gpu_feature_info()
            .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] ==
        gpu::kGpuFeatureStatusEnabled);
@@ -1166,6 +1164,10 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
   // Enable automatic flushes to improve canvas throughput.
   // See https://crbug.com/880901
   bool automatic_flushes = true;
+  // We use kGpuStreamIdDefault here, the same as in
+  // PepperVideoDecodeContextProvider, so we don't need to handle
+  // synchronization between the pepper context and the shared main thread
+  // context.
   shared_main_thread_contexts_ = CreateOffscreenContext(
       std::move(gpu_channel_host), GetGpuMemoryBufferManager(),
       gpu::SharedMemoryLimits(), support_locking, support_gles2_interface,
@@ -1177,6 +1179,44 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
   if (result != gpu::ContextResult::kSuccess)
     shared_main_thread_contexts_ = nullptr;
   return shared_main_thread_contexts_;
+}
+
+scoped_refptr<viz::ContextProviderCommandBuffer>
+RenderThreadImpl::PepperVideoDecodeContextProvider() {
+  DCHECK(IsMainThread());
+  if (pepper_video_decode_contexts_ &&
+      pepper_video_decode_contexts_->ContextGL()->GetGraphicsResetStatusKHR() ==
+          GL_NO_ERROR)
+    return pepper_video_decode_contexts_;
+
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
+      EstablishGpuChannelSync());
+  if (!gpu_channel_host) {
+    pepper_video_decode_contexts_ = nullptr;
+    return nullptr;
+  }
+
+  bool support_locking = false;
+  bool support_raster_interface = false;
+  bool support_oop_rasterization = false;
+  bool support_gles2_interface = true;
+  bool support_grcontext = !support_oop_rasterization;
+  bool automatic_flushes = false;
+  // We use kGpuStreamIdDefault here, the same as in
+  // SharedMainThreadContextProvider, so we don't need to handle
+  // synchronization between the pepper context and the shared main thread
+  // context.
+  pepper_video_decode_contexts_ = CreateOffscreenContext(
+      std::move(gpu_channel_host), GetGpuMemoryBufferManager(),
+      gpu::SharedMemoryLimits::ForMailboxContext(), support_locking,
+      support_gles2_interface, support_raster_interface,
+      support_oop_rasterization, support_grcontext, automatic_flushes,
+      viz::command_buffer_metrics::ContextType::RENDERER_MAIN_THREAD,
+      kGpuStreamIdDefault, kGpuStreamPriorityDefault);
+  auto result = pepper_video_decode_contexts_->BindToCurrentSequence();
+  if (result != gpu::ContextResult::kSuccess)
+    pepper_video_decode_contexts_ = nullptr;
+  return pepper_video_decode_contexts_;
 }
 
 #if BUILDFLAG(IS_ANDROID)

@@ -9,11 +9,34 @@
 #include "base/base64url.h"
 #include "base/check.h"
 #include "base/hash/sha1.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/no_destructor.h"
 #include "components/enterprise/browser/identifiers/identifiers_prefs.h"
 #include "components/enterprise/browser/identifiers/profile_id_delegate.h"
 #include "components/prefs/pref_service.h"
 
 namespace enterprise {
+
+namespace {
+
+static constexpr char kErrorHistogramName[] =
+    "Enterprise.ProfileIdentifier.Error";
+static constexpr char kStatusHistogramName[] =
+    "Enterprise.ProfileIdentifier.Status";
+
+absl::nullopt_t RecordError(ProfileIdService::Error error) {
+  base::UmaHistogramBoolean(kStatusHistogramName, false);
+  base::UmaHistogramEnumeration(kErrorHistogramName, error);
+  return absl::nullopt;
+}
+
+// Used in testing for storing and retrieving the profile identifier.
+std::string& GetTestProfileIdFromStorage() {
+  static base::NoDestructor<std::string> storage;
+  return *storage;
+}
+
+}  // namespace
 
 ProfileIdService::ProfileIdService(std::unique_ptr<ProfileIdDelegate> delegate,
                                    PrefService* profile_prefs)
@@ -22,21 +45,34 @@ ProfileIdService::ProfileIdService(std::unique_ptr<ProfileIdDelegate> delegate,
   DCHECK(profile_prefs_);
 }
 
+ProfileIdService::ProfileIdService(const std::string profile_id) {
+  GetTestProfileIdFromStorage() = profile_id;
+}
+
 ProfileIdService::~ProfileIdService() = default;
 
 absl::optional<std::string> ProfileIdService::GetProfileId() {
+  std::string profile_id = GetTestProfileIdFromStorage();
+  if (!profile_id.empty())
+    return profile_id;
+
   std::string profile_guid = profile_prefs_->GetString(kProfileGUIDPref);
   if (profile_guid.empty())
-    return absl::nullopt;
+    return RecordError(Error::kGetProfileGUIDFailure);
 
   auto device_id = delegate_->GetDeviceId();
   if (device_id.empty())
-    return absl::nullopt;
+    return RecordError(Error::kGetDeviceIdFailure);
 
   std::string encoded_string;
   base::Base64UrlEncode(base::SHA1HashString(profile_guid + device_id),
                         base::Base64UrlEncodePolicy::OMIT_PADDING,
                         &encoded_string);
+
+  if (encoded_string.empty())
+    return RecordError(Error::kProfileIdURLEncodeFailure);
+
+  base::UmaHistogramBoolean(kStatusHistogramName, true);
   return encoded_string;
 }
 

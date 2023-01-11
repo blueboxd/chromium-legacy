@@ -10,8 +10,13 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/strcat.h"
 #include "base/test/gtest_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/dips/dips_utils.h"
+#include "sql/sqlite_result_code_values.h"
+#include "sql/test/scoped_error_expecter.h"
+#include "sql/test/test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -21,6 +26,13 @@ using base::Time;
 class DIPSDatabase;
 
 namespace {
+class TestDatabase : public DIPSDatabase {
+ public:
+  explicit TestDatabase(const absl::optional<base::FilePath>& db_path)
+      : DIPSDatabase(db_path) {}
+  void ComputeDatabaseMetricsForTesting() { ComputeDatabaseMetrics(); }
+};
+
 enum ColumnType {
   kSiteStorage,
   kUserInteraction,
@@ -33,19 +45,20 @@ class DIPSDatabaseTest : public testing::Test {
   explicit DIPSDatabaseTest(bool in_memory) : in_memory_(in_memory) {}
 
  protected:
-  std::unique_ptr<DIPSDatabase> db_;
-
+  std::unique_ptr<TestDatabase> db_;
+  base::ScopedTempDir temp_dir_;
+  base::FilePath db_path_;
   // Test setup.
   void SetUp() override {
     if (in_memory_) {
-      db_ = std::make_unique<DIPSDatabase>(absl::nullopt);
+      db_ = std::make_unique<TestDatabase>(absl::nullopt);
     } else {
       ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-      db_ = std::make_unique<DIPSDatabase>(
-          temp_dir_.GetPath().AppendASCII("DIPS.db"));
+      db_path_ = temp_dir_.GetPath().AppendASCII("DIPS.db");
+      db_ = std::make_unique<TestDatabase>(db_path_);
     }
 
-    ASSERT_EQ(db_->Init(), sql::INIT_OK);
+    ASSERT_TRUE(db_->CheckDBInit());
   }
 
   void TearDown() override {
@@ -57,7 +70,6 @@ class DIPSDatabaseTest : public testing::Test {
   }
 
  private:
-  base::ScopedTempDir temp_dir_;
   bool in_memory_;
 };
 
@@ -169,7 +181,7 @@ INSTANTIATE_TEST_SUITE_P(
                                          ColumnType::kStatefulBounce,
                                          ColumnType::kStatelessBounce)));
 
-// A test class that verifies the behavior of the methods  used to query the
+// A test class that verifies the behavior of the methods used to query the
 // DIPSDatabase for information more efficiently than using DIPSDatabase::Read.
 //
 // Parameterized over whether the db is in memory.
@@ -198,6 +210,19 @@ class DIPSDatabaseQueryTest : public DIPSDatabaseTest,
                /*stateful_bounce_times=*/{}, stateless_bounce_times);
   }
 
+ protected:
+  // Rewrites the entries that were wrote in SetUp() to not have interactions.
+  void ClearAllInteractions() {
+    db_->Write("https://storage-only.test", storage_times,
+               /*interaction_times=*/{},
+               /*stateful_bounce_times=*/{}, /*stateless_bounce_times=*/{});
+    db_->Write("https://stateful-bounce.test", storage_times,
+               /*interaction_times=*/{}, stateful_bounce_times,
+               /*stateless_bounce_times=*/{});
+    db_->Write("https://stateless-bounce.test",
+               /*storage_times=*/{}, /*interaction_times=*/{},
+               /*stateful_bounce_times=*/{}, stateless_bounce_times);
+  }
   // For ease of testings if a site has an entry in its `user_interaction`
   // column the timestamp is at t=1 and so on.
   base::Time interaction = Time::FromDoubleT(1);
@@ -220,6 +245,16 @@ class DIPSDatabaseQueryTest : public DIPSDatabaseTest,
   TimestampRange stateful_bounce_times = {stateful_bounce, stateful_bounce};
   TimestampRange stateless_bounce_times = {stateless_bounce, stateless_bounce};
 };
+
+TEST_P(DIPSDatabaseQueryTest, VerifyInteractionsNonNull) {
+  ClearAllInteractions();
+  EXPECT_THAT(db_->GetSitesThatBounced(before_storage, interaction),
+              testing::IsEmpty());
+  EXPECT_THAT(db_->GetSitesThatUsedStorage(before_storage, interaction),
+              testing::IsEmpty());
+  EXPECT_THAT(db_->GetSitesThatBouncedWithState(before_storage, interaction),
+              testing::IsEmpty());
+}
 
 TEST_P(DIPSDatabaseQueryTest, EnsureLastInteractionStrictlyBeforeRangeStart) {
   // Verify that the |last_interaction| shouldn't be greater than |range_start|
@@ -359,3 +394,225 @@ TEST_P(DIPSDatabaseQueryTest, GetSitesThatUsedStorage_RangeStartTest) {
 }
 
 INSTANTIATE_TEST_SUITE_P(All, DIPSDatabaseQueryTest, ::testing::Bool());
+
+// A test class that verifies DIPSDatabase garbage collection behavior.
+class DIPSDatabaseGarbageCollectionTest
+    : public DIPSDatabaseTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  DIPSDatabaseGarbageCollectionTest() : DIPSDatabaseTest(true) {}
+
+  void SetUp() override {
+    DIPSDatabaseTest::SetUp();
+
+    DCHECK(db_);
+
+    db_->SetMaxEntriesForTesting(200);
+    db_->SetPurgeEntriesForTesting(20);
+
+    recent_interaction = Time::Now();
+    old_interaction = Time::Now() - DIPSDatabase::kMaxAge - base::Days(1);
+
+    recent_interaction_times = {recent_interaction, recent_interaction};
+    old_interaction_times = {old_interaction, old_interaction};
+  }
+
+  void BloatBouncesForGC(int num_recent_entries, int num_old_entries) {
+    DCHECK(db_);
+
+    for (int i = 0; i < num_recent_entries; i++) {
+      db_->Write(base::StrCat({"https://recent_interaction.test",
+                               base::NumberToString(i)}),
+                 storage_times, recent_interaction_times, stateful_bounce_times,
+                 stateless_bounce_times);
+    }
+
+    for (int i = 0; i < num_old_entries; i++) {
+      db_->Write(base::StrCat(
+                     {"https://old_interaction.test", base::NumberToString(i)}),
+                 storage_times, old_interaction_times, stateful_bounce_times,
+                 stateless_bounce_times);
+    }
+  }
+
+  base::Time recent_interaction;
+  base::Time old_interaction;
+  base::Time storage = Time::FromDoubleT(2);
+  base::Time stateful_bounce = Time::FromDoubleT(3);
+  base::Time stateless_bounce = Time::FromDoubleT(4);
+
+  TimestampRange recent_interaction_times;
+  TimestampRange old_interaction_times;
+  TimestampRange storage_times = {storage, storage};
+  TimestampRange stateful_bounce_times = {stateful_bounce, stateful_bounce};
+  TimestampRange stateless_bounce_times = {stateless_bounce, stateless_bounce};
+};
+
+// More than |max_entries_| entries with recent user interaction; garbage
+// collection should purge down to |max_entries_| - |purge_entries_| entries.
+TEST_P(DIPSDatabaseGarbageCollectionTest, RemovesRecentOverMax) {
+  BloatBouncesForGC(/*num_recent_entries=*/db_->GetMaxEntries() * 2,
+                    /*num_old_entries=*/0);
+
+  EXPECT_EQ(db_->GarbageCollect(),
+            db_->GetMaxEntries() + db_->GetPurgeEntries());
+
+  EXPECT_EQ(db_->GetEntryCount(),
+            db_->GetMaxEntries() - db_->GetPurgeEntries());
+}
+
+// Less than |max_entries_| entries, some with expired user interaction and some
+// with recent; no entries should be garbage collected.
+TEST_P(DIPSDatabaseGarbageCollectionTest, PreservesUnderMax) {
+  BloatBouncesForGC(
+      /*num_recent_entries=*/(db_->GetMaxEntries() - db_->GetPurgeEntries()) /
+          4,
+      /*num_old_entries=*/(db_->GetMaxEntries() - db_->GetPurgeEntries()) / 4);
+
+  EXPECT_EQ(db_->GarbageCollect(), static_cast<size_t>(0));
+
+  EXPECT_EQ(db_->GetEntryCount(),
+            (db_->GetMaxEntries() - db_->GetPurgeEntries()) / 2);
+}
+
+// Exactly |max_entries_| entries, some with expired user interaction and some
+// with recent; no entries should be garbage collected.
+TEST_P(DIPSDatabaseGarbageCollectionTest, PreservesMax) {
+  BloatBouncesForGC(/*num_recent_entries=*/db_->GetMaxEntries() / 2,
+                    /*num_old_entries=*/db_->GetMaxEntries() / 2);
+
+  EXPECT_EQ(db_->GarbageCollect(), static_cast<size_t>(0));
+
+  EXPECT_EQ(db_->GetEntryCount(), db_->GetMaxEntries());
+}
+
+// More than |max_entries_| entries with recent user interaction and a few with
+// expired user interaction; only entries with expired user interaction should
+// be garbage collected by pure expiration.
+TEST_P(DIPSDatabaseGarbageCollectionTest, ExpirationPreservesRecent) {
+  BloatBouncesForGC(/*num_recent_entries=*/db_->GetMaxEntries() * 2,
+                    /*num_old_entries=*/db_->GetMaxEntries() / 2);
+
+  EXPECT_EQ(db_->GarbageCollectExpired(), db_->GetMaxEntries() / 2);
+
+  EXPECT_EQ(db_->GetEntryCount(), db_->GetMaxEntries() * 2);
+}
+
+// The entries with the oldest interaction and storage times should be deleted
+// first.
+TEST_P(DIPSDatabaseGarbageCollectionTest, OldestEntriesRemoved) {
+  db_->Write("https://old_interaction.test", {},
+             /*interaction_times=*/{Time::FromDoubleT(1), Time::FromDoubleT(1)},
+             {}, {});
+  db_->Write("https://old_storage_old_interaction.test",
+             /*storage_times=*/{Time::FromDoubleT(1), Time::FromDoubleT(1)},
+             /*interaction_times=*/{Time::FromDoubleT(2), Time::FromDoubleT(2)},
+             {}, {});
+  db_->Write("https://old_storage.test",
+             /*storage_times=*/{Time::FromDoubleT(3), Time::FromDoubleT(3)}, {},
+             {}, {});
+  db_->Write("https://old_storage_new_interaction.test",
+             /*storage_times=*/{Time::FromDoubleT(1), Time::FromDoubleT(1)},
+             /*interaction_times=*/{Time::FromDoubleT(4), Time::FromDoubleT(4)},
+             {}, {});
+  db_->Write("https://new_storage_old_interaction.test",
+             /*storage_times=*/{Time::FromDoubleT(5), Time::FromDoubleT(5)},
+             /*interaction_times=*/{Time::FromDoubleT(2), Time::FromDoubleT(2)},
+             {}, {});
+  db_->Write("https://new_storage_new_interaction.test",
+             /*storage_times=*/{Time::FromDoubleT(6), Time::FromDoubleT(6)},
+             /*interaction_times=*/{Time::FromDoubleT(7), Time::FromDoubleT(7)},
+             {}, {});
+
+  EXPECT_EQ(db_->GarbageCollectOldest(3), static_cast<size_t>(3));
+  EXPECT_EQ(db_->GetEntryCount(), static_cast<size_t>(3));
+
+  EXPECT_THAT(db_->GetAllSitesForTesting(),
+              testing::ElementsAre("https://new_storage_new_interaction.test",
+                                   "https://new_storage_old_interaction.test",
+                                   "https://old_storage_new_interaction.test"));
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         DIPSDatabaseGarbageCollectionTest,
+                         ::testing::Bool());
+
+// A test class that verifies DIPSDatabase database health metrics collection
+// behavior. Created on-disk so opening a corrupt database file can be tested.
+class DIPSDatabaseHistogramTest : public DIPSDatabaseTest {
+ public:
+  DIPSDatabaseHistogramTest() : DIPSDatabaseTest(false) {}
+
+  const base::HistogramTester& histograms() const { return histogram_tester_; }
+
+ protected:
+  base::HistogramTester histogram_tester_;
+};
+
+TEST_F(DIPSDatabaseHistogramTest, HealthMetrics) {
+  // The database was initialized successfully.
+  histograms().ExpectTotalCount("Privacy.DIPS.DatabaseErrors", 0);
+  histograms().ExpectTotalCount("Privacy.DIPS.DatabaseInit", 1);
+  histograms().ExpectUniqueSample("Privacy.DIPS.DatabaseInit", 1, 1);
+
+  // These should each have one sample after database initialization.
+  histograms().ExpectTotalCount("Privacy.DIPS.DatabaseHealthMetricsTime", 1);
+  histograms().ExpectTotalCount("Privacy.DIPS.DatabaseSize", 1);
+
+  // The database should be empty.
+  histograms().ExpectTotalCount("Privacy.DIPS.DatabaseEntryCount", 1);
+  histograms().ExpectUniqueSample("Privacy.DIPS.DatabaseEntryCount", 0, 1);
+
+  // Write an entry to the db.
+  db_->Write("https://url1.test", {},
+             /*interaction_times=*/{Time::FromDoubleT(1), Time::FromDoubleT(1)},
+             {}, {});
+  db_->ComputeDatabaseMetricsForTesting();
+
+  // These should be unchanged.
+  histograms().ExpectTotalCount("Privacy.DIPS.DatabaseErrors", 0);
+  histograms().ExpectTotalCount("Privacy.DIPS.DatabaseInit", 1);
+  histograms().ExpectUniqueSample("Privacy.DIPS.DatabaseInit", 1, 1);
+
+  // These should each have two samples now.
+  histograms().ExpectTotalCount("Privacy.DIPS.DatabaseHealthMetricsTime", 2);
+  histograms().ExpectTotalCount("Privacy.DIPS.DatabaseSize", 2);
+
+  // The database should now have one entry.
+  histograms().ExpectTotalCount("Privacy.DIPS.DatabaseEntryCount", 2);
+  histograms().ExpectBucketCount("Privacy.DIPS.DatabaseEntryCount", 1, 1);
+}
+
+TEST_F(DIPSDatabaseHistogramTest, ErrorMetrics) {
+  // The database was initialized successfully.
+  histograms().ExpectTotalCount("Privacy.DIPS.DatabaseErrors", 0);
+  histograms().ExpectTotalCount("Privacy.DIPS.DatabaseInit", 1);
+  histograms().ExpectUniqueSample("Privacy.DIPS.DatabaseInit", 1, 1);
+
+  // Write an entry to the db.
+  db_->Write("https://url1.test", {},
+             /*interaction_times=*/{Time::FromDoubleT(1), Time::FromDoubleT(1)},
+             {}, {});
+  EXPECT_EQ(db_->GetEntryCount(), static_cast<size_t>(1));
+
+  // Corrupt the database.
+  db_.reset();
+  EXPECT_TRUE(sql::test::CorruptSizeInHeader(db_path_));
+
+  sql::test::ScopedErrorExpecter expecter;
+  expecter.ExpectError(SQLITE_CORRUPT);
+
+  // Open that database and ensure that it does not fail.
+  EXPECT_NO_FATAL_FAILURE(db_ = std::make_unique<TestDatabase>(db_path_));
+  histograms().ExpectTotalCount("Privacy.DIPS.DatabaseInit", 2);
+  histograms().ExpectUniqueSample("Privacy.DIPS.DatabaseInit", 1, 2);
+
+  // No data should be present as the database should have been razed.
+  EXPECT_EQ(db_->GetEntryCount(), static_cast<size_t>(0));
+
+  // Verify that the corruption error was reported.
+  EXPECT_TRUE(expecter.SawExpectedErrors());
+  histograms().ExpectTotalCount("Privacy.DIPS.DatabaseErrors", 1);
+  histograms().ExpectUniqueSample("Privacy.DIPS.DatabaseErrors",
+                                  sql::SqliteLoggedResultCode::kCorrupt, 1);
+}

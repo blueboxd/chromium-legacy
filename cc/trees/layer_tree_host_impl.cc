@@ -56,6 +56,7 @@
 #include "cc/layers/surface_layer_impl.h"
 #include "cc/layers/viewport.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
+#include "cc/metrics/custom_metrics_recorder.h"
 #include "cc/metrics/frame_sequence_metrics.h"
 #include "cc/metrics/lcd_text_metrics_reporter.h"
 #include "cc/metrics/ukm_smoothness_data.h"
@@ -1106,6 +1107,11 @@ void LayerTreeHostImpl::StartPageScaleAnimation(const gfx::Point& target_offset,
   gfx::SizeF scrollable_size = active_tree_->ScrollableSize();
   gfx::SizeF viewport_size(
       active_tree_->InnerViewportScrollNode()->container_bounds);
+
+  if (viewport_size.IsEmpty()) {
+    // Avoid divide by zero. Besides nothing should see the animation anyway.
+    return;
+  }
 
   // TODO(miletus) : Pass in ScrollOffset.
   page_scale_animation_ = PageScaleAnimation::Create(
@@ -2287,7 +2293,8 @@ void LayerTreeHostImpl::OnCompositorFrameTransitionDirectiveProcessed(
 
 void LayerTreeHostImpl::ReportEventLatency(
     std::vector<EventLatencyTracker::LatencyData> latencies) {
-  client_->ReportEventLatency(std::move(latencies));
+  if (auto* recorder = CustomMetricRecorder::Get())
+    recorder->ReportEventLatency(std::move(latencies));
 }
 
 void LayerTreeHostImpl::OnCanDrawStateChangedForTree() {

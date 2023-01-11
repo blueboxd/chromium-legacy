@@ -77,6 +77,7 @@ if (is_android) {
       "//chrome/browser/feedback/android:java",
       "//chrome/browser/profiles/android:java",
       "//components/autofill/android:autofill_java",
+      "//components/metrics:metrics_java",
       "//components/payments/content/android:java",
       "//components/payments/mojom:mojom_java",
       "//content/public/android:content_java",
@@ -128,6 +129,8 @@ static_library("test_support") {
     "../browser/search_engines/template_url_service_test_util.h",
     "../browser/signin/identity_test_environment_profile_adaptor.cc",
     "../browser/signin/identity_test_environment_profile_adaptor.h",
+    "../browser/signin/test_signin_client_builder.cc",
+    "../browser/signin/test_signin_client_builder.h",
     "base/chrome_render_view_host_test_harness.cc",
     "base/chrome_render_view_host_test_harness.h",
     "base/chrome_render_view_test.cc",
@@ -180,6 +183,8 @@ static_library("test_support") {
     sources += [
       "../browser/apps/platform_apps/app_browsertest_util.cc",
       "../browser/apps/platform_apps/app_browsertest_util.h",
+      "../browser/extensions/extension_service_test_base.cc",
+      "../browser/extensions/extension_service_test_base.h",
     ]
 
     deps += [
@@ -1495,9 +1500,6 @@ if (!is_android) {
       "//components/url_formatter/spoof_checks/top_domains:browsertest_top500_domains",
       "//components/url_formatter/spoof_checks/top_domains:browsertest_top500_domains_header",
       "//components/url_formatter/spoof_checks/top_domains:generate_top_domains_browsertest_trie",
-      "//components/url_param_filter/core",
-      "//components/url_param_filter/core:test_support",
-      "//components/url_param_filter/core:url_param_filter_classification_proto",
       "//components/user_education/common",
       "//components/user_education/test",
       "//components/user_manager",
@@ -5592,8 +5594,6 @@ test("unit_tests") {
     "../browser/signin/primary_account_policy_manager_unittest.cc",
     "../browser/signin/reauth_tab_helper_unittest.cc",
     "../browser/signin/signin_profile_attributes_updater_unittest.cc",
-    "../browser/signin/test_signin_client_builder.cc",
-    "../browser/signin/test_signin_client_builder.h",
     "../browser/site_isolation/chrome_site_isolation_policy_unittest.cc",
     "../browser/ssl/certificate_error_reporter_unittest.cc",
     "../browser/ssl/certificate_reporting_test_utils.cc",
@@ -6053,10 +6053,6 @@ test("unit_tests") {
     "//components/unified_consent",
     "//components/url_formatter/spoof_checks/common_words:common",
     "//components/url_formatter/spoof_checks/common_words:common_words_dafsa",
-    "//components/url_param_filter/content",
-    "//components/url_param_filter/core",
-    "//components/url_param_filter/core:test_support",
-    "//components/url_param_filter/core:url_param_filter_classification_proto",
     "//components/user_education/common",
     "//components/user_education/test",
     "//components/user_manager",
@@ -6569,7 +6565,6 @@ test("unit_tests") {
       "//components/signin/core/browser",
       "//components/signin/public/android:signin_java_test_support",
       "//components/ukm:test_support",
-      "//components/url_param_filter/content",
       "//components/webapk:proto",
       "//components/webapps/browser",
       "//content/public/android:content_java",
@@ -7441,7 +7436,7 @@ test("unit_tests") {
       "../browser/ui/app_list/search/ranking/removed_results_proto_unittest.cc",
       "../browser/ui/app_list/search/ranking/removed_results_ranker_unittest.cc",
       "../browser/ui/app_list/search/ranking/score_normalizing_ranker_unittest.cc",
-      "../browser/ui/app_list/search/search_controller_impl_new_unittest.cc",
+      "../browser/ui/app_list/search/search_controller_impl_unittest.cc",
       "../browser/ui/app_list/search/test/ranking_test_util.cc",
       "../browser/ui/app_list/search/test/ranking_test_util.h",
       "../browser/ui/app_list/search/test/test_search_controller.cc",
@@ -7965,8 +7960,6 @@ test("unit_tests") {
       "../browser/extensions/extension_prefs_unittest.h",
       "../browser/extensions/extension_protocols_unittest.cc",
       "../browser/extensions/extension_service_sync_unittest.cc",
-      "../browser/extensions/extension_service_test_base.cc",
-      "../browser/extensions/extension_service_test_base.h",
       "../browser/extensions/extension_service_test_with_install.cc",
       "../browser/extensions/extension_service_test_with_install.h",
       "../browser/extensions/extension_service_unittest.cc",
@@ -8524,6 +8517,10 @@ test("unit_tests") {
       "../browser/enterprise/connectors/device_trust/key_management/browser:test_support",
       "../browser/enterprise/connectors/device_trust/key_management/core/mac",
     ]
+  }
+
+  if (is_win) {
+    deps += [ "../browser/enterprise/connectors/device_trust/signals/decorators/browser/win:unit_tests" ]
   }
 
   if (is_linux || is_chromeos_ash || is_mac || is_win) {

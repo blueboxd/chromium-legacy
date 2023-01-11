@@ -7,11 +7,14 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -32,6 +35,7 @@ int g_next_message_id = 0;
 }  // namespace
 
 SimpleDevToolsProtocolClient::SimpleDevToolsProtocolClient() = default;
+
 SimpleDevToolsProtocolClient::SimpleDevToolsProtocolClient(
     const std::string& session_id)
     : session_id_(session_id) {}
@@ -87,12 +91,19 @@ void SimpleDevToolsProtocolClient::DispatchProtocolMessage(
   if (const std::string* session_id = message.FindString("sessionId")) {
     auto it = sessions_.find(*session_id);
     if (it != sessions_.cend()) {
-      it->second->DispatchProtocolMessage(std::move(message));
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &SimpleDevToolsProtocolClient::DispatchProtocolMessageTask,
+              base::Unretained(it->second), std::move(message)));
       return;
     }
   }
 
-  DispatchProtocolMessage(std::move(message));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SimpleDevToolsProtocolClient::DispatchProtocolMessageTask,
+                     base::Unretained(this), std::move(message)));
 }
 
 void SimpleDevToolsProtocolClient::AgentHostClosed(
@@ -103,7 +114,7 @@ void SimpleDevToolsProtocolClient::AgentHostClosed(
   }
 }
 
-void SimpleDevToolsProtocolClient::DispatchProtocolMessage(
+void SimpleDevToolsProtocolClient::DispatchProtocolMessageTask(
     base::Value::Dict message) {
   // Handle response message shutting down the host if it's unexpected.
   if (absl::optional<int> id = message.FindInt(kId)) {
@@ -141,8 +152,8 @@ void SimpleDevToolsProtocolClient::DispatchProtocolMessage(
   bool first_callback = true;
   for (auto& callback : handlers) {
     if (first_callback || HasEventHandler(*event_name, callback)) {
-      callback.Run(message);
       first_callback = false;
+      callback.Run(message);
     }
   }
 }

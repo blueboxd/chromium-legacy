@@ -170,6 +170,10 @@
     "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
     "bases": ["fast/css3-text/css3-text-decoration/stable",
               "fast/dom/Window",
+              "external/wpt/css/css-color/parsing/",
+              "external/wpt/css/css-transitions/parsing/",
+              "external/wpt/css/css-animations/parsing/",
+              "external/wpt/css/css-images/parsing/",
               "http/tests/navigation",
               "http/tests/sendbeacon",
               "http/tests/serviceworker/webexposed",
@@ -1238,12 +1242,6 @@
     ],
     "args": ["--enable-features=FencedFrames:implementation_type/shadow_dom,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,NoncedPartitionedCookies",
              "--force-renderer-accessibility"]
-  },
-  {
-    "prefix": "disable-custom-element-default-style",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/css/css-cascade/presentational-hints-cascade.html"],
-    "args": ["--disable-blink-features=CustomElementDefaultStyle"]
   },
   {
     "prefix": "cors-non-wildcard-request-headers",

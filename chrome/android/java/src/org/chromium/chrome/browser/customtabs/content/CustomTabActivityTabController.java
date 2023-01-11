@@ -268,10 +268,6 @@ public class CustomTabActivityTabController implements InflationObserver {
                     mIntent.getIntExtra(ServiceTabLauncher.LAUNCH_REQUEST_ID_EXTRA, 0),
                     tab.getWebContents());
         }
-
-        if (mRealtimeEngagementSignalObserver != null) {
-            mRealtimeEngagementSignalObserver.onFinishNativeInitialization();
-        }
     }
 
     // Creates the tab on native init, if it hasn't been created yet, and does all the additional
@@ -428,7 +424,7 @@ public class CustomTabActivityTabController implements InflationObserver {
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS)) {
             mRealtimeEngagementSignalObserver = new RealtimeEngagementSignalObserver(
-                    mTabObserverRegistrar, tab, mConnection, mSession);
+                    mTabObserverRegistrar, mConnection, mSession);
         }
 
         // TODO(pshmakov): invert these dependencies.

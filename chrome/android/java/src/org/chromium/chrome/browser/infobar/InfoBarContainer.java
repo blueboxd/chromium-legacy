@@ -190,6 +190,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener, I
             new FullscreenManager.Observer() {
                 @Override
                 public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
+                    assert !isDestroyed() : "Full screen observer is not correctly removed";
                     setIsAllowedToAutoHide(false);
                     mInfoBarContainerView.setTranslationY(0);
                 }
@@ -404,12 +405,6 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener, I
     @Override
     public void destroy() {
         destroyContainerView();
-        BrowserControlsManager browserControlsManager =
-                BrowserControlsManagerSupplier.getValueOrNullFrom(mTab.getWindowAndroid());
-        if (browserControlsManager != null
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.INFOBAR_SCROLL_OPTIMIZATION)) {
-            browserControlsManager.getFullscreenManager().removeObserver(mFullscreenObserver);
-        }
         mTab.removeObserver(mTabObserver);
         if (mNativeInfoBarContainer != 0) {
             InfoBarContainerJni.get().destroy(mNativeInfoBarContainer, InfoBarContainer.this);
@@ -506,6 +501,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener, I
                 browserControlsManager, DeviceFormFactor.isWindowOnTablet(mTab.getWindowAndroid()));
         if (browserControlsManager != null
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.INFOBAR_SCROLL_OPTIMIZATION)) {
+            browserControlsManager.getFullscreenManager().removeObserver(mFullscreenObserver);
             browserControlsManager.getFullscreenManager().addObserver(mFullscreenObserver);
         }
 
@@ -553,6 +549,13 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener, I
             removeAnimationListener(mIPHSupport);
             removeObserver(mIPHSupport);
             mIPHSupport = null;
+        }
+
+        BrowserControlsManager browserControlsManager =
+                BrowserControlsManagerSupplier.getValueOrNullFrom(mTab.getWindowAndroid());
+        if (browserControlsManager != null
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.INFOBAR_SCROLL_OPTIMIZATION)) {
+            browserControlsManager.getFullscreenManager().removeObserver(mFullscreenObserver);
         }
 
         if (mInfoBarContainerView != null) {

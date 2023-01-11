@@ -380,9 +380,12 @@ public class FeedSurfaceCoordinator
 
     void setToolbarHairlineVisibility(boolean isVisible) {
         Toolbar toolbar = mToolbarSupplier.get();
-        if(toolbar != null){
-            toolbar.setHairlineVisibility(isVisible);
+        // If the ToolbarLayout isn't visible, we shouldn't change the toolbar_hairline to be
+        // visible.
+        if (toolbar == null || !toolbar.isBrowsingModeToolbarVisible() && isVisible) {
+            return;
         }
+        toolbar.setBrowsingModeHairlineVisibility(isVisible);
     }
 
     /** @return the position of the in-feed header. */
@@ -536,6 +539,13 @@ public class FeedSurfaceCoordinator
             mSwipeRefreshLayout.setRefreshing(false);
         });
         getFeatureEngagementTracker().notifyEvent(EventConstants.FEED_SWIPE_REFRESHED);
+    }
+
+    public void nonSwipeRefresh() {
+        if (mSwipeRefreshLayout != null) {
+            mSwipeRefreshLayout.startRefreshingAtTheBottom();
+        }
+        onRefresh();
     }
 
     void updateReloadButtonVisibility(boolean isReloading) {

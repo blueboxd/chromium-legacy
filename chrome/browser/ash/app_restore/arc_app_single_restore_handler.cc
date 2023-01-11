@@ -96,10 +96,12 @@ void ArcAppSingleRestoreHandler::LaunchGhostWindowWithApp(
   // bounds is from "recording data" in ash wm side, so it will reduce the top
   // caption bar size when launch ghost window. However, if here use the bounds
   // from Android side, the bounds should be added a "caption" size.
-  restore_data.bounds_in_root->Inset(gfx::Insets().set_top(
-      -views::GetCaptionButtonLayoutSize(
-           views::CaptionButtonLayoutSize::kNonBrowserCaption)
-           .height()));
+  if (restore_data.bounds_in_root.has_value()) {
+    restore_data.bounds_in_root->Inset(gfx::Insets().set_top(
+        -views::GetCaptionButtonLayoutSize(
+             views::CaptionButtonLayoutSize::kNonBrowserCaption)
+             .height()));
+  }
   restore_data.window_state_type =
       static_cast<chromeos::WindowStateType>(window_info->state);
   restore_data.event_flag = event_flags;
@@ -175,6 +177,10 @@ void ArcAppSingleRestoreHandler::OnAppStatesUpdate(const std::string& app_id,
   // changed from original state.
   if (!is_cancelled_ && ready && !need_fixup)
     SendAppLaunchRequestToARC();
+}
+
+void ArcAppSingleRestoreHandler::OnGhostWindowHandlerDestroy() {
+  observation_.Reset();
 }
 
 void ArcAppSingleRestoreHandler::SendAppLaunchRequestToARC() {

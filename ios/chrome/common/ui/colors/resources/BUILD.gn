@@ -7,6 +7,7 @@ import("//build/config/ios/asset_catalog.gni")
 group("resources") {
   deps = [
     ":background_color",
+    ":blue_400_color",
     ":blue_500_color",
     ":blue_600_color",
     ":blue_700_color",
@@ -50,6 +51,8 @@ group("resources") {
     ":separator_color",
     ":solid_button_text_color",
     ":solid_primary_color",
+    ":static_blue_400_color",
+    ":static_grey_300_color",
     ":table_view_row_highlight_color",
     ":tertiary_background_color",
     ":text_primary_color",
@@ -79,6 +82,10 @@ colorset("blue_halo_color") {
   sources = [ "blue_halo_color.colorset/Contents.json" ]
 }
 
+colorset("blue_400_color") {
+  sources = [ "blue_400_color.colorset/Contents.json" ]
+}
+
 colorset("blue_500_color") {
   sources = [ "blue_500_color.colorset/Contents.json" ]
 }
@@ -89,6 +96,10 @@ colorset("blue_600_color") {
 
 colorset("blue_700_color") {
   sources = [ "blue_700_color.colorset/Contents.json" ]
+}
+
+colorset("static_blue_400_color") {
+  sources = [ "static_blue_400_color.colorset/Contents.json" ]
 }
 
 colorset("close_button_color") {
@@ -165,6 +176,10 @@ colorset("grey_800_color") {
 
 colorset("grey_900_color") {
   sources = [ "grey_900_color.colorset/Contents.json" ]
+}
+
+colorset("static_grey_300_color") {
+  sources = [ "static_grey_300_color.colorset/Contents.json" ]
 }
 
 colorset("red_500_color") {

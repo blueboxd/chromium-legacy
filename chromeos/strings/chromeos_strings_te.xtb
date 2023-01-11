@@ -136,7 +136,7 @@
 <translation id="2152882202543497059"><ph name="NUMBER" /> ఫోటోలు</translation>
 <translation id="2157959690810728433">క్యూలో ఉంచబడింది</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: మళ్లీ ట్రై చేయండి</translation>
-<translation id="2161394479394250669">ప్రింట్ టాస్క్‌ను రద్దు చేయి</translation>
+<translation id="2161394479394250669">ప్రింట్ టాస్క్‌ను రద్దు చేయండి</translation>
 <translation id="2163937499206714165">డార్క్ మోడ్‌ను ఆన్ చేయండి</translation>
 <translation id="2180197493692062006">ఏదో తప్పు జరిగింది. యాప్‌ను తిరిగి తెరవడానికి ట్రై చేయండి.</translation>
 <translation id="2209788852729124853">ట్రాఫిక్ కౌంటర్‌లను రీసెట్ చేయండి</translation>
@@ -158,7 +158,7 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">సమీప పరికరాలను కనుగొనడానికి బ్లూటూత్‌ను ఆన్ చేయండి</translation>
 <translation id="2346474577291266260">అద్భుతంగా ఉంది (<ph name="SIGNAL_STRENGTH" />)</translation>
-<translation id="2359808026110333948">కొనసాగించు</translation>
+<translation id="2359808026110333948">కొనసాగించండి</translation>
 <translation id="2364498172489649528">ఆమోదించినవి</translation>
 <translation id="2380886658946992094">చట్టపరం</translation>
 <translation id="2391082728065870591">ఫీడ్‌బ్యాక్ రిపోర్ట్‌ను పంపు</translation>
@@ -202,7 +202,7 @@
 <translation id="2874939134665556319">మునుపటి ట్రాక్</translation>
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> సెకన్లలో <ph name="RATE" /> డిశ్చార్జ్ చేయబడింది.</translation>
 <translation id="2926057806159140518">మీ యూజర్‌నేమ్, పాస్‌వర్డ్‌ను ఎంటర్ చేయండి లేదా మీ QR కోడ్‌ను స్కాన్ చేయండి</translation>
-<translation id="3008341117444806826">రిఫ్రెష్ చేయి</translation>
+<translation id="3008341117444806826">రిఫ్రెష్ చేయండి</translation>
 <translation id="3009958530611748826">దీనిలో సేవ్ చేయడానికి ఫోల్డర్‌ను ఎంచుకోండి</translation>
 <translation id="3017079585324758401">నేపథ్యం</translation>
 <translation id="3027578600144895987">కెమెరాను మూసివేయండి</translation>
@@ -305,6 +305,7 @@
 <translation id="4044093238444069296">గేట్‌వేను సంప్రదించడం సాధ్యపడదు</translation>
 <translation id="4046123991198612571">తరువాత ట్రాక్</translation>
 <translation id="404928562651467259">హెచ్చరిక</translation>
+<translation id="4060260348856573701">కొత్త APN</translation>
 <translation id="4093865285251893588">ప్రొఫైల్ ఇమేజ్</translation>
 <translation id="409427325554347132">టెస్ట్ వివరాలను సేవ్ చేయండి</translation>
 <translation id="4110686435123617899"><ph name="TITLE" /> <ph name="DESC" /> ఆల్బమ్‌ను ఎంచుకోండి</translation>
@@ -433,7 +434,7 @@
 <translation id="5222676887888702881">సైన్ ఔట్</translation>
 <translation id="522307662484862935">ఈమెయిల్ అడ్రస్‌ను చేర్చకండి</translation>
 <translation id="5227902338748591677">ముదురు రంగు రూపం షెడ్యూల్</translation>
-<translation id="5234764350956374838">తొలగించు</translation>
+<translation id="5234764350956374838">తొలగించండి</translation>
 <translation id="5252456968953390977">రోమింగ్</translation>
 <translation id="5257811368506016604">లేత రంగు మోడ్‌ను ఎనేబుల్ చేయండి</translation>
 <translation id="5264277876637023664">CPU పరీక్షను రన్ చేయండి</translation>
@@ -489,7 +490,7 @@
 <translation id="576835345334454681">డిస్‌ప్లే బ్రైట్‌నెస్‌ను పెంచండి</translation>
 <translation id="57838592816432529">మ్యూట్ చేయి</translation>
 <translation id="5784136236926853061">అధిక HTTPS ప్రతిస్పందన సమయం</translation>
-<translation id="5832805196449965646">వ్యక్తిని జోడించు</translation>
+<translation id="5832805196449965646">వ్యక్తిని జోడించండి</translation>
 <translation id="583281660410589416">తెలియని</translation>
 <translation id="5843706793424741864">ఫారెన్‌హీట్</translation>
 <translation id="5849570051105887917">స్వస్థల నెట్‌వర్క్ ప్రదాత కోడ్</translation>
@@ -498,7 +499,7 @@
 <translation id="5860491529813859533">ఆన్ చేయండి</translation>
 <translation id="5866840822086176774">చాలా బలంగా ఉంది</translation>
 <translation id="588258955323874662">పూర్తితెర</translation>
-<translation id="5895138241574237353">మళ్ళీ ప్రారంభించు</translation>
+<translation id="5895138241574237353">మళ్ళీ ప్రారంభించండి</translation>
 <translation id="5901630391730855834">పసుపు</translation>
 <translation id="5903200662178656908">పరికరం అనేది కీబోర్డ్, మౌస్ కలయిక.</translation>
 <translation id="5907649332524363701">కీ రంగు</translation>
@@ -605,6 +606,7 @@
 <translation id="6766275201586212568">విఫలమైన DNS రిజల్యూషన్‌లు</translation>
 <translation id="6768237774506518020">అధిక DNS రిజల్యూషన్ వైఫల్య రేటు</translation>
 <translation id="6791471867139427246">కీబోర్డ్ లైట్ రంగు</translation>
+<translation id="6793680441750437230">మీ కీబోర్డ్‌లో ఏదైనా కీని టైప్ చేయండి. మీరు ఒకేసారి గరిష్ఠంగా 4 కీలను నొక్కవచ్చు. డైలాగ్‌ను మూసివేయడానికి Alt + Escను నొక్కండి.</translation>
 <translation id="680983167891198932">కీ</translation>
 <translation id="6816797338148849397">మీ ఎంచుకున్న దానికి సంబంధించిన సమాచారం అందుబాటులో ఉంది. యాక్సెస్ చేయడానికి పై వైపు బాణం కీని ఉపయోగించండి.</translation>
 <translation id="6853312040151791195">డిశ్చార్జింగ్ రేట్</translation>
@@ -639,7 +641,7 @@
 <translation id="7170236477717446850">ప్రొఫైల్ ఫోటో</translation>
 <translation id="7172721935181587524">1 ఇమేజ్</translation>
 <translation id="7177485034254901881"><ph name="MANAGER" />, ఈ <ph name="DEVICE_TYPE" />ను మేనేజ్ చేస్తోంది. అడ్మినిస్ట్రేటర్‌లు పరికరాన్ని రిమోట్‌గా కాన్ఫిగర్ చేయవచ్చు.</translation>
-<translation id="7180611975245234373">రిఫ్రెష్ చేయి</translation>
+<translation id="7180611975245234373">రిఫ్రెష్ చేయండి</translation>
 <translation id="7212734716605298123">బాహ్య పరికరాల కోసం ఫర్మ్‌వేర్ అప్‌డేట్‌లు</translation>
 <translation id="7216409898977639127">సెల్యులార్ ప్రదాత</translation>
 <translation id="725133483556299729">ఈమెయిల్‌ను ఎంచుకోండి</translation>
@@ -734,7 +736,7 @@
 <translation id="8206859287963243715">సెల్యులార్</translation>
 <translation id="8208861521865154048">పెర్క్‌లు</translation>
 <translation id="8226628635270268143">మీకు ఇష్టమైన ఫోటోలు, ఆల్బమ్‌లను ఎంచుకోండి</translation>
-<translation id="8227119283605456246">ఫైల్‌ను జోడించు</translation>
+<translation id="8227119283605456246">ఫైల్‌ను జోడించండి</translation>
 <translation id="8230672074305416752">డిఫాల్ట్ నెట్‌వర్క్ గేట్‌వేను పింగ్ చేయడంలో విఫలమైంది</translation>
 <translation id="8246209727385807362">తెలియని క్యారియర్</translation>
 <translation id="827422111966801947">నీలిమందు రంగు</translation>

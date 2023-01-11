@@ -60,6 +60,7 @@ import org.chromium.components.browser_ui.site_settings.SingleCategorySettingsCo
 import org.chromium.components.browser_ui.site_settings.SiteSettingsFeatureList;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni;
+import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.feature_engagement.FeatureConstants;
@@ -136,14 +137,24 @@ public class RequestDesktopUtilsUnitTest {
     @Implements(SysUtils.class)
     static class ShadowSysUtils {
         private static boolean sLowEndDevice;
+        private static int sMemoryInMB;
 
         public static void setLowEndDevice(boolean lowEndDevice) {
             sLowEndDevice = lowEndDevice;
         }
 
+        public static void setMemoryInMB(int memoryInMB) {
+            sMemoryInMB = memoryInMB;
+        }
+
         @Implementation
         public static boolean isLowEndDevice() {
             return sLowEndDevice;
+        }
+
+        @Implementation
+        public static int amountOfPhysicalMemoryKB() {
+            return sMemoryInMB * ConversionUtils.KILOBYTES_PER_MEGABYTE;
         }
     }
 
@@ -218,6 +229,7 @@ public class RequestDesktopUtilsUnitTest {
         mSharedPreferencesManager.disableKeyCheckerForTesting();
 
         mResources = ApplicationProvider.getApplicationContext().getResources();
+        mResources.getConfiguration().smallestScreenWidthDp = 600;
         when(mActivity.getResources()).thenReturn(mResources);
 
         when(mTabModelSelector.getModels())
@@ -227,6 +239,8 @@ public class RequestDesktopUtilsUnitTest {
 
         TrackerFactory.setTrackerForTests(mTracker);
         disableGlobalDefaultsExperimentFeatures();
+
+        ShadowSysUtils.setMemoryInMB(2048);
     }
 
     @After
@@ -373,10 +387,23 @@ public class RequestDesktopUtilsUnitTest {
         enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, params, true);
         ShadowSysUtils.setLowEndDevice(true);
         boolean shouldDefaultEnable = RequestDesktopUtils.shouldDefaultEnableGlobalSetting(
-                RequestDesktopUtils
-                        .DEFAULT_GLOBAL_SETTING_DEFAULT_ON_DISPLAY_SIZE_THRESHOLD_INCHES);
+                RequestDesktopUtils.DEFAULT_GLOBAL_SETTING_DEFAULT_ON_DISPLAY_SIZE_THRESHOLD_INCHES,
+                mActivity);
         Assert.assertFalse(
                 "Desktop site global setting should not be default-enabled on low memory devices.",
+                shouldDefaultEnable);
+    }
+
+    @Test
+    public void testShouldDefaultEnableGlobalSetting_MemoryThreshold() {
+        Map<String, String> params = new HashMap<>();
+        params.put(RequestDesktopUtils.PARAM_GLOBAL_SETTING_DEFAULT_ON_MEMORY_LIMIT, "4000");
+        enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, params, true);
+        boolean shouldDefaultEnable = RequestDesktopUtils.shouldDefaultEnableGlobalSetting(
+                RequestDesktopUtils.DEFAULT_GLOBAL_SETTING_DEFAULT_ON_DISPLAY_SIZE_THRESHOLD_INCHES,
+                mActivity);
+        Assert.assertFalse(
+                "Desktop site global setting should not be default-enabled on devices below the memory threshold.",
                 shouldDefaultEnable);
     }
 
@@ -387,7 +414,8 @@ public class RequestDesktopUtilsUnitTest {
                 RequestDesktopUtils.PARAM_GLOBAL_SETTING_DEFAULT_ON_DISPLAY_SIZE_THRESHOLD_INCHES,
                 "10.0");
         enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, params, true);
-        boolean shouldDefaultEnable = RequestDesktopUtils.shouldDefaultEnableGlobalSetting(11.0);
+        boolean shouldDefaultEnable =
+                RequestDesktopUtils.shouldDefaultEnableGlobalSetting(11.0, mActivity);
         Assert.assertTrue("Desktop site global setting should be default-enabled on 10\"+ devices.",
                 shouldDefaultEnable);
     }
@@ -402,8 +430,8 @@ public class RequestDesktopUtilsUnitTest {
                         .USER_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_PREFERENCE_KEY,
                 true);
         boolean shouldDefaultEnable = RequestDesktopUtils.shouldDefaultEnableGlobalSetting(
-                RequestDesktopUtils
-                        .DEFAULT_GLOBAL_SETTING_DEFAULT_ON_DISPLAY_SIZE_THRESHOLD_INCHES);
+                RequestDesktopUtils.DEFAULT_GLOBAL_SETTING_DEFAULT_ON_DISPLAY_SIZE_THRESHOLD_INCHES,
+                mActivity);
         Assert.assertFalse(
                 "Desktop site global setting should not be default-enabled if it has been previously updated by the user.",
                 shouldDefaultEnable);
@@ -415,8 +443,8 @@ public class RequestDesktopUtilsUnitTest {
         enableFeatureWithParams(
                 ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS_CONTROL, null, true);
         boolean shouldDefaultEnable = RequestDesktopUtils.shouldDefaultEnableGlobalSetting(
-                RequestDesktopUtils
-                        .DEFAULT_GLOBAL_SETTING_DEFAULT_ON_DISPLAY_SIZE_THRESHOLD_INCHES);
+                RequestDesktopUtils.DEFAULT_GLOBAL_SETTING_DEFAULT_ON_DISPLAY_SIZE_THRESHOLD_INCHES,
+                mActivity);
         Assert.assertFalse(
                 "Desktop site global setting should not be default-enabled in the control experiment group.",
                 shouldDefaultEnable);
@@ -471,7 +499,7 @@ public class RequestDesktopUtilsUnitTest {
         enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, null, true);
         boolean didDefaultEnable = RequestDesktopUtils.maybeDefaultEnableGlobalSetting(
                 RequestDesktopUtils.DEFAULT_GLOBAL_SETTING_DEFAULT_ON_DISPLAY_SIZE_THRESHOLD_INCHES,
-                mProfile);
+                mProfile, mActivity);
         Assert.assertTrue(
                 "Desktop site global setting should be default-enabled on big screen devices.",
                 didDefaultEnable);
@@ -485,15 +513,6 @@ public class RequestDesktopUtilsUnitTest {
                                 ChromePreferenceKeys.DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING,
                                 false));
         Assert.assertTrue(
-                "SharedPreference DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE should be true.",
-                mSharedPreferencesManager.contains(
-                        ChromePreferenceKeys
-                                .DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE)
-                        && mSharedPreferencesManager.readBoolean(
-                                ChromePreferenceKeys
-                                        .DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE,
-                                false));
-        Assert.assertTrue(
                 "SharedPreference DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT should be true.",
                 mSharedPreferencesManager.contains(
                         ChromePreferenceKeys.DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT)
@@ -504,8 +523,8 @@ public class RequestDesktopUtilsUnitTest {
 
         // Verify that the desktop site global setting will be default-enabled at most once.
         boolean shouldDefaultEnable = RequestDesktopUtils.shouldDefaultEnableGlobalSetting(
-                RequestDesktopUtils
-                        .DEFAULT_GLOBAL_SETTING_DEFAULT_ON_DISPLAY_SIZE_THRESHOLD_INCHES);
+                RequestDesktopUtils.DEFAULT_GLOBAL_SETTING_DEFAULT_ON_DISPLAY_SIZE_THRESHOLD_INCHES,
+                mActivity);
         Assert.assertFalse(
                 "Desktop site global setting should not be default-enabled more than once.",
                 shouldDefaultEnable);
@@ -519,7 +538,7 @@ public class RequestDesktopUtilsUnitTest {
 
         boolean didDefaultEnable = RequestDesktopUtils.maybeDefaultEnableGlobalSetting(
                 RequestDesktopUtils.DEFAULT_GLOBAL_SETTING_DEFAULT_ON_DISPLAY_SIZE_THRESHOLD_INCHES,
-                mProfile);
+                mProfile, mActivity);
         Assert.assertFalse(
                 "Desktop site global setting should not be default-enabled when opt-in is enabled.",
                 didDefaultEnable);
@@ -527,12 +546,14 @@ public class RequestDesktopUtilsUnitTest {
 
     @Test
     public void testMaybeShowDefaultEnableGlobalSettingMessage() {
+        when(mTracker.shouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_DEFAULT_ON_FEATURE))
+                .thenReturn(true);
         enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, null, true);
 
         // Default-enable the global setting before the message is shown.
         RequestDesktopUtils.maybeDefaultEnableGlobalSetting(
                 RequestDesktopUtils.DEFAULT_GLOBAL_SETTING_DEFAULT_ON_DISPLAY_SIZE_THRESHOLD_INCHES,
-                mProfile);
+                mProfile, mActivity);
 
         when(mWebsitePreferenceBridgeJniMock.isContentSettingEnabled(
                      mProfile, ContentSettingsType.REQUEST_DESKTOP_SITE))
@@ -553,21 +574,17 @@ public class RequestDesktopUtilsUnitTest {
                 message.getValue().get(MessageBannerProperties.PRIMARY_BUTTON_TEXT));
         Assert.assertEquals("Message icon resource ID should match.", R.drawable.ic_desktop_windows,
                 message.getValue().get(MessageBannerProperties.ICON_RESOURCE_ID));
-        Assert.assertFalse(
-                "SharedPreference DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE should be removed.",
-                mSharedPreferencesManager.contains(
-                        ChromePreferenceKeys
-                                .DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE));
     }
 
     @Test
     public void testMaybeShowDefaultEnableGlobalSettingMessage_DoNotShowIfSettingIsDisabled() {
+        when(mTracker.shouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_DEFAULT_ON_FEATURE))
+                .thenReturn(true);
         enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, null, true);
 
         // Preference is set when the setting is default-enabled.
         mSharedPreferencesManager.writeBoolean(
-                ChromePreferenceKeys.DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE,
-                true);
+                ChromePreferenceKeys.DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING, true);
 
         // Simulate disabling of the setting by the user before the message is shown.
         when(mWebsitePreferenceBridgeJniMock.isContentSettingEnabled(
@@ -578,11 +595,6 @@ public class RequestDesktopUtilsUnitTest {
                 mProfile, mMessageDispatcher, mActivity);
         Assert.assertFalse(
                 "Message should not be shown if the content setting is disabled.", shown);
-        Assert.assertFalse(
-                "SharedPreference DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE should be removed.",
-                mSharedPreferencesManager.contains(
-                        ChromePreferenceKeys
-                                .DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE));
     }
 
     @Test
@@ -591,7 +603,7 @@ public class RequestDesktopUtilsUnitTest {
         enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, null, true);
         RequestDesktopUtils.maybeDefaultEnableGlobalSetting(
                 RequestDesktopUtils.DEFAULT_GLOBAL_SETTING_DEFAULT_ON_DISPLAY_SIZE_THRESHOLD_INCHES,
-                mProfile);
+                mProfile, mActivity);
 
         // Disable REQUEST_DESKTOP_SITE_DEFAULTS and initiate downgrade.
         enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, null, false);
@@ -608,11 +620,6 @@ public class RequestDesktopUtilsUnitTest {
                 mSharedPreferencesManager.contains(
                         ChromePreferenceKeys.DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING));
         Assert.assertFalse(
-                "SharedPreference DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE should be removed.",
-                mSharedPreferencesManager.contains(
-                        ChromePreferenceKeys
-                                .DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE));
-        Assert.assertFalse(
                 "SharedPreference DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT should be removed.",
                 mSharedPreferencesManager.contains(
                         ChromePreferenceKeys.DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT));
@@ -624,7 +631,7 @@ public class RequestDesktopUtilsUnitTest {
         enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, null, true);
         RequestDesktopUtils.maybeDefaultEnableGlobalSetting(
                 RequestDesktopUtils.DEFAULT_GLOBAL_SETTING_DEFAULT_ON_DISPLAY_SIZE_THRESHOLD_INCHES,
-                mProfile);
+                mProfile, mActivity);
 
         // This SharedPreference key will ideally be updated when the user explicitly requests for
         // an update to the desktop site global setting. Simulate a scenario where the user turns
@@ -653,15 +660,12 @@ public class RequestDesktopUtilsUnitTest {
                 "SharedPreference DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING should be removed.",
                 mSharedPreferencesManager.contains(
                         ChromePreferenceKeys.DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING));
-        Assert.assertFalse(
-                "SharedPreference DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE should be removed.",
-                mSharedPreferencesManager.contains(
-                        ChromePreferenceKeys
-                                .DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE));
     }
 
     @Test
     public void testShouldShowGlobalSettingOptInMessage_ExperimentControlGroup() {
+        when(mTracker.wouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_OPT_IN_FEATURE))
+                .thenReturn(true);
         Map<String, String> params = new HashMap<>();
         params.put(RequestDesktopUtils.PARAM_GLOBAL_SETTING_OPT_IN_ENABLED, "true");
         enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, null, false);
@@ -670,7 +674,7 @@ public class RequestDesktopUtilsUnitTest {
 
         boolean shouldShowOptIn = RequestDesktopUtils.shouldShowGlobalSettingOptInMessage(
                 RequestDesktopUtils.DEFAULT_GLOBAL_SETTING_OPT_IN_DISPLAY_SIZE_MIN_THRESHOLD_INCHES,
-                mProfile);
+                mProfile, mActivity);
         Assert.assertFalse(
                 "Opt-in message for desktop site global setting should not be shown in the control experiment group.",
                 shouldShowOptIn);
@@ -686,6 +690,10 @@ public class RequestDesktopUtilsUnitTest {
 
     @Test
     public void testMaybeShowGlobalSettingOptInMessage() {
+        when(mTracker.shouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_OPT_IN_FEATURE))
+                .thenReturn(true);
+        when(mTracker.wouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_OPT_IN_FEATURE))
+                .thenReturn(true);
         Map<String, String> params = new HashMap<>();
         params.put(RequestDesktopUtils.PARAM_GLOBAL_SETTING_OPT_IN_ENABLED, "true");
         enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, params, true);
@@ -709,11 +717,6 @@ public class RequestDesktopUtilsUnitTest {
         Assert.assertEquals("Message icon resource ID should match.", R.drawable.ic_desktop_windows,
                 message.getValue().get(MessageBannerProperties.ICON_RESOURCE_ID));
         Assert.assertTrue(
-                "SharedPreference DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_SHOWN should be true.",
-                mSharedPreferencesManager.readBoolean(
-                        ChromePreferenceKeys.DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_SHOWN,
-                        false));
-        Assert.assertTrue(
                 "SharedPreference DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_COHORT should be true.",
                 mSharedPreferencesManager.readBoolean(
                         ChromePreferenceKeys.DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_COHORT,
@@ -721,25 +724,11 @@ public class RequestDesktopUtilsUnitTest {
     }
 
     @Test
-    public void testMaybeShowGlobalSettingOptInMessage_ShowAtMostOnce() {
-        Map<String, String> params = new HashMap<>();
-        params.put(RequestDesktopUtils.PARAM_GLOBAL_SETTING_OPT_IN_ENABLED, "true");
-        enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, params, true);
-
-        boolean shown = RequestDesktopUtils.maybeShowGlobalSettingOptInMessage(
-                RequestDesktopUtils.DEFAULT_GLOBAL_SETTING_OPT_IN_DISPLAY_SIZE_MIN_THRESHOLD_INCHES,
-                mProfile, mMessageDispatcher, mActivity, mCurrentTabSupplier);
-
-        boolean shouldShow = RequestDesktopUtils.shouldShowGlobalSettingOptInMessage(
-                RequestDesktopUtils.DEFAULT_GLOBAL_SETTING_OPT_IN_DISPLAY_SIZE_MIN_THRESHOLD_INCHES,
-                mProfile);
-        Assert.assertFalse(
-                "Desktop site global setting opt-in message should be shown at most once.",
-                shouldShow);
-    }
-
-    @Test
     public void testMaybeShowGlobalSettingOptInMessage_DoNotShowIfSettingIsEnabled() {
+        when(mTracker.shouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_OPT_IN_FEATURE))
+                .thenReturn(true);
+        when(mTracker.wouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_OPT_IN_FEATURE))
+                .thenReturn(true);
         Map<String, String> params = new HashMap<>();
         params.put(RequestDesktopUtils.PARAM_GLOBAL_SETTING_OPT_IN_ENABLED, "true");
         enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, params, true);
@@ -753,6 +742,25 @@ public class RequestDesktopUtilsUnitTest {
                 mProfile, mMessageDispatcher, mActivity, mCurrentTabSupplier);
         Assert.assertFalse(
                 "Desktop site global setting opt-in message should not be shown when the setting is already enabled.",
+                shown);
+    }
+
+    @Test
+    public void testMaybeShowGlobalSettingOptInMessage_MemoryThreshold() {
+        when(mTracker.shouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_OPT_IN_FEATURE))
+                .thenReturn(true);
+        when(mTracker.wouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_OPT_IN_FEATURE))
+                .thenReturn(true);
+        Map<String, String> params = new HashMap<>();
+        params.put(RequestDesktopUtils.PARAM_GLOBAL_SETTING_OPT_IN_ENABLED, "true");
+        params.put(RequestDesktopUtils.PARAM_GLOBAL_SETTING_OPT_IN_MEMORY_LIMIT, "4000");
+        enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, params, true);
+
+        boolean shown = RequestDesktopUtils.maybeShowGlobalSettingOptInMessage(
+                RequestDesktopUtils.DEFAULT_GLOBAL_SETTING_OPT_IN_DISPLAY_SIZE_MIN_THRESHOLD_INCHES,
+                mProfile, mMessageDispatcher, mActivity, mCurrentTabSupplier);
+        Assert.assertFalse(
+                "Desktop site global setting opt-in message should not be shown on devices below the memory threshold.",
                 shown);
     }
 
@@ -882,6 +890,10 @@ public class RequestDesktopUtilsUnitTest {
     // the message is clicked on.
     @Test
     public void testGlobalSettingOptInMessageClickedOnDifferentTab() {
+        when(mTracker.shouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_OPT_IN_FEATURE))
+                .thenReturn(true);
+        when(mTracker.wouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_OPT_IN_FEATURE))
+                .thenReturn(true);
         Map<String, String> params = new HashMap<>();
         params.put(RequestDesktopUtils.PARAM_GLOBAL_SETTING_OPT_IN_ENABLED, "true");
         enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, params, true);

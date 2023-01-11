@@ -193,12 +193,6 @@ extern const char kDiscoverFeedCardShownAtIndex[];
 // Histogram name for a Following feed card shown at index.
 extern const char kFollowingFeedCardShownAtIndex[];
 
-// Histogram name for a Discover feed card tapped at index.
-extern const char kDiscoverFeedCardOpenedAtIndex[];
-
-// Histogram name for a Following feed card tapped at index.
-extern const char kFollowingFeedCardOpenedAtIndex[];
-
 // Histogram name to capture Feed Notice card impressions.
 extern const char kDiscoverFeedNoticeCardFulfilled[];
 
@@ -230,9 +224,11 @@ extern const char kDiscoverFeedUploadActionsNetworkDurationFailure[];
 // operation.
 extern const char kDiscoverFeedNetworkDuration[];
 
-// Histogram name to measure opened URL's regardless of the surface they were
-// opened in.
+// Histogram name to track opened articles from the Discover feed.
 extern const char kDiscoverFeedURLOpened[];
+
+// Histogram name to track opened articles from the Following feed.
+extern const char kFollowingFeedURLOpened[];
 
 // Histogram name to capture if the last Feed fetch had logging enabled.
 extern const char kDiscoverFeedActivityLoggingEnabled[];
@@ -267,6 +263,13 @@ extern const char kFollowCountWhenEngaged[];
 extern const char kActionOnNTP[];
 // Histogram for an action taken on the start surface.
 extern const char kActionOnStartSurface[];
+
+// Histogram name for last visible card when switching from Discover to
+// Following feed.
+extern const char kDiscoverIndexWhenSwitchingFeed[];
+// Histogram name for last visible card when switching from Following to
+// Discover feed.
+extern const char kFollowingIndexWhenSwitchingFeed[];
 
 #pragma mark - User Actions
 

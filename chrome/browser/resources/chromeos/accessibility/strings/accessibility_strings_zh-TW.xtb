@@ -57,7 +57,7 @@
 <translation id="1273314450961659276">文字轉語音設定</translation>
 <translation id="1275718070701477396">已選取</translation>
 <translation id="1284576163386164372">如要瀏覽教學課程，你隨時可以用四指輕觸螢幕來開啟選單，然後在「ChromeVox」部分底下啟用教學課程。</translation>
-<translation id="1291286136605998134">切換按鈕</translation>
+<translation id="1291286136605998134">切換鈕</translation>
 <translation id="1299774449519412690">淺天藍</translation>
 <translation id="1303806948938513162">用四指輕觸即可進入 ChromeVox 選單</translation>
 <translation id="1313373992684326101">移至上一個區段，例如「狀態匣」和「啟動器」。</translation>
@@ -286,7 +286,7 @@
 <translation id="2873259058405069099">前往表格開頭</translation>
 <translation id="287383510823843610">深橘</translation>
 <translation id="2879867157561757640">以三指向下滑動</translation>
-<translation id="288178314850623291">使用跳轉指令可直接在特定類型的元素之間移動。如要跳到下一個標題，請按下搜尋鍵 + H 鍵；如要跳到下一個標題，請按下搜尋鍵 + Shift 鍵 + H 鍵。</translation>
+<translation id="288178314850623291">使用跳轉指令可直接在特定類型的元素之間移動。如要跳到下一個標題，請按下搜尋鍵 + H 鍵；如要跳到上一個標題，請按下搜尋鍵 + Shift 鍵 + H 鍵。</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{分鐘}other{分鐘}}</translation>
 <translation id="2894654529758326923">資訊</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{左大括弧}other{# 個左大括弧}}</translation>
@@ -363,7 +363,7 @@
 <translation id="3270069636408109001">沒有下一個表格</translation>
 <translation id="3273791280096244679">儲存標籤</translation>
 <translation id="3283583562490372694">未勾選</translation>
-<translation id="3286372614333682499">肖像</translation>
+<translation id="3286372614333682499">直向</translation>
 <translation id="3286390186030710347">滑桿</translation>
 <translation id="3300348286427369683">支援 RTF 格式：ChromeVox 現在支援 RTF 格式欄位，包括跳轉指令、點字游標路徑、選取等等。</translation>
 <translation id="3300733168898541351">復原</translation>
@@ -464,7 +464,7 @@
 <translation id="3943857333388298514">貼上</translation>
 <translation id="3962990492275676168">從目前位置開始朗讀</translation>
 <translation id="3970951409746498040">沙褐</translation>
-<translation id="3989324057180830702">切換按鈕</translation>
+<translation id="3989324057180830702">切換鈕</translation>
 <translation id="3991317907213946254">鹿皮鞋色</translation>
 <translation id="4002709828007663583">深蘭紫</translation>
 <translation id="4004802134384979325">已勾選</translation>

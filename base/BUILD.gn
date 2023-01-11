@@ -155,7 +155,7 @@ config("perfetto_config") {
   }
 }
 
-if (enable_pkeys) {
+if (enable_pkeys && is_debug) {
   config("no_stack_protector") {
     cflags = [ "-fno-stack-protector" ]
   }
@@ -645,6 +645,7 @@ mixed_component("base") {
     "scoped_native_library.h",
     "scoped_observation.h",
     "scoped_observation_traits.h",
+    "scoped_observation_traits_internal.h",
     "sequence_checker.cc",
     "sequence_checker.h",
     "sequence_checker_impl.cc",
@@ -3838,7 +3839,10 @@ test("base_unittests") {
       sources += [ "allocator/partition_allocator/partition_alloc_base/fuchsia/fuchsia_logging_pa_unittest.cc" ]
     }
 
-    if (enable_pkeys) {
+    if (enable_pkeys && is_debug && !is_component_build) {
+      # This test requires RELRO, which is not enabled in component builds.
+      # Also, require a debug build, since we only disable stack protectors in
+      # debug builds in partition alloc (see below why it's needed).
       sources += [ "allocator/partition_allocator/pkey_unittest.cc" ]
 
       # We want to test the pkey code without access to memory that is not

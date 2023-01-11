@@ -10,9 +10,14 @@
 #include <utility>
 
 #include "base/test/scoped_feature_list.h"
+#include "build/buildflag.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/views_features.h"
+
+#if BUILDFLAG(IS_MAC)
+#include "base/mac/mac_util.h"
+#endif
 
 namespace views {
 
@@ -32,6 +37,11 @@ class SublevelManagerTest : public ViewsTestBase,
     set_native_widget_type(
         std::get<ViewsTestBase::NativeWidgetType>(GetParam()));
     ViewsTestBase::SetUp();
+#if BUILDFLAG(IS_MAC)
+    // MacOS 10.13 does not report window z-ordering reliably.
+    if (base::mac::IsAtMostOS10_13())
+      GTEST_SKIP();
+#endif
   }
 
   std::unique_ptr<Widget> CreateChildWidget(

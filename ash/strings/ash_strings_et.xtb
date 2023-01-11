@@ -175,6 +175,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="1862380676329487333">Värskenda ja logi välja</translation>
 <translation id="1864454756846565995">C-tüüpi USB-seade (tagumine port)</translation>
 <translation id="1869497990620230175">Kiirfailid</translation>
+<translation id="1871703283152909317">Lülita sisse mõlemad juurdepääsud</translation>
 <translation id="1879018240766558464">Inkognito aknaid praegu ei toetata. Muud rakendused salvestatakse.</translation>
 <translation id="1882814835921407042">Mobiilsidevõrku pole</translation>
 <translation id="1882897271359938046">Peegeldamine asukohta <ph name="DISPLAY_NAME" /></translation>
@@ -352,6 +353,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="2960314608273155470">Jäädvustusrežiim, vaikeseade on <ph name="SOURCE" /> <ph name="TYPE" />. Klaviatuuriga navigeerimiseks vajutage tabulaatorit.</translation>
 <translation id="2961963223658824723">Midagi läks valesti. Proovige mõne sekundi pärast uuesti.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2965227184985674128">Kas lülitada sisse juurdepääs mikrofonile?</translation>
 <translation id="296762781903199866">Kõnefaile <ph name="LANGUAGE" /> keeles ei õnnestunud alla laadida</translation>
 <translation id="2970920913501714344">Installige rakendusi, laiendusi ja teemasid</translation>
 <translation id="2977598380246111477">Järgmine number</translation>
@@ -430,6 +432,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="3386978599540877378">täisekraani luup</translation>
 <translation id="3387527074123400161">Chromium OS</translation>
 <translation id="3400357268283240774">Lisaseaded</translation>
+<translation id="3405101454990027959">Lülita sisse juurdepääs mikrofonile</translation>
 <translation id="3410336247007142655">Kuva tumeda teema seaded</translation>
 <translation id="3413817803639110246">Veel ei ole midagi kuvada</translation>
 <translation id="3428447136709161042">Katkesta ühendus võrguga <ph name="NETWORK_NAME" /></translation>
@@ -517,6 +520,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="385051799172605136">Tagasi</translation>
 <translation id="385300504083504382">Algus</translation>
 <translation id="3861651314799684201">Vajutage täisekraani salvestamiseks sisestusklahvi</translation>
+<translation id="3885531177412808398">Kõikidel mikrofonile juurdepääsemise loaga rakendustel ja veebisaitidel lubatakse mikrofonile juurde pääseda</translation>
 <translation id="3886872229787704059">Täna avatud</translation>
 <translation id="3891340733213178823">Väljalogimiseks vajutage kaks korda klahvikombinatsiooni Ctrl + tõstuklahv + Q.</translation>
 <translation id="3893630138897523026">ChromeVox (kõnena esitatud tagasiside)</translation>
@@ -921,6 +925,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6095008505822982596">Kõne kiirus</translation>
 <translation id="6099678161144790572">Muudetud viimase kuu jooksul</translation>
 <translation id="6103838137565245112">süsteem</translation>
+<translation id="6107292179555508368">Juurdepääs mikrofonile ja kaamerale on selles seadmes välja lülitatud</translation>
 <translation id="6114505516289286752">Kõnefailid <ph name="LANGUAGE" /> keeles laaditi alla</translation>
 <translation id="6116825164611323644">Juurdepääs kaamerale on selles seadmes välja lülitatud</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
@@ -949,6 +954,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6259254695169772643">Kasutage valimiseks elektronpliiatsit</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: aktiveerimine ...</translation>
 <translation id="6274202259872570803">Ekraaniülekanne</translation>
+<translation id="6282694724099204652">Lülitage juurdepääsud sisse, et lubadega rakendustel ja veebilehtedel lubada selles seadmes mikrofone ja kaameraid kasutada.</translation>
 <translation id="6283712521836204486">Režiim Mitte segada on väljas.</translation>
 <translation id="6284232397434400372">Eraldusvõimet muudeti</translation>
 <translation id="6288235558961782912">Aadressi <ph name="USER_EMAIL_ADDRESS" /> saab hiljem vanema loaga uuesti lisada.</translation>
@@ -1376,6 +1382,7 @@ Uus installimine</translation>
 <translation id="8666856788528804727">Avage <ph name="NAME" />, et oma seade seadistada</translation>
 <translation id="8676770494376880701">Väikese energiakuluga laadija on ühendatud</translation>
 <translation id="8683506306463609433">Toimivuse jälgimine on aktiivne</translation>
+<translation id="8684405646663021166">Rakendusel <ph name="APP_NAME" /> ning kõikidel mikrofonile juurdepääsemise loaga rakendustel ja veebisaitidel lubatakse mikrofonile juurde pääseda</translation>
 <translation id="8685326675965865247">Otsige oma seadmest, rakendustest, seadetest ja veebist. Rakendustes navigeerimiseks kasutage nooleklahve.</translation>
 <translation id="8703634754197148428">Alusta salvestust. Kui salvestamine on alanud, vajutage klahvikombinatsiooni Alt + tõstuklahv + L, et liikuda riiulile ja leida salvestamise peatamise nupp.</translation>
 <translation id="8721053961083920564">Lülitage helitugevus sisse. <ph name="STATE_TEXT" /></translation>

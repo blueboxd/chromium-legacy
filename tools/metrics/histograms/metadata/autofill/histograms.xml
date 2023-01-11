@@ -489,7 +489,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Autocomplete.PredictionCollisionState"
-    enum="PredictionStateAutocompleteStatePair" expires_after="2022-12-31">
+    enum="PredictionStateAutocompleteStatePair" expires_after="2023-10-31">
   <owner>koerber@google.com</owner>
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
@@ -502,7 +502,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Autocomplete.PredictionCollisionType.Heuristics"
-    enum="AutofillServerFieldType" expires_after="2022-12-31">
+    enum="AutofillServerFieldType" expires_after="2023-10-31">
   <owner>koerber@google.com</owner>
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
@@ -513,7 +513,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Autocomplete.PredictionCollisionType.Server"
-    enum="AutofillServerFieldType" expires_after="2022-12-31">
+    enum="AutofillServerFieldType" expires_after="2023-10-31">
   <owner>koerber@google.com</owner>
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
@@ -525,7 +525,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.Autocomplete.PredictionCollisionType.ServerOrHeuristics"
-    enum="AutofillServerFieldType" expires_after="2022-12-31">
+    enum="AutofillServerFieldType" expires_after="2023-10-31">
   <owner>koerber@google.com</owner>
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
@@ -534,6 +534,30 @@ chromium-metrics-reviews@google.com.
     submitted form. If no server type is available, the heuristics type is
     logged instead. Emitted on form submission.
   </summary>
+</histogram>
+
+<histogram
+    name="Autofill.Autocomplete.PredictionCollisionType2.{PredictionType}.{AutocompleteState}"
+    enum="AutofillServerFieldType" expires_after="2023-10-31">
+  <owner>koerber@google.com</owner>
+  <owner>fleimgruber@google.com</owner>
+  <owner>chrome-autofill-team@google.com</owner>
+  <summary>
+    Records the PredictionType of each field in a submitted form, depending on
+    the field's AutocompleteState. Emitted on form submission.
+  </summary>
+  <token key="PredictionType">
+    <variant name="Heuristics"/>
+    <variant name="Server"/>
+    <variant name="ServerOrHeuristics"
+        summary="If available, the server type. Otherwise the heuristic type."/>
+  </token>
+  <token key="AutocompleteState">
+    <variant name="Garbage"/>
+    <variant name="None"/>
+    <variant name="Off"/>
+    <variant name="Valid"/>
+  </token>
 </histogram>
 
 <histogram name="Autofill.AutocompleteQuery" enum="BooleanCreated"
@@ -847,6 +871,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.CardUnmaskAuthenticationSelectionDialog.Shown"
     enum="BooleanShown" expires_after="2023-04-16">
+  <obsolete>
+    Deprecated in M109. Subsumed by
+    Autofill.CardUnmaskAuthenticationSelectionDialog.Shown2.
+  </obsolete>
   <owner>siyua@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <owner>siashah@chromium.org</owner>
@@ -854,6 +882,20 @@ chromium-metrics-reviews@google.com.
     Records true every time the card unmask challenge option selection dialog
     was shown. This dialog is shown when a user needs to select a challenge
     option to authenticate a card for payments autofill.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.CardUnmaskAuthenticationSelectionDialog.Shown2"
+    units="challenge_options" expires_after="2023-04-16">
+  <owner>siyua@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
+  <owner>siashah@chromium.org</owner>
+  <owner>vinnypersky@google.com</owner>
+  <summary>
+    On every show of the card unmask challenge option selection dialog, this
+    histogram records a count (with a maximum of 10) for the number of challenge
+    options that were shown. This dialog is shown when a user needs to select a
+    challenge option to authenticate a card for payments autofill.
   </summary>
 </histogram>
 
@@ -1126,6 +1168,42 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records when credit card upload provides feedback on its status to the user.
   </summary>
+</histogram>
+
+<histogram name="Autofill.CvcAuth.{CardType}.Attempt" enum="BooleanAttempted"
+    expires_after="2023-11-01">
+  <owner>vinnypersky@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Emits true when a CVC authentication starts and does not emit any value
+    otherwise. Broken down into sub-histograms based on the type of the card,
+    for example virtual card or server card.
+  </summary>
+  <token key="CardType" variants="Autofill.PaymentsRpcCardType"/>
+</histogram>
+
+<histogram name="Autofill.CvcAuth.{CardType}.Result"
+    enum="AutofillCvcAuthEvent" expires_after="2023-11-01">
+  <owner>vinnypersky@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logs the result of the OTP authentication, broken down into sub-histograms
+    by card type. The different possible results can be found in the
+    AutofillCvcAuthEvent enum, with the exception of any retriable failure,
+    which is logged in a separate histogram. This histogram is 1:1 with
+    Autofill.CvcAuth.{CardType}.Attempt
+  </summary>
+  <token key="CardType" variants="Autofill.PaymentsRpcCardType"/>
+</histogram>
+
+<histogram name="Autofill.CvcAuth.{CardType}.RetryableError"
+    enum="AutofillCvcAuthEvent" expires_after="2023-11-01">
+  <owner>vinnypersky@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logs any retryable failure that occurs during the CVC authentication flow.
+  </summary>
+  <token key="CardType" variants="Autofill.PaymentsRpcCardType"/>
 </histogram>
 
 <histogram name="Autofill.DaysSinceLastUse.CreditCard" units="days"
@@ -3944,6 +4022,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.UnmaskPrompt.Events" enum="AutofillUnmaskPromptEvent"
     expires_after="2023-03-19">
+  <obsolete>
+    Deprecated in M109. Subsumed by Autofill.UnmaskPrompt.{CardType}.Events.
+  </obsolete>
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <summary>
@@ -4037,6 +4118,18 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="CardType" variants="Autofill.PaymentsRpcCardType"/>
   <token key="Result" variants="Autofill.PaymentsRpcResult"/>
+</histogram>
+
+<histogram name="Autofill.UnmaskPrompt.{CardType}.Events"
+    enum="AutofillUnmaskPromptEvent" expires_after="2023-11-01">
+  <owner>vinnypersky@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Events tracking the usage of the unmasking prompt, recorded for {CardType}.
+    This prompt is triggered when a user selects a masked card in a autofill
+    dropdown.
+  </summary>
+  <token key="CardType" variants="Autofill.PaymentsRpcCardType"/>
 </histogram>
 
 <histogram name="Autofill.Upload.BackoffDelay" units="ms" expires_after="never">

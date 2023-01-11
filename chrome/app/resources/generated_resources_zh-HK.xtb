@@ -1204,6 +1204,7 @@
 <translation id="208928984520943006">從底部向上滑動即可隨時前往主畫面。</translation>
 <translation id="2089566709556890888">透過 Google Chrome 瀏覽器安全瀏覽內容</translation>
 <translation id="2089795179672254991">在網站要求查看複製到剪貼簿的文字和圖片時詢問您 (建議)</translation>
+<translation id="2089925163047119068">或</translation>
 <translation id="2090165459409185032">如要復原帳戶資料，請前往：google.com/accounts/recovery</translation>
 <translation id="2090507354966565596">登入時自動連線</translation>
 <translation id="2090876986345970080">系統安全性設定</translation>
@@ -2387,6 +2388,7 @@
 <translation id="3143515551205905069">取消同步處理</translation>
 <translation id="3143754809889689516">從頭開始播放</translation>
 <translation id="3144647712221361880">以其他身分開啟連結</translation>
+<translation id="3144896554017119333">擴充程式和其他項目</translation>
 <translation id="3149510190863420837">Chrome 應用程式</translation>
 <translation id="3150693969729403281">即刻執行安全檢查</translation>
 <translation id="3150927491400159470">強制重新載入</translation>
@@ -2495,6 +2497,7 @@
 <translation id="3268451620468152448">開啟的分頁</translation>
 <translation id="3269093882174072735">載入圖片</translation>
 <translation id="326911502853238749">不要顯示<ph name="MODULE_NAME" /></translation>
+<translation id="3269175001434213183">開啟同步功能即可備份資料，並在任何裝置上使用</translation>
 <translation id="3269612321104318480">淺藍綠色和白色</translation>
 <translation id="3269689705184377744">{COUNT,plural, =1{檔案}other{# 個檔案}}</translation>
 <translation id="326999365752735949">正在下載差異部分</translation>
@@ -3755,6 +3758,7 @@
 <translation id="445099924538929605"><ph name="DEVICE_OS" /> 偵測到有效的 TPM，能夠更安全地儲存您的資料。</translation>
 <translation id="4451479197788154834">您的密碼已儲存在此裝置和 Google 帳戶中</translation>
 <translation id="4451757071857432900">封鎖顯示滋擾性或誤導廣告網站上的廣告 (建議)</translation>
+<translation id="4452898361839215358">或選取 PPD。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="4453946976636652378">搜尋 <ph name="SEARCH_ENGINE_NAME" /> 或輸入網址</translation>
 <translation id="4458535500699390320">當此分頁處於閒置狀態時，「節省記憶體」模式會釋出記憶體給其他工作。您可隨時在設定中變更此設定。</translation>
 <translation id="4459169140545916303">曾於 <ph name="DEVICE_LAST_ACTIVATED_TIME" /> 天前在線</translation>
@@ -4292,6 +4296,7 @@
 <translation id="4950993567860689081">工作階段由您的機構管理。管理員可刪除設定檔並監察網絡流量。</translation>
 <translation id="495164417696120157">{COUNT,plural, =1{1 個檔案}other{# 個檔案}}</translation>
 <translation id="495170559598752135">動作</translation>
+<translation id="4951966678293618079">一律不儲存此網站的密碼</translation>
 <translation id="4953808748584563296">預設橙色圖片</translation>
 <translation id="4955710816792587366">選擇 PIN</translation>
 <translation id="4959262764292427323">密碼會儲存在您的 Google 帳戶中，讓您可在任何裝置上使用</translation>
@@ -4321,6 +4326,7 @@
 <translation id="4981449534399733132">如要從所有已同步的裝置和 Google 帳戶中清除瀏覽資料，請<ph name="BEGIN_LINK" />登入<ph name="END_LINK" />。</translation>
 <translation id="4982111327868342436">在任何裝置上繼續未完成的工作</translation>
 <translation id="4982236238228587209">裝置軟件</translation>
+<translation id="4986706507552097681">您隨時可在設定中選擇要同步的資料。Google 可能會根據您的記錄，提供個人化「搜尋」和其他服務。</translation>
 <translation id="4986728572522335985">此操作將刪除這個安全密鑰上的所有資料，包括 PIN</translation>
 <translation id="4988526792673242964">網頁</translation>
 <translation id="49896407730300355">逆時針旋轉(&amp;O)</translation>
@@ -5480,7 +5486,6 @@
 <translation id="6087746524533454243">要查看瀏覽器的「關於」頁面嗎？請前往</translation>
 <translation id="6087960857463881712">開懷大笑</translation>
 <translation id="608912389580139775">如要將網頁加入您的閱讀清單，請按一下「書籤」圖示</translation>
-<translation id="6091116443517744502">請檢查您的互聯網連線，然後再試一次</translation>
 <translation id="6091761513005122595">已成功連接共用裝置。</translation>
 <translation id="6093803049406781019">刪除設定檔</translation>
 <translation id="6093888419484831006">正在取消更新…</translation>
@@ -7557,6 +7562,7 @@
 <translation id="8046132381940444654">客戶服務專員可以使用此 EID 號碼協助您啟用服務</translation>
 <translation id="8047242494569930800">移至 Google 帳戶</translation>
 <translation id="804786196054284061">使用者授權協議</translation>
+<translation id="8048728378294435881">將資料備份，並在任何裝置上使用</translation>
 <translation id="8048977114738515028">在裝置上建立桌面捷徑，方便直接存取此設定檔</translation>
 <translation id="8049029041626250638">請連接鍵盤或滑鼠。如果使用藍牙裝置，請確認裝置可供配對。</translation>
 <translation id="8049122382261047457">使用「Google 智能鏡頭」搜尋任何圖片</translation>
@@ -8381,6 +8387,7 @@
 <translation id="8823514049557262177">複製連結文字(&amp;X)</translation>
 <translation id="8823559166155093873">封鎖 Cookie</translation>
 <translation id="8823704566850948458">建議密碼…</translation>
+<translation id="8823963789776061136">您亦可選取打印機 PPD。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="8824701697284169214">新增網頁(&amp;G)…</translation>
 <translation id="8827125715368568315">已封鎖<ph name="PERMISSION" />和其他 <ph name="COUNT" /> 個項目</translation>
 <translation id="8827289157496676362">固定擴充功能</translation>
@@ -8623,6 +8630,7 @@
 <translation id="9040661932550800571">要更新 <ph name="ORIGIN" /> 的密碼嗎？</translation>
 <translation id="9041692268811217999">管理員已停用電腦的本機檔案存取權</translation>
 <translation id="904224458472510106">此操作無法復原</translation>
+<translation id="9042827002460091668">請檢查您的互聯網連線，然後再試一次</translation>
 <translation id="9042893549633094279">私隱權和安全性</translation>
 <translation id="9044646465488564462">無法連線至網絡：<ph name="DETAILS" /></translation>
 <translation id="9045160989383249058">閱讀清單已移動至新的側面板。按這裡即可試用。</translation>
@@ -8637,6 +8645,7 @@
 <translation id="9057007989365783744">「<ph name="SUPERVISED_USER_NAME" />」要求存取以下內容：</translation>
 <translation id="9057354806206861646">更新時間表</translation>
 <translation id="9058070466596314168">{NUM_NOTIFICATION,plural, =1{每天約傳送 1 則通知}other{每天約傳送 {NUM_NOTIFICATION} 則通知}}</translation>
+<translation id="9058760336383947367">查看打印機 PPD</translation>
 <translation id="9061383912634843744">使用已儲存的憑證自動登入網站和應用程式。如果關閉此功能，系統將會在每次登入網站或應用程式前要求您進行確認。</translation>
 <translation id="9062468308252555888">14 倍</translation>
 <translation id="9063208415146866933">第<ph name="ERROR_LINE_START" />至第<ph name="ERROR_LINE_END" />行有錯</translation>

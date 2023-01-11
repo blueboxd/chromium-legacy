@@ -117,7 +117,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1536604384701784949">Për të përdorur <ph name="USER_EMAIL_ADDRESS" /> duhet të dalësh nga të gjitha llogaritë përpara. Për të dalë, zgjidh "Anulo" për t'u kthyer mbrapa. Pastaj zgjidh kohën për të hapur zonën e statusit dhe zgjidh "Dil". Pastaj identifikohu përsëri në <ph name="USER_EMAIL_ADDRESS_2" />.</translation>
 <translation id="15373452373711364">Kursor i madh</translation>
 <translation id="1546492247443594934">Tavolina e punës 2</translation>
-<translation id="1546930421365146760">Kërkoji administratorit ta konfigurojë këtë pajisje te paneli komandues i administratorit të Google</translation>
+<translation id="1546930421365146760">Kërkoji administratorit ta konfigurojë këtë pajisje te "Paneli i administratorit të Google"</translation>
 <translation id="1550523713251050646">Kliko për opsione të tjera</translation>
 <translation id="1555130319947370107">E kaltër</translation>
 <translation id="1589090746204042747">Qasu te të gjitha aktivitetet e tua në këtë sesion</translation>
@@ -175,6 +175,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1862380676329487333">Përditëso dhe dil</translation>
 <translation id="1864454756846565995">Pajisja USB-C (porta prapa)</translation>
 <translation id="1869497990620230175">Skedarët e shpejtë</translation>
+<translation id="1871703283152909317">Aktivizo të dyja rastet e qasjes</translation>
 <translation id="1879018240766558464">Dritaret "E fshehta" nuk mbështeten aktualisht. Aplikacionet e tjera do të ruhen.</translation>
 <translation id="1882814835921407042">Nuk ka rrjet celular</translation>
 <translation id="1882897271359938046">Po pasqyron në <ph name="DISPLAY_NAME" /></translation>
@@ -352,6 +353,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="2960314608273155470">Modaliteti i regjistrimit, parazgjedhja është <ph name="TYPE" /> (<ph name="SOURCE" />). Shtyp skedën për navigimin e tastierës.</translation>
 <translation id="2961963223658824723">Ndodhi një gabim. Provo sërish pas pak sekondash.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2965227184985674128">Të aktivizohet qasja te mikrofoni?</translation>
 <translation id="296762781903199866">S'mund të shkarkoheshin skedarët ligjërimit në <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">Instalo aplikacione, shtesa dhe tema</translation>
 <translation id="2977598380246111477">Numri tjetër</translation>
@@ -430,6 +432,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="3386978599540877378">zmadhuesi në ekran të plotë</translation>
 <translation id="3387527074123400161">ChromiumOS</translation>
 <translation id="3400357268283240774">Cilësimet shtesë</translation>
+<translation id="3405101454990027959">Aktivizo qasjen te mikrofoni</translation>
 <translation id="3410336247007142655">Shfaq cilësimet e "Temës së errët"</translation>
 <translation id="3413817803639110246">Nuk ka ende asgjë për të parë</translation>
 <translation id="3428447136709161042">Shkëputu nga <ph name="NETWORK_NAME" /></translation>
@@ -516,6 +519,7 @@ Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <translation id="385051799172605136">Prapa</translation>
 <translation id="385300504083504382">Fillimi</translation>
 <translation id="3861651314799684201">Shtyp "Enter" për të regjistruar ekranin e plotë</translation>
+<translation id="3885531177412808398">Lejon qasjen te mikrofoni për të gjitha aplikacionet dhe sajtet e uebit me lejen e mikrofonit</translation>
 <translation id="3886872229787704059">Hapur sot</translation>
 <translation id="3891340733213178823">Shtyp Ctrl+Shift+Q për të dalë nga llogaria.</translation>
 <translation id="3893630138897523026">ChromeVox (komente të thëna me gojë)</translation>
@@ -920,6 +924,7 @@ Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <translation id="6095008505822982596">Shpejtësia e të folurit</translation>
 <translation id="6099678161144790572">Modifikuar muajin e kaluar</translation>
 <translation id="6103838137565245112">sistemi</translation>
+<translation id="6107292179555508368">Qasja te mikrofoni dhe qasja te kamera janë joaktive në këtë pajisje</translation>
 <translation id="6114505516289286752">Skedarët e ligjërimit në <ph name="LANGUAGE" /> u shkarkuan</translation>
 <translation id="6116825164611323644">Qasja te kamera është joaktive në këtë pajisje</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
@@ -948,6 +953,7 @@ Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <translation id="6259254695169772643">Përdor lapsin për të zgjedhur</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Po aktivizohet...</translation>
 <translation id="6274202259872570803">Transmetimi i ekranit</translation>
+<translation id="6282694724099204652">Aktivizo qasjet për të lejuar aplikacionet dhe faqet e uebit që kanë lejen që të përdorin mikrofonat dhe kamerat në këtë pajisje.</translation>
 <translation id="6283712521836204486">Modaliteti "Mos shqetëso" është joaktiv.</translation>
 <translation id="6284232397434400372">Rezolucioni u ndryshua</translation>
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> mund të rishtohet më vonë me lejen e prindit.</translation>
@@ -1375,6 +1381,7 @@ Instalim i ri</translation>
 <translation id="8666856788528804727">Hap <ph name="NAME" /> për të konfiguruar pajisjen tënde</translation>
 <translation id="8676770494376880701">Është lidhur karikues me fuqi të ulët</translation>
 <translation id="8683506306463609433">Gjurmimi i cilësisë së funksionimit është aktiv</translation>
+<translation id="8684405646663021166">Lejon qasjen te mikrofoni për <ph name="APP_NAME" /> dhe të gjitha aplikacionet dhe sajtet e uebit me lejen e mikrofonit</translation>
 <translation id="8685326675965865247">Kërko në pajisjen tënde, aplikacione, cilësime dhe ueb. Përdor tastet e shigjetave për të naviguar nëpër aplikacione.</translation>
 <translation id="8703634754197148428">Nis regjistrimin. Pasi të ketë filluar regjistrimi, përdor Alt + Shift + L për të shkuar te rafti dhe gjej butonin e ndalimit të regjistrimit</translation>
 <translation id="8721053961083920564">Ndërro volumin. <ph name="STATE_TEXT" /></translation>

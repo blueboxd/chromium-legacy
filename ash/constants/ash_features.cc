@@ -790,6 +790,11 @@ BASE_FEATURE(kEnableAllSystemWebApps,
              "EnableAllSystemWebApps",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables per-desk Z order for all-desk windows.
+BASE_FEATURE(kEnablePerDeskZOrder,
+             "EnablePerDeskZOrder",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, touchpad cards will be shown in the diagnostics app's input
 // section.
 BASE_FEATURE(kEnableTouchpadsInDiagnosticsApp,
@@ -2028,7 +2033,7 @@ BASE_FEATURE(kUseAuthFactors,
 // instead of legacy CheckKey.
 BASE_FEATURE(kUseAuthsessionForWebAuthN,
              "UseAuthsessionForWebAuthN",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, the login shelf view is placed in its own widget instead of
 // sharing the shelf widget with other components.
@@ -3010,6 +3015,10 @@ bool IsQuickDimEnabled() {
 
 bool IsQuickSettingsNetworkRevampEnabled() {
   return base::FeatureList::IsEnabled(kQuickSettingsNetworkRevamp);
+}
+
+bool IsPerDeskZOrderEnabled() {
+  return base::FeatureList::IsEnabled(kEnablePerDeskZOrder);
 }
 
 bool IsReleaseTrackUiEnabled() {

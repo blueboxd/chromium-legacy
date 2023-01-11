@@ -174,7 +174,6 @@ vars = {
   # support for other platforms may be added in the future.
   'checkout_openxr' : 'checkout_win',
 
-  'checkout_traffic_annotation_tools': 'checkout_configuration != "small"',
   'checkout_instrumented_libraries': 'checkout_linux and checkout_configuration != "small"',
 
   # By default bot checkouts the WPR archive files only when this
@@ -307,15 +306,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '09ce19b9da5be984a88df440a6db18792e842d7e',
+  'skia_revision': '9f5ce0f89e2ba479fdb57eebd13204bbed86922b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '8ade6bf1fa237ad30dd9a05cc6ffe548131699e8',
+  'v8_revision': '4b4e473387ed62f7fcbc95a3bf05244ea0e76a0a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '7f42f858e2b232338bd520fe3527e1d07cebdb1a',
+  'angle_revision': 'aa63ea230e0c507e7b4b164a30e502fb17168c17',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -323,14 +322,14 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '1d94eaddb44f1e8c16387e5207ef23de70cb3cd8',
+  'pdfium_revision': '89aa9f9ebe803480ec697fb39470ed106869e272',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
   #
   # Note this revision should be updated with
   # third_party/boringssl/roll_boringssl.py, not roll-dep.
-  'boringssl_revision': '1ee71185a2322dc354bee5e5a0abfb1810a27dc6',
+  'boringssl_revision': '1ccef4908ce04adc6d246262846f3cd8a111fa44',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Fuchsia sdk
   # and whatever else without interference from each other.
@@ -422,7 +421,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '865c3f8e94e40009f0b5f2eb016d62bc80a281a4',
+  'dawn_revision': '867cf74751f12a097807d3cbe29a32b14c8c6304',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -446,7 +445,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nearby
   # and whatever else without interference from each other.
-  'nearby_revision': '23a27d9384624edb4d1c7b9baa9e43123cc86198',
+  'nearby_revision': '8c8e5d7e6f72dacd0917fdf5a3fab3e5b19ce93c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling securemessage
   # and whatever else without interference from each other.
@@ -817,7 +816,7 @@ deps = {
 
   'src/clank': {
     'url': 'https://chrome-internal.googlesource.com/clank/internal/apps.git' + '@' +
-    'cd9c13c2f959602e77f23325a2371fc89622df05',
+    'fa33bbf6ed46946cf7b5aee6ad393413e3b09dbe',
     'condition': 'checkout_android and checkout_src_internal and not checkout_clank_via_src_internal',
   },
 
@@ -1001,7 +1000,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': '2f-FO0uuN2DJOSbJbnZz1fglvMuxI7PIE-ShXehM8WcC',
+          'version': '7fcu-OXUt3YtkM5bJ799qvx1sFSQAWOsynLMt9Z2NR4C',
       },
     ],
     'condition': 'checkout_android',
@@ -1162,7 +1161,7 @@ deps = {
     Var('boringssl_git') + '/boringssl.git' + '@' +  Var('boringssl_revision'),
 
   'src/third_party/breakpad/breakpad':
-    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + 'e085b3b50bde862d0cf3ce4594e3f391bcf5faec',
+    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + 'e059dad5ea3e781786f155ff9806602a4374b5fa',
 
   'src/third_party/byte_buddy': {
       'packages': [
@@ -1250,7 +1249,7 @@ deps = {
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
 
   'src/third_party/devtools-frontend-internal': {
-      'url': 'https://chrome-internal.googlesource.com/devtools/devtools-internal.git' + '@' + 'b6260a98c2e38969e0d3f79e0890bebaca845804',
+      'url': 'https://chrome-internal.googlesource.com/devtools/devtools-internal.git' + '@' + '9344e6921ca0df93b7ffd95a3b692dd9aba5c465',
     'condition': 'checkout_src_internal',
   },
 
@@ -1451,7 +1450,7 @@ deps = {
       + '@' + '42e892d96e47b1f6e29844cc705e148ec4856448', # release 1.9.4
 
   'src/third_party/junit/src': {
-      'url': Var('chromium_git') + '/external/junit.git' + '@' + '64155f8a9babcfcf4263cf4d08253a1556e75481',
+      'url': Var('chromium_git') + '/external/junit.git' + '@' + '05fe2a64f59127c02135be22f416e91260d6ede6',
       'condition': 'checkout_android',
   },
 
@@ -1465,7 +1464,7 @@ deps = {
     Var('chromium_git') + '/external/libaddressinput.git' + '@' + 'df35d6c42da4fa2759e4cfb592afe33817993b89',
 
   'src/third_party/libaom/source/libaom':
-    Var('aomedia_git') + '/aom.git' + '@' +  '407ee57e289d3ed907c57de16275c7615a93f9d9',
+    Var('aomedia_git') + '/aom.git' + '@' +  'b42e001a9ca9805aff7aaaa270b364a8298c33b4',
 
   'src/third_party/libavif/src':
     Var('chromium_git') + '/external/github.com/AOMediaCodec/libavif.git' + '@' + Var('libavif_revision'),
@@ -1727,7 +1726,7 @@ deps = {
   },
 
   'src/third_party/requests/src': {
-      'url': Var('chromium_git') + '/external/github.com/kennethreitz/requests.git' + '@' + 'refs/tags/v2.23.0',
+      'url': Var('chromium_git') + '/external/github.com/kennethreitz/requests.git' + '@' + 'c7e0fc087ceeadb8b4c84a0953a422c474093d6d',
       'condition': 'checkout_android',
   },
 
@@ -1850,7 +1849,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '9eb57da4a0252044feac56418f4a306f5c66880a',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'a3e51df5f3377bee71b4dcdd1ee8f50c520a9ea8',
+    Var('webrtc_git') + '/src.git' + '@' + '4e8a5ac68e8a4ae0588f54f2fdb8cbd1eb5fa50d',
 
   # Wuffs' canonical repository is at github.com/google/wuffs, but we use
   # Skia's mirror of Wuffs, the same as in upstream Skia's DEPS file.
@@ -1920,7 +1919,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e996dcecbc8f5088f54d6edc02a9aebcb16389cd',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@03c7d5252c543b20160f4341273e7377ca027397',
     'condition': 'checkout_src_internal',
   },
 
@@ -4504,38 +4503,6 @@ hooks = [
                 '--no_auth',
                 '--bucket', 'chromium-telemetry',
                 '-s', 'src/tools/perf/page_sets/maps_perf_test/load_dataset.sha1',
-    ],
-  },
-
-  # This is used to ensure that all network operations are properly
-  # annotated so we can document what they're for.
-  {
-    'name': 'tools_traffic_annotation_linux',
-    'pattern': '.',
-    'condition': 'host_os == "linux" and checkout_traffic_annotation_tools',
-    'action': [ 'python3',
-                'src/third_party/depot_tools/download_from_google_storage.py',
-                '--no_resume',
-                '--no_auth',
-                '--num_threads=4',
-                '--bucket', 'chromium-tools-traffic_annotation',
-                '-d', 'src/tools/traffic_annotation/bin/linux64',
-    ],
-  },
-
-# This is used to ensure that all network operations are properly
-# annotated so we can document what they're for.
-  {
-    'name': 'tools_traffic_annotation_windows',
-    'pattern': '.',
-    'condition': 'host_os == "win" and checkout_traffic_annotation_tools',
-    'action': [ 'python3',
-                'src/third_party/depot_tools/download_from_google_storage.py',
-                '--no_resume',
-                '--no_auth',
-                '--num_threads=4',
-                '--bucket', 'chromium-tools-traffic_annotation',
-                '-d', 'src/tools/traffic_annotation/bin/win32',
     ],
   },
 

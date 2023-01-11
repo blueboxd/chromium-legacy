@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.tasks.tab_management.TabListRecyclerView.RecyclerViewPosition;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorCoordinator.TabSelectionEditorNavigationProvider;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
@@ -182,10 +183,7 @@ class TabSelectionEditorMediator
         if (mActionListModel == null) return;
 
         for (PropertyModel model : mActionListModel) {
-            // TODO(ckitagawa): update these tints with input from UX.
             model.set(TabSelectionEditorActionProperties.TEXT_TINT, toolbarTintColorList);
-            if (model.get(TabSelectionEditorActionProperties.SKIP_ICON_TINT)) continue;
-
             model.set(TabSelectionEditorActionProperties.ICON_TINT, toolbarTintColorList);
         }
     }
@@ -194,14 +192,9 @@ class TabSelectionEditorMediator
      * {@link TabSelectionEditorCoordinator.TabSelectionEditorController} implementation.
      */
     @Override
-    public void show(List<Tab> tabs) {
-        show(tabs, 0);
-    }
-
-    @Override
-    public void show(List<Tab> tabs, int preSelectedTabCount) {
+    public void show(List<Tab> tabs, int preSelectedTabCount,
+            @Nullable RecyclerViewPosition recyclerViewPosition) {
         recordTimeSinceLastShown();
-
         // We don't call TabListCoordinator#prepareTabSwitcherView, since not all the logic (e.g.
         // requiring one tab to be selected) is applicable here.
         mTabListCoordinator.prepareTabGridView();
@@ -221,7 +214,8 @@ class TabSelectionEditorMediator
             mSelectionDelegate.setSelectedItems(preSelectedTabIds);
         }
 
-        mResetHandler.resetWithListOfTabs(tabs, preSelectedTabCount, /*quickMode=*/false);
+        mResetHandler.resetWithListOfTabs(
+                tabs, preSelectedTabCount, recyclerViewPosition, /*quickMode=*/false);
 
         mModel.set(TabSelectionEditorProperties.IS_VISIBLE, true);
     }
@@ -298,20 +292,42 @@ class TabSelectionEditorMediator
     }
 
     @Override
+    public void syncRecyclerViewPosition() {
+        mResetHandler.syncRecyclerViewPosition();
+    }
+
+    @Override
     public ObservableSupplier<Boolean> getHandleBackPressChangedSupplier() {
         return mBackPressChangedSupplier;
     }
 
     @Override
     public void hide() {
+        hideInternal(/*hiddenByAction=*/false);
+    }
+
+    @Override
+    public void hideByAction() {
+        hideInternal(/*hiddenByAction=*/true);
+    }
+
+    private void hideInternal(boolean hiddenByAction) {
         if (!isEditorVisible()) return;
 
         if (TabUiFeatureUtilities.isTabSelectionEditorV2Enabled(mContext)) {
             RecordUserAction.record("TabMultiSelectV2.Closed");
         }
+
+        // When hiding by action it is expected that syncRecyclerViewPosition() is called before the
+        // action occurs. This is because an action may remove tabs so sync position must happen
+        // first so the recyclerViewStat is valid due to the same number of items.
+        if (!hiddenByAction) {
+            syncRecyclerViewPosition();
+        }
         mTabListCoordinator.cleanupTabGridView();
         mVisibleTabs.clear();
-        mResetHandler.resetWithListOfTabs(null, 0, /*quickMode=*/false);
+        mResetHandler.resetWithListOfTabs(
+                null, /*preSelectedCount=*/0, /*recyclerViewPosition=*/null, /*quickMode=*/false);
         mModel.set(TabSelectionEditorProperties.IS_VISIBLE, false);
         if (ChromeFeatureList.sDiscardOccludedBitmaps.isEnabled()) {
             mResetHandler.postHiding();
@@ -330,7 +346,8 @@ class TabSelectionEditorMediator
             selectedTabIds.add(tab.getId());
         }
         mSelectionDelegate.setSelectedItems(selectedTabIds);
-        mResetHandler.resetWithListOfTabs(mVisibleTabs, mVisibleTabs.size(), /*quickMode=*/true);
+        mResetHandler.resetWithListOfTabs(mVisibleTabs, mVisibleTabs.size(),
+                /*recyclerViewPosition=*/null, /*quickMode=*/true);
     }
 
     @Override
@@ -338,7 +355,8 @@ class TabSelectionEditorMediator
         Set<Integer> selectedTabIds = mSelectionDelegate.getSelectedItems();
         selectedTabIds.clear();
         mSelectionDelegate.setSelectedItems(selectedTabIds);
-        mResetHandler.resetWithListOfTabs(mVisibleTabs, 0, /*quickMode=*/true);
+        mResetHandler.resetWithListOfTabs(mVisibleTabs, /*preSelectedCount=*/0,
+                /*recyclerViewPosition=*/null, /*quickMode=*/true);
     }
 
     @Override

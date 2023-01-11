@@ -86,6 +86,7 @@
 #include "content/browser/web_package/web_bundle_source.h"
 #include "content/browser/web_package/web_bundle_utils.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/common/debug_utils.h"
 #include "content/common/features.h"
 #include "content/common/navigation_params_utils.h"
@@ -1260,7 +1261,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           std::string() /* reduced_accept_language */,
           /*navigation_delivery_type=*/
           network::mojom::NavigationDeliveryType::kDefault,
-          /*view_transition_state=*/absl::nullopt);
+          /*view_transition_state=*/absl::nullopt,
+          /*not_restored_reasons=*/nullptr);
 
   // CreateRendererInitiated() should only be triggered when the navigation is
   // initiated by a frame in the same process.
@@ -1393,7 +1395,8 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           std::string() /* reduced_accept_language */,
           /*navigation_delivery_type=*/
           network::mojom::NavigationDeliveryType::kDefault,
-          /*view_transition_state=*/absl::nullopt);
+          /*view_transition_state=*/absl::nullopt,
+          /*not_restored_reasons=*/nullptr);
   blink::mojom::BeginNavigationParamsPtr begin_params =
       blink::mojom::BeginNavigationParams::New();
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -1544,6 +1547,8 @@ NavigationRequest::NavigationRequest(
   // invalidated yet at this point.
   CHECK(!rfh_restored_from_back_forward_cache.WasInvalidated());
   ScopedCrashKeys crash_keys(*this);
+
+  ComputeDownloadPolicy();
 
   // There should be no navigations to about:newtab, about:version or other
   // similar URLs (see https://crbug.com/1145717):
@@ -1863,6 +1868,24 @@ NavigationRequest::NavigationRequest(
         context->StartServiceWorkerForNavigationHint(GetURL(), key,
                                                      base::DoNothing());
       }
+    }
+  }
+
+  // Only update the BackForwardCacheMetrics if this is for a navigation that
+  // could've been served from the bfcache.
+  if (IsBackForwardCacheEnabled() && !IsServedFromBackForwardCache() && entry &&
+      BackForwardCacheMetrics::IsCrossDocumentMainFrameHistoryNavigation(
+          this)) {
+    // Update NotRestoredReasons and create a metrics object if there's none.
+    entry->UpdateBackForwardCacheNotRestoredReasons(this);
+    auto* metrics = entry->back_forward_cache_metrics();
+    DCHECK(metrics);
+    if (base::FeatureList::IsEnabled(
+            blink::features::kBackForwardCacheSendNotRestoredReasons)) {
+      // Only populate the web-exposed NotRestoredReasons when needed by
+      // the NotRestoredReasons API.
+      commit_params_->not_restored_reasons =
+          metrics->GetWebExposedNotRestoredReasons();
     }
   }
 }
@@ -2765,6 +2788,10 @@ void NavigationRequest::OnRequestRedirected(
   // Reset the page state as it can no longer be used at commit time since the
   // navigation was redirected.
   commit_params_->page_state = std::string();
+
+  // Reset NotRestoredReasons as the reasons are for the original page and not
+  // for the redirected one.
+  commit_params_->not_restored_reasons = nullptr;
 
   // A request was made. Record it before we decide to block this response for
   // a reason or another.
@@ -5071,12 +5098,26 @@ void NavigationRequest::CommitNavigation() {
 
   PersistOriginTrialsFromHeaders(origin, response(), browser_context);
 
-  // If the final response do not have a valid ReduceAcceptLanguage origin trial
-  // token, stop persisting the accepted language. This happens when the token
-  // expires, is invalid, or is missing when the server stop using it.
+  // Update the reduced accept-language to commit if it's empty, and stop
+  // persisting the accepted language if the final response do not have a valid
+  // ReduceAcceptLanguage origin trial token. This happens when a site initially
+  // opts-in to the origin trial, the token expires, is invalid, or is missing
+  // when the server stops using it.
   if (auto reduce_accept_lang_utils =
           ReduceAcceptLanguageUtils::Create(browser_context);
       reduce_accept_lang_utils && !devtools_accept_language_override_) {
+    // When the server initially opt into the origin trial, via an OT token in
+    // the navigation response, the reduced accept-language to commit has not
+    // been set. It is set here to make sure the initial page load uses an
+    // appropriate value. E.g. this helps subresource requests send reduced
+    // accept-language when server initially opt into the origin trial.
+    if (commit_params_->reduced_accept_language.empty()) {
+      commit_params_->reduced_accept_language =
+          reduce_accept_lang_utils.value()
+              .LookupReducedAcceptLanguage(GetOriginToCommit().value(),
+                                           frame_tree_node_)
+              .value_or("");
+    }
     reduce_accept_lang_utils.value().RemoveOriginTrialReducedAcceptLanguage(
         commit_params_->reduced_accept_language, GetOriginToCommit().value(),
         response(), frame_tree_node_);
@@ -8303,6 +8344,39 @@ NavigationRequest::GetJavaNavigationHandle() {
 void NavigationRequest::SetViewTransitionState(
     blink::ViewTransitionState view_transition_state) {
   commit_params_->view_transition_state = std::move(view_transition_state);
+}
+
+// The NavigationDownloadPolicy is currently computed by the renderer process.
+// The problem: not every navigation are initiated from the renderer. Most
+// fields from the bitfield can be computed from the browser process. This
+// function is a partial attempt at doing it.
+void NavigationRequest::ComputeDownloadPolicy() {
+  blink::NavigationDownloadPolicy& download_policy =
+      common_params_->download_policy;
+
+  // [ViewSource]
+  if (GetNavigationEntry() && GetNavigationEntry()->IsViewSourceMode()) {
+    download_policy.SetDisallowed(blink::NavigationDownloadType::kViewSource);
+  }
+
+  // [Sandbox]
+  if (base::FeatureList::IsEnabled(
+          features::kBrowserSideDownloadPolicySandbox) &&
+      (commit_params_->frame_policy.sandbox_flags &
+       network::mojom::WebSandboxFlags::kDownloads) ==
+          network::mojom::WebSandboxFlags::kDownloads) {
+    download_policy.SetDisallowed(blink::NavigationDownloadType::kSandbox);
+  }
+
+  // TODO(arthursonzogni): Check if the following fields from the
+  // NavigationDownloadPolicy could be computed here from the browser process
+  // instead:
+  //
+  // [NoGesture]
+  // [OpenerCrossOrigin]
+  // [AdFrameNoGesture]
+  // [AdFrame]
+  // [Interstitial]
 }
 
 }  // namespace content

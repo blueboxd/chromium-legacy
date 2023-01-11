@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/ash/input_method_manager.h"
@@ -32,6 +33,12 @@ namespace ash {
 namespace input_method {
 
 namespace {
+
+constexpr int kMaxEditDistance = 30;
+constexpr int kDistanceUntilUnderlineHides = 3;
+constexpr int kMaxValidationTries = 4;
+constexpr base::TimeDelta kVeryFastInteractionPeriod = base::Milliseconds(200);
+constexpr base::TimeDelta kFastInteractionPeriod = base::Milliseconds(500);
 
 bool IsVkAutocorrect() {
   return ChromeKeyboardControllerClient::HasInstance() &&
@@ -67,6 +74,99 @@ AutocorrectPreference GetPhysicalKeyboardAutocorrectPref(
   if (autocorrect_setting->GetIfInt().value() > 0)
     return AutocorrectPreference::kEnabled;
   return AutocorrectPreference::kDisabled;
+}
+
+AutocorrectCompatibilitySummary ConvertActionToCompatibilitySummary(
+    AutocorrectActions action) {
+  switch (action) {
+    case AutocorrectActions::kWindowShown:
+      return AutocorrectCompatibilitySummary::kWindowShown;
+    case AutocorrectActions::kUnderlined:
+      return AutocorrectCompatibilitySummary::kUnderlined;
+    case AutocorrectActions::kReverted:
+      return AutocorrectCompatibilitySummary::kReverted;
+    case AutocorrectActions::kUserAcceptedAutocorrect:
+      return AutocorrectCompatibilitySummary::kUserAcceptedAutocorrect;
+    case AutocorrectActions::kUserActionClearedUnderline:
+      return AutocorrectCompatibilitySummary::kUserActionClearedUnderline;
+    case AutocorrectActions::kUserExitedTextFieldWithUnderline:
+      return AutocorrectCompatibilitySummary::kUserExitedTextFieldWithUnderline;
+    case AutocorrectActions::kInvalidRange:
+      return AutocorrectCompatibilitySummary::kInvalidRange;
+    default:
+      LOG(ERROR) << "Invalid AutocorrectActions: action=" << (int)action;
+      return AutocorrectCompatibilitySummary::kInvalidRange;
+  }
+}
+
+void RecordAppCompatibilityUkm(
+    ukm::SourceId source_id,
+    bool virtual_keyboard,
+    AutocorrectCompatibilitySummary compatibility_summary) {
+  if (virtual_keyboard) {
+    ukm::builders::InputMethod_Assistive_AutocorrectV2(source_id)
+        .SetCompatibilitySummary_VK(static_cast<int>(compatibility_summary))
+        .Record(ukm::UkmRecorder::Get());
+  } else {
+    ukm::builders::InputMethod_Assistive_AutocorrectV2(source_id)
+        .SetCompatibilitySummary_PK(static_cast<int>(compatibility_summary))
+        .Record(ukm::UkmRecorder::Get());
+  }
+}
+
+void LogAutocorrectAppCompatibilityUkm(AutocorrectActions action,
+                                       base::TimeDelta time_delta,
+                                       bool virtual_keyboard_visible) {
+  ui::TextInputTarget* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (!input_context) {
+    return;
+  }
+
+  ukm::SourceId sourceId = input_context->GetClientSourceForMetrics();
+  if (sourceId == ukm::kInvalidSourceId) {
+    return;
+  }
+
+  // Record base interactions.
+  RecordAppCompatibilityUkm(sourceId, virtual_keyboard_visible,
+                            ConvertActionToCompatibilitySummary(action));
+
+  if (time_delta > kFastInteractionPeriod) {
+    return;
+  }
+
+  bool is_very_fast = time_delta <= kVeryFastInteractionPeriod;
+
+  AutocorrectCompatibilitySummary latency_compatibility;
+
+  // Convert latency of important interaction to CompatibilitySummary.
+  switch (action) {
+    case AutocorrectActions::kUserAcceptedAutocorrect:
+      latency_compatibility =
+          is_very_fast
+              ? AutocorrectCompatibilitySummary::kVeryFastAcceptedAutocorrect
+              : AutocorrectCompatibilitySummary::kFastAcceptedAutocorrect;
+      break;
+    case AutocorrectActions::kReverted:
+    case AutocorrectActions::kUserActionClearedUnderline:
+    case AutocorrectActions::kInvalidRange:
+      latency_compatibility =
+          is_very_fast
+              ? AutocorrectCompatibilitySummary::kVeryFastRejectedAutocorrect
+              : AutocorrectCompatibilitySummary::kFastRejectedAutocorrect;
+      break;
+    case AutocorrectActions::kUserExitedTextFieldWithUnderline:
+      latency_compatibility =
+          is_very_fast ? AutocorrectCompatibilitySummary::kVeryFastExitField
+                       : AutocorrectCompatibilitySummary::kFastExitField;
+      break;
+    default:
+      return;
+  }
+
+  RecordAppCompatibilityUkm(sourceId, virtual_keyboard_visible,
+                            latency_compatibility);
 }
 
 void LogAssistiveAutocorrectDelay(base::TimeDelta delay) {
@@ -157,6 +257,78 @@ void LogAssistiveAutocorrectQualityBreakdown(
   }
 }
 
+// Returns the Levenshtein distance between |str1| and |str2|.
+// Which is the minimum number of single-character edits (i.e. insertions,
+// deletions or substitutions) required to change one word into the other.
+// https://en.wikipedia.org/wiki/Levenshtein_distance
+int GetLevenshteinDistance(const std::u16string& str1,
+                           const std::u16string& str2) {
+  if (str1.size() > str2.size()) {
+    return GetLevenshteinDistance(str2, str1);
+  }
+  if (str1.size() + static_cast<size_t>(kMaxEditDistance) < str2.size()) {
+    return kMaxEditDistance;
+  }
+
+  std::vector<int> row(str1.size() + 1);
+  for (size_t i = 0; i < row.size(); ++i) {
+    row[i] = static_cast<int>(i);
+  }
+
+  for (size_t i = 0; i < str2.size(); ++i) {
+    ++row[0];
+    int previous = static_cast<int>(i);
+    bool under_cutoff = false;
+    for (size_t j = 0; j < str1.size(); ++j) {
+      int old_row = row[j + 1];
+      int cost = str2[i] == str1[j] ? 0 : 1;
+      row[j + 1] = std::min(std::min(row[j], row[j + 1]) + 1, previous + cost);
+      if (row[j + 1] < kMaxEditDistance) {
+        under_cutoff = true;
+      }
+      previous = old_row;
+    }
+
+    if (!under_cutoff) {
+      return kMaxEditDistance;
+    }
+  }
+  return row[str1.size()];
+}
+
+void MeasureAndLogAssistiveAutocorrectEditDistance(
+    const std::u16string& original_text,
+    const std::u16string& suggested_text,
+    const bool suggestion_accepted,
+    const bool virtual_keyboard_visible) {
+  const int text_length =
+      std::min(static_cast<int>(original_text.length()), kMaxEditDistance);
+  const int distance = std::min(
+      GetLevenshteinDistance(original_text, suggested_text), kMaxEditDistance);
+  if (text_length <= 0 || distance <= 0) {
+    return;
+  }
+
+  const std::string histogram_base_name =
+      "InputMethod.Assistive.AutocorrectV2.Distance.";
+  std::string keyboard_type_extension =
+      virtual_keyboard_visible ? ".Vk" : ".Pk";
+  keyboard_type_extension += suggestion_accepted ? "Accepted" : "Rejected";
+
+  // This is a 2d array of size (kMaxEditDistance x kMaxEditDistance) that
+  // has been flattened
+  const int flattenedLengthVsDistance =
+      (text_length - 1) * kMaxEditDistance + distance - 1;
+  base::UmaHistogramSparse(
+      base::StrCat({histogram_base_name, "OriginalLengthVsLevenshteinDistance",
+                    keyboard_type_extension}),
+      flattenedLengthVsDistance);
+  base::UmaHistogramExactLinear(
+      base::StrCat(
+          {histogram_base_name, "SuggestedLength", keyboard_type_extension}),
+      suggested_text.length(), kMaxEditDistance);
+}
+
 void RecordAssistiveCoverage(AssistiveType type) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Coverage", type);
 }
@@ -201,9 +373,6 @@ bool IsAutocorrectSuggestionInSurroundingText(
   return surrounding_text.substr(autocorrect_range.start(),
                                  autocorrect_range.length()) == suggested_text;
 }
-
-constexpr int kDistanceUntilUnderlineHides = 3;
-constexpr int kMaxValidationTries = 4;
 
 }  // namespace
 
@@ -257,6 +426,7 @@ void AutocorrectManager::HandleAutocorrect(const gfx::Range autocorrect_range,
 
   LogAssistiveAutocorrectInternalState(
       AutocorrectInternalStates::kHandleSetRange);
+
   input_context->SetAutocorrectRange(
       autocorrect_range,
       base::BindOnce(&AutocorrectManager::ProcessSetAutocorrectRangeDone,
@@ -298,9 +468,13 @@ void AutocorrectManager::LogAssistiveAutocorrectAction(
                                 action);
 
   if (pending_autocorrect_.has_value()) {
+    base::TimeDelta latency =
+        base::TimeTicks::Now() - pending_autocorrect_->start_time;
     LogAssistiveAutocorrectActionLatency(
-        action, base::TimeTicks::Now() - pending_autocorrect_->start_time,
-        pending_autocorrect_->virtual_keyboard_visible);
+        action, latency, pending_autocorrect_->virtual_keyboard_visible);
+
+    LogAutocorrectAppCompatibilityUkm(
+        action, latency, pending_autocorrect_->virtual_keyboard_visible);
   }
 
   if (pending_autocorrect_.has_value() &&
@@ -348,6 +522,9 @@ void AutocorrectManager::MeasureAndLogAssistiveAutocorrectQualityBreakdown(
   LogAssistiveAutocorrectQualityBreakdown(
       AutocorrectQualityBreakdown::kSuggestionResolved, suggestion_accepted,
       virtual_keyboard_visible);
+  MeasureAndLogAssistiveAutocorrectEditDistance(original_text, suggested_text,
+                                                suggestion_accepted,
+                                                virtual_keyboard_visible);
 
   if (diacritics_insensitive_string_comparator_.Equal(original_text,
                                                       suggested_text)) {

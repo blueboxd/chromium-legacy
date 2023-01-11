@@ -63,7 +63,7 @@ class SimpleDevToolsProtocolClient : public content::DevToolsAgentHostClient {
                                base::span<const uint8_t> json_message) override;
   void AgentHostClosed(content::DevToolsAgentHost* agent_host) override;
 
-  void DispatchProtocolMessage(base::Value::Dict message);
+  void DispatchProtocolMessageTask(base::Value::Dict message);
 
   void SendProtocolMessage(base::Value::Dict message);
 

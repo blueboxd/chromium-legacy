@@ -354,6 +354,7 @@
 <translation id="1791820510173628507"><ph name="MANAGE_GOOGLE_ACCOUNT_FOCUSED_FRIENDLY_MATCH_TEXT" />, Tab düyməsi, sonra Enter düyməsinə basaraq Google Hesabınızda məlumat, məxfilik və təhlükəsizliyinizi idarə edin</translation>
 <translation id="1798447301915465742"><ph name="MULTIPLE_ACTIONS_FOCUSED_FRIENDLY_MATCH_TEXT" />, bir neçə əməliyyat əlçatandır, onları nəzərdən keçirmək üçün Tab düyməsinə basın</translation>
 <translation id="1800473098294731951">B9</translation>
+<translation id="1801812870656502108">Virtual kart detalları</translation>
 <translation id="1803020234906945288">Sağlam qidalanma</translation>
 <translation id="1803264062614276815">Kart Sahibinin Adı</translation>
 <translation id="1803351196216024260">Saytlar mikrofonunuzdan istifadə etmək üçün icazə istəyə bilər</translation>
@@ -447,6 +448,7 @@
 <translation id="2059202684901022309">22 x 34 düym</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 təklif}other{# təklif}}</translation>
 <translation id="2066915425250589881">silinməsini tələb edin</translation>
+<translation id="2066969741541525119">Qarşıdakı sayt təşkilatınız tərəfindən bloklanıb</translation>
 <translation id="2068528718802935086">Körpələr və yenicə ayaq açmış uşaqlar</translation>
 <translation id="2071156619270205202">Bu kart virtual kart nömrəsi üçün uyğun deyil.</translation>
 <translation id="2071692954027939183">Bildirişlərə adətən icazə vermədiyinizə görə onlar avtomatik olaraq bloklanıb</translation>
@@ -501,6 +503,7 @@
 <translation id="2188375229972301266">Aşağıdan çoxsaylı deşik açın</translation>
 <translation id="219906046732893612">Ev yeniləməsi</translation>
 <translation id="2202020181578195191">Düzgün bitmə ili daxil edin</translation>
+<translation id="2202627062836089804">kartınızın arxa tərəfi</translation>
 <translation id="22081806969704220">Qab 3</translation>
 <translation id="2210794033760923560">Hesabatı yükləyin</translation>
 <translation id="2212735316055980242">Siyasət tapılmadı</translation>
@@ -680,7 +683,6 @@
 <translation id="2674804415323431591">Təklifləri gizlədin</translation>
 <translation id="2677696497921480781">Doğum günləri və ad günləri</translation>
 <translation id="2677748264148917807">Tərk edin</translation>
-<translation id="2679714844901977852">Təhlükəsiz və sürətli ödəniş üçün kartınızı və faktura məlumatınızı Google Hesabınızda (<ph name="USER_EMAIL" />) saxlayın</translation>
 <translation id="2687555958734450033">Ən uyğun</translation>
 <translation id="2688186765492306706">500 x 760 mm</translation>
 <translation id="2688969097326701645">Bəli, davam edin</translation>
@@ -718,7 +720,6 @@
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784474685437057136">B5 Extra</translation>
 <translation id="2784949926578158345">Əlaqə sıfırlanmışdı.</translation>
-<translation id="2791176355335562114">Növbəti dəfə daha sürətli ödəyin</translation>
 <translation id="2792012897584536778">Bu cihazın administratorlarının quraşdırdığı güvənlik sertifikatları daxil olduğunuz veb saytların kontentini görmələrinə imkan verir.</translation>
 <translation id="2799020568854403057">Sonrakı saytda zərərli tətbiq var</translation>
 <translation id="2799223571221894425">Yenidən başladın</translation>
@@ -983,6 +984,7 @@
 <translation id="350069200438440499">Fayl adı:</translation>
 <translation id="3507936815618196901">Ətrafınızdakı sahələrin 3D xəritəsini yaratmaq və kamera mövqeyini izləmək</translation>
 <translation id="3512163584740124171">Eyni siyasət qrupundan olan digər siyasət üstünlük təşkil etdiyinə görə bu siyasət iqnor edilir.</translation>
+<translation id="3515972145999192222">Siyasəti pozduğuna görə təşkilatınız <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> saytını bloklayıb. <ph name="BEGIN_LEARN_MORE_LINK" />Ətraflı məlumat<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="35172538073169599">"Ünvanları idarə edin" düyməsi,Chrome ayarlarında ünvanlar əlavə etmək və idarə etmək üçün Enter düyməsinə basın</translation>
 <translation id="3518941727116570328">Çoxsaylı obyektin idarə edilməsi</translation>
 <translation id="3525130752944427905">10 x 14 düym</translation>
@@ -1038,7 +1040,6 @@
 <translation id="3633738897356909127">"Chrome'u güncəlləyin" düyməsi, Chrome ayarlarında Chrome'u güncəlləmək üçün Enter düyməsinə basın</translation>
 <translation id="3634530185120165534">Qab 5</translation>
 <translation id="3634567936866541746">İndicə parolunuzu aldadıcı sayt içində yazdınız. Hesablarınızı qorumaq üçün Chrome yadda saxladığınız parolları yoxlamağı tövsiyə edir.</translation>
-<translation id="3637662659967048211">Google Hesabında saxlayın</translation>
 <translation id="3642638418806704195">Tətbiq:</translation>
 <translation id="3647286794400715637">Hər bir keçid sətri daxiletməsində 1-2 keçid olmalıdır.</translation>
 <translation id="3650584904733503804">Yoxlama uğurludur</translation>
@@ -1057,6 +1058,7 @@
 <translation id="3678342917559046352">Yanlış Artırma: Dəyər bu formatlardan birində olmalıdır: &lt;extension_id&gt; və ya &lt;extension_id&gt;;&lt;update_url&gt;.</translation>
 <translation id="3678529606614285348">Yeni Gizli pəncərədə səhifə açın (Ctrl-Shift-N)</translation>
 <translation id="3681007416295224113">Sertifikat məlumatı</translation>
+<translation id="3693327506115126094">Kimliyinizi necə doğrulayacağınızı seçin</translation>
 <translation id="3699374065820972102">TouchID parolları daxil etmək üçün aktivdir</translation>
 <translation id="3701427423622901115">Sıfırlanma doğrulandı.</translation>
 <translation id="3704162925118123524">İstifadə etdiyiniz şəbəkə login səhifəsinə daxil olmağınızı tələb edə bilər.</translation>
@@ -1141,6 +1143,7 @@
 <translation id="3906954721959377182">Planşet</translation>
 <translation id="3909477809443608991"><ph name="URL" /> qorunan kontenti oxutmaq istəyir. Cihazın kimliyi Google tərəfindən doğrulanacaq və bu sayt cihaza daxil ola biləcək.</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
+<translation id="3921869355029467742">Təhlükəsizlik kodunuzu daxil edin</translation>
 <translation id="3927932062596804919">Rədd edin</translation>
 <translation id="393316646445601645">İnternet və telekom</translation>
 <translation id="3939773374150895049">CVC əvəzinə WebAuthn istifadə edilsin?</translation>
@@ -1221,6 +1224,7 @@
 <translation id="4132448310531350254">Tətbiq "<ph name="POLICY_IDS_LIST" />" tərəfindən istinad edilən "<ph name="FILE_EXTENSION" />" fayl artırması üçün dublikat emalçılar.</translation>
 <translation id="4134123981501319574">Sənəd yaradın</translation>
 <translation id="413544239732274901">Ətraflı məlumat</translation>
+<translation id="4140905530744469899">Profil ID-si:</translation>
 <translation id="4142935452406587478">Qab 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4150099059797363385">Zərf Çin #4</translation>
@@ -1387,6 +1391,7 @@
 <translation id="4524805452350978254">Kartları idarə edin</translation>
 <translation id="4526465106919207193">İnsanlar və cəmiyyət</translation>
 <translation id="4530347922939905757">Mətn mesajı</translation>
+<translation id="4531477351494678589">Virtual kart nömrəsi:</translation>
 <translation id="4540780316273593836">Xəta baş verdi</translation>
 <translation id="4541810033354695636">artırılmış reallıq</translation>
 <translation id="4542971377163063093">Qab 6</translation>
@@ -1396,6 +1401,7 @@
 <translation id="4567686777917670400">Administrator brauzer quraşdırmasını uzaqdan dəyişə bilər. Bu cihazdakı fəaliyyət Chromium'dan kənarda da idarə edilə bilər. <ph name="BEGIN_LINK" />Ətraflı məlumat<ph name="END_LINK" /></translation>
 <translation id="457875822857220463">Çatdırılma</translation>
 <translation id="4582204425268416675">Kartı silin</translation>
+<translation id="4582595824823167856">Mətn mesajı alın</translation>
 <translation id="4587425331216688090">Ünvan Chrome'dan silinsin?</translation>
 <translation id="459089498662672729"><ph name="ORIGIN_NAME" /> mənbəyindən bu məkana əlavə etmək administrator siyasətinə əsasən tövsiyə edilmir</translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" /> domeninə bağlantınız müasir şifrə paketi ilə şifrələnib.</translation>
@@ -1407,6 +1413,7 @@
 <translation id="4606870351894164739">Təsirli</translation>
 <translation id="4607603470419975064">"Chrome ipucularına baxın" düyməsi, Enter düyməsinə basaraq Chrome funksiyaları haqqında ətraflı məlumat əldə edin</translation>
 <translation id="4607608436550361748">Chrome ipucularına baxın</translation>
+<translation id="460848736049414407">Admin tərəfindən bloklanıb</translation>
 <translation id="4610279718074907952">Bu sayt fəaliyyətinizi görən <ph name="SET_OWNER" /> tərəfindən təyin edilən qrupdadır</translation>
 <translation id="4617273035598175554">Qrafika və animasiya proqramı</translation>
 <translation id="4622292761762557753">İstənilən halda ötürün</translation>
@@ -1421,6 +1428,7 @@
 <translation id="4646534391647090355">İndi giriş edilsin</translation>
 <translation id="4648262692072505866">Heş SHA-256 formatında olmalıdır.</translation>
 <translation id="4652266463001779298">İcazə verilmir</translation>
+<translation id="4652440160515225514">Siyasəti pozduğuna görə təşkilatınız bu saytı bloklayıb.</translation>
 <translation id="4653167719759882810">Birləşmə və alış</translation>
 <translation id="4658638640878098064">Yuxarı soldan ştapel vurun</translation>
 <translation id="4660119392514473465">İndi şəxsi axtarış edə bilərsiniz və bu cihazı istifadə edən digər şəxslər fəaliyyətinizi görməyəcək. Lakin endirmələr, əlfəcinlər və oxu siyahısı elementləri yadda saxlanacaq.</translation>
@@ -1873,6 +1881,7 @@
 <translation id="57689295674415555">Virtual kart nömrəsi daxil edilməyib?</translation>
 <translation id="5772086939108830423">Fərqli Cihazda Giriş Açarı İstifadə edin</translation>
 <translation id="5776313857861697733">Prioritet</translation>
+<translation id="5776574724412881956">Virtual kart doldurulmayıb? Mübadilə buferinə kopyalamaq üçün virtual kart detallarına klikləyin. <ph name="IDS_AUTOFILL_VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="5781136890105823427">Sınaq aktiv edildi</translation>
 <translation id="578305955206182703">Kəhrəba</translation>
 <translation id="57838592816432529">Səssiz</translation>
@@ -2002,6 +2011,7 @@
 <translation id="6116338172782435947">Buferə kopyalanan mətn və şəkillərə baxın</translation>
 <translation id="6118782133429281336">Mənşə siyahısı boşdur.</translation>
 <translation id="6120179357481664955">UPI ID'niz yadda saxlansın?</translation>
+<translation id="6122181661879998141">kartınızın ön tərəfi</translation>
 <translation id="6124432979022149706">Chrome Enterprise Birləşdiriciləri</translation>
 <translation id="6126565365696310362">Zərf Çin #2</translation>
 <translation id="6127379762771434464">Element silindi</translation>
@@ -2260,7 +2270,6 @@
 <translation id="6826993739343257035">AR üçün icazə verilsin?</translation>
 <translation id="6828866289116430505">Genetika</translation>
 <translation id="6831043979455480757">Tərcümə et</translation>
-<translation id="6833752742582340615">Təhlükəsiz və sürətli ödəniş üçün kartınızı və faktura məlumatınızı Google Hesabınızda saxlayın</translation>
 <translation id="6842196666980060516">184 x 260 mm</translation>
 <translation id="6846340164947227603">Virtual kart nömrəsini istifadə edin:</translation>
 <translation id="6852204201400771460">Tətbiq yenidən yüklənilsin?</translation>
@@ -2369,6 +2378,7 @@
 <translation id="7108634116785509031"><ph name="HOST" /> kameranızı istifadə etmək istəyir</translation>
 <translation id="7108819624672055576">Artırma tərəfindən icazə verildi</translation>
 <translation id="7111012039238467737">(Düzgün)</translation>
+<translation id="7112327784801341716">Cari məlumatlarınızı görmürsünüz? Yeniləmək üçün bankınızla əlaqə saxlayın.</translation>
 <translation id="7118618213916969306">Mübadilə buferindən link axtarın, <ph name="SHORT_URL" /></translation>
 <translation id="7119414471315195487">Digər tab və ya proqramları bağlayın</translation>
 <translation id="7129355289156517987">Bütün Chromium Anonim tablarını bağladığınız zaman həmin tablardakı fəaliyyətiniz bu cihazdan silinir:
@@ -2672,6 +2682,7 @@
 <translation id="7798389633136518089">Siyasət bulud mənbəyi tərəfindən təyin edilmədiyinə görə nəzərə alınmayıb.</translation>
 <translation id="7800304661137206267">Bağlantı <ph name="CIPHER" /> istifadə olunaraq şifrələndi, mesaj doğrulanması üçün <ph name="MAC" /> və açar mübadiləsi mexanizmi üçün <ph name="KX" /> oldu.</translation>
 <translation id="7802523362929240268">Sayt qanunidir</translation>
+<translation id="7802989406998618639">Bankın kimliyinizi doğrulaması üçün <ph name="SIDE_OF_CARD" />ndəki <ph name="NUMBER_OF_DIGITS" /> rəqəmli təhlükəsizlik kodunu daxil edin</translation>
 <translation id="780301667611848630">Yox, çox sağ olun</translation>
 <translation id="7805571567667010077">Təşkilatınız tərəfindən idarə edilir</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -2906,6 +2917,7 @@
 <translation id="8437238597147034694">&amp;Daşınmanı ləğv edin</translation>
 <translation id="8438476240229491014">Bu ayarı yadda saxlayın</translation>
 <translation id="8438786541497918448">Kamera və mikrofon istifadə edilsin?</translation>
+<translation id="8438923942245957911">Bu sayt təşkilatınız tərəfindən işarələnib</translation>
 <translation id="8443613539889492016">Rep və hip-hop</translation>
 <translation id="8444543005280733648">Kompüter şəbəkələri</translation>
 <translation id="8446884382197647889">Ətraflı Məlumat</translation>
@@ -2999,6 +3011,7 @@
 <translation id="8725066075913043281">Yenidən cəhd edin</translation>
 <translation id="8726549941689275341">Səhifə ölçüsü:</translation>
 <translation id="8730621377337864115">Tamamdır</translation>
+<translation id="8731268612289859741">Təhlükəsizlik kodu</translation>
 <translation id="8731544501227493793">"Parolları idarə edin" düyməsi, Chrome ayarlarında parollarınıza baxmaq və idarə etmək üçün Enter düyməsinə basın</translation>
 <translation id="8734529307927223492"><ph name="DEVICE_TYPE" /> cihazınız <ph name="MANAGER" /> tərəfindən idarə edilir</translation>
 <translation id="8736059027199600831">30 x 40 düym</translation>
@@ -3104,6 +3117,7 @@
 <translation id="9005998258318286617">PDF sənədini yükləmək alınmadı.</translation>
 <translation id="9008178007718859630">Ev və interyer dekorasiyası</translation>
 <translation id="9008201768610948239">İqnor</translation>
+<translation id="9018120810758822233"><ph name="CREDIT_CARD" /> üçün təhlükəsizlik kodunuzu daxil edin</translation>
 <translation id="901834265349196618">e-poçt</translation>
 <translation id="9020200922353704812">Kart faktura ünvanı tələb edilir</translation>
 <translation id="9020542370529661692">Bu səhifə <ph name="TARGET_LANGUAGE" /> dilinə tərcümə edilmişdir</translation>
@@ -3181,6 +3195,7 @@
 <translation id="9179907736442194268">Hər hansı saytda qiymət enərsə, e-poçt xəbərdarlıqları alın</translation>
 <translation id="9183302530794969518">Google Sənəd</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> dəstəklənməyən protokol istifadə edir.</translation>
+<translation id="918454845714257218"><ph name="SIDE_OF_CARD" /> tərəfində kodu yoxlayıb yenidən cəhd edin</translation>
 <translation id="9187461866967718678">Ekstremal idmanlar</translation>
 <translation id="9191834167571392248">Aşağı soldan deşik açın</translation>
 <translation id="9199905725844810519">Çap funksiyası bloklanıb</translation>

@@ -194,7 +194,7 @@
 <translation id="2751739896257479635">Autentikasi tahap 2 EAP</translation>
 <translation id="2783010256799387990">LULUS</translation>
 <translation id="2789486458103222910">Oke</translation>
-<translation id="2805756323405976993">Apl</translation>
+<translation id="2805756323405976993">Aplikasi</translation>
 <translation id="28232023175184696">Tidak dapat terhubung ke internet. Klik untuk mencoba lagi.</translation>
 <translation id="2859243502336719778">Update penting</translation>
 <translation id="2860473693272905224">Letakkan halaman lain pada pemindai</translation>
@@ -305,6 +305,7 @@
 <translation id="4044093238444069296">Tidak dapat terhubung ke gateway</translation>
 <translation id="4046123991198612571">Lagu berikutnya</translation>
 <translation id="404928562651467259">PERINGATAN</translation>
+<translation id="4060260348856573701">APN baru</translation>
 <translation id="4093865285251893588">Gambar profil</translation>
 <translation id="409427325554347132">Simpan detail pengujian</translation>
 <translation id="4110686435123617899">Pilih album <ph name="TITLE" /> <ph name="DESC" /></translation>
@@ -328,7 +329,7 @@
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4258281355379922695">Latensi HTTP</translation>
 <translation id="4271957103967917607">Lihat di Layar Penuh</translation>
-<translation id="4289540628985791613">Ikhtisar</translation>
+<translation id="4289540628985791613">Ringkasan</translation>
 <translation id="4289849978083912975">Slideshow</translation>
 <translation id="4297501883039923494">Dihentikan - Error tidak diketahui</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> Gambar</translation>
@@ -606,6 +607,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="6766275201586212568">Resolusi DNS gagal</translation>
 <translation id="6768237774506518020">Tingkat kegagalan resolusi DNS tinggi</translation>
 <translation id="6791471867139427246">warna lampu keyboard</translation>
+<translation id="6793680441750437230">Tekan sembarang tombol di keyboard. Anda dapat menekan hingga 4 tombol sekaligus. Tekan Alt plus Esc untuk menutup dialog.</translation>
 <translation id="680983167891198932">Kunci</translation>
 <translation id="6816797338148849397">Info terkait pilihan Anda tersedia. Gunakan tombol Panah atas untuk mengakses.</translation>
 <translation id="6853312040151791195">Kecepatan pemakaian daya</translation>

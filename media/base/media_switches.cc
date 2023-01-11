@@ -586,6 +586,10 @@ BASE_FEATURE(kVaapiVideoDecodeLinux,
              "VaapiVideoDecoder",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kVaapiVideoDecodeLinuxGL,
+             "VaapiVideoDecodeLinuxGL",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kVaapiVideoEncodeLinux,
              "VaapiVideoEncoder",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1093,6 +1097,13 @@ const base::Feature MEDIA_EXPORT kUseOutOfProcessVideoDecoding{
 const base::Feature MEDIA_EXPORT kUseOutOfProcessVideoEncoding{
     "UseOutOfProcessVideoEncoding", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+
+// Make the PepperVideoDecoderHost use the MojoVideoDecoder to talk to hardware
+// decoders instead of using the GpuVideoDecodeAcceleratorHost. Note: this
+// doesn't affect the PPB_VideoDecoder_Impl which will continue to use the
+// GpuVideoDecodeAcceleratorHost for the PPB_VideoDecoder_Dev interface.
+const base::Feature MEDIA_EXPORT kUseMojoVideoDecoderForPepper{
+    "UseMojoVideoDecoderForPepper", base::FEATURE_DISABLED_BY_DEFAULT};
 
 std::string GetEffectiveAutoplayPolicy(const base::CommandLine& command_line) {
   // Return the autoplay policy set in the command line, if any.

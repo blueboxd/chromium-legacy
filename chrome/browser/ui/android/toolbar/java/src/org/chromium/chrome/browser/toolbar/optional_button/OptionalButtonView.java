@@ -36,6 +36,7 @@ import com.google.android.material.color.MaterialColors;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.ButtonData.ButtonSpec;
@@ -71,6 +72,7 @@ class OptionalButtonView extends FrameLayout implements TransitionListener {
     private int mBackgroundColorFilter;
     private Runnable mOnBeforeHideTransitionCallback;
     private Callback<Transition> mFakeBeginTransitionForTesting;
+    private Handler mHandler;
     private Handler mHandlerForTesting;
 
     private @State int mState;
@@ -296,7 +298,11 @@ class OptionalButtonView extends FrameLayout implements TransitionListener {
             return mHandlerForTesting;
         }
 
-        return super.getHandler();
+        if (mHandler == null) {
+            mHandler = new Handler(ThreadUtils.getUiThreadLooper());
+        }
+
+        return mHandler;
     }
 
     @Override
@@ -364,7 +370,7 @@ class OptionalButtonView extends FrameLayout implements TransitionListener {
         // When finished expanding the action chip schedule the collapse transition in 3 seconds.
         if (mState == State.SHOWING_ACTION_CHIP) {
             getHandler().postDelayed(mCollapseActionChipRunnable,
-                    AdaptiveToolbarFeatures.getContextualPageActionDelayMs());
+                    AdaptiveToolbarFeatures.getContextualPageActionDelayMs(mCurrentButtonVariant));
         }
     }
 
@@ -581,7 +587,7 @@ class OptionalButtonView extends FrameLayout implements TransitionListener {
         mButton.setImageDrawable(mIconDrawable);
         mButton.setVisibility(GONE);
 
-        if (AdaptiveToolbarFeatures.shouldUseAlternativeActionChipColor()) {
+        if (AdaptiveToolbarFeatures.shouldUseAlternativeActionChipColor(mCurrentButtonVariant)) {
             int highlightColor = MaterialColors.getColor(this, R.attr.colorSecondaryContainer);
             mBackground.setColorFilter(highlightColor);
         } else {

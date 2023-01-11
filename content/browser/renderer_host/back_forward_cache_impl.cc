@@ -13,6 +13,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -1473,6 +1474,16 @@ BackForwardCacheCanStoreTreeResult::BackForwardCacheCanStoreTreeResult(
       src_(rfh->frame_tree_node()->html_src()),
       url_(url) {}
 
+BackForwardCacheCanStoreTreeResult::BackForwardCacheCanStoreTreeResult(
+    bool is_same_origin,
+    const GURL& url)
+    : document_result_(BackForwardCacheCanStoreDocumentResult()),
+      is_same_origin_(is_same_origin),
+      id_(""),
+      name_(""),
+      src_(""),
+      url_(url) {}
+
 BackForwardCacheCanStoreTreeResult::~BackForwardCacheCanStoreTreeResult() =
     default;
 
@@ -1502,6 +1513,17 @@ void BackForwardCacheCanStoreTreeResult::FlattenTreeHelper(
 }
 
 std::unique_ptr<BackForwardCacheCanStoreTreeResult>
+BackForwardCacheCanStoreTreeResult::CreateEmptyTreeForNavigation(
+    NavigationRequest* navigation) {
+  DCHECK(BackForwardCacheMetrics::IsCrossDocumentMainFrameHistoryNavigation(
+      navigation));
+  std::unique_ptr<BackForwardCacheCanStoreTreeResult> empty_tree(
+      new BackForwardCacheCanStoreTreeResult(
+          /*is_same_origin=*/true, navigation->GetURL()));
+  return empty_tree;
+}
+
+std::unique_ptr<BackForwardCacheCanStoreTreeResult>
 BackForwardCacheCanStoreTreeResult::CreateEmptyTree(RenderFrameHostImpl* rfh) {
   BackForwardCacheCanStoreDocumentResult empty_result;
   std::unique_ptr<BackForwardCacheCanStoreTreeResult> empty_tree(
@@ -1511,27 +1533,16 @@ BackForwardCacheCanStoreTreeResult::CreateEmptyTree(RenderFrameHostImpl* rfh) {
   return empty_tree;
 }
 
-std::unique_ptr<BackForwardCacheCanStoreTreeResult>
-BackForwardCacheCanStoreTreeResult::CreateEmptyTreeBeforeCommit(
-    NavigationRequest* navigation) {
-  // This method should only be called when a RenderFrameHostImpl is in the
-  // process of committing a navigation.
-  DCHECK_GE(navigation->state(), NavigationRequest::WILL_PROCESS_RESPONSE);
-  RenderFrameHostImpl* frame = navigation->GetRenderFrameHost();
-  DCHECK(frame);
-  // Non-null `frame` indicates a non-`nullopt` `origin`.
-  absl::optional<url::Origin> origin = navigation->GetOriginToCommit();
-  DCHECK(origin.has_value());
-
-  BackForwardCacheCanStoreDocumentResult empty_result;
-  std::unique_ptr<BackForwardCacheCanStoreTreeResult> empty_tree(
-      new BackForwardCacheCanStoreTreeResult(
-          frame, origin.value(), navigation->GetURL(), empty_result));
-  return empty_tree;
+blink::mojom::BackForwardCacheNotRestoredReasonsPtr
+BackForwardCacheCanStoreTreeResult::GetWebExposedNotRestoredReasons() {
+  uint32_t count = GetCrossOriginReachableFrameCount();
+  int index = count == 0 ? 0 : base::RandInt(0, count - 1);
+  return GetWebExposedNotRestoredReasonsInternal(index);
 }
 
 blink::mojom::BackForwardCacheNotRestoredReasonsPtr
-BackForwardCacheCanStoreTreeResult::GetWebExposedNotRestoredReasons() {
+BackForwardCacheCanStoreTreeResult::GetWebExposedNotRestoredReasonsInternal(
+    int& index) {
   blink::mojom::BackForwardCacheNotRestoredReasonsPtr not_restored_reasons =
       blink::mojom::BackForwardCacheNotRestoredReasons::New();
   if (IsSameOrigin()) {
@@ -1547,19 +1558,42 @@ BackForwardCacheCanStoreTreeResult::GetWebExposedNotRestoredReasons() {
     not_restored_reasons->same_origin_details->reasons =
         GetDocumentResult().GetStringReasons();
 
-    not_restored_reasons->blocked = !GetDocumentResult().CanRestore();
+    not_restored_reasons->blocked = GetDocumentResult().CanRestore()
+                                        ? blink::mojom::BFCacheBlocked::kNo
+                                        : blink::mojom::BFCacheBlocked::kYes;
     for (const auto& subtree : GetChildren()) {
       not_restored_reasons->same_origin_details->children.push_back(
-          subtree->GetWebExposedNotRestoredReasons());
+          subtree->GetWebExposedNotRestoredReasonsInternal(index));
     }
   } else {
     // If the subtree's root document is cross-origin from the main frame
-    // document, report whether or not this entire subtree is blocking
-    // back/forward cache.
-    not_restored_reasons->blocked =
-        !GetDocumentResult().CanRestore() || !FlattenTree().CanRestore();
+    // document, and if this is the randomly selected cross-origin iframe,
+    // report whether or not this entire subtree is blocking back/forward cache.
+    if (index == 0) {
+      not_restored_reasons->blocked =
+          (!GetDocumentResult().CanRestore() || !FlattenTree().CanRestore())
+              ? blink::mojom::BFCacheBlocked::kYes
+              : blink::mojom::BFCacheBlocked::kNo;
+    } else {
+      not_restored_reasons->blocked = blink::mojom::BFCacheBlocked::kMasked;
+    }
+    // Decrease the index now that we saw a cross-origin iframe.
+    index--;
   }
   return not_restored_reasons;
+}
+
+uint32_t
+BackForwardCacheCanStoreTreeResult::GetCrossOriginReachableFrameCount() {
+  // If the document is cross-origin, we cannot reach any further. Only count
+  // the one we have reached and return.
+  if (!IsSameOrigin())
+    return 1;
+  uint32_t count = 0;
+  for (const auto& subtree : GetChildren()) {
+    count += subtree->GetCrossOriginReachableFrameCount();
+  }
+  return count;
 }
 
 BackForwardCacheCanStoreDocumentResultWithTree::

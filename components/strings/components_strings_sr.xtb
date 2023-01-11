@@ -683,7 +683,6 @@
 <translation id="2674804415323431591">Сакријте предлоге</translation>
 <translation id="2677696497921480781">Рођендани и имендани</translation>
 <translation id="2677748264148917807">Затвори</translation>
-<translation id="2679714844901977852">Сачувајте информације о картици и обрачуну на Google налогу <ph name="USER_EMAIL" /> ради безбедних и бржих плаћања</translation>
 <translation id="2687555958734450033">Најбоља величина</translation>
 <translation id="2688186765492306706">500×760 mm</translation>
 <translation id="2688969097326701645">Да, настави</translation>
@@ -721,7 +720,6 @@
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784474685437057136">B5 Extra</translation>
 <translation id="2784949926578158345">Веза је враћена на почетне вредности.</translation>
-<translation id="2791176355335562114">Платите брже следећи пут</translation>
 <translation id="2792012897584536778">Администратори овог уређаја су подесили безбедносне сертификате који могу да им омогуће да виде садржај веб-сајтова које посећујете.</translation>
 <translation id="2799020568854403057">Сајт који ћете посетити садржи штетне апликације</translation>
 <translation id="2799223571221894425">Поново покрени</translation>
@@ -1046,7 +1044,6 @@
 <translation id="3633738897356909127">Дугме Ажурирај Chrome, притисните Enter да бисте ажурирали Chrome из подешавања Chrome-а</translation>
 <translation id="3634530185120165534">5. фиока</translation>
 <translation id="3634567936866541746">Управо сте унели лозинку на обмањујућем сајту. Да бисте заштитили налоге, Chrome препоручује да проверите сачуване лозинке.</translation>
-<translation id="3637662659967048211">Сачувајте на Google налогу</translation>
 <translation id="3642638418806704195">Апликација:</translation>
 <translation id="3647286794400715637">Унос сваког стринга URL-а мора да садржи између 1 и 2 URL-а.</translation>
 <translation id="3650584904733503804">Потврда ваљаности је успела</translation>
@@ -1231,6 +1228,7 @@
 <translation id="4132448310531350254">Дуплирани обрађивачи за екстензију фајла<ph name="FILE_EXTENSION" /> наведени у апликацијама <ph name="POLICY_IDS_LIST" />.</translation>
 <translation id="4134123981501319574">Направите документ</translation>
 <translation id="413544239732274901">Сазнајте више</translation>
+<translation id="4140905530744469899">ИД профила:</translation>
 <translation id="4142935452406587478">10. фиока</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4150099059797363385">Кинеска коверта бр. 4</translation>
@@ -1434,6 +1432,7 @@
 <translation id="4646534391647090355">Одведи ме тамо</translation>
 <translation id="4648262692072505866">Хеш мора да буде у формату SHA-256.</translation>
 <translation id="4652266463001779298">Није дозвољено</translation>
+<translation id="4652440160515225514">Ваша организација је блокирала овај сајт јер крши смернице.</translation>
 <translation id="4653167719759882810">Припајање и куповина предузећа</translation>
 <translation id="4658638640878098064">Спајање у горњем левом углу</translation>
 <translation id="4660119392514473465">Сада можете да прегледате приватно и други људи који користе уређај неће видети ваше активности. Међутим, сачуваће се преузимања, обележивачи и ставке на листи за читање</translation>
@@ -2274,7 +2273,6 @@
 <translation id="6826993739343257035">Дозволићете ПР?</translation>
 <translation id="6828866289116430505">Генетика</translation>
 <translation id="6831043979455480757">Преведи</translation>
-<translation id="6833752742582340615">Сачувајте информације о картици и обрачуну на Google налогу ради безбедних и бржих плаћања</translation>
 <translation id="6842196666980060516">184×260 mm</translation>
 <translation id="6846340164947227603">Користи број виртуелне картице...</translation>
 <translation id="6852204201400771460">Желите ли да поново учитате апликацију?</translation>
@@ -2922,6 +2920,7 @@
 <translation id="8437238597147034694">&amp;Опозови премештање</translation>
 <translation id="8438476240229491014">Запамти ово подешавање</translation>
 <translation id="8438786541497918448">Дозволићете коришћење камере и микрофона?</translation>
+<translation id="8438923942245957911">Ваша организација је обележила овај сајт</translation>
 <translation id="8443613539889492016">Реп и хип-хоп</translation>
 <translation id="8444543005280733648">Рачунарске мреже</translation>
 <translation id="8446884382197647889">Сазнајте више</translation>
@@ -3200,6 +3199,7 @@
 <translation id="9179907736442194268">Добијајте обавештења имејлом ако се цена снизи на било ком сајту</translation>
 <translation id="9183302530794969518">Google документи</translation>
 <translation id="9183425211371246419">Хост <ph name="HOST_NAME" /> користи неподржани протокол.</translation>
+<translation id="918454845714257218">Проверите кôд на <ph name="SIDE_OF_CARD" /> и пробајте поново</translation>
 <translation id="9187461866967718678">Екстремни спортови</translation>
 <translation id="9191834167571392248">Бушење у доњем левом углу</translation>
 <translation id="9199905725844810519">Штампање је блокирано</translation>
@@ -3214,7 +3214,7 @@
 <translation id="935608979562296692">ОБРИШИ ОБРАЗАЦ</translation>
 <translation id="936602727769022409">Могли бисте да изгубите приступ Google налогу. Chromium препоручује да одмах промените лозинку. Мораћете да се пријавите.</translation>
 <translation id="937457230470581909">Зоолошки вртови, акваријуми и резервати</translation>
-<translation id="939736085109172342">Нови директоријум</translation>
+<translation id="939736085109172342">Нови фолдер</translation>
 <translation id="940053046584497293">Путовања и превоз</translation>
 <translation id="945522503751344254">Пошаљи повратне информације</translation>
 <translation id="945855313015696284">Проверите информације у наставку и избришите све неважеће картице</translation>

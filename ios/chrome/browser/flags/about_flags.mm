@@ -39,6 +39,7 @@
 #import "components/flags_ui/flags_storage.h"
 #import "components/flags_ui/flags_ui_switches.h"
 #import "components/invalidation/impl/invalidation_switches.h"
+#import "components/ntp_tiles/features.h"
 #import "components/ntp_tiles/switches.h"
 #import "components/omnibox/browser/omnibox_field_trial.h"
 #import "components/omnibox/common/omnibox_features.h"
@@ -85,6 +86,7 @@
 #import "ios/chrome/browser/ui/first_run/trending_queries_field_trial.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/keyboard/features.h"
+#import "ios/chrome/browser/ui/ntp/field_trial_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/open_in/features.h"
@@ -575,6 +577,13 @@ const FeatureEntry::FeatureParam kIOSNewPostRestoreExperienceMinimal[] = {
 const FeatureEntry::FeatureVariation kIOSNewPostRestoreExperienceVariations[] =
     {{"minimal", kIOSNewPostRestoreExperienceMinimal,
       std::size(kIOSNewPostRestoreExperienceMinimal), nullptr}};
+
+const FeatureEntry::FeatureParam kIOSPopularSitesExcludePopularApps[] = {
+    {ntp_tiles::kIOSPopularSitesExcludePopularAppsParam, "true"}};
+const FeatureEntry::FeatureVariation
+    kIOSPopularSitesImprovedSuggestionsVariations[] = {
+        {"(Exclude popular apps)", kIOSPopularSitesExcludePopularApps,
+         std::size(kIOSPopularSitesExcludePopularApps), nullptr}};
 
 const FeatureEntry::FeatureParam kEnableExperienceKitMapsWithSrp[] = {
     {kExperienceKitMapsVariationName, kEnableExperienceKitMapsVariationSrp}};
@@ -1150,6 +1159,15 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::
                             kIOSPasswordManagerCrossOriginIframeSupport)},
+    {"ios-popular-sites-improved-suggestions",
+     flag_descriptions::kIOSPopularSitesImprovedSuggestionsName,
+     flag_descriptions::kIOSPopularSitesImprovedSuggestionsDescription,
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         ntp_tiles::kIOSPopularSitesImprovedSuggestions,
+         kIOSPopularSitesImprovedSuggestionsVariations,
+         field_trial_constants::
+             kIOSPopularSitesImprovedSuggestionsFieldTrialName)},
     {"omnibox-adaptive-suggestions-count",
      flag_descriptions::kAdaptiveSuggestionsCountName,
      flag_descriptions::kAdaptiveSuggestionsCountDescription, flags_ui::kOsIos,
@@ -1493,31 +1511,6 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
   return testing_policies;
 }
 
-// Generates a unique NSString based on currently monitored policies from
-// NSUserDefaults standardUserDefaults.
-NSString* TestingPoliciesHash() {
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  return [NSString
-      stringWithFormat:@"%d|%d|%d|%d|%@|%d|%d|%d|%d|%d|%d|%d|%d|%@|%d",
-                       [defaults boolForKey:@"DisallowChromeDataInBackups"],
-                       [defaults boolForKey:@"EnableSyncDisabledPolicy"],
-                       [defaults boolForKey:@"EnableSamplePolicies"],
-                       static_cast<int>([defaults
-                           integerForKey:@"IncognitoModeAvailability"]),
-                       [defaults stringForKey:@"RestrictAccountsToPatterns"],
-                       [defaults boolForKey:@"SyncTypesListBookmarks"],
-                       [defaults boolForKey:@"SyncTypesListReadingList"],
-                       [defaults boolForKey:@"SyncTypesListPreferences"],
-                       [defaults boolForKey:@"SyncTypesListPasswords"],
-                       [defaults boolForKey:@"SyncTypesListAutofill"],
-                       [defaults boolForKey:@"SyncTypesListTypedUrls"],
-                       [defaults boolForKey:@"SyncTypesListTabs"],
-                       static_cast<int>(
-                           [defaults integerForKey:@"BrowserSignin"]),
-                       [defaults stringForKey:@"NTPLocation"],
-                       static_cast<int>([defaults
-                           integerForKey:@"MetricsReportingEnabled"])];
-}
 }  // namespace
 
 // Add all switches from experimental flags to `command_line`.
@@ -1603,46 +1596,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   }
 
   ios::provider::AppendSwitchesFromExperimentalSettings(defaults, command_line);
-}
-
-void MonitorExperimentalSettingsChanges() {
-  // Startup values for settings to be observed.
-  __block NSString* hash = TestingPoliciesHash();
-  static std::atomic_bool pending_check(false);
-
-  auto monitor = ^(NSNotification* notification) {
-    bool has_pending_check = pending_check.exchange(true);
-    if (has_pending_check)
-      return;
-
-    // Can be called from any thread from where the notification was sent,
-    // but since it may change standardUserDefaults, and that has to be on main
-    // thread, dispatch to main thread.
-    dispatch_async(dispatch_get_main_queue(), ^{
-      // Check if observed settings have changed. Since source and destination
-      // are both user defaults, this is required to avoid cycling back here.
-      NSString* newHash = TestingPoliciesHash();
-      if (![newHash isEqualToString:hash]) {
-        hash = newHash;
-
-        // Publish update.
-        NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-        NSMutableDictionary* testing_policies =
-            CreateExperimentalTestingPolicies();
-        NSDictionary* registration_defaults =
-            @{kPolicyLoaderIOSConfigurationKey : testing_policies};
-        [defaults registerDefaults:registration_defaults];
-      }
-
-      pending_check.store(false);
-    });
-  };
-
-  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  [center addObserverForName:NSUserDefaultsDidChangeNotification
-                      object:nil
-                       queue:nil
-                  usingBlock:monitor];
 }
 
 void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,

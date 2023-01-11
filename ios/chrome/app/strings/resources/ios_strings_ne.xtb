@@ -87,6 +87,7 @@
 <translation id="1545749641540134597">QR कोड स्क्यान गर्नुहोस्</translation>
 <translation id="1552525382687785070">तपाईंका प्रशासकले सिंंक सुविधा असक्षम पार्नुभएको छ</translation>
 <translation id="1554477036522844996">नयाँ विन्डो</translation>
+<translation id="1565371473877914088">नयाँ इन्कोग्निटो ट्याब</translation>
 <translation id="1580715474678097352">हानिकारक वेबसाइटहरूबाट सुरक्षित रहनुहोस्</translation>
 <translation id="1580783302095112590">पत्र पठाइयो।</translation>
 <translation id="1582732959743469162">यस कार्यले तपाईंको जारी डाउनलोडको सम्पूर्ण प्रगति रोक्ने छ।</translation>
@@ -133,6 +134,7 @@
 <translation id="1981118202195772574">मोबाइल</translation>
 <translation id="1989112275319619282">ब्राउज गर्नुहोस्</translation>
 <translation id="199425419756152024">पासवर्ड हेर्नुहोस्</translation>
+<translation id="2010008505735295285">रिलोड गर्नुहोस्</translation>
 <translation id="2015722694326466240">पासवर्डहरू हेर्नका लागि सर्वप्रथम तपाईंले अनिवार्य रूपमा आफ्नो यन्त्रमा कुनै पासकोड सेट गर्नुपर्छ।</translation>
 <translation id="2021670401941426298">तपाईंको सर्च इन्जिनमा खोजको इतिहास मेटाउन मिल्छ भने खोज इतिहास मेटाउन सर्च इन्जिनले उपलब्ध गराएका निर्देशनहरू हेर्नुहोस्।</translation>
 <translation id="202292859882676807">माइक्रोफोन प्रयोग गर्ने अनुमति दिइएको छ</translation>
@@ -232,6 +234,7 @@
 <translation id="2815198996063984598">२. डिफल्ट ब्राउजर एपमा ट्याप गर्नुहोस्</translation>
 <translation id="2820289420301699633">तपाईंका एड्मिन Chrome नियन्त्रण गर्छन् र उनी त्यसमा भएका डेटा हेर्न तथा प्रयोग गर्न सक्छन्</translation>
 <translation id="2830972654601096923">ठेगानाहरू व्यवस्थापन गर्नुहोस्...</translation>
+<translation id="2834399722155632105">३. पासवर्डसम्बन्धी विकल्पहरूमा ट्याप गर्नुहोस्</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">अनुवाद सेटिङहरू रिसेट गर्नुहोस्</translation>
 <translation id="2848086008667475748">सेटिङमा गई यसलाई डिफल्ट ब्राउजर बनाउनुहोस्…</translation>
@@ -280,6 +283,7 @@
 <translation id="3153862085237805241">कार्ड सेभ गर्नुहोस्</translation>
 <translation id="3157387275655328056">पाठ्य सूचीमा थप्नुहोस्</translation>
 <translation id="3157684681743766797">सबैलाई चिन्ह लगाउनुहोस्…</translation>
+<translation id="315778507796115851">हिस्ट्री</translation>
 <translation id="3169472444629675720">पत्ता लगाउनुहोस्</translation>
 <translation id="3174662312949010067">तपाईं सेभ गरिएका पासवर्डहरू अन्य डिभाइसहरूमा पनि प्रयोग गर्न सक्नुहुन्छ।</translation>
 <translation id="3175081911749765310">वेब सेवाहरू</translation>
@@ -298,6 +302,7 @@
 <translation id="3272527697863656322">रद्द गर्नुहोस्</translation>
 <translation id="3277021493514034324">साइटको ठेगाना प्रतिलिपि गरियो</translation>
 <translation id="3285962946108803577">पेज सेयर गर्नुहोस्...</translation>
+<translation id="3289505634533552500">भ्वाइस सर्च</translation>
 <translation id="3290875554372353449">कुनै खाता छान्नुहोस्</translation>
 <translation id="3305294846493618482">थप</translation>
 <translation id="3311748811247479259">निष्क्रिय छ</translation>
@@ -370,6 +375,7 @@
 <translation id="3861486700625780712">अनफलो गर्नुहोस्</translation>
 <translation id="3863769054730344136">आफ्ना डिभाइसहरूमा पठाउनुहोस्</translation>
 <translation id="387280738075653372">यहाँ गई Chrome डाउनलोड गर्नुहोस्।</translation>
+<translation id="3888863481921783344">तपाईंलाई तपाईंको कार्यक्रममा जुन जुन मान्छेलाई निम्तो गरिएको हुन सक्छ ती मान्छेहरूको सूची देखाउने प्रयोजनका लागि यो एप प्रयोग गरिने छ।</translation>
 <translation id="3892144330757387737">तपाईंले गर्नुभएका क्रियाकलापको इतिहास यहाँ देखिने छ</translation>
 <translation id="3897092660631435901">मेनु</translation>
 <translation id="3904829425754749514">तपाईंको सङ्गठनले सिंक गर्ने सुविधा अफ गरेको छ। तपाईं यो डिभाइसमा आफ्ना बुकमार्क, हिस्ट्री, पासवर्ड र अन्य सेटिङ देखिरहनु हुने छ। तपाईंले यी कुरा परिवर्तन गर्नुभयो भने ती परिवर्तन तपाईंको खातामा सिंक हुने छैनन्।</translation>
@@ -567,10 +573,12 @@
 <translation id="5439599923922718668">बारम्बार हेरिएका</translation>
 <translation id="54401264925851789">पृष्ठ सुरक्षा जानकारी</translation>
 <translation id="5443952882982198570">क्रेडिट कार्डहरू</translation>
+<translation id="5444892875087332195">बुकमार्कहरू</translation>
 <translation id="5457226814769348910">अफलाइन संस्करण खोल्नुहोस्</translation>
 <translation id="5489208564673669003">सबै साइटका कुकीहरू व्यवस्थापन गर्न, <ph name="BEGIN_LINK" />कुकीसम्बन्धी सेटिङ<ph name="END_LINK" />मा जानुहोस्।</translation>
 <translation id="5490005495580364134">सबै कुकीलाई रोक लगाइयोस् (सिफारिस गरिँदैन)</translation>
 <translation id="5513681519188741830"><ph name="TIME" /> घन्टाअघि</translation>
+<translation id="5520466080178053306">"पासवर्ड म्यानेजर" मा ट्याप गर्नुहोस् अनि "हाल्नुहोस्" मा ट्याप गर्नुहोस्</translation>
 <translation id="5525095647255982834">तपाईं यो ट्याब अर्को डिभाइसमा पठाउन चाहनुहुन्छ भने उक्त डिभाइसमा Chrome मा साइन इन गर्नुहोस्।</translation>
 <translation id="5525269841082836315">पासफ्रेज सिर्जना गर्नुहोस्</translation>
 <translation id="5542540507657872337"><ph name="COUNT" /> वटा खुला ट्याब भेटियो</translation>
@@ -630,6 +638,7 @@
 <translation id="5899314093904173337">वरपर रहेका मान्छेहरूसँग सेयर गर्न उनीहरूलाई क्यामेरा वा QR स्क्यान गर्ने एप प्रयोग गरी यो QR कोड स्क्यान गर्न लगाउनुहोस्</translation>
 <translation id="5911030830365207728">Google अनुवादक</translation>
 <translation id="5913600720976431809">यो पृष्ठ अनुवाद गर्ने विकल्पहरू</translation>
+<translation id="5933515656458364246">सबै डिभाइसहरूमा आफ्नो डेटा सिंक गर्नुहोस्।</translation>
 <translation id="5938160824633642847">तपाईंको डिभाइसको भण्डारण स्थान लगभग भरिएको छ। भण्डारण स्थान खाली गरी फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="5948291296578561264">यो एपले तपाईंलाई आफ्नो तस्बिरको लाइब्रेरीमा तस्बिरहरू सुरक्षित गर्न दिन्छ।</translation>
 <translation id="5951816930277761335">लिंक सेयर गर्नुहोस्</translation>
@@ -642,6 +651,7 @@
 <translation id="5984222099446776634">भर्खरै भ्रमण गरिएको</translation>
 <translation id="5988097621740394599">आफ्ना ट्याबहरूमा मूल्य घटेको कुरासम्बन्धी जानकारी हेर्नुहोस्।</translation>
 <translation id="5988851877894965432">Chrome मा URL हरू खोल्नुहोस्</translation>
+<translation id="6006672969046233841">नयाँ ट्याब</translation>
 <translation id="6012140227487808125">इन्क्रिप्सन गर्दै ...</translation>
 <translation id="6021332621416007159">यसमा खोल्नुहोस्...</translation>
 <translation id="6027945736510816438">तपाईंले <ph name="WEBSITE" /> लेख्न खोज्नुभएको हो?</translation>
@@ -711,6 +721,7 @@
 
 तपाईँको डेटालाई <ph name="TIME" /> मा तपाईँको सिंक पासफ्रेजमार्फत इन्क्रिप्ट गरिएको थियो। सिंक सुरु गर्न त्यो पासफ्रेज प्रविष्टि गर्नुहोस्।</translation>
 <translation id="6418346271604475326">PDF तयार गर्दै</translation>
+<translation id="6429213933892582367">पासवर्डसम्बन्धी विकल्पहरू खोल्नुहोस्</translation>
 <translation id="6434591244308415567">कुनै त्रुटि भयो। पछि फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="6435236283694032571">पछि पढ्न सेभ गरिएका वेबपेजको सूचीमा हाल्नुहोस्</translation>
 <translation id="6439338047467462846">सबैलाई अनुमति दिनुहोस्</translation>
@@ -826,6 +837,8 @@
 <translation id="7203585745079012652">जवाफहरू पुन: भन्नुहोस्</translation>
 <translation id="7207023858769244910">आफ्नो रुचिअनुसारका सामग्री प्राप्त गर्न सिंक गर्नुहोस्।</translation>
 <translation id="721597782417389033">कार्डको उपनाम अवैध छ</translation>
+<translation id="7221173315674413369">"नयाँ के छ" मा गई नयाँ सुविधा र सुझावहरूका बारेमा जान्नुहोस्</translation>
+<translation id="7223102419539744003">ट्याब बन्द गर्नुहोस्</translation>
 <translation id="722454870747268814">नयाँ इन्कोग्निटो ट्याब</translation>
 <translation id="7265758999917665941">यो साइटका हकमा कहिल्यै पनि नसम्झनुहोस्</translation>
 <translation id="7272437679830969316">तपाईंको पहिचान पुष्टि गर्न सकिएन। पासवर्डको प्रतिलिपि गरिएको छैन।</translation>
@@ -859,6 +872,7 @@
 <translation id="7514365320538308">डाउनलोड गर्नुहोस्</translation>
 <translation id="7531345132340165516">हालको साइट</translation>
 <translation id="7537586195939242955">माफ गर्नुहोस्, यस समयमा तपाईंको पासलाई पासबुकमा स्थापना गर्न सकिदैन।</translation>
+<translation id="7553234618121028547">स्वतः भर्ने सुविधा अफ गर्न <ph name="BEGIN_LINK" />सेटिङ<ph name="END_LINK" /> खोल्नुहोस् अनि पासवर्डसम्बन्धी विकल्पहरूमा जानुहोस्।</translation>
 <translation id="7554791636758816595">नयाँ ट्याब</translation>
 <translation id="7561196759112975576">सधैं</translation>
 <translation id="7583004045319035904">आफ्ना इन्कोग्निटो ट्याबहरू अनलक गर्न <ph name="BIOMETRIC_AUTHENITCATION_TYPE" /> प्रयोग गर्नुहोस्।</translation>
@@ -878,6 +892,7 @@
 <translation id="7726702057919861819">मेनु → इतिहास → ब्राउजिङ डेटा मेटाउनुहोस्</translation>
 <translation id="7738120385185846461">समस्याका बारेमा रिपोर्ट गर्नुहोस्…</translation>
 <translation id="7741325291586284254">इन्कोग्निटो ट्याबसम्बन्धी नयाँ पेज</translation>
+<translation id="7744394900930577716">अन्य एपहरूका पासवर्ड</translation>
 <translation id="7756478488453921771">मेनु → सेटिङ → भुक्तानी विधि</translation>
 <translation id="7765158879357617694">सार्नुहोस्</translation>
 <translation id="7772032839648071052">पासफ्रेज पक्का</translation>
@@ -939,7 +954,9 @@
 <translation id="8101409298456377967">तपाईं साइट र एपहरूमा सजिलै साइन इन गर्न चाहनुहुन्छ भने पासवर्ड सिर्जना गर्नुहोस्, सेभ गर्नुहोस् र व्यवस्थापन गर्नुहोस्। <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="8105368624971345109">निष्क्रिय पार्नुहोस्</translation>
 <translation id="8114753159095730575">डाउनलोड गर्न फाइल उपलब्ध छ। स्क्रिनको फेदनजिकै विकल्पहरू उपलब्ध छन्।</translation>
+<translation id="81313319706244542">२. पासवर्डहरूमा ट्याप गर्नुहोस्</translation>
 <translation id="8132598642024322408">अहिले <ph name="PRICE" /> पर्छ, पहिले <ph name="PREVIOUS_PRICE" /> पर्थ्यो।</translation>
+<translation id="8136856065410661948">Chrome तथा Google लेन्समार्फत Apple पात्रोमा कार्यक्रमहरू बनाउने प्रयोजनका लागि यो एप प्रयोग गरिने छ।</translation>
 <translation id="8156478151976189188">पासवर्ड सिंक गर्ने सुविधाले काम गरिरहेको छैन</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> खाताहरू</translation>
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />तपाईंका डिभाइसहरू<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
@@ -960,6 +977,7 @@
 <translation id="8319076807703933069">नयाँ खोज</translation>
 <translation id="8323906514956095947">ट्याबसम्बन्धी थप विकल्पहरू हेर्न टच एण्ड होल्ड गर्नुहोस्</translation>
 <translation id="8328777765163860529">सबै बन्द गर्नुहोस्</translation>
+<translation id="8343993175958086504">आफ्नो डेटा ब्याकअप गर्नुहोस् र जुनसुकै डिभाइसमा सो डेटा प्रयोग गर्नुहोस्।</translation>
 <translation id="8378714024927312812">तपाईंको सङ्गठनले व्यवस्थापन गरेको</translation>
 <translation id="8386068868580335421">रिसेट गर्नुहोस्</translation>
 <translation id="8407669440184693619">यो साइटका लागि कुनै पनि पासवर्ड फेला परेन</translation>
@@ -1016,6 +1034,7 @@
 <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="8810413591309742901">डिफल्ट साइट भ्यू</translation>
 <translation id="8820817407110198400">बुकमार्कहरू</translation>
+<translation id="882557203579758546">पेजमा खोज्नुहोस्…</translation>
 <translation id="8840513115188359703">तपाईं आफ्नो Google खाताबाट साइन आउट हुनु हुने छैन।</translation>
 <translation id="8843129975935593190">तपाईंको सङ्गठनले तपाईंले सिंक गर्न पाउने कुराहरूका सम्बन्धमा सीमा तोकेको छ।</translation>
 <translation id="8849001918648564819">लुकाइएको</translation>
@@ -1054,6 +1073,7 @@
 <translation id="9081058212938299310"><ph name="USERNAME" /> को पासवर्ड अद्यावधिक गर्ने हो?</translation>
 <translation id="9083838294503912307">यन्त्रहरूभरि सिंक र पर्सनलाइज गर्न सिंक सुविधा अन गर्नुहोस्।</translation>
 <translation id="9087108903408689779">Chrome ले सिफारिस गरेको पासवर्ड:</translation>
+<translation id="9093271241977565440">स्क्रिनको सिरानमा रहेको "खोज्नुहोस्" आइकनमा ट्याप गर्नुहोस्</translation>
 <translation id="9094033019050270033">पासवर्ड अपडेट गर्नुहोस्</translation>
 <translation id="9097506547406246598">अनफलो गर्न सकिएन। केही चिज गडबड भयो।</translation>
 <translation id="9100610230175265781">पासफ्रेज आवश्यक छ</translation>

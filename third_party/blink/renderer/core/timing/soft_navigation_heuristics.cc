@@ -22,14 +22,14 @@ namespace {
 void LogToConsole(LocalFrame* frame,
                   mojom::blink::ConsoleMessageLevel level,
                   const String& message) {
-  if (!RuntimeEnabledFeatures::SoftNavigationHeuristicsEnabled()) {
-    return;
-  }
   if (!frame || !frame->IsMainFrame()) {
     return;
   }
   LocalDOMWindow* window = frame->DomWindow();
   if (!window) {
+    return;
+  }
+  if (!RuntimeEnabledFeatures::SoftNavigationHeuristicsEnabled(window)) {
     return;
   }
   auto* console_message = MakeGarbageCollected<ConsoleMessage>(
@@ -110,7 +110,7 @@ bool SoftNavigationHeuristics::IsCurrentTaskDescendantOfClickEventHandler(
 void SoftNavigationHeuristics::ClickEventEnded(ScriptState* script_state) {
   ThreadScheduler* scheduler = ThreadScheduler::Current();
   DCHECK(scheduler);
-  scheduler->GetTaskAttributionTracker()->UnregisterObserver();
+  scheduler->GetTaskAttributionTracker()->UnregisterObserver(this);
   CheckAndReportSoftNavigation(script_state);
   TRACE_EVENT0("scheduler", "SoftNavigationHeuristics::ClickEventEnded");
 }
@@ -210,7 +210,7 @@ void SoftNavigationHeuristics::CheckAndReportSoftNavigation(
 void SoftNavigationHeuristics::ResetPaintsIfNeeded(LocalFrame* frame,
                                                    LocalDOMWindow* window) {
   if (!did_reset_paints_) {
-    if (RuntimeEnabledFeatures::SoftNavigationHeuristicsEnabled()) {
+    if (RuntimeEnabledFeatures::SoftNavigationHeuristicsEnabled(window)) {
       if (Document* document = window->document()) {
         PaintTiming::From(*document).ResetFirstPaintAndFCP();
       }
@@ -232,6 +232,10 @@ void SoftNavigationHeuristics::OnCreateTaskScope(
   TRACE_EVENT1("scheduler", "SoftNavigationHeuristics::OnCreateTaskScope",
                "task_id", task_id.value());
   potential_soft_navigation_task_ids_.insert(task_id.value());
+}
+
+ExecutionContext* SoftNavigationHeuristics::GetExecutionContext() {
+  return GetSupplementable();
 }
 
 }  // namespace blink

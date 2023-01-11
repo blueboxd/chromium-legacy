@@ -175,6 +175,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="1862380676329487333">Sasisha kisha uondoke kwenye akaunti</translation>
 <translation id="1864454756846565995">Kifaa cha USB-C (mlango wa nyuma)</translation>
 <translation id="1869497990620230175">Faili zinazofikiwa kwa haraka</translation>
+<translation id="1871703283152909317">Washa uwezo wa kufikia kamera na maikrofoni</translation>
 <translation id="1879018240766558464">Madirisha fiche hayawezi kutumika kwa sasa. Programu nyingine zitahifadhiwa.</translation>
 <translation id="1882814835921407042">Hakuna mtandao wa simu</translation>
 <translation id="1882897271359938046">Inaakisi kwenye <ph name="DISPLAY_NAME" /></translation>
@@ -352,6 +353,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="2960314608273155470">Hali ya Kupiga Picha, chaguomsingi ni <ph name="SOURCE" /> <ph name="TYPE" />. Bonyeza 'tab' ili usogeze kwa kutumia kibodi.</translation>
 <translation id="2961963223658824723">Hitilafu fulani imetokea. Jaribu tena baada ya sekunde chache.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2965227184985674128">Ungependa kuwasha ufikiaji wa maikrofoni?</translation>
 <translation id="296762781903199866">Imeshindwa kupakua faili za matamshi za <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">Kusakinisha programu, viendelezi na mandhari</translation>
 <translation id="2977598380246111477">Nambari inayofuata</translation>
@@ -430,6 +432,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="3386978599540877378">Kikuza skrini nzima</translation>
 <translation id="3387527074123400161">Mfumo wa uendeshaji wa Chromium</translation>
 <translation id="3400357268283240774">Mipangilio ya ziada</translation>
+<translation id="3405101454990027959">Washa ufikiaji wa maikrofoni</translation>
 <translation id="3410336247007142655">Onyesha mipangilio ya mandhari meusi</translation>
 <translation id="3413817803639110246">Bado hakuna chochote hapa</translation>
 <translation id="3428447136709161042">Ondoa kwenye <ph name="NETWORK_NAME" /></translation>
@@ -516,6 +519,7 @@ Chomeka kifaa chako kwenye umeme.</translation>
 <translation id="385051799172605136">Rudi nyuma</translation>
 <translation id="385300504083504382">Mwanzo</translation>
 <translation id="3861651314799684201">Bonyeza enter ili urekodi skrini nzima</translation>
+<translation id="3885531177412808398">Huruhusu ufikiaji wa maikrofoni kwa programu na tovuti zote zenye ruhusa ya maikrofoni</translation>
 <translation id="3886872229787704059">Imefunguliwa leo</translation>
 <translation id="3891340733213178823">Bonyeza Ctrl+Shift+Q mara mbili ili kuondoka katika akaunti.</translation>
 <translation id="3893630138897523026">ChromeVox (maoni yaliyotamkwa)</translation>
@@ -920,6 +924,7 @@ Chomeka kifaa chako kwenye umeme.</translation>
 <translation id="6095008505822982596">Kasi ya kutamka</translation>
 <translation id="6099678161144790572">Ilibadilishwa mwezi uliopita</translation>
 <translation id="6103838137565245112">mfumo</translation>
+<translation id="6107292179555508368">Uwezo wa kufikia maikrofoni na kamera umezimwa kwenye kifaa hiki</translation>
 <translation id="6114505516289286752">Faili za matamshi za <ph name="LANGUAGE" /> zimepakuliwa</translation>
 <translation id="6116825164611323644">Ufikiaji wa kamera umezimwa kwenye kifaa hiki</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
@@ -948,6 +953,7 @@ Chomeka kifaa chako kwenye umeme.</translation>
 <translation id="6259254695169772643">Tumia stylus yako kuchagua</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Inaanza kutumia...</translation>
 <translation id="6274202259872570803">Kionyesha skrini</translation>
+<translation id="6282694724099204652">Washa uwezo wa kufikia kamera na maikrofoni ili uruhusu programu na kurasa za wavuti zitumie maikrofoni na kamera kwenye kifaa hiki.</translation>
 <translation id="6283712521836204486">Kipengele cha usinisumbue kimezimwa.</translation>
 <translation id="6284232397434400372">Imebadilisha ubora</translation>
 <translation id="6288235558961782912">Unaweza kuweka tena <ph name="USER_EMAIL_ADDRESS" /> baadaye kupitia ruhusa ya mzazi.</translation>
@@ -1376,6 +1382,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8666856788528804727">Fungua <ph name="NAME" /> ili uweke mipangilio ya kifaa chako</translation>
 <translation id="8676770494376880701">Chaja ya nguvu ya chini imeunganishwa</translation>
 <translation id="8683506306463609433">Kipengele cha ufuatiliaji wa utendaji kinatumika</translation>
+<translation id="8684405646663021166">Huruhusu ufikiaji wa maikrofoni kwa <ph name="APP_NAME" />, programu na tovuti zote zenye ruhusa ya maikrofoni</translation>
 <translation id="8685326675965865247">Tafuta kwenye programu, mipangilio, wavuti na kifaa chako. Tumia vitufe vya vishale ili upitie programu zako.</translation>
 <translation id="8703634754197148428">Anza kurekodi. Ukishaanza kurekodi, tumia vitufe vya Alt + Shift + L kwenda kwenye rafu ili upate kitufe cha kuacha kurekodi</translation>
 <translation id="8721053961083920564">Swichi ya Sauti. <ph name="STATE_TEXT" /></translation>

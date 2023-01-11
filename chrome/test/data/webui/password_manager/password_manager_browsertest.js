@@ -8,6 +8,7 @@
 
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
+GEN('#include "build/build_config.h"')
 GEN('#include "components/password_manager/core/common/password_manager_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 

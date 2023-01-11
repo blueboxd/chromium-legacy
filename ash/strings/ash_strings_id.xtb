@@ -175,6 +175,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="1862380676329487333">Update dan logout</translation>
 <translation id="1864454756846565995">Perangkat USB-C (port belakang)</translation>
 <translation id="1869497990620230175">File cepat</translation>
+<translation id="1871703283152909317">Aktifkan kedua akses</translation>
 <translation id="1879018240766558464">Jendela Samaran saat ini tidak didukung. Aplikasi lainnya akan disimpan.</translation>
 <translation id="1882814835921407042">Tidak ada jaringan seluler</translation>
 <translation id="1882897271359938046">Mencerminkan ke <ph name="DISPLAY_NAME" /></translation>
@@ -244,7 +245,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="2295777434187870477">Mikrofon aktif, mengalihkan tombol akan membisukan masukan.</translation>
 <translation id="2298170939937364391">Kaca Pembesar Layar diaktifkan. Tekan Ctrl+Penelusuran+M lagi untuk menonaktifkannya.</translation>
 <translation id="2302092602801625023">Akun ini dikelola oleh Family Link</translation>
-<translation id="2303600792989757991">Beralih ikhtisar jendela</translation>
+<translation id="2303600792989757991">Beralih ringkasan jendela</translation>
 <translation id="2315005022200073389"><ph name="HOLDING_SPACE_TITLE" />: screenshot, download, dan file tersemat yang terbaru</translation>
 <translation id="2318576281648121272">Hari ini <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" />, kategori hasil penelusuran</translation>
@@ -280,14 +281,14 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="2475982808118771221">Terjadi error</translation>
 <translation id="2482878487686419369">Notifikasi</translation>
 <translation id="2484513351006226581">Tekan <ph name="KEYBOARD_SHORTCUT" /> untuk mengganti tata letak keyboard.</translation>
-<translation id="2501920221385095727">Tombol sticky</translation>
+<translation id="2501920221385095727">Tombol lekat</translation>
 <translation id="2509468283778169019">CAPS LOCK aktif</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2542089167727451762">Ketuk gambar profil Anda</translation>
 <translation id="255671100581129685">Asisten Google tidak tersedia dalam sesi publik.</translation>
 <translation id="256712445991462162">kaca pembesar tersemat</translation>
 <translation id="2573588302192866788">Tidak dapat menghubungkan <ph name="NAME" /></translation>
-<translation id="2575685495496069081">Fitur login multipel telah dinonaktifkan</translation>
+<translation id="2575685495496069081">Fitur multi-login telah dinonaktifkan</translation>
 <translation id="2582112259361606227">Nyalakan ulang untuk mengupdate</translation>
 <translation id="2586561057878260610">Tekan Ctrl + W untuk menggabungkan dengan <ph name="DESK_NAME" />. Tekan Ctrl + Shift + W untuk menutup desktop dan jendela.</translation>
 <translation id="2595239820337756193">Lima kilometer dalam mil</translation>
@@ -325,7 +326,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="2791421900609674576">Rekomendasi akan ditampilkan sehingga Anda dapat melanjutkan aktivitas terakhir yang Anda lakukan. Anda dapat menyentuh lama untuk menghapus rekomendasi.</translation>
 <translation id="2792498699870441125">Alt+Telusuri</translation>
 <translation id="2797741504905337289">Shelf Party</translation>
-<translation id="2805756323405976993">Apl</translation>
+<translation id="2805756323405976993">Aplikasi</translation>
 <translation id="2814448776515246190">Tangkapan layar sebagian</translation>
 <translation id="2819276065543622893">Anda akan dikeluarkan sekarang.</translation>
 <translation id="2822551631199737692">Kamera sedang digunakan</translation>
@@ -389,7 +390,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="3139942575505304791">Halaman kerja 1</translation>
 <translation id="315116470104423982">Data seluler</translation>
 <translation id="3151786313568798007">Orientasi</translation>
-<translation id="3153444934357957346">Anda hanya dapat memiliki maksimum <ph name="MULTI_PROFILE_USER_LIMIT" /> akun dalam fitur login multipel.</translation>
+<translation id="3153444934357957346">Anda hanya dapat memiliki maksimum <ph name="MULTI_PROFILE_USER_LIMIT" /> akun dalam fitur multi-login.</translation>
 <translation id="3154351730702813399">Admin perangkat dapat memantau aktivitas akses internet Anda.</translation>
 <translation id="3157931365184549694">Pulihkan</translation>
 <translation id="316086887565479535">Aplikasi yang tidak didukung di template</translation>
@@ -441,7 +442,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="343571671045587506">Edit pengingat</translation>
 <translation id="3435967511775410570">Sidik jari dikenali</translation>
 <translation id="3441920967307853524"><ph name="RECEIVED_BYTES" />/<ph name="TOTAL_BYTES" /></translation>
-<translation id="3445288400492335833"><ph name="MINUTES" /> mnt</translation>
+<translation id="3445288400492335833"><ph name="MINUTES" /> menit</translation>
 <translation id="3445925074670675829">Perangkat USB-C</translation>
 <translation id="3455468639467374593">Template, <ph name="TEMPLATE_NAME" /></translation>
 <translation id="3465223694362104965">Keyboard lain telah terhubung ke perangkat ini sejak terakhir kali Anda login. Pastikan Anda memercayai keyboard ini sebelum menggunakannya.</translation>
@@ -501,7 +502,7 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="3735740477244556633">Urutkan menurut</translation>
 <translation id="3742055079367172538">Screenshot telah diambil</translation>
 <translation id="3765841986579723851">Diedit hari ini</translation>
-<translation id="3773700760453577392">Administrator telah melarang fitur login multipel untuk <ph name="USER_EMAIL" />. Semua pengguna harus logout untuk melanjutkan.</translation>
+<translation id="3773700760453577392">Administrator telah melarang fitur multi-login untuk <ph name="USER_EMAIL" />. Semua pengguna harus logout untuk melanjutkan.</translation>
 <translation id="3779139509281456663">Menghubungkan <ph name="NAME" /></translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Kunci</translation>
@@ -923,6 +924,7 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="6095008505822982596">Kecepatan ucapan</translation>
 <translation id="6099678161144790572">Diedit dalam sebulan terakhir</translation>
 <translation id="6103838137565245112">sistem</translation>
+<translation id="6107292179555508368">Akses mikrofon dan kamera nonaktif di perangkat ini</translation>
 <translation id="6114505516289286752">File ucapan bahasa <ph name="LANGUAGE" /> didownload</translation>
 <translation id="6116825164611323644">Akses kamera nonaktif di perangkat ini</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
@@ -951,6 +953,7 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="6259254695169772643">Gunakan stilus untuk memilih</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Mengaktifkan...</translation>
 <translation id="6274202259872570803">Screencast</translation>
+<translation id="6282694724099204652">Aktifkan akses untuk mengizinkan aplikasi dan halaman web yang memiliki izin untuk menggunakan mikrofon dan kamera di perangkat ini.</translation>
 <translation id="6283712521836204486">Mode Jangan Ganggu nonaktif.</translation>
 <translation id="6284232397434400372">Resolusi diubah</translation>
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> dapat ditambahkan ulang nanti dengan izin orang tua.</translation>

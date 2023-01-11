@@ -141,6 +141,7 @@
   }
 
   #customizeButton {
+    --hover-bg-color: var(--color-new-tab-page-button-background-hovered);
     --text-color: var(--color-new-tab-page-button-foreground);
     border: none;
     border-radius: calc(.5 * var(--cr-button-height));
@@ -327,7 +328,7 @@
   </ntp-logo>
   <div id="realboxContainer">
     <ntp-realbox id="realbox" is-dark="[[theme_.isDark]]"
-        themed-icons="[[theme_.themeRealboxIcons]]"
+        single-colored-icons="[[theme_.themeRealboxIcons]]"
         on-open-lens-search="onOpenLensSearch_"
         on-open-voice-search="onOpenVoiceSearch_" shown$="[[realboxShown_]]">
     </ntp-realbox>

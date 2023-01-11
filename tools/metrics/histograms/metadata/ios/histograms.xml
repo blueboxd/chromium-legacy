@@ -838,11 +838,12 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="IOS.Incognito.TimeSpent" units="ms" expires_after="2023-10-16">
   <owner>olivierrobin@chromium.org</owner>
-  <owner>thegreenfrog@chromium.org</owner>
+  <owner>qpubert@google.com</owner>
   <summary>
     The time incognito profile is displayed to the user. Incognito sessions
     during less than 10 seconds are not reported. Incognito session paused for
-    less than 10 seconds is resumed.
+    less than 10 seconds is resumed. (Incorrectly reported between M92 and
+    M107).
   </summary>
 </histogram>
 
@@ -1863,13 +1864,26 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.TabSwitcher.DragDropTabs"
+    enum="IOSTabSwitcherDragDropTabs" expires_after="2023-11-16">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
+  <summary>
+    Records tab drag and drop interactions on the tab switcher. An intercation
+    is recorded twice (one drag and one drop).
+  </summary>
+</histogram>
+
 <histogram name="IOS.TabSwitcher.PageChangeInteraction"
     enum="IOSTabSwitcherPageChangeInteraction" expires_after="2023-02-26">
   <owner>marq@chromium.org</owner>
+  <owner>ewannpv@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
     The UI interaction by which the user changed the visible page in the tab
-    switcher.
+    switcher. Note that drag interactions can be recorded multiple time for a
+    single drag.
   </summary>
 </histogram>
 

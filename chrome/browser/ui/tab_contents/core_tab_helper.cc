@@ -141,6 +141,7 @@ bool CoreTabHelper::IsSidePanelEnabled() {
 
 bool CoreTabHelper::IsSidePanelEnabledFor3PDse() {
   return IsSidePanelEnabled() &&
+         !search::DefaultSearchProviderIsGoogle(GetTemplateURLService()) &&
          base::FeatureList::IsEnabled(features::kUnifiedSidePanel) &&
          lens::features::GetEnableImageSearchUnifiedSidePanelFor3PDse();
 }
@@ -237,7 +238,6 @@ void CoreTabHelper::SearchByImageImpl(
   log_data.push_back(lens::mojom::LatencyLog::New(
       lens::mojom::Phase::ENCODE_END, image_original_size, gfx::Size(),
       image_format, base::Time::Now()));
-  search_args.image_thumbnail_content.assign(data.begin(), data.end());
 
   std::string additional_query_params_modified = additional_query_params;
   if (lens::features::GetEnableLatencyLogging() &&

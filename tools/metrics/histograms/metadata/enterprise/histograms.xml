@@ -1023,6 +1023,7 @@ chromium-metrics-reviews@google.com.
     <variant name="Common.WithCache" summary="Common (with cache)"/>
     <variant name="Context" summary="Context"/>
     <variant name="Full" summary="full set of"/>
+    <variant name="Win" summary="Windows"/>
   </token>
 </histogram>
 
@@ -2275,6 +2276,26 @@ chromium-metrics-reviews@google.com.
   <owner>poromov@chromium.org</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
   <summary>Tracking the results of policy user verification.</summary>
+</histogram>
+
+<histogram name="Enterprise.ProfileIdentifier.Error"
+    enum="EnterpriseProfileIdError" expires_after="2023-11-10">
+  <owner>hmare@google.com</owner>
+  <owner>cbe-device-trust-eng@google.com</owner>
+  <summary>
+    Recorded in the event of failures during the profile identifier generation
+    action.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.ProfileIdentifier.Status" enum="Boolean"
+    expires_after="2023-11-10">
+  <owner>hmare@google.com</owner>
+  <owner>cbe-device-trust-eng@google.com</owner>
+  <summary>
+    Records whether the profile identifier generation action was successful or
+    not.
+  </summary>
 </histogram>
 
 <histogram name="Enterprise.ProfileSeparation.DasherPolicyFetch.HttpResponse"

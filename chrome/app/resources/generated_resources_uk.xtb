@@ -1207,6 +1207,7 @@
 <translation id="208928984520943006">Щоб будь-коли повернутися на головний екран, проведіть пальцем знизу вгору.</translation>
 <translation id="2089566709556890888">Безпечний перегляд сайтів у Google Chrome</translation>
 <translation id="2089795179672254991">Запитувати, коли сайт хоче переглядати тексти й зображення в буфері обміну (рекомендується)</translation>
+<translation id="2089925163047119068">АБО</translation>
 <translation id="2090165459409185032">Щоб відновити дані облікового запису, перейдіть на сторінку google.com/accounts/recovery</translation>
 <translation id="2090507354966565596">Мережа автоматично підключатиметься, коли ви входитимете в обліковий запис</translation>
 <translation id="2090876986345970080">Налаштування безпеки системи</translation>
@@ -2390,6 +2391,7 @@
 <translation id="3143515551205905069">Скасувати синхронізацію</translation>
 <translation id="3143754809889689516">Відтворити з початку</translation>
 <translation id="3144647712221361880">Відкрити посилання як</translation>
+<translation id="3144896554017119333">Розширення тощо</translation>
 <translation id="3149510190863420837">Додатки Chrome</translation>
 <translation id="3150693969729403281">Виконати перевірку безпеки</translation>
 <translation id="3150927491400159470">Жорстке перезавантаження</translation>
@@ -2498,6 +2500,7 @@
 <translation id="3268451620468152448">Відкриті вкладки</translation>
 <translation id="3269093882174072735">Завантажити зображення</translation>
 <translation id="326911502853238749">Не показувати <ph name="MODULE_NAME" /></translation>
+<translation id="3269175001434213183">Увімкніть синхронізацію, щоб створювати резервні копії даних і використовувати їх на будь-якому пристрої</translation>
 <translation id="3269612321104318480">Світло-бірюзовий і білий</translation>
 <translation id="3269689705184377744">{COUNT,plural, =1{Файл}one{# файл}few{# файли}many{# файлів}other{# файлу}}</translation>
 <translation id="326999365752735949">Завантаження відмінностей</translation>
@@ -2788,7 +2791,7 @@
 <translation id="3536492240554502321">Ротація тонів</translation>
 <translation id="3537881477201137177">Це можна змінити пізніше в налаштуваннях</translation>
 <translation id="3538066758857505094">Не вдалося встановити Linux. Повторіть спробу.</translation>
-<translation id="354060433403403521">Адаптер змінного струму</translation>
+<translation id="354060433403403521">Зарядний пристрій</translation>
 <translation id="354068948465830244">Може переглядати й змінювати дані сайту</translation>
 <translation id="3541823293333232175">Призначено</translation>
 <translation id="3543393733900874979">Не вдалось оновити (помилка: <ph name="ERROR_NUMBER" />)</translation>
@@ -3758,6 +3761,7 @@
 <translation id="445099924538929605">ОС <ph name="DEVICE_OS" /> виявила активний модуль TPM, який дозволяє надійніше зберігати ваші дані.</translation>
 <translation id="4451479197788154834">Ваш пароль збережено на цьому пристрої та в обліковому записі Google</translation>
 <translation id="4451757071857432900">Заблоковано на сайтах, які показують нав’язливі чи оманливі оголошення (рекомендовано)</translation>
+<translation id="4452898361839215358">або виберіть файл PPD. <ph name="LINK_BEGIN" />Докладніше<ph name="LINK_END" /></translation>
 <translation id="4453946976636652378">Шукайте в <ph name="SEARCH_ENGINE_NAME" /> або введіть URL-адресу</translation>
 <translation id="4458535500699390320">Коли ця вкладка була неактивною, функція заощадження пам’яті звільнила оперативну пам’ять для інших завдань. Параметри функції можна будь-коли змінити в налаштуваннях.</translation>
 <translation id="4459169140545916303">У мережі <ph name="DEVICE_LAST_ACTIVATED_TIME" /> дн. тому</translation>
@@ -4295,6 +4299,7 @@
 <translation id="4950993567860689081">Сеансом керує адміністратор вашої організації. Адміністратори можуть видалити ваш профіль, а також відстежувати мережевий трафік.</translation>
 <translation id="495164417696120157">{COUNT,plural, =1{файл}one{# файл}few{# файли}many{# файлів}other{# файлу}}</translation>
 <translation id="495170559598752135">Дії</translation>
+<translation id="4951966678293618079">Ніколи не зберігати паролі для цього сайту</translation>
 <translation id="4953808748584563296">Стандартний оранжевий аватар</translation>
 <translation id="4955710816792587366">Придумайте PIN-код</translation>
 <translation id="4959262764292427323">Паролі зберігаються в обліковому записі Google, щоб ви могли користуватися ними на будь-якому пристрої</translation>
@@ -4324,6 +4329,7 @@
 <translation id="4981449534399733132">Щоб очистити дані веб-перегляду на всіх синхронізованих пристроях і в обліковому записі Google, <ph name="BEGIN_LINK" />увійдіть в обліковий запис<ph name="END_LINK" />.</translation>
 <translation id="4982111327868342436">Продовжуйте роботу з місця, де ви зупинилися, на будь-якому пристрої</translation>
 <translation id="4982236238228587209">Програмне забезпечення на пристрої</translation>
+<translation id="4986706507552097681">Ви можете будь-коли вибрати дані для синхронізації в налаштуваннях. Google може персоналізувати Пошук та інші сервіси на основі вашої історії.</translation>
 <translation id="4986728572522335985">Усі дані на ключі безпеки (зокрема, PIN-код) буде видалено</translation>
 <translation id="4988526792673242964">Сторінки</translation>
 <translation id="49896407730300355">Повернути п&amp;роти годинникової стрілки</translation>
@@ -5101,7 +5107,7 @@
 <translation id="5739017626473506901">Увійдіть, і тоді <ph name="USER_NAME" /> зможе додати обліковий запис закладу освіти</translation>
 <translation id="5739235828260127894">Очікується підтвердження. <ph name="LINK_BEGIN" />Докладніше<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Дуже великий</translation>
-<translation id="5740328398383587084">Передавання поблизу</translation>
+<translation id="5740328398383587084">Обмін поблизу</translation>
 <translation id="5740709157181662145">Технічна підтримка апаратного забезпечення та стабільність роботи <ph name="DEVICE_OS" /></translation>
 <translation id="574104302965107104">Дзеркалювання дисплея</translation>
 <translation id="574209121243317957">Тон</translation>
@@ -5483,7 +5489,6 @@
 <translation id="6087746524533454243">Шукаєте сторінку з інформацією про веб-переглядач? Перейдіть на сторінку</translation>
 <translation id="6087960857463881712">Гарне обличчя</translation>
 <translation id="608912389580139775">Щоб додати цю сторінку в список читання, натисніть значок закладки</translation>
-<translation id="6091116443517744502">перевірте інтернет-з’єднання й повторіть спробу</translation>
 <translation id="6091761513005122595">Спільний доступ надано.</translation>
 <translation id="6093803049406781019">Видалити профіль</translation>
 <translation id="6093888419484831006">Скасування оновлення...</translation>
@@ -6570,7 +6575,7 @@
 <translation id="7099739618316136113">{COUNT,plural, =0{Немає зламаних паролів}=1{{COUNT} зламаний пароль}one{{COUNT} зламаний пароль}few{{COUNT} зламані паролі}many{{COUNT} зламаних паролів}other{{COUNT} зламаного пароля}}</translation>
 <translation id="7102832101143475489">Час очікування запиту минув</translation>
 <translation id="710640343305609397">Відкрити мережеві налаштування</translation>
-<translation id="7107609441453408294">Відтворювати той самий аудіозапис на всіх колонках</translation>
+<translation id="7107609441453408294">Відтворювати однаковий звук через усі колонки</translation>
 <translation id="7108338896283013870">Сховати</translation>
 <translation id="7108668606237948702">Enter</translation>
 <translation id="7108933416628942903">Заблокувати</translation>
@@ -7565,6 +7570,7 @@
 <translation id="8046132381940444654">Спеціаліст з обслуговування клієнтів може запитати цей номер EID, щоб активувати сервіс</translation>
 <translation id="8047242494569930800">Перемістити в обліковий запис Google</translation>
 <translation id="804786196054284061">Ліцензійна угода кінцевого користувача</translation>
+<translation id="8048728378294435881">Створюйте резервні копії даних і використовуйте їх на будь-якому пристрої</translation>
 <translation id="8048977114738515028">Створити ярлик на робочому столі, щоб відразу переходити до цього профілю</translation>
 <translation id="8049029041626250638">Підключіть клавіатуру або мишу. Якщо ви користуєтеся пристроями з Bluetooth, переконайтеся, що вони готові до підключення.</translation>
 <translation id="8049122382261047457">Шукайте будь-яке зображення через Google Об’єктив</translation>
@@ -8392,6 +8398,7 @@
 <translation id="8823514049557262177">Копіювати те&amp;кст посилання</translation>
 <translation id="8823559166155093873">Блокувати файли cookie</translation>
 <translation id="8823704566850948458">Запропонувати пароль…</translation>
+<translation id="8823963789776061136">Або виберіть файл PPD для принтера. <ph name="LINK_BEGIN" />Докладніше<ph name="LINK_END" /></translation>
 <translation id="8824701697284169214">Додати стор&amp;інку...</translation>
 <translation id="8827125715368568315">Заблоковано: <ph name="PERMISSION" /> і ще <ph name="COUNT" /></translation>
 <translation id="8827289157496676362">Закріпити розширення</translation>
@@ -8634,6 +8641,7 @@
 <translation id="9040661932550800571">Оновити пароль для <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">Адміністратор вимкнув доступ до локальних файлів на вашому комп’ютері</translation>
 <translation id="904224458472510106">Цю операцію не можна відмінити</translation>
+<translation id="9042827002460091668">Перевірте інтернет-з’єднання й повторіть спробу</translation>
 <translation id="9042893549633094279">Конфіденційність і безпека</translation>
 <translation id="9044646465488564462">Помилка під’єднання до мережі: <ph name="DETAILS" /></translation>
 <translation id="9045160989383249058">Список читання переміщено на нову бічну панель. Перегляньте його там.</translation>
@@ -8648,6 +8656,7 @@
 <translation id="9057007989365783744"><ph name="SUPERVISED_USER_NAME" /> хоче отримати доступ до контенту нижче:</translation>
 <translation id="9057354806206861646">Оновити розклад</translation>
 <translation id="9058070466596314168">{NUM_NOTIFICATION,plural, =1{1 сповіщення на день}one{Приблизно {NUM_NOTIFICATION} сповіщення на день}few{Приблизно {NUM_NOTIFICATION} сповіщення на день}many{Приблизно {NUM_NOTIFICATION} сповіщень на день}other{Приблизно {NUM_NOTIFICATION} сповіщення на день}}</translation>
+<translation id="9058760336383947367">Переглянути файл PPD для принтера</translation>
 <translation id="9061383912634843744">Автоматично входити на сайти та в додатки за допомогою збережених облікових даних. Якщо цю функцію вимкнути, потрібно буде підтверджувати дані під час кожного входу.</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Помилка в рядках <ph name="ERROR_LINE_START" />–<ph name="ERROR_LINE_END" /></translation>

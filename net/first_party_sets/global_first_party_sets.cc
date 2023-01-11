@@ -80,18 +80,23 @@ GlobalFirstPartySets::GlobalFirstPartySets(
     base::flat_map<SchemefulSite, SchemefulSite> aliases)
     : GlobalFirstPartySets(std::move(entries),
                            std::move(aliases),
+                           /*manual_sets=*/{},
                            FirstPartySetsContextConfig()) {}
 
 GlobalFirstPartySets::GlobalFirstPartySets(
     base::flat_map<SchemefulSite, FirstPartySetEntry> entries,
     base::flat_map<SchemefulSite, SchemefulSite> aliases,
+    base::flat_map<SchemefulSite, FirstPartySetEntry> manual_sets,
     FirstPartySetsContextConfig manual_config)
     : entries_(std::move(entries)),
       aliases_(std::move(aliases)),
+      manual_sets_(std::move(manual_sets)),
       manual_config_(std::move(manual_config)) {
   // `aliases_` can only be nonempty if `entries_` is also nonempty.
   if (!aliases_.empty())
     DCHECK(!entries_.empty());
+
+  DCHECK_EQ(manual_sets_.empty(), manual_config_.empty());
 }
 
 GlobalFirstPartySets::GlobalFirstPartySets(GlobalFirstPartySets&&) = default;
@@ -101,8 +106,9 @@ GlobalFirstPartySets& GlobalFirstPartySets::operator=(GlobalFirstPartySets&&) =
 GlobalFirstPartySets::~GlobalFirstPartySets() = default;
 
 bool GlobalFirstPartySets::operator==(const GlobalFirstPartySets& other) const {
-  return std::tie(entries_, aliases_, manual_config_) ==
-         std::tie(other.entries_, other.aliases_, other.manual_config_);
+  return std::tie(entries_, aliases_, manual_sets_, manual_config_) ==
+         std::tie(other.entries_, other.aliases_, other.manual_sets_,
+                  other.manual_config_);
 }
 
 bool GlobalFirstPartySets::operator!=(const GlobalFirstPartySets& other) const {
@@ -110,7 +116,8 @@ bool GlobalFirstPartySets::operator!=(const GlobalFirstPartySets& other) const {
 }
 
 GlobalFirstPartySets GlobalFirstPartySets::Clone() const {
-  return GlobalFirstPartySets(entries_, aliases_, manual_config_.Clone());
+  return GlobalFirstPartySets(entries_, aliases_, manual_sets_,
+                              manual_config_.Clone());
 }
 
 absl::optional<FirstPartySetEntry> GlobalFirstPartySets::FindEntry(
@@ -218,11 +225,11 @@ bool GlobalFirstPartySets::IsContextSamePartyWithSite(
 void GlobalFirstPartySets::ApplyManuallySpecifiedSet(
     const base::flat_map<SchemefulSite, FirstPartySetEntry>& manual_entries) {
   DCHECK(manual_config_.empty());
+  manual_sets_ = manual_entries;
   // We handle the manually-specified set the same way as we handle
   // replacement enterprise policy sets.
   manual_config_ = ComputeConfig(
       /*replacement_sets=*/{manual_entries}, /*addition_sets=*/{});
-  manual_sets_ = manual_entries;
 }
 
 FirstPartySetsContextConfig GlobalFirstPartySets::ComputeConfig(
@@ -287,7 +294,11 @@ FirstPartySetsContextConfig GlobalFirstPartySets::ComputeConfig(
   // Find out which potential singletons are actually singletons; delete
   // members whose owners left; and reparent the sets that intersected with
   // an addition set.
-  for (const auto& [member, set_entry] : entries_) {
+  // Note: use a null config here, to avoid taking unrelated policy sets into
+  // account.
+  ForEachEffectiveSetEntry(/*config=*/nullptr, [&](const SchemefulSite& member,
+                                                   const FirstPartySetEntry&
+                                                       set_entry) {
     // Reparent all sites in any intersecting addition sets.
     if (auto entry = addition_intersected_owners.find(set_entry.primary());
         entry != addition_intersected_owners.end() &&
@@ -300,7 +311,7 @@ FirstPartySetsContextConfig GlobalFirstPartySets::ComputeConfig(
                                      absl::nullopt));
     }
     if (member == set_entry.primary())
-      continue;
+      return true;
     // Remove non-singletons from the potential list.
     if (auto entry = potential_singletons.find(set_entry.primary());
         entry != potential_singletons.end() &&
@@ -315,7 +326,9 @@ FirstPartySetsContextConfig GlobalFirstPartySets::ComputeConfig(
         !addition_intersected_owners.contains(set_entry.primary())) {
       site_to_entry.emplace_back(member, absl::nullopt);
     }
-  }
+
+    return true;
+  });
   // Any owner remaining in `potential_singleton` is a real singleton, so delete
   // it:
   for (auto& [owner, members] : potential_singletons) {
@@ -395,6 +408,50 @@ bool GlobalFirstPartySets::ForEachPublicSetEntry(
   return true;
 }
 
+bool GlobalFirstPartySets::ForEachEffectiveSetEntry(
+    const FirstPartySetsContextConfig& config,
+    base::FunctionRef<bool(const SchemefulSite&, const FirstPartySetEntry&)> f)
+    const {
+  return ForEachEffectiveSetEntry(&config, f);
+}
+
+bool GlobalFirstPartySets::ForEachEffectiveSetEntry(
+    const FirstPartySetsContextConfig* config,
+    base::FunctionRef<bool(const SchemefulSite&, const FirstPartySetEntry&)> f)
+    const {
+  // Policy sets have highest precedence:
+  if (config != nullptr) {
+    if (!config->ForEachCustomizationEntry(
+            [&](const SchemefulSite& site,
+                const absl::optional<FirstPartySetEntry>& maybe_entry) {
+              if (maybe_entry.has_value())
+                return f(site, *maybe_entry);
+              return true;
+            })) {
+      return false;
+    }
+  }
+
+  // Then the manual set:
+  if (!manual_config_.ForEachCustomizationEntry(
+          [&](const SchemefulSite& site,
+              const absl::optional<FirstPartySetEntry>& maybe_entry) {
+            if (maybe_entry.has_value() && (!config || !config->Contains(site)))
+              return f(site, *maybe_entry);
+            return true;
+          })) {
+    return false;
+  }
+
+  // Finally, the public sets.
+  return ForEachPublicSetEntry([&](const SchemefulSite& site,
+                                   const FirstPartySetEntry& entry) {
+    if ((!config || !config->Contains(site)) && !manual_config_.Contains(site))
+      return f(site, entry);
+    return true;
+  });
+}
+
 std::ostream& operator<<(std::ostream& os, const GlobalFirstPartySets& sets) {
   os << "{entries = {";
   for (const auto& [site, entry] : sets.entries()) {
@@ -404,6 +461,18 @@ std::ostream& operator<<(std::ostream& os, const GlobalFirstPartySets& sets) {
   for (const auto& [alias, canonical] : sets.aliases()) {
     os << "{" << alias.Serialize() << ": " << canonical.Serialize() << "}, ";
   }
+  os << "}, manual_sets = {";
+  for (const auto& [site, entry] : sets.manual_sets()) {
+    os << "{" << site.Serialize() << ": " << entry << "}, ";
+  }
+  os << "}, manual_config = {";
+  sets.manual_config().ForEachCustomizationEntry(
+      [&](const net::SchemefulSite& site,
+          const absl::optional<net::FirstPartySetEntry>& maybe_entry) {
+        os << "{" << site.Serialize() << ": ";
+        maybe_entry.has_value() ? os << maybe_entry.value() : os << "nullopt";
+        return true;
+      });
   os << "}}";
   return os;
 }

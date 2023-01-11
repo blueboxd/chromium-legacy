@@ -175,6 +175,7 @@
 <translation id="1862380676329487333">Абнавіць і выйсці</translation>
 <translation id="1864454756846565995">Прылада USB-C (порт ззаду)</translation>
 <translation id="1869497990620230175">Хуткія файлы</translation>
+<translation id="1871703283152909317">Даць абодва дазволы на доступ</translation>
 <translation id="1879018240766558464">Вокны ў рэжыме інкогніта зараз не падтрымліваюцца. Іншыя праграмы будуць захаваны.</translation>
 <translation id="1882814835921407042">Мабільная сетка адсутнічае</translation>
 <translation id="1882897271359938046">Выконваецца адлюстраванне на дысплэй <ph name="DISPLAY_NAME" /></translation>
@@ -352,6 +353,7 @@
 <translation id="2960314608273155470">Рэжым здымання, стандартна гэта <ph name="TYPE" /> (<ph name="SOURCE" />). Для навігацыі з дапамогай клавіятуры выкарыстоўвайце клавішу Tab.</translation>
 <translation id="2961963223658824723">Нешта пайшло не так. Паўтарыце спробу праз некалькі секунд.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2965227184985674128">Уключыць доступ да мікрафона?</translation>
 <translation id="296762781903199866">Не ўдалося спампаваць файлы для распазнавання маўлення на наступнай мове: <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">Усталёўваць праграмы, пашырэнні, тэмы.</translation>
 <translation id="2977598380246111477">Наступная лічба</translation>
@@ -430,6 +432,7 @@
 <translation id="3386978599540877378">экранная лупа ў поўнаэкранным рэжыме</translation>
 <translation id="3387527074123400161">Chromium OS</translation>
 <translation id="3400357268283240774">Дадатковыя налады</translation>
+<translation id="3405101454990027959">Уключыць доступ да мікрафона</translation>
 <translation id="3410336247007142655">Паказаць налады цёмнай тэмы</translation>
 <translation id="3413817803639110246">Пакуль што нічога няма</translation>
 <translation id="3428447136709161042">Адключыцца ад сеткі "<ph name="NETWORK_NAME" />"</translation>
@@ -516,6 +519,7 @@
 <translation id="385051799172605136">Назад</translation>
 <translation id="385300504083504382">У пачатак</translation>
 <translation id="3861651314799684201">Каб запісаць увесь экран, націсніце Увод</translation>
+<translation id="3885531177412808398">Дае доступ да мікрафона ўсім праграмам і сайтам, якія маюць дазвол выкарыстоўваць мікрафон</translation>
 <translation id="3886872229787704059">Адкрывалася сёння</translation>
 <translation id="3891340733213178823">Каб выйсці з уліковага запісу, двойчы націсніце "Ctrl+Shift+Q".</translation>
 <translation id="3893630138897523026">ChromeVox (галасавая зваротная сувязь)</translation>
@@ -920,6 +924,7 @@
 <translation id="6095008505822982596">Хуткасць маўлення</translation>
 <translation id="6099678161144790572">Зменена ў мінулым месяцы</translation>
 <translation id="6103838137565245112">сістэма</translation>
+<translation id="6107292179555508368">На гэтай прыладзе забаронены доступ да мікрафона і камеры</translation>
 <translation id="6114505516289286752">Спампаваны файлы для распазнавання маўлення на наступнай мове: <ph name="LANGUAGE" /></translation>
 <translation id="6116825164611323644">На гэтай прыладзе няма доступу да камеры</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
@@ -948,6 +953,7 @@
 <translation id="6259254695169772643">Для выбару выкарыстайце стыло</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: ідзе актывацыя...</translation>
 <translation id="6274202259872570803">Скрынкаст</translation>
+<translation id="6282694724099204652">Дайце доступ, каб праграмы і вэб-старонкі з адпаведным дазволам маглі выкарыстоўваць на гэтай прыладзе мікрафон і камеру.</translation>
 <translation id="6283712521836204486">Рэжым "Не турбаваць" выключаны.</translation>
 <translation id="6284232397434400372">Раздзяляльнасць зменена</translation>
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> можна дадаць пазней з дазволу бацькоў.</translation>
@@ -1375,6 +1381,7 @@
 <translation id="8666856788528804727">Каб наладзіць прыладу, адкрыйце <ph name="NAME" /></translation>
 <translation id="8676770494376880701">Падключана зарадная прылада малой магутнасці</translation>
 <translation id="8683506306463609433">Ажыццяўляецца трасіроўка прадукцыйнасці</translation>
+<translation id="8684405646663021166">Дае доступ да мікрафона праграме "<ph name="APP_NAME" />" і ўсім праграмам і сайтам, якія маюць дазвол выкарыстоўваць мікрафон</translation>
 <translation id="8685326675965865247">Пошук на прыладзе, у праграмах, наладах і інтэрнэце. Для пераходу паміж праграмамі выкарыстоўвайце клавішы са стрэлкамі.</translation>
 <translation id="8703634754197148428">Пачаць запіс. Каб пасля пачатку запісу перайсці на паліцу, дзе знаходзіцца кнопка спынення запісу, націсніце Alt + Shift + L</translation>
 <translation id="8721053961083920564">Уключыць або выключыць гук. <ph name="STATE_TEXT" /></translation>

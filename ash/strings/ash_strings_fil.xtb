@@ -175,6 +175,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="1862380676329487333">I-update at mag-sign out</translation>
 <translation id="1864454756846565995">USB-C device (port sa rear)</translation>
 <translation id="1869497990620230175">Mga mabilisang file</translation>
+<translation id="1871703283152909317">I-on ang parehong access</translation>
 <translation id="1879018240766558464">Kasalukuyang hindi sinusuportahan ang mga Incognito window. Mase-save ang iba pang app.</translation>
 <translation id="1882814835921407042">Walang mobile network</translation>
 <translation id="1882897271359938046">Nagmi-mirror sa <ph name="DISPLAY_NAME" /></translation>
@@ -191,7 +192,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="1957958912175573503">Itakda ang iyong wika</translation>
 <translation id="1961239773406905488">Naka-hide ang preview ng camera</translation>
 <translation id="1961832440516943645"><ph name="DATE" />, <ph name="TIME" /></translation>
-<translation id="1962969542251276847">Screen ng Lock</translation>
+<translation id="1962969542251276847">Lock Screen</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Kumusta, <ph name="USERNAME" /></translation>
 <translation id="1978498689038657292">Pag-input ng text</translation>
@@ -479,7 +480,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="3619536907358025872">Mga setting ng screen capture</translation>
 <translation id="3621202678540785336">Input</translation>
 <translation id="3621712662352432595">Mga Setting ng Audio</translation>
-<translation id="3626281679859535460">Tingkad</translation>
+<translation id="3626281679859535460">Brightness</translation>
 <translation id="3630697955794050612">naka-off</translation>
 <translation id="3631369015426612114">Payagan ang mga notification mula sa mga sumusunod</translation>
 <translation id="3633097874324966332">Buksan ang mga setting ng Bluetooth para ipares ang iyong device</translation>
@@ -923,6 +924,7 @@ Isaksak ang iyong device.</translation>
 <translation id="6095008505822982596">Bilis ng pagsasalita</translation>
 <translation id="6099678161144790572">Na-edit sa nakalipas na buwan</translation>
 <translation id="6103838137565245112">system</translation>
+<translation id="6107292179555508368">Naka-off ang mga access sa mikropono at camera sa device na ito</translation>
 <translation id="6114505516289286752">Na-download na ang mga <ph name="LANGUAGE" /> na speech file</translation>
 <translation id="6116825164611323644">Naka-off ang access sa camera sa device na ito</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
@@ -951,6 +953,7 @@ Isaksak ang iyong device.</translation>
 <translation id="6259254695169772643">Gamitin ang iyong stylus para pumili</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Ina-activate...</translation>
 <translation id="6274202259872570803">Screencast</translation>
+<translation id="6282694724099204652">I-on ang mga access para mapayagan ang mga app at webpage na may pahintulot na gamitin ang (mga) mikropono at (mga) camera sa device na ito.</translation>
 <translation id="6283712521836204486">Naka-off ang Huwag istorbohin.</translation>
 <translation id="6284232397434400372">Binago ang resolution</translation>
 <translation id="6288235558961782912">Puwedeng idagdag ulit ang <ph name="USER_EMAIL_ADDRESS" /> kung may pahintulot ng magulang.</translation>

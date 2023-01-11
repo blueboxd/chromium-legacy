@@ -21,6 +21,7 @@
 #include "components/autofill/core/browser/autofill_profile_import_process.h"
 #include "components/autofill/core/browser/autofill_progress_dialog_type.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/form_events/form_events.h"
@@ -212,7 +213,13 @@ class AutofillMetrics {
     // requested the issuer to send an OTP, and we can not move on to the next
     // step in this flow.
     kDismissedByServerRequestFailure = 4,
-    kMaxValue = kDismissedByServerRequestFailure,
+    // User accepted a challenge option in the
+    // CardUnmaskAuthenticationSelectionDialog that does not require a server
+    // call to get to the next step in this flow. For instance, in the CVC case,
+    // we can go directly to the CVC input dialog after the user selects the
+    // challenge option.
+    kDismissedByUserAcceptanceNoServerRequestNeeded = 5,
+    kMaxValue = kDismissedByUserAcceptanceNoServerRequestNeeded,
   };
 
   enum CreditCardUploadFeedbackMetric {
@@ -1069,8 +1076,8 @@ class AutofillMetrics {
     kNone = 0,
     kValid = 1,
     kGarbage = 2,
-    kIgnored = 3,
-    kMaxValue = kIgnored
+    kOff = 3,
+    kMaxValue = kOff
   };
 
   AutofillMetrics() = delete;
@@ -1105,9 +1112,10 @@ class AutofillMetrics {
   static void LogCardUnmaskAuthenticationSelectionDialogResultMetric(
       CardUnmaskAuthenticationSelectionDialogResultMetric metric);
 
-  // Logs true every time the Card Unmask Authentication Selection Dialog is
-  // shown.
-  static void LogCardUnmaskAuthenticationSelectionDialogShown();
+  // Logs the number of challenge options shown every time the Card Unmask
+  // Authentication Selection Dialog is shown.
+  static void LogCardUnmaskAuthenticationSelectionDialogShown(
+      size_t number_of_challenge_options);
 
   static void LogCreditCardInfoBarMetric(
       InfoBarMetric metric,
@@ -1243,7 +1251,8 @@ class AutofillMetrics {
 
   // Logs |event| to the unmask prompt events histogram.
   static void LogUnmaskPromptEvent(UnmaskPromptEvent event,
-                                   bool has_valid_nickname);
+                                   bool has_valid_nickname,
+                                   CreditCard::RecordType card_type);
 
   // Logs |event| to cardholder name fix flow prompt events histogram.
   static void LogCardholderNameFixFlowPromptEvent(
@@ -1795,9 +1804,10 @@ class AutofillMetrics {
       PredictionState prediction_state,
       AutocompleteState autocomplete_state);
 
-  // Logs a field's server and heuristic type on form submit. This is only used
-  // for fields with autocomplete=garbage.
+  // Logs a field's server and heuristic type on form submit into a histogram
+  // corresponding to the field's `autocomplete_state`.
   static void LogAutocompletePredictionCollisionTypes(
+      AutocompleteState autocomplete_state,
       ServerFieldType server_type,
       ServerFieldType heuristic_types);
 
@@ -1810,6 +1820,13 @@ class AutofillMetrics {
   // heuristic precedence is disabled.
   static void LogAcceptedFilledFieldWithNumericQuantityHeuristicPrediction(
       bool accepted);
+
+  // Returns the histogram string for the passed in
+  // `AutofillClient::PaymentsRpcCardType` or `CreditCard::RecordType`, starting
+  // with a period.
+  static std::string GetHistogramStringForCardType(
+      absl::variant<AutofillClient::PaymentsRpcCardType, CreditCard::RecordType>
+          card_type);
 
   // Logs the context menu impressions based on the autofill type as well as
   // based on the autocomplete type.

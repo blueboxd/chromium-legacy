@@ -175,7 +175,7 @@
 <translation id="249323605434939166"><ph name="QUERY_TEXT" />, <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2505327257735685095">현재 배경화면 이미지 새로고침</translation>
 <translation id="2513396635448525189">로그인 이미지</translation>
-<translation id="2517472476991765520">검색</translation>
+<translation id="2517472476991765520">스캔</translation>
 <translation id="2526590354069164005">데스크톱</translation>
 <translation id="253029298928638905">다시 시작 중...</translation>
 <translation id="2533048460510040082">추천 도움말 콘텐츠</translation>
@@ -305,6 +305,7 @@
 <translation id="4044093238444069296">게이트웨이에 접근할 수 없습니다.</translation>
 <translation id="4046123991198612571">다음 트랙</translation>
 <translation id="404928562651467259">경고</translation>
+<translation id="4060260348856573701">새 APN</translation>
 <translation id="4093865285251893588">프로필 이미지</translation>
 <translation id="409427325554347132">테스트 세부정보 저장</translation>
 <translation id="4110686435123617899">앨범 <ph name="TITLE" /> <ph name="DESC" /> 선택</translation>
@@ -455,7 +456,7 @@
 <translation id="5358174242040570474">문제가 발생했습니다. 배경화면을 다시 선택하거나 앱을 다시 실행해 보세요.</translation>
 <translation id="5372659122375744710">Wi-Fi 네트워크가 안전하지 않습니다.</translation>
 <translation id="5376354385557966694">자동 밝은 모드</translation>
-<translation id="5389159777326897627">배경화면/스타일</translation>
+<translation id="5389159777326897627">배경화면 및 스타일</translation>
 <translation id="5389224261615877010">무지개</translation>
 <translation id="5400907029458559844">기기 연결 중입니다.</translation>
 <translation id="5401938042319910061">모든 루틴 실행</translation>
@@ -606,6 +607,7 @@
 <translation id="6766275201586212568">DNS 변환 실패함</translation>
 <translation id="6768237774506518020">DNS 변환 실패율 높음</translation>
 <translation id="6791471867139427246">키보드 조명 색상</translation>
+<translation id="6793680441750437230">키보드의 아무 키나 누르세요. 동시에 최대 4개의 키를 누를 수 있습니다. Alt + Esc를 눌러 대화상자를 닫습니다.</translation>
 <translation id="680983167891198932">키</translation>
 <translation id="6816797338148849397">선택 항목과 관련된 정보를 이용할 수 있습니다. 액세스하려면 위쪽 화살표 키를 사용하세요.</translation>
 <translation id="6853312040151791195">방전 속도</translation>
@@ -765,7 +767,7 @@
 <translation id="8483248364096924578">IP 주소</translation>
 <translation id="8491311378305535241">Android 앱에서 방화벽으로 인해 HTTP 웹사이트에 연결할 수 없습니다.</translation>
 <translation id="8498220429738806196">트래픽 카운터</translation>
-<translation id="8503813439785031346">사용자이름</translation>
+<translation id="8503813439785031346">사용자 이름</translation>
 <translation id="8503836310948963452">몇 분 정도밖에 남지 않았습니다...</translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8575298406870537639">이동통신사에서 네트워크에 연결하기 위해 이 옵션을 요구할 수 있습니다. 자세한 내용은 이동통신사에 문의하세요.</translation>

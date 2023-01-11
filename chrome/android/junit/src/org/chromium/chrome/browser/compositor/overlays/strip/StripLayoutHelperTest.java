@@ -1368,6 +1368,7 @@ public class StripLayoutHelperTest {
         mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
         StripLayoutTab[] tabs = mStripLayoutHelper.getStripLayoutTabs();
         StripLayoutTab thirdTab = tabs[2];
+        int oldSecondTabId = tabs[1].getId();
         groupTabs(0, 2);
 
         // Start reorder mode on third tab. Drag between tabs in group.
@@ -1393,9 +1394,40 @@ public class StripLayoutHelperTest {
 
         // Verify interacting tab was merged into group at the second index.
         tabs = mStripLayoutHelper.getStripLayoutTabs();
-        // assertEquals("Third tab should now be second tab.", thirdTab, tabs[1]);
+        assertEquals("Third tab should now be second tab.", thirdTab, tabs[1]);
         verify(mTabGroupModelFilter)
-                .mergeTabsToGroup(eq(thirdTab.getId()), eq(tabs[0].getId()), eq(true));
+                .mergeTabsToGroup(eq(thirdTab.getId()), eq(oldSecondTabId), eq(true));
+    }
+
+    @Test
+    @Feature("Tab Groups on Tab Strip")
+    public void testReorder_NoExtraMinScroll() {
+        // Mock 3 tabs. Group the first two tabs.
+        initializeTest(false, false, true, 0, 3);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
+
+        // Start reorder mode on third tab.
+        mStripLayoutHelper.startReorderModeAtIndexForTesting(2);
+
+        // Verify extra scroll offset.
+        assertEquals("Extra min offset should not be set.", 0f,
+                mStripLayoutHelper.getReorderExtraMinScrollOffset(), EPSILON);
+    }
+
+    @Test
+    @Feature("Tab Groups on Tab Strip")
+    public void testReorder_ExtraMinScroll() {
+        // Mock 3 tabs. Group the first two tabs.
+        initializeTest(false, false, true, 0, 3);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
+        groupTabs(0, 2);
+
+        // Start reorder mode on third tab.
+        mStripLayoutHelper.startReorderModeAtIndexForTesting(2);
+
+        // Verify extra scroll offset.
+        assertNotEquals("Extra min offset should be set.", 0f,
+                mStripLayoutHelper.getReorderExtraMinScrollOffset(), EPSILON);
     }
 
     @Test

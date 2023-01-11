@@ -150,6 +150,10 @@ DEFINE_VARIATION_PARAM(kIPHReadLaterBottomSheetFeature,
                        "IPH_ReadLaterBottomSheet");
 DEFINE_VARIATION_PARAM(kIPHRequestDesktopSiteAppMenuFeature,
                        "IPH_RequestDesktopSiteAppMenu");
+DEFINE_VARIATION_PARAM(kIPHRequestDesktopSiteDefaultOnFeature,
+                       "IPH_RequestDesktopSiteDefaultOn");
+DEFINE_VARIATION_PARAM(kIPHRequestDesktopSiteOptInFeature,
+                       "IPH_RequestDesktopSiteOptIn");
 DEFINE_VARIATION_PARAM(kIPHShoppingListMenuItemFeature,
                        "IPH_ShoppingListMenuItem");
 DEFINE_VARIATION_PARAM(kIPHShoppingListSaveFlowFeature,
@@ -329,6 +333,8 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHReadLaterAppMenuBookmarksFeature),
         VARIATION_ENTRY(kIPHReadLaterBottomSheetFeature),
         VARIATION_ENTRY(kIPHRequestDesktopSiteAppMenuFeature),
+        VARIATION_ENTRY(kIPHRequestDesktopSiteDefaultOnFeature),
+        VARIATION_ENTRY(kIPHRequestDesktopSiteOptInFeature),
         VARIATION_ENTRY(kIPHShoppingListMenuItemFeature),
         VARIATION_ENTRY(kIPHShoppingListSaveFlowFeature),
         VARIATION_ENTRY(kIPHTabGroupsQuicklyComparePagesFeature),

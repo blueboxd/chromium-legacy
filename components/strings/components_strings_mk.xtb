@@ -683,7 +683,6 @@
 <translation id="2674804415323431591">Сокриј ги предлозите</translation>
 <translation id="2677696497921480781">Родендени и имендени</translation>
 <translation id="2677748264148917807">Напушти</translation>
-<translation id="2679714844901977852">Зачувајте ги податоците за картичката и наплата на вашата сметка на Google <ph name="USER_EMAIL" /> за побезбедно и побрзо плаќање</translation>
 <translation id="2687555958734450033">Најдобро вклопување</translation>
 <translation id="2688186765492306706">500 x 760 mm</translation>
 <translation id="2688969097326701645">Да, продолжи</translation>
@@ -721,7 +720,6 @@
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784474685437057136">B5 Extra</translation>
 <translation id="2784949926578158345">Врската е ресетирана.</translation>
-<translation id="2791176355335562114">Играјте побрзо следниот пат</translation>
 <translation id="2792012897584536778">Администраторите на уредов поставиле безбедносни сертификати што може да им дозволат да ги гледаат содржините на веб-сајтовите што ги посетувате.</translation>
 <translation id="2799020568854403057">Сајтот пред вас содржи штетни апликации</translation>
 <translation id="2799223571221894425">Рестартирај</translation>
@@ -1046,7 +1044,6 @@
 <translation id="3633738897356909127">Копче „Ажурирај го Chrome“, притиснете Enter за да го ажурирате Chrome од поставките за Chrome</translation>
 <translation id="3634530185120165534">Фиока 5</translation>
 <translation id="3634567936866541746">Тукушто ја внесовте својата лозинка на измамнички сајт. За да ги заштитите сметките, Chrome ви препорачува да ги проверите зачуваните лозинки.</translation>
-<translation id="3637662659967048211">Зачувајте во сметката на Google</translation>
 <translation id="3642638418806704195">Апликација:</translation>
 <translation id="3647286794400715637">Секој запис во низата со URL-адреси мора да содржи помеѓу 1 и 2 URL-адреси.</translation>
 <translation id="3650584904733503804">Потврдувањето е успешно</translation>
@@ -1231,6 +1228,7 @@
 <translation id="4132448310531350254">Дупликат ракувачи за наставка на датотека „<ph name="FILE_EXTENSION" />“ како референца од апликациите „<ph name="POLICY_IDS_LIST" />“.</translation>
 <translation id="4134123981501319574">Создај документ</translation>
 <translation id="413544239732274901">Дознајте повеќе</translation>
+<translation id="4140905530744469899">ID на профил:</translation>
 <translation id="4142935452406587478">Фиока 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4150099059797363385">Плик Chinese #4</translation>
@@ -1434,6 +1432,7 @@
 <translation id="4646534391647090355">Однеси ме таму сега</translation>
 <translation id="4648262692072505866">Хашот мора да биде формат SHA-256.</translation>
 <translation id="4652266463001779298">Не е дозволено</translation>
+<translation id="4652440160515225514">Вашата организација го блокираше овој сајт бидејќи прекршува правило.</translation>
 <translation id="4653167719759882810">Спојувања и аквизиции</translation>
 <translation id="4658638640878098064">Спојување горе лево</translation>
 <translation id="4660119392514473465">Сега може да прелистувате приватно, а другите луѓе кои го користат уредов нема да ја гледаат вашата активност. Меѓутоа, преземањата, обележувачите и ставките на списокот за читање ќе се зачуваат.</translation>
@@ -1618,7 +1617,7 @@
 <translation id="5078060223219502807">Откриено е дека лозинката која штотуку ја употребивте е меѓу лозинките откриени при упад во податоците. За да ја задржите безбедноста на сметките, Password Manager препорачува веднаш да ја промените, а потоа да ги проверите зачуваните лозинки.</translation>
 <translation id="5086225927071063542">Дистрибуирани и компјутерски услуги во облак</translation>
 <translation id="5087286274860437796">Сертификатот на серверот не е важечки во моментов.</translation>
-<translation id="5087580092889165836">Додај картичка</translation>
+<translation id="5087580092889165836">Додајте картичка</translation>
 <translation id="5088142053160410913">Порака до операторот</translation>
 <translation id="5093232627742069661">Z-превиткување</translation>
 <translation id="5094747076828555589">Серверот не може да докаже дека е <ph name="DOMAIN" />; Chromium не му верува на неговиот безбедносен сертификат. Тоа може да се должи на погрешна конфигурација или на напаѓач што го пресретнува поврзувањето.</translation>
@@ -2275,7 +2274,6 @@
 <translation id="6826993739343257035">Да се дозволи AR?</translation>
 <translation id="6828866289116430505">Генетика</translation>
 <translation id="6831043979455480757">Преведи</translation>
-<translation id="6833752742582340615">Зачувајте ги податоците за картичката и наплата на вашата сметка на Google за побезбедно и побрзо плаќање</translation>
 <translation id="6842196666980060516">184 x 260 mm</translation>
 <translation id="6846340164947227603">Користете број на виртуелна картичка…</translation>
 <translation id="6852204201400771460">Дали да се вчита апликацијата повторно?</translation>
@@ -2923,6 +2921,7 @@
 <translation id="8437238597147034694">&amp;Врати преместување</translation>
 <translation id="8438476240229491014">Запомни ја поставкава</translation>
 <translation id="8438786541497918448">Да се користат камерата и микрофонот?</translation>
+<translation id="8438923942245957911">Овој сајт е означен од вашата организација</translation>
 <translation id="8443613539889492016">Рап и хип-хоп</translation>
 <translation id="8444543005280733648">Компјутерски мрежи</translation>
 <translation id="8446884382197647889">Дознај повеќе</translation>
@@ -3200,6 +3199,7 @@
 <translation id="9179907736442194268">Добивајте предупредувања по е-пошта ако цената се намали на кој било сајт</translation>
 <translation id="9183302530794969518">Документи на Google</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> користи неподдржан протокол.</translation>
+<translation id="918454845714257218">Проверете го кодот на <ph name="SIDE_OF_CARD" /> и пробајте пак</translation>
 <translation id="9187461866967718678">Екстремни спортови</translation>
 <translation id="9191834167571392248">Дупка долу лево</translation>
 <translation id="9199905725844810519">Печатењето е блокирано</translation>

@@ -175,6 +175,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="1862380676329487333">Actualitza i tanca la sessió</translation>
 <translation id="1864454756846565995">Dispositiu USB-C (port posterior)</translation>
 <translation id="1869497990620230175">Fitxers ràpids</translation>
+<translation id="1871703283152909317">Activa els dos accessos</translation>
 <translation id="1879018240766558464">Les finestres d'incògnit no s'admeten actualment. Les altres aplicacions es desaran.</translation>
 <translation id="1882814835921407042">No hi ha cap xarxa mòbil</translation>
 <translation id="1882897271359938046">S'està replicant <ph name="DISPLAY_NAME" /></translation>
@@ -352,6 +353,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="2960314608273155470">Mode de captura, l'opció predeterminada és <ph name="TYPE" /> <ph name="SOURCE" />. Prem la tecla de tabulació per navegar amb el teclat.</translation>
 <translation id="2961963223658824723">S'ha produït un error. Torna-ho a provar d'aquí a uns quants segons.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2965227184985674128">Vols activar l'accés al micròfon?</translation>
 <translation id="296762781903199866">No s'han pogut baixar els fitxers de veu en <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">Instal·lar aplicacions, extensions i temes.</translation>
 <translation id="2977598380246111477">Número següent</translation>
@@ -430,6 +432,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="3386978599540877378">la lupa de pantalla completa</translation>
 <translation id="3387527074123400161">Chromium OS</translation>
 <translation id="3400357268283240774">Configuració addicional</translation>
+<translation id="3405101454990027959">Activa l'accés al micròfon</translation>
 <translation id="3410336247007142655">Mostra la configuració del tema fosc</translation>
 <translation id="3413817803639110246">Encara no hi ha res per veure</translation>
 <translation id="3428447136709161042">Desconnecta't de la xarxa <ph name="NETWORK_NAME" /></translation>
@@ -516,6 +519,7 @@ Connecta el dispositiu a l'alimentació.</translation>
 <translation id="385051799172605136">Enrere</translation>
 <translation id="385300504083504382">Principi</translation>
 <translation id="3861651314799684201">Prem Retorn per gravar la pantalla completa</translation>
+<translation id="3885531177412808398">Permet l'accés al micròfon per a totes les aplicacions i tots els llocs web amb permís de micròfon</translation>
 <translation id="3886872229787704059">Obert avui</translation>
 <translation id="3891340733213178823">Premeu Ctrl+Maj+Q dues vegades per tancar la sessió.</translation>
 <translation id="3893630138897523026">ChromeVox (avisos de veu)</translation>
@@ -920,6 +924,7 @@ Connecta el dispositiu a l'alimentació.</translation>
 <translation id="6095008505822982596">Velocitat de parla</translation>
 <translation id="6099678161144790572">Editat durant el darrer mes</translation>
 <translation id="6103838137565245112">sistema</translation>
+<translation id="6107292179555508368">Els accessos al micròfon i a la càmera estan desactivats en aquest dispositiu</translation>
 <translation id="6114505516289286752">S'han baixat fitxers de veu en <ph name="LANGUAGE" /></translation>
 <translation id="6116825164611323644">L'accés a la càmera està desactivat en aquest dispositiu</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" />.</translation>
@@ -948,6 +953,7 @@ Connecta el dispositiu a l'alimentació.</translation>
 <translation id="6259254695169772643">Fes servir el llapis òptic per seleccionar</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: s'està activant...</translation>
 <translation id="6274202259872570803">Captura de pantalla de vídeo</translation>
+<translation id="6282694724099204652">Activa els accessos per permetre que les aplicacions i les pàgines web que tinguin permís utilitzin els micròfons i les càmeres d'aquest dispositiu.</translation>
 <translation id="6283712521836204486">El mode No molestis està desactivat.</translation>
 <translation id="6284232397434400372">S'ha canviat la resolució</translation>
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> es pot tornar a afegir més endavant amb un permís dels pares.</translation>
@@ -995,7 +1001,7 @@ Instal·lació nova</translation>
 <translation id="6565007273808762236">La connexió eSIM no està disponible</translation>
 <translation id="6570831796530454248">{0,plural, =1{Actualitza el dispositiu en 1 hora}other{Actualitza el dispositiu en # hores}}</translation>
 <translation id="6570902864550063460">S'està carregant per USB</translation>
-<translation id="6574587113394758819"><ph name="APP_TITLE" /> està amagada perquè la protecció de visualització està activada</translation>
+<translation id="6574587113394758819"><ph name="APP_TITLE" /> està amagada perquè la protecció antimirades està activada</translation>
 <translation id="6574622320167699133">Desbloquejat pel teu telèfon. Toca o fes clic per entrar.</translation>
 <translation id="6578407462441924264">Sense nom</translation>
 <translation id="6585808820553845416">La sessió finalitzarà d'aquí a <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -1004,7 +1010,7 @@ Instal·lació nova</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, <ph name="SIGNAL_STRENGTH" /> d'intensitat del senyal, xarxa gestionada per l'administrador</translation>
 <translation id="6612802754306526077">S'ha seleccionat el mode de gravació de pantalla</translation>
 <translation id="6614169507485700968">La pantalla de privadesa està activada</translation>
-<translation id="6625718907317144388"><ph name="APP_1_TITLE" />, <ph name="APP_2_TITLE" /> i altres notificacions estan amagades perquè la protecció de visualització està activada</translation>
+<translation id="6625718907317144388"><ph name="APP_1_TITLE" />, <ph name="APP_2_TITLE" /> i altres notificacions estan amagades perquè la protecció antimirades està activada</translation>
 <translation id="6627638273713273709">Cerca+Maj+K</translation>
 <translation id="6637729079642709226">Canvia l'hora</translation>
 <translation id="6641720045729354415">Commuta la funció Subtítols instantanis. <ph name="STATE_TEXT" /></translation>
@@ -1316,7 +1322,7 @@ Instal·lació nova</translation>
 <translation id="8374601332003098278">Prem Retorn per gravar una part de la pantalla</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> i el teu telèfon es connectaran automàticament</translation>
 <translation id="8380784334203145311">Bona nit,</translation>
-<translation id="8382715499079447151">Protecció de visualització</translation>
+<translation id="8382715499079447151">Protecció antimirades</translation>
 <translation id="8388750414311082622">L'últim escriptori no es pot suprimir.</translation>
 <translation id="8394567579869570560">El teu pare o mare han bloquejat aquest dispositiu</translation>
 <translation id="8401850874595457088">Menú per seleccionar l'idioma</translation>
@@ -1372,6 +1378,7 @@ Instal·lació nova</translation>
 <translation id="8666856788528804727">Obre <ph name="NAME" /> per configurar el dispositiu</translation>
 <translation id="8676770494376880701">S'ha connectat un carregador de baix consum</translation>
 <translation id="8683506306463609433">Traça del rendiment activa</translation>
+<translation id="8684405646663021166">Permet l'accés al micròfon per a <ph name="APP_NAME" /> i totes les aplicacions i llocs web amb permís de micròfon</translation>
 <translation id="8685326675965865247">Fes cerques al dispositiu, en aplicacions, a la configuració i al web. Fes servir les tecles de fletxa per navegar per les aplicacions.</translation>
 <translation id="8703634754197148428">Inicia la gravació. Quan la gravació hagi començat, prem Alt+Maj+L per navegar fins al prestatge i trobar el botó per aturar-la.</translation>
 <translation id="8721053961083920564">Activa o desactiva el volum. <ph name="STATE_TEXT" /></translation>

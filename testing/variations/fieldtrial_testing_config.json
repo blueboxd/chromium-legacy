@@ -262,6 +262,21 @@
             ]
         }
     ],
+    "AndroidMessagesPWAInstall": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "InstallableAmbientBadgeMessage"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidMessagesSaveCard": [
         {
             "platforms": [
@@ -1504,29 +1519,6 @@
             ]
         }
     ],
-    "AutofillShadowDOM": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "fuchsia",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillShadowDOM"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillSurveys": [
         {
             "platforms": [
@@ -2050,6 +2042,31 @@
                     "name": "Enabled_20221013",
                     "enable_features": [
                         "BluetoothQualityReport"
+                    ]
+                }
+            ]
+        }
+    ],
+    "BrokeringDiskCacheOnAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "OutOfProcessNetworkService",
+                    "disable_features": [
+                        "BrokerFileOperationsOnDiskCacheInNetworkService",
+                        "NetworkServiceInProcess2"
+                    ]
+                },
+                {
+                    "name": "BrokerDiskCache",
+                    "enable_features": [
+                        "BrokerFileOperationsOnDiskCacheInNetworkService"
+                    ],
+                    "disable_features": [
+                        "NetworkServiceInProcess2"
                     ]
                 }
             ]
@@ -3875,31 +3892,6 @@
                     },
                     "enable_features": [
                         "OmniboxUpdateResultDebounce"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DesktopOmniboxRichAutocompletion": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "fuchsia",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "RichAutocompletionAutocompleteNonPrefixAll": "true",
-                        "RichAutocompletionAutocompleteTitles": "true"
-                    },
-                    "enable_features": [
-                        "OmniboxRichAutocompletion",
-                        "OmniboxShortcutExpanding"
                     ]
                 }
             ]
@@ -6060,31 +6052,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "IncognitoNtpRevamp"
-                    ]
-                }
-            ]
-        }
-    ],
-    "IncognitoParamFilterExperimentv3": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "fuchsia",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "experiment_identifier": "foo",
-                        "should_filter": "true"
-                    },
-                    "enable_features": [
-                        "IncognitoParamFilterEnabled"
                     ]
                 }
             ]
@@ -9811,7 +9778,6 @@
                 "android_webview",
                 "chromeos",
                 "chromeos_lacros",
-                "ios",
                 "linux",
                 "mac",
                 "windows"
@@ -9820,6 +9786,12 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
+                        "SendMouseEventsDisabledFormControls"
+                    ]
+                },
+                {
+                    "name": "Disabled",
+                    "disable_features": [
                         "SendMouseEventsDisabledFormControls"
                     ]
                 }
@@ -12132,6 +12104,25 @@
                         "DefaultANGLEVulkan",
                         "Vulkan",
                         "VulkanFromANGLE"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebContentsCaptureHiDPI": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebContentsCaptureHiDPI"
                     ]
                 }
             ]

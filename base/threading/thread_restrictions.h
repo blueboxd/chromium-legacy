@@ -301,6 +301,9 @@ class CoreLibraryInitializer;
 class SyncCallRestrictions;
 namespace core {
 class ScopedIPCSupport;
+namespace ipcz_driver {
+class MojoTrap;
+}
 }
 }  // namespace mojo
 namespace printing {
@@ -435,6 +438,7 @@ class StackTrace;
 }
 
 namespace win {
+class OSInfo;
 class ScopedAllowBlockingForUserAccountControl;
 }
 
@@ -552,6 +556,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class content::
       ScopedAllowBlockingForViewAura;  // http://crbug.com/332579
 #if BUILDFLAG(IS_WIN)
+  friend class base::win::OSInfo;
   friend class content::WebContentsImpl;  // http://crbug.com/1262162
 #endif
   friend class content::WebContentsViewMac;
@@ -787,6 +792,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class media::AudioOutputDevice;
   friend class media::PaintCanvasVideoRenderer;
   friend class mojo::SyncCallRestrictions;
+  friend class mojo::core::ipcz_driver::MojoTrap;
   friend class net::NetworkConfigWatcherMacThread;
   friend class ui::DrmThreadProxy;
   friend class viz::HostGpuMemoryBufferManager;

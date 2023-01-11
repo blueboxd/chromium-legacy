@@ -329,7 +329,7 @@
       // Makes autofill look across shadow boundaries when collecting form
       // controls to fill.
       name: "AutofillShadowDOM",
-      status: "experimental",
+      status: "stable",
       base_feature: "AutofillShadowDOM",
     },
     {
@@ -589,7 +589,7 @@
       status:  {"Android": "stable", "default": "experimental"},
     },
     {
-      name: "ContentVisibilityAutoStateChangedEvent",
+      name: "ContentVisibilityAutoStateChangeEvent",
       status: "stable",
     },
     {
@@ -646,10 +646,8 @@
     {
       // Support for CSS Color Module Level 4
       // https://www.w3.org/TR/css-color-4/
-      // It has a kill-switch in case we see that something is not proplery working"
       name: "CSSColor4",
-      status:  "stable",
-      base_feature: "CSSColor4",
+      status:  "experimental",
     },
     {
       name: "CSSColorContrast",
@@ -950,10 +948,6 @@
     {
       name: "CSSViewTimeline",
       status: "test",
-    },
-    {
-      name: "CustomElementDefaultStyle",
-      status: "experimental",
     },
     {
       name: "Database",
@@ -1823,6 +1817,7 @@
       name: "NavigationId",
       status: "experimental",
       base_feature: "NavigationId",
+      origin_trial_feature_name: "SoftNavigationHeuristics",
     },
     {
       name: "NavigatorContentUtils",
@@ -1888,6 +1883,7 @@
       name: "OffsetParentNewSpecBehavior",
       status: "stable",
       base_feature: "OffsetParentNewSpecBehavior",
+      public: true,
     },
     {
       name: "OnDeviceChange",
@@ -2458,6 +2454,7 @@
       name: "SendMouseEventsDisabledFormControls",
       base_feature: "SendMouseEventsDisabledFormControls",
       status: "experimental",
+      public: true,
     },
     {
       name: "SensorExtraClasses",
@@ -2544,6 +2541,7 @@
       status: "experimental",
       depends_on: ["NavigationId"],
       base_feature: "SoftNavigationHeuristics",
+      origin_trial_feature_name: "SoftNavigationHeuristics",
     },
     // An origin trial feature name is required for this, even though it's
     // actually enabled by the more specific trial. Having these as separate

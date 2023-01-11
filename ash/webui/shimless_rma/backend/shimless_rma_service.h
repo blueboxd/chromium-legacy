@@ -75,8 +75,6 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
 
   void WriteProtectManuallyDisabled(
       WriteProtectManuallyDisabledCallback callback) override;
-  void GetWriteProtectManuallyDisabledInstructions(
-      GetWriteProtectManuallyDisabledInstructionsCallback callback) override;
 
   void GetWriteProtectDisableCompleteAction(
       GetWriteProtectDisableCompleteActionCallback callback) override;
@@ -275,6 +273,11 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
   // Handles responses from the platform to diagnostics requests.
   void OnMetricsReply(
       absl::optional<rmad::RecordBrowserActionMetricReply> response);
+
+  // Handles the response when the RSU QR code is generated.
+  void OnQrCodeGenerated(
+      GetRsuDisableWriteProtectChallengeQrCodeCallback callback,
+      const std::string& qr_code_image);
 
   // Remote for sending requests to the CrosNetworkConfig service.
   mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>

@@ -106,6 +106,7 @@
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_mediator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/lens/lens_coordinator.h"
+#import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
@@ -443,6 +444,8 @@ enum class ToolbarKind {
   [self startMediators];
   [self installDelegatesForAllWebStates];
   [self startChildCoordinators];
+  // TODO(crbug.com/1392109) remove this special case.
+  [self installPostCoordinatorDelegatesForAllWebStates];
   // Browser delegates can have dependencies on coordinators.
   [self installDelegatesForBrowser];
   [self installDelegatesForBrowserState];
@@ -1629,9 +1632,14 @@ enum class ToolbarKind {
   if (base::FeatureList::IsEnabled(
           password_manager::features::kIOSPasswordUISplit)) {
     DCHECK(!self.passwordSettingsCoordinator);
+
+    // Use main browser to open the password settings.
+    SceneState* sceneState =
+        SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
     self.passwordSettingsCoordinator = [[PasswordSettingsCoordinator alloc]
         initWithBaseViewController:self.viewController
-                           browser:self.browser];
+                           browser:sceneState.interfaceProvider.mainInterface
+                                       .browser];
     self.passwordSettingsCoordinator.delegate = self;
     [self.passwordSettingsCoordinator start];
   } else {
@@ -1779,6 +1787,14 @@ enum class ToolbarKind {
               atIndex:(int)index
            activating:(BOOL)activating {
   [self installDelegatesForWebState:webState];
+  // TODO(crbug.com/1392109): remove these special cases.
+  DCHECK(self.passKitCoordinator);
+  PassKitTabHelper::FromWebState(webState)->SetDelegate(
+      self.passKitCoordinator);
+
+  DCHECK(self.storeKitCoordinator);
+  StoreKitTabHelper::FromWebState(webState)->SetLauncher(
+      self.storeKitCoordinator);
 }
 
 - (void)webStateList:(WebStateList*)webStateList
@@ -1838,6 +1854,24 @@ enum class ToolbarKind {
   for (int i = 0; i < self.browser->GetWebStateList()->count(); i++) {
     web::WebState* webState = self.browser->GetWebStateList()->GetWebStateAt(i);
     [self installDelegatesForWebState:webState];
+  }
+}
+// Temporary fix for crbug.com/1380980. Webstate delegates which depend on
+// coordinators are set up here.
+// TODO(crbug.com/1392109) Remove this workaround and stop having coordinators
+// which are delegates of webstates that start themselves.
+- (void)installPostCoordinatorDelegatesForAllWebStates {
+  for (int i = 0; i < self.browser->GetWebStateList()->count(); i++) {
+    web::WebState* webState = self.browser->GetWebStateList()->GetWebStateAt(i);
+    // Add delegates for webstates where those delegates are other coorindators.
+    // (Please don't add further code here).
+    DCHECK(self.passKitCoordinator);
+    PassKitTabHelper::FromWebState(webState)->SetDelegate(
+        self.passKitCoordinator);
+
+    DCHECK(self.storeKitCoordinator);
+    StoreKitTabHelper::FromWebState(webState)->SetLauncher(
+        self.storeKitCoordinator);
   }
 }
 
@@ -1939,19 +1973,11 @@ enum class ToolbarKind {
         self.viewController);
   }
 
-  PassKitTabHelper::FromWebState(webState)->SetDelegate(
-      self.passKitCoordinator);
-
   if (PrintTabHelper::FromWebState(webState)) {
     PrintTabHelper::FromWebState(webState)->set_printer(self.printController);
   }
 
   RepostFormTabHelper::FromWebState(webState)->SetDelegate(self);
-
-  if (StoreKitTabHelper::FromWebState(webState)) {
-    StoreKitTabHelper::FromWebState(webState)->SetLauncher(
-        self.storeKitCoordinator);
-  }
 
   FollowTabHelper* followTabHelper = FollowTabHelper::FromWebState(webState);
   if (followTabHelper) {

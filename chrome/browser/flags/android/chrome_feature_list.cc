@@ -161,6 +161,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAllowNewIncognitoTabIntents,
     &kAndroidScrollOptimizations,
     &kAndroidSearchEngineChoiceNotification,
+    &kAnimatedImageDragShadow,
     &kAssistantConsentSimplifiedText,
     &kAssistantConsentV2,
     &kAssistantIntentExperimentId,
@@ -169,6 +170,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAppMenuMobileSiteOption,
     &kAppToWebAttribution,
     &kBackgroundThreadPool,
+    &kBaselineGM3SurfaceColors,
     &kCastDeviceFilter,
     &kClearOmniboxFocusAfterNavigation,
     &kCloseTabSuggestions,
@@ -370,7 +372,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &switches::kTangibleSync,
     &syncer::kSyncEnableHistoryDataType,
     &syncer::kSyncAndroidLimitNTPPromoImpressions,
-    &syncer::kSyncAndroidPromosWithAlternativeTitle,
     &syncer::kSyncAndroidPromosWithTitle,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
     &video_tutorials::features::kVideoTutorials,
@@ -434,6 +435,10 @@ BASE_FEATURE(kAndroidSearchEngineChoiceNotification,
              "AndroidSearchEngineChoiceNotification",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kAnimatedImageDragShadow,
+             "AnimatedImageDragShadow",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kAssistantConsentSimplifiedText,
              "AssistantConsentSimplifiedText",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -464,6 +469,10 @@ BASE_FEATURE(kAppToWebAttribution,
 
 BASE_FEATURE(kBackgroundThreadPool,
              "BackgroundThreadPool",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kBaselineGM3SurfaceColors,
+             "BaselineGM3SurfaceColors",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kConditionalTabStripAndroid,

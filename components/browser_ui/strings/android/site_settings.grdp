@@ -49,14 +49,17 @@
   <message name="IDS_SITE_SETTINGS_PAGE_SITE_DATA_BLOCKED_SUB_LABEL" desc="2 of 3 possible states for the On-device site data setting. This text appears beneath the 'On-device site data' label and shows the user the state of the setting. With this status, sites have the least flexibility.">
     Sites aren't allowed to save data on your device
   </message>
-  <message name="IDS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_ENABLED" desc="" translateable="false">
-    Allowed
+  <message name="IDS_THIRD_PARTY_COOKIES_LINK_ROW_LABEL" desc="This text is the label of a page. Here, it serves as a button that opens the new page.">
+    Third-party cookies
   </message>
-  <message name="IDS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_DISABLED_INCOGNITO" desc="" translateable="false">
-    Blocked in incognito
+   <message name="IDS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_ENABLED" desc="1 of 3 possible states for the Third-party cookies setting. This text appears beneath the 'Third-party cookies' button label.">
+    Third-party cookies are allowed
   </message>
-  <message name="IDS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_DISABLED" desc="" translateable="false">
-    Blocked
+  <message name="IDS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_DISABLED_INCOGNITO" desc="2 of 3 possible states for the Third-party cookies setting. This text appears beneath the 'Third-party cookies' button label.">
+    Third-party cookies are blocked in Incognito mode
+  </message>
+  <message name="IDS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_DISABLED" desc="3 of 3 possible states for the Third-party cookies setting. This text appears beneath the 'Third-party cookies' button label." >
+    Third-party cookies are blocked
   </message>
   <message name="IDS_WEBSITE_SETTINGS_IDLE_DETECTION" desc="Title of the permission to detect user activity [CHAR_LIMIT=32]">
     Your device use
@@ -324,6 +327,15 @@
   </message>
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ADS_BLOCKED_LIST" desc="Summary text explaining that the Ads permission is set to block ads on some sites. To be shown in the list of permission categories.">
     Blocked on some sites
+  </message>
+  <message name="IDS_SITE_SETTINGS_PAGE_INTRUSIVE_ADS_LABEL" desc="We're renaming the existing 'Ads' setting (visit chrome://settings/content and click 'Additional content settings'). We need to rename this setting because we're introducing 3 new ad settings on the new 'Ad privacy' page. This string is the name of a setting. Here, it serves as the label of a button that opens the 'Intrusive ads' page.">
+    Intrusive ads
+  </message>
+  <message name="IDS_SITE_SETTINGS_PAGE_INTRUSIVE_ALLOWED_SUB_LABEL" desc="1 of 2 states for the 'Intrusive ads' setting.">
+    Any site you visit can show any ad to you
+  </message>
+  <message name="IDS_SITE_SETTINGS_PAGE_INTRUSIVE_BLOCKED_SUB_LABEL" desc="2 of 2 states for the 'intrusive ads' setting.">
+    Ads are blocked on sites known to show intrusive or misleading ads
   </message>
 
   <!-- Augmented reality -->

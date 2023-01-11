@@ -170,6 +170,7 @@ public abstract class ChromeFeatureList {
     public static final String ADD_TO_HOMESCREEN_IPH = "AddToHomescreenIPH";
     public static final String ALLOW_NEW_INCOGNITO_TAB_INTENTS = "AllowNewIncognitoTabIntents";
     public static final String ANDROID_SCROLL_OPTIMIZATIONS = "AndroidScrollOptimizations";
+    public static final String ANIMATED_IMAGE_DRAG_SHADOW = "AnimatedImageDragShadow";
     public static final String AUTOFILL_ADDRESS_PROFILE_SAVE_PROMPT_NICKNAME_SUPPORT =
             "AutofillAddressProfileSavePromptNicknameSupport";
     public static final String AUTOFILL_ALLOW_NON_HTTP_ACTIVATION =
@@ -207,6 +208,7 @@ public abstract class ChromeFeatureList {
     public static final String BACKGROUND_THREAD_POOL = "BackgroundThreadPool";
     public static final String BACK_FORWARD_CACHE = "BackForwardCache";
     public static final String BACK_GESTURE_REFACTOR = "BackGestureRefactorAndroid";
+    public static final String BASELINE_GM3_SURFACE_COLORS = "BaselineGM3SurfaceColors";
     public static final String BIOMETRIC_TOUCH_TO_FILL = "BiometricTouchToFill";
     public static final String CACHE_DEPRECATED_SYSTEM_LOCATION_SETTING =
             "CacheDeprecatedSystemLocationSetting";
@@ -280,8 +282,6 @@ public abstract class ChromeFeatureList {
     public static final String CORMORANT = "Cormorant";
     public static final String SYNC_ANDROID_LIMIT_NTP_PROMO_IMPRESSIONS =
             "SyncAndroidLimitNTPPromoImpressions";
-    public static final String SYNC_ANDROID_PROMOS_WITH_ALTERNATIVE_TITLE =
-            "SyncAndroidPromosWithAlternativeTitle";
     public static final String SYNC_ANDROID_PROMOS_WITH_TITLE = "SyncAndroidPromosWithTitle";
     public static final String CRITICAL_PERSISTED_TAB_DATA = "CriticalPersistedTabData";
     public static final String DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING =
@@ -552,6 +552,8 @@ public abstract class ChromeFeatureList {
             new CachedFlag(APP_MENU_MOBILE_SITE_OPTION, false);
     public static final CachedFlag sBackGestureRefactorAndroid =
             new CachedFlag(BACK_GESTURE_REFACTOR, false);
+    public static final CachedFlag sBaselineGm3SurfaceColors =
+            new CachedFlag(BASELINE_GM3_SURFACE_COLORS, false);
     public static final CachedFlag sCctAutoTranslate = new CachedFlag(CCT_AUTO_TRANSLATE, true);
     public static final CachedFlag sCctBrandTransparency =
             new CachedFlag(CCT_BRAND_TRANSPARENCY, false);

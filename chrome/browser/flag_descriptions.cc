@@ -3412,6 +3412,13 @@ const char kAndroidSurfaceControlDescription[] =
     " DisplayCompositor on Android. This feature is only available on "
     " android Q+ devices";
 
+const char kAnimatedImageDragShadowName[] =
+    "Enable animated image drag shadow on Android.";
+const char kAnimatedImageDragShadowDescription[] =
+    "Animate the shadow image from its original bound to the touch point. "
+    "Image drag on Android is available when flag touch-drag-and-context-menu "
+    "is enabled.";
+
 const char kAssistantIntentTranslateInfoName[] =
     "Translate info in Assistant intent";
 const char kAssistantIntentTranslateInfoDescription[] =
@@ -4000,6 +4007,10 @@ const char kFoldableJankFixAndroidName[] = "Fix for jank seen on foldables.";
 const char kFoldableJankFixAndroidDescription[] =
     "Enables fix for jank seen during fold to unfold transition on foldables "
     "with Android 12+";
+
+const char kBaselineGM3SurfaceColorsName[] = "Baseline GM3 Surface Colors";
+const char kBaselineGM3SurfaceColorsDescription[] =
+    "Updates baseline surface colors to match the GM3 formula.";
 
 const char kTouchDragAndContextMenuName[] =
     "Simultaneous touch drag and context menu";

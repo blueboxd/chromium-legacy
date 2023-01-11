@@ -177,7 +177,7 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_RATIONALIZE_STREET_ADDRESS_AND_HOUSE_NUMBER,
                     "Rationalizes (street address, house number) field sequences to "
                             + "(street name, house number)."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_ALWAYS_PARSE_PLACEHOLDERS,
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_CONSIDER_PLACEHOLDER_FOR_PARSING,
                     "When enabled, Autofill local heuristics consider the placeholder attribute "
                             + "for determining field types."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_IMPROVED_LABEL_FOR_INFERENCE,
@@ -337,6 +337,7 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.THREADED_BODY_LOADER,
                     "If enabled, reads and decodes navigation body data off the main thread."),
             Flag.baseFeature("PreconnectOnRedirect"),
+            Flag.baseFeature("PreconnectInNetworkService"), Flag.baseFeature("PrefetchDNSWithURL"),
             Flag.baseFeature(BlinkFeatures.SEND_MOUSE_EVENTS_DISABLED_FORM_CONTROLS,
                     "This changes event propagation for disabled form controls."),
             Flag.baseFeature(ContentFeatures.SURFACE_SYNC_FULLSCREEN_KILLSWITCH,

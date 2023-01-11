@@ -196,15 +196,15 @@ void BrowserAccessibilityManager::FireFocusEventsIfNeeded() {
       return;
   }
 
-  // Wait until navigation is complete or stopped, before attempting to move the
-  // accessibility focus.
-  if (user_is_navigating_away_)
-    return;
-
   ui::AXNode* last_focused_node = GetLastFocusedNode();
-  if (focus != GetFromAXNode(last_focused_node))
-    FireFocusEvent(focus->node());
-  SetLastFocusedNode(focus->node());
+  if (focus != GetFromAXNode(last_focused_node)) {
+    // Wait until navigation is complete or stopped, before attempting to move
+    // the accessibility focus.
+    if (!user_is_navigating_away_) {
+      FireFocusEvent(focus->node());
+    }
+    SetLastFocusedNode(focus->node());
+  }
 }
 
 bool BrowserAccessibilityManager::CanFireEvents() const {
@@ -1760,7 +1760,7 @@ void BrowserAccessibilityManager::CacheHitTestResult(
   // return a node that's hidden from the tree.
   hit_test_result = hit_test_result->PlatformGetLowestPlatformAncestor();
 
-  last_hover_ax_tree_id_ = hit_test_result->manager()->ax_tree_id();
+  last_hover_ax_tree_id_ = hit_test_result->manager()->GetTreeID();
   last_hover_node_id_ = hit_test_result->GetId();
   last_hover_bounds_ = hit_test_result->GetClippedScreenBoundsRect();
 }

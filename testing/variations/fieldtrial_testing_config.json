@@ -4113,6 +4113,24 @@
             ]
         }
     ],
+    "DisallowManagedProfileSignout": [
+        {
+            "platforms": [
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DisallowManagedProfileSignout"
+                    ]
+                }
+            ]
+        }
+    ],
     "DiscardableMemoryExperiments": [
         {
             "platforms": [
@@ -4585,6 +4603,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "EncryptedClientHello"
+                    ]
+                }
+            ]
+        }
+    ],
+    "EvictSubtree": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EvictSubtree"
                     ]
                 }
             ]
@@ -6927,6 +6960,28 @@
             ]
         }
     ],
+    "MetricsServiceAsyncCollection": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20230103",
+                    "enable_features": [
+                        "MetricsServiceAsyncCollection"
+                    ]
+                }
+            ]
+        }
+    ],
     "MigrateAlwaysTranslateLanguagesFix": [
         {
             "platforms": [
@@ -6992,6 +7047,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MigrateRuleBasedInputMethods"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MmapSafeBrowsingDatabase": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MmapSafeBrowsingDatabase"
                     ]
                 }
             ]
@@ -10823,6 +10897,27 @@
             ]
         }
     ],
+    "SyncEnforceBookmarksCountLimit": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncEnforceBookmarksCountLimit"
+                    ]
+                }
+            ]
+        }
+    ],
     "SyncPromoAfterSigninInterceptStudy": [
         {
             "platforms": [
@@ -10918,6 +11013,25 @@
                     "enable_features": [
                         "IPH_TabAudioMuting",
                         "TabAudioMuting"
+                    ]
+                }
+            ]
+        }
+    ],
+    "TabGroupsCollapseFreezing": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "TabGroupsCollapseFreezing"
                     ]
                 }
             ]

@@ -152,6 +152,11 @@
     "expiry_milestone": 140
   },
   {
+    "name": "animated-image-drag-shadow",
+    "owners": [ "shuyng@google.com", "wenyufu", "clank-app-team@google.com" ],
+    "expiry_milestone": 115
+  },
+  {
     "name": "animated-image-resume",
     "owners": [ "cblume", "vmpstr" ],
     "expiry_milestone": 93
@@ -1790,6 +1795,11 @@
     "name": "enable-background-blur",
     "owners": [ "newcomer" ],
     "expiry_milestone": 86
+  },
+  {
+    "name": "enable-baseline-gm3-surface-colors",
+    "owners": ["nemco", "skavuluru"],
+    "expiry_milestone": 115
   },
   {
     "name": "enable-bluetooth-spp-in-serial-api",
@@ -4244,6 +4254,11 @@
     "name": "intent-chip-skips-intent-picker",
     "owners": ["tsergeant", "chromeos-apps-foundation-team@google.com"],
     "expiry_milestone": 112
+  },
+  {
+    "name": "intents-on-email",
+    "owners": [ "djean@google.com", "erahmaoui@google.com", "bling-flags@google.com" ],
+    "expiry_milestone": 113
   },
   {
     "name": "intents-on-phone-number",

@@ -1776,6 +1776,8 @@ crbug.com/248894 external/wpt/css/css-typed-om/the-stylepropertymap/properties/t
 crbug.com/248894 external/wpt/web-animations/responsive/textIndent.html [ Failure ]
 
 # nth-* selectors
+crbug.com/304163 external/wpt/css/selectors/invalidation/nth-child-containing-ancestor.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/invalidation/nth-child-in-shadow-root.html [ Failure ]
 crbug.com/304163 external/wpt/css/selectors/invalidation/nth-child-of-attr.html [ Failure ]
 crbug.com/304163 external/wpt/css/selectors/invalidation/nth-child-of-class.html [ Failure ]
 crbug.com/304163 external/wpt/css/selectors/invalidation/nth-child-of-has.html [ Failure ]
@@ -3363,8 +3365,6 @@ crbug.com/626703 external/wpt/css/CSS2/text/text-decoration-va-length-001.xht [ 
 crbug.com/626703 external/wpt/css/CSS2/text/text-decoration-va-length-002.xht [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/text/white-space-collapsing-bidi-001.xht [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/text/white-space-mixed-001.xht [ Failure ]
-crbug.com/626703 external/wpt/css/css-tables/floats/floats-wrap-bfc-006b.xht [ Failure ]
-crbug.com/626703 external/wpt/css/css-tables/floats/floats-wrap-bfc-006c.xht [ Failure ]
 crbug.com/626703 external/wpt/media-source/mediasource-avtracks.html [ Crash Failure ]
 crbug.com/626703 external/wpt/media-source/mediasource-getvideoplaybackquality.html [ Failure Timeout ]
 crbug.com/958104 external/wpt/presentation-api/controlling-ua/getAvailability.https.html [ Failure ]
@@ -5921,7 +5921,6 @@ crbug.com/1311128 external/wpt/paint-timing/fcp-only/fcp-document-opacity-text.h
 
 # Scroll Unification known issues (go/su-web-tests) for enabling in test:
 crbug.com/1311431 [ Mac ] fast/scroll-behavior/overscroll-behavior.html [ Failure Pass ]
-crbug.com/1312036 virtual/hidpi/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Pass ]
 
 # These tests fail on SwiftShader FEMU due to a change in log/exp implementation.
 crbug.com/1311456 [ Fuchsia ] fast/css3-text/css3-text-decoration/text-decoration-style-inherit.html [ Crash Failure Pass Timeout ]
@@ -6203,7 +6202,6 @@ crbug.com/1354433 [ Linux ] external/wpt/html/browsers/the-window-object/window-
 # Failures with FractionalScrollOffsets disabled for web tests by default.
 crbug.com/1358383 fast/scrolling/scrollbars/touch-scrolling-on-root-scrollbar.html [ Failure ]
 crbug.com/1358383 [ Mac ] fast/scrolling/scrollbars/scrollbar-rtl-manipulation.html [ Failure ]
-crbug.com/1358383 fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Pass ]
 crbug.com/1358383 virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar-thumb.html [ Failure ]
 crbug.com/1358383 virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar-thumb.html [ Failure ]
 [ Linux ] virtual/percent-based-scrolling/fast/scrolling/scrollbars/touch-scrolling-on-root-scrollbar.html [ Pass ]
@@ -6214,9 +6212,6 @@ virtual/fractional-scroll-offsets/fast/scrolling/scrollbars/touch-scrolling-on-r
 [ Mac ] virtual/main-threaded-percent-based-scrolling/fast/scrolling/scrollbars/scrollbar-rtl-manipulation.html [ Pass ]
 [ Mac ] virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/scrollbars/scrollbar-rtl-manipulation.html [ Pass ]
 [ Mac ] virtual/fractional-scroll-offsets/fast/scrolling/scrollbars/scrollbar-rtl-manipulation.html [ Pass ]
-virtual/percent-based-scrolling/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Pass ]
-virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Pass ]
-virtual/fractional-scroll-offsets/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Pass ]
 
 # Sheriff 2022-08-24
 crbug.com/1356118 [ Mac ] virtual/async-script-scheduling-finished-parsing/wpt_internal/async-script-scheduling/execution-order.sub.html [ Failure Pass ]
@@ -6374,7 +6369,7 @@ crbug.com/1396422 [ Mac11-arm64 ] inspector-protocol/css/css-get-media-queries.j
 crbug.com/1403736 [ Mac11-arm64 ] external/wpt/html/semantics/popovers/light-dismiss-event-ordering.tentative.html [ Timeout ]
 crbug.com/1396079 [ Mac ] inspector-protocol/memory/forcibly-purge-javascript-memory.js [ Crash Failure ]
 crbug.com/1395840 [ Mac ] http/tests/accessibility/slow-document-load.html [ Failure ]
-crbug.com/1404767 [ Debug Linux ] external/wpt/css/css-cascade/all-prop-revert-layer-noop.html [ Timeout Failure ]
+crbug.com/1404767 [ Debug Linux ] external/wpt/css/css-cascade/all-prop-revert-layer-noop.html [ Failure Timeout ]
 crbug.com/1406027 [ Win ] virtual/media-foundation-for-clear-dcomp/media/controls/overflow-menu-hide-on-resize.html [ Failure ]
 
 # Sheriff 2022-10-07
@@ -6958,6 +6953,7 @@ crbug.com/1404252 [ Mac11-arm64 Release ] external/wpt/resource-timing/response-
 # Sheriff 2023-01-11
 crbug.com/1406380 [ Win ] external/wpt/infrastructure/server/webtransport-h3.https.sub.any.worker.html [ Failure Pass ]
 crbug.com/1406380 [ Win ] external/wpt/infrastructure/server/webtransport-h3.https.sub.any.sharedworker.html [ Failure Pass ]
+crbug.com/1406380 [ Win ] external/wpt/infrastructure/server/webtransport-h3.https.sub.any.html [ Failure Pass ]
 
 crbug.com/1347831 http/tests/devtools/cache-storage/cache-data.js [ Failure Pass ]
 crbug.com/1347831 http/tests/devtools/cache-storage/cache-deletion.js [ Failure Pass ]

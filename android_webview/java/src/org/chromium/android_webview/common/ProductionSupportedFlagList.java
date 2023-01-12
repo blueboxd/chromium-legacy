@@ -177,7 +177,7 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_RATIONALIZE_STREET_ADDRESS_AND_HOUSE_NUMBER,
                     "Rationalizes (street address, house number) field sequences to "
                             + "(street name, house number)."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_CONSIDER_PLACEHOLDER_FOR_PARSING,
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_ALWAYS_PARSE_PLACEHOLDERS,
                     "When enabled, Autofill local heuristics consider the placeholder attribute "
                             + "for determining field types."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_IMPROVED_LABEL_FOR_INFERENCE,
@@ -354,6 +354,12 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(ContentSwitches.DISABLE_DOMAIN_BLOCKING_FOR3DAP_IS,
                     "Disable the per-domain blocking for 3D APIs after GPU reset. "
                             + "This switch is intended only for tests."),
+            Flag.baseFeature(MetricsFeatures.METRICS_SERVICE_ALLOW_EARLY_LOG_CLOSE,
+                    "Controls whether a log is allowed to be closed when Chrome"
+                            + " is backgrounded/foregrounded early."),
+            Flag.baseFeature(MetricsFeatures.METRICS_SERVICE_ASYNC_COLLECTION,
+                    "Controls whether the metrics service creates periodic logs"
+                            + " in a background thread or on the main thread."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

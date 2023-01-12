@@ -45,11 +45,9 @@ class CONTENT_EXPORT DirectSocketsServiceImpl
       OpenTcpSocketCallback callback) override;
   void OpenUdpSocket(
       blink::mojom::DirectSocketOptionsPtr options,
-      mojo::PendingReceiver<blink::mojom::DirectUDPSocket> receiver,
+      mojo::PendingReceiver<network::mojom::RestrictedUDPSocket> receiver,
       mojo::PendingRemote<network::mojom::UDPSocketListener> listener,
       OpenUdpSocketCallback callback) override;
-
-  static net::NetworkTrafficAnnotationTag TrafficAnnotation();
 
   // Testing:
   static void SetNetworkContextForTesting(network::mojom::NetworkContext*);
@@ -71,14 +69,11 @@ class CONTENT_EXPORT DirectSocketsServiceImpl
 
   void OnResolveCompleteForUdpSocket(
       blink::mojom::DirectSocketOptionsPtr,
-      mojo::PendingReceiver<blink::mojom::DirectUDPSocket>,
+      mojo::PendingReceiver<network::mojom::RestrictedUDPSocket>,
       mojo::PendingRemote<network::mojom::UDPSocketListener>,
       OpenUdpSocketCallback,
       int result,
       const absl::optional<net::AddressList>& resolved_addresses);
-
-  mojo::UniqueReceiverSet<blink::mojom::DirectUDPSocket>
-      direct_udp_socket_receivers_;
 
   base::WeakPtrFactory<DirectSocketsServiceImpl> weak_ptr_factory_{this};
 };

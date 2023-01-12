@@ -60,6 +60,18 @@ bool CanCallGetMatchedRules(content::BrowserContext* browser_context,
   return can_call;
 }
 
+// Filter the fetched dynamic/session rules by the user provided rule filter.
+void FilterRules(std::vector<dnr_api::Rule>& rules,
+                 const dnr_api::GetRulesFilter& rule_filter) {
+  // Filter the rules by the rule IDs, if provided.
+  if (rule_filter.rule_ids) {
+    const base::flat_set<int>& rule_ids = *rule_filter.rule_ids;
+    base::EraseIf(rules, [rule_ids](const auto& rule) {
+      return !rule_ids.contains(rule.id);
+    });
+  }
+}
+
 }  // namespace
 
 DeclarativeNetRequestUpdateDynamicRulesFunction::
@@ -119,6 +131,13 @@ DeclarativeNetRequestGetDynamicRulesFunction::
 
 ExtensionFunction::ResponseAction
 DeclarativeNetRequestGetDynamicRulesFunction::Run() {
+  using Params = dnr_api::GetDynamicRules::Params;
+
+  std::u16string error;
+  std::unique_ptr<Params> params(Params::Create(args(), &error));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  EXTENSION_FUNCTION_VALIDATE(error.empty());
+
   auto source = declarative_net_request::FileBackedRulesetSource::CreateDynamic(
       browser_context(), extension()->id());
 
@@ -132,11 +151,12 @@ DeclarativeNetRequestGetDynamicRulesFunction::Run() {
       FROM_HERE, std::move(read_dynamic_rules),
       base::BindOnce(
           &DeclarativeNetRequestGetDynamicRulesFunction::OnDynamicRulesFetched,
-          this));
+          this, std::move(params)));
   return RespondLater();
 }
 
 void DeclarativeNetRequestGetDynamicRulesFunction::OnDynamicRulesFetched(
+    std::unique_ptr<dnr_api::GetDynamicRules::Params> params,
     declarative_net_request::ReadJSONRulesResult read_json_result) {
   using Status = declarative_net_request::ReadJSONRulesResult::Status;
 
@@ -150,6 +170,10 @@ void DeclarativeNetRequestGetDynamicRulesFunction::OnDynamicRulesFetched(
   if (read_json_result.status == Status::kFileReadError) {
     Respond(Error(declarative_net_request::kInternalErrorGettingDynamicRules));
     return;
+  }
+
+  if (params->filter) {
+    FilterRules(read_json_result.rules, *params->filter);
   }
 
   Respond(ArgumentList(
@@ -210,12 +234,25 @@ DeclarativeNetRequestGetSessionRulesFunction::
 
 ExtensionFunction::ResponseAction
 DeclarativeNetRequestGetSessionRulesFunction::Run() {
+  using Params = dnr_api::GetSessionRules::Params;
+
+  std::u16string error;
+  std::unique_ptr<Params> params(Params::Create(args(), &error));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  EXTENSION_FUNCTION_VALIDATE(error.empty());
+
   auto* rules_monitor_service =
       declarative_net_request::RulesMonitorService::Get(browser_context());
   DCHECK(rules_monitor_service);
 
-  return RespondNow(OneArgument(base::Value(
-      rules_monitor_service->GetSessionRulesValue(extension_id()).Clone())));
+  auto rules = rules_monitor_service->GetSessionRules(extension_id());
+
+  if (params->filter) {
+    FilterRules(rules, *params->filter);
+  }
+
+  return RespondNow(
+      ArgumentList(dnr_api::GetSessionRules::Results::Create(rules)));
 }
 
 DeclarativeNetRequestUpdateEnabledRulesetsFunction::
@@ -382,6 +419,52 @@ void DeclarativeNetRequestUpdateStaticRulesFunction::OnStaticRulesUpdated(
   } else {
     Respond(NoArguments());
   }
+}
+
+DeclarativeNetRequestGetDisabledRuleIdsFunction::
+    DeclarativeNetRequestGetDisabledRuleIdsFunction() = default;
+DeclarativeNetRequestGetDisabledRuleIdsFunction::
+    ~DeclarativeNetRequestGetDisabledRuleIdsFunction() = default;
+
+ExtensionFunction::ResponseAction
+DeclarativeNetRequestGetDisabledRuleIdsFunction::Run() {
+  using Params = dnr_api::GetDisabledRuleIds::Params;
+  using RulesetID = declarative_net_request::RulesetID;
+  using DNRManifestData = declarative_net_request::DNRManifestData;
+
+  std::u16string error;
+  std::unique_ptr<Params> params(Params::Create(args(), &error));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  EXTENSION_FUNCTION_VALIDATE(error.empty());
+
+  const DNRManifestData::ManifestIDToRulesetMap& public_id_map =
+      DNRManifestData::GetManifestIDToRulesetMap(*extension());
+  auto it = public_id_map.find(params->options.ruleset_id);
+  if (it == public_id_map.end()) {
+    return RespondNow(Error(ErrorUtils::FormatErrorMessage(
+        declarative_net_request::kInvalidRulesetIDError,
+        params->options.ruleset_id)));
+  }
+  RulesetID ruleset_id = it->second->id;
+
+  auto* rules_monitor_service =
+      declarative_net_request::RulesMonitorService::Get(browser_context());
+  DCHECK(rules_monitor_service);
+  DCHECK(extension());
+
+  rules_monitor_service->GetDisabledRuleIds(
+      *extension(), std::move(ruleset_id),
+      base::BindOnce(&DeclarativeNetRequestGetDisabledRuleIdsFunction::
+                         OnDisabledRuleIdsRead,
+                     this));
+
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void DeclarativeNetRequestGetDisabledRuleIdsFunction::OnDisabledRuleIdsRead(
+    std::vector<int> disabled_rule_ids) {
+  Respond(ArgumentList(
+      dnr_api::GetDisabledRuleIds::Results::Create(disabled_rule_ids)));
 }
 
 // static

@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -333,6 +333,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface>,
   virtual bool SupportsGpuVSync() const;
 
   virtual void SetGpuVSyncEnabled(bool enabled);
+
+  virtual void SetVSyncDisplayID(int64_t display_id) {}
 
   virtual void SetDisplayTransform(gfx::OverlayTransform transform) {}
   virtual void SetFrameRate(float frame_rate) {}

@@ -147,6 +147,9 @@ extern const char kPasswordViewPageInSettingsDescription[];
 extern const char kPPAPISharedImagesSwapChainName[];
 extern const char kPPAPISharedImagesSwapChainDescription[];
 
+extern const char kSupportPepperVideoDecoderDevAPIName[];
+extern const char kSupportPepperVideoDecoderDevAPIDescription[];
+
 extern const char kPrivacyIndicatorsName[];
 extern const char kPrivacyIndicatorsDescription[];
 
@@ -566,6 +569,9 @@ extern const char kEnablePreinstalledWebAppDuplicationFixerDescription[];
 extern const char kEnableTLS13EarlyDataName[];
 extern const char kEnableTLS13EarlyDataDescription[];
 
+extern const char kAccessibilityAcceleratorNotificationsTimeoutName[];
+extern const char kAccessibilityAcceleratorNotificationsTimeoutDescription[];
+
 extern const char kAccessibilityServiceName[];
 extern const char kAccessibilityServiceDescription[];
 
@@ -822,6 +828,9 @@ extern const char kFedCmMultiIdpDescription[];
 
 extern const char kFedCmSelectiveDisclosureName[];
 extern const char kFedCmSelectiveDisclosureDescription[];
+
+extern const char kFedCmRpContextName[];
+extern const char kFedCmRpContextDescription[];
 
 extern const char kFedCmUserInfoName[];
 extern const char kFedCmUserInfoDescription[];
@@ -1197,6 +1206,12 @@ extern const char kOmniboxShortBookmarkSuggestionsDescription[];
 extern const char kOmniboxShortcutExpandingName[];
 extern const char kOmniboxShortcutExpandingDescription[];
 
+extern const char kOmniboxSimplifiedUiUniformRowHeightName[];
+extern const char kOmniboxSimplifiedUiUniformRowHeightDescription[];
+
+extern const char kOmniboxSimplifiedUiSquareSuggestIconName[];
+extern const char kOmniboxSimplifiedUiSquareSuggestIconDescription[];
+
 extern const char kOmniboxSiteSearchStarterPackName[];
 extern const char kOmniboxSiteSearchStarterPackDescription[];
 
@@ -1226,9 +1241,6 @@ extern const char kOmniboxMaxZeroSuggestMatchesDescription[];
 
 extern const char kOmniboxUIMaxAutocompleteMatchesName[];
 extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
-
-extern const char kOmniboxSimplifiedUiUniformRowHeightName[];
-extern const char kOmniboxSimplifiedUiUniformRowHeightDescription[];
 
 extern const char kOmniboxUpdatedConnectionSecurityIndicatorsName[];
 extern const char kOmniboxUpdatedConnectionSecurityIndicatorsDescription[];
@@ -1957,6 +1969,8 @@ extern const char kAndroidSurfaceControlDescription[];
 
 extern const char kAnimatedImageDragShadowName[];
 extern const char kAnimatedImageDragShadowDescription[];
+extern const char kAndroidImprovedBookmarksName[];
+extern const char kAndroidImprovedBookmarksDescription[];
 
 extern const char kAssistantIntentTranslateInfoName[];
 extern const char kAssistantIntentTranslateInfoDescription[];
@@ -2690,6 +2704,9 @@ extern const char kArcRtVcpuQuadCoreDesc[];
 
 extern const char kArcUpdateO4CListViaA2C2Name[];
 extern const char kArcUpdateO4CListViaA2C2Desc[];
+
+extern const char kArcEnableAAudioMMAPName[];
+extern const char kArcEnableAAudioMMAPDescription[];
 
 extern const char kArcEnableUsapName[];
 extern const char kArcEnableUsapDesc[];

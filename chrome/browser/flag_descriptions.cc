@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "flag_descriptions.h"
 #include "pdf/buildflags.h"
 
 // Keep in identical order as the header file, see the comment at the top
@@ -203,6 +204,12 @@ extern const char kPPAPISharedImagesSwapChainName[] =
     "Use SharedImages for PPAPI swapchain";
 extern const char kPPAPISharedImagesSwapChainDescription[] =
     "Switches legacy swap chain code to SharedImages";
+
+extern const char kSupportPepperVideoDecoderDevAPIName[] =
+    "Controls whether the Pepper PPB_VideoDecoder(Dev) API is supported";
+extern const char kSupportPepperVideoDecoderDevAPIDescription[] =
+    "When disabled, Chrome will return 0 if asked to create the "
+    "PPB_VideoDecoder(Dev) API by in-process callers";
 
 const char kPrivacyIndicatorsName[] = "Enable Privacy Indicators";
 const char kPrivacyIndicatorsDescription[] =
@@ -992,6 +999,13 @@ const char kEnableTLS13EarlyDataDescription[] =
     "during the handshake when resuming a connection to a compatible TLS 1.3 "
     "server.";
 
+const char kAccessibilityAcceleratorNotificationsTimeoutName[] =
+    "Allows accelerator notifications for accessibility features to time out";
+const char kAccessibilityAcceleratorNotificationsTimeoutDescription[] =
+    "Enables notifications for accessibility features turned on by keyboard "
+    "shortcut (docked magnifier, screen magnifier and high contrast) to time "
+    "out instead of remaining pinned.";
+
 const char kAccessibilityServiceName[] = "Experimental Accessibility Service";
 const char kAccessibilityServiceDescription[] =
     "This option enables the experimental Accessibility Service and runs some "
@@ -1486,6 +1500,11 @@ const char kFedCmWithoutThirdPartyCookiesName[] =
     "FedCmWithoutThirdPartyCookies";
 const char kFedCmWithoutThirdPartyCookiesDescription[] =
     "Allows the FedCM API to be enabled when third party cookies are disabled.";
+
+const char kFedCmRpContextName[] = "FedCmRpContext";
+const char kFedCmRpContextDescription[] =
+    "Allows relying parties to describe which context (e.g. sign-up vs "
+    "sign-in) the FedCM is executing on.";
 
 const char kFileHandlingIconsName[] = "File Handling Icons";
 const char kFileHandlingIconsDescription[] =
@@ -2172,6 +2191,17 @@ const char kOmniboxShortcutExpandingDescription[] =
     "Expand the last word in the shortcut text to be a complete word from the "
     "suggestion text.";
 
+const char kOmniboxSimplifiedUiUniformRowHeightName[] =
+    "Omnibox Suggestion Row Height";
+const char kOmniboxSimplifiedUiUniformRowHeightDescription[] =
+    "Changes the row height of omnibox suggetions.";
+
+const char kOmniboxSimplifiedUiSquareSuggestIconName[] =
+    "Omnibox Square Suggest Icons";
+const char kOmniboxSimplifiedUiSquareSuggestIconDescription[] =
+    "Adds a grey square background to suggestion icons, and makes the answer "
+    "icon square.";
+
 const char kOmniboxMaxZeroSuggestMatchesName[] =
     "Omnibox Max Zero Suggest Matches";
 const char kOmniboxMaxZeroSuggestMatchesDescription[] =
@@ -2183,11 +2213,6 @@ const char kOmniboxUIMaxAutocompleteMatchesName[] =
 const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
     "Changes the maximum number of autocomplete matches displayed in the "
     "Omnibox UI.";
-
-const char kOmniboxSimplifiedUiUniformRowHeightName[] =
-    "Omnibox Suggestion Row Height";
-const char kOmniboxSimplifiedUiUniformRowHeightDescription[] =
-    "Changes the row height of omnibox suggetions.";
 
 const char kOmniboxUpdatedConnectionSecurityIndicatorsName[] =
     "Omnibox Updated connection security indicators";
@@ -3411,6 +3436,11 @@ const char kAndroidSurfaceControlDescription[] =
     " Enables SurfaceControl to manage the buffer queue for the "
     " DisplayCompositor on Android. This feature is only available on "
     " android Q+ devices";
+
+const char kAndroidImprovedBookmarksName[] = "Android Visual Bookmark Manager";
+const char kAndroidImprovedBookmarksDescription[] =
+    "More visual changes to the bookmarks surfaces, with more thumbnails and a "
+    "focus on search instead of folders/hierarchy";
 
 const char kAnimatedImageDragShadowName[] =
     "Enable animated image drag shadow on Android.";
@@ -4680,6 +4710,11 @@ const char kArcRtVcpuQuadCoreDesc[] =
 const char kArcUpdateO4CListViaA2C2Name[] = "Update the O4C list via A2C2";
 const char kArcUpdateO4CListViaA2C2Desc[] =
     "When enabled, the O4C list is allowed to be updated via A2C2.";
+
+const char kArcEnableAAudioMMAPName[] = "Enable ARCVM AAudio MMAP";
+const char kArcEnableAAudioMMAPDescription[] =
+    "Enable AAudio MMAP support for ARCVM which provides low latency audio "
+    "for supported apps.";
 
 const char kArcEnableUsapName[] =
     "Enable ARC Unspecialized Application Processes";

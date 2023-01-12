@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/single_thread_task_runner.h"
@@ -53,8 +53,9 @@ void MessageReader::DoRead() {
         read_buffer_.get(), kReadBufferSize,
         base::BindOnce(&MessageReader::OnRead, weak_factory_.GetWeakPtr()));
 
-    if (!HandleReadResult(result))
+    if (!HandleReadResult(result)) {
       break;
+    }
   }
 }
 
@@ -99,8 +100,9 @@ void MessageReader::OnDataReceived(net::IOBuffer* data, int data_size) {
   // for all of them.
   while (true) {
     CompoundBuffer* buffer = message_decoder_.GetNextMessage();
-    if (!buffer)
+    if (!buffer) {
       break;
+    }
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&MessageReader::RunCallback, weak_factory_.GetWeakPtr(),

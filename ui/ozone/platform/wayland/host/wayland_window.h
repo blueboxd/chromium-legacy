@@ -10,10 +10,10 @@
 #include <set>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/linked_list.h"
+#include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
@@ -235,7 +235,9 @@ class WaylandWindow : public PlatformWindow,
     bool is_snapped_primary = false;
     bool is_snapped_secondary = false;
     bool is_floated = false;
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
     WindowTiledEdges tiled_edges;
+#endif
   };
 
   // Configure related:

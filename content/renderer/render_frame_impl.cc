@@ -11,8 +11,6 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
 #include "base/debug/alias.h"
@@ -21,6 +19,8 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -3250,11 +3250,14 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
     WebMediaPlayerEncryptedMediaClient* encrypted_client,
     WebContentDecryptionModule* initial_cdm,
     const blink::WebString& sink_id,
-    const cc::LayerTreeSettings& settings,
+    const cc::LayerTreeSettings* settings,
     scoped_refptr<base::TaskRunner> compositor_worker_task_runner) {
+  // `settings` should be non-null since the WebView created for
+  // RenderFrameImpl always composites.
+  DCHECK(settings);
   return media_factory_.CreateMediaPlayer(
       source, client, inspector_context, encrypted_client, initial_cdm, sink_id,
-      GetLocalRootWebFrameWidget()->GetFrameSinkId(), settings,
+      GetLocalRootWebFrameWidget()->GetFrameSinkId(), *settings,
       agent_scheduling_group_.agent_group_scheduler().CompositorTaskRunner(),
       std::move(compositor_worker_task_runner));
 }

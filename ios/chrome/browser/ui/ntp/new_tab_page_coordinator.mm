@@ -354,15 +354,6 @@
 
 #pragma mark - Public
 
-- (void)setWebState:(web::WebState*)webState {
-  if (_webState == webState) {
-    return;
-  }
-  self.contentSuggestionsCoordinator.webState = webState;
-  self.ntpMediator.webState = webState;
-  _webState = webState;
-}
-
 - (void)stopScrolling {
   if (!self.contentSuggestionsCoordinator) {
     return;
@@ -397,7 +388,7 @@
 }
 
 - (void)locationBarDidResignFirstResponder {
-  [self.headerController locationBarResignsFirstResponder];
+  [self.NTPViewController omniboxDidResignFirstResponder];
 }
 
 - (void)constrainDiscoverHeaderMenuButtonNamedGuide {
@@ -471,6 +462,26 @@
 
   self.viewPresented = visible;
   [self updateVisible];
+}
+
+#pragma mark - Setters
+
+- (void)setSelectedFeed:(FeedType)selectedFeed {
+  if (_selectedFeed == selectedFeed) {
+    return;
+  }
+  // Tell Metrics Recorder the feed has changed.
+  [self.feedMetricsRecorder recordFeedTypeChangedFromFeed:_selectedFeed];
+  _selectedFeed = selectedFeed;
+}
+
+- (void)setWebState:(web::WebState*)webState {
+  if (_webState == webState) {
+    return;
+  }
+  self.contentSuggestionsCoordinator.webState = webState;
+  self.ntpMediator.webState = webState;
+  _webState = webState;
 }
 
 #pragma mark - Initializers
@@ -635,9 +646,9 @@
   DCHECK(self.ntpMediator);
   DCHECK(self.contentSuggestionsCoordinator.contentSuggestionsMediator);
   self.ntpMediator.browser = self.browser;
-  self.ntpMediator.NTPViewController = self.NTPViewController;
   self.ntpMediator.feedControlDelegate = self;
-  self.ntpMediator.consumer = self.headerController;
+  self.ntpMediator.contentSuggestionsHeaderConsumer = self.headerController;
+  self.ntpMediator.consumer = self.NTPViewController;
   self.ntpMediator.suggestionsMediator =
       self.contentSuggestionsCoordinator.contentSuggestionsMediator;
   [self.ntpMediator setUp];
@@ -879,7 +890,6 @@
   if (self.selectedFeed == feedType) {
     return;
   }
-
   self.selectedFeed = feedType;
 
   // Saves scroll position before changing feed.

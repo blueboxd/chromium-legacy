@@ -1005,8 +1005,6 @@ static_library("browser") {
     "page_load_metrics/observers/loading_predictor_page_load_metrics_observer.h",
     "page_load_metrics/observers/local_network_requests_page_load_metrics_observer.cc",
     "page_load_metrics/observers/local_network_requests_page_load_metrics_observer.h",
-    "page_load_metrics/observers/media_page_load_metrics_observer.cc",
-    "page_load_metrics/observers/media_page_load_metrics_observer.h",
     "page_load_metrics/observers/multi_tab_loading_page_load_metrics_observer.cc",
     "page_load_metrics/observers/multi_tab_loading_page_load_metrics_observer.h",
     "page_load_metrics/observers/omnibox_suggestion_used_page_load_metrics_observer.cc",
@@ -1029,8 +1027,6 @@ static_library("browser") {
     "page_load_metrics/observers/service_worker_page_load_metrics_observer.h",
     "page_load_metrics/observers/signed_exchange_page_load_metrics_observer.cc",
     "page_load_metrics/observers/signed_exchange_page_load_metrics_observer.h",
-    "page_load_metrics/observers/tab_restore_page_load_metrics_observer.cc",
-    "page_load_metrics/observers/tab_restore_page_load_metrics_observer.h",
     "page_load_metrics/observers/third_party_metrics_observer.cc",
     "page_load_metrics/observers/third_party_metrics_observer.h",
     "page_load_metrics/observers/translate_page_load_metrics_observer.cc",
@@ -3296,6 +3292,8 @@ static_library("browser") {
       "//chrome/browser/commerce/merchant_viewer:merchant_signal_db",
       "//chrome/browser/commerce/merchant_viewer:merchant_viewer_data_manager",
       "//chrome/browser/commerce/merchant_viewer/android:jni_headers",
+      "//chrome/browser/commerce/subscriptions:commerce_subscription_db",
+      "//chrome/browser/commerce/subscriptions/android:jni_headers",
       "//chrome/browser/consent_auditor/android:jni_headers",
       "//chrome/browser/content_creation/notes/internal/android:jni_headers",
       "//chrome/browser/creator/android:jni_headers",
@@ -4399,6 +4397,7 @@ static_library("browser") {
       "//chrome/browser/ui/webui/side_panel/user_notes:mojo_bindings",
       "//chrome/browser/ui/webui/tab_search:mojo_bindings",
       "//chrome/browser/ui/webui/tab_strip:mojo_bindings",
+      "//chrome/browser/ui/webui/web_app_internals:mojo_bindings",
       "//chrome/browser/web_applications",
       "//chrome/browser/web_applications/adjustments",
       "//chrome/browser/web_applications/app_service",
@@ -4423,7 +4422,6 @@ static_library("browser") {
       "//components/live_caption:live_translate",
       "//components/memory_pressure",
       "//components/omnibox/browser:mojo_bindings",
-      "//components/services/app_service:lib",
       "//components/services/app_service/public/cpp:app_file_handling",
       "//components/services/app_service/public/cpp:app_share_target",
       "//components/services/app_service/public/cpp:app_types",
@@ -7721,6 +7719,7 @@ grit("resources") {
     deps += [
       "//chrome/browser/resources/media_router/internals:build_ts",
       "//chrome/browser/share/core/resources:make_share_targets_protobuf",
+      "//chrome/browser/ui/webui/web_app_internals:mojo_bindings_js",
     ]
   }
   if (is_chromeos_ash) {

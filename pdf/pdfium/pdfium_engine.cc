@@ -16,12 +16,12 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/debug/alias.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
@@ -204,9 +204,9 @@ void FormatStringWithHyphens(std::u16string* text) {
   base::ReplaceSubstringsAfterOffset(text, 0, kSpaceCrCn, kCrCn);
 }
 
-// Replace CR/LF with just LF on POSIX.
+// Replace CR/LF with just LF on POSIX and Fuchsia.
 void FormatStringForOS(std::u16string* text) {
-#if BUILDFLAG(IS_POSIX)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   static constexpr char16_t kCr[] = {L'\r', L'\0'};
   static constexpr char16_t kBlank[] = {L'\0'};
   base::ReplaceChars(*text, kCr, kBlank, text);
@@ -254,10 +254,8 @@ void SetUpV8() {
     v8::V8::SetFlagsFromString(recommended, strlen(recommended));
 
     // The isolate holder is already initialized in the renderer process.
-    gin::IsolateHolder::Initialize(
-        gin::IsolateHolder::kNonStrictMode,
-        static_cast<v8::ArrayBuffer::Allocator*>(
-            FPDF_GetArrayBufferAllocatorSharedInstance()));
+    gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
+                                   gin::ArrayBufferAllocator::SharedInstance());
   }
 
   DCHECK(!g_isolate_holder);

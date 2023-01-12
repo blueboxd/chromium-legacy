@@ -7,12 +7,12 @@
 #include <iterator>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/debug/alias.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -749,15 +749,6 @@ DownloadManagerImpl::GetQuarantineConnectionCallback() {
     return base::NullCallback();
 
   return delegate_->GetQuarantineConnectionCallback();
-}
-
-std::unique_ptr<download::DownloadItemRenameHandler>
-DownloadManagerImpl::GetRenameHandlerForDownload(
-    download::DownloadItemImpl* download_item) {
-  if (!delegate_)
-    return nullptr;
-
-  return delegate_->GetRenameHandlerForDownload(download_item);
 }
 
 void DownloadManagerImpl::StartDownload(

@@ -852,6 +852,8 @@
       'Mac10.15 Tests', # https://crbug.com/1042757
       'Mac12 Tests (dbg)', # https://crbug.com/1201386
       'mac-code-coverage', # https://crbug.com/1201386
+      'mac11-arm64-rel-tests', # https://crbug.com/1406364
+      'mac12-arm64-rel-tests', # https://crbug.com/1406364
       'Linux TSan Tests',  # https://crbug.com/368525
       'Win10 Tests x64 (dbg)',
     ],
@@ -1078,7 +1080,7 @@
       },
       'linux-rel-cft': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux.linux-rel-cft.browser_tests.filter;../../testing/buildbot/filters/linux.linux-rel-cft.interactive_ui_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux.linux-rel-cft.browser_tests.filter',
         ],
       },
       'mac-code-coverage': {
@@ -1093,27 +1095,8 @@
       },
       'mac-rel-cft': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel-cft.browser_tests.filter;../../testing/buildbot/filters/mac.mac-rel-cft.interactive_ui_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel-cft.browser_tests.filter',
         ],
-      },
-      'mac11-arm64-rel-tests': {
-        'args': [
-          # crbug.com/1262402
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac11-arm64-rel.browser_tests.filter',
-        ],
-        'swarming': {
-          'shards': 30,
-        },
-      },
-      'mac12-arm64-rel-tests': {
-        'ci_only': False,  # https://crbug.com/1234525
-        'args': [
-          # crbug.com/1262402
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac12-arm64-rel.browser_tests.filter',
-        ],
-        'swarming': {
-          'shards': 30,
-        },
       },
       'win-asan': {
         # These are very slow on the ASAN trybot for some reason.
@@ -1129,7 +1112,7 @@
       },
       'win-rel-cft': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/win.win-rel-cft.browser_tests.filter;../../testing/buildbot/filters/win.win-rel-cft.interactive_ui_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/win.win-rel-cft.browser_tests.filter',
         ],
       },
       'win10-rel-no-external-ip': {
@@ -2525,6 +2508,11 @@
           'shards': 10,
         },
       },
+      'linux-rel-cft': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux.linux-rel-cft.interactive_ui_tests.filter',
+        ],
+      },
       'mac-code-coverage': {
         'args': [
           '--coverage-continuous-mode=1',
@@ -2533,6 +2521,16 @@
       # TODO (crbug.com/1278617) Re-enable once fixed
       'mac-osxbeta-rel': {
         'experiment_percentage': 100,
+      },
+      'mac-rel-cft': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel-cft.interactive_ui_tests.filter',
+        ],
+      },
+      'win-rel-cft': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/win.win-rel-cft.interactive_ui_tests.filter',
+        ],
       },
     },
   },
@@ -3210,11 +3208,6 @@
         'swarming': {
           'quickrun_shards': 2,
         },
-      },
-      'ToTAndroid': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_tot.services_unittests.filter',
-        ]
       },
       'android-11-x86-rel': {
         'args': [

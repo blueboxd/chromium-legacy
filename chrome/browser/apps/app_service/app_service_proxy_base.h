@@ -34,12 +34,6 @@
 #include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/cpp/preferred_apps_impl.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list.h"
-#include "components/services/app_service/public/mojom/app_service.mojom.h"
-#include "components/services/app_service/public/mojom/types.mojom-forward.h"
-#include "components/services/app_service/public/mojom/types.mojom-shared.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver_set.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -56,7 +50,6 @@ class AppPublisher;
 class AppUpdate;
 class BrowserAppLauncher;
 class PreferredAppsListHandle;
-class AppServiceMojomImpl;
 struct AppLaunchParams;
 
 struct IntentLaunchInfo {
@@ -69,6 +62,8 @@ struct IntentLaunchInfo {
   std::string activity_label;
   bool is_generic_file_handler;
   bool is_file_extension_match;
+  // Whether the intent is blocked by DLP. Defaults to false.
+  bool is_dlp_blocked = false;
 };
 
 // Singleton (per Profile) proxy and cache of an App Service's apps.
@@ -84,7 +79,6 @@ struct IntentLaunchInfo {
 // See components/services/app_service/README.md.
 class AppServiceProxyBase : public KeyedService,
                             public IconLoader,
-                            public apps::mojom::Subscriber,
                             public PreferredAppsImpl::Host {
  public:
   explicit AppServiceProxyBase(Profile* profile);
@@ -99,7 +93,6 @@ class AppServiceProxyBase : public KeyedService,
 
   Profile* profile() const { return profile_; }
 
-  mojo::Remote<apps::mojom::AppService>& AppService();
   apps::AppRegistryCache& AppRegistryCache();
   apps::AppCapabilityAccessCache& AppCapabilityAccessCache();
 
@@ -376,9 +369,6 @@ class AppServiceProxyBase : public KeyedService,
   virtual bool MaybeShowLaunchPreventionDialog(
       const apps::AppUpdate& update) = 0;
 
-  // apps::mojom::Subscriber overrides.
-  void Clone(mojo::PendingReceiver<apps::mojom::Subscriber> receiver) override;
-
   IntentFilterPtr FindBestMatchingFilter(const IntentPtr& intent);
 
   virtual void PerformPostLaunchTasks(apps::LaunchSource launch_source);
@@ -407,17 +397,17 @@ class AppServiceProxyBase : public KeyedService,
                          IconType icon_type,
                          LoadIconCallback callback) {}
 
+  // Returns an instance of `IntentLaunchInfo` created based on `intent`,
+  // `filter`, and `update`.
+  virtual IntentLaunchInfo CreateIntentLaunchInfo(
+      const apps::IntentPtr& intent,
+      const apps::IntentFilterPtr& filter,
+      const apps::AppUpdate& update);
+
   base::flat_map<AppType, AppPublisher*> publishers_;
 
-  // This proxy privately owns its instance of the App Service. This should not
-  // be exposed except through the Mojo interface connected to |app_service_|.
-  std::unique_ptr<apps::AppServiceMojomImpl> app_service_mojom_impl_;
-
-  mojo::Remote<apps::mojom::AppService> app_service_;
   apps::AppRegistryCache app_registry_cache_;
   apps::AppCapabilityAccessCache app_capability_access_cache_;
-
-  mojo::ReceiverSet<apps::mojom::Subscriber> receivers_;
 
   // The LoadIconFromIconKey implementation sends a chained series of requests
   // through each icon loader, starting from the outer and working back to the

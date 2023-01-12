@@ -85,6 +85,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/storage/blink_storage_key.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
+#include "third_party/blink/renderer/platform/wtf/gc_plugin_ignore.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 
@@ -552,8 +553,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   void InitializeEmptyResponse();
 
-  bool ShouldReportTimingInfoToParent();
-
   void CommitData(BodyData& data);
   // Processes the data stored in |data_buffer_| or |decoded_data_buffer_|, used
   // to avoid appending data to the parser in a nested message loop.
@@ -650,6 +649,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   bool data_received_;
   const bool is_error_page_for_failed_navigation_;
 
+  GC_PLUGIN_IGNORE("https://crbug.com/1381979")
   mojo::Remote<mojom::blink::ContentSecurityNotifier>
       content_security_notifier_;
 
@@ -739,7 +739,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   CommitReason commit_reason_ = CommitReason::kRegular;
   uint64_t main_resource_identifier_ = 0;
   scoped_refptr<ResourceTimingInfo> navigation_timing_info_;
-  bool report_timing_info_to_parent_ = false;
   WebScopedVirtualTimePauser virtual_time_pauser_;
   Member<PrefetchedSignedExchangeManager> prefetched_signed_exchange_manager_;
   const KURL web_bundle_physical_url_;

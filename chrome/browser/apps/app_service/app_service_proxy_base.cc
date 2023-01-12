@@ -21,7 +21,6 @@
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/services/app_service/app_service_mojom_impl.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/cpp/features.h"
@@ -31,11 +30,7 @@
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/cpp/types_util.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/url_data_source.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "url/gurl.h"
 
 namespace apps {
@@ -131,7 +126,6 @@ void AppServiceProxyBase::ReinitializeForTesting(
   // Service, before the profile is fully initialized. Such tests can call this
   // after full profile initialization to ensure the App Service implementation
   // has all of profile state it needs.
-  app_service_.reset();
   profile_ = profile;
   is_using_testing_profile_ = true;
   app_registry_cache_.ReinitializeForTesting();  // IN-TEST
@@ -166,21 +160,6 @@ void AppServiceProxyBase::Initialize() {
 
   browser_app_launcher_ = std::make_unique<apps::BrowserAppLauncher>(profile_);
 
-  if (!base::FeatureList::IsEnabled(kStopMojomAppService)) {
-    app_service_mojom_impl_ =
-        std::make_unique<apps::AppServiceMojomImpl>(profile_->GetPath());
-
-    app_service_mojom_impl_->BindReceiver(
-        app_service_.BindNewPipeAndPassReceiver());
-
-    if (app_service_.is_connected()) {
-      // The AppServiceProxy is a subscriber: something that wants to be able to
-      // list all known apps.
-      mojo::PendingRemote<apps::mojom::Subscriber> subscriber;
-      receivers_.Add(this, subscriber.InitWithNewPipeAndPassReceiver());
-      app_service_->RegisterSubscriber(std::move(subscriber), nullptr);
-    }
-  }
   // Make the chrome://app-icon/ resource available.
   content::URLDataSource::Add(profile_,
                               std::make_unique<apps::AppIconSource>(profile_));
@@ -189,10 +168,6 @@ void AppServiceProxyBase::Initialize() {
 AppPublisher* AppServiceProxyBase::GetPublisher(AppType app_type) {
   auto it = publishers_.find(app_type);
   return it == publishers_.end() ? nullptr : it->second;
-}
-
-mojo::Remote<apps::mojom::AppService>& AppServiceProxyBase::AppService() {
-  return app_service_;
 }
 
 apps::AppRegistryCache& AppServiceProxyBase::AppRegistryCache() {
@@ -524,7 +499,7 @@ std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForIntent(
     return intent_launch_info;
   }
 
-  app_registry_cache_.ForEachApp([&intent_launch_info, &intent,
+  app_registry_cache_.ForEachApp([this, &intent_launch_info, &intent,
                                   &exclude_browsers, &exclude_browser_tab_apps](
                                      const apps::AppUpdate& update) {
     if (update.Readiness() != apps::Readiness::kReady &&
@@ -570,13 +545,7 @@ std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForIntent(
     const auto& filters = update.IntentFilters();
     for (const auto& handler_entry : best_handler_map) {
       const IntentFilterPtr& filter = filters[handler_entry.second.index];
-      IntentLaunchInfo entry;
-      entry.app_id = update.AppId();
-      entry.activity_label = GetActivityLabel(filter, update);
-      entry.activity_name = filter->activity_name.value_or("");
-      entry.is_generic_file_handler =
-          apps_util::IsGenericFileHandler(intent, filter);
-      entry.is_file_extension_match = filter->IsFileExtensionsFilter();
+      IntentLaunchInfo entry = CreateIntentLaunchInfo(intent, filter, update);
       intent_launch_info.push_back(entry);
     }
   });
@@ -688,11 +657,6 @@ void AppServiceProxyBase::OnCapabilityAccesses(
   app_capability_access_cache_.OnCapabilityAccesses(std::move(deltas));
 }
 
-void AppServiceProxyBase::Clone(
-    mojo::PendingReceiver<apps::mojom::Subscriber> receiver) {
-  receivers_.Add(this, std::move(receiver));
-}
-
 IntentFilterPtr AppServiceProxyBase::FindBestMatchingFilter(
     const IntentPtr& intent) {
   IntentFilterPtr best_matching_intent_filter;
@@ -740,6 +704,20 @@ void AppServiceProxyBase::OnLaunched(LaunchCallback callback,
 
 bool AppServiceProxyBase::ShouldReadIcons() {
   return false;
+}
+
+IntentLaunchInfo AppServiceProxyBase::CreateIntentLaunchInfo(
+    const apps::IntentPtr& intent,
+    const apps::IntentFilterPtr& filter,
+    const apps::AppUpdate& update) {
+  IntentLaunchInfo entry;
+  entry.app_id = update.AppId();
+  entry.activity_label = GetActivityLabel(filter, update);
+  entry.activity_name = filter->activity_name.value_or("");
+  entry.is_generic_file_handler =
+      apps_util::IsGenericFileHandler(intent, filter);
+  entry.is_file_extension_match = filter->IsFileExtensionsFilter();
+  return entry;
 }
 
 IntentLaunchInfo::IntentLaunchInfo() = default;

@@ -46,9 +46,11 @@ src/common/tools/gen_cache.ts
 src/common/tools/gen_listings.ts
 src/common/tools/gen_wpt_cts_html.ts
 src/common/tools/presubmit.ts
+src/common/tools/run_wpt_ref_tests.ts
 src/common/tools/version.ts
 src/common/util/collect_garbage.ts
 src/common/util/preprocessor.ts
+src/common/util/wpt_reftest_wait.ts
 src/unittests/unit_test.ts
 src/demo/a.spec.ts
 src/demo/json.spec.ts
@@ -454,7 +456,10 @@ src/webgpu/web_platform/reftests/gpu_ref_test.ts
 src/webgpu/web_platform/reftests/canvas_clear.html.ts
 src/webgpu/web_platform/reftests/canvas_complex.html.ts
 src/webgpu/web_platform/reftests/canvas_composite_alpha.html.ts
+src/webgpu/web_platform/reftests/canvas_image_rendering.html.ts
 src/webgpu/web_platform/reftests/canvas_size_different_with_back_buffer_size.html.ts
+src/webgpu/web_platform/reftests/create-pattern-data-url.ts
+src/webgpu/web_platform/reftests/resize_observer.html.ts
 src/webgpu/web_platform/worker/worker.spec.ts
 src/webgpu/web_platform/worker/worker.ts
 src/webgpu/web_platform/worker/worker_launcher.ts

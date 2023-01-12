@@ -9,14 +9,14 @@
 #include <unordered_map>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ptr_util.h"
@@ -1700,6 +1700,14 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   if (was_created)
     delegate_->RenderFrameDeleted(this);
 
+  // Ensure that the render process host has been notified that all audio
+  // streams from this frame have terminated. This is required to ensure the
+  // process host has the correct media stream count, which affects its
+  // background priority.
+  if (is_audible_) {
+    OnAudibleStateChanged(false);
+  }
+
   // Resetting `document_associated_data_` destroys live `DocumentService` and
   // `DocumentUserData` instances. It is important for them to be
   // destroyed before the body of the `RenderFrameHostImpl` destructor
@@ -1707,13 +1715,6 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // `DocumentService` and `RenderFrameHostUserData` subclasses are still valid
   // when their destructors run.
   document_associated_data_.reset();
-
-  // Ensure that the render process host has been notified that all audio
-  // streams from this frame have terminated. This is required to ensure the
-  // process host has the correct media stream count, which affects its
-  // background priority.
-  if (is_audible_)
-    OnAudibleStateChanged(false);
 
   // If this was the last active frame in the SiteInstanceGroup, the
   // DecrementActiveFrameCount call will trigger the deletion of the
@@ -5032,7 +5033,17 @@ void RenderFrameHostImpl::OnUnloadACK() {
     return;
   }
 
-  if (frame_tree_node_->render_manager()->is_attaching_inner_delegate()) {
+  // This method should be called in the pending deletion state except the
+  // placeholder RFHs for an inner WebContents that use unload without changing
+  // lifecycle states. When attaching a GuestView as the inner WebContents,
+  // `RFH::SwapOuterDelegateFrame()` is called for the placeholder RFH so that
+  // it makes its renderer send this message. `owner_` is non null since this
+  // attachment can only happen for subframes and pending deletion is the only
+  // case where subframes may have a null `owner_`.
+  RenderFrameHostOwner* owner =
+      IsPendingDeletion() ? GetFrameTreeNodeForUnload() : owner_;
+  if (!is_main_frame() &&
+      owner->GetRenderFrameHostManager().is_attaching_inner_delegate()) {
     // This RFH was unloaded while attaching an inner delegate. The RFH
     // will stay around but it will no longer be associated with a RenderFrame.
     RenderFrameDeleted();
@@ -5550,7 +5561,7 @@ void RenderFrameHostImpl::WriteIntoTrace(
   proto.Set(TraceProto::kRenderFrameHostId, GetGlobalId());
   proto->set_frame_tree_node_id(frame_tree_node_->frame_tree_node_id());
   proto->set_lifecycle_state(LifecycleStateToProto());
-  proto->set_frame_type(FrameTypeToProto(frame_tree_node_->GetFrameType()));
+  proto->set_frame_type(GetFrameTypeProto());
   proto->set_origin(GetLastCommittedOrigin().GetDebugString());
   proto->set_url(GetLastCommittedURL().possibly_invalid_spec());
   proto.Set(TraceProto::kProcess, GetProcess());
@@ -5590,6 +5601,30 @@ RenderFrameHostImpl::LifecycleStateToProto() const {
   }
 
   return RFHProto::UNSPECIFIED;
+}
+
+perfetto::protos::pbzero::FrameTreeNodeInfo::FrameType
+RenderFrameHostImpl::GetFrameTypeProto() const {
+  using RFHProto = perfetto::protos::pbzero::FrameTreeNodeInfo;
+
+  if (GetParent()) {
+    return RFHProto::SUBFRAME;
+  }
+  if (const_cast<RenderFrameHostImpl*>(this)->GetPage().IsPrimary()) {
+    return RFHProto::PRIMARY_MAIN_FRAME;
+  }
+  if (lifecycle_state() == LifecycleStateImpl::kPrerendering) {
+    return RFHProto::PRERENDER_MAIN_FRAME;
+  }
+  if (IsFencedFrameRoot()) {
+    return RFHProto::FENCED_FRAME_ROOT;
+  }
+
+  // It returns a different value from FrameTreeNode::GetFrameType() when
+  // - `this` is a speculative RFH or
+  // - `this` is not in a frame tree (e.g., IsInBackForwardCache() or
+  // IsPendingDeletion()).
+  return RFHProto::UNSPECIFIED_FRAME_TYPE;
 }
 
 StoragePartitionImpl* RenderFrameHostImpl::GetStoragePartition() {
@@ -8740,7 +8775,7 @@ void RenderFrameHostImpl::StartPendingDeletionOnSubtree(
     // Reset navigations only when entering "pending deletion" state due to
     // frame detach if the kStopCancellingNavigationsOnCommitAndNewNavigation
     // flag is enabled, or for all pending deletion cases otherwise.
-    frame_tree_node_->ResetAllNavigationsForFrameDetach();
+    GetFrameTreeNodeForUnload()->ResetAllNavigationsForFrameDetach();
   } else {
     CHECK(
         pending_deletion_reason == PendingDeletionReason::kSwappedOut ||

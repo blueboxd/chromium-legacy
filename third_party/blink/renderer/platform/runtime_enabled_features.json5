@@ -1242,6 +1242,11 @@
       public: true,
     },
     {
+      name: "FedCmRpContext",
+      depends_on: ["FedCm"],
+      public: true,
+    },
+    {
       name: "FedCmSelectiveDisclosure",
       depends_on: ["FedCm"],
       public: true,
@@ -2074,9 +2079,10 @@
     {
       name: "PartitionedCookies",
       origin_trial_feature_name: "PartitionedCookies",
-      status: "experimental",
-      origin_trial_feature_name: "PartitionedCookies",
-      origin_trial_allows_third_party: true,
+      // No status because this blink runtime feature doesn't work by itself.
+      // It's controlled by the corresponding Chromium feature,
+      // net::features::kPartitionedCookies, which needs to be enabled to make
+      // the whole feature work.
     },
     // This is to add an option to enable the Reveal button on password inputs while waiting ::reveal gets standardized.
     {
@@ -2359,6 +2365,10 @@
     {
       name: "ResourceTimingResponseStatus",
       status: "stable",
+    },
+    {
+      name: "ResourceTimingUseCORSForBodySizes",
+      status: "test"
     },
     {
       name: "RestrictGamepadAccess",
@@ -2661,8 +2671,10 @@
       "name": "SpeculationRulesPrefetchWithSubresources",
     },
     // Adds a "referrer_policy" key to speculation rules. See https://crbug.com/1355146
+    // TODO(mcnee): This feature shipped in M111. Clean up this flag in M113.
     {
       name: "SpeculationRulesReferrerPolicyKey",
+      status: "stable",
       base_feature: "SpeculationRulesReferrerPolicyKey",
       origin_trial_feature_name: "SpeculationRulesReferrerPolicyKey",
       implied_by: ["SpeculationRulesPrefetchFuture"],
@@ -2815,6 +2827,12 @@
     },
     {
       name: "TopicsAPI",
+      origin_trial_feature_name: "PrivacySandboxAdsAPIs",
+      origin_trial_allows_third_party: true,
+      public: true,
+    },
+    {
+      name: "TopicsXHR",
       origin_trial_feature_name: "PrivacySandboxAdsAPIs",
       origin_trial_allows_third_party: true,
       public: true,
@@ -3314,6 +3332,13 @@
     {
       name: "WindowDefaultStatus",
       base_feature: "WindowDefaultStatus",
+    },
+    // Allows use of `window-management` as an alias for `window-placement`
+    // permission. See crbug.com/1328581
+    {
+      name: "WindowManagementPermissionAlias",
+      status: "experimental",
+      base_feature: "WindowManagementPermissionAlias",
     },
     // Allows sites to request fullscreen when the set of screens change.
     {

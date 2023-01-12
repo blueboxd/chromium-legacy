@@ -129,6 +129,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
       query: params.query,
       types: params.types,
       maxResults: params.maxResults,
+      timestamp: params.timestamp || 0,
     };
     if (params.rootDir) {
       newParams.rootUrl = getEntryURL(params.rootDir);
@@ -218,12 +219,13 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
             descriptor, urls, mimeTypes, callback);
       });
 
-  apiFunctions.setHandleRequest('getFileTasks', function(entries, callback) {
-    var urls = entries.map(function(entry) {
-      return getEntryURL(entry);
-    });
-    fileManagerPrivateInternal.getFileTasks(urls, callback);
-  });
+  apiFunctions.setHandleRequest(
+      'getFileTasks', function(entries, dlpSourceUrls, callback) {
+        var urls = entries.map(function(entry) {
+          return getEntryURL(entry);
+        });
+        fileManagerPrivateInternal.getFileTasks(urls, dlpSourceUrls, callback);
+      });
 
   apiFunctions.setHandleRequest('getDownloadUrl', function(entry, callback) {
     var url = getEntryURL(entry);

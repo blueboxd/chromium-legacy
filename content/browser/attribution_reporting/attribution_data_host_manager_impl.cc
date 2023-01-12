@@ -9,10 +9,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/containers/flat_tree.h"
+#include "base/functional/bind.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
@@ -565,8 +565,8 @@ void AttributionDataHostManagerImpl::OnSourceEligibleDataHostFinished(
 
 void AttributionDataHostManagerImpl::OnRedirectSourceParsed(
     const blink::AttributionSrcToken& attribution_src_token,
-    SuitableOrigin reporting_origin,
-    std::string header_value,
+    const SuitableOrigin& reporting_origin,
+    const std::string& header_value,
     AttributionNavigationType nav_type,
     data_decoder::DataDecoder::ValueOrError result) {
   auto it = redirect_registrations_.find(attribution_src_token);

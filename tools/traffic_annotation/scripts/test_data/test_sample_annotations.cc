@@ -74,3 +74,38 @@ net::NetworkTrafficAnnotationTag traffic_annotation =
     "This feature cannot be controlled by Chrome settings, but users "
     "can sign out of Chrome to disable it."
   })");
+
+// An annotation with a incomplete email address, unspecified user_data
+// invalid date format.
+net::NetworkTrafficAnnotationTag traffic_annotation =
+    net::DefineNetworkTrafficAnnotation("invalid_assignment_annotation", R"(
+  semantics {
+    sender: "Cloud Policy"
+    description:
+    "Used to fetch policy for extensions, policy-controlled wallpaper, "
+    "and custom terms of service."
+    trigger:
+    "Periodically loaded when a managed user is signed in to Chrome."
+    data:
+    "This request does not send any data. It loads external resources "
+    "by a unique URL provided by the admin."
+    destination: GOOGLE_OWNED_SERVICE
+    internal {
+      contacts {
+        email: "chromium-dev@google.com"
+      }
+    }
+    user_data {
+      type: NONE
+    }
+    last_reviewed: "23-12-2022"
+  }
+  policy {
+    cookies_allowed: NO
+    setting:
+    "This feature cannot be controlled by Chrome settings, but users "
+    "can sign out of Chrome to disable it."
+    policy_exception_justification:
+    "Not implemented, considered not useful. This request is part of "
+    "the policy fetcher itself."
+  })");

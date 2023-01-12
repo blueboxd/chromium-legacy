@@ -10,7 +10,7 @@
 #include <string>
 #include <utility>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
@@ -230,7 +230,8 @@ class FederatedAuthRequestImplMultipleFramesTest
     std::vector<blink::mojom::IdentityProviderConfigPtr> idp_ptrs;
     idp_ptrs.push_back(std::move(idp_ptr));
     auto get_params = blink::mojom::IdentityProviderGetParameters::New(
-        std::move(idp_ptrs), /*prefer_auto_signin=*/true);
+        std::move(idp_ptrs), /*prefer_auto_signin=*/true,
+        /*rp_context=*/blink::mojom::RpContext::kSignIn);
     std::vector<blink::mojom::IdentityProviderGetParametersPtr> idp_get_params;
     idp_get_params.push_back(std::move(get_params));
 

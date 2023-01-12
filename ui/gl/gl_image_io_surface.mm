@@ -6,8 +6,8 @@
 
 #include <map>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/memory_allocator_dump.h"
@@ -131,8 +131,6 @@ bool GLImageIOSurface::BindTexImage(unsigned target) {
   NOTREACHED();
   return false;
 }
-
-void GLImageIOSurface::ReleaseTexImage(unsigned target) {}
 
 void GLImageIOSurface::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                                     uint64_t process_tracing_id,

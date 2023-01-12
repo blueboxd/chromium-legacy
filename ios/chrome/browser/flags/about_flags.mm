@@ -12,10 +12,10 @@
 #import <stdint.h>
 
 #import "base/base_switches.h"
-#import "base/bind.h"
-#import "base/callback_helpers.h"
 #import "base/check_op.h"
 #import "base/debug/debugging_buildflags.h"
+#import "base/functional/bind.h"
+#import "base/functional/callback_helpers.h"
 #import "base/mac/foundation_util.h"
 #import "base/no_destructor.h"
 #import "base/strings/stringprintf.h"
@@ -1254,7 +1254,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"intents-on-email", flag_descriptions::kEmailName,
      flag_descriptions::kEmailDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEnableEmails)},
-
+    {"ios-password-checkup", flag_descriptions::kIOSPasswordCheckupName,
+     flag_descriptions::kIOSPasswordCheckupDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(password_manager::features::kIOSPasswordCheckup)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

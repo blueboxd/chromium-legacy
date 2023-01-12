@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
@@ -188,8 +188,9 @@ TEST_F(XmppRegisterSupportHostRequestTest, Send) {
 
   int consumed = 0;
   for (auto& listener : signal_strategy_listeners_) {
-    if (listener.OnSignalStrategyIncomingStanza(response.get()))
+    if (listener.OnSignalStrategyIncomingStanza(response.get())) {
       consumed++;
+    }
   }
   EXPECT_EQ(1, consumed);
 

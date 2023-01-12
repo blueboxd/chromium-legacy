@@ -706,6 +706,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, SearchFiles) {
 
   {
     base::ScopedAllowBlockingForTesting allow_io;
+    // Creates two files with the same prefix, in different locations.
     base::File root_image_file(
         downloads_dir.Append("foo.jpg"),
         base::File::FLAG_CREATE | base::File::FLAG_WRITE);
@@ -716,6 +717,23 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, SearchFiles) {
         downloads_dir.Append("images").Append("foo.jpg"),
         base::File::FLAG_CREATE | base::File::FLAG_WRITE);
     ASSERT_TRUE(nested_image_file.IsValid());
+
+    // Creates two files with the same prefix, and different modified dates.
+    base::File jan_15_file(downloads_dir.Append("bar_15012020.jpg"),
+                           base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    ASSERT_TRUE(jan_15_file.IsValid());
+    base::Time jan_15_2020_noon;
+    ASSERT_TRUE(base::Time::FromUTCExploded(
+        base::Time::Exploded(2020, 1, 3, 15, 12, 0, 0, 0), &jan_15_2020_noon));
+    jan_15_file.SetTimes(jan_15_2020_noon, jan_15_2020_noon);
+
+    base::File jan_01_file(downloads_dir.Append("bar_01012020.jpg"),
+                           base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    ASSERT_TRUE(jan_01_file.IsValid());
+    base::Time jan_01_2020_noon;
+    ASSERT_TRUE(base::Time::FromUTCExploded(
+        base::Time::Exploded(2020, 1, 3, 1, 12, 0, 0, 0), &jan_01_2020_noon));
+    jan_01_file.SetTimes(jan_01_2020_noon, jan_01_2020_noon);
   }
 
   ASSERT_TRUE(RunExtensionTest("file_browser/search_files", {},
@@ -768,11 +786,17 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiDlpTest, DlpBlockCopy) {
                           base::Unretained(this)));
   ASSERT_TRUE(policy::DlpRulesManagerFactory::GetForPrimaryProfile());
 
-  AddLocalFileSystem(browser()->profile(), temp_dir_.GetPath());
+  base::FilePath my_files_dir_ =
+      file_manager::util::GetMyFilesFolderForProfile(browser()->profile());
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+
+    ASSERT_TRUE(base::CreateDirectory(my_files_dir_));
+  }
+  AddLocalFileSystem(browser()->profile(), my_files_dir_);
 
   const char kTestFileName[] = "dlp_test_file.txt";
-  const base::FilePath test_file_path =
-      temp_dir_.GetPath().Append(kTestFileName);
+  const base::FilePath test_file_path = my_files_dir_.Append(kTestFileName);
 
   {
     base::ScopedAllowBlockingForTesting allow_io;

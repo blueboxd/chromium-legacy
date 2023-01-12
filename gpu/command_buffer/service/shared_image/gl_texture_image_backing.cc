@@ -181,13 +181,23 @@ SharedImageBackingType GLTextureImageBacking::GetType() const {
   return SharedImageBackingType::kGLTexture;
 }
 
+gfx::Rect GLTextureImageBacking::ClearedRect() const {
+  if (!IsPassthrough())
+    return texture_->GetLevelClearedRect(texture_->target(), 0);
+
+  // Use shared image based tracking for passthrough, because we don't always
+  // use angle robust initialization.
+  return ClearTrackingSharedImageBacking::ClearedRect();
+}
+
 void GLTextureImageBacking::SetClearedRect(const gfx::Rect& cleared_rect) {
-  if (!IsPassthrough() && !IsCleared()) {
-    // If the image isn't already fully cleared then pass `cleared_rect` to
-    // validating command decoder as well.
+  if (!IsPassthrough()) {
     texture_->SetLevelClearedRect(texture_->target(), 0, cleared_rect);
+    return;
   }
 
+  // Use shared image based tracking for passthrough, because we don't always
+  // use angle robust initialization.
   ClearTrackingSharedImageBacking::SetClearedRect(cleared_rect);
 }
 
@@ -380,19 +390,35 @@ std::unique_ptr<DawnImageRepresentation> GLTextureImageBacking::ProduceDawn(
     std::vector<WGPUTextureFormat> view_formats) {
 #if BUILDFLAG(USE_DAWN) && BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
   if (backend_type == WGPUBackendType_OpenGLES) {
+    // GLImageNativePixmap is only compiled on below os.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_OZONE)
     if (!gl_image_native_pixmap_) {
-      CreateGLImageNativePixmap();
+      SharedContextState* shared_context_state =
+          factory()->GetSharedContextState();
+      ui::ScopedMakeCurrent smc(shared_context_state->context(),
+                                shared_context_state->surface());
+      gl_image_native_pixmap_ = gl::GLImageNativePixmap::CreateFromTexture(
+          size(), ToBufferFormat(format()), GetGLServiceId());
+      if (!gl_image_native_pixmap_) {
+        DLOG(ERROR) << "Unable to create a GLImage";
+        return nullptr;
+      }
     }
-    std::unique_ptr<GLTextureImageRepresentationBase> texture;
+    std::unique_ptr<GLTextureImageRepresentationBase> gl_representation;
     if (IsPassthrough()) {
-      texture = ProduceGLTexturePassthrough(manager, tracker);
+      gl_representation = ProduceGLTexturePassthrough(manager, tracker);
     } else {
-      texture = ProduceGLTexture(manager, tracker);
+      gl_representation = ProduceGLTexture(manager, tracker);
     }
     return std::make_unique<DawnEGLImageRepresentation>(
-        std::move(texture), manager, this, tracker, device);
+        std::move(gl_representation), gl_image_native_pixmap_->GetEGLImage(),
+        manager, this, tracker, device);
+#else
+    DLOG(ERROR) << "Dawn representation not supported";
+    return nullptr;
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_OZONE)
   }
-#endif
+#endif  // BUILDFLAG(USE_DAWN) && BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
 
   if (!factory()) {
     DLOG(ERROR) << "No SharedImageFactory to create a dawn representation.";
@@ -428,6 +454,7 @@ std::unique_ptr<SkiaImageRepresentation> GLTextureImageBacking::ProduceSkia(
 
 void GLTextureImageBacking::InitializeGLTexture(
     const GLCommonImageBackingFactory::FormatInfo& format_info,
+    bool is_cleared,
     bool framebuffer_attachment_angle) {
   format_desc_.target = GL_TEXTURE_2D;
   format_desc_.data_format = format_info.gl_format;
@@ -442,6 +469,7 @@ void GLTextureImageBacking::InitializeGLTexture(
 
   if (IsPassthrough()) {
     passthrough_texture_->SetEstimatedSize(GetEstimatedSize());
+    SetClearedRect(is_cleared ? gfx::Rect(size()) : gfx::Rect());
   } else {
     // TODO(piman): We pretend the texture was created in an ES2 context, so
     // that it can be used in other ES2 contexts, and so we have to pass
@@ -450,27 +478,9 @@ void GLTextureImageBacking::InitializeGLTexture(
     texture_->SetLevelInfo(format_desc_.target, 0, format_desc_.data_format,
                            size().width(), size().height(), /*depth=*/1, 0,
                            format_desc_.data_format, format_desc_.data_type,
-                           /*cleared_rect=*/gfx::Rect());
+                           is_cleared ? gfx::Rect(size()) : gfx::Rect());
     texture_->SetImmutable(true, format_info.supports_storage);
   }
-}
-
-void GLTextureImageBacking::CreateGLImageNativePixmap() {
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_OZONE)
-  SharedContextState* shared_context_state = factory()->GetSharedContextState();
-  ui::ScopedMakeCurrent smc(shared_context_state->context(),
-                            shared_context_state->surface());
-  gl_image_native_pixmap_ = gl::GLImageNativePixmap::CreateFromTexture(
-      size(), ToBufferFormat(format()), GetGLServiceId());
-  if (passthrough_texture_) {
-    passthrough_texture_->SetLevelImage(passthrough_texture_->target(), 0,
-                                        gl_image_native_pixmap_.get());
-  } else if (texture_) {
-    texture_->SetLevelImage(texture_->target(), 0,
-                            gl_image_native_pixmap_.get(),
-                            gles2::Texture::ImageState::BOUND);
-  }
-#endif
 }
 
 void GLTextureImageBacking::SetCompatibilitySwizzle(

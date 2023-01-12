@@ -472,6 +472,15 @@ bool CrasAudioHandler::GetPrimaryActiveOutputDevice(AudioDevice* device) const {
   return true;
 }
 
+bool CrasAudioHandler::GetPrimaryActiveInputDevice(AudioDevice* device) const {
+  const AudioDevice* active_device = GetDeviceFromId(active_input_node_id_);
+  if (!active_device || !device) {
+    return false;
+  }
+  *device = *active_device;
+  return true;
+}
+
 const AudioDevice* CrasAudioHandler::GetDeviceByType(AudioDeviceType type) {
   for (const auto& item : audio_devices_) {
     const AudioDevice& device = item.second;
@@ -1010,11 +1019,7 @@ void CrasAudioHandler::NodesChanged() {
 
 void CrasAudioHandler::OutputNodeVolumeChanged(uint64_t node_id, int volume) {
   const AudioDevice* device = this->GetDeviceFromId(node_id);
-
-  // If this is not an active output node, ignore this event. Because when this
-  // node set to active, it will be applied with the volume value stored in
-  // preference.
-  if (!device || !device->active || device->is_input) {
+  if (!device || device->is_input) {
     LOG(ERROR) << "Unexpexted OutputNodeVolumeChanged received on node: 0x"
                << std::hex << node_id;
     return;
@@ -1025,7 +1030,9 @@ void CrasAudioHandler::OutputNodeVolumeChanged(uint64_t node_id, int volume) {
   // set the volume, i.e., volume could be set from non-chrome source, like
   // Bluetooth headset, etc. Assume all active output devices share a single
   // volume.
-  output_volume_ = volume;
+  if (device->active) {
+    output_volume_ = volume;
+  }
   audio_pref_handler_->SetVolumeGainValue(*device, volume);
 
   if (initializing_audio_state_) {
@@ -1049,6 +1056,26 @@ void CrasAudioHandler::OutputNodeVolumeChanged(uint64_t node_id, int volume) {
 
   for (auto& observer : observers_)
     observer.OnOutputNodeVolumeChanged(node_id, volume);
+}
+
+void CrasAudioHandler::InputNodeGainChanged(uint64_t node_id, int gain) {
+  const AudioDevice* device = this->GetDeviceFromId(node_id);
+
+  if (!device || !device->is_input) {
+    LOG(ERROR) << "Unexpexted InputNodeGainChanged received on node: 0x"
+               << std::hex << node_id;
+    return;
+  }
+
+  if (device->active) {
+    input_gain_ = gain;
+  }
+
+  audio_pref_handler_->SetVolumeGainValue(*device, gain);
+
+  for (auto& observer : observers_) {
+    observer.OnInputNodeGainChanged(node_id, gain);
+  }
 }
 
 void CrasAudioHandler::ActiveOutputNodeChanged(uint64_t node_id) {
@@ -1359,15 +1386,11 @@ void CrasAudioHandler::SetInputNodeGainPercent(uint64_t node_id,
 
   // NOTE: We do not sanitize input gain values since the range is completely
   // dependent on the device.
-  if (active_input_node_id_ == node_id)
-    input_gain_ = gain_percent;
 
   audio_pref_handler_->SetVolumeGainValue(*device, gain_percent);
 
   if (device->active) {
     SetInputNodeGain(node_id, gain_percent);
-    for (auto& observer : observers_)
-      observer.OnInputNodeGainChanged(node_id, gain_percent);
   }
 }
 

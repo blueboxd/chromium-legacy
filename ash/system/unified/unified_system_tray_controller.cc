@@ -678,6 +678,8 @@ void UnifiedSystemTrayController::InitFeatureTiles() {
               feature_pod_controllers_, tiles);
   create_tile(std::make_unique<RotationLockFeaturePodController>(),
               feature_pod_controllers_, tiles);
+  create_tile(std::make_unique<PrivacyScreenFeaturePodController>(),
+              feature_pod_controllers_, tiles);
   create_tile(std::make_unique<IMEFeaturePodController>(this),
               feature_pod_controllers_, tiles);
   create_tile(std::make_unique<VPNFeaturePodController>(this),
@@ -686,6 +688,10 @@ void UnifiedSystemTrayController::InitFeatureTiles() {
               feature_pod_controllers_, tiles);
   if (base::FeatureList::IsEnabled(features::kShelfParty)) {
     create_tile(std::make_unique<ShelfPartyFeaturePodController>(),
+                feature_pod_controllers_, tiles);
+  }
+  if (media::ShouldEnableAutoFraming()) {
+    create_tile(std::make_unique<AutozoomFeaturePodController>(),
                 feature_pod_controllers_, tiles);
   }
 

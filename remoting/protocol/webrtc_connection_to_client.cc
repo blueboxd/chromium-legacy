@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/task/single_thread_task_runner.h"
@@ -171,8 +171,9 @@ void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
 
       // OnConnectionAuthenticated() call above may result in the connection
       // being torn down.
-      if (self)
+      if (self) {
         event_handler_->CreateMediaStreams();
+      }
       break;
     }
 

@@ -1538,7 +1538,6 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
       event_handler_(MakeGarbageCollected<EventHandler>(*this)),
       console_(MakeGarbageCollected<FrameConsole>(*this)),
       navigation_disable_count_(0),
-      should_send_resource_timing_info_to_parent_(true),
       in_view_source_mode_(false),
       frozen_(false),
       paused_(false),
@@ -2658,11 +2657,7 @@ void LocalFrame::DidResume() {
   GetDocument()->Fetcher()->SetDefersLoading(LoaderFreezeMode::kNone);
   Loader().SetDefersLoading(LoaderFreezeMode::kNone);
 
-  const base::TimeTicks resume_event_start = base::TimeTicks::Now();
   GetDocument()->DispatchEvent(*Event::Create(event_type_names::kResume));
-  const base::TimeTicks resume_event_end = base::TimeTicks::Now();
-  base::UmaHistogramMicrosecondsTimes("DocumentEventTiming.ResumeDuration",
-                                      resume_event_end - resume_event_start);
   // TODO(fmeawad): Move the following logic to the page once we have a
   // PageResourceCoordinator in Blink
   if (auto* document_resource_coordinator =

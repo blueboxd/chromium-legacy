@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -159,16 +159,18 @@ class ChromotingHostTest : public testing::Test {
 
     if (authenticate) {
       client_ptr->OnConnectionAuthenticated();
-      if (!reject)
+      if (!reject) {
         client_ptr->OnConnectionChannelsConnected();
+      }
     } else {
       client_ptr->OnConnectionClosed(protocol::AUTHENTICATION_FAILED);
     }
   }
 
   void TearDown() override {
-    if (host_)
+    if (host_) {
       ShutdownHost();
+    }
     task_runner_ = nullptr;
 
     base::RunLoop().RunUntilIdle();

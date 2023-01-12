@@ -147,6 +147,11 @@
     "expiry_milestone": 115
   },
   {
+    "name": "android-improved-bookmarks",
+    "owners": ["wylieb", "skym", "bttk"],
+    "expiry_milestone": 120
+  },
+  {
     "name": "android-media-picker",
     "owners": [ "finnur@google.com", "beverloo@google.com" ],
     "expiry_milestone": 140
@@ -200,6 +205,11 @@
     "name": "arc-documents-provider-unknown-size",
     "owners": [ "alexbn" ],
     "expiry_milestone": 98
+  },
+  {
+    "name": "arc-enable-aaudio-mmap",
+    "owners": [ "pteerapong", "chromeos-audio@google.com" ],
+    "expiry_milestone": 120
   },
   {
     "name": "arc-enable-usap",
@@ -1653,6 +1663,11 @@
     "name": "enable-access-code-cast-tabswitching-ui",
     "owners": [ "//chrome/browser/media/router/discovery/access_code/OWNERS" ],
     "expiry_milestone": 111
+  },
+  {
+    "name": "enable-accessibility-accelerators-notifications-timeout",
+    "owners": [ "katie@chromium.org", "//ash/accessibility/OWNERS" ],
+    "expiry_milestone": 120
   },
   {
     "name": "enable-accessibility-live-caption",
@@ -3663,6 +3678,11 @@
     "expiry_milestone": 120
   },
   {
+    "name": "fedcm-rp-context",
+    "owners": ["goto", "web-identity-eng@google.com"],
+    "expiry_milestone": 120
+  },
+  {
     "name": "fedcm-selective-disclosure",
     "owners": ["goto", "web-identity-eng@google.com"],
     "expiry_milestone": 120
@@ -4311,6 +4331,11 @@
     "name": "ios-new-post-restore-experience",
     "owners": [ "scottyoder@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 112
+  },
+  {
+    "name": "ios-password-checkup",
+    "owners": ["noemies", "eic", "bling-integrations-team@google.com"],
+    "expiry_milestone": 117
   },
   {
     "name": "ios-password-manager-cross-origin-iframe-support",
@@ -5260,6 +5285,13 @@
     "expiry_milestone": 92
   },
   {
+    "name": "omnibox-square-suggest-icons",
+    "owners": [
+      "yohanes@google.com", "manukh", "chrome-omnibox-team@google.com"
+    ],
+    "expiry_milestone": 120
+  },
+  {
     "name": "omnibox-trending-zero-prefix-suggestions-on-ntp",
     "owners": [ "ender", "stkhapugin", "mahmadi", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 120
@@ -5277,7 +5309,7 @@
   {
     "name": "omnibox-uniform-suggestion-height",
     "owners": [ "yohanes@google.com", "manukh", "chrome-omnibox-team@google.com"],
-    "expiry_milestone": 110
+    "expiry_milestone": 120
   },
   {
     "name": "omnibox-updated-connection-security-indicators",
@@ -6448,6 +6480,11 @@
     "name": "suggestions-scrolling-ipad",
     "owners": [ "christianxu", "bling-flags@google.com" ],
     "expiry_milestone": 120
+  },
+  {
+    "name": "support-pepper-video-decoder-dev-api",
+    "owners": [ "blundell" ],
+    "expiry_milestone": 128
   },
   {
     "name": "support-tool",

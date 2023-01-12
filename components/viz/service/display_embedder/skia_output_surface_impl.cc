@@ -241,6 +241,10 @@ SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
   }
   DCHECK(render_pass_image_cache_.empty());
 
+  // Save a copy of this pointer before moving it into the task. Tasks that are
+  // already enqueud may need to use it before |impl_on_gpu_| is destroyed.
+  SkiaOutputSurfaceImplOnGpu* impl_on_gpu = impl_on_gpu_.get();
+
   // Post a task to destroy |impl_on_gpu_| on the GPU thread.
   auto task = base::BindOnce(
       [](std::unique_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu) {},
@@ -248,7 +252,7 @@ SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
   EnqueueGpuTask(std::move(task), {}, /*make_current=*/false,
                  /*need_framebuffer=*/false);
   // Flush GPU tasks and block until all tasks are finished.
-  FlushGpuTasks(SyncMode::kWaitForTasksFinished);
+  FlushGpuTasksWithImpl(SyncMode::kWaitForTasksFinished, impl_on_gpu);
 }
 
 gpu::SurfaceHandle SkiaOutputSurfaceImpl::GetSurfaceHandle() const {
@@ -307,9 +311,9 @@ void SkiaOutputSurfaceImpl::DiscardBackbuffer() {
 void SkiaOutputSurfaceImpl::RecreateRootRecorder() {
   DCHECK(characterization_.isValid());
   root_recorder_.emplace(characterization_);
-
   // This will trigger the lazy initialization of the recorder
   std::ignore = root_recorder_->getCanvas();
+  reset_recorder_on_swap_ = false;
 }
 
 void SkiaOutputSurfaceImpl::Reshape(const ReshapeParams& params) {
@@ -380,6 +384,12 @@ void SkiaOutputSurfaceImpl::SetGpuVSyncCallback(GpuVSyncCallback callback) {
   gpu_vsync_callback_ = std::move(callback);
 }
 
+void SkiaOutputSurfaceImpl::SetVSyncDisplayID(int64_t display_id) {
+  auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SetVSyncDisplayID,
+                             base::Unretained(impl_on_gpu_.get()), display_id);
+  gpu_task_scheduler_->ScheduleOrRetainGpuTask(std::move(task), {});
+}
+
 void SkiaOutputSurfaceImpl::SetDisplayTransformHint(
     gfx::OverlayTransform transform) {
   display_transform_ = transform;
@@ -399,7 +409,7 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
   // Make sure there is no unsubmitted PaintFrame or PaintRenderPass.
   DCHECK(!current_paint_);
   DCHECK(root_recorder_);
-
+  reset_recorder_on_swap_ = true;
   current_paint_.emplace(&root_recorder_.value());
   return current_paint_->recorder()->getCanvas();
 }
@@ -597,8 +607,10 @@ void SkiaOutputSurfaceImpl::SwapBuffers(OutputSurfaceFrame frame) {
 
   // Recreate |root_recorder_| after SwapBuffers has been scheduled on GPU
   // thread to save some time in BeginPaintCurrentFrame
-  // TODO(vasilyt): reuse root recorder
-  RecreateRootRecorder();
+  // Recreating recorder is expensive. Avoid recreation if there was no paint.
+  if (reset_recorder_on_swap_) {
+    RecreateRootRecorder();
+  }
 }
 
 void SkiaOutputSurfaceImpl::SwapBuffersSkipped(
@@ -621,8 +633,10 @@ void SkiaOutputSurfaceImpl::SwapBuffersSkipped(
   EnqueueGpuTask(std::move(task), std::move(resource_sync_tokens_),
                  /*make_current=*/true, /*need_framebuffer=*/false);
 
-  // TODO(vasilyt): reuse root recorder
-  RecreateRootRecorder();
+  // Recreating recorder is expensive. Avoid recreation if there was no paint.
+  if (reset_recorder_on_swap_) {
+    RecreateRootRecorder();
+  }
 }
 
 void SkiaOutputSurfaceImpl::ScheduleOutputSurfaceAsOverlay(
@@ -1143,8 +1157,19 @@ void SkiaOutputSurfaceImpl::EnqueueGpuTask(
 }
 
 void SkiaOutputSurfaceImpl::FlushGpuTasks(SyncMode sync_mode) {
+  FlushGpuTasksWithImpl(sync_mode, impl_on_gpu_.get());
+}
+
+void SkiaOutputSurfaceImpl::FlushGpuTasksWithImpl(
+    SyncMode sync_mode,
+    SkiaOutputSurfaceImplOnGpu* impl_on_gpu) {
   TRACE_EVENT1("viz", "SkiaOutputSurfaceImpl::FlushGpuTasks", "sync_mode",
                sync_mode);
+
+  // impl_on_gpu will only be null during initialization. If we need to make
+  // context current, or measure timings then impl_on_gpu must exist.
+  DCHECK(impl_on_gpu || (!make_current_ && !should_measure_next_post_task_));
+
   // If |wait_for_finish| is true, a GPU task will be always scheduled to make
   // sure all pending tasks are finished on the GPU thread.
   if (gpu_tasks_.empty() && sync_mode == SyncMode::kNoWait)
@@ -1167,14 +1192,13 @@ void SkiaOutputSurfaceImpl::FlushGpuTasks(SyncMode sync_mode) {
         if (sync_mode == SyncMode::kWaitForTasksStarted)
           event->Signal();
         gpu::ContextUrl::SetActiveUrl(GetActiveUrl());
-        // impl_on_gpu can be null during destruction.
-        if (impl_on_gpu) {
-          if (!post_task_timestamp.is_null())
-            impl_on_gpu->SetDrawTimings(post_task_timestamp);
+        if (!post_task_timestamp.is_null()) {
+          impl_on_gpu->SetDrawTimings(post_task_timestamp);
+        }
+        if (make_current) {
           // MakeCurrent() will mark context lost in SkiaOutputSurfaceImplOnGpu,
           // if it fails.
-          if (make_current)
-            impl_on_gpu->MakeCurrent(need_framebuffer);
+          impl_on_gpu->MakeCurrent(need_framebuffer);
         }
         // Each task can check SkiaOutputSurfaceImplOnGpu::contest_is_lost_
         // to detect errors.
@@ -1185,8 +1209,8 @@ void SkiaOutputSurfaceImpl::FlushGpuTasks(SyncMode sync_mode) {
         if (sync_mode == SyncMode::kWaitForTasksFinished)
           event->Signal();
       },
-      std::move(gpu_tasks_), sync_mode, event.get(), impl_on_gpu_.get(),
-      make_current_, need_framebuffer_, post_task_timestamp);
+      std::move(gpu_tasks_), sync_mode, event.get(), impl_on_gpu, make_current_,
+      need_framebuffer_, post_task_timestamp);
 
   gpu::GpuTaskSchedulerHelper::ReportingCallback reporting_callback;
   if (should_measure_next_post_task_) {

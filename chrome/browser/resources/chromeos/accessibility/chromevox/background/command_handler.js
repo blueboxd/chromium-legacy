@@ -71,7 +71,7 @@ export class CommandHandler extends CommandHandlerInterface {
 
     /**
      * To support viewGraphicAsBraille_(), the current image node.
-     * @type {?AutomationNode}
+     * @private {?AutomationNode}
      */
     this.imageNode_;
 
@@ -243,7 +243,7 @@ export class CommandHandler extends CommandHandlerInterface {
         this.announceBatteryDescription_();
         break;
       case Command.RESET_TEXT_TO_SPEECH_SETTINGS:
-        ChromeVox.tts.resetTextToSpeechSettings();
+        TtsBackground.resetTextToSpeechSettings();
         return false;
       case Command.COPY:
         EventGenerator.sendKeyPress(KeyCode.C, {ctrl: true});

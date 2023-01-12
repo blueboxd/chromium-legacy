@@ -32,7 +32,7 @@ import {OutputFormatter} from './output_formatter.js';
 import {OutputInterface} from './output_interface.js';
 import {OutputFormatLogger} from './output_logger.js';
 import {OutputRoleInfo} from './output_role_info.js';
-import {OutputRule, OutputRuleSpecifier} from './output_rules.js';
+import {AncestryOutputRule, OutputRule, OutputRuleSpecifier} from './output_rules.js';
 import * as outputTypes from './output_types.js';
 
 const AriaCurrentState = chrome.automation.AriaCurrentState;
@@ -432,11 +432,11 @@ export class Output {
    */
   onSpeechEnd(callback) {
     this.speechEndCallback_ =
-        /** @type {function(boolean=)} */ (function(opt_cleanupOnly) {
+        /** @type {function(boolean=)} */ (opt_cleanupOnly => {
           if (!opt_cleanupOnly) {
             callback();
           }
-        }.bind(this));
+        });
     return this;
   }
 
@@ -623,97 +623,6 @@ export class Output {
     new OutputFormatParser(formatter).parse(params.outputFormat);
   }
 
-  /** @override */
-  formatMessage_(data, token, tree, options) {
-    const buff = data.outputBuffer;
-    const node = data.node;
-    const formatLog = data.outputFormatLogger;
-
-    const isPluralized = (token[0] === '@');
-    if (isPluralized) {
-      token = token.slice(1);
-    }
-    // Tokens can have substitutions.
-    const pieces = token.split('+');
-    token = pieces.reduce((prev, cur) => {
-      let lookup = cur;
-      if (cur[0] === '$') {
-        lookup = node[cur.slice(1)];
-      }
-      return prev + lookup;
-    }, '');
-    const msgId = token;
-    let msgArgs = [];
-    formatLog.write(token + '{');
-    if (!isPluralized) {
-      let curArg = tree.firstChild;
-      while (curArg) {
-        if (curArg.value[0] !== '$') {
-          const errorMsg = 'Unexpected value: ' + curArg.value;
-          formatLog.writeError(errorMsg);
-          console.error(errorMsg);
-          return;
-        }
-        let msgBuff = [];
-        this.format_({
-          node,
-          outputFormat: curArg,
-          outputBuffer: msgBuff,
-          outputFormatLogger: formatLog,
-        });
-        // Fill in empty string if nothing was formatted.
-        if (!msgBuff.length) {
-          msgBuff = [''];
-        }
-        msgArgs = msgArgs.concat(msgBuff);
-        curArg = curArg.nextSibling;
-      }
-    }
-    let msg = Msgs.getMsg(msgId, msgArgs);
-    try {
-      if (this.formatOptions_.braille) {
-        msg = Msgs.getMsg(msgId + '_brl', msgArgs) || msg;
-      }
-    } catch (e) {
-    }
-
-    if (!msg) {
-      const errorMsg = 'Could not get message ' + msgId;
-      formatLog.writeError(errorMsg);
-      console.error(errorMsg);
-      return;
-    }
-
-    if (isPluralized) {
-      const arg = tree.firstChild;
-      if (!arg || arg.nextSibling) {
-        const errorMsg = 'Pluralized messages take exactly one argument';
-        formatLog.writeError(errorMsg);
-        console.error(errorMsg);
-        return;
-      }
-      if (arg.value[0] !== '$') {
-        const errorMsg = 'Unexpected value: ' + arg.value;
-        formatLog.writeError(errorMsg);
-        console.error(errorMsg);
-        return;
-      }
-      const argBuff = [];
-      this.format_({
-        node,
-        outputFormat: arg,
-        outputBuffer: argBuff,
-        outputFormatLogger: formatLog,
-      });
-      const namedArgs = {COUNT: Number(argBuff[0])};
-      msg = new goog.i18n.MessageFormat(msg).format(namedArgs);
-    }
-    formatLog.write('}');
-
-    this.append_(buff, msg, options);
-    formatLog.write(': ' + msg + '\n');
-  }
-
   /**
    * @param {!CursorRange} range
    * @param {CursorRange} prevRange
@@ -749,7 +658,7 @@ export class Output {
     let prevNode = prevRange.start.node;
     let node = range.start.node;
 
-    const formatNodeAndAncestors = function(node, prevNode) {
+    const formatNodeAndAncestors = (node, prevNode) => {
       const buff = [];
 
       if (addContextBefore) {
@@ -767,7 +676,7 @@ export class Output {
         this.locations_.push(node.location);
       }
       return buff;
-    }.bind(this);
+    };
 
     let lca = null;
     if (range.start.node !== range.end.node) {
@@ -948,7 +857,7 @@ export class Output {
   ancestryHelper_(args) {
     let {node, prevNode, buff, formatLog, type, ancestors, formatName} = args;
 
-    const rule = new OutputRule(type);
+    const rule = new AncestryOutputRule(type);
     // First, look up the event type's format block.
     const eventBlock = OutputRule.RULES[rule.event];
 
@@ -967,10 +876,13 @@ export class Output {
         continue;
       }
 
+      // Reset the rule to DEFAULT so we don't unintentionally use a value from
+      // the last iteration.
+      rule.role = CustomRole.DEFAULT;
       rule.populateRole(formatNode.role, roleInfo.inherits, formatName);
+      rule.populateNavigation(formatName);
 
       if (eventBlock[rule.role][formatName]) {
-        rule.navigation = formatName;
         rule.output = eventBlock[rule.role][formatName].speak ?
             outputTypes.OutputFormatType.SPEAK :
             undefined;
@@ -1030,11 +942,8 @@ export class Output {
     rule.populateRole(node.role, parentRole, rule.output);
     if (this.formatOptions_.braille) {
       // Overwrite rule by braille rule if exists.
-      if (node.role && (eventBlock[node.role] || {}).braille !== undefined) {
-        rule.role = node.role;
-        rule.output = outputTypes.OutputFormatType.BRAILLE;
-      } else if ((eventBlock[parentRole] || {}).braille !== undefined) {
-        rule.role = parentRole;
+      if (rule.populateRole(
+              node.role, parentRole, outputTypes.OutputFormatType.BRAILLE)) {
         rule.output = outputTypes.OutputFormatType.BRAILLE;
       }
     }

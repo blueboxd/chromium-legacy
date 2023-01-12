@@ -573,7 +573,7 @@ BASE_FEATURE(kCryptohomeRecoverySetup,
 
 BASE_FEATURE(kDarkLightModeKMeansColor,
              "DarkLightModeKMeansColor",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables Sync for desk templates on ChromeOS.
 BASE_FEATURE(kDeskTemplateSync,
@@ -1486,6 +1486,12 @@ BASE_FEATURE(kOnDeviceSpeechRecognition,
 
 // If enabled, CHOBOE Screen will be shown during the new user onboarding flow.
 BASE_FEATURE(kOobeChoobe, "OobeChoobe", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, TouchPadScreen will be shown in CHOOBE.
+// enabling this without enabling OobeChoobe flag will have no effect
+BASE_FEATURE(kOobeTouchpadScroll,
+             "OobeTouchpadScrollDirection",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, EULA and ARC Terms of Service screens are skipped and merged
 // into Consolidated Consent Screen.
@@ -2884,6 +2890,10 @@ bool IsOobeRemoveShutdownButtonEnabled() {
 
 bool IsOobeThemeSelectionEnabled() {
   return base::FeatureList::IsEnabled(kEnableOobeThemeSelection);
+}
+
+bool IsOobeTouchpadScrollEnabled() {
+  return base::FeatureList::IsEnabled(kOobeTouchpadScroll);
 }
 
 bool IsOsSettingsAppBadgingToggleEnabled() {

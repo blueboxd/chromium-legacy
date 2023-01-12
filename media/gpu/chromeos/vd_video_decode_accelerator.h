@@ -8,7 +8,7 @@
 #include <map>
 #include <memory>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -155,6 +155,12 @@ class MEDIA_GPU_EXPORT VdVideoDecodeAccelerator
   // to see if it is a secure buffer format.
   bool is_encrypted_ = false;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  // Value of |low_delay| from the most recent initialization (via either Create
+  // or Initialize(const Config&, Client*, bool). When re-initialization happens
+  // via the VideoDecodeAccelerator interface (where we cannot pass
+  // |low_delay|), we use this value.
+  bool low_delay_ = false;
 
   // Main task runner and its sequence checker. All methods should be called
   // on it.

@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "remoting/host/action_executor.h"
@@ -221,8 +221,9 @@ BasicDesktopEnvironment::CreateVideoCapturer() {
 
 #if BUILDFLAG(IS_APPLE)
   // Mac includes the mouse cursor in the captured image in curtain mode.
-  if (options_.enable_curtaining())
+  if (options_.enable_curtaining()) {
     return desktop_capturer;
+  }
 #endif
   return std::make_unique<DesktopAndCursorConditionalComposer>(
       std::move(desktop_capturer));

@@ -28,8 +28,6 @@
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
 #include "components/services/app_service/public/cpp/preferred_app.h"
-#include "components/services/app_service/public/mojom/app_service.mojom.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 // Avoid including this header file directly or referring directly to
@@ -270,6 +268,13 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
                        IconType icon_type,
                        LoadIconCallback callback,
                        bool install_success);
+
+  // Returns an instance of `IntentLaunchInfo` created based on `intent`,
+  // `filter`, and `update`.
+  IntentLaunchInfo CreateIntentLaunchInfo(
+      const apps::IntentPtr& intent,
+      const apps::IntentFilterPtr& filter,
+      const apps::AppUpdate& update) override;
 
   SubscriberCrosapi* crosapi_subscriber_ = nullptr;
 

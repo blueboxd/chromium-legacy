@@ -7,8 +7,8 @@
 #include <memory>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/task/sequenced_task_runner.h"
@@ -224,7 +224,9 @@ VdVideoDecodeAccelerator::~VdVideoDecodeAccelerator() {
 
 bool VdVideoDecodeAccelerator::Initialize(const Config& config,
                                           Client* client) {
-  return Initialize(config, client, false /* low_delay */);
+  // |low_delay_| came from the most recent initialization, or false if it has
+  // never been explicitly set.
+  return Initialize(config, client, low_delay_);
 }
 
 bool VdVideoDecodeAccelerator::Initialize(const Config& config,
@@ -283,6 +285,8 @@ bool VdVideoDecodeAccelerator::Initialize(const Config& config,
       base::BindRepeating(&VdVideoDecodeAccelerator::OnFrameReady, weak_this_);
   vd_->Initialize(std::move(vd_config), low_delay, cdm_context,
                   std::move(init_cb), std::move(output_cb), base::DoNothing());
+  // Save the value for possible future re-initialization.
+  low_delay_ = low_delay;
   return true;
 }
 

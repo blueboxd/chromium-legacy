@@ -46,6 +46,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter_delegate.h"
@@ -71,7 +72,6 @@
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_commands.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_view.h"
-#import "ios/chrome/browser/ui/legacy_bookmarks/legacy_bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/lens/lens_coordinator.h"
 #import "ios/chrome/browser/ui/main/layout_guide_util.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
@@ -306,10 +306,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // The updater that adjusts the toolbar's layout for fullscreen events.
   std::unique_ptr<FullscreenUIUpdater> _fullscreenUIUpdater;
 
-  // TODO(crbug.com/1331229): Remove all use of the download manager coordinator
-  // from BVC Coordinator for the Download Manager UI.
-  DownloadManagerCoordinator* _downloadManagerCoordinator;
-
   // Fake status bar view used to blend the toolbar into the status bar.
   UIView* _fakeStatusBarView;
 
@@ -480,9 +476,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     _keyCommandsProvider = keyCommandsProvider;
     // TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
     _prerenderService = dependencies.prerenderService;
-    // TODO(crbug.com/1331229): Remove all use of the download manager
-    // coordinator from BVC
-    _downloadManagerCoordinator = dependencies.downloadManagerCoordinator;
     _sideSwipeController = dependencies.sideSwipeController;
     [_sideSwipeController setSwipeDelegate:self];
     _bookmarkInteractionController = dependencies.bookmarkInteractionController;
@@ -1756,14 +1749,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   [_sideSwipeController addHorizontalGesturesToView:self.view];
 
-  // TODO(crbug.com/1331229): Remove all use of the download manager coordinator
-  // from BVC
-  // DownloadManagerCoordinator is already created.
-  DCHECK(_downloadManagerCoordinator);
-  _downloadManagerCoordinator.bottomMarginHeightAnchor =
-      [NamedGuide guideWithName:kSecondaryToolbarGuide view:self.contentArea]
-          .heightAnchor;
-
   // TODO(crbug.com/1329089): Inject this handler.
   self.omniboxHandler =
       HandlerForProtocol(self.browser->GetCommandDispatcher(), OmniboxCommands);
@@ -1845,7 +1830,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       kContentAreaGuide,
       kPrimaryToolbarGuide,
       kOmniboxGuide,
-      kSecondaryToolbarGuide,
     ];
     AddNamedGuidesToView(guideNames, self.view);
 

@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/editor/bookmarks_editor_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/bookmarks_commands.h"
@@ -39,7 +40,6 @@
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_mediator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
-#import "ios/chrome/browser/ui/legacy_bookmarks/legacy_bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
 #import "ios/chrome/browser/ui/main/layout_guide_util.h"
@@ -1244,20 +1244,17 @@
 #pragma mark - SnackbarCoordinatorDelegate
 
 - (CGFloat)bottomOffsetForCurrentlyPresentedView {
-  UILayoutGuide* bottomToolbarGuide = nil;
+  NSString* bottomToolbarGuideName;
   if ([self.bvcContainer currentBVC]) {
     // Use the BVC bottom bar as the offset as it is currently presented.
-    bottomToolbarGuide =
-        [NamedGuide guideWithName:kSecondaryToolbarGuide
-                             view:self.bvcContainer.currentBVC.view];
+    bottomToolbarGuideName = kSecondaryToolbarGuide;
   } else {
     // The tab grid is being show so use tab grid bottom bar.
-    bottomToolbarGuide = [LayoutGuideCenterForBrowser(self.browser)
-        makeLayoutGuideNamed:kTabGridBottomToolbarGuide];
-    [self.baseViewController.view addLayoutGuide:bottomToolbarGuide];
+    bottomToolbarGuideName = kTabGridBottomToolbarGuide;
   }
-
-  return CGRectGetHeight(bottomToolbarGuide.layoutFrame);
+  UIView* bottomToolbar = [LayoutGuideCenterForBrowser(self.browser)
+      referencedViewUnderName:bottomToolbarGuideName];
+  return CGRectGetHeight(bottomToolbar.bounds);
 }
 
 @end

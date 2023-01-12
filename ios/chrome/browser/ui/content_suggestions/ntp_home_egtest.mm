@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
 #import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/capabilities_types.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
+#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cells_constants.h"
@@ -677,6 +678,8 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 // Tests that tapping the fake omnibox and then scrolling defocuses the the
 // omnibox.
 - (void)testTapFakeOmniboxAndScrollDefocuses {
+  // Clear pasteboard so that omnibox doesn't cover the NTP on focus.
+  [ChromeEarlGrey clearPasteboard];
   // Get the collection and its layout.
   UICollectionView* collectionView = [NewTabPageAppInterface collectionView];
 
@@ -1264,6 +1267,34 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
   // Opens settings menu and ensures that Discover setting is present.
   [self checkDiscoverSettingsToggleVisible:YES];
+}
+
+// Tests that the feed top sync promo is visible when conditions are met, and
+// that pressing the dismiss button makes it disappear.
+// TODO(crbug.com/1406885): Enable test when feed is supported.
+- (void)DISABLED_testFeedTopSyncPromoIsVisibleAndDismiss {
+  // Scroll into feed to trigger engagement condition.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
+      performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
+
+  // Relaunch the app
+  AppLaunchConfiguration config = [self appConfigurationForTestCase];
+  config.relaunch_policy = ForceRelaunchByCleanShutdown;
+  config.features_enabled.push_back(kEnableDiscoverFeedTopSyncPromo);
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
+  // Scroll down a bit and check that the promo is visible.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
+      performAction:grey_scrollInDirection(kGREYDirectionDown, 100)];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(kSigninPromoViewId)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap the dismiss button and check that the promo is no longer visible.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(kSigninPromoCloseButtonId)]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(kSigninPromoViewId)]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 }
 
 #pragma mark - Helpers

@@ -373,8 +373,9 @@ struct FrameDetails {
 #endif
 };
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) && defined(_WIN64) || \
-    ANDROID_ARM64_UNWINDING_SUPPORTED || ANDROID_CFI_UNWINDING_SUPPORTED
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) && defined(_WIN64) ||            \
+    ANDROID_ARM64_UNWINDING_SUPPORTED || ANDROID_CFI_UNWINDING_SUPPORTED || \
+    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
 // Returns whether stack sampling is supported on the current platform.
 bool IsStackSamplingSupported() {
   return base::StackSamplingProfiler::IsSupportedForCurrentPlatform();
@@ -431,8 +432,8 @@ TracingSamplerProfiler::TracingProfileBuilder::TracingProfileBuilder(
 TracingSamplerProfiler::TracingProfileBuilder::~TracingProfileBuilder() {
 #if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   // Deleting a TraceWriter can end up triggering a Mojo call which calls
-  // TaskRunnerHandle::Get() and isn't safe on thread shutdown, which is when
-  // TracingProfileBuilder gets destructed, so we make sure this happens on
+  // task runner GetCurrentDefault() and isn't safe on thread shutdown, which is
+  // when TracingProfileBuilder gets destructed, so we make sure this happens on
   // a different sequence.
   if (base::ThreadPoolInstance::Get()) {
     PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner()->DeleteSoon(
@@ -801,8 +802,9 @@ void TracingSamplerProfiler::RegisterDataSource() {
 
 // static
 bool TracingSamplerProfiler::IsStackUnwindingSupportedForTesting() {
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) && defined(_WIN64) || \
-    ANDROID_ARM64_UNWINDING_SUPPORTED || ANDROID_CFI_UNWINDING_SUPPORTED
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) && defined(_WIN64) ||            \
+    ANDROID_ARM64_UNWINDING_SUPPORTED || ANDROID_CFI_UNWINDING_SUPPORTED || \
+    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
   return IsStackSamplingSupported();
 #else
   return false;

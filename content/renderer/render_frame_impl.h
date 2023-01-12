@@ -16,9 +16,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/id_map.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
@@ -489,7 +489,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       blink::WebContentDecryptionModule* initial_cdm,
       const blink::WebString& sink_id,
-      const cc::LayerTreeSettings& settings,
+      const cc::LayerTreeSettings* settings,
       scoped_refptr<base::TaskRunner> compositor_worker_task_runner) override;
   std::unique_ptr<blink::WebContentSettingsClient>
   CreateWorkerContentSettingsClient() override;

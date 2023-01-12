@@ -4,8 +4,8 @@
 
 #include "remoting/host/chromoting_host_context.h"
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/task/single_thread_task_runner.h"
@@ -48,9 +48,10 @@ ChromotingHostContext::ChromotingHostContext(
       url_request_context_getter_(url_request_context_getter) {}
 
 ChromotingHostContext::~ChromotingHostContext() {
-  if (url_loader_factory_owner_)
+  if (url_loader_factory_owner_) {
     network_task_runner_->DeleteSoon(FROM_HERE,
                                      url_loader_factory_owner_.release());
+  }
 }
 
 std::unique_ptr<ChromotingHostContext> ChromotingHostContext::Copy() {

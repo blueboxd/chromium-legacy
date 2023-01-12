@@ -34,8 +34,8 @@
 #include "cc/base/features.h"
 #include "cc/base/switches.h"
 #include "chrome/browser/ash/android_sms/android_sms_switches.h"
-#include "chrome/browser/ash/app_list/search/files/item_suggest_cache.h"
 #include "chrome/browser/ash/app_list/search/search_features.h"
+#include "chrome/browser/ash/file_suggest/item_suggest_cache.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/fast_checkout/fast_checkout_features.h"
 #include "chrome/browser/feature_guide/notifications/feature_notification_guide_service.h"
@@ -4931,6 +4931,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcDocumentsProviderUnknownSizeName,
      flag_descriptions::kArcDocumentsProviderUnknownSizeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kDocumentsProviderUnknownSizeFeature)},
+    {"arc-enable-aaudio-mmap", flag_descriptions::kArcEnableAAudioMMAPName,
+     flag_descriptions::kArcEnableAAudioMMAPDescription, kOsCrOS,
+     PLATFORM_FEATURE_NAME_TYPE("CrOSLateBootArcVmAAudioMMAP")},
     {"arc-enable-usap", flag_descriptions::kArcEnableUsapName,
      flag_descriptions::kArcEnableUsapDesc, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kEnableUsap)},
@@ -5415,6 +5418,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxShortBookmarkSuggestionsName,
      flag_descriptions::kOmniboxShortBookmarkSuggestionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kShortBookmarkSuggestions)},
+
+    {"omnibox-square-suggest-icons",
+     flag_descriptions::kOmniboxSimplifiedUiSquareSuggestIconName,
+     flag_descriptions::kOmniboxSimplifiedUiSquareSuggestIconDescription,
+     kOsAll, FEATURE_VALUE_TYPE(omnibox::kSquareSuggestIcons)},
 
     {"omnibox-uniform-suggestion-height",
      flag_descriptions::kOmniboxSimplifiedUiUniformRowHeightName,
@@ -6702,6 +6710,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableRgbKeyboardDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kRgbKeyboard)},
 
+    {"enable-accessibility-accelerators-notifications-timeout",
+     flag_descriptions::kAccessibilityAcceleratorNotificationsTimeoutName,
+     flag_descriptions::
+         kAccessibilityAcceleratorNotificationsTimeoutDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         features::kAccessibilityAcceleratorNotificationsTimeout)},
+
     {"enable-accessibility-service",
      flag_descriptions::kAccessibilityServiceName,
      flag_descriptions::kAccessibilityServiceDescription, kOsCrOS,
@@ -7392,7 +7408,7 @@ const FeatureEntry kFeatureEntries[] = {
                                     "ProductivityLauncher")},
     {"launcher-item-suggest", flag_descriptions::kLauncherItemSuggestName,
      flag_descriptions::kLauncherItemSuggestDescription, kOsCrOS,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(app_list::kLauncherItemSuggest,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(ash::kLauncherItemSuggest,
                                     kLauncherItemSuggestVariations,
                                     "LauncherItemSuggest")},
     {"autocomplete-extended-suggestions",
@@ -7932,6 +7948,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFedCmSelectiveDisclosureName,
      flag_descriptions::kFedCmSelectiveDisclosureDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kFedCmSelectiveDisclosure)},
+
+    {"fedcm-rp-context", flag_descriptions::kFedCmRpContextName,
+     flag_descriptions::kFedCmRpContextDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kFedCmRpContext)},
 
     {"fedcm-user-info", flag_descriptions::kFedCmUserInfoName,
      flag_descriptions::kFedCmUserInfoDescription, kOsAll,
@@ -9262,6 +9282,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kPPAPISharedImagesSwapChain)},
 #endif
 
+#if BUILDFLAG(ENABLE_NACL)
+    {"support-pepper-video-decoder-dev-api",
+     flag_descriptions::kSupportPepperVideoDecoderDevAPIName,
+     flag_descriptions::kSupportPepperVideoDecoderDevAPIDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSupportPepperVideoDecoderDevAPI)},
+#endif
+
 #if BUILDFLAG(IS_WIN)
     {"cloud-ap-auth", flag_descriptions::kCloudApAuthName,
      flag_descriptions::kCloudApAuthDescription, kOsWin,
@@ -9389,6 +9416,14 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillSuggestServerCardInsteadOfLocalCard)},
+
+#if BUILDFLAG(IS_ANDROID)
+    {"android-improved-bookmarks",
+     flag_descriptions::kAndroidImprovedBookmarksName,
+     flag_descriptions::kAndroidImprovedBookmarksDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kBookmarksRefresh)},
+#endif  // BUILDFLAG(IS_ANDROID)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

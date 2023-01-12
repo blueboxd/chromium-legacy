@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/url_request/url_request.h"
@@ -22,9 +22,8 @@ class ClientCertStore;
 
 namespace remoting {
 
-class TokenValidatorBase
-    : public net::URLRequest::Delegate,
-      public protocol::TokenValidator {
+class TokenValidatorBase : public net::URLRequest::Delegate,
+                           public protocol::TokenValidator {
  public:
   TokenValidatorBase(
       const ThirdPartyAuthConfig& third_party_auth_config,

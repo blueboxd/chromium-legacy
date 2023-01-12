@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/component_export.h"
+#include "base/functional/callback.h"
 #include "build/build_config.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_mode.h"
@@ -134,9 +134,6 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) TextInputMethod {
                                   uint32_t cursor_pos,
                                   uint32_t anchor_pos,
                                   uint32_t offset_pos) = 0;
-
-  // Called when the composition bounds changed.
-  virtual void SetCompositionBounds(const std::vector<gfx::Rect>& bounds) = 0;
 
   // Called when caret bounds changed.
   virtual void SetCaretBounds(const gfx::Rect& caret_bounds) = 0;

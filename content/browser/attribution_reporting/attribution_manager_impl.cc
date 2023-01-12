@@ -8,12 +8,11 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/functional/overloaded.h"
 #include "base/memory/ptr_util.h"
@@ -53,7 +52,6 @@
 #include "content/browser/attribution_reporting/attribution_storage_delegate_impl.h"
 #include "content/browser/attribution_reporting/attribution_storage_sql.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
-#include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/send_result.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/stored_source.h"
@@ -213,10 +211,8 @@ void LogMetricsOnReportSend(const AttributionReport& report, base::Time now) {
       // for a long time while a conversion report is pending. Revisit this
       // range if it is non-ideal for real world data.
       const AttributionInfo& attribution_info = report.attribution_info();
-      base::Time original_report_time = ComputeReportTime(
-          attribution_info.source.common_info(), attribution_info.time);
       base::TimeDelta time_since_original_report_time =
-          now - original_report_time;
+          now - report.OriginalReportTime();
       base::UmaHistogramCustomTimes(
           "Conversions.ExtraReportDelay2", time_since_original_report_time,
           base::Seconds(1), base::Days(24), /*buckets=*/100);
@@ -239,12 +235,9 @@ void LogMetricsOnReportSend(const AttributionReport& report, base::Time now) {
           time_from_conversion_to_report_assembly, base::Minutes(1),
           base::Days(24), 50);
 
-      auto* data = absl::get_if<AttributionReport::AggregatableAttributionData>(
-          &report.data());
-      DCHECK(data);
       UMA_HISTOGRAM_CUSTOM_TIMES(
           "Conversions.AggregatableReport.ExtraReportDelay",
-          now - data->initial_report_time, base::Seconds(1), base::Days(24),
+          now - report.OriginalReportTime(), base::Seconds(1), base::Days(24),
           50);
 
       UMA_HISTOGRAM_CUSTOM_TIMES(
@@ -637,7 +630,7 @@ void AttributionManagerImpl::ProcessNextEvent(bool is_debug_cookie_set) {
             RecordRegisterImpressionAllowed(allowed);
             if (!allowed) {
               this->OnSourceStored(
-                  std::move(source),
+                  source,
                   /*cleared_debug_key=*/absl::nullopt, is_debug_cookie_set,
                   AttributionStorage::StoreSourceResult(
                       StorableSource::Result::kProhibitedByBrowserPolicy));

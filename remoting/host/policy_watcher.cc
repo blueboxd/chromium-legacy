@@ -10,9 +10,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -467,9 +467,9 @@ std::unique_ptr<PolicyWatcher> PolicyWatcher::CreateWithTaskRunner(
   policy::PolicyServiceImpl::Providers providers;
   std::unique_ptr<policy::PolicyService> owned_policy_service(
       new policy::PolicyServiceImpl(providers));
-  return base::WrapUnique(new PolicyWatcher(
-      owned_policy_service.get(), std::move(owned_policy_service), nullptr,
-      CreateSchemaRegistry()));
+  return base::WrapUnique(new PolicyWatcher(owned_policy_service.get(),
+                                            std::move(owned_policy_service),
+                                            nullptr, CreateSchemaRegistry()));
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
   NOTREACHED() << "CreateWithPolicyService() should be used on ChromeOS.";
   return nullptr;

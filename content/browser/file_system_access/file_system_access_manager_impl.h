@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_FILE_SYSTEM_ACCESS_FILE_SYSTEM_ACCESS_MANAGER_IMPL_H_
 #define CONTENT_BROWSER_FILE_SYSTEM_ACCESS_FILE_SYSTEM_ACCESS_MANAGER_IMPL_H_
 
-#include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback_forward.h"
 #include "base/guid.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -607,9 +607,8 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   absl::optional<FileSystemChooser::ResultEntry>
       auto_file_picker_result_for_test_ GUARDED_BY_CONTEXT(sequence_checker_);
 
-  // TODO(https://crbug.com/1396116): Remove this hack by fixing the fact that
-  // FileSystemURL uses a StorageKey with an opaque origin to represent "no
-  // origin".
+  // TODO(https://crbug.com/1396116): Remove this hack when removing the
+  // `kFileSystemURLComparatorsTreatOpaqueOriginAsNoOrigin` feature flag.
   //
   // A StorageKey containing an arbitrary, unique, randomly-generated opaque
   // origin. ChromeOS file system backends run security checks on the assumption

@@ -33,6 +33,7 @@ namespace gpu {
 class DawnEGLImageRepresentation;
 class D3DImageBacking;
 class D3DImageBackingFactoryTest;
+class GLTextureImageBacking;
 class GLTexturePassthroughD3DImageRepresentation;
 FORWARD_DECLARE_TEST(CALayerTreeTest, HDRTrigger);
 FORWARD_DECLARE_TEST(D3DImageBackingFactoryTestSwapChain,
@@ -108,15 +109,11 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   // It is valid for an implementation to always return false.
   virtual bool BindTexImage(unsigned target);
 
-  // Release image from texture currently bound to |target|.
-  virtual void ReleaseTexImage(unsigned target);
-
  public:
   // Allow usage of these methods from text sites that are inconvenient to
   // friend.
   gfx::Size GetSizeForTesting() { return GetSize(); }
   bool BindTexImageForTesting(unsigned target) { return BindTexImage(target); }
-  void ReleaseTexImageForTesting(unsigned target) { ReleaseTexImage(target); }
 
  protected:
   // Dumps information about the memory backing the GLImage to a dump named
@@ -145,6 +142,7 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   friend class gpu::DawnEGLImageRepresentation;
   friend class gpu::D3DImageBacking;
   friend class gpu::D3DImageBackingFactoryTest;
+  friend class gpu::GLTextureImageBacking;
   friend class gpu::GLTexturePassthroughD3DImageRepresentation;
   friend class gpu::gles2::BackTexture;
   friend class gpu::gles2::GLES2DecoderImpl;

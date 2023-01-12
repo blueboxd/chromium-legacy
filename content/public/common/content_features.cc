@@ -328,6 +328,13 @@ BASE_FEATURE(kEnableMachineLearningModelLoaderWebPlatformApi,
              "EnableMachineLearningModelLoaderWebPlatformApi",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables support for the PPB_VideoDecoder(Dev) API. If this feature is
+// false (and the command-line override is not set in the renderer), the API
+// will appear as unsupported if asked for by a plugin.
+BASE_FEATURE(kSupportPepperVideoDecoderDevAPI,
+             "kSupportPepperVideoDecoderDevAPI",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enables service workers on chrome-untrusted:// urls.
 BASE_FEATURE(kEnableServiceWorkersForChromeUntrusted,
              "EnableServiceWorkersForChromeUntrusted",
@@ -393,6 +400,11 @@ BASE_FEATURE(kFedCmMetricsEndpoint,
 // time.
 BASE_FEATURE(kFedCmMultipleIdentityProviders,
              "FedCmMultipleIdentityProviders",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables usage of the FedCM Relying Party Context API.
+BASE_FEATURE(kFedCmRpContext,
+             "FedCmRpContext",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM API with the User Info API at the same time.

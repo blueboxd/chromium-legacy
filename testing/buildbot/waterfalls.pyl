@@ -983,6 +983,7 @@
       'android-pie-arm64-rel': {
         'mixins': [
           'has_native_resultdb_integration',
+          'isolate_profile_data',
           'pie_fleet',
           'walleye',
         ],
@@ -1468,6 +1469,15 @@
           'chrome',
         ],
         'os_type': 'chromeos'
+      },
+      'lacros-arm64-generic-rel-skylab': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+        'test_suites': {
+          'skylab_tests': 'lacros_arm64_generic_rel_skylab',
+        },
+        'os_type': 'chromeos',
       },
       'linux-ash-chromium-generator-rel': {
         'additional_compile_targets': [
@@ -5935,6 +5945,22 @@
             {
               'integrity': 'high',
               'pool': 'chromium.tests',
+            }
+          ]
+        },
+      },
+      'win10-updater-tester-rel-uac': {
+        'mixins': [
+          'win10-any',
+          'x86-64',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests_win_uac',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'pool': 'chromium.win.uac',
             }
           ]
         },

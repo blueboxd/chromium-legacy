@@ -13,7 +13,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -264,9 +264,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   void ReportBytesWasted(download::DownloadItemImpl* download) override;
   void BindWakeLockProvider(
       mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) override;
-  std::unique_ptr<download::DownloadItemRenameHandler>
-  GetRenameHandlerForDownload(
-      download::DownloadItemImpl* download_item) override;
 
   // Drops a download before it is created.
   void DropDownload();

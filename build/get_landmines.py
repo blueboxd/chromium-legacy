@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2013 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -78,6 +78,7 @@ def print_landmines():
   print('The Great Blink mv for source files (crbug.com/768828)')
   if host_os() == 'linux':
     print('Clobber to workaround buggy .ninja_deps cycle (crbug.com/934404)')
+  print('Clobber to flush stale generated files. See crbug.com/1406628')
 
 
 def main():

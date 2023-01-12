@@ -179,10 +179,10 @@ Refer to README.md for content description and update process.
  <item id="profile_avatar" added_in_milestone="62" content_hash_code="06c4a5fd" os_list="linux,windows,chromeos,android" file_path="chrome/browser/profiles/profile_avatar_downloader.cc" />
  <item id="profile_resetter_upload" added_in_milestone="62" content_hash_code="07b56813" os_list="linux,windows,chromeos" file_path="chrome/browser/profile_resetter/reset_report_uploader.cc" />
  <item id="promo_service" added_in_milestone="72" content_hash_code="01f69c19" os_list="linux,windows,chromeos" file_path="chrome/browser/new_tab_page/promos/promo_service.cc" />
- <item id="proxy_config_direct" added_in_milestone="67" content_hash_code="072602b0" os_list="linux,windows,chromeos,android" file_path="net/proxy_resolution/proxy_config_with_annotation.cc" />
+ <item id="proxy_config_direct" added_in_milestone="67" content_hash_code="032a4682" os_list="linux,windows,chromeos,android" file_path="net/proxy_resolution/proxy_config_with_annotation.cc" />
  <item id="proxy_config_headless" added_in_milestone="67" content_hash_code="049def4d" os_list="linux,windows,chromeos" file_path="headless/lib/browser/headless_request_context_manager.cc" />
- <item id="proxy_config_settings" added_in_milestone="67" content_hash_code="0129f6d1" os_list="linux,windows,chromeos,android" file_path="components/proxy_config/pref_proxy_config_tracker_impl.cc" />
- <item id="proxy_config_system" added_in_milestone="67" content_hash_code="0497cf89" os_list="linux,windows,chromeos,android" file_path="net/proxy_resolution/proxy_config_service.cc" />
+ <item id="proxy_config_settings" added_in_milestone="67" content_hash_code="05940645" os_list="linux,windows,chromeos,android" file_path="components/proxy_config/pref_proxy_config_tracker_impl.cc" />
+ <item id="proxy_config_system" added_in_milestone="67" content_hash_code="061e794f" os_list="linux,windows,chromeos,android" file_path="net/proxy_resolution/proxy_config_service.cc" />
  <item id="proxy_config_windows_resolver" added_in_milestone="86" content_hash_code="075530ef" os_list="windows" file_path="net/proxy_resolution/win/windows_system_proxy_resolution_request.cc" />
  <item id="qr_code_save" added_in_milestone="84" content_hash_code="045593bd" os_list="linux,windows,chromeos" file_path="chrome/browser/ui/views/qrcode_generator/qrcode_generator_bubble.cc" />
  <item id="query_tiles_fetcher" added_in_milestone="84" content_hash_code="0100b835" os_list="linux,windows,chromeos,android" file_path="components/query_tiles/internal/tile_fetcher.cc" />
@@ -297,7 +297,7 @@ Refer to README.md for content description and update process.
  <item id="network_traversal_ice_config_fetcher" added_in_milestone="98" content_hash_code="0065f89d" os_list="chromeos" file_path="chrome/browser/nearby_sharing/network_traversal_ice_config_fetcher.cc" />
  <item id="tachyon_ice_config_fetcher" added_in_milestone="98" content_hash_code="01e878b0" os_list="chromeos" file_path="chrome/browser/nearby_sharing/tachyon_ice_config_fetcher.cc" />
  <item id="supervised_users_denylist" added_in_milestone="98" content_hash_code="01cebaff" os_list="chromeos,android" file_path="chrome/browser/supervised_user/supervised_user_service.cc" />
- <item id="launcher_item_suggest" added_in_milestone="98" content_hash_code="04a4041e" os_list="chromeos" file_path="chrome/browser/ash/app_list/search/files/item_suggest_cache.cc" />
+ <item id="launcher_item_suggest" added_in_milestone="98" content_hash_code="04a4041e" os_list="chromeos" file_path="chrome/browser/ash/file_suggest/item_suggest_cache.cc" />
  <item id="ambient_client" added_in_milestone="98" content_hash_code="062d821f" os_list="chromeos" file_path="chrome/browser/ui/ash/ambient/ambient_client_impl.cc" />
  <item id="calendar_get_events" added_in_milestone="98" content_hash_code="0603f52a" os_list="chromeos" file_path="chrome/browser/ui/ash/calendar/calendar_keyed_service.cc" />
  <item id="side_search_availability_test" added_in_milestone="98" content_hash_code="04b1ffa5" os_list="chromeos,linux,windows" file_path="chrome/browser/ui/side_search/side_search_tab_contents_helper.cc" />
@@ -394,9 +394,9 @@ Refer to README.md for content description and update process.
  <item id="k_anonymity_service_join_set" added_in_milestone="108" content_hash_code="02ae88a5" os_list="linux,windows,android,chromeos" file_path="chrome/browser/k_anonymity_service/k_anonymity_service_client.cc" />
  <item id="k_anonymity_service_query_set" added_in_milestone="108" content_hash_code="0411a8c6" os_list="linux,windows,android,chromeos" file_path="chrome/browser/k_anonymity_service/k_anonymity_service_client.cc" />
  <item id="managed_acccount_signin_restrictions_secure_connect_chromeos" added_in_milestone="109" content_hash_code="05958d4c" os_list="chromeos" file_path="chrome/browser/ui/webui/signin/ash/user_cloud_signin_restriction_policy_fetcher.cc" />
- <item id="ntp_custom_background" added_in_milestone="109" content_hash_code="062e3e29" os_list="linux,windows,chromeos" file_path="chrome/browser/search/background/ntp_custom_background_service.cc" />
- <item id="iwa_policy_update_manifest" added_in_milestone="110" content_hash_code="01f71479" os_list="chromeos" file_path="chrome/browser/web_applications/isolated_web_apps/policy/isolated_web_app_policy_manager.cc" />
- <item id="iwa_policy_signed_web_bundle" added_in_milestone="110" content_hash_code="024e4e8b" os_list="chromeos" file_path="chrome/browser/web_applications/isolated_web_apps/policy/isolated_web_app_policy_manager.cc" />
+ <item id="ntp_custom_background" added_in_milestone="109" content_hash_code="08080082" os_list="linux,windows,chromeos" file_path="chrome/browser/search/background/ntp_custom_background_service.cc" />
+ <item id="iwa_policy_update_manifest" added_in_milestone="110" content_hash_code="057bb523" os_list="chromeos" file_path="chrome/browser/web_applications/isolated_web_apps/policy/isolated_web_app_policy_manager.cc" />
+ <item id="iwa_policy_signed_web_bundle" added_in_milestone="110" content_hash_code="03a6049c" os_list="chromeos" file_path="chrome/browser/web_applications/isolated_web_apps/policy/isolated_web_app_policy_manager.cc" />
  <item id="quick_start_challenge_bytes_fetcher" added_in_milestone="110" content_hash_code="050ba600" os_list="chromeos" file_path="chrome/browser/ash/login/oobe_quick_start/second_device_auth_broker.cc" />
  <item id="customization_document" added_in_milestone="110" content_hash_code="007a3dda" os_list="chromeos" file_path="chrome/browser/ash/customization/customization_document.cc" />
  <item id="nearby_webrtc_connection" added_in_milestone="110" content_hash_code="070e1f72" os_list="chromeos" file_path="chrome/services/sharing/nearby/platform/webrtc.cc" />
@@ -405,7 +405,7 @@ Refer to README.md for content description and update process.
  <item id="password_sync_token_fetcher" added_in_milestone="110" content_hash_code="0451c1ff" os_list="chromeos" file_path="chrome/browser/ash/login/saml/password_sync_token_fetcher.cc" />
  <item id="projector_xhr_loader" added_in_milestone="110" content_hash_code="071c4ac5" os_list="chromeos" file_path="ash/webui/projector_app/projector_xhr_sender.cc" />
  <item id="cloud_speech_recognition" added_in_milestone="110" content_hash_code="00d56fd8" os_list="linux,windows,chromeos" file_path="components/live_caption/live_translate_controller.cc" />
- <item id="bruschetta_installer_download" added_in_milestone="110" content_hash_code="01b953f4" os_list="chromeos" file_path="chrome/browser/ash/bruschetta/bruschetta_installer_impl.cc" />
+ <item id="bruschetta_installer_download" added_in_milestone="110" content_hash_code="073f0263" os_list="chromeos" file_path="chrome/browser/ash/bruschetta/bruschetta_installer_impl.cc" />
  <item id="quick_start_session_auth_requester" added_in_milestone="110" content_hash_code="08353e70" os_list="chromeos" file_path="chrome/browser/ash/login/oobe_quick_start/second_device_auth_broker.cc" />
  <item id="network_diagnostics_routines" added_in_milestone="110" content_hash_code="0007b237" os_list="chromeos" file_path="chrome/browser/ash/net/network_diagnostics/http_request_manager.cc" />
  <item id="trial_group_lookup" added_in_milestone="110" content_hash_code="047aeeca" os_list="chromeos" file_path="chromeos/ash/components/trial_group/trial_group_checker.cc" />

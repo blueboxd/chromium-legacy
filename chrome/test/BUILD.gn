@@ -60,7 +60,6 @@ if (is_android) {
   import("//build/config/android/rules.gni")
   import("//chrome/android/features/dev_ui/dev_ui_module.gni")
   import("//tools/perf/chrome_telemetry_build/android_browser_types.gni")
-  import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 }
 
 # This target exists to reference other test executables to bring these files
@@ -1111,14 +1110,9 @@ if (is_android) {
     # These are assets rules so we can just depend on them.
     deps += [
       "//chrome/android:chrome_apk_pak_assets",
+      "//gin:v8_snapshot_assets",
       "//third_party/icu:icu_assets",
     ]
-
-    if (use_v8_context_snapshot) {
-      deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
-    } else {
-      deps += [ "//v8:v8_external_startup_data_assets" ]
-    }
   }
 
   android_library("android_browsertests_java") {
@@ -3666,7 +3660,6 @@ if (!is_android) {
         "../browser/ash/app_list/chrome_app_list_item_browsertest.cc",
         "../browser/ash/app_list/chrome_app_list_model_updater_browsertest.cc",
         "../browser/ash/app_list/search/files/drive_search_browsertest.cc",
-        "../browser/ash/app_list/search/files/file_suggest_keyed_service_browsertest.cc",
         "../browser/ash/app_list/search/help_app_search_browsertest.cc",
         "../browser/ash/app_list/search/test/app_list_search_test_helper.cc",
         "../browser/ash/app_list/search/test/app_list_search_test_helper.h",
@@ -3731,6 +3724,7 @@ if (!is_android) {
         "../browser/ash/file_manager/file_tasks_browsertest.cc",
         "../browser/ash/file_manager/image_loader_jstest.cc",
         "../browser/ash/file_manager/open_with_browser_browsertest.cc",
+        "../browser/ash/file_suggest/file_suggest_keyed_service_browsertest.cc",
         "../browser/ash/file_system_provider/fake_extension_provider.cc",
         "../browser/ash/file_system_provider/fake_extension_provider.h",
         "../browser/ash/file_system_provider/fake_provided_file_system.cc",
@@ -5458,7 +5452,6 @@ test("unit_tests") {
     "../browser/page_load_metrics/observers/live_tab_count_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/loading_predictor_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/local_network_requests_page_load_metrics_observer_unittest.cc",
-    "../browser/page_load_metrics/observers/media_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/multi_tab_loading_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.cc",
     "../browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h",
@@ -5467,7 +5460,6 @@ test("unit_tests") {
     "../browser/page_load_metrics/observers/scheme_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/service_worker_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/signed_exchange_page_load_metrics_observer_unittest.cc",
-    "../browser/page_load_metrics/observers/tab_restore_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/third_party_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/translate_page_load_metrics_observer_unittest.cc",
     "../browser/password_manager/chrome_password_manager_client_unittest.cc",
@@ -6631,14 +6623,10 @@ test("unit_tests") {
       "//components/webapk:proto",
       "//components/webapps/browser",
       "//content/public/android:content_java",
+      "//gin:v8_snapshot_assets",
       "//ui/android",
       "//ui/events/devices:test_support",
     ]
-    if (use_v8_context_snapshot) {
-      deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
-    } else {
-      deps += [ "//v8:v8_external_startup_data_assets" ]
-    }
     if (dfmify_dev_ui) {
       sources += [
         "//chrome/browser/dev_ui/android/dev_ui_loader_throttle_unittest.cc",
@@ -7401,10 +7389,7 @@ test("unit_tests") {
       "../browser/ash/app_list/search/cros_action_history/cros_action_recorder_unittest.cc",
       "../browser/ash/app_list/search/files/file_result_unittest.cc",
       "../browser/ash/app_list/search/files/file_search_provider_unittest.cc",
-      "../browser/ash/app_list/search/files/file_suggest_keyed_service_unittest.cc",
-      "../browser/ash/app_list/search/files/item_suggest_cache_unittest.cc",
       "../browser/ash/app_list/search/files/justifications_unittest.cc",
-      "../browser/ash/app_list/search/files/local_file_suggestion_provider_unittest.cc",
       "../browser/ash/app_list/search/files/zero_state_drive_provider_unittest.cc",
       "../browser/ash/app_list/search/files/zero_state_file_provider_unittest.cc",
       "../browser/ash/app_list/search/games/game_provider_unittest.cc",
@@ -7424,6 +7409,7 @@ test("unit_tests") {
       "../browser/ash/app_list/search/ranking/best_match_ranker_unittest.cc",
       "../browser/ash/app_list/search/ranking/filtering_ranker_unittest.cc",
       "../browser/ash/app_list/search/ranking/ftrl_ranker_unittest.cc",
+      "../browser/ash/app_list/search/ranking/keyword_ranker_unittest.cc",
       "../browser/ash/app_list/search/ranking/mrfu_ranker_unittest.cc",
       "../browser/ash/app_list/search/ranking/query_highlighter_unittest.cc",
       "../browser/ash/app_list/search/ranking/removed_results_proto_unittest.cc",
@@ -7454,6 +7440,9 @@ test("unit_tests") {
       "../browser/ash/app_list/test/fake_app_list_model_updater.h",
       "../browser/ash/attestation/attestation_policy_unittest.cc",
       "../browser/ash/dbus/chrome_features_service_provider_unittest.cc",
+      "../browser/ash/file_suggest/file_suggest_keyed_service_unittest.cc",
+      "../browser/ash/file_suggest/item_suggest_cache_unittest.cc",
+      "../browser/ash/file_suggest/local_file_suggestion_provider_unittest.cc",
       "../browser/ash/login/screens/reset_screen_unittest.cc",
       "../browser/browser_process_platform_part_ash_unittest.cc",
       "../browser/component_updater/cros_component_installer_chromeos_unittest.cc",
@@ -10268,6 +10257,8 @@ source_set("sync_integration_test_support") {
     "../browser/sync/test/integration/invalidations/fake_sync_instance_id.h",
     "../browser/sync/test/integration/invalidations/fake_sync_instance_id_driver.cc",
     "../browser/sync/test/integration/invalidations/fake_sync_instance_id_driver.h",
+    "../browser/sync/test/integration/invalidations/invalidations_status_checker.cc",
+    "../browser/sync/test/integration/invalidations/invalidations_status_checker.h",
     "../browser/sync/test/integration/multi_client_status_change_checker.cc",
     "../browser/sync/test/integration/multi_client_status_change_checker.h",
     "../browser/sync/test/integration/offer_helper.cc",

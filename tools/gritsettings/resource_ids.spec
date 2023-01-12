@@ -184,6 +184,10 @@
     "META": {"sizes": {"includes": [30]}},
     "includes": [1495],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/vc_tray_tester/resources.grd": {
+    "META": {"sizes": {"includes": [5]}},
+    "includes": [1497],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/commander/resources.grd": {
     "META": {"sizes": {"includes": [15]}},
     "includes": [1500],
@@ -299,12 +303,20 @@
     "META": {"sizes": {"includes": [5],}},
     "includes": [1931],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/reading_list/resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/read_anything/resources.grd": {
     "META": {"sizes": {"includes": [10],}},
     "includes": [1932],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/side_panel_resources.grd": {
-    "META": {"sizes": {"includes": [50],}},
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/reading_list/resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [1933],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/shared/resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [1934],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/user_notes/resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
     "includes": [1935],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/settings/chromeos/os_settings_resources.grd": {
@@ -345,6 +357,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/webui_gallery/resources.grd": {
     "META": {"sizes": {"includes": [70]}},
     "includes": [2130],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/web_app_internals/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [2135],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/whats_new/resources.grd": {
     "META": {"sizes": {"includes": [10]}},
@@ -404,6 +420,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/components/optimization_guide/optimization_guide_internals/resources/resources.grd": {
     "META": {"sizes": {"includes": [10]}},
     "includes": [2330],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/components/policy/resources/webui/resources.grd": {
+    "META": {"sizes": {"includes": [20]}},
+    "includes": [2335],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/app_home/resources.grd": {
     "META": {"sizes": {"includes": [10]}},
@@ -765,6 +785,9 @@
   "components/components_strings.grd": {
     "messages": [3580],
   },
+  "components/headless/command_handler/headless_command.grd": {
+    "includes": [3590],
+  },
   "components/omnibox/resources/omnibox_pedal_synonyms.grd": {
     "messages": [3600],
   },
@@ -977,10 +1000,6 @@
   },
   "extensions/strings/extensions_strings.grd": {
     "messages": [4380],
-  },
-
-  "headless/app/headless_command.grd": {
-    "includes": [4410],
   },
 
   "mojo/public/js/mojo_bindings_resources.grd": {

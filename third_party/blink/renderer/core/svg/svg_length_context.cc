@@ -43,25 +43,6 @@ namespace blink {
 
 namespace {
 
-inline float DimensionForLengthMode(SVGLengthMode mode,
-                                    const gfx::SizeF& viewport_size) {
-  switch (mode) {
-    case SVGLengthMode::kWidth:
-      return viewport_size.width();
-    case SVGLengthMode::kHeight:
-      return viewport_size.height();
-    case SVGLengthMode::kOther:
-      // Returns the normalized diagonal length of the viewport, as defined in
-      // https://www.w3.org/TR/SVG2/coords.html#Units.
-      return ClampTo<float>(std::sqrt(
-          gfx::Vector2dF(viewport_size.width(), viewport_size.height())
-              .LengthSquared() /
-          2));
-  }
-  NOTREACHED();
-  return 0;
-}
-
 const ComputedStyle* ComputedStyleForLengthResolving(
     const SVGElement* context) {
   if (!context) {
@@ -366,7 +347,7 @@ gfx::RectF SVGLengthContext::ResolveRectangle(const SVGElement* context,
     gfx::SizeF viewport_size_for_resolve;
     if (size.Width().IsPercentOrCalc() || size.Height().IsPercentOrCalc() ||
         point.X().IsPercentOrCalc() || point.Y().IsPercentOrCalc()) {
-      SVGLengthContext(context).DetermineViewport(viewport_size_for_resolve);
+      viewport_size_for_resolve = SVGLengthContext(context).ResolveViewport();
     }
     // Resolve the Lengths to user units.
     resolved_rect =
@@ -397,7 +378,7 @@ gfx::Vector2dF SVGLengthContext::ResolveLengthPair(
     const ComputedStyle& style) const {
   gfx::SizeF viewport_size;
   if (x_length.IsPercentOrCalc() || y_length.IsPercentOrCalc()) {
-    DetermineViewport(viewport_size);
+    viewport_size = ResolveViewport();
     // If either |x_length| or |y_length| is 'auto', set that viewport dimension
     // to zero so that the corresponding Length resolves to zero. This matches
     // the behavior of ValueForLength() below.
@@ -460,13 +441,9 @@ float SVGLengthContext::ValueForLength(const Length& length,
 float SVGLengthContext::ValueForLength(const Length& length,
                                        float zoom,
                                        SVGLengthMode mode) const {
-  float dimension = 0;
-  if (length.IsPercentOrCalc()) {
-    gfx::SizeF viewport_size;
-    DetermineViewport(viewport_size);
-    // The viewport will be unaffected by zoom.
-    dimension = DimensionForLengthMode(mode, viewport_size);
-  }
+  // The viewport will be unaffected by zoom.
+  const float dimension =
+      length.IsPercentOrCalc() ? ViewportDimension(mode) : 0;
   return ValueForLength(length, zoom, dimension);
 }
 
@@ -499,14 +476,9 @@ float SVGLengthContext::ConvertValueToUserUnits(
     case CSSPrimitiveValue::UnitType::kUserUnits:
       user_units = value;
       break;
-    case CSSPrimitiveValue::UnitType::kPercentage: {
-      gfx::SizeF viewport_size;
-      if (!DetermineViewport(viewport_size)) {
-        return 0;
-      }
-      user_units = value * DimensionForLengthMode(mode, viewport_size) / 100;
+    case CSSPrimitiveValue::UnitType::kPercentage:
+      user_units = value * ViewportDimension(mode) / 100;
       break;
-    }
     case CSSPrimitiveValue::UnitType::kEms:
       user_units = ConvertValueFromEMSToUserUnits(
           ComputedStyleForLengthResolving(context_), value);
@@ -601,11 +573,7 @@ float SVGLengthContext::ConvertValueFromUserUnits(
     case CSSPrimitiveValue::UnitType::kUserUnits:
       return value;
     case CSSPrimitiveValue::UnitType::kPercentage: {
-      gfx::SizeF viewport_size;
-      if (!DetermineViewport(viewport_size)) {
-        return 0;
-      }
-      float dimension = DimensionForLengthMode(mode, viewport_size);
+      const float dimension = ViewportDimension(mode);
       if (!dimension) {
         return 0;
       }
@@ -671,30 +639,44 @@ float SVGLengthContext::ConvertValueFromUserUnits(
   return 0;
 }
 
-bool SVGLengthContext::DetermineViewport(gfx::SizeF& viewport_size) const {
+gfx::SizeF SVGLengthContext::ResolveViewport() const {
   if (!context_) {
-    return false;
+    return gfx::SizeF();
   }
-
   // Root <svg> element lengths are resolved against the top level viewport.
   if (context_->IsOutermostSVGSVGElement()) {
-    viewport_size = To<SVGSVGElement>(context_)->CurrentViewportSize();
-    return true;
+    return To<SVGSVGElement>(context_)->CurrentViewportSize();
   }
-
   // Take size from nearest viewport element.
   SVGElement* viewport_element = context_->viewportElement();
   const auto* svg = DynamicTo<SVGSVGElement>(viewport_element);
   if (!svg) {
-    return false;
+    return gfx::SizeF();
   }
-
-  viewport_size = svg->CurrentViewBoxRect().size();
+  gfx::SizeF viewport_size = svg->CurrentViewBoxRect().size();
   if (viewport_size.IsEmpty()) {
     viewport_size = svg->CurrentViewportSize();
   }
+  return viewport_size;
+}
 
-  return true;
+float SVGLengthContext::ViewportDimension(SVGLengthMode mode) const {
+  gfx::SizeF viewport_size = ResolveViewport();
+  switch (mode) {
+    case SVGLengthMode::kWidth:
+      return viewport_size.width();
+    case SVGLengthMode::kHeight:
+      return viewport_size.height();
+    case SVGLengthMode::kOther:
+      // Returns the normalized diagonal length of the viewport, as defined in
+      // https://www.w3.org/TR/SVG2/coords.html#Units.
+      return ClampTo<float>(std::sqrt(
+          gfx::Vector2dF(viewport_size.width(), viewport_size.height())
+              .LengthSquared() /
+          2));
+  }
+  NOTREACHED();
+  return 0;
 }
 
 }  // namespace blink

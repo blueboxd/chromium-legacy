@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
@@ -57,8 +57,9 @@ XmppRegisterSupportHostRequest::XmppRegisterSupportHostRequest(
     : directory_bot_jid_(directory_bot_jid) {}
 
 XmppRegisterSupportHostRequest::~XmppRegisterSupportHostRequest() {
-  if (signal_strategy_)
+  if (signal_strategy_) {
     signal_strategy_->RemoveListener(this);
+  }
 }
 
 void XmppRegisterSupportHostRequest::StartRequest(

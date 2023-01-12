@@ -10,9 +10,9 @@
 #include <memory>
 #include <set>
 
-#include "base/callback.h"
-#include "base/callback_forward.h"
 #include "base/component_export.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ime/ash/text_input_method.h"
@@ -181,10 +181,6 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) InputMethodAsh
                            ui::ime::KeyEventHandledState handled_state);
 
   bool IsPasswordOrNoneInputFieldFocused();
-
-  // Gets the bounds of the composition text or cursor in |client|.
-  std::vector<gfx::Rect> GetCompositionBounds(
-      const ui::TextInputClient* client);
 
   // Sends a fake key event for IME composing without physical key events.
   // Returns true if the faked key event is stopped propagation.

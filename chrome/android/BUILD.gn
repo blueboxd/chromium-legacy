@@ -36,7 +36,6 @@ import("//testing/test.gni")
 import("//third_party/icu/config.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//tools/resources/generate_resource_allowlist.gni")
-import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//weblayer/variables.gni")
 import("channel.gni")
 import("java_sources.gni")
@@ -1438,7 +1437,6 @@ if (current_toolchain == default_toolchain) {
       "//components/browser_ui/styles/android:java",
       "//components/browser_ui/util/android:java",
       "//components/browser_ui/widget/android:java",
-      "//components/commerce/core/android:core_java",
       "//components/crash/android:java",
       "//components/embedder_support/android:context_menu_java",
       "//components/embedder_support/android:util_java",
@@ -1513,11 +1511,8 @@ if (current_toolchain == default_toolchain) {
       "$google_play_services_package:google_play_services_gcm_java",
       "$google_play_services_package:google_play_services_iid_java",
       "$google_play_services_package:google_play_services_tasks_java",
-      "//base:base_java",
       "//base:base_java_test_support",
-      "//base:jni_java",
       "//base/test:test_support_java",
-      "//build/android:build_java",
       "//cc:cc_java",
       "//chrome/android:chrome_java",
       "//chrome/android/features/keyboard_accessory/public:public_java",
@@ -1832,6 +1827,8 @@ if (current_toolchain == default_toolchain) {
 
     deps += feed_test_deps
 
+    deps += commerce_subscriptions_java_test_deps
+
     if (enable_printing) {
       deps += [ "//printing:printing_java" ]
     }
@@ -2112,14 +2109,6 @@ if (current_toolchain == default_toolchain) {
     deps = [
       "//chrome/android/webapk/libs/runtime_library:runtime_library_assets",
     ]
-  }
-
-  java_group("chrome_public_v8_assets") {
-    if (use_v8_context_snapshot) {
-      deps = [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
-    } else {
-      deps = [ "//v8:v8_external_startup_data_assets" ]
-    }
   }
 
   jinja_template_resources("chrome_public_apk_template_resources") {
@@ -4077,6 +4066,7 @@ group("jni_headers") {
     "//chrome/browser/battery/android:jni_headers",
     "//chrome/browser/commerce/merchant_viewer/android:jni_headers",
     "//chrome/browser/commerce/price_tracking/android:jni_headers",
+    "//chrome/browser/commerce/subscriptions/android:jni_headers",
     "//chrome/browser/contextmenu:jni_headers",
     "//chrome/browser/download/android:jni_headers",
     "//chrome/browser/enterprise/util:jni_headers",

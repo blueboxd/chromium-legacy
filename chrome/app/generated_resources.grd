@@ -14031,8 +14031,17 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </if>
 
     <!-- FedCM Account Selection strings -->
-    <message name="IDS_ACCOUNT_SELECTION_SHEET_TITLE_EXPLICIT" desc="Header for sign in sheet. Sheet is shown to prompt user for sign in consent.">
+    <message name="IDS_ACCOUNT_SELECTION_SHEET_TITLE_EXPLICIT_SIGN_IN" desc="Header for sign-in sheet. Sheet is shown to prompt the user to sign-in to a website using an account from an identity provider.">
       Sign in to <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph> with <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$2<ex>idp.example</ex></ph>
+    </message>
+    <message name="IDS_ACCOUNT_SELECTION_SHEET_TITLE_EXPLICIT_SIGN_UP" desc="Header for sign-up sheet. Sheet is shown to prompt the user to link their identity on a website with their identity from an identity provider.">
+      Sign up to <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph> with <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$2<ex>idp.example</ex></ph>
+    </message>
+    <message name="IDS_ACCOUNT_SELECTION_SHEET_TITLE_EXPLICIT_USE" desc="Header for use sheet. Sheet is shown to prompt user to use a website using an account from an identity provider.">
+      Use <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph> with <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$2<ex>idp.example</ex></ph>
+    </message>
+    <message name="IDS_ACCOUNT_SELECTION_SHEET_TITLE_EXPLICIT_CONTINUE" desc="Header for continue-to sheet. Sheet is shown to prompt user to continue using their identity from an identity provider on a website.">
+      Continue to <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph> with <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$2<ex>idp.example</ex></ph>
     </message>
     <message name="IDS_ACCOUNT_SELECTION_CONTINUE" desc="Title of the button that continues filling with the only available set of credentials.">
       Continue as <ph name="NAME">$1<ex>Albus (or Albus Dumbledore)</ex></ph>
@@ -14272,11 +14281,17 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_HIGH_EFFICIENCY_DIALOG_BODY" desc="Body text for a dialog describing that Memory Saver mode will use less memory from inactive tabs and that this is a setting the user can control.">
         While this tab was inactive, Memory Saver freed up memory for other tasks. You can change this anytime in <ph name="SETTINGS_LINK">$1<ex>Settings</ex></ph>.
       </message>
+      <message name="IDS_HIGH_EFFICIENCY_DIALOG_BODY_WITHOUT_LINK" desc="Body text for a dialog describing that Memory Saver mode will use less memory.">
+        While this tab was inactive, Memory Saver freed up memory for other tasks.
+      </message>
       <message name="IDS_HIGH_EFFICIENCY_DIALOG_BODY_LINK_TEXT" desc="The link text for the body text for the Memory Saver dialog.">
         Settings
       </message>
       <message name="IDS_HIGH_EFFICIENCY_DIALOG_BODY_WITH_SAVINGS_AND_LINK" desc="Body text for a dialog describing how much less memory was used due to Memory Saver mode and that this is a setting the user can control.">
         While this tab was inactive, Memory Saver freed up <ph name="MEMORY_VALUE">$1<ex>175MB</ex></ph> of memory for other tasks. You can change this anytime in <ph name="SETTINGS_LINK">$2<ex>Settings</ex></ph>.
+      </message>
+      <message name="IDS_HIGH_EFFICIENCY_DIALOG_BODY_WITH_SAVINGS" desc="Body text for a dialog describing how much less memory was used due to Memory Saver mode.">
+        While this tab was inactive, Memory Saver freed up <ph name="MEMORY_VALUE">$1<ex>175MB</ex></ph> of memory for other tasks.
       </message>
     </if>
     <message name="IDS_ACCNAME_SIDEBAR_WEBVIEW_LOCATION_BAR" desc="The accessible name of the sidebar webview's location bar.">

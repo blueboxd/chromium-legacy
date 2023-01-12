@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/containers/queue.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/webid/fedcm_metrics.h"
@@ -75,19 +75,22 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
 
   struct IdentityProviderGetInfo {
     IdentityProviderGetInfo(blink::mojom::IdentityProviderConfig,
-                            bool prefer_auto_signin);
+                            bool prefer_auto_signin,
+                            blink::mojom::RpContext rp_context);
     ~IdentityProviderGetInfo();
     IdentityProviderGetInfo(const IdentityProviderGetInfo&);
 
     blink::mojom::IdentityProviderConfig provider;
     bool prefer_auto_signin{false};
+    blink::mojom::RpContext rp_context{blink::mojom::RpContext::kSignIn};
   };
 
   struct IdentityProviderInfo {
     IdentityProviderInfo(blink::mojom::IdentityProviderConfig,
                          IdpNetworkRequestManager::Endpoints,
                          IdentityProviderMetadata,
-                         bool prefer_auto_signin);
+                         bool prefer_auto_signin,
+                         blink::mojom::RpContext rp_context);
     ~IdentityProviderInfo();
     IdentityProviderInfo(const IdentityProviderInfo&);
 
@@ -96,6 +99,7 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
     IdentityProviderMetadata metadata;
     bool prefer_auto_signin{false};
     bool has_failing_idp_signin_status{false};
+    blink::mojom::RpContext rp_context{blink::mojom::RpContext::kSignIn};
     absl::optional<IdentityProviderData> data;
   };
 

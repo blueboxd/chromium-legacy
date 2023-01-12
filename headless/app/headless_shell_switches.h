@@ -5,7 +5,6 @@
 #ifndef HEADLESS_APP_HEADLESS_SHELL_SWITCHES_H_
 #define HEADLESS_APP_HEADLESS_SHELL_SWITCHES_H_
 
-#include "content/public/common/content_switches.h"
 #include "headless/public/headless_export.h"
 
 namespace headless {
@@ -24,7 +23,6 @@ HEADLESS_EXPORT extern const char kProxyBypassList[];
 HEADLESS_EXPORT extern const char kProxyServer[];
 HEADLESS_EXPORT extern const char kNoSystemProxyConfigService[];
 HEADLESS_EXPORT extern const char kRemoteDebuggingAddress[];
-HEADLESS_EXPORT extern const char kRepl[];
 HEADLESS_EXPORT extern const char kUserAgent[];
 HEADLESS_EXPORT extern const char kUserDataDir[];
 HEADLESS_EXPORT extern const char kIncognito[];
@@ -33,10 +31,6 @@ HEADLESS_EXPORT extern const char kAuthServerAllowlist[];
 HEADLESS_EXPORT extern const char kFontRenderHinting[];
 HEADLESS_EXPORT extern const char kBlockNewWebContents[];
 HEADLESS_EXPORT extern const char kExplicitlyAllowedPorts[];
-
-// Switches which are replicated from content.
-using ::switches::kRemoteDebuggingPort;
-using ::switches::kRemoteDebuggingPipe;
 
 }  // namespace switches
 }  // namespace headless

@@ -28,6 +28,7 @@ namespace fileManagerPrivateInternal {
     DOMString query;
     fileManagerPrivate.SearchType types;
     long maxResults;
+    double timestamp;
   };
 
   callback SimpleCallback = void();
@@ -107,6 +108,7 @@ namespace fileManagerPrivateInternal {
                                DOMString[] mimeTypes,
                                SimpleCallback callback);
     static void getFileTasks(DOMString[] urls,
+                             DOMString[] dlpSourceUrls,
                              GetFileTasksCallback callback);
     static void getDownloadUrl(DOMString url, GetUrlCallback callback);
     static void getDisallowedTransfers(DOMString[] entries,

@@ -9,9 +9,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDeferredDisplayListRecorder.h"
@@ -96,7 +96,7 @@ class SurfacelessSkiaGlRenderer::BufferWrapper {
   gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
   gfx::Size size_;
 
-  scoped_refptr<gl::GLImage> image_;
+  scoped_refptr<gl::GLImageNativePixmap> image_;
   unsigned int gl_tex_ = 0;
   sk_sp<SkSurface> sk_surface_;
 };
@@ -105,7 +105,6 @@ SurfacelessSkiaGlRenderer::BufferWrapper::BufferWrapper() = default;
 
 SurfacelessSkiaGlRenderer::BufferWrapper::~BufferWrapper() {
   if (gl_tex_) {
-    image_->ReleaseTexImage(GL_TEXTURE_2D);
     glDeleteTextures(1, &gl_tex_);
   }
 }

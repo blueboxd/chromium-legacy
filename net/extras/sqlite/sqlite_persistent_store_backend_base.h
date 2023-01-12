@@ -8,10 +8,10 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
-#include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/thread_annotations.h"
 #include "sql/meta_table.h"
@@ -91,11 +91,8 @@ class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentStoreBackendBase
 
   // Record metrics on various errors/events that may occur during
   // initialization.
-  virtual void RecordPathDoesNotExistProblem() {}
   virtual void RecordOpenDBProblem() {}
   virtual void RecordDBMigrationProblem() {}
-  virtual void RecordNewDBFile() {}
-  virtual void RecordDBLoaded() {}
 
   // Embedder-specific database upgrade statements. Returns the version number
   // that the database ends up at, or returns nullopt on error. This is called

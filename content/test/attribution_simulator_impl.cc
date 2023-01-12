@@ -13,10 +13,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/functional/overloaded.h"
 #include "base/guid.h"
 #include "base/memory/raw_ptr.h"
@@ -33,7 +33,6 @@
 #include "base/test/task_environment.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
-#include "base/time/time_to_iso8601.h"
 #include "base/values.h"
 #include "components/attribution_reporting/parsing_utils.h"
 #include "content/browser/aggregation_service/aggregation_service_features.h"
@@ -124,30 +123,39 @@ struct AttributionReportJsonConverter {
     if (options.remove_report_ids)
       report_body.Remove("report_id");
 
-    if (options.remove_assembled_report &&
-        absl::holds_alternative<AttributionReport::AggregatableAttributionData>(
-            report.data())) {
-      // Output attribution_destination from the shared_info field.
-      absl::optional<base::Value> shared_info =
-          report_body.Extract("shared_info");
-      DCHECK(shared_info);
-      std::string* shared_info_str = shared_info->GetIfString();
-      DCHECK(shared_info_str);
+    switch (report.GetReportType()) {
+      case AttributionReport::Type::kAggregatableAttribution:
+        if (options.remove_assembled_report) {
+          // Output attribution_destination from the shared_info field.
+          absl::optional<base::Value> shared_info =
+              report_body.Extract("shared_info");
+          DCHECK(shared_info);
+          std::string* shared_info_str = shared_info->GetIfString();
+          DCHECK(shared_info_str);
 
-      base::Value shared_info_value = base::test::ParseJson(*shared_info_str);
-      DCHECK(shared_info_value.is_dict());
+          base::Value shared_info_value =
+              base::test::ParseJson(*shared_info_str);
+          DCHECK(shared_info_value.is_dict());
 
-      static constexpr char kKeyAttributionDestination[] =
-          "attribution_destination";
-      std::string* attribution_destination =
-          shared_info_value.GetDict().FindString(kKeyAttributionDestination);
-      DCHECK(attribution_destination);
-      DCHECK(!report_body.contains(kKeyAttributionDestination));
-      report_body.Set(kKeyAttributionDestination,
-                      std::move(*attribution_destination));
+          static constexpr char kKeyAttributionDestination[] =
+              "attribution_destination";
+          std::string* attribution_destination =
+              shared_info_value.GetDict().FindString(
+                  kKeyAttributionDestination);
+          DCHECK(attribution_destination);
+          DCHECK(!report_body.contains(kKeyAttributionDestination));
+          report_body.Set(kKeyAttributionDestination,
+                          std::move(*attribution_destination));
 
-      report_body.Remove("aggregation_service_payloads");
-      report_body.Remove("source_registration_time");
+          report_body.Remove("aggregation_service_payloads");
+          report_body.Remove("source_registration_time");
+        }
+        break;
+      case AttributionReport::Type::kEventLevel:
+        bool ok =
+            AdjustScheduledReportTime(report_body, report.OriginalReportTime());
+        DCHECK(ok);
+        break;
     }
 
     base::Value::Dict value;
@@ -202,7 +210,13 @@ struct AttributionReportJsonConverter {
       for (auto& value : report_body) {
         base::Value::Dict* dict = value.GetIfDict();
         DCHECK(dict);
-        dict->RemoveByDottedPath("body.report_id");
+
+        base::Value::Dict* body = dict->FindDict("body");
+        DCHECK(body);
+
+        body->Remove("report_id");
+        AdjustScheduledReportTime(*body,
+                                  report.GetOriginalReportTimeForTesting());
       }
     }
 
@@ -215,13 +229,22 @@ struct AttributionReportJsonConverter {
 
   std::string FormatTime(base::Time time) const {
     base::TimeDelta time_delta = time - time_origin;
+    return base::NumberToString(time_delta.InMilliseconds());
+  }
 
-    switch (options.report_time_format) {
-      case AttributionReportTimeFormat::kMillisecondsSinceUnixEpoch:
-        return base::NumberToString(time_delta.InMilliseconds());
-      case AttributionReportTimeFormat::kISO8601:
-        return base::TimeToISO8601(base::Time::UnixEpoch() + time_delta);
+  bool AdjustScheduledReportTime(base::Value::Dict& report_body,
+                                 base::Time original_report_time) const {
+    // This field contains a string encoding seconds from the UNIX epoch. It
+    // needs to be adjusted relative to the simulator's origin time in order
+    // for test output to be consistent.
+    std::string* str = report_body.FindString("scheduled_report_time");
+    if (!str) {
+      return false;
     }
+
+    *str =
+        base::NumberToString((original_report_time - time_origin).InSeconds());
+    return true;
   }
 
   const AttributionSimulationOutputOptions options;

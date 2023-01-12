@@ -91,6 +91,44 @@ absl::optional<ino64_t> GetInodeValue(const base::FilePath& path) {
   return file_stats.st_ino;
 }
 
+// Returns a `DlpFileDestination` with a source URL or component, based on
+// |app_update|.
+DlpFilesController::DlpFileDestination GetFileDestinationForApp(
+    const apps::AppUpdate& app_update) {
+  DlpFilesController::DlpFileDestination destination;
+  switch (app_update.AppType()) {
+    case apps::AppType::kStandaloneBrowserChromeApp:
+    case apps::AppType::kExtension:
+    case apps::AppType::kStandaloneBrowserExtension:
+    case apps::AppType::kChromeApp:
+      destination.url_or_path = base::StrCat(
+          {extensions::kExtensionScheme, "://", app_update.AppId()});
+      break;
+    case apps::AppType::kArc:
+      destination.component = DlpRulesManager::Component::kArc;
+      break;
+    case apps::AppType::kCrostini:
+      destination.component = DlpRulesManager::Component::kCrostini;
+      break;
+    case apps::AppType::kPluginVm:
+      destination.component = DlpRulesManager::Component::kPluginVm;
+      break;
+    case apps::AppType::kWeb:
+      destination.url_or_path = app_update.PublisherId();
+      break;
+    case apps::AppType::kUnknown:
+    case apps::AppType::kBuiltIn:
+    case apps::AppType::kMacOs:
+    case apps::AppType::kStandaloneBrowser:
+    case apps::AppType::kRemote:
+    case apps::AppType::kBorealis:
+    case apps::AppType::kBruschetta:
+    case apps::AppType::kSystemWeb:
+      break;
+  }
+  return destination;
+}
+
 std::vector<absl::optional<ino64_t>> GetFilesInodes(
     const std::vector<storage::FileSystemURL>& files) {
   std::vector<absl::optional<ino64_t>> inodes;
@@ -448,6 +486,17 @@ void ShowNotification(const std::string& notification_id,
                                            /*metadata=*/nullptr);
 }
 
+// Returns true if `file_path` is in My Files directory.
+bool IsInLocalFileSystem(const base::FilePath& file_path) {
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  auto my_files_folder =
+      file_manager::util::GetMyFilesFolderForProfile(profile);
+  if (my_files_folder == file_path || my_files_folder.IsParent(file_path)) {
+    return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 DlpFilesController::DlpFileMetadata::DlpFileMetadata(
@@ -788,41 +837,51 @@ void DlpFilesController::CheckIfLaunchAllowed(
   request.set_file_action(intent->IsShareIntent() ? ::dlp::FileAction::SHARE
                                                   : ::dlp::FileAction::OPEN);
 
-  switch (app_update.AppType()) {
-    case apps::AppType::kStandaloneBrowserChromeApp:
-    case apps::AppType::kExtension:
-    case apps::AppType::kStandaloneBrowserExtension:
-    case apps::AppType::kChromeApp:
-      request.set_destination_url(base::StrCat(
-          {extensions::kExtensionScheme, "://", app_update.AppId()}));
-      break;
-
-    case apps::AppType::kArc:
-      request.set_destination_component(::dlp::DlpComponent::ARC);
-      break;
-    case apps::AppType::kCrostini:
-      request.set_destination_component(::dlp::DlpComponent::CROSTINI);
-      break;
-    case apps::AppType::kPluginVm:
-      request.set_destination_component(::dlp::DlpComponent::PLUGIN_VM);
-      break;
-    case apps::AppType::kWeb:
-      request.set_destination_url(app_update.PublisherId());
-      break;
-    case apps::AppType::kUnknown:
-    case apps::AppType::kBuiltIn:
-    case apps::AppType::kMacOs:
-    case apps::AppType::kStandaloneBrowser:
-    case apps::AppType::kRemote:
-    case apps::AppType::kBorealis:
-    case apps::AppType::kBruschetta:
-    case apps::AppType::kSystemWeb:
-      break;
+  DlpFileDestination destination = GetFileDestinationForApp(app_update);
+  if (destination.url_or_path.has_value()) {
+    request.set_destination_url(destination.url_or_path.value());
+  } else if (destination.component.has_value()) {
+    request.set_destination_component(
+        MapPolicyComponentToProto(destination.component.value()));
   }
+
   chromeos::DlpClient::Get()->CheckFilesTransfer(
       request, base::BindOnce(&DlpFilesController::LaunchIfAllowed,
                               weak_ptr_factory_.GetWeakPtr(),
                               std::move(result_callback)));
+}
+
+bool DlpFilesController::IsLaunchBlocked(const apps::AppUpdate& app_update,
+                                         const apps::IntentPtr& intent) {
+  if (intent->files.empty()) {
+    return false;
+  }
+
+  DlpFileDestination destination = GetFileDestinationForApp(app_update);
+  for (const auto& file : intent->files) {
+    if (!file->dlp_source_url.has_value()) {
+      continue;
+    }
+    if (destination.url_or_path.has_value()) {
+      DlpRulesManager::Level level = rules_manager_.IsRestrictedDestination(
+          GURL(file->dlp_source_url.value()),
+          GURL(destination.url_or_path.value()),
+          DlpRulesManager::Restriction::kFiles, /*out_source_pattern=*/nullptr,
+          /*out_destination_pattern=*/nullptr);
+      if (level == DlpRulesManager::Level::kBlock) {
+        return true;
+      }
+    } else if (destination.component.has_value()) {
+      DlpRulesManager::Level level = rules_manager_.IsRestrictedComponent(
+          GURL(file->dlp_source_url.value()), destination.component.value(),
+          DlpRulesManager::Restriction::kFiles, /*out_source_pattern=*/nullptr);
+      if (level == DlpRulesManager::Level::kBlock) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 void DlpFilesController::IsFilesTransferRestricted(
@@ -1248,9 +1307,10 @@ void DlpFilesController::ContinueGetDisallowedTransfers(
   ::dlp::CheckFilesTransferRequest request;
   base::flat_map<std::string, storage::FileSystemURL> filtered_files;
   for (const auto& file : transferred_files) {
-    // If the file is in the same file system as the destination, no
-    // restrictions should be applied.
-    if (!file.IsInSameFileSystem(destination)) {
+    // If the file isn't in the local file system, or the file is in the same
+    // file system as the destination, no restrictions should be applied.
+    if (IsInLocalFileSystem(file.path()) &&
+        !file.IsInSameFileSystem(destination)) {
       auto file_path = file.path().value();
       filtered_files[file_path] = file;
       request.add_files_paths(file_path);

@@ -5,17 +5,17 @@
 #include <cmath>
 #include <string>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "components/headless/command_handler/headless_command_handler.h"
+#include "components/headless/command_handler/headless_command_switches.h"
 #include "content/public/test/browser_test.h"
-#include "headless/app/headless_command_handler.h"
-#include "headless/app/headless_command_switches.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"

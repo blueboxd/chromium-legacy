@@ -16,11 +16,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "base/functional/function_ref.h"
 #include "base/gtest_prod_util.h"
 #include "base/i18n/rtl.h"
@@ -35,6 +35,7 @@
 #include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/tracing/protos/chrome_track_event.pbzero.h"
 #include "base/types/pass_key.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
@@ -3696,6 +3697,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   TraceProto::LifecycleState LifecycleStateToProto() const;
 
+  perfetto::protos::pbzero::FrameTreeNodeInfo::FrameType GetFrameTypeProto()
+      const;
+
   void BindCacheStorageInternal(
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
       const storage::BucketLocator& bucket_locator);
@@ -3784,13 +3788,30 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // mistakes when the associated FrameTreeNode changes (e.g. during prerender
   // activations).
   //
-  // This points to:
-  // - Owning FrameTreeNode for main RenderFrameHosts in kActive, kPrerender,
-  //   kSpeculative or kPendingCommit lifecycle states.
-  // - Null for main RenderFrameHosts in kPendingDeletion lifecycle state.
-  // - Null for main RenderFrameHosts stored in BFCache.
-  // - Owning FrameTreeNode for subframes (which stays the same for the entire
-  //   lifetime of a subframe RenderFrameHostImpl).
+  // All RenderFrameHosts are created with a non-null `owner_`. When
+  // RenderFrameHostManager replaces its current RenderFrameHost with another
+  // RenderFrameHost (e.g., after a navigation), the old RenderFrameHost's
+  // `owner_` becomes null. The old RenderFrameHost will then enter back-forward
+  // cache or become pending deletion.
+  //
+  // Invariants:
+  // - If `lifecycle_state_` is one of: kSpeculative, kPrerendering, kActive, or
+  //   kPendingCommit then `owner_` != nullptr.
+  //
+  // - If `lifecycle_state_` == kBackForwardCache, then the top-level
+  //   RenderFrameHost has no `owner_`. RenderFrameHosts nested below in iframes
+  //   still have an `owner_` while in the back-forward cache.
+  //
+  // - If `lifecycle_state_` is kRunningUnloadHandlers or kReadyToBeDeleted
+  //   (i.e., pending deletion), then `owner_` will sometimes be null.
+  //   Specifically, RenderFrameHosts that have been replaced (e.g., after a
+  //   navigation) will have a null `owner_`, while their children will continue
+  //   to have a non-null `owner_`. Detached <iframe> RenderFrameHosts also
+  //   continue to have a non-null `owner_`.
+  //
+  // In particular:
+  // - IsActive() => owner_.
+  // - !owner_    => IsPendingDeletion() || IsInBackForwardCache().
   raw_ptr<RenderFrameHostOwner> owner_ = nullptr;
 
   // Stores all of the state related to each browsing context +
